@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="145" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="154" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -275,6 +275,7 @@
     <Product config="assa_abloy/TouchDeadbolt.xml" id="1000" name="Yale Key Free Touchscreen Deadbolt (YRD446)" type="8002"/>
     <Product config="assa_abloy/PushButtonLever.xml" id="0409" name="Yale Push Button Lever Lock (YRL210)" type="0003"/>
     <Product config="assa_abloy/PushButtonLever.xml" id="0800" name="Yale Push Button Lever Lock (YRL210)" type="0003"/>
+    <Product config="assa_abloy/PushButtonLever.xml" id="0f00" name="Yale Push Button Lever Lock (YRL226)" type="800c"/>
     <Product config="assa_abloy/PushButtonDeadbolt.xml" id="0000" name="Yale Push Button Deadbolt (YRD210)" type="0004"/>
     <Product config="assa_abloy/PushButtonDeadbolt.xml" id="0209" name="Yale Push Button Deadbolt (YRD210)" type="0004"/>
     <Product config="assa_abloy/PushButtonDeadbolt.xml" id="aa00" name="Yale Push Button Deadbolt (YRD210)" type="0004"/>
@@ -825,6 +826,7 @@
     <Product config="ge/14294-dimmer.xml" id="3039" name="14299 In-Wall 1000W Smart Dimmer" type="4944"/>
     <Product config="ge/14295-dimmer-toggle.xml" id="3130" name="14295 In-Wall Smart Toggle Dimmer" type="4944"/>
     <Product config="ge/14298.xml" id="3034" name="14298 Plug-in Outdoor Smart Switch" type="4F50"/>
+    <Product config="ge/14322-dimmer-toggle.xml" id="3137" name="14322 In-Wall Smart Toggle Dimmer" type="4944"/>
     <Product config="ge/26931-motion-switch.xml" id="3032" name="26931 Smart Motion Switch" type="494d"/>
     <Product config="ge/26932-motion-dimmer.xml" id="3033" name="26932 Smart Motion Dimmer" type="494d"/>
     <Product config="ge/26933-motion-dimmer.xml" id="3034" name="26933 Smart Motion Dimmer" type="494d"/>
@@ -1060,6 +1062,7 @@
     <Product type="0007" id="0001" name="LZW40 Dimmable  Bulb" config="inovelli/lzw40.xml"/>
     <Product type="000d" id="0001" name="LZW60 4-in-1 Sensor" config="inovelli/lzw60.xml"/>
     <Product type="000e" id="0001" name="LZW36 Fan/Light Dimmer" config="inovelli/lzw36.xml"/>
+    <Product type="000a" id="0001" name="LZW45 Light Strip" config="inovelli/lzw45.xml"/>
   </Manufacturer>
   <Manufacturer id="0100" name="Insignia"></Manufacturer>
   <Manufacturer id="0006" name="Intel"></Manufacturer>
@@ -1148,7 +1151,7 @@
     <Product config="leviton/vrf01.xml" id="0334" name="VRF01-1LZ Quiet Fan Speed Control" type="1001"/>
     <Product id="0243" name="VRCS2-MRZ 2-Button Scene Controller with Switches" type="1102"/>
     <Product config="leviton/vrcz4.xml" id="0243" name="VRCZ4-MRZ 4-Button Zone Controller with Switch" type="1202"/>
-    <Product id="0334" name="DZPD3-1LW Plug-In Dimming Lamp Module" type="1902"/>
+    <Product config="leviton/dzpd3.xml" id="0334" name="DZPD3-1LW Plug-In Dimming Lamp Module" type="1902"/>
     <Product id="0334" name="DZPA1-1LW Plug-In Appliance Module" type="1a02"/>
     <Product id="0334" name="DZMX1-1LZ Dimmer" type="1b03"/>
     <Product id="0334" name="DZS15-1LZ Switch" type="1c02"/>
@@ -1230,11 +1233,12 @@
     <Product config="mcohome/mhp220.xml" id="1352" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhp220.xml" id="5101" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhp220.xml" id="5102" name="MH-P220 Micro Dimmer" type="220a"/>
+    <Product config="mcohome/mhs220.xml" id="1252" name="MH-S220 One-Load" type="2201"/>	  
     <Product config="mcohome/mhs311.xml" id="0201" name="MH-S311 One-load" type="3102"/>
     <Product config="mcohome/mhs312.xml" id="0202" name="MH-S312 Two-load" type="3102"/>
     <Product config="mcohome/mhs314.xml" id="0204" name="MH-S314 Four-load" type="3102"/>
     <Product config="mcohome/mhs314.xml" id="1302" name="MH-S314 Four-load" type="3141"/>
-    <Product config="mcohome/mhs314.xml" id="3141" name="MH-S314 Four-load" type="5102"/>
+    <Product config="mcohome/mhs314.xml" id="5102" name="MH-S314 Four-load" type="3141"/>
     <Product config="mcohome/mhs411.xml" id="0201" name="MH-S411 One-load" type="4102"/>
     <Product config="mcohome/mhs412.xml" id="0202" name="MH-S412 Two-load" type="4102"/>
     <Product config="mcohome/mhs412.xml" id="1302" name="MH-S412 Two-load" type="4121"/>
@@ -1306,6 +1310,9 @@
   <Manufacturer id="036B" name="NEC Platforms Ltd"></Manufacturer>
   <Manufacturer id="0241" name="NEEO AG"></Manufacturer>
   <Manufacturer id="006D" name="Nefit"></Manufacturer>
+  <Manufacturer id="0312" name="NEI Technology">
+    <Product config="nei/ms11z.xml" id="ff04" name="MS11Z" type="ff00"/>  
+  </Manufacturer>
   <Manufacturer id="0351" name="NEOCONTROL US LLC"></Manufacturer>
   <Manufacturer id="0189" name="Ness Corporation Pty Ltd"></Manufacturer>
   <Manufacturer id="0133" name="Netgear"></Manufacturer>
@@ -1544,6 +1551,7 @@
   <Manufacturer id="0153" name="Revolv"></Manufacturer>
   <Manufacturer id="0346" name="Ring">
     <Product config="ring/PIR-SS.xml" id="0201" name="PIR-SS Motion Detector" type="0301"/>
+    <Product config="ring/contact-sensor-v2.xml" id="0301" name="Contact Sensor" type="0201"/>
     <Product id="0201" name="DW-SS Contact Sensor" type="0201"/>
   </Manufacturer>
   <Manufacturer id="035E" name="RISCO Group"></Manufacturer>
@@ -1643,6 +1651,9 @@
 	<!-- NAS-CS01Z Curtain Switch -->
 	<Product config="shenzen_neo/nas-cs01z.xml" id="102c" name="NAS-CS01Z Curtain Switch" type="0200"/>
   </Manufacturer>
+  <Manufacturer id="041a" name="Shenzhen Neo Electronics Co Ltd"> <!-- new manufacturer id for Neo Coolcam -->
+    <Product config="shenzen_neo/nas-wr01ze.xml" id="0008" name="NAS-WR01ZE Power plug 12A" type="0200"/>
+  </Manufacturer>
   <Manufacturer id="032C" name="Shenzhen Saykey Technology">
     <Product config="shenzen_saykey/sk-3007-05.xml" id="0005" name="Curtain Motor Control with external module" type="3007"/>
   </Manufacturer>
@@ -1739,7 +1750,7 @@
   </Manufacturer>
   <Manufacturer id="019b" name="ThermoFloor AS">
     <Product config="thermofloor/heatit021.xml" id="0001" name="Heatit Thermostat TF 021" type="0001"/>
-    <Product config="thermofloor/heatit021.xml" id="0201" name="Heatit Thermostat TF 016" type="0003"/>
+    <Product config="thermofloor/heatit021-v1.92.xml" id="0201" name="Heatit Thermostat TF 016 (TF 021 FW > 1.92)" type="0003"/>
     <Product config="thermofloor/heatit056.xml" id="0202" name="Heatit Thermostat TF 056" type="0003"/>
     <Product config="thermofloor/heatit058.xml" id="0203" name="Heatit Thermostat TF 058" type="0003"/>
     <Product config="thermofloor/heatit204.xml" id="0204" name="Heatit Thermostat Z-Temp2" type="0004"/>
@@ -1813,6 +1824,7 @@
     <Product config="sunricher/srzv9001tccteu.xml" id="a104" name="Z-Wave Wall Controller - SR-ZV9001T-CCT-EU" type="0300"/>
     <Product config="sunricher/zv9101fa.xml" id="d002" name="Dimmer ZV-9101FA" type="0200"/>
     <Product config="sunricher/srzv9101sachpswitch.xml" id="d006" name="AC Switch ZV-9101SAC-HP-Switch" type="0200"/>
+    <Product config="sunricher/srzv9100aa.xml" id="d00f" name="SR-ZV9100A-A In-Wall Smart Switch" type="0200"/>
   </Manufacturer>
   <Manufacturer id="0049" name="Twisthink"></Manufacturer>
   <Manufacturer id="0270" name="Ubitech"></Manufacturer>
@@ -2033,7 +2045,7 @@
     <Product config="zooz/zse30.xml" id="0085" name="ZSE30 Water Sensor" type="0003"/>
     <Product config="zooz/zen31.xml" id="2000" name="ZEN31 RGBW Dimmer" type="0902"/>
     <Product config="zooz/zse33.xml" id="0088" name="ZSE33 Smart Chime" type="0003"/>
-    <Product config="zooz/zen34.xml" id="F001" name="ZEN34 Remote Switch" type="0004"/>
+    <Product config="zooz/zen34.xml" id="f001" name="ZEN34 Remote Switch" type="0004"/>
     <Product config="zooz/zse40.xml" id="2101" name="ZSE40 4-in-1 sensor" type="2021"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">

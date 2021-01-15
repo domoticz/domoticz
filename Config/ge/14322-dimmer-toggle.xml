@@ -1,0 +1,65 @@
+<!-- GE(Jasco) 14322 Z-Wave Plus Dimmer Toggle Switch -->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3137:4944</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ge/14322-dimmer-toggle.png</MetaDataItem>
+    <MetaDataItem id="3137" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/2123/</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2123/Binder1.pdf</MetaDataItem>
+    <MetaDataItem name="Name">In-Wall Smart Toggle Dimmer</MetaDataItem>
+    <MetaDataItem id="3137" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Quickly press ON (up) button (3) times then immediately
+press the OFF (down) button (3) times.
+Note: This should only be used in the even your network's
+primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to
+include a device to the Z-Wave network.
+2. Once the controller is ready to include your device,
+press and release the top or bottom of the wireless smart
+dimmer (rocker) to include it in the network.</MetaDataItem>
+    <MetaDataItem id="3137" name="Identifier" type="4944">14322/ZW3004</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1. Follow the instructions for your Z-Wave certified controller to
+exclude a device from the Z-Wave network.
+2. Once the controller is ready to Exclude your device,
+press and release the top or bottom of the wireless smart
+dimmer (rocker) to exclude it from the network.</MetaDataItem>
+    <MetaDataItem name="Description">Transform any home into a smart home with the Jasco Z-Wave In-Wall Smart Toggle Dimmer. The dimmer enables wireless control of on/off and dim functions of hard-wired dimmable LED/CFL and incandescent lighting. The dimmer replaces your current light switch, uses your existing wiring, and provides Z-Wave wireless and in-wall control of overhead lighting. Use the dimmer feature to customize the lighting output and create the perfect ambiance for any room. Providing ultimate flexibility, the In-Wall Smart Dimmer allows you to operate the switch by itself or easily integrate the switch three-way or four-way wiring configurations by adding the Jasco Add-On Switch. Single Pole wiring configuration controls the light from one location. Three-way wiring configuration controls the light from two separate locations. Four-way wiring configuration controls the light from three separate locations. The Jasco Add-On Switch is required for three-way or four-way installations. Take control of your home lighting with Jasco Z-Wave Wireless Lighting Controls!</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Brandon Clifford - brandon099@gmail.com" date="22 Nov 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2123/xml</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters - per https://products.z-wavealliance.org/products/2048 -->
+  <CommandClass id="112">
+    <Value genre="config" index="4" label="Invert Switch" max="1" min="0" size="1" type="list" value="0">
+      <Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+      <Item label="No" value="0"/>
+      <Item label="Yes" value="1"/>
+    </Value>
+    <!-- Both the number of steps (or levels) that the dimmer will change and the timing of the steps can be modified to suit personal preferences. The timing of the steps can be adjusted in 10 millisecond intervals. As an example, the default setting for parameter 8 is 3. This means that the lighting level will change every 30 milliseconds when the Dim Command is received. A value of 255 would mean that the level would change every 2.55 seconds. Combined, the two parameters allow dim rate adjustments from 10 milliseconds to 4.2 minutes to go from maximum-to-minimum or minimum-to-maximum brightness levels. -->
+    <Value genre="config" index="7" label="Z-Wave Command Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="8" label="Z-Wave Command Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="9" label="Local Control Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="10" label="Local Control Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+    <Value genre="config" index="11" label="ALL ON/ALL OFF Dim Step" max="99" min="1" type="byte" units="" value="1">
+      <Help>Indicates how many levels the dimmer will change for each dimming step.</Help>
+    </Value>
+    <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="short" units="x 10 milliseconds" value="3">
+      <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>

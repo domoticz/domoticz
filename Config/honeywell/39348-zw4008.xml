@@ -1,5 +1,5 @@
 <!-- Honeywell(Jasco) 39348 / ZW4008 In-Wall Smart Switch-->
-<Product Revision="1" 
+<Product Revision="2" 
   xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <!--<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/</MetaDataItem>-->
@@ -20,6 +20,7 @@ Note: This should only be used in the event your network’s primary controller 
     <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3599/39348%20Binder.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Jeff Sanicola - jeff.sanicola@outlook.com" date="01 Jan 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3599/xml</Entry>
+      <Entry author="Brian France" date="11 Dec 2020" revision="2">Added COMMAND_CLASS_BASIC block to set Value type instead of Node Event for Basic Set, Added COMMAND_CLASS_ASSOCIATION block for double tap with double tap defauled to auto</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters - per https://products.z-wavealliance.org/products/3599 -->
@@ -43,7 +44,14 @@ Note: This should only be used in the event your network’s primary controller 
     <Associations num_groups="3">
       <Group index="1" label="Lifeline" max_associations="5"/>
       <Group index="2" label="Basic - Load" max_associations="5"/>
-      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5" auto="true"/>
     </Associations>
   </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+   <CommandClass id="32">
+     <Compatibility>
+       <IgnoreMapping>true</IgnoreMapping>
+       <SetAsReport>true</SetAsReport>
+     </Compatibility>
+   </CommandClass>
 </Product>

@@ -1,0 +1,73 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Contact Sensor</MetaDataItem>
+    <MetaDataItem name="Description">Ring Alarm Contact Sensor is a wireless sensor for the Ring Alarm system which provides users the ability to know when a door or window is open or closed. After installing the sensor on a door or window and setting up the sensor in the Ring app, monitor and receive notifications when the door or window opens or closes. The Ring Alarm Base Station is required to enable Contact Sensor features and functions within the Ring app. </MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0346:0301:0201</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ring/contact-sensor-v2.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3862/Z-WaveUserManual_Contact_Sensor_700.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">">The sensor will wake up every so often to send a Wake-Up Notification to allow the life line master node controller that the sensor is now available for any queued messages that the controller may have for the sensor. The time between Wake-Up Notifications can be configured with the Wake-Up Notification command class according to the following configurable values:
+•	Min Value 1 hr
+•	Max Value 24 hr
+•	Default Value 12 hours (12 * 60 * 60 seconds)
+•	Wake Up Interval Step Seconds 1 hour (3600 seconds)
+    </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">After powering on the device, press and hold the button on the front of the device for ~3 seconds. Release the button and the device will enter Classic inclusion mode which implements both classic inclusion with a Node Information Frame, and Network Wide Inclusion. During Classic Inclusion mode, the green LED will blink three times followed by a brief pause, repeatedly. When Classic inclusion times-out, the device will blink alternating red and green a few times.
+    </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion Instructions:
+1.	Initiate remove “Ring Alarm Contact Sensor” flow in the Ring Alarm mobile application – Select the settings icon from device details page and choose “Remove Device” to remove the device. This will place the controller into Remove or “Z-Wave Exclusion” mode.
+2.	With the controller in Remove (Z-Wave Exclusion) mode, use a paper clip or similar object and tap the pinhole button. The device’s red LED turns on solid to indicate the device was removed from the network.
+    </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Factory Default Instructions
+1.	To restore Ring Alarm Contact Sensor to factory default settings, locate the pinhole reset button on the device. This is found inside the battery compartment on the back of the device after removing the back bracket.
+2.	Using a paperclip or similar object, insert it into the pinhole, press and hold the button down for 10 seconds.
+3.	The device will rapidly blink green continuously for 10 seconds. After about 10 seconds, when the green blinking stops, release the button. The red LED will turn on solid to indicate the device was removed from the network.
+    </MetaDataItem>
+    <MetaDataItem id="0301" name="ZWProductPage" type="0201">https://products.z-wavealliance.org/products/3862/</MetaDataItem>
+    <MetaDataItem id="0301" name="Identifier" type="0201">Contact Sensor v2</MetaDataItem>
+    <MetaDataItem id="0301" name="FrequencyName" type="0201">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+	<Entry author="gongtao0607@gmail.com" date="13 Jan 2021" revision="1">Initial Metadata Creation</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Heartbeat Interval" max="70" min="1" size="1" type="byte" units="minutes" value="70">
+      <Help>
+        Heartbeats are automatic battery reports on a timer after the last event.
+      </Help>
+    </Value>
+    <Value genre="config" index="2" label="Application Retriess" max="5" min="0" size="1" type="byte" units="" value="1">
+      <Help>
+        Number of application level retries attempted for messages either not ACKed or messages encapsulated via supervision get that did not receive a report.
+      </Help>
+    </Value>
+    <Value genre="config" index="3" label="Application Level Retry Base Wait Time Period" max="96" min="1" size="1" type="byte" units="seconds" value="5">
+      <Help>
+        This parameter is the number base seconds used in the calculation for sleeping between retry messages.
+      </Help>
+    </Value>
+    <Value genre="config" index="4" label="LED Indicator Enable" max="2" min="0" size="1" type="list" value="1">
+      <Help>
+        This parameter allows a user, via software, to configure the various LED indications on the device.
+      </Help>
+      <Item label="Don't show green" value="0"/>
+      <Item label="Show green after Supervision Report Intrusion (Fault)" value="1"/>
+      <Item label="Show green after Supervision Report both Intrusion and Intrusion clear" value="2"/>
+    </Value>
+    <Value genre="config" index="5" label="One Shot Timer" max="65535" min="5" size="2" type="short" units="seconds" value="0">
+      <Help>
+        Writing to this parameter prompts the sensor to send a wakeup notification one time after this parameter's number of seconds. After which it is reset back to 0.
+      </Help>
+    </Value>
+    <Value genre="config" index="6" label="Supervisory Report Timeout" max="5000" min="500" size="2" type="short" units="milliseconds" value="1500">
+      <Help>
+        The number of milliseconds waiting for a Supervisory Report response to a Supervisory Get encapsulated command from the sensor before attempting a retry.
+      </Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+       <Group index="1" label="LifeLine" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
+

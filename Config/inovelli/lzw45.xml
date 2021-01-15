@@ -1,0 +1,193 @@
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:000a</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/inovelli/lzw31-sn.png</MetaDataItem>
+    <MetaDataItem id="0001" name="ZWProductPage" type="000a">https://products.z-wavealliance.org/products/3438</MetaDataItem>
+    <MetaDataItem name="ProductPage">TBD</MetaDataItem>
+    <MetaDataItem name="ProductSupport">TBD</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">TBD</MetaDataItem>
+    <MetaDataItem id="0001" name="FrequencyName" type="000a">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="ProductManual">TBD</MetaDataItem>
+    <MetaDataItem name="ResetDescription">TBD</MetaDataItem>
+    <MetaDataItem name="Description">TBD</MetaDataItem>
+    <MetaDataItem name="Name">LZW45 LED Light Strip</MetaDataItem>
+    <MetaDataItem id="0001" name="Identifier" type="000a">LZW45</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">TBD</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Jtronicus" date="29 Sep 2020" revision="1">Initial Release</Entry>
+      <Entry author="Jtronicus" date="2 Oct 2020" revision="2">Fix device type, fix some issues with parameter sizes</Entry>
+      <Entry author="Jtronicus" date="16 Oct 2020" revision="3">Updates to work with firmware 1.16</Entry>
+      <Entry author="Jtronicus" date="24 Oct 2020" revision="4">Updates to work with firmware 1.17</Entry>
+      <Entry author="Jtronicus" date="27 Oct 2020" revision="5">Updates to work with firmware 1.18</Entry>
+      <Entry author="Jtronicus" date="27 Oct 2020" revision="6">Updates parameter 30 to 4 bytes</Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" type="byte" size="1" index="1" label="Number of Pixels" min="0" max="130" value="0">
+      <Help>
+      When individually addressable LEDs are used, this parameter tells the controller the number of pixels that are attached. 
+      0: Automatic recognition of pixels
+      Range 1 - 130: Set the fixed value of the pixel bit
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="2" label="Dimming Speed" min="0" max="98" value="3">
+      <Help>
+      This changes the speed in which the light strip dims up or down. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed.
+      Range 0 - 98: Set the dimming speed
+      Default: 4
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="3" label="Ramp Rate" min="0" max="99" value="99">
+      <Help>
+      This changes the speed in which the light strip turns on or off. For example, when a user sends the switch a basicSet(value: 0xFF) or basicSet(value: 0x00), this is the speed in which those actions take place. A setting of 0 should turn the light immediately on or off (almost like an on/off switch). Increasing the value should slow down the transition speed. A setting of 99 should keep this in sync with parameter 2.
+      Range 0 - 98: Set the Ramp Rate
+      99: Keep in sync with parameter 2
+      Default: 99
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="4" label="Minimum Level" min="1" max="45" value="1">
+      <Help>
+      The minimum level that the strip can be dimmed to. Useful when the user has an LED strip that does not turn on or flickers at a lower level.
+      Range: 1 - 45
+      Default: 1
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="5" label="Maximum Level" min="55" max="99" value="99">
+      <Help>
+      The maximum level that the strip can be dimmed to. Useful when the user has an LED strip that reaches its maximum level before the dimmer value of 99.
+      Range: 55 - 99
+      Default: 99
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="6" label="Auto Off Timer" min="0" max="32767" value="0">
+      <Help>
+      Automatically turns the strip off after this many seconds. When the strip is turned on a timer is started that is the duration of this setting. When the timer expires, the strip is turned off.
+      0 - Auto off is disabled
+      Range: 0 - 32767
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="7" label="Default Level (Local)" min="0" max="99" value="0">
+      <Help>
+      Default level for the strip when it is powered on from the local switch. A setting of 0 means that the switch will return to the level that it was on before it was turned off.
+      Range 0 - 99
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="8" label="Default Level (Z-Wave)" min="0" max="99" value="0">
+      <Help>
+      Default level for the dimmer when it is powered on from a Z-Wave command (i.e. BasicSet(0xFF)). A setting of 0 means that the switch will return to the level that it was on before it was turned off.
+      Range: 0-99
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="9" label="Default Color" min="0" max="425984362" value="262144000">
+      <Help>
+      Byte(3-2): Values between 2700-6500 represent a color temperature. 
+      Byte(1-0): Values between 0-361, represent the color on the Hue color wheel. The value of 361 represents a random color.
+      Range: 0 - 425984362
+      Default: 262144000
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="10" label="State after power Restored" min="1" max="2" value="2">
+      <Help>
+      The state the switch should return to once power is restored after power failure.
+      0 - Off
+      1 - Default Color / Level (Parameter 9)
+      2 - Previous
+      Default: Previous
+      </Help>
+      <Item value="0" label="Off"/>
+      <Item value="1" label="Default Color/Level"/>
+      <Item value="2" label="Previous"/>
+    </Value>
+   <Value genre="config" type="byte" size="1" index="17" label="Active Power Reports" min="0" max="100" value="10">
+      <Help>
+      The power level change that will result in a new power report being sent. The value is a percentage of the previous report. 0 = disabled.
+      Range: 0 - 100
+      Default: 10
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="18" label="Periodic Power &amp; Energy Reports" min="0" max="32767" value="3600">
+      <Help>
+      Time period between consecutive power &amp; energy reports being sent (in seconds). The timer is reset after each report is sent.
+      Range: 0, 30 - 32767
+      Default: 3600
+      </Help>
+    </Value>
+    <Value genre="config" type="byte" size="1" index="19" label="Energy Reports" min="0" max="127" value="10">
+      <Help>
+      The energy level change that will result in a new energy report being sent (in kWh)
+	  0 = 0.01kWh, 10=0.1kWh, 100=1kWh
+      Range:0-127
+      Default: 10
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="21" label="Quick Strip Effect" min="0" max="2147483647" value="0">
+      <Help>
+      See website for details
+      *  Sending Basic, Binary Switch, Multilevel, and Color SET will automatically disable the strip effect.
+      *  Toggling OFF -> ON will cancel effect mode set on LED Strip and change the LED Strip back to the Previous color.
+      Range: 0 - 2147483647
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="22" label="Custom Strip Effect Parameter 1" min="0" max="2147483647" value="0">
+      <Help>
+      See website for details.
+      Range: 0 - 2147483647
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="23" label="Custom Strip Effect Parameter 2" min="0" max="2147483647" value="0">
+      <Help>
+      See website for details.
+      Range: 0 - 2147483647
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="24" label="Custom Strip Effect Parameter 3" min="0" max="2147483647" value="0">
+      <Help>
+      See website for details.
+      Range: 0 - 2147483647
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="int" size="4" index="30" label="Custom Strip Effect Parameter 4" min="0" max="65535" value="0">
+      <Help>
+      See website for details.
+      Range: 0 - 65535
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="short" size="2" index="31" label="Pixel Effect" min="0" max="32767" value="0">
+      <Help>
+      Byte 1 - Level
+      Byte 0 - Effect
+      See website for details.
+      Default: 0
+      </Help>
+    </Value>
+    <Value genre="config" type="list" size="1" index="51" label="Disable Physical On/Off Delay" min="0" max="1" value="1">
+      <Help>
+      The 700ms delay that occurs after pressing the physical button to turn the switch on/off is removed. Consequently this also removes the following scenes: 2x, 3x, 4x, 5x tap. Still working are the 1x tap, held, released, and the level up/down scenes. (firmware 1.36+)
+      0 - 700ms delay disabled (some scenes will not work)
+      1 - 700ms delay enabled (All scenes work)
+      Default: 700ms delay enabled
+      </Help>
+      <Item value="0" label="700ms delay disabled"/>
+      <Item value="1" label="700ms delay enabled"/>
+    </Value>    
+   </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" label="Lifeline" max_associations="5" />
+      <Group index="2" label="Basic_Set" max_associations="5" />
+	  <Group index="3" label="Switch_MultiLevel_Set" max_associations="5" />
+      <Group index="4" label="Switch_MultiLevel_Start/Stop" max_associations="5" />
+    </Associations>
+  </CommandClass>
+</Product>

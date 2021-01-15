@@ -2,7 +2,7 @@
 Aeotec ZW111 Nano Dimmer, base on Engineering Spec 3/6/2018 V2.02
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 https://aeotec.freshdesk.com/helpdesk/attachments/6048080397
---><Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:006F:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw111.png</MetaDataItem>
@@ -22,6 +22,7 @@ The Nano Dimmer is also a security Z-Wave plus device and supports Over The Air 
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2135/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2149/xml</Entry>
       <Entry author="Matej Drobnič - matejdro@gmail.com" date="27 Dec 2020" revision="7">Enable Basic command class</Entry>
+      <Entry author="Jean-François Auger - nechry@gmail.com" date="06 Jan 2021" revision="8">Revert 2517</Entry>
     </ChangeLog>
     <MetaDataItem id="006F" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2135/</MetaDataItem>
     <MetaDataItem id="006F" name="Identifier" type="0003">ZW111-C</MetaDataItem>
@@ -362,11 +363,4 @@ The Nano Dimmer is also a security Z-Wave plus device and supports Over The Air 
       <Group index="4" label="Control Key2" max_associations="5"/>
     </Associations>
   </CommandClass>
-  <!-- Basic command class --> 
-  <CommandClass id="32">
-    <Compatibility>
-      <IgnoreMapping>true</IgnoreMapping>
-      <SetAsReport>true</SetAsReport>
-    </Compatibility>
-  </CommandClass>	
 </Product>
