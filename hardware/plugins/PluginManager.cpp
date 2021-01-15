@@ -466,6 +466,7 @@ namespace http {
 									ATTRIBUTE_VALUE(pXmlEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
 									ATTRIBUTE_VALUE(pXmlEle, "default", root[iPluginCnt]["parameters"][iParams]["default"]);
 									ATTRIBUTE_VALUE(pXmlEle, "password", root[iPluginCnt]["parameters"][iParams]["password"]);
+									ATTRIBUTE_VALUE(pXmlEle, "rows", root[iPluginCnt]["parameters"][iParams]["rows"]);
 
 									TiXmlNode* pXmlOptionsNode = pXmlEle->FirstChild("options");
 									int	iOptions = 0;

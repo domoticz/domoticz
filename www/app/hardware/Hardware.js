@@ -4794,14 +4794,24 @@ define(['app'], function (app) {
 											PluginParams += '</select></td>';
 										} else {
 											PluginParams += '<td>'
-											if ((typeof (param.password) != "undefined") && (param.password == "true"))
-												PluginParams += '<input type="password" ';
-											else
-												PluginParams += '<input type="text" ';
-											PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
-											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
-											PluginParams += ' /></td>';
+											var nbRows=parseInt(param.rows);
+											if (nbRows >= 0) {
+												PluginParams += '<textarea id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
+												PluginParams += '>';
+												if (typeof (param.default) != "undefined") PluginParams +=  param.default;
+												PluginParams +='</textarea>';
+											} else {
+												if ((typeof (param.password) != "undefined") && (param.password == "true"))
+													PluginParams += '<input type="password" ';
+												else
+													PluginParams += '<input type="text" ';
+												PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
+												if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+  												PluginParams += ' />';
+											}
+											PluginParams += '</td>';
 										}
 									}
 									else {
