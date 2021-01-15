@@ -70,7 +70,7 @@ class CDomoticzHardwareBase : public StoppableTask
 		__attribute__((format(printf, 3, 4)))
 #endif
 		;
-
+	uint32_t m_LogLevelEnabled; //bitwise _eLogLevel 7 = LOG_NORM | LOG_STATUS | LOG_ERROR
       protected:
 	virtual bool StartHardware() = 0;
 	virtual bool StopHardware() = 0;

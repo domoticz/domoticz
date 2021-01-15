@@ -1045,6 +1045,7 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
+			std::string loglevel = request::findValue(&req, "loglevel");
 			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
 			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
@@ -1067,6 +1068,7 @@ namespace http {
 			int mode5 = 0;
 			int mode6 = 0;
 			int port = atoi(sport.c_str());
+			uint32_t iLogLevelEnabled = (uint32_t)atoi(loglevel.c_str());
 			std::string mode1Str = request::findValue(&req, "Mode1");
 			if (!mode1Str.empty()) {
 				mode1 = atoi(mode1Str.c_str());
@@ -1373,10 +1375,11 @@ namespace http {
 
 			if (htype == HTYPE_HTTPPOLLER) {
 				m_sql.safe_query(
-					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					"INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
 					name.c_str(),
 					(senabled == "true") ? 1 : 0,
 					htype,
+					iLogLevelEnabled,
 					address.c_str(),
 					port,
 					sport.c_str(),
@@ -1390,10 +1393,11 @@ namespace http {
 			else if (htype == HTYPE_PythonPlugin) {
 				sport = request::findValue(&req, "serialport");
 				m_sql.safe_query(
-					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					"INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
 					name.c_str(),
 					(senabled == "true") ? 1 : 0,
 					htype,
+					iLogLevelEnabled,
 					address.c_str(),
 					port,
 					sport.c_str(),
@@ -1411,10 +1415,11 @@ namespace http {
 			{
 				//No Extra field here, handled in CWebServer::SetRFXCOMMode
 				m_sql.safe_query(
-					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					"INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 					name.c_str(),
 					(senabled == "true") ? 1 : 0,
 					htype,
+					iLogLevelEnabled,
 					address.c_str(),
 					port,
 					sport.c_str(),
@@ -1427,10 +1432,11 @@ namespace http {
 			}
 			else {
 				m_sql.safe_query(
-					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					"INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 					name.c_str(),
 					(senabled == "true") ? 1 : 0,
 					htype,
+					iLogLevelEnabled,
 					address.c_str(),
 					port,
 					sport.c_str(),
@@ -1451,7 +1457,8 @@ namespace http {
 
 				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
 
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, iLogLevelEnabled, address, port, sport, username, password, extra, mode1, mode2,
+								   mode3, mode4, mode5, mode6, iDataTimeout, true);
 			}
 		}
 
@@ -1469,6 +1476,7 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
+			std::string loglevel = request::findValue(&req, "loglevel");
 			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
 			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
@@ -1496,6 +1504,7 @@ namespace http {
 			int iDataTimeout = atoi(sdatatimeout.c_str());
 
 			int port = atoi(sport.c_str());
+			uint32_t iLogLevelEnabled = (uint32_t)atoi(loglevel.c_str());
 
 			bool bIsSerial = false;
 
@@ -1753,10 +1762,11 @@ namespace http {
 			{
 				if (htype == HTYPE_HTTPPOLLER) {
 					m_sql.safe_query(
-						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(),
 						(senabled == "true") ? 1 : 0,
 						htype,
+						iLogLevelEnabled,
 						address.c_str(),
 						port,
 						sport.c_str(),
@@ -1776,10 +1786,11 @@ namespace http {
 					mode6Str = request::findValue(&req, "Mode6");
 					sport = request::findValue(&req, "serialport");
 					m_sql.safe_query(
-						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(),
 						(senabled == "true") ? 1 : 0,
 						htype,
+						iLogLevelEnabled,
 						address.c_str(),
 						port,
 						sport.c_str(),
@@ -1798,10 +1809,11 @@ namespace http {
 				{
 					//No Extra field here, handled in CWebServer::SetRFXCOMMode
 					m_sql.safe_query(
-						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(),
 						(bEnabled == true) ? 1 : 0,
 						htype,
+						iLogLevelEnabled,
 						address.c_str(),
 						port,
 						sport.c_str(),
@@ -1818,10 +1830,11 @@ namespace http {
 				}
 				else {
 					m_sql.safe_query(
-						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(),
 						(bEnabled == true) ? 1 : 0,
 						htype,
+						iLogLevelEnabled,
 						address.c_str(),
 						port,
 						sport.c_str(),
@@ -1837,7 +1850,8 @@ namespace http {
 
 			//re-add the device in our system
 			int ID = atoi(idx.c_str());
-			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, iLogLevelEnabled, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6,
+							   iDataTimeout, true);
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root)
@@ -12000,7 +12014,7 @@ namespace http {
 #endif
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
+			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, LogLevel FROM Hardware ORDER BY ID ASC");
 			if (!result.empty())
 			{
 				int ii = 0;
@@ -12037,6 +12051,7 @@ namespace http {
 						root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
 					}
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
+					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
 
 					//Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));

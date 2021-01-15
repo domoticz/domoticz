@@ -81,7 +81,7 @@ public:
 
 	bool RestartHardware(const std::string &idx);
 
-	bool AddHardwareFromParams(int ID, const std::string &Name, bool Enabled, _eHardwareTypes Type, const std::string &Address, uint16_t Port, const std::string &SerialPort,
+	bool AddHardwareFromParams(int ID, const std::string &Name, bool Enabled, _eHardwareTypes Type, const uint32_t LogLevelEnabled, const std::string &Address, uint16_t Port, const std::string &SerialPort,
 				   const std::string &Username, const std::string &Password, const std::string &Extra, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6,
 				   int DataTimeout, bool bDoStart);
 
