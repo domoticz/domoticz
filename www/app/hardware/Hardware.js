@@ -26,7 +26,7 @@ define(['app'], function (app) {
 			HideNotify();
 			RefreshHardwareTable();
 		}
-
+		
 		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name == "") {
@@ -3870,22 +3870,12 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
 						else
 							$("#hardwarecontent #hardwareparamstable #combotype").val(data["Extra"]);
-
-						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
-
-						$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', (data["LogLevel"] & 1));
-						$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', (data["LogLevel"] & 2));
-						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', (data["LogLevel"] & 4));
-						
-						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
-						
 						if (data["Type"].indexOf("I2C ") >= 0) {
 							$("#hardwarecontent #hardwareparamstable #combotype").val(1000);
 						}
 
 						$.devExtra = data["Extra"];
-						UpdateHardwareParamControls();
-
+						
 						// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.
 						if (data["Type"] == "PLUGIN") {
@@ -3904,6 +3894,14 @@ define(['app'], function (app) {
 							UpdateHardwareParamControls();
 							return;
 						}
+						
+						UpdateHardwareParamControls();
+
+						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
+						$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
+						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
 						if (
 							(data["Type"].indexOf("TE923") >= 0) ||
@@ -4397,7 +4395,6 @@ define(['app'], function (app) {
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combodatatimeout").prop('disabled', false);
-			
 			$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', true);
 			$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', true);
 			$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', true);
