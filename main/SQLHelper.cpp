@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 147
+#define DB_VERSION 148
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -233,6 +233,7 @@ const char* sqlCreateHardware =
 "[Name] VARCHAR(200) NOT NULL, "
 "[Enabled] INTEGER DEFAULT 1, "
 "[Type] INTEGER NOT NULL, "
+"[LogLevel] INTEGER default 7, " //LOG_NORM + LOG_STATUS + LOG_ERROR
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
 "[SerialPort] TEXT DEFAULT (''), "
@@ -2769,6 +2770,10 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//Pushlink is not zero based anymore
 			safe_exec_no_return("UPDATE PushLink SET DelimitedValue=1 WHERE (DelimitedValue == 0)");
+		}
+		if (dbversion < 148)
+		{
+			query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
 		}
 	}
 	else if (bNewInstall)

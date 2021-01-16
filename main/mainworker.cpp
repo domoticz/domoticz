@@ -267,7 +267,7 @@ void MainWorker::AddAllDomoticzHardware()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
+		"SELECT ID, Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 	if (!result.empty())
 	{
 		for (const auto &sd : result)
@@ -277,20 +277,22 @@ void MainWorker::AddAllDomoticzHardware()
 			std::string sEnabled = sd[2];
 			bool Enabled = (sEnabled == "1") ? true : false;
 			_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[3].c_str());
-			std::string Address = sd[4];
-			uint16_t Port = (uint16_t)atoi(sd[5].c_str());
-			std::string SerialPort = sd[6];
-			std::string Username = sd[7];
-			std::string Password = sd[8];
-			std::string Extra = sd[9];
-			int mode1 = atoi(sd[10].c_str());
-			int mode2 = atoi(sd[11].c_str());
-			int mode3 = atoi(sd[12].c_str());
-			int mode4 = atoi(sd[13].c_str());
-			int mode5 = atoi(sd[14].c_str());
-			int mode6 = atoi(sd[15].c_str());
-			int DataTimeout = atoi(sd[16].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
+			uint32_t LogLevelEnabled = (uint32_t)atoi(sd[4].c_str());
+			std::string Address = sd[5];
+			uint16_t Port = (uint16_t)atoi(sd[6].c_str());
+			std::string SerialPort = sd[7];
+			std::string Username = sd[8];
+			std::string Password = sd[9];
+			std::string Extra = sd[10];
+			int mode1 = atoi(sd[11].c_str());
+			int mode2 = atoi(sd[12].c_str());
+			int mode3 = atoi(sd[13].c_str());
+			int mode4 = atoi(sd[14].c_str());
+			int mode5 = atoi(sd[15].c_str());
+			int mode6 = atoi(sd[16].c_str());
+			int DataTimeout = atoi(sd[17].c_str());
+			AddHardwareFromParams(ID, Name, Enabled, Type, LogLevelEnabled, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout,
+					      false);
 		}
 		m_hardwareStartCounter = 0;
 		m_bStartHardware = true;
@@ -613,7 +615,7 @@ bool MainWorker::RestartHardware(const std::string& idx)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
+		"SELECT Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.empty())
 		return false;
@@ -621,20 +623,22 @@ bool MainWorker::RestartHardware(const std::string& idx)
 	std::string Name = sd[0];
 	std::string senabled = (sd[1] == "1") ? "true" : "false";
 	_eHardwareTypes htype = (_eHardwareTypes)atoi(sd[2].c_str());
-	std::string address = sd[3];
-	uint16_t port = (uint16_t)atoi(sd[4].c_str());
-	std::string serialport = sd[5];
-	std::string username = sd[6];
-	std::string password = sd[7];
-	std::string extra = sd[8];
-	int Mode1 = atoi(sd[9].c_str());
-	int Mode2 = atoi(sd[10].c_str());
-	int Mode3 = atoi(sd[11].c_str());
-	int Mode4 = atoi(sd[12].c_str());
-	int Mode5 = atoi(sd[13].c_str());
-	int Mode6 = atoi(sd[14].c_str());
-	int DataTimeout = atoi(sd[15].c_str());
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
+	uint32_t LogLevelEnabled = (uint32_t)atoi(sd[3].c_str());
+	std::string address = sd[4];
+	uint16_t port = (uint16_t)atoi(sd[5].c_str());
+	std::string serialport = sd[6];
+	std::string username = sd[7];
+	std::string password = sd[8];
+	std::string extra = sd[9];
+	int Mode1 = atoi(sd[10].c_str());
+	int Mode2 = atoi(sd[11].c_str());
+	int Mode3 = atoi(sd[12].c_str());
+	int Mode4 = atoi(sd[13].c_str());
+	int Mode5 = atoi(sd[14].c_str());
+	int Mode6 = atoi(sd[15].c_str());
+	int DataTimeout = atoi(sd[16].c_str());
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, LogLevelEnabled, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3,
+				     Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -642,6 +646,7 @@ bool MainWorker::AddHardwareFromParams(
 	const std::string& Name,
 	const bool Enabled,
 	const _eHardwareTypes Type,
+	const uint32_t LogLevelEnabled,
 	const std::string& Address, const uint16_t Port, const std::string& SerialPort,
 	const std::string& Username, const std::string& Password,
 	const std::string& Extra,
@@ -1091,6 +1096,7 @@ bool MainWorker::AddHardwareFromParams(
 	if (pHardware)
 	{
 		pHardware->HwdType = Type;
+		pHardware->m_LogLevelEnabled = LogLevelEnabled;
 		pHardware->m_Name = Name;
 		pHardware->m_ShortName = Hardware_Short_Desc(Type);
 		pHardware->m_DataTimeout = DataTimeout;
@@ -2485,11 +2491,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			const _tGeneralDevice* pMeter = reinterpret_cast<const _tGeneralDevice*>(pRXCommand);
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
-		std::stringstream sTmp;
-		sTmp << "(" << pHardware->m_Name << ") " << sdevicetype << " (" << DeviceName << ")";
-		WriteMessageStart();
-		WriteMessage(sTmp.str().c_str());
-		WriteMessageEnd();
+		std::string szLogString = sdevicetype + " (" + DeviceName + ")";
+		const_cast<CDomoticzHardwareBase *>(pHardware)->Log(LOG_NORM, szLogString);
 	}
 
 	//TODO: Notify plugin?
