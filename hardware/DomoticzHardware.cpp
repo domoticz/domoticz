@@ -127,7 +127,7 @@ int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_typ
 #define MAX_LOG_LINE_LENGTH (2048*3)
 void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogline)
 {
-	if (!m_LogLevelEnabled && (uint32_t)level)
+	if (!(m_LogLevelEnabled & (uint32_t)level))
 		return; //this type of log is disabled
 
 	_log.Log(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
@@ -135,7 +135,7 @@ void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogl
 
 void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
 {
-	if (!m_LogLevelEnabled && (uint32_t)level)
+	if (!(m_LogLevelEnabled & (uint32_t)level))
 		return; // this type of log is disabled
 
 	va_list argList;
