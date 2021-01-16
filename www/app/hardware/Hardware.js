@@ -4396,7 +4396,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', false);
-			$("#hardwarecontent #hardwareparamstable #|").prop('disabled', false);
+			$("#hardwarecontent #hardwareparamstable #combodatatimeout").prop('disabled', false);
 			
 			$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', true);
 			$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', true);
