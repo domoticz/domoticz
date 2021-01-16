@@ -2491,15 +2491,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			const _tGeneralDevice* pMeter = reinterpret_cast<const _tGeneralDevice*>(pRXCommand);
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
-		std::stringstream sTmp;
-		sTmp << "(" << pHardware->m_Name << ") " << sdevicetype << " (" << DeviceName << ")";
-
-		if (pHardware->m_LogLevelEnabled & (int32_t)LOG_NORM)
-		{
-			WriteMessageStart();
-			WriteMessage(sTmp.str().c_str());
-			WriteMessageEnd();
-		}
+		std::string szLogString = sdevicetype + " (" + DeviceName + ")";
+		const_cast<CDomoticzHardwareBase *>(pHardware)->Log(LOG_NORM, szLogString);
 	}
 
 	//TODO: Notify plugin?
