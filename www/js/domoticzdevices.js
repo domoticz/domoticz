@@ -837,6 +837,8 @@ Device.create = function (item) {
         type = 'baro';
     } else if ((item.Type === 'General') && (item.SubType === 'Custom Sensor')) {
         type = 'custom';
+    } else if ((item.Type === 'Thermostat') && (item.SubType === 'SetPoint')) {
+        type = 'setpoint';  // Instead of the TypeImg (which changes when using custom images)
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
@@ -919,6 +921,7 @@ Device.create = function (item) {
             break;
         case "override":
         case "override_mini":
+        case "setpoint":
             dev = new SetPoint(item);
             break;
         case "radiation":
@@ -1618,12 +1621,19 @@ Scene.inheritsFrom(Pushon);
 function SetPoint(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.image = "images/override.png";
+        if (item.CustomImage != 0 && typeof item.Image != 'undefined') {
+            this.image = "images/" + item.Image + ".png";
+        } else {
+            this.image = "images/override.png";
+        }
         if ($.isNumeric(this.data)) this.data += '\u00B0' + $.myglobals.tempsign;
         if ($.isNumeric(this.status)) this.status += '\u00B0' + $.myglobals.tempsign;
         var pattern = new RegExp('\\d\\s' + $.myglobals.tempsign + '\\b');
         while (this.data.search(pattern) > 0) this.data = this.data.setCharAt(this.data.search(pattern) + 1, '\u00B0');
         while (this.status.search(pattern) > 0) this.status = this.status.setCharAt(this.status.search(pattern) + 1, '\u00B0');
+        this.imagetext = "Set Temp";
+        this.controlable = true;
+        this.onClick = 'ShowSetpointPopup(' + event + ', ' + this.index + ', ' + this.protected + ' , "' + this.data + '");';
     }
 }
 SetPoint.inheritsFrom(TemperatureSensor);
