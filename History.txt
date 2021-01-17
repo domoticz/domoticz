@@ -1,7 +1,9 @@
 Version 2020.xxxx (xxxx)
+- Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: AirconWithMe wifi module
 - Implemented: Allow complete IPv6 address in local network setting
+- Implemented: Allow custom icons for thermostat setpoints on floorplan
 - Implemented: Allow custom icons for utility sensors
 - Implemented: Counter meter type now supports a divider
 - Implemented: Custom icons for RGB/W
@@ -28,6 +30,7 @@ Version 2020.xxxx (xxxx)
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: EvoHome; decode, display and store hotwater setpoint
 - Updated: Lay-out of notifications tab
+- Updated: MQTT; added option to choose notification subsystem
 - Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
 - Updated: OpenZWave; configuration files
 - Updated: Openweathermap; use latest API and overal improvements
@@ -43,16 +46,20 @@ Version 2020.xxxx (xxxx)
 - Fixed: Annatherm Presets usage in Events. Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
 - Fixed: Cache refresh issue on Safari
 - Fixed: Changing a value from a Thermostat Setpoint via the JSON API/MQTT resulted in a double event trigger
+- Fixed: Control for thermostat setpoints on floorplan
 - Fixed: Compiling on systems with recent Python versions
 - Fixed: Distance sensor was converting to miles instead of inches
 - Fixed: Icon uploading from linux clients/browsers
 - Fixed: Floorplan uploading
 - Fixed: Font in events editor on MacOS
+- Fixed: Motherboard Sensors for big partitions
 - Fixed: Possible crash in CEventSystem::SetEventTrigger
 - Fixed: Prevent duplicate keys in preferences table
+- Fixed: Pushtype selection mechanism
 - Fixed: Sound device was incorrectly displayed on the Floorplan
 - Fixed: Tado Zone/Home limit, setpoint mix-up
 - Fixed: User field in device logging for switches, -text-devices and for groups/scenes
+- Fixed: Zwave various issues
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
