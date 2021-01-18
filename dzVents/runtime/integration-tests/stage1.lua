@@ -691,7 +691,7 @@ local testRGBW = function(name)
 		["timedOut"] = false;
 	})
 	dev.setRGB(15, 30, 60)
-	dev.dimTo(15)
+	dev.dimTo(15).afterSec(5)
 	tstMsg('Test RGBW device', res)
 	return res
 end
