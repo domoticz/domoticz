@@ -3608,7 +3608,7 @@ void CSQLHelper::GetUrlThreaded(int method, std::string url,std::string postData
 
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "Error opening url: %s", url);
+		_log.Log(LOG_ERROR, "Error opening url: %s", url.c_str());
 	}
 }
 
@@ -3760,18 +3760,18 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_EXECUTESHELLCOMMAND)
 			{
-				// int returncode=0;
 				std::string command = itt->_sValue;
 				std::string callback = itt->_ID;
 				std::string path = itt->_sUser;
 				int timeout = itt->_nValue;
+
 				std::thread shellcommandthread(&CSQLHelper::ExecuteScriptThreaded,this, command,callback,timeout,path);
 				shellcommandthread.detach();
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
 				std::string response;
-				std::vector<std::string> headerData, extraHeaders;
+				std::vector<std::string> extraHeaders;
 				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
 				std::string url = itt->_sValue;
@@ -3780,7 +3780,6 @@ void CSQLHelper::Do_Work()
 				if (!itt->_relatedEvent.empty())
 					StringSplit(itt->_relatedEvent, "!#", extraHeaders);
 
-				// CSQLHelper::GetUrlThreaded(method,url,postData,extraHeaders,callback);
 				std::thread geturlthread(&CSQLHelper::GetUrlThreaded,this,method,url,postData,extraHeaders,callback);
 				geturlthread.detach();
 			}
