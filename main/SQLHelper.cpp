@@ -3574,6 +3574,43 @@ void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback
 	}
 }
 
+void CSQLHelper::GetUrlThreaded(int method, std::string url,std::string postData,std::vector<std::string> extraHeaders,std::string callback)
+{
+	std::string response;
+	std::vector<std::string> headerData;
+
+	HTTPClient::_eHTTPmethod tmethod = static_cast<HTTPClient::_eHTTPmethod>(method);
+	
+	bool ret = false;
+	if (tmethod == HTTPClient::HTTP_METHOD_GET)
+	{
+		ret = HTTPClient::GET(url, extraHeaders, response, headerData);
+	}
+	else if (tmethod == HTTPClient::HTTP_METHOD_POST)
+	{
+		ret = HTTPClient::POST(url, postData, extraHeaders, response, headerData, true, true);
+	}
+	else if (tmethod == HTTPClient::HTTP_METHOD_PUT)
+	{
+		ret = HTTPClient::PUT(url, postData, extraHeaders, response, headerData, true);
+	}
+	else if (tmethod == HTTPClient::HTTP_METHOD_DELETE)
+	{
+		ret = HTTPClient::Delete(url, postData, extraHeaders, response, headerData, true);
+	}
+	else
+		return; //unsupported method
+
+	if (m_bEnableEventSystem && !callback.empty())
+	{
+		m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
+	}
+
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Error opening url: %s", url);
+	}
+}
 
 
 void CSQLHelper::Do_Work()
@@ -3737,41 +3774,15 @@ void CSQLHelper::Do_Work()
 				std::vector<std::string> headerData, extraHeaders;
 				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
+				std::string url = itt->_sValue;
+				int method=itt->_switchtype;
 
 				if (!itt->_relatedEvent.empty())
 					StringSplit(itt->_relatedEvent, "!#", extraHeaders);
 
-				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod>(itt->_switchtype);
-
-				bool ret = false;
-				if (method == HTTPClient::HTTP_METHOD_GET)
-				{
-					ret = HTTPClient::GET(itt->_sValue, extraHeaders, response, headerData);
-				}
-				else if (method == HTTPClient::HTTP_METHOD_POST)
-				{
-					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData, true, true);
-				}
-				else if (method == HTTPClient::HTTP_METHOD_PUT)
-				{
-					ret = HTTPClient::PUT(itt->_sValue, postData, extraHeaders, response, headerData, true);
-				}
-				else if (method == HTTPClient::HTTP_METHOD_DELETE)
-				{
-					ret = HTTPClient::Delete(itt->_sValue, postData, extraHeaders, response, headerData, true);
-				}
-				else
-					return; //unsupported method
-
-				if (m_bEnableEventSystem && !callback.empty())
-				{
-					m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
-				}
-
-				if (!ret)
-				{
-					_log.Log(LOG_ERROR, "Error opening url: %s", itt->_sValue.c_str());
-				}
+				// CSQLHelper::GetUrlThreaded(method,url,postData,extraHeaders,callback);
+				std::thread geturlthread(&CSQLHelper::GetUrlThreaded,this,method,url,postData,extraHeaders,callback);
+				geturlthread.detach();
 			}
 			else if ((itt->_ItemType == TITEM_SEND_EMAIL) || (itt->_ItemType == TITEM_SEND_EMAIL_TO))
 			{

@@ -497,6 +497,7 @@ class CSQLHelper : public StoppableTask
 
 	void ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 	void ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path);
+	void GetUrlThreaded(int method, std::string url,std::string postData,std::vector<std::string> extraHeaders,std::string callback);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
 	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
 
