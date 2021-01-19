@@ -278,7 +278,7 @@ local function Domoticz(settings)
 			if options.headers then
 				headers = ''
 				for key, value in pairs(options.headers) do
-					headers = headers .. '!#' .. key .. ': ' .. value
+					headers = headers .. '!#' .. key .. ': ' .. tostring(value)
 				end
 			end
 
