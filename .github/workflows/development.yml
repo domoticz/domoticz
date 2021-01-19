@@ -71,9 +71,9 @@ jobs:
           cp History.txt package/history_linux_x86_64.txt
 
       # Deploy
-      - name: FTP-Deploy-Action
+      - name: FTP Deployment
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
-        env:
+        with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
