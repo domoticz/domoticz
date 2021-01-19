@@ -51,7 +51,7 @@ jobs:
           git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
           cd open-zwave-read-only
           make
-          sudo make install
+          sudo make install >> /dev/null 2>&1
           cd ..
 
       # Domoticz
@@ -60,3 +60,24 @@ jobs:
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
+
+      # Packaging
+      - name: package domoticz
+        run: |
+          mkdir package
+          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          shasum -a 256 domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
+          cp appversion.h.txt package/version_linux_x86_64.h
+          cp History.txt package/history_linux_x86_64.txt
+
+      # Deploy
+      - name: FTP-Deploy-Action
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          LOCAL_DIR: package
+          METHOD: sftp
+          PORT: 22
+          ARGS: --delete
