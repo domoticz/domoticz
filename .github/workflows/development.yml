@@ -80,3 +80,4 @@ jobs:
           protocol: ftps
           local-dir: ./package/
           server-dir: beta/
+          security: loose
