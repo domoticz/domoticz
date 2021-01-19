@@ -80,4 +80,3 @@ jobs:
           protocol: ftps
           local-dir: ./package/
           server-dir: beta/
-          port: 22
