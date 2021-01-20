@@ -133,10 +133,7 @@ return {
 			end
 			if m == nil then m = 3 end
 			local colors = domoticz.utils.fromJSON(device.color,{ t=0, cw=0, ww=0})
-			local brightness = br or 100
-			if br == nil then
-				local _ , _ , brightness = domoticz.utils.rgbToHSB(r, g, b)
-			end
+			local brightness = br or device.level or 100
 			if cw == nil then cw = colors.cw end
 			if ww == nil then ww = colors.ww end
 			if t  == nil then t = colors.t end
@@ -205,6 +202,7 @@ return {
 			ct["cold white"] = ct.cw
 			ct.temperature = ct.t
 			ct.mode = ct.m
+			ct.br = device.level
 			ct.brightness = ct.value
 			return (ct)
 		end
