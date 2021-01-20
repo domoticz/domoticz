@@ -103,9 +103,10 @@ namespace Plugins
 			Py_XDECREF(pErrBytes);
 
 		// Log a stack trace if there is one
-		while (pTraceback)
+		PyTracebackObject *pTraceFrame = pTraceback;
+		while (pTraceFrame)
 		{
-			PyFrameObject *frame = pTraceback->tb_frame;
+			PyFrameObject *frame = pTraceFrame->tb_frame;
 			if (frame)
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
@@ -119,7 +120,7 @@ namespace Plugins
 				Py_XDECREF(pFileBytes);
 				Py_XDECREF(pFuncBytes);
 			}
-			pTraceback = pTraceback->tb_next;
+			pTraceFrame = pTraceFrame->tb_next;
 		}
 
 		if (!pExcept && !pValue && !pTraceback)
