@@ -3333,285 +3333,354 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 }
 #endif
 
-void CSQLHelper::ExecuteScriptThreaded(std::string command, std::string callback, int timeout, std::string path)
+void CSQLHelper::PerformThreadedAction(const _tTaskItem itt)
 {
-	std::ifstream infile;
-	std::string sLine;
-	std::string filename;
-	std::string filenamestderr;
-	std::string scriptoutput;
-	std::string scriptstderr;
-	bool commmandExecutedSuccesfully = false;
-	int exitcode = 0;
+	if (itt._ItemType == TITEM_EXECUTESHELLCOMMAND)
+	{
+		std::string command = itt._sValue;
+		std::string callback = itt._ID;
+		std::string path = itt._sUser;
+		int timeout = itt._nValue;
+
+		std::ifstream infile;
+		std::string sLine;
+		std::string filename;
+		std::string filenamestderr;
+		std::string scriptoutput;
+		std::string scriptstderr;
+		bool commmandExecutedSuccesfully = false;
+		int exitcode = 0;
 #ifndef WIN32
-	int pid;
-	bool stillRunning = true;
-	std::shared_ptr<std::thread> T;
+		int pid;
+		bool stillRunning = true;
+		std::shared_ptr<std::thread> T;
 #endif
-	bool timeoutOccurred = false;
+		bool timeoutOccurred = false;
 
-	// make sure we have unique filenames
-	scriptoutputindex++;
-	if (scriptoutputindex > 10000) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
-	{
-		scriptoutputindex = 1;
-	}
-	std::string scriptoutputindextext = std::to_string(scriptoutputindex);
+		// make sure we have unique filenames
+		scriptoutputindex++;
+		if (scriptoutputindex > 10000) // should be a big number, to prevent parallel scripts having the same output files. 250 concurrent will probably never be reached
+		{
+			scriptoutputindex = 1;
+		}
+		std::string scriptoutputindextext = std::to_string(scriptoutputindex);
 
-	// create filenames for stderr and stdout  ("path+domscript+index+<.out|.err>")
-	filename = path;
-	filename.append("domscript");
-	filename.append(scriptoutputindextext);
-	filenamestderr = filename;
-	filename.append(".out");       // stdout
-	filenamestderr.append(".err"); // stderr
+		// create filenames for stderr and stdout  ("path+domscript+index+<.out|.err>")
+		filename = path;
+		filename.append("domscript");
+		filename.append(scriptoutputindextext);
+		filenamestderr = filename;
+		filename.append(".out");       // stdout
+		filenamestderr.append(".err"); // stderr
 
-	// Remove temp file if they exist
-	if (!remove(filename.c_str()))
-		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filename.c_str());
-	if (!remove(filenamestderr.c_str()))
-		_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filenamestderr.c_str());
+		// Remove temp file if they exist
+		if (!remove(filename.c_str()))
+			_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filename.c_str());
+		if (!remove(filenamestderr.c_str()))
+			_log.Log(LOG_ERROR, "old temp file (%s) was still there, removing...", filenamestderr.c_str());
 
-	if (timeout > 0)
-	{
-		_log.Debug(DEBUG_NORM, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
-	}
-	else
-	{
-		_log.Debug(DEBUG_NORM, "dzVents: Executing shellcommmand %s", command.c_str());
-	}
-
-#ifdef WIN32
-	SECURITY_ATTRIBUTES sa;
-	sa.nLength = sizeof(sa);
-	sa.lpSecurityDescriptor = NULL;
-	sa.bInheritHandle = TRUE;
-
-	HANDLE hstdout = CreateFile(_T(filename.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	HANDLE hstderr = CreateFile(_T(filenamestderr.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-	PROCESS_INFORMATION pi;
-	STARTUPINFO si;
-	BOOL ret = FALSE;
-	DWORD flags = CREATE_NO_WINDOW;
-
-	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-	ZeroMemory(&si, sizeof(STARTUPINFO));
-	si.cb = sizeof(STARTUPINFO);
-	si.dwFlags |= STARTF_USESTDHANDLES;
-	si.hStdInput = NULL;
-	si.hStdError = hstderr;
-	si.hStdOutput = hstdout;
-
-	ret = CreateProcess(NULL, const_cast<char *>(command.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
-	if (!ret)  // the above command will fail if the executable cannot be found (e.g. a "dir" command). So try again using the command shell
-	{
-		std::string cmd = "cmd /c ";
-		cmd.append(command.c_str());
-		_log.Debug(DEBUG_NORM, "Could not execute command, trying again using %s", cmd.c_str());
-		ret = CreateProcess(NULL, const_cast<char *>(cmd.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
-	}
-
-	if (ret)
-	{
-		// Successfully created the process.  Wait for it to finish.
-		DWORD waitstatus;
 		if (timeout > 0)
 		{
-			waitstatus = WaitForSingleObject(pi.hProcess, timeout * 1000);
+			_log.Debug(DEBUG_NORM, "dzVents: Executing shellcommmand %s for max %d seconds", command.c_str(), timeout);
 		}
 		else
 		{
-			waitstatus = WaitForSingleObject(pi.hProcess, INFINITE);
+			_log.Debug(DEBUG_NORM, "dzVents: Executing shellcommmand %s", command.c_str());
 		}
 
-		if (waitstatus == WAIT_TIMEOUT)
-		{
-			_log.Log(LOG_ERROR, "dzVents: %s has been running longer than specified timeout (%d seconds), cancelling command",command.c_str(),timeout);
-			timeoutOccurred = true;
-			exitcode = 9;   // Analog to error on unix
-			commmandExecutedSuccesfully = true;
+#ifdef WIN32
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(sa);
+		sa.lpSecurityDescriptor = NULL;
+		sa.bInheritHandle = TRUE;
 
-			if (!TerminateProcess(pi.hProcess, 1))
+		HANDLE hstdout = CreateFile(_T(filename.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		HANDLE hstderr = CreateFile(_T(filenamestderr.c_str()), FILE_APPEND_DATA, FILE_SHARE_WRITE | FILE_SHARE_READ, &sa, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		PROCESS_INFORMATION pi;
+		STARTUPINFO si;
+		BOOL ret = FALSE;
+		DWORD flags = CREATE_NO_WINDOW;
+
+		ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+		ZeroMemory(&si, sizeof(STARTUPINFO));
+		si.cb = sizeof(STARTUPINFO);
+		si.dwFlags |= STARTF_USESTDHANDLES;
+		si.hStdInput = NULL;
+		si.hStdError = hstderr;
+		si.hStdOutput = hstdout;
+
+		ret = CreateProcess(NULL, const_cast<char *>(command.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+		if (!ret) // the above command will fail if the executable cannot be found (e.g. a "dir" command). So try again using the command shell
+		{
+			std::string cmd = "cmd /c ";
+			cmd.append(command.c_str());
+			_log.Debug(DEBUG_NORM, "Could not execute command, trying again using %s", cmd.c_str());
+			ret = CreateProcess(NULL, const_cast<char *>(cmd.c_str()), NULL, NULL, TRUE, flags, NULL, NULL, &si, &pi);
+		}
+
+		if (ret)
+		{
+			// Successfully created the process.  Wait for it to finish.
+			DWORD waitstatus;
+			if (timeout > 0)
 			{
-				_log.Log(LOG_ERROR, "terminate failed");
+				waitstatus = WaitForSingleObject(pi.hProcess, timeout * 1000);
+			}
+			else
+			{
+				waitstatus = WaitForSingleObject(pi.hProcess, INFINITE);
+			}
+
+			if (waitstatus == WAIT_TIMEOUT)
+			{
+				_log.Log(LOG_ERROR, "dzVents: %s has been running longer than specified timeout (%d seconds), cancelling command", command.c_str(), timeout);
+				timeoutOccurred = true;
+				exitcode = 9; // Analog to error on unix
+				commmandExecutedSuccesfully = true;
+
+				if (!TerminateProcess(pi.hProcess, 1))
+				{
+					_log.Log(LOG_ERROR, "terminate failed");
+				}
+			}
+			else if (waitstatus == WAIT_FAILED)
+			{
+				_log.Log(LOG_ERROR, "something went wrong while executing %s waiting", command.c_str());
+			}
+			else
+			{
+
+				// all went fine
+				// Get the exit code.
+
+				DWORD exitCode;
+				GetExitCodeProcess(pi.hProcess, &exitCode);
+				_log.Debug(DEBUG_NORM, "Exit code %ld", exitCode);
+				exitcode = exitCode;
+				commmandExecutedSuccesfully = true;
 			}
 		}
-		else if (waitstatus == WAIT_FAILED)
-		{
-			_log.Log(LOG_ERROR, "something went wrong while executing %s waiting",command.c_str());
-		}
 		else
 		{
-
-			// all went fine
-			// Get the exit code.
-
-			DWORD exitCode;
-			GetExitCodeProcess(pi.hProcess, &exitCode);
-			_log.Debug(DEBUG_NORM, "Exit code %ld", exitCode);
-			exitcode = exitCode;
-			commmandExecutedSuccesfully = true;
+			_log.Log(LOG_ERROR, "Unable to execute %s", command.c_str());
 		}
 
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "Unable to execute %s", command.c_str());
-	}
-
-	// Clear up everything
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-	CloseHandle(hstdout);
-	CloseHandle(hstderr);
-	
+		// Clear up everything
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		CloseHandle(hstdout);
+		CloseHandle(hstderr);
 
 #else
-	// Start process,  using command on stdin
-	pid = fork();
-	if (pid == 0)
-	{
-		// child process
-		int fdout = open(filename.c_str(), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
-		int fderr = open(filenamestderr.c_str(), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
-		dup2(fdout, 1); // reroute stdout
-		dup2(fderr, 2); // reroute srderr
-		close(fdout);
-		close(fderr);
-		exitcode = execl("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
-		exit(exitcode);
-	}
-
-	if (pid == -1)
-	{
-		_log.Log(LOG_ERROR, "Unable to spawn process");
-	}
-	else
-	{
-		if (timeout>0) {
-			T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout,this,pid,timeout,&stillRunning,&timeoutOccurred);
+		// Start process,  using command on stdin
+		pid = fork();
+		if (pid == 0)
+		{
+			// child process
+			int fdout = open(filename.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+			int fderr = open(filenamestderr.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+			dup2(fdout, 1); // reroute stdout
+			dup2(fderr, 2); // reroute srderr
+			close(fdout);
+			close(fderr);
+			exitcode = execl("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
+			exit(exitcode);
 		}
-		waitpid(pid, &exitcode, 0);
-		stillRunning = false;
-		commmandExecutedSuccesfully = true;
-	}
+
+		if (pid == -1)
+		{
+			_log.Log(LOG_ERROR, "Unable to spawn process");
+		}
+		else
+		{
+			if (timeout > 0)
+			{
+				T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout, this, pid, timeout, &stillRunning, &timeoutOccurred);
+			}
+			waitpid(pid, &exitcode, 0);
+			stillRunning = false;
+			commmandExecutedSuccesfully = true;
+		}
 #endif
 
-	if (commmandExecutedSuccesfully)
-	{ 
-
-		// get stdout
-		infile.open(filename.c_str());
-		if (infile.is_open())
+		if (commmandExecutedSuccesfully)
 		{
-			getline(infile, sLine);
-			do
+
+			// get stdout
+			infile.open(filename.c_str());
+			if (infile.is_open())
 			{
-				scriptoutput.append(sLine);
 				getline(infile, sLine);
-				if (!infile.eof())
+				do
 				{
-					scriptoutput.append("\n");
-				}
-			} while (!infile.eof());
+					scriptoutput.append(sLine);
+					getline(infile, sLine);
+					if (!infile.eof())
+					{
+						scriptoutput.append("\n");
+					}
+				} while (!infile.eof());
 
-			infile.close();
+				infile.close();
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Unable to read file %s", filename.c_str());
+			}
 
+			// get stderr
+			infile.open(filenamestderr.c_str());
+			if (infile.is_open())
+			{
+				getline(infile, sLine);
+				do
+				{
+					if (!sLine.empty())
+						_log.Debug(DEBUG_NORM, "ExecuteScriptError: %s", sLine.c_str());
+					scriptstderr.append(sLine);
+					getline(infile, sLine);
+					if (!infile.eof())
+					{
+						scriptstderr.append("\n");
+					}
+				} while (!infile.eof());
+				infile.close();
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Unable to read file %s", filenamestderr.c_str());
+			}
+
+			// start callback if applicable
+			if (m_bEnableEventSystem && !callback.empty())
+			{
+				m_mainworker.m_eventsystem.TriggerShellCommand(scriptoutput, scriptstderr, callback, exitcode, timeoutOccurred);
+			}
+#ifndef WIN32
+			if (timeout > 0)
+			{
+				T->join();
+				T.reset();
+			}
+#endif
+			// delete temporary file
+			std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // give the time to finish all io from the child processes
+			if (remove(filename.c_str()))
+			{
+				_log.Log(LOG_ERROR, "unable to remove file %s", filename.c_str());
+			}
+			if (remove(filenamestderr.c_str()))
+			{
+				_log.Log(LOG_ERROR, " unable to remove file %s", filenamestderr.c_str());
+			}
+		}
+	}
+	else if (itt._ItemType == TITEM_GETURL)
+	{
+		std::vector<std::string> extraHeaders;
+		std::string postData = itt._command;
+		std::string callback = itt._ID;
+		std::string url = itt._sValue;
+		int method = itt._switchtype;
+		_log.Log(LOG_ERROR, "opening url: %s", url.c_str());
+
+		if (!itt._relatedEvent.empty())
+			StringSplit(itt._relatedEvent, "!#", extraHeaders);
+		std::string response;
+		std::vector<std::string> headerData;
+
+		HTTPClient::_eHTTPmethod tmethod = static_cast<HTTPClient::_eHTTPmethod>(method);
+
+		bool ret = false;
+		if (tmethod == HTTPClient::HTTP_METHOD_GET)
+		{
+			ret = HTTPClient::GET(url, extraHeaders, response, headerData);
+		}
+		else if (tmethod == HTTPClient::HTTP_METHOD_POST)
+		{
+			ret = HTTPClient::POST(url, postData, extraHeaders, response, headerData, true, true);
+		}
+		else if (tmethod == HTTPClient::HTTP_METHOD_PUT)
+		{
+			ret = HTTPClient::PUT(url, postData, extraHeaders, response, headerData, true);
+		}
+		else if (tmethod == HTTPClient::HTTP_METHOD_DELETE)
+		{
+			ret = HTTPClient::Delete(url, postData, extraHeaders, response, headerData, true);
 		}
 		else
-		{
-			_log.Log(LOG_ERROR, "Unable to read file %s", filename.c_str());
-		}
+			return; // unsupported method
 
-		// get stderr
-		infile.open(filenamestderr.c_str());
-		if (infile.is_open())
-		{
-			getline(infile, sLine);
-			do
-			{
-				if (!sLine.empty())
-					_log.Debug(DEBUG_NORM, "ExecuteScriptError: %s", sLine.c_str());
-				scriptstderr.append(sLine);
-				getline(infile, sLine);
-				if (!infile.eof())
-				{
-					scriptstderr.append("\n");
-				}
-			} while (!infile.eof());
-			infile.close();
-
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "Unable to read file %s", filenamestderr.c_str());
-		}
-
-		// start callback if applicable
 		if (m_bEnableEventSystem && !callback.empty())
 		{
-			m_mainworker.m_eventsystem.TriggerShellCommand(scriptoutput, scriptstderr, callback, exitcode, timeoutOccurred);
-		}
-#ifndef WIN32
-		if (timeout>0) 
-		{
-			T->join();
-			T.reset();
-		}
-#endif
-		// delete temporary file
-		std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // give the time to finish all io from the child processes
-		if (remove(filename.c_str()))
-		{
-			_log.Log(LOG_ERROR, "unable to remove file %s", filename.c_str());
-		}
-		if (remove(filenamestderr.c_str()))
-		{
-			_log.Log(LOG_ERROR, " unable to remove file %s", filenamestderr.c_str());
+			m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
 		}
 
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "Error opening url: %s", url.c_str());
+		}
+	}
+	else if ((itt._ItemType == TITEM_SEND_EMAIL) || (itt._ItemType == TITEM_SEND_EMAIL_TO))
+	{
+		int nValue;
+		if (GetPreferencesVar("EmailEnabled", nValue))
+		{
+			if (nValue)
+			{
+				std::string sValue;
+				if (GetPreferencesVar("EmailServer", sValue))
+				{
+					if (!sValue.empty())
+					{
+						std::string EmailFrom;
+						std::string EmailTo;
+						const std::string &EmailServer = sValue;
+						int EmailPort = 25;
+						std::string EmailUsername;
+						std::string EmailPassword;
+						GetPreferencesVar("EmailFrom", EmailFrom);
+						if (itt._ItemType != TITEM_SEND_EMAIL_TO)
+						{
+							GetPreferencesVar("EmailTo", EmailTo);
+						}
+						else
+						{
+							EmailTo = itt._command;
+						}
+						GetPreferencesVar("EmailUsername", EmailUsername);
+						GetPreferencesVar("EmailPassword", EmailPassword);
+
+						GetPreferencesVar("EmailPort", EmailPort);
+
+						SMTPClient sclient;
+						sclient.SetFrom(CURLEncode::URLDecode(EmailFrom));
+						sclient.SetTo(CURLEncode::URLDecode(EmailTo));
+						sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
+						sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
+						sclient.SetSubject(CURLEncode::URLDecode(itt._ID));
+						sclient.SetHTMLBody(itt._sValue);
+						bool bRet = sclient.SendEmail();
+
+						if (bRet)
+							_log.Log(LOG_STATUS, "Notification sent (Email)");
+						else
+							_log.Log(LOG_ERROR, "Notification failed (Email)");
+					}
+				}
+			}
+		}
+	}
+	else if (itt._ItemType == TITEM_SEND_SMS)
+	{
+		m_notifications.SendMessage(0, std::string(""), "clickatell", itt._ID, itt._ID, std::string(""), 1, std::string(""), false);
+	}
+	else if (itt._ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
+	{
+		m_mainworker.m_cameras.EmailCameraSnapshot(itt._ID, itt._sValue);
 	}
 }
-
-void CSQLHelper::GetUrlThreaded(int method, std::string url,std::string postData,std::vector<std::string> extraHeaders,std::string callback)
-{
-	std::string response;
-	std::vector<std::string> headerData;
-
-	HTTPClient::_eHTTPmethod tmethod = static_cast<HTTPClient::_eHTTPmethod>(method);
-	
-	bool ret = false;
-	if (tmethod == HTTPClient::HTTP_METHOD_GET)
-	{
-		ret = HTTPClient::GET(url, extraHeaders, response, headerData);
-	}
-	else if (tmethod == HTTPClient::HTTP_METHOD_POST)
-	{
-		ret = HTTPClient::POST(url, postData, extraHeaders, response, headerData, true, true);
-	}
-	else if (tmethod == HTTPClient::HTTP_METHOD_PUT)
-	{
-		ret = HTTPClient::PUT(url, postData, extraHeaders, response, headerData, true);
-	}
-	else if (tmethod == HTTPClient::HTTP_METHOD_DELETE)
-	{
-		ret = HTTPClient::Delete(url, postData, extraHeaders, response, headerData, true);
-	}
-	else
-		return; //unsupported method
-
-	if (m_bEnableEventSystem && !callback.empty())
-	{
-		m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
-	}
-
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Error opening url: %s", url.c_str());
-	}
-}
-
 
 void CSQLHelper::Do_Work()
 {
@@ -3754,89 +3823,6 @@ void CSQLHelper::Do_Work()
 				}
 #endif
 			}
-			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
-			{
-				m_mainworker.m_cameras.EmailCameraSnapshot(itt->_ID, itt->_sValue);
-			}
-			else if (itt->_ItemType == TITEM_EXECUTESHELLCOMMAND)
-			{
-				std::string command = itt->_sValue;
-				std::string callback = itt->_ID;
-				std::string path = itt->_sUser;
-				int timeout = itt->_nValue;
-
-				std::thread shellcommandthread(&CSQLHelper::ExecuteScriptThreaded,this, command,callback,timeout,path);
-				shellcommandthread.detach();
-			}
-			else if (itt->_ItemType == TITEM_GETURL)
-			{
-				std::string response;
-				std::vector<std::string> extraHeaders;
-				std::string postData = itt->_command;
-				std::string callback = itt->_ID;
-				std::string url = itt->_sValue;
-				int method=itt->_switchtype;
-
-				if (!itt->_relatedEvent.empty())
-					StringSplit(itt->_relatedEvent, "!#", extraHeaders);
-
-				std::thread geturlthread(&CSQLHelper::GetUrlThreaded,this,method,url,postData,extraHeaders,callback);
-				geturlthread.detach();
-			}
-			else if ((itt->_ItemType == TITEM_SEND_EMAIL) || (itt->_ItemType == TITEM_SEND_EMAIL_TO))
-			{
-				int nValue;
-				if (GetPreferencesVar("EmailEnabled", nValue))
-				{
-					if (nValue)
-					{
-						std::string sValue;
-						if (GetPreferencesVar("EmailServer", sValue))
-						{
-							if (!sValue.empty())
-							{
-								std::string EmailFrom;
-								std::string EmailTo;
-								const std::string &EmailServer = sValue;
-								int EmailPort = 25;
-								std::string EmailUsername;
-								std::string EmailPassword;
-								GetPreferencesVar("EmailFrom", EmailFrom);
-								if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
-								{
-									GetPreferencesVar("EmailTo", EmailTo);
-								}
-								else
-								{
-									EmailTo = itt->_command;
-								}
-								GetPreferencesVar("EmailUsername", EmailUsername);
-								GetPreferencesVar("EmailPassword", EmailPassword);
-
-								GetPreferencesVar("EmailPort", EmailPort);
-
-								SMTPClient sclient;
-								sclient.SetFrom(CURLEncode::URLDecode(EmailFrom));
-								sclient.SetTo(CURLEncode::URLDecode(EmailTo));
-								sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-								sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
-								sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
-								sclient.SetHTMLBody(itt->_sValue);
-								bool bRet = sclient.SendEmail();
-
-								if (bRet)
-									_log.Log(LOG_STATUS, "Notification sent (Email)");
-								else
-									_log.Log(LOG_ERROR, "Notification failed (Email)");
-							}
-						}
-					}
-				}
-			}
-			else if (itt->_ItemType == TITEM_SEND_SMS)
-			{
-				m_notifications.SendMessage(0, std::string(""), "clickatell", itt->_ID, itt->_ID, std::string(""), 1, std::string(""), false);
-			}
 			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
 			{
 				SwitchLightFromTasker(itt->_idx, itt->_command, itt->_level, itt->_Color, itt->_sUser);
@@ -3928,6 +3914,13 @@ void CSQLHelper::Do_Work()
 				eventInfo["name"] = itt->_ID;
 				eventInfo["data"] = itt->_sValue;
 				m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, JSonToRawString(eventInfo));
+			}
+			else if (itt->_ItemType == TITEM_EXECUTESHELLCOMMAND || itt->_ItemType == TITEM_GETURL || itt->_ItemType == TITEM_SEND_EMAIL || itt->_ItemType == TITEM_SEND_EMAIL_TO ||
+				 itt->_ItemType == TITEM_SEND_SMS || itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
+			{
+				// All actions which should not be on the main SQL Helper thread will get their own thread
+				std::thread ActionThread(&CSQLHelper::PerformThreadedAction, this, *itt);
+				ActionThread.detach();
 			}
 
 			++itt;
