@@ -34,6 +34,13 @@
                 <br /><span data-i18n="Please note that even if the command are basically sanitized, activating this option may cause a security issue."></span>
             </td>
         </tr>
+        <tr valign="top">
+            <td align="right" style="width:110px"><label><span data-i18n="Allow send commands if Off">Allow send commands if Off</span>:</label></td>
+            <td>
+                <input type="checkbox" id="tryifoff" name="tryifoff"><label for="tryifoff"></label>
+                <br /><span data-i18n="This checkbox allows Domoticz to try to send commands to the TV even if it is not reported On. This can be useful if you need to send commands right after powering up the TV and the status is not already reported accordingly."></span>
+            </td>
+        </tr>
         <tr>
             <td></td>
             <td><a class="btn btn-danger sub-tabs-apply" onclick="SetPanasonicSettings();" data-i18n="Apply Settings">Apply Settings</a></td>

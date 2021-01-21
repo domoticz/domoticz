@@ -16,6 +16,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #panasonicsettingstable #pollinterval").val($ctrl.hardware.Mode1);
             $("#hardwarecontent #panasonicsettingstable #pingtimeout").val($ctrl.hardware.Mode2);
             $("#hardwarecontent #panasonicsettingstable #unknowncommands").prop('checked', $ctrl.hardware.Mode3 & 1);
+            $("#hardwarecontent #panasonicsettingstable #tryifoff").prop('checked', $ctrl.hardware.Mode3 & 2);
             $("#hardwarecontent #panasonicsettingstable #custombuttons").val($ctrl.hardware.Extra);
 
             $('#panasonicnodestable').dataTable({
@@ -225,6 +226,7 @@ define(['app'], function (app) {
                 Mode2 = 500;
             var Mode3 = 0;
             Mode3 |= ($("#hardwarecontent #panasonicsettingstable #unknowncommands").is(':checked'))?1:0;
+            Mode3 |= ($("#hardwarecontent #panasonicsettingstable #tryifoff").is(':checked'))?2:0;
             var Extra = $("#hardwarecontent #panasonicsettingstable #custombuttons").val();
             $.ajax({
                 url: "json.htm?type=command&param=panasonicsetmode" +
