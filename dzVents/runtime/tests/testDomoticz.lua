@@ -381,7 +381,7 @@ describe('Domoticz', function()
 				method = 'POST',
 				callback = 'trigger1',
 				headers = {
-					['X-Apikey'] = '12345ABC_',
+					['Auth-Required'] = false ,
 				},
 				postData = {
 					a = 1, b = 2
@@ -392,7 +392,7 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = '!#X-Apikey: 12345ABC_',
+						headers = '!#Auth-Required: false',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
