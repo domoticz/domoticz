@@ -69,6 +69,9 @@ jobs:
       # Packaging
       - name: package domoticz
         run: |
+          cd $GITHUB_WORKSPACE
+          cd ..
+          cd dev-domoticz
           mkdir package
           tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
           shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
@@ -83,7 +86,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          local-dir: ./package/
+          local-dir: ../dev-domoticz/package/
           server-dir: beta/
           security: loose
 
