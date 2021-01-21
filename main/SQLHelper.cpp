@@ -3583,7 +3583,6 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem itt)
 		std::string callback = itt._ID;
 		std::string url = itt._sValue;
 		int method = itt._switchtype;
-		_log.Log(LOG_ERROR, "opening url: %s", url.c_str());
 
 		if (!itt._relatedEvent.empty())
 			StringSplit(itt._relatedEvent, "!#", extraHeaders);
