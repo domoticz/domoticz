@@ -33,7 +33,8 @@ local function getDevice_(
 	dummyLogger,
 	batteryLevel,
 	signalLevel,
-	nValue)
+	nValue,
+	customImage)
 
 	local Device = require('Device')
 
@@ -64,6 +65,7 @@ local function getDevice_(
 	{
 		["id"] = 1,
 		["name"] = name,
+		["customImage"] = 102,
 		["description"] = "Description 1",
 		["batteryLevel"] = batteryLevel and batteryLevel or 50,
 		["protected"] = true,
@@ -119,7 +121,8 @@ local function getDevice(domoticz, options)
 		options.dummyLogger,
 		options.batteryLevel,
 		options.signalLevel,
-		options.nValue)
+		options.nValue,
+		options.customImage)
 
 end
 
@@ -180,6 +183,7 @@ describe('device', function()
 			['name'] = 'myDevice',
 			['type'] = 'Light/Switch',
 			['state'] = 'On',
+			['customImage'] = 102,
 			['changed'] = true,
 		})
 		utils = device._getUtilsInstance()
@@ -1853,13 +1857,13 @@ describe('device', function()
 			it('should handle setColor method correctly',function()
 				commandArray = {}
 				assert.is_nil(device.setColor(15,31,44))
-				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=100&color={"m":3,"t":0,"cw":0,"ww":0,"r":15,"g":31,"b":44}'},commandArray)
+				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=1&color={"m":3,"t":0,"cw":0,"ww":0,"r":15,"g":31,"b":44}'},commandArray)
 			end)
 
 			it('should handle setColorBrightness method correctly',function()
 				commandArray = {}
 				assert.is_nil(device.setColorBrightness(15,31,44))
-				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=100&color={"m":3,"t":0,"cw":0,"ww":0,"r":15,"g":31,"b":44}'},commandArray)
+				assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&brightness=1&color={"m":3,"t":0,"cw":0,"ww":0,"r":15,"g":31,"b":44}'},commandArray)
 			end)
 
 			it('should handle setDiscomode method correctly',function()

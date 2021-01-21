@@ -874,6 +874,7 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''batteryLevel''': ''Number'' If applicable for that device then it will be from 0-100.
 * '''bState''': ''Boolean''. Is true for some common states like ‘On’ or ‘Open’ or ‘Motion’. Better to use active.
 * '''changed''': ''Boolean''. True if the device was updated. '''Note''': This does not necessarily means the device state or value changed.
+* '''customImage''': ''Number''. When customImage is used for the device-icon this will be the icon-number. It will be 0 if the icon was not changed.
 * '''description''': ''String''. Description of the device.
 * '''deviceId''': ''String''. Another identifier of devices in Domoticz. dzVents uses the id(x) attribute. See device list in Domoticz’ settings table.
 * '''deviceSubType''': ''String''. See Domoticz devices table in Domoticz GUI.
@@ -2518,6 +2519,13 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))</source>
 Check out the documentation [https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html here].
 
 = History [https://www.domoticz.com/wiki/DzVents_version_History link to changes in previous versions]. =
+
+== [3.1.2] ==
+
+* Fixed issue with icon name
+* Add attribute customImage (icon number or 0)
+* Use level as brightness in getColor function
+* Allow booleans as value in header field of openURL
 
 == [3.1.1] ==
 

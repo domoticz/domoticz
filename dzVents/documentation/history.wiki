@@ -1,4 +1,11 @@
 __NOTOC__
+== [3.1.2] ==
+
+* Fixed issue with icon name
+* Add attribute customImage (icon number or 0)
+* Use level as brightness in getColor function
+* Allow booleans as value in header field of openURL
+
 == [3.1.1] ==
 
 * Fixed issue that prevented dzVents from accessing the domoticz API when used in sslwww only mode

@@ -78,6 +78,7 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] = {
 	{ "CounterDelivToday", "counterDeliveredToday", JTYPE_STRING },
 	{ "CounterToday", "counterToday", JTYPE_STRING },
 	{ "Current", "current", JTYPE_FLOAT },
+	{ "CustomImage", "customImage", JTYPE_INT },
 	{ "DewPoint", "dewPoint", JTYPE_FLOAT },
 	{ "Direction", "direction", JTYPE_FLOAT },
 	{ "DirectionStr", "directionString", JTYPE_STRING },
@@ -88,6 +89,7 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] = {
 	{ "HardwareTypeVal", "hardwareTypeValue", JTYPE_INT },
 	{ "Humidity", "humidity", JTYPE_INT },
 	{ "HumidityStatus", "humidityStatus", JTYPE_STRING },
+	{ "Image", "Image", JTYPE_STRING },
 	{ "InternalState", "internalState", JTYPE_STRING }, // door contact
 	{ "LevelActions", "levelActions", JTYPE_STRING },
 	{ "LevelInt", "levelVal", JTYPE_INT },

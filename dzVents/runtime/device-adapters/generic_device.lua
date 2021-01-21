@@ -120,6 +120,9 @@ return {
 					idx = data.id
 				})
 			end
+			if customImage and tonumber(customImage) and customImage >= 100 then
+				device.icon = device.Image
+			end
 
 			device.isDevice = true
 		end
