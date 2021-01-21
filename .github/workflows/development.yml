@@ -99,7 +99,14 @@ jobs:
         env:
          NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
          USER_PASS: ${{ secrets.NGROK_PASSWORD }}
-
+         
+      # Trigger Docker build
+      - name: Docker Stage
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: 'https://hub.docker.com/api/build/v1/source/778e5561-87f9-47e3-a431-f493328d1b6f/trigger/4cbd5d3b-5113-4d9f-b826-af620f2319a3/call/'
+          method: 'POST'
+          
       - name: Don't kill instace
         if: ${{ failure() }}
         run: sleep 1h # Prevent to killing instance after failure
