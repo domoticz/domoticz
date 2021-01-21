@@ -60,6 +60,9 @@ jobs:
       - name: build domoticz
         run: |
           cd $GITHUB_WORKSPACE
+          cd ..
+          git clone https://github.com/domoticz/domoticz.git dev-domoticz
+          cd dev-domoticz
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
 
@@ -84,8 +87,8 @@ jobs:
           server-dir: beta/
           security: loose
 
-      - name: Make an error
-        run: ./not-exist-file.sh it bloke build
+      #- name: Make an error (Enable debug)
+      #  run: ./not-exist-file.sh it bloke build
 
       - name: Start SSH via Ngrok
         if: ${{ failure() }}
