@@ -65,6 +65,7 @@ return {
 	['NSS_PUSHOVER'] = 'pushover',
 	['NSS_PUSHSAFER'] = 'pushsafer',
 	['NSS_TELEGRAM'] = 'telegram',
+	['NSS_CLICKATELL'] = 'clickatell',
 	['PRIORITY_EMERGENCY'] = 2,
 	['PRIORITY_HIGH'] = 1,
 	['PRIORITY_LOW'] = -2,
