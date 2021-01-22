@@ -608,6 +608,7 @@ describe('device', function()
 					"updateDistance",
 					"updateElectricity",
 					"updateGas",
+					"updateHistory",
 					"updateHumidity",
 					"updateLux",
 					"updateMode",
@@ -1072,6 +1073,37 @@ describe('device', function()
 			commandArray = {}
 			device.incrementCounter(10)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10", _trigger=true} } }, commandArray)
+		end)
+
+		it('should detect a managed counter device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Counter',
+				['subType'] = 'Managed Counter',
+				['additionalDataData'] = {
+					["counterToday"] = "123.44 Watt";
+					["counter"] = "6.7894 kWh";
+				}
+			})
+
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			assert.is_same(123.44, device.counterToday)
+			assert.is_same(6.7894, device.counter)
+
+			commandArray = {}
+			device.updateCounter(555.123)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555.123", _trigger=true} } }, commandArray)
+
+			 commandArray = {}
+			device.updateHistory('2021-13-32','12;234567')
+			assert.is_same( { 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=12;234567;2021-13-32' }, commandArray)
+
+			commandArray = {}
+			device.updateHistory('2021-13-32 12:34:56','12;234567')
+			assert.is_same( { 'http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=12;234567;2021-13-32+12%3A34%3A56' }, commandArray)
 		end)
 
 		it('should detect a pressure device', function()

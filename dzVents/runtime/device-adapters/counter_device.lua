@@ -5,13 +5,14 @@ return {
 	name = 'Counter device adapter',
 
 	matches = function (device, adapterManager)
-		local res = ( device.deviceSubType == 'RFXMeter counter' 
+		local res = ( device.deviceSubType == 'RFXMeter counter'
 						or  device.deviceSubType == 'Counter Incremental'
 						or  device.deviceSubType == 'Managed Counter')
 
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateCounter')
 			adapterManager.addDummyMethod(device, 'incrementCounter')
+			adapterManager.addDummyMethod(device, 'updateHistory')
 		end
 
 		return res
@@ -30,7 +31,7 @@ return {
 		device['counter'] = info['value']
 
 		if device.deviceSubType == 'Managed Counter' and ( device.valueUnits == nil or device.valueUnits == "" ) then
-			device.valueUnits = string.match(device._data.data.counter, "%a+%d*") or ''  
+			device.valueUnits = string.match(device._data.data.counter, "%a+%d*") or ''
 		end
 
 		function device.updateCounter(value)
@@ -46,12 +47,23 @@ return {
 			if type(value) ~= 'number' then
 				utils.log('incrementCounter only accept numbers; your value is a ' .. type(value) .. ' !! ', utils.LOG_ERROR)
 				return nil
-			elseif device.deviceSubType ~= 'Counter Incremental' then 
+			elseif device.deviceSubType ~= 'Counter Incremental' then
 				utils.log('method incrementCounter not valid for ' .. device.deviceSubType .. ' !! ', utils.LOG_ERROR)
 				return nil
 			else
 				return device.update(0, value)
-			end	
-		end	
+			end
+		end
+
+		function device.updateHistory(date, sValues)
+
+			if device.deviceSubType ~= 'Managed Counter' then utils.log('function not available for counter type: ' .. device.deviceSubType , utils.LOG_ERROR) return end
+
+			local url = domoticz.settings['Domoticz url'] ..'/json.htm?type=command&param=udevice&idx=' .. device.id ..
+						'&nvalue=0' .. '&svalue=' .. sValues .. ';' .. utils.urlEncode(date)
+
+			return domoticz.openURL(url)
+		end
+
 	end
 }

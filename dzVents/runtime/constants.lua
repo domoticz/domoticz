@@ -51,6 +51,7 @@ return {
 	['HUM_NORMAL'] = 0,
 	['HUM_WET'] = 3,
 	['INTEGER'] = 'integer',
+	['NSS_CLICKATELL'] = 'clickatell',
 	['NSS_FIREBASE'] = 'fcm',
 	['NSS_FIREBASE_CLOUD_MESSAGING'] = 'fcm',
 	['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',  -- Only for backward compatibility. Will be deprecated soon
@@ -65,7 +66,6 @@ return {
 	['NSS_PUSHOVER'] = 'pushover',
 	['NSS_PUSHSAFER'] = 'pushsafer',
 	['NSS_TELEGRAM'] = 'telegram',
-	['NSS_CLICKATELL'] = 'clickatell',
 	['PRIORITY_EMERGENCY'] = 2,
 	['PRIORITY_HIGH'] = 1,
 	['PRIORITY_LOW'] = -2,

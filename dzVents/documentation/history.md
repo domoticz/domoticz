@@ -1,6 +1,10 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## [3.1.3] ##
+- Add method updateHistory for managed counter devices
+- Added NSS_CLICKATELL as notification subsystem
+
 ## [3.1.2] ##
 - Fixed issue with icon name
 - Add attribute customImage (icon number or 0)

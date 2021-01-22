@@ -849,7 +849,7 @@ The domoticz object has these constants available for use in your code e.g. <co
 * '''HUM_COMFORTABLE, HUM_DRY, HUM_NORMAL, HUM_WET, HUM_COMPUTE''' <sup>3.0.15</sup>: constant for humidity status.
 * '''INTEGER, FLOAT, STRING, DATE, TIME''': variable types.
 * **LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_FORCE: for logging messages. LOG_FORCE is at the same level as LOG_ERROR.
-* '''NSS_CLICKATELL''' <sup>3.1.2</sup>, '''NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES,''' <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, '''NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM, NSS_GOOGLE_CLOUD_MESSAGING''' <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
+* '''NSS_CLICKATELL''' <sup>3.1.3</sup>, '''NSS_FIREBASE, NSS_FIREBASE_CLOUD_MESSAGING, NSS_GOOGLE_DEVICES,''' <sup>3.0.10</sup> <sup>Only with installed casting plugin</sup>, '''NSS_HTTP, NSS_KODI, NSS_LOGITECH_MEDIASERVER, NSS_NMA,NSS_PROWL, NSS_PUSHALOT, NSS_PUSHBULLET, NSS_PUSHOVER, NSS_PUSHSAFER, NSS_TELEGRAM, NSS_GOOGLE_CLOUD_MESSAGING''' <sup>deprecated by Google and replaced by firebase</sup>: for notification subsystem
 * '''PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY''': for notification priority.
 * '''SECURITY_ARMEDAWAY, SECURITY_ARMEDHOME, SECURITY_DISARMED''': for security state.
 * '''STATE_IDLE, STATE_COOLING, STATE_HEATING''': for thermostat operating state.
@@ -949,6 +949,11 @@ Note that if you do not find your specific device type here you can always inspe
 * '''counter''': ''Number''
 * '''counterToday''': ''Number''. Today’s counter value.
 * '''updateCounter(value)''': ''Function''. '''Overwrite current value for managed and standard counters; increment for incremental counters !!'''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''updateHistory( date, sValues )''': ''Strings'' <sup>3.1.3</sup> ''function'' Managed counter only! Used to write values to short or long term storage.
+
+<source lang="lua">    local mCounter = domoticz.devices('device name')
+    mCounter.updateHistory('2021-01-22', 10;1777193') -- Write to long term storage (meter_calendar table)
+    mCounter.updateHistory('2021-01-22 10:05:02', 10;1777193') -- Write to short term storage (meter table)</source>
 * '''incrementCounter(value)''': ''Function''. (counter incremental) Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]]. To update with a complete new value you will have to do some calculation and take the counter divider into account.
 
 <source lang="lua">    local newValue = value
@@ -2520,13 +2525,17 @@ Check out the documentation [https://htmlpreview.github.io/?https://github.com/r
 
 = History [https://www.domoticz.com/wiki/DzVents_version_History link to changes in previous versions]. =
 
+== [3.1.3] ==
+
+* Add method updateHistory for managed counter devices
+* Added NSS_CLICKATELL as notification subsystem
+
 == [3.1.2] ==
 
 * Fixed issue with icon name
 * Add attribute customImage (icon number or 0)
 * Use level as brightness in getColor function
 * Allow booleans as value in header field of openURL
-* Added NSS_CLICKATELL as notification subsystem
 
 == [3.1.1] ==
 
