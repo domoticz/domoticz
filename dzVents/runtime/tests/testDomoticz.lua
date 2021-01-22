@@ -172,6 +172,26 @@ describe('Domoticz', function()
 			assert.is_same(domoticz['LOG_ERROR'], 1)
 			assert.is_same(domoticz['LOG_MODULE_EXEC_INFO'], 2)
 		end)
+
+		it('should have NSS constants', function()
+			assert.is_same(domoticz['NSS_CLICKATELL'], 'clickatell')
+			assert.is_same(domoticz['NSS_FIREBASE'], 'fcm')
+			assert.is_same(domoticz['NSS_FIREBASE_CLOUD_MESSAGING'], 'fcm')
+			assert.is_same(domoticz['NSS_GOOGLE_CLOUD_MESSAGING'], 'gcm')  -- Only for backward compatibility. Will be deprecated soon
+			assert.is_same(domoticz['NSS_GOOGLE_DEVICES'], 'Google_Devices')
+			assert.is_same(domoticz['NSS_HTTP'], 'http')
+			assert.is_same(domoticz['NSS_KODI'], 'kodi')
+			assert.is_same(domoticz['NSS_LOGITECH_MEDIASERVER'], 'lms')
+			assert.is_same(domoticz['NSS_NMA'], 'nma')
+			assert.is_same(domoticz['NSS_PROWL'], 'prowl')
+			assert.is_same(domoticz['NSS_PUSHALOT'], 'pushalot')
+			assert.is_same(domoticz['NSS_PUSHBULLET'], 'pushbullet')
+			assert.is_same(domoticz['NSS_PUSHOVER'], 'pushover')
+			assert.is_same(domoticz['NSS_PUSHSAFER'], 'pushsafer')
+			assert.is_same(domoticz['NSS_TELEGRAM'], 'telegram')
+
+		end)
+
 	end)
 
 	describe('commands', function()
@@ -231,9 +251,36 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
 		end)
 
-		it('should notify with multiple subsystems as table', function()
+		it('should notify with two subsystems as table', function()
 			domoticz.notify('sub', nil, nil, nil, nil, { domoticz.NSS_HTTP, domoticz.NSS_PROWL })
 			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with multiple subsystems as table', function()
+			domoticz.notify('sub', nil, nil, nil, nil,
+			{
+				domoticz.NSS_CLICKATELL,
+				domoticz.NSS_FIREBASE,
+				domoticz.NSS_FIREBASE_CLOUD_MESSAGING,
+				domoticz.NSS_GOOGLE_CLOUD_MESSAGING,
+				domoticz.NSS_GOOGLE_DEVICES,
+				domoticz.NSS_HTTP,
+				domoticz.NSS_KODI,
+				domoticz.NSS_LOGITECH_MEDIASERVER,
+				domoticz.NSS_NMA,
+				domoticz.NSS_PROWL,
+				domoticz.NSS_PUSHALOT,
+				domoticz.NSS_PUSHBULLET,
+				domoticz.NSS_PUSHOVER,
+				domoticz.NSS_PUSHSAFER,
+				domoticz.NSS_TELEGRAM
+			})
+			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##clickatell;fcm;fcm;fcm;Google_Devices;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with All subsystems', function()
+			domoticz.notify('sub', 'All')
+			assert.is_same({ { ['SendNotification'] = 'sub#All#0#pushover##' } }, domoticz.commandArray)
 		end)
 
 		it('should notify with multiple subsystems as table and delay', function()
