@@ -83,7 +83,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
-          local-dir: ../dev-domoticz/package/
+          local-dir: ./package/
           server-dir: beta/
           security: loose
 
@@ -96,7 +96,8 @@ jobs:
 
       # Grok 2.tcp.ngrok.io DNS resolves to 52.14.18.129
       - name: Start SSH debug Session
-        if: ${{ failure() }}
+        #if: ${{ failure() }}
+        if: ${{ false }}
         uses: luchihoratiu/debug-via-ssh@main
         with:
          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
