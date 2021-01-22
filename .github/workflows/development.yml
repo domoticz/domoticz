@@ -22,8 +22,8 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Make an error (Enable debug)
-        run: ./not-exist-file.sh it bloke build
+      #- name: Make an error (Enable debug)
+      #  run: ./not-exist-file.sh it bloke build
 
       # install dependencies
       - name: dependencies
@@ -94,13 +94,10 @@ jobs:
           url: 'https://hub.docker.com/api/build/v1/source/778e5561-87f9-47e3-a431-f493328d1b6f/trigger/4cbd5d3b-5113-4d9f-b826-af620f2319a3/call/'
           method: 'POST'
 
+      # Grok 2.tcp.ngrok.io DNS resolves to 52.14.18.129
       - name: Start SSH debug Session
         if: ${{ failure() }}
         uses: luchihoratiu/debug-via-ssh@main
         with:
          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
          SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
-
-      - name: Don't kill instace
-        if: ${{ failure() }}
-        run: sleep 1h # Prevent to killing instance after failure
