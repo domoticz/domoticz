@@ -2002,7 +2002,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							{
 								int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
 								unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
-								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name.c_str(), 12);
+								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name, 12);
 								return;
 							}
 							break;

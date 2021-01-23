@@ -325,7 +325,7 @@ bool CAirconWithMe::GetInfo()
 			if (info[it.mName].isInt())
 			{
 				int32_t value = info[it.mName].asInt();
-				SendGeneralSwitch(it.mUID, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, it.mDescription, m_Name.c_str());
+				SendGeneralSwitch(it.mUID, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, it.mDescription, m_Name);
 			}
 		}
 	}

@@ -157,7 +157,7 @@ void BleBox::GetDevicesState()
 					unsigned int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
-					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[device.second].name, m_Name.c_str());
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[device.second].name, m_Name);
 					break;
 				}
 				case 4:

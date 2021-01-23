@@ -1074,7 +1074,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 
 	if (bHaveBlind)
 	{
-		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name, m_Name.c_str());
+		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name, m_Name);
 	}
 
 	if (bHaveKWatt&bHaveWatt)
@@ -1123,12 +1123,12 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		//RRGGBB
 		if (switchcmd == "ON") rgb = 0xffff;
-		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name, m_Name.c_str());
+		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name, m_Name);
 	} else if (bHaveRGBW) {
 		//RRGGBBWW
 		//_log.Log(LOG_STATUS, "RFLink ID,unit,level,cmd: %x , %x, %x, %x", ID, switchunit, rgbw, switchcmd);
 		if (switchcmd == "OFF") rgbw = 0;
-		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name, m_Name.c_str());
+		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name, m_Name);
 	} else if (bHaveSwitch && bHaveSwitchCmd) {
 		std::string switchType = results[2];
 

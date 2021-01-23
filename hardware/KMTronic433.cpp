@@ -173,6 +173,6 @@ void KMTronic433::GetRelayStates()
 		std::stringstream sstr;
 		sstr << "Relay " << (ii + 1);
 		bool bIsOn = false;
-		SendSwitchIfNotExists(ii + 1, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str(), m_Name.c_str());
+		SendSwitchIfNotExists(ii + 1, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str(), m_Name);
 	}
 }

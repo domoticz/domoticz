@@ -517,7 +517,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			break;
 		}
 		if (bHandled)
-			SendSecurity1Sensor(strtoul(data["id"].c_str(), nullptr, 16), x10_device, batterylevel, x10_status, model, m_Name.c_str(), snr);
+			SendSecurity1Sensor(strtoul(data["id"].c_str(), nullptr, 16), x10_device, batterylevel, x10_status, model, m_Name, snr);
 	} // End of X10-Security section
 
 	return bHandled; //not handled (Yet!)

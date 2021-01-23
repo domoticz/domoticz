@@ -784,9 +784,9 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Unknown command: '%s'. Trying anyway.", m_Name.c_str(), sanityze.c_str());
 			if (sanityze.rfind("app",0) == 0) {
 				sanityze.erase(0,3);
-				sPanasonicCall = buildXMLStringAppCtl(sanityze.c_str());
+				sPanasonicCall = buildXMLStringAppCtl(sanityze);
 			} else {
-				sPanasonicCall = buildXMLStringNetCtl(sanityze.c_str());
+				sPanasonicCall = buildXMLStringNetCtl(sanityze);
 			}
 		} else {
 			_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Unknown command: '%s'. ", m_Name.c_str(), command.c_str());

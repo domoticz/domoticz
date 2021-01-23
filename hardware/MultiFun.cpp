@@ -436,11 +436,11 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if ((device.first & value) && !(device.first & m_LastDevices))
 						{
-							SendGeneralSwitch(2, device.first, 255, true, 0, device.second, m_Name.c_str());
+							SendGeneralSwitch(2, device.first, 255, true, 0, device.second, m_Name);
 						}
 						else if (!(device.first & value) && (device.first & m_LastDevices))
 						{
-							SendGeneralSwitch(2, device.first, 255, false, 0, device.second, m_Name.c_str());
+							SendGeneralSwitch(2, device.first, 255, false, 0, device.second, m_Name);
 						}
 					}
 					m_LastDevices = value;
@@ -515,11 +515,11 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if ((access.first & value) && !(access.first & m_LastQuickAccess))
 						{
-							SendGeneralSwitch(0x21, access.first, 255, true, 0, access.second, m_Name.c_str());
+							SendGeneralSwitch(0x21, access.first, 255, true, 0, access.second, m_Name);
 						}
 						else if ((!(access.first & value) && (access.first & m_LastQuickAccess)) || firstTime)
 						{
-							SendGeneralSwitch(0x21, access.first, 255, false, 0, access.second, m_Name.c_str());
+							SendGeneralSwitch(0x21, access.first, 255, false, 0, access.second, m_Name);
 						}
 					}
 					m_LastQuickAccess = value;
