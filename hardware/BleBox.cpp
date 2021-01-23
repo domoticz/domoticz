@@ -1193,7 +1193,7 @@ void BleBox::SearchNodes(const std::string & pattern)
 	std::vector<std::thread> searchingThreads;
 	for(auto&& host : hosts)
 		if (m_devices.find(host) == m_devices.end())
-			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", std::ref(host), false);
+			searchingThreads.emplace_back([this, &host] { AddNode("unknown", host, false); });
 
 	for (auto&& thread : searchingThreads)
 	{
