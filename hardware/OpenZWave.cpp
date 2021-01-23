@@ -6256,7 +6256,7 @@ namespace http {
 				pOZWHardware->GetConfigFile(configFilePath, rep.content);
 				if (!configFilePath.empty() && !rep.content.empty()) {
 					std::string filename;
-					std::size_t last_slash_pos = configFilePath.find_last_of("/");
+					std::size_t last_slash_pos = configFilePath.find_last_of('/');
 					if (last_slash_pos != std::string::npos) {
 						filename = configFilePath.substr(last_slash_pos + 1);
 					}
