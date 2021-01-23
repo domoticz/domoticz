@@ -874,11 +874,8 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 						{
 							std::string sBoolValue = sValue;
 							stdlower(sBoolValue);
-							if(sBoolValue.compare("true") == 0 || sBoolValue.compare("false") == 0)
-							{
-								isBool = true;
-								bValue = (sBoolValue.compare("true") == 0 ? true : false);
-							}
+							isBool = (sBoolValue == "true" || sBoolValue == "false");
+							bValue = (sBoolValue == "true");
 						}
 
 						_log.Debug(DEBUG_NORM, "Processing custom data %d - %s - %s (%s)", iChildID, sValue.c_str(), sLabel.c_str(), (isBool ? "Boolean" : (is_number(sValue) ? "Number": "Text" )));
