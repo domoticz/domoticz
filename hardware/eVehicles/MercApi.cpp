@@ -215,6 +215,14 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 			}
 		}
 	}
+	else
+	{
+		if (m_httpresultcode == 403)
+		{
+			_log.Log(LOG_STATUS, "Access has been denied to the ElectricVehicle data!");
+			bData = true;	// We should see if we can continue with the rest
+		}
+	}
 
 	return bData;
 }
@@ -308,6 +316,14 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 			}
 		}
 	}
+	else
+	{
+		if (m_httpresultcode == 403)
+		{
+			_log.Log(LOG_STATUS, "Access has been denied to the VehicleLockStatus data!");
+			bData = true;	// We should see if we can continue with the rest
+		}
+	}
 
 	reply.clear();
 
@@ -328,6 +344,14 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 				GetVehicleData(reply, data);
 				bData = true;
 			}
+		}
+	}
+	else
+	{
+		if (m_httpresultcode == 403)
+		{
+			_log.Log(LOG_STATUS, "Access has been denied to the PayAsYouDrive data!");
+			bData = true;	// We should see if we can continue with the rest
 		}
 	}
 
