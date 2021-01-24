@@ -10,7 +10,7 @@
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 class BleBox : public CDomoticzHardwareBase
 {

@@ -28,79 +28,77 @@ using namespace boost::placeholders;
 #define Rego6XX_READ_BUFFER_MASK (Rego6XX_READ_BUFFER_SIZE - 1)
 #define Rego6XX_MAX_ERRORS_UNITL_RESTART 20
 
-typedef enum {
-	REGO_TYPE_NONE=0,
+typedef enum
+{
+	REGO_TYPE_NONE = 0,
 	REGO_TYPE_TEMP,
 	REGO_TYPE_STATUS,
-    REGO_TYPE_COUNTER,
+	REGO_TYPE_COUNTER,
 	REGO_TYPE_END
 } RegoRegType;
 
-typedef struct _tRegoRegisters
+using RegoRegisters = struct
 {
 	char name[25];
 	unsigned short regNum_type1;
 	unsigned short regNum_type2;
 	unsigned short regNum_type3;
 	RegoRegType type;
-    float lastTemp;
-    int lastValue;
-    time_t lastSent;
-} RegoRegisters;
-
-typedef union _tRegoCommand
-{
-    unsigned char raw[9];
-    struct
-    {
-        unsigned char address;
-        unsigned char command;
-        unsigned char regNum[3];
-        unsigned char value[3];
-        unsigned char crc;
-    } data;
-} RegoCommand;
-
-typedef union _tRegoReply
-{
-    char raw[5];
-    struct
-    {
-        char address;
-        char value[3];
-        char crc;
-    } data;
-} RegoReply;
-
-RegoRegisters g_allRegisters[] = {
-	{ "GT1 Radiator",           0x0209,	0x020B,	0x020D,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT2 Out",		        0x020A,	0x020C,	0x020E,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT3 Hot water",	        0x020B,	0x020D,	0x020F,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT4 Forward",	        0x020C,	0x020E,	0x0210,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT5 Room",			    0x020D,	0x020F,	0x0211,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT6 Compressor",	        0x020E,	0x0210,	0x0212,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT8 Hot fluid out",      0x020F,	0x0211,	0x0213,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT9 Hot fluid in",		0x0210,	0x0212,	0x0214,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT10 Cold fluid in",		0x0211,	0x0213,	0x0215,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT11 Cold fluid out",	0x0212,	0x0214,	0x0216,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT3x Ext hot water",		0x0213, 0x0215, 0x0217,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "P3 Cold fluid",	    	0x01FD,	0x01FF,	0x0201,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Compressor",				0x01FE,	0x0200,	0x0202,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Add heat 1",     		0x01FF,	0x0201,	0x0203,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Add heat 2",		        0x0200,	0x0202,	0x0204,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "P1 Radiator",    		0x0203,	0x0205,	0x0207,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "P2 Heat fluid",  		0x0204, 0x0206, 0x0208, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Three-way valve",        0x0205, 0x0207, 0x0209, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Alarm",                  0x0206, 0x0208, 0x020A, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Operating hours",        0x0046, 0x0048, 0x004A, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "Radiator hours",         0x0048, 0x004A, 0x004C, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "Hot water hours",        0x004A, 0x004C, 0x004E, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "GT1 Target",             0x006E,	0x006E,	0x006E,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT3 Target",             0x002B,	0x002B,	0x002B,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT4 Target",             0x006D,	0x006D,	0x006D,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "",                            0,      0,      0, REGO_TYPE_NONE,             0,  0, 0}
+	float lastTemp;
+	int lastValue;
+	time_t lastSent;
 };
 
+using RegoCommand = union {
+	unsigned char raw[9];
+	struct
+	{
+		unsigned char address;
+		unsigned char command;
+		unsigned char regNum[3];
+		unsigned char value[3];
+		unsigned char crc;
+	} data;
+};
+
+using RegoReply = union {
+	char raw[5];
+	struct
+	{
+		char address;
+		char value[3];
+		char crc;
+	} data;
+};
+
+std::array<RegoRegisters, 26> g_allRegisters{ {
+	{ "GT1 Radiator", 0x0209, 0x020B, 0x020D, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT2 Out", 0x020A, 0x020C, 0x020E, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT3 Hot water", 0x020B, 0x020D, 0x020F, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT4 Forward", 0x020C, 0x020E, 0x0210, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT5 Room", 0x020D, 0x020F, 0x0211, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT6 Compressor", 0x020E, 0x0210, 0x0212, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT8 Hot fluid out", 0x020F, 0x0211, 0x0213, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT9 Hot fluid in", 0x0210, 0x0212, 0x0214, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT10 Cold fluid in", 0x0211, 0x0213, 0x0215, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT11 Cold fluid out", 0x0212, 0x0214, 0x0216, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT3x Ext hot water", 0x0213, 0x0215, 0x0217, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "P3 Cold fluid", 0x01FD, 0x01FF, 0x0201, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "Compressor", 0x01FE, 0x0200, 0x0202, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "Add heat 1", 0x01FF, 0x0201, 0x0203, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "Add heat 2", 0x0200, 0x0202, 0x0204, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "P1 Radiator", 0x0203, 0x0205, 0x0207, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "P2 Heat fluid", 0x0204, 0x0206, 0x0208, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "Three-way valve", 0x0205, 0x0207, 0x0209, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "Alarm", 0x0206, 0x0208, 0x020A, REGO_TYPE_STATUS, -50.0, -1, 0 },
+	{ "Operating hours", 0x0046, 0x0048, 0x004A, REGO_TYPE_COUNTER, -50.0, -1, 0 },
+	{ "Radiator hours", 0x0048, 0x004A, 0x004C, REGO_TYPE_COUNTER, -50.0, -1, 0 },
+	{ "Hot water hours", 0x004A, 0x004C, 0x004E, REGO_TYPE_COUNTER, -50.0, -1, 0 },
+	{ "GT1 Target", 0x006E, 0x006E, 0x006E, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT3 Target", 0x002B, 0x002B, 0x002B, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "GT4 Target", 0x006D, 0x006D, 0x006D, REGO_TYPE_TEMP, -50.0, -1, 0 },
+	{ "", 0, 0, 0, REGO_TYPE_NONE, 0, 0, 0 },
+} };
 
 //
 //Class Rego6XXSerial

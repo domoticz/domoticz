@@ -130,7 +130,7 @@ bool CNotificationHTTP::SendMessageImplementation(
 		}
 		if (file_exist(scriptname.c_str()))
 		{
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
 			bSuccess = true;
 		}
 	}

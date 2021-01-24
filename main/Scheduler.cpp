@@ -349,9 +349,9 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		localtime_r(&atime, &ltime);
 		struct tm tm1;
 
-		std::string  allSchedules[] = {sSunRise, sSunSet, sSunAtSouth, sCivTwStart, sCivTwEnd, sNautTwStart, sNautTwEnd, sAstTwStart, sAstTwEnd};
+		auto allSchedules = std::array<std::string, 9>{ sSunRise, sSunSet, sSunAtSouth, sCivTwStart, sCivTwEnd, sNautTwStart, sNautTwEnd, sAstTwStart, sAstTwEnd };
 		time_t *allTimes[] = {&m_tSunRise, &m_tSunSet, &m_tSunAtSouth, &m_tCivTwStart, &m_tCivTwEnd, &m_tNautTwStart, &m_tNautTwEnd, &m_tAstTwStart, &m_tAstTwEnd};
-		for(unsigned int a = 0; a < sizeof(allSchedules)/sizeof(allSchedules[0]); a = a + 1)
+		for (size_t a = 0; a < allSchedules.size(); a = a + 1)
 		{
 			//std::cout << allSchedules[a].c_str() << ' ';
 			int hour = atoi(allSchedules[a].substr(0, 2).c_str());
@@ -871,7 +871,7 @@ void CScheduler::CheckSchedules()
 								if (item.timerCmd == TCMD_ON)
 								{
 									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0f) * item.Level;
+									float fLevel = (maxDimLevel / 100.0F) * item.Level;
 									if (fLevel > 100)
 										fLevel = 100;
 									ilevel = int(fLevel);
@@ -884,7 +884,7 @@ void CScheduler::CheckSchedules()
 								if (item.timerCmd == TCMD_ON)
 								{
 									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0f) * item.Level;
+									float fLevel = (maxDimLevel / 100.0F) * item.Level;
 									if (fLevel > 100)
 										fLevel = 100;
 									ilevel = int(fLevel);
@@ -2317,6 +2317,5 @@ namespace http {
 				}
 			}
 		}
-
 	} // namespace server
 } // namespace http

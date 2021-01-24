@@ -45,78 +45,79 @@
 	#include <string.h> 
 #endif
 
-const char *szHelp =
-"Usage: Domoticz -www port\n"
-"\t-version display version number\n"
-"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
-"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
-#ifdef WWW_ENABLE_SSL
-"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
-"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-"\t-sslkey file_path (if different from certificate file)\n"
-"\t-sslpass passphrase (to access to server private key in certificate)\n"
-"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
-"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
-"\t-ssldhparam file_path (for SSL DH parameters)\n"
-#endif
-#if defined WIN32
-"\t-wwwroot file_path (for example D:\\www)\n"
-"\t-dbase file_path (for example D:\\domoticz.db)\n"
-"\t-userdata file_path (for example D:\\domoticzdata)\n"
-"\t-approot file_path (for example D:\\domoticz)\n"
-#else
-"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
-"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
-"\t-userdata file_path (for example /opt/domoticz)\n"
-"\t-approot file_path (for example /opt/domoticz)\n"
-#endif
-"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
-"\t-startupdelay seconds (default=0)\n"
-"\t-nowwwpwd (in case you forgot the web server username/password)\n"
-"\t-nocache (do not return appcache, use only when developing the web pages)\n"
-"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
-#if defined WIN32
-"\t-nobrowser (do not start web browser (Windows Only)\n"
-#endif
-"\t-noupdates do not use the internal update functionality\n"
-#if defined WIN32
-"\t-log file_path (for example D:\\domoticz.log)\n"
-#else
-"\t-log file_path (for example /var/log/domoticz.log)\n"
-#endif
-"\t-loglevel (combination of: normal,status,error,debug)\n"
-"\t-debuglevel (combination of: normal,hardware,received,webserver,eventsystem,python,thread_id)\n"
-"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
-"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
-#ifndef WIN32
-"\t-daemon (run as background daemon)\n"
-"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
-"\t-f config_file (for example /etc/domoticz.conf)\n"
-#endif
-"";
-
-#ifndef WIN32
-struct _facilities {
-	const char* facname;
-	const int   facvalue;
-};
-
-static const _facilities facilities[] =
+namespace
 {
-	{ "daemon", LOG_DAEMON },
-	{ "user",   LOG_USER },
-	{ "local0", LOG_LOCAL0 },
-	{ "local1", LOG_LOCAL1 },
-	{ "local2", LOG_LOCAL2 },
-	{ "local3", LOG_LOCAL3 },
-	{ "local4", LOG_LOCAL4 },
-	{ "local5", LOG_LOCAL5 },
-	{ "local6", LOG_LOCAL6 },
-	{ "local7", LOG_LOCAL7 }
-}; 
-std::string logfacname = "user";
+	constexpr const char *szHelp
+	{
+		"Usage: Domoticz -www port\n"
+		"\t-version display version number\n"
+		"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
+		"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
+#ifdef WWW_ENABLE_SSL
+		"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
+		"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+		"\t-sslkey file_path (if different from certificate file)\n"
+		"\t-sslpass passphrase (to access to server private key in certificate)\n"
+		"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
+		"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
+		"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
+#if defined WIN32
+		"\t-wwwroot file_path (for example D:\\www)\n"
+		"\t-dbase file_path (for example D:\\domoticz.db)\n"
+		"\t-userdata file_path (for example D:\\domoticzdata)\n"
+		"\t-approot file_path (for example D:\\domoticz)\n"
+#else
+		"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
+		"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
+		"\t-userdata file_path (for example /opt/domoticz)\n"
+		"\t-approot file_path (for example /opt/domoticz)\n"
+#endif
+		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
+		"\t-startupdelay seconds (default=0)\n"
+		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
+		"\t-nocache (do not return appcache, use only when developing the web pages)\n"
+		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
+#if defined WIN32
+		"\t-nobrowser (do not start web browser (Windows Only)\n"
+#endif
+		"\t-noupdates do not use the internal update functionality\n"
+#if defined WIN32
+		"\t-log file_path (for example D:\\domoticz.log)\n"
+#else
+		"\t-log file_path (for example /var/log/domoticz.log)\n"
+#endif
+		"\t-loglevel (combination of: normal,status,error,debug)\n"
+		"\t-debuglevel (combination of: normal,hardware,received,webserver,eventsystem,python,thread_id)\n"
+		"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+		"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
+#ifndef WIN32
+		"\t-daemon (run as background daemon)\n"
+		"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
+		"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+		"\t-f config_file (for example /etc/domoticz.conf)\n"
+#endif
+		""
+	};
+
+#ifndef WIN32
+	constexpr std::array<std::pair<const char *, int>, 10> facilities{
+		{
+			{ "daemon", LOG_DAEMON }, //
+			{ "user", LOG_USER },	  //
+			{ "local0", LOG_LOCAL0 }, //
+			{ "local1", LOG_LOCAL1 }, //
+			{ "local2", LOG_LOCAL2 }, //
+			{ "local3", LOG_LOCAL3 }, //
+			{ "local4", LOG_LOCAL4 }, //
+			{ "local5", LOG_LOCAL5 }, //
+			{ "local6", LOG_LOCAL6 }, //
+			{ "local7", LOG_LOCAL7 }, //
+		}				  //
+	};
+	std::string logfacname = "user";
+#endif
+} // namespace
 std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
@@ -1063,11 +1064,11 @@ int main(int argc, char**argv)
 	{
 		int logfacility = 0;
 
-		for (auto facilitie : facilities)
+		for (const auto &facility : facilities)
 		{
-			if (strcmp(facilitie.facname, logfacname.c_str()) == 0)
+			if (strcmp(facility.first, logfacname.c_str()) == 0)
 			{
-				logfacility = facilitie.facvalue;
+				logfacility = facility.second;
 				break;
 			}
 		}

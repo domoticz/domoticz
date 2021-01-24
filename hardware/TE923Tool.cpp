@@ -135,7 +135,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 		if ( data->_t[i] == 0 ) {
 			data->t[i] = (float)(( bcd2int( buf[0+offset] ) / 10.0 ) + ( bcd2int( buf[1+offset] & 0x0F ) * 10.0 ));
 			if (( buf[1+offset] & 0x20 ) == 0x20 )
-				data->t[i] += 0.05f;
+				data->t[i] += 0.05F;
 			if (( buf[1+offset] & 0x80 ) != 0x80 )
 				data->t[i] *= -1;
 		} else
@@ -210,7 +210,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 	if ( data->_wChill == 0 ) {
 		data->wChill = float(( bcd2int( buf[23] ) / 10.0 ) + ( bcd2int( buf[24] & 0x0F ) * 10.0 ));
 		if (( buf[24] & 0x20 ) == 0x20 )
-			data->wChill += 0.05f;
+			data->wChill += 0.05F;
 		if (( buf[24] & 0x80 ) != 0x80 )
 			data->wChill *= -1;
 		data->_wChill = 0;

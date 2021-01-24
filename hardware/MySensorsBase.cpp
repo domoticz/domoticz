@@ -548,7 +548,7 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 		fChill = fTemp;
 		if ((fTemp < 10.0) && (fWind >= 1.4))
 		{
-			fChill = 13.12f + 0.6215f*fTemp - 11.37f*std::pow(fWind*3.6f, 0.16f) + 0.3965f*fTemp*std::pow(fWind*3.6f, 0.16f);
+			fChill = 13.12F + 0.6215F * fTemp - 11.37F * std::pow(fWind * 3.6F, 0.16F) + 0.3965F * fTemp * std::pow(fWind * 3.6F, 0.16F);
 		}
 	}
 	int cNode = (nodeID << 8) | ChildID;
@@ -825,19 +825,19 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_RGB:
 		//RRGGBB
 		if (pChild->GetValue(vType, intValue))
-			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, false, (!pChild->childName.empty()) ? pChild->childName : "RGB Light", m_Name.c_str());
+			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, false, (!pChild->childName.empty()) ? pChild->childName : "RGB Light", m_Name);
 		break;
 	case V_RGBW:
 		//RRGGBBWW
 		if (pChild->GetValue(vType, intValue))
-			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, true, (!pChild->childName.empty()) ? pChild->childName : "RGBW Light", m_Name.c_str());
+			SendRGBWSwitch(pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, intValue, true, (!pChild->childName.empty()) ? pChild->childName : "RGBW Light", m_Name);
 		break;
 	case V_UP:
 	case V_DOWN:
 	case V_STOP:
 		if (pChild->GetValue(vType, intValue))
 			SendBlindSensor((uint8_t)pChild->nodeID, (uint8_t)pChild->childID, pChild->batValue, (uint8_t)intValue, (!pChild->childName.empty()) ? pChild->childName : "Blinds/Window",
-					m_Name.c_str());
+					m_Name);
 		break;
 	case V_LIGHT_LEVEL:
 		if (pChild->GetValue(vType, floatValue))
@@ -1359,9 +1359,9 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			}
 			if (light_command == light2_sSetLevel)
 			{
-				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
-				if (fvalue > 100.0f)
-					fvalue = 100.0f; //99 is fully on
+				float fvalue = (100.0F / 15.0F) * float(pCmd->LIGHTING2.level);
+				if (fvalue > 100.0F)
+					fvalue = 100.0F; // 99 is fully on
 				int svalue = round(fvalue);
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, std::to_string(svalue), pChild->useAck, pChild->ackTimeout);
 			}
@@ -1511,7 +1511,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			{
 				std::stringstream sstr;
 				int Brightness = 100;
-				int wWhite = round((255.0f / 100.0f)*float(Brightness));
+				int wWhite = round((255.0F / 100.0F) * float(Brightness));
 				if (!bIsRGBW)
 				{
 					sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
@@ -2226,9 +2226,9 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 				else if (vType == V_TRIPPED)
 					UpdateSwitch(vType, node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
 				else if (vType == V_RGBW)
-					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light", m_Name.c_str());
+					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light", m_Name);
 				else if (vType == V_RGB)
-					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light", m_Name.c_str());
+					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light", m_Name);
 			}
 		}
 		else if (vType == V_UP)
@@ -2236,7 +2236,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			int blind_value;
 			if (!GetBlindsValue(node_id, child_sensor_id, blind_value))
 			{
-				SendBlindSensor(node_id, child_sensor_id, pSensor->batValue, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window", m_Name.c_str());
+				SendBlindSensor(node_id, child_sensor_id, pSensor->batValue, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window", m_Name);
 			}
 		}
 		else if (vType == V_TEXT)

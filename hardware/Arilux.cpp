@@ -145,14 +145,9 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 
 	//Code for On/Off and RGB command
-	unsigned char Arilux_On_Command_Tab[] = { 0x71, 0x23, 0x0f };
-	unsigned char Arilux_Off_Command_Tab[] = { 0x71, 0x24, 0x0f };
-	unsigned char Arilux_RGBCommand_Command_Tab[] = { 0x31, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x0f };
-
-	//C++98 Vector Init
-	std::vector<unsigned char> Arilux_On_Command(Arilux_On_Command_Tab, Arilux_On_Command_Tab+sizeof(Arilux_On_Command_Tab)/sizeof(unsigned char));
-	std::vector<unsigned char> Arilux_Off_Command(Arilux_Off_Command_Tab, Arilux_Off_Command_Tab + sizeof(Arilux_Off_Command_Tab) / sizeof(unsigned char));
-	std::vector<unsigned char> Arilux_RGBCommand_Command(Arilux_RGBCommand_Command_Tab, Arilux_RGBCommand_Command_Tab + sizeof(Arilux_RGBCommand_Command_Tab) / sizeof(unsigned char));
+	auto Arilux_On_Command = std::vector<unsigned char>{ 0x71, 0x23, 0x0f };
+	auto Arilux_Off_Command = std::vector<unsigned char>{ 0x71, 0x24, 0x0f };
+	auto Arilux_RGBCommand_Command = std::vector<unsigned char>{ 0x31, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x0f };
 
 	switch (pLed->command)
 	{

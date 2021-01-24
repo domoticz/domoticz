@@ -212,7 +212,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		{
 			m_Name = __func__;
 			m_Unit = Unit;
-			m_fLevel = -273.15f;
+			m_fLevel = -273.15F;
 			m_Command = Command;
 			m_iLevel = level;
 			m_iColor = color;
@@ -235,7 +235,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  void ProcessLocked() override
 	  {
 		  PyObject *pParams;
-		  if (m_fLevel != -273.15f)
+		  if (m_fLevel != -273.15F)
 		  {
 			  pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
 		  }
@@ -525,4 +525,4 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		};
 		bool	bNotifyPlugin;
 	};
-}
+} // namespace Plugins

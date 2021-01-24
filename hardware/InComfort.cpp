@@ -116,7 +116,7 @@ std::string CInComfort::GetHTTPData(const std::string &sURL)
 
 std::string CInComfort::SetRoom1SetTemperature(float tempSetpoint)
 {
-	float setpointToSet = (tempSetpoint - 5.0f) * 10.0f;
+	float setpointToSet = (tempSetpoint - 5.0F) * 10.0F;
 
 	std::stringstream sstr;
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
@@ -161,20 +161,20 @@ void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 		return;
 	}
 
-	float room1Temperature = (root["room_temp_1_lsb"].asInt() + root["room_temp_1_msb"].asInt() * 256) / 100.0f;
-	float room1SetTemperature = (root["room_temp_set_1_lsb"].asInt() + root["room_temp_set_1_msb"].asInt() * 256) / 100.0f;
-	float room1OverrideTemperature = (root["room_set_ovr_1_lsb"].asInt() + root["room_set_ovr_1_msb"].asInt() * 256) / 100.0f;
-	float room2Temperature = (root["room_temp_2_lsb"].asInt() + root["room_temp_2_msb"].asInt() * 256) / 100.0f;
-	float room2SetTemperature = (root["room_temp_set_2_lsb"].asInt() + root["room_temp_set_2_msb"].asInt() * 256) / 100.0f;
-	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0f;
+	float room1Temperature = (root["room_temp_1_lsb"].asInt() + root["room_temp_1_msb"].asInt() * 256) / 100.0F;
+	float room1SetTemperature = (root["room_temp_set_1_lsb"].asInt() + root["room_temp_set_1_msb"].asInt() * 256) / 100.0F;
+	float room1OverrideTemperature = (root["room_set_ovr_1_lsb"].asInt() + root["room_set_ovr_1_msb"].asInt() * 256) / 100.0F;
+	float room2Temperature = (root["room_temp_2_lsb"].asInt() + root["room_temp_2_msb"].asInt() * 256) / 100.0F;
+	float room2SetTemperature = (root["room_temp_set_2_lsb"].asInt() + root["room_temp_set_2_msb"].asInt() * 256) / 100.0F;
+	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0F;
 
 	int statusDisplayCode = root["displ_code"].asInt();
 	//int rssi = root["rf_message_rssi"].asInt();
 	//int rfStatusCounter = root["rfstatus_cntr"].asInt();
 
-	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0f;
-	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0f;
-	float tapWaterTemperature = (root["tap_temp_lsb"].asInt() + root["tap_temp_msb"].asInt() * 256) / 100.0f;
+	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0F;
+	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0F;
+	float tapWaterTemperature = (root["tap_temp_lsb"].asInt() + root["tap_temp_msb"].asInt() * 256) / 100.0F;
 
 	int io = root["IO"].asInt();
 	bool lockout = (io & 0x01) > 0;

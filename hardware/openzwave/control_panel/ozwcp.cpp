@@ -423,10 +423,10 @@ MyValue *MyNode::lookup(const std::string &data)
 	node = (uint8)strtol(data.c_str(), nullptr, 10);
 	if (node == 0)
 		return nullptr;
-	pos1 = data.find("-", 0);
+	pos1 = data.find('-', 0);
 	if (pos1 == std::string::npos)
 		return nullptr;
-	pos2 = data.find("-", ++pos1);
+	pos2 = data.find('-', ++pos1);
 	if (pos2 == std::string::npos)
 		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
@@ -434,19 +434,19 @@ MyValue *MyNode::lookup(const std::string &data)
 	if (cls == 0xFF)
 		return nullptr;
 	pos1 = pos2;
-	pos2 = data.find("-", ++pos1);
+	pos2 = data.find('-', ++pos1);
 	if (pos2 == std::string::npos)
 		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
 	vg = valueGenreNum(str.c_str());
 	pos1 = pos2;
-	pos2 = data.find("-", ++pos1);
+	pos2 = data.find('-', ++pos1);
 	if (pos2 == std::string::npos)
 		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
 	typ = valueTypeNum(str.c_str());
 	pos1 = pos2;
-	pos2 = data.find("-", ++pos1);
+	pos2 = data.find('-', ++pos1);
 	if (pos2 == std::string::npos)
 		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);

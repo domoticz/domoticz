@@ -812,8 +812,8 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 	if (root["thermostatInfo"].empty())
 		return false;
 
-	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0f;
-	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0f;
+	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0F;
+	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0F;
 	SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
 	SendTempSensor(1, 255, currentTemp, "Room Temperature");
 
@@ -886,7 +886,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 		//Room Set Point
 
 		char szTemp[20];
-		sprintf(szTemp,"%d",int(temp*100.0f));
+		sprintf(szTemp, "%d", int(temp * 100.0F));
 		std::string sTemp = szTemp;
 
 		std::stringstream sstr2;

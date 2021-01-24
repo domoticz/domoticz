@@ -215,7 +215,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "pressure_kPa"))
 	{
-		pressure = 10.0f * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		pressure = 10.0F * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
 		havePressure = true;
 	}
 	if (FindField(data, "rain_mm"))
@@ -230,7 +230,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6f;
+		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6F;
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_avg_m_s")) // wind speed average
@@ -245,7 +245,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6f;
+		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6F;
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "wind_max_m_s"))
@@ -517,7 +517,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			break;
 		}
 		if (bHandled)
-			SendSecurity1Sensor(strtoul(data["id"].c_str(), nullptr, 16), x10_device, batterylevel, x10_status, model, m_Name.c_str(), snr);
+			SendSecurity1Sensor(strtoul(data["id"].c_str(), nullptr, 16), x10_device, batterylevel, x10_status, model, m_Name, snr);
 	} // End of X10-Security section
 
 	return bHandled; //not handled (Yet!)

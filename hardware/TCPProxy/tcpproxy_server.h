@@ -61,4 +61,4 @@ namespace tcp_proxy
 		std::string upstream_host_;
 		std::string upstream_port_;
 	};
-}
+} // namespace tcp_proxy

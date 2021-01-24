@@ -265,7 +265,8 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned char eHouseTCP::IsCM(unsigned char addrh, unsigned char addrl)
 {
-	if (addrl >= 250u) return 1;
+	if (addrl >= 250U)
+		return 1;
 	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -676,7 +677,7 @@ void eHouseTCP::UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL)
 	int size = sizeof(m_eHouseProStatus->status.Outputs) / sizeof(m_eHouseProStatus->status.Outputs[0]);
 	size = MAX_OUTPUTS / PRO_HALF_IO;
 	//deb("PRO: ", EHouseProStatus.data, sizeof(eHouseProStatus.data));
-	for (i = 0u; i < size; i++)
+	for (i = 0U; i < size; i++)
 	{
 		curr = (m_eHouseProStatus->status.Outputs[i / 8] >> (i % 8)) & 0x1;
 		prev = (m_eHouseProStatusPrv->status.Outputs[i / 8] >> (i % 8)) & 0x1;
@@ -1701,7 +1702,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	int i,m_PlanID;
 	char Name[80];
 	char tmp[96];
-	char PGMs[500u];
+	char PGMs[500U];
 
 	memset(PGMs, 0, sizeof(PGMs));
 	gettype(data[1], data[2]);
@@ -1852,7 +1853,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	int i, m_PlanID;
 	char Name[80];
 	char tmp[96];
-	char PGMs[500u];
+	char PGMs[500U];
 
 	memset(PGMs, 0, sizeof(PGMs));
 	gettype(data[1], data[2]);
@@ -1998,7 +1999,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	int i, m_PlanID;
 	char Name[80];
 	char tmp[96];
-	char PGMs[500u];
+	char PGMs[500U];
 
 	memset(PGMs, 0, sizeof(PGMs));
 	gettype(data[1], data[2]);
@@ -2439,7 +2440,7 @@ void eHouseTCP::Do_Work()
 		m_disablers485 = 1;
 	}
 	unsigned int sum, sum2;
-	unsigned char udp_status[MAXMSG], devaddrh, devaddrl, log[300u], dir[10];	// , code[20];
+	unsigned char udp_status[MAXMSG], devaddrh, devaddrl, log[300U], dir[10]; // , code[20];
 	int i;
 	char GetLine[255];
 	struct sockaddr_in saddr, caddr;
@@ -2680,7 +2681,7 @@ void eHouseTCP::Do_Work()
 				sum2 = ((unsigned int)udp_status[nbytes - 2]) << 8;   //get sent checksum
 				sum2 += udp_status[nbytes - 1];
 				unsigned int iii;
-				for (iii = 0; iii < nbytes - 2u; iii++)               //calculate local checksum
+				for (iii = 0; iii < nbytes - 2U; iii++) // calculate local checksum
 				{
 					sum += udp_status[iii];
 				}
@@ -3135,7 +3136,7 @@ void eHouseTCP::Do_Work()
 									if (m_DEBUG_AURA) LOG(LOG_STATUS, "LQI: %d\t", m_AuraDev[aindex]->LQI);
 									m_AuraN[aindex]->BinaryStatusLength = m_AuraN[aindex]->BinaryStatus[0];//nbytes;
 									m_AuraN[aindex]->TCPQuery++;
-									m_AuraN[aindex]->StatusTimeOut = 15u;
+									m_AuraN[aindex]->StatusTimeOut = 15U;
 									UpdateAuraToSQL(m_AuraN[aindex]->AddrH, m_AuraN[aindex]->AddrL, aindex);
 								}
 							}

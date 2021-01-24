@@ -4,8 +4,8 @@
 namespace http {
 	namespace server {
 		class CWebsocketHandler;
-	}
-}
+	} // namespace server
+} // namespace http
 
 class CWebSocketPush : public CBasePush
 {

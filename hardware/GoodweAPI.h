@@ -5,7 +5,7 @@
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 class GoodweAPI : public CDomoticzHardwareBase
 {

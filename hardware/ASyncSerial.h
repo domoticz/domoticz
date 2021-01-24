@@ -13,7 +13,7 @@ namespace boost
 	namespace system
 	{
 		class error_code;
-	}
+	} // namespace system
 } // namespace boost
 
 /**

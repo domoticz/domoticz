@@ -340,7 +340,7 @@ int CNetatmo::GetBatteryLevel(const std::string &ModuleType, int battery_percent
 
 		//range = 1000
 		batValue = 3200 - battery_percent;
-		batValue = 100 - int((100.0f / 1000.0f)*float(batValue));
+		batValue = 100 - int((100.0F / 1000.0F) * float(batValue));
 	}
 	else if (ModuleType == "NATherm1")
 	{
@@ -351,7 +351,7 @@ int CNetatmo::GetBatteryLevel(const std::string &ModuleType, int battery_percent
 
 		//range = 1100
 		batValue = 4100 - battery_percent;
-		batValue = 100 - int((100.0f / 1100.0f)*float(batValue));
+		batValue = 100 - int((100.0F / 1100.0F) * float(batValue));
 	}
 
 	return batValue;
@@ -480,8 +480,8 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 			bHaveWind = true;
 			wind_angle = root["WindAngle"].asInt();
 			//wind_gust_angle = root["GustAngle"].asInt();
-			wind_strength = root["WindStrength"].asFloat() / 3.6f;
-			wind_gust = root["GustStrength"].asFloat() / 3.6f;
+			wind_strength = root["WindStrength"].asFloat() / 3.6F;
+			wind_gust = root["GustStrength"].asFloat() / 3.6F;
 		}
 	}
 
@@ -1369,13 +1369,13 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				{
 					float rf_strength = module["rf_strength"].asFloat();
 					// 90=low, 60=highest
-					if (rf_strength > 90.0f)
-						rf_strength = 90.0f;
-					if (rf_strength < 60.0f)
-						rf_strength = 60.0f;
+					if (rf_strength > 90.0F)
+						rf_strength = 90.0F;
+					if (rf_strength < 60.0F)
+						rf_strength = 60.0F;
 
 					//range is 30
-					float mrf_percentage = (100.0f / 30.0f)*float((90 - rf_strength));
+					float mrf_percentage = (100.0F / 30.0F) * float((90 - rf_strength));
 					if (mrf_percentage != 0)
 					{
 						std::string pName = moduleName + " RF (+Batt)";

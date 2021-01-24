@@ -731,9 +731,9 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			iLevel=tsen->LIGHTING2.level;
 			if (iLevel>15)
 				iLevel=15;
-			float fLevel=(100.0f/15.0f)*float(iLevel);
-			if (fLevel>99.0f)
-				fLevel=100.0f;
+			float fLevel = (100.0F / 15.0F) * float(iLevel);
+			if (fLevel > 99.0F)
+				fLevel = 100.0F;
 			iLevel=(uint8_t)(fLevel);
 		}
 		cmnd=light2_sSetLevel;
@@ -908,10 +908,10 @@ float CEnOceanESP3::GetValueRange(const float InValue, const float ScaleMax, con
 {
 	float vscale=ScaleMax-ScaleMin;
 	if (vscale==0)
-		return 0.0f;
+		return 0.0F;
 	float vrange=RangeMax-RangeMin;
 	if (vrange==0)
-		return 0.0f;
+		return 0.0F;
 	float multiplyer=vscale/vrange;
 	return multiplyer*(InValue-RangeMin)+ScaleMin;
 }
@@ -1376,7 +1376,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 							tsen.TEMP.tempsign=(temp>=0)?0:1;
-							int at10=round(std::abs(temp*10.0f));
+							int at10 = round(std::abs(temp * 10.0F));
 							tsen.TEMP.temperatureh=(BYTE)(at10/256);
 							at10-=(tsen.TEMP.temperatureh*256);
 							tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -1457,8 +1457,16 @@ void CEnOceanESP3::ParseRadioDatagram()
 						else if (iType==0x19) { ScaleMin=30; ScaleMax=110; }
 						else if (iType==0x1A) { ScaleMin=40; ScaleMax=120; }
 						else if (iType==0x1B) { ScaleMin=50; ScaleMax=130; }
-						else if (iType==0x20) { ScaleMin=-10; ScaleMax=41.2f; }
-						else if (iType==0x30) { ScaleMin=-40; ScaleMax=62.3f; }
+						else if (iType == 0x20)
+						{
+							ScaleMin = -10;
+							ScaleMax = 41.2F;
+						}
+						else if (iType == 0x30)
+						{
+							ScaleMin = -40;
+							ScaleMax = 62.3F;
+						}
 
 						float temp;
 						if (iType<0x20)
@@ -1476,7 +1484,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 						tsen.TEMP.tempsign=(temp>=0)?0:1;
-						int at10=round(std::abs(temp*10.0f));
+						int at10 = round(std::abs(temp * 10.0F));
 						tsen.TEMP.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP.temperatureh*256);
 						tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -1503,7 +1511,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.id2=ID_BYTE1;
 						tsen.TEMP_HUM.battery_level=9;
 						tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-						int at10=round(std::abs(temp*10.0f));
+						int at10 = round(std::abs(temp * 10.0F));
 						tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP_HUM.temperatureh*256);
 						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
@@ -1521,7 +1529,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							if (DATA_BYTE0 & 1)
 							{
 								//Voltage supported
-								float voltage = GetValueRange(DATA_BYTE3, 5.0f, 0, 250, 0);
+								float voltage = GetValueRange(DATA_BYTE3, 5.0F, 0, 250, 0);
 								memset(&tsen, 0, sizeof(RBUF));
 								tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 								tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1562,7 +1570,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							RBUF tsen;
 
-							float voltage = GetValueRange(DATA_BYTE3, 5.0f, 0, 250, 0);
+							float voltage = GetValueRange(DATA_BYTE3, 5.0F, 0, 250, 0);
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1602,7 +1610,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							RBUF tsen;
 
-							float voltage = GetValueRange(DATA_BYTE3, 5.0f, 0, 250, 0);
+							float voltage = GetValueRange(DATA_BYTE3, 5.0F, 0, 250, 0);
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1994,7 +2002,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							{
 								int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
 								unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
-								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name.c_str(), 12);
+								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name, 12);
 								return;
 							}
 							break;

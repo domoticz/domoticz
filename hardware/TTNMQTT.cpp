@@ -892,11 +892,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 						}
 						else if (type == "digital_input") {
-							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, m_Name.c_str(), rssi);
+							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, m_Name, rssi);
 							bDin = true;
 						}
 						else if (type == "digital_output") {
-							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, m_Name.c_str(), rssi);
+							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, m_Name, rssi);
 							bDout = true;
 						}
 						else if (type == "analog_input") {

@@ -20,12 +20,14 @@ using namespace boost::placeholders;
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-const char* szTLSVersions[3] =
+namespace
 {
-	"tlsv1",
-	"tlsv1.1",
-	"tlsv1.2"
-};
+	constexpr std::array<const char *, 3> szTLSVersions{
+		"tlsv1",   //
+		"tlsv1.1", //
+		"tlsv1.2", //
+	};
+} // namespace
 
 MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra,
 	   const int TLS_Version, const int PublishScheme, const std::string &MQTTClientID, const bool PreventLoop)
@@ -329,7 +331,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 			}
 
 			int ival = 100;
-			float brightnessAdj = 1.0f;
+			float brightnessAdj = 1.0F;
 
 			if (!root["color"].empty())
 			{
@@ -340,7 +342,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 					float hsb[3];
 					int r, g, b;
 					rgb2hsb(color.r, color.g, color.b, hsb);
-					hsb2rgb(hsb[0] * 360.0f, hsb[1], 1.0f, r, g, b, 255);
+					hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, r, g, b, 255);
 					color.r = (uint8_t)r;
 					color.g = (uint8_t)g;
 					color.b = (uint8_t)b;
@@ -367,7 +369,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 					int tr, tg, tb; // tmp of 'int' type so can be passed as references to hsb2rgb
 					rgb2hsb(r, g, b, hsb);
 					// Normalize RGB to full brightness
-					hsb2rgb(hsb[0] * 360.0f, hsb[1], 1.0f, tr, tg, tb, 255);
+					hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, tr, tg, tb, 255);
 					r = (uint8_t)tr;
 					g = (uint8_t)tg;
 					b = (uint8_t)tb;
@@ -401,9 +403,9 @@ void MQTT::on_message(const struct mosquitto_message* message)
 
 				//convert hue to RGB
 				float iHue = float(atof(hue.c_str()));
-				float iSat = 100.0f;
+				float iSat = 100.0F;
 				if (!sat.empty()) iSat = float(atof(sat.c_str()));
-				hsb2rgb(iHue, iSat / 100.0f, 1.0f, r, g, b, 255);
+				hsb2rgb(iHue, iSat / 100.0F, 1.0F, r, g, b, 255);
 
 				color = _tColor((uint8_t)r, (uint8_t)g, (uint8_t)b, 0, 0, ColorModeRGB);
 				if (iswhite == "true") color.mode = ColorModeWhite;

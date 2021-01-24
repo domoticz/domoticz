@@ -11,7 +11,7 @@ struct lua_Debug;
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 namespace http {
 	namespace server {
@@ -384,5 +384,5 @@ private:
 	std::string m_server_alias;
 };
 
-} //server
-}//http
+	} // namespace server
+} // namespace http

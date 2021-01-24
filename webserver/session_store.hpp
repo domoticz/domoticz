@@ -50,6 +50,6 @@ public:
 
 typedef session_store* session_store_impl_ptr;
 
-}
-}
+} // namespace server
+} // namespace http
 #endif /* WEBSERVER_SESSION_STORE_HPP_ */

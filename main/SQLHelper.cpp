@@ -2259,7 +2259,8 @@ bool CSQLHelper::OpenDatabase()
 						{
 							szQuery2.clear();
 							szQuery2.str("");
-							szQuery2 << "INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (" << sd[0] << ", " << (float)atof(sd3[0].c_str()) / 10.0f << ", '" << sd3[1] << "')";
+							szQuery2 << "INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (" << sd[0] << ", " << (float)atof(sd3[0].c_str()) / 10.0F << ", '"
+								 << sd3[1] << "')";
 							query(szQuery2.str());
 						}
 						szQuery2.clear();
@@ -2276,9 +2277,9 @@ bool CSQLHelper::OpenDatabase()
 						{
 							szQuery2.clear();
 							szQuery2.str("");
-							float percentage_min = (float)atof(sd3[0].c_str()) / 10.0f;
-							float percentage_max = (float)atof(sd3[1].c_str()) / 10.0f;
-							float percentage_avg = (float)atof(sd3[2].c_str()) / 10.0f;
+							float percentage_min = (float)atof(sd3[0].c_str()) / 10.0F;
+							float percentage_max = (float)atof(sd3[1].c_str()) / 10.0F;
+							float percentage_avg = (float)atof(sd3[2].c_str()) / 10.0F;
 							szQuery2 << "INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) VALUES (" << sd[0] << ", " << percentage_min << ", " << percentage_max << ", " << percentage_avg << ", '" << sd3[3] << "')";
 							query(szQuery2.str());
 						}
@@ -2310,7 +2311,7 @@ bool CSQLHelper::OpenDatabase()
 
 					//convert hue to RGB
 					float iHue = float(atof(sd[1].c_str()));
-					hsb2rgb(iHue, 1.0f, 1.0f, r, g, b, 255);
+					hsb2rgb(iHue, 1.0F, 1.0F, r, g, b, 255);
 
 					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					szQuery2.clear();
@@ -2330,7 +2331,7 @@ bool CSQLHelper::OpenDatabase()
 
 					//convert hue to RGB
 					float iHue = float(atof(sd[1].c_str()));
-					hsb2rgb(iHue, 1.0f, 1.0f, r, g, b, 255);
+					hsb2rgb(iHue, 1.0F, 1.0F, r, g, b, 255);
 
 					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					szQuery2.clear();
@@ -3685,12 +3686,12 @@ void CSQLHelper::Do_Work()
 {
 	std::vector<_tTaskItem> _items2do;
 
-	while (!IsStopRequested(static_cast<const long>(1000.0f / timer_resolution_hz)))
+	while (!IsStopRequested(static_cast<const long>(1000.0F / timer_resolution_hz)))
 	{
 		if (m_bAcceptHardwareTimerActive)
 		{
 			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);
-			if (m_iAcceptHardwareTimerCounter <= (1.0f / timer_resolution_hz / 2))
+			if (m_iAcceptHardwareTimerCounter <= (1.0F / timer_resolution_hz / 2))
 			{
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
@@ -3719,7 +3720,7 @@ void CSQLHelper::Do_Work()
 							tvDiff.tv_sec = 0;
 							tvDiff.tv_usec = 0;
 						}
-						float diff = ((tvDiff.tv_usec / 1000000.0f) + tvDiff.tv_sec);
+						float diff = ((tvDiff.tv_usec / 1000000.0F) + tvDiff.tv_sec);
 						if ((itt->_DelayTime) <= diff)
 						{
 							_items2do.push_back(*itt);
@@ -5228,8 +5229,8 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 
 void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float& AddjValue, float& AddjMulti)
 {
-	AddjValue = 0.0f;
-	AddjMulti = 1.0f;
+	AddjValue = 0.0F;
+	AddjMulti = 1.0F;
 	std::vector<std::vector<std::string> > result;
 	result = safe_query(
 		"SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
@@ -5256,8 +5257,8 @@ void CSQLHelper::GetMeterType(const int HardwareID, const char* ID, const unsign
 
 void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float& AddjValue, float& AddjMulti)
 {
-	AddjValue = 0.0f;
-	AddjMulti = 1.0f;
+	AddjValue = 0.0F;
+	AddjMulti = 1.0F;
 	std::vector<std::vector<std::string> > result;
 	result = safe_query(
 		"SELECT AddjValue2,AddjMulti2 FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
@@ -5651,7 +5652,7 @@ void CSQLHelper::UpdateTemperatureLog()
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
 					humidity = atoi(splitresults[1].c_str());
 					if (dSubType == sTypeTHBFloat)
-						barometer = int(atof(splitresults[3].c_str()) * 10.0f);
+						barometer = int(atof(splitresults[3].c_str()) * 10.0F);
 					else
 						barometer = atoi(splitresults[3].c_str());
 					dewpoint = (float)CalculateDewPoint(temp, humidity);
@@ -5661,7 +5662,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				if (splitresults.size() >= 2)
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
-					barometer = int(atof(splitresults[1].c_str()) * 10.0f);
+					barometer = int(atof(splitresults[1].c_str()) * 10.0F);
 				}
 				break;
 			case pTypeUV:
@@ -5698,7 +5699,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				{
 					if (splitresults.size() != 2)
 						continue;
-					barometer = int(atof(splitresults[0].c_str()) * 10.0f);
+					barometer = int(atof(splitresults[0].c_str()) * 10.0F);
 				}
 				break;
 			}
@@ -6229,25 +6230,25 @@ void CSQLHelper::UpdateMeter()
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeVisibility))
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
@@ -6258,7 +6259,7 @@ void CSQLHelper::UpdateMeter()
 				if (splitresults.size() < 2)
 					continue;
 
-				double fValue = atof(splitresults[0].c_str()) * 10.0f;
+				double fValue = atof(splitresults[0].c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sUsage = szTmp;
 
@@ -6274,7 +6275,7 @@ void CSQLHelper::UpdateMeter()
 			}
 			else if (dType == pTypeWEIGHT)
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
@@ -6292,25 +6293,25 @@ void CSQLHelper::UpdateMeter()
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 			{
-				double fValue = atof(sValue.c_str()) * 1000.0f;
+				double fValue = atof(sValue.c_str()) * 1000.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 			{
-				double fValue = atof(sValue.c_str()) * 1000.0f;
+				double fValue = atof(sValue.c_str()) * 1000.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if (dType == pTypeUsage)
 			{
-				double fValue = atof(sValue.c_str()) * 10.0f;
+				double fValue = atof(sValue.c_str()) * 10.0F;
 				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
@@ -6431,19 +6432,19 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0f);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0f);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0f);
+				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
+				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
+				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
 			}
 			else if ((dType == pTypeCURRENTENERGY) && (dSubType == sTypeELEC4))
 			{
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0f);
-				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0f);
-				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0f);
-				value4 = (unsigned long long)(atof(splitresults[3].c_str()) * 1000.0f);
+				value1 = (unsigned long)(atof(splitresults[0].c_str()) * 10.0F);
+				value2 = (unsigned long)(atof(splitresults[1].c_str()) * 10.0F);
+				value3 = (unsigned long)(atof(splitresults[2].c_str()) * 10.0F);
+				value4 = (unsigned long long)(atof(splitresults[3].c_str()) * 1000.0F);
 			}
 			else
 				continue;//don't know you (yet)
@@ -6727,9 +6728,9 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 void CSQLHelper::AddCalendarUpdateMeter()
 {
-	float EnergyDivider = 1000.0f;
-	float GasDivider = 100.0f;
-	float WaterDivider = 100.0f;
+	float EnergyDivider = 1000.0F;
+	float GasDivider = 100.0F;
+	float WaterDivider = 100.0F;
 	float musage = 0;
 	int tValue;
 	if (GetPreferencesVar("MeterDividerEnergy", tValue))
@@ -6801,7 +6802,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else if (devType == pTypeP1Gas)
 		{
 			metertype = MTYPE_GAS;
-			tGasDivider = 1000.0f;
+			tGasDivider = 1000.0F;
 		}
 		else if ((devType == pTypeRego6XXValue) && (subType == sTypeRego6XXCounter))
 		{
@@ -6905,13 +6906,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			else
 			{
 				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
-				result = safe_query(
-					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
-					"VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
-					ID,
-					total_min, total_max, avg_value, 0.0f, 0.0f, 0.0f,
-					szDateStart
-				);
+				result = safe_query("INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
+						    "VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
+						    ID, total_min, total_max, avg_value, 0.0F, 0.0F, 0.0F, szDateStart);
 			}
 			if (
 				(devType != pTypeAirQuality) &&
@@ -6947,20 +6944,16 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		else
 		{
 			//no new meter result received in last day
-			result = safe_query(
-				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
-				"VALUES ('%" PRIu64 "', '%.2f', '%q')",
-				ID,
-				0.0f,
-				szDateStart
-			);
+			result = safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) "
+					    "VALUES ('%" PRIu64 "', '%.2f', '%q')",
+					    ID, 0.0F, szDateStart);
 		}
 	}
 }
 
 void CSQLHelper::AddCalendarUpdateMultiMeter()
 {
-	float EnergyDivider = 1000.0f;
+	float EnergyDivider = 1000.0F;
 	int tValue;
 	if (GetPreferencesVar("MeterDividerEnergy", tValue))
 	{
@@ -8155,22 +8148,22 @@ void CSQLHelper::SetUnitsAndScale()
 	if (m_windunit == WINDUNIT_MS)
 	{
 		m_windsign = "m/s";
-		m_windscale = 0.1f;
+		m_windscale = 0.1F;
 	}
 	else if (m_windunit == WINDUNIT_KMH)
 	{
 		m_windsign = "km/h";
-		m_windscale = 0.36f;
+		m_windscale = 0.36F;
 	}
 	else if (m_windunit == WINDUNIT_MPH)
 	{
 		m_windsign = "mph";
-		m_windscale = 0.223693629205f;
+		m_windscale = 0.223693629205F;
 	}
 	else if (m_windunit == WINDUNIT_Knots)
 	{
 		m_windsign = "kn";
-		m_windscale = 0.1943844492457398f;
+		m_windscale = 0.1943844492457398F;
 	}
 	else if (m_windunit == WINDUNIT_Beaufort)
 	{
@@ -8182,23 +8175,23 @@ void CSQLHelper::SetUnitsAndScale()
 	if (m_tempunit == TEMPUNIT_C)
 	{
 		m_tempsign = "C";
-		m_tempscale = 1.0f;
+		m_tempscale = 1.0F;
 	}
 	else if (m_tempunit == TEMPUNIT_F)
 	{
 		m_tempsign = "F";
-		m_tempscale = 1.0f; // *1.8 + 32
+		m_tempscale = 1.0F; // *1.8 + 32
 	}
 
 	if (m_weightunit == WEIGHTUNIT_KG)
 	{
 		m_weightsign = "kg";
-		m_weightscale = 1.0f;
+		m_weightscale = 1.0F;
 	}
 	else if (m_weightunit == WEIGHTUNIT_LB)
 	{
 		m_weightsign = "lb";
-		m_weightscale = 2.20462f;
+		m_weightscale = 2.20462F;
 	}
 }
 
@@ -8216,7 +8209,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction
 
 		if ((OnAction.find("http://") == 0) || (OnAction.find("https://") == 0))
 		{
-			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
+			AddTaskItem(_tTaskItem::GetHTTPPage(0.2F, OnAction, "SwitchActionOn"));
 		}
 		else if (OnAction.find("script://") == 0)
 		{
@@ -8242,7 +8235,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction
 			}
 			if (file_exist(scriptname.c_str()))
 			{
-				AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+				AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
 			}
 			else
 				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
@@ -8256,7 +8249,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction
 
 	if ((OffAction.find("http://") == 0) || (OffAction.find("https://") == 0))
 	{
-		AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
+		AddTaskItem(_tTaskItem::GetHTTPPage(0.2F, OffAction, "SwitchActionOff"));
 	}
 	else if (OffAction.find("script://") == 0)
 	{
@@ -8281,7 +8274,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string& OnAction
 		}
 		if (file_exist(scriptname.c_str()))
 		{
-			AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+			AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
 		}
 	}
 	return true;
@@ -8890,7 +8883,7 @@ bool CSQLHelper::CheckTime(const std::string& sTime)
 
 void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 {
-	m_iAcceptHardwareTimerCounter = iTotMinutes * 60.0f;
+	m_iAcceptHardwareTimerCounter = iTotMinutes * 60.0F;
 	if (m_bAcceptHardwareTimerActive == false)
 	{
 		m_bPreviousAcceptNewHardware = m_bAcceptNewHardware;
@@ -9273,10 +9266,10 @@ float CSQLHelper::GetCounterDivider(const int metertype, const int dType, const 
 		if (dType == pTypeP1Gas)
 			divider = 1000;
 		else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-			divider *= 100.0f;
+			divider *= 100.0F;
 
 		if (divider == 0)
-			divider = 1.0f;
+			divider = 1.0F;
 	}
 	return divider;
 }

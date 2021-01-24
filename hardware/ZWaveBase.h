@@ -100,7 +100,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		{
 			sequence_number = 1;
 			nodeID = (uint8_t)-1;
-			scaleMultiply = 1.0f;
+			scaleMultiply = 1.0F;
 			isListening = false;
 			hasWakeup = false;
 			batValue = 255;

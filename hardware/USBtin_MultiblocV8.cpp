@@ -132,7 +132,7 @@ History :
 #define BLOC_SFSP_M                     0x14
 #define BLOC_SFSP_E                     0x15
 
-std::string NomRefBloc[45]={
+constexpr std::array<const char *, 45> NomRefBloc{
 	"UNDEFINED",
 	"DOMOTICZ",
 	"NAVIGRAPH_VER",
@@ -344,7 +344,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	unsigned int codetouche = bufferdata[4];
 	std::string defaultname=" ";
 
-	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, codetouche );
+	_log.Log(LOG_NORM, "MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X", NomRefBloc[RefBloc], Codage, Ssreseau, SwitchId, codetouche);
 
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -422,7 +422,7 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 				m_BlocList_CAN[IndexBLoc].CongifurationCrc = ( bufferdata[3]<<8 )+bufferdata[4];
 				m_BlocList_CAN[IndexBLoc].Status = BLOC_ALIVE;
 				m_BlocList_CAN[IndexBLoc].NbAliveFrameReceived = 0;
-				_log.Log(LOG_NORM,"MultiblocV8: new bloc detected: %s# Coding: %d network: %d", NomRefBloc[RefBloc].c_str(),Codage,Ssreseau);
+				_log.Log(LOG_NORM, "MultiblocV8: new bloc detected: %s# Coding: %d network: %d", NomRefBloc[RefBloc], Codage, Ssreseau);
 				//checking if we must send request, to refresh the hardware in domoticz dispositifs :
 				switch(RefBloc){
 					case BLOC_SFSP_M :
@@ -666,7 +666,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	int level = int(rlevel);
 	//Extract the RefBloc Type
 	uint8_t RefBloc = (uint8_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
-	if (RefBloc >= 45)// _countof(NomRefBloc))
+	if (RefBloc >= NomRefBloc.size())
 		return;
 
 	tRBUF lcmd;
@@ -884,9 +884,9 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 
 				if (iLevel>15)
 					iLevel=15;
-				float fLevel=(255.0f/15.0f)*float(iLevel);
-				if (fLevel>254.0f)
-					fLevel=255.0f;
+				float fLevel = (255.0F / 15.0F) * float(iLevel);
+				if (fLevel > 254.0F)
+					fLevel = 255.0F;
 				iLevel=int(fLevel);
 
 

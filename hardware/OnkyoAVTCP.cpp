@@ -15,124 +15,126 @@
 
 #define RETRY_DELAY 30
 
+namespace
+{
+	struct eiscp_packet
+	{
+		uint32_t magic;
+		uint32_t hdr_size;
+		uint32_t data_size;
+		uint8_t version;
+		uint8_t reserved[3];
+		char start;
+		char dest;
+		char message[2];
+	};
 
-struct eiscp_packet {
-	uint32_t magic;
-	uint32_t hdr_size;
-	uint32_t data_size;
-	uint8_t version;
-	uint8_t reserved[3];
-	char start;
-	char dest;
-	char message[2];
-};
+	// Do not change except to append to these, or you break compatibility.
+	enum DevNr
+	{
+		ID_MVL = 0,
+		ID_ZVL,
+		ID_VL3,
+		ID_VL4,
+		ID_PWR,
+		ID_ZPW,
+		ID_PW3,
+		ID_PW4,
+		ID_SLI,
+		ID_SLZ,
+		ID_SL3,
+		ID_SL4,
+		ID_HDO,
+	};
 
-// Do not change except to append to these, or you break compatibility.
-enum DevNr {
-	ID_MVL = 0,
-	ID_ZVL,
-	ID_VL3,
-	ID_VL4,
-	ID_PWR,
-	ID_ZPW,
-	ID_PW3,
-	ID_PW4,
-	ID_SLI,
-	ID_SLZ,
-	ID_SL3,
-	ID_SL4,
-	ID_HDO,
-};
+	struct selector_name
+	{
+		int val;
+		const char *name;
+	};
 
-struct selector_name {
-	int val;
-	const char *name;
-};
+	const struct selector_name input_names[] = {
+		{ 0x00, "STB/DVR" },
+		{ 0x01, "CBL/SAT" },
+		{ 0x02, "GAME/TV" },
+		{ 0x03, "AUX1" },
+		{ 0x04, "AUX2/GAME2" },
+		{ 0x05, "PC" },
+		{ 0x06, "VIDEO7" },
+		{ 0x07, "Hidden1" },
+		{ 0x08, "Hidden2" },
+		{ 0x09, "Hidden3" },
+		{ 0x10, "BD/DVD" },
+		{ 0x11, "STRM BOX" },
+		{ 0x12, "TV" },
+		{ 0x20, "TV/TAPE" },
+		{ 0x21, "TAPE2" },
+		{ 0x22, "PHONO" },
+		{ 0x23, "TV/CD" },
+		{ 0x24, "FM" },
+		{ 0x25, "AM" },
+		{ 0x26, "TUNER" },
+		{ 0x27, "Music Server" },
+		{ 0x28, "Internet Radio" },
+		{ 0x29, "USB/USB(Front)" },
+		{ 0x2a, "USB(Rear)" },
+		{ 0x2c, "USB(Toggle)" },
+		{ 0x2d, "Airplay" },
+		{ 0x2e, "Bluetooth" },
+		{ 0x30, "MULTI CH" },
+		{ 0x31, "XM" },
+		{ 0x32, "SIRIUS" },
+		{ 0x33, "DAB" },
+		{ 0x40, "Universal PORT" },
+		{ 0x55, "HDMI5" },
+		{ 0x56, "HDMI6" },
+		{ 0x57, "HDMI7" },
+		{ 0x80, "Source" },
+		{ 0, nullptr },
+	};
 
-static struct selector_name input_names[] = {
-	{ 0x00, "STB/DVR" },
-	{ 0x01, "CBL/SAT" },
-	{ 0x02, "GAME/TV" },
-	{ 0x03, "AUX1" },
-	{ 0x04, "AUX2/GAME2" },
-	{ 0x05, "PC" },
-	{ 0x06, "VIDEO7" },
-	{ 0x07, "Hidden1" },
-	{ 0x08, "Hidden2" },
-	{ 0x09, "Hidden3" },
-	{ 0x10, "BD/DVD" },
-	{ 0x11, "STRM BOX" },
-	{ 0x12, "TV" },
-	{ 0x20, "TV/TAPE" },
-	{ 0x21, "TAPE2" },
-	{ 0x22, "PHONO" },
-	{ 0x23, "TV/CD" },
-	{ 0x24, "FM" },
-	{ 0x25, "AM" },
-	{ 0x26, "TUNER" },
-	{ 0x27, "Music Server" },
-	{ 0x28, "Internet Radio" },
-	{ 0x29, "USB/USB(Front)" },
-	{ 0x2a, "USB(Rear)" },
-	{ 0x2c, "USB(Toggle)" },
-	{ 0x2d, "Airplay" },
-	{ 0x2e, "Bluetooth" },
-	{ 0x30, "MULTI CH" },
-	{ 0x31, "XM" },
-	{ 0x32, "SIRIUS" },
-	{ 0x33, "DAB" },
-	{ 0x40, "Universal PORT" },
-	{ 0x55, "HDMI5" },
-	{ 0x56, "HDMI6" },
-	{ 0x57, "HDMI7" },
-	{ 0x80, "Source" },
-	{ 0, nullptr },
-};
+	using _switch_types = struct
+	{
+		const char *iscpCmd;
+		const char *iscpMute;
+		const char *name;
+		uint8_t switchType;
+		uint8_t subtype;
+		int customImage;
+		const char *options;
+		const struct selector_name *default_names;
+	};
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-static struct {
-	const char *iscpCmd;
-	const char *iscpMute;
-	const char *name;
-	uint8_t switchType;
-	uint8_t subtype;
-	int customImage;
-	const char *options;
-	struct selector_name *default_names;
-} switch_types[] = {
-	{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
-	{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
-	{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
-	{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
-	{ "PWR", nullptr, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
-	{ "ZPW", nullptr, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
-	{ "PW3", nullptr, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
-	{ "PW4", nullptr, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
-	{ "SLI", nullptr, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5,
-	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "SLZ", nullptr, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5,
-	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "SL2", nullptr, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5,
-	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "SL3", nullptr, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5,
-	  "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
-	{ "HDO", nullptr, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5,
-	  "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
-};
+	constexpr std::array<_switch_types, 13> switch_types{
+		{
+			{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
+			{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
+			{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
+			{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
+			{ "PWR", nullptr, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
+			{ "ZPW", nullptr, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
+			{ "PW3", nullptr, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
+			{ "PW4", nullptr, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
+			{ "SLI", nullptr, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
+			{ "SLZ", nullptr, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
+			{ "SL2", nullptr, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
+			{ "SL3", nullptr, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
+			{ "HDO", nullptr, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" }, //
+		}																						    //
+	};
 
-static struct {
-	const char *iscpCmd;
-	const char *name;
-} text_types[] = {
-	{ "NAL", "Album name" },
-	{ "NAT", "Artist name" },
-	{ "NTI", "Title name" },
-	{ "NTM", "Playback time" },
-	{ "NTR", "Track info" },
-};
+	constexpr std::array<std::pair<const char *, const char *>, 5> text_types{
+		{
+			{ "NAL", "Album name" },    //
+			{ "NAT", "Artist name" },   //
+			{ "NTI", "Title name" },    //
+			{ "NTM", "Playback time" }, //
+			{ "NTR", "Track info" },    //
+		}				    //
+	};
 
 #define IS_END_CHAR(x) ((x) == 0x1a)
-
+}; // namespace
 
 OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
 	m_szIPAddress(IPAddress)
@@ -255,7 +257,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char /*length
 		int ID = xcmd->id;
 		int level = xcmd->level;
 		char buf[9];
-		if (ID >= ARRAY_SIZE(switch_types))
+		if (ID >= int(switch_types.size()))
 			return false;
 		switch(xcmd->cmnd) {
 		case gswitch_sSetLevel:
@@ -383,7 +385,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 			// Add previously unknown value to a selector
 			std::string str(reinterpret_cast<const char*>(pData + 3), Len - 4);
 			std::string level_name = str;
-			struct selector_name *n = switch_types[ID].default_names;
+			const struct selector_name *n = switch_types[ID].default_names;
 			while (n && n->name) {
 				if (n->val == level) {
 					level_name = n->name;
@@ -572,25 +574,32 @@ void OnkyoAVTCP::ReceiveMessage(const char *pData, int Len)
 	}
 	_log.Log(LOG_NORM, "OnkyoAVTCP: Packet received: %d %.*s", Len, Len-1, pData);
 
-	int i;
-	for (i = 0; i < ARRAY_SIZE(text_types); i++) {
-		if (!memcmp(pData, text_types[i].iscpCmd, 3)) {
+	int i = 0;
+	for (const auto &text : text_types)
+	{
+		if (!memcmp(pData, text.first, 3))
+		{
 			std::string str(reinterpret_cast<const char*>(pData + 3), Len - 4);
-			SendTextSensor(1, i, 255, str, text_types[i].name);
+			SendTextSensor(1, i, 255, str, text.second);
 			return;
 		}
+		++i;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(switch_types); i++) {
-	  if (!memcmp(pData, switch_types[i].iscpCmd, 3)) {
-		  ReceiveSwitchMsg(pData, Len, false, i);
-		  return;
-	  }
-	  if (switch_types[i].iscpMute && !memcmp(pData, switch_types[i].iscpMute, 3))
-	  {
-		  ReceiveSwitchMsg(pData, Len, true, i);
-		  return;
-	  }
+	i = 0;
+	for (const auto &sw : switch_types)
+	{
+		if (!memcmp(pData, sw.iscpCmd, 3))
+		{
+			ReceiveSwitchMsg(pData, Len, false, i);
+			return;
+		}
+		if (sw.iscpMute && !memcmp(pData, sw.iscpMute, 3))
+		{
+			ReceiveSwitchMsg(pData, Len, true, i);
+			return;
+		}
+		++i;
 	}
 }
 

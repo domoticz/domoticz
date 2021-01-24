@@ -756,7 +756,7 @@ bool CNefitEasy::GetGasUsage()
 	}
 	float yeargas = root["value"].asFloat();
 	//convert from kWh to m3
-	yeargas *= (0.12307692f*1000.0f);
+	yeargas *= (0.12307692F * 1000.0F);
 	uint32_t gusage = (uint32_t)yeargas;
 	if (gusage < m_lastgasusage)
 	{

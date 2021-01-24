@@ -192,7 +192,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.id1=0;
 		tsen.WIND.id2=1;
 
-		float winddir=float(data.wDir)*22.5f;
+		float winddir = float(data.wDir) * 22.5F;
 		int aw=round(winddir);
 		tsen.WIND.directionh=(BYTE)(aw/256);
 		aw-=(tsen.WIND.directionh*256);
@@ -202,7 +202,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.av_speedl=0;
 		if (data._wSpeed==0)
 		{
-			int sw=round(data.wSpeed*10.0f);
+			int sw = round(data.wSpeed * 10.0F);
 			tsen.WIND.av_speedh=(BYTE)(sw/256);
 			sw-=(tsen.WIND.av_speedh*256);
 			tsen.WIND.av_speedl=(BYTE)(sw);
@@ -211,7 +211,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.gustl=0;
 		if (data._wGust==0)
 		{
-			int gw=round(data.wGust*10.0f);
+			int gw = round(data.wGust * 10.0F);
 			tsen.WIND.gusth=(BYTE)(gw/256);
 			gw-=(tsen.WIND.gusth*256);
 			tsen.WIND.gustl=(BYTE)(gw);
@@ -226,7 +226,7 @@ void CTE923::GetSensorDetails()
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
-			int at10=round(std::abs(data.wChill*10.0f));
+			int at10 = round(std::abs(data.wChill * 10.0F));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);
@@ -241,7 +241,7 @@ void CTE923::GetSensorDetails()
 	if (data._RainCount==0)
 	{
 		int BatLevel = (dev.batteryRain) ? 100 : 0;
-		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7f, "Rain");
+		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7F, "Rain");
 		/*
 				RBUF tsen;
 				memset(&tsen,0,sizeof(RBUF));

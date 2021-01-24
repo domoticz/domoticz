@@ -310,14 +310,14 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
         // check setlevel command
         if (pSwitch->cmnd == gswitch_sSetLevel) {
            // Get device level to set
-			float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
-			if (fvalue > 15.0f)
-				fvalue = 15.0f; //99 is fully on
-			int svalue = round(fvalue);
-			//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
-	        char buffer[50] = {0};
-			sprintf(buffer, "%d", svalue);
-			switchcmnd = buffer;
+	   float fvalue = (15.0F / 100.0F) * float(pSwitch->level);
+	   if (fvalue > 15.0F)
+		   fvalue = 15.0F; // 99 is fully on
+	   int svalue = round(fvalue);
+	   //_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
+	   char buffer[50] = { 0 };
+	   sprintf(buffer, "%d", svalue);
+	   switchcmnd = buffer;
 	    }
 
 		if (switchcmnd.empty()) {
@@ -410,7 +410,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = int(hsb[0] * 255.0f);
+				int iHue = int(hsb[0] * 255.0F);
 				iHue = (iHue + 0x20) & 0xFF; // Milight color offset correction
 				colorbright = (((unsigned char)iHue) << 8) | brightness;
 				switchcmnd = "COLOR";
@@ -813,7 +813,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 				//negative temp
 				iTemp = -(iTemp & 0xFFF);
 			}
-			temp = float(iTemp) / 10.0f;
+			temp = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("HUM") != std::string::npos)
 		{
@@ -839,7 +839,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveRain = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			raincounter = float(iTemp) / 10.0f;
+			raincounter = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("LUX") != std::string::npos)
 		{
@@ -851,7 +851,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveUV = true;
-			uv = float(iTemp) /10.0f;
+			uv = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("BAT") != std::string::npos)
 		{
@@ -867,13 +867,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveWindSpeed = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
-			windspeed = (float(iTemp) * 0.0277778f);   //convert to m/s
+			windspeed = (float(iTemp) * 0.0277778F);      // convert to m/s
 		}
 		else if (results[ii].find("WINGS") != std::string::npos)
 		{
 			bHaveWindGust = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
-			windgust = (float(iTemp) * 0.0277778f);    //convert to m/s
+			windgust = (float(iTemp) * 0.0277778F);	      // convert to m/s
 		}
 		else if (results[ii].find("WINTMP") != std::string::npos)
 		{
@@ -883,7 +883,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 				//negative temp
 				iTemp = -(iTemp & 0xFFF);
 			}
-			windtemp = float(iTemp) / 10.0f;
+			windtemp = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("WINCHL") != std::string::npos)
 		{
@@ -893,7 +893,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 				//negative temp
 				iTemp = -(iTemp & 0xFFF);
 			}
-			windchill = float(iTemp) / 10.0f;
+			windchill = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("SOUND") != std::string::npos)
 		{
@@ -924,49 +924,49 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveKWatt = true;
-			kwatt = float(iTemp) / 1000.0f;
+			kwatt = float(iTemp) / 1000.0F;
 		}
 		else if (results[ii].find("WATT") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveWatt = true;
-			watt = float(iTemp) / 10.0f;
+			watt = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("DIST") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveDistance = true;
-			distance = float(iTemp) / 10.0f;
+			distance = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("METER") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveMeter = true;
-			meter = float(iTemp) / 10.0f;
+			meter = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("VOLT") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveVoltage = true;
-			voltage = float(iTemp) / 10.0f;
+			voltage = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("CURRENT") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent = true;
-			current = float(iTemp) / 10.0f;
+			current = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("CURRENT2") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent2 = true;
-			current2 = float(iTemp) / 10.0f;
+			current2 = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("CURRENT3") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent3 = true;
-			current3 = float(iTemp) / 10.0f;
+			current3 = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("WEIGHT") != std::string::npos)
 		{
@@ -978,7 +978,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveImpedance = true;
-			impedance = float(iTemp) / 10.0f;
+			impedance = float(iTemp) / 10.0F;
 		}
 		else if (results[ii].find("SWITCH") != std::string::npos)
 		{
@@ -1053,7 +1053,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			_log.Log(LOG_STATUS, "RFLink: id:%d wd %d ws %f wg: %f wt: %f wc: %f status:%d", ID, twindir, twindspeed, twindgust, twindtemp, twindchill, bExists);
 		}
 #endif
-		if (bHaveWindDir) twindir = round(float(windir)*22.5f);
+		if (bHaveWindDir)
+			twindir = round(float(windir) * 22.5F);
 		if (!bHaveWindSpeed) windspeed = twindspeed;
 		if (!bHaveWindGust) windgust = twindgust;
 		if (!bHaveWindTemp) windtemp = twindtemp;
@@ -1073,20 +1074,20 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 
 	if (bHaveBlind)
 	{
-		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name, m_Name.c_str());
+		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name, m_Name);
 	}
 
 	if (bHaveKWatt&bHaveWatt)
 	{
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0F, kwatt, tmp_Name);
 	}
 	else if (bHaveKWatt)
 	{
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0F, kwatt, tmp_Name);
 	}
 	else if (bHaveWatt)
 	{
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0F, kwatt, tmp_Name);
 	}
 	if (bHaveDistance)
 	{
@@ -1122,12 +1123,12 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		//RRGGBB
 		if (switchcmd == "ON") rgb = 0xffff;
-		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name, m_Name.c_str());
+		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name, m_Name);
 	} else if (bHaveRGBW) {
 		//RRGGBBWW
 		//_log.Log(LOG_STATUS, "RFLink ID,unit,level,cmd: %x , %x, %x, %x", ID, switchunit, rgbw, switchcmd);
 		if (switchcmd == "OFF") rgbw = 0;
-		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name, m_Name.c_str());
+		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name, m_Name);
 	} else if (bHaveSwitch && bHaveSwitchCmd) {
 		std::string switchType = results[2];
 

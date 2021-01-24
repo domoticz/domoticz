@@ -157,7 +157,7 @@ void BleBox::GetDevicesState()
 					unsigned int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
-					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[device.second].name, m_Name.c_str());
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[device.second].name, m_Name);
 					break;
 				}
 				case 4:
@@ -559,9 +559,9 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		case Color_LedOn: {
 			if (m_RGBWColorState.mode != ColorModeNone && !m_RGBWisWhiteState)
 			{
-				red = int(round(m_RGBWColorState.r * m_RGBWbrightnessState / 255.0f));
-				green = int(round(m_RGBWColorState.g * m_RGBWbrightnessState / 255.0f));
-				blue = int(round(m_RGBWColorState.b * m_RGBWbrightnessState / 255.0f));
+				red = int(round(m_RGBWColorState.r * m_RGBWbrightnessState / 255.0F));
+				green = int(round(m_RGBWColorState.g * m_RGBWbrightnessState / 255.0F));
+				blue = int(round(m_RGBWColorState.b * m_RGBWbrightnessState / 255.0F));
 				white = 0;
 			}
 			else
@@ -603,7 +603,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		}
 		case Color_SetBrightnessLevel: {
 			int BrightnessBase = (int)pLed->value;
-			int dMax_Send = (int)(round((255.0f / 100.0f) * float(BrightnessBase)));
+			int dMax_Send = (int)(round((255.0F / 100.0F) * float(BrightnessBase)));
 
 			m_RGBWbrightnessState = dMax_Send;
 
@@ -616,9 +616,9 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 			}
 			else
 			{
-				red = int(round(m_RGBWColorState.r * dMax_Send / 255.0f));
-				green = int(round(m_RGBWColorState.g * dMax_Send / 255.0f));
-				blue = int(round(m_RGBWColorState.b * dMax_Send / 255.0f));
+				red = int(round(m_RGBWColorState.r * dMax_Send / 255.0F));
+				green = int(round(m_RGBWColorState.g * dMax_Send / 255.0F));
+				blue = int(round(m_RGBWColorState.b * dMax_Send / 255.0F));
 				white = 0;
 			}
 			break;
@@ -1193,7 +1193,7 @@ void BleBox::SearchNodes(const std::string & pattern)
 	std::vector<std::thread> searchingThreads;
 	for(auto&& host : hosts)
 		if (m_devices.find(host) == m_devices.end())
-			searchingThreads.emplace_back(&BleBox::AddNode, this, "unknown", std::ref(host), false);
+			searchingThreads.emplace_back([this, &host] { AddNode("unknown", host, false); });
 
 	for (auto&& thread : searchingThreads)
 	{

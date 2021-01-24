@@ -35,49 +35,44 @@ extern std::string szWWWFolder;
 
 //Note!, Some devices uses the same instance for multiple values,
 //to solve this we are going to use the Index value!, Except for COMMAND_CLASS_MULTI_INSTANCE
-
-struct _tAlarmNameToIndexMapping
-{
-	std::string sLabel;
-	uint8_t iIndex;
-};
-
 //This is for backwards compatability .... but should not be used
-static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
-	{ "General",			0x28 },
-	{ "Smoke",				0x29 },
-	{ "Carbon Monoxide",	0x2A },
-	{ "Carbon Dioxide",		0x2B },
-	{ "Heat",				0x2C },
-	{ "Water",				0x2D },
-	{ "Flood",				0x2D },
-	{ "Alarm Level",		0x32 },
-	{ "Alarm Type",			0x33 },
-	{ "Access Control",		0x34 },
-	{ "Burglar",			0x35 },
-	{ "Home Security",		0x35 },
-	{ "Power Management",	0x36 },
-	{ "System",				0x37 },
-	{ "Emergency",			0x38 },
-	{ "Clock",				0x39 },
-	{ "Appliance",			0x3A },
-	{ "HomeHealth",			0x3B },
-	{ "Siren",				0x3C },
-	{ "Water Valve",		0x3D },
-	{ "Weather",			0x3E },
-	{ "Irrigation",			0x3F },
-	{ "Gas",				0x40 },
-	{ "", 0 }
-};
+namespace
+{
+	constexpr std::array<std::pair<const char *, uint8_t>, 23> AlarmToIndexMapping{
+		{
+			{ "General", 0x28 },	      //
+			{ "Smoke", 0x29 },	      //
+			{ "Carbon Monoxide", 0x2A },  //
+			{ "Carbon Dioxide", 0x2B },   //
+			{ "Heat", 0x2C },	      //
+			{ "Water", 0x2D },	      //
+			{ "Flood", 0x2D },	      //
+			{ "Alarm Level", 0x32 },      //
+			{ "Alarm Type", 0x33 },	      //
+			{ "Access Control", 0x34 },   //
+			{ "Burglar", 0x35 },	      //
+			{ "Home Security", 0x35 },    //
+			{ "Power Management", 0x36 }, //
+			{ "System", 0x37 },	      //
+			{ "Emergency", 0x38 },	      //
+			{ "Clock", 0x39 },	      //
+			{ "Appliance", 0x3A },	      //
+			{ "HomeHealth", 0x3B },	      //
+			{ "Siren", 0x3C },	      //
+			{ "Water Valve", 0x3D },      //
+			{ "Weather", 0x3E },	      //
+			{ "Irrigation", 0x3F },	      //
+			{ "Gas", 0x40 },	      //
+		}				      //
+	};
+} // namespace
 
 uint8_t GetIndexFromAlarm(const std::string& sLabel)
 {
-	int ii = 0;
-	while (AlarmToIndexMapping[ii].iIndex != 0)
+	for (const auto &alarm : AlarmToIndexMapping)
 	{
-		if (sLabel.find(AlarmToIndexMapping[ii].sLabel) != std::string::npos)
-			return AlarmToIndexMapping[ii].iIndex;
-		ii++;
+		if (sLabel.find(alarm.first) != std::string::npos)
+			return alarm.second;
 	}
 	return 0;
 }
@@ -6261,7 +6256,7 @@ namespace http {
 				pOZWHardware->GetConfigFile(configFilePath, rep.content);
 				if (!configFilePath.empty() && !rep.content.empty()) {
 					std::string filename;
-					std::size_t last_slash_pos = configFilePath.find_last_of("/");
+					std::size_t last_slash_pos = configFilePath.find_last_of('/');
 					if (last_slash_pos != std::string::npos) {
 						filename = configFilePath.substr(last_slash_pos + 1);
 					}

@@ -315,7 +315,7 @@ bool RFXComSerial::UpgradeFirmware()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 		unsigned long Address = firmware.first;
-		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
+		m_FirmwareUploadPercentage = (100.0F / float(firmwareBuffer.size())) * icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
 

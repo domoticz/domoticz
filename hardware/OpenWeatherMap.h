@@ -20,7 +20,7 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	int GetForecastFromBarometricPressure(float pressure, float temp = -999.9f);
+	int GetForecastFromBarometricPressure(float pressure, float temp = -999.9F);
 	std::string GetDayFromUTCtimestamp(uint8_t daynr, const std::string &UTCtimestamp);
 	std::string GetHourFromUTCtimestamp(uint8_t hournr, const std::string &UTCtimestamp);
 	bool ProcessForecast(Json::Value &forecast, const std::string &period, const std::string &periodname, uint8_t count, int startNodeID);

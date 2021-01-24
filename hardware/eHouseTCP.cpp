@@ -493,17 +493,14 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	memset(m_newData, 0, sizeof(m_newData));
 	m_AddrL = m_SrvAddrL;
 	m_AddrH = m_SrvAddrH;
-	int i;
-	for (i = 0; i < EVENT_QUEUE_MAX; i++)
+	for (auto &e : m_EvQ)
 	{
-		m_EvQ[i] = (struct EventQueueT *) malloc(sizeof(struct EventQueueT));
-
-		if (m_EvQ[i] == nullptr)
+		e = (struct EventQueueT *)calloc(1, sizeof(struct EventQueueT));
+		if (e == nullptr)
 		{
 			LOG(LOG_ERROR, "Can't Alloc Events Queue Memory");
 			return;
 		}
-		memset(m_EvQ[i], 0, sizeof(struct EventQueueT));
 	}
 
 	eHPROaloc(0, m_AddrH, m_AddrL);
@@ -522,7 +519,8 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	ev[3] = 0x33;
 	int nr = -1;
 	if (m_eHEnableAutoDiscovery) nr = AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
-	if (nr >= 0) m_EvQ[nr]->LocalEventsTimeOuts = 200u;
+	if (nr >= 0)
+		m_EvQ[nr]->LocalEventsTimeOuts = 200U;
 	m_alarmLast = false;
 }
 //////////////////////////////////////////////////////////////////////
@@ -975,7 +973,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 
 		ev[0] = AddrH;
 		ev[1] = AddrL;
-		ev[2] = 245u;		//MODADC
+		ev[2] = 245U;		// MODADC
 		ev[3] = nr;		//starting channel arg1
 		ev[4] = 3;		//arg2
 

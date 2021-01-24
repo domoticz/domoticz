@@ -19,26 +19,28 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-typedef struct tSatelModel {
+using SatelModel = struct
+{
 	unsigned int id;
 	const char* name;
 	unsigned int zones;
 	unsigned int outputs;
-} SatelModel;
+};
 
 #define TOT_MODELS 9
 
-static SatelModel models[TOT_MODELS] =
-{
-	{ 0, "Integra 24", 24, 20 },
-	{ 1, "Integra 32", 32, 32 },
-	{ 2, "Integra 64", 64, 64 },
-	{ 3, "Integra 128", 128, 128 },
-	{ 4, "Integra 128 WRL SIM300", 128, 128 },
-	{ 132, "Integra 128 WRL LEON", 128, 128 },
-	{ 66, "Integra 64 Plus", 64, 64 },
-	{ 67, "Integra 128 Plus", 128, 128 },
-	{ 72, "Integra 256 Plus", 256, 256 },
+constexpr std::array<SatelModel, TOT_MODELS> models{
+	{
+		{ 0, "Integra 24", 24, 20 },		   //
+		{ 1, "Integra 32", 32, 32 },		   //
+		{ 2, "Integra 64", 64, 64 },		   //
+		{ 3, "Integra 128", 128, 128 },		   //
+		{ 4, "Integra 128 WRL SIM300", 128, 128 }, //
+		{ 132, "Integra 128 WRL LEON", 128, 128 }, //
+		{ 66, "Integra 64 Plus", 64, 64 },	   //
+		{ 67, "Integra 128 Plus", 128, 128 },	   //
+		{ 72, "Integra 256 Plus", 256, 256 },	   //
+	}						   //
 };
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1
@@ -56,20 +58,11 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	memset(m_newData, 0, sizeof(m_newData));
 
 	// clear last local state of zones and outputs
-	for (unsigned int i = 0; i < 256; ++i)
-	{
-		m_zonesLastState[i] = false;
-		m_outputsLastState[i] = false;
-		m_isOutputSwitch[i] = false;
-		m_isTemperature[i] = false;
-	}
-
-	for (unsigned int i = 0; i < 32; ++i)
-	{
-		m_isPartitions[i] = false;
-		m_armLastState[i] = false;
-	}
-
+	std::fill(std::begin(m_zonesLastState), std::end(m_zonesLastState), false);
+	std::fill(std::begin(m_outputsLastState), std::end(m_outputsLastState), false);
+	std::fill(std::begin(m_isOutputSwitch), std::end(m_isOutputSwitch), false);
+	std::fill(std::begin(m_isPartitions), std::end(m_isPartitions), false);
+	std::fill(std::begin(m_armLastState), std::end(m_armLastState), false);
 	m_alarmLast = false;
 
 	errorCodes[1] = "requesting user code not found";
@@ -750,7 +743,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 
 	if ((Idx > 1024) || m_isOutputSwitch[Idx - 1])
 	{
-		SendGeneralSwitch(Idx, 1, 255, state ? gswitch_sOn : gswitch_sOff, 0, "", m_Name.c_str());
+		SendGeneralSwitch(Idx, 1, 255, state ? gswitch_sOn : gswitch_sOff, 0, "", m_Name);
 	}
 	else
 	{
@@ -766,7 +759,7 @@ void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
 	m_armLastState[Idx - 1] = isArm;
 
-	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, "", m_Name.c_str());
+	SendGeneralSwitch(Idx, 2, 255, isArm ? gswitch_sOn : gswitch_sOff, 0, "", m_Name);
 }
 
 void SatelIntegra::ReportAlarm(const bool isAlarm)

@@ -325,7 +325,7 @@ bool CAirconWithMe::GetInfo()
 			if (info[it.mName].isInt())
 			{
 				int32_t value = info[it.mName].asInt();
-				SendGeneralSwitch(it.mUID, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, it.mDescription, m_Name.c_str());
+				SendGeneralSwitch(it.mUID, 1, 255, value > 0 ? gswitch_sOn : gswitch_sOff, 1, it.mDescription, m_Name);
 			}
 		}
 	}
@@ -347,7 +347,7 @@ void CAirconWithMe::UpdateDomoticzWithValue(int32_t uid, int32_t value)
 		break;
 
 	case NDT_THERMOSTAT:
-		SendSetPointSensor(0, uid / 256, uid % 256, static_cast<float>(value) / 10.0f, valueInfo.mDefaultName);
+		SendSetPointSensor(0, uid / 256, uid % 256, static_cast<float>(value) / 10.0F, valueInfo.mDefaultName);
 		break;
 
 	case NDT_SELECTORSWITCH:
@@ -355,7 +355,7 @@ void CAirconWithMe::UpdateDomoticzWithValue(int32_t uid, int32_t value)
 		break;
 
 	case NDT_THERMOMETER:
-		SendTempSensor(uid, 255, static_cast<float>(value) / 10.0f, valueInfo.mDefaultName);
+		SendTempSensor(uid, 255, static_cast<float>(value) / 10.0F, valueInfo.mDefaultName);
 		break;
 
 	case NDT_NUMBER:

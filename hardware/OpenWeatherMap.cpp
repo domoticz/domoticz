@@ -435,10 +435,10 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 	{
 		try
 		{
-			float rainmm = 9999.00f;
-			float uvi = -999.9f;
-			float mintemp = -999.9f;
-			float maxtemp = -999.9f;
+			float rainmm = 9999.00F;
+			float uvi = -999.9F;
+			float mintemp = -999.9F;
+			float maxtemp = -999.9F;
 
 			float pop = forecast["pop"].asFloat();
 			float clouds = forecast["clouds"].asFloat();
@@ -515,7 +515,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			sName.str("");
 			sName.clear();
 			sName << "Minumum Temperature " << period << " " << (count + 0);
-			if (mintemp != -999.9f)
+			if (mintemp != -999.9F)
 			{
 				SendTempSensor(NodeID, 255, mintemp, sName.str());
 			}
@@ -530,7 +530,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			sName.str("");
 			sName.clear();
 			sName << "UV Index " << period << " " << (count + 0);
-			if (uvi != -999.9f)
+			if (uvi != -999.9F)
 			{
 				SendUVSensor(NodeID, 1, 255, uvi, sName.str());
 			}
@@ -545,7 +545,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str());
 
 			NodeID++;;
-			if ((rainmm != 9999.00f) && (rainmm >= 0.00f))
+			if ((rainmm != 9999.00F) && (rainmm >= 0.00F))
 			{
 				sName.str("");
 				sName.clear();
@@ -577,7 +577,7 @@ int COpenWeatherMap::GetForecastFromBarometricPressure(const float pressure, con
 	if (pressure < 1000)
 	{
 		barometric_forecast = wsbaroforecast_rain;
-		if (temp != -999.9f)
+		if (temp != -999.9F)
 		{
 			if (temp <= 0)
 				barometric_forecast = wsbaroforecast_snow;
@@ -650,8 +650,8 @@ void COpenWeatherMap::GetMeterDetails()
 
 	//Current values
 	Json::Value current;
-	float temp = -999.9f;
-	float fltemp = -999.9f;
+	float temp = -999.9F;
+	float fltemp = -999.9F;
 
 	current = root["current"];
 	int humidity = 0;
@@ -699,24 +699,24 @@ void COpenWeatherMap::GetMeterDetails()
 			}
 		}
 	}
-	if ((temp != -999.9f) && (humidity != 0) && (barometric != 0))
+	if ((temp != -999.9F) && (humidity != 0) && (barometric != 0))
 	{
 		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
 	}
-	else if ((temp != -999.9f) && (humidity != 0))
+	else if ((temp != -999.9F) && (humidity != 0))
 	{
 		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
 	}
 	else
 	{
-		if (temp != -999.9f)
+		if (temp != -999.9F)
 			SendTempSensor(1, 255, temp, "Temperature");
 		if (humidity != 0)
 			SendHumiditySensor(1, 255, humidity, "Humidity");
 	}
 
 	// Feel temperature
-	if (fltemp != -999.9f)
+	if (fltemp != -999.9F)
 	{
 		SendTempSensor(3, 255, fltemp, "Feel Temperature");
 	}
@@ -741,8 +741,8 @@ void COpenWeatherMap::GetMeterDetails()
 			//we need to assume temp and chill temperatures are availabe to define subtype of wind device. 
 			//It is possible that sometimes in the API a temperature is missing, but it should not change a device type.
 			//Therefor set that temp to 0
-			float wind_temp = (temp != -999.9f ? temp : 0);
-			float wind_chill = (fltemp != -999.9f ? fltemp : 0); //Wind_chill is same as feels like temperature
+			float wind_temp = (temp != -999.9F ? temp : 0);
+			float wind_chill = (fltemp != -999.9F ? fltemp : 0); // Wind_chill is same as feels like temperature
 
 			SendWind(4, 255, wind_degrees, windspeed_ms, windgust_ms, wind_temp, wind_chill, true, true, "Wind");
 		}
@@ -761,7 +761,7 @@ void COpenWeatherMap::GetMeterDetails()
 	//Visibility
 	if (!current["visibility"].empty() && current["visibility"].isInt())
 	{
-		float visibility = ((float)current["visibility"].asInt())/1000.0f;
+		float visibility = ((float)current["visibility"].asInt()) / 1000.0F;
 		if (visibility >= 0)
 		{
 			SendVisibilitySensor(6, 1, 255, visibility, "Visibility");

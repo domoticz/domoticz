@@ -7,8 +7,8 @@
 namespace http {
 	namespace server {
 		class CProxyClient;
-	}
-};
+	} // namespace server
+} // namespace http
 
 namespace tcp {
 namespace server {

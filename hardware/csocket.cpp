@@ -214,7 +214,7 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 
 	timeval timeout;
 
-	if ( waitTime <= 0.0f )
+	if (waitTime <= 0.0F)
 	{
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 0;
@@ -222,7 +222,7 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 	else
 	{
 		timeout.tv_sec = static_cast<int>((waitTime));
-		timeout.tv_usec = static_cast<int>((1000000.0f * (waitTime - (float)timeout.tv_sec)));
+		timeout.tv_usec = static_cast<int>((1000000.0F * (waitTime - (float)timeout.tv_sec)));
 	}
 
 	int n = select(m_socket + 1, &fds, nullptr, nullptr, &timeout);
