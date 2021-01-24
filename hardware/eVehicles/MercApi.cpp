@@ -362,7 +362,6 @@ bool CMercApi::GetCustomData(tCustomData& data)
 {
 	Json::Value reply;
 	std::vector<std::string> strarray;
-	bool bCustom = true;
 
 	if (m_capabilities.has_custom_data)
 	{
@@ -411,7 +410,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 		}
 	}
 
-	return bCustom;
+	return true;
 }
 
 void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
