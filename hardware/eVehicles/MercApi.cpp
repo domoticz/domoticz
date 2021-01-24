@@ -758,6 +758,8 @@ bool CMercApi::GetAuthToken(const std::string &username, const std::string &pass
 bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData,
 	std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders, const int timeout)
 {
+	m_httpresultcode = 0;	// Reset to 0
+
 	// If there is no token stored then there is no point in doing a request. Unless we specifically
 	// decide not to do authentication.
 	if (m_accesstoken.empty() && bSendAuthHeaders)
@@ -780,7 +782,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		if (bSendAuthHeaders) 
 			_vExtraHeaders.push_back("Authorization: Bearer " + m_accesstoken);
 
-		// Increase default timeout
+		// In/Decrease default timeout
 		if(timeout == 0)
 		{
 			HTTPClient::SetConnectionTimeout(MERC_APITIMEOUT);
@@ -823,15 +825,19 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			}
 		}
 
-		_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
+		m_httpresultcode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 
 		// Debug response
 		for (auto &_vResponseHeader : _vResponseHeaders)
 			_ssResponseHeaderString << _vResponseHeader;
-		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", m_httpresultcode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
-		switch(_iHttpCode)
+		switch(m_httpresultcode)
 		{
+		case 28:
+			_log.Log(LOG_STATUS, "Received (Curl) returncode 28.. API request response took too long, timed-out!");
+			return false;
+			break;
 		case 200:
 			break; // Ok, continue to process content
 		case 204:
@@ -851,6 +857,17 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			}			
 			return false;
 			break;
+		case 403:
+			if(!m_authenticating)
+			{
+				_log.Log(LOG_STATUS, "Received 403.. Access has been denied!");
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "Received 403.. Access denied during authorisation proces. Aborting!");
+			}
+			return false;
+			break;
 		case 429:
 			_log.Log(LOG_STATUS, "Received 429.. Too many request... we need to back off!");
 			return false;
@@ -861,19 +878,19 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			return false;
 			break;
 		default:
-			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", _iHttpCode);
+			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", m_httpresultcode);
 			return false;
 		}
 
 		if (sResponse.empty())
 		{
-			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %d).", _iHttpCode);
+			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %d).", m_httpresultcode);
 			return false;
 		}
 
 		if (!ParseJSon(sResponse, jsDecodedResponse))
 		{
-			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %d).", _iHttpCode);
+			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %d).", m_httpresultcode);
 			return false;
 		}
 	}

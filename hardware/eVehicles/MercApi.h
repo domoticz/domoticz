@@ -63,4 +63,5 @@ private:
 	uint32_t m_crc;
 	std::string m_fields;
 	int16_t m_fieldcnt;
+	uint16_t m_httpresultcode;
 };
