@@ -212,6 +212,7 @@ namespace http {
 			void AddSession(const WebEmSession & session);
 			void RemoveSession(const WebEmSession & session);
 			void RemoveSession(const std::string & ssid);
+			std::vector<std::string> GetExpiredSessions();
 			int CountSessions();
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)

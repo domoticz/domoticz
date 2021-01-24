@@ -1169,41 +1169,33 @@ namespace http {
 			return (int)m_sessions.size();
 		}
 
+		std::vector<std::string> cWebem::GetExpiredSessions()
+		{
+			std::unique_lock<std::mutex> lock(m_sessionsMutex);
+			std::vector<std::string> ret;
+			time_t now = mytime(nullptr);
+			for (const auto &session : m_sessions)
+			{
+				if (session.second.timeout < now)
+					ret.push_back(session.second.id);
+			}
+			return ret;
+		}
+
 		void cWebem::CleanSessions()
 		{
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] cleaning sessions...", GetPort().c_str());
 
-			int before = CountSessions();
 			// Clean up timed out sessions from memory
-			std::vector<std::string> ssids;
-			{
-				std::unique_lock<std::mutex> lock(m_sessionsMutex);
-				time_t now = mytime(nullptr);
-				for (const auto &session : m_sessions)
-					if (session.second.timeout < now)
-						ssids.push_back(session.second.id);
-			}
-			for (const auto &ssid : ssids)
+			std::vector<std::string> expired_ssids = GetExpiredSessions();
+			for (const auto &ssid : expired_ssids)
 			{
 				RemoveSession(ssid);
-			}
-			int after = CountSessions();
-			std::stringstream ss;
-			{
-				std::unique_lock<std::mutex> lock(m_sessionsMutex);
-				int i = 0;
-				for (const auto &session : m_sessions)
-				{
-					if (i > 0)
-						ss << ",";
-					ss << session.second.id;
-					i += 1;
-				}
 			}
 			// Clean up expired sessions from database in order to avoid to wait for the domoticz restart (long time running instance)
 			if (mySessionStore != nullptr)
 			{
-				this->mySessionStore->CleanSessions();
+				mySessionStore->CleanSessions();
 			}
 			// Schedule next cleanup
 			m_session_clean_timer.expires_at(m_session_clean_timer.expires_at() + boost::posix_time::minutes(15));
