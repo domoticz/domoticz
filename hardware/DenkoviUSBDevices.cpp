@@ -83,8 +83,8 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 		if (m_Cmd == _edaeUsbState::DAE_USB16_ASK_CMD) {
 			uint8_t firstEight, secondEight;
 			if (len == 2) {
-				firstEight = (unsigned char)data[0];
-				secondEight = (unsigned char)data[1];
+				firstEight = uint8_t(data[0]);
+				secondEight = uint8_t(data[1]);
 			}
 			else {
 				_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Response error.");

@@ -111,7 +111,7 @@ void CTE923Tool::CloseDevice()
 }
 
 int bcd2int( char bcd ) {
-	return (( int )(( bcd & 0xF0 ) >> 4 ) * 10 + ( int )( bcd & 0x0F ) );
+	return (((bcd & 0xF0) >> 4) * 10 + (bcd & 0x0F));
 }
 
 int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data ) 
@@ -133,7 +133,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 			data->_t[i] = -2;
 		}
 		if ( data->_t[i] == 0 ) {
-			data->t[i] = (float)(( bcd2int( buf[0+offset] ) / 10.0 ) + ( bcd2int( buf[1+offset] & 0x0F ) * 10.0 ));
+			data->t[i] = float((bcd2int(buf[0 + offset]) / 10.0) + (bcd2int(buf[1 + offset] & 0x0F) * 10.0));
 			if (( buf[1+offset] & 0x20 ) == 0x20 )
 				data->t[i] += 0.05F;
 			if (( buf[1+offset] & 0x80 ) != 0x80 )
@@ -163,7 +163,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 	}
 
 	else {
-		data->uv = (float)(bcd2int( buf[18] & 0x0F ) / 10.0 + bcd2int( buf[18] & 0xF0 ) + bcd2int( buf[19] & 0x0F ) * 10.0);
+		data->uv = float(bcd2int(buf[18] & 0x0F) / 10.0 + bcd2int(buf[18] & 0xF0) + bcd2int(buf[19] & 0x0F) * 10.0);
 		data->_uv = 0;
 	}
 
@@ -172,7 +172,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 		data->press = 0;
 		data->_press = -1;
 	} else {
-		data->press = (float)(( int )( buf[21] * 0x100 + buf[20] ) * 0.0625);
+		data->press = float((buf[21] * 0x100 + buf[20]) * 0.0625);
 		data->_press = 0;
 	}
 
@@ -190,7 +190,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 		else
 			data->storm = 0;
 
-		data->forecast = ( int )( buf[22] & 0x07 );
+		data->forecast = (buf[22] & 0x07);
 	}
 
 	//decode wind chill
@@ -234,7 +234,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 		int offset = 0;
 		if (( buf[26] & 0x10 ) == 0x10 )
 			offset = 100;
-		data->wGust = (float)((( bcd2int( buf[25] ) / 10.0 ) + ( bcd2int( buf[26] & 0x0F ) * 10.0 ) + offset ) / 2.23694);
+		data->wGust = float(((bcd2int(buf[25]) / 10.0) + (bcd2int(buf[26] & 0x0F) * 10.0) + offset) / 2.23694);
 	} else
 		data->wGust = 0;
 
@@ -255,7 +255,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 		int offset = 0;
 		if (( buf[28] & 0x10 ) == 0x10 )
 			offset = 100;
-		data->wSpeed = (float)((( bcd2int( buf[27] ) / 10.0 ) + ( bcd2int( buf[28] & 0x0F ) * 10.0 ) + offset ) / 2.23694);
+		data->wSpeed = float(((bcd2int(buf[27]) / 10.0) + (bcd2int(buf[28] & 0x0F) * 10.0) + offset) / 2.23694);
 	} else
 		data->wSpeed = 0;
 
@@ -264,7 +264,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 		data->_wDir = -3;
 		data->wDir = 0;
 	} else {
-		data->wDir = ( int )buf[29] & 0x0F;
+		data->wDir = int(buf[29]) & 0x0F;
 		data->_wDir = 0;
 	}
 
@@ -272,7 +272,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 	//don't know to find out it sensor link missing, but is no problem, because the counter is inside
 	//the station, not in the sensor.
 	data->_RainCount = 0;
-	data->RainCount = ( int )(( buf[31] * 0x100 + buf[30] )/2);
+	data->RainCount = ((buf[31] * 0x100 + buf[30]) / 2);
 	return 0;
 }
 
@@ -287,14 +287,14 @@ int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 	buf[3] = ( adr - ( buf[4] * 0x10000 ) ) / 0x100;
 	buf[2] = adr - ( buf[4] * 0x10000 ) - ( buf[3] * 0x100 );
 	buf[5] = ( buf[1] ^ buf[2] ^ buf[3] ^ buf[4] );
-	ret = usb_control_msg( m_device_handle, 0x21, 0x09, 0x0200, 0x0000, (char*)&buf, 0x08, timeout );
+	ret = usb_control_msg(m_device_handle, 0x21, 0x09, 0x0200, 0x0000, reinterpret_cast<char *>(&buf), 0x08, timeout);
 	if ( ret < 0 )
 		return -1;
 	usleep(300000);
-	while ( usb_interrupt_read( m_device_handle, 0x01, (char*)&buf, 0x8, timeout ) > 0 ) 
+	while (usb_interrupt_read(m_device_handle, 0x01, reinterpret_cast<char *>(&buf), 0x8, timeout) > 0)
 	{
 		usleep(150000);
-		int bytes = ( int )buf[0];
+		int bytes = int(buf[0]);
 		if (( count + bytes ) < BUFLEN )
 			memcpy( rbuf + count, buf + 1, bytes );
 		count += bytes;
@@ -317,14 +317,14 @@ int CTE923Tool::get_te923_lifedata( Te923DataSet_t *data )
 	unsigned char readretries=0;
 	do
 	{
-		ret = read_from_te923( adr, (unsigned char*)&buf );
+		ret = read_from_te923(adr, reinterpret_cast<unsigned char *>(&buf));
 		readretries++;
 	}
 	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
 	if ( buf[0] != 0x5A )
 		return -1;
 	memmove( buf, buf + 1, BUFLEN - 1 );
-	data->timestamp = (unsigned long)time(nullptr);
+	data->timestamp = uint64_t(time(nullptr));
 	decode_te923_data( buf, data );
 	return 0;
 }
@@ -336,7 +336,7 @@ int CTE923Tool::get_te923_devstate( Te923DevSet_t *dev ) {
 	unsigned char readretries=0;
 	do
 	{
-		ret = read_from_te923( adr, (unsigned char*)&buf );
+		ret = read_from_te923(adr, reinterpret_cast<unsigned char *>(&buf));
 		readretries++;
 	}
 	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
@@ -351,7 +351,7 @@ int CTE923Tool::get_te923_devstate( Te923DevSet_t *dev ) {
 	readretries=0;
 	do
 	{
-		ret = read_from_te923( adr, (unsigned char*)&buf );
+		ret = read_from_te923(adr, reinterpret_cast<unsigned char *>(&buf));
 		readretries++;
 	}
 	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
@@ -418,7 +418,7 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 		if (readretries>=MAX_LOOP_RETRY)
 			return -1;
 
-		adr = (((( int )buf[3] ) * 0x100 + ( int )buf[5] ) * 0x26 ) + 0x101;
+		adr = (((int(buf[3])) * 0x100 + int(buf[5])) * 0x26) + 0x101;
 	} else
 		adr = data->__src;
 
@@ -439,7 +439,7 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 		return -1;
 
 	int day = bcd2int( buf[2] );
-	int mon = ( int )( buf[1] & 0x0F );
+	int mon = (buf[1] & 0x0F);
 	int year = sysyear;
 	if ( mon > sysmon + 1 )
 		year--;
@@ -459,7 +459,7 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 */
 	time_t timestamp;
 	constructTime(timestamp,newtime,year+1900,mon,day,hour,minute,0,-1);
-	data->timestamp = (unsigned long)timestamp;
+	data->timestamp = uint64_t(timestamp);
 
 	memcpy( databuf, buf + 5, 11 );
 	adr += 0x10;
@@ -516,20 +516,20 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_forecast == 0 ) 
-		sprintf(szTmp, "%d:", (int)data->forecast );
+	if (data->_forecast == 0)
+		sprintf(szTmp, "%d:", int(data->forecast));
 	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_storm == 0 ) 
-		sprintf(szTmp, "%d:", (int)data->storm );
+	if (data->_storm == 0)
+		sprintf(szTmp, "%d:", int(data->storm));
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_wDir == 0 ) 
-		sprintf(szTmp, "%d:", (int)data->wDir );
+	if (data->_wDir == 0)
+		sprintf(szTmp, "%d:", int(data->wDir));
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);

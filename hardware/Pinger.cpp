@@ -142,9 +142,9 @@ private:
 	static unsigned short get_identifier()
 	{
 #if defined(BOOST_WINDOWS)
-		return static_cast<unsigned short>(::GetCurrentProcessId());
+		return uint16_t(::GetCurrentProcessId());
 #else
-		return static_cast<unsigned short>(::getpid());
+		return uint16_t(::getpid());
 #endif
 	}
 	boost::asio::ip::icmp::resolver resolver_;

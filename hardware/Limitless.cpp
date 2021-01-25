@@ -164,8 +164,8 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const int BridgeType, co
 	m_usIPPort = usIPPort;
 	m_RemoteSocket = INVALID_SOCKET;
 	m_bSkipReceiveCheck = true;
-	m_BridgeType = (_eLimitlessBridgeType)BridgeType;
-	m_LEDType = (unsigned char)LedType;
+	m_BridgeType = _eLimitlessBridgeType(BridgeType);
+	m_LEDType = uint8_t(LedType);
 	m_bIsStarted = false;
 	Init();
 }
@@ -220,7 +220,8 @@ bool CLimitLess::StartHardware()
 
 	// this call is what allows broadcast packets to be sent:
 	int broadcast = 1;
-	if (setsockopt(m_RemoteSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1) {
+	if (setsockopt(m_RemoteSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char *>(&broadcast), sizeof(broadcast)) == -1)
+	{
 		_log.Log(LOG_ERROR, "AppLamp: Error with IP address (SO_BROADCAST)!...");
 		return false;
 	}
@@ -230,7 +231,7 @@ bool CLimitLess::StartHardware()
 	//m_stRemoteDestAddr.sin_family = PF_INET;
 	m_stRemoteDestAddr.sin_family = AF_INET;     // host byte order
 	m_stRemoteDestAddr.sin_port = htons(m_usIPPort); // short, network byte order
-	m_stRemoteDestAddr.sin_addr = *((struct in_addr*)he->h_addr);
+	m_stRemoteDestAddr.sin_addr = *(reinterpret_cast<struct in_addr *>(he->h_addr));
 	memset(m_stRemoteDestAddr.sin_zero, '\0', sizeof m_stRemoteDestAddr.sin_zero);
 
 	//Add the Default switches
@@ -290,20 +291,21 @@ bool CLimitLess::GetV6BridgeID()
 	m_BridgeID_1 = m_BridgeID_2 = 0;
 	int totRetries = 0;
 
-	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+	sendto(m_RemoteSocket, reinterpret_cast<const char *>(&V6_GetSessionID), sizeof(V6_GetSessionID), 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	while (totRetries < v6_repeats)
 	{
 		if (!IsDataAvailable(m_RemoteSocket))
 		{
 			totRetries++;
-			sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&V6_GetSessionID), sizeof(V6_GetSessionID), 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr),
+			       sizeof(sockaddr_in));
 			continue;
 		}
 		uint8_t rbuffer[1024];
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
 		sleep_milliseconds(100);
-		int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*) & si_other, &slen);
+		int trecv = recvfrom(m_RemoteSocket, reinterpret_cast<char *>(&rbuffer), sizeof(rbuffer), 0, reinterpret_cast<struct sockaddr *>(&si_other), &slen);
 
 		if (trecv < 1)
 		{
@@ -313,7 +315,7 @@ bool CLimitLess::GetV6BridgeID()
 			while ((rbuffer[0x00] == 0x88) && (rbuffer[0x07] == 0x01))
 			{
 				totRetries++;
-				trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*) & si_other, &slen);
+				trecv = recvfrom(m_RemoteSocket, reinterpret_cast<char *>(&rbuffer), sizeof(rbuffer), 0, reinterpret_cast<struct sockaddr *>(&si_other), &slen);
 			}
 		//return false;
 		if ((rbuffer[0x00] != 0x28) || (rbuffer[0x15] != 0x00))
@@ -348,7 +350,7 @@ bool CLimitLess::SendV6Command(const uint8_t* pCmd)
 	OutBuffer[wPointer++] = m_BridgeID_1;
 	OutBuffer[wPointer++] = m_BridgeID_2;
 	OutBuffer[wPointer++] = 0x00;
-	OutBuffer[wPointer++] = (uint8_t)(m_CommandCntr++);
+	OutBuffer[wPointer++] = (m_CommandCntr++);
 	OutBuffer[wPointer++] = 0x00;
 
 	int wPointerCmd = wPointer;
@@ -362,7 +364,7 @@ bool CLimitLess::SendV6Command(const uint8_t* pCmd)
 		crc = (crc + OutBuffer[wPointerCmd + ii]) & 0xFF;
 	OutBuffer[wPointer++] = crc;
 
-	sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+	sendto(m_RemoteSocket, reinterpret_cast<const char *>(&OutBuffer), wPointer, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	sleep_milliseconds(100);
 	//	return true;
 	int totRetries = 0;
@@ -370,17 +372,17 @@ bool CLimitLess::SendV6Command(const uint8_t* pCmd)
 	{
 		if (!IsDataAvailable(m_RemoteSocket))
 		{
-			sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&OutBuffer), wPointer, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			totRetries++;
 			continue;
 		}
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
-		int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*) & si_other, &slen);
+		int trecv = recvfrom(m_RemoteSocket, reinterpret_cast<char *>(&RBuffer), sizeof(RBuffer), 0, reinterpret_cast<struct sockaddr *>(&si_other), &slen);
 		//Hack to workaround other communication get from bridge, should solved more clear
 		//8000000015ACCF23F581D8050200340000000000000000000034
 		while ((RBuffer[0x00] == 0x80) && (RBuffer[0x04] == 0x15)) {
-			trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*) & si_other, &slen);
+			trecv = recvfrom(m_RemoteSocket, reinterpret_cast<char *>(&RBuffer), sizeof(RBuffer), 0, reinterpret_cast<struct sockaddr *>(&si_other), &slen);
 		}
 		if (trecv < 1)
 			return false;
@@ -391,9 +393,9 @@ bool CLimitLess::SendV6Command(const uint8_t* pCmd)
 			{
 				OutBuffer[5] = m_BridgeID_1;
 				OutBuffer[6] = m_BridgeID_2;
-				sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&OutBuffer), wPointer, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 				//Hack to flush buffer and see if command succeeded
-				recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*) & si_other, &slen);
+				recvfrom(m_RemoteSocket, reinterpret_cast<char *>(&RBuffer), sizeof(RBuffer), 0, reinterpret_cast<struct sockaddr *>(&si_other), &slen);
 				if (RBuffer[0x07] != 0x00)
 				{
 					_log.Log(LOG_ERROR, "AppLamp: Error sending command to Bridge!...");
@@ -466,9 +468,9 @@ void CLimitLess::Send_V6_RGBWW_On(const uint8_t dunit, const long delay)
 {
 	unsigned char* pCMD;
 	if (dunit == 5)
-		pCMD = (unsigned char*)&V6_BridgeOn;
+		pCMD = reinterpret_cast<unsigned char *>(&V6_BridgeOn);
 	else {
-		pCMD = (unsigned char*)&V6_RGBWW_On;
+		pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_On);
 		pCMD[0x09] = dunit;
 	}
 	SendV6Command(pCMD);
@@ -479,9 +481,9 @@ void CLimitLess::Send_V6_RGBW_On(const uint8_t dunit, const long delay)
 {
 	unsigned char* pCMD;
 	if (dunit == 5)
-		pCMD = (unsigned char*)&V6_BridgeOn;
+		pCMD = reinterpret_cast<unsigned char *>(&V6_BridgeOn);
 	else {
-		pCMD = (unsigned char*)&V6_RGBW_On;
+		pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_On);
 		pCMD[0x09] = dunit;
 	}
 	SendV6Command(pCMD);
@@ -491,15 +493,15 @@ void CLimitLess::Send_V6_RGBW_On(const uint8_t dunit, const long delay)
 void CLimitLess::Send_V4V5_RGBW_On(const uint8_t dunit, const long delay)
 {
 	if (dunit == 0)
-		sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	else if (dunit == 1)
-		sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup1AllOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	else if (dunit == 2)
-		sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup2AllOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	else if (dunit == 3)
-		sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup3AllOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	else if (dunit == 4)
-		sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup4AllOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 	sleep_milliseconds(delay);
 }
 
@@ -523,9 +525,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			case Color_LedOff:
 			{
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_BridgeOff;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_BridgeOff);
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_Off;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_Off);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -545,30 +547,30 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				if (pLed->color.mode == ColorModeWhite)
 				{
 					if (pLed->dunit == 5)
-						pCMD = (unsigned char*)&V6_Bridge_White_On;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_White_On);
 					else {
-						pCMD = (unsigned char*)&V6_RGBWW_White_On;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_White_On);
 						pCMD[0x09] = pLed->dunit;
 					}
 				}
 				else if (pLed->color.mode == ColorModeTemp)
 				{
-					pCMD = (unsigned char*)&V6_RGBWW_SetKelvinLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_SetKelvinLevel);
 					pCMD[0x05] = (255 - pLed->color.t) * 100 / 255;
 					pCMD[0x09] = pLed->dunit;
 				}
 				else if (pLed->color.mode == ColorModeRGB)
 				{
 					if (pLed->dunit == 5)
-						pCMD = (unsigned char*)&V6_Bridge_SetColor;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetColor);
 					else
-						pCMD = (unsigned char*)&V6_RGBWW_SetColor;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_SetColor);
 					float hsb[3];
 					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0F);
-					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0F);
-					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0F);
-					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x05] = uint8_t(hsb[0] * 255.0F);
+					pCMD[0x06] = uint8_t(hsb[0] * 255.0F);
+					pCMD[0x07] = uint8_t(hsb[0] * 255.0F);
+					pCMD[0x08] = uint8_t(hsb[0] * 255.0F);
 					if (pLed->dunit != 5)
 						pCMD[0x09] = pLed->dunit;
 				}
@@ -580,9 +582,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 
 				//Send brightness
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetBrightnessLevel);
 				else
-					pCMD = (unsigned char*)&V6_RGBWW_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_SetBrightnessLevel);
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
@@ -594,9 +596,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				//First send ON , sleep 100ms, then the command
 				Send_V6_RGBWW_On(pLed->dunit, 100);
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetBrightnessLevel);
 				else
-					pCMD = (unsigned char*)&V6_RGBWW_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_SetBrightnessLevel);
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
@@ -607,9 +609,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				//First send ON , sleep 100ms, then the command
 				Send_V6_RGBWW_On(pLed->dunit, 100);
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_White_On;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_White_On);
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_White_On;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_White_On);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -618,19 +620,19 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			{
 				if (pLed->dunit == 5) {
 					//First put on
-					pCMD = (unsigned char*)&V6_BridgeOn;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_BridgeOn);
 					SendV6Command(pCMD);
 					sleep_milliseconds(50);
 					//Second set to white
-					pCMD = (unsigned char*)&V6_Bridge_White_On;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_White_On);
 					SendV6Command(pCMD);
 					sleep_milliseconds(50);
 					//Third set to 2 percent brightness
-					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetBrightnessLevel);
 					pCMD[0x05] = 0x01;
 				}
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_Night_On;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_Night_On);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -638,17 +640,17 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			case Color_DiscoSpeedSlower:
 			{
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_Mode_Speed_Down;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_Mode_Speed_Down);
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_Mode_Speed_Down;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_Mode_Speed_Down);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
 			case Color_DiscoSpeedFaster:
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_Mode_Speed_Up;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_Mode_Speed_Up);
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_Mode_Speed_Up;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_Mode_Speed_Up);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -658,9 +660,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				//First send ON , sleep 100ms, then the command
 				Send_V6_RGBWW_On(pLed->dunit, 100);
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_Disco_Mode);
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_Disco_Mode);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -679,11 +681,11 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				Send_V6_RGBWW_On(pLed->dunit, 100);
 				unsigned char mode = pLed->command - Color_DiscoMode_1 + 1;
 				if (pLed->dunit == 5) {
-					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_Disco_Mode);
 					pCMD[0X05] = mode;
 				}
 				else {
-					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBWW_Disco_Mode);
 					pCMD[0x09] = pLed->dunit;
 					pCMD[0X05] = mode;
 				}
@@ -704,9 +706,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			case Color_LedOff:
 			{
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_BridgeOff;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_BridgeOff);
 				else {
-					pCMD = (unsigned char*)&V6_RGBW_Off;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_Off);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -720,24 +722,24 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				if (pLed->color.mode == ColorModeWhite)
 				{
 					if (pLed->dunit == 5)
-						pCMD = (unsigned char*)&V6_Bridge_White_On;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_White_On);
 					else {
-						pCMD = (unsigned char*)&V6_RGBW_White_On;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_White_On);
 						pCMD[0x09] = pLed->dunit;
 					}
 				}
 				else if (pLed->color.mode == ColorModeRGB)
 				{
 					if (pLed->dunit == 5)
-						pCMD = (unsigned char*)&V6_Bridge_SetColor;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetColor);
 					else
-						pCMD = (unsigned char*)&V6_RGBW_SetColor;
+						pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_SetColor);
 					float hsb[3];
 					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0F);
-					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0F);
-					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0F);
-					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x05] = uint8_t(hsb[0] * 255.0F);
+					pCMD[0x06] = uint8_t(hsb[0] * 255.0F);
+					pCMD[0x07] = uint8_t(hsb[0] * 255.0F);
+					pCMD[0x08] = uint8_t(hsb[0] * 255.0F);
 					if (pLed->dunit != 5)
 						pCMD[0x09] = pLed->dunit;
 				}
@@ -749,9 +751,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 
 				//Send brightness
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetBrightnessLevel);
 				else
-					pCMD = (unsigned char*)&V6_RGBW_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_SetBrightnessLevel);
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
@@ -763,9 +765,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				//First send ON , sleep 100ms, then the command
 				Send_V6_RGBW_On(pLed->dunit, 100);
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_SetBrightnessLevel);
 				else
-					pCMD = (unsigned char*)&V6_RGBW_SetBrightnessLevel;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_SetBrightnessLevel);
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
@@ -776,9 +778,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				//First send ON , sleep 100ms, then the command
 				Send_V6_RGBW_On(pLed->dunit, 100);
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_White_On;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_Bridge_White_On);
 				else {
-					pCMD = (unsigned char*)&V6_RGBW_White_On;
+					pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_White_On);
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
@@ -787,7 +789,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			{
 				if (pLed->dunit == 5)
 					return false;
-				pCMD = (unsigned char*)&V6_RGBW_Night_On;
+				pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_Night_On);
 				pCMD[0x09] = pLed->dunit;
 				break;
 			}
@@ -795,7 +797,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			{
 				if (pLed->dunit == 5)
 					return false;
-				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Down;
+				pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_Mode_Speed_Down);
 				pCMD[0x09] = pLed->dunit;
 				break;
 			}
@@ -803,7 +805,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			{
 				if (pLed->dunit == 5)
 					return false;
-				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Up;
+				pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_Mode_Speed_Up);
 				pCMD[0x09] = pLed->dunit;
 				break;
 			}
@@ -813,7 +815,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				Send_V6_RGBW_On(pLed->dunit, 100);
 				if (pLed->dunit == 5)
 					return false;
-				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_Disco_Mode);
 				pCMD[0x09] = pLed->dunit;
 				break;
 			}
@@ -832,7 +834,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				if (pLed->dunit == 5)
 					return false;
 				unsigned char mode = pLed->command - Color_DiscoMode_1 + 1;
-				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD = reinterpret_cast<unsigned char *>(&V6_RGBW_Disco_Mode);
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = mode;
 				break;
@@ -1054,9 +1056,9 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				ival = 2;
 			if (ival > 27)
 				ival = 27;
-			RGBWSetBrightnessLevel[1] = (unsigned char)ival;
-			pCMD = (unsigned char*)&RGBWSetBrightnessLevel;
-			sendto(m_RemoteSocket, (const char*)pCMD, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			RGBWSetBrightnessLevel[1] = uint8_t(ival);
+			pCMD = reinterpret_cast<unsigned char *>(&RGBWSetBrightnessLevel);
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(pCMD), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
 			//Send the command
@@ -1083,11 +1085,11 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = (unsigned char)(hsb[0] * 255.0F);
+				int iHue = uint8_t(hsb[0] * 255.0F);
 				//The Hue is inverted/swifted 90 degrees
 				iHue = ((255 - iHue) + 192) & 0xFF;
-				RGBWSetColor[1] = (unsigned char)iHue;
-				pCMD = (unsigned char*)&RGBWSetColor;
+				RGBWSetColor[1] = uint8_t(iHue);
+				pCMD = reinterpret_cast<unsigned char *>(&RGBWSetColor);
 			}
 			else {
 				_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
@@ -1125,7 +1127,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 
 			//It takes at max 8 speed clicks to get the minimal speed
 			for (int i = 1; i < 8; i++) {
-				sendto(m_RemoteSocket, (const char*)&RGBWDiscoSpeedSlower, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWDiscoSpeedSlower), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 				sleep_milliseconds(50);
 			}
 
@@ -1139,7 +1141,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 
 			//It takes at max 8 speed clicks to get the minimal speed
 			for (int i = 1; i < 8; i++) {
-				sendto(m_RemoteSocket, (const char*)&RGBWDiscoSpeedFaster, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWDiscoSpeedFaster), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 				sleep_milliseconds(50);
 			}
 
@@ -1161,20 +1163,20 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 
 			//reset disco mode
 			if (pLed->dunit == 0)
-				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWSetColorToWhiteAll), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
-				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWSetColorToWhiteGroup1), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 2)
-				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWSetColorToWhiteGroup2), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 3)
-				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWSetColorToWhiteGroup3), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
-				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWSetColorToWhiteGroup4), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
 			unsigned char mode = pLed->command - Color_DiscoMode_1 + 1;
 			for (int i = 0; i < mode; i++) {
-				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWDiscoMode), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 				sleep_milliseconds(50);
 			}
 			break;
@@ -1183,15 +1185,15 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 		{
 			//First send Off hack for keeping this stable, sleep 100ms, then the command
 			if (pLed->dunit == 0)
-				sendto(m_RemoteSocket, (const char*)&RGBWOff, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWOff), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
-				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOff, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup1AllOff), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 2)
-				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOff, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup2AllOff), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 3)
-				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOff, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup3AllOff), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
-				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOff, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBWGroup4AllOff), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
 			if (pLed->dunit == 0)
@@ -1236,8 +1238,8 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				ival = 2;
 			if (ival > 27)
 				ival = 27;
-			RGBWSetBrightnessLevel[1] = (unsigned char)ival;
-			pCMD = (unsigned char*)&RGBWSetBrightnessLevel;
+			RGBWSetBrightnessLevel[1] = uint8_t(ival);
+			pCMD = reinterpret_cast<unsigned char *>(&RGBWSetBrightnessLevel);
 		}
 		break;
 		}
@@ -1257,16 +1259,16 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 			if (pLed->color.mode == ColorModeRGB)
 			{
 				//First send ON , sleep 100ms, then the command
-				sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 				sleep_milliseconds(100);
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = (unsigned char)(hsb[0] * 255.0F);
+				int iHue = uint8_t(hsb[0] * 255.0F);
 				//The Hue is inverted/swifted 90 degrees
 				iHue = ((255 - iHue) + 192) & 0xFF;
-				RGBSetColour[1] = (unsigned char)iHue;
-				pCMD = (unsigned char*)&RGBSetColour;
+				RGBSetColour[1] = uint8_t(iHue);
+				pCMD = reinterpret_cast<unsigned char *>(&RGBSetColour);
 			}
 			else {
 				_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
@@ -1275,48 +1277,48 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 		break;
 		case Color_SetBrightUp:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBBrightnessUp;
 			break;
 		case Color_SetBrightDown:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBBrightnessDown;
 			break;
 		case Color_DiscoSpeedSlower:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBDiscoSpeedSlower;
 			break;
 		case Color_DiscoSpeedFaster:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBDiscoSpeedFaster;
 			break;
 		case Color_DiscoSpeedFasterLong:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBDiscoSpeedFasterLong;
 			break;
 		case Color_DiscoMode:
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		case Color_RGBDiscoNext:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBDiscoNext;
 			break;
 		case Color_RGBDiscoPrevious:
 			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sendto(m_RemoteSocket, reinterpret_cast<const char *>(&RGBOn), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBDiscoPrevious;
 			break;
@@ -1401,7 +1403,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 
 	if (pCMD != nullptr)
 	{
-		sendto(m_RemoteSocket, (const char*)pCMD, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
+		sendto(m_RemoteSocket, reinterpret_cast<const char *>(pCMD), 3, 0, reinterpret_cast<struct sockaddr *>(&m_stRemoteDestAddr), sizeof(sockaddr_in));
 		sleep_milliseconds(100);
 	}
 	return true;

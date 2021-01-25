@@ -251,7 +251,7 @@ void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& da
 					if(!iter2["value"].empty())
 					{
 						_log.Debug(DEBUG_NORM, "MercApi: SoC has value %s", iter2["value"].asString().c_str());
-						data.battery_level = static_cast<float>(atof(iter2["value"].asString().c_str()));
+						data.battery_level = float(atof(iter2["value"].asString().c_str()));
 					}
 				}
 				if (id == "rangeelectric")
@@ -373,7 +373,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 
 		if(m_fieldcnt < 0)
 		{
-			m_fieldcnt = static_cast<int16_t>(strarray.size());
+			m_fieldcnt = int16_t(strarray.size());
 			_log.Debug(DEBUG_NORM, "MercApi: Reset Customfield count to %d", m_fieldcnt);
 		}
 		else
@@ -455,7 +455,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					if(!iter2["value"].empty())
 					{
 						_log.Debug(DEBUG_NORM, "MercApi: Odo has value %s", iter2["value"].asString().c_str());
-						data.odo = static_cast<float>(atof(iter2["value"].asString().c_str()));
+						data.odo = float(atof(iter2["value"].asString().c_str()));
 					}
 				}
 			}
@@ -588,7 +588,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 
 			m_fields = ss.str();
 			StringSplit(m_fields, ",", strarray);
-			m_fieldcnt = static_cast<int16_t>(strarray.size());
+			m_fieldcnt = int16_t(strarray.size());
 
 			_log.Log(LOG_STATUS, "Found %d resource fields: %s", m_fieldcnt, m_fields.c_str());
 
@@ -941,9 +941,9 @@ uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0
 		{
 			if (sResponseHeaderLine0.find_first_of(' ') != std::string::npos)
 			{
-				iHttpCodeStartPos = (uint8_t)sResponseHeaderLine0.find_first_of(' ') + 1;	// So look for a SPACE as the seperator (RFC2616)
+				iHttpCodeStartPos = uint8_t(sResponseHeaderLine0.find_first_of(' ')) + 1; // So look for a SPACE as the seperator (RFC2616)
 
-				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
+				iHttpCode = uint16_t(std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3)));
 				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range
 				{
 					_log.Log(LOG_STATUS, "Found non-standard resultcode (%d) in HTTP response statusline: %s", iHttpCode, sResponseHeaderLine0.c_str());

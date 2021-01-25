@@ -440,24 +440,16 @@ bool request_handler::url_decode(const std::string& in, std::string& out)
   {
     if (in[i] == '%')
     {
-      if (i + 3 <= in.size())
-      {
-        int value;
-        std::istringstream is(in.substr(i + 1, 2));
-        if (is >> std::hex >> value)
-        {
-          out += static_cast<char>(value);
-          i += 2;
-        }
-        else
-        {
-          return false;
-        }
-      }
-      else
-      {
-        return false;
-      }
+	    if (i + 3 > in.size())
+		    return false;
+
+	    int value;
+	    std::istringstream is(in.substr(i + 1, 2));
+	    if (!(is >> std::hex >> value))
+		    return false;
+
+	    out += char(value);
+	    i += 2;
     }
     else if (in[i] == '+')
     {

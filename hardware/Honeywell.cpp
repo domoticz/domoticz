@@ -255,20 +255,20 @@ void CHoneywell::GetThermostatData()
 			std::string units = device["units"].asString(); //:"Fahrenheit"
 
 			float temperature;
-			temperature = (float)device["indoorTemperature"].asFloat();
+			temperature = device["indoorTemperature"].asFloat();
 			std::string desc = kRoomTempDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendTempSensor(10 * devNr + 1, 255, (float)ConvertToCelsius(temperature), desc);
+				SendTempSensor(10 * devNr + 1, 255, float(ConvertToCelsius(temperature)), desc);
 			}else{
 				SendTempSensor(10 * devNr + 1, 255, temperature, desc);
 			}
 
-			temperature = (float)device["outdoorTemperature"].asFloat();
+			temperature = device["outdoorTemperature"].asFloat();
 			desc = kOutdoorTempDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendTempSensor(10 * devNr + 2, 255, (float)ConvertToCelsius(temperature), desc);
+				SendTempSensor(10 * devNr + 2, 255, float(ConvertToCelsius(temperature)), desc);
 			}else{
 				SendTempSensor(10 * devNr + 2, 255, temperature, desc);
 			}
@@ -280,16 +280,16 @@ void CHoneywell::GetThermostatData()
 			SendSwitch(10 * devNr + 3, 1, 255, bHeating, 0, desc, m_Name);
 
 			if(bHeating){
-				temperature = (float)device["changeableValues"]["heatSetpoint"].asFloat();
+				temperature = device["changeableValues"]["heatSetpoint"].asFloat();
 			}else{
-				temperature = (float)device["changeableValues"]["coolSetpoint"].asFloat();
+				temperature = device["changeableValues"]["coolSetpoint"].asFloat();
 			}
 			desc = kSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
 			if(units == "Fahrenheit") {
-				SendSetPointSensor((uint8_t)(10 * devNr + 4), (float)ConvertToCelsius(temperature), desc);
+				SendSetPointSensor(uint8_t(10 * devNr + 4), float(ConvertToCelsius(temperature)), desc);
 			}else{
-				SendSetPointSensor((uint8_t)(10 * devNr + 4), temperature, desc);
+				SendSetPointSensor(uint8_t(10 * devNr + 4), temperature, desc);
 			}
 			
 			std::string operationstatus = device["operationStatus"]["mode"].asString();
@@ -358,7 +358,7 @@ void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, c
 
 	thermos.temp = Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 //
@@ -426,16 +426,16 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 		std::string units = mDeviceList[idx]["units"].asString();
 		float temperature;
 		if(nHeat){
-			temperature = (float)mDeviceList[idx]["changeableValues"]["heatSetpoint"].asFloat();
+			temperature = mDeviceList[idx]["changeableValues"]["heatSetpoint"].asFloat();
 		}else{
-			temperature = (float)mDeviceList[idx]["changeableValues"]["coolSetpoint"].asFloat();
+			temperature = mDeviceList[idx]["changeableValues"]["coolSetpoint"].asFloat();
 		}
 		desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
 		if(units == "Fahrenheit") {
-			SendSetPointSensor((uint8_t)(10 * idx + 4), (float)ConvertToCelsius(temperature), desc);
+			SendSetPointSensor(uint8_t(10 * idx + 4), float(ConvertToCelsius(temperature)), desc);
 		}else{
-			SendSetPointSensor((uint8_t)(10 * idx + 4), temperature, desc);
+			SendSetPointSensor(uint8_t(10 * idx + 4), temperature, desc);
 		}
 	}
 
@@ -461,32 +461,36 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 
 	Json::Value reqRoot;
 	std::string units = mDeviceList[idx]["units"].asString();
-	
-	if(GetSwitchValue((uint8_t)(10 * idx + 7)) /* mode set for cooling*/){
+
+	if (GetSwitchValue(uint8_t(10 * idx + 7)) /* mode set for cooling*/)
+	{
 		reqRoot["mode"] = "Cool";
 		reqRoot["autoChangeoverActive"] = "true";
 		reqRoot["heatSetpoint"] = mDeviceList[idx]["changeableValues"]["heatSetpoint"].asInt();
 	
 		if(units == "Fahrenheit") {
-			reqRoot["coolSetpoint"] = (float)ConvertToFahrenheit(temp);
+			reqRoot["coolSetpoint"] = float(ConvertToFahrenheit(temp));
 		}else{
 			reqRoot["coolSetpoint"] = temp;
 		}
-	}else{
+	}
+	else
+	{
 		reqRoot["mode"] = "Heat";
 		reqRoot["autoChangeoverActive"] = "true";
 		if(units == "Fahrenheit") {
-			reqRoot["heatSetpoint"] = (float)ConvertToFahrenheit(temp);
+			reqRoot["heatSetpoint"] = float(ConvertToFahrenheit(temp));
 		}else{
 			reqRoot["heatSetpoint"] = temp;
 		}
 		reqRoot["coolSetpoint"] = mDeviceList[idx]["changeableValues"]["coolSetpoint"].asInt();
 	}
-		
+
 	//reqRoot["thermostatSetpointStatus"] = "PermanentHold";
 	reqRoot["thermostatSetpointStatus"] = "TemporaryHold";
 	std::string sResult;
-	if(GetSwitchValue((uint8_t)(10 * idx + 7)) | GetSwitchValue((uint8_t)(10 * idx + 3))){
+	if (GetSwitchValue(uint8_t(10 * idx + 7)) | GetSwitchValue(uint8_t(10 * idx + 3)))
+	{
 		HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 		HTTPClient::SetTimeout(HWAPITIMEOUT);
 		if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
@@ -496,7 +500,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 
 		std::string desc = kSetPointDesc;
 		stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-		SendSetPointSensor((uint8_t)(10 * idx + 4), temp, desc);
+		SendSetPointSensor(uint8_t(10 * idx + 4), temp, desc);
 	}
 	//desc = kHeatingDesc;
 	//stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
@@ -507,10 +511,10 @@ bool CHoneywell::GetSwitchValue(const int NodeID)
 {
 	uint8_t ChildID = 1;
 	//make device ID
-	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
-	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
-	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
-	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+	uint8_t ID1 = uint8_t((NodeID & 0xFF000000) >> 24);
+	uint8_t ID2 = uint8_t((NodeID & 0xFF0000) >> 16);
+	uint8_t ID3 = uint8_t((NodeID & 0xFF00) >> 8);
+	uint8_t ID4 = uint8_t(NodeID) & 0xFF;
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);

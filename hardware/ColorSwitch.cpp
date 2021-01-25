@@ -64,12 +64,12 @@ void _tColor::fromJSON(const Json::Value &root)
 		int tmp = root.get("m", 0).asInt();
 		if (tmp == ColorModeNone || tmp > ColorModeLast) return;
 		mode = ColorMode(tmp);
-		t = (uint8_t)root.get("t", 0).asInt();
-		r = (uint8_t)root.get("r", 0).asInt();
-		g = (uint8_t)root.get("g", 0).asInt();
-		b = (uint8_t)root.get("b", 0).asInt();
-		cw = (uint8_t)root.get("cw", 0).asInt();
-		ww = (uint8_t)root.get("ww", 0).asInt();
+		t = uint8_t(root.get("t", 0).asInt());
+		r = uint8_t(root.get("r", 0).asInt());
+		g = uint8_t(root.get("g", 0).asInt());
+		b = uint8_t(root.get("b", 0).asInt());
+		cw = uint8_t(root.get("cw", 0).asInt());
+		ww = uint8_t(root.get("ww", 0).asInt());
 		//level = root.get("l", 0).asInt();
 	}
 	catch (...) {
@@ -128,7 +128,7 @@ std::string _tColor::toString() const
 	// Return the empty string if the color is not valid
 	if (mode == ColorModeNone || mode > ColorModeLast) return "{INVALID}";
 
-	snprintf(tmp, sizeof(tmp), "{m: %u, RGB: %02x%02x%02x, CWWW: %02x%02x, CT: %u}", (unsigned int)mode, r, g, b, cw, ww, t);
+	snprintf(tmp, sizeof(tmp), "{m: %u, RGB: %02x%02x%02x, CWWW: %02x%02x, CT: %u}", uint32_t(mode), r, g, b, cw, ww, t);
 
 	return std::string(tmp);
 }

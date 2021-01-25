@@ -158,7 +158,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id4 = Idx;
 	thermos.dunit = 1;
 	thermos.temp = Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*length*/)
@@ -507,7 +507,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = float(atof(tmpstr.c_str()));
 					SendTempSensor(1, 255, temperature, sname);
 				}
 			}
@@ -516,7 +516,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float illuminance = (float)atof(tmpstr.c_str());
+					float illuminance = float(atof(tmpstr.c_str()));
 					SendLuxSensor(2, 1, 255, illuminance, sname);
 				}
 			}
@@ -525,7 +525,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = float(atof(tmpstr.c_str()));
 					SendSetPointSensor(3, temperature, sname);
 				}
 			}
@@ -534,7 +534,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = float(atof(tmpstr.c_str()));
 					SendTempSensor(4, 255, temperature, sname);
 				}
 			}
@@ -543,7 +543,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = float(atof(tmpstr.c_str()));
 					SendTempSensor(5, 255, temperature, sname);
 				}
 			}
@@ -552,7 +552,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = float(atof(tmpstr.c_str()));
 					SendTempSensor(6, 255, temperature, sname);
 				}
 			}
@@ -561,7 +561,7 @@ void CAnnaThermostat::GetMeterDetails()
 				tmpstr = GetPeriodMeasurement(pElem);
 				if (!tmpstr.empty())
 				{
-					float temperature = (float)atof(tmpstr.c_str());
+					float temperature = float(atof(tmpstr.c_str()));
 					SendTempSensor(7, 255, temperature, sname);
 				}
 			}

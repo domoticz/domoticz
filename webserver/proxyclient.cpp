@@ -307,7 +307,7 @@ namespace http {
 		{
 			/* data from master to slave */
 			bool success;
-			success = m_pDomServ->OnIncomingData(pdu->m_token, (const unsigned char *)pdu->m_data.c_str(), pdu->m_data.length());
+			success = m_pDomServ->OnIncomingData(pdu->m_token, reinterpret_cast<const unsigned char *>(pdu->m_data.c_str()), pdu->m_data.length());
 			if (!success) {
 				SendServDisconnect(pdu->m_token, 1);
 			}
@@ -323,7 +323,7 @@ namespace http {
 
 			DomoticzTCP *slave = sharedData.findSlaveConnection(pdu->m_tokenparam);
 			if (slave && slave->isConnected()) {
-				slave->FromProxy((const unsigned char *)pdu->m_data.c_str(), pdu->m_data.length());
+				slave->FromProxy(reinterpret_cast<const unsigned char *>(pdu->m_data.c_str()), pdu->m_data.length());
 			}
 		}
 
@@ -403,7 +403,7 @@ namespace http {
 
 		void CProxyClient::OnData(const unsigned char *pData, size_t length)
 		{
-			readbuf.append((const char *)pData, length);
+			readbuf.append(reinterpret_cast<const char *>(pData), length);
 			switch (connection_status) {
 			case status_httpmode:
 				if (parse_response(readbuf.c_str(), readbuf.size())) {
@@ -414,7 +414,8 @@ namespace http {
 				break;
 			case status_connected:
 				CWebsocketFrame frame;
-				if (frame.Parse((const uint8_t *)readbuf.c_str(), readbuf.size())) {
+				if (frame.Parse(reinterpret_cast<const uint8_t *>(readbuf.c_str()), readbuf.size()))
+				{
 					readbuf.clear();
 					switch (frame.Opcode()) {
 					case opcodes::opcode_ping:

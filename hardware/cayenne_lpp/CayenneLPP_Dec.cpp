@@ -229,7 +229,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "gps";
 
-			int32_t tvalue = (int32_t)(pBuffer[2] << 16) | (pBuffer[3] << 8) | pBuffer[4];
+			int32_t tvalue = int32_t(pBuffer[2] << 16) | (pBuffer[3] << 8) | pBuffer[4];
 			if ((pBuffer[2]&0xF0) == 0xF0)
 				tvalue |= 0xFF000000;
 			float value = float(tvalue) / 10000.0F;
@@ -239,7 +239,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 				tvalue |= 0xFF000000;
 			value = float(tvalue) / 10000.0F;
 			root[iIndex]["lon"] = value;
-			tvalue = (int32_t)((pBuffer[8] << 16) | (pBuffer[9] << 8) | pBuffer[10]);
+			tvalue = int32_t((pBuffer[8] << 16) | (pBuffer[9] << 8) | pBuffer[10]);
 			if ((pBuffer[8] & 0xF0) == 0xF0)
 				tvalue |= 0xFF000000;
 			value = float(tvalue) / 100.0F;

@@ -273,7 +273,7 @@ void CdzVents::ProcessHttpResponse(lua_State* lua_state, const std::vector<CEven
 		if (item.reason == m_mainworker.m_eventsystem.REASON_URL)
 		{
 			luaTable.OpenSubTableEntry(index, 0, 0);
-			luaTable.OpenSubTableEntry("headers", (int)item.vData.size() + 2, 0); // status is split into 3 parts
+			luaTable.OpenSubTableEntry("headers", int(item.vData.size()) + 2, 0); // status is split into 3 parts
 			if (!item.vData.empty())
 			{
 				for (const auto &header : item.vData)
@@ -340,7 +340,7 @@ bool CdzVents::ExecuteShellCommand(lua_State *lua_state, const std::vector<_tLua
 		else if (value.type == TYPE_INTEGER)
 		{
 			if (value.name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(value.iValue));
+				delayTime = float(GenerateRandomNumber(value.iValue));
 			if (value.name == "timeout")
 			{
 				timeout = value.iValue;
@@ -383,7 +383,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 				extraHeaders = value.sValue;
 		}
 		else if ((value.type == TYPE_INTEGER) && (value.name == "_random"))
-			delayTime = static_cast<float>(GenerateRandomNumber(value.iValue));
+			delayTime = float(GenerateRandomNumber(value.iValue));
 		else if ((value.type == TYPE_FLOAT) && (value.name == "_after"))
 			delayTime = value.fValue;
 	}
@@ -450,7 +450,7 @@ bool CdzVents::TriggerCustomEvent(lua_State* lua_state, const std::vector<_tLuaT
 		else if ((item.type == TYPE_STRING) && (item.name == "data"))
 			sValue = item.sValue;
 		else if ((item.type == TYPE_INTEGER) && (item.name == "_random"))
-			delayTime = static_cast<float>(GenerateRandomNumber(item.iValue));
+			delayTime = float(GenerateRandomNumber(item.iValue));
 		else if ((item.type == TYPE_FLOAT) && (item.name == "_after"))
 			delayTime = item.fValue;
 	}
@@ -481,7 +481,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 			else if (item.name == "protected")
 				Protected = item.iValue;
 			else if (item.name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(item.iValue));
+				delayTime = float(GenerateRandomNumber(item.iValue));
 		}
 
 		else if ((item.type == TYPE_FLOAT) && (item.name == "_after"))
@@ -516,7 +516,7 @@ bool CdzVents::TriggerIFTTT(lua_State *lua_state, const std::vector<_tLuaTableVa
 		if (item.type == TYPE_INTEGER)
 		{
 			if (item.name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(item.iValue));
+				delayTime = float(GenerateRandomNumber(item.iValue));
 			else if (item.name == "sID")
 				sID = std::to_string(item.iValue);
 			else if (item.name == "sValue1")
@@ -560,7 +560,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 			if (item.name == "idx")
 				idx = item.iValue;
 			else if (item.name == "_random")
-				delayTime = static_cast<float>(GenerateRandomNumber(item.iValue));
+				delayTime = float(GenerateRandomNumber(item.iValue));
 		}
 
 		else if ((item.type == TYPE_FLOAT) && (item.name == "_after"))
@@ -662,7 +662,7 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 			else if (std::string(luaL_typename(lua_state, -2)) == "number")
 			{
 				item.type = TYPE_INTEGER;
-				item.iValue = static_cast<int>(lua_tonumber(lua_state, -2));
+				item.iValue = int(lua_tonumber(lua_state, -2));
 			}
 			else
 			{
@@ -687,12 +687,12 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 			if (item.name == "_after")
 			{
 				item.type = TYPE_FLOAT;
-				item.fValue = static_cast<float>(lua_tonumber(lua_state, -1));
+				item.fValue = float(lua_tonumber(lua_state, -1));
 			}
 			else
 			{
 				item.type = TYPE_INTEGER;
-				item.iValue = static_cast<int>(lua_tonumber(lua_state, -1));
+				item.iValue = int(lua_tonumber(lua_state, -1));
 			}
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")
@@ -882,7 +882,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			luaTable.AddString("baseType","device");
 			luaTable.AddString("deviceType", dev_type);
 			luaTable.AddString("subType", sub_type);
-			luaTable.AddString("switchType", Switch_Type_Desc((_eSwitchType)sitem.switchtype));
+			luaTable.AddString("switchType", Switch_Type_Desc(_eSwitchType(sitem.switchtype)));
 			luaTable.AddInteger("switchTypeValue", sitem.switchtype);
 			luaTable.AddString("lastUpdate", sitem.lastUpdate);
 			luaTable.AddInteger("lastLevel", sitem.lastLevel);
@@ -985,7 +985,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		luaTable.AddInteger("id", sgitem.ID);
 		luaTable.AddString("description", sgitem.description);
 		luaTable.AddString("baseType", (sgitem.scenesgroupType == 0) ? "scene" : "group");
-		luaTable.AddBool("protected", (lua_Number)sgitem.protection == 1);
+		luaTable.AddBool("protected", lua_Number(sgitem.protection) == 1);
 		luaTable.AddString("lastUpdate", sgitem.lastUpdate);
 		luaTable.AddBool("changed", triggerScene);
 

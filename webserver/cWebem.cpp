@@ -974,7 +974,7 @@ namespace http {
 				uint8_t wPos = 0;
 				int wptr = 0;
 				std::string szNetwork;
-				while (wPos < (uint8_t)results.size())
+				while (wPos < static_cast<uint8_t>(results.size()))
 				{
 					bool bIsMask = (results[wPos] == "*");
 					ipnetwork.Mask[wptr++] = (!bIsMask) ? 255 : 0;
@@ -1046,20 +1046,20 @@ namespace http {
 					struct addrinfo* addr = nullptr;
 					if (getaddrinfo(network.c_str(), "0", nullptr, &addr) == 0)
 					{
-						struct sockaddr_in* saddr = (((struct sockaddr_in*)addr->ai_addr));
+						struct sockaddr_in *saddr = ((reinterpret_cast<struct sockaddr_in *>(addr->ai_addr)));
 						uint8_t* pAddress = nullptr;
 						if (saddr->sin_family == AF_INET)
 						{
 							ipnetwork.bIsIPv6 = false;
 							iASize = 4;
-							pAddress = (uint8_t*)&saddr->sin_addr;
+							pAddress = reinterpret_cast<uint8_t *>(&saddr->sin_addr);
 						}
 						else if (saddr->sin_family == AF_INET6)
 						{
 							ipnetwork.bIsIPv6 = true;
 							iASize = 16;
-							struct sockaddr_in6* saddr6 = (((struct sockaddr_in6*)addr->ai_addr));
-							pAddress = (uint8_t*)&saddr6->sin6_addr;
+							struct sockaddr_in6 *saddr6 = ((reinterpret_cast<struct sockaddr_in6 *>(addr->ai_addr)));
+							pAddress = reinterpret_cast<uint8_t *>(&saddr6->sin6_addr);
 						}
 						else
 							return;
@@ -1165,7 +1165,7 @@ namespace http {
 		int cWebem::CountSessions()
 		{
 			std::unique_lock<std::mutex> lock(m_sessionsMutex);
-			return (int)m_sessions.size();
+			return static_cast<int>(m_sessions.size());
 		}
 
 		std::vector<std::string> cWebem::GetExpiredSessions()
@@ -1505,12 +1505,12 @@ namespace http {
 				bool bHaveGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
 				if (bHaveGZipSupport)
 				{
-					CA2GZIP gzip((char*)rep.content.c_str(), (int)rep.content.size());
-					if ((gzip.Length > 0) && (gzip.Length < (int)rep.content.size()))
+					CA2GZIP gzip(const_cast<char *>(rep.content.c_str()), static_cast<int>(rep.content.size()));
+					if ((gzip.Length > 0) && (gzip.Length < static_cast<int>(rep.content.size())))
 					{
 						rep.bIsGZIP = true; // flag for later
 						rep.content.clear();
-						rep.content.append((char*)gzip.pgzip, gzip.Length);
+						rep.content.append(reinterpret_cast<char *>(gzip.pgzip), gzip.Length);
 						//Set new content length
 						reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 						//Add gzip header
@@ -2115,7 +2115,7 @@ namespace http {
 
 					if (session.reply_status != reply::ok) // forbidden
 					{
-						rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+						rep = reply::stock_reply(reply::status_type(session.reply_status));
 						return;
 					}
 
@@ -2129,7 +2129,7 @@ namespace http {
 					modify_info mInfo;
 					if (session.reply_status != reply::ok)
 					{
-						rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+						rep = reply::stock_reply(reply::status_type(session.reply_status));
 						return;
 					}
 					if (rep.status != reply::ok) // bad request

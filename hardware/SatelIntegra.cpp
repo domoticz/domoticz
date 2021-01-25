@@ -84,7 +84,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	}
 
 	uint64_t result(0);
-	for (unsigned int i = 0; i < 16; ++i)
+	for (size_t i = 0; i < 16; ++i)
 	{
 		result = result << 4;
 
@@ -97,9 +97,9 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 			result += 0x0F;
 		}
 	}
-	for (unsigned int i = 0; i < 8; ++i)
+	for (size_t i = 0; i < m_userCode.size(); ++i)
 	{
-		unsigned int c = (unsigned int)(result >> ((7 - i) * 8));
+		auto c = uint8_t(result >> ((7 - i) * 8));
 		m_userCode[i] = c;
 	}
 
@@ -267,7 +267,7 @@ bool SatelIntegra::ConnectToIntegra()
 		return false;
 	}
 
-	if (connect(m_socket, (const sockaddr*)&m_addr, sizeof(m_addr)) == SOCKET_ERROR)
+	if (connect(m_socket, reinterpret_cast<const sockaddr *>(&m_addr), sizeof(m_addr)) == SOCKET_ERROR)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Unable to connect to specified IP Address on specified Port (%s:%d)", m_IPAddress.c_str(), m_IPPort);
 		DestroySocket();
@@ -749,7 +749,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 	else
 	{
 		char szTmp[10];
-		sprintf(szTmp, "%08X", (int)Idx);
+		sprintf(szTmp, "%08X", Idx);
 		std::string devname;
 
 		m_sql.UpdateValue(m_HwdID, szTmp, 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, state ? "On" : "Off", devname);
@@ -774,7 +774,7 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 
 void SatelIntegra::ReportTemperature(const int Idx, const int temp)
 {
-	float ftemp = static_cast<float>(temp - 0x6E);
+	float ftemp = float(temp - 0x6E);
 	ftemp /= 2;
 	SendTempSensor(Idx, 255, ftemp, "Temperature");
 }
@@ -793,8 +793,8 @@ bool SatelIntegra::ArmPartitions(const int partition, const int mode)
 	unsigned char buffer[2];
 
 	unsigned char cmd[13] = { 0 };
-	cmd[0] = (unsigned char)(0x80 + mode); // arm in mode 0
-	for (unsigned int i = 0; i < 8; ++i)
+	cmd[0] = uint8_t(0x80 + mode); // arm in mode 0
+	for (size_t i = 0; i < m_userCode.size(); ++i)
 	{
 		cmd[i + 1] = m_userCode[i];
 	}
@@ -825,7 +825,7 @@ bool SatelIntegra::DisarmPartitions(const int partition)
 
 	unsigned char cmd[13];
 	cmd[0] = 0x84; // disarm
-	for (unsigned int i = 0; i < 8; ++i)
+	for (size_t i = 0; i < m_userCode.size(); ++i)
 	{
 		cmd[i + 1] = m_userCode[i];
 	}
@@ -866,7 +866,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			unsigned char buffer[2];
 			unsigned char cmd[41] = { 0 };
 
-			for (unsigned int i = 0; i < sizeof(m_userCode); ++i)
+			for (size_t i = 0; i < m_userCode.size(); ++i)
 			{
 				cmd[i + 1] = m_userCode[i];
 			}
@@ -947,7 +947,7 @@ void SatelIntegra::UpdateZoneName(const int Idx, const unsigned char* name, cons
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[4];
-	sprintf(szTmp, "%d", (int)Idx);
+	sprintf(szTmp, "%d", Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -977,7 +977,7 @@ void SatelIntegra::UpdateTempName(const int Idx, const unsigned char* name, cons
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[4];
-	sprintf(szTmp, "%d", (int)Idx);
+	sprintf(szTmp, "%d", Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -1000,7 +1000,7 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[10];
-	sprintf(szTmp, "%08X", (int)Idx);
+	sprintf(szTmp, "%08X", Idx);
 
 	std::string shortName((char*)name, 16);
 
@@ -1046,7 +1046,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 		if (m_isPartitions[i])
 		{
 			char szTmp[10];
-			sprintf(szTmp, "%08X", (int)i + 1);
+			sprintf(szTmp, "%08X", int(i) + 1);
 			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=2)", m_HwdID, szTmp, i + 1);
 			if (result.empty())
 			{
@@ -1102,7 +1102,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	cmdPayload = getFullFrame(cmd, cmdLength);
 
 	//Send cmd
-	if (send(m_socket, (const char*)cmdPayload.first, cmdPayload.second, 0) < 0)
+	if (send(m_socket, reinterpret_cast<const char *>(cmdPayload.first), cmdPayload.second, 0) < 0)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Send command '%02X' failed", cmdPayload.first[2]);
 		DestroySocket();
@@ -1131,7 +1131,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	int totalRet = 0;
 	do
 	{
-		int ret = recv(m_socket, (char*)&buffer[totalRet], MAX_LENGTH_OF_ANSWER - totalRet, 0);
+		int ret = recv(m_socket, reinterpret_cast<char *>(&buffer[totalRet]), MAX_LENGTH_OF_ANSWER - totalRet, 0);
 		totalRet += ret;
 		if ((ret <= 0) || (totalRet >= MAX_LENGTH_OF_ANSWER))
 		{

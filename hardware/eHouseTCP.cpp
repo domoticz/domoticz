@@ -377,7 +377,7 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, i
 			{
 				lastlevel = nValue;
 				_state = 2;
-				sprintf(state, "%d", static_cast<uint8_t>((nValue * 15) / 100));
+				sprintf(state, "%d", uint8_t((nValue * 15) / 100));
 			}
 		result = m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 			_state, state, lastlevel, szLastUpdate, m_HwdID, IDX);
@@ -495,7 +495,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_AddrH = m_SrvAddrH;
 	for (auto &e : m_EvQ)
 	{
-		e = (struct EventQueueT *)calloc(1, sizeof(struct EventQueueT));
+		e = static_cast<struct EventQueueT *>(calloc(1, sizeof(struct EventQueueT)));
 		if (e == nullptr)
 		{
 			LOG(LOG_ERROR, "Can't Alloc Events Queue Memory");
@@ -603,7 +603,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		saddr.sin_addr.s_addr = IP;
 	else
 		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
-	saddr.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);
+	saddr.sin_port = htons(uint16_t(m_EHOUSE_TCP_PORT));
 	memset(&server, 0, sizeof(server));               //clear server structure
 	memset(&challange, 0, sizeof(challange));         //clear buffer
 	char line[20];
@@ -618,9 +618,9 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	server.sin_addr.s_addr = m_addr.sin_addr.s_addr;
 	server.sin_family = AF_INET;                    //tcp v4
-	server.sin_port = htons((uint16_t)m_EHOUSE_TCP_PORT);       //assign eHouse Port
+	server.sin_port = htons(uint16_t(m_EHOUSE_TCP_PORT)); // assign eHouse Port
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Trying Connecting to: %s", line);
-	if (connect(TCPSocket, (struct sockaddr *)&server, sizeof(server)) < 0)
+	if (connect(TCPSocket, reinterpret_cast<struct sockaddr *>(&server), sizeof(server)) < 0)
 	{
 		closesocket(TCPSocket);
 		_log.Log(LOG_ERROR, "[TCP Cli Status] error connecting: %s", line);
@@ -628,7 +628,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Authorizing");
 	int iter = 5;
-	while ((status = recv(TCPSocket, (char *)&challange, 6, 0)) < 6)       //receive challenge code
+	while ((status = recv(TCPSocket, reinterpret_cast<char *>(&challange), 6, 0)) < 6) // receive challenge code
 	{
 		if ((status < 0) || (!(iter--)))
 		{
@@ -656,7 +656,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	status = 0;
 	iter = 5;
-	while ((status = send(TCPSocket, (char *)&challange, 13, 0)) != 13)
+	while ((status = send(TCPSocket, reinterpret_cast<char *>(&challange), 13, 0)) != 13)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
@@ -669,7 +669,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	//Send Challange + response + Events    - Only Xor password
 	status = 0;
 	iter = 5;
-	while ((status = recv(TCPSocket, (char *)&challange, 1, 0)) < 1)       //receive challenge code
+	while ((status = recv(TCPSocket, reinterpret_cast<char *>(&challange), 1, 0)) < 1) // receive challenge code
 	{
 		if ((status < 0) || (!(iter--)))
 		{
@@ -680,7 +680,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	}
 	//_log.Log(LOG_STATUS,"Confirmation: %c", challange[0]);
 	challange[0] = 1;
-	while ((status = send(TCPSocket, (char *)&challange, 1, 0)) != 1)
+	while ((status = send(TCPSocket, reinterpret_cast<char *>(&challange), 1, 0)) != 1)
 	{
 		if ((!(iter--)) || (status < 0))
 		{
@@ -703,13 +703,13 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		//after connection change timeout
 		//after connection change
 
-	if (setsockopt(TCPSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)   //Set socket Read operation Timeout
+	if (setsockopt(TCPSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char *>(&timeout), sizeof(timeout)) < 0) // Set socket Read operation Timeout
 	{
 		LOG(LOG_ERROR, "[TCP Client Status] Set Read Timeout failed");
 		perror("[TCP Client Status] Set Read Timeout failed\n");
 	}
 
-	if (setsockopt(TCPSocket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
+	if (setsockopt(TCPSocket, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<char *>(&timeout), sizeof(timeout)) < 0) // Set Socket Write operation Timeout
 	{
 		LOG(LOG_ERROR, "[TCP Client Status] Set Write Timeout failed");
 		perror("[TCP Client Status] Set Write Timeout failed\n");
@@ -831,7 +831,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				{
 					_log.Debug(DEBUG_HARDWARE, "[EX] Execute pgm %d", i);
 					ev[2] = 2;//exec program/scene
-					ev[3] = (unsigned char)i;
+					ev[3] = uint8_t(i);
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
@@ -850,7 +850,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 				{
 					_log.Debug(DEBUG_HARDWARE, "[EX] Execute ADC pgm %d", i);
 					ev[2] = 97;//exec ADC program/scene
-					ev[3] = (unsigned char)i;
+					ev[3] = uint8_t(i);
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
@@ -899,7 +899,7 @@ int  eHouseTCP::getrealRMpgm(int32_t ID, int level)
 					if (index == 0) ev[2] = 0xaa;
 					if (index == STATUS_ARRAYS_SIZE)  ev[2] = 2;
 
-					ev[3] = (unsigned char)i;
+					ev[3] = uint8_t(i);
 					AddToLocalEvent(ev, 0);
 					return i;
 				}
@@ -969,7 +969,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		nr = therm->id4;
 
 		float temp = therm->temp;
-		int ttemp = (int)(temp * 10);
+		int ttemp = int(temp * 10);
 
 		ev[0] = AddrH;
 		ev[1] = AddrL;
@@ -981,12 +981,12 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		sprintf(IDX, "%02X%02X%02X%02X", therm->id1, therm->id2, therm->id3, therm->id4);
 		if ((m_Dtype == EH_LAN) || (m_Dtype == EH_WIFI))
 		{
-			unsigned int adcvalue = (int)(1023.0 * ((temp + 50.0) / 330.0));  //mcp9700 10mv/c offset -50
+			unsigned int adcvalue = int(1023.0 * ((temp + 50.0) / 330.0)); // mcp9700 10mv/c offset -50
 			adcvalue -= 2;
-			ev[5] =(uint8_t)( adcvalue >> 8);      //arg3
+			ev[5] = uint8_t(adcvalue >> 8); // arg3
 			ev[6] = adcvalue & 0xff;    //arg4
 			adcvalue += 4;
-			ev[7] = (uint8_t)(adcvalue >> 8);      //arg5
+			ev[7] = uint8_t(adcvalue >> 8); // arg5
 			ev[8] = adcvalue & 0xff;    //arg6
 			AddToLocalEvent(ev, 0);
 			sprintf(tmp, "%.1f", temp);
@@ -995,13 +995,13 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 
 		if (m_Dtype == EH_AURA)
 		{
-			unsigned int adcvalue = (int)round(temp);
+			unsigned int adcvalue = round(temp);
 			ev[3] = 0;	//nr ==0
 			ev[4] = 3;	//set value
-			ev[5] = (uint8_t)(adcvalue / 10);
+			ev[5] = uint8_t(adcvalue / 10);
 			ev[6] = adcvalue % 10;
 			adcvalue += 5;
-			ev[7] = (uint8_t)(adcvalue / 10);
+			ev[7] = uint8_t(adcvalue / 10);
 			ev[8] = adcvalue % 10;
 			m_AuraDev[AddrL - 1]->ServerTempSet = temp;
 			AddToLocalEvent(ev, 0);
@@ -1034,9 +1034,9 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 
 /////////////!!!!!!! check 255
 //Scale domoticz 0..100 scale for eHouse 0-255
-				ev[4] = (uint8_t)(pLed->color.r * pLed->value * 255 / 100);
-				ev[5] = (uint8_t)(pLed->color.g * pLed->value * 255 / 100);
-				ev[6] = (uint8_t)(pLed->color.b * pLed->value * 255 / 100);
+				ev[4] = uint8_t(pLed->color.r * pLed->value * 255 / 100);
+				ev[5] = uint8_t(pLed->color.g * pLed->value * 255 / 100);
+				ev[6] = uint8_t(pLed->color.b * pLed->value * 255 / 100);
 				AddToLocalEvent(ev, 0);
 			}
 			else
@@ -1103,14 +1103,14 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 								if (svalue < output->LIGHTING2.level)
 								{
 									proev[4] = ev[4] = 2;
-									ev[5] = (uint8_t)(output->LIGHTING2.level - svalue);
+									ev[5] = uint8_t(output->LIGHTING2.level - svalue);
 									ev[5] *= 2;
 									proev[6] = ev[5];
 								}
 								else
 								{
 									proev[4] = ev[4] = 1;
-									ev[5] = (uint8_t)(svalue - output->LIGHTING2.level);
+									ev[5] = uint8_t(svalue - output->LIGHTING2.level);
 									ev[5] *= 2;
 									proev[6] = ev[5];
 								}

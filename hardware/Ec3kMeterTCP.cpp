@@ -239,7 +239,7 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		std::stringstream sensorNameWMaxSS;
 		sensorNameWMaxSS << "EC3K meter " << std::hex << id << " maximum";
 		const std::string sensorNameWMax = sensorNameWMaxSS.str();
-		SendWattMeter((uint8_t)id, 2, 255, w_max, sensorNameWMax);
+		SendWattMeter(uint8_t(id), 2, 255, w_max, sensorNameWMax);
 
 		// TODO: send times + reset_count?
 	}

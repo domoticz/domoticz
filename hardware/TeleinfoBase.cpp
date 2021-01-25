@@ -61,7 +61,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, char* text)
 	int level;
 	float flevel;
 
-	flevel = (float)(Iinst * 100) / Isousc;
+	flevel = float(Iinst * 100) / Isousc;
 	level = 1;
 	sprintf(text, " < 80%% de %iA souscrits", Isousc);
 	if (flevel > 80)
@@ -172,7 +172,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				teleinfo.tariff = "Tarif de Base";
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1power), (name + " kWh Total").c_str(), 255, nullptr);
 			}
 			else if (teleinfo.OPTARIF == "HC..")
 			{
@@ -181,7 +181,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendKwhMeter(m_HwdID, 32 * rank + 4, 255, m_pappHP, teleinfo.HCHP / 1000.0, name + " kWh Heures Pleines");
 				m_p1power.powerusage1 = teleinfo.HCHP;
 				m_p1power.powerusage2 = teleinfo.HCHC;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1power), (name + " kWh Total").c_str(), 255, nullptr);
 			}
 			else if (teleinfo.OPTARIF == "EJP.")
 			{
@@ -190,7 +190,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendKwhMeter(m_HwdID, 32 * rank + 7, 255, m_pappHP, teleinfo.EJPHPM / 1000.0, name + " kWh Pointe Mobile");
 				m_p1power.powerusage1 = teleinfo.EJPHPM;
 				m_p1power.powerusage2 = teleinfo.EJPHN;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1power), (name + " kWh EJP").c_str(), 255, nullptr);
 				alertEJP = (teleinfo.PEJP == 30) ? 4 : 1;
 				if (alertEJP != teleinfo.pAlertEJP)
 				{
@@ -250,9 +250,9 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				m_p3power.powerusage1 = teleinfo.BBRHPJR;
 				m_p3power.powerusage2 = teleinfo.BBRHCJR;
 				m_p3power.usagecurrent = m_pappHCJR + m_pappHPJR;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + "kWh Jours Bleus").c_str(), 255, nullptr);
-				sDecodeRXMessage(this, (const unsigned char *)&m_p2power, (name + "kWh Jours Blancs").c_str(), 255, nullptr);
-				sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "kWh Jours Rouges").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1power), (name + "kWh Jours Bleus").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p2power), (name + "kWh Jours Blancs").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p3power), (name + "kWh Jours Rouges").c_str(), 255, nullptr);
 				if (color_alert != teleinfo.pAlertColor)
 				{
 					SendAlertSensor(32 * rank + 2, 255, color_alert, "Jour " + teleinfo.color, name + " Couleur du jour");
@@ -279,13 +279,12 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			}
 			if (teleinfo.triphase == false)
 			{
-				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
+				SendCurrentSensor(m_HwdID + rank, 255, float(teleinfo.IINST), 0, 0, name + " Courant");
 				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
 			}
 			else
 			{
-				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
-					name + " Courant");
+				SendCurrentSensor(m_HwdID + rank, 255, float(teleinfo.IINST1), float(teleinfo.IINST2), float(teleinfo.IINST3), name + " Courant");
 				if (teleinfo.ISOUSC > 0)
 				{
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1 * 100) / float(teleinfo.ISOUSC),
@@ -391,7 +390,7 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 
 	checksum = sLine[sLine.size() - 1];
 	int i = 0;
-	for (int i = 0; i < (int)sLine.size()-2; i++)
+	for (size_t i = 0; i < sLine.size() - 2; i++)
 	{
 		mode1 += sLine[i];
 	}
@@ -401,7 +400,7 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 	if (mode1 == checksum)
 	{
 		line_ok = true;
-		if (isMode1 != (int)true)// This will evaluate to false when isMode still equals to 255 at second run
+		if (isMode1 != int(true)) // This will evaluate to false when isMode still equals to 255 at second run
 		{
 			isMode1 = true;
 			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", m_Name.c_str());

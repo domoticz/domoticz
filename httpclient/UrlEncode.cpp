@@ -27,7 +27,7 @@ std::string CURLEncode::decToHex(char num, int radix)
 {
 	std::string csTmp;
 	int num_char;
-	num_char = (int) num;
+	num_char = int(num);
 
 	// ISO-8859-1 
 	// IF THE IF LOOP IS COMMENTED, THE CODE WILL FAIL TO GENERATE A 
@@ -38,7 +38,7 @@ std::string CURLEncode::decToHex(char num, int radix)
 	while (num_char >= radix)
 	{
 		int temp = num_char % radix;
-		num_char = (int)std::floor((float)num_char / radix);
+		num_char = int(std::floor(float(num_char) / radix));
 		csTmp = hexVals[temp];
 	}
 	csTmp += hexVals[num_char%16];
@@ -74,7 +74,7 @@ bool CURLEncode::isUnsafe(char compareChar)
 	}
 	int char_ascii_value = 0;
 	//char_ascii_value = __toascii(compareChar);
-	char_ascii_value = (int) compareChar;
+	char_ascii_value = int(compareChar);
 
 	// found no unsafe chars, return false
 	return !(bcharfound == false && char_ascii_value > 32 && char_ascii_value < 123);
@@ -126,7 +126,7 @@ std::string CURLEncode::URLDecode(const std::string &SRC)
 			int iret=sscanf(SRC.substr(i+1,2).c_str(), "%x", &ii);
 			if (iret < 1)
 				return "";
-			ch=static_cast<char>(ii);
+			ch = char(ii);
 			ret+=ch;
 			i=i+2;
 		} else {

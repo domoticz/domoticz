@@ -563,7 +563,7 @@ void CLogitechMediaServer::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		_log.Log(LOG_STATUS, "Logitech Media Server: %d player-switch(es) found.", (int)result.size());
+		_log.Log(LOG_STATUS, "Logitech Media Server: %d player-switch(es) found.", int(result.size()));
 		for (const auto &sd : result)
 		{
 			LogitechMediaServerNode pnode;
@@ -581,7 +581,7 @@ void CLogitechMediaServer::ReloadNodes()
 			if (result2.size() == 1)
 			{
 				pnode.ID = atoi(result2[0][0].c_str());
-				pnode.nStatus = (_eMediaStatus)atoi(result2[0][1].c_str());
+				pnode.nStatus = _eMediaStatus(atoi(result2[0][1].c_str()));
 				pnode.sStatus = result2[0][2];
 			}
 
@@ -918,8 +918,8 @@ namespace http {
 			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 			if (result.size() == 1)
 			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
+				_eSwitchType sType = _eSwitchType(atoi(result[0][0].c_str()));
+				_eHardwareTypes hType = _eHardwareTypes(atoi(result[0][1].c_str()));
 				int HwID = atoi(result[0][2].c_str());
 				// Is the device a media Player?
 				if (sType == STYPE_Media)

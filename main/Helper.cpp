@@ -132,7 +132,7 @@ std::vector<char> HexToBytes(const std::string& hex) {
 
 	for (unsigned int i = 0; i < hex.length(); i += 2) {
 		std::string byteString = hex.substr(i, 2);
-		char byte = (char)strtol(byteString.c_str(), nullptr, 16);
+		char byte = char(strtol(byteString.c_str(), nullptr, 16));
 		bytes.push_back(byte);
 	}
 
@@ -227,7 +227,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			std::vector<ULONG> intPorts;
 			intPorts.resize(255);
 			ULONG nPortNumbersFound = 0;
-			const ULONG nReturn = pGetCommPorts(&(intPorts[0]), static_cast<ULONG>(intPorts.size()), &nPortNumbersFound);
+			const ULONG nReturn = pGetCommPorts(&(intPorts[0]), ULONG(intPorts.size()), &nPortNumbersFound);
 			if (nReturn == ERROR_SUCCESS)
 			{
 				for (ULONG i = 0; i < nPortNumbersFound; i++)
@@ -486,8 +486,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* T = temperature (in °C) */
-	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
-		* (temp + 273.15F)) / 0.0065F;
+	return ((pow((seaLevel / atmospheric), 0.190223F) - 1.0F) * (temp + 273.15F)) / 0.0065F;
 }
 
 /**************************************************************************/
@@ -512,8 +511,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
 	/* T = Temperature (in °C) */
-	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
-		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
+	return atmospheric * pow((1.0F - (0.0065F * altitude) / (temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
 
 //Haversine formula to calculate distance between two points
@@ -713,8 +711,8 @@ double ConvertToFahrenheit(const double Celsius)
 
 double RoundDouble(const long double invalue, const short numberOfPrecisions)
 {
-	long long p = (long long) pow(10.0L, numberOfPrecisions);
-	double ret= (long long)(invalue * p + 0.5L) / (double)p;
+	int64_t p = int64_t(pow(10.0L, numberOfPrecisions));
+	double ret = int64_t(invalue * p + 0.5L) / double(p);
 	return ret;
 }
 
@@ -809,7 +807,7 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 	}
 
 	if (format > TF_DateTime && ltime == nullptr)
-		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+		sstr << "." << std::setw(3) << std::setfill('0') << (int(tv.tv_usec) / 1000);
 
 	return sstr.str();
 }
@@ -819,11 +817,11 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 	std::string cstring = InputString + Salt;
 	unsigned char digest[MD5_DIGEST_LENGTH + 1];
 	digest[MD5_DIGEST_LENGTH] = 0;
-	MD5((const unsigned char*)cstring.c_str(), cstring.size(), (unsigned char*)&digest);
+	MD5(reinterpret_cast<const unsigned char *>(cstring.c_str()), cstring.size(), reinterpret_cast<unsigned char *>(&digest));
 	char mdString[(MD5_DIGEST_LENGTH * 2) + 1];
 	mdString[MD5_DIGEST_LENGTH * 2] = 0;
 	for (int i = 0; i < 16; i++)
-		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
+		sprintf(&mdString[i * 2], "%02x", uint32_t(digest[i]));
 	return mdString;
 }
 
@@ -840,7 +838,7 @@ void hsb2rgb(const float hue, const float saturation, const float vlue, int &out
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;
-	i = (long)hh;
+	i = long(hh);
 	ff = hh - i;
 	p = vlue * (1.0 - saturation);
 	q = vlue * (1.0 - (saturation * ff));
@@ -892,17 +890,17 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 	int cmin = (r < g) ? r : g;
 	if (b < cmin) cmin = b;
 
-	brightness = ((float)cmax) / 255.0F;
+	brightness = (float(cmax)) / 255.0F;
 	if (cmax != 0)
-		saturation = ((float)(cmax - cmin)) / ((float)cmax);
+		saturation = (float(cmax - cmin)) / (float(cmax));
 	else
 		saturation = 0;
 	if (saturation == 0)
 		hue = 0;
 	else {
-		float redc = ((float)(cmax - r)) / ((float)(cmax - cmin));
-		float greenc = ((float)(cmax - g)) / ((float)(cmax - cmin));
-		float bluec = ((float)(cmax - b)) / ((float)(cmax - cmin));
+		float redc = (float(cmax - r)) / (float(cmax - cmin));
+		float greenc = (float(cmax - g)) / (float(cmax - cmin));
+		float bluec = (float(cmax - b)) / (float(cmax - cmin));
 		if (r == cmax)
 			hue = bluec - greenc;
 		else if (g == cmax)
@@ -1169,7 +1167,7 @@ bool IsArgumentSecure(const std::string &arg)
 uint32_t SystemUptime()
 {
 #if defined(WIN32)
-	return static_cast<uint32_t>(GetTickCount64() / 1000u);
+	return uint32_t(GetTickCount64() / 1000u);
 #elif defined(__linux__) || defined(__linux) || defined(linux)
 	struct sysinfo info;
 	if (sysinfo(&info) != 0)
@@ -1199,14 +1197,14 @@ static struct
 	time_t t;
 	clock_t c;
 	int counter;
-} entropy = { 0, (time_t) 0, (clock_t) 0, 0 };
+} entropy = { 0, time_t(0), clock_t(0), 0 };
 
-static unsigned char * p = (unsigned char *) (&entropy + 1);
+static unsigned char *p = reinterpret_cast<unsigned char *>(&entropy + 1);
 static int accSeed = 0;
 
 int GenerateRandomNumber(const int range)
 {
-	if (p == ((unsigned char *) (&entropy + 1)))
+	if (p == (reinterpret_cast<unsigned char *>(&entropy + 1)))
 	{
 		switch (entropy.which)
 		{
@@ -1222,9 +1220,9 @@ int GenerateRandomNumber(const int range)
 				break;
 		}
 		entropy.which = (entropy.which + 1) % 3;
-		p = (unsigned char *) &entropy.t;
+		p = reinterpret_cast<unsigned char *>(&entropy.t);
 	}
-	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int) *p;
+	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + int(*p);
 	p++;
 	srand (accSeed);
 	return (rand() / (RAND_MAX / range));
@@ -1274,7 +1272,7 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 int SetThreadName(const std::thread::native_handle_type &thread, const char* threadName) {
-	DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( thread ) );
+	DWORD dwThreadID = ::GetThreadId(HANDLE(thread));
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = threadName;

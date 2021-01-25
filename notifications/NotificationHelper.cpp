@@ -221,11 +221,11 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const std::string &sValue) {
-	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, 0, sValue, static_cast<float>(atof(sValue.c_str())));
+	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, 0, sValue, float(atof(sValue.c_str())));
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue) {
-	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, nValue, sValue, static_cast<float>(atof(sValue.c_str())));
+	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, nValue, sValue, float(atof(sValue.c_str())));
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
@@ -248,7 +248,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeP1Power:
 			nexpected = 5;
 			if (nsize >= nexpected) {
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)atof(strarray[4].c_str()));
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, static_cast<float>(atof(strarray[4].c_str())));
 			}
 			break;
 		case pTypeRFXSensor:
@@ -277,9 +277,9 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeTEMP_HUM:
 			nexpected = 2;
 			if (nsize >= nexpected) {
-				float Temp = (float)atof(strarray[0].c_str());
+				float Temp = static_cast<float>(atof(strarray[0].c_str()));
 				int Hum = atoi(strarray[1].c_str());
-				float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+				float dewpoint = static_cast<float>(CalculateDewPoint(Temp, Hum));
 				r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
 				r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
 				return r1 && r2;
@@ -288,27 +288,27 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeTEMP_HUM_BARO:
 			nexpected = 4;
 			if (nsize >= nexpected) {
-				float Temp = (float)atof(strarray[0].c_str());
+				float Temp = static_cast<float>(atof(strarray[0].c_str()));
 				int Hum = atoi(strarray[1].c_str());
-				float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+				float dewpoint = static_cast<float>(CalculateDewPoint(Temp, Hum));
 				r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
 				r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
-				r3 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+				r3 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, static_cast<float>(atof(strarray[3].c_str())));
 				return r1 && r2 && r3;
 			}
 			break;
 		case pTypeRAIN:
 			nexpected = 2;
 			if (nsize >= nexpected) {
-				fValue2 = (float)atof(strarray[1].c_str());
+				fValue2 = static_cast<float>(atof(strarray[1].c_str()));
 				return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, fValue2);
 			}
 			break;
 		case pTypeTEMP_BARO:
 			nexpected = 2;
 			if (nsize >= nexpected) {
-				float Temp = (float)atof(strarray[0].c_str());
-				float Baro = (float)atof(strarray[1].c_str());
+				float Temp = static_cast<float>(atof(strarray[0].c_str()));
+				float Baro = static_cast<float>(atof(strarray[1].c_str()));
 				r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
 				r2 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
 				return r1 && r2;
@@ -317,8 +317,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeUV:
 			nexpected = 2;
 			if (nsize >= nexpected) {
-				float Level = (float)atof(strarray[0].c_str());
-				float Temp = (float)atof(strarray[1].c_str());
+				float Level = static_cast<float>(atof(strarray[0].c_str()));
+				float Temp = static_cast<float>(atof(strarray[1].c_str()));
 				if (cSubType == sTypeUV3)
 				{
 					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
@@ -332,26 +332,26 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeCURRENT:
 			nexpected = 3;
 			if (nsize >= nexpected) {
-				float CurrentChannel1 = (float)atof(strarray[0].c_str());
-				float CurrentChannel2 = (float)atof(strarray[1].c_str());
-				float CurrentChannel3 = (float)atof(strarray[2].c_str());
+				float CurrentChannel1 = static_cast<float>(atof(strarray[0].c_str()));
+				float CurrentChannel2 = static_cast<float>(atof(strarray[1].c_str()));
+				float CurrentChannel3 = static_cast<float>(atof(strarray[2].c_str()));
 				return CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
 			}
 			break;
 		case pTypeCURRENTENERGY:
 			nexpected = 3;
 			if (nsize >= nexpected) {
-				float CurrentChannel1 = (float)atof(strarray[0].c_str());
-				float CurrentChannel2 = (float)atof(strarray[1].c_str());
-				float CurrentChannel3 = (float)atof(strarray[2].c_str());
+				float CurrentChannel1 = static_cast<float>(atof(strarray[0].c_str()));
+				float CurrentChannel2 = static_cast<float>(atof(strarray[1].c_str()));
+				float CurrentChannel3 = static_cast<float>(atof(strarray[2].c_str()));
 				return CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
 			}
 			break;
 		case pTypeWIND:
 			nexpected = 5;
 			if (nsize >= nexpected) {
-				float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0F);
-				float temp = (float)atof(strarray[4].c_str());
+				float wspeedms = static_cast<float>(atof(strarray[2].c_str()) / 10.0F);
+				float temp = static_cast<float>(atof(strarray[4].c_str()));
 				r1 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
 				r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
 				return r1 && r2;
@@ -360,12 +360,12 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypeYouLess:
 			nexpected = 2;
 			if (nsize >= nexpected) {
-				float usagecurrent = (float)atof(strarray[1].c_str());
+				float usagecurrent = static_cast<float>(atof(strarray[1].c_str()));
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, usagecurrent);
 			}
 			break;
 		case pTypeAirQuality:
-			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
+			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, static_cast<float>(nValue));
 		case pTypeWEIGHT:
 		case pTypeLux:
 			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
@@ -374,7 +374,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		case pTypePOWER:
 			nexpected = 1;
 			if (nsize >= nexpected) {
-				fValue2 = (float)atof(strarray[0].c_str());
+				fValue2 = static_cast<float>(atof(strarray[0].c_str()));
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 			}
 			break;
@@ -414,7 +414,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				case sTypeKwh:
 					nexpected = 1;
 					if (nsize >= nexpected) {
-						fValue2 = (float)atof(strarray[0].c_str());
+						fValue2 = static_cast<float>(atof(strarray[0].c_str()));
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 					}
 					break;
@@ -425,7 +425,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				case sTypeSoilMoisture:
 				case sTypeLeafWetness:
 				case sTypeAlert:
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, static_cast<float>(nValue));
 				case sTypeFan:
 				case sTypeSoundLevel:
 				case sTypeSolarRadiation:
@@ -519,7 +519,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 				continue; //impossible
 			std::string ntype = splitresults[0];
 			std::string custommsg;
-			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
+			float svalue = float(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
 			bool bCustomMessage = false;
 			bCustomMessage = CustomRecoveryMessage(n.ID, custommsg, false);
@@ -530,7 +530,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 				if (m_sql.m_tempunit == TEMPUNIT_F)
 				{
 					//Convert to Celsius
-					svalue = static_cast<float>(ConvertToCelsius(svalue));
+					svalue = float(ConvertToCelsius(svalue));
 				}
 
 				if (temp > 30.0) szExtraData += "Image=temp-gt-30|";
@@ -690,7 +690,7 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 			if (splitresults.size() < 2)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			int svalue = static_cast<int>(atoi(splitresults[1].c_str()));
+			int svalue = int(atoi(splitresults[1].c_str()));
 
 			if (ntype == signvalue)
 			{
@@ -759,7 +759,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			std::string ntype = splitresults[0];
 			std::string custommsg;
 			std::string ltype;
-			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
+			float svalue = float(atof(splitresults[2].c_str()));
 			float ampere = 0.0F;
 			bool bSendNotification = false;
 			bool bCustomMessage = false;
@@ -920,7 +920,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				continue; //impossible
 			std::string ntype = splitresults[0];
 			std::string custommsg;
-			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
+			float svalue = float(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
 			bool bCustomMessage = false;
 			bCustomMessage = CustomRecoveryMessage(n.ID, custommsg, false);
@@ -976,7 +976,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 		Idx);
 	if (result.empty())
 		return false;
-	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+	_eSwitchType switchtype = static_cast<_eSwitchType>(atoi(result[0][0].c_str()));
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 
 	std::string msg;
@@ -1088,7 +1088,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 		Idx);
 	if (result.empty())
 		return false;
-	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+	_eSwitchType switchtype = static_cast<_eSwitchType>(atoi(result[0][0].c_str()));
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 	std::string sOptions = result[0][2];
 
@@ -1204,7 +1204,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 		//value is already total rain
 		double total_real = mvalue;
 		total_real *= AddjMulti;
-		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
+		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, static_cast<float>(total_real));
 	}
 	else
 	{
@@ -1214,11 +1214,11 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 		{
 			std::vector<std::string> sd = result[0];
 
-			float total_min = static_cast<float>(atof(sd[0].c_str()));
+			float total_min = float(atof(sd[0].c_str()));
 			float total_max = mvalue;
 			double total_real = total_max - total_min;
 			total_real *= AddjMulti;
-			CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
+			CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, static_cast<float>(total_real));
 		}
 	}
 	return false;
@@ -1258,8 +1258,8 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					std::string szExtraData;
 					std::string custommsg;
 					uint64_t Idx = n.first;
-					uint32_t SensorTimeOut = static_cast<uint32_t>(atoi(splitresults[2].c_str()));  // minutes
-					uint32_t diff = static_cast<uint32_t>(round(difftime(btime, n2.LastUpdate)));
+					uint32_t SensorTimeOut = uint32_t(atoi(splitresults[2].c_str())); // minutes
+					uint32_t diff = uint32_t(round(difftime(btime, n2.LastUpdate)));
 					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut * 60);
 					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut * 60), (diff < SensorTimeOut * 60));
 					bool bCustomMessage = false;

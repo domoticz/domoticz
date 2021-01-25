@@ -209,8 +209,8 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	gDevice.subtype = sTypeCurrent;
 	gDevice.id = 1;
 	gDevice.floatval1 = Curr;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255, nullptr);
+	gDevice.intval1 = int(Idx);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gDevice), defaultname.c_str(), 255, nullptr);
 }
 
 void CHardwareMonitor::GetInternalTemperature()
@@ -230,7 +230,7 @@ void CHardwareMonitor::GetInternalTemperature()
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float temperature = static_cast<float>(atof(tmpline.c_str()));
+	float temperature = float(atof(tmpline.c_str()));
 	if (temperature == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -263,7 +263,7 @@ void CHardwareMonitor::GetInternalARMClockSpeed()
 
 	if (strarray.size()==2)
 	{
-		ArmClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
+		ArmClockSpeed = float(atof(strarray[1].c_str())) / 1000000;
 	}
 
 	Debug(DEBUG_NORM,"Updating sensor with value %.2f",ArmClockSpeed);
@@ -294,7 +294,7 @@ void CHardwareMonitor::GetInternalV3DClockSpeed()
 
 	if (strarray.size()==2)
 	{
-		V3DClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
+		V3DClockSpeed = float(atof(strarray[1].c_str())) / 1000000;
 	}
 
 	Debug(DEBUG_NORM,"Updating sensor with value %.2f",V3DClockSpeed);
@@ -325,7 +325,7 @@ void CHardwareMonitor::GetInternalCoreClockSpeed()
 
 	if (strarray.size()==2)
 	{
-		CoreClockSpeed = static_cast<float>(atof(strarray[1].c_str()))/1000000;
+		CoreClockSpeed = float(atof(strarray[1].c_str())) / 1000000;
 	}
 
 	Debug(DEBUG_NORM,"Updating sensor with value %.2f",CoreClockSpeed);
@@ -350,7 +350,7 @@ void CHardwareMonitor::GetInternalVoltage()
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float voltage = static_cast<float>(atof(tmpline.c_str()));
+	float voltage = float(atof(tmpline.c_str()));
 	if (voltage == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -374,7 +374,7 @@ void CHardwareMonitor::GetInternalCurrent()
 		tmpline = tmpline.substr(0, pos);
 	}
 
-	float current = static_cast<float>(atof(tmpline.c_str()));
+	float current = float(atof(tmpline.c_str()));
 	if (current == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
@@ -391,13 +391,13 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	if (qType == "Temperature")
 	{
 		doffset = 1000;
-		float temp = static_cast<float>(atof(devValue.c_str()));
+		float temp = float(atof(devValue.c_str()));
 		SendTempSensor(doffset + dindex, 255, temp, devName);
 	}
 	else if (qType == "Load")
 	{
 		doffset = 1100;
-		float perc = static_cast<float>(atof(devValue.c_str()));
+		float perc = float(atof(devValue.c_str()));
 		SendPercentageSensor(doffset + dindex, 0, 255, perc, devName);
 	}
 	else if (qType == "Fan")
@@ -409,19 +409,19 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	else if (qType == "Voltage")
 	{
 		doffset = 1300;
-		float volt = static_cast<float>(atof(devValue.c_str()));
-		SendVoltageSensor(0, (uint32_t)(doffset + dindex), 255, volt, devName);
+		float volt = float(atof(devValue.c_str()));
+		SendVoltageSensor(0, uint32_t(doffset + dindex), 255, volt, devName);
 	}
 	else if (qType == "Current")
 	{
 		doffset = 1400;
-		float curr = static_cast<float>(atof(devValue.c_str()));
+		float curr = float(atof(devValue.c_str()));
 		SendCurrent(doffset + dindex, curr, devName);
 	}
 	else if (qType == "Process")
 	{
 		doffset = 1500;
-		float usage = static_cast<float>(atof(devValue.c_str()));
+		float usage = float(atof(devValue.c_str()));
 		SendCustomSensor(0, doffset + dindex, 255, usage, devName, "MB");
 	}
 }
@@ -628,7 +628,7 @@ bool CHardwareMonitor::IsOHMRunning()
 		VARIANT vtProp;
 		VariantInit(&vtProp);
 		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
-		int procId = static_cast<int>(vtProp.iVal);
+		int procId = int(vtProp.iVal);
 		if (procId) {
 			bOHMRunning = true;
 		}
@@ -714,8 +714,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		struct timeval tp;
 		if (gettimeofday(&tp, (struct timezone *)nullptr) == -1)
 			return 0;
-		return ((double) (tp.tv_sec)) +
-			(((double) tp.tv_usec) * 0.000001 );
+		return (double(tp.tv_sec)) + ((double(tp.tv_usec)) * 0.000001);
 	}
 
 #if defined(__linux__)

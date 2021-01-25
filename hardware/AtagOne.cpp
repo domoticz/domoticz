@@ -386,21 +386,21 @@ void CAtagOne::GetMeterDetails()
 		Log(LOG_ERROR, "Invalid/no data received...");
 		return;
 	}
-	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
+	root["roomTemperature"] = float(atof(sret.c_str()));
 	root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias", "Device alias", false);
 	root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd", "Latest report time", false);
 	root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met", "Connected to", false);
-	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren", "Burning hours", true).c_str()));
+	root["burningHours"] = float(atof(GetHTMLPageValue(sResult, "Branduren", "Burning hours", true).c_str()));
 	root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor", "Boiler heating for", false);
 	sret= GetHTMLPageValue(sResult, "Brander status", "Flame status", false);
 	root["flameStatus"] = ((sret == "Aan") || (sret == "On")) ? true : false;
-	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur", "Outside temperature", true).c_str()));
-	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater", "DHW setpoint", true).c_str()));
-	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur", "DHW water temperature", true).c_str()));
-	root["chSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint cv", "CH setpoint", true).c_str()));
-	root["chWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur", "CH water temperature", true).c_str()));
-	root["chWaterPressure"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-waterdruk", "CH water pressure", true).c_str()));
-	root["chReturnTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur", "CH return temperature", true).c_str()));
+	root["outsideTemperature"] = float(atof(GetHTMLPageValue(sResult, "Buitentemperatuur", "Outside temperature", true).c_str()));
+	root["dhwSetpoint"] = float(atof(GetHTMLPageValue(sResult, "Setpoint warmwater", "DHW setpoint", true).c_str()));
+	root["dhwWaterTemperature"] = float(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur", "DHW water temperature", true).c_str()));
+	root["chSetpoint"] = float(atof(GetHTMLPageValue(sResult, "Setpoint cv", "CH setpoint", true).c_str()));
+	root["chWaterTemperature"] = float(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur", "CH water temperature", true).c_str()));
+	root["chWaterPressure"] = float(atof(GetHTMLPageValue(sResult, "CV-waterdruk", "CH water pressure", true).c_str()));
+	root["chReturnTemperature"] = float(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur", "CH return temperature", true).c_str()));
 
 #ifdef DEBUG_AtagOneThermostat_read
 	sResult = ReadFile("E:\\AtagOne_gettargetsetpoint.txt");
@@ -430,54 +430,54 @@ void CAtagOne::GetMeterDetails()
 		Log(LOG_ERROR, "Invalid/no data received...");
 		return;
 	}
-	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
+	root["targetTemperature"] = float(atof(root2["targetTemp"].asString().c_str()));
 	root["currentMode"] = root2["currentMode"].asString();
 	root["vacationPlanned"] = root2["vacationPlanned"].asBool();
 
 	//Handle the Values
 	float temperature;
-	temperature = (float)root["targetTemperature"].asFloat();
+	temperature = root["targetTemperature"].asFloat();
 	SendSetPointSensor(0, 0, 1, temperature, "Room Setpoint");
 
-	temperature = (float)root["roomTemperature"].asFloat();
+	temperature = root["roomTemperature"].asFloat();
 	SendTempSensor(2, 255, temperature, "room Temperature");
 
 	if (!root["outsideTemperature"].empty())
 	{
-		temperature = (float)root["outsideTemperature"].asFloat();
+		temperature = root["outsideTemperature"].asFloat();
 		SendTempSensor(3, 255, temperature, "outside Temperature");
 	}
 
 	//DHW
 	if (!root["dhwSetpoint"].empty())
 	{
-		temperature = (float)root["dhwSetpoint"].asFloat();
+		temperature = root["dhwSetpoint"].asFloat();
 		SendSetPointSensor(0, 0, 2, temperature, "DHW Setpoint");
 	}
 	if (!root["dhwWaterTemperature"].empty())
 	{
-		temperature = (float)root["dhwWaterTemperature"].asFloat();
+		temperature = root["dhwWaterTemperature"].asFloat();
 		SendTempSensor(4, 255, temperature, "DHW Temperature");
 	}
 	//CH
 	if (!root["chSetpoint"].empty())
 	{
-		temperature = (float)root["chSetpoint"].asFloat();
+		temperature = root["chSetpoint"].asFloat();
 		SendSetPointSensor(0, 0, 3, temperature, "CH Setpoint");
 	}
 	if (!root["chWaterTemperature"].empty())
 	{
-		temperature = (float)root["chWaterTemperature"].asFloat();
+		temperature = root["chWaterTemperature"].asFloat();
 		SendTempSensor(5, 255, temperature, "CH Temperature");
 	}
 	if (!root["chWaterPressure"].empty())
 	{
-		float pressure = (float)root["chWaterPressure"].asFloat();
+		float pressure = root["chWaterPressure"].asFloat();
 		SendPressureSensor(1, 1, 255, pressure, "Pressure");
 	}
 	if (!root["chReturnTemperature"].empty())
 	{
-		temperature = (float)root["chReturnTemperature"].asFloat();
+		temperature = root["chReturnTemperature"].asFloat();
 		SendTempSensor(6, 255, temperature, "CH Return Temperature");
 	}
 
@@ -538,7 +538,7 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 #ifdef DEBUG_AtagOneThermostat
 	SaveString2Disk(sResult, "E:\\AtagOne_setsetpoint.txt");
 #endif
-	SendSetPointSensor(0,0, (const uint8_t)idx, dtemp, "");
+	SendSetPointSensor(0, 0, uint8_t(idx), dtemp, "");
 }
 
 void CAtagOne::SetPauseStatus(const bool /*bIsPause*/)

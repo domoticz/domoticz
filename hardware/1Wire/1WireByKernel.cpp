@@ -392,7 +392,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
 	if (bFoundCrcOk)
 	{
 		if (is_number(data))
-			return (float)atoi(data.c_str()) / 1000.0F; // Temperature given by kernel is in thousandths of degrees
+			return float(atoi(data.c_str())) / 1000.0F; // Temperature given by kernel is in thousandths of degrees
 	}
 
 	throw OneWireReadErrorException(deviceFileName);
@@ -409,7 +409,7 @@ bool C1WireByKernel::sendAndReceiveByRwFile(std::string path, const unsigned cha
 	{
 		if (file.write((char*)cmd, cmdSize))
 		{
-			if (file.read((char*)answer, answerSize))
+			if (file.read(reinterpret_cast<char *>(answer), answerSize))
 				ok = true;
 		}
 		file.close();
@@ -530,15 +530,13 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 	// Check for transmission errors
 	// Expected first byte = 0xAA
 	// Expected second Byte = inverted new pio state
-	if (answer[0] != 0xAA || answer[1] != (unsigned char)(~newPioState))
+	if (answer[0] != 0xAA || answer[1] != uint8_t(~newPioState))
 		throw OneWireWriteErrorException(deviceFileName);
 }
 
 inline void std_to_upper(const std::string& str, std::string& converted)
 {
-	converted = "";
-	for (char c : str)
-		converted += (char)toupper(c);
+	std::transform(str.begin(), str.end(), converted.begin(), ::toupper);
 }
 
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const

@@ -45,8 +45,8 @@ std::string SolarMaxTCP::MakeRequestString()
 	std::string RequestString = "64:KDY;KT0;PAC;UDC;UL1;IDC;IL1;PIN;PRL;TNF;TKK";
 	char szSendTemp[100];
 	char szSendRequest[120];
-	sprintf(szSendTemp, "%02X;%02X;%02X|%s|", SourceAddress, DestAddress, (unsigned int)(RequestString.size() + 16), RequestString.c_str());
-	int Chksum = SolarMaxCalcChecksum((const unsigned char*)&szSendTemp, (int)strlen(szSendTemp));
+	sprintf(szSendTemp, "%02X;%02X;%02X|%s|", SourceAddress, DestAddress, uint32_t(RequestString.size() + 16), RequestString.c_str());
+	int Chksum = SolarMaxCalcChecksum(reinterpret_cast<const unsigned char *>(&szSendTemp), int(strlen(szSendTemp)));
 	sprintf(szSendRequest, "{%s%04X}", szSendTemp, Chksum);
 	return std::string(szSendRequest);
 }
@@ -81,8 +81,8 @@ bool SolarMaxTCP::StartHardware()
 	}
 
 	char szIP[20];
-	unsigned char *pAddress = (unsigned char *)&m_addr.sin_addr;
-	sprintf(szIP, "%d.%d.%d.%d", (int)pAddress[0], (int)pAddress[1], (int)pAddress[2], (int)pAddress[3]);
+	unsigned char *pAddress = reinterpret_cast<unsigned char *>(&m_addr.sin_addr);
+	sprintf(szIP, "%d.%d.%d.%d", int(pAddress[0]), int(pAddress[1]), int(pAddress[2]), int(pAddress[3]));
 	m_endpoint = szIP;
 
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
@@ -127,7 +127,7 @@ bool SolarMaxTCP::ConnectInternal()
 	*/
 	// connect to the server
 	int nRet;
-	nRet = connect(m_socket, (const sockaddr*)&m_addr, sizeof(m_addr));
+	nRet = connect(m_socket, reinterpret_cast<const sockaddr *>(&m_addr), sizeof(m_addr));
 	if (nRet == SOCKET_ERROR)
 	{
 		closesocket(m_socket);
@@ -189,7 +189,7 @@ void SolarMaxTCP::Do_Work()
 				//this could take a long time... maybe there will be no data received at all,
 				//so it's no good to-do the heartbeat timing here
 
-				int bread = recv(m_socket, (char*)&buf, sizeof(buf), 0);
+				int bread = recv(m_socket, reinterpret_cast<char *>(&buf), sizeof(buf), 0);
 				if (IsStopRequested(0))
 					break;
 				if (bread <= 0) {
@@ -198,7 +198,7 @@ void SolarMaxTCP::Do_Work()
 					m_retrycntr = 0;
 					continue;
 				}
-				ParseData((const unsigned char *)&buf, bread);
+				ParseData(reinterpret_cast<const unsigned char *>(&buf), bread);
 			}
 		}
 
@@ -265,7 +265,7 @@ static unsigned long SolarMaxGetHexStringValue(const std::string &svalue)
 
 void SolarMaxTCP::ParseLine()
 {
-	std::string InputStr = std::string((const char*)&m_buffer);
+	std::string InputStr = std::string(reinterpret_cast<const char *>(&m_buffer));
 	size_t npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
@@ -345,19 +345,19 @@ void SolarMaxTCP::ParseLine()
 		else if (sLabel == "PRL")
 		{
 			//AC power [%]
-			float percentage = (float)SolarMaxGetHexStringValue(sVal);
+			float percentage = float(SolarMaxGetHexStringValue(sVal));
 			SendPercentageSensor(6, 6, 255, percentage, "AC power Percentage");
 		}
 		else if (sLabel == "TNF")
 		{
 			//AC Frequency (Hz)
-			float freq = (float)SolarMaxGetHexStringValue(sVal)/100;
+			float freq = float(SolarMaxGetHexStringValue(sVal)) / 100;
 			SendPercentageSensor(7, 7, 255, freq, "Hz");
 		}
 		else if (sLabel == "TKK")
 		{
 			//Temperature Heat Sink
-			float temp = (float)SolarMaxGetHexStringValue(sVal);// / 10.0f;
+			float temp = float(SolarMaxGetHexStringValue(sVal)); // / 10.0f;
 			SendTempSensor(8, 255, temp,"Temperature Heat Sink");
 		}
 	}

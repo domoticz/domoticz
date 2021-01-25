@@ -231,10 +231,10 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		else if (switchtype == "AC")
 		{
 			oFrame.protocol = SEND_CHACON_PROTOCOL_433;
-			oFrame.ID_1 = (uint8_t)((pSwitch->id & 0xFF000000) >> 24);
-			oFrame.ID_2 = (uint8_t)((pSwitch->id & 0x00FF0000) >> 16);
-			oFrame.ID_3 = (uint8_t)((pSwitch->id & 0x0000FF00) >> 8);
-			oFrame.ID_4 = (uint8_t)((pSwitch->id & 0x000000FF));
+			oFrame.ID_1 = uint8_t((pSwitch->id & 0xFF000000) >> 24);
+			oFrame.ID_2 = uint8_t((pSwitch->id & 0x00FF0000) >> 16);
+			oFrame.ID_3 = uint8_t((pSwitch->id & 0x0000FF00) >> 8);
+			oFrame.ID_4 = uint8_t((pSwitch->id & 0x000000FF));
 		}
 		else
 		{
@@ -268,7 +268,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		}
 
-		WriteInt((const uint8_t*)&oFrame, sizeof(_tOutgoingFrame));
+		WriteInt(reinterpret_cast<const uint8_t *>(&oFrame), sizeof(_tOutgoingFrame));
 		return true;
 	}
 	return false;
@@ -310,7 +310,7 @@ bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, BatteryLevel, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gswitch), nullptr, BatteryLevel, m_Name.c_str());
 	return true;
 }
 
@@ -371,7 +371,7 @@ void CZiBlueBase::ParseData(const char *data, size_t len)
 			m_rfbuffer[m_rfbufferpos++] = data[ii];
 			if (m_rfbufferpos == m_Length)
 			{
-				ParseBinary(m_SDQ, (const uint8_t*)&m_rfbuffer, m_Length);
+				ParseBinary(m_SDQ, reinterpret_cast<const uint8_t *>(&m_rfbuffer), m_Length);
 				m_State = ZIBLUE_STATE_ZI_1;
 			}
 			else if (m_rfbufferpos >= m_Length)
@@ -388,7 +388,7 @@ void CZiBlueBase::ParseData(const char *data, size_t len)
 					)
 				{
 					//Frame done
-					ParseBinary(m_SDQ, (const uint8_t*)&m_rfbuffer, m_rfbufferpos);
+					ParseBinary(m_SDQ, reinterpret_cast<const uint8_t *>(&m_rfbuffer), m_rfbufferpos);
 					m_State = ZIBLUE_STATE_ZI_1;
 				}
 			}
@@ -427,10 +427,10 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 		//RFLink
 		if (len < 24)
 			return false;
-		const uint8_t *pData = (const uint8_t*)data;
+		const uint8_t *pData = data;
 
 		FrameType = pData[0];
-		uint32_t frequency = (uint32_t)(pData[4] << 24) + (uint32_t)(pData[3]<<16) + (uint32_t)(pData[2]<<8) + (uint32_t)pData[1];
+		uint32_t frequency = uint32_t(pData[4] << 24) + uint32_t(pData[3] << 16) + uint32_t(pData[2] << 8) + uint32_t(pData[1]);
 		int8_t RFLevel = pData[5];
 		int8_t FloorNoise = pData[6];
 		uint8_t PulseElementSize = pData[7];
@@ -438,7 +438,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 		uint8_t Repeats = pData[10];
 		uint8_t Delay = pData[11];
 		uint8_t Multiply = pData[12];
-		uint32_t Time = (uint32_t)(pData[16] << 24) + (uint32_t)(pData[15]<<16) + (uint32_t)(pData[14]<<8) + (uint32_t)pData[13];
+		uint32_t Time = uint32_t(pData[16] << 24) + uint32_t(pData[15] << 16) + uint32_t(pData[14] << 8) + uint32_t(pData[13]);
 		_log.Log(LOG_NORM, "ZiBlue: frameType: %d, frequency: %d kHz", FrameType, frequency);
 		_log.Log(LOG_NORM, "ZiBlue: rfLevel: %d dBm, floorNoise: %d dBm, PulseElementSize: %d", RFLevel, FloorNoise, PulseElementSize);
 		_log.Log(LOG_NORM, "ZiBlue: number: %d, Repeats: %d, Delay: %d, Multiply: %d", number, Repeats, Delay, Multiply);
@@ -666,7 +666,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				}
 				SendKwhMeter(pSen->idLsb^pSen->idMsb, 1, (pSen->qualifier & 0x01) ? 0 : 100, power1, total1 / 1000.0, "HC");
 				SendKwhMeter(pSen->idLsb^pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, power2, total2 / 1000.0, "HP");
-				SendWattMeter(pSen->idLsb^pSen->idMsb, 3, (pSen->qualifier & 0x01) ? 0 : 100, (float)pSen->apparentPower, "Apparent Power");
+				SendWattMeter(pSen->idLsb ^ pSen->idMsb, 3, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->apparentPower), "Apparent Power");
 				m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 1] = m_LastReceivedTime;
 				m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 1] = total1;
 				m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 2] = m_LastReceivedTime;

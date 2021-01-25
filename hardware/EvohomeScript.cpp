@@ -105,7 +105,8 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 		return;
 	_tEVOHOME2* tsen = (_tEVOHOME2*)pdata;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)", m_HwdID, (int)tsen->zone, (int)tsen->type);
+	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)", m_HwdID,
+				  int(tsen->zone), int(tsen->type));
 	if (!result.empty())
 	{
 		unsigned long ID;
@@ -123,11 +124,11 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			boost::replace_all(OnAction, "{deviceid}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << (int)tsen->zone;
+			s_strid << int(tsen->zone);
 			boost::replace_all(OnAction, "{unit}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << (int)tsen->mode;
+			s_strid << int(tsen->mode);
 			boost::replace_all(OnAction, "{mode}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
@@ -135,7 +136,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			boost::replace_all(OnAction, "{setpoint}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << (int)tsen->temperature;
+			s_strid << int(tsen->temperature);
 			boost::replace_all(OnAction, "{state}", s_strid.str());
 			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen));
 			//Execute possible script

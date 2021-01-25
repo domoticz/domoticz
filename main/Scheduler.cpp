@@ -25,7 +25,7 @@ CScheduler::CScheduler()
 	m_tNautTwEnd = 0;
 	m_tAstTwStart = 0;
 	m_tAstTwEnd = 0;
-	srand((int)mytime(nullptr));
+	srand(int(mytime(nullptr)));
 }
 
 void CScheduler::StartScheduler()
@@ -83,15 +83,15 @@ void CScheduler::ReloadSchedules()
 				titem.bIsScene = false;
 				titem.bIsThermostat = false;
 
-				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+				_eTimerType timerType = _eTimerType(atoi(sd[2].c_str()));
 				titem.RowID = std::stoull(sd[0]);
 				titem.TimerID= std::stoull(sd[14]);
-				titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
-				titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+				titem.startHour = uint8_t(atoi(sd[1].substr(0, 2).c_str()));
+				titem.startMin = uint8_t(atoi(sd[1].substr(3, 2).c_str()));
 				titem.startTime = 0;
 				titem.timerType = timerType;
-				titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
-				titem.Level = (unsigned char)atoi(sd[4].c_str());
+				titem.timerCmd = _eTimerCommand(atoi(sd[3].c_str()));
+				titem.Level = uint8_t(atoi(sd[4].c_str()));
 				titem.bUseRandomness = (atoi(sd[8].c_str()) != 0);
 				titem.Color = _tColor(sd[9]);
 				titem.MDay = 0;
@@ -103,9 +103,9 @@ void CScheduler::ReloadSchedules()
 					std::string sdate = sd[10];
 					if (sdate.size() != 10)
 						continue; //invalid
-					titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
-					titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
-					titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+					titem.startYear = uint16_t(atoi(sdate.substr(0, 4).c_str()));
+					titem.startMonth = uint8_t(atoi(sdate.substr(5, 2).c_str()));
+					titem.startDay = uint8_t(atoi(sdate.substr(8, 2).c_str()));
 				}
 				else if (timerType == TTYPE_MONTHLY)
 				{
@@ -186,16 +186,16 @@ void CScheduler::ReloadSchedules()
 				std::stringstream s_str(sd[12]);
 				s_str >> titem.TimerID; }
 
-			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+			_eTimerType timerType = _eTimerType(atoi(sd[2].c_str()));
 
 			if (timerType == TTYPE_FIXEDDATETIME)
 			{
 				std::string sdate = sd[8];
 				if (sdate.size() != 10)
 					continue; //invalid
-				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
-				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
-				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+				titem.startYear = uint16_t(atoi(sdate.substr(0, 4).c_str()));
+				titem.startMonth = uint8_t(atoi(sdate.substr(5, 2).c_str()));
+				titem.startDay = uint8_t(atoi(sdate.substr(8, 2).c_str()));
 			}
 			else if (timerType == TTYPE_MONTHLY)
 			{
@@ -230,12 +230,12 @@ void CScheduler::ReloadSchedules()
 				titem.Occurence = atoi(socc.c_str());
 			}
 
-			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
-			titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+			titem.startHour = uint8_t(atoi(sd[1].substr(0, 2).c_str()));
+			titem.startMin = uint8_t(atoi(sd[1].substr(3, 2).c_str()));
 			titem.startTime = 0;
 			titem.timerType = timerType;
-			titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
-			titem.Level = (unsigned char)atoi(sd[4].c_str());
+			titem.timerCmd = _eTimerCommand(atoi(sd[3].c_str()));
+			titem.Level = uint8_t(atoi(sd[4].c_str()));
 			titem.bUseRandomness = (atoi(sd[7].c_str()) != 0);
 			if ((titem.timerCmd == TCMD_ON) && (titem.Level == 0))
 			{
@@ -276,16 +276,16 @@ void CScheduler::ReloadSchedules()
 				std::stringstream s_str(sd[10]);
 				s_str >> titem.TimerID; }
 
-			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
+			_eTimerType timerType = _eTimerType(atoi(sd[2].c_str()));
 
 			if (timerType == TTYPE_FIXEDDATETIME)
 			{
 				std::string sdate = sd[6];
 				if (sdate.size() != 10)
 					continue; //invalid
-				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
-				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
-				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+				titem.startYear = uint16_t(atoi(sdate.substr(0, 4).c_str()));
+				titem.startMonth = uint8_t(atoi(sdate.substr(5, 2).c_str()));
+				titem.startDay = uint8_t(atoi(sdate.substr(8, 2).c_str()));
 			}
 			else if (timerType == TTYPE_MONTHLY)
 			{
@@ -320,12 +320,12 @@ void CScheduler::ReloadSchedules()
 				titem.Occurence = atoi(socc.c_str());
 			}
 
-			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
-			titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
+			titem.startHour = uint8_t(atoi(sd[1].substr(0, 2).c_str()));
+			titem.startMin = uint8_t(atoi(sd[1].substr(3, 2).c_str()));
 			titem.startTime = 0;
 			titem.timerType = timerType;
 			titem.timerCmd = TCMD_ON;
-			titem.Temperature = static_cast<float>(atof(sd[3].c_str()));
+			titem.Temperature = float(atof(sd[3].c_str()));
 			titem.Level = 100;
 			titem.bUseRandomness = false;
 			titem.Days = atoi(sd[4].c_str());
@@ -567,12 +567,12 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	{
 		//pItem->Days: mon=1 .. sat=32, sun=64
 		//convert to : sun=0, mon=1 .. sat=6
-		int daynum = (int)log2(pItem->Days) + 1;
+		int daynum = int(log2(pItem->Days)) + 1;
 		if (daynum == 7) daynum = 0;
 
-		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
-		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
-		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = boost::gregorian::nth_day_of_the_week_in_month::week_num(pItem->Occurence);
+		boost::gregorian::greg_weekday::weekday_enum Day = boost::gregorian::greg_weekday::weekday_enum(daynum);
+		boost::gregorian::months_of_year Month = boost::gregorian::months_of_year(ltime.tm_mon + 1);
 
 		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
 		nth_dow ndm(Occurence, Day, Month);
@@ -589,7 +589,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 				ltime.tm_mon = 0;
 				ltime.tm_year++;
 			}
-			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+			Month = boost::gregorian::months_of_year(ltime.tm_mon + 1);
 			nth_dow ndm(Occurence, Day, Month);
 			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
@@ -619,12 +619,12 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	{
 		//pItem->Days: mon=1 .. sat=32, sun=64
 		//convert to : sun=0, mon=1 .. sat=6
-		int daynum = (int)log2(pItem->Days) + 1;
+		int daynum = int(log2(pItem->Days)) + 1;
 		if (daynum == 7) daynum = 0;
 
-		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
-		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
-		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = boost::gregorian::nth_day_of_the_week_in_month::week_num(pItem->Occurence);
+		boost::gregorian::greg_weekday::weekday_enum Day = boost::gregorian::greg_weekday::weekday_enum(daynum);
+		boost::gregorian::months_of_year Month = boost::gregorian::months_of_year(ltime.tm_mon + 1);
 
 		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
 		nth_dow ndm(Occurence, Day, Month);
@@ -857,7 +857,7 @@ void CScheduler::CheckSchedules()
 
 							unsigned char dType = atoi(sd[0].c_str());
 							unsigned char dSubType = atoi(sd[1].c_str());
-							_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
+							_eSwitchType switchtype = _eSwitchType(atoi(sd[2].c_str()));
 							std::string lstatus;
 							int llevel = 0;
 							bool bHaveDimmer = false;
@@ -1598,7 +1598,7 @@ namespace http {
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			int days = atoi(sdays.c_str());
-			float temperature = static_cast<float>(atof(stvalue.c_str()));
+			float temperature = float(atof(stvalue.c_str()));
 			int mday = atoi(smday.c_str());
 			int month = atoi(smonth.c_str());
 			int occurence = atoi(soccurence.c_str());
@@ -1690,7 +1690,7 @@ namespace http {
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			int days = atoi(sdays.c_str());
-			float tempvalue = static_cast<float>(atof(stvalue.c_str()));
+			float tempvalue = float(atof(stvalue.c_str()));
 			int mday = atoi(smday.c_str());
 			int month = atoi(smonth.c_str());
 			int occurence = atoi(soccurence.c_str());

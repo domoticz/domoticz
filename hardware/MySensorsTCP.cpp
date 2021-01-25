@@ -128,6 +128,6 @@ void MySensorsTCP::WriteInt(const std::string &sendStr)
 	{
 		return;
 	}
-	write((const unsigned char*)sendStr.c_str(), sendStr.size());
+	write(reinterpret_cast<const unsigned char *>(sendStr.c_str()), sendStr.size());
 }
 

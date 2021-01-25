@@ -44,7 +44,7 @@ void CCameraHandler::ReloadCameras()
 			citem.Username = base64_decode(sd[4]);
 			citem.Password = base64_decode(sd[5]);
 			citem.ImageURL = sd[6];
-			citem.Protocol = (eCameraProtocol)atoi(sd[7].c_str());
+			citem.Protocol = eCameraProtocol(atoi(sd[7].c_str()));
 			m_cameradevices.push_back(citem);
 			_AddedCameras.push_back(sd[0]);
 		}
@@ -71,7 +71,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 		{
 			cameraActiveDevice aDevice;
 			aDevice.ID = std::stoull(sd[0]);
-			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
+			aDevice.DevSceneType = uint8_t(atoi(sd[1].c_str()));
 			aDevice.DevSceneRowID = std::stoull(sd[2]);
 			pCamera->mActiveDevices.push_back(aDevice);
 		}
@@ -173,7 +173,7 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 			{
 				char buf[512];
 				while (is.read(buf, sizeof(buf)).gcount() > 0)
-					camimage.insert(camimage.end(), buf, buf + (unsigned int)is.gcount());
+					camimage.insert(camimage.end(), buf, buf + uint32_t(is.gcount()));
 				is.close();
 				std::remove(OutputFileName.c_str());
 				return true;
@@ -217,7 +217,7 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 			{
 				char buf[512];
 				while (is.read(buf, sizeof(buf)).gcount() > 0)
-					camimage.insert(camimage.end(), buf, buf + (unsigned int)is.gcount());
+					camimage.insert(camimage.end(), buf, buf + uint32_t(is.gcount()));
 				is.close();
 				std::remove(OutputFileName.c_str());
 				return true;

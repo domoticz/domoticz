@@ -266,7 +266,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pflow1 = m_status.flow1;
 			m_status.time1 = atime;
 			SendMeterSensor(m_HwdID, 1, 255, m_status.index1 / 1000.0F, m_status.hostname + " Counter 1");
-			SendWaterflowSensor(m_HwdID, 2, 255, (float)m_status.flow1, m_status.hostname + " Flow counter 1");
+			SendWaterflowSensor(m_HwdID, 2, 255, float(m_status.flow1), m_status.hostname + " Flow counter 1");
 		}
 
 		// Process Counter 2
@@ -277,7 +277,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pflow2 = m_status.flow2;
 			m_status.time2 = atime;
 			SendMeterSensor(m_HwdID, 3, 255, m_status.index2 / 1000.0F, m_status.hostname + " Counter 2");
-			SendWaterflowSensor(m_HwdID, 4, 255, (float)m_status.flow2, m_status.hostname + " Flow counter 2");
+			SendWaterflowSensor(m_HwdID, 4, 255, float(m_status.flow2), m_status.hostname + " Flow counter 2");
 		}
 	}
 	else
@@ -451,7 +451,7 @@ void CEcoDevices::GetMeterRT2Details()
 
 	//Measured voltage on power supply
 	m_status.voltage = i_xpath_int(XMLdoc.RootElement(), "/response/vmesure/text()");
-	SendVoltageSensor(m_HwdID, 1, 255, (float)m_status.voltage, "EcoDevice RT2");
+	SendVoltageSensor(m_HwdID, 1, 255, float(m_status.voltage), "EcoDevice RT2");
 
 	// Teleinfo data processing
 	for (i = 0; i < 32; i++)
@@ -509,11 +509,11 @@ void CEcoDevices::GetMeterRT2Details()
 		if (splitresults[0].empty())
 			break;
 
-		fvalue1 = (float)atof(splitresults[0].c_str());
+		fvalue1 = float(atof(splitresults[0].c_str()));
 		if (fvalue1 > 0)
 			SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
-		fvalue2 = (float)atof(splitresults[1].c_str());
+		fvalue2 = float(atof(splitresults[1].c_str()));
 		if (fvalue2 > 0)
-			SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
+			SendWaterflowSensor(m_HwdID, uint8_t(i), 255, fvalue2, m_status.hostname + " " + label);
 	}
 }

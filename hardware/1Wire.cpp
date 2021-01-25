@@ -440,7 +440,7 @@ void C1Wire::ReportWiper(const std::string& deviceId, const int wiper)
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
 	int NodeID = (deviceIdByteArray[0] << 24) | (deviceIdByteArray[1] << 16) | (deviceIdByteArray[2] << 8) | (deviceIdByteArray[3]);
-	unsigned int value = static_cast<int>(wiper * (100.0 / 255.0));
+	unsigned int value = int(wiper * (100.0 / 255.0));
 	SendSwitch(NodeID, 0, 255, wiper > 0, value, "Wiper", m_Name);
 }
 
@@ -506,7 +506,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
-	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1] + unit, 255, (const float)counter / 1000.0F, "Counter");
+	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1] + unit, 255, float(counter) / 1000.0F, "Counter");
 }
 
 void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, const int voltage)
@@ -521,11 +521,11 @@ void C1Wire::ReportVoltage(const std::string& /*deviceId*/, const int unit, cons
 	tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 	tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 	tsen.RFXSENSOR.rssi = 12;
-	tsen.RFXSENSOR.id = (uint8_t)(unit + 1);
+	tsen.RFXSENSOR.id = uint8_t(unit + 1);
 
-	tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-	tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+	tsen.RFXSENSOR.msg1 = BYTE(voltage / 256);
+	tsen.RFXSENSOR.msg2 = BYTE(voltage - (tsen.RFXSENSOR.msg1 * 256));
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXSENSOR), nullptr, 255, nullptr);
 }
 
 void C1Wire::ReportIlluminance(const std::string& deviceId, const float illuminescence)

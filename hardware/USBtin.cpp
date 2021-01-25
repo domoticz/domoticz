@@ -237,7 +237,7 @@ void USBtin::readCallback(const char *data, size_t len)
 		_log.Log(LOG_ERROR,"USBtin: Warning Error buffer size reaches/ maybe Can is overrun...");
 		return;
 	}
-	ParseData(data, static_cast<int>(len));
+	ParseData(data, int(len));
 }
 
 void USBtin::ParseData(const char *pData, int Len)
@@ -267,29 +267,29 @@ void USBtin::ParseData(const char *pData, int Len)
 		{
 			m_USBtinBelErrorCount = 0;
 			if( m_USBtinBuffer[0] == USBTIN_HARDWARE_VERSION ){
-				strncpy(value, (char*)&(m_USBtinBuffer[1]), 4);
+				strncpy(value, &(m_USBtinBuffer[1]), 4);
 				_log.Log(LOG_STATUS,"USBtin: Hardware Version: %s", value);
 
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_FIRMWARE_VERSION ){
-				strncpy(value, (char*)&(m_USBtinBuffer[1]), 4);
+				strncpy(value, &(m_USBtinBuffer[1]), 4);
 				_log.Log(LOG_STATUS,"USBtin: Firware Version: %s", value);
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_SERIAL_NUMBER ){
-				strncpy(value, (char*)&(m_USBtinBuffer[1]), 4);
+				strncpy(value, &(m_USBtinBuffer[1]), 4);
 				_log.Log(LOG_STATUS,"USBtin: Serial Number: %s", value);
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_CR ){
 				_log.Log(LOG_STATUS,"USBtin: return OK :-)");
 			}
 			else if( m_USBtinBuffer[0] == USBTIN_EXT_TRAME_RECEIVE ){ // Receive Extended Frame :
-				strncpy(value, (char*)&(m_USBtinBuffer[1]), 8); //take the "Extended ID" CAN parts and paste it in the char table
+				strncpy(value, &(m_USBtinBuffer[1]), 8);	  // take the "Extended ID" CAN parts and paste it in the char table
 				int IDhexNumber;
 				sscanf(value, "%x", &IDhexNumber); //IDhexNumber now contains the the digital value of the Ext ID
 
 				memset(&value[0], 0, sizeof(value));
 
-				strncpy(value, (char*)&(m_USBtinBuffer[9]), 1); //read the DLC (lenght of message)
+				strncpy(value, &(m_USBtinBuffer[9]), 1); // read the DLC (lenght of message)
 				int DLChexNumber;
 				sscanf(value, "%x", &DLChexNumber);
 
@@ -304,7 +304,7 @@ void USBtin::ParseData(const char *pData, int Len)
 					{
 						ValData = 0;
 
-						strncpy(value, (char*)&(m_USBtinBuffer[10+(2*i)]), 2); //to fill the Buffer of 8 bytes
+						strncpy(value, &(m_USBtinBuffer[10 + (2 * i)]), 2); // to fill the Buffer of 8 bytes
 						sscanf(value, "%x", &ValData);
 
 						Buffer_Octets[i]=ValData;
@@ -347,7 +347,7 @@ void USBtin::ParseData(const char *pData, int Len)
 
 bool USBtin::writeFrame(const std::string & data)
 {
-	char length = (uint8_t)data.size();
+	char length = uint8_t(data.size());
 	if (!isOpen()){
 		return false;
 	}

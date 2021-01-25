@@ -326,7 +326,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 		return; //not interested in the last will
 	std::string topic = message->topic;
 
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage = std::string(static_cast<char *>(message->payload), static_cast<char *>(message->payload) + message->payloadlen);
 
 #ifdef DEBUG_OCTO_W
 	SaveString2Disk(qMessage, "E:\\OCTO_mqtt.json");
@@ -388,7 +388,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 						return; //do not update faster then 30 seconds
 				}
 				m_LastSendTemp[szSensorName] = atime;
-				int crcID = Crc32(0, (const unsigned char*)szSensorName.c_str(), szSensorName.length());
+				int crcID = Crc32(0, reinterpret_cast<const unsigned char *>(szSensorName.c_str()), szSensorName.length());
 				SendTempSensor(crcID, 255, std::stof(root["actual"].asString()), szSensorName);
 			}
 			else if (szMsgType == "progress")

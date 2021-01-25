@@ -65,7 +65,7 @@ bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char /*leng
 		{
 			unsigned char SendBuf[3];
 			SendBuf[0] = 0xFF;
-			SendBuf[1] = (uint8_t)node_id;
+			SendBuf[1] = uint8_t(node_id);
 			SendBuf[2] = (pCmd->LIGHTING2.cmnd == light2_sOn) ? 1 : 0;
 			WriteInt(SendBuf, 3,false);
 			return true;

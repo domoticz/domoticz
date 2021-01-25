@@ -192,29 +192,29 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 
 		tsen.ENERGY.battery_level=9;
 
-		unsigned long long instant=(unsigned long long)(musage*1000.0);
-		tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
+		uint64_t instant = uint64_t(musage * 1000.0);
+		tsen.ENERGY.instant1 = uint8_t(instant / 0x1000000);
 		instant-=tsen.ENERGY.instant1*0x1000000;
-		tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
+		tsen.ENERGY.instant2 = uint8_t(instant / 0x10000);
 		instant-=tsen.ENERGY.instant2*0x10000;
-		tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
+		tsen.ENERGY.instant3 = uint8_t(instant / 0x100);
 		instant-=tsen.ENERGY.instant3*0x100;
-		tsen.ENERGY.instant4=(unsigned char)(instant);
+		tsen.ENERGY.instant4 = uint8_t(instant);
 
 		double total=(mtotal*1000.0)*223.666;
-		tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
+		tsen.ENERGY.total1 = uint8_t(total / 0x10000000000ULL);
 		total-=tsen.ENERGY.total1*0x10000000000ULL;
-		tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
+		tsen.ENERGY.total2 = uint8_t(total / 0x100000000ULL);
 		total-=tsen.ENERGY.total2*0x100000000ULL;
-		tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
+		tsen.ENERGY.total3 = uint8_t(total / 0x1000000);
 		total-=tsen.ENERGY.total3*0x1000000;
-		tsen.ENERGY.total4=(unsigned char)(total/0x10000);
+		tsen.ENERGY.total4 = uint8_t(total / 0x10000);
 		total-=tsen.ENERGY.total4*0x10000;
-		tsen.ENERGY.total5=(unsigned char)(total/0x100);
+		tsen.ENERGY.total5 = uint8_t(total / 0x100);
 		total-=tsen.ENERGY.total5*0x100;
-		tsen.ENERGY.total6=(unsigned char)(total);
+		tsen.ENERGY.total6 = uint8_t(total);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, nullptr, 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.ENERGY), nullptr, 255, nullptr);
 	}
 	else if (meterype==MTYPE_GAS)
 	{
@@ -222,9 +222,9 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		m_p1gas.len=sizeof(P1Gas)-1;
 		m_p1gas.type=pTypeP1Gas;
 		m_p1gas.subtype=sTypeP1Gas;
-		m_p1gas.gasusage=(unsigned long)(mtotal*1000.0);
+		m_p1gas.gasusage = uint32_t(mtotal * 1000.0);
 		m_p1gas.ID = ID;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, nullptr, 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1gas), nullptr, 255, nullptr);
 	}
 	else
 	{
@@ -239,13 +239,13 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.RFXMETER.id1=0;
 		tsen.RFXMETER.id2=ID;
 
-		unsigned long counterA=(unsigned long)(mtotal*1000.0);
+		uint64_t counterA = uint64_t(mtotal * 1000.0);
 
-		tsen.RFXMETER.count1 = (BYTE)((counterA & 0xFF000000) >> 24);
-		tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
-		tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
-		tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+		tsen.RFXMETER.count1 = BYTE((counterA & 0xFF000000) >> 24);
+		tsen.RFXMETER.count2 = BYTE((counterA & 0x00FF0000) >> 16);
+		tsen.RFXMETER.count3 = BYTE((counterA & 0x0000FF00) >> 8);
+		tsen.RFXMETER.count4 = BYTE(counterA & 0x000000FF);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 	}
 }
 
@@ -253,7 +253,7 @@ void S0MeterBase::ParseLine()
 {
 	if (m_bufferpos<2)
 		return;
-	std::string sLine((char*)&m_buffer);
+	std::string sLine(reinterpret_cast<char *>(&m_buffer));
 
 	std::vector<std::string> results;
 	StringSplit(sLine,":",results);
@@ -291,8 +291,8 @@ void S0MeterBase::ParseLine()
 
 			double s0_pulse = atof(results[roffset + 1].c_str());
 
-			unsigned long LastTotalPulses = m_meters[ii].total_pulses;
-			m_meters[ii].total_pulses = (unsigned long)atol(results[roffset + 2].c_str());
+			uint32_t LastTotalPulses = m_meters[ii].total_pulses;
+			m_meters[ii].total_pulses = uint32_t(atol(results[roffset + 2].c_str()));
 			if (m_meters[ii].total_pulses < LastTotalPulses)
 			{
 				//counter has looped
@@ -302,7 +302,7 @@ void S0MeterBase::ParseLine()
 
 			if (s0_pulse != 0)
 			{
-				double pph = ((double)m_meters[ii].m_pulse_per_unit) / 1000; // Pulses per (watt) hour
+				double pph = (m_meters[ii].m_pulse_per_unit) / 1000; // Pulses per (watt) hour
 				double ActualUsage = ((3600.0 / double(m_meters[ii].m_PacketsSinceLastPulseChange*s0_pulse_interval) / pph) * s0_pulse);
 				m_meters[ii].m_PacketsSinceLastPulseChange = 0;
 
@@ -340,7 +340,8 @@ void S0MeterBase::ParseLine()
 				if (m_meters[ii].first_total_pulses_received == 0)
 					m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
 
-				double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
+				double counter_value =
+					m_meters[ii].m_counter_start + ((double(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / (m_meters[ii].m_pulse_per_unit)));
 				m_meters[ii].m_current_counter = counter_value;
 				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, counter_value);
 			}

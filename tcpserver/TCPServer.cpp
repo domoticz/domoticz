@@ -171,7 +171,7 @@ unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 	_tRemoteShareUser *pUser=FindUser(username);
 	if (pUser == nullptr)
 		return 0;
-	return (unsigned int) pUser->Devices.size();
+	return static_cast<unsigned int>(pUser->Devices.size());
 }
 
 void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)

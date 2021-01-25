@@ -143,7 +143,7 @@ void BleBox::GetDevicesState()
 					const std::string currentColor = root["light"]["currentColor"].asString();
 					unsigned int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
-					int level = (int)(hexNumber / (255.0 / 100.0));
+					int level = int(hexNumber / (255.0 / 100.0));
 
 					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[device.second].name);
 					break;
@@ -176,7 +176,7 @@ void BleBox::GetDevicesState()
 						break;
 
 					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
-					int level = (int)(currentPos / (255.0 / 100.0));
+					int level = int(currentPos / (255.0 / 100.0));
 
 					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[device.second].name);
 					break;
@@ -191,7 +191,7 @@ void BleBox::GetDevicesState()
 					{
 						if ((DoesNodeExists(relay, "relay") == false) || (DoesNodeExists(relay, "state") == false))
 							break;
-						uint8_t relayNumber = (uint8_t)relay["relay"].asInt(); // 0 or 1
+						uint8_t relayNumber = uint8_t(relay["relay"].asInt()); // 0 or 1
 						bool currentState = relay["state"].asBool();	       // 0 or 1
 						// std::string name = DevicesType[device.second].name + " " + relay["state"].asString();
 						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[device.second].name);
@@ -216,7 +216,7 @@ void BleBox::GetDevicesState()
 						Json::Value sensor = sensors[index];
 						if ((DoesNodeExists(sensor, "type") == false) || (DoesNodeExists(sensor, "value") == false))
 							break;
-						uint8_t value = (uint8_t)sensor["value"].asInt();
+						uint8_t value = uint8_t(sensor["value"].asInt());
 						std::string type = sensor["type"].asString();
 
 						// TODO - how save IP address ??
@@ -248,8 +248,7 @@ void BleBox::GetDevicesState()
 						}
 
 						std::string temperature = sensor["value"].asString(); // xxxx (xx.xx = temperature)
-						float ftemp = static_cast<float>(std::stoi(temperature.substr(0, 2))
-										 + std::stoi(temperature.substr(2, 2)) / 100.0);
+						float ftemp = float(std::stoi(temperature.substr(0, 2)) + std::stoi(temperature.substr(2, 2)) / 100.0);
 
 						// TODO - how save IP address ??
 						SendTempSensor(IP, 255, ftemp, DevicesType[device.second].name);
@@ -311,8 +310,8 @@ std::string BleBox::IPToHex(const std::string & IPAddress, const int type)
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeColorSwitch)
 	{
-		uint32_t sID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
-		sprintf(szIdx, "%08X", (unsigned int)sID);
+		uint32_t sID = uint32_t(atoi(strarray[0].c_str()) << 24) | uint32_t(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
+		sprintf(szIdx, "%08X", uint32_t(sID));
 	}
 	else
 	{
@@ -383,7 +382,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 					}
 					else
 					{
-						uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
+						uint8_t percentage = uint8_t(output->LIGHTING2.level * 255 / 15);
 
 						char value[4];
 						sprintf(value, "%x", percentage);
@@ -420,7 +419,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 					}
 					else
 					{
-						uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
+						uint8_t percentage = uint8_t(output->LIGHTING2.level * 255 / 15);
 
 						char value[4];
 						sprintf(value, "%x", percentage);
@@ -602,8 +601,8 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 			// No break, fall through to send combined color + brightness command
 		}
 		case Color_SetBrightnessLevel: {
-			int BrightnessBase = (int)pLed->value;
-			int dMax_Send = (int)(round((255.0F / 100.0F) * float(BrightnessBase)));
+			int BrightnessBase = int(pLed->value);
+			int dMax_Send = int(round((255.0F / 100.0F) * float(BrightnessBase)));
 
 			m_RGBWbrightnessState = dMax_Send;
 
@@ -687,13 +686,13 @@ void BleBox::SetSettings(const int pollIntervalSec)
 void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string & defaultname)
 { //TODO - remove this method, when in DomoticzHardware bug is fix (15 instead 16)
 	double rlevel = (15.0 / 100.0) * Level;
-	uint8_t level = (uint8_t)(rlevel);
+	uint8_t level = uint8_t(rlevel);
 
 	//make device ID
-	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
-	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
-	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
-	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+	uint8_t ID1 = uint8_t((NodeID & 0xFF000000) >> 24);
+	uint8_t ID2 = uint8_t((NodeID & 0xFF0000) >> 16);
+	uint8_t ID3 = uint8_t((NodeID & 0xFF00) >> 8);
+	uint8_t ID4 = uint8_t(NodeID) & 0xFF;
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
@@ -740,7 +739,7 @@ void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int Batte
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatteryLevel, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), BatteryLevel, m_Name.c_str());
 }
 
 
@@ -1058,9 +1057,9 @@ std::string BleBox::GetUptime(const std::string & IPAddress)
 	else
 		return "unknown";
 
-	int days = static_cast<int>(total_minutes / (24 * 60));
-	int hours = static_cast<int>(total_minutes / 60 - days * 24);
-	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
+	int days = int(total_minutes / (24 * 60));
+	int hours = int(total_minutes / 60 - days * 24);
+	int mins = int(total_minutes - days * 24 * 60 - hours * 60); // sec / 60 - day * (24 * 60) - hour * 60;
 
 	char timestring[32];
 	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
@@ -1096,19 +1095,19 @@ void BleBox::AddNode(const std::string & name, const std::string & IPAddress, bo
 
 	if (deviceType.unit == 4) // gatebox
 	{
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, uint8_t(deviceType.deviceID), deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 2, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
 		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
 	}
 	else
 		if (deviceType.unit == 6) // switchboxd
 		{
-			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
-			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, uint8_t(deviceType.deviceID), deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, uint8_t(deviceType.deviceID), deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 		}
 		else
 		{
-			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, (uint8_t)deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+			m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, uint8_t(deviceType.deviceID), deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 		}
 
 	if (reloadNodes)

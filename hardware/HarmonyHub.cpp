@@ -79,7 +79,7 @@ History:
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port):
 m_szHarmonyAddress(IPAddress)
 {
-	m_usHarmonyPort = (unsigned short)port;
+	m_usHarmonyPort = uint16_t(port);
 	m_HwdID=ID;
 	Init();
 }
@@ -210,7 +210,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
-		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
+		int lookUpId = (pCmd->LIGHTING2.id1 << 24) | (pCmd->LIGHTING2.id2 << 16) | (pCmd->LIGHTING2.id3 << 8) | int(pCmd->LIGHTING2.id4);
 		std::string realID = std::to_string(lookUpId);
 
 		if (pCmd->LIGHTING2.cmnd == 0)
@@ -432,13 +432,13 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	// get the device id from the db (if already inserted)
 	int actId=atoi(activityID.c_str());
 	std::stringstream hexId ;
-	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << (int)( actId) ;
+	hexId << std::setw(7) << std::hex << std::setfill('0') << std::uppercase << (actId);
 	std::string actHex = hexId.str();
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, actHex.c_str());
 	if (!result.empty())
 	{
-		UpdateSwitch((uint8_t)(atoi(result[0][1].c_str())), activityID.c_str(),on,result[0][0]);
+		UpdateSwitch(uint8_t(atoi(result[0][1].c_str())), activityID.c_str(), on, result[0][0]);
 	}
 }
 
@@ -451,7 +451,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const bool bOn, const std::string &defaultname)
 {
 	std::stringstream hexId ;
-	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
+	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (atoi(realID));
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, hexId.str().c_str());
 	if (!result.empty())
@@ -490,7 +490,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const 
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 
@@ -543,7 +543,7 @@ void CHarmonyHub::ResetCommunicationSocket()
 
 int CHarmonyHub::WriteToSocket(std::string *szReq)
 {
-	int ret =  m_connection->write(szReq->c_str(), static_cast<unsigned int>(szReq->length()));
+	int ret = m_connection->write(szReq->c_str(), uint32_t(szReq->length()));
 	if (ret > 0)
 		m_bWantAnswer = true;
 	return ret;
@@ -909,9 +909,9 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 				if (m_szCurActivityID.empty()) // initialize all switches
 				{
 					m_szCurActivityID = szCurrentActivity;
-					for (const auto & itt : m_mapActivities)
+					for (const auto &activity : m_mapActivities)
 					{
-						UpdateSwitch(0, itt.first.c_str(), (m_szCurActivityID == itt.first), itt.second);
+						UpdateSwitch(0, activity.first.c_str(), (m_szCurActivityID == activity.first), activity.second);
 					}
 				}
 				else if (m_szCurActivityID != szCurrentActivity)
@@ -977,11 +977,10 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 
 		try
 		{
-			int totActivities = (int)j_result["activity"].size();
-			for (int ii = 0; ii < totActivities; ii++)
+			for (const auto &activity : j_result["activity"])
 			{
-				std::string aID = j_result["activity"][ii]["id"].asString();
-				std::string aLabel = j_result["activity"][ii]["label"].asString();
+				std::string aID = activity["id"].asString();
+				std::string aLabel = activity["label"].asString();
 				m_mapActivities[aID] = aLabel;
 			}
 		}
@@ -994,14 +993,12 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 		{
 			std::string resultString = "Harmony Hub: Activity list: {";
 
-			std::map<std::string, std::string>::iterator it = m_mapActivities.begin();
-			std::map<std::string, std::string>::iterator ite = m_mapActivities.end();
-			for (; it != ite; ++it)
+			for (const auto &activity : m_mapActivities)
 			{
 				resultString.append("\"");
-				resultString.append(it->second);
+				resultString.append(activity.second);
 				resultString.append("\":\"");
-				resultString.append(it->first);
+				resultString.append(activity.first);
 				resultString.append("\",");
 			}
 			resultString=resultString.substr(0, resultString.size()-1);

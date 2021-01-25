@@ -103,8 +103,8 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 		if (m_Cmd == _eDaeTcpState::DAE_WIFI16_ASK_CMD) {
 			uint8_t firstEight, secondEight;
 			if (length == 2) {
-				firstEight = (unsigned char)pData[0];
-				secondEight = (unsigned char)pData[1];
+				firstEight = pData[0];
+				secondEight = pData[1];
 			}
 			else {
 				Log(LOG_ERROR, "%s: Response error!",szDenkoviHardwareNamesTCP[m_iModel]);
@@ -122,8 +122,8 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 	}
 	case DDEV_SmartDEN_IP_16_R_MT_MODBUS:
 	case DDEV_WIFI_16R_Modbus: {
-		m_respBuff.append((const char * )pData, length);
-		m_uiReceivedDataLength += (uint16_t)length;
+		m_respBuff.append(reinterpret_cast<const char *>(pData), length);
+		m_uiReceivedDataLength += uint16_t(length);
 
 		if (m_Cmd == _eDaeTcpState::DAE_READ_COILS_CMD && m_uiReceivedDataLength >= READ_COILS_CMD_LENGTH) {
 			ConvertResponse(m_respBuff, m_uiReceivedDataLength);
@@ -138,8 +138,8 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 				break;
 			}
 			uint8_t firstEight, secondEight;
-			firstEight = (uint8_t)m_pResp.data[0];
-			secondEight = (uint8_t)m_pResp.data[1];
+			firstEight = m_pResp.data[0];
+			secondEight = m_pResp.data[1];
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii), m_Name);
 			}
@@ -263,11 +263,11 @@ bool CDenkoviTCPDevices::WriteToHardware(const char *pdata, const unsigned char 
 		m_pReq.prId[0] = 0;
 		m_pReq.prId[1] = 0;
 		m_uiTransactionCounter++;
-		m_pReq.trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
-		m_pReq.trId[1] = (uint8_t)(m_uiTransactionCounter);
-		m_pReq.unitId = (uint8_t)m_slaveId;
+		m_pReq.trId[0] = uint8_t(m_uiTransactionCounter >> 8);
+		m_pReq.trId[1] = uint8_t(m_uiTransactionCounter);
+		m_pReq.unitId = uint8_t(m_slaveId);
 		m_pReq.address[0] = 0;
-		m_pReq.address[1] = (uint8_t)(io - 1);
+		m_pReq.address[1] = uint8_t(io - 1);
 		m_pReq.fc = DMODBUS_WRITE_SINGLE_COIL;
 		m_pReq.length[0] = 0;
 		m_pReq.length[1] = 6;
@@ -306,14 +306,14 @@ void CDenkoviTCPDevices::GetMeterDetails()
 		m_pReq.prId[0] = 0;
 		m_pReq.prId[1] = 0;
 		m_uiTransactionCounter++;
-		m_pReq.trId[0] = (uint8_t)(m_uiTransactionCounter >> 8);
-		m_pReq.trId[1] = (uint8_t)(m_uiTransactionCounter);
+		m_pReq.trId[0] = uint8_t(m_uiTransactionCounter >> 8);
+		m_pReq.trId[1] = uint8_t(m_uiTransactionCounter);
 		m_pReq.address[0] = 0;
 		m_pReq.address[1] = 0;
 		m_pReq.fc = DMODBUS_READ_COILS;
 		m_pReq.length[0] = 0;
 		m_pReq.length[1] = 6;
-		m_pReq.unitId = (uint8_t)m_slaveId;
+		m_pReq.unitId = uint8_t(m_slaveId);
 		m_pReq.data[0] = 0;
 		m_pReq.data[1] = 16;
 		size_t dataLength = m_pReq.length[1] + 6;

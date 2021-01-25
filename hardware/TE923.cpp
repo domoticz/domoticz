@@ -194,27 +194,27 @@ void CTE923::GetSensorDetails()
 
 		float winddir = float(data.wDir) * 22.5F;
 		int aw=round(winddir);
-		tsen.WIND.directionh=(BYTE)(aw/256);
+		tsen.WIND.directionh = BYTE(aw / 256);
 		aw-=(tsen.WIND.directionh*256);
-		tsen.WIND.directionl=(BYTE)(aw);
+		tsen.WIND.directionl = BYTE(aw);
 
 		tsen.WIND.av_speedh=0;
 		tsen.WIND.av_speedl=0;
 		if (data._wSpeed==0)
 		{
 			int sw = round(data.wSpeed * 10.0F);
-			tsen.WIND.av_speedh=(BYTE)(sw/256);
+			tsen.WIND.av_speedh = BYTE(sw / 256);
 			sw-=(tsen.WIND.av_speedh*256);
-			tsen.WIND.av_speedl=(BYTE)(sw);
+			tsen.WIND.av_speedl = BYTE(sw);
 		}
 		tsen.WIND.gusth=0;
 		tsen.WIND.gustl=0;
 		if (data._wGust==0)
 		{
 			int gw = round(data.wGust * 10.0F);
-			tsen.WIND.gusth=(BYTE)(gw/256);
+			tsen.WIND.gusth = BYTE(gw / 256);
 			gw-=(tsen.WIND.gusth*256);
-			tsen.WIND.gustl=(BYTE)(gw);
+			tsen.WIND.gustl = BYTE(gw);
 		}
 
 		//this is not correct, why no wind temperature? and only chill?
@@ -227,14 +227,14 @@ void CTE923::GetSensorDetails()
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
 			int at10 = round(std::abs(data.wChill * 10.0F));
-			tsen.WIND.temperatureh=(BYTE)(at10/256);
-			tsen.WIND.chillh=(BYTE)(at10/256);
+			tsen.WIND.temperatureh = BYTE(at10 / 256);
+			tsen.WIND.chillh = BYTE(at10 / 256);
 			at10-=(tsen.WIND.chillh*256);
-			tsen.WIND.temperaturel=(BYTE)(at10);
-			tsen.WIND.chilll=(BYTE)(at10);
+			tsen.WIND.temperaturel = BYTE(at10);
+			tsen.WIND.chilll = BYTE(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, -1, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.WIND), nullptr, -1, nullptr);
 	}
 
 	//Rain

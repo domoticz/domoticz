@@ -133,7 +133,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 
 void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 {
-	buffer.append((const char*)data, len);
+	buffer.append(reinterpret_cast<const char *>(data), len);
 
 	std::stringstream stream(buffer);
 	std::string line;
@@ -157,7 +157,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 	}
 
 	// Trim consumed bytes.
-	buffer.erase(0, buffer.length() - static_cast<unsigned int>(stream.rdbuf()->in_avail()));
+	buffer.erase(0, buffer.length() - uint32_t(stream.rdbuf()->in_avail()));
 }
 
 void Comm5TCP::queryRelayState()

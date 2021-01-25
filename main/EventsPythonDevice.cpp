@@ -14,7 +14,7 @@
           Py_XDECREF(self->n_value_string);
           Py_XDECREF(self->s_value);
           Py_XDECREF(self->last_update_string);
-          Py_TYPE(self)->tp_free((PyObject*)self);
+	  Py_TYPE(self)->tp_free(reinterpret_cast<PyObject *>(self));
       }
 
       PyObject *
@@ -22,7 +22,7 @@
       {
           PDevice *self;
 
-          self = (PDevice *)type->tp_alloc(type, 0);
+	  self = reinterpret_cast<PDevice *>(type->tp_alloc(type, 0));
 	  if (self != nullptr)
 	  {
 		  self->name = PyUnicode_FromString("");
@@ -60,7 +60,7 @@
 		  self->switch_type = 0;
 	  }
 
-	  return (PyObject *)self;
+	  return reinterpret_cast<PyObject *>(self);
       }
 
       int

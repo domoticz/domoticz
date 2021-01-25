@@ -104,7 +104,7 @@ void CRFLinkTCP::Do_Work()
 
 void CRFLinkTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData((const char*)pData,length);
+	ParseData(reinterpret_cast<const char *>(pData), length);
 }
 
 void CRFLinkTCP::OnError(const boost::system::error_code& error)

@@ -214,7 +214,7 @@ void CDarkSky::GetMeterDetails()
 	if (barometric!=0)
 	{
 		//Add temp+hum+baro device
-		SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+		SendTempHumBaroSensor(1, 255, temp, humidity, float(barometric), barometric_forcast, "THB");
 	}
 	else if (humidity!=0)
 	{
@@ -244,7 +244,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["windSpeed"] != "N/A") && (root["currently"]["windSpeed"] != "--"))
 		{
-			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
+			float temp_wind_mph = float(atof(root["currently"]["windSpeed"].asString().c_str()));
 			if (temp_wind_mph != -9999.00F)
 			{
 				//convert to m/s
@@ -256,7 +256,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["windGust"] != "N/A") && (root["currently"]["windGust"] != "--"))
 		{
-			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
+			float temp_wind_gust_mph = float(atof(root["currently"]["windGust"].asString().c_str()));
 			if (temp_wind_gust_mph != -9999.00F)
 			{
 				//convert to m/s
@@ -268,7 +268,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["apparentTemperature"] != "N/A") && (root["currently"]["apparentTemperature"] != "--"))
 		{
-			wind_chill = static_cast<float>(atof(root["currently"]["apparentTemperature"].asString().c_str()));
+			wind_chill = float(atof(root["currently"]["apparentTemperature"].asString().c_str()));
 			//Convert to celcius
 			wind_chill=float((wind_chill-32)*(5.0/9.0));
 		}
@@ -287,23 +287,23 @@ void CDarkSky::GetMeterDetails()
 
 		float winddir=float(wind_degrees);
 		int aw=round(winddir);
-		tsen.WIND.directionh=(BYTE)(aw/256);
+		tsen.WIND.directionh = BYTE(aw / 256);
 		aw-=(tsen.WIND.directionh*256);
-		tsen.WIND.directionl=(BYTE)(aw);
+		tsen.WIND.directionl = BYTE(aw);
 
 		tsen.WIND.av_speedh=0;
 		tsen.WIND.av_speedl=0;
 		int sw = round(windspeed_ms * 10.0F);
-		tsen.WIND.av_speedh=(BYTE)(sw/256);
+		tsen.WIND.av_speedh = BYTE(sw / 256);
 		sw-=(tsen.WIND.av_speedh*256);
-		tsen.WIND.av_speedl=(BYTE)(sw);
+		tsen.WIND.av_speedl = BYTE(sw);
 
 		tsen.WIND.gusth=0;
 		tsen.WIND.gustl=0;
 		int gw = round(windgust_ms * 10.0F);
-		tsen.WIND.gusth=(BYTE)(gw/256);
+		tsen.WIND.gusth = BYTE(gw / 256);
 		gw-=(tsen.WIND.gusth*256);
-		tsen.WIND.gustl=(BYTE)(gw);
+		tsen.WIND.gustl = BYTE(gw);
 
 		//this is not correct, why no wind temperature? and only chill?
 		tsen.WIND.chillh=0;
@@ -313,17 +313,17 @@ void CDarkSky::GetMeterDetails()
 
 		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
 		int at10 = round(std::abs(wind_temp * 10.0F));
-		tsen.WIND.temperatureh=(BYTE)(at10/256);
+		tsen.WIND.temperatureh = BYTE(at10 / 256);
 		at10-=(tsen.WIND.temperatureh*256);
-		tsen.WIND.temperaturel=(BYTE)(at10);
+		tsen.WIND.temperaturel = BYTE(at10);
 
 		tsen.WIND.chillsign=(wind_chill>=0)?0:1;
 		at10 = round(std::abs(wind_chill * 10.0F));
-		tsen.WIND.chillh=(BYTE)(at10/256);
+		tsen.WIND.chillh = BYTE(at10 / 256);
 		at10-=(tsen.WIND.chillh*256);
-		tsen.WIND.chilll=(BYTE)(at10);
+		tsen.WIND.chilll = BYTE(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.WIND), nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -344,7 +344,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
-			float rainrateph = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str())) * 25.4F; // inches to mm
+			float rainrateph = float(atof(root["currently"]["precipIntensity"].asString().c_str())) * 25.4F; // inches to mm
 			if ((rainrateph != -9999.00F) && (rainrateph >= 0.00F))
 			{
 				SendRainRateSensor(1, 255, rainrateph, "Rain");
@@ -357,13 +357,13 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
 		{
-			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str())) * 1.60934F; // miles to km
+			float visibility = float(atof(root["currently"]["visibility"].asString().c_str())) * 1.60934F; // miles to km
 			if (visibility>=0)
 			{
 				_tGeneralDevice gdevice;
 				gdevice.subtype=sTypeVisibility;
 				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gdevice), nullptr, 255, nullptr);
 			}
 		}
 	}
@@ -372,7 +372,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
+			float radiation = float(atof(root["currently"]["ozone"].asString().c_str()));
 			if (radiation >= 0.0F)
 			{
 				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
@@ -384,7 +384,7 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["cloudCover"] != "N/A") && (root["currently"]["cloudCover"] != "--"))
 		{
-			float cloudcover = static_cast<float>(atof(root["currently"]["cloudCover"].asString().c_str()));
+			float cloudcover = float(atof(root["currently"]["cloudCover"].asString().c_str()));
 			if (cloudcover >= 0.0F)
 			{
 				SendPercentageSensor(1, 0, 255, cloudcover * 100.0F, "Cloud Cover");

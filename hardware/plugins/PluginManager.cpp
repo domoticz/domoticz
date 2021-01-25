@@ -180,7 +180,7 @@ namespace Plugins {
 		if (Py_LoadLibrary() && m_InitialPythonThread)
 		{
 			if (Py_IsInitialized()) {
-				PyEval_RestoreThread((PyThreadState*)m_InitialPythonThread);
+				PyEval_RestoreThread(static_cast<PyThreadState *>(m_InitialPythonThread));
 				Py_Finalize();
 			}
 		}
@@ -369,7 +369,7 @@ namespace Plugins {
 				if (Message)
 				{
 					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
-					CPlugin* pPlugin = (CPlugin*)Message->Plugin();
+					CPlugin *pPlugin = const_cast<CPlugin *>(Message->Plugin());
 					pPlugin->RestoreThread();
 					delete Message;
 					pPlugin->ReleaseThread();

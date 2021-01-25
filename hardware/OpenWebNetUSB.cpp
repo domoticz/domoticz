@@ -88,7 +88,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 		case sSwitchBlindsT1:
 		case sSwitchLightT1:
 			//Bus command
-			whereStr << (int)(pCmd->id & 0xFFFF);
+			whereStr << (pCmd->id & 0xFFFF);
 			break;
 		case sSwitchBlindsT2:
 		case sSwitchLightT2:
@@ -234,10 +234,10 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 	std::vector<std::vector<std::string> > result;
 
 	//make device ID
-	unsigned char ID1 = (unsigned char)((deviceID & 0xFF000000) >> 24);
-	unsigned char ID2 = (unsigned char)((deviceID & 0xFF0000) >> 16);
-	unsigned char ID3 = (unsigned char)((deviceID & 0xFF00) >> 8);
-	unsigned char ID4 = (unsigned char)(deviceID & 0xFF);
+	uint8_t ID1 = uint8_t((deviceID & 0xFF000000) >> 24);
+	uint8_t ID2 = uint8_t((deviceID & 0xFF0000) >> 16);
+	uint8_t ID3 = uint8_t((deviceID & 0xFF00) >> 8);
+	uint8_t ID4 = uint8_t(deviceID & 0xFF);
 
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
@@ -335,7 +335,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 
-	std::string responseStr((const char*)m_readBuffer, m_readBufferSize);
+	std::string responseStr(reinterpret_cast<const char *>(m_readBuffer), m_readBufferSize);
 	bt_openwebnet responseSession(responseStr);
 	_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", OPENWEBNET_COMMAND_SESSION, responseStr.c_str());
 
@@ -356,7 +356,8 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frameOpen.c_str(), m_readBuffer);
 	}
 
-	if (!ParseData((char*)m_readBuffer, m_readBufferSize, response)) {
+	if (!ParseData(reinterpret_cast<char *>(m_readBuffer), m_readBufferSize, response))
+	{
 		if (!silent) {
 			_log.Log(LOG_ERROR, "COpenWebNet : Cannot parse answer : %s", m_readBuffer);
 		}

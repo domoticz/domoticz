@@ -149,11 +149,11 @@ namespace
 	};
 } // namespace
 
-I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1) :
-	m_dev_type(DevType),
-	m_i2c_addr((uint8_t)atoi(Address.c_str())),
-	m_ActI2CBus(SerialPort),
-	m_invert_data((bool)Mode1)
+I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1)
+	: m_dev_type(DevType)
+	, m_i2c_addr(uint8_t(atoi(Address.c_str())))
+	, m_ActI2CBus(SerialPort)
+	, m_invert_data(bool(Mode1))
 {
 	_log.Log(LOG_STATUS, "I2C  Start HW witf ID: %d Name: %s Address: %d Port: %s Invert:%d ", ID, szI2CTypeNames[m_dev_type], m_i2c_addr, m_ActI2CBus.c_str(), m_invert_data);
 	m_HwdID = ID;
@@ -419,7 +419,7 @@ void I2C::MCP23017_Init()
 				value = true;
 			}
 
-			int DeviceID = (m_i2c_addr << 8) + (unsigned char)unit; 			// DeviceID from i2c_address and pin_number
+			int DeviceID = (m_i2c_addr << 8) + uint8_t(unit);					// DeviceID from i2c_address and pin_number
 			SendSwitch(DeviceID, unit, 255, value, 0, "", m_Name); 					// create or update switch
 			//_log.Log(LOG_NORM, "SendSwitch(DeviceID: %d, unit: %d, value: %d", DeviceID, unit, value );
 		}
@@ -756,7 +756,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 	{
 		if (data & 0x8000)
 		{
-			data = (uint16_t)((data << 1) ^ HTU21D_CRC8_POLYNOMINAL);
+			data = uint16_t((data << 1) ^ HTU21D_CRC8_POLYNOMINAL);
 		}
 		else
 		{
@@ -789,7 +789,7 @@ int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 		return -1;
 	}
 	rawHumidity ^= 0x02;
-	*Hum = -6 + 0.001907 * (float)rawHumidity;
+	*Hum = -6 + 0.001907 * float(rawHumidity);
 	return 0;
 #endif
 }
@@ -819,7 +819,7 @@ int I2C::HTU21D_GetTemperature(int fd, float *Temp)
 		_log.Log(LOG_ERROR, "%s: Incorrect temperature checksum!...", szI2CTypeNames[m_dev_type]);
 		return -1;
 	}
-	*Temp = -46.85 + 0.002681 * (float)rawTemperature;
+	*Temp = -46.85 + 0.002681 * float(rawTemperature);
 	return 0;
 #endif
 }
@@ -1005,7 +1005,7 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 
 	//printf ("\nDelay:%i\n",(BMPx8x_minDelay+(4<<BMPx8x_OverSampling)));
 	if (ReadInt(fd, rValues, BMPx8x_Results, 3) != 0) return -1;
-	up = (((unsigned int)rValues[0] << 16) | ((unsigned int)rValues[1] << 8) | (unsigned int)rValues[2]) >> (8 - BMPx8x_OverSampling);
+	up = ((uint32_t(rValues[0]) << 16) | (uint32_t(rValues[1]) << 8) | uint32_t(rValues[2])) >> (8 - BMPx8x_OverSampling);
 
 	int x1, x2, x3, b3, b6, p;
 	unsigned int b4, b7;
@@ -1014,14 +1014,14 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 	x1 = (bmp_b2 * (b6 * b6) >> 12) >> 11;
 	x2 = (bmp_ac2 * b6) >> 11;
 	x3 = x1 + x2;
-	b3 = (((((int)bmp_ac1) * 4 + x3) << BMPx8x_OverSampling) + 2) >> 2;
+	b3 = ((((int(bmp_ac1)) * 4 + x3) << BMPx8x_OverSampling) + 2) >> 2;
 
 	x1 = (bmp_ac3 * b6) >> 13;
 	x2 = (bmp_b1 * ((b6 * b6) >> 12)) >> 16;
 	x3 = ((x1 + x2) + 2) >> 2;
-	b4 = (bmp_ac4 * (unsigned int)(x3 + 32768)) >> 15;
+	b4 = (bmp_ac4 * uint32_t(x3 + 32768)) >> 15;
 
-	b7 = ((unsigned int)(up - b3) * (50000 >> BMPx8x_OverSampling));
+	b7 = ((up - b3) * (50000 >> BMPx8x_OverSampling));
 	if (b7 < 0x80000000)
 		p = (b7 << 1) / b4;
 	else
@@ -1031,7 +1031,7 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 	x1 = (x1 * 3038) >> 16;
 	x2 = (-7357 * p) >> 16;
 	p += (x1 + x2 + 3791) >> 4;
-	*Pres = ((double)p / 100);
+	*Pres = (double(p) / 100);
 	return 0;
 #endif
 }
@@ -1055,8 +1055,8 @@ int I2C::bmp_GetTemperature(int fd, double *Temp)
 	ut = ((rValues[0] << 8) | rValues[1]);
 
 	int x1, x2;
-	x1 = (((int)ut - (int)bmp_ac6)*(int)bmp_ac5) >> 15;
-	x2 = ((int)bmp_mc << 11) / (x1 + bmp_md);
+	x1 = ((int(ut) - int(bmp_ac6)) * int(bmp_ac5)) >> 15;
+	x2 = (int(bmp_mc) << 11) / (x1 + bmp_md);
 	bmp_b5 = x1 + x2;
 
 	double result = ((bmp_b5 + 8) >> 4);
@@ -1229,7 +1229,7 @@ uint8_t I2C::CalculateForecast(const float pressure)
 				nforecast = bmpbaroforecast_rain;
 			else if (pressure >= 1029)
 				nforecast = bmpbaroforecast_sunny;
-			m_LastSendForecast = (unsigned char)nforecast;
+			m_LastSendForecast = uint8_t(nforecast);
 		}
 		break;
 		}
@@ -1284,8 +1284,8 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	tsensor.forecast = CalculateForecast(((float)pressure) * 10.0F);
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor, nullptr, 255, nullptr);
+	tsensor.forecast = CalculateForecast((float(pressure)) * 10.0F);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsensor), nullptr, 255, nullptr);
 }
 
 bool I2C::readBME280ID(const int fd, int &ChipID, int &Version)
@@ -1318,7 +1318,7 @@ int8_t getChar(uint8_t *data, int index)
 	int result = data[index];
 	if (result > 127)
 		result -= 256;
-	return (int8_t)result;
+	return int8_t(result);
 }
 
 uint8_t getUChar(uint8_t *data, int index)
@@ -1385,7 +1385,7 @@ bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidit
 
 	// Wait in ms(Datasheet Appendix B : Measurement time and current calculation)
 	double wait_time = 1.25 + (2.3 * BMEx8x_OverSampling_Temp) + ((2.3 * BMEx8x_OverSampling_Pres) + 0.575) + ((2.3 * BMEx8x_OverSampling_Hum) + 0.575);
-	int wait_time_ms = (int)rint(wait_time) + 1;
+	int wait_time_ms = int(rint(wait_time)) + 1;
 	sleep_milliseconds(wait_time_ms);
 
 	// Read temperature/pressure/humidity
@@ -1467,7 +1467,7 @@ void I2C::bmp_Read_BME_SensorDetails()
 	}
 	close(fd);
 #endif
-	uint8_t forecast = CalculateForecast(((float)pressure) * 10.0F);
+	uint8_t forecast = CalculateForecast((pressure)*10.0F);
 	//We are using the TempHumBaro Float type now, convert the forecast
 	int nforecast = wsbaroforecast_some_clouds;
 	if (pressure <= 980)

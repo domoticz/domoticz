@@ -129,12 +129,12 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		_log.Log(LOG_STATUS, "YeeLight: Invalid location received! (No IP Address)");
 		return;
 	}
-	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
+	uint32_t sID = uint32_t(atoi(ipaddress[0].c_str()) << 24) | uint32_t(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
 	char szDeviceID[20];
 	if (sID == 1)
 		sprintf(szDeviceID, "%d", 1);
 	else
-		sprintf(szDeviceID, "%08X", (unsigned int)sID);
+		sprintf(szDeviceID, "%08X", uint32_t(sID));
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue, LastLevel, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d)", m_HwdID, szDeviceID, pTypeColorSwitch);
@@ -159,7 +159,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		ycmd.value = value;
 		ycmd.command = cmd;
 		// TODO: Update color
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&ycmd), nullptr, -1, m_Name.c_str());
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
@@ -169,7 +169,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		if (sTypeOld != YeeType)
 		{
 			_log.Log(LOG_STATUS, "YeeLight: Updating SubType of light (%s/%s) from %u to %u", Location.c_str(), lightName.c_str(), sTypeOld, YeeType);
-			m_sql.UpdateDeviceValue("SubType", (int)YeeType, sIdx);
+			m_sql.UpdateDeviceValue("SubType", YeeType, sIdx);
 		}
 
 		int nvalue = atoi(result[0][0].c_str());
@@ -192,7 +192,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			ycmd.value = value;
 			ycmd.command = cmd;
 			// TODO: Update color
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
+			m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&ycmd), nullptr, -1, m_Name.c_str());
 		}
 	}
 }
@@ -211,17 +211,17 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pLed->id == 1)
 		sprintf(szTmp, "%d", 1);
 	else
-		sprintf(szTmp, "%08X", (unsigned int)pLed->id);
+		sprintf(szTmp, "%08X", uint32_t(pLed->id));
 	std::string ID = szTmp;
 
 	std::stringstream s_strid;
 	s_strid << std::hex << ID;
 	s_strid >> lID;
 
-	unsigned char ID1 = (unsigned char)((lID & 0xFF000000) >> 24);
-	unsigned char ID2 = (unsigned char)((lID & 0x00FF0000) >> 16);
-	unsigned char ID3 = (unsigned char)((lID & 0x0000FF00) >> 8);
-	unsigned char ID4 = (unsigned char)((lID & 0x000000FF));
+	uint8_t ID1 = uint8_t((lID & 0xFF000000) >> 24);
+	uint8_t ID2 = uint8_t((lID & 0x00FF0000) >> 16);
+	uint8_t ID3 = uint8_t((lID & 0x0000FF00) >> 8);
+	uint8_t ID4 = uint8_t((lID & 0x000000FF));
 
 	//IP Address
 	sprintf(szTmp, "%d.%d.%d.%d", ID1, ID2, ID3, ID4);

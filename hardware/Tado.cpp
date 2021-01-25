@@ -324,7 +324,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		if (_jsRoot["sensorDataPoints"]["humidity"]["percentage"].isNumeric())
 			fCurrentHumPct = _jsRoot["sensorDataPoints"]["humidity"]["percentage"].asFloat();
 		if (_fCurrentTempC > 0) {
-			SendTempHumSensor(ZoneIndex * 100 + 3, 255, _fCurrentTempC, (int)fCurrentHumPct, home.Name + " " + zone.Name + " TempHum");
+			SendTempHumSensor(ZoneIndex * 100 + 3, 255, _fCurrentTempC, int(fCurrentHumPct), home.Name + " " + zone.Name + " TempHum");
 		}
 
 		// Manual override of zone setpoint
@@ -353,7 +353,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 			_bHeatingOn = _sHeatingPowerPercentage > 0;
 			UpdateSwitch(ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
 
-			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
+			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, float(_sHeatingPowerPercentage), home.Name + " " + zone.Name + " Heating Power");
 		}
 
 		// Open Window Detected
@@ -428,7 +428,7 @@ void CTado::SendSetPointSensor(const int Idx, const float Temp, const std::strin
 
 	thermos.temp = Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 // Creates or updates on/off switches.
@@ -480,7 +480,7 @@ void CTado::UpdateSwitch(const int Idx, const bool bOn, const std::string &defau
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 // Removes any active overlay from a specific zone.
@@ -599,7 +599,8 @@ void CTado::Do_Work()
 			else iTokenCycleCount++;
 
 			// Iterate through the discovered homes and zones. Get some state information.
-			for (int HomeIndex = 0; HomeIndex < (int)m_TadoHomes.size(); HomeIndex++) {
+			for (size_t HomeIndex = 0; HomeIndex < m_TadoHomes.size(); HomeIndex++)
+			{
 
 				if (!GetHomeState(HomeIndex, m_TadoHomes[HomeIndex]))
 				{
@@ -608,7 +609,7 @@ void CTado::Do_Work()
 					continue;
 				}
 
-				for (int ZoneIndex = 0; ZoneIndex < (int)m_TadoHomes[HomeIndex].Zones.size(); ZoneIndex++)
+				for (int ZoneIndex = 0; ZoneIndex < int(m_TadoHomes[HomeIndex].Zones.size()); ZoneIndex++)
 				{
 					if (!GetZoneState(HomeIndex, ZoneIndex, m_TadoHomes[HomeIndex], m_TadoHomes[HomeIndex].Zones[ZoneIndex]))
 					{
@@ -634,9 +635,9 @@ std::vector<std::string> CTado::StringSplitEx(const std::string &inputString, co
 
 	// Else we're building a new vector with all the overflowing elements merged into the last element.
 	std::vector<std::string> cappedArray;
-	for (int i = 0; (unsigned int)i < array.size(); i++)
+	for (size_t i = 0; i < array.size(); i++)
 	{
-		if (i <= maxelements-1)
+		if (int(i) <= maxelements - 1)
 		{
 			cappedArray.push_back(array[i]);
 		}

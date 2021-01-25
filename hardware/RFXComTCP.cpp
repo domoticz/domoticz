@@ -107,6 +107,6 @@ bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!isConnected())
 		return false;
-	write((const unsigned char*)pdata, length);
+	write(reinterpret_cast<const unsigned char *>(pdata), length);
 	return true;
 }

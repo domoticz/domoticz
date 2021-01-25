@@ -81,7 +81,7 @@ class SatelIntegra : public CDomoticzHardwareBase
 	unsigned char m_newData[7];
 
 	// password to Integra
-	unsigned char m_userCode[8];
+	std::array<unsigned char, 8> m_userCode;
 
 	// TODO maybe create dynamic array ?
 	bool m_zonesLastState[256];

@@ -64,8 +64,8 @@ private:
 
   void encode(int a, int b, unsigned short n)
   {
-    rep_[a] = static_cast<unsigned char>(n >> 8);
-    rep_[b] = static_cast<unsigned char>(n & 0xFF);
+	  rep_[a] = uint8_t(n >> 8);
+	  rep_[b] = uint8_t(n & 0xFF);
   }
 
   unsigned char rep_[8];
@@ -81,14 +81,14 @@ void compute_checksum(icmp_header& header,
   Iterator body_iter = body_begin;
   while (body_iter != body_end)
   {
-    sum += (static_cast<unsigned char>(*body_iter++) << 8);
-    if (body_iter != body_end)
-      sum += static_cast<unsigned char>(*body_iter++);
+	  sum += (uint8_t(*body_iter++) << 8);
+	  if (body_iter != body_end)
+		  sum += uint8_t(*body_iter++);
   }
 
   sum = (sum >> 16) + (sum & 0xFFFF);
   sum += (sum >> 16);
-  header.checksum(static_cast<unsigned short>(~sum));
+  header.checksum(uint16_t(~sum));
 }
 
 #endif // ICMP_HEADER_HPP

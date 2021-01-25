@@ -182,7 +182,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "temperature_C"))
 	{
-		tempC = (float)atof(data["temperature_C"].c_str());
+		tempC = float(atof(data["temperature_C"].c_str()));
 		haveTemp = true;
 	}
 	if (FindField(data, "humidity"))
@@ -205,37 +205,37 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "pressure_hPa"))
 	{
-		pressure = (float)atof(data["pressure_hPa"].c_str());
+		pressure = float(atof(data["pressure_hPa"].c_str()));
 		havePressure = true;
 	}
 	if (FindField(data, "pressure_PSI"))
 	{
-		pressure_PSI = (float)atof(data["pressure_PSI"].c_str());
+		pressure_PSI = float(atof(data["pressure_PSI"].c_str()));
 		havePressure_PSI = true;
 	}
 	if (FindField(data, "pressure_kPa"))
 	{
-		pressure = 10.0F * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		pressure = 10.0F * float(atof(data["pressure_kPa"].c_str())); // convert to hPA
 		havePressure = true;
 	}
 	if (FindField(data, "rain_mm"))
 	{
-		rain = (float)atof(data["rain_mm"].c_str());
+		rain = float(atof(data["rain_mm"].c_str()));
 		haveRain = true;
 	}
 	if (FindField(data, "depth_cm"))
 	{
-		depth = (float)atof(data["depth_cm"].c_str());
+		depth = float(atof(data["depth_cm"].c_str()));
 		haveDepth = true;
 	}
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6F;
+		wind_speed = (float(atof(data["wind_avg_km_h"].c_str()))) / 3.6F;
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_avg_m_s")) // wind speed average
 	{
-		wind_speed = (float)atof(data["wind_avg_m_s"].c_str());
+		wind_speed = float(atof(data["wind_avg_m_s"].c_str()));
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_dir_deg"))
@@ -245,12 +245,12 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6F;
+		wind_gust = (float(atof(data["wind_max_km_h"].c_str()))) / 3.6F;
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "wind_max_m_s"))
 	{
-		wind_gust = (float)atof(data["wind_max_m_s"].c_str());
+		wind_gust = float(atof(data["wind_max_m_s"].c_str()));
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "moisture"))
@@ -260,12 +260,12 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "power_W")) // -- power_W,energy_kWh,radio_clock,sequence,
 	{
-		power = (float)atof(data["power_W"].c_str());
+		power = float(atof(data["power_W"].c_str()));
 		havePower = true;
 	}
 	if (FindField(data, "energy_kWh")) // sensor type general subtype electric counter
 	{
-		energy = (float)atof(data["energy_kWh"].c_str());
+		energy = float(atof(data["energy_kWh"].c_str()));
 		haveEnergy = true;
 	}
 	if (FindField(data, "sequence")) // please do not remove : to be added in future PR for data in sensor (for fiability reporting)
@@ -275,7 +275,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "uv"))
 	{
-		uvi = (float)atof(data["uv"].c_str());
+		uvi = float(atof(data["uv"].c_str()));
 		haveUV = true;
 	}
 	if (FindField(data, "snr"))
@@ -286,7 +286,8 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		*/
 		snr = std::stoi(data["snr"]) - 4;
 
-		if (snr > 5) snr -= (int)(snr - 5) / 2;
+		if (snr > 5)
+			snr -= (snr - 5) / 2;
 		if (snr > 11) snr = 11; // Domoticz RSSI field can only be 0-11, 12 is used for non-RF received devices
 		if (snr < 0) snr = 0; // In case snr actually was below 4 dB
 	}
@@ -307,11 +308,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		else if (FindField(data, "command"))
 			bOn = data["command"] == "On";
 		unsigned int switchidx = (id & 0xfffffff) | ((channel & 0xf) << 28);
-		SendSwitch(switchidx,
-			(const uint8_t)unit,
-			batterylevel,
-			bOn,
-			0, model, m_Name, snr);
+		SendSwitch(switchidx, uint8_t(unit), batterylevel, bOn, 0, model, m_Name, snr);
 		bDone = true;
 	}
 	if (FindField(data, "switch1") && FindField(data, "id"))
@@ -328,11 +325,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			{
 				bool bOn = (data[szSwitch] == "CLOSED");
 				unsigned int switchidx = ((idx & 0xffffff) << 8) | (iSwitch + 1);
-				SendSwitch(switchidx,
-					(const uint8_t)unit,
-					batterylevel,
-					bOn,
-					0, model, m_Name, snr);
+				SendSwitch(switchidx, uint8_t(unit), batterylevel, bOn, 0, model, m_Name, snr);
 			}
 			bDone = true;
 		}
@@ -395,18 +388,18 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	if (haveMoisture)
 	{
 		//moisture is in percentage
-		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, static_cast<float>(moisture), model, "%", snr);
+		SendCustomSensor(uint8_t(sensoridx), uint8_t(unit), batterylevel, float(moisture), model, "%", snr);
 		//SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
 		bHandled = true;
 	}
 	if (havePower)
 	{
-		SendWattMeter((uint8_t)sensoridx, (uint8_t)unit, batterylevel, power, model, snr);
+		SendWattMeter(uint8_t(sensoridx), uint8_t(unit), batterylevel, power, model, snr);
 		bHandled = true;
 	}
 	if (havePressure_PSI)
 	{
-		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, pressure_PSI, model, "PSI", snr);
+		SendCustomSensor(uint8_t(sensoridx), uint8_t(unit), batterylevel, pressure_PSI, model, "PSI", snr);
 		bHandled = true;
 	}
 	if (haveEnergy && havePower)
@@ -419,7 +412,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveUV)
 	{
-		SendUVSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, uvi, model, snr);
+		SendUVSensor(uint8_t(sensoridx), uint8_t(unit), batterylevel, uvi, model, snr);
 		bHandled = true;
 	}
 

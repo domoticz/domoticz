@@ -488,7 +488,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (bHaveTemp && bHaveHum && bHaveBaro)
 	{
 		int nforecast = m_forecast_calculators[ID].CalculateBaroForecast(temp, baro);
-		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, (uint8_t)nforecast, name, rssiLevel);
+		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, uint8_t(nforecast), name, rssiLevel);
 	}
 	else if (bHaveTemp && bHaveHum)
 	{
@@ -502,7 +502,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	if (bHaveSetpoint)
 	{
 		std::string sName = "SetPoint " + name;
-		SendSetPointSensor((const uint8_t)DevIdx, 0, ID & 0xFF, sp_temp, sName);
+		SendSetPointSensor(uint8_t(DevIdx), 0, ID & 0xFF, sp_temp, sName);
 	}
 
 	if (bHaveRain)
@@ -564,7 +564,8 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	if ((int)(pCmd->LIGHTING2.id1) >> 4){
+	if (int(pCmd->LIGHTING2.id1) >> 4)
+	{
 		//id1 == 0x1### means boiler_status switch
 		return true;
 	}
@@ -600,7 +601,7 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 {
 	if (m_NetatmoType != NETYPE_ENERGY)
 	{
-		if (idx >= (int)m_thermostatDeviceID.size())
+		if (idx >= int(m_thermostatDeviceID.size()))
 			return false;
 		if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
 		{
@@ -693,7 +694,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	if (m_NetatmoType != NETYPE_ENERGY)
 	{
 		idx = (idx & 0x00FF0000) >> 16;
-		if (idx >= (int)m_thermostatDeviceID.size())
+		if (idx >= int(m_thermostatDeviceID.size()))
 		{
 			return;
 		}
@@ -715,7 +716,7 @@ void CNetatmo::SetSetpoint(int idx, const float temp)
 	if (tSign == 'F')
 	{
 		//convert back to Celsius
-		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
+		tempDest = float(ConvertToCelsius(tempDest));
 	}
 
 	time_t now = mytime(nullptr);
@@ -882,7 +883,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 									mrf_status = 10;
 								}
 							}
-							int crcId = Crc32(0, (const unsigned char *)mid.c_str(), mid.length());
+							int crcId = Crc32(0, reinterpret_cast<const unsigned char *>(mid.c_str()), mid.length());
 							if (!module["dashboard_data"].empty())
 							{
 								ParseDashboard(module["dashboard_data"], iDevIndex, crcId, mname, mtype, mbattery_percent, mrf_status);
@@ -902,7 +903,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 											std::string setpoint_mode = module["setpoint"]["setpoint_mode"].asString();
 											bool bIsAway = (setpoint_mode == "away");
 											std::string aName = "Away " + mname;
-											SendSwitch(3, (uint8_t)(1 + iDevIndex), 255, bIsAway, 0, aName, m_Name);
+											SendSwitch(3, uint8_t(1 + iDevIndex), 255, bIsAway, 0, aName, m_Name);
 										}
 										//Check if setpoint was just set, and if yes, overrule the previous setpoint
 										if (!module["setpoint"]["setpoint_temp"].empty())
@@ -934,7 +935,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 					wifi_status = 10;
 				}
 			}
-			int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+			int crcId = Crc32(0, reinterpret_cast<const unsigned char *>(id.c_str()), id.length());
 			if (!device["dashboard_data"].empty())
 			{
 				ParseDashboard(device["dashboard_data"], iDevIndex, crcId, name, type, battery_percent, wifi_status);
@@ -1027,7 +1028,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 		//{
 		//	dataTypes.insert((*itDataType).asCString());
 		//}
-		int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+		int crcId = Crc32(0, reinterpret_cast<const unsigned char *>(id.c_str()), id.length());
 		if (!module["dashboard_data"].empty())
 		{
 			ParseDashboard(module["dashboard_data"], iDevIndex, crcId, name, type, battery_percent, rf_status);
@@ -1263,7 +1264,7 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 	if (!root["body"]["homes"].empty())
 	{
 		//Lets assume we have only 1 home for now
-		if ((int)root["body"]["homes"].size() <= m_ActHome)
+		if (int(root["body"]["homes"].size()) <= m_ActHome)
 			return false;
 		if (!root["body"]["homes"][m_ActHome]["id"].empty())
 		{
@@ -1279,7 +1280,7 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 				{
 					std::string mID = module["id"].asString();
 					m_ModuleNames[mID] = module["name"].asString();
-					int crcId = Crc32(0, (const unsigned char *)mID.c_str(), mID.length());
+					int crcId = Crc32(0, reinterpret_cast<const unsigned char *>(mID.c_str()), mID.length());
 					m_ModuleIDs[mID] = crcId;
 				}
 			}
@@ -1294,7 +1295,7 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 				{
 					std::string rID = room["id"].asString();
 					m_RoomNames[rID] = room["name"].asString();
-					int crcId = Crc32(0, (const unsigned char *)rID.c_str(), rID.length());
+					int crcId = Crc32(0, reinterpret_cast<const unsigned char *>(rID.c_str()), rID.length());
 					m_RoomIDs[rID] = crcId;
 				}
 			}
@@ -1423,7 +1424,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				}
 				if (!room["therm_setpoint_temperature"].empty())
 				{
-					SendSetPointSensor((uint8_t)(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(),
+					SendSetPointSensor(uint8_t(((roomID & 0x00FF0000) | 0x02000000) >> 16), (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(),
 							   roomName);
 				}
 				if (!room["therm_setpoint_mode"].empty())

@@ -80,7 +80,7 @@ void CurrentCostMeterSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData(data, static_cast<int>(len));
+	ParseData(data, int(len));
 }
 
 bool CurrentCostMeterSerial::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)

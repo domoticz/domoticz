@@ -340,7 +340,7 @@ const _t4BSLookup T4BSTable[] = {
 
 const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
 {
-	const _t4BSLookup* pOrgTable = (const _t4BSLookup*)&T4BSTable;
+	const _t4BSLookup *pOrgTable = reinterpret_cast<const _t4BSLookup *>(&T4BSTable);
 	while (pOrgTable->Label)
 	{
 		if (
@@ -357,7 +357,7 @@ const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
 
 const char* Get_Enocean4BSDesc(const int Org, const int Func, const int Type)
 {
-	const _t4BSLookup* pOrgTable = (const _t4BSLookup*)&T4BSTable;
+	const _t4BSLookup *pOrgTable = reinterpret_cast<const _t4BSLookup *>(&T4BSTable);
 	while (pOrgTable->Label)
 	{
 		if (
@@ -782,7 +782,7 @@ enocean_data_structure enocean_clean_data_structure() {
 	int i = 0;
 	enocean_data_structure ds;
 	for (i = 0; i < sizeof(ds); i++) {
-		BYTE* b = (BYTE*)&ds + i;
+		BYTE *b = reinterpret_cast<BYTE *>(&ds) + i;
 		*b = 0x00;
 	}
 	return ds;
@@ -831,7 +831,7 @@ unsigned char enocean_calc_checksum(const enocean_data_structure* input_data) {
 }
 
 char* enocean_gethex_internal(BYTE* in, const int framesize) {
-	char* hexstr = (char*)malloc((framesize * 2) + 1);  // because every hex-byte needs 2 characters
+	char *hexstr = static_cast<char *>(malloc((framesize * 2) + 1)); // because every hex-byte needs 2 characters
 	if (!hexstr)
 		return nullptr;
 	char* tempstr = hexstr;
@@ -852,7 +852,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 	const int framesize = sizeof(enocean_data_structure);
 	// every byte of the frame takes 2 characters in the human representation + the length of the text blocks (without trailing '\0');
 	const int stringsize = (framesize * 2) + 1 + sizeof(HR_TYPE) - 1 + sizeof(HR_RPS) - 1 + sizeof(HR_DATA) - 1 + sizeof(HR_SENDER) - 1 + sizeof(HR_STATUS) - 1;
-	char* humanString = (char*)malloc(stringsize);
+	char *humanString = static_cast<char *>(malloc(stringsize));
 	if (!humanString)
 		return nullptr;
 	char* tempstring = humanString;
@@ -901,7 +901,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 		}
 		sprintf(tempstring, HR_SENDER);
 		tempstring += sizeof(HR_SENDER) - 1;
-		temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->ID_BYTE3), 4);
+		temphexstring = enocean_gethex_internal(const_cast<BYTE *>(&(pFrame->ID_BYTE3)), 4);
 		if (temphexstring)
 		{
 			strcpy(tempstring, temphexstring);
@@ -910,7 +910,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 		}
 		sprintf(tempstring, HR_DATA);
 		tempstring += sizeof(HR_DATA) - 1;
-		temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->DATA_BYTE3), 4);
+		temphexstring = enocean_gethex_internal(const_cast<BYTE *>(&(pFrame->DATA_BYTE3)), 4);
 		if (temphexstring)
 		{
 			strcpy(tempstring, temphexstring);
@@ -924,7 +924,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 		tempstring += sizeof(HR_6DT) - 1;
 		sprintf(tempstring, HR_SENDER);
 		tempstring += sizeof(HR_SENDER) - 1;
-		temphexstring = enocean_gethex_internal((BYTE*)&(frame_6DT->ADDRESS1), 2);
+		temphexstring = enocean_gethex_internal(static_cast<BYTE *>(&(frame_6DT->ADDRESS1)), 2);
 		if (temphexstring)
 		{
 			strcpy(tempstring, temphexstring);
@@ -933,7 +933,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 		}
 		sprintf(tempstring, HR_DATA);
 		tempstring += sizeof(HR_DATA) - 1;
-		temphexstring = enocean_gethex_internal((BYTE*)&(frame_6DT->DATA_BYTE5), 6);
+		temphexstring = enocean_gethex_internal(static_cast<BYTE *>(&(frame_6DT->DATA_BYTE5)), 6);
 		if (temphexstring)
 		{
 			strcpy(tempstring, temphexstring);
@@ -947,7 +947,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 		tempstring += sizeof(HR_MDA) - 1;
 		sprintf(tempstring, HR_SENDER);
 		tempstring += sizeof(HR_SENDER) - 1;
-		temphexstring = enocean_gethex_internal((BYTE*)&(frame_MDA->ADDRESS1), 2);
+		temphexstring = enocean_gethex_internal(static_cast<BYTE *>(&(frame_MDA->ADDRESS1)), 2);
 		if (temphexstring)
 		{
 			strcpy(tempstring, temphexstring);
@@ -962,7 +962,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 	}
 	sprintf(tempstring, HR_STATUS);
 	tempstring += sizeof(HR_STATUS) - 1;
-	temphexstring = enocean_gethex_internal((BYTE*)&(pFrame->STATUS), 1);
+	temphexstring = enocean_gethex_internal(const_cast<BYTE *>(&(pFrame->STATUS)), 1);
 	if (temphexstring)
 	{
 		strcpy(tempstring, temphexstring);
@@ -1046,7 +1046,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 	*/
 
 	iframe = tcm120_rd_idbase();
-	write((const char*)&iframe, sizeof(enocean_data_structure));
+	write(reinterpret_cast<const char *>(&iframe), sizeof(enocean_data_structure));
 
 	return true;
 }
@@ -1090,7 +1090,7 @@ void CEnOceanESP2::readCallback(const char* data, size_t len)
 			break;
 		case ERS_CHECKSUM:
 			m_buffer[m_bufferpos++] = c;
-			if (m_buffer[m_bufferpos - 1] == enocean_calc_checksum((const enocean_data_structure*)&m_buffer))
+			if (m_buffer[m_bufferpos - 1] == enocean_calc_checksum(reinterpret_cast<const enocean_data_structure *>(&m_buffer)))
 			{
 				ParseData();
 			}
@@ -1127,10 +1127,10 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		return false;
 	}
 
-	iframe.ID_BYTE3 = (unsigned char)((sID & 0xFF000000) >> 24);//tsen->LIGHTING2.id1;
-	iframe.ID_BYTE2 = (unsigned char)((sID & 0x00FF0000) >> 16);//tsen->LIGHTING2.id2;
-	iframe.ID_BYTE1 = (unsigned char)((sID & 0x0000FF00) >> 8);//tsen->LIGHTING2.id3;
-	iframe.ID_BYTE0 = (unsigned char)(sID & 0x0000FF);//tsen->LIGHTING2.id4;
+	iframe.ID_BYTE3 = uint8_t((sID & 0xFF000000) >> 24); // tsen->LIGHTING2.id1;
+	iframe.ID_BYTE2 = uint8_t((sID & 0x00FF0000) >> 16); // tsen->LIGHTING2.id2;
+	iframe.ID_BYTE1 = uint8_t((sID & 0x0000FF00) >> 8);  // tsen->LIGHTING2.id3;
+	iframe.ID_BYTE0 = uint8_t(sID & 0x0000FF);	     // tsen->LIGHTING2.id4;
 
 	unsigned char RockerID = 0;
 	unsigned char Pressed = 1;
@@ -1147,14 +1147,14 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	uint8_t LastLevel = 0;
 	std::vector<std::vector<std::string> > result;
 	char szDeviceID[20];
-	sprintf(szDeviceID, "%08X", (unsigned int)sID);
+	sprintf(szDeviceID, "%08X", uint32_t(sID));
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szDeviceID, int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
 	{
-		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+		_eSwitchType switchtype = _eSwitchType(atoi(result[0][0].c_str()));
 		if (switchtype == STYPE_Dimmer)
 			bIsDimmer = true;
-		LastLevel = (uint8_t)atoi(result[0][1].c_str());
+		LastLevel = uint8_t(atoi(result[0][1].c_str()));
 	}
 
 	uint8_t iLevel = tsen->LIGHTING2.level;
@@ -1177,7 +1177,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 			float fLevel = (100.0F / 15.0F) * float(iLevel);
 			if (fLevel > 99.0F)
 				fLevel = 100.0F;
-			iLevel = (uint8_t)(fLevel);
+			iLevel = uint8_t(fLevel);
 		}
 		cmnd = light2_sSetLevel;
 	}
@@ -1193,13 +1193,13 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
 
-		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
+		Add2SendQueue(reinterpret_cast<const char *>(&iframe), sizeof(enocean_data_structure));
 
 		//Next command is send a bit later (button release)
 		iframe.DATA_BYTE3 = 0;
 		iframe.STATUS = 0x20;
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
-		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
+		Add2SendQueue(reinterpret_cast<const char *>(&iframe), sizeof(enocean_data_structure));
 	}
 	else
 	{
@@ -1219,7 +1219,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 			iframe.DATA_BYTE0 = 0x09;//Dim On
 
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
-		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
+		Add2SendQueue(reinterpret_cast<const char *>(&iframe), sizeof(enocean_data_structure));
 	}
 	return true;
 }
@@ -1245,10 +1245,10 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 			return;
 		}
 
-		iframe.ID_BYTE3 = (unsigned char)((sID & 0xFF000000) >> 24);//tsen->LIGHTING2.id1;
-		iframe.ID_BYTE2 = (unsigned char)((sID & 0x00FF0000) >> 16);//tsen->LIGHTING2.id2;
-		iframe.ID_BYTE1 = (unsigned char)((sID & 0x0000FF00) >> 8);//tsen->LIGHTING2.id3;
-		iframe.ID_BYTE0 = (unsigned char)(sID & 0x0000FF);//tsen->LIGHTING2.id4;
+		iframe.ID_BYTE3 = uint8_t((sID & 0xFF000000) >> 24); // tsen->LIGHTING2.id1;
+		iframe.ID_BYTE2 = uint8_t((sID & 0x00FF0000) >> 16); // tsen->LIGHTING2.id2;
+		iframe.ID_BYTE1 = uint8_t((sID & 0x0000FF00) >> 8);  // tsen->LIGHTING2.id3;
+		iframe.ID_BYTE0 = uint8_t(sID & 0x0000FF);	     // tsen->LIGHTING2.id4;
 
 		unsigned char RockerID = 0;
 		//unsigned char UpDown = 1;
@@ -1266,7 +1266,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 		iframe.DATA_BYTE1 = 0;
 		iframe.DATA_BYTE0 = 0;
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
-		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
+		Add2SendQueue(reinterpret_cast<const char *>(&iframe), sizeof(enocean_data_structure));
 	}
 }
 
@@ -1284,14 +1284,14 @@ float CEnOceanESP2::GetValueRange(const float InValue, const float ScaleMax, con
 
 bool CEnOceanESP2::ParseData()
 {
-	enocean_data_structure* pFrame = (enocean_data_structure*)&m_buffer;
+	enocean_data_structure *pFrame = reinterpret_cast<enocean_data_structure *>(&m_buffer);
 	unsigned char Checksum = enocean_calc_checksum(pFrame);
 	if (Checksum != pFrame->CHECKSUM)
 		return false; //checksum Mismatch!
 
 	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
 	char szDeviceID[20];
-	sprintf(szDeviceID, "%08X", (unsigned int)id);
+	sprintf(szDeviceID, "%08X", uint32_t(id));
 
 	//Handle possible OK/Errors
 	bool bStopProcessing = false;
@@ -1382,10 +1382,10 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.packettype = pTypeLighting2;
 				tsen.LIGHTING2.subtype = sTypeAC;
 				tsen.LIGHTING2.seqnbr = 0;
-				tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
-				tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
-				tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
-				tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+				tsen.LIGHTING2.id1 = BYTE(pFrame->ID_BYTE3);
+				tsen.LIGHTING2.id2 = BYTE(pFrame->ID_BYTE2);
+				tsen.LIGHTING2.id3 = BYTE(pFrame->ID_BYTE1);
+				tsen.LIGHTING2.id4 = BYTE(pFrame->ID_BYTE0);
 				tsen.LIGHTING2.level = 0;
 				tsen.LIGHTING2.rssi = 12;
 
@@ -1401,7 +1401,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.unitcode = SecondRockerID + 10;
 					tsen.LIGHTING2.cmnd = (SecondUpDown == 1) ? light2_sOn : light2_sOff;
 				}
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 			}
 		}
 		break;
@@ -1471,24 +1471,24 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.rssi = 12;
 				tsen.RFXMETER.id1 = pFrame->ID_BYTE2;
 				tsen.RFXMETER.id2 = pFrame->ID_BYTE1;
-				tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+				tsen.RFXMETER.count1 = BYTE((cvalue & 0xFF000000) >> 24);
+				tsen.RFXMETER.count2 = BYTE((cvalue & 0x00FF0000) >> 16);
+				tsen.RFXMETER.count3 = BYTE((cvalue & 0x0000FF00) >> 8);
+				tsen.RFXMETER.count4 = BYTE(cvalue & 0x000000FF);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 			}
 			else if (szST == "AMR.Electricity")
 			{
 				//0xA5, 0x12, 0x01, "Electricity"
 				int cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
 				_tUsageMeter umeter;
-				umeter.id1 = (BYTE)pFrame->ID_BYTE3;
-				umeter.id2 = (BYTE)pFrame->ID_BYTE2;
-				umeter.id3 = (BYTE)pFrame->ID_BYTE1;
-				umeter.id4 = (BYTE)pFrame->ID_BYTE0;
+				umeter.id1 = BYTE(pFrame->ID_BYTE3);
+				umeter.id2 = BYTE(pFrame->ID_BYTE2);
+				umeter.id3 = BYTE(pFrame->ID_BYTE1);
+				umeter.id4 = BYTE(pFrame->ID_BYTE0);
 				umeter.dunit = 1;
-				umeter.fusage = (float)cvalue;
-				sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
+				umeter.fusage = float(cvalue);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&umeter), nullptr, 255, nullptr);
 			}
 			else if (szST == "AMR.Gas")
 			{
@@ -1502,11 +1502,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.rssi = 12;
 				tsen.RFXMETER.id1 = pFrame->ID_BYTE2;
 				tsen.RFXMETER.id2 = pFrame->ID_BYTE1;
-				tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+				tsen.RFXMETER.count1 = BYTE((cvalue & 0xFF000000) >> 24);
+				tsen.RFXMETER.count2 = BYTE((cvalue & 0x00FF0000) >> 16);
+				tsen.RFXMETER.count3 = BYTE((cvalue & 0x0000FF00) >> 8);
+				tsen.RFXMETER.count4 = BYTE(cvalue & 0x000000FF);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 			}
 			else if (szST == "AMR.Water")
 			{
@@ -1520,11 +1520,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.rssi = 12;
 				tsen.RFXMETER.id1 = pFrame->ID_BYTE2;
 				tsen.RFXMETER.id2 = pFrame->ID_BYTE1;
-				tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+				tsen.RFXMETER.count1 = BYTE((cvalue & 0xFF000000) >> 24);
+				tsen.RFXMETER.count2 = BYTE((cvalue & 0x00FF0000) >> 16);
+				tsen.RFXMETER.count3 = BYTE((cvalue & 0x0000FF00) >> 8);
+				tsen.RFXMETER.count4 = BYTE(cvalue & 0x000000FF);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 			}
 			else if (szST.find("RoomOperatingPanel") == 0)
 			{
@@ -1579,10 +1579,10 @@ bool CEnOceanESP2::ParseData()
 
 					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
 					int at10 = round(std::abs(temp * 10.0F));
-					tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+					tsen.TEMP.temperatureh = BYTE(at10 / 256);
 					at10 -= (tsen.TEMP.temperatureh * 256);
-					tsen.TEMP.temperaturel = (BYTE)(at10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
+					tsen.TEMP.temperaturel = BYTE(at10);
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.TEMP), nullptr, -1, nullptr);
 				}
 			}
 			else if (szST == "LightSensor.01")
@@ -1621,18 +1621,18 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+					tsen.RFXSENSOR.msg1 = BYTE(voltage / 256);
+					tsen.RFXSENSOR.msg2 = BYTE(voltage - (tsen.RFXSENSOR.msg1 * 256));
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXSENSOR), nullptr, 255, nullptr);
 				}
 				_tLightMeter lmeter;
-				lmeter.id1 = (BYTE)pFrame->ID_BYTE3;
-				lmeter.id2 = (BYTE)pFrame->ID_BYTE2;
-				lmeter.id3 = (BYTE)pFrame->ID_BYTE1;
-				lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
+				lmeter.id1 = BYTE(pFrame->ID_BYTE3);
+				lmeter.id2 = BYTE(pFrame->ID_BYTE2);
+				lmeter.id3 = BYTE(pFrame->ID_BYTE1);
+				lmeter.id4 = BYTE(pFrame->ID_BYTE0);
 				lmeter.dunit = 1;
 				lmeter.fLux = lux;
-				sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lmeter), nullptr, 255, nullptr);
 			}
 			else if (szST.find("Temperature") == 0)
 			{
@@ -1690,10 +1690,10 @@ bool CEnOceanESP2::ParseData()
 
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
 				int at10 = round(std::abs(temp * 10.0F));
-				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+				tsen.TEMP.temperatureh = BYTE(at10 / 256);
 				at10 -= (tsen.TEMP.temperatureh * 256);
-				tsen.TEMP.temperaturel = (BYTE)(at10);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
+				tsen.TEMP.temperaturel = BYTE(at10);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.TEMP), nullptr, -1, nullptr);
 			}
 			else if (szST == "TempHum")
 			{
@@ -1717,12 +1717,12 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP_HUM.battery_level = 9;
 				tsen.TEMP_HUM.tempsign = (temp >= 0) ? 0 : 1;
 				int at10 = round(std::abs(temp * 10.0F));
-				tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
+				tsen.TEMP_HUM.temperatureh = BYTE(at10 / 256);
 				at10 -= (tsen.TEMP_HUM.temperatureh * 256);
-				tsen.TEMP_HUM.temperaturel = (BYTE)(at10);
-				tsen.TEMP_HUM.humidity = (BYTE)hum;
+				tsen.TEMP_HUM.temperaturel = BYTE(at10);
+				tsen.TEMP_HUM.humidity = BYTE(hum);
 				tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.TEMP_HUM), nullptr, -1, nullptr);
 			}
 			else if (szST == "OccupancySensor.01")
 			{
@@ -1742,9 +1742,9 @@ bool CEnOceanESP2::ParseData()
 						tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
 						tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+						tsen.RFXSENSOR.msg1 = BYTE(voltage / 256);
+						tsen.RFXSENSOR.msg2 = BYTE(voltage - (tsen.RFXSENSOR.msg1 * 256));
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXSENSOR), nullptr, 255, nullptr);
 					}
 
 					bool bPIROn = (pFrame->DATA_BYTE1 > 127);
@@ -1754,15 +1754,15 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
 
-					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+					tsen.LIGHTING2.id1 = BYTE(pFrame->ID_BYTE3);
+					tsen.LIGHTING2.id2 = BYTE(pFrame->ID_BYTE2);
+					tsen.LIGHTING2.id3 = BYTE(pFrame->ID_BYTE1);
+					tsen.LIGHTING2.id4 = BYTE(pFrame->ID_BYTE0);
 					tsen.LIGHTING2.level = 0;
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 				}
 				else {
 					//Error code
@@ -1783,9 +1783,9 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+					tsen.RFXSENSOR.msg1 = BYTE(voltage / 256);
+					tsen.RFXSENSOR.msg2 = BYTE(voltage - (tsen.RFXSENSOR.msg1 * 256));
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXSENSOR), nullptr, 255, nullptr);
 
 					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1794,15 +1794,15 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
 
-					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+					tsen.LIGHTING2.id1 = BYTE(pFrame->ID_BYTE3);
+					tsen.LIGHTING2.id2 = BYTE(pFrame->ID_BYTE2);
+					tsen.LIGHTING2.id3 = BYTE(pFrame->ID_BYTE1);
+					tsen.LIGHTING2.id4 = BYTE(pFrame->ID_BYTE0);
 					tsen.LIGHTING2.level = 0;
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 				}
 				else {
 					//Error code
@@ -1823,21 +1823,21 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+					tsen.RFXSENSOR.msg1 = BYTE(voltage / 256);
+					tsen.RFXSENSOR.msg2 = BYTE(voltage - (tsen.RFXSENSOR.msg1 * 256));
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXSENSOR), nullptr, 255, nullptr);
 
 					int lux = (pFrame->DATA_BYTE2 << 2) | (pFrame->DATA_BYTE1 >> 6);
 					if (lux > 1000)
 						lux = 1000;
 					_tLightMeter lmeter;
-					lmeter.id1 = (BYTE)pFrame->ID_BYTE3;
-					lmeter.id2 = (BYTE)pFrame->ID_BYTE2;
-					lmeter.id3 = (BYTE)pFrame->ID_BYTE1;
-					lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
+					lmeter.id1 = BYTE(pFrame->ID_BYTE3);
+					lmeter.id2 = BYTE(pFrame->ID_BYTE2);
+					lmeter.id3 = BYTE(pFrame->ID_BYTE1);
+					lmeter.id4 = BYTE(pFrame->ID_BYTE0);
 					lmeter.dunit = 1;
-					lmeter.fLux = (float)lux;
-					sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+					lmeter.fLux = float(lux);
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lmeter), nullptr, 255, nullptr);
 
 					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1846,15 +1846,15 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
 
-					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE)pFrame->ID_BYTE0;
+					tsen.LIGHTING2.id1 = BYTE(pFrame->ID_BYTE3);
+					tsen.LIGHTING2.id2 = BYTE(pFrame->ID_BYTE2);
+					tsen.LIGHTING2.id3 = BYTE(pFrame->ID_BYTE1);
+					tsen.LIGHTING2.id4 = BYTE(pFrame->ID_BYTE0);
 					tsen.LIGHTING2.level = 0;
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 				}
 				else {
 					//Error code

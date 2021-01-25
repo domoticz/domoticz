@@ -280,7 +280,7 @@ void USBtin_MultiblocV8::Do_Work()
 void USBtin_MultiblocV8::SendRequest(int sID ){
 	char szDeviceID[10];
 	std::string szTrameToSend = "R"; // "R02180A008"; //for debug to force request
-	sprintf(szDeviceID,"%08X",(unsigned int)sID);
+	sprintf(szDeviceID, "%08X", uint32_t(sID));
 	szTrameToSend += szDeviceID;
 	szTrameToSend += "8";
 	//_log.Log(LOG_NORM,"MultiblocV8: write frame to Can: #%s# ",szTrameToSend.c_str());
@@ -380,8 +380,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	convert << CodeNumber;
 	defaultname += convert.str();
 
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
-
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 //For listing of detected blocs :
@@ -471,10 +470,10 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string &defaultname ){
 
 	//make device ID
-	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
-	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
-	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
-	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+	uint8_t ID1 = uint8_t((NodeID & 0xFF000000) >> 24);
+	uint8_t ID2 = uint8_t((NodeID & 0xFF0000) >> 16);
+	uint8_t ID3 = uint8_t((NodeID & 0xFF00) >> 8);
+	uint8_t ID4 = uint8_t(NodeID) & 0xFF;
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
@@ -559,7 +558,7 @@ void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned char RefBloc, 
 	std::vector<std::vector<std::string> > result;
 	//for searching the good commands switches :
 	unsigned long sID=(type_COMMANDE_ETAT_BLOC<<SHIFT_TYPE_TRAME)+(RefBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
-	sprintf(szDeviceID,"%07X",(unsigned int)sID);
+	sprintf(szDeviceID, "%07X", uint32_t(sID));
 	if( rxDLC == 1 ){
 		_log.Log(LOG_NORM,"MultiblocV8: Check Etat Bloc with hardwarId: %d and id: %s receive: %d",m_HwdID,szDeviceID, bufferdata[0] );
 		//search the 3 switches (LEARN ENTRY / EXIT and CLEAR) associates to this return EtatBloc frame
@@ -628,7 +627,7 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int OutputNumber,bo
 		case 10 :case 11 : IdFordbSearch += (type_STATE_S_TOR_11_TO_12<<SHIFT_TYPE_TRAME); break;
 	}
 
-	sprintf(szDeviceID,"%07X",(unsigned int)IdFordbSearch);
+	sprintf(szDeviceID, "%07X", uint32_t(IdFordbSearch));
 	//_log.Log(LOG_NORM,"MultiblocV8: Check states for output: %d with hardwarId: %d and id: %s ",OutputNumber,m_HwdID,szDeviceID);
 	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)",
 		m_HwdID, szDeviceID,pTypeLighting2,sTypeAC, OutputNumber); //Unit = 1 = sortie n°1
@@ -665,7 +664,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	double rlevel = (15.0 / 255)*Level;
 	int level = int(rlevel);
 	//Extract the RefBloc Type
-	uint8_t RefBloc = (uint8_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+	uint8_t RefBloc = uint8_t((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
 	if (RefBloc >= NomRefBloc.size())
 		return;
 
@@ -693,7 +692,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	convert << OutputNumber;
 	defaultname += convert.str();
 
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 //The STOR Frame always contain a maximum of 2 stor States. 4 Low bytes = STOR 1 / 4 high bytes = STOR2
@@ -840,7 +839,7 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType,cons
 	VoltageLevel += bufferdata[1];
 	//_log.Log(LOG_NORM,"MultiblocV8: receive ANA1 (alimentation) sfsp: #%d# ",VoltageLevel);
 	int percent = ((VoltageLevel * 100) / 125);
-	float voltage = (float)VoltageLevel/10;
+	float voltage = float(VoltageLevel) / 10;
 	SendVoltageSensor(((sID>>8)&0xffff), (sID&0xff), percent, voltage, "SFSP Voltage");
 }
 
@@ -876,7 +875,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 				FrameType == type_STATE_S_TOR_11_TO_12 ){
 
 				unsigned long sID = (type_CMD_S_TOR<<SHIFT_TYPE_TRAME)+ (sID_EnBase&(MSK_INDEX_MODULE+MSK_CODAGE_MODULE+MSK_SRES_MODULE));
-				sprintf(szDeviceID,"%08X",(unsigned int)sID);
+				sprintf(szDeviceID, "%08X", uint32_t(sID));
 				unsigned int OutputNumber = (pSen->LIGHTING2.unitcode) - 1; //output number for command
 				unsigned int Command = 0;
 				unsigned int Reserve = 0;
@@ -903,7 +902,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 
 				unsigned long LongDataToSend = (OutputNumber<<24)+(Command<<16)+(Reserve<<8)+iLevel;
 
-				sprintf(DataToSend,"%08X",(unsigned int)LongDataToSend);
+				sprintf(DataToSend, "%08X", uint32_t(LongDataToSend));
 				std::string szTrameToSend = "T"; //
 				szTrameToSend += szDeviceID;
 				szTrameToSend += "4";
@@ -979,10 +978,10 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend,char CodeTouche){
 	char szDeviceID[10];
 	char DataToSend[16];
-	sprintf(szDeviceID,"%08X",(unsigned int)sID_ToSend);
+	sprintf(szDeviceID, "%08X", uint32_t(sID_ToSend));
 	//unsigned int DevIdOnCan = 0x00000001; //on the CAN a wired Input always send a DevId at 0x01 on a u32
 	//differ from a real wireless EnOcean receive switch send directly its (u32)DeviceId
-	sprintf(DataToSend,"%02X",(unsigned char)CodeTouche);
+	sprintf(DataToSend, "%02X", uint8_t(CodeTouche));
 	std::string szTrameToSend = "T"; //
 	szTrameToSend += szDeviceID;
 	szTrameToSend += "5";		 //DLC always to 5 for SFSP_SWITCH Frame
@@ -995,10 +994,10 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSen
 void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID_ToSend,char Commande){
 	char szDeviceID[10];
 	char DataToSend[16];
-	sprintf(szDeviceID,"%08X",(unsigned int)sID_ToSend);
+	sprintf(szDeviceID, "%08X", uint32_t(sID_ToSend));
 	//unsigned int DevIdOnCan = 0x00000001; //on the CAN a wired Input always send a DevId at 0x01 on a u32
 	//differ from a real wireless EnOcean receive switch send directly its (u32)DeviceId
-	sprintf(DataToSend,"%02X",(unsigned char)Commande);
+	sprintf(DataToSend, "%02X", uint8_t(Commande));
 	std::string szTrameToSend = "T"; //
 	szTrameToSend += szDeviceID;
 	szTrameToSend += "1";		 //DLC always to 5 for SFSP_SWITCH Frame
@@ -1012,10 +1011,10 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	char szDeviceID[10];
 	char DataToSend[16];
 	unsigned long sID = (type_SFSP_LearnCommand<<SHIFT_TYPE_TRAME)+ (baseID_ToSend&(MSK_INDEX_MODULE+MSK_CODAGE_MODULE+MSK_SRES_MODULE));
-	sprintf(szDeviceID,"%08X",(unsigned int)sID);
+	sprintf(szDeviceID, "%08X", uint32_t(sID));
 	//unsigned int DevIdOnCan = 0x00000001; //on the CAN a wired Input always send a DevId at 0x01 on a u32
 	//differ from a real wireless EnOcean receive switch send directly its (u32)DeviceId
-	sprintf(DataToSend,"%02X",(unsigned char)Commande);
+	sprintf(DataToSend, "%02X", uint8_t(Commande));
 	std::string szTrameToSend = "T"; //
 	szTrameToSend += szDeviceID;
 	szTrameToSend += "1";		 //DLC always to 5 for SFSP_SWITCH Frame

@@ -371,7 +371,7 @@ bool CEnOceanESP3::sendFrame(unsigned char frametype, unsigned char *databuf, un
 		crc=proc_crc8(crc, buf[len++]);
 	}
 	buf[len++]=crc;
-	write((const char*)&buf,len);
+	write(reinterpret_cast<const char *>(&buf), len);
 	return true;
 }
 
@@ -401,7 +401,7 @@ bool CEnOceanESP3::sendFrameQueue(unsigned char frametype, unsigned char *databu
 		crc=proc_crc8(crc, buf[len++]);
 	}
 	buf[len++]=crc;
-	Add2SendQueue((const char*)&buf,len);
+	Add2SendQueue(reinterpret_cast<const char *>(&buf), len);
 	return true;
 }
 
@@ -468,8 +468,8 @@ void CEnOceanESP3::ReloadVLDNodes()
 			_tVLDNode node;
 			node.idx = atoi(sd[0].c_str());
 			node.manufacturer = atoi(sd[2].c_str());
-			node.profile = (uint8_t)atoi(sd[3].c_str());
-			node.type = (uint8_t)atoi(sd[4].c_str());
+			node.profile = uint8_t(atoi(sd[3].c_str()));
+			node.type = uint8_t(atoi(sd[4].c_str()));
 
 			//convert to hex, and we have our ID
 			std::stringstream s_strid;
@@ -540,7 +540,7 @@ void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)
 
 	for (size_t idx = 0; idx < length; idx++)
 	{
-		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (((unsigned int)pData[idx]) & 0xFF);
+		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << ((uint32_t(pData[idx])) & 0xFF);
 		if (idx != length - 1)
 			sstr << " ";
 	}
@@ -701,14 +701,14 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 	uint8_t LastLevel=0;
 	std::vector<std::vector<std::string> > result;
 	char szDeviceID[20];
-	sprintf(szDeviceID,"%08X",(unsigned int)sID);
+	sprintf(szDeviceID, "%08X", uint32_t(sID));
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szDeviceID, int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
 	{
-		_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
+		_eSwitchType switchtype = _eSwitchType(atoi(result[0][0].c_str()));
 		if (switchtype==STYPE_Dimmer)
 			bIsDimmer=true;
-		LastLevel=(uint8_t)atoi(result[0][1].c_str());
+		LastLevel = uint8_t(atoi(result[0][1].c_str()));
 	}
 
 	uint8_t iLevel=tsen->LIGHTING2.level;
@@ -731,7 +731,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			float fLevel = (100.0F / 15.0F) * float(iLevel);
 			if (fLevel > 99.0F)
 				fLevel = 100.0F;
-			iLevel=(uint8_t)(fLevel);
+			iLevel = uint8_t(fLevel);
 		}
 		cmnd=light2_sSetLevel;
 	}
@@ -918,13 +918,13 @@ bool CEnOceanESP3::ParseData()
 #ifdef ENABLE_LOGGING
 	std::stringstream sstr;
 
-	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_ReceivedPacketType << " (";
-	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_DataSize << "/";
-	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_OptionalDataSize << ") ";
+	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << uint32_t(m_ReceivedPacketType) << " (";
+	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << uint32_t(m_DataSize) << "/";
+	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << uint32_t(m_OptionalDataSize) << ") ";
 
 	for (int idx=0;idx<m_bufferpos;idx++)
 	{
-		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_buffer[idx];
+		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << uint32_t(m_buffer[idx]);
 		if (idx!=m_bufferpos-1)
 			sstr << " ";
 	}
@@ -966,13 +966,10 @@ bool CEnOceanESP3::ParseData()
 		if (m_bufferpos==33)
 		{
 			//Version Information
-			_log.Log(LOG_STATUS,"EnOcean: Version_Info, App: %02x.%02x.%02x.%02x, API: %02x.%02x.%02x.%02x, ChipID: %02x.%02x.%02x.%02x, ChipVersion: %02x.%02x.%02x.%02x, Description: %s",
-				m_buffer[1],m_buffer[2],m_buffer[3],m_buffer[4],
-				m_buffer[5],m_buffer[6],m_buffer[7],m_buffer[8],
-				m_buffer[9],m_buffer[10],m_buffer[11],m_buffer[12],
-				m_buffer[13],m_buffer[14],m_buffer[15],m_buffer[16],
-				(const char*)&m_buffer+17
-				);
+			_log.Log(LOG_STATUS,
+				 "EnOcean: Version_Info, App: %02x.%02x.%02x.%02x, API: %02x.%02x.%02x.%02x, ChipID: %02x.%02x.%02x.%02x, ChipVersion: %02x.%02x.%02x.%02x, Description: %s",
+				 m_buffer[1], m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5], m_buffer[6], m_buffer[7], m_buffer[8], m_buffer[9], m_buffer[10], m_buffer[11], m_buffer[12],
+				 m_buffer[13], m_buffer[14], m_buffer[15], m_buffer[16], reinterpret_cast<const char *>(&m_buffer) + 17);
 		}
 		return true;
 	}
@@ -1171,15 +1168,15 @@ void CEnOceanESP3::ParseRadioDatagram()
 				tsen.LIGHTING2.subtype=sTypeAC;
 				tsen.LIGHTING2.seqnbr=0;
 
-				tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
-				tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
-				tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
-				tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
+				tsen.LIGHTING2.id1 = BYTE(ID_BYTE3);
+				tsen.LIGHTING2.id2 = BYTE(ID_BYTE2);
+				tsen.LIGHTING2.id3 = BYTE(ID_BYTE1);
+				tsen.LIGHTING2.id4 = BYTE(ID_BYTE0);
 				tsen.LIGHTING2.level=0;
 				tsen.LIGHTING2.rssi=rssi;
 				tsen.LIGHTING2.unitcode=1;
 				tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 			}
 			break;
 		case RORG_4BS: // 4 byte communication
@@ -1203,7 +1200,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 				long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 				char szDeviceID[20];
-				sprintf(szDeviceID,"%08X",(unsigned int)id);
+				sprintf(szDeviceID, "%08X", uint32_t(id));
 
 				if ((DATA_BYTE0 & RORG_4BS_TEACHIN_LRN_BIT) == 0)	// LRN_BIT is 0 -> Teach-in datagram
 				{
@@ -1282,24 +1279,24 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.rssi=rssi;
 						tsen.RFXMETER.id1=ID_BYTE2;
 						tsen.RFXMETER.id2=ID_BYTE1;
-						tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+						tsen.RFXMETER.count1 = BYTE((cvalue & 0xFF000000) >> 24);
+						tsen.RFXMETER.count2 = BYTE((cvalue & 0x00FF0000) >> 16);
+						tsen.RFXMETER.count3 = BYTE((cvalue & 0x0000FF00) >> 8);
+						tsen.RFXMETER.count4 = BYTE(cvalue & 0x000000FF);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 					}
 					else if (szST=="AMR.Electricity")
 					{
 						//0xA5, 0x12, 0x01, "Electricity"
 						int cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						_tUsageMeter umeter;
-						umeter.id1=(BYTE)ID_BYTE3;
-						umeter.id2=(BYTE)ID_BYTE2;
-						umeter.id3=(BYTE)ID_BYTE1;
-						umeter.id4=(BYTE)ID_BYTE0;
+						umeter.id1 = BYTE(ID_BYTE3);
+						umeter.id2 = BYTE(ID_BYTE2);
+						umeter.id3 = BYTE(ID_BYTE1);
+						umeter.id4 = BYTE(ID_BYTE0);
 						umeter.dunit=1;
-						umeter.fusage=(float)cvalue;
-						sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
+						umeter.fusage = float(cvalue);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&umeter), nullptr, 255, nullptr);
 					}
 					else if (szST=="AMR.Gas")
 					{
@@ -1313,11 +1310,11 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.rssi=rssi;
 						tsen.RFXMETER.id1=ID_BYTE2;
 						tsen.RFXMETER.id2=ID_BYTE1;
-						tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+						tsen.RFXMETER.count1 = BYTE((cvalue & 0xFF000000) >> 24);
+						tsen.RFXMETER.count2 = BYTE((cvalue & 0x00FF0000) >> 16);
+						tsen.RFXMETER.count3 = BYTE((cvalue & 0x0000FF00) >> 8);
+						tsen.RFXMETER.count4 = BYTE(cvalue & 0x000000FF);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 					}
 					else if (szST=="AMR.Water")
 					{
@@ -1331,11 +1328,11 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.rssi=rssi;
 						tsen.RFXMETER.id1=ID_BYTE2;
 						tsen.RFXMETER.id2=ID_BYTE1;
-						tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+						tsen.RFXMETER.count1 = BYTE((cvalue & 0xFF000000) >> 24);
+						tsen.RFXMETER.count2 = BYTE((cvalue & 0x00FF0000) >> 16);
+						tsen.RFXMETER.count3 = BYTE((cvalue & 0x0000FF00) >> 8);
+						tsen.RFXMETER.count4 = BYTE(cvalue & 0x000000FF);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RFXMETER), nullptr, 255, nullptr);
 					}
 					else if (szST.find("RoomOperatingPanel") == 0)
 					{
@@ -1390,10 +1387,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 							tsen.TEMP.tempsign=(temp>=0)?0:1;
 							int at10 = round(std::abs(temp * 10.0F));
-							tsen.TEMP.temperatureh=(BYTE)(at10/256);
+							tsen.TEMP.temperatureh = BYTE(at10 / 256);
 							at10-=(tsen.TEMP.temperatureh*256);
-							tsen.TEMP.temperaturel=(BYTE)(at10);
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
+							tsen.TEMP.temperaturel = BYTE(at10);
+							sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.TEMP), nullptr, -1, nullptr);
 						}
 					}
 					else if (szST == "LightSensor.01")
@@ -1434,13 +1431,13 @@ void CEnOceanESP3::ParseRadioDatagram()
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 						}
 						_tLightMeter lmeter;
-						lmeter.id1=(BYTE)ID_BYTE3;
-						lmeter.id2=(BYTE)ID_BYTE2;
-						lmeter.id3=(BYTE)ID_BYTE1;
-						lmeter.id4=(BYTE)ID_BYTE0;
+						lmeter.id1 = BYTE(ID_BYTE3);
+						lmeter.id2 = BYTE(ID_BYTE2);
+						lmeter.id3 = BYTE(ID_BYTE1);
+						lmeter.id4 = BYTE(ID_BYTE0);
 						lmeter.dunit=1;
 						lmeter.fLux=lux;
-						sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lmeter), nullptr, 255, nullptr);
 					}
 					else if (szST.find("Temperature")==0)
 					{
@@ -1498,10 +1495,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						tsen.TEMP.tempsign=(temp>=0)?0:1;
 						int at10 = round(std::abs(temp * 10.0F));
-						tsen.TEMP.temperatureh=(BYTE)(at10/256);
+						tsen.TEMP.temperatureh = BYTE(at10 / 256);
 						at10-=(tsen.TEMP.temperatureh*256);
-						tsen.TEMP.temperaturel=(BYTE)(at10);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
+						tsen.TEMP.temperaturel = BYTE(at10);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.TEMP), nullptr, -1, nullptr);
 					}
 					else if (szST.find("TempHum")==0)
 					{
@@ -1525,12 +1522,12 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.battery_level=9;
 						tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
 						int at10 = round(std::abs(temp * 10.0F));
-						tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
+						tsen.TEMP_HUM.temperatureh = BYTE(at10 / 256);
 						at10-=(tsen.TEMP_HUM.temperatureh*256);
-						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-						tsen.TEMP_HUM.humidity=(BYTE)hum;
+						tsen.TEMP_HUM.temperaturel = BYTE(at10);
+						tsen.TEMP_HUM.humidity = BYTE(hum);
 						tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1, nullptr);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.TEMP_HUM), nullptr, -1, nullptr);
 					}
 					else if (szST == "OccupancySensor.01")
 					{
@@ -1562,15 +1559,15 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
 
-							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+							tsen.LIGHTING2.id1 = BYTE(ID_BYTE3);
+							tsen.LIGHTING2.id2 = BYTE(ID_BYTE2);
+							tsen.LIGHTING2.id3 = BYTE(ID_BYTE1);
+							tsen.LIGHTING2.id4 = BYTE(ID_BYTE0);
 							tsen.LIGHTING2.level = 0;
 							tsen.LIGHTING2.rssi = rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+							sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 						}
 						else {
 							//Error code
@@ -1602,15 +1599,15 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
 
-							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+							tsen.LIGHTING2.id1 = BYTE(ID_BYTE3);
+							tsen.LIGHTING2.id2 = BYTE(ID_BYTE2);
+							tsen.LIGHTING2.id3 = BYTE(ID_BYTE1);
+							tsen.LIGHTING2.id4 = BYTE(ID_BYTE0);
 							tsen.LIGHTING2.level = 0;
 							tsen.LIGHTING2.rssi = rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+							sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 						}
 						else {
 							//Error code
@@ -1639,13 +1636,13 @@ void CEnOceanESP3::ParseRadioDatagram()
 							if (lux > 1000)
 								lux = 1000;
 							_tLightMeter lmeter;
-							lmeter.id1 = (BYTE)ID_BYTE3;
-							lmeter.id2 = (BYTE)ID_BYTE2;
-							lmeter.id3 = (BYTE)ID_BYTE1;
-							lmeter.id4 = (BYTE)ID_BYTE0;
+							lmeter.id1 = BYTE(ID_BYTE3);
+							lmeter.id2 = BYTE(ID_BYTE2);
+							lmeter.id3 = BYTE(ID_BYTE1);
+							lmeter.id4 = BYTE(ID_BYTE0);
 							lmeter.dunit = 1;
-							lmeter.fLux = (float)lux;
-							sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+							lmeter.fLux = float(lux);
+							sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lmeter), nullptr, 255, nullptr);
 
 							bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
 							memset(&tsen, 0, sizeof(RBUF));
@@ -1654,15 +1651,15 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
 
-							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+							tsen.LIGHTING2.id1 = BYTE(ID_BYTE3);
+							tsen.LIGHTING2.id2 = BYTE(ID_BYTE2);
+							tsen.LIGHTING2.id3 = BYTE(ID_BYTE1);
+							tsen.LIGHTING2.id4 = BYTE(ID_BYTE0);
 							tsen.LIGHTING2.level = 0;
 							tsen.LIGHTING2.rssi = rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+							sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 						}
 						else {
 							//Error code
@@ -1682,7 +1679,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						float temp = GetValueRange(DATA_BYTE1, 51, 0, 255, 0);
 						float hum = GetValueRange(DATA_BYTE3, 100, 0, 200, 0);
-						int co2 = (int)GetValueRange(DATA_BYTE2, 2550, 0, 255, 0);
+						int co2 = int(GetValueRange(DATA_BYTE2, 2550, 0, 255, 0));
 						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 						// Report battery level as 9
@@ -1718,7 +1715,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				unsigned char ID_BYTE0=m_buffer[5];
 				long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 				char szDeviceID[20];
-				sprintf(szDeviceID,"%08X",(unsigned int)id);
+				sprintf(szDeviceID, "%08X", uint32_t(id));
 				int Profile;
 				int iType;
 
@@ -1970,7 +1967,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// EEP Teach-In Query (UTE Message / CMD 0x0)
 
 						unsigned char nb_channel = m_buffer[2];
-						unsigned int manID = ((unsigned int)(m_buffer[4] & 0x7)) << 8 | (m_buffer[3]);
+						uint32_t manID = (uint32_t(m_buffer[4] & 0x7)) << 8 | (m_buffer[3]);
 						unsigned char type = m_buffer[5];
 						unsigned char func = m_buffer[6];
 						unsigned char rorg = m_buffer[7];
@@ -1987,7 +1984,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							char szDeviceID[20];
 							std::vector<std::vector<std::string> > result;
-							sprintf(szDeviceID,"%08X",(unsigned int)id);
+							sprintf(szDeviceID, "%08X", uint32_t(id));
 							result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
 							if (result.empty())
 							{
@@ -2014,10 +2011,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.LIGHTING2.subtype=sTypeAC;
 								tsen.LIGHTING2.seqnbr=0;
 
-								tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
-								tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
-								tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
-								tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
+								tsen.LIGHTING2.id1 = BYTE(ID_BYTE3);
+								tsen.LIGHTING2.id2 = BYTE(ID_BYTE2);
+								tsen.LIGHTING2.id3 = BYTE(ID_BYTE1);
+								tsen.LIGHTING2.id4 = BYTE(ID_BYTE0);
 								tsen.LIGHTING2.level=0;
 								tsen.LIGHTING2.rssi=rssi;
 
@@ -2033,8 +2030,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 #endif //ENOCEAN_BUTTON_DEBUG
 
 								_log.Log(LOG_NORM, "EnOcean: channel = %d", nbc+1);
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr,
-										 255, m_Name.c_str());
+								sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 							}
 							return;
 						}
@@ -2074,7 +2070,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							//Light, Switching + Blind Control
 							if (iType == 0x0A)
 							{
-								int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
+								int battery = int(double((255.0 / 100.0) * m_buffer[1]));
 								unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
 								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name, 12);
 								return;
@@ -2104,7 +2100,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// report status only if it is a known device else we may have an incorrect profile
 						char szDeviceID[20];
 						std::vector<std::vector<std::string> > result;
-						sprintf(szDeviceID, "%08X", (unsigned int)id);
+						sprintf(szDeviceID, "%08X", uint32_t(id));
 
 						result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
 						if (result.empty())
@@ -2120,10 +2116,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.LIGHTING2.subtype = sTypeAC;
 						tsen.LIGHTING2.seqnbr = 0;
 
-						tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-						tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+						tsen.LIGHTING2.id1 = BYTE(ID_BYTE3);
+						tsen.LIGHTING2.id2 = BYTE(ID_BYTE2);
+						tsen.LIGHTING2.id3 = BYTE(ID_BYTE1);
+						tsen.LIGHTING2.id4 = BYTE(ID_BYTE0);
 						tsen.LIGHTING2.level = dim_power;
 						tsen.LIGHTING2.rssi = rssi;
 
@@ -2140,7 +2136,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 #endif //ENOCEAN_BUTTON_DEBUG
 
 						// Never learn device from D2-01-0C because subtype may be incorrect
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.LIGHTING2), nullptr, 255, m_Name.c_str());
 
 						// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
 						//			Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)

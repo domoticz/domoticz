@@ -14,7 +14,7 @@ _e1WireFamilyType ToFamily(const std::string& str)
 	if (!(ss >> xID))
 		return _e1WireFamilyTypeUnknown;
 
-	return (_e1WireFamilyType)xID;
+	return _e1WireFamilyType(xID);
 }
 
 void DeviceIdToByteArray(const std::string& deviceId,/*out*/unsigned char* byteArray)
@@ -33,7 +33,7 @@ void DeviceIdToByteArray(const std::string& deviceId,/*out*/unsigned char* byteA
 		ss << std::hex << str.substr(2 * idx, 2);
 		if (!(ss >> i))
 			byteArray[DEVICE_ID_SIZE - idx - 1] = 0;
-		byteArray[DEVICE_ID_SIZE - idx - 1] = (uint8_t)i;
+		byteArray[DEVICE_ID_SIZE - idx - 1] = uint8_t(i);
 	}
 }
 
@@ -41,7 +41,7 @@ std::string ByteArrayToDeviceId(const unsigned char* byteArray)
 {
 	std::stringstream sID;
 	for (size_t idx = DEVICE_ID_SIZE; idx > 0; idx--)
-		sID << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)byteArray[idx - 1];
+		sID << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << uint32_t(byteArray[idx - 1]);
 	return sID.str();
 }
 

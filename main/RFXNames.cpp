@@ -1136,7 +1136,7 @@ void GetLightStatus(
 
 		if (switchtype != STYPE_Media) {
 			// Calculate % that the light is currently on, taking the maxdimlevel into account.
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int(float((100.0F / float(maxDimLevel)) * atof(sValue.c_str())));
 		}
 
 		// Fill in other parameters
@@ -1205,7 +1205,7 @@ void GetLightStatus(
 			bHaveGroupCmd = true;
 			bHaveDimmer = true;
 			maxDimLevel = 32;
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int(float((100.0F / float(maxDimLevel)) * atof(sValue.c_str())));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1393,7 +1393,7 @@ void GetLightStatus(
 			break;
 		case sTypeIT:
 			maxDimLevel = 9;
-			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+			llevel = int(float((100.0F / float(maxDimLevel)) * atof(sValue.c_str())));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1468,7 +1468,7 @@ void GetLightStatus(
 		maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		llevel = int(float((100.0F / float(maxDimLevel)) * atof(sValue.c_str())));
 
 		// Fill in other parameters
 		switch (dSubType)
@@ -1577,7 +1577,7 @@ void GetLightStatus(
 			lstatus = "Set Level";
 			bHaveDimmer = true;
 			llevel = nValue - fs20_sDimlevel_1 + 1;
-			llevel = (int)float((100.0F / float(maxDimLevel)) * llevel);
+			llevel = int(float((100.0F / float(maxDimLevel)) * llevel));
 			break;
 		case fs20_sOn_100:
 			lstatus = "On";
@@ -1622,7 +1622,7 @@ void GetLightStatus(
 		maxDimLevel = 100;
 
 		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		llevel = int(float((100.0F / float(maxDimLevel)) * atof(sValue.c_str())));
 
 		switch (nValue)
 		{
@@ -4024,7 +4024,7 @@ void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype)
 		s_strid << std::hex << strtoul(devid.c_str(), nullptr, 16);
 		unsigned long deviceid = 0;
 		s_strid >> deviceid;
-		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
+		deviceid = ((deviceid & 0xffffff00) >> 8);
 		char szTmp[20];
 		sprintf(szTmp, "%08lX", deviceid);
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);

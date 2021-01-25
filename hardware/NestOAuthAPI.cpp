@@ -104,7 +104,7 @@ void CNestOAuthAPI::SendSetPointSensor(const unsigned char Idx, const float Temp
 	thermos.dunit=0;
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 // Creates and updates switch used to log Heating and/or Cooling.
@@ -147,10 +147,10 @@ void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 		level = 15;
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = (BYTE)level;
+	lcmd.LIGHTING2.level = BYTE(level);
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string & /*accesstoken*/) {
@@ -285,13 +285,13 @@ bool CNestOAuthAPI::WriteToHardware(const char *pdata, const unsigned char /*len
 	if ((node_id - 3) % 3 == 0)
 	{
 		//Away
-		return SetAway((const unsigned char)node_id, bIsOn);
+		return SetAway(uint8_t(node_id), bIsOn);
 	}
 
 	if ((node_id - 4) % 3 == 0)
 	{
 		// Manual Eco Mode
-		return SetManualEcoMode((const unsigned char)node_id, bIsOn);
+		return SetManualEcoMode(uint8_t(node_id), bIsOn);
 	}
 
 	return false;
@@ -354,13 +354,13 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 		level = 15;
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = (BYTE)level;
+	lcmd.LIGHTING2.level = BYTE(level);
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 
 	if (!bDeviceExists)
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
@@ -370,7 +370,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 		}
 	}
 	else
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CNestOAuthAPI::GetMeterDetails()
@@ -487,8 +487,8 @@ void CNestOAuthAPI::GetMeterDetails()
 				}
 			}
 
-			UpdateSmokeSensor((const unsigned char)SwitchIndex, bSmokeAlarm, devName + " Smoke Alarm");
-			UpdateSmokeSensor((const unsigned char)(SwitchIndex+1), bCOAlarm, devName + " CO Alarm");
+			UpdateSmokeSensor(uint8_t(SwitchIndex), bSmokeAlarm, devName + " Smoke Alarm");
+			UpdateSmokeSensor(uint8_t(SwitchIndex + 1), bCOAlarm, devName + " CO Alarm");
 
 			SwitchIndex = SwitchIndex + 2;
 		}
@@ -571,7 +571,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			if (!ndevice["target_temperature_"+temperatureScale].empty())
 			{
 				float currentSetpoint = ndevice["target_temperature_"+temperatureScale].asFloat();
-				SendSetPointSensor((const unsigned char)(iThermostat * 3) + 1, currentSetpoint, Name + " Setpoint");
+				SendSetPointSensor(uint8_t(iThermostat * 3) + 1, currentSetpoint, Name + " Setpoint");
 			}
 			//Room Temperature/Humidity
 			if (!ndevice["ambient_temperature_"+temperatureScale].empty())
@@ -585,14 +585,14 @@ void CNestOAuthAPI::GetMeterDetails()
 			if (ntherm.CanHeat && !sHvacState.empty())
 			{
 				bool bIsHeating = (sHvacState == "heating");
-				UpdateSwitch((unsigned char)(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
+				UpdateSwitch(uint8_t(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
 			if (ntherm.CanCool && !sHvacState.empty())
 			{
 				bool bIsCooling = (sHvacState == "cooling");
-				UpdateSwitch((unsigned char)(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
+				UpdateSwitch(uint8_t(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
 			}
 
 			// Indicates HVAC system heating/cooling modes, like Heat/Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings.

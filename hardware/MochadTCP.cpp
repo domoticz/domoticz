@@ -181,9 +181,9 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
 		sprintf (s_buffer,"ST\n");
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOn) {
-		sprintf (s_buffer,"RF %c%d on\n",(char)(pdata[4]), pdata[5]);
+		sprintf(s_buffer, "RF %c%d on\n", (pdata[4]), pdata[5]);
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOff) {
-		sprintf (s_buffer,"RF %c%d off\n",(char)(pdata[4]), pdata[5]);
+		sprintf(s_buffer, "RF %c%d off\n", (pdata[4]), pdata[5]);
 	} else {
 //			case light1_sDim:
 //			case light1_sBright:
@@ -193,13 +193,13 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 		return false;
 	}
 //	_log.Log(LOG_STATUS, "Mochad: send '%s'", s_buffer);
-	write((const unsigned char *)s_buffer, strlen(s_buffer));
+	write(reinterpret_cast<const unsigned char *>(s_buffer), strlen(s_buffer));
 	return true;
 }
 
 void MochadTCP::MatchLine()
 {
-	if ((strlen((const char*)&m_mochadbuffer)<1)||(m_mochadbuffer[0]==0x0a))
+	if ((strlen(reinterpret_cast<const char *>(&m_mochadbuffer)) < 1) || (m_mochadbuffer[0] == 0x0a))
 		return; //null value (startup)
 
 	int j,k;
@@ -217,7 +217,7 @@ void MochadTCP::MatchLine()
 		switch(t.matchtype)
 		{
 		case ID:
-			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			if (strncmp(t.key, reinterpret_cast<const char *>(&m_mochadbuffer), strlen(t.key)) != 0)
 			{
 				continue;
 			}
@@ -225,14 +225,14 @@ void MochadTCP::MatchLine()
 			found = true;
 			break;
 		case STD:
-			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			if (strncmp(t.key, reinterpret_cast<const char *>(&m_mochadbuffer), strlen(t.key)) != 0)
 			{
 				continue;
 			}
 			found = true;
 			break;
 		case LINE17:
-			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			if (strncmp(t.key, reinterpret_cast<const char *>(&m_mochadbuffer), strlen(t.key)) != 0)
 			{
 				continue;
 			}
@@ -240,12 +240,13 @@ void MochadTCP::MatchLine()
 			found = true;
 			break;
 		case LINE18:
-			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0)) {
+			if ((m_linecount == 18) && (strncmp(t.key, reinterpret_cast<const char *>(&m_mochadbuffer), strlen(t.key)) == 0))
+			{
 				found = true;
 			}
 			break;
 		case EXCLMARK:
-			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			if (strncmp(t.key, reinterpret_cast<const char *>(&m_mochadbuffer), strlen(t.key)) != 0)
 			{
 				continue;
 			}
@@ -277,7 +278,7 @@ void MochadTCP::MatchLine()
 				return;
 			if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '1')) goto onError;
 			m_mochad.LIGHTING1.cmnd = m_mochadbuffer[j++] - '0';
-			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, nullptr, 255, m_Name.c_str());
+			sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_mochad), nullptr, 255, m_Name.c_str());
 			if (!(','==  m_mochadbuffer[j++])) return;
 		}
 		break;
@@ -313,9 +314,9 @@ checkFunc:
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {
-				m_mochad.LIGHTING1.housecode = (BYTE)(currentHouse+'A');
-				m_mochad.LIGHTING1.unitcode = (BYTE)k;
-				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, nullptr, 255, m_Name.c_str());
+				m_mochad.LIGHTING1.housecode = BYTE(currentHouse + 'A');
+				m_mochad.LIGHTING1.unitcode = BYTE(k);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_mochad), nullptr, 255, m_Name.c_str());
 				selected[currentHouse][k] = 0;
 			}
 		}
@@ -325,14 +326,14 @@ checkFunc:
 		char *pchar;
 		char tempRFSECbuf[50];
 
-		if (strstr((const char*)&m_mochadbuffer[j], "DS10A"))
+		if (strstr(reinterpret_cast<const char *>(&m_mochadbuffer[j]), "DS10A"))
 		{
 			m_mochadsec.SECURITY1.subtype = sTypeSecX10;
 			setSecID(&m_mochadbuffer[t.start]);
 			m_mochadsec.SECURITY1.battery_level = 0x0f;
 
 			// parse sensor conditions, e.g. "Contact_alert_min_DS10A" or "'Contact_normal_max_low_DS10A"
-			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			strcpy(tempRFSECbuf, reinterpret_cast<const char *>(&m_mochadbuffer[t.start + t.width + 7]));
 			pchar = strtok(tempRFSECbuf, " _");
 			while (pchar != nullptr)
 			{
@@ -353,14 +354,14 @@ checkFunc:
 			}
 			m_mochadsec.SECURITY1.rssi = 12; // signal strength ?? 12 = no signal strength
 		}
-		else if (strstr((const char *)&m_mochadbuffer[j], "KR10A"))
+		else if (strstr(reinterpret_cast<const char *>(&m_mochadbuffer[j]), "KR10A"))
 		{
 			m_mochadsec.SECURITY1.subtype = sTypeSecX10R;
 			setSecID(&m_mochadbuffer[t.start]);
 			m_mochadsec.SECURITY1.battery_level = 0x0f;
 
 			// parse remote conditions, e.g. "Panic_KR10A" "Lights_On_KR10A" "Lights_Off_KR10A" "Disarm_KR10A" "Arm_KR10A"
-			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			strcpy(tempRFSECbuf, reinterpret_cast<const char *>(&m_mochadbuffer[t.start + t.width + 7]));
 			pchar = strtok(tempRFSECbuf, " _");
 			while (pchar != nullptr)
 			{
@@ -378,14 +379,14 @@ checkFunc:
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}
-		else if (strstr((const char *)&m_mochadbuffer[j], "MS10A"))
+		else if (strstr(reinterpret_cast<const char *>(&m_mochadbuffer[j]), "MS10A"))
 		{
 			m_mochadsec.SECURITY1.subtype = sTypeSecX10M;
 			setSecID(&m_mochadbuffer[t.start]);
 			m_mochadsec.SECURITY1.battery_level = 0x0f;
 
 			// parse remote conditions, "Motion_alert_MS10A" and "Motion_normal_MS10A"
-			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			strcpy(tempRFSECbuf, reinterpret_cast<const char *>(&m_mochadbuffer[t.start + t.width + 7]));
 			pchar = strtok(tempRFSECbuf, " _");
 			while (pchar != nullptr)
 			{
@@ -402,7 +403,7 @@ checkFunc:
 		else
 			goto onError;
 
-		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, nullptr, 255, m_Name.c_str());
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_mochadsec), nullptr, 255, m_Name.c_str());
 		break;
 	}
 	return;
@@ -429,7 +430,8 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 			// discard newline, close string, parse line and clear it.
 			if(m_bufferpos > 0) m_mochadbuffer[m_bufferpos] = 0;
 			m_linecount++;
-			if (strlen((const char *)m_mochadbuffer) > 14) {
+			if (strlen(reinterpret_cast<const char *>(m_mochadbuffer)) > 14)
+			{
 				int i = 0;
 				while (m_mochadbuffer[i+15] != 0) {
 					m_mochadbuffer[i] = m_mochadbuffer[i+15];

@@ -109,7 +109,7 @@ void Comm5SMTCP::Do_Work()
 
 void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 {
-	buffer.append((const char*)data, len);
+	buffer.append(reinterpret_cast<const char *>(data), len);
 
 	if (buffer.find('\n') == std::string::npos)
 		return; // Incomplete lines
@@ -124,7 +124,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			float temperature = static_cast<float>(atof(tokens[1].c_str()));
+			float temperature = float(atof(tokens[1].c_str()));
 			SendTempSensor(1, 255, temperature, "TEMPERATURE");
 		}
 		else if (startsWith(line, "281")) {
@@ -140,13 +140,13 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			float baro = static_cast<float>(atof(tokens[1].c_str()));
+			float baro = float(atof(tokens[1].c_str()));
 			SendBaroSensor(1, 0, 255, baro, 0, "BAROMETRIC");
 		}
 	}
 
 	// Trim consumed bytes.
-	buffer.erase(0, buffer.length() - static_cast<unsigned int>(stream.rdbuf()->in_avail()));
+	buffer.erase(0, buffer.length() - uint32_t(stream.rdbuf()->in_avail()));
 }
 
 void Comm5SMTCP::querySensorState()

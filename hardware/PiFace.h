@@ -26,32 +26,32 @@ class CIOCount
 	CIOCount();
 	~CIOCount() = default;
 
-	int Update(unsigned long Counts);
-	unsigned long GetTotal() const
+	int Update(uint32_t Counts);
+	uint32_t GetTotal() const
 	{
 		return Total;
 	};
-	unsigned long GetLastTotal() const
+	uint32_t GetLastTotal() const
 	{
 		return LastTotal;
 	};
-	unsigned long GetRateLimit() const
+	uint32_t GetRateLimit() const
 	{
 		return Minimum_Pulse_Period_ms;
 	};
-	unsigned long GetDivider() const
+	uint32_t GetDivider() const
 	{
 		return Divider;
 	};
-	void SetTotal(unsigned long NewTotalValue)
+	void SetTotal(uint32_t NewTotalValue)
 	{
 		Total = NewTotalValue;
 	};
-	void SetLastTotal(unsigned long NewTotalValue)
+	void SetLastTotal(uint32_t NewTotalValue)
 	{
 		LastTotal = NewTotalValue;
 	};
-	void SetRateLimit(unsigned long NewRateLimit)
+	void SetRateLimit(uint32_t NewRateLimit)
 	{
 		Minimum_Pulse_Period_ms = NewRateLimit;
 	};
@@ -60,21 +60,21 @@ class CIOCount
 		Total = 0;
 		LastTotal = 0;
 	};
-	bool ProcessUpdateInterval(unsigned long PassedTime_ms);
-	void SetUpdateInterval(unsigned long NewValue_ms);
-	void SetUpdateIntervalPerc(unsigned long NewValue)
+	bool ProcessUpdateInterval(uint32_t PassedTime_ms);
+	void SetUpdateInterval(uint32_t NewValue_ms);
+	void SetUpdateIntervalPerc(uint32_t NewValue)
 	{
 		UpdateIntervalPerc = NewValue;
 	};
-	void SetDivider(unsigned long NewValue)
+	void SetDivider(uint32_t NewValue)
 	{
 		Divider = NewValue;
 	};
-	unsigned long GetUpdateInterval()
+	uint32_t GetUpdateInterval()
 	{
 		return UpdateInterval_ms;
 	};
-	unsigned long GetUpdateIntervalPerc()
+	uint32_t GetUpdateIntervalPerc()
 	{
 		return UpdateIntervalPerc;
 	};
@@ -83,13 +83,13 @@ class CIOCount
 	int Type;
 
       private:
-	unsigned long Total;
-	unsigned long LastTotal;
-	unsigned long UpdateInterval_ms;
-	unsigned long UpdateDownCount_ms;
-	unsigned long UpdateIntervalPerc;
-	unsigned long Minimum_Pulse_Period_ms;
-	unsigned long Divider;
+	uint32_t Total;
+	uint32_t LastTotal;
+	uint32_t UpdateInterval_ms;
+	uint32_t UpdateDownCount_ms;
+	uint32_t UpdateIntervalPerc;
+	uint32_t Minimum_Pulse_Period_ms;
+	uint32_t Divider;
 	boost::posix_time::ptime Last_Pulse;
 	boost::posix_time::ptime Cur_Pulse;
 	boost::posix_time::ptime Last_Callback;

@@ -85,7 +85,7 @@ void DomoticzTCP::OnConnect()
 	{
 		char szAuth[300];
 		snprintf(szAuth, sizeof(szAuth), "AUTH;%s;%s", m_username.c_str(), m_password.c_str());
-		WriteToHardware((const char*)&szAuth, (const unsigned char)strlen(szAuth));
+		WriteToHardware(reinterpret_cast<const char *>(&szAuth), uint8_t(strlen(szAuth)));
 	}
 	sOnConnected(this);
 }
@@ -103,7 +103,7 @@ void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 		return;
 	}
 	std::lock_guard<std::mutex> l(readQueueMutex);
-	onInternalMessage((const unsigned char *)pData, length, false); // Do not check validity, this might be non RFX-message
+	onInternalMessage(pData, length, false); // Do not check validity, this might be non RFX-message
 }
 
 void DomoticzTCP::OnError(const boost::system::error_code& error)
@@ -153,7 +153,7 @@ bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if (ASyncTCP::isConnected())
 	{
-		write(std::string((const char*)pdata, length));
+		write(std::string(pdata, length));
 		return true;
 	}
 #else

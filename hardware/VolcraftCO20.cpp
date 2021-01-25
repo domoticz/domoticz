@@ -149,8 +149,7 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 	}
 
 	/* Prepare value from first read.  */
-	value = ((unsigned char *)usb_io_buf)[3] << 8
-		| ((unsigned char *)usb_io_buf)[2] << 0;
+	value = (reinterpret_cast<unsigned char *>(usb_io_buf))[3] << 8 | (reinterpret_cast<unsigned char *>(usb_io_buf))[2] << 0;
 
 	/* Dummy read.  */
 	usb_interrupt_read(devh, 0x0081/*endpoint*/,

@@ -42,7 +42,7 @@ signed int eHouseTCP::GetIndexOfEvent(unsigned char *TempEvent)
 	unsigned int i;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 	{
-		if (memcmp(TempEvent, (struct EventQueueT *) &m_EvQ[i]->LocalEventsToRun, EVENT_SIZE) == 0)
+		if (memcmp(TempEvent, reinterpret_cast<struct EventQueueT *>(&m_EvQ[i]->LocalEventsToRun), EVENT_SIZE) == 0)
 			return i;	//Exist on Event Queue
 	}
 	return -1;
@@ -182,10 +182,9 @@ void eHouseTCP::AddTextEvents(unsigned char *ev, int size)
 	while (offset < size - 1)
 	{
 		int tmp = hex2bin(ev, offset);			// decode Text Hex Coded Event
-		if (tmp >= 0)						// valid hex char
-			evnt[i] = (unsigned char)tmp;	// construct binary
-		else
+		if (tmp < 0)					// valid hex char
 			return;		//ignore if wrong data (non hex digit)
+		evnt[i] = uint8_t(tmp); // construct binary
 		i++;
 		if (i == 10)		//only if valid eHouse text event 10 binary = 20 hex char event
 		{
@@ -212,7 +211,7 @@ signed int eHouseTCP::AddToLocalEvent(unsigned char *Even, unsigned char offset)
 	signed int i;
 	//signed int k;
 	unsigned char Event[EVENT_SIZE + 1];
-	memcpy(Event, (unsigned char *)&Even[offset], EVENT_SIZE); //copy event from selected offset
+	memcpy(Event, &Even[offset], EVENT_SIZE); // copy event from selected offset
 	if (Event[2] == 0)  return 0;
 	if (Event[2] == 0xff)  return 0;
 	i = GetIndexOfEvent(Event);

@@ -94,12 +94,12 @@ void Arilux::InsertUpdateSwitch(const std::string &lightName, const int subType,
 	{
 		Log(LOG_STATUS, "New controller added (%s/%s)", location.c_str(), lightName.c_str());
 		_tColorSwitch ycmd;
-		ycmd.subtype = (uint8_t)subType;
+		ycmd.subtype = uint8_t(subType);
 		ycmd.id = sID;
 		ycmd.dunit = 0;
 		ycmd.value = 0;
 		ycmd.command = Color_LedOff;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&ycmd), nullptr, -1, m_Name.c_str());
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', switchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), STYPE_Dimmer, m_HwdID, szDeviceID);
 	}
 }
@@ -111,7 +111,7 @@ bool Arilux::SendTCPCommand(uint32_t ip,std::vector<unsigned char> &command)
 	//Add checksum calculation
 	int sum = std::accumulate(command.begin(), command.end(), 0);
 	sum = sum & 0xFF;
-	command.push_back((unsigned char)sum);
+	command.push_back(uint8_t(sum));
 
 	boost::asio::io_service io_service;
 	boost::asio::ip::tcp::socket sendSocket(io_service);
@@ -189,10 +189,10 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 		}
 		// No break, fall through to send combined color + brightness command
 	case Color_SetBrightnessLevel:
-		Arilux_RGBCommand_Command[1] = static_cast<uint8_t>(m_color.r * pLed->value / 100);
-		Arilux_RGBCommand_Command[2] = static_cast<uint8_t>(m_color.g * pLed->value / 100);
-		Arilux_RGBCommand_Command[3] = static_cast<uint8_t>(m_color.b * pLed->value / 100);
-		Arilux_RGBCommand_Command[4] = static_cast<uint8_t>(m_color.ww * pLed->value / 100);
+		Arilux_RGBCommand_Command[1] = uint8_t(m_color.r * pLed->value / 100);
+		Arilux_RGBCommand_Command[2] = uint8_t(m_color.g * pLed->value / 100);
+		Arilux_RGBCommand_Command[3] = uint8_t(m_color.b * pLed->value / 100);
+		Arilux_RGBCommand_Command[4] = uint8_t(m_color.ww * pLed->value / 100);
 		return SendTCPCommand(pLed->id, Arilux_RGBCommand_Command);
 	}
 	Log(LOG_STATUS, "This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");

@@ -218,7 +218,7 @@ void CMeteorologisk::GetMeterDetails()
 	Json::Value selectedTimeserie = 0;
 	time_t now = time(nullptr);
 
-	for(int i = 0; i < (int)timeseries.size(); i++)
+	for (int i = 0; i < int(timeseries.size()); i++)
 	{
 		Json::Value timeserie = timeseries[i];
 		std::string stime = timeserie["time"].asString();

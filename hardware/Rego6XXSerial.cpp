@@ -247,7 +247,7 @@ void CRego6XXSerial::Do_Work()
 					for (int i = 2; i < 8; i++)
 						cmd.data.crc ^= cmd.raw[i];
 
-					WriteToHardware((char *)cmd.raw, sizeof(cmd.raw));
+					WriteToHardware(reinterpret_cast<char *>(cmd.raw), sizeof(cmd.raw));
 				}
 				else
 				{
@@ -371,14 +371,14 @@ bool CRego6XXSerial::ParseData()
 		if (g_allRegisters[m_pollcntr].type == REGO_TYPE_TEMP)
 		{
 			strcpy(m_Rego6XXTemp.ID, g_allRegisters[m_pollcntr].name);
-			m_Rego6XXTemp.temperature = (float)(data * 0.1);
+			m_Rego6XXTemp.temperature = float(data * 0.1);
 			if ((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
 			    ((std::fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
 			     (difftime(atime, g_allRegisters[m_pollcntr].lastSent) >= 300))) // Send at least every 5 minutes
 			{
 				g_allRegisters[m_pollcntr].lastSent = atime;
 				g_allRegisters[m_pollcntr].lastTemp = m_Rego6XXTemp.temperature;
-				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXTemp, nullptr, 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_Rego6XXTemp), nullptr, 255, nullptr);
 			}
 		}
 		else if (g_allRegisters[m_pollcntr].type == REGO_TYPE_STATUS)
@@ -391,7 +391,7 @@ bool CRego6XXSerial::ParseData()
 			{
 				g_allRegisters[m_pollcntr].lastSent = atime;
 				g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_Rego6XXValue), nullptr, 255, nullptr);
 			}
 		}
 		else if (g_allRegisters[m_pollcntr].type == REGO_TYPE_COUNTER)
@@ -404,7 +404,7 @@ bool CRego6XXSerial::ParseData()
 			{
 				g_allRegisters[m_pollcntr].lastSent = atime;
 				g_allRegisters[m_pollcntr].lastValue = m_Rego6XXValue.value;
-				sDecodeRXMessage(this, (const unsigned char *)&m_Rego6XXValue, nullptr, 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_Rego6XXValue), nullptr, 255, nullptr);
 			}
 		}
 

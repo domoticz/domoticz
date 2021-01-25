@@ -403,7 +403,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["TSP"].asString();
 		if (tmpstr != "null")
 		{
-			float temp = static_cast<float>(atof(tmpstr.c_str()));
+			float temp = float(atof(tmpstr.c_str()));
 			SendSetPointSensor(1, 1, 1, temp, "Setpoint");
 		}
 	}
@@ -412,7 +412,7 @@ bool CNefitEasy::GetStatusDetails()
 		tmpstr = root2["IHT"].asString();
 		if (tmpstr != "null")
 		{
-			float temp = static_cast<float>(atof(tmpstr.c_str()));
+			float temp = float(atof(tmpstr.c_str()));
 			SendTempSensor(1, -1, temp, "Room Temperature");
 		}
 	}
@@ -757,13 +757,13 @@ bool CNefitEasy::GetGasUsage()
 	float yeargas = root["value"].asFloat();
 	//convert from kWh to m3
 	yeargas *= (0.12307692F * 1000.0F);
-	uint32_t gusage = (uint32_t)yeargas;
+	uint32_t gusage = uint32_t(yeargas);
 	if (gusage < m_lastgasusage)
 	{
 
 	}
 	m_p1gas.gasusage = gusage;
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1gas), "Gas", 255, nullptr);
 	return true;
 }
 

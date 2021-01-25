@@ -92,7 +92,7 @@ void P1MeterTCP::OnDisconnect()
 
 void P1MeterTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseP1Data((const unsigned char*)pData, length, m_bDisableCRC, m_ratelimit);
+	ParseP1Data(pData, length, m_bDisableCRC, m_ratelimit);
 }
 
 

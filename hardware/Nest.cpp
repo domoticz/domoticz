@@ -130,7 +130,7 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 	thermos.dunit=0;
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 
@@ -174,10 +174,10 @@ void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 		level = 15;
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = (BYTE)level;
+	lcmd.LIGHTING2.level = BYTE(level);
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 bool CNest::Login()
@@ -268,13 +268,13 @@ bool CNest::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	if (node_id % 3 == 0)
 	{
 		//Away
-		return SetAway((uint8_t)node_id, bIsOn);
+		return SetAway(uint8_t(node_id), bIsOn);
 	}
 
 	if (node_id % 4 == 0)
 	{
 		//Manual Eco Mode
-		return SetManualEcoMode((uint8_t)node_id, bIsOn);
+		return SetManualEcoMode(uint8_t(node_id), bIsOn);
 	}
 
 	return false;
@@ -337,13 +337,13 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 		level = 15;
 		lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = (uint8_t)level;
+	lcmd.LIGHTING2.level = uint8_t(level);
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 
 	if (!bDeviceExits)
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
@@ -353,7 +353,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 		}
 	}
 	else
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 
@@ -524,7 +524,7 @@ void CNest::GetMeterDetails()
 				if (!bBool)
 					bIAlarm = true;
 			}
-			UpdateSmokeSensor((uint8_t)SwitchIndex, bIAlarm, devName);
+			UpdateSmokeSensor(uint8_t(SwitchIndex), bIAlarm, devName);
 			SwitchIndex++;
 		}
 	}
@@ -602,7 +602,7 @@ void CNest::GetMeterDetails()
 			if (!nshared["target_temperature"].empty())
 			{
 				float currentSetpoint = nshared["target_temperature"].asFloat();
-				SendSetPointSensor((const unsigned char)(iThermostat * 3) + 1, currentSetpoint, Name + " Setpoint");
+				SendSetPointSensor(uint8_t(iThermostat * 3) + 1, currentSetpoint, Name + " Setpoint");
 			}
 			//Room Temperature/Humidity
 			if (!nshared["current_temperature"].empty())
@@ -616,14 +616,14 @@ void CNest::GetMeterDetails()
 			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
 				bool bIsHeating = nshared["hvac_heater_state"].asBool();
-				UpdateSwitch((unsigned char)(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
+				UpdateSwitch(uint8_t(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
 			if (nshared["can_cool"].asBool() && !nshared["hvac_ac_state"].empty())
 			{
 				bool bIsCooling = nshared["hvac_ac_state"].asBool();
-				UpdateSwitch((unsigned char)(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
+				UpdateSwitch(uint8_t(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
 			}
 
 			//Away
@@ -672,7 +672,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	unsigned char tSign = m_sql.m_tempsign[0];
 	if (tSign == 'F')
 	{
-		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
+		tempDest = float(ConvertToCelsius(tempDest));
 	}
 
 	Json::Value root;
@@ -716,7 +716,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	Json::Value root;
 	root["away"] = bIsAway;
-	root["away_timestamp"] = (int)mytime(nullptr);
+	root["away_timestamp"] = int(mytime(nullptr));
 	root["away_setter"] = 0;
 
 	std::string sResult;

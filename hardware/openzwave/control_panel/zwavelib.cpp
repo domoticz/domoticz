@@ -59,16 +59,16 @@ OpenZWave::ValueID::ValueGenre valueGenreNum (char const *str)
 {
   if (strcmp(str, "basic") == 0)
     return OpenZWave::ValueID::ValueGenre_Basic;
-  else if (strcmp(str, "user") == 0)
-    return OpenZWave::ValueID::ValueGenre_User;
-  else if (strcmp(str, "config") == 0)
-    return OpenZWave::ValueID::ValueGenre_Config;
-  else if (strcmp(str, "system") == 0)
-    return OpenZWave::ValueID::ValueGenre_System;
-  else if (strcmp(str, "count") == 0)
-    return OpenZWave::ValueID::ValueGenre_Count;
-  else
-    return (OpenZWave::ValueID::ValueGenre)255;
+  if (strcmp(str, "user") == 0)
+	  return OpenZWave::ValueID::ValueGenre_User;
+  if (strcmp(str, "config") == 0)
+	  return OpenZWave::ValueID::ValueGenre_Config;
+  if (strcmp(str, "system") == 0)
+	  return OpenZWave::ValueID::ValueGenre_System;
+  if (strcmp(str, "count") == 0)
+	  return OpenZWave::ValueID::ValueGenre_Count;
+
+  return OpenZWave::ValueID::ValueGenre(255);
 }
 
 const char *valueTypeStr (OpenZWave::ValueID::ValueType vt)
@@ -102,26 +102,26 @@ OpenZWave::ValueID::ValueType valueTypeNum (char const *str)
 {
   if (strcmp(str, "bool") == 0)
     return OpenZWave::ValueID::ValueType_Bool;
-  else if (strcmp(str, "byte") == 0)
-    return OpenZWave::ValueID::ValueType_Byte;
-  else if (strcmp(str, "decimal") == 0)
-    return OpenZWave::ValueID::ValueType_Decimal;
-  else if (strcmp(str, "int") == 0)
-    return OpenZWave::ValueID::ValueType_Int;
-  else if (strcmp(str, "list") == 0)
-    return OpenZWave::ValueID::ValueType_List;
-  else if (strcmp(str, "schedule") == 0)
-    return OpenZWave::ValueID::ValueType_Schedule;
-  else if (strcmp(str, "short") == 0)
-    return OpenZWave::ValueID::ValueType_Short;
-  else if (strcmp(str, "string") == 0)
-    return OpenZWave::ValueID::ValueType_String;
-  else if (strcmp(str, "button") == 0)
-    return OpenZWave::ValueID::ValueType_Button;
-  else if (strcmp(str, "raw") == 0)
-    return OpenZWave::ValueID::ValueType_Raw;
-  else
-    return (OpenZWave::ValueID::ValueType)255;
+  if (strcmp(str, "byte") == 0)
+	  return OpenZWave::ValueID::ValueType_Byte;
+  if (strcmp(str, "decimal") == 0)
+	  return OpenZWave::ValueID::ValueType_Decimal;
+  if (strcmp(str, "int") == 0)
+	  return OpenZWave::ValueID::ValueType_Int;
+  if (strcmp(str, "list") == 0)
+	  return OpenZWave::ValueID::ValueType_List;
+  if (strcmp(str, "schedule") == 0)
+	  return OpenZWave::ValueID::ValueType_Schedule;
+  if (strcmp(str, "short") == 0)
+	  return OpenZWave::ValueID::ValueType_Short;
+  if (strcmp(str, "string") == 0)
+	  return OpenZWave::ValueID::ValueType_String;
+  if (strcmp(str, "button") == 0)
+	  return OpenZWave::ValueID::ValueType_Button;
+  if (strcmp(str, "raw") == 0)
+	  return OpenZWave::ValueID::ValueType_Raw;
+
+  return OpenZWave::ValueID::ValueType(255);
 }
 
 const char *nodeBasicStr (uint8 basic)

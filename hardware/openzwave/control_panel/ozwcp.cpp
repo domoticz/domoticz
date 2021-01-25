@@ -305,7 +305,7 @@ void MyNode::updateGroup(uint8 node, uint8 grp, char* glist)
 	while (p != nullptr && *p && n < (*it)->max)
 	{
 		np = strsep(&p, ",");
-		v[n++] = (uint8)strtol(np, nullptr, 10);
+		v[n++] = uint8_t(strtol(np, nullptr, 10));
 	}
 	/* Look for nodes in the passed-in argument list, if not present add them */
 	std::vector<uint8>::iterator nit;
@@ -420,7 +420,7 @@ MyValue *MyNode::lookup(const std::string &data)
 	size_t pos1, pos2;
 	std::string str;
 
-	node = (uint8)strtol(data.c_str(), nullptr, 10);
+	node = uint8_t(strtol(data.c_str(), nullptr, 10));
 	if (node == 0)
 		return nullptr;
 	pos1 = data.find('-', 0);
@@ -450,10 +450,10 @@ MyValue *MyNode::lookup(const std::string &data)
 	if (pos2 == std::string::npos)
 		return nullptr;
 	str = data.substr(pos1, pos2 - pos1);
-	inst = (uint8)strtol(str.c_str(), nullptr, 10);
+	inst = uint8_t(strtol(str.c_str(), nullptr, 10));
 	pos1 = pos2 + 1;
 	str = data.substr(pos1);
-	ind = (uint8)strtol(str.c_str(), nullptr, 10);
+	ind = uint8_t(strtol(str.c_str(), nullptr, 10));
 	OpenZWave::ValueID id(homeId, node, vg, cls, inst, ind, typ);
 	MyNode* n = nodes[node];
 	if (n == nullptr)
@@ -877,7 +877,7 @@ COpenZWaveControlPanel::COpenZWaveControlPanel() :
 
 void web_controller_update(OpenZWave::Driver::ControllerState cs, OpenZWave::Driver::ControllerError err, void* ct)
 {
-	COpenZWaveControlPanel* cp = (COpenZWaveControlPanel*)ct;
+	auto cp = static_cast<COpenZWaveControlPanel *>(ct);
 	std::string s;
 	bool more = true;
 
@@ -1178,7 +1178,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 					nodeElement->SetAttribute("beam", OpenZWave::Manager::Get()->IsNodeBeamingDevice(homeId, i) ? "true" : "false");
 					nodeElement->SetAttribute("routing", OpenZWave::Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
 					nodeElement->SetAttribute("security", OpenZWave::Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
-					nodeElement->SetAttribute("time", (int)nodes[i]->getTime());
+					nodeElement->SetAttribute("time", int(nodes[i]->getTime()));
 #ifdef OZW_WRITE_LOG
 					Log::Write(LogLevel_Info, "i=%d failed=%d\n", i, OpenZWave::Manager::Get()->IsNodeFailed(homeId, i));
 					Log::Write(LogLevel_Info, "i=%d awake=%d\n", i, OpenZWave::Manager::Get()->IsNodeAwake(homeId, i));

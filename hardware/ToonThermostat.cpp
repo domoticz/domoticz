@@ -150,15 +150,15 @@ void CToonThermostat::Init()
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==1) AND ([Type]==%d) AND (SubType==%d)", m_HwdID, pTypeP1Power, sTypeP1Power);
 	if (!result.empty())
 	{
-		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
+		uint32_t devID = uint32_t(atol(result[0][0].c_str()));
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = *result.begin();
-			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
-			m_OffsetDeliv1 = (unsigned long)atol(sd[1].c_str());
-			m_OffsetUsage2 = (unsigned long)atol(sd[2].c_str());
-			m_OffsetDeliv2 = (unsigned long)atol(sd[3].c_str());
+			m_OffsetUsage1 = uint32_t(atol(sd[0].c_str()));
+			m_OffsetDeliv1 = uint32_t(atol(sd[1].c_str()));
+			m_OffsetUsage2 = uint32_t(atol(sd[2].c_str()));
+			m_OffsetDeliv2 = uint32_t(atol(sd[3].c_str()));
 		}
 	}
 	m_bDoLogin = true;
@@ -231,7 +231,7 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
@@ -276,7 +276,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 std::string CToonThermostat::GetRandom()
@@ -659,16 +659,16 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 
 	time_t atime = mytime(nullptr);
 
-	unsigned long powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
-	unsigned long powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
+	auto powerusage1 = uint32_t(root["powerUsage"]["meterReadingLow"].asFloat());
+	auto powerusage2 = uint32_t(root["powerUsage"]["meterReading"].asFloat());
 
 	if ((powerusage1 == 0) && (powerusage2 == 0))
 	{
 		//New firmware does not provide meter readings anymore
 		if (root["powerUsage"]["dayUsage"].empty() == false)
 		{
-			unsigned long usage1 = (unsigned long)(root["powerUsage"]["dayUsage"].asFloat());
-			unsigned long usage2 = (unsigned long)(root["powerUsage"]["dayLowUsage"].asFloat());
+			auto usage1 = uint32_t(root["powerUsage"]["dayUsage"].asFloat());
+			auto usage2 = uint32_t(root["powerUsage"]["dayLowUsage"].asFloat());
 			if (usage1 < m_LastUsage1)
 			{
 				m_OffsetUsage1 += m_LastUsage1;
@@ -691,8 +691,8 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 
 	if (root["powerUsage"]["meterReadingProdu"].empty() == false)
 	{
-		unsigned long powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
-		unsigned long powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
+		auto powerdeliv1 = uint32_t(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+		auto powerdeliv2 = uint32_t(root["powerUsage"]["meterReadingProdu"].asFloat());
 
 		if ((powerdeliv1 != 0) || (powerdeliv2 != 0))
 		{
@@ -706,12 +706,12 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 		}
 	}
 
-	m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
-	m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+	m_p1power.usagecurrent = uint32_t(root["powerUsage"]["value"].asFloat());	  // Watt
+	m_p1power.delivcurrent = uint32_t(root["powerUsage"]["valueProduced"].asFloat()); // Watt
 
 	if (root["powerUsage"]["valueSolar"].empty() == false)
 	{
-		float valueSolar = (float)(root["powerUsage"]["valueSolar"].asFloat());
+		float valueSolar = (root["powerUsage"]["valueSolar"].asFloat());
 		if (valueSolar != 0)
 		{
 			SendWattMeter(1, 1, 255, valueSolar, "Solar");
@@ -730,7 +730,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
 			m_lastelectradeliv = m_p1power.delivcurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, nullptr, 255, nullptr);
+			sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1power), nullptr, 255, nullptr);
 		}
 	}
 	return true;
@@ -742,7 +742,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 		return false;
 	time_t atime = mytime(nullptr);
 
-	m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
+	m_p1gas.gasusage = uint32_t(root["gasUsage"]["meterReading"].asFloat());
 
 	//Send GAS if the value changed, or at least every 5 minutes
 	if (
@@ -754,7 +754,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 		{
 			m_lastSharedSendGas = atime;
 			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, nullptr, 255, nullptr);
+			sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1gas), nullptr, 255, nullptr);
 		}
 	}
 	return true;

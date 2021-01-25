@@ -102,7 +102,7 @@ void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 				bool bHaveDimmer = false;
 				bool bHaveGroupCmd = false;
 				int maxDimLevel = 0;
-				GetLightStatus(dType, dSubType, (_eSwitchType)metertype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				GetLightStatus(dType, dSubType, static_cast<_eSwitchType>(metertype), nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 				sendValue = lstatus;
 			}
 			else if (delpos > 0) {

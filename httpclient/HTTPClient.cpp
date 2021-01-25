@@ -30,35 +30,35 @@ std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *userp) // called once for each header
 {
 	size_t realsize = size * nmemb;
-	std::vector<std::string>* pvHeaderData = (std::vector<std::string>*)userp;
-	pvHeaderData->push_back(std::string((unsigned char*)contents, (std::find((unsigned char*)contents, (unsigned char*)contents + realsize, '\r'))));
+	auto pvHeaderData = static_cast<std::vector<std::string> *>(userp);
+	pvHeaderData->push_back(std::string(static_cast<unsigned char *>(contents), (std::find(static_cast<unsigned char *>(contents), static_cast<unsigned char *>(contents) + realsize, '\r'))));
 	return realsize;
 }
 
 size_t write_curl_data(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	size_t realsize = size * nmemb;
-	std::vector<unsigned char>* pvHTTPResponse = (std::vector<unsigned char>*)userp;
-	pvHTTPResponse->insert(pvHTTPResponse->end(), (unsigned char*)contents, (unsigned char*)contents + realsize);
+	std::vector<unsigned char> *pvHTTPResponse = static_cast<std::vector<unsigned char> *>(userp);
+	pvHTTPResponse->insert(pvHTTPResponse->end(), static_cast<unsigned char *>(contents), static_cast<unsigned char *>(contents) + realsize);
 	return realsize;
 }
 
 size_t write_curl_data_file(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	size_t realsize = size * nmemb;
-	std::ofstream *outfile = (std::ofstream*)userp;
-	outfile->write((const char*)contents, realsize);
+	std::ofstream *outfile = static_cast<std::ofstream *>(userp);
+	outfile->write(static_cast<const char *>(contents), realsize);
 	return realsize;
 }
 
 size_t write_curl_data_single_line(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	size_t realsize = size * nmemb;
-	std::vector<unsigned char>* pvHTTPResponse = (std::vector<unsigned char>*)userp;
+	std::vector<unsigned char> *pvHTTPResponse = static_cast<std::vector<unsigned char> *>(userp);
 	size_t ii=0;
 	while (ii< realsize)
 	{
-		unsigned char *pData = (unsigned char*)contents + ii;
+		unsigned char *pData = static_cast<unsigned char *>(contents) + ii;
 		if ((pData[0] == '\n') || (pData[0] == '\r'))
 			return 0;
 		pvHTTPResponse->push_back(pData[0]);
@@ -96,7 +96,7 @@ void HTTPClient::Cleanup()
 
 void HTTPClient::SetGlobalOptions(void *curlobj)
 {
-	CURL *curl=(CURL *)curlobj;
+	CURL *curl = static_cast<CURL *>(curlobj);
 	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC | CURLAUTH_DIGEST);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data);
 	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
@@ -180,7 +180,7 @@ const _tHTTPErrors HTTPCodes[] = {
 
 void HTTPClient::LogError(const long response_code)
 {
-	const _tHTTPErrors* pCodes = (const _tHTTPErrors*)&HTTPCodes;
+	const _tHTTPErrors *pCodes = reinterpret_cast<const _tHTTPErrors *>(&HTTPCodes);
 
 	while (pCodes[0].http_code != 0)
 	{

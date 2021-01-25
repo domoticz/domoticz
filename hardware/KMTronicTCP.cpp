@@ -276,7 +276,7 @@ void KMTronicTCP::ParseTemps(const std::string &sResult)
 			pos1 = tmpstr.find("</temp>");
 			if (pos1 != std::string::npos)
 			{
-				float temp = (float)atof(tmpstr.substr(0, pos1).c_str());
+				float temp = float(atof(tmpstr.substr(0, pos1).c_str()));
 				SendTempSensor(Idx++, 255, temp, name);
 				continue;
 			}

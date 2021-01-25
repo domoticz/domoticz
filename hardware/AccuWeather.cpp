@@ -313,7 +313,7 @@ void CAccuWeather::GetMeterDetails()
 		if (barometric != 0)
 		{
 			//Add temp+hum+baro device
-			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+			SendTempHumBaroSensor(1, 255, temp, humidity, float(barometric), barometric_forcast, "THB");
 		}
 		else if (humidity != 0)
 		{
@@ -363,7 +363,7 @@ void CAccuWeather::GetMeterDetails()
 		//UV
 		if (!root["UVIndex"].empty())
 		{
-			float UV = static_cast<float>(atof(root["UVIndex"].asString().c_str()));
+			float UV = float(atof(root["UVIndex"].asString().c_str()));
 			if ((UV < 16) && (UV >= 0))
 			{
 				SendUVSensor(0, 1, 255, UV, "UV");
@@ -375,7 +375,7 @@ void CAccuWeather::GetMeterDetails()
 		{
 			if (!root["PrecipitationSummary"]["Precipitation"].empty())
 			{
-				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
+				float RainCount = float(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
 				if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
 				{
 					RBUF tsen;
@@ -393,23 +393,23 @@ void CAccuWeather::GetMeterDetails()
 
 					if (!root["PrecipitationSummary"]["PastHour"].empty())
 					{
-						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
+						float rainrateph = float(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
 						if (rainrateph != -9999.00F)
 						{
 							int at10 = round(std::abs(rainrateph * 10.0F));
-							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
+							tsen.RAIN.rainrateh = BYTE(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
-							tsen.RAIN.rainratel = (BYTE)(at10);
+							tsen.RAIN.rainratel = BYTE(at10);
 						}
 					}
 
 					int tr10 = int((float(RainCount) * 10.0F));
 					tsen.RAIN.raintotal1 = 0;
-					tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
+					tsen.RAIN.raintotal2 = BYTE(tr10 / 256);
 					tr10 -= (tsen.RAIN.raintotal2 * 256);
-					tsen.RAIN.raintotal3 = (BYTE)(tr10);
+					tsen.RAIN.raintotal3 = BYTE(tr10);
 
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, 255, nullptr);
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.RAIN), nullptr, 255, nullptr);
 				}
 			}
 		}
@@ -425,7 +425,7 @@ void CAccuWeather::GetMeterDetails()
 					_tGeneralDevice gdevice;
 					gdevice.subtype = sTypeVisibility;
 					gdevice.floatval1 = visibility;
-					sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
+					sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gdevice), nullptr, 255, nullptr);
 				}
 			}
 		}

@@ -174,7 +174,7 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 				terminate();
 			}
 			else {
-				if (!HandleLoopData((const unsigned char*)data, len))
+				if (!HandleLoopData(reinterpret_cast<const unsigned char *>(data), len))
 				{
 					//error in data, try again...
 					terminate();
@@ -251,13 +251,13 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if ((pData[7] != 0xFF) && (pData[8] != 0xFF))
 	{
 		bBaroValid = true;
-		BaroMeter = ((unsigned int)((pData[8] << 8) | pData[7])) / 29.53F; // in hPa
+		BaroMeter = (uint32_t((pData[8] << 8) | pData[7])) / 29.53F; // in hPa
 	}
 	//Inside Temperature
 	if ((pData[9] != 0xFF) || (pData[10] != 0x7F))
 	{
 		bInsideTemperatureValid = true;
-		InsideTemperature = ((unsigned int)((pData[10] << 8) | pData[9])) / 10.F;
+		InsideTemperature = (uint32_t((pData[10] << 8) | pData[9])) / 10.F;
 		InsideTemperature = (InsideTemperature - 32.0F) * 5.0F / 9.0F;
 	}
 	//Inside Humidity
@@ -301,10 +301,10 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (temp16 > 0x800) {
 			// Negative values, convert to float from two complements int
 			int temp_int = (temp16 | ~((1 << 16) - 1));
-			OutsideTemperature = (float)temp_int / 10.0F;
+			OutsideTemperature = float(temp_int) / 10.0F;
 		}
 		else {
-			OutsideTemperature = (float)temp16 / 10.0F;
+			OutsideTemperature = float(temp16) / 10.0F;
 		}
 
 		// Convert to celsius
@@ -428,7 +428,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if ((pData[16] != 0xFF) && (pData[17] != 0x7F))
 	{
 		bWindDirectionValid = true;
-		WindDirection = ((unsigned int)((pData[17] << 8) | pData[16]));
+		WindDirection = (uint32_t((pData[17] << 8) | pData[16]));
 	}
 
 	if ((bWindSpeedValid) && (bWindDirectionValid))
@@ -443,16 +443,16 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.WIND.id2 = 1;
 
 		int aw = round(WindDirection);
-		tsen.WIND.directionh = (BYTE)(aw / 256);
+		tsen.WIND.directionh = BYTE(aw / 256);
 		aw -= (tsen.WIND.directionh * 256);
-		tsen.WIND.directionl = (BYTE)(aw);
+		tsen.WIND.directionl = BYTE(aw);
 
 		tsen.WIND.av_speedh = 0;
 		tsen.WIND.av_speedl = 0;
 		int sw = round(WindSpeed * 10.0F);
-		tsen.WIND.av_speedh = (BYTE)(sw / 256);
+		tsen.WIND.av_speedh = BYTE(sw / 256);
 		sw -= (tsen.WIND.av_speedh * 256);
-		tsen.WIND.av_speedl = (BYTE)(sw);
+		tsen.WIND.av_speedl = BYTE(sw);
 
 		tsen.WIND.gusth = 0;
 		tsen.WIND.gustl = 0;
@@ -467,14 +467,14 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			tsen.WIND.tempsign = (OutsideTemperature >= 0) ? 0 : 1;
 			tsen.WIND.chillsign = (OutsideTemperature >= 0) ? 0 : 1;
 			int at10 = round(std::abs(OutsideTemperature * 10.0F));
-			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
-			tsen.WIND.chillh = (BYTE)(at10 / 256);
+			tsen.WIND.temperatureh = BYTE(at10 / 256);
+			tsen.WIND.chillh = BYTE(at10 / 256);
 			at10 -= (tsen.WIND.chillh * 256);
-			tsen.WIND.temperaturel = (BYTE)(at10);
-			tsen.WIND.chilll = (BYTE)(at10);
+			tsen.WIND.temperaturel = BYTE(at10);
+			tsen.WIND.chilll = BYTE(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.WIND), nullptr, 255, nullptr);
 	}
 
 	//UV
@@ -504,7 +504,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//Rain Year
 	if ((pData[54] != 0xFF) && (pData[55] != 0xFF))
 	{
-		float rainYear = ((unsigned int)((pData[55] << 8) | pData[54])) / 100.0F; // inches
+		float rainYear = (uint32_t((pData[55] << 8) | pData[54])) / 100.0F;	  // inches
 		rainYear *= 25.4F;							  // mm
 
 		SendRainSensor(1, 255, rainYear, "Rain");
@@ -513,11 +513,11 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	//Solar Radiation
 	if ((pData[44] != 0xFF) && (pData[45] != 0x7F))
 	{
-		unsigned int solarRadiation = ((unsigned int)((pData[45] << 8) | pData[44]));//Watt/M2
+		uint32_t solarRadiation = (uint32_t((pData[45] << 8) | pData[44])); // Watt/M2
 		_tGeneralDevice gdevice;
 		gdevice.subtype = sTypeSolarRadiation;
 		gdevice.floatval1 = float(solarRadiation);
-		sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gdevice), nullptr, 255, nullptr);
 	}
 
 	//Soil Moistures
@@ -540,8 +540,8 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 			_tGeneralDevice gdevice;
 			gdevice.subtype = sTypeLeafWetness;
 			gdevice.intval1 = leaf_wetness;
-			gdevice.id = (uint8_t)(1 + iLeaf);
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
+			gdevice.id = uint8_t(1 + iLeaf);
+			sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gdevice), nullptr, 255, nullptr);
 		}
 	}
 

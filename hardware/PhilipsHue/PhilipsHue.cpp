@@ -151,7 +151,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	{
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pSen);
 		//light command
-		nodeID = static_cast<int>(pSwitch->id);
+		nodeID = int(pSwitch->id);
 		if ((pSwitch->cmnd == gswitch_sOff) || (pSwitch->cmnd == gswitch_sGroupOff))
 		{
 			LCmd = "Off";
@@ -177,7 +177,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	else if (packettype == pTypeColorSwitch)
 	{
 		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pSen);
-		nodeID = static_cast<int>(pLed->id);
+		nodeID = int(pLed->id);
 
 		if (pLed->command == Color_LedOff)
 		{
@@ -478,7 +478,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		if (NodeID==1)
 			sprintf(szID, "%d", NodeID);
 		else
-			sprintf(szID, "%08X", (unsigned int)NodeID);
+			sprintf(szID, "%08X", uint32_t(NodeID));
 		sprintf(szSValue, "%d;%d", tstate.sat, tstate.hue);
 		unsigned char unitcode = 1;
 		int cmd = (tstate.on ? Color_LedOn : Color_LedOff);
@@ -528,7 +528,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			if (sTypeOld != sType)
 			{
 				_log.Log(LOG_STATUS, "Philips Hue: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, sType);
-				m_sql.UpdateDeviceValue("SubType", (int)sType, sID);
+				m_sql.UpdateDeviceValue("SubType", int(sType), sID);
 			}
 		}
 
@@ -572,7 +572,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.value = tstate.level;
 		lcmd.color = color;
 		lcmd.subtype = sType;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&lcmd), Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -584,7 +584,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 	else if (LType == HLTYPE_SCENE)
 	{
 		char szID[10];
-		sprintf(szID, "%08X", (unsigned int)NodeID);
+		sprintf(szID, "%08X", uint32_t(NodeID));
 		unsigned char unitcode = 1;
 		int cmd = (tstate.on ? Color_LedOn : Color_LedOff);
 
@@ -623,7 +623,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.command = cmd;
 		lcmd.value = 0;
 		//lcmd.subtype = sType; // TODO: set type also for groups?
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&lcmd), Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -636,7 +636,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 	{
 		//Send as GeneralSwitch
 		char szID[10];
-		sprintf(szID, "%08X", (unsigned int)NodeID);
+		sprintf(szID, "%08X", uint32_t(NodeID));
 		unsigned char unitcode = 1;
 		int cmd = (tstate.on ? gswitch_sOn : gswitch_sOff);
 
@@ -686,7 +686,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.cmnd = cmd;
 		lcmd.level = tstate.level;
 		lcmd.seqnbr = 1;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&lcmd), Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -1153,7 +1153,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 						float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00F);
 						lux = pow(10, convertedLightLevel);
 					}
-					SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, (const float)lux, current_sensor.m_type + " Lux " + current_sensor.m_name);
+					SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, float(lux), current_sensor.m_type + " Lux " + current_sensor.m_name);
 				}
 			}
 			else
@@ -1181,7 +1181,7 @@ bool CPhilipsHue::InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Uni
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
+	m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&xcmd), Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1209,7 +1209,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
+	m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&xcmd), Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1247,7 +1247,7 @@ namespace http {
 			if ((sipaddress.empty()) || (sport.empty()))
 				return;
 
-			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);
+			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, uint16_t(atoi(sport.c_str())), susername);
 			std::vector<std::string> strarray;
 			StringSplit(sresult, ";", strarray);
 			if (strarray.size() != 2)

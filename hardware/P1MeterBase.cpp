@@ -195,7 +195,7 @@ void P1MeterBase::Init()
 		std::string s_gasmbuschannel = result[0][0];
 		if ((s_gasmbuschannel.length() == 1) && (s_gasmbuschannel[0] > 0x30) && (s_gasmbuschannel[0] < 0x35)) // value must be a single digit number between 1 and 4
 		{
-			m_gasmbuschannel = (char)s_gasmbuschannel[0];
+			m_gasmbuschannel = char(s_gasmbuschannel[0]);
 			m_gasprefix[2] = m_gasmbuschannel;
 			_log.Log(LOG_STATUS, "P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
 		}
@@ -219,7 +219,7 @@ void P1MeterBase::InitP1EncryptionState()
 
 bool P1MeterBase::MatchLine()
 {
-	if ((strlen((const char*)&l_buffer) < 1) || (l_buffer[0] == 0x0a))
+	if ((strlen(reinterpret_cast<const char *>(&l_buffer)) < 1) || (l_buffer[0] == 0x0a))
 		return true; //null value (startup)
 	uint8_t i;
 	bool found = false;
@@ -239,7 +239,7 @@ bool P1MeterBase::MatchLine()
 		{
 		case _eP1MatchType::ID:
 			// start of data
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, reinterpret_cast<const char *>(&l_buffer), strlen(t->key)) == 0)
 			{
 				m_linecount = 1;
 				found = true;
@@ -248,28 +248,28 @@ bool P1MeterBase::MatchLine()
 			break;
 		case _eP1MatchType::EXCLMARK:
 			// end of data
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, reinterpret_cast<const char *>(&l_buffer), strlen(t->key)) == 0)
 			{
 				l_exclmarkfound = 1;
 				found = true;
 			}
 			break;
 		case _eP1MatchType::STD:
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, reinterpret_cast<const char *>(&l_buffer), strlen(t->key)) == 0)
 				found = true;
 			break;
 		case _eP1MatchType::DEVTYPE:
 			if (m_gasmbuschannel == 0)
 			{
-				vString = (const char*)t->key + 3;
-				if (strncmp(vString.c_str(), (const char*)&l_buffer + 3, strlen(t->key) - 3) == 0)
+				vString = t->key + 3;
+				if (strncmp(vString.c_str(), reinterpret_cast<const char *>(&l_buffer) + 3, strlen(t->key) - 3) == 0)
 					found = true;
 				else
 					i += 100; // skip matches with any other gas lines - we need to find the M0-Bus channel first
 			}
 			break;
 		case _eP1MatchType::GAS:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), reinterpret_cast<const char *>(&l_buffer), strlen(t->key)) == 0)
 			{
 				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
 				if ((l_buffer[9] & 0xFD) == 0x31)
@@ -279,14 +279,14 @@ bool P1MeterBase::MatchLine()
 				i += 100; // skip matches with any DSMR v2 gas lines
 			break;
 		case _eP1MatchType::LINE17:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), reinterpret_cast<const char *>(&l_buffer), strlen(t->key)) == 0)
 			{
 				m_linecount = 17;
 				found = true;
 			}
 			break;
 		case _eP1MatchType::LINE18:
-			if ((m_linecount == 18) && (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0))
+			if ((m_linecount == 18) && (strncmp(t->key, reinterpret_cast<const char *>(&l_buffer), strlen(t->key)) == 0))
 				found = true;
 			break;
 		} //switch
@@ -305,7 +305,7 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
-				sDecodeRXMessage(this, (const unsigned char *)&m_power, "Power", 255, nullptr);
+				sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_power), "Power", 255, nullptr);
 				if (m_voltagel1 != -1) {
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
 				}
@@ -349,7 +349,7 @@ bool P1MeterBase::MatchLine()
 						// just accept it - we cannot sync to our clock
 						m_lastSharedSendGas = atime;
 						m_lastgasusage = m_gas.gasusage;
-						sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255, nullptr);
+						sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_gas), "Gas", 255, nullptr);
 					}
 					else if (atime >= m_gasoktime)
 					{
@@ -359,12 +359,12 @@ bool P1MeterBase::MatchLine()
 						sprintf(myts, "%02d%02d%02d%02d%02d%02dW", ltime.tm_year % 100, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 						if (ltime.tm_isdst)
 							myts[12] = 'S';
-						if ((m_gastimestamp.length() > 13) || (strncmp((const char*)&myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
+						if ((m_gastimestamp.length() > 13) || (strncmp(reinterpret_cast<const char *>(&myts), m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
 						{
 							m_lastSharedSendGas = atime;
 							m_lastgasusage = m_gas.gasusage;
 							m_gasoktime += 300;
-							sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255, nullptr);
+							sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_gas), "Gas", 255, nullptr);
 						}
 						else // gas clock is ahead
 						{
@@ -390,7 +390,7 @@ bool P1MeterBase::MatchLine()
 							}
 							else {
 								m_gasoktime = gtime;
-								_log.Log(LOG_STATUS, "P1 Smart Meter: Gas meter clock is %i seconds ahead - wait for my clock to catch up", (int)m_gasclockskew);
+								_log.Log(LOG_STATUS, "P1 Smart Meter: Gas meter clock is %i seconds ahead - wait for my clock to catch up", int(m_gasclockskew));
 							}
 						}
 					}
@@ -401,7 +401,7 @@ bool P1MeterBase::MatchLine()
 		}
 		else
 		{
-			vString = (const char*)&l_buffer + t->start;
+			vString = reinterpret_cast<const char *>(&l_buffer) + t->start;
 			size_t ePos = t->width;
 			ePos = vString.find_first_of("*)");
 
@@ -427,7 +427,7 @@ bool P1MeterBase::MatchLine()
 #endif
 			}
 
-			unsigned long temp_usage = 0;
+			uint32_t temp_usage = 0;
 			float temp_volt = 0;
 			float temp_ampere = 0;
 			float temp_power = 0;
@@ -456,16 +456,16 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_MBUSDEVICETYPE:
-				temp_usage = (unsigned long)(strtod(value, &validate));
+				temp_usage = uint32_t(strtod(value, &validate));
 				if (temp_usage == 3)
 				{
-					m_gasmbuschannel = (char)l_buffer[2];
+					m_gasmbuschannel = char(l_buffer[2]);
 					m_gasprefix[2] = m_gasmbuschannel;
 					_log.Log(LOG_STATUS, "P1 Smart Meter: Found gas meter on M-Bus channel %c", m_gasmbuschannel);
 				}
 				break;
 			case P1TYPE_POWERUSAGE:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F);
+				temp_usage = uint32_t(strtod(value, &validate) * 1000.0F);
 				if ((l_buffer[8] & 0xFE) == 0x30)
 				{
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
@@ -483,7 +483,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERDELIV:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F);
+				temp_usage = uint32_t(strtod(value, &validate) * 1000.0F);
 				if ((l_buffer[8] & 0xFE) == 0x30)
 				{
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
@@ -501,12 +501,12 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_USAGECURRENT:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F); // Watt
+				temp_usage = uint32_t(strtod(value, &validate) * 1000.0F); // Watt
 				if (temp_usage < 17250)
 					m_power.usagecurrent = temp_usage;
 				break;
 			case P1TYPE_DELIVCURRENT:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F); // Watt;
+				temp_usage = uint32_t(strtod(value, &validate) * 1000.0F); // Watt;
 				if (temp_usage < 17250)
 					m_power.delivcurrent = temp_usage;
 				break;
@@ -550,32 +550,32 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERUSEL1:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
+				temp_power = float(strtod(value, &validate) * 1000.0F);
 				if (temp_power < 10000)
 					m_powerusel1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERUSEL2:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
+				temp_power = float(strtod(value, &validate) * 1000.0F);
 				if (temp_power < 10000)
 					m_powerusel2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERUSEL3:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
+				temp_power = float(strtod(value, &validate) * 1000.0F);
 				if (temp_power < 10000)
 					m_powerusel3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_POWERDELL1:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
+				temp_power = float(strtod(value, &validate) * 1000.0F);
 				if (temp_power < 10000)
 					m_powerdell1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERDELL2:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
+				temp_power = float(strtod(value, &validate) * 1000.0F);
 				if (temp_power < 10000)
 					m_powerdell2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERDELL3:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
+				temp_power = float(strtod(value, &validate) * 1000.0F);
 				if (temp_power < 10000)
 					m_powerdell3 = temp_power; //Power Used L3;
 				break;
@@ -584,7 +584,7 @@ bool P1MeterBase::MatchLine()
 				break;
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMR4:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F);
+				temp_usage = uint32_t(strtod(value, &validate) * 1000.0F);
 				if (!m_gas.gasusage || m_p1version >= 4)
 					m_gas.gasusage = temp_usage;
 				else if (temp_usage - m_gas.gasusage < 20000)
@@ -602,7 +602,7 @@ bool P1MeterBase::MatchLine()
 			if (t->type == P1TYPE_GASUSAGEDSMR4)
 			{
 				// need to get timestamp from this line as well
-				vString = (const char*)&l_buffer + 11;
+				vString = reinterpret_cast<const char *>(&l_buffer) + 11;
 				m_gastimestamp = vString.substr(0, 13);
 #ifdef _DEBUG
 				_log.Log(LOG_NORM, "P1 Smart Meter: Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
@@ -650,9 +650,9 @@ bool P1MeterBase::CheckCRC()
 
 	// retrieve CRC from the current line
 	char crc_str[5];
-	strncpy(crc_str, (const char*)&l_buffer + 1, 4);
+	strncpy(crc_str, reinterpret_cast<const char *>(&l_buffer) + 1, 4);
 	crc_str[4] = 0;
-	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, nullptr, 16);
+	uint16_t m_crc16 = uint16_t(strtoul(crc_str, nullptr, 16));
 
 	// calculate CRC
 	const unsigned char* c_buffer = m_buffer;
@@ -822,7 +822,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					cipherText.append(m_dataPayload.begin(), m_dataPayload.end());
 					cipherText.append(m_gcmTag.begin(), m_gcmTag.end());
 
-					size_t neededDecryptBufferSize = std::min(2048, static_cast<int>(cipherText.size() + 16));
+					size_t neededDecryptBufferSize = std::min(2048, int(cipherText.size() + 16));
 					if (neededDecryptBufferSize > m_DecryptBufferSize)
 					{
 						delete[] m_pDecryptBuffer;
@@ -840,14 +840,13 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr);
 					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), nullptr);
 
-					EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char *)m_szHexKey.data(),
-							   (const unsigned char *)iv.c_str());
+					EVP_DecryptInit_ex(ctx, nullptr, nullptr, reinterpret_cast<const unsigned char *>(m_szHexKey.data()), reinterpret_cast<const unsigned char *>(iv.c_str()));
 
 					int outlen = 0;
 					// std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
 					// EVP_DecryptUpdate(ctx, nullptr, &outlen, (const uint8_t*)m_szDecodeAdd.data(),
 					// m_szDecodeAdd.size());
-					EVP_DecryptUpdate(ctx, (uint8_t*)m_pDecryptBuffer, &outlen, (uint8_t*)cipherText.c_str(), cipherText.size());
+					EVP_DecryptUpdate(ctx, m_pDecryptBuffer, &outlen, (uint8_t *)cipherText.c_str(), cipherText.size());
 					EVP_CIPHER_CTX_free(ctx);
 					if (outlen <= 0)
 						return;
@@ -857,7 +856,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					decryptor.ProcessData(m_pDecryptBuffer, (uint8_t*)cipherText.c_str(), cipherText.size());
 */
 					pData = m_pDecryptBuffer;
-					Len = static_cast<int>(strlen((const char*)m_pDecryptBuffer));
+					Len = int(strlen(reinterpret_cast<const char *>(m_pDecryptBuffer)));
 				}
 				catch (const std::exception& e)
 				{

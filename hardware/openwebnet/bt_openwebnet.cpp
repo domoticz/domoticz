@@ -12,7 +12,7 @@ std::string bt_openwebnet::FirstToken(const std::string& myText, const std::stri
 {
 	std::istringstream iss(myText);
 	std::string token;
-	if (std::getline(iss, token, (char)delimiters.at(0)))
+	if (std::getline(iss, token, char(delimiters.at(0))))
 	{
 		return token;
 	}

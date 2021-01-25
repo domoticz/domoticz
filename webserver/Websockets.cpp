@@ -28,7 +28,7 @@ namespace http {
 			std::string result;
 			result.resize(payloadlen);
 			for (size_t i = 0; i < payloadlen; i++) {
-				result[i] = (uint8_t)(bytes[i] ^ mask[i % 4]);
+				result[i] = static_cast<uint8_t>(bytes[i] ^ mask[i % 4]);
 			}
 			return result;
 		}
@@ -38,25 +38,25 @@ namespace http {
 			size_t_t payloadlen = payload.length();
 			std::string res;
 			// byte 0
-			res += ((uint8_t)opcode | FIN_MASK);
+			res += (static_cast<uint8_t>(opcode) | FIN_MASK);
 			if (payloadlen < 126) {
-				res += (uint8_t)payloadlen | (domasking ? MASKING_MASK : 0);
+				res += static_cast<uint8_t>(payloadlen) | (domasking ? MASKING_MASK : 0);
 			}
 			else {
 				if (payloadlen <= 0xffff) {
-					res += (uint8_t)126 | (domasking ? MASKING_MASK : 0);
+					res += static_cast<uint8_t>(126) | (domasking ? MASKING_MASK : 0);
 					int bits = 16;
 					while (bits) {
 						bits -= 8;
-						res += (uint8_t)((payloadlen >> bits) & 0xff);
+						res += static_cast<uint8_t>((payloadlen >> bits) & 0xff);
 					}
 				}
 				else {
-					res += (uint8_t)127 | (domasking ? MASKING_MASK : 0);
+					res += static_cast<uint8_t>(127) | (domasking ? MASKING_MASK : 0);
 					int bits = 64;
 					while (bits) {
 						bits -= 8;
-						uint8_t ch = (uint8_t)((size_t)(payloadlen >> bits) & 0xff);
+						uint8_t ch = static_cast<uint8_t>(static_cast<size_t>(payloadlen >> bits) & 0xff);
 						res += ch;
 					}
 				}
@@ -69,7 +69,7 @@ namespace http {
 					i = rand();
 					res += i;
 				}
-				res += unmask(masking_key, (const uint8_t *)payload.c_str(), (size_t)payloadlen);
+				res += unmask(masking_key, reinterpret_cast<const uint8_t *>(payload.c_str()), static_cast<size_t>(payloadlen));
 			}
 			else {
 				res += payload;
@@ -88,7 +88,7 @@ namespace http {
 			rsvi1 = (bytes[0] & RSVI1_MASK) > 0;
 			rsvi2 = (bytes[0] & RSVI2_MASK) > 0;
 			rsvi3 = (bytes[0] & RSVI3_MASK) > 0;
-			opcode = (opcodes)(bytes[0] & OPCODE_MASK);
+			opcode = static_cast<opcodes>(bytes[0] & OPCODE_MASK);
 			masking = (bytes[1] & MASKING_MASK) > 0;
 			payloadlen = (bytes[1] & PAYLOADLEN_MASK);
 			remaining -= 2;
@@ -101,7 +101,7 @@ namespace http {
 				int bits = 16;
 				for (uint8_t i = 0; i < 2; i++) {
 					bits -= 8;
-					payloadlen += (size_t)bytes[ptr++] << bits;
+					payloadlen += static_cast<size_t>(bytes[ptr++]) << bits;
 					remaining--;
 				}
 			}
@@ -113,7 +113,7 @@ namespace http {
 				int bits = 64;
 				for (uint8_t i = 0; i < 8; i++) {
 					bits -= 8;
-					payloadlen += (size_t)bytes[ptr++] << bits;
+					payloadlen += static_cast<size_t>(bytes[ptr++]) << bits;
 					remaining--;
 				}
 			}

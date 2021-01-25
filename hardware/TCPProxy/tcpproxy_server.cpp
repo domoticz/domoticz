@@ -50,9 +50,7 @@ namespace tcp_proxy
 		boost::asio::ip::tcp::resolver::iterator i = resolver.resolve(query);
 		if (i == boost::asio::ip::tcp::resolver::iterator())
 		{
-			end=boost::asio::ip::tcp::endpoint(
-				boost::asio::ip::address::from_string(upstream_host),
-				(unsigned short)atoi(upstream_port.c_str()));
+			end = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(upstream_host), uint16_t(atoi(upstream_port.c_str())));
 		}
 		else
 			end=*i;
@@ -90,7 +88,7 @@ namespace tcp_proxy
 		if (!error)
 		{
 			//std::unique_lock<std::mutex> lock(mutex_);
-			sDownstreamData(reinterpret_cast<unsigned char*>(&downstream_data_[0]),static_cast<size_t>(bytes_transferred));
+			sDownstreamData(reinterpret_cast<unsigned char *>(&downstream_data_[0]), size_t(bytes_transferred));
 			async_write(upstream_socket_, boost::asio::buffer(downstream_data_, bytes_transferred),
 				    [p = shared_from_this()](auto &&err, auto bytes) { p->handle_downstream_read(err, bytes); });
 		}
@@ -115,7 +113,7 @@ namespace tcp_proxy
 		if (!error)
 		{
 			//std::unique_lock<std::mutex> lock(mutex_);
-			sUpstreamData(reinterpret_cast<unsigned char*>(&upstream_data_[0]),static_cast<size_t>(bytes_transferred));
+			sUpstreamData(reinterpret_cast<unsigned char *>(&upstream_data_[0]), size_t(bytes_transferred));
 
 			async_write(downstream_socket_, boost::asio::buffer(upstream_data_, bytes_transferred), [p = shared_from_this()](auto &&err, auto) { p->handle_downstream_write(err); });
 		}

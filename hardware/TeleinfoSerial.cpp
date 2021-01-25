@@ -134,5 +134,5 @@ void CTeleinfoSerial::readCallback(const char *data, size_t len)
 		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", m_Name.c_str());
 		return;
 	}
-	ParseTeleinfoData(data, static_cast<int>(len));
+	ParseTeleinfoData(data, int(len));
 }

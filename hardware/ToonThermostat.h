@@ -53,23 +53,23 @@ class CToonThermostat : public CDomoticzHardwareBase
 	std::string m_ClientIDChecksum;
 	std::shared_ptr<std::thread> m_thread;
 
-	unsigned long m_LastUsage1;
-	unsigned long m_LastUsage2;
-	unsigned long m_OffsetUsage1;
-	unsigned long m_OffsetUsage2;
-	unsigned long m_LastDeliv1;
-	unsigned long m_LastDeliv2;
-	unsigned long m_OffsetDeliv1;
-	unsigned long m_OffsetDeliv2;
+	uint32_t m_LastUsage1;
+	uint32_t m_LastUsage2;
+	uint32_t m_OffsetUsage1;
+	uint32_t m_OffsetUsage2;
+	uint32_t m_LastDeliv1;
+	uint32_t m_LastDeliv2;
+	uint32_t m_OffsetDeliv1;
+	uint32_t m_OffsetDeliv2;
 
 	bool m_bDoLogin;
 	P1Power m_p1power;
 	P1Gas m_p1gas;
 	time_t m_lastSharedSendElectra;
 	time_t m_lastSharedSendGas;
-	unsigned long m_lastgasusage;
-	unsigned long m_lastelectrausage;
-	unsigned long m_lastelectradeliv;
+	uint32_t m_lastgasusage;
+	uint32_t m_lastelectrausage;
+	uint32_t m_lastelectradeliv;
 
 	int m_poll_counter;
 	int m_retry_counter;

@@ -241,9 +241,9 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int /*SubUnit*/, co
 		gswitch.cmnd = gswitch_sOff;
 	else
 		gswitch.cmnd = gswitch_sOn;
-	gswitch.level = static_cast<uint8_t>(Level);
+	gswitch.level = uint8_t(Level);
 	gswitch.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gswitch), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CDaikin::GetMeterDetails()
@@ -417,7 +417,7 @@ void CDaikin::GetControlInfo()
 			if (m_otemp != results2[1])
 			{
 				m_otemp = results2[1];
-				SendTempSensor(10, -1, static_cast<float>(atof(results2[1].c_str())), "Outside Temperature");
+				SendTempSensor(10, -1, float(atof(results2[1].c_str())), "Outside Temperature");
 			}
 		}
 		else if (results2[0] == "stemp")
@@ -425,7 +425,7 @@ void CDaikin::GetControlInfo()
 			if (m_stemp != results2[1])
 			{
 				m_stemp = results2[1];
-				SendSetPointSensor(20, 1, 1, static_cast<float>(atof(results2[1].c_str())), "Target Temperature");
+				SendSetPointSensor(20, 1, 1, float(atof(results2[1].c_str())), "Target Temperature");
 			}
 		}
 		else if (results2[0] == "f_rate")
@@ -546,17 +546,16 @@ void CDaikin::GetSensorInfo()
 			continue;
 		if (results2[0] == "htemp")
 		{
-			htemp = static_cast<float>(atof(results2[1].c_str()));
+			htemp = float(atof(results2[1].c_str()));
 		}
 		else if (results2[0] == "hhum")
 		{
 			if (results2[1] != "-")
-				hhum = static_cast<int>(atoi(results2[1].c_str()));
+				hhum = int(atoi(results2[1].c_str()));
 		}
 		else if (results2[0] == "otemp")
 		{
-			SendTempSensor(10, -1, static_cast<float>(atof(results2[1].c_str())), "Outside Temperature");
-
+			SendTempSensor(10, -1, float(atof(results2[1].c_str())), "Outside Temperature");
 		}
 	}
 	if (htemp != -1)
@@ -720,7 +719,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIs
 
 	xcmd.subtype = sSwitchTypeSelector;
 	if (level > 0) {
-		xcmd.level = (uint8_t)level;
+		xcmd.level = uint8_t(level);
 	}
 
 	//check if this switch is already in the database
@@ -734,7 +733,7 @@ void CDaikin::InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIs
 	}
 
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, sID, xcmd.type, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, defaultname.c_str(), 255, m_Name.c_str());
+	m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&xcmd), defaultname.c_str(), 255, m_Name.c_str());
 	if (result.empty())
 	{
 		// New Hardware -> Create the corresponding devices Selector

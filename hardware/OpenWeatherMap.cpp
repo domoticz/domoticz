@@ -361,7 +361,7 @@ std::string COpenWeatherMap::GetHourFromUTCtimestamp(const uint8_t hournr, const
 {
 	std::string sHour = "Unknown";
 
-	time_t t = (time_t)strtol(UTCtimestamp.c_str(), nullptr, 10);
+	time_t t = time_t(strtol(UTCtimestamp.c_str(), nullptr, 10));
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;
@@ -393,7 +393,7 @@ std::string COpenWeatherMap::GetDayFromUTCtimestamp(const uint8_t daynr, const s
 {
 	std::string sDay = "Unknown";
 
-	time_t t = (time_t)strtol(UTCtimestamp.c_str(), nullptr, 10);
+	time_t t = time_t(strtol(UTCtimestamp.c_str(), nullptr, 10));
 	std::string sDate = ctime(&t);
 
 	std::vector<std::string> strarray;
@@ -445,7 +445,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			float windspeed_ms = forecast["wind_speed"].asFloat();
 			int wind_degrees = forecast["wind_deg"].asInt();
 			float barometric = forecast["pressure"].asFloat();
-			uint8_t humidity = (uint8_t) forecast["humidity"].asUInt();
+			uint8_t humidity = uint8_t(forecast["humidity"].asUInt());
 			std::string wdesc = forecast["weather"][0]["description"].asString();
 			std::string wicon = forecast["weather"][0]["icon"].asString();
 
@@ -761,7 +761,7 @@ void COpenWeatherMap::GetMeterDetails()
 	//Visibility
 	if (!current["visibility"].empty() && current["visibility"].isInt())
 	{
-		float visibility = ((float)current["visibility"].asInt()) / 1000.0F;
+		float visibility = (float(current["visibility"].asInt())) / 1000.0F;
 		if (visibility >= 0)
 		{
 			SendVisibilitySensor(6, 1, 255, visibility, "Visibility");

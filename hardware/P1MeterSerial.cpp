@@ -148,7 +148,7 @@ bool P1MeterSerial::StartHardware()
 	sOnConnected(this);
 
 #ifdef DEBUG_P1_R
-	ParseP1Data((const uint8_t*)szP1Test, static_cast<int>(strlen(szP1Test)), m_bDisableCRC, m_ratelimit);
+	ParseP1Data((const uint8_t *)szP1Test, int(strlen(szP1Test)), m_bDisableCRC, m_ratelimit);
 #endif
 
 	return true;
@@ -171,7 +171,7 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 {
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
-	ParseP1Data((const unsigned char*)data, static_cast<int>(len), m_bDisableCRC, m_ratelimit);
+	ParseP1Data(reinterpret_cast<const unsigned char *>(data), int(len), m_bDisableCRC, m_ratelimit);
 }
 
 bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)

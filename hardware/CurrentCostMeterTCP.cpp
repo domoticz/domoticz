@@ -83,7 +83,7 @@ bool CurrentCostMeterTCP::ConnectInternal()
 
 	// connect to the server
 	int nRet;
-	nRet = connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr));
+	nRet = connect(m_socket, reinterpret_cast<const sockaddr *>(&m_addr), sizeof(m_addr));
 	if (nRet == SOCKET_ERROR)
 	{
 		closesocket(m_socket);

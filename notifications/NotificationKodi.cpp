@@ -76,10 +76,10 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 {
 	std::string	szImageFile;
 
-	int	posImage = (int)ExtraData.find("|Image=");
-	int	posStatus = (int)ExtraData.find("|Status=");
-	int	posCustom = (int)ExtraData.find("|CustomImage=");
-	int	posType = (int)ExtraData.find("|SwitchType=");
+	int posImage = static_cast<int>(ExtraData.find("|Image="));
+	int posStatus = static_cast<int>(ExtraData.find("|Status="));
+	int posCustom = static_cast<int>(ExtraData.find("|CustomImage="));
+	int posType = static_cast<int>(ExtraData.find("|SwitchType="));
 
 	if (posImage >= 0)
 	{
@@ -111,7 +111,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 		posType+=12;
 		std::string szType = ExtraData.substr(posType, ExtraData.find('|', posType) - posType);
 		std::string	szTypeImage;
-		_eSwitchType switchtype=(_eSwitchType)atoi(szType.c_str());
+		_eSwitchType switchtype = static_cast<_eSwitchType>(atoi(szType.c_str()));
 		switch (switchtype)
 		{
 			case STYPE_OnOff:
@@ -285,9 +285,9 @@ bool CNotificationKodi::SendMessageImplementation(
 		_Sock = -1;
 		if (bMulticast) {
 			_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
+			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, reinterpret_cast<const char *>(&_TTL), sizeof(_TTL));
 			u_char loop = 1;
-			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loop, sizeof(loop));
+			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, reinterpret_cast<const char *>(&loop), sizeof(loop));
 		}
 		else {
 			_Sock = socket(AF_INET, SOCK_DGRAM, 0);

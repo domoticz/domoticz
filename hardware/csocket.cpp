@@ -64,7 +64,7 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in
 	struct addrinfo *addr;
 	if (getaddrinfo(szRemoteHostName.c_str(), "0", nullptr, &addr) == 0)
 	{
-		struct sockaddr_in *saddr = (((struct sockaddr_in *)addr->ai_addr));
+		struct sockaddr_in *saddr = ((reinterpret_cast<struct sockaddr_in *>(addr->ai_addr)));
 		sa.sin_family = saddr->sin_family;
 		memcpy(&sa, saddr, sizeof(sockaddr_in));
 		return SUCCESS;
@@ -106,9 +106,9 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 	m_localSocketAddr.sin_family = m_remoteSocketAddr.sin_family;
 	m_localSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	m_localSocketAddr.sin_port = htons(0);
-	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*) &iRecvTimeout, sizeof(iRecvTimeout));
+	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char *>(&iRecvTimeout), sizeof(iRecvTimeout));
 
-	status = bind(m_socket, (const sockaddr*)&(m_localSocketAddr), sizeof(struct sockaddr));
+	status = bind(m_socket, reinterpret_cast<const sockaddr *>(&(m_localSocketAddr)), sizeof(struct sockaddr));
 
 	if (status < 0)
 		return FAILURE;
@@ -119,7 +119,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 #endif
 
 	// connect to remote socket
-	m_remoteSocketAddr.sin_port = htons((uint16_t)m_remotePort);
+	m_remoteSocketAddr.sin_port = htons(uint16_t(m_remotePort));
 #ifdef WIN32
 	unsigned long nonblock = 1;
 	ioctlsocket(m_socket, FIONBIO, &nonblock);
@@ -164,7 +164,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 #else
 	// do a non-blocking connect and return success or fail after no more than 5 seconds
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
-	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
+	status = ::connect(m_socket, reinterpret_cast<const sockaddr *>(&(m_remoteSocketAddr)), sizeof(sockaddr_in));
 
 	if (status < 0)
 	{
@@ -221,8 +221,8 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 	}
 	else
 	{
-		timeout.tv_sec = static_cast<int>((waitTime));
-		timeout.tv_usec = static_cast<int>((1000000.0F * (waitTime - (float)timeout.tv_sec)));
+		timeout.tv_sec = int((waitTime));
+		timeout.tv_usec = int((1000000.0F * (waitTime - float(timeout.tv_sec))));
 	}
 
 	int n = select(m_socket + 1, &fds, nullptr, nullptr, &timeout);

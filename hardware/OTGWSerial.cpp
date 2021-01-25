@@ -62,7 +62,7 @@ void OTGWSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData(reinterpret_cast<const unsigned char *>(data), int(len));
 }
 
 bool OTGWSerial::OpenSerialDevice()
@@ -154,6 +154,6 @@ bool OTGWSerial::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
 	if (!isOpen())
 		return false;
-	write((const char*)pData, Len);
+	write(reinterpret_cast<const char *>(pData), Len);
 	return true;
 }

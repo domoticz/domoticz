@@ -99,10 +99,10 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*lengt
 		memset(&udpClient,0,sizeof(udpClient));
 	        udpClient.sin_family = AF_INET;
 	        udpClient.sin_port = htons(m_usIPPort); // short, network byte order
-		udpClient.sin_addr = *((struct in_addr *)he->h_addr);
+		udpClient.sin_addr = *(reinterpret_cast<struct in_addr *>(he->h_addr));
 
 		/** build the packet **/
-		buf[3]=(char)(Relay+'0');
+		buf[3] = char(Relay + '0');
 
 		if (pSen->LIGHTING2.cmnd == light2_sOn)
 		{
@@ -110,7 +110,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*lengt
 		}
 
 	        /** send the packet **/
-	        n=sendto(udpSocket, buf, 6, 0, (struct sockaddr*)&udpClient, sizeof(udpClient));
+		n = sendto(udpSocket, buf, 6, 0, reinterpret_cast<struct sockaddr *>(&udpClient), sizeof(udpClient));
 		closesocket(udpSocket);
     		if (n < 0) {
 			_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
@@ -147,13 +147,13 @@ void KMTronicUDP::GetMeterDetails()
 	memset(&udpClient,0,sizeof(udpClient));
 	udpClient.sin_family = AF_INET;
 	udpClient.sin_port = htons(m_usIPPort); // short, network byte order
-	udpClient.sin_addr = *((struct in_addr *)he->h_addr);
+	udpClient.sin_addr = *(reinterpret_cast<struct in_addr *>(he->h_addr));
 
 	/** set timeout to 1 second**/
 #if !defined WIN32
         struct timeval tv;
         tv.tv_sec = 1;
-        setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
+	setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
 #else
         unsigned long nTimeout = 1*1000;
         setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
@@ -162,15 +162,16 @@ void KMTronicUDP::GetMeterDetails()
 
 	/** send the packet **/
 	serverlen = sizeof(udpClient);
-	n=sendto(udpSocket, "FF0000", 6, 0, (struct sockaddr*)&udpClient, serverlen);
-    	if (n < 0) {
+	n = sendto(udpSocket, "FF0000", 6, 0, reinterpret_cast<struct sockaddr *>(&udpClient), serverlen);
+	if (n < 0)
+	{
 		closesocket(udpSocket);
 		_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
 	/** get reply from socket **/
-	n = recvfrom(udpSocket, buf, 8, 0, (struct sockaddr*)&udpClient, &serverlen);
+	n = recvfrom(udpSocket, buf, 8, 0, reinterpret_cast<struct sockaddr *>(&udpClient), &serverlen);
 	closesocket(udpSocket);
     	if (n < 0) {
 		_log.Log(LOG_ERROR, "KMTronic: Error reading relay status from: %s", m_szIPAddress.c_str());

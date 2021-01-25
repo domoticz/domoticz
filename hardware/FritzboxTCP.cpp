@@ -135,7 +135,7 @@ bool FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		return false;
 	}
-	write((const unsigned char*)pdata,length);
+	write(reinterpret_cast<const unsigned char *>(pdata), length);
 	return true;
 }
 
@@ -179,7 +179,7 @@ void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
 void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	double rlevel = (15.0 / 100)*Level;
-	uint8_t level = (uint8_t)(rlevel);
+	uint8_t level = uint8_t(rlevel);
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
@@ -222,14 +222,14 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, c
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void FritzboxTCP::ParseLine()
 {
 	if (m_bufferpos < 2)
 		return;
-	std::string sLine((char*)&m_buffer);
+	std::string sLine(reinterpret_cast<char *>(&m_buffer));
 
 	//_log.Log(LOG_STATUS, sLine.c_str());
 

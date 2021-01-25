@@ -76,7 +76,7 @@ bool GenerateWOLPacket(unsigned char *pPacket, const std::string &MACAddress)
 		std::stringstream SS(results[ii]);
 		unsigned int c;
 		SS >> std::hex >> c;
-		mac[ii] = (unsigned char)c;
+		mac[ii] = uint8_t(c);
 	}
 
 	/** first 6 bytes of 255 **/
@@ -99,7 +99,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 
 	// this call is what allows broadcast packets to be sent:
 	int broadcast = 1;
-	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1)
+	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char *>(&broadcast), sizeof(broadcast)) == -1)
 	{
 		closesocket(udpSocket);
 		return false;
@@ -108,7 +108,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 	udpClient.sin_addr.s_addr = INADDR_ANY;
 	udpClient.sin_port = 0;
 
-	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
+	bind(udpSocket, reinterpret_cast<struct sockaddr *>(&udpClient), sizeof(udpClient));
 
 	/** make the packet as shown above **/
 
@@ -118,7 +118,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 	udpServer.sin_port = htons(m_wol_port);
 
 	/** send the packet **/
-	sendto(udpSocket, (const char*)pPacket, 102, 0, (struct sockaddr*)&udpServer, sizeof(udpServer));
+	sendto(udpSocket, reinterpret_cast<const char *>(pPacket), 102, 0, reinterpret_cast<struct sockaddr *>(&udpServer), sizeof(udpServer));
 
 	closesocket(udpSocket);
 

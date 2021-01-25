@@ -386,7 +386,7 @@ size_t Serial::SerialImpl::available()
 		ss << "Error while checking status of the serial port: " << GetLastError();
 		THROW(IOException, ss.str().c_str());
 	}
-	return static_cast<size_t>(cs.cbInQue);
+	return size_t(cs.cbInQue);
 }
 
 bool Serial::SerialImpl::waitReadable(uint32_t timeout)
@@ -407,7 +407,7 @@ size_t Serial::SerialImpl::read(uint8_t *buf, size_t size)
 		throw PortNotOpenedException("Serial::read");
 	}
 	DWORD bytes_read;
-	if (!ReadFile(fd_, buf, static_cast<DWORD>(size), &bytes_read, nullptr))
+	if (!ReadFile(fd_, buf, DWORD(size), &bytes_read, nullptr))
 	{
 		stringstream ss;
 		ss << "Error while reading from the serial port: " << GetLastError();
@@ -423,7 +423,7 @@ size_t Serial::SerialImpl::write(const uint8_t *data, size_t length)
 		throw PortNotOpenedException("Serial::write");
 	}
 	DWORD bytes_written;
-	if (!WriteFile(fd_, data, static_cast<DWORD>(length), &bytes_written, nullptr))
+	if (!WriteFile(fd_, data, DWORD(length), &bytes_written, nullptr))
 	{
 		stringstream ss;
 		ss << "Error while writing to the serial port: " << GetLastError();

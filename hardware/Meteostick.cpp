@@ -149,7 +149,7 @@ void Meteostick::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData(reinterpret_cast<const unsigned char *>(data), int(len));
 }
 
 bool Meteostick::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -213,16 +213,16 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.id2 = Idx;
 
 	int aw = round(Direction);
-	tsen.WIND.directionh = (BYTE)(aw / 256);
+	tsen.WIND.directionh = BYTE(aw / 256);
 	aw -= (tsen.WIND.directionh * 256);
-	tsen.WIND.directionl = (BYTE)(aw);
+	tsen.WIND.directionl = BYTE(aw);
 
 	tsen.WIND.av_speedh = 0;
 	tsen.WIND.av_speedl = 0;
 	int sw = round(Speed * 10.0F);
-	tsen.WIND.av_speedh = (BYTE)(sw / 256);
+	tsen.WIND.av_speedh = BYTE(sw / 256);
 	sw -= (tsen.WIND.av_speedh * 256);
-	tsen.WIND.av_speedl = (BYTE)(sw);
+	tsen.WIND.av_speedl = BYTE(sw);
 
 	tsen.WIND.gusth = 0;
 	tsen.WIND.gustl = 0;
@@ -241,11 +241,11 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	}
 	dWindChill *= 10.0F;
 	tsen.WIND.chillsign = (dWindChill >= 0) ? 0 : 1;
-	tsen.WIND.chillh = (BYTE)(dWindChill / 256);
+	tsen.WIND.chillh = BYTE(dWindChill / 256);
 	dWindChill -= (tsen.WIND.chillh * 256);
-	tsen.WIND.chilll = (BYTE)(dWindChill);
+	tsen.WIND.chilll = BYTE(dWindChill);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.WIND), defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
@@ -254,8 +254,8 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeLeafWetness;
 	gdevice.intval1 = Wetness;
-	gdevice.id = (uint8_t)finalID;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255, nullptr);
+	gdevice.id = uint8_t(finalID);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gdevice), defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
@@ -268,16 +268,16 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 {
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeSolarRadiation;
-	gdevice.id = static_cast<int>(Idx);
+	gdevice.id = int(Idx);
 	gdevice.floatval1 = Radiation;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gdevice), defaultname.c_str(), 255, nullptr);
 }
 
 void Meteostick::ParseLine()
 {
 	if (m_bufferpos < 1)
 		return;
-	std::string sLine((char*)&m_buffer);
+	std::string sLine(reinterpret_cast<char *>(&m_buffer));
 
 	std::vector<std::string> results;
 	StringSplit(sLine, " ", results);
@@ -335,8 +335,8 @@ void Meteostick::ParseLine()
 		//temperature in Celsius, pressure in hPa
 		if (results.size() >= 3)
 		{
-			float temp = static_cast<float>(atof(results[1].c_str()));
-			float baro = static_cast<float>(atof(results[2].c_str()));
+			float temp = float(atof(results[1].c_str()));
+			float baro = float(atof(results[2].c_str()));
 
 			SendTempBaroSensorInt(0, temp, baro, "Meteostick Temp+Baro");
 		}
@@ -345,11 +345,11 @@ void Meteostick::ParseLine()
 		//current wind speed in m / s, wind direction in degrees
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
 			if (m_LastOutsideTemp[ID%MAX_IDS] != 12345)
 			{
-				float speed = static_cast<float>(atof(results[2].c_str()));
-				int direction = static_cast<int>(atoi(results[3].c_str()));
+				float speed = float(atof(results[2].c_str()));
+				int direction = int(atoi(results[3].c_str()));
 				SendWindSensor(ID, m_LastOutsideTemp[ID%MAX_IDS], speed, direction, "Wind");
 			}
 		}
@@ -358,9 +358,9 @@ void Meteostick::ParseLine()
 		//temperature in degree Celsius, humidity in percent
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float temp = static_cast<float>(atof(results[2].c_str()));
-			int hum = static_cast<int>(atoi(results[3].c_str()));
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			float temp = float(atof(results[2].c_str()));
+			int hum = int(atoi(results[3].c_str()));
 
 			SendTempHumSensor(ID, 255, temp, hum, "Outside Temp+Hum");
 			m_LastOutsideTemp[ID%MAX_IDS] = temp;
@@ -373,7 +373,7 @@ void Meteostick::ParseLine()
 		//it only has a small counter, so we should make the total counter ourselfses
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
 			int raincntr = atoi(results[2].c_str());
 			float Rainmm = 0;
 			if (m_LastRainValue[ID%MAX_IDS] != -1)
@@ -408,8 +408,8 @@ void Meteostick::ParseLine()
 		//solar radiation, solar radiation in W / qm
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Radiation = static_cast<float>(atof(results[2].c_str()));
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			float Radiation = float(atof(results[2].c_str()));
 			SendSolarRadiationSensor(ID, Radiation, "Solar Radiation");
 		}
 		break;
@@ -417,8 +417,8 @@ void Meteostick::ParseLine()
 		//UV index
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float UV = static_cast<float>(atof(results[2].c_str()));
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			float UV = float(atof(results[2].c_str()));
 			CDomoticzHardwareBase::SendUVSensor(0, ID, 255, UV, "UV");
 		}
 		break;
@@ -427,9 +427,9 @@ void Meteostick::ParseLine()
 		//channel number (1 - 4), leaf wetness (0-15)
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			unsigned char Wetness = (unsigned char)atoi(results[3].c_str());
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			uint8_t Channel = uint8_t(atoi(results[2].c_str()));
+			uint8_t Wetness = uint8_t(atoi(results[3].c_str()));
 			SendLeafWetnessRainSensor(ID, Channel, Wetness, "Leaf Wetness");
 		}
 		break;
@@ -438,9 +438,9 @@ void Meteostick::ParseLine()
 		//channel number (1 - 4), Soil moisture in cbar(0 - 200)
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			unsigned char Moisture = (unsigned char)atoi(results[3].c_str());
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			uint8_t Channel = uint8_t(atoi(results[2].c_str()));
+			uint8_t Moisture = uint8_t(atoi(results[3].c_str()));
 			SendSoilMoistureSensor(ID, Channel, Moisture, "Soil Moisture");
 		}
 		break;
@@ -449,9 +449,9 @@ void Meteostick::ParseLine()
 		//channel number (1 - 4), soil / leaf temperature in degrees Celsius
 		if (results.size() >= 5)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
-			float temp = static_cast<float>(atof(results[3].c_str()));
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			uint8_t Channel = uint8_t(atoi(results[2].c_str()));
+			float temp = float(atof(results[3].c_str()));
 			unsigned char finalID = (ID * 10) + Channel;
 			SendTempSensor(finalID, 255, temp, "Soil/Leaf Temp");
 		}
@@ -460,8 +460,8 @@ void Meteostick::ParseLine()
 		//solar panel power in(0 - 100)
 		if (results.size() >= 4)
 		{
-			unsigned char ID = (unsigned char)atoi(results[1].c_str());
-			float Percentage = static_cast<float>(atof(results[2].c_str()));
+			uint8_t ID = uint8_t(atoi(results[1].c_str()));
+			float Percentage = float(atof(results[2].c_str()));
 			SendPercentageSensor(ID, 0, 255, Percentage, "power of solar panel");
 		}
 		break;

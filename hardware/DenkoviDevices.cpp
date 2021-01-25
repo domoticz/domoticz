@@ -439,7 +439,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			szURL << "0";
 		else if (command== light2_sSetLevel) {
 			double lvl = level*10.34;
-			int iLvl = (int)lvl;
+			int iLvl = int(lvl);
 			szURL << std::to_string(iLvl);
 		}
 		else
@@ -598,7 +598,7 @@ float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, const std::s
 		tmpstr = tmpstr.substr(pos1 + strlen(parameter.c_str()));
 		pos1 = tmpstr.find('<');
 		if (pos1 != std::string::npos)
-			value = static_cast<float>(atof(tmpstr.substr(0, pos1).c_str()));
+			value = float(atof(tmpstr.substr(0, pos1).c_str()));
 	}
 	return value;
 }
@@ -639,7 +639,7 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(const std::string &tmpstr, const int
 		pos2 = tmpstr.find(',', pos1);
 		ss << std::hex << tmpstr.substr(pos1 + 3, pos2 - (pos1 + 3)).c_str();
 		ss >> b;
-		return (uint8_t)b;
+		return uint8_t(b);
 	}
 	if (port == DAENETIP2_PORT_5_VAL)
 	{
@@ -647,7 +647,7 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(const std::string &tmpstr, const int
 		pos2 = tmpstr.find(',', pos1 + 3);
 		ss << std::hex << tmpstr.substr(pos1 + 3, pos2 - (pos1 + 3)).c_str();
 		ss >> b;
-		return (uint8_t)b;
+		return uint8_t(b);
 	}
 	return 0;
 }
@@ -674,16 +674,16 @@ uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(const std::string &tmpstr, const i
 	pos2 = tmpstr.find(',', pos1 + 2);
 	ss << std::hex << tmpstr.substr(pos1 + 2, pos2 - (pos1 + 2)).c_str();
 	ss >> b;
-	return (uint16_t)b;
+	return uint16_t(b);
 }
 
 float CDenkoviDevices::DAEnetIP2CalculateAi(int adc, const int &valType) {
 	if (valType == DAENETIP2_AI_TEMPERATURE) {
-		return static_cast<float>(10000 * ((1.2*204.8)*adc / (120 * 1024) + 0) / 100);
+		return float(10000 * ((1.2 * 204.8) * adc / (120 * 1024) + 0) / 100);
 	}
 	if (valType == DAENETIP2_AI_VOLTAGE)
 	{
-		return static_cast<float>(10000 * ((1.2*0.377)*adc / (4.7 * 1024) + 0) / 100);
+		return float(10000 * ((1.2 * 0.377) * adc / (4.7 * 1024) + 0) / 100);
 	}
 	return 0.0F;
 }
@@ -801,7 +801,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveAnalogInput = false;
 		bool bHaveTemperatureInput = false;
 		bool bHaveRelay = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -845,8 +845,8 @@ void CDenkoviDevices::GetMeterDetails()
 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_STATE_DEF)) != -1))
 			{
-				name = "Digital Input " + std::to_string(Idx) + " (" + name + ")"; 
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
+				name = "Digital Input " + std::to_string(Idx) + " (" + name + ")";
+				SendSwitch(DIOType_DI, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveDigitalInput = false;
 				continue;
@@ -858,13 +858,13 @@ void CDenkoviDevices::GetMeterDetails()
 				StringSplit(tmpMeasure, " ", vMeasure); 
 				int len = tmpMeasure.length() - tmpMeasure.find_first_of('.', 0) - 2;
 				std::string units = tmpMeasure.substr(tmpMeasure.find_first_of('.',0)+2, len);
-				SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled (" + name + ")", units);
+				SendCustomSensor(Idx, 1, 255, float(atof(vMeasure[0].c_str())), "Analog Input Scaled (" + name + ")", units);
 
 				std::vector<std::string> vRaw;
 				tmpstr = results[ii - 1];
 				std::string tmpRawValue = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF);
 				StringSplit(tmpRawValue, " ", vRaw);
-				SendCustomSensor(Idx+1, 1, 255, static_cast<float>(atof(vRaw[0].c_str())), "Analog Input (" + name + ")", "");
+				SendCustomSensor(Idx + 1, 1, 255, float(atof(vRaw[0].c_str())), "Analog Input (" + name + ")", "");
 
 				Idx = -1;
 				bHaveAnalogInput = false;
@@ -876,9 +876,9 @@ void CDenkoviDevices::GetMeterDetails()
 				name = "Temperature Input (" + name + ")";
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure);
-				tmpTiValue = static_cast<float>(atof(tmpMeasure.c_str()));
+				tmpTiValue = float(atof(tmpMeasure.c_str()));
 				if (tmpMeasure.find('F') != std::string::npos)
-					tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
+					tmpTiValue = float(ConvertToCelsius(double(tmpTiValue)));
 				SendTempSensor(Idx, 255, tmpTiValue, name);
 
 				Idx = -1;
@@ -889,7 +889,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveRelay && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_STATE_DEF)) != -1))
 			{
 				name = "Relay " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
+				SendSwitch(DIOType_Relay, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveRelay = false;
 				continue;
@@ -905,7 +905,7 @@ void CDenkoviDevices::GetMeterDetails()
 					tmpValue = blinds_sClose;
 				else
 					tmpValue = 0x11;
-				SendSwitch(DIOType_MCD, (uint8_t)Idx, 255, tmpValue, 0, tmpN, m_Name);
+				SendSwitch(DIOType_MCD, uint8_t(Idx), 255, tmpValue, 0, tmpN, m_Name);
 				ii = ii + 4;
 				tmpstr = stdstring_trim(results[ii]);
 				tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_LASTO_DEF);
@@ -928,20 +928,20 @@ void CDenkoviDevices::GetMeterDetails()
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 1);
 			name = "Digital IO " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DIO, (uint8_t)(ii + 1), 255, ((port3 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
+			SendSwitch(DIOType_DIO, uint8_t(ii + 1), 255, ((port3 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 digital inputs/outputs from port5
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 8 + 1);
 			name = "Relay " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_Relay, (uint8_t)(ii + 8 + 1), 255, ((port5 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
+			SendSwitch(DIOType_Relay, uint8_t(ii + 8 + 1), 255, ((port5 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 16 + 1);
 			tmpValue = DAEnetIP2GetAiValue(sResult, ii + 1);
 			name = "Analog Input " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendCustomSensor(DIOType_AI, (uint8_t)(ii + 16 + 1), 255, static_cast<float>(tmpValue), name, "");
+			SendCustomSensor(DIOType_AI, uint8_t(ii + 16 + 1), 255, float(tmpValue), name, "");
 			//float voltageValue = (float)(10.44*(tmpValue / 1024));
 			float voltageValue = DAEnetIP2CalculateAi(tmpValue, DAENETIP2_AI_VOLTAGE);
 			SendVoltageSensor(DIOType_AI, ii + 24 + 1, 255, voltageValue, name);
@@ -958,20 +958,20 @@ void CDenkoviDevices::GetMeterDetails()
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 1);
 			name = "Digital IO " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DIO, (uint8_t)(ii + 1), 255, ((port3 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
+			SendSwitch(DIOType_DIO, uint8_t(ii + 1), 255, ((port3 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 digital inputs/outputs from port5
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 8 + 1);
 			name = "Digital IO " + std::to_string(ii + 8 + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DIO, (uint8_t)(ii + 8 + 1), 255, ((port5 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
+			SendSwitch(DIOType_DIO, uint8_t(ii + 8 + 1), 255, ((port5 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 16 + 1);
 			tmpValue = DAEnetIP2GetAiValue(sResult, ii + 1);
 			name = "Analog Input " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendCustomSensor(DIOType_AI, (uint8_t)(ii + 16 + 1), 255, static_cast<float>(tmpValue), name, "");
+			SendCustomSensor(DIOType_AI, uint8_t(ii + 16 + 1), 255, float(tmpValue), name, "");
 		}
 		break;
 	}
@@ -983,7 +983,7 @@ void CDenkoviDevices::GetMeterDetails()
 			io << std::uppercase << std::hex << ii;
 			tmpName = DAEnetIP3GetIo(sResult, DAENETIP3_PORTA_SNAME_DEF + io.str());
 			name = "Digital Output " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DO, (uint8_t)(ii + 1), 255, ((pins & (0x0001 << ii)) != 0) ? true : false, 0, name, m_Name);
+			SendSwitch(DIOType_DO, uint8_t(ii + 1), 255, ((pins & (0x0001 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 
 		pins = std::stoul(DAEnetIP3GetIo(sResult, DAENETIP3_PORTB_MDI_DEF), nullptr, 16);
@@ -993,22 +993,22 @@ void CDenkoviDevices::GetMeterDetails()
 			io << std::uppercase << std::hex << ii;
 			tmpName = DAEnetIP3GetIo(sResult2, DAENETIP3_PORTB_SNAME_DEF + io.str());
 			name = "Digital Input " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DI, (uint8_t)(ii + 1), 255, ((pins & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
+			SendSwitch(DIOType_DI, uint8_t(ii + 1), 255, ((pins & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		} 
 
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
 			tmpMeasure = DAEnetIP3GetAi(sResult, (DAENETIP3_PORTC_SVAL_DEF + std::to_string(ii)), DAENETIP3_AI_VALUE);
 			tmpstr = DAEnetIP3GetAi(sResult, (DAENETIP3_PORTC_SVAL_DEF + std::to_string(ii)), DAENETIP3_AI_DIMENSION);
-			tmpName = DAEnetIP3GetIo(sResult2, DAENETIP3_PORTC_SNAME_DEF + std::to_string(ii)); 
-			SendCustomSensor(DIOType_AI, (uint8_t)(ii + 1), 255, static_cast<float>(atoi(tmpMeasure.c_str())), "Analog Input Scaled " + std::to_string(ii + 1) + " (" + tmpName + ")", tmpstr);
+			tmpName = DAEnetIP3GetIo(sResult2, DAENETIP3_PORTC_SNAME_DEF + std::to_string(ii));
+			SendCustomSensor(DIOType_AI, uint8_t(ii + 1), 255, float(atoi(tmpMeasure.c_str())), "Analog Input Scaled " + std::to_string(ii + 1) + " (" + tmpName + ")", tmpstr);
 		}
 	}
 	case DDEV_SmartDEN_IP_16_R_MT://has only relays
 	case DDEV_SmartDEN_IP_16_R_MQ:  
 	case DDEV_SmartDEN_IP_16_Relays: {//has only relays
 		bool bHaveRelays = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1028,7 +1028,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				std::stringstream sstr;
 				sstr << "Relay " << Idx << " (" << name << ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpState == 1) ? true : false, 0, sstr.str(), m_Name);
+				SendSwitch(DIOType_Relay, uint8_t(Idx), 255, (tmpState == 1) ? true : false, 0, sstr.str(), m_Name);
 				Idx = -1;
 				bHaveRelays = false;
 				continue;
@@ -1038,7 +1038,7 @@ void CDenkoviDevices::GetMeterDetails()
 	}
 	case DDEV_SmartDEN_IP_Watchdog: {//has only relays
 		bool bHaveRelays = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1057,7 +1057,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveRelays && (Idx != -1) && ((tmpState = DenkoviGetIntParameter(tmpstr, DAE_RSTATE_DEF)) != -1))
 			{
 				name = "Relay " + std::to_string(Idx) + "(" + name + ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpState == 1) ? true : false, 0, name, m_Name);
+				SendSwitch(DIOType_Relay, uint8_t(Idx), 255, (tmpState == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveRelays = false;
 				continue;
@@ -1070,7 +1070,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveDigitalInput = false;
 		bool bHaveAnalogInput = false;
 		bool bHaveTemperatureInput = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1101,8 +1101,8 @@ void CDenkoviDevices::GetMeterDetails()
 			}
 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
-			{ 
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
+			{
+				SendSwitch(DIOType_DI, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
 
 				//Check if there is counter
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1117,7 +1117,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 			if (bHaveAnalogInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendCustomSensor(Idx + 8, 1, 255, static_cast<float>(tmpValue), "Analog Input " + std::to_string(Idx) + " (" + name + ")", "");
+				SendCustomSensor(Idx + 8, 1, 255, float(tmpValue), "Analog Input " + std::to_string(Idx) + " (" + name + ")", "");
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1127,7 +1127,7 @@ void CDenkoviDevices::GetMeterDetails()
 					StringSplit(tmpMeasure, " ", vMeasure);
 					if (vMeasure.size() == 2)
 					{
-						SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
+						SendCustomSensor(Idx, 1, 255, float(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
 					}
 				}
 				Idx = -1;
@@ -1143,10 +1143,10 @@ void CDenkoviDevices::GetMeterDetails()
 				
 				if ((tmpMeasure.find("---") == std::string::npos))
 				{
-					tmpTiValue = static_cast<float>(atof(tmpMeasure.c_str()));
+					tmpTiValue = float(atof(tmpMeasure.c_str()));
 
 					if (tmpMeasure[tmpMeasure.size() - 1] == -119)//Check if F is found
-						tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
+						tmpTiValue = float(ConvertToCelsius(double(tmpTiValue)));
 				}
 				else
 					tmpTiValue = 0; 
@@ -1163,7 +1163,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveDigitalInput = false;
 		bool bHaveAnalogInput = false;
 		bool bHaveTemperatureInput = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1195,7 +1195,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
+				SendSwitch(DIOType_DI, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
 
 				//Check if there is counter
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1210,7 +1210,7 @@ void CDenkoviDevices::GetMeterDetails()
 						
 			if (bHaveAnalogInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendCustomSensor(Idx+8, 1, 255, static_cast<float>(tmpValue), "Analog Input " + std::to_string(Idx) + " (" + name + ")", "");
+				SendCustomSensor(Idx + 8, 1, 255, float(tmpValue), "Analog Input " + std::to_string(Idx) + " (" + name + ")", "");
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1220,7 +1220,7 @@ void CDenkoviDevices::GetMeterDetails()
 					StringSplit(tmpMeasure, " ", vMeasure);
 					if (vMeasure.size() == 2)
 					{
-						SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
+						SendCustomSensor(Idx, 1, 255, float(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
 					}
 				}
 				Idx = -1;
@@ -1235,10 +1235,10 @@ void CDenkoviDevices::GetMeterDetails()
 
 				if ((tmpMeasure.find("---") == std::string::npos))
 				{
-					tmpTiValue = static_cast<float>(atof(tmpMeasure.c_str()));
+					tmpTiValue = float(atof(tmpMeasure.c_str()));
 
 					if (tmpMeasure[tmpMeasure.size() - 1] == -119)//Check if F is found
-						tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
+						tmpTiValue = float(ConvertToCelsius(double(tmpTiValue)));
 				}
 				else
 					tmpTiValue = 0;
@@ -1257,7 +1257,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveAnalogOutput = false;
 		bool bHaveAnalogInput = false;
 		bool bHaveRelay = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1296,7 +1296,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{	//Value
 				name = "Digital Input " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
+				SendSwitch(DIOType_DI, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				//Counter
 				tmp_counter = stdstring_trim(results[ii+1]);
 				SendDenkoviTextSensor(DIOType_TXT, Idx + 8, 255, DenkoviGetStrParameter(tmp_counter, DAE_COUNT_DEF), name + " Counter");
@@ -1311,8 +1311,8 @@ void CDenkoviDevices::GetMeterDetails()
 				StringSplit(tmpMeasure, " ", vMeasure);
 				if (Idx <= 4)
 				{
-					//scaled value				 
-					SendCustomSensor(Idx, DIOType_AI, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
+					// scaled value
+					SendCustomSensor(Idx, DIOType_AI, 255, float(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
 					//raw value					
 					tmp_adc_raw_value = stdstring_trim(results[ii-1]);
 					SendCustomSensor(Idx+8, DIOType_AI, 255, DenkoviGetFloatParameter(tmp_adc_raw_value, DAE_VALUE_DEF), "Analog Input Raw " + std::to_string(Idx) + " (" + name + ")","");
@@ -1321,9 +1321,9 @@ void CDenkoviDevices::GetMeterDetails()
 				else {
 					name = "Analog Input " + std::to_string(Idx) + " (" + name + ")";
 					if (vMeasure.size() == 2) {
-						tmpTiValue = static_cast<float>(atof(vMeasure[0].c_str()));
+						tmpTiValue = float(atof(vMeasure[0].c_str()));
 						if (vMeasure[1] == "degF")
-							tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
+							tmpTiValue = float(ConvertToCelsius(double(tmpTiValue)));
 						SendTempSensor(Idx, 255, tmpTiValue, name);
 					}
 					else
@@ -1337,7 +1337,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveRelay && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "Relay " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
+				SendSwitch(DIOType_Relay, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveRelay = false;
 				continue;
@@ -1347,7 +1347,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				name = "Analog Output " + std::to_string(Idx) + " (" + name + ")";
 				double val = (100 * tmpValue) / 1023;
-				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)val, name, m_Name);
+				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, uint8_t(val), name, m_Name);
 				Idx = -1;
 				bHaveAnalogOutput = false;
 				continue;
@@ -1360,7 +1360,7 @@ void CDenkoviDevices::GetMeterDetails()
 		bool bHaveDigitalOutput = false;
 		bool bHaveAnalogInput = false;
 		bool bHavePWM = false;
-		for (ii = 1; ii < (int)results.size(); ii++)
+		for (ii = 1; ii < int(results.size()); ii++)
 		{
 			tmpstr = stdstring_trim(results[ii]);
 
@@ -1398,7 +1398,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
+				SendSwitch(DIOType_DI, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
 
 				//Check if there is counter
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1413,7 +1413,7 @@ void CDenkoviDevices::GetMeterDetails()
 						
 			if (bHaveAnalogInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendCustomSensor(Idx + 8, 1, 255, static_cast<float>(tmpValue), "Analog Input " + std::to_string(Idx) + " (" + name + ")", "");
+				SendCustomSensor(Idx + 8, 1, 255, float(tmpValue), "Analog Input " + std::to_string(Idx) + " (" + name + ")", "");
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1423,7 +1423,7 @@ void CDenkoviDevices::GetMeterDetails()
 					StringSplit(tmpMeasure, " ", vMeasure);
 					if (vMeasure.size() == 2)
 					{
-						SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
+						SendCustomSensor(Idx, 1, 255, float(atof(vMeasure[0].c_str())), "Analog Input Scaled " + std::to_string(Idx) + " (" + name + ")", vMeasure[1]);
 					}
 				}
 				Idx = -1;
@@ -1434,7 +1434,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveDigitalOutput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "Digital Output " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_DO, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
+				SendSwitch(DIOType_DO, uint8_t(Idx), 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveDigitalOutput = false;
 				continue;
@@ -1443,7 +1443,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHavePWM && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "PWM " + std::to_string(Idx) + " (" + name + ")";
-				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)tmpValue, name, m_Name);
+				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, uint8_t(tmpValue), name, m_Name);
 				Idx = -1;
 				bHavePWM = false;
 				continue;

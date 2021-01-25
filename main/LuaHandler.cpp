@@ -31,7 +31,7 @@ int CLuaHandler::l_domoticz_updateDevice(lua_State* lua_state)
 		if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2) || lua_isnumber(lua_state, 2)) && lua_isstring(lua_state, 3))
 		{
 			// Extract the parameters from the lua 'updateDevice' function
-			int ideviceId = (int)lua_tointeger(lua_state, 1);
+			int ideviceId = int(lua_tointeger(lua_state, 1));
 			std::string nvalue = lua_tostring(lua_state, 2);
 			std::string svalue = lua_tostring(lua_state, 3);
 			if (((lua_isstring(lua_state, 3) && nvalue.empty()) && svalue.empty()))
@@ -45,12 +45,12 @@ int CLuaHandler::l_domoticz_updateDevice(lua_State* lua_state)
 			int signallevel = 12;
 			if (nargs >= 4 && lua_isnumber(lua_state, 4))
 			{
-				signallevel = (int)lua_tointeger(lua_state, 4);
+				signallevel = int(lua_tointeger(lua_state, 4));
 			}
 			int batterylevel = 255;
 			if (nargs == 5 && lua_isnumber(lua_state, 5))
 			{
-				batterylevel = (int)lua_tointeger(lua_state, 5);
+				batterylevel = int(lua_tointeger(lua_state, 5));
 			}
 			_log.Log(LOG_NORM, "CLuaHandler (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", ideviceId, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
 
@@ -167,7 +167,7 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 
 	// Push all url parameters as a map indexed by the parameter name
 	// Each entry will be uri[<param name>] = <param value>
-	int totParameters = (int)allParameters.size();
+	int totParameters = int(allParameters.size());
 	lua_createtable(lua_state, totParameters, 0);
 	for (int i = 0; i < totParameters; i++)
 	{

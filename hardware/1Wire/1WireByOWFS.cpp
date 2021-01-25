@@ -154,22 +154,22 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
       {
          if (unit<0 || unit>1)
             return;
-         writeData(device,std::string("PIO.").append(1,'A'+(char)unit),value?"yes":"no");
-         break;
+	 writeData(device, std::string("PIO.").append(1, 'A' + char(unit)), value ? "yes" : "no");
+	 break;
       }
    case _8_channel_addressable_switch:
       {
          if (unit<0 || unit>7)
             return;
-         writeData(device,std::string("PIO.").append(1,'0'+(char)unit),value?"yes":"no");
-         break;
+	 writeData(device, std::string("PIO.").append(1, '0' + char(unit)), value ? "yes" : "no");
+	 break;
       }
    case _4k_EEPROM_with_PIO:
       {
          if (unit<0 || unit>1)
             return;
-         writeData(device,std::string("PIO.").append(1,'0'+(char)unit),value?"yes":"no");
-         break;
+	 writeData(device, std::string("PIO.").append(1, '0' + char(unit)), value ? "yes" : "no");
+	 break;
       }
    case microlan_coupler:
       {
@@ -180,7 +180,7 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
    case digital_potentiometer:
    {
 	   writeData(device, "chargepump", "1");
-	   unsigned int wiper = static_cast<unsigned int>(level * (255.0 / 15.0));
+	   uint32_t wiper = uint32_t(level * (255.0 / 15.0));
 	   writeData(device, "wiper", std::to_string(wiper));
 	   break;
    }
@@ -198,7 +198,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 
    if (readValue.empty())
       return -1000.0;
-   return static_cast<float>(atof(readValue.c_str()));
+   return float(atof(readValue.c_str()));
 }
 
 float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
@@ -209,7 +209,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 
    if (readValue.empty())
 	   return -1000.0;
-   return static_cast<float>(atof(readValue.c_str()));
+   return float(atof(readValue.c_str()));
 }
 
 float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
@@ -219,7 +219,7 @@ float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
    std::string readValue=readRawData(std::string(realFilename+"/pressure"));
    if (readValue.empty())
 	   return -1000.0;
-   return static_cast<float>(atof(readValue.c_str()));
+   return float(atof(readValue.c_str()));
 }
 
 bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
@@ -239,22 +239,22 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
       {
          if (unit<0 || unit>1)
             return false;
-         fileName.append("/sensed.").append(1,'A'+(char)unit);
-         break;
+	 fileName.append("/sensed.").append(1, 'A' + char(unit));
+	 break;
       }
    case _8_channel_addressable_switch:
       {
          if (unit<0 || unit>7)
             return false;
-         fileName.append("/sensed.").append(1,'0'+(char)unit);
-         break;
+	 fileName.append("/sensed.").append(1, '0' + char(unit));
+	 break;
       }
    case _4k_EEPROM_with_PIO:
       {
          if (unit<0 || unit>1)
             return false;
-         fileName.append("/sensed.").append(1,'0'+(char)unit);
-         break;
+	 fileName.append("/sensed.").append(1, '0' + char(unit));
+	 break;
       }
    case microlan_coupler:
       {
@@ -303,12 +303,12 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
 unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
 {
    // Depending on OWFS version, file can be "counter" or "counters". So try both.
-   std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+(char)unit));
+   std::string readValue = readRawData(std::string(device.filename + "/counter.").append(1, 'A' + char(unit)));
    if (readValue.empty())
-      readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+(char)unit));
+	   readValue = readRawData(std::string(device.filename + "/counters.").append(1, 'A' + char(unit)));
    if (readValue.empty())
 	   return 0;
-   return (unsigned long)atol(readValue.c_str());
+   return std::atol(readValue.c_str());
 }
 
 int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
@@ -327,15 +327,15 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
       }
    default:
       {
-         fileName.append("/volt.").append(1, static_cast<char>('A'+unit));
-         break;
+	   fileName.append("/volt.").append(1, char('A' + unit));
+	   break;
       }
    }
 
    std::string readValue=readRawData(fileName);
    if (readValue.empty())
 	   return -1000;
-   return static_cast<int>((atof(readValue.c_str())*1000.0));
+   return int(atof(readValue.c_str()) * 1000.0);
 }
 
 float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
@@ -346,7 +346,7 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
       readValue=readRawData(std::string(device.filename+"/S3-R1-A/illumination"));
    if (readValue.empty())
 	   return -1000.0;
-   return (float)(atof(readValue.c_str())*1000.0);
+   return float(atof(readValue.c_str()) * 1000.0);
 }
 
 int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const

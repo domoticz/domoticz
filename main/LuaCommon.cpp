@@ -157,12 +157,12 @@ int CLuaCommon::l_domoticz_applyJsonPath(lua_State* lua_state)
 					}
 					if (node.isInt())
 					{
-						lua_pushnumber(lua_state, (double)node.asInt());
+						lua_pushnumber(lua_state, double(node.asInt()));
 						return 1;
 					}
 					if (node.isInt64())
 					{
-						lua_pushnumber(lua_state, (double)node.asInt64());
+						lua_pushnumber(lua_state, double(node.asInt64()));
 						return 1;
 					}
 					if (node.isString())

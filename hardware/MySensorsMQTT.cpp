@@ -13,7 +13,7 @@
 
 MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password,
 			     const std::string &CAfilenameExtra, const int TLS_Version, const int PublishScheme, const bool PreventLoop)
-	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTT::PT_out, std::string("Domoticz-MySensors") + std::string(GenerateUUID()), PreventLoop)
+	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, int(MQTT::PT_out), std::string("Domoticz-MySensors") + std::string(GenerateUUID()), PreventLoop)
 	, MyTopicIn(TOPIC_IN)
 	, MyTopicOut(TOPIC_OUT)
 {
@@ -103,7 +103,7 @@ bool MySensorsMQTT::StopHardware()
 void MySensorsMQTT::on_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage = std::string(static_cast<char *>(message->payload), static_cast<char *>(message->payload) + message->payloadlen);
 
 	_log.Log(LOG_NORM, "MySensorsMQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 

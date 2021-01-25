@@ -170,7 +170,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	if (result2.size() == 1)
 	{
 		m_ID = atoi(result2[0][0].c_str());
-		m_PreviousStatus.Status((_eMediaStatus)atoi(result2[0][1].c_str()));
+		m_PreviousStatus.Status(_eMediaStatus(atoi(result2[0][1].c_str())));
 		m_PreviousStatus.Status(result2[0][2]);
 	}
 	m_CurrentStatus = m_PreviousStatus;
@@ -364,8 +364,10 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							{
 								m_CurrentStatus.Status(MSTAT_VIDEO);
 								if (root["result"]["item"].isMember("showtitle"))	m_CurrentStatus.ShowTitle(root["result"]["item"]["showtitle"].asCString());
-								if (root["result"]["item"].isMember("season"))		m_CurrentStatus.Season((int)root["result"]["item"]["season"].asInt());
-								if (root["result"]["item"].isMember("episode"))		m_CurrentStatus.Episode((int)root["result"]["item"]["episode"].asInt());
+								if (root["result"]["item"].isMember("season"))
+									m_CurrentStatus.Season(int(root["result"]["item"]["season"].asInt()));
+								if (root["result"]["item"].isMember("episode"))
+									m_CurrentStatus.Episode(int(root["result"]["item"]["episode"].asInt()));
 							}
 							if (m_CurrentStatus.Type() == "channel")
 							{
@@ -1420,8 +1422,8 @@ namespace http {
 			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 			if (result.size() == 1)
 			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
+				_eSwitchType sType = _eSwitchType(atoi(result[0][0].c_str()));
+				_eHardwareTypes hType = _eHardwareTypes(atoi(result[0][1].c_str()));
 				int HwID = atoi(result[0][2].c_str());
 				// Is the device a media Player?
 				if (sType == STYPE_Media)

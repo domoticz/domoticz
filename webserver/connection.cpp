@@ -267,7 +267,7 @@ namespace http {
 #define FILE_SEND_BUFFER_SIZE 16*1024
 				if (!send_buffer_)
 					send_buffer_ = new uint8_t[FILE_SEND_BUFFER_SIZE];
-				size_t bread = static_cast<size_t>(sendfile_.read((char*)send_buffer_, FILE_SEND_BUFFER_SIZE).gcount());
+				size_t bread = size_t(sendfile_.read(reinterpret_cast<char *>(send_buffer_), FILE_SEND_BUFFER_SIZE).gcount());
 				if (bread <= 0)
 				{
 					//Error reading file!
@@ -463,7 +463,7 @@ namespace http {
 				case ConnectionType::connection_websocket:
 				case ConnectionType::connection_websocket_closing:
 					begin = boost::asio::buffer_cast<const char*>(_buf.data());
-					result = websocket_parser.parse((const unsigned char*)begin, _buf.size(), bytes_consumed, keepalive_);
+					result = websocket_parser.parse(reinterpret_cast<const unsigned char *>(begin), _buf.size(), bytes_consumed, keepalive_);
 					_buf.consume(bytes_consumed);
 					if (result) {
 						// we received a complete packet (that was handled already)

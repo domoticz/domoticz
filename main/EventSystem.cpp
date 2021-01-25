@@ -408,7 +408,7 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 					item.JsonMapString[index] = l_JsonValueString.assign(value);
 					break;
 				case JTYPE_FLOAT:
-					item.JsonMapFloat[index] = (float)atof(value.c_str());
+					item.JsonMapFloat[index] = float(atof(value.c_str()));
 					break;
 				case JTYPE_INT:
 					item.JsonMapInt[index] = atoi(value.c_str());
@@ -489,7 +489,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.sValue = l_sValue.assign(sd[4]);
 
 			sitem.switchtype = atoi(sd[7].c_str());
-			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
+			_eSwitchType switchtype = _eSwitchType(sitem.switchtype);
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
@@ -658,7 +658,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeTEMP:
 			if (!splitresults.empty())
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				temp = float(atof(splitresults[0].c_str()));
 				isTemp = true;
 			}
 			break;
@@ -667,7 +667,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (!splitresults.empty())
 				{
-					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					temp = float(atof(splitresults[0].c_str()));
 					isTemp = true;
 				}
 			}
@@ -675,7 +675,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (!splitresults.empty())
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = float(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
 			}
@@ -683,7 +683,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeThermostat1:
 			if (!splitresults.empty())
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				temp = float(atof(splitresults[0].c_str()));
 				isTemp = true;
 			}
 			break;
@@ -694,9 +694,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeTEMP_HUM:
 			if (splitresults.size() > 1)
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				temp = float(atof(splitresults[0].c_str()));
 				humidity = atoi(splitresults[1].c_str());
-				dewpoint = (float)CalculateDewPoint(temp, humidity);
+				dewpoint = float(CalculateDewPoint(temp, humidity));
 				isTemp = true;
 				isHum = true;
 				isDew = true;
@@ -707,10 +707,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 				_log.Log(LOG_ERROR, "EventSystem: TEMP_HUM_BARO missing values : ID=%" PRIu64 ", sValue=%s", sitem.ID, sitem.sValue.c_str());
 				continue;
 			}
-			temp = static_cast<float>(atof(splitresults[0].c_str()));
+			temp = float(atof(splitresults[0].c_str()));
 			humidity = atoi(splitresults[1].c_str());
-			barometer = static_cast<float>(atof(splitresults[3].c_str()));
-			dewpoint = (float)CalculateDewPoint(temp, humidity);
+			barometer = float(atof(splitresults[3].c_str()));
+			dewpoint = float(CalculateDewPoint(temp, humidity));
 			isTemp = true;
 			isHum = true;
 			isBaro = true;
@@ -719,34 +719,34 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeTEMP_BARO:
 			if (splitresults.size() > 1)
 			{
-				temp = static_cast<float>(atof(splitresults[0].c_str()));
-				barometer = static_cast<float>(atof(splitresults[1].c_str()));
+				temp = float(atof(splitresults[0].c_str()));
+				barometer = float(atof(splitresults[1].c_str()));
 				isTemp = true;
 				isBaro = true;
 			}
 			break;
 		case pTypeBARO:
-			barometer = static_cast<float>(atof(splitresults[0].c_str()));
+			barometer = float(atof(splitresults[0].c_str()));
 			isBaro = true;
 			break;
 		case pTypeRadiator1:
 			if (sitem.subType == sTypeSmartwares)
 			{
-				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
+				utilityval = float(atof(sitem.sValue.c_str()));
 				isUtility = true;
 			}
 			break;
 		case pTypeUV:
 			if (splitresults.size() == 2)
 			{
-				uv = static_cast<float>(atof(splitresults[0].c_str()));
+				uv = float(atof(splitresults[0].c_str()));
 				isUV = true;
 				weatherval = uv;
 				isWeather = true;
 
 				if (sitem.subType == sTypeUV3)
 				{
-					temp = static_cast<float>(atof(splitresults[1].c_str()));
+					temp = float(atof(splitresults[1].c_str()));
 					isTemp = true;
 				}
 			}
@@ -754,7 +754,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeWIND:
 			if (splitresults.size() == 6)
 			{
-				winddir = static_cast<float>(atof(splitresults[0].c_str()));
+				winddir = float(atof(splitresults[0].c_str()));
 				isWindDir = true;
 
 				if (sitem.subType != sTypeWIND5)
@@ -779,8 +779,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				if ((sitem.subType == sTypeWIND4) || (sitem.subType == sTypeWINDNoTemp))
 				{
-					temp = static_cast<float>(atof(splitresults[4].c_str()));
-					//chill = static_cast<float>(atof(splitresults[5].c_str()));
+					temp = float(atof(splitresults[4].c_str()));
+					// chill = float(atof(splitresults[5].c_str()));
 					isTemp = true;
 				}
 			}
@@ -790,55 +790,55 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (!splitresults.empty())
 				{
-					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					temp = float(atof(splitresults[0].c_str()));
 					isTemp = true;
 				}
 			}
 			else if ((sitem.subType == sTypeRFXSensorVolt) || (sitem.subType == sTypeRFXSensorAD))
 			{
-				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
+				utilityval = float(atof(sitem.sValue.c_str()));
 				isUtility = true;
 			}
 			break;
 		case pTypeAirQuality:
-			utilityval = (float)(sitem.nValue);
+			utilityval = float(sitem.nValue);
 			isUtility = true;
 			break;
 		case pTypeENERGY:
 			if (!splitresults.empty())
 			{
 				if (splitresults.size() == 2)
-					utilityval = static_cast<float>(atof(splitresults[1].c_str()));
+					utilityval = float(atof(splitresults[1].c_str()));
 				else
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = float(atof(splitresults[0].c_str()));
 				isUtility = true;
 			}
 			break;
 		case pTypePOWER:
 			if (!splitresults.empty())
 			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				utilityval = float(atof(splitresults[0].c_str()));
 				isUtility = true;
 			}
 			break;
 		case pTypeUsage:
 			if (!splitresults.empty())
 			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				utilityval = float(atof(splitresults[0].c_str()));
 				isUtility = true;
 			}
 			break;
 		case pTypeP1Power:
 			if (splitresults.size() == 6)
 			{
-				utilityval = static_cast<float>(atof(splitresults[4].c_str()));
+				utilityval = float(atof(splitresults[4].c_str()));
 				isUtility = true;
 			}
 			break;
 		case pTypeLux:
 			if (!splitresults.empty())
 			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				utilityval = float(atof(splitresults[0].c_str()));
 				isUtility = true;
 			}
 			break;
@@ -848,14 +848,14 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if ((sitem.subType == sTypeVisibility) || (sitem.subType == sTypeSolarRadiation))
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = float(atof(splitresults[0].c_str()));
 					isUtility = true;
 					weatherval = utilityval;
 					isWeather = true;
 				}
 				else if (sitem.subType == sTypeBaro)
 				{
-					barometer = static_cast<float>(atof(splitresults[0].c_str()));
+					barometer = float(atof(splitresults[0].c_str()));
 					isBaro = true;
 				}
 				else if ((sitem.subType == sTypeAlert)
@@ -870,7 +870,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					|| (sitem.subType == sTypeSoundLevel)
 					)
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = float(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
 			}
@@ -883,7 +883,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
-					const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
+					const auto metertype = _eMeterType(sitem.switchtype);
 
 					float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
 
@@ -908,7 +908,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 				else if (sitem.subType == sTypeManagedCounter)
 				{
-					const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
+					const auto metertype = _eMeterType(sitem.switchtype);
 
 					float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
 
@@ -929,7 +929,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				rainmm = 0;
-				rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0F;
+				rainmmlasthour = float(atof(splitresults[0].c_str())) / 100.0F;
 				isRain = true;
 				weatherval = rainmmlasthour;
 				isWeather = true;
@@ -961,8 +961,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 					}
 					else
 					{
-						float total_min = static_cast<float>(atof(sd2[0].c_str()));
-						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
+						float total_min = float(atof(sd2[0].c_str()));
+						float total_max = float(atof(splitresults[1].c_str()));
 						total_real = total_max - total_min;
 					}
 					rainmm = float(total_real);
@@ -995,7 +995,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		case pTypeRFXMeter:
 			if (sitem.subType == sTypeRFXMeterCount)
 			{
-				const _eMeterType metertype = (const _eMeterType)sitem.switchtype;
+				const auto metertype = _eMeterType(sitem.switchtype);
 				float divider = m_sql.GetCounterDivider(int(metertype), int(sitem.devType), float(sitem.AddjValue2));
 
 				//get value of today
@@ -1171,9 +1171,9 @@ bool CEventSystem::Update(const Notification::_eType type, const Notification::_
 		return false;
 	_tEventQueue item;
 	item.reason = REASON_NOTIFICATION;
-	item.nValue = static_cast<int>(type);
+	item.nValue = int(type);
 	item.sValue = eventdata;
-	item.lastLevel = static_cast<uint8_t>(status);
+	item.lastLevel = uint8_t(status);
 	if (type != Notification::DZ_STOP)
 		m_eventqueue.push(item);
 	else // blocking call on application shutdown
@@ -1217,7 +1217,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (!m_eventtrigger.empty())
 	{
-		time_t atime = mytime(nullptr) + static_cast<int>(fDelayTime);
+		time_t atime = mytime(nullptr) + int(fDelayTime);
 		for (auto itt = m_eventtrigger.begin(); itt != m_eventtrigger.end();)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later or equal queued items
@@ -1229,7 +1229,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	_tEventTrigger item;
 	item.ID = ulDevID;
 	item.reason = reason;
-	item.timestamp = mytime(nullptr) + static_cast<int>(fDelayTime);
+	item.timestamp = mytime(nullptr) + int(fDelayTime);
 	m_eventtrigger.push_back(item);
 }
 
@@ -1458,9 +1458,9 @@ void CEventSystem::ProcessDevice(
 
 	std::vector<std::string> sd = result[0];
 
-	_eSwitchType switchType = (_eSwitchType)std::stoi(sd[0]);
+	_eSwitchType switchType = _eSwitchType(std::stoi(sd[0]));
 	std::string lastUpdate = sd[1];
-	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
+	uint8_t lastLevel = uint8_t(std::stoi(sd[2]));
 	std::string dev_options = sd[3];
 	std::string devname = sd[4];
 
@@ -1682,8 +1682,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "print");
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-	
-	CLuaTable luaTable(lua_state, "device", (int)m_devicestates.size(), 0);
+
+	CLuaTable luaTable(lua_state, "device", int(m_devicestates.size()), 0);
 
 	for (const auto &state : m_devicestates)
 	{
@@ -1694,8 +1694,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	devicestatesMutexLock.unlock();
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-	
-	luaTable.InitTable(lua_state, "variable", (int)m_uservariables.size(), 0);
+
+	luaTable.InitTable(lua_state, "variable", int(m_uservariables.size()), 0);
 
 	for (const auto &variable : m_uservariables)
 	{
@@ -1721,14 +1721,14 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 
 	if (!m_tempValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "temperaturedevice", (int)m_tempValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "temperaturedevice", int(m_tempValuesByID.size()), 0);
 		for (const auto &temp : m_tempValuesByID)
 			luaTable.AddNumber(temp.first, temp.second);
 		luaTable.Publish();
 	}
 	if (!m_dewValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "dewpointdevice", (int)m_dewValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "dewpointdevice", int(m_dewValuesByID.size()), 0);
 		for (const auto &dew : m_dewValuesByID)
 		{
 			luaTable.AddNumber(dew.first, dew.second);
@@ -1737,7 +1737,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_humValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "humiditydevice", (int)m_humValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "humiditydevice", int(m_humValuesByID.size()), 0);
 		for (const auto &hum : m_humValuesByID)
 		{
 			luaTable.AddNumber(hum.first, hum.second);
@@ -1746,7 +1746,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_baroValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "barometerdevice", (int)m_baroValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "barometerdevice", int(m_baroValuesByID.size()), 0);
 		for (const auto &baro : m_baroValuesByID)
 		{
 			luaTable.AddNumber(baro.first, baro.second);
@@ -1755,7 +1755,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_utilityValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "utilitydevice", (int)m_utilityValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "utilitydevice", int(m_utilityValuesByID.size()), 0);
 		for (const auto &utility : m_utilityValuesByID)
 		{
 			luaTable.AddNumber(utility.first, utility.second);
@@ -1764,7 +1764,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_weatherValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "weatherdevice", (int)m_weatherValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "weatherdevice", int(m_weatherValuesByID.size()), 0);
 		for (const auto &weather : m_weatherValuesByID)
 		{
 			luaTable.AddNumber(weather.first, weather.second);
@@ -1773,7 +1773,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_rainValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "raindevice", (int)m_rainValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "raindevice", int(m_rainValuesByID.size()), 0);
 		for (const auto &rain : m_rainValuesByID)
 		{
 			luaTable.AddNumber(rain.first, rain.second);
@@ -1782,7 +1782,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_rainLastHourValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "rainlasthourdevice", (int)m_rainLastHourValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "rainlasthourdevice", int(m_rainLastHourValuesByID.size()), 0);
 		for (const auto &rainlh : m_rainLastHourValuesByID)
 		{
 			luaTable.AddNumber(rainlh.first, rainlh.second);
@@ -1791,7 +1791,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_uvValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "uvdevice", (int)m_uvValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "uvdevice", int(m_uvValuesByID.size()), 0);
 		for (const auto &uv : m_uvValuesByID)
 		{
 			luaTable.AddNumber(uv.first, uv.second);
@@ -1800,7 +1800,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_winddirValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "winddirdevice", (int)m_winddirValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "winddirdevice", int(m_winddirValuesByID.size()), 0);
 		for (const auto &winddir : m_winddirValuesByID)
 		{
 			luaTable.AddNumber(winddir.first, winddir.second);
@@ -1809,7 +1809,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_windspeedValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "windspeeddevice", (int)m_windspeedValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "windspeeddevice", int(m_windspeedValuesByID.size()), 0);
 		for (const auto &windspeed : m_windspeedValuesByID)
 		{
 			luaTable.AddNumber(windspeed.first, windspeed.second);
@@ -1818,7 +1818,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_windgustValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "windgustdevice", (int)m_windgustValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "windgustdevice", int(m_windgustValuesByID.size()), 0);
 		for (const auto &windgust : m_windgustValuesByID)
 		{
 			luaTable.AddNumber(windgust.first, windgust.second);
@@ -1827,7 +1827,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (!m_zwaveAlarmValuesByID.empty())
 	{
-		luaTable.InitTable(lua_state, "zwavealarms", (int)m_zwaveAlarmValuesByID.size(), 0);
+		luaTable.InitTable(lua_state, "zwavealarms", int(m_zwaveAlarmValuesByID.size()), 0);
 		for (const auto &alarm : m_zwaveAlarmValuesByID)
 		{
 			luaTable.AddNumber(alarm.first, alarm.second);
@@ -1835,7 +1835,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		luaTable.Publish();
 	}
 
-	lua_pushnumber(lua_state, (lua_Number)m_SecStatus);
+	lua_pushnumber(lua_state, lua_Number(m_SecStatus));
 	lua_setglobal(lua_state, "securitystatus");
 
 	return lua_state;
@@ -2106,7 +2106,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 		if (itt != m_zwaveAlarmValuesByID.end())
 		{
 			std::stringstream sstr;
-			sstr << (int)itt->second;
+			sstr << int(itt->second);
 			return sstr.str();
 		}
 	}
@@ -2235,14 +2235,14 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				{
 					std::vector<std::string> sd = result[0];
 					std::string errorMessage;
-					if (!m_sql.UpdateUserVariable(variableNo, sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), doWhat, false, errorMessage))
+					if (!m_sql.UpdateUserVariable(variableNo, sd[0], _eUsrVariableType(atoi(sd[1].c_str())), doWhat, false, errorMessage))
 					{
 						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 				}
 			}
 			else
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(parseResult.fAfterSec, uint64_t(atol(variableNo.c_str())), doWhat, false));
 
 			actionsDone = true;
 			continue;
@@ -2515,19 +2515,19 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 				oResults_.sCommand.append(sToken);
 				break;
 			case 1:
-				oResults_.fForSec = 60.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fForSec = 60.F * float(atof(sToken.c_str()));
 				break;
 			case 2:
-				oResults_.fAfterSec = 1.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fAfterSec = 1.F * float(atof(sToken.c_str()));
 				break;
 			case 3:
-				oResults_.fRandomSec = 60.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fRandomSec = 60.F * float(atof(sToken.c_str()));
 				break;
 			case 4:
 				oResults_.iRepeat = atoi(sToken.c_str());
 				break;
 			case 5:
-				oResults_.fRepeatSec = 1.F * static_cast<float>(atof(sToken.c_str()));
+				oResults_.fRepeatSec = 1.F * float(atof(sToken.c_str()));
 				break;
 			}
 		}
@@ -2628,7 +2628,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-	CLuaTable luaTable(lua_state, "otherdevices", (int)m_devicestates.size(), 0);
+	CLuaTable luaTable(lua_state, "otherdevices", int(m_devicestates.size()), 0);
 	for (const auto &state : m_devicestates)
 	{
 		luaTable.AddString(state.second.deviceName, (state.first == item.id && item.reason == REASON_DEVICE)
@@ -2637,7 +2637,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 	}
 	luaTable.Publish();
 
-	luaTable.InitTable(lua_state, "otherdevices_lastupdate", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_lastupdate", int(m_devicestates.size()), 0);
 	for (const auto &state : m_devicestates)
 	{
 		luaTable.AddString(state.second.deviceName,
@@ -2645,7 +2645,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 	}
 	luaTable.Publish();
 
-	luaTable.InitTable(lua_state, "otherdevices_svalues", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_svalues", int(m_devicestates.size()), 0);
 	for (const auto &state : m_devicestates)
 	{
 		luaTable.AddString(state.second.deviceName,
@@ -2653,14 +2653,14 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 	}
 	luaTable.Publish();
 
-	luaTable.InitTable(lua_state, "otherdevices_idx", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_idx", int(m_devicestates.size()), 0);
 	for (const auto &state : m_devicestates)
 	{
 		luaTable.AddInteger(state.second.deviceName, state.second.ID);
 	}
 	luaTable.Publish();
 
-	luaTable.InitTable(lua_state, "otherdevices_lastlevel", (int)m_devicestates.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_lastlevel", int(m_devicestates.size()), 0);
 	for (const auto &state : m_devicestates)
 	{
 		luaTable.AddNumber(state.second.deviceName,
@@ -2696,7 +2696,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 
 		if (!m_tempValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_temperature", (int)m_tempValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_temperature", int(m_tempValuesByName.size()), 0);
 			for (const auto &temp : m_tempValuesByName)
 			{
 				luaTable.AddNumber(temp.first, temp.second);
@@ -2709,7 +2709,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_dewValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_dewpoint", (int)m_dewValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_dewpoint", int(m_dewValuesByName.size()), 0);
 			for (const auto &dew : m_dewValuesByName)
 			{
 				luaTable.AddNumber(dew.first, dew.second);
@@ -2722,7 +2722,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_humValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_humidity", (int)m_humValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_humidity", int(m_humValuesByName.size()), 0);
 			for (const auto &hum : m_humValuesByName)
 			{
 				luaTable.AddNumber(hum.first, hum.second);
@@ -2735,20 +2735,20 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_baroValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_barometer", (int)m_baroValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_barometer", int(m_baroValuesByName.size()), 0);
 			for (const auto &baro : m_baroValuesByName)
 			{
 				luaTable.AddNumber(baro.first, baro.second);
 				if (baro.first == item.devname)
 				{
-					thisDeviceBaro = (float)baro.second;
+					thisDeviceBaro = float(baro.second);
 				}
 			}
 			luaTable.Publish();
 		}
 		if (!m_utilityValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_utility", (int)m_utilityValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_utility", int(m_utilityValuesByName.size()), 0);
 			for (const auto &utility : m_utilityValuesByName)
 			{
 				luaTable.AddNumber(utility.first, utility.second);
@@ -2761,7 +2761,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_rainValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_rain", (int)m_rainValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_rain", int(m_rainValuesByName.size()), 0);
 			for (const auto &rain : m_rainValuesByName)
 			{
 				luaTable.AddNumber(rain.first, rain.second);
@@ -2774,7 +2774,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_rainLastHourValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_rain_lasthour", (int)m_rainLastHourValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_rain_lasthour", int(m_rainLastHourValuesByName.size()), 0);
 			for (const auto &rainlh : m_rainLastHourValuesByName)
 			{
 				luaTable.AddNumber(rainlh.first, rainlh.second);
@@ -2787,7 +2787,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_uvValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_uv", (int)m_uvValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_uv", int(m_uvValuesByName.size()), 0);
 			for (const auto &uv : m_uvValuesByName)
 			{
 				luaTable.AddNumber(uv.first, uv.second);
@@ -2800,7 +2800,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_winddirValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_winddir", (int)m_winddirValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_winddir", int(m_winddirValuesByName.size()), 0);
 			for (const auto &winddir : m_winddirValuesByName)
 			{
 				luaTable.AddNumber(winddir.first, winddir.second);
@@ -2812,7 +2812,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_windspeedValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_windspeed", (int)m_windspeedValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_windspeed", int(m_windspeedValuesByName.size()), 0);
 			for (const auto &windspeed : m_windspeedValuesByName)
 			{
 				luaTable.AddNumber(windspeed.first, windspeed.second);
@@ -2824,7 +2824,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_windgustValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_windgust", (int)m_windgustValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_windgust", int(m_windgustValuesByName.size()), 0);
 			for (const auto &windgust : m_windgustValuesByName)
 			{
 				luaTable.AddNumber(windgust.first, windgust.second);
@@ -2836,7 +2836,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_weatherValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_weather", (int)m_weatherValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_weather", int(m_weatherValuesByName.size()), 0);
 			for (const auto &weather : m_weatherValuesByName)
 			{
 				luaTable.AddNumber(weather.first, weather.second);
@@ -2849,7 +2849,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 		if (!m_zwaveAlarmValuesByName.empty())
 		{
-			CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
+			CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", int(m_zwaveAlarmValuesByName.size()), 0);
 			for (const auto &alarm : m_zwaveAlarmValuesByName)
 			{
 				luaTable.AddNumber(alarm.first, alarm.second);
@@ -2941,7 +2941,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
-	CLuaTable luaTable(lua_state, "uservariables", (int)m_uservariables.size(), 0);
+	CLuaTable luaTable(lua_state, "uservariables", int(m_uservariables.size()), 0);
 
 	for (const auto &uservar : m_uservariables)
 	{
@@ -2961,7 +2961,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	}
 	luaTable.Publish();
 
-	luaTable.InitTable(lua_state, "uservariables_lastupdate", (int)m_uservariables.size(), 0);
+	luaTable.InitTable(lua_state, "uservariables_lastupdate", int(m_uservariables.size()), 0);
 
 	for (const auto &uservar : m_uservariables)
 	{
@@ -2986,7 +2986,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	uservariablesMutexLock.unlock();
 
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
-	luaTable.InitTable(lua_state, "otherdevices_scenesgroups", (int)m_scenesgroups.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_scenesgroups", int(m_scenesgroups.size()), 0);
 	for (const auto &group : m_scenesgroups)
 	{
 		_tScenesGroups sgitem = group.second;
@@ -2994,7 +2994,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	}
 	luaTable.Publish();
 
-	luaTable.InitTable(lua_state, "otherdevices_scenesgroups_idx", (int)m_scenesgroups.size(), 0);
+	luaTable.InitTable(lua_state, "otherdevices_scenesgroups_idx", int(m_scenesgroups.size()), 0);
 	for (const auto &group : m_scenesgroups)
 	{
 		_tScenesGroups sgitem = group.second;
@@ -3389,7 +3389,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			if (parseResult.fAfterSec < (1. / timer_resolution_hz / 2))
 			{
 				std::string errorMessage;
-				if (!m_sql.UpdateUserVariable(sd[0], variableName, (const _eUsrVariableType)atoi(sd[1].c_str()), variableValue, false, errorMessage))
+				if (!m_sql.UpdateUserVariable(sd[0], variableName, _eUsrVariableType(atoi(sd[1].c_str())), variableValue, false, errorMessage))
 				{
 					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), errorMessage.c_str());
 				}
@@ -3672,7 +3672,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		}
 
 		std::vector<std::string> sd = result[0];
-		_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
+		_eSwitchType switchtype = _eSwitchType(atoi(sd[0].c_str()));
 		int iOnDelay = atoi(sd[1].c_str());
 
 		bool bIsOn = IsLightSwitchOn(oParseResults.sCommand);
@@ -3688,7 +3688,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 
 		float fRandomTime = 0;
 		if (oParseResults.fRandomSec > (1. / timer_resolution_hz / 2))
-			fRandomTime = static_cast<float>(GenerateRandomNumber(static_cast<int>(oParseResults.fRandomSec)));
+			fRandomTime = float(GenerateRandomNumber(int(oParseResults.fRandomSec)));
 
 		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + iDeviceDelay + (iIndex * oParseResults.fForSec) + (iIndex * oParseResults.fRepeatSec);
 		fPreviousRandomTime = fRandomTime;
@@ -3882,7 +3882,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (switchtype == STYPE_Media)
 	{
-		lstatus = Media_Player_States((const _eMediaStatus)nValue);
+		lstatus = Media_Player_States(_eMediaStatus(nValue));
 	}
 	else if (lstatus.empty())
 	{
@@ -4004,7 +4004,7 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 
 		unsigned char dType = atoi(sd[0].c_str());
 		unsigned char dSubType = atoi(sd[1].c_str());
-		_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
+		_eSwitchType switchtype = _eSwitchType(atoi(sd[2].c_str()));
 		std::string lstatus;
 		int llevel = 0;
 		bool bHaveDimmer = false;
@@ -4141,7 +4141,7 @@ namespace http {
 
 					if (interpreter == "Blockly") {
 						const Json::Value array = jsonRoot["eventlogic"];
-						for (int index = 0; index < (int)array.size(); ++index)
+						for (int index = 0; index < int(array.size()); ++index)
 						{
 							std::string conditions = array[index].get("conditions", "").asString();
 							std::string actions = array[index].get("actions", "").asString();
@@ -4387,7 +4387,7 @@ namespace http {
 
 						if (interpreter == "Blockly") {
 							const Json::Value array = jsonRoot["eventlogic"];
-							for (int index = 0; index < (int)array.size(); ++index)
+							for (int index = 0; index < int(array.size()); ++index)
 							{
 								std::string conditions = array[index].get("conditions", "").asString();
 								std::string actions = array[index].get("actions", "").asString();
@@ -4433,7 +4433,7 @@ namespace http {
 				for (const auto &state : devStates)
 				{
 					root["title"] = "Current States";
-					root["result"][ii]["id"] = (Json::Value::UInt64)state.ID;
+					root["result"][ii]["id"] = Json::Value::UInt64(state.ID);
 					root["result"][ii]["name"] = state.deviceName;
 					root["result"][ii]["value"] = state.nValueWording;
 					std::stringstream sstr;

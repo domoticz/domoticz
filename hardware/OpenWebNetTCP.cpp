@@ -188,7 +188,7 @@ bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size
 	int bytesWritten = connectionSocket->write(pdata, size);
 	if (bytesWritten != size) 
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, (unsigned int)size);
+		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, int(size));
 		return (false);
 	}
 	return (true);
@@ -210,11 +210,11 @@ int COpenWebNetTCP::ownRead(csocket *connectionSocket, char* pdata, size_t size)
 uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::string &nonce)
 {
 	uint32_t msr = 0x7FFFFFFF;
-	uint32_t m_1 = (uint32_t)0xFFFFFFFF;
-	uint32_t m_8 = (uint32_t)0xFFFFFFF8;
-	uint32_t m_16 = (uint32_t)0xFFFFFFF0;
-	uint32_t m_128 = (uint32_t)0xFFFFFF80;
-	uint32_t m_16777216 = (uint32_t)0xFF000000;
+	uint32_t m_1 = uint32_t(0xFFFFFFFF);
+	uint32_t m_8 = uint32_t(0xFFFFFFF8);
+	uint32_t m_16 = uint32_t(0xFFFFFFF0);
+	uint32_t m_128 = uint32_t(0xFFFFFF80);
+	uint32_t m_16777216 = uint32_t(0xFF000000);
 	bool flag = true;
 	uint32_t num1 = 0;
 	uint32_t num2 = 0;
@@ -229,7 +229,7 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 		{
 			if (flag)
 			{
-				num2 = (uint32_t)atoi(password.c_str());
+				num2 = uint32_t(atoi(password.c_str()));
 				flag = false;
 			}
 		}
@@ -699,7 +699,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 		std::string sup, sValue = result[0][0];
 
 		if (usage)
-			*usage = (float)atof(sValue.c_str());
+			*usage = float(atof(sValue.c_str()));
 
 		if (energy)
 		{
@@ -707,7 +707,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 			if (pos >= 0)
 			{
 				sup = sValue.substr(pos + 1);
-				*energy = (float)atof(sup.c_str());
+				*energy = float(atof(sup.c_str()));
 			}
 		}
 
@@ -797,8 +797,8 @@ void COpenWebNetTCP::SendGeneralSwitch(const int NodeID, const uint8_t ChildID, 
 	gSwitch.unitcode = ChildID;
 	gSwitch.cmnd = cmd;
 	gSwitch.level = level;
-	gSwitch.rssi = (uint8_t)RssiLevel;
-	sDecodeRXMessage(this, (const unsigned char*)& gSwitch, defaultname.c_str(), BatteryLevel, m_Name.c_str());
+	gSwitch.rssi = uint8_t(RssiLevel);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gSwitch), defaultname.c_str(), BatteryLevel, m_Name.c_str());
 }
 
 /**
@@ -808,7 +808,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 {
 	//NOTE: interface id (bus identifier) go in 'Unit' field
 	//make device ID
-	int NodeID = (((int)who << 16) & 0xFFFF0000) | (((int)where) & 0x0000FFFF);
+	int NodeID = ((who << 16) & 0xFFFF0000) | ((where)&0x0000FFFF);
 
 	/* insert switch type */
 	char szIdx[10];
@@ -885,7 +885,7 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 {
 	//NOTE: interface id (bus identifier) go in 'Unit' field
 	//make device ID
-	int NodeID = (int)((((int)who << 16) & 0xFFFF0000) | (((int)(where + (iAppValue * 2) + (what * 3))) & 0x0000FFFF));
+	int NodeID = int(((who << 16) & 0xFFFF0000) | (((where + (iAppValue * 2) + (what * 3))) & 0x0000FFFF));
 	char szIdx[10];
 	sprintf(szIdx, "%08X", NodeID);
 	std::vector<std::vector<std::string> > result;
@@ -904,7 +904,7 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	}
 
 	//check if we have a change, if not do not update it
-	bool bOn = (bool)Command;
+	bool bOn = bool(Command);
 	if ((!bOn) && (nvalue == gswitch_sOff)) return;
 	if ((bOn && (nvalue == gswitch_sOn))) return;
 
@@ -920,7 +920,7 @@ void COpenWebNetTCP::UpdateSoundDiffusion(const int who, const int where, const 
 {
 	//NOTE: interface id (bus identifier) go in 'Unit' field
 	//make device ID
-	int NodeID = (((int)who << 16) & 0xFFFF0000) | (((int)where) & 0x0000FFFF);
+	int NodeID = ((who << 16) & 0xFFFF0000) | ((where)&0x0000FFFF);
 
 	/* insert switch type */
 	char szIdx[10];
@@ -942,7 +942,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 {
 	//NOTE: interface id (bus identifier) go in 'Unit' field
 	//make device ID
-	int NodeID = (((int)who << 16) & 0xFFFF0000) | (((int)where) & 0x0000FFFF);
+	int NodeID = ((who << 16) & 0xFFFF0000) | ((where)&0x0000FFFF);
 
 	/* insert switch type */
 	char szIdx[10];
@@ -975,7 +975,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	int level = (what > 1) ? (what * 10) : 0;
 
 	//check if we have a change, if not do not update it
-	bool bOn = (bool)what;
+	bool bOn = bool(what);
 	if ((!bOn) && (nvalue == gswitch_sOff)) return;
 	if ((bOn && (nvalue != gswitch_sOff)))
 	{
@@ -1170,7 +1170,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		switch (atoi(dimension.c_str()))
 		{
 		case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:
-			UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), float(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:
 			devname += " Valves";
@@ -1182,7 +1182,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 		case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:
 			devname += " Setpoint";
-			UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), devname.c_str());
+			UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), float(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), devname.c_str());
 			break;
 		default:
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
@@ -1405,10 +1405,10 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		switch (atoi(dimension.c_str()))
 		{
 		case ENERGY_MANAGEMENT_DIMENSION_ACTIVE_POWER:
-			UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str())), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), float(atof(value.c_str())), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
-			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
+			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), float(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE:			
 			if (atoi(value.c_str()))
@@ -1540,7 +1540,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					ltime.tm_isdst = lnowtime.tm_isdst;
 					rcv_tm = mktime(&ltime);
 
-					delta = static_cast<int>(now - rcv_tm);
+					delta = int(now - rcv_tm);
 
 					if ((delta < -60) || (delta > 60))	// delta +-1min
 					{
@@ -1884,7 +1884,7 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 	//int who = (idx >> 16) & 0xff;  fixed to 'WHO_TEMPERATURE_CONTROL'
 	int iInterface = (idx >> 8) & 0xff;
 	int where = idx & 0xff;
-	int _temp = (int)(temp * 10);
+	int _temp = int(temp * 10);
 
 	std::vector<bt_openwebnet> responses;
 	bt_openwebnet request;

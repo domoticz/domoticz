@@ -53,7 +53,7 @@ const char* CEvohomeBase::GetWebAPIModeName(uint8_t nControllerMode)
 
 const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 {
-	return m_szZoneMode[std::min(nZoneMode, (uint8_t)6)];
+	return m_szZoneMode[std::min(nZoneMode, uint8_t(6))];
 }
 
 CEvohomeBase::CEvohomeBase()
@@ -140,11 +140,11 @@ void CEvohomeBase::InitZoneNames()
 {
 	std::lock_guard<std::mutex> l(m_mtxZoneName);
 	char szTmp[1024];
-	for(int i=0;i<(int)m_ZoneNames.size();i++)
+	for (size_t i = 0; i < m_ZoneNames.size(); i++)
 	{
 		if(m_ZoneNames[i].empty())
 		{
-			sprintf(szTmp,"Zone %d",i+1);
+			sprintf(szTmp, "Zone %zu", i + 1);
 			m_ZoneNames[i]=szTmp;
 		}
 	}
@@ -237,7 +237,7 @@ void CEvohomeBase::Log(bool bDebug, int nLogLevel, const char* format, ... )
         va_end(argList);
 
 	if(!bDebug || m_bDebug)
-		_log.Log(static_cast<_eLogLevel>(nLogLevel), "%s", cbuffer);
+		_log.Log(_eLogLevel(nLogLevel), "%s", cbuffer);
 	if(m_bDebug && m_pEvoLog)
 	{
 		LogDate();
@@ -282,7 +282,7 @@ namespace http {
 			sprintf(ID, "%lu", nid);
 
 			//get zone count
-			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);
+			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, iSensorType);
 
 			int nDevCount = 0;
 			if (!result.empty())
@@ -311,7 +311,7 @@ namespace http {
 					root["message"] = "Maximum number of supported zones reached";
 					return;
 				}
-				m_sql.UpdateValue(HwdID, ID, (uint8_t)nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+				m_sql.UpdateValue(HwdID, ID, uint8_t(nDevCount) + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
 				bCreated = true;
 				break;
 			case pTypeEvohomeWater://DHW...should be 1 per hardware

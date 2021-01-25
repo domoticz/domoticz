@@ -155,7 +155,7 @@ bool KMTronic433::WriteInt(const unsigned char *data, const size_t len, const bo
 	if (!isOpen())
 		return false;
 	m_bHaveReceived = false;
-	write((const char*)data, len);
+	write(reinterpret_cast<const char *>(data), len);
 	if (!bWaitForReturn)
 		return true;
 	sleep_milliseconds(100);

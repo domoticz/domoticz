@@ -43,7 +43,7 @@ namespace http {
 					// todo: Add the username and rights from the original connection
 					if (outbound)
 					{
-						time_t nowAnd1Day = ((time_t)mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
+						time_t nowAnd1Day = (mytime(nullptr)) + WEBSOCKET_SESSION_TIMEOUT;
 						session.timeout = nowAnd1Day;
 						session.expires = nowAnd1Day;
 						session.isnew = false;

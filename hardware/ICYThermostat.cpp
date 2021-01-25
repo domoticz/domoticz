@@ -102,7 +102,7 @@ void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Tem
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), defaultname.c_str(), 255, nullptr);
 }
 
 bool CICYThermostat::GetSerialAndToken()

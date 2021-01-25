@@ -337,7 +337,7 @@ Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const uint8_
 	Json::Value ret;
 	for (const auto &r : root)
 	{
-		uint8_t channel = (uint8_t)r["channel"].asInt();
+		uint8_t channel = uint8_t(r["channel"].asInt());
 
 		if ((channel == sChannel) && !r["used"])
 			return r;
@@ -349,7 +349,7 @@ void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &s
 {
 	for (auto &r : root)
 	{
-		uint8_t channel = (uint8_t)r["channel"].asInt();
+		uint8_t channel = uint8_t(r["channel"].asInt());
 		std::string type = r["type"].asString();
 
 		if ((type == stype) && (channel == sChannel))
@@ -535,7 +535,7 @@ int CTTNMQTT::CalcDomoticsRssiFromLora(const int gwrssi, const float gwsnr)
 	else
 	{
 		// Below noisefloor, little more difficult
-		iCalc = gwrssi + (int)std::rint(gwsnr);
+		iCalc = gwrssi + int(std::rint(gwsnr));
 	}
 
 	// Range somewhere between -150 and +20
@@ -572,7 +572,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 	if (topic.find("/up/") != std::string::npos)
 		return; //not interested in sub-topics
 
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage = std::string(static_cast<char *>(message->payload), static_cast<char *>(message->payload) + message->payloadlen);
 
 #ifdef DEBUG_TTN_W
 	SaveString2Disk(qMessage, "ttn_mqtt.json");
@@ -638,7 +638,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				break;
 			case 1:
 			default:
-				if(CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+				if (CayenneLPPDec::ParseLPP(reinterpret_cast<const uint8_t *>(lpp.c_str()), lpp.size(), payload))
 				{
 					Decoded = true;
 				}
@@ -707,7 +707,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 				UTCttntime = MetaData["time"].asString().c_str();
 				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
+				constructTime(msgtime, t, y, M, d, h, m, int(floor(s)));
 			}
 			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
 			{
@@ -823,7 +823,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		for (const auto &p : payload)
 		{
 			std::string type = p["type"].asString();
-			uint8_t channel = (uint8_t)p["channel"].asInt();
+			uint8_t channel = uint8_t(p["channel"].asInt());
 
 			// The following IS NOT part of the CayenneLPP specification
 			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
@@ -832,7 +832,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			if (type == "batterylevel") {
 				if (p["value"].isNumeric())
 				{
-					BatteryLevel = (int)p["value"].asInt();
+					BatteryLevel = int(p["value"].asInt());
 				}
 			}
 			else
@@ -957,11 +957,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				int iAltDevId = (DeviceID << 8) | channel;
 				if (bTemp && bHumidity && bBaro)
 				{
-					SendTempHumBaroSensorFloat(iAltDevId, BatteryLevel, temp, (int)std::rint(hum), baro, (uint8_t)nforecast, DeviceName, rssi);
+					SendTempHumBaroSensorFloat(iAltDevId, BatteryLevel, temp, int(std::rint(hum)), baro, nforecast, DeviceName, rssi);
 				}
 				else if(bTemp && bHumidity)
 				{
-					SendTempHumSensor(iAltDevId, BatteryLevel, temp, (int)std::rint(hum), DeviceName, rssi);
+					SendTempHumSensor(iAltDevId, BatteryLevel, temp, int(std::rint(hum)), DeviceName, rssi);
 				}
 				else if(bTemp && bBaro)
 				{
@@ -975,11 +975,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					}
 					if (bHumidity)
 					{
-						SendHumiditySensor(iAltDevId, BatteryLevel, (int)std::rint(hum), DeviceName, rssi);
+						SendHumiditySensor(iAltDevId, BatteryLevel, int(std::rint(hum)), DeviceName, rssi);
 					}
 					if (bBaro)
 					{
-						SendBaroSensor(DeviceID, channel, BatteryLevel, baro, (uint8_t)nforecast, DeviceName);
+						SendBaroSensor(DeviceID, channel, BatteryLevel, baro, nforecast, DeviceName);
 					}
 				}
 			}
@@ -1011,9 +1011,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		// If we have a Geo Location of the sensor (either own or meta), calculate distance from 'home'
 		if(iGps == 1 || !(devlat == 0 || devlon == 0))
 		{
-			uint64_t nSsrDistance = static_cast<int>(std::rint(1000 * distanceEarth(m_DomLat, m_DomLon, ssrlat, ssrlon)));
-			SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
-			Debug(DEBUG_NORM, "Distance between Sensordevice and Domoticz Home is %f meters!", (double)nSsrDistance);
+			uint64_t nSsrDistance = int(std::rint(1000 * distanceEarth(m_DomLat, m_DomLon, ssrlat, ssrlon)));
+			SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, float(nSsrDistance), DeviceName + " Home Distance", "meters", rssi);
+			Debug(DEBUG_NORM, "Distance between Sensordevice and Domoticz Home is %f meters!", double(nSsrDistance));
 		}
 
 		// Did we find any Geo Location data from the Gateway with the best reception
@@ -1027,9 +1027,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			}
 			else if (!(ssrlat == 0 && ssrlon == 0))
 			{
-				uint64_t nGwDistance = static_cast<int>(std::rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
-				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
-				Debug(DEBUG_NORM, "Distance between Sensordevice and gateway is %f meters!", (double)nGwDistance);
+				uint64_t nGwDistance = int(std::rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
+				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, float(nGwDistance), DeviceName + " Gateway Distance", "meters", rssi);
+				Debug(DEBUG_NORM, "Distance between Sensordevice and gateway is %f meters!", double(nGwDistance));
 			}
 		}
 	}

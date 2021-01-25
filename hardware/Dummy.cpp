@@ -135,7 +135,7 @@ namespace http {
 			int sensortype = atoi(ssensortype.c_str());
 			unsigned int type = 0;
 			unsigned int subType = 0;
-			uint64_t DeviceRowIdx = (uint64_t )-1;
+			auto DeviceRowIdx = std::numeric_limits<std::uint64_t>::max();
 
 			for (const auto &sensor : mappedsensorname)
 			{
@@ -167,7 +167,7 @@ namespace http {
 
 					m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
-					if (DeviceRowIdx != (uint64_t)-1)
+					if (DeviceRowIdx != std::numeric_limits<std::uint64_t>::max())
 					{
 						root["status"] = "OK";
 						root["title"] = "CreateVirtualSensor";
@@ -246,7 +246,7 @@ namespace http {
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
-			if (DeviceRowIdx != (uint64_t)-1)
+			if (DeviceRowIdx != std::numeric_limits<std::uint64_t>::max())
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";

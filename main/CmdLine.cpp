@@ -101,7 +101,7 @@ int CCmdLine::SplitLine(int argc, char **argv)
 		}
 	}
 
-	return static_cast<int>(size());
+	return int(size());
 }
 
 /*------------------------------------------------------
@@ -218,14 +218,14 @@ std::string CCmdLine::GetArgument(const char *pSwitch, int iIdx)
 		CCmdLine::iterator theIterator = find(pSwitch);
 		if (theIterator != end())
 		{
-			if (static_cast<int>((*theIterator).second.m_strings.size()) > iIdx)
+			if (int(theIterator->second.m_strings.size()) > iIdx)
 			{
-				return (*theIterator).second.m_strings[iIdx];
+				return theIterator->second.m_strings[iIdx];
 			}
 		}
 	}
 
-	throw (int)0;
+	throw 0;
 
 	return "";
 }
@@ -248,7 +248,7 @@ int CCmdLine::GetArgumentCount(const char *pSwitch)
 		CCmdLine::iterator theIterator = find(pSwitch);
 		if (theIterator != end())
 		{
-			iArgumentCount = static_cast<int>((*theIterator).second.m_strings.size());
+			iArgumentCount = int(theIterator->second.m_strings.size());
 		}
 	}
 

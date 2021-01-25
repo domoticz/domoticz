@@ -153,7 +153,7 @@ void CLuaTable::CloseSubTableEntry()
 void CLuaTable::PushRow(std::vector<_tEntry>::iterator itt)
 {
 	if (itt->label_type == TYPE_VALUE_INDEX)
-		lua_pushinteger(m_lua_state, (lua_Integer)itt->index);
+		lua_pushinteger(m_lua_state, lua_Integer(itt->index));
 	else
 		lua_pushstring(m_lua_state, itt->label.c_str());
 
@@ -163,10 +163,10 @@ void CLuaTable::PushRow(std::vector<_tEntry>::iterator itt)
 		lua_pushboolean(m_lua_state, itt->bValue);
 		break;
 	case TYPE_INTEGER:
-		lua_pushinteger(m_lua_state, (lua_Integer)itt->iValue);
+		lua_pushinteger(m_lua_state, lua_Integer(itt->iValue));
 		break;
 	case TYPE_NUMBER:
-		lua_pushnumber(m_lua_state, (lua_Number)itt->dValue);
+		lua_pushnumber(m_lua_state, lua_Number(itt->dValue));
 		break;
 	case TYPE_STRING:
 		lua_pushstring(m_lua_state, itt->sValue.c_str());
@@ -193,7 +193,7 @@ void CLuaTable::Publish()
 				lua_createtable(m_lua_state, itt->nrCols, itt->nrRows);
 				break;
 			case TYPE_SUBTABLE_OPEN_INDEX:
-				lua_pushinteger(m_lua_state, (lua_Integer)itt->index);
+				lua_pushinteger(m_lua_state, lua_Integer(itt->index));
 				lua_createtable(m_lua_state, itt->nrCols, itt->nrRows);
 				break;
 			case TYPE_SUBTABLE_CLOSE:

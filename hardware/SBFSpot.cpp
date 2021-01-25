@@ -172,29 +172,29 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 
 	tsen.ENERGY.battery_level=9;
 
-	unsigned long long instant=(unsigned long long)(musage*1000.0);
-	tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
+	uint64_t instant = uint64_t(musage * 1000.0);
+	tsen.ENERGY.instant1 = uint8_t(instant / 0x1000000);
 	instant-=tsen.ENERGY.instant1*0x1000000;
-	tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
+	tsen.ENERGY.instant2 = uint8_t(instant / 0x10000);
 	instant-=tsen.ENERGY.instant2*0x10000;
-	tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
+	tsen.ENERGY.instant3 = uint8_t(instant / 0x100);
 	instant-=tsen.ENERGY.instant3*0x100;
-	tsen.ENERGY.instant4=(unsigned char)(instant);
+	tsen.ENERGY.instant4 = uint8_t(instant);
 
 	double total=(mtotal*1000.0)*223.666;
-	tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
+	tsen.ENERGY.total1 = uint8_t(total / 0x10000000000ULL);
 	total-=tsen.ENERGY.total1*0x10000000000ULL;
-	tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
+	tsen.ENERGY.total2 = uint8_t(total / 0x100000000ULL);
 	total-=tsen.ENERGY.total2*0x100000000ULL;
-	tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
+	tsen.ENERGY.total3 = uint8_t(total / 0x1000000);
 	total-=tsen.ENERGY.total3*0x1000000;
-	tsen.ENERGY.total4=(unsigned char)(total/0x10000);
+	tsen.ENERGY.total4 = uint8_t(total / 0x10000);
 	total-=tsen.ENERGY.total4*0x10000;
-	tsen.ENERGY.total5=(unsigned char)(total/0x100);
+	tsen.ENERGY.total5 = uint8_t(total / 0x100);
 	total-=tsen.ENERGY.total5*0x100;
-	tsen.ENERGY.total6=(unsigned char)(total);
+	tsen.ENERGY.total6 = uint8_t(total);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, defaultname.c_str(), 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&tsen.ENERGY), defaultname.c_str(), 255, nullptr);
 }
 
 bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
@@ -310,7 +310,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 					szKwhCounter = "0," + szKwhCounter;
 				stdreplace(szKwhCounter, ",", ".");
 				double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
-				unsigned long long ulCounter = (unsigned long long)kWhCounter;
+				uint64_t ulCounter = uint64_t(kWhCounter);
 
 				//check if this day record does not exists in the database, and insert it
 				std::vector<std::vector<std::string> > result;
@@ -376,7 +376,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
 						double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
-						unsigned long long ulCounter = (unsigned long long)kWhCounter;
+						uint64_t ulCounter = uint64_t(kWhCounter);
 
 						//check if this day record does not exists in the database, and insert it
 						std::vector<std::vector<std::string> > result;
@@ -571,17 +571,17 @@ void CSBFSpot::GetMeterDetails()
 		float voltage;
 		tmpString = results[16];
 		stdreplace(tmpString, ",", ".");
-		voltage = static_cast<float>(atof(tmpString.c_str()));
+		voltage = float(atof(tmpString.c_str()));
 		SendVoltageSensor(0, (InvIdx * 10) + 1, 255, voltage, "Volt uac1");
 		tmpString = results[17];
 		stdreplace(tmpString, ",", ".");
-		voltage = static_cast<float>(atof(tmpString.c_str()));
+		voltage = float(atof(tmpString.c_str()));
 		if (voltage != 0) {
 			SendVoltageSensor(0, (InvIdx * 10) + 2, 255, voltage, "Volt uac2");
 		}
 		tmpString = results[18];
 		stdreplace(tmpString, ",", ".");
-		voltage = static_cast<float>(atof(tmpString.c_str()));
+		voltage = float(atof(tmpString.c_str()));
 		if (voltage != 0) {
 			SendVoltageSensor(0, (InvIdx * 10) + 3, 255, voltage, "Volt uac3");
 		}
@@ -589,22 +589,22 @@ void CSBFSpot::GetMeterDetails()
 		float percentage;
 		tmpString = results[21];
 		stdreplace(tmpString, ",", ".");
-		percentage = static_cast<float>(atof(tmpString.c_str()));
+		percentage = float(atof(tmpString.c_str()));
 		SendPercentageSensor((InvIdx * 10) + 1, 0, 255, percentage, "Efficiency");
 		tmpString = results[24];
 		stdreplace(tmpString, ",", ".");
-		percentage = static_cast<float>(atof(tmpString.c_str()));
+		percentage = float(atof(tmpString.c_str()));
 		SendPercentageSensor((InvIdx * 10) + 2, 0, 255, percentage, "Hz");
 		tmpString = results[27];
 		stdreplace(tmpString, ",", ".");
-		percentage = static_cast<float>(atof(tmpString.c_str()));
+		percentage = float(atof(tmpString.c_str()));
 		SendPercentageSensor((InvIdx * 10) + 3, 0, 255, percentage, "BT_Signal");
 
 		if (results.size() >= 31)
 		{
 			tmpString = results[30];
 			stdreplace(tmpString, ",", ".");
-			float temperature = static_cast<float>(atof(tmpString.c_str()));
+			float temperature = float(atof(tmpString.c_str()));
 			SendTempSensor((InvIdx * 10) + 1, 255, temperature, "Temperature");
 		}
 		InvIdx++;
@@ -616,7 +616,7 @@ void CSBFSpot::GetMeterDetails()
 		double LastTotal = 0;
 		if (GetMeter(0, 1, LastUsage, LastTotal))
 		{
-			if (kWhCounter < (int)(LastTotal * 100) / 100)
+			if (kWhCounter < int(LastTotal * 100) / 100)
 			{
 				_log.Log(LOG_ERROR, "SBFSpot: Actual KwH counter (%f) less then last Counter (%f)!", kWhCounter, LastTotal);
 				return;

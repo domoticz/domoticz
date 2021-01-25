@@ -278,7 +278,7 @@ void ASyncTCP::cb_read_done(const boost::system::error_code& error, size_t bytes
 
 void ASyncTCP::write(const uint8_t* pData, size_t length)
 {
-	write(std::string((const char*)pData, length));
+	write(std::string(reinterpret_cast<const char *>(pData), length));
 }
 
 void ASyncTCP::write(const std::string& msg)

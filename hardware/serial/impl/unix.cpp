@@ -60,9 +60,9 @@ MillisecondTimer::MillisecondTimer (const uint32_t millis)
 {
   int64_t tv_nsec = expiry.tv_nsec + (millis * 1e6);
   if (tv_nsec >= 1e9) {
-    int64_t sec_diff = tv_nsec / static_cast<int> (1e9);
-    expiry.tv_nsec = tv_nsec - static_cast<int> (1e9 * sec_diff);
-    expiry.tv_sec += sec_diff;
+	  int64_t sec_diff = tv_nsec / int(1e9);
+	  expiry.tv_nsec = tv_nsec - int(1e9 * sec_diff);
+	  expiry.tv_sec += sec_diff;
   } else {
     expiry.tv_nsec = tv_nsec;
   }
@@ -170,17 +170,16 @@ Serial::SerialImpl::reconfigurePort ()
   }
 
   // set up raw mode / no echo / binary
-  options.c_cflag |= (tcflag_t)  (CLOCAL | CREAD);
-  options.c_lflag &= (tcflag_t) ~(ICANON | ECHO | ECHOE | ECHOK | ECHONL |
-                                       ISIG | IEXTEN); //|ECHOPRT
+  options.c_cflag |= tcflag_t(CLOCAL | CREAD);
+  options.c_lflag &= tcflag_t(~(ICANON | ECHO | ECHOE | ECHOK | ECHONL | ISIG | IEXTEN)); //|ECHOPRT
 
-  options.c_oflag &= (tcflag_t) ~(OPOST);
-  options.c_iflag &= (tcflag_t) ~(INLCR | IGNCR | ICRNL | IGNBRK);
+  options.c_oflag &= tcflag_t(~(OPOST));
+  options.c_iflag &= tcflag_t(~(INLCR | IGNCR | ICRNL | IGNBRK));
 #ifdef IUCLC
-  options.c_iflag &= (tcflag_t) ~IUCLC;
+  options.c_iflag &= tcflag_t(~IUCLC);
 #endif
 #ifdef PARMRK
-  options.c_iflag &= (tcflag_t) ~PARMRK;
+  options.c_iflag &= tcflag_t(~PARMRK);
 #endif
 
   // setup baud rate
@@ -306,7 +305,7 @@ Serial::SerialImpl::reconfigurePort ()
     // other than those specified by POSIX. The driver for the underlying serial hardware
     // ultimately determines which baud rates can be used. This ioctl sets both the input
     // and output speed.
-    speed_t new_baud = static_cast<speed_t> (baudrate_);
+    speed_t new_baud = speed_t(baudrate_);
     if (-1 == ioctl (fd_, IOSSIOSPEED, &new_baud, 1)) {
       THROW (IOException, errno);
     }
@@ -319,7 +318,7 @@ Serial::SerialImpl::reconfigurePort ()
     }
 
     // set custom divisor
-    ser.custom_divisor = ser.baud_base / static_cast<int> (baudrate_);
+    ser.custom_divisor = ser.baud_base / int(baudrate_);
     // update flags
     ser.flags &= ~ASYNC_SPD_MASK;
     ser.flags |= ASYNC_SPD_CUST;
@@ -341,7 +340,7 @@ Serial::SerialImpl::reconfigurePort ()
   }
 
   // setup char len
-  options.c_cflag &= (tcflag_t) ~CSIZE;
+  options.c_cflag &= tcflag_t(~CSIZE);
   if (bytesize_ == eightbits)
     options.c_cflag |= CS8;
   else if (bytesize_ == sevenbits)
@@ -354,7 +353,7 @@ Serial::SerialImpl::reconfigurePort ()
     throw invalid_argument ("invalid char len");
   // setup stopbits
   if (stopbits_ == stopbits_one)
-    options.c_cflag &= (tcflag_t) ~(CSTOPB);
+	  options.c_cflag &= tcflag_t(~(CSTOPB));
   else if (stopbits_ == stopbits_one_point_five)
     // ONE POINT FIVE same as TWO.. there is no POSIX support for 1.5
     options.c_cflag |=  (CSTOPB);
@@ -363,12 +362,12 @@ Serial::SerialImpl::reconfigurePort ()
   else
     throw invalid_argument ("invalid stop bit");
   // setup parity
-  options.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP);
+  options.c_iflag &= tcflag_t(~(INPCK | ISTRIP));
   if (parity_ == parity_none) {
-    options.c_cflag &= (tcflag_t) ~(PARENB | PARODD);
+	  options.c_cflag &= tcflag_t(~(PARENB | PARODD));
   } else if (parity_ == parity_even) {
-    options.c_cflag &= (tcflag_t) ~(PARODD);
-    options.c_cflag |=  (PARENB);
+	  options.c_cflag &= tcflag_t(~(PARODD));
+	  options.c_cflag |= (PARENB);
   } else if (parity_ == parity_odd) {
     options.c_cflag |=  (PARENB | PARODD);
   }
@@ -378,7 +377,7 @@ Serial::SerialImpl::reconfigurePort ()
   }
   else if (parity_ == parity_space) {
     options.c_cflag |=  (PARENB | CMSPAR);
-    options.c_cflag &= (tcflag_t) ~(PARODD);
+    options.c_cflag &= tcflag_t(~(PARODD));
   }
 #else
   // CMSPAR is not defined on OSX. So do not support mark or space parity.
@@ -407,24 +406,24 @@ Serial::SerialImpl::reconfigurePort ()
   if (xonxoff_)
     options.c_iflag |=  (IXON | IXOFF); //|IXANY)
   else
-    options.c_iflag &= (tcflag_t) ~(IXON | IXOFF | IXANY);
+	  options.c_iflag &= tcflag_t(~(IXON | IXOFF | IXANY));
 #else
   if (xonxoff_)
     options.c_iflag |=  (IXON | IXOFF);
   else
-    options.c_iflag &= (tcflag_t) ~(IXON | IXOFF);
+	  options.c_iflag &= tcflag_t(~(IXON | IXOFF));
 #endif
   // rtscts
 #ifdef CRTSCTS
   if (rtscts_)
     options.c_cflag |=  (CRTSCTS);
   else
-    options.c_cflag &= (unsigned long) ~(CRTSCTS);
+	  options.c_cflag &= uint64_t(~(CRTSCTS));
 #elif defined CNEW_RTSCTS
   if (rtscts_)
     options.c_cflag |=  (CNEW_RTSCTS);
   else
-    options.c_cflag &= (unsigned long) ~(CNEW_RTSCTS);
+	  options.c_cflag &= uint64_t(~(CNEW_RTSCTS));
 #else
 #error "OS Support seems wrong."
 #endif
@@ -483,7 +482,7 @@ Serial::SerialImpl::available ()
   if (-1 == ioctl (fd_, TIOCINQ, &count)) {
       THROW (IOException, errno);
   }
-  return static_cast<size_t>(count);
+  return size_t(count);
 }
 
 bool
@@ -520,8 +519,8 @@ Serial::SerialImpl::waitReadable (uint32_t timeout)
 void
 Serial::SerialImpl::waitByteTimes (size_t count)
 {
-  timespec wait_time = { 0, static_cast<long>(byte_time_ns_ * count)};
-  pselect(0, nullptr, nullptr, nullptr, &wait_time, nullptr);
+	timespec wait_time = { 0, long(byte_time_ns_ * count) };
+	pselect(0, nullptr, nullptr, nullptr, &wait_time, nullptr);
 }
 
 size_t
@@ -535,7 +534,7 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
 
   // Calculate total timeout in milliseconds t_c + (t_m * N)
   long total_timeout_ms = timeout_.read_timeout_constant;
-  total_timeout_ms += timeout_.read_timeout_multiplier * static_cast<long> (size);
+  total_timeout_ms += timeout_.read_timeout_multiplier * long(size);
   MillisecondTimer total_timeout(total_timeout_ms);
 
   // Pre-fill buffer with available bytes
@@ -554,8 +553,7 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
     }
     // Timeout for the next select is whichever is less of the remaining
     // total read timeout and the inter-byte timeout.
-    uint32_t timeout = std::min(static_cast<uint32_t> (timeout_remaining_ms),
-                                timeout_.inter_byte_timeout);
+    uint32_t timeout = std::min(uint32_t(timeout_remaining_ms), timeout_.inter_byte_timeout);
     // Wait for the device to be readable, and then attempt to read.
     if (waitReadable(timeout)) {
       // If it's a fixed-length multi-byte read, insert a wait here so that
@@ -581,7 +579,7 @@ Serial::SerialImpl::read (uint8_t *buf, size_t size)
                                "returned no data (device disconnected?)");
       }
       // Update bytes_read
-      bytes_read += static_cast<size_t> (bytes_read_now);
+      bytes_read += size_t(bytes_read_now);
       // If bytes_read == size then we have read everything we need
       if (bytes_read == size) {
         break;
@@ -612,7 +610,7 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
 
   // Calculate total timeout in milliseconds t_c + (t_m * N)
   long total_timeout_ms = timeout_.write_timeout_constant;
-  total_timeout_ms += timeout_.write_timeout_multiplier * static_cast<long> (length);
+  total_timeout_ms += timeout_.write_timeout_multiplier * long(length);
   MillisecondTimer total_timeout(total_timeout_ms);
 
   while (bytes_written < length) {
@@ -660,21 +658,24 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
                                  "returned no data (device disconnected?)");
         }
         // Update bytes_written
-        bytes_written += static_cast<size_t> (bytes_written_now);
-        // If bytes_written == size then we have written everything we need to
-        if (bytes_written == length) {
-          break;
-        }
-        // If bytes_written < size then we have more to write
-        if (bytes_written < length) {
-          continue;
-        }
-        // If bytes_written > size then we have over written, which shouldn't happen
-        if (bytes_written > length) {
-          throw SerialException ("write over wrote, too many bytes where "
-                                 "written, this shouldn't happen, might be "
-                                 "a logical error!");
-        }
+	bytes_written += size_t(bytes_written_now);
+	// If bytes_written == size then we have written everything we need to
+	if (bytes_written == length)
+	{
+		break;
+	}
+	// If bytes_written < size then we have more to write
+	if (bytes_written < length)
+	{
+		continue;
+	}
+	// If bytes_written > size then we have over written, which shouldn't happen
+	if (bytes_written > length)
+	{
+		throw SerialException("write over wrote, too many bytes where "
+				      "written, this shouldn't happen, might be "
+				      "a logical error!");
+	}
       }
       // This shouldn't happen, if r > 0 our fd has to be in the list!
       THROW (IOException, "select reports ready to write, but our fd isn't"
@@ -811,7 +812,7 @@ Serial::SerialImpl::sendBreak (int duration)
   if (is_open_ == false) {
     throw PortNotOpenedException ("Serial::sendBreak");
   }
-  tcsendbreak (fd_, static_cast<int> (duration / 4));
+  tcsendbreak(fd_, int(duration / 4));
 }
 
 void

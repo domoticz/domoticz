@@ -41,7 +41,7 @@ extern time_t m_LastHeartbeat;
 static void printRegInfo(siginfo_t * info, ucontext_t * ucontext)
 {
 #if defined(REG_RIP) //x86_64
-	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void*)((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_RIP]);
+	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void *)(ucontext)->uc_mcontext.gregs[REG_RIP]);
 #elif defined(REG_EIP) //x86
 	_log.Log(LOG_ERROR, "siginfo address=%p, address=%p", info->si_addr, (void*)((ucontext_t *)ucontext)->uc_mcontext.gregs[REG_EIP]);
 #elif defined(__aarch64__) //arm64 (aarch64 according to gnu)
@@ -439,7 +439,7 @@ void signal_handler(int sig_num
 				, "-");
 #endif
 #if defined(__linux__)
-			printRegInfo(info, ((ucontext_t *)ucontext));
+			printRegInfo(info, (static_cast<ucontext_t *>(ucontext)));
 #endif
 #ifndef WIN32
 			if (!pthread_equal(fatal_handling_thread, pthread_self()))
@@ -466,7 +466,7 @@ void signal_handler(int sig_num
 			, "-");
 #endif
 #if defined(__linux__)
-		printRegInfo(info, ((ucontext_t *)ucontext));
+		printRegInfo(info, (static_cast<ucontext_t *>(ucontext)));
 #endif
 		dumpstack(info, ucontext);
 		// re-raise signal to enforce core dump

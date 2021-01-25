@@ -76,7 +76,7 @@ void CZiBlueTCP::Do_Work()
 
 void CZiBlueTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData((const char*)pData,length);
+	ParseData(reinterpret_cast<const char *>(pData), length);
 }
 
 void CZiBlueTCP::OnError(const boost::system::error_code& error)

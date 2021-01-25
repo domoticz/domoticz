@@ -46,7 +46,7 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 	if (m_ECMn == nullptr)
 	{
 		LOG(LOG_STATUS, "Allocating CommManager LAN Controller (192.168.%d.%d)", devaddrh, devaddrl);
-		m_ECMn = (struct CommManagerNamesT *) malloc(sizeof(struct CommManagerNamesT));
+		m_ECMn = static_cast<struct CommManagerNamesT *>(malloc(sizeof(struct CommManagerNamesT)));
 		if (m_ECMn == nullptr)
 		{
 			LOG(LOG_ERROR, "CAN'T Allocate ECM Names Memory");
@@ -55,8 +55,8 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 		m_ECMn->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 		m_ECMn->AddrH = devaddrh;
 		m_ECMn->AddrL = devaddrl;
-		m_ECM = (union CMStatusT *) malloc(sizeof(union CMStatusT));
-		m_ECMPrv = (union CMStatusT *) malloc(sizeof(union CMStatusT));
+		m_ECM = static_cast<union CMStatusT *>(malloc(sizeof(union CMStatusT)));
+		m_ECMPrv = static_cast<union CMStatusT *>(malloc(sizeof(union CMStatusT)));
 		if (m_ECM == nullptr)
 			LOG(LOG_ERROR, "CAN'T Allocate ECM Memory");
 		if (m_ECMPrv == nullptr)
@@ -72,7 +72,7 @@ void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 	if (m_eHouseProN == nullptr)
 	{
 		LOG(LOG_STATUS, "Allocating eHouse PRO Controller (192.168.%d.%d)", devaddrh, devaddrl);
-		m_eHouseProN = (struct eHouseProNamesT *) malloc(sizeof(struct eHouseProNamesT)); //Giz: ?? why use mallocs ?
+		m_eHouseProN = static_cast<struct eHouseProNamesT *>(malloc(sizeof(struct eHouseProNamesT))); // Giz: ?? why use mallocs ?
 		if (m_eHouseProN == nullptr)
 		{
 			LOG(LOG_ERROR, "CAN'T Allocate PRO Names Memory");
@@ -81,8 +81,8 @@ void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 		m_eHouseProN->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 		m_eHouseProN->AddrH[0] = devaddrh;
 		m_eHouseProN->AddrL[0] = devaddrl;
-		m_eHouseProStatus = (union eHouseProStatusUT *)  malloc(sizeof(union eHouseProStatusUT));
-		m_eHouseProStatusPrv = (union eHouseProStatusUT *) malloc(sizeof(union eHouseProStatusUT));
+		m_eHouseProStatus = static_cast<union eHouseProStatusUT *>(malloc(sizeof(union eHouseProStatusUT)));
+		m_eHouseProStatusPrv = static_cast<union eHouseProStatusUT *>(malloc(sizeof(union eHouseProStatusUT)));
 		if (m_eHouseProStatus == nullptr)
 			LOG(LOG_ERROR, "CAN'T Allocate PRO Stat Memory");
 		if (m_eHouseProStatusPrv == nullptr)
@@ -103,7 +103,7 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 		if (m_AuraN[i] == nullptr)
 		{
 			LOG(LOG_STATUS, "Allocating Aura Thermostat (%d.%d)", devaddrh, i + 1);
-			m_AuraN[i] = (struct AuraNamesT *) malloc(sizeof(struct AuraNamesT));
+			m_AuraN[i] = static_cast<struct AuraNamesT *>(malloc(sizeof(struct AuraNamesT)));
 			if (m_AuraN[i] == nullptr)
 			{
 				LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
@@ -112,9 +112,9 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_AuraN[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			m_AuraN[i]->AddrH = devaddrh;
 			m_AuraN[i]->AddrL = i + 1;
-			m_AuraDev[i] = (struct AURAT *) malloc(sizeof(struct AURAT));
-			m_AuraDevPrv[i] = (struct AURAT *) malloc(sizeof(struct AURAT));
-			m_adcs[i] = (struct CtrlADCT *) malloc(sizeof(struct CtrlADCT));
+			m_AuraDev[i] = static_cast<struct AURAT *>(malloc(sizeof(struct AURAT)));
+			m_AuraDevPrv[i] = static_cast<struct AURAT *>(malloc(sizeof(struct AURAT)));
+			m_adcs[i] = static_cast<struct CtrlADCT *>(malloc(sizeof(struct CtrlADCT)));
 			if (m_adcs[i] == nullptr)
 				LOG(LOG_ERROR, "CAN'T Allocate ADCs Memory");
 			if (m_AuraDev[i] == nullptr)
@@ -144,7 +144,7 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 		if (m_eHEn[i] == nullptr)
 		{
 			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i + m_INITIAL_ADDRESS_LAN);
-			m_eHEn[i] = (struct EtherneteHouseNamesT *) malloc(sizeof(struct EtherneteHouseNamesT));
+			m_eHEn[i] = static_cast<struct EtherneteHouseNamesT *>(malloc(sizeof(struct EtherneteHouseNamesT)));
 			if (m_eHEn[i] == nullptr)
 			{
 				LOG(LOG_ERROR, "CAN'T Allocate LAN Names Memory");
@@ -153,8 +153,8 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_eHEn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			m_eHEn[i]->AddrH = devaddrh;
 			m_eHEn[i]->AddrL = i + m_INITIAL_ADDRESS_LAN;
-			m_eHERMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
-			m_eHERMPrev[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
+			m_eHERMs[i] = static_cast<union ERMFullStatT *>(malloc(sizeof(union ERMFullStatT)));
+			m_eHERMPrev[i] = static_cast<union ERMFullStatT *>(malloc(sizeof(union ERMFullStatT)));
 			if (m_eHERMs[i] == nullptr)
 				LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Memory");
 			if (m_eHERMPrev[i] == nullptr)
@@ -180,7 +180,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 		//		if (strlen((char *) &eHn[i]) < 1)
 		if (m_eHn[i] == nullptr)
 		{
-			m_eHn[i] = (struct eHouse1NamesT *) malloc(sizeof(struct eHouse1NamesT));
+			m_eHn[i] = static_cast<struct eHouse1NamesT *>(malloc(sizeof(struct eHouse1NamesT)));
 			if (m_eHn[i] == nullptr)
 			{
 				LOG(LOG_ERROR, "CAN'T Allocate RS-485 Names Memory");
@@ -204,8 +204,8 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 					m_eHn[i]->AddrL = i;
 				}
 			LOG(LOG_STATUS, "Allocating eHouse RS-485 Controller (%d,%d)", m_eHn[i]->AddrH, m_eHn[i]->AddrL);
-			m_eHRMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
-			m_eHRMPrev[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
+			m_eHRMs[i] = static_cast<union ERMFullStatT *>(malloc(sizeof(union ERMFullStatT)));
+			m_eHRMPrev[i] = static_cast<union ERMFullStatT *>(malloc(sizeof(union ERMFullStatT)));
 			if (m_eHRMs[i] == nullptr)
 				LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Memory");
 			if (m_eHRMPrev[i] == nullptr)
@@ -232,7 +232,7 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 		if (m_eHWIFIn[i] == nullptr)
 		{
 			LOG(LOG_STATUS, "Allocating eHouse WiFi Controller (192.168.%d.%d)", devaddrh, m_INITIAL_ADDRESS_WIFI + i);
-			m_eHWIFIn[i] = (struct WiFieHouseNamesT *) malloc(sizeof(struct WiFieHouseNamesT));
+			m_eHWIFIn[i] = static_cast<struct WiFieHouseNamesT *>(malloc(sizeof(struct WiFieHouseNamesT)));
 			if (m_eHWIFIn[i] == nullptr)
 			{
 				LOG(LOG_ERROR, "CAN'T Allocate WiFi Names Memory");
@@ -241,9 +241,9 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 			m_eHWIFIn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			m_eHWIFIn[i]->AddrH = devaddrh;
 			m_eHWIFIn[i]->AddrL = devaddrl;
-			m_eHWiFi[i] = (union WiFiStatusT *) malloc(sizeof(union WiFiStatusT));
-			m_eHWIFIs[i] = (union WIFIFullStatT *) malloc(sizeof(union WIFIFullStatT));
-			m_eHWIFIPrev[i] = (union WIFIFullStatT *) malloc(sizeof(union WIFIFullStatT));
+			m_eHWiFi[i] = static_cast<union WiFiStatusT *>(malloc(sizeof(union WiFiStatusT)));
+			m_eHWIFIs[i] = static_cast<union WIFIFullStatT *>(malloc(sizeof(union WIFIFullStatT)));
+			m_eHWIFIPrev[i] = static_cast<union WIFIFullStatT *>(malloc(sizeof(union WIFIFullStatT)));
 			if (m_eHWIFIs[i] == nullptr)
 				LOG(LOG_ERROR, "CAN'T Allocate WiFi Stat Memory");
 			if (m_eHWIFIPrev[i] == nullptr)
@@ -297,31 +297,33 @@ void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 		return;
 	}
 	size = 4;
-	acurr = (float)(m_AuraDev[index]->TempSet);
-	aprev = (float)(m_AuraDevPrv[index]->TempSet);
+	acurr = float(m_AuraDev[index]->TempSet);
+	aprev = float(m_AuraDevPrv[index]->TempSet);
 	//printf("\r\n!!!!!Aura [%s]  TempSet =%f, Temp=%f\r\n", Auras[index],acurr, AuraDev[index].Temp);
 	if ((acurr != aprev) || (m_AuraDevPrv[index]->Addr == 0))
 	{
-		if (m_CHANGED_DEBUG) _log.Log(LOG_STATUS, "Temp Preset #%d changed to: %d", (int)index, (int)acurr);
+		if (m_CHANGED_DEBUG)
+			_log.Log(LOG_STATUS, "Temp Preset #%d changed to: %d", int(index), int(acurr));
 		sprintf(sval, "%.1f", (m_AuraDev[index]->TempSet));
 		AddrH = 0x81;
 		AddrL = m_AuraDev[index]->Addr;
 		//printf("[AURA] %x,%x\r\n", AddrH, AddrL);
-		UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_PRESET, 1, m_AuraDev[index]->RSSI, (int)round(m_AuraDev[index]->TempSet * 10), sval, (int)round(m_AuraDev[index]->volt));
+		UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_PRESET, 1, m_AuraDev[index]->RSSI, int(round(m_AuraDev[index]->TempSet * 10)), sval, int(round(m_AuraDev[index]->volt)));
 	}
 
 	//ADCs
 	//for (i = 0; i < size; i++)
 	{
-		acurr = (float)(m_AuraDev[index]->Temp);
-		aprev = (float)(m_AuraDevPrv[index]->Temp);
+		acurr = float(m_AuraDev[index]->Temp);
+		aprev = float(m_AuraDevPrv[index]->Temp);
 		if ((acurr != aprev) || (m_AuraDevPrv[index]->Addr == 0))
 		{
-			sprintf(sval, "%.1f", ((float)acurr));
+			sprintf(sval, "%.1f", (acurr));
 			AddrH = 0x81;
 			AddrL = m_AuraDev[index]->Addr;
-			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_IN, 1, m_AuraDev[index]->RSSI, (int)round(acurr * 10), sval, (int)round(m_AuraDev[index]->volt));
-			if (m_CHANGED_DEBUG) _log.Log(LOG_STATUS, "Temp #%d changed to: %f", (int)index, acurr);
+			UpdateSQLStatus(AddrH, AddrL, EH_AURA, VISUAL_AURA_IN, 1, m_AuraDev[index]->RSSI, int(round(acurr * 10)), sval, int(round(m_AuraDev[index]->volt)));
+			if (m_CHANGED_DEBUG)
+				_log.Log(LOG_STATUS, "Temp #%d changed to: %f", int(index), acurr);
 		}
 	}
 	memcpy(&m_AuraDevPrv[index]->Addr, &m_AuraDev[index]->Addr, sizeof(struct AURAT));
@@ -342,7 +344,9 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 		prev = (m_ECMPrv->CMB.outs[i / 8] >> (i % 8)) & 0x1;
 		if ((curr != prev) || (m_ECMPrv->data[1] == 0))
 		{
-			if (m_CHANGED_DEBUG) if (m_ECMPrv->data[1]) _log.Log(LOG_STATUS, "[CM 192.168.%d.%d] Out #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+			if (m_CHANGED_DEBUG)
+				if (m_ECMPrv->data[1])
+					_log.Log(LOG_STATUS, "[CM 192.168.%d.%d] Out #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 			UpdateSQLStatus(AddrH, AddrL, EH_LAN, 0x21, i, 100, curr, "", 100);
 		}
 	}
@@ -357,7 +361,9 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 			prev = (m_ECMPrv->CMB.inputs[i / 8] >> (i % 8)) & 0x1;
 			if ((curr != prev) || (m_ECMPrv->data[1] == 0))
 			{
-				if (m_CHANGED_DEBUG) if (m_ECMPrv->data[1]) _log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Input #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+				if (m_CHANGED_DEBUG)
+					if (m_ECMPrv->data[1])
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Input #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_INPUT_IN, i, 100, curr, "", 100);
 			}
 		}
@@ -365,7 +371,8 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 		{
 			curr = m_ECM->CMB.CURRENT_ADC_PROGRAM;
 			if (m_CHANGED_DEBUG)
-				if (m_ECMPrv->data[1]) _log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ADC Program #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+				if (m_ECMPrv->data[1])
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ADC Program #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 		/* if (ECM.CMB.CURRENT_PROFILE!=ECMPrv.CMB.CURRENT_PROFILE)
 			{
@@ -377,7 +384,8 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 		{
 			curr = m_ECM->CMB.CURRENT_PROGRAM;
 			if (m_CHANGED_DEBUG)
-				if (m_ECMPrv->data[1]) _log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Program #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+				if (m_ECMPrv->data[1])
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Program #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 
 		size = 3;
@@ -390,7 +398,8 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 			if ((curr != prev) || (m_ECMPrv->data[1] == 0))
 			{
 				if (m_CHANGED_DEBUG)
-					if (m_ECMPrv->data[1]) _log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Dimmer #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					if (m_ECMPrv->data[1])
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Dimmer #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_DIMMER_OUT, i, 100, (curr * 100) / 255, "", 100);
 			}
 		}
@@ -425,7 +434,7 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 			curr = m_ECM->CMB.CURRENT_ZONE;
 			if (m_CHANGED_DEBUG)
 				if (m_ECMPrv->data[1])
-					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ZONE #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ZONE #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 		size = 48;
 		//Outputs signals
@@ -439,7 +448,7 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_ECMPrv->data[1])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Outs #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Outs #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 			}
 		}
 
@@ -454,7 +463,7 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_ECMPrv->data[1])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Input #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Input #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				//UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_INPUT_IN, i, 100,curr, "", 100);
 			}
 		}
@@ -527,7 +536,8 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 		if ((curr != prev) || (m_eHERMPrev[index]->data[0] == 0))
 		{
 			if (m_CHANGED_DEBUG)
-				if (m_eHERMPrev[index]->data[0]) _log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Out #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+				if (m_eHERMPrev[index]->data[0])
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Out #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 			UpdateSQLStatus(AddrH, AddrL, EH_LAN, 0x21, i, 100, curr, "", 100);
 		}
 	}
@@ -542,7 +552,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHERMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Input #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Input #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_INPUT_IN, i, 100, curr, "", 100);
 			}
 		}
@@ -552,7 +562,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			curr = m_eHERMs[index]->eHERM.CURRENT_ADC_PROGRAM;
 			if (m_CHANGED_DEBUG)
 				if (m_eHERMPrev[index]->data[0])
-					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ADC Program #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ADC Program #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 
 		if (m_eHERMs[index]->eHERM.CURRENT_PROFILE != m_eHERMPrev[index]->eHERM.CURRENT_PROFILE)
@@ -560,7 +570,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			curr = m_eHERMs[index]->eHERM.CURRENT_PROFILE;
 			if (m_CHANGED_DEBUG)
 				if (m_eHERMPrev[index]->data[0])
-					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Profile #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Profile #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 
 		if (m_eHERMs[index]->eHERM.CURRENT_PROGRAM != m_eHERMPrev[index]->eHERM.CURRENT_PROGRAM)
@@ -568,7 +578,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			curr = m_eHERMs[index]->eHERM.CURRENT_PROGRAM;
 			if (m_CHANGED_DEBUG)
 				if (m_eHERMPrev[index]->data[0])
-					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Program #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Program #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 
 		size = 3;
@@ -581,7 +591,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHERMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Dimmer #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Dimmer #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_DIMMER_OUT, i, 100, (curr * 100) / 255, "", 100);
 			}
 		}
@@ -596,7 +606,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHERMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] ADC H Preset #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)acurr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] ADC H Preset #%d changed to: %d", int(AddrH), int(AddrL), int(i), acurr);
 			}
 		}
 		//ADCs L Preset
@@ -608,7 +618,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHERMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] ADC Low Preset #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)acurr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] ADC Low Preset #%d changed to: %d", int(AddrH), int(AddrL), int(i), acurr);
 			}
 		}
 		//ADCs
@@ -632,7 +642,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHERMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] TEMP Low Preset #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)acurr);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] TEMP Low Preset #%d changed to: %d", int(AddrH), int(AddrL), int(i), acurr);
 			}
 		}
 
@@ -647,8 +657,8 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHERMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Temp H Preset #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)acurr);
-				sprintf(sval, "%.1f", ((float)(m_eHERMs[index]->eHERM.TempH[i] + m_eHERMs[index]->eHERM.TempL[i])) / 20);
+						_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Temp H Preset #%d changed to: %d", int(AddrH), int(AddrL), int(i), acurr);
+				sprintf(sval, "%.1f", (float(m_eHERMs[index]->eHERM.TempH[i] + m_eHERMs[index]->eHERM.TempL[i])) / 20);
 				UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_MCP9700_PRESET, i, 100, midpoint, sval, 100);
 			}
 		}
@@ -660,7 +670,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 			aprev = (m_eHERMPrev[index]->eHERM.Temp[i]);
 			if ((acurr != aprev) || (m_eHERMPrev[index]->data[0] == 0))
 			{
-				sprintf(sval, "%.1f", ((float)acurr) / 10);
+				sprintf(sval, "%.1f", (float(acurr)) / 10);
 				UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_MCP9700_IN, i, 100, acurr, sval, 100);
 			}
 		}
@@ -685,7 +695,7 @@ void eHouseTCP::UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL)
 		{
 			if (m_CHANGED_DEBUG)
 				if (m_eHouseProStatusPrv->data[0])
-					_log.Log(LOG_STATUS, "[PRO 192.168.%d.%d] OUT #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					_log.Log(LOG_STATUS, "[PRO 192.168.%d.%d] OUT #%d changed to: %d", int(AddrH), int(AddrL), i, int(curr));
 			UpdateSQLStatus(AddrH, AddrL, EH_PRO, 0x21, i, 100, curr, "", 100);
 		}
 	}
@@ -817,7 +827,9 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 		prev = (m_eHWIFIPrev[index]->eHWIFI.Outs[i / 8] >> (i % 8)) & 0x1;
 		if ((curr != prev) || (m_eHWIFIPrev[index]->data[0] == 0))
 		{
-			if (m_CHANGED_DEBUG) if (m_eHWIFIPrev[index]->data[0]) _log.Log(LOG_STATUS, "[WIFI 192.168.%d.%d] Out #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+			if (m_CHANGED_DEBUG)
+				if (m_eHWIFIPrev[index]->data[0])
+					_log.Log(LOG_STATUS, "[WIFI 192.168.%d.%d] Out #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 			UpdateSQLStatus(AddrH, AddrL, EH_WIFI, 0x21, i + 1, 100, curr, "", 100);
 		}
 	}
@@ -832,7 +844,7 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHWIFIPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[WIFI 192.168.%d.%d] Input #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[WIFI 192.168.%d.%d] Input #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_WIFI, VISUAL_INPUT_IN, i + 1, 100, curr, "", 100);
 			}
 		}
@@ -862,7 +874,7 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHWIFIPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[WIFI 192.168.%d.%d] Dimmer #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[WIFI 192.168.%d.%d] Dimmer #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_WIFI, VISUAL_DIMMER_OUT, i + 1, 100, (curr), "", 100);
 			}
 		}
@@ -922,7 +934,7 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 			if ((acurr != aprev) || (m_eHWIFIPrev[index]->data[0] == 0))
 			{
 				//if (eHWIFIPrev[[index].data[0]) printf("[WIFI 192.168.%d.%d] Temp H Preset #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int)acurr);
-				sprintf(sval, "%.1f", ((float)(m_eHWIFIs[index]->eHWIFI.TempH[i] + m_eHWIFIs[index]->eHWIFI.TempL[i])) / 20);
+				sprintf(sval, "%.1f", (float(m_eHWIFIs[index]->eHWIFI.TempH[i] + m_eHWIFIs[index]->eHWIFI.TempL[i])) / 20);
 				UpdateSQLStatus(AddrH, AddrL, EH_WIFI, VISUAL_MCP9700_PRESET, i + 1, 100, midpoint, sval, 100);
 			}
 		}
@@ -934,7 +946,7 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 			aprev = (m_eHWIFIPrev[index]->eHWIFI.Temp[i]);
 			if ((acurr != aprev) || (m_eHWIFIPrev[index]->data[0] == 0))
 			{
-				sprintf(sval, "%.1f", ((float)acurr) / 10);
+				sprintf(sval, "%.1f", (float(acurr)) / 10);
 				UpdateSQLStatus(AddrH, AddrL, EH_WIFI, VISUAL_MCP9700_IN, i + 1, 100, acurr, sval, 100);
 				//if (eHWIFIPrev[[index].data[0]) printf("[WIFI 192.168.%d.%d] Temp #%d changed to: %d", (int) AddrH, (int) AddrL, (int) i, (int) curr);
 			}
@@ -969,7 +981,9 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 		prev = (m_eHRMPrev[index]->eHERM.Outs[i / 8] >> (i % 8)) & 0x1;
 		if ((curr != prev) || (m_eHRMPrev[index]->data[0] == 0))
 		{
-			if (m_CHANGED_DEBUG) if (m_eHRMPrev[index]->data[0]) printf("[RS485 (%d,%d)] Out #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+			if (m_CHANGED_DEBUG)
+				if (m_eHRMPrev[index]->data[0])
+					printf("[RS485 (%d,%d)] Out #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 			UpdateSQLStatus(AddrH, AddrL, EH_RS485, 0x21, i + 1, 100, curr, "", 100);
 		}
 	}
@@ -987,7 +1001,7 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHRMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Input #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Input #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_INPUT_IN, i + 1, 100, curr, "", 100);
 			}
 		}
@@ -996,12 +1010,14 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 			curr = m_eHRMs[index]->eHERM.CURRENT_PROFILE;
 			if (m_CHANGED_DEBUG)
 				if (m_eHRMPrev[index]->data[0])
-					_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Current Profile #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+					_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Current Profile #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 		if (m_eHRMs[index]->eHERM.CURRENT_PROGRAM != m_eHRMPrev[index]->eHERM.CURRENT_PROGRAM)
 		{
 			curr = m_eHRMs[index]->eHERM.CURRENT_PROGRAM;
-			if (m_CHANGED_DEBUG) if (m_eHRMPrev[index]->data[0]) _log.Log(LOG_STATUS, "[RS485 (%d,%d) Current Program #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+			if (m_CHANGED_DEBUG)
+				if (m_eHRMPrev[index]->data[0])
+					_log.Log(LOG_STATUS, "[RS485 (%d,%d) Current Program #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 		}
 
 		size = 3;
@@ -1014,7 +1030,7 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 			{
 				if (m_CHANGED_DEBUG)
 					if (m_eHRMPrev[index]->data[0])
-						_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Dimmer #%d changed to: %d", (int)AddrH, (int)AddrL, (int)i, (int)curr);
+						_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Dimmer #%d changed to: %d", int(AddrH), int(AddrL), int(i), int(curr));
 				UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_DIMMER_OUT, i + 1, 100, (curr * 100) / 255, "", 100);
 			}
 		}
@@ -1042,15 +1058,15 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 			aprev = (m_eHRMPrev[index]->eHERM.Temp[i]);
 			if ((acurr != aprev) || (m_eHRMPrev[index]->data[0] == 0))
 			{
-				sprintf(sval, "%.1f", ((float)acurr) / 10);
+				sprintf(sval, "%.1f", (float(acurr)) / 10);
 				if (i > 0)
 				{
-					sprintf(sval, "%.1f", ((float)acurr) / 10);
+					sprintf(sval, "%.1f", (float(acurr)) / 10);
 					UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_LM335_IN, i + 1, 100, acurr, sval, 100);
 				}
 				else
 				{
-					sprintf(sval, "%.1f", ((float)acurr) / 10);
+					sprintf(sval, "%.1f", (float(acurr)) / 10);
 					UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_INVERTED_PERCENT_IN, i, 100, acurr, sval, 100);
 				}
 				//printf("[LAN 192.168.%d.%d] Temp #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
@@ -1209,14 +1225,14 @@ float eHouseTCP::getAdcVolt2(int index)
 
 
 	//val+=eHERMs[index].eHERM.ADC[3].LSB;
-	float vae = (float)val;
+	float vae = float(val);
 	float temp;
-	m_VccRef = (float)((2500.0 * 1023.0) / vae);
+	m_VccRef = float((2500.0 * 1023.0) / vae);
 	m_VccRef /= 10;
-	temp = (float)(3300.0 / 2500.0);
+	temp = float(3300.0 / 2500.0);
 	temp *= vae;
-	m_AdcRefMax = (int)temp;
-	m_CalcCalibration = (float)(1 / ((val * (3300.0 / 2500.0)) / 1024));
+	m_AdcRefMax = int(temp);
+	m_CalcCalibration = float(1 / ((val * (3300.0 / 2500.0)) / 1024));
 	return m_VccRef;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -1255,67 +1271,67 @@ void eHouseTCP::CalculateAdc2(unsigned char index)
 			//temp=-273.16+(temp*5000)/(1023*10);
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
-		temmp = (int)round(adcvalue);
+		temmp = int(round(adcvalue));
 		m_eHEn[index]->AdcValue[field] = temmp;
 
 		temp = -273.16 + Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;  //LM335 10mv/1c offset -273.16
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHEn[index]->SensorTempsLM335[field] = temp / 10;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;          //LM35 10mv/1c offset 0
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHEn[index]->SensorTempsLM35[field] = temp / 10;
 
 		temp = -50.0 + Offset + ((adcvalue * Vcc) / (10.0 * 1023.0)) * Calibration;  //mcp9700 10mv/c offset -50
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHEn[index]->SensorTempsMCP9700[field] = temp / 10;
 		temp = (adcvalue * 100) / 1023;
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHEn[index]->SensorPercents[field] = temp / 10;
 		m_eHEn[index]->SensorInvPercents[field] = 100 - (temp / 10);
 		if (field != 9)
 		{
 			temp = -50.0 + Offset + ((adch * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempH[field] = (int)round(temp);
+			m_eHERMs[index]->eHERM.TempH[field] = int(round(temp));
 
 			temp = -50.0 + Offset + ((adcl*Vcc) / (10.0*1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempL[field] = (int)round(temp);
-			m_eHERMs[index]->eHERM.Temp[field] = (int)round(m_eHEn[index]->SensorTempsMCP9700[field] * 10);
+			m_eHERMs[index]->eHERM.TempL[field] = int(round(temp));
+			m_eHERMs[index]->eHERM.Temp[field] = int(round(m_eHEn[index]->SensorTempsMCP9700[field] * 10));
 			m_eHERMs[index]->eHERM.Unit[field] = 'C';
 		}
 		else {
 			temp = (adch * 100) / 1023;
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempH[field] = (int)round((1000 - (temp)));
+			m_eHERMs[index]->eHERM.TempH[field] = int(round((1000 - (temp))));
 
 			temp = (adcl * 100) / 1023;
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHERMs[index]->eHERM.TempL[field] = (int)round((1000 - (temp)));
+			m_eHERMs[index]->eHERM.TempL[field] = int(round((1000 - (temp))));
 
-			m_eHERMs[index]->eHERM.Temp[field] = (int)round(m_eHEn[index]->SensorInvPercents[field] * 10);
+			m_eHERMs[index]->eHERM.Temp[field] = int(round(m_eHEn[index]->SensorInvPercents[field] * 10));
 			m_eHERMs[index]->eHERM.Unit[field] = '%';
 		}
 
 
 
 		temp = -20.513 + Offset + ((adcvalue * Vcc) / (19.5 * 1023)) * Calibration;  //mcp9701 19.5mv/c offset -20.513
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHEn[index]->SensorTempsMCP9701[field] = temp / 10;
 
 
 		temp = Calibration * (adcvalue * Vcc) / 1023;
-		temmp = (int)round(temp / 10);
+		temmp = int(round(temp / 10));
 		temp = temmp;
 		m_eHEn[index]->SensorVolts[field] = temp / 100;
 	}
@@ -1364,65 +1380,65 @@ void eHouseTCP::CalculateAdcWiFi(unsigned char index)
 			//temp=-273.16+(temp*5000)/(1023*10);
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
-		temmp = (int)round(adcvalue);
+		temmp = int(round(adcvalue));
 		m_eHWIFIn[index]->AdcValue[field] = temmp;
 
 		temp = -273.16 + Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;  //LM335 10mv/1c offset -273.16
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsLM335[field] = temp / 10;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;          //LM35 10mv/1c offset 0
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsLM35[field] = temp / 10;
 
 		temp = -50.0 + Offset + ((adcvalue * Vcc) / (10.0 * 1023.0)) * Calibration;  //mcp9700 10mv/c offset -50
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsMCP9700[field] = temp / 10;
 		temp = (adcvalue * 100) / 1023;
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHWIFIn[index]->SensorPercents[field] = temp / 10;
 		m_eHWIFIn[index]->SensorInvPercents[field] = 100 - (temp / 10);
 		if (field == 0)
 		{
 			temp = -50.0 + Offset + ((adch * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempH[field] = (int)round(temp);
+			m_eHWIFIs[index]->eHWIFI.TempH[field] = int(round(temp));
 
 			temp = -50.0 + Offset + ((adcl * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempL[field] = (int)round(temp);
-			m_eHWIFIs[index]->eHWIFI.Temp[field] = (int)round(m_eHWIFIn[index]->SensorTempsMCP9700[field] * 10);
+			m_eHWIFIs[index]->eHWIFI.TempL[field] = int(round(temp));
+			m_eHWIFIs[index]->eHWIFI.Temp[field] = int(round(m_eHWIFIn[index]->SensorTempsMCP9700[field] * 10));
 			m_eHWIFIs[index]->eHWIFI.Unit[field] = 'C';
 		}
 		else {
 			temp = (adch * 100) / 1023;
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempH[field] = (int)round((1000 - (temp)));
+			m_eHWIFIs[index]->eHWIFI.TempH[field] = int(round((1000 - (temp))));
 
 			temp = (adcl * 100) / 1023;
-			temmp = (int)round(temp * 10);
+			temmp = int(round(temp * 10));
 			temp = temmp;
-			m_eHWIFIs[index]->eHWIFI.TempL[field] = (int)round((1000 - (temp)));
+			m_eHWIFIs[index]->eHWIFI.TempL[field] = int(round((1000 - (temp))));
 
-			m_eHWIFIs[index]->eHWIFI.Temp[field] = (int)round(m_eHWIFIn[index]->SensorInvPercents[field] * 10);
+			m_eHWIFIs[index]->eHWIFI.Temp[field] = int(round(m_eHWIFIn[index]->SensorInvPercents[field] * 10));
 			m_eHWIFIs[index]->eHWIFI.Unit[field] = '%';
 		}
 
 
 
 		temp = -20.513 + Offset + ((adcvalue * Vcc) / (19.5 * 1023)) * Calibration;  //mcp9701 19.5mv/c offset -20.513
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHWIFIn[index]->SensorTempsMCP9701[field] = temp / 10;
 		temp = Calibration * (adcvalue * Vcc) / 1023;
-		temmp = (int)round(temp / 10);
+		temmp = int(round(temp / 10));
 		temp = temmp;
 		m_eHWIFIn[index]->SensorVolts[field] = temp / 100;
 	}
@@ -1464,26 +1480,26 @@ void eHouseTCP::CalculateAdcEH1(unsigned char index)
 
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
-		temmp = (int)round(adcvalue);
+		temmp = int(round(adcvalue));
 		m_eHn[index]->AdcValue[field] = temmp;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) - 273.16;  //LM335 10mv/1c offset -273.16
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHn[index]->SensorTempsLM335[field] = temp / 10;
 
 		temp = Offset + ((adcvalue * Vcc) / (10 * 1023)) * Calibration;          //LM35 10mv/1c offset 0
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHn[index]->SensorTempsLM35[field] = temp / 10;
 
 		temp = -50.0 + Offset + ((adcvalue * Vcc) / (10.0 * 1023.0)) * Calibration;  //mcp9700 10mv/c offset -50
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHn[index]->SensorTempsMCP9700[field] = temp / 10;
 
 		temp = (adcvalue * 100) / 1023;
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHn[index]->SensorPercents[field] = temp / 10;
 		m_eHn[index]->SensorInvPercents[field] = 100 - (temp / 10);
@@ -1492,7 +1508,7 @@ void eHouseTCP::CalculateAdcEH1(unsigned char index)
 		{
 			m_eHRMs[index]->eHERM.TempH[field] = 1500;
 			m_eHRMs[index]->eHERM.TempL[field] = 0;
-			m_eHRMs[index]->eHERM.Temp[field] = (int)round(m_eHn[index]->SensorTempsLM335[field] * 10);
+			m_eHRMs[index]->eHERM.Temp[field] = int(round(m_eHn[index]->SensorTempsLM335[field] * 10));
 			m_eHRMs[index]->eHERM.Unit[field] = 'C';
 		}
 		else
@@ -1500,18 +1516,18 @@ void eHouseTCP::CalculateAdcEH1(unsigned char index)
 			m_eHRMs[index]->eHERM.TempH[field] = 1000;//(1000 - (temp));
 			m_eHRMs[index]->eHERM.TempL[field] = 0;//(1000 - (temp));
 
-			m_eHRMs[index]->eHERM.Temp[field] = (int)round(m_eHn[index]->SensorInvPercents[field] * 10);
+			m_eHRMs[index]->eHERM.Temp[field] = int(round(m_eHn[index]->SensorInvPercents[field] * 10));
 			m_eHRMs[index]->eHERM.Unit[field] = '%';
 		}
 
 
 
 		temp = -20.513 + Offset + ((adcvalue * Vcc) / (19.5 * 1023)) * Calibration;  //mcp9701 19.5mv/c offset -20.513
-		temmp = (int)round(temp * 10);
+		temmp = int(round(temp * 10));
 		temp = temmp;
 		m_eHn[index]->SensorTempsMCP9701[field] = temp / 10;
 		temp = Calibration * (adcvalue * Vcc) / 1023;
-		temmp = (int)round(temp / 10);
+		temmp = int(round(temp / 10));
 		temp = temmp;
 		m_eHn[index]->SensorVolts[field] = temp / 100;
 	}
@@ -1534,7 +1550,7 @@ void eHouseTCP::GetStr(unsigned char *GetNamesDta)
 	while ((GetNamesDta[m_GetIndex] != 13) && (m_GetIndex < m_GetSize))
 	{
 		if (strlen(m_GetLine) < sizeof(m_GetLine))
-			strncat(m_GetLine, (char *)&GetNamesDta[m_GetIndex], 1);
+			strncat(m_GetLine, reinterpret_cast<char *>(&GetNamesDta[m_GetIndex]), 1);
 		m_GetIndex++;
 
 	}
@@ -1569,24 +1585,30 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	GetStr(data);			//name
 	i = 1;
 	eHaloc(nr, data[1], data[2]);
-	m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_RS485, (char *)&m_GetLine);//for Automatic RoomPlan generation for RoomManager
-	if (m_PlanID < 0) m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_RS485, (char *)&m_GetLine); //Add RoomPlan for RoomManager (RM)
+	m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_RS485, reinterpret_cast<char *>(&m_GetLine)); // for Automatic RoomPlan generation for RoomManager
+	if (m_PlanID < 0)
+		m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_RS485, reinterpret_cast<char *>(&m_GetLine)); // Add RoomPlan for RoomManager (RM)
 
-	strncpy((char *)&m_eHn[nr]->Name, (char *)&m_GetLine, sizeof(m_eHn[nr]->Name)); //RM Controller Name
-	strncpy((char *)&Name, (char *)&m_GetLine, sizeof(Name));
+	strncpy(reinterpret_cast<char *>(&m_eHn[nr]->Name), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHn[nr]->Name)); // RM Controller Name
+	strncpy(reinterpret_cast<char *>(&Name), reinterpret_cast<char *>(&m_GetLine), sizeof(Name));
 	GetStr(data);   //comment
 
 	for (i = 0; i < sizeof(m_eHn[nr]->ADCs) / sizeof(m_eHn[nr]->ADCs[0]); i++)          //ADC Names (measurement+regulation)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHn[nr]->ADCs[i], (char *)&m_GetLine, sizeof(m_eHn[nr]->ADCs[i]));
+		strncpy(reinterpret_cast<char *>(&m_eHn[nr]->ADCs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHn[nr]->ADCs[i]));
 		if (nr > 0)
 		{
-			if (i > 0) UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_LM335_IN, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-			else UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_INVERTED_PERCENT_IN, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+			if (i > 0)
+				UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_LM335_IN, i + 1, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+					       m_PlanID);
+			else
+				UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_INVERTED_PERCENT_IN, i + 1, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true,
+					       100, m_PlanID);
 			//        UpdateSQLState(data[1], data[2], EH_RS485, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_LM335_PRESET, i, 1, 0, "20.5", Name, (char *) &GetLine, true, 100);
 		}
-		else UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_LM335_IN, i + 1, 0, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		else
+			UpdateSQLState(data[1], data[2], EH_RS485, pTypeTEMP, sTypeTEMP5, 0, VISUAL_LM335_IN, i + 1, 0, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	/*    GetStr(data);// #ADC CFG; Not available for eHouse 1
@@ -1600,17 +1622,18 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHn[nr]->Outs) / sizeof(m_eHn[nr]->Outs[0]); i++)      //binary outputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHn[nr]->Outs[i], (char *)&m_GetLine, sizeof(m_eHn[nr]->Outs[i]));
-		UpdateSQLState(data[1], data[2], EH_RS485, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHn[nr]->Outs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHn[nr]->Outs[i]));
+		UpdateSQLState(data[1], data[2], EH_RS485, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i + 1, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	GetStr(data);
 	for (i = 0; i < sizeof(m_eHn[nr]->Inputs) / sizeof(m_eHn[nr]->Inputs[0]); i++)  //binary inputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHn[nr]->Inputs[i], (char *)&m_GetLine, sizeof(m_eHn[nr]->Inputs[i]));
-		if (nr != 0) UpdateSQLState(data[1], data[2], EH_RS485, pTypeGeneralSwitch, sSwitchGeneralSwitch,    //not HM
-			STYPE_Contact, VISUAL_INPUT_IN, i + 1, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHn[nr]->Inputs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHn[nr]->Inputs[i]));
+		if (nr != 0)
+			UpdateSQLState(data[1], data[2], EH_RS485, pTypeGeneralSwitch, sSwitchGeneralSwitch, // not HM
+				       STYPE_Contact, VISUAL_INPUT_IN, i + 1, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 
@@ -1618,8 +1641,8 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHn[nr]->Dimmers) / sizeof(m_eHn[nr]->Dimmers[0]); i++)    //dimmers names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHn[nr]->Dimmers[i], (char *)&m_GetLine, sizeof(m_eHn[nr]->Dimmers[i]));
-		UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHn[nr]->Dimmers[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHn[nr]->Dimmers[i]));
+		UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 	UpdateSQLState(data[1], data[2], EH_RS485, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100, m_PlanID);  //RGB dimmer
 	GetStr(data);	//rollers names
@@ -1627,7 +1650,9 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHn[nr]->Outs) / sizeof(m_eHn[nr]->Outs[0]); i += 2)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
 		GetStr(data);
-		if (nr == STATUS_ARRAYS_SIZE) UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i + 1, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		if (nr == STATUS_ARRAYS_SIZE)
+			UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i + 1, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true,
+				       100, m_PlanID);
 	}
 
 	int k = 0;
@@ -1636,11 +1661,11 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHn[nr]->Programs) / sizeof(m_eHn[nr]->Programs[0]); i++)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHn[nr]->Programs[i], (char *)&m_GetLine, sizeof(m_eHn[nr]->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHn[nr]->Programs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHn[nr]->Programs[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 #ifdef UNLIMITED_PGM
 			if (k <= 10) 
 #endif
@@ -1717,20 +1742,21 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	GetStr(data);			//name
 	i = 1;
 	eHEaloc(nr, data[1], data[2]);
-	m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_LAN, (char *)&m_GetLine);//for Automatic RoomPlan generation for RoomManager
-	if (m_PlanID < 0) m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_LAN, (char *)&m_GetLine); //Add RoomPlan for RoomManager (RM)
+	m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_LAN, reinterpret_cast<char *>(&m_GetLine)); // for Automatic RoomPlan generation for RoomManager
+	if (m_PlanID < 0)
+		m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_LAN, reinterpret_cast<char *>(&m_GetLine)); // Add RoomPlan for RoomManager (RM)
 
-
-	strncpy((char *)&m_eHEn[nr]->Name, (char *)&m_GetLine, sizeof(m_eHEn[nr]->Name)); //RM Controller Name
-	strncpy((char *)&Name, (char *)&m_GetLine, sizeof(Name));
+	strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->Name), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->Name)); // RM Controller Name
+	strncpy(reinterpret_cast<char *>(&Name), reinterpret_cast<char *>(&m_GetLine), sizeof(Name));
 	GetStr(data);			//comment
 
 	for (i = 0; i < sizeof(m_eHEn[nr]->ADCs) / sizeof(m_eHEn[nr]->ADCs[0]); i++)          //ADC Names (measurement+regulation)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHEn[nr]->ADCs[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->ADCs[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->ADCs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->ADCs[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 	GetStr(data);// #ADC CFG;
@@ -1744,16 +1770,17 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHEn[nr]->Outs) / sizeof(m_eHEn[nr]->Outs[0]); i++)      //binary outputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHEn[nr]->Outs[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->Outs[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->Outs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->Outs[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	GetStr(data);
 	for (i = 0; i < sizeof(m_eHEn[nr]->Inputs) / sizeof(m_eHEn[nr]->Inputs[0]); i++)  //binary inputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHEn[nr]->Inputs[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->Inputs[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->Inputs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->Inputs[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 
@@ -1761,8 +1788,8 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHEn[nr]->Dimmers) / sizeof(m_eHEn[nr]->Dimmers[0]); i++)    //dimmers names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHEn[nr]->Dimmers[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->Dimmers[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->Dimmers[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->Dimmers[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100, m_PlanID);  //RGB dimmer
 	GetStr(data);		//rollers names
@@ -1770,8 +1797,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHEn[nr]->Rollers) / sizeof(m_eHEn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
 		GetStr(data);
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-	
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	int k = 0;
@@ -1780,11 +1806,11 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHEn[nr]->Programs) / sizeof(m_eHEn[nr]->Programs[0]); i++)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHEn[nr]->Programs[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->Programs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->Programs[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 //			if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -1807,11 +1833,11 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	{
 		GetStr(data);
 		//printf("%s\r\n", (char *) &GetLine);
-		strncpy((char *)&m_eHEn[nr]->ADCPrograms[i], (char *)&m_GetLine, sizeof(m_eHEn[nr]->ADCPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHEn[nr]->ADCPrograms[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHEn[nr]->ADCPrograms[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -1868,19 +1894,21 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	GetStr(data);				//name
 	i = 1;
 	eCMaloc(0, data[1], data[2]);
-	m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_LAN, (char *)&m_GetLine);		//for Automatic RoomPlan generation for RoomManager
-	if (m_PlanID < 0) m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_LAN, (char *)&m_GetLine); //Add RoomPlan for RoomManager (RM)
+	m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_LAN, reinterpret_cast<char *>(&m_GetLine)); // for Automatic RoomPlan generation for RoomManager
+	if (m_PlanID < 0)
+		m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_LAN, reinterpret_cast<char *>(&m_GetLine)); // Add RoomPlan for RoomManager (RM)
 
-	strncpy((char *)&m_ECMn->Name, (char *)&m_GetLine, sizeof(m_ECMn->Name)); //RM Controller Name
-	strncpy((char *)&Name, (char *)&m_GetLine, sizeof(Name));
+	strncpy(reinterpret_cast<char *>(&m_ECMn->Name), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->Name)); // RM Controller Name
+	strncpy(reinterpret_cast<char *>(&Name), reinterpret_cast<char *>(&m_GetLine), sizeof(Name));
 	GetStr(data);   //comment
 
 	for (i = 0; i < sizeof(m_ECMn->ADCs) / sizeof(m_ECMn->ADCs[0]); i++)          //ADC Names (measurement+regulation)
 	{
 		GetStr(data);
-		strncpy((char *)&m_ECMn->ADCs[i], (char *)&m_GetLine, sizeof(m_ECMn->ADCs[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_ECMn->ADCs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->ADCs[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 	GetStr(data);		// #ADC CFG;
@@ -1894,16 +1922,17 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_ECMn->Outs) / sizeof(m_ECMn->Outs[0]); i++)      //binary outputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_ECMn->Outs[i], (char *)&m_GetLine, sizeof(m_ECMn->Outs[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_ECMn->Outs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->Outs[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	GetStr(data);
 	for (i = 0; i < sizeof(m_ECMn->Inputs) / sizeof(m_ECMn->Inputs[0]); i++)  //binary inputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_ECMn->Inputs[i], (char *)&m_GetLine, sizeof(m_ECMn->Inputs[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_ECMn->Inputs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->Inputs[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 
@@ -1911,8 +1940,8 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_ECMn->Dimmers) / sizeof(m_ECMn->Dimmers[0]); i++)    //dimmers names
 	{
 		GetStr(data);
-		strncpy((char *)&m_ECMn->Dimmers[i], (char *)&m_GetLine, sizeof(m_ECMn->Dimmers[i]));
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_ECMn->Dimmers[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->Dimmers[i]));
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100, m_PlanID);  //RGB dimmer
 	GetStr(data);//rolers names
@@ -1920,7 +1949,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_ECMn->Rollers) / sizeof(m_ECMn->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
 		GetStr(data);
-		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	int k = 0;
@@ -1929,11 +1958,11 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_ECMn->Programs) / sizeof(m_ECMn->Programs[0]); i++)
 	{
 		GetStr(data);
-		strncpy((char *)&m_ECMn->Programs[i], (char *)&m_GetLine, sizeof(m_ECMn->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_ECMn->Programs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->Programs[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -1954,11 +1983,11 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_ECMn->ADCPrograms) / sizeof(m_ECMn->ADCPrograms[0]); i++)
 	{
 		GetStr(data);
-		strncpy((char *)&m_ECMn->ADCPrograms[i], (char *)&m_GetLine, sizeof(m_ECMn->ADCPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_ECMn->ADCPrograms[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_ECMn->ADCPrograms[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -2014,23 +2043,25 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	GetStr(data);				//name
 	i = 1;
 	//eHPROaloc(0, data[1], data[2]);
-	m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_PRO, (char *)&m_GetLine);//for Automatic RoomPlan generation for RoomManager
-	if (m_PlanID < 0) m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_PRO, (char *)&m_GetLine); //Add RoomPlan for RoomManager (RM)
+	m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_PRO, reinterpret_cast<char *>(&m_GetLine)); // for Automatic RoomPlan generation for RoomManager
+	if (m_PlanID < 0)
+		m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_PRO, reinterpret_cast<char *>(&m_GetLine)); // Add RoomPlan for RoomManager (RM)
 
-	strncpy((char *)&m_eHouseProN->Name, (char *)&m_GetLine, sizeof(m_eHouseProN->Name));	//RM Controller Name
-	strncpy((char *)&Name, (char *)&m_GetLine, sizeof(Name));
+	strncpy(reinterpret_cast<char *>(&m_eHouseProN->Name), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->Name)); // RM Controller Name
+	strncpy(reinterpret_cast<char *>(&Name), reinterpret_cast<char *>(&m_GetLine), sizeof(Name));
 	GetStr(data);		//comment
 
 	for (i = 0; i < sizeof(m_eHouseProN->ADCs) / sizeof(m_eHouseProN->ADCs[0]); i++)          //ADC Names (measurement+regulation)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->ADCs[i], (char *)&m_GetLine, sizeof(m_eHouseProN->ADCs[i]));
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->ADCs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->ADCs[i]));
 		if (i < MAX_AURA_DEVS)
 		{
 			//eAURAaloc(i, 0x81, i + 1);
-			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeTEMP, sTypeTEMP5, 0, VISUAL_AURA_IN, 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_AURA_PRESET, 1, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-			if (strlen((char *)&m_AuraN[i]) > 0)
+			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeTEMP, sTypeTEMP5, 0, VISUAL_AURA_IN, 1, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
+			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_AURA_PRESET, 1, 1, 0, "20.5", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+				       m_PlanID);
+			if (strlen(reinterpret_cast<char *>(&m_AuraN[i])) > 0)
 			{
 				m_AuraDevPrv[i]->Addr = 0;
 				m_AuraN[i]->BinaryStatus[0] = 0;
@@ -2044,23 +2075,24 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		GetStr(data);
 		//eHouseProN.ADCType[i] =GetLine[0]-'0';
 		if (i < MAX_AURA_DEVS)
-			strncpy((char *)&m_eHouseProN->ADCType[i], (char *)&m_GetLine, sizeof(m_eHouseProN->ADCType[i]));//[0]-'0';
+			strncpy(reinterpret_cast<char *>(&m_eHouseProN->ADCType[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->ADCType[i])); //[0]-'0';
 	}
 
 	GetStr(data);// #Outs;
 	for (i = 0; i < sizeof(m_eHouseProN->Outs) / sizeof(m_eHouseProN->Outs[0]); i++)      //binary outputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->Outs[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Outs[i]));
-		UpdateSQLState(data[1], data[2], EH_PRO, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->Outs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->Outs[i]));
+		UpdateSQLState(data[1], data[2], EH_PRO, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	GetStr(data);
 	for (i = 0; i < sizeof(m_eHouseProN->Inputs) / sizeof(m_eHouseProN->Inputs[0]); i++)  //binary inputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->Inputs[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Inputs[i]));
-		UpdateSQLState(data[1], data[2], EH_PRO, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->Inputs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->Inputs[i]));
+		UpdateSQLState(data[1], data[2], EH_PRO, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 
@@ -2068,7 +2100,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHouseProN->Dimmers) / sizeof(m_eHouseProN->Dimmers[0]); i++)    //dimmers names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->Dimmers[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Dimmers[i]));
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->Dimmers[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->Dimmers[i]));
 		//    UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *) &GetLine, true, 100);
 	}
 	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
@@ -2077,7 +2109,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHouseProN->Rollers) / sizeof(m_eHouseProN->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
 		GetStr(data);
-		UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	int k = 0;
@@ -2086,11 +2118,11 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHouseProN->Programs) / sizeof(m_eHouseProN->Programs[0]); i++)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->Programs[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Programs[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->Programs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->Programs[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -2116,11 +2148,11 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHouseProN->ADCPrograms) / sizeof(m_eHouseProN->ADCPrograms[0]); i++)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->ADCPrograms[i], (char *)&m_GetLine, sizeof(m_eHouseProN->ADCPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->ADCPrograms[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->ADCPrograms[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -2148,11 +2180,11 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		//strcat(Name,"\r\n");
 		//if (i > 9) break;
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->SecuPrograms[i], (char *)&m_GetLine, sizeof(m_eHouseProN->SecuPrograms[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->SecuPrograms[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->SecuPrograms[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -2180,11 +2212,11 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		//strcat(Name,"\r\n");
 		//if (i > 9) break;
 		GetStr(data);
-		strncpy((char *)&m_eHouseProN->Zones[i], (char *)&m_GetLine, sizeof(m_eHouseProN->Zones[i]));
-		if ((strlen((char *)&m_GetLine) > 1) && (strstr((char *)&m_GetLine, "@") == nullptr))
+		strncpy(reinterpret_cast<char *>(&m_eHouseProN->Zones[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHouseProN->Zones[i]));
+		if ((strlen(reinterpret_cast<char *>(&m_GetLine)) > 1) && (strstr(reinterpret_cast<char *>(&m_GetLine), "@") == nullptr))
 		{
 			k++;
-			sprintf(tmp, "%s (%d)|", (char *)&m_GetLine, i + 1);
+			sprintf(tmp, "%s (%d)|", reinterpret_cast<char *>(&m_GetLine), i + 1);
 			//if (k <= 10) strncat(PGMs, tmp, strlen(tmp));
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
@@ -2232,19 +2264,21 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 	GetStr(data);				//name
 	i = 1;
 	eHWIFIaloc(nr, data[1], data[2]);
-	m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_WIFI, (char *)&m_GetLine);					//for Automatic RoomPlan generation for RoomManager
-	if (m_PlanID < 0) m_PlanID = UpdateSQLPlan((int)data[1], (int)data[2], EH_WIFI, (char *)&m_GetLine);	//Add RoomPlan for RoomManager (RM)
+	m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_WIFI, reinterpret_cast<char *>(&m_GetLine)); // for Automatic RoomPlan generation for RoomManager
+	if (m_PlanID < 0)
+		m_PlanID = UpdateSQLPlan(int(data[1]), int(data[2]), EH_WIFI, reinterpret_cast<char *>(&m_GetLine)); // Add RoomPlan for RoomManager (RM)
 
-	strncpy((char *)&m_eHWIFIn[nr]->Name, (char *)&m_GetLine, sizeof(m_eHWIFIn[nr]->Name));				//RM Controller Name
-	strncpy((char *)&Name, (char *)&m_GetLine, sizeof(Name));
+	strncpy(reinterpret_cast<char *>(&m_eHWIFIn[nr]->Name), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHWIFIn[nr]->Name)); // RM Controller Name
+	strncpy(reinterpret_cast<char *>(&Name), reinterpret_cast<char *>(&m_GetLine), sizeof(Name));
 	GetStr(data);   //comment
 
 	for (i = 0; i < sizeof(m_eHWIFIn[nr]->ADCs) / sizeof(m_eHWIFIn[nr]->ADCs[0]); i++)          //ADC Names (measurement+regulation)
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHWIFIn[nr]->ADCs[i], (char *)&m_GetLine, sizeof(m_eHWIFIn[nr]->ADCs[i]));
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i + 1, 1, 0, "20.5", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHWIFIn[nr]->ADCs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHWIFIn[nr]->ADCs[i]));
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeTEMP, sTypeTEMP5, 0, VISUAL_MCP9700_IN, i + 1, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i + 1, 1, 0, "20.5", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 	GetStr(data);		// #ADC CFG;
@@ -2258,16 +2292,17 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHWIFIn[nr]->Outs) / sizeof(m_eHWIFIn[nr]->Outs[0]); i++)			//binary outputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHWIFIn[nr]->Outs[i], (char *)&m_GetLine, sizeof(m_eHWIFIn[nr]->Outs[i]));
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i + 1, 1, 0, "0", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHWIFIn[nr]->Outs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHWIFIn[nr]->Outs[i]));
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i + 1, 1, 0, "0", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 
 	GetStr(data);
 	for (i = 0; i < sizeof(m_eHWIFIn[nr]->Inputs) / sizeof(m_eHWIFIn[nr]->Inputs[0]); i++)  //binary inputs names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHWIFIn[nr]->Inputs[i], (char *)&m_GetLine, sizeof(m_eHWIFIn[nr]->Inputs[i]));
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i + 1, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHWIFIn[nr]->Inputs[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHWIFIn[nr]->Inputs[i]));
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i + 1, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true,
+			       100, m_PlanID);
 	}
 
 
@@ -2275,8 +2310,8 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHWIFIn[nr]->Dimmers) / sizeof(m_eHWIFIn[nr]->Dimmers[0]); i++)    //dimmers names
 	{
 		GetStr(data);
-		strncpy((char *)&m_eHWIFIn[nr]->Dimmers[i], (char *)&m_GetLine, sizeof(m_eHWIFIn[nr]->Dimmers[i]));
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		strncpy(reinterpret_cast<char *>(&m_eHWIFIn[nr]->Dimmers[i]), reinterpret_cast<char *>(&m_GetLine), sizeof(m_eHWIFIn[nr]->Dimmers[i]));
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100, m_PlanID);
 	}
 	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100, m_PlanID);  //RGB dimmer
 	GetStr(data);//rollers names
@@ -2284,7 +2319,8 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 	for (i = 0; i < sizeof(m_eHWIFIn[nr]->Rollers) / sizeof(m_eHWIFIn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
 		GetStr(data);
-		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i + 1, 1, 0, "", Name, (char *)&m_GetLine, true, 100, m_PlanID);
+		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i + 1, 1, 0, "", Name, reinterpret_cast<char *>(&m_GetLine), true, 100,
+			       m_PlanID);
 	}
 
 	int k = 0;
@@ -2462,8 +2498,10 @@ void eHouseTCP::Do_Work()
 		saddr.sin_port = htons(m_UDP_PORT);
 		m_eHouseUDPSocket = socket(AF_INET, SOCK_DGRAM, 0);	//socket creation
 
-		opt = 1; setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
-		opt = 1; setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_KEEPALIVE, (char *)&opt, sizeof(opt));
+		opt = 1;
+		setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&opt), sizeof(opt));
+		opt = 1;
+		setsockopt(m_eHouseUDPSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&opt), sizeof(opt));
 
 		//opt = 0;	setsockopt(eHouseUDPSocket, SOL_SOCKET, SO_LINGER, &opt, sizeof(int));
 #ifndef WIN32
@@ -2482,7 +2520,7 @@ void eHouseTCP::Do_Work()
 
 #endif
 
-		ressock = bind(m_eHouseUDPSocket, (struct sockaddr *) &saddr, sizeof(saddr));  //bind socket
+		ressock = bind(m_eHouseUDPSocket, reinterpret_cast<struct sockaddr *>(&saddr), sizeof(saddr)); // bind socket
 	}
 	int SecIter = 0;
 	unsigned char ou = 0;
@@ -2537,19 +2575,19 @@ void eHouseTCP::Do_Work()
 		size = sizeof(caddr);
 		memset(udp_status, 0, sizeof(udp_status));
 		if (!m_ViaTCP)
-			nbytes = recvfrom(m_eHouseUDPSocket, (char *)&udp_status, MAXMSG, 0, (struct sockaddr *) & caddr, &size);	//Standard UDP Operation (LAN)
+			nbytes = recvfrom(m_eHouseUDPSocket, reinterpret_cast<char *>(&udp_status), MAXMSG, 0, reinterpret_cast<struct sockaddr *>(&caddr), &size); // Standard UDP Operation (LAN)
 		else
 		{
 			if (m_NoDetectTCPPack != 0)
 			{
-				nbytes = recv(m_TCPSocket, (char *)&udp_status, MAXMSG, 0);				//TCP Operation Based on Timeout - may loose combined statuses
+				nbytes = recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status), MAXMSG, 0); // TCP Operation Based on Timeout - may loose combined statuses
 				if (eH1(udp_status[1], udp_status[2]))
 					eh1 = 1;
 			}
 			else	//recover multiple packets for Slow links (eg. Internet)
 			{
 				int len = 0;
-				nbytes = recv(m_TCPSocket, (char *)&udp_status, 4, 0);
+				nbytes = recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status), 4, 0);
 				/*				if (udp_status[2] == 202)
 									{
 									len ++;
@@ -2566,7 +2604,7 @@ void eHouseTCP::Do_Work()
 					if (nbytes > 0)
 					{
 						LOG(LOG_STATUS, "Problem receive data<3");
-						recv(m_TCPSocket, (char *)&udp_status, MAXMSG, 0);
+						recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status), MAXMSG, 0);
 						continue;
 					}
 					else
@@ -2597,7 +2635,7 @@ void eHouseTCP::Do_Work()
 				if ((udp_status[0] == 0) || (udp_status[2] == 0) || (nbytes == 0))
 				{
 					LOG(LOG_STATUS, "[eHouse TCP] Data Is Zero");
-					recv(m_TCPSocket, (char *)&udp_status, MAXMSG, 0);
+					recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status), MAXMSG, 0);
 					continue;
 				}
 				if (eH1(udp_status[1], udp_status[2]))					///Check if via eHouse PRO Gateway (eHouse RS-485, CAN, RF, Thermostat, etc)
@@ -2608,12 +2646,12 @@ void eHouseTCP::Do_Work()
 				}
 				if ((udp_status[0] < 255) && (udp_status[4] != 'n'))	//not eHouse PRO
 				{
-					nbytes += recv(m_TCPSocket, (char *)&udp_status[4], len, 0);
+					nbytes += recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status[4]), len, 0);
 				}
 				else
 				{									//eHouse PRO
 					if (m_ProSize == 0) m_ProSize = MAXMSG;
-					nbytes += recv(m_TCPSocket, (char *)&udp_status[4], m_ProSize, 0);
+					nbytes += recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status[4]), m_ProSize, 0);
 				}
 			}
 		}
@@ -2649,7 +2687,7 @@ void eHouseTCP::Do_Work()
 		}
 		else
 		{
-			m_ipaddrh = (unsigned char)(((caddr.sin_addr.s_addr & 0x00ff0000) >> 16) & 0xff);
+			m_ipaddrh = uint8_t(((caddr.sin_addr.s_addr & 0x00ff0000) >> 16) & 0xff);
 			m_ipaddrl = (caddr.sin_addr.s_addr >> 24) & 0xff;
 		}
 
@@ -2678,7 +2716,7 @@ void eHouseTCP::Do_Work()
 			else
 			{   //eHouse PRO  status
 				sum = 0;
-				sum2 = ((unsigned int)udp_status[nbytes - 2]) << 8;   //get sent checksum
+				sum2 = uint32_t(udp_status[nbytes - 2]) << 8; // get sent checksum
 				sum2 += udp_status[nbytes - 1];
 				unsigned int iii;
 				for (iii = 0; iii < nbytes - 2U; iii++) // calculate local checksum
@@ -2723,12 +2761,12 @@ void eHouseTCP::Do_Work()
 		//received status
 		{										//size more than 0
 			sum = 0;
-			sum2 = ((unsigned int)udp_status[nbytes - 2]);
+			sum2 = uint32_t(udp_status[nbytes - 2]);
 			sum2 = sum2 << 8;							//get sent checksum
 			sum2 += udp_status[nbytes - 1];
 			for (i = 0; i < nbytes - 2; i++)               //calculate local checksum
 			{
-				sum += (unsigned int)udp_status[i];
+				sum += uint32_t(udp_status[i]);
 			}
 			devaddrh = udp_status[1];
 			devaddrl = udp_status[2];
@@ -2756,13 +2794,13 @@ void eHouseTCP::Do_Work()
 					//if    (udp_status[3] == 'l')
 					if (nbytes > 6)
 					{
-						strncpy((char *)&log, (char *)&udp_status[4], nbytes - 6);
+						strncpy(reinterpret_cast<char *>(&log), reinterpret_cast<char *>(&udp_status[4]), nbytes - 6);
 						LOG(LOG_STATUS, "[%s Log] (%-3d,%-3d) - %s", LogPrefix, devaddrh, devaddrl, log);
 						if (m_IRPerform)
 						{
-							if (strstr((char *)&log, "[IR]"))
+							if (strstr(reinterpret_cast<char *>(&log), "[IR]"))
 							{
-								sprintf((char *)&dir, "%02x_%02x", devaddrh, devaddrl);
+								sprintf(reinterpret_cast<char *>(&dir), "%02x_%02x", devaddrh, devaddrl);
 								/*                                                mf("IR", dir,"captured", &log[6], 0);
 																				mf("IR", dir,"events", &log[6], 1);*/
 							}
@@ -2957,7 +2995,8 @@ void eHouseTCP::Do_Work()
 									m_AuraDev[aindex]->ID |= m_AuraN[aindex]->BinaryStatus[i++];
 									m_AuraDev[aindex]->ID = m_AuraDev[aindex]->ID << 8;
 									m_AuraDev[aindex]->ID |= m_AuraN[aindex]->BinaryStatus[i++];
-									if (m_DEBUG_AURA) LOG(LOG_STATUS, "[Aura UDP %d] ID: %lx\t", aindex + 1, (long int)m_AuraDev[aindex]->ID);
+									if (m_DEBUG_AURA)
+										LOG(LOG_STATUS, "[Aura UDP %d] ID: %lx\t", aindex + 1, long(m_AuraDev[aindex]->ID));
 									m_AuraDev[aindex]->DType = m_AuraN[aindex]->BinaryStatus[i++];            //device type
 									if (m_DEBUG_AURA) LOG(LOG_STATUS, " DevType: %d\t", m_AuraDev[index]->DType);
 									i++;//params count
@@ -3011,7 +3050,7 @@ void eHouseTCP::Do_Work()
 												}
 												//for (i = 0; i<AuraDev[auraindex].ParamsCount; i++)
 												{
-													m_AuraN[aindex]->ParamPreset[0] = (unsigned int)(m_AuraDev[aindex]->TempSet * 10);
+													m_AuraN[aindex]->ParamPreset[0] = uint32_t(m_AuraDev[aindex]->TempSet * 10);
 
 													//eHPROaloc(0, SrvAddrH, SrvAddrL);
 
@@ -3131,7 +3170,8 @@ void eHouseTCP::Do_Work()
 									time += m_AuraN[aindex]->BinaryStatus[i++];
 									m_AuraDev[aindex]->ServerTempSet = time;
 									m_AuraDev[aindex]->ServerTempSet /= 10;
-									if (m_DEBUG_AURA) LOG(LOG_STATUS, "FlagsB: %lx\t", (long unsigned int) m_adcs[aindex]->flagsb);
+									if (m_DEBUG_AURA)
+										LOG(LOG_STATUS, "FlagsB: %lx\t", m_adcs[aindex]->flagsb);
 									m_AuraDev[aindex]->LQI = m_AuraN[aindex]->BinaryStatus[i++];
 									if (m_DEBUG_AURA) LOG(LOG_STATUS, "LQI: %d\t", m_AuraDev[aindex]->LQI);
 									m_AuraN[aindex]->BinaryStatusLength = m_AuraN[aindex]->BinaryStatus[0];//nbytes;
@@ -3149,7 +3189,7 @@ void eHouseTCP::Do_Work()
 				LOG(LOG_STATUS, "[%s] St:  (%03d,%03d) Invalid Check Sum {%d!=%d} (%dB)", LogPrefix, devaddrh, devaddrl, sum, sum2, nbytes);
 				if (m_ViaTCP)
 				{
-					nbytes = recv(m_TCPSocket, (char *)&udp_status, MAXMSG, 0);
+					nbytes = recv(m_TCPSocket, reinterpret_cast<char *>(&udp_status), MAXMSG, 0);
 					continue;
 				}
 				//if (ViaTCP) LOG(LOG_STATUS, "[TCP n=%d] #%d (%d,%d) Data=%c", nbytes, udp_status[0], udp_status[1], udp_status[2], udp_status[4]);
@@ -3209,7 +3249,7 @@ void eHouseTCP::Do_Work()
 	}
 	else
 		ressock = shutdown(m_eHouseUDPSocket, SHUT_RDWR);
-	LOG(LOG_STATUS, "[%s] Shut %d/ERROR CODE: %d", LogPrefix, (unsigned int)ressock, errno);
+	LOG(LOG_STATUS, "[%s] Shut %d/ERROR CODE: %d", LogPrefix, uint32_t(ressock), errno);
 	switch (errno)
 	{
 	case EBADF:

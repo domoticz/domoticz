@@ -156,7 +156,7 @@ void CBuienRadar::Do_Work()
 			if ((m_rainShowerLeadTime > 0) && (sec_counter % 60 == 0))
 			{
 				m_rainShowerLeadTime--;
-				SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(m_rainShowerLeadTime), "Expected Rainshower Leadtime", "minutes");
+				SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, float(m_rainShowerLeadTime), "Expected Rainshower Leadtime", "minutes");
 			}
 		}
 	}
@@ -623,7 +623,7 @@ void CBuienRadar::GetRainPrediction()
 						else
 						{
 							// add stats
-							double rain_rate = pow(10, ((double)(rain_value - 109) / 32));
+							double rain_rate = pow(10, (double(rain_value - 109) / 32));
 							total_rainvalues_in_next_rainshower++;
 							total_rainmmh_in_next_rainshower += rain_rate;
 							if (rain_rate > max_rainmmh_in_next_rainshower)
@@ -640,7 +640,7 @@ void CBuienRadar::GetRainPrediction()
 					shower_detected = true;
 
 					// add stats
-					double rain_rate = pow(10, ((double)(rain_value - 109) / 32));
+					double rain_rate = pow(10, (double(rain_value - 109) / 32));
 
 					total_rainvalues_in_next_rainshower++;
 					total_rainmmh_in_next_rainshower += rain_rate;
@@ -696,24 +696,24 @@ void CBuienRadar::GetRainPrediction()
 		}
 
 		m_rainShowerLeadTime = start_of_rainshower - startTime;
-		SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, static_cast<float>(round_digits(m_rainShowerLeadTime, 1)), "Next Rainshower Leadtime", "min");
-		SendCustomSensor(RAINSHOWER_DURATION, 1, 255, static_cast<float>(round_digits(end_of_rainshower - start_of_rainshower, 1)), "Next Rainshower Duration", "min");
-		SendCustomSensor(RAINSHOWER_AVERAGE_MMH, 1, 255, static_cast<float>(round_digits(avg_rainmmh_in_next_rainshower, 1)), "Next Rainshower Avg Rainrate", "mm/h");
-		SendCustomSensor(RAINSHOWER_MAX_MMH, 1, 255, static_cast<float>(round_digits(max_rainmmh_in_next_rainshower, 1)), "Next Rainshower Max Rainrate", "mm/h");
+		SendCustomSensor(RAINSHOWER_LEADTIME, 1, 255, float(round_digits(m_rainShowerLeadTime, 1)), "Next Rainshower Leadtime", "min");
+		SendCustomSensor(RAINSHOWER_DURATION, 1, 255, float(round_digits(end_of_rainshower - start_of_rainshower, 1)), "Next Rainshower Duration", "min");
+		SendCustomSensor(RAINSHOWER_AVERAGE_MMH, 1, 255, float(round_digits(avg_rainmmh_in_next_rainshower, 1)), "Next Rainshower Avg Rainrate", "mm/h");
+		SendCustomSensor(RAINSHOWER_MAX_MMH, 1, 255, float(round_digits(max_rainmmh_in_next_rainshower, 1)), "Next Rainshower Max Rainrate", "mm/h");
 
 		if (total_rain_values_in_duration)
 		{
 			double rain_avg = total_rain_in_duration / total_rain_values_in_duration;
 			//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
 			double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
-			SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
+			SendPercentageSensor(1, 1, 255, float(rain_perc), "Rain Intensity");
 			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain", m_Name);
 		}
 		if (total_rain_values_next_hour)
 		{
 			double rain_avg = total_rain_next_hour / total_rain_values_next_hour;
 			double rain_mm_hour = (rain_avg == 0) ? 0 : pow(10, ((rain_avg - 109) / 32));
-			SendCustomSensor(1, 1, 255, static_cast<float>(round_digits(rain_mm_hour, 1)), "Rainfall next Hour", "mm/h");
+			SendCustomSensor(1, 1, 255, float(round_digits(rain_mm_hour, 1)), "Rainfall next Hour", "mm/h");
 		}
 	}
 	else

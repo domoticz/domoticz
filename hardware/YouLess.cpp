@@ -130,10 +130,10 @@ bool CYouLess::GetP1Details()
 	{
 		int Pwr = root["pwr"].asInt();
 
-		m_p1power.powerusage1 = (unsigned long)(root["p1"].asDouble() * 1000);
-		m_p1power.powerusage2 = (unsigned long)(root["p2"].asDouble() * 1000);
-		m_p1power.powerdeliv1 = (unsigned long)(root["n1"].asDouble() * 1000);
-		m_p1power.powerdeliv2 = (unsigned long)(root["n2"].asDouble() * 1000);
+		m_p1power.powerusage1 = uint32_t(root["p1"].asDouble() * 1000);
+		m_p1power.powerusage2 = uint32_t(root["p2"].asDouble() * 1000);
+		m_p1power.powerdeliv1 = uint32_t(root["n1"].asDouble() * 1000);
+		m_p1power.powerdeliv2 = uint32_t(root["n2"].asDouble() * 1000);
 
 		if (Pwr >= 0)
 		{
@@ -145,9 +145,9 @@ bool CYouLess::GetP1Details()
 			m_p1power.delivcurrent = -Pwr;
 			m_p1power.usagecurrent = 0;
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1power), "Power", 255, nullptr);
 
-		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
+		m_p1gas.gasusage = uint32_t(root["gas"].asDouble() * 1000);
 		time_t atime = mytime(nullptr);
 		if (
 			(m_p1gas.gasusage != m_lastgasusage) ||
@@ -156,7 +156,7 @@ bool CYouLess::GetP1Details()
 		{
 			m_lastgasusage = m_p1gas.gasusage;
 			m_lastSharedSendGas = atime;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
+			sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_p1gas), "Gas", 255, nullptr);
 		}
 		m_bHaveP1OrS0 = true;
 	}
@@ -222,6 +222,6 @@ void CYouLess::GetMeterDetails()
 	{
 		m_meter.powerusage = lpusage;
 		m_meter.usagecurrent = lpcurrent;
-		sDecodeRXMessage(this, (const unsigned char *)&m_meter, nullptr, 255, nullptr);
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_meter), nullptr, 255, nullptr);
 	}
 }

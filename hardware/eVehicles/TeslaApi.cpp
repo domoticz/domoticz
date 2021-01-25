@@ -226,7 +226,7 @@ void CTeslaApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 {
 	data.odo = (jsondata["odometer"].asFloat());
 	if (!m_config.unit_miles)
-		data.odo = data.odo * (float)1.60934;
+		data.odo = data.odo * float(1.60934);
 
 	if (jsondata["df"].asBool() ||
 		jsondata["pf"].asBool() ||

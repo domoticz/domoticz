@@ -28,7 +28,7 @@ _tTrendCalculator::_eTendencyType _tTrendCalculator::AddValueAndReturnTendency(c
 	else
 	{
 		time_t atime = time(nullptr);
-		int AvarageMinutes = (int)TendType;
+		int AvarageMinutes = int(TendType);
 		if (atime - m_timeLastAvarage >= (AvarageMinutes * 60))
 		{
 			//Calculate Mean (M)

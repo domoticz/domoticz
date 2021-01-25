@@ -110,7 +110,7 @@ void CurrentCostMeterBase::ExtractReadings()
 			// create a suitable default name
 			// there can only be 8 sensors so this
 			// method is OK and should be faster
-			char sensorInt(static_cast<char>(sensor));
+			char sensorInt((char(sensor)));
 			std::string sensorName("CC Sensor 0 Power");
 			sensorName[10] += sensorInt;
 			SendWattMeter(2 + sensorInt, 1, 255, totalPower, sensorName);
@@ -131,7 +131,7 @@ void CurrentCostMeterBase::ExtractReadings()
 		if (consumption != 0.0)
 		{
 			consumption /= ipu;
-			char sensorInt(static_cast<char>(sensor));
+			char sensorInt((char(sensor)));
 			std::string sensorName("CC Sensor 0 kWh consumption");
 			sensorName[10] += sensorInt;
 			SendKwhMeter(2 + sensorInt, 2, 255, 0, consumption, sensorName);

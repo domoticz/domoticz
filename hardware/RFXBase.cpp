@@ -36,8 +36,8 @@ bool CRFXBase::onInternalMessage(const unsigned char *pBuffer, const size_t Len,
 		}
 		if (m_rxbufferpos > m_rxbuffer[0])
 		{
-			if (!checkValid || CheckValidRFXData((uint8_t*)&m_rxbuffer))
-				sDecodeRXMessage(this, (const uint8_t *)&m_rxbuffer, nullptr, -1, m_Name.c_str());
+			if (!checkValid || CheckValidRFXData(reinterpret_cast<uint8_t *>(&m_rxbuffer)))
+				sDecodeRXMessage(this, reinterpret_cast<const uint8_t *>(&m_rxbuffer), nullptr, -1, m_Name.c_str());
 			else
 				Log(LOG_ERROR, "Invalid data received!....");
 
@@ -237,7 +237,7 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 	cmd.ASYNCPORT.filler1 = 0;
 	cmd.ASYNCPORT.filler2 = 0;
 
-	WriteToHardware((const char*)&cmd, sizeof(cmd.ASYNCPORT));
+	WriteToHardware(reinterpret_cast<const char *>(&cmd), sizeof(cmd.ASYNCPORT));
 }
 
 void CRFXBase::Parse_Async_Data(const uint8_t *pData, const int Len)
@@ -273,7 +273,7 @@ void CRFXBase::SendCommand(const unsigned char Cmd)
 	cmd.ICMND.msg7 = 0;
 	cmd.ICMND.msg8 = 0;
 	cmd.ICMND.msg9 = 0;
-	WriteToHardware((const char*)&cmd, sizeof(cmd.ICMND));
+	WriteToHardware(reinterpret_cast<const char *>(&cmd), sizeof(cmd.ICMND));
 }
 
 bool CRFXBase::SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6)
@@ -290,9 +290,9 @@ bool CRFXBase::SetRFXCOMHardwaremodes(const unsigned char Mode1, const unsigned 
 	Response.ICMND.msg4 = Mode4;
 	Response.ICMND.msg5 = Mode5;
 	Response.ICMND.msg6 = Mode6;
-	if (!WriteToHardware((const char*)&Response, sizeof(Response.ICMND)))
+	if (!WriteToHardware(reinterpret_cast<const char *>(&Response), sizeof(Response.ICMND)))
 		return false;
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&Response, nullptr, -1, m_Name.c_str());
+	m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&Response), nullptr, -1, m_Name.c_str());
 	//Save it also
 	SendCommand(cmdSAVE);
 

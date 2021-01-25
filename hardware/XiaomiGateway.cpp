@@ -291,14 +291,14 @@ int XiaomiGateway::get_local_ipaddr(std::vector<std::string>& ip_addrs)
 		{
 		case AF_INET:
 		{
-			struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+			struct sockaddr_in *s4 = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr);
 			in_addr = &s4->sin_addr;
 			break;
 		}
 
 		case AF_INET6:
 		{
-			struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+			struct sockaddr_in6 *s6 = reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr);
 			in_addr = &s6->sin6_addr;
 			break;
 		}
@@ -347,7 +347,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 
 		char szTmp[50];
-		sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
+		sprintf(szTmp, "%08X", uint32_t(xcmd->id));
 		std::string ID = szTmp;
 		std::stringstream s_strid2;
 		s_strid2 << std::hex << ID;
@@ -458,7 +458,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				//m_GatewayBrightnessInt = std::max(m_GatewayBrightnessInt - 10, 0);
 			}
 			else {
-				m_GatewayBrightnessInt = (int)xcmd->value; //TODO: What is the valid range for XiaomiGateway, 0..100 or 0..255?
+				m_GatewayBrightnessInt = int(xcmd->value); // TODO: What is the valid range for XiaomiGateway, 0..100 or 0..255?
 			}
 
 			uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
@@ -599,7 +599,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 	if (sID == 1)
 		sprintf(szDeviceID, "%d", 1);
 	else
-		sprintf(szDeviceID, "%08X", (unsigned int)sID);
+		sprintf(szDeviceID, "%08X", sID);
 
 	int lastLevel = 0;
 	int nvalue = 0;
@@ -622,7 +622,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		//ycmd.dunit = 0;
 		ycmd.value = brightness;
 		ycmd.command = cmd;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&ycmd), nullptr, -1, m_Name.c_str());
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID, pTypeColorSwitch);
 	}
 	else {
@@ -642,7 +642,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 			//ycmd.dunit = 0;
 			ycmd.value = brightness;
 			ycmd.command = cmd;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
+			m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&ycmd), nullptr, -1, m_Name.c_str());
 		}
 	}
 }
@@ -655,7 +655,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	if (sID == 1)
 		sprintf(szTmp, "%d", 1);
 	else
-		sprintf(szTmp, "%08X", (unsigned int)sID);
+		sprintf(szTmp, "%08X", sID);
 	std::string ID = szTmp;
 
 	_tGeneralSwitch xcmd;
@@ -704,7 +704,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	if (result.empty())
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New %s Found (%s)", Name.c_str(), nodeid.c_str());
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, battery, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&xcmd), nullptr, battery, m_Name.c_str());
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
 				customimage = 1; // Wall socket
@@ -775,7 +775,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		}
 		else {
 			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == NAME_SELECTOR_WIRED_WALL_DUAL) || (Name == NAME_SELECTOR_WIRED_WALL_SINGLE) || (Name == NAME_ACT_BLINDS_CURTAIN)) {
-				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, nullptr, BatteryLevel, m_Name.c_str());
+				m_mainworker.PushAndWaitRxMessage(this, reinterpret_cast<const unsigned char *>(&xcmd), nullptr, BatteryLevel, m_Name.c_str());
 			}
 		}
 		if ((Name == NAME_ACT_ONOFF_PLUG) || (Name == NAME_ACT_ONOFF_PLUG_WALL)) {
@@ -803,7 +803,7 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 		unsigned int sID = GetShortID(nodeid);
 		if (sID > 0) {
 			int percent = ((VoltageLevel - 2200) / 10);
-			float voltage = (float)VoltageLevel / 1000;
+			float voltage = float(VoltageLevel) / 1000;
 			SendVoltageSensor(sID, sID, percent, voltage, "Xiaomi Voltage");
 		}
 	}
@@ -813,7 +813,7 @@ void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::strin
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		float lux = (float)Illumination;
+		float lux = float(Illumination);
 		SendLuxSensor(sID, sID, battery, lux, Name);
 	}
 }
@@ -981,7 +981,7 @@ std::string XiaomiGateway::GetGatewayKey()
 
 	AES_KEY encryption_key;
 	AES_set_encrypt_key(key, 128, &(encryption_key));
-	AES_cbc_encrypt((unsigned char *)plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
+	AES_cbc_encrypt(plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
 
 	char gatewaykey[128];
 	for (int i = 0; i < 16; i++)
@@ -1409,21 +1409,21 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					if (name == NAME_SENSOR_TEMP_HUM_AQARA)
 					{
 						std::string szPressure = root2["pressure"].asString();
-						pressure = static_cast<float>(atof(szPressure.c_str())) / 100.0F;
+						pressure = float(atof(szPressure.c_str())) / 100.0F;
 					}
 
 					if ((!temperature.empty()) && (!humidity.empty()) && (pressure != 0))
 					{
 						// Temp+Hum+Baro
 						float temp = std::stof(temperature) / 100.0F;
-						int hum = static_cast<int>((std::stof(humidity) / 100));
+						int hum = int((std::stof(humidity) / 100));
 						TrueGateway->InsertUpdateTempHumPressure(sid, "Xiaomi TempHumBaro", temp, hum, pressure, battery);
 					}
 					else if ((!temperature.empty()) && (!humidity.empty()))
 					{
 						// Temp+Hum
 						float temp = std::stof(temperature) / 100.0F;
-						int hum = static_cast<int>((std::stof(humidity) / 100));
+						int hum = int((std::stof(humidity) / 100));
 						TrueGateway->InsertUpdateTempHum(sid, "Xiaomi TempHum", temp, hum, battery);
 					}
 					else if (!temperature.empty())
@@ -1436,7 +1436,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (!humidity.empty())
 					{
-						int hum = static_cast<int>((std::stof(humidity) / 100));
+						int hum = int((std::stof(humidity) / 100));
 						if (hum > 1)
 						{
 							TrueGateway->InsertUpdateHumidity(sid, "Xiaomi Humidity", hum, battery);

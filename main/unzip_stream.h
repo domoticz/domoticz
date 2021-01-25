@@ -72,12 +72,12 @@ namespace clx {
 		{
 			if (this->gptr() == this->egptr())
 			{
-				int_type n = static_cast<int_type>(this->gptr() - this->eback());
+				int_type n = int_type(this->gptr() - this->eback());
 				if (n > npback)
 					n = npback;
 				std::memcpy(&buffer_.at(npback - n), this->gptr() - n, n);
 
-				int_type byte = static_cast<int_type>((buffer_.size() - npback) * sizeof(char_type));
+				int_type byte = int_type((buffer_.size() - npback) * sizeof(char_type));
 				int l = unzReadCurrentFile(handler_, reinterpret_cast<char *>(&buffer_.at(npback)), byte - 1);
 				if (l <= 0)
 					return traits::eof();

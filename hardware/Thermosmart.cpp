@@ -170,7 +170,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 	thermos.id4=Idx;
 	thermos.dunit=0;
 	thermos.temp=Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255, nullptr);
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&thermos), "Setpoint", 255, nullptr);
 }
 
 bool CThermosmart::Login()
@@ -368,15 +368,15 @@ void CThermosmart::GetMeterDetails()
 	}
 
 	float temperature;
-	temperature = (float)root["target_temperature"].asFloat();
+	temperature = root["target_temperature"].asFloat();
 	SendSetPointSensor(1, temperature, "target temperature");
 
-	temperature = (float)root["room_temperature"].asFloat();
+	temperature = root["room_temperature"].asFloat();
 	SendTempSensor(2, 255, temperature, "room temperature");
 
 	if (!root["outside_temperature"].empty())
 	{
-		temperature = (float)root["outside_temperature"].asFloat();
+		temperature = root["outside_temperature"].asFloat();
 		SendTempSensor(3, 255, temperature, "outside temperature");
 	}
 	if (!root["source"].empty())

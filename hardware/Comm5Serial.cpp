@@ -177,7 +177,7 @@ void Comm5Serial::readCallBack(const char * data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData(reinterpret_cast<const unsigned char *>(data), int(len));
 }
 
 uint16_t Comm5Serial::crc16_update(uint16_t crc, const uint8_t data)
@@ -185,11 +185,11 @@ uint16_t Comm5Serial::crc16_update(uint16_t crc, const uint8_t data)
 #define POLYNOME 0x13D65
 	int i;
 
-	crc = crc ^ ((uint16_t)data << 8);
+	crc = crc ^ (uint16_t(data) << 8);
 	for (i = 0; i<8; i++)
 	{
 		if (crc & 0x8000)
-			crc = (uint16_t)((crc << 1) ^ POLYNOME);
+			crc = uint16_t((crc << 1) ^ POLYNOME);
 		else
 			crc <<= 1;
 	}
@@ -260,7 +260,7 @@ void Comm5Serial::ParseData(const unsigned char* data, const size_t len)
 		case STFRAME_CRC2:
 			frame.push_back(data[i]);
 			frameCRC = crc16_update(frameCRC, 0);
-			readCRC = (static_cast<uint16_t>(frame.at(frame.size() - 2)) << 8) | frame.at(frame.size() - 1);
+			readCRC = uint16_t((frame.at(frame.size() - 2)) << 8) | frame.at(frame.size() - 1);
 			if (frameCRC == readCRC)
 				parseFrame(frame);
 			else
@@ -290,7 +290,7 @@ void Comm5Serial::parseFrame(const std::string & mframe)
 
 bool Comm5Serial::writeFrame(const std::string & data)
 {
-	char length = (uint8_t)data.size();
+	char length = uint8_t(data.size());
 	std::string mframe("\x05\x64", 2);
 	mframe.push_back(length);
 	mframe.push_back(0x00);

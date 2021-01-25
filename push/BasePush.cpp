@@ -396,7 +396,7 @@ unsigned long CBasePush::get_tzoffset()
 {
 	// Compute tz
 	boost::posix_time::time_duration uoffset = get_utc_offset();
-	unsigned long tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
+	unsigned long tzoffset = static_cast<int>(static_cast<double>(uoffset.ticks() / 3600000000LL) * 3600);
 	return tzoffset;
 }
 
@@ -448,7 +448,7 @@ std::string CBasePush::DropdownOptionsValue(const int devType, const int devSubT
 {
 	std::vector<std::string> tmpV;
 	StringSplit(RFX_Type_SubType_Values(devType, devSubType), ",", tmpV);
-	if (pos > 0 && pos <= (int)tmpV.size())
+	if (pos > 0 && pos <= static_cast<int>(tmpV.size()))
 		return tmpV[pos - 1];
 	return "???";
 }
@@ -465,8 +465,8 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			return ""; // unhandled type
 
 		unsigned char tempsign = m_sql.m_tempsign[0];
-		_eMeterType metertype = (_eMeterType)metertypein;
-		
+		_eMeterType metertype = static_cast<_eMeterType>(metertypein);
+
 		if ((vType == "Temperature") || (vType == "Temperature 1") || (vType == "Temperature 2") || (vType == "Set point"))
 		{
 			sprintf(szData, "%g", ConvertTemperature(std::stod(rawsendValue), tempsign));
@@ -592,12 +592,12 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			bool bHaveDimmer = false;
 			bool bHaveGroupCmd = false;
 			int maxDimLevel = 0;
-			GetLightStatus(devType, devSubType, static_cast<_eSwitchType>(metertypein), 1, rawsendValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			GetLightStatus(devType, devSubType, _eSwitchType(metertypein), 1, rawsendValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 			int level = atoi(rawsendValue.c_str());
 
 			if (maxDimLevel != 0)
-				level = (int) float((100.0F / float(maxDimLevel)) * level);
+				level = int(float((100.0F / float(maxDimLevel)) * level));
 
 			if (lstatus.find("Off") != std::string::npos)
 				level = 0;
@@ -718,7 +718,7 @@ std::string CBasePush::getUnit(const int devType, const int devSubType, const in
 		return ""; // No unit, unhandled
 
 	unsigned char tempsign = m_sql.m_tempsign[0];
-	_eMeterType metertype = (_eMeterType)metertypein;
+	_eMeterType metertype = static_cast<_eMeterType>(metertypein);
 	char szData[100];
 	szData[0] = 0;
 

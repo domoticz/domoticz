@@ -228,7 +228,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/
 			cmd[11] = 0x01;
 			cmd[12] = 0x02; // number of bytes
 			cmd[13] = 0x00;
-			cmd[14] = (uint8_t)change;
+			cmd[14] = uint8_t(change);
 
 			int ret = SendCommand(cmd, 15, buffer, true);
 			if (ret == 4)
@@ -241,12 +241,12 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 
 		float temp = therm->temp;
-		int calculatedTemp = (int)temp;
+		int calculatedTemp = int(temp);
 
 		if ((therm->id2 == 0x1F || therm->id2 == 0x20) ||
 			((therm->id2 == 0x1C || therm->id2 == 0x1D) && m_isWeatherWork[therm->id2 - 0x1C]))
 		{
-			calculatedTemp = (int)(temp * 5);
+			calculatedTemp = int(temp * 5);
 			calculatedTemp = calculatedTemp | 0x8000;
 		}
 
@@ -266,7 +266,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/
 		cmd[11] = 0x01;
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
-		cmd[14] = (uint8_t)calculatedTemp;
+		cmd[14] = uint8_t(calculatedTemp);
 
 		int ret = SendCommand(cmd, 15, buffer, true);
 		if (ret == 4)
@@ -445,7 +445,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					m_LastDevices = value;
 
-					float level = (float)((value & 0xFC00) >> 10);
+					float level = float((value & 0xFC00) >> 10);
 					SendPercentageSensor(2, 1, 255, level, "BLOWER POWER");
 					break;
 				}
@@ -464,7 +464,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					m_LastState = value;
 
-					float level = (float)((value & 0xFC00) >> 10);
+					float level = float((value & 0xFC00) >> 10);
 					SendPercentageSensor(3, 1, 255, level, "Fuel Level");
 					break;
 				}
@@ -475,19 +475,19 @@ void MultiFun::GetRegisters(bool firstTime)
 					char name[20];
 					sprintf(name, "C.H. %d Temperature", i - 0x1C + 1);
 
-					float temp = (float)value;
+					float temp = float(value);
 					if ((value & 0x8000) == 0x8000)
 					{
-						temp = (float)((value & 0x0FFF) * 0.2);
+						temp = float((value & 0x0FFF) * 0.2);
 					}
 					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
-					SendSetPointSensor((uint8_t)i, 1, 1, temp, name);
+					SendSetPointSensor(uint8_t(i), 1, 1, temp, name);
 					break;
 				}
 
 				case 0x1E:
 				{
-					SendSetPointSensor(0x1E, 1, 1, (float)value, "H.W.U. Temperature");
+					SendSetPointSensor(0x1E, 1, 1, float(value), "H.W.U. Temperature");
 					break;
 				}
 
@@ -499,8 +499,8 @@ void MultiFun::GetRegisters(bool firstTime)
 
 					if (m_isSensorExists[i - 0x1F])
 					{
-						float temp = (float)((value & 0x0FFF) * 0.2);
-						SendSetPointSensor((uint8_t)i, 1, 1, temp, name);
+						float temp = float((value & 0x0FFF) * 0.2);
+						SendSetPointSensor(uint8_t(i), 1, 1, temp, name);
 					}
 					else
 					{
@@ -550,7 +550,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	unsigned char databuffer[BUFFER_LENGHT];
 	int ret = -1;
 
-	if (m_socket->write((char*)cmd, cmdLength) != (int)cmdLength)
+	if (m_socket->write((char *)cmd, cmdLength) != int(cmdLength))
 	{
 		_log.Log(LOG_ERROR, "MultiFun: Send command failed");
 		DestroySocket();
@@ -562,7 +562,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_LENGHT);
-		ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
+		ret = m_socket->read(reinterpret_cast<char *>(databuffer), BUFFER_LENGHT, false);
 	}
 
 	if ((ret <= 0) || (ret >= BUFFER_LENGHT))
@@ -584,7 +584,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 				}
 				answerLength = ret - 8; // answer = frame - prefix
 
-				if ((int)databuffer[4] * 256 + (int)databuffer[5] == (unsigned char)(answerLength + 2))
+				if (int(databuffer[4]) * 256 + int(databuffer[5]) == uint8_t(answerLength + 2))
 				{
 					if (!write)
 					{

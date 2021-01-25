@@ -385,7 +385,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 						StringSplit(sMeasure, " ", vMeasure);
 						if (vMeasure.size() == 2)
 						{
-							SendCustomSensor(Idx, 1, 255, static_cast<float>(atof(vMeasure[0].c_str())), name, vMeasure[1]);
+							SendCustomSensor(Idx, 1, 255, float(atof(vMeasure[0].c_str())), name, vMeasure[1]);
 						}
 					}
 					Idx = -1;
@@ -407,7 +407,7 @@ void CDenkoviSmartdenIPInOut::GetMeterDetails()
 					pos1 = tmpstr.find('<');
 					if (pos1 != std::string::npos)
 					{
-						SendTempSensor(Idx, 255, static_cast<float>(atof(tmpstr.substr(0, pos1).c_str())), name);
+						SendTempSensor(Idx, 255, float(atof(tmpstr.substr(0, pos1).c_str())), name);
 					}
 					Idx = -1;
 					bHaveTemperatureInput = false;

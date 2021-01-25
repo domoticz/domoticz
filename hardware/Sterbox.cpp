@@ -175,7 +175,7 @@ void CSterbox::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CSterbox::GetMeterDetails()
@@ -328,7 +328,7 @@ void CSterbox::GetMeterDetails()
 					tmpinp = analog[jj];
 					tmpstr2 = tmpstr2.substr(1, 10);
 
-					float lValue = (float)atof(tmpstr2.c_str());
+					float lValue = float(atof(tmpstr2.c_str()));
 					std::stringstream sstr;
 					sstr << "Analog " << jj;
 					pos1 = tmpinp.find('t');
@@ -339,12 +339,12 @@ void CSterbox::GetMeterDetails()
 					pos1 = tmpinp.find('v');
 					if (pos1 != std::string::npos)
 					{
-						SendVoltageSensor(0, (uint8_t)jj, 255, lValue, sstr.str());
+						SendVoltageSensor(0, uint8_t(jj), 255, lValue, sstr.str());
 					}
 					pos1 = tmpinp.find('l');
 					if (pos1 != std::string::npos)
 					{
-						SendLuxSensor(0, (uint8_t)jj, 255,lValue, sstr.str());
+						SendLuxSensor(0, uint8_t(jj), 255, lValue, sstr.str());
 					}
 					pos1 = tmpinp.find('h');
 					if (pos1 != std::string::npos)

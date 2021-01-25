@@ -232,8 +232,8 @@ int CPiFace::LoadConfig()
 		    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
 		    if (EndPos >= 0)
 		    {
-			    Address = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
-												     // future use.
+			    Address = uint8_t(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
+											     // future use.
 			    StartPos = EndPos;
 		    }
 
@@ -259,8 +259,8 @@ int CPiFace::LoadConfig()
 		    EndPos = GetParameterString(Line, ".", StartPos, Parameter);
 		    if (EndPos >= 0)
 		    {
-			    PinNumber = (unsigned char)(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
-												       // future use.
+			    PinNumber = uint8_t(strtol(Parameter.c_str(), nullptr, 0) & 0xFF); // data can be restricted further but as we check later on keep it wide for
+											       // future use.
 			    StartPos = EndPos;
 		    }
 
@@ -905,7 +905,7 @@ void CPiFace::Do_Work_Queue()
         sendData = *itt;
         m_send_queue.erase(itt);
         m_queue_mutex.unlock();
-	sDecodeRXMessage(this, (const unsigned char *)sendData.c_str(), nullptr, 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(sendData.c_str()), nullptr, 255, m_Name.c_str());
     }
 }
 
@@ -1123,13 +1123,13 @@ void CPiFace::Sample_and_Process_Input_Interrupts(unsigned char devId)
     }
 }
 
-void CIOCount::SetUpdateInterval(unsigned long NewValue_ms)
+void CIOCount::SetUpdateInterval(uint32_t NewValue_ms)
 {
     UpdateInterval_ms=NewValue_ms;
     UpdateDownCount_ms=UpdateInterval_ms;
 }
 
-bool CIOCount::ProcessUpdateInterval(unsigned long PassedTime_ms)
+bool CIOCount::ProcessUpdateInterval(uint32_t PassedTime_ms)
 {
     bool Update=false;
     if (Enabled)
@@ -1161,18 +1161,18 @@ bool CIOCount::ProcessUpdateInterval(unsigned long PassedTime_ms)
                 Cur_Interval = Now - Cur_Pulse;
             }
 
-			double perc = (100. / Last_Interval.total_milliseconds()) * labs((long)(Cur_Interval.total_milliseconds() - Last_Interval.total_milliseconds()));
-            if ( perc > UpdateIntervalPerc )
-            {
-                UpdateDownCount_ms=UpdateInterval_ms;
-                Update=true;
-            }
-        }
+	    double perc = (100. / Last_Interval.total_milliseconds()) * llabs((Cur_Interval.total_milliseconds() - Last_Interval.total_milliseconds()));
+	    if (perc > UpdateIntervalPerc)
+	    {
+		    UpdateDownCount_ms = UpdateInterval_ms;
+		    Update = true;
+	    }
+	}
     }
     return Update;
 }
 
-int CIOCount::Update(unsigned long Counts)
+int CIOCount::Update(uint32_t Counts)
 {
     int result = -1;
 
@@ -1343,7 +1343,7 @@ CIOPinState::CIOPinState()
 void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned char housecode, unsigned char initial_state)
 {
     int PinNr;
-    unsigned long value;
+    uint32_t value;
     bool found;
 
     std::vector<std::vector<std::string> > result;
@@ -1411,14 +1411,15 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
                         dValue = atol(resultparts[1].c_str()) / ( 1000. / Pin[PinNr].Count.GetDivider() );
                         found = true;
                     }
-                    value = (unsigned long)dValue;
-                }
-                break;
-        }
+		    value = uint32_t(dValue);
+		}
+		break;
+	}
 
-        if ( found ) {
-            Pin[PinNr].Count.SetTotal(value);
-        }
+	if (found)
+	{
+		Pin[PinNr].Count.SetTotal(value);
+	}
     }
 
     Last=initial_state;
@@ -1452,69 +1453,67 @@ int CIOPort::Update(unsigned char New)
             IOPinStatusPacket.LIGHTING1.cmnd = (ChangeState != 0) ? light1_sOn : light1_sOff;
             IOPinStatusPacket.LIGHTING1.seqnbr++;
             IOPinStatusPacket.LIGHTING1.unitcode = PinNr + (devId*10) ; //report inputs from PiFace X (X0..X9)
-            myCallback->CallBackSendEvent((const unsigned char *)&IOPinStatusPacket, sizeof(IOPinStatusPacket.LIGHTING1));
-        }
+	    myCallback->CallBackSendEvent(reinterpret_cast<const unsigned char *>(&IOPinStatusPacket), sizeof(IOPinStatusPacket.LIGHTING1));
+	}
 
-        UpdateCounter=Pin[PinNr].Count.ProcessUpdateInterval(PIFACE_INPUT_PROCESS_INTERVAL*PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
-        if (UpdateCounter)
-        {
-            unsigned long Count = Pin[PinNr].Count.GetTotal();
-            unsigned long LastCount = Pin[PinNr].Count.GetLastTotal();
+	UpdateCounter = Pin[PinNr].Count.ProcessUpdateInterval(PIFACE_INPUT_PROCESS_INTERVAL * PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
+	if (UpdateCounter)
+	{
+		unsigned long Count = Pin[PinNr].Count.GetTotal();
+		unsigned long LastCount = Pin[PinNr].Count.GetLastTotal();
 
-            Pin[PinNr].Count.Last_Callback = boost::posix_time::microsec_clock::universal_time();
+		Pin[PinNr].Count.Last_Callback = boost::posix_time::microsec_clock::universal_time();
 
-            switch( Pin[PinNr].Count.Type )
-            {
-                case COUNT_TYPE_GENERIC:
-                case COUNT_TYPE_RFXMETER:
-                    int meterid;
-                    if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
-                        meterid=100+PinNr + (devId*10);
-                    else
-                        meterid=0+PinNr + (devId*10);
+		switch (Pin[PinNr].Count.Type)
+		{
+			case COUNT_TYPE_GENERIC:
+			case COUNT_TYPE_RFXMETER:
+				int meterid;
+				if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
+					meterid = 100 + PinNr + (devId * 10);
+				else
+					meterid = 0 + PinNr + (devId * 10);
 
-                    Pin[PinNr].IOPinCounterPacket.RFXMETER.id1=((meterid >>8) & 0xFF);
-                    Pin[PinNr].IOPinCounterPacket.RFXMETER.id2= (meterid & 0xFF);
+				Pin[PinNr].IOPinCounterPacket.RFXMETER.id1 = ((meterid >> 8) & 0xFF);
+				Pin[PinNr].IOPinCounterPacket.RFXMETER.id2 = (meterid & 0xFF);
 
-                    if (Count != LastCount)
-                    {
-                        Pin[PinNr].Count.SetLastTotal(Count);
-                        //    _log.Log(LOG_NORM,"Counter %lu\n",Count);
-                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count1 = (unsigned char)((Count >> 24) & 0xFF);
-                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count2 = (unsigned char)((Count >> 16) & 0xFF);
-                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count3 = (unsigned char)((Count >> 8) & 0xFF);
-                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count4 = (unsigned char)((Count)& 0xFF);
-                        Pin[PinNr].IOPinCounterPacket.RFXMETER.seqnbr++;
-                        //    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",Pin[PinNr].IOPinCounterPacket.RFXMETER.count1,Pin[PinNr].IOPinCounterPacket.RFXMETER.count2,Pin[PinNr].IOPinCounterPacket.RFXMETER.count3,Pin[PinNr].IOPinCounterPacket.RFXMETER.count4);
-                        myCallback->CallBackSendEvent((const unsigned char *)&Pin[PinNr].IOPinCounterPacket, sizeof(Pin[PinNr].IOPinCounterPacket.RFXMETER));
-                    }
-                    break;
+				if (Count != LastCount)
+				{
+					Pin[PinNr].Count.SetLastTotal(Count);
+					//    _log.Log(LOG_NORM,"Counter %lu\n",Count);
+					Pin[PinNr].IOPinCounterPacket.RFXMETER.count1 = uint8_t((Count >> 24) & 0xFF);
+					Pin[PinNr].IOPinCounterPacket.RFXMETER.count2 = uint8_t((Count >> 16) & 0xFF);
+					Pin[PinNr].IOPinCounterPacket.RFXMETER.count3 = uint8_t((Count >> 8) & 0xFF);
+					Pin[PinNr].IOPinCounterPacket.RFXMETER.count4 = uint8_t((Count)&0xFF);
+					Pin[PinNr].IOPinCounterPacket.RFXMETER.seqnbr++;
+					//    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4
+					//    %d\n",Pin[PinNr].IOPinCounterPacket.RFXMETER.count1,Pin[PinNr].IOPinCounterPacket.RFXMETER.count2,Pin[PinNr].IOPinCounterPacket.RFXMETER.count3,Pin[PinNr].IOPinCounterPacket.RFXMETER.count4);
+					myCallback->CallBackSendEvent(reinterpret_cast<const unsigned char *>(&Pin[PinNr].IOPinCounterPacket), sizeof(Pin[PinNr].IOPinCounterPacket.RFXMETER));
+				}
+				break;
 
-                case COUNT_TYPE_ENERGY:
-                    int nodeId;
-                    if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
-                        nodeId=300+devId;
-                    else
-                        nodeId=200+devId;
+			case COUNT_TYPE_ENERGY:
+				int nodeId;
+				if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
+					nodeId = 300 + devId;
+				else
+					nodeId = 200 + devId;
 
-                    // Energy devices are updated *every* time because their current power usage (Watt) drops if no pulses
-                    // are registered between the interval.
-                    Pin[PinNr].Count.SetLastTotal(Count);
+				// Energy devices are updated *every* time because their current power usage (Watt) drops if no pulses
+				// are registered between the interval.
+				Pin[PinNr].Count.SetLastTotal(Count);
 
-                    if (
-                        Pin[PinNr].Count.Cur_Interval.total_milliseconds() > 0 &&
-                        Pin[PinNr].Count.GetDivider() > 0
-                    )
-                    {
-                        Pin[PinNr].Count.Last_Interval = Pin[PinNr].Count.Cur_Interval;
-                        double dEnergy = ( ( 1. / Pin[PinNr].Count.GetDivider() ) * Count  ); // kWh
-                        double dPower = ( ( 1000. / Pin[PinNr].Count.GetDivider() ) * ( 1000. / Pin[PinNr].Count.Cur_Interval.total_milliseconds() ) * 3600 ); // Watt
-                        myCallback->SendKwhMeter(nodeId, PinNr, 255, dPower, dEnergy, "kWh Meter" );
-                    }
-                    break;
-            }
-        }
-        mask<<=1;
+				if (Pin[PinNr].Count.Cur_Interval.total_milliseconds() > 0 && Pin[PinNr].Count.GetDivider() > 0)
+				{
+					Pin[PinNr].Count.Last_Interval = Pin[PinNr].Count.Cur_Interval;
+					double dEnergy = ((1. / Pin[PinNr].Count.GetDivider()) * Count);								 // kWh
+					double dPower = ((1000. / Pin[PinNr].Count.GetDivider()) * (1000. / Pin[PinNr].Count.Cur_Interval.total_milliseconds()) * 3600); // Watt
+					myCallback->SendKwhMeter(nodeId, PinNr, 255, dPower, dEnergy, "kWh Meter");
+				}
+				break;
+		}
+	}
+	mask <<= 1;
     }
 
     return (ChangeState);

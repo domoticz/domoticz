@@ -82,7 +82,7 @@ void CEvohomeTCP::OnData(const unsigned char *pData, size_t length)
 	try
 	{
 		//_log.Log(LOG_NORM,"evohome: received %ld bytes",len);
-		HandleLoopData((const char *)pData, length);
+		HandleLoopData(reinterpret_cast<const char *>(pData), length);
 	}
 	catch (...)
 	{

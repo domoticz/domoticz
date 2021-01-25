@@ -11,7 +11,7 @@ namespace mosqdz {
 
 static void on_connect_wrapper(struct mosquitto *mosq, void *userdata, int rc)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 
 	UNUSED(mosq);
 
@@ -20,42 +20,42 @@ static void on_connect_wrapper(struct mosquitto *mosq, void *userdata, int rc)
 
 static void on_connect_with_flags_wrapper(struct mosquitto *mosq, void *userdata, int rc, int flags)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_connect_with_flags(rc, flags);
 }
 
 static void on_disconnect_wrapper(struct mosquitto *mosq, void *userdata, int rc)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_disconnect(rc);
 }
 
 static void on_publish_wrapper(struct mosquitto *mosq, void *userdata, int mid)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_publish(mid);
 }
 
 static void on_message_wrapper(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_message(message);
 }
 
 static void on_subscribe_wrapper(struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_subscribe(mid, qos_count, granted_qos);
 }
 
 static void on_unsubscribe_wrapper(struct mosquitto *mosq, void *userdata, int mid)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_unsubscribe(mid);
 }
@@ -63,7 +63,7 @@ static void on_unsubscribe_wrapper(struct mosquitto *mosq, void *userdata, int m
 
 static void on_log_wrapper(struct mosquitto *mosq, void *userdata, int level, const char *str)
 {
-	class mosquittodz *m = (class mosquittodz *)userdata;
+	class mosquittodz *m = static_cast<class mosquittodz *>(userdata);
 	UNUSED(mosq);
 	m->on_log(level, str);
 }

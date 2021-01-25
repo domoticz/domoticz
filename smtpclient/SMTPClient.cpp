@@ -20,7 +20,7 @@ struct smtp_upload_status {
 
 static size_t smtp_payload_reader(void* ptr, size_t size, size_t nmemb, void* userp)
 {
-	struct smtp_upload_status* upload_ctx = (struct smtp_upload_status*)userp;
+	struct smtp_upload_status *upload_ctx = static_cast<struct smtp_upload_status *>(userp);
 
 	if ((size == 0) || (nmemb == 0) || ((size * nmemb) < 1)) {
 		return 0;

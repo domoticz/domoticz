@@ -373,11 +373,11 @@ void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 		sndbuf[0] = 'R'; 		//	Get relay status
 	}
 
-	sndbuf[1] = 0x30 + (char) RelayNumber;
+	sndbuf[1] = 0x30 + char(RelayNumber);
 	sndbuf[2] = '\r';
 	sndbuf[3] = '\n';
 
-	write((const unsigned char*)&sndbuf[0], (size_t) sizeof(sndbuf));
+	write(reinterpret_cast<const unsigned char *>(&sndbuf[0]), size_t(sizeof(sndbuf)));
 }
 
 void RelayNet::SetRelayState(int RelayNumber, bool State)
@@ -467,11 +467,11 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 			m_Packet.LIGHTING2.cmnd = light2_sOff;
 			m_Packet.LIGHTING2.level = 0;
 		}
-		m_Packet.LIGHTING2.unitcode = 100 + (char) InputNumber;
+		m_Packet.LIGHTING2.unitcode = 100 + char(InputNumber);
 		m_Packet.LIGHTING2.seqnbr++;
 
 		/* send packet to Domoticz */
-		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255, m_Name.c_str());
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_Packet.LIGHTING2), "Input", 255, m_Name.c_str());
 	}
 }
 
@@ -519,11 +519,11 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 			m_Packet.LIGHTING2.cmnd = light2_sOff;
 			m_Packet.LIGHTING2.level = 0;
 		}
-		m_Packet.LIGHTING2.unitcode = (char) RelayNumber;
+		m_Packet.LIGHTING2.unitcode = char(RelayNumber);
 		m_Packet.LIGHTING2.seqnbr++;
 
 		/* send packet to Domoticz */
-		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Relay", 255, m_Name.c_str());
+		sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&m_Packet.LIGHTING2), "Relay", 255, m_Name.c_str());
 	}
 }
 

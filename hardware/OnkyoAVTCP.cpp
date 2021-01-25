@@ -11,6 +11,7 @@
 #include "../tinyxpath/tinyxml.h"
 #include "../main/WebServer.h"
 
+#include <cinttypes>
 #include <sstream>
 
 #define RETRY_DELAY 30
@@ -310,7 +311,7 @@ bool OnkyoAVTCP::SendPacket(const char *pdata)
 	_log.Log(LOG_NORM, "OnkyoAVTCP: Send %s", pdata);
 	size_t length = strlen(pdata);
 
-	struct eiscp_packet *pPkt = (struct eiscp_packet *)malloc(sizeof(*pPkt) + length);
+	struct eiscp_packet *pPkt = static_cast<struct eiscp_packet *>(malloc(sizeof(*pPkt) + length));
 	if (!pPkt)
 	{
 		return false;
@@ -327,7 +328,7 @@ bool OnkyoAVTCP::SendPacket(const char *pdata)
 	pPkt->message[length] = 0x0d;
 	pPkt->message[length + 1] = 0x0a;
 
-	write((unsigned char *)pPkt, length + sizeof(*pPkt));
+	write(reinterpret_cast<unsigned char *>(pPkt), length + sizeof(*pPkt));
 	free(pPkt);
 	return true;
 }
@@ -377,7 +378,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 		std::vector<std::string>::iterator itt2;
 		int i = 0;
 		for (itt2 = strarray.begin(); itt2 != strarray.end(); ++itt2) {
-			if (strtoul(itt2->c_str(), nullptr, 16) == (unsigned long)level)
+			if (std::strtoumax(itt2->c_str(), nullptr, 16) == uintmax_t(level))
 				break;
 			i += 10;
 		}
@@ -416,13 +417,13 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	gswitch.subtype = switch_types[ID].subtype;
 	gswitch.id = ID;
 	gswitch.unitcode = 0;
-	gswitch.cmnd = (uint8_t)action;
-	gswitch.level = (uint8_t)level;
+	gswitch.cmnd = uint8_t(action);
+	gswitch.level = uint8_t(level);
 	gswitch.battery_level = 255;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
 
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, switch_types[ID].name, 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gswitch), switch_types[ID].name, 255, m_Name.c_str());
 }
 
 void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
@@ -459,7 +460,7 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 {
 	TiXmlDocument doc;
 
-	((char *)pData)[Len - 1] = 0;
+	(const_cast<char *>(pData))[Len - 1] = 0;
 	pData += 3;
 
 	doc.Parse(pData);
@@ -606,7 +607,7 @@ void OnkyoAVTCP::ReceiveMessage(const char *pData, int Len)
 void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 {
 	if (m_pPartialPkt) {
-		unsigned char *new_data = (unsigned char *)realloc(m_pPartialPkt, m_PPktLen + Len);
+		unsigned char *new_data = static_cast<unsigned char *>(realloc(m_pPartialPkt, m_PPktLen + Len));
 		if (!new_data) {
 			free(m_pPartialPkt);
 			m_pPartialPkt = nullptr;
@@ -621,14 +622,14 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 		}
 	}
 	while (Len >= 18) {
-		const struct eiscp_packet *pkt = (const struct eiscp_packet *)pData;
+		const struct eiscp_packet *pkt = reinterpret_cast<const struct eiscp_packet *>(pData);
 		if (pkt->magic != htonl(0x49534350) || // "ISCP"
 		    pkt->hdr_size != htonl(16) || pkt->version != 1) {
 			Len--;
 			pData++;
 			continue;
 		}
-		int data_size = static_cast<int>(ntohl(pkt->data_size));
+		int data_size = int(ntohl(pkt->data_size));
 		if (Len < 16 + data_size)
 			break;
 
@@ -642,7 +643,7 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 			m_PPktLen = Len;
 			return;
 		}
-		new_partial = (unsigned char *)malloc(Len);
+		new_partial = static_cast<unsigned char *>(malloc(Len));
 		if (new_partial)
 			memcpy(new_partial, pData, Len);
 		else Len = 0;
@@ -680,7 +681,7 @@ namespace http {
 			root["status"] = "ERR";
 			if (result.size() == 1)
 			{
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
+				_eHardwareTypes hType = _eHardwareTypes(atoi(result[0][2].c_str()));
 				switch (hType) {
 				// We allow raw EISCP commands to be sent on *any* of the logical devices
 				// associated with the hardware.

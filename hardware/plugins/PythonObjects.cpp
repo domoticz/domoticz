@@ -30,12 +30,12 @@ namespace Plugins {
 		Py_XDECREF(self->Base);
 		Py_XDECREF(self->Name);
 		Py_XDECREF(self->Description);
-		Py_TYPE(self)->tp_free((PyObject*)self);
+		Py_TYPE(self)->tp_free(reinterpret_cast<PyObject *>(self));
 	}
 
 	PyObject* CImage_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	{
-		CImage *self = (CImage *)type->tp_alloc(type, 0);
+		CImage *self = reinterpret_cast<CImage *>(type->tp_alloc(type, 0));
 
 		try
 		{
@@ -81,7 +81,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
 
-		return (PyObject *)self;
+		return reinterpret_cast<PyObject *>(self);
 	}
 
 	int CImage_init(CImage *self, PyObject *args, PyObject *kwds)
@@ -98,7 +98,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
+			module_state *pModState = (static_cast<struct module_state *>(PyModule_GetState(pModule)));
 			if (!pModState)
 			{
 				_log.Log(LOG_ERROR, "CImage:%s, unable to obtain module state.", __func__);
@@ -176,11 +176,10 @@ namespace Plugins {
 							// Add image objects into the image dictionary with ID as the key
 							for (const auto &sd : result)
 							{
-								CImage *pImage = (CImage *)CImage_new(&CImageType, (PyObject *)nullptr,
-												      (PyObject *)nullptr);
+								CImage *pImage = reinterpret_cast<CImage *>(CImage_new(&CImageType, (PyObject *)nullptr, (PyObject *)nullptr));
 
 								PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
-								if (PyDict_SetItem((PyObject*)self->pPlugin->m_ImageDict, pKey, (PyObject*)pImage) == -1)
+								if (PyDict_SetItem(static_cast<PyObject *>(self->pPlugin->m_ImageDict), pKey, reinterpret_cast<PyObject *>(pImage)) == -1)
 								{
 									_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", self->pPlugin->m_PluginKey.c_str(), sd[0].c_str());
 									break;
@@ -232,7 +231,7 @@ namespace Plugins {
 					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
 					PyObject*	pKey = PyLong_FromLong(self->ImageID);
-					if (PyDict_DelItem((PyObject*)self->pPlugin->m_ImageDict, pKey) == -1)
+					if (PyDict_DelItem(static_cast<PyObject *>(self->pPlugin->m_ImageDict), pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete image '%d' from images dictionary.", self->pPlugin->m_Name.c_str(), self->ImageID);
 						Py_INCREF(Py_None);
@@ -272,12 +271,12 @@ namespace Plugins {
 		PyDict_Clear(self->Options);
 		Py_XDECREF(self->Options);
 		Py_XDECREF(self->Color);
-		Py_TYPE(self)->tp_free((PyObject*)self);
+		Py_TYPE(self)->tp_free(reinterpret_cast<PyObject *>(self));
 	}
 
 	PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	{
-		CDevice *self = (CDevice *)type->tp_alloc(type, 0);
+		CDevice *self = reinterpret_cast<CDevice *>(type->tp_alloc(type, 0));
 
 		try
 		{
@@ -353,7 +352,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
 
-		return (PyObject *)self;
+		return reinterpret_cast<PyObject *>(self);
 	}
 
 	static void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
@@ -548,7 +547,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
+			module_state *pModState = (static_cast<struct module_state *>(PyModule_GetState(pModule)));
 			if (!pModState)
 			{
 				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
@@ -784,7 +783,7 @@ namespace Plugins {
 							self->ID = atoi(result[0][0].c_str());
 
 							PyObject*	pKey = PyLong_FromLong(self->Unit);
-							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
+							if (PyDict_SetItem(static_cast<PyObject *>(self->pPlugin->m_DeviceDict), pKey, reinterpret_cast<PyObject *>(self)) == -1)
 							{
 								_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
 								Py_INCREF(Py_None);
@@ -1012,8 +1011,8 @@ namespace Plugins {
 				{
 					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 				}
-				Py_BEGIN_ALLOW_THREADS
-				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+				Py_BEGIN_ALLOW_THREADS DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), uint8_t(self->Unit), uint8_t(iType), uint8_t(iSubType), iSignalLevel,
+										     iBatteryLevel, nValue, sValue, sName, true);
 				Py_END_ALLOW_THREADS
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
@@ -1053,7 +1052,7 @@ namespace Plugins {
 				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 				// Trigger any associated scene / groups
-				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue, "Python");
+				m_mainworker.CheckSceneCode(DevRowIdx, uint8_t(self->Type), uint8_t(self->SubType), nValue, sValue, "Python");
 				Py_END_ALLOW_THREADS
 
 			}
@@ -1088,7 +1087,7 @@ namespace Plugins {
 					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 
 					PyObject*	pKey = PyLong_FromLong(self->Unit);
-					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
+					if (PyDict_DelItem(static_cast<PyObject *>(self->pPlugin->m_DeviceDict), pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete unit '%d' from device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
 						Py_INCREF(Py_None);
@@ -1163,15 +1162,15 @@ namespace Plugins {
 			self->pProtocol = nullptr;
 		}
 
-		Py_TYPE(self)->tp_free((PyObject*)self);
+		Py_TYPE(self)->tp_free(reinterpret_cast<PyObject *>(self));
 	}
 
 	PyObject * CConnection_new(PyTypeObject * type, PyObject * args, PyObject * kwds)
 	{
 		CConnection *self = nullptr;
-		if ((CConnection *)type->tp_alloc)
+		if (reinterpret_cast<CConnection *>(type->tp_alloc))
 		{
-			self = (CConnection *)type->tp_alloc(type, 0);
+			self = reinterpret_cast<CConnection *>(type->tp_alloc(type, 0));
 		}
 		else
 		{
@@ -1241,7 +1240,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
 
-		return (PyObject *)self;
+		return reinterpret_cast<PyObject *>(self);
 	}
 
 	int CConnection_init(CConnection * self, PyObject * args, PyObject * kwds)
@@ -1263,7 +1262,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
+			module_state *pModState = (static_cast<struct module_state *>(PyModule_GetState(pModule)));
 			if (!pModState)
 			{
 				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
@@ -1301,7 +1300,7 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, (PyObject*)self));
+					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, reinterpret_cast<PyObject *>(self)));
 				}
 			}
 			else
@@ -1354,7 +1353,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, (PyObject*)self));
+		self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, reinterpret_cast<PyObject *>(self)));
 
 		return Py_None;
 	}
@@ -1388,7 +1387,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, (PyObject*)self));
+		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, reinterpret_cast<PyObject *>(self)));
 
 		return Py_None;
 	}
@@ -1416,7 +1415,7 @@ namespace Plugins {
 			else
 			{
 				//	Add start command to message queue
-				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay));
+				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, reinterpret_cast<PyObject *>(self), pData, iDelay));
 			}
 		}
 
@@ -1430,7 +1429,7 @@ namespace Plugins {
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, (PyObject*)self));
+				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, reinterpret_cast<PyObject *>(self)));
 			}
 			else
 				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->m_Name.c_str());
@@ -1494,7 +1493,7 @@ namespace Plugins {
 		std::string		sParent = "None";
 		if (self->Parent != Py_None)
 		{
-			sParent = PyUnicode_AsUTF8(((CConnection*)self->Parent)->Name);
+			sParent = PyUnicode_AsUTF8((reinterpret_cast<CConnection *>(self->Parent))->Name);
 		}
 
 		if (self->pTransport)

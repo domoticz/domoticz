@@ -127,7 +127,7 @@ bool CETH8020::WriteToHardware(const char *pdata, const unsigned char /*length*/
 void CETH8020::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	double rlevel = (15.0 / 100)*Level;
-	uint8_t level = (uint8_t)(rlevel);
+	uint8_t level = uint8_t(rlevel);
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
@@ -170,7 +170,7 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, cons
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&lcmd.LIGHTING2), defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CETH8020::GetMeterDetails()
@@ -219,7 +219,7 @@ void CETH8020::GetMeterDetails()
 			pos1 = tmpstr.find('>');
 			if (pos1 != std::string::npos)
 			{
-				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = uint8_t(atoi(tmpstr.substr(0, pos1).c_str()));
 				tmpstr = tmpstr.substr(pos1+1);
 				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
@@ -237,18 +237,18 @@ void CETH8020::GetMeterDetails()
 			pos1 = tmpstr.find('>');
 			if (pos1 != std::string::npos)
 			{
-				Idx = (uint8_t)atoi(tmpstr.substr(0, pos1).c_str());
+				Idx = uint8_t(atoi(tmpstr.substr(0, pos1).c_str()));
 				tmpstr = tmpstr.substr(pos1 + 1);
 				pos1 = tmpstr.find('<');
 				if (pos1 != std::string::npos)
 				{
 					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
-					float voltage = (float)(5.0F / 1023.0F) * lValue;
+					float voltage = (5.0F / 1023.0F) * lValue;
 					if (voltage > 5.0F)
 						voltage = 5.0F;
 					std::stringstream sstr;
 					sstr << "Voltage " << Idx;
-					SendVoltageSensor(0, (uint8_t)Idx, 255, voltage, sstr.str());
+					SendVoltageSensor(0, Idx, 255, voltage, sstr.str());
 				}
 			}
 		}

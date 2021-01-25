@@ -237,7 +237,7 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 		{
 			// discard newline, close string, parse line and clear it.
 			m_rfbuffer[m_rfbufferpos] = '\0';
-			std::string sLine((char*)&m_rfbuffer);
+			std::string sLine(reinterpret_cast<char *>(&m_rfbuffer));
 			ParseLine(sLine);
 			m_rfbufferpos = 0;
 		}
@@ -392,7 +392,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			if (pLed->color.mode == ColorModeWhite)
 			{
 				// brightness (0-100) converted to 0x00-0xff
-				int brightness = (unsigned char)pLed->value;
+				int brightness = uint8_t(pLed->value);
 				brightness = (brightness * 255) / 100;
 				brightness = brightness & 0xff;
 				colorbright &= 0xff00;
@@ -404,7 +404,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->color.mode == ColorModeRGB)
 			{
 				// brightness (0-100) converted to 0x00-0xff
-				int brightness = (unsigned char)pLed->value;
+				int brightness = uint8_t(pLed->value);
 				brightness = (brightness * 255) / 100;
 				brightness = brightness & 0xff;
 				// Convert RGB to HSV
@@ -412,7 +412,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
 				int iHue = int(hsb[0] * 255.0F);
 				iHue = (iHue + 0x20) & 0xFF; // Milight color offset correction
-				colorbright = (((unsigned char)iHue) << 8) | brightness;
+				colorbright = (uint8_t(iHue) << 8) | brightness;
 				switchcmnd = "COLOR";
 				switchcmnd2 = "BRIGHT";
 				bSendOn = true;
@@ -441,11 +441,11 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Color_SetBrightnessLevel: {
 			// brightness (0-100) converted to 0x00-0xff
-			int brightness = (unsigned char)pLed->value;
+			int brightness = uint8_t(pLed->value);
 			brightness = (brightness * 255) / 100;
 			brightness = brightness & 0xff;
 			colorbright = colorbright & 0xff00;
-			colorbright = colorbright + (unsigned char)brightness;
+			colorbright = colorbright + uint8_t(brightness);
 			switchcmnd = "BRIGHT";
 			bSendOn = true;
 		}
@@ -600,7 +600,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, BatteryLevel, m_Name.c_str());
+	sDecodeRXMessage(this, reinterpret_cast<const unsigned char *>(&gswitch), nullptr, BatteryLevel, m_Name.c_str());
 
 	return true;
 }

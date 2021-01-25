@@ -51,7 +51,7 @@
 		else
 		{
 			std::string message = msg;
-			_log.Log((_eLogLevel)LOG_NORM, message);
+			_log.Log(LOG_NORM, message);
 		}
 
 		Py_INCREF(Py_None);
@@ -119,7 +119,7 @@
 		}
 
 		std::lock_guard<std::mutex> l(PythonMutex);
-		PyEval_RestoreThread((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
+		PyEval_RestoreThread(static_cast<PyThreadState *>(m_mainworker.m_pluginsystem.PythonThread()));
 		m_PyInterpreter = Py_NewInterpreter();
 		if (!m_PyInterpreter)
 		{
@@ -137,18 +137,19 @@
             std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
 
             sPath += Plugins::Py_GetPath();
-            Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
+	    Plugins::PySys_SetPath(const_cast<wchar_t *>(sPath.c_str()));
 
-            PythonEventsInitalized = 1;
+	    PythonEventsInitalized = 1;
 
-            PyObject* pModule = Plugins::PythonEventsGetModule();
-			PyEval_SaveThread();
-			if (!pModule) {
-                _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
-                return false;
-            }
-            ModuleInitalized = true;
-            return true;
+	    PyObject *pModule = Plugins::PythonEventsGetModule();
+	    PyEval_SaveThread();
+	    if (!pModule)
+	    {
+		    _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
+		    return false;
+	    }
+	    ModuleInitalized = true;
+	    return true;
 	}
 
 	bool PythonEventsStop()
@@ -156,9 +157,9 @@
 		if (m_PyInterpreter)
 		{
 			std::lock_guard<std::mutex> l(PythonMutex);
-			PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
+			PyEval_RestoreThread(static_cast<PyThreadState *>(m_PyInterpreter));
 			if (Plugins::Py_IsInitialized())
-				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
+				Py_EndInterpreter(static_cast<PyThreadState *>(m_PyInterpreter));
 			m_PyInterpreter = nullptr;
 			PyEval_ReleaseLock();
 			_log.Log(LOG_STATUS, "EventSystem - Python stopped...");
@@ -210,7 +211,7 @@
 
 			std::lock_guard<std::mutex> l(PythonMutex);
 			if (m_PyInterpreter)
-				PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
+				PyEval_RestoreThread(static_cast<PyThreadState *>(m_PyInterpreter));
 
 			/*{
 			    _log.Log(LOG_ERROR, "EventSystem - Python: Failed to attach to interpreter");
@@ -220,7 +221,7 @@
 			if (pModule)
 			{
 
-				PyObject *pModuleDict = Plugins::PyModule_GetDict((PyObject *)pModule); // borrowed referece
+				PyObject *pModuleDict = Plugins::PyModule_GetDict(pModule); // borrowed referece
 
 				if (!pModuleDict)
 				{
@@ -240,7 +241,7 @@
 
 				PyObject *m_DeviceDict = Plugins::PyDict_New();
 
-				if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", (PyObject *)m_DeviceDict) == -1)
+				if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", m_DeviceDict) == -1)
 				{
 					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
 					PyEval_SaveThread();
@@ -266,13 +267,12 @@
 					// sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue,
 					// sitem.lastUpdate); devices[sitem.deviceName] = deviceStatus;
 
-					Plugins::PDevice *aDevice = (Plugins::PDevice *)Plugins::PDevice_new(
-						&Plugins::PDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
+					Plugins::PDevice *aDevice = reinterpret_cast<Plugins::PDevice *>(Plugins::PDevice_new(&Plugins::PDeviceType, (PyObject *)nullptr, (PyObject *)nullptr));
 					PyObject *pKey = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
 
 					if (sitem.ID == DeviceID)
 					{
-						if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device", (PyObject *)aDevice) == -1)
+						if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device", reinterpret_cast<PyObject *>(aDevice)) == -1)
 						{
 							_log.Log(LOG_ERROR,
 								 "Python EventSystem: Failed to add device '%s' as changed_device.",
@@ -280,7 +280,7 @@
 						}
 					}
 
-					if (Plugins::PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)aDevice) == -1)
+					if (Plugins::PyDict_SetItem(m_DeviceDict, pKey, reinterpret_cast<PyObject *>(aDevice)) == -1)
 					{
 						_log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.",
 							 sitem.deviceName.c_str());
@@ -295,7 +295,7 @@
 
 						// If nValueWording contains %, unicode fails?
 
-						aDevice->id = static_cast<int>(sitem.ID);
+						aDevice->id = int(sitem.ID);
 						aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
 						aDevice->type = sitem.devType;
 						aDevice->sub_type = sitem.subType;
@@ -367,7 +367,7 @@
 				// UserVariables
 				PyObject *m_uservariablesDict = Plugins::PyDict_New();
 
-				if (Plugins::PyDict_SetItemString(pModuleDict, "user_variables", (PyObject *)m_uservariablesDict) == -1)
+				if (Plugins::PyDict_SetItemString(pModuleDict, "user_variables", m_uservariablesDict) == -1)
 				{
 					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add uservariables dictionary.");
 					PyEval_SaveThread();

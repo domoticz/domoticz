@@ -41,7 +41,7 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 	mosqdz::lib_init();
 
 	m_usIPPort = usIPPort;
-	m_publish_scheme = (_ePublishTopics)PublishScheme;
+	m_publish_scheme = _ePublishTopics(PublishScheme);
 
 	m_TopicIn = TOPIC_IN;
 	m_TopicOut = TOPIC_OUT;
@@ -167,7 +167,7 @@ void MQTT::on_connect(int rc)
 void MQTT::on_message(const struct mosquitto_message* message)
 {
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage = std::string(static_cast<char *>(message->payload), static_cast<char *>(message->payload) + message->payloadlen);
 
 	_log.Log(LOG_NORM, "MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 
@@ -197,7 +197,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		//Checks
 		if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))
 		{
-			idx = (uint64_t)root["idx"].asInt64();
+			idx = uint64_t(root["idx"].asInt64());
 			//Get the raw device parameters
 			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
@@ -208,7 +208,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		}
 		else if ((szCommand == "switchscene") || (szCommand == "getsceneinfo"))
 		{
-			idx = (uint64_t)root["idx"].asInt64();
+			idx = uint64_t(root["idx"].asInt64());
 			result = m_sql.safe_query("SELECT Name FROM Scenes WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
@@ -218,7 +218,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		}
 		else if (szCommand == "setuservariable")
 		{
-			idx = (uint64_t)root["idx"].asInt64();
+			idx = uint64_t(root["idx"].asInt64());
 			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			if (result.empty())
 			{
@@ -310,7 +310,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		}
 		else if (szCommand == "setcolbrightnessvalue")
 		{
-			idx = (uint64_t)root["idx"].asInt64();
+			idx = uint64_t(root["idx"].asInt64());
 			_tColor color;
 
 			std::string hex = root["hex"].asString();
@@ -341,9 +341,9 @@ void MQTT::on_message(const struct mosquitto_message* message)
 					int r, g, b;
 					rgb2hsb(color.r, color.g, color.b, hsb);
 					hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, r, g, b, 255);
-					color.r = (uint8_t)r;
-					color.g = (uint8_t)g;
-					color.b = (uint8_t)b;
+					color.r = uint8_t(r);
+					color.g = uint8_t(g);
+					color.b = uint8_t(b);
 					brightnessAdj = hsb[2];
 				}
 				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue: color: '%s', bri: '%s'", color.toString().c_str(), brightness.c_str());
@@ -360,35 +360,35 @@ void MQTT::on_message(const struct mosquitto_message* message)
 				switch (hex.length())
 				{
 				case 6: //RGB
-					r = (uint8_t)((ihex & 0x0000FF0000) >> 16);
-					g = (uint8_t)((ihex & 0x000000FF00) >> 8);
-					b = (uint8_t)ihex & 0xFF;
+					r = uint8_t((ihex & 0x0000FF0000) >> 16);
+					g = uint8_t((ihex & 0x000000FF00) >> 8);
+					b = uint8_t(ihex) & 0xFF;
 					float hsb[3];
 					int tr, tg, tb; // tmp of 'int' type so can be passed as references to hsb2rgb
 					rgb2hsb(r, g, b, hsb);
 					// Normalize RGB to full brightness
 					hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, tr, tg, tb, 255);
-					r = (uint8_t)tr;
-					g = (uint8_t)tg;
-					b = (uint8_t)tb;
+					r = uint8_t(tr);
+					g = uint8_t(tg);
+					b = uint8_t(tb);
 					brightnessAdj = hsb[2];
 					// Backwards compatibility: set iswhite for unsaturated colors
 					iswhite = (hsb[1] < (20.0 / 255.0)) ? "true" : "false";
 					color = _tColor(r, g, b, cw, ww, ColorModeRGB);
 					break;
 				case 8: //RGB_WW
-					r = (uint8_t)((ihex & 0x00FF000000) >> 24);
-					g = (uint8_t)((ihex & 0x0000FF0000) >> 16);
-					b = (uint8_t)((ihex & 0x000000FF00) >> 8);
-					ww = (uint8_t)ihex & 0xFF;
+					r = uint8_t((ihex & 0x00FF000000) >> 24);
+					g = uint8_t((ihex & 0x0000FF0000) >> 16);
+					b = uint8_t((ihex & 0x000000FF00) >> 8);
+					ww = uint8_t(ihex) & 0xFF;
 					color = _tColor(r, g, b, cw, ww, ColorModeCustom);
 					break;
 				case 10: //RGB_CW_WW
-					r = (uint8_t)((ihex & 0xFF00000000) >> 32);
-					g = (uint8_t)((ihex & 0x00FF000000) >> 24);
-					b = (uint8_t)((ihex & 0x0000FF0000) >> 16);
-					cw = (uint8_t)((ihex & 0x000000FF00) >> 8);
-					ww = (uint8_t)ihex & 0xFF;
+					r = uint8_t((ihex & 0xFF00000000) >> 32);
+					g = uint8_t((ihex & 0x00FF000000) >> 24);
+					b = uint8_t((ihex & 0x0000FF0000) >> 16);
+					cw = uint8_t((ihex & 0x000000FF00) >> 8);
+					ww = uint8_t(ihex) & 0xFF;
 					color = _tColor(r, g, b, cw, ww, ColorModeCustom);
 					break;
 				}
@@ -405,7 +405,7 @@ void MQTT::on_message(const struct mosquitto_message* message)
 				if (!sat.empty()) iSat = float(atof(sat.c_str()));
 				hsb2rgb(iHue, iSat / 100.0F, 1.0F, r, g, b, 255);
 
-				color = _tColor((uint8_t)r, (uint8_t)g, (uint8_t)b, 0, 0, ColorModeRGB);
+				color = _tColor(uint8_t(r), uint8_t(g), uint8_t(b), 0, 0, ColorModeRGB);
 				if (iswhite == "true") color.mode = ColorModeWhite;
 				//_log.Debug(DEBUG_NORM, "MQTT: setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
 			}
@@ -449,10 +449,10 @@ void MQTT::on_message(const struct mosquitto_message* message)
 		{
 			std::string varvalue = root["value"].asString();
 
-			idx = (uint64_t)root["idx"].asInt64();
+			idx = uint64_t(root["idx"].asInt64());
 			result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID==%" PRIu64 ")", idx);
 			std::string sVarName = result[0][0];
-			_eUsrVariableType varType = (_eUsrVariableType)atoi(result[0][1].c_str());
+			_eUsrVariableType varType = _eUsrVariableType(atoi(result[0][1].c_str()));
 
 			std::string errorMessage;
 			if (!m_sql.UpdateUserVariable(root["idx"].asString(), sVarName, varType, varvalue, true, errorMessage))
@@ -744,7 +744,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		int dSubType = atoi(sd[iIndex++].c_str());
 		int nvalue = atoi(sd[iIndex++].c_str());
 		std::string svalue = sd[iIndex++];
-		_eSwitchType switchType = (_eSwitchType)atoi(sd[iIndex++].c_str());
+		_eSwitchType switchType = _eSwitchType(atoi(sd[iIndex++].c_str()));
 		int RSSI = atoi(sd[iIndex++].c_str());
 		int BatteryLevel = atoi(sd[iIndex++].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[iIndex++]);
@@ -759,14 +759,14 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		root["id"] = did;
 		root["unit"] = dunit;
 		root["name"] = name;
-		root["dtype"] = RFX_Type_Desc((uint8_t)dType, 1);
-		root["stype"] = RFX_Type_SubType_Desc((uint8_t)dType, (uint8_t)dSubType);
+		root["dtype"] = RFX_Type_Desc(uint8_t(dType), 1);
+		root["stype"] = RFX_Type_SubType_Desc(uint8_t(dType), uint8_t(dSubType));
 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
 		}
 		else if ((dType == pTypeRFXMeter) || (dType == pTypeRFXSensor)) {
-			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
+			root["meterType"] = Meter_Type_Desc(_eMeterType(switchType));
 		}
 		// Add device options
 		for (const auto &option : options)
@@ -856,8 +856,8 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string&/*SceneName*
 	std::string sName = sd[1];
 	std::string sLastUpdate = sd[6];
 
-	unsigned char nValue = (uint8_t)atoi(sd[4].c_str());
-	unsigned char scenetype = (uint8_t)atoi(sd[5].c_str());
+	unsigned char nValue = uint8_t(atoi(sd[4].c_str()));
+	unsigned char scenetype = uint8_t(atoi(sd[5].c_str()));
 	//int iProtected = atoi(sd[7].c_str());
 
 	//std::string onaction = base64_encode((sd[8]);

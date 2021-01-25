@@ -31,7 +31,7 @@ void CHEOS::ParseLine()
 {
 	if (m_bufferpos < 2)
 		return;
-	std::string sLine((char*)&m_buffer);
+	std::string sLine(reinterpret_cast<char *>(&m_buffer));
 
 	try
 	{
@@ -675,7 +675,7 @@ bool CHEOS::WriteInt(const std::string &sendStr)
 	ssSend << sendStr << "\r\n";
 	sSend = ssSend.str();
 
-	write((const unsigned char*)sSend.c_str(), sSend.size());
+	write(reinterpret_cast<const unsigned char *>(sSend.c_str()), sSend.size());
 	return true;
 }
 
@@ -799,14 +799,14 @@ void CHEOS::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,DeviceID, Name, nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		_log.Log(LOG_STATUS, "DENON for HEOS: %d players found.", (int)result.size());
+		_log.Log(LOG_STATUS, "DENON for HEOS: %d players found.", int(result.size()));
 		for (const auto &sd : result)
 		{
 			HEOSNode pnode;
 			pnode.ID = atoi(sd[0].c_str());
 			pnode.DevID = atoi(sd[1].c_str());
 			pnode.Name = sd[2];
-			pnode.nStatus = (_eMediaStatus)atoi(sd[3].c_str());
+			pnode.nStatus = _eMediaStatus(atoi(sd[3].c_str()));
 			pnode.sStatus = sd[4];
 			pnode.LastOK = mytime(nullptr);
 
@@ -869,9 +869,9 @@ namespace http {
 
 			if (result.size() == 1)
 			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
+				_eSwitchType sType = _eSwitchType(atoi(result[0][0].c_str()));
 				int PlayerID = atoi(result[0][1].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
+				_eHardwareTypes hType = _eHardwareTypes(atoi(result[0][2].c_str()));
 				//int HwID = atoi(result[0][3].c_str());
 				// Is the device a media Player?
 				if (sType == STYPE_Media)

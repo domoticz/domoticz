@@ -708,7 +708,7 @@ int main(int argc, char**argv)
 	{
 #if !defined WIN32
 		char szStartupPath[255];
-		getExecutablePathName((char*)&szStartupPath,255);
+		getExecutablePathName(reinterpret_cast<char *>(&szStartupPath), 255);
 		szStartupFolder=szStartupPath;
 		if (szStartupFolder.find_last_of('/')!=std::string::npos)
 			szStartupFolder=szStartupFolder.substr(0,szStartupFolder.find_last_of('/')+1);
@@ -735,7 +735,7 @@ int main(int argc, char**argv)
 	}
 
 	/* call srand once for the entire app */
-	std::srand((unsigned int)std::time(nullptr));
+	std::srand(uint32_t(std::time(nullptr)));
 	szRandomUUID = GenerateUUID();    
 
 	GetAppVersion();
@@ -803,7 +803,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
-			int iPort = (int)atoi(wwwport.c_str());
+			int iPort = atoi(wwwport.c_str());
 			if ((iPort < 0) || (iPort > 32767))
 			{
 				_log.Log(LOG_ERROR, "Please specify a valid www port");
@@ -844,7 +844,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
-			int iPort = (int)atoi(wwwport.c_str());
+			int iPort = atoi(wwwport.c_str());
 			if ((iPort < 0) || (iPort > 32767))
 			{
 				_log.Log(LOG_ERROR, "Please specify a valid sslwww port");

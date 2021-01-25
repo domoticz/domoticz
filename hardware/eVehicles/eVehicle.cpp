@@ -197,7 +197,7 @@ void CeVehicle::SendPercentage(int percType, float value)
 {
 	if ((percType == VEHICLE_LEVEL_BATTERY) && m_api->m_capabilities.has_battery_level)
 	{
-		int iBattLevel = static_cast<int>(value);
+		int iBattLevel = int(value);
 		float fBattLevel = value;
 		if (fBattLevel < 0.0F || fBattLevel > 100.0F)	// Filter out wrong readings
 		{
@@ -886,7 +886,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 
 						if (is_number(sValue))
 						{
-							float fValue = static_cast<float>(std::atof(sValue.c_str()));
+							float fValue = float(std::atof(sValue.c_str()));
 							SendCustom(VEHICLE_CUSTOM, iChildID, fValue, sLabel);
 						}
 						else if (isBool)

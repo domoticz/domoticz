@@ -246,7 +246,7 @@ void SolarEdgeAPI::GetMeterDetails()
 	m_totalActivePower = 0;
 	m_totalEnergy = 0;
 
-	for (int iInverter = 0; iInverter < (int)m_inverters.size(); iInverter++)
+	for (int iInverter = 0; iInverter < int(m_inverters.size()); iInverter++)
 	{
 		GetInverterDetails(&m_inverters[iInverter], iInverter);
 	}

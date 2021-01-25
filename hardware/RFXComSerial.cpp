@@ -331,7 +331,7 @@ bool RFXComSerial::UpgradeFirmware()
 			bcmd[1] = 1;
 			bcmd[2] = Address & 0xFF;
 			bcmd[3] = (Address & 0xFF00) >> 8;
-			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
+			bcmd[4] = uint8_t((Address & 0xFF0000) >> 16);
 			memcpy(bcmd + 5, firmware.second.c_str(), firmware.second.size());
 			bool ret = Write_TX_PKT(bcmd, 5 + firmware.second.size(), 20);
 			if (!ret)
@@ -507,7 +507,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			int iByte = 0;
 			sstr << std::hex << szHex;
 			sstr >> iByte;
-			rawLineBuf[raw_length++] = (unsigned char)iByte;
+			rawLineBuf[raw_length++] = uint8_t(iByte);
 			if (!sLine.empty())
 				chksum += iByte;
 			if (raw_length > sizeof(rawLineBuf) - 1)
@@ -536,7 +536,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 		case 0:
 			//Data record
-			dstring += std::string((const char*)&rawLineBuf + 4, (const char*)rawLineBuf + 4 + byte_count);
+			dstring += std::string(reinterpret_cast<const char *>(&rawLineBuf) + 4, reinterpret_cast<const char *>(rawLineBuf) + 4 + byte_count);
 			if (dstring.size() == PKT_writeblock)
 			{
 				dest_address = (((((addrh << 16) | (faddress + byte_count)) - PKT_writeblock)) / PKT_bytesperaddr);
@@ -676,7 +676,7 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, int m
 	{
 		try
 		{
-			size_t twrite = m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
+			size_t twrite = m_serial.write(reinterpret_cast<const uint8_t *>(&output_buffer), tot_bytes);
 			sleep_milliseconds(RFX_WRITE_DELAY);
 			if (twrite == tot_bytes)
 			{
@@ -712,7 +712,7 @@ bool RFXComSerial::Read_TX_PKT()
 	m_rx_tot_bytes = 0;
 	while (m_rx_tot_bytes < sizeof(m_rx_input_buffer))
 	{
-		size_t tot_read = m_serial.read((uint8_t*)&sbuffer, sizeof(sbuffer));
+		size_t tot_read = m_serial.read(reinterpret_cast<uint8_t *>(&sbuffer), sizeof(sbuffer));
 		if (tot_read <= 0)
 			return false;
 		int ii = 0;
@@ -830,7 +830,7 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 	{
 		if (!m_bInBootloaderMode)
 		{
-			bool bRet = onInternalMessage((const unsigned char *)data, len);
+			bool bRet = onInternalMessage(reinterpret_cast<const unsigned char *>(data), len);
 			if (bRet == false)
 			{
 				//close serial connection, and restart
@@ -945,7 +945,7 @@ namespace http {
 			unsigned char Mode5 = atoi(result[0][4].c_str());
 			unsigned char Mode6 = atoi(result[0][5].c_str());
 
-			_eHardwareTypes HWType = (_eHardwareTypes)atoi(result[0][6].c_str());
+			_eHardwareTypes HWType = _eHardwareTypes(atoi(result[0][6].c_str()));
 
 			tRBUF Response;
 			Response.ICMND.freqsel = Mode1;
@@ -996,7 +996,7 @@ namespace http {
 						if (AsyncMode.empty())
 							AsyncMode = "0";
 						result = m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", AsyncMode.c_str(), idx.c_str());
-						pBase->SetAsyncType((CRFXBase::_eRFXAsyncType)atoi(AsyncMode.c_str()));
+						pBase->SetAsyncType(CRFXBase::_eRFXAsyncType(atoi(AsyncMode.c_str())));
 					}
 				}
 			}
