@@ -171,13 +171,13 @@ namespace Plugins
 			switch (what)
 			{
 				case PyTrace_CALL:
-					_log.Log(LOG_NORM, "(%s) Calling function at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Calling function at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
 					break;
 				case PyTrace_RETURN:
-					_log.Log(LOG_NORM, "(%s) Returning from line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Returning from line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
 					break;
 				case PyTrace_EXCEPTION:
-					_log.Log(LOG_NORM, "(%s) Exception at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Exception at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
 					break;
 			}
 		}
@@ -217,13 +217,13 @@ namespace Plugins
 			switch (what)
 			{
 				case PyTrace_CALL:
-					_log.Log(LOG_NORM, "(%s) Calling function at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Calling function at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
 					break;
 				case PyTrace_LINE:
-					_log.Log(LOG_NORM, "(%s) Executing line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Executing line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
 					break;
 				case PyTrace_EXCEPTION:
-					_log.Log(LOG_NORM, "(%s) Exception at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Exception at line %d in '%s'", pModState->pPlugin->m_Name.c_str(), lineno, sFuncName.c_str());
 					break;
 			}
 		}
@@ -250,13 +250,13 @@ namespace Plugins
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
 					// TODO: Dump data to aid debugging
-					_log.Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
+					pModState->pPlugin->Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
 					LogPythonException(pModState->pPlugin, std::string(__func__));
 				}
 				else
 				{
 					std::string message = "(" + pModState->pPlugin->m_Name + ") " + msg;
-					_log.Log((_eLogLevel)LOG_NORM, message);
+					pModState->pPlugin->Log((_eLogLevel)LOG_NORM, message);
 				}
 			}
 		}
@@ -281,13 +281,13 @@ namespace Plugins
 			char *msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
-				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				std::string message = "(" + pModState->pPlugin->m_Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_NORM, message);
+				pModState->pPlugin->Log((_eLogLevel)LOG_NORM, message);
 			}
 		}
 
@@ -311,13 +311,13 @@ namespace Plugins
 			char *msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str(), std::string(__func__).c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) %s failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str(), std::string(__func__).c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				std::string message = "(" + pModState->pPlugin->m_Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_STATUS, message);
+				pModState->pPlugin->Log((_eLogLevel)LOG_STATUS, message);
 			}
 		}
 
@@ -342,13 +342,13 @@ namespace Plugins
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
 				// TODO: Dump data to aid debugging
-				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				std::string message = "(" + pModState->pPlugin->m_Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_ERROR, message);
+				pModState->pPlugin->Log((_eLogLevel)LOG_ERROR, message);
 			}
 		}
 
@@ -372,7 +372,7 @@ namespace Plugins
 			unsigned int type;
 			if (!PyArg_ParseTuple(args, "i", &type))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
@@ -382,7 +382,7 @@ namespace Plugins
 					type = PDM_ALL;
 
 				pModState->pPlugin->m_bDebug = (PluginDebugMask)type;
-				_log.Log(LOG_NORM, "(%s) Debug logging mask set to: %s%s%s%s%s%s%s%s%s", pModState->pPlugin->m_Name.c_str(), (type == PDM_NONE ? "NONE" : ""),
+				pModState->pPlugin->Log(LOG_NORM, "(%s) Debug logging mask set to: %s%s%s%s%s%s%s%s%s", pModState->pPlugin->m_Name.c_str(), (type == PDM_NONE ? "NONE" : ""),
 					 (type & PDM_PYTHON ? "PYTHON " : ""), (type & PDM_PLUGIN ? "PLUGIN " : ""), (type & PDM_QUEUE ? "QUEUE " : ""), (type & PDM_IMAGE ? "IMAGE " : ""),
 					 (type & PDM_DEVICE ? "DEVICE " : ""), (type & PDM_CONNECTION ? "CONNECTION " : ""), (type & PDM_MESSAGE ? "MESSAGE " : ""), (type == PDM_ALL ? "ALL" : ""));
 			}
@@ -408,7 +408,7 @@ namespace Plugins
 			int iPollinterval;
 			if (!PyArg_ParseTuple(args, "i", &iPollinterval))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
@@ -438,7 +438,7 @@ namespace Plugins
 			char *szNotifier;
 			if (!PyArg_ParseTuple(args, "s", &szNotifier))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Notifier Name expected.", pModState->pPlugin->m_Name.c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Notifier Name expected.", pModState->pPlugin->m_Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
@@ -446,7 +446,8 @@ namespace Plugins
 				std::string sNotifierName = szNotifier;
 				if ((sNotifierName.empty()) || (sNotifierName.find_first_of(' ') != std::string::npos))
 				{
-					_log.Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->m_Name.c_str(), szNotifier);
+					pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->m_Name.c_str(),
+								szNotifier);
 				}
 				else
 				{
@@ -476,13 +477,13 @@ namespace Plugins
 			int bTrace = 0;
 			if (!PyArg_ParseTuple(args, "p", &bTrace))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameter, True/False expected.", pModState->pPlugin->m_Name.c_str());
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameter, True/False expected.", pModState->pPlugin->m_Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				pModState->pPlugin->m_bTracing = (bool)bTrace;
-				_log.Log(LOG_NORM, "(%s) Low level Python tracing %s.", pModState->pPlugin->m_Name.c_str(), (pModState->pPlugin->m_bTracing ? "ENABLED" : "DISABLED"));
+				pModState->pPlugin->Log(LOG_NORM, "(%s) Low level Python tracing %s.", pModState->pPlugin->m_Name.c_str(), (pModState->pPlugin->m_bTracing ? "ENABLED" : "DISABLED"));
 
 				if (pModState->pPlugin->m_bTracing)
 				{
@@ -528,7 +529,7 @@ namespace Plugins
 				// Python object supplied if it is not a dictionary
 				if (!PyDict_Check(pNewConfig))
 				{
-					_log.Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
+					pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
 					return pConfig;
 				}
 				//  Convert to JSON and store
@@ -543,7 +544,7 @@ namespace Plugins
 			result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
 			if (result.empty())
 			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
+				pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
 				return pConfig;
 			}
 

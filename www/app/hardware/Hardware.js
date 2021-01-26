@@ -3880,9 +3880,6 @@ define(['app'], function (app) {
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.
 						if (data["Type"] == "PLUGIN") {
 							$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
-							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
-							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
-							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
 							$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Username").val(data["Username"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Password").val(data["Password"]);
@@ -3897,6 +3894,9 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode6").val(data["Mode6"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Extra").val(data["Extra"]);
 							UpdateHardwareParamControls();
+							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
 							return;
 						}
 						
