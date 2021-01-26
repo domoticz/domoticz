@@ -13,7 +13,9 @@ local function ShellCommandResponse(domoticz, responseData, testResponse)
 	self.errorText = responseData.errorText:gsub('\n','')
 	self.timeoutOccurred = responseData.timeoutOccurred
 	if (self.errorText == "" or self.errorText == "\r" or self.errorText == '\r\n') and self.timeoutOccurred then self.errorText = 'Timeout occurred' end
+	self.statusText = self.errorText or ''
 	self.ok = self.statusCode == 0
+
 
 	function self.dump( filename )
 		domoticz.logObject(self, filename, 'ShellCommandResponse')
