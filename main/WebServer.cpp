@@ -93,7 +93,7 @@ struct _tGuiLanguage {
 
 namespace
 {
-	constexpr std::array<std::pair<const char *, const char *>, 37> guiLanguage{ {
+	constexpr std::array<std::pair<const char *, const char *>, 36> guiLanguage{ {
 		{ "en", "English" },   { "sq", "Albanian" },   { "ar", "Arabic" },   { "bs", "Bosnian" },      { "bg", "Bulgarian" }, { "ca", "Catalan" },
 		{ "zh", "Chinese" },   { "cs", "Czech" },      { "da", "Danish" },   { "nl", "Dutch" },	       { "et", "Estonian" },  { "de", "German" },
 		{ "el", "Greek" },     { "fr", "French" },     { "fi", "Finnish" },  { "he", "Hebrew" },       { "hu", "Hungarian" }, { "is", "Icelandic" },
