@@ -31,25 +31,31 @@ local function EventHelpers(domoticz, mainMethod)
 	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,shellCommandResponses,scenes,groups,variables'
 	local inValidEventTypes = 'on,logging,active,data,execute'
 
+	-- defaults
 	local hyperTextTransferProtocol = 'http'
 	local serverPort = '8080'
+	local serverAddress = '127.0.0.1'
 
-	if  _gv.domoticz_listening_port ~= nil and tostring(_gv.domoticz_listening_port) ~= '' and
-		tonumber(_gv.domoticz_listening_port) ~= 0 then
-			serverPort = _gv.domoticz_listening_port
-	elseif  _gv.domoticz_is_secure and _gv.domoticz_secure_listening_port ~= nil and
-			tostring(_gv.domoticz_secure_listening_port) ~= '' and tonumber(_gv.domoticz_secure_listening_port) ~= 0 then
-			hyperTextTransferProtocol = 'https'
-			serverPort = _gv.domoticz_secure_listening_port
+	if _gv.domoticz_listening_port and tostring(_gv.domoticz_listening_port) ~= '' and tonumber(_gv.domoticz_listening_port) ~= 0 then
+		serverPort = _gv.domoticz_listening_port
+	elseif _gv.domoticz_is_secure and _gv.domoticz_secure_listening_port and
+		tostring(_gv.domoticz_secure_listening_port) ~= '' and tonumber(_gv.domoticz_secure_listening_port) ~= 0 then
+		hyperTextTransferProtocol = 'https'
+		serverPort = _gv.domoticz_secure_listening_port
 	end
 
-	local API_url = hyperTextTransferProtocol .. '://127.0.0.1:' .. serverPort
+	if _gv.domoticz_wwwbind ~= nil and tostring(_gv.domoticz_wwwbind) ~= '' and tostring(_gv.domoticz_wwwbind) ~= '::' then
+		serverAddress = _gv.domoticz_wwwbind
+	end
+
+	local API_url = hyperTextTransferProtocol .. '://' .. serverAddress .. ':' .. serverPort
 
 	local settings = {
 		['Log level'] = _gv.dzVents_log_level or 1,
 		['Domoticz url'] = API_url,
 		url = API_url,
 		webRoot = _gv.domoticz_webroot,
+		wwwBind = _gv.domoticz_wwwbind,
 		serverPort = port,
 		secureServer = _gv.domoticz_is_secure,
 		dzVentsVersion = _gv.dzVents_version,
