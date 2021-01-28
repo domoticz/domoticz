@@ -718,7 +718,8 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **secureServer**: *boolean* <sup>3.1.1</sup> true when domoticz can be accessed via https.
 	- **serverPort**: webserver listening port used by dzVents to access domoticz API.
 	- **url**: internal url to access the API service.
-	- **webRoot**: `webroot` value as specified when starting the Domoticz service.
+	- **webRoot**: `webroot` <sup>3.1.1</sup> value as specified when starting the Domoticz service (or default).
+	- **wwwBind**: `wwwbind` <sup>3.1.4</sup> value as specified when starting the Domoticz service (or default).
  - **sms(message [, delay] <sup>3.0.10</sup> )**: *Function*. Sends an sms if it is configured in Domoticz. Optional parm delay is delay in seconds.
  - **snapshot(cameraID(s) or camera Name(s)<sup>3.0.13</sup>,subject)**: *Function*. Sends email with a camera snapshots if email is configured and set for attachments in Domoticz. Send 1 or multiple camerIDs -names in ; separated string or array.
 
@@ -2601,6 +2602,9 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+
+## [3.1.4] ##
+- Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
 
 ## [3.1.3] ##
 - Add method updateHistory for managed counter devices

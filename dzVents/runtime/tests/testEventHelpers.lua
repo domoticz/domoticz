@@ -449,6 +449,20 @@ describe('event helpers', function()
 			assert.are.same(true, helpers.settings.secureServer)
 		 end)
 
+		it('should have proper settings when started with wwwbind', function()
+		_G.globalvariables['domoticz_listening_port'] = nil
+			_G.globalvariables['domoticz_secure_listening_port'] = '8943'
+			_G.globalvariables['domoticz_is_secure'] = true
+			_G.globalvariables['domoticz_wwwbind'] = '0.0.0.0'
+
+			helpers = EventHelpers(domoticz)
+			assert.are.same('0.0.0.0', helpers.settings.wwwBind)
+			assert.are.same('https://0.0.0.0:8943', helpers.settings['Domoticz url'])
+			assert.are.same('https://0.0.0.0:8943', helpers.settings.url)
+			assert.are.same('0.0.0.0', helpers.settings.wwwBind)
+
+		end)
+
 		it('should have proper location settings', function()
 			assert.are.same('Domoticz', helpers.settings.location.name)
 		end)

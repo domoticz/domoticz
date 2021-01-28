@@ -1,6 +1,9 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## [3.1.4] ##
+- Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
+
 ## [3.1.3] ##
 - Add method updateHistory for managed counter devices
 - Added NSS_CLICKATELL as notification subsystem

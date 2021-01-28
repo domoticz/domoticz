@@ -30,7 +30,7 @@ extern http::server::ssl_server_settings secure_webserver_settings;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.1.3")
+	: m_version("3.1.4")
 {
 	m_bdzVentsExist = false;
 }
@@ -805,6 +805,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, c
 	luaTable.AddString("domoticz_secure_listening_port", secure_webserver_settings.listening_port);
 	luaTable.AddBool("domoticz_is_secure", secure_webserver_settings.is_secure());
 	luaTable.AddString("domoticz_webroot", szWebRoot);
+	luaTable.AddString("domoticz_wwwbind", m_mainworker.GetWebserverAddress());
 	luaTable.AddString("domoticz_start_time", m_mainworker.m_eventsystem.m_szStartTime);
 	luaTable.AddString("currentTime", TimeToString(nullptr, TF_DateTimeMs));
 	luaTable.AddInteger("systemUptime", SystemUptime());
