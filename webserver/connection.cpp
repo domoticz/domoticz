@@ -393,7 +393,7 @@ namespace http {
 					}
 					catch (...)
 					{
-						_log.Log(LOG_ERROR, "Exception parsing http request.");
+						_log.Log(LOG_ERROR, "Exception parsing HTTP. Address: %s", host_endpoint_address_.c_str());
 					}
 
 					if (result) {
@@ -456,14 +456,7 @@ namespace http {
 					}
 					else if (!result)
 					{
-/*
-This does not seem to print the correct request
-						begin = boost::asio::buffer_cast<const char*>(_buf.data());
-						std::string sRequest(begin, begin + _buf.size());
-
-						_log.Log(LOG_ERROR, "Error parsing http request. (%s)", sRequest.c_str());
-*/
-						_log.Log(LOG_ERROR, "Error parsing http request.");
+						_log.Log(LOG_ERROR, "Error parsing http request address: %s", host_endpoint_address_.c_str());
 						keepalive_ = false;
 						reply_ = reply::stock_reply(reply::bad_request);
 						MyWrite(reply_.to_string(request_.method));
