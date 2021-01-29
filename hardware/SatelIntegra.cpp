@@ -61,6 +61,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	std::fill(std::begin(m_zonesLastState), std::end(m_zonesLastState), false);
 	std::fill(std::begin(m_outputsLastState), std::end(m_outputsLastState), false);
 	std::fill(std::begin(m_isOutputSwitch), std::end(m_isOutputSwitch), false);
+	std::fill(std::begin(m_isTemperature), std::end(m_isTemperature), false);
 	std::fill(std::begin(m_isPartitions), std::end(m_isPartitions), false);
 	std::fill(std::begin(m_armLastState), std::end(m_armLastState), false);
 	m_alarmLast = false;
