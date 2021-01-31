@@ -19,6 +19,42 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+// Mapping to device idx for backwards compatibility
+#define MsgID0		101
+#define MsgID1		1
+#define MsgID6		2
+#define MsgID7		25
+#define MsgID8		26
+#define MsgID14		3
+#define MsgID15		4
+#define MsgID16		5
+#define MsgID17		6
+#define MsgID18		7
+#define MsgID19		27
+#define MsgID23		28
+#define MsgID24		8
+#define MsgID25		9
+#define MsgID26		10
+#define MsgID27		11
+#define MsgID28		12
+#define MsgID31		29
+#define MsgID33		30
+#define MsgID48		13
+#define MsgID49		14
+#define MsgID56		15
+#define MsgID57		16
+#define MsgID70		31
+#define MsgID71		32
+#define MsgID77		33
+#define MsgID116	17
+#define MsgID117	18
+#define MsgID118	19
+#define MsgID119	20
+#define MsgID120	21
+#define MsgID121	22
+#define MsgID122	23
+#define MsgID123	24
+
 extern http::server::CWebServerHelper m_webservers;
 
 OTGWBase::OTGWBase()
@@ -386,41 +422,41 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 
-		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Control_setpoint, "Control Setpoint");
+		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID1, 255, _status.Control_setpoint, "Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		if(m_bFirmware5)
 		{
 			idx+=2;
 		}
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
-		bool bExists = CheckPercentageSensorExists(idx - 1, 1);
+		bool bExists = CheckPercentageSensorExists(MsgID14, 1);
 		if ((_status.Maximum_relative_modulation_level != 0) || (bExists))
 		{
-			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
+			SendPercentageSensor(MsgID14, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
 		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));
-		UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature != 0.0F) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
+		UpdateSetPointSensor((uint8_t)MsgID16, ((m_OverrideTemperature != 0.0F) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
-		bExists = CheckPercentageSensorExists(idx - 1, 1);
+		bExists = CheckPercentageSensorExists(MsgID17, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
 		{
-			SendPercentageSensor(idx - 1, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
+			SendPercentageSensor(MsgID17, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
 		}
 		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.CH_water_pressure != 0)
 		{
-			SendPressureSensor(0, idx - 1, 255, _status.CH_water_pressure, "CH Water Pressure");
+			SendPressureSensor(0, MsgID18, 255, _status.CH_water_pressure, "CH Water Pressure");
 		}
 		if(m_bFirmware5)
 		{
 			idx+=2;
 		}
-		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Room_temperature, "Room Temperature");
-		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
-		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(idx - 1, 255, _status.DHW_temperature, "DHW Temperature");
-		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Outside_temperature, "Outside Temperature");
-		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
+		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID24, 255, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID25, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(MsgID26, 255, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID27, 255, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID28, 255, _status.Return_water_temperature, "Return Water Temperature");
 		if(m_bFirmware5)
 		{
 			idx+=2;
@@ -430,12 +466,12 @@ void OTGWBase::ParseLine()
 		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.DHW_setpoint != 0.0F)
 		{
-			UpdateSetPointSensor((uint8_t)idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+			UpdateSetPointSensor((uint8_t)MsgID56, _status.DHW_setpoint, "DHW Setpoint");
 		}
 		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.Max_CH_water_setpoint != 0.0F)
 		{
-			UpdateSetPointSensor((uint8_t)idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+			UpdateSetPointSensor((uint8_t)MsgID57, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
 		}
 		if(m_bFirmware5)
 		{
