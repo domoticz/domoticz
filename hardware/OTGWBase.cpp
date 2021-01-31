@@ -325,29 +325,29 @@ void OTGWBase::ParseLine()
 		//0    0	Status (MsgID=0) - Printed as two 8-bit bitfields
 		//1    1	Control setpoint (MsgID=1) - Printed as a floating point value
 		//2    2	Remote parameter flags (MsgID=6) - Printed as two 8-bit bitfields
-		// 	   3	Cooling control (MsgID=7) - 
-		//     4	Control setpoint 2 (MsgID=8) -  
+		// 	   3	Cooling control (MsgID=7) - Printed as a floating point value
+		//     4	Control setpoint 2 (MsgID=8) - Printed as a floating point value
 		//3    5	Maximum relative modulation level (MsgID=14) - Printed as a floating point value
 		//4    6	Boiler capacity and modulation limits (MsgID=15) - Printed as two bytes
 		//5    7	Room Setpoint (MsgID=16) - Printed as a floating point value
 		//6    8	Relative modulation level (MsgID=17) - Printed as a floating point value
 		//7    9	CH water pressure (MsgID=18) - Printed as a floating point value
-		//     10	DHW flow rate (MsgID=19) - 
-		//     11	CH2 room setpoint (MsgID=23) -  
+		//     10	DHW flow rate (MsgID=19) - Printed as a floating point value
+		//     11	CH2 room setpoint (MsgID=23) - Printed as a floating point value
 		//8    12	Room temperature (MsgID=24) - Printed as a floating point value
 		//9    13	Boiler water temperature (MsgID=25) - Printed as a floating point value
 		//10   14	DHW temperature (MsgID=26) - Printed as a floating point value
 		//11   15	Outside temperature (MsgID=27) - Printed as a floating point value
 		//12   16	Return water temperature (MsgID=28) - Printed as a floating point value
-		// 	   17	CH2 flow temperature (MsgID=31) -  
-		//     18	Boiler exhaust temperature (MsgID=33) -  
+		// 	   17	CH2 flow temperature (MsgID=31) - Printed as a floating point value
+		//     18	Boiler exhaust temperature (MsgID=33) - Printed as a signed decimal value
 		//13   19	DHW setpoint boundaries (MsgID=48) - Printed as two bytes
 		//14   20 	Max CH setpoint boundaries (MsgID=49) - Printed as two bytes
 		//15   21	DHW setpoint (MsgID=56) - Printed as a floating point value
 		//16   22	Max CH water setpoint (MsgID=57) - Printed as a floating point value
-		//     23	V/H master status (MsgID=70) -  
-		//     24	V/H control setpoint (MsgID=71) -  
-		//     25	Relative ventilation (MsgID=77) - 
+		//     23	V/H master status (MsgID=70) - Printed as two 8-bit bitfields
+		//     24	V/H control setpoint (MsgID=71) - Printed as a byte
+		//     25	Relative ventilation (MsgID=77) - Printed as a byte
 		//17   26	Burner starts (MsgID=116) - Printed as a decimal value
 		//18   27	CH pump starts (MsgID=117) - Printed as a decimal value
 		//19   28	DHW pump/valve starts (MsgID=118) - Printed as a decimal value
@@ -365,6 +365,8 @@ void OTGWBase::ParseLine()
 		if (m_bFirmware5)
 			sFirmwareMsg = "firmware 5 or higher!"; 
 		Log(LOG_STATUS, "Running with %s", sFirmwareMsg.c_str());
+
+		Debug(DEBUG_NORM, "Parsing the following PS=1 input line : %s", sLine.c_str());
 
 		_status.MsgID=results[idx++];
 		if (_status.MsgID.size()==17)
