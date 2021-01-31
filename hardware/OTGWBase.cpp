@@ -214,7 +214,7 @@ bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int /*s
 		}
 		else
 		{
-			Log(LOG_ERROR, "OTGW: Invalid switch command received!");
+			Log(LOG_ERROR, "Invalid switch command received!");
 			return false;
 		}
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
@@ -257,7 +257,7 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	}
 	else
 	{
-		Log(LOG_STATUS, "OTGW: Skipping writing to Hardware for type: %02X, subType: %02X", packettype, subtype);
+		Log(LOG_STATUS, "Skipping writing to Hardware for type: %02X, subType: %02X", packettype, subtype);
 	}
 	return true;
 }
@@ -315,7 +315,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	if (idx == 1)
 	{
 		//Control Set Point (MsgID=1)
-		Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Control SetPoint to: %.1f", temp);
 		sprintf(szCmd, "CS=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
@@ -323,7 +323,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
-		Log(LOG_STATUS, "OTGW: Setting Room SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Room SetPoint to: %.1f", temp);
 		sprintf(szCmd, "TT=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 		UpdateSetPointSensor((uint8_t)idx, temp, "Room Setpoint");
@@ -331,7 +331,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	else if (idx == 15)
 	{
 		//DHW setpoint (MsgID=56)
-		Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Heating SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SW=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 		UpdateSetPointSensor((uint8_t)idx, temp, "DHW Setpoint");
@@ -339,7 +339,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	else if (idx == 16)
 	{
 		//Max CH water setpoint (MsgID=57)
-		Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Max CH water SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 		UpdateSetPointSensor((uint8_t)idx, temp, "Max_CH Water Setpoint");
@@ -396,13 +396,11 @@ void OTGWBase::ParseLine()
 		_tOTGWStatus _status;
 		int idx=0;
 		m_bFirmware5 = (results.size()==34);
-	
-		std::string sFirmwareMsg = "pre version 5 firmware!";
-		if (m_bFirmware5)
-			sFirmwareMsg = "firmware 5 or higher!"; 
-		Log(LOG_STATUS, "Running with %s", sFirmwareMsg.c_str());
 
-		Debug(DEBUG_NORM, "Parsing the following PS=1 input line : %s", sLine.c_str());
+		std::string sFirmwareMsg = "pre version 5 firmware";
+		if (m_bFirmware5)
+			sFirmwareMsg = "firmware 5 or higher";
+		Debug(DEBUG_HARDWARE, "OTGW: Assuming %s! Parsing the following PS=1 input line : .%s.", sFirmwareMsg.c_str(), sLine.c_str());
 
 		_status.MsgID=results[idx++];
 		if (_status.MsgID.size()==17)
@@ -490,7 +488,7 @@ void OTGWBase::ParseLine()
 
 	if (sLine == "SE")
 	{
-		Log(LOG_ERROR, "OTGW: Error received!");
+		Log(LOG_ERROR, "Error received!");
 	}
 	else if (sLine.find("PR: G") != std::string::npos)
 	{
@@ -548,7 +546,7 @@ void OTGWBase::ParseLine()
 		if ((sLine.find("OT") == std::string::npos) && (sLine.find("PS") == std::string::npos) && (sLine.find("SC") == std::string::npos))
 		{
 			// Dont report OT/PS/SC feedback
-			Log(LOG_STATUS, "OTGW: %s", sLine.c_str());
+			Log(LOG_STATUS, "%s", sLine.c_str());
 		}
 	}
 }
@@ -605,7 +603,7 @@ namespace http {
 			size_t tpos = cmnd.find('=');
 			if (tpos != 2)
 			{
-				_log.Log(LOG_STATUS, "OTGW: Invalid user command!: %s", cmnd.c_str());
+				_log.Log(LOG_STATUS, "Invalid user command!: %s", cmnd.c_str());
 				return;
 			}
 			std::string rcmnd = cmnd.substr(0, 2);
