@@ -163,7 +163,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	end
 
-	if (isUTC~=nil and isUTC==true) then
+	if isUTC and isUTC == true then
 		now = os.date('!*t')
 	else
 		now = os.date('*t')
