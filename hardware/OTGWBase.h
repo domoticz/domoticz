@@ -47,7 +47,6 @@ class OTGWBase : public CDomoticzHardwareBase
 	void SetSetpoint(int idx, float temp);
 	virtual bool WriteInt(const unsigned char *pData, unsigned char Len) = 0;
 	std::string m_Version;
-	bool m_bFirmware5;
 
       protected:
 	void SetModes(int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
