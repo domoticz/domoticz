@@ -218,6 +218,7 @@ bool CTTNMQTT::ConnectIntEx()
 
 	if (!m_CAFilename.empty()) {
 		rc = tls_set(m_CAFilename.c_str());
+		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{
