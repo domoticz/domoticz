@@ -442,7 +442,9 @@ void OTGWBase::ParseLine()
 		}
 		if(bIsFirmware5)
 		{
-			idx+=2;
+			_status.DHW_flow_rate = static_cast<float>(atof(results[idx++].c_str()));						SendWaterflowSensor(MsgID19, 1, 255, _status.DHW_flow_rate, "DHW Flow Rate");
+			//CH2 room setpoint (MsgID=23)
+			idx+=1;
 		}
 		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID24, 255, _status.Room_temperature, "Room Temperature");
 		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID25, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
@@ -451,6 +453,8 @@ void OTGWBase::ParseLine()
 		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID28, 255, _status.Return_water_temperature, "Return Water Temperature");
 		if(bIsFirmware5)
 		{
+			//CH2 flow temperature(MsgID = 31)
+			//Boiler exhaust temperature(MsgID = 33)
 			idx+=2;
 		}
 		_status.DHW_setpoint_boundaries=results[idx++];
@@ -467,6 +471,9 @@ void OTGWBase::ParseLine()
 		}
 		if(bIsFirmware5)
 		{
+			//V/H master status(MsgID = 70)
+			//V/H control setpoint(MsgID = 71)
+			//Relative ventilation(MsgID = 77)
 			idx+=3;
 		}
 		_status.Burner_starts=atol(results[idx++].c_str());
