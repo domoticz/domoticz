@@ -396,11 +396,6 @@ void OTGWBase::ParseLine()
 		int idx=0;
 		bool bIsFirmware5 = (results.size()==34);
 
-		std::string sFirmwareMsg = "pre version 5 firmware";
-		if (bIsFirmware5)
-			sFirmwareMsg = "firmware 5 or higher";
-		Debug(DEBUG_HARDWARE, "OTGW: Assuming %s! Parsing the following PS=1 input line : .%s.", sFirmwareMsg.c_str(), sLine.c_str());
-
 		_status.MsgID=results[idx++];
 		if (_status.MsgID.size()==17)
 		{
