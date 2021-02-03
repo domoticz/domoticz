@@ -96,14 +96,6 @@ jobs:
           server-dir: beta/
           security: loose
 
-      # Trigger Docker build
-      - name: Docker Stage
-        if: github.repository_owner == 'domoticz'
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: 'https://hub.docker.com/api/build/v1/source/778e5561-87f9-47e3-a431-f493328d1b6f/trigger/4cbd5d3b-5113-4d9f-b826-af620f2319a3/call/'
-          method: 'POST'
-
       # Grok 2.tcp.ngrok.io DNS resolves to 52.14.18.129
       - name: Start SSH debug Session
         #if: ${{ failure() }}
