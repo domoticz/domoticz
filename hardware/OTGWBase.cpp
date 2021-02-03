@@ -64,7 +64,6 @@ OTGWBase::OTGWBase()
 	m_bufferpos = 0;
 	m_OverrideTemperature = 0.0F;
 	m_bRequestVersion = true;
-	m_bFirmware5 = false;
 }
 
 void OTGWBase::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
@@ -395,10 +394,10 @@ void OTGWBase::ParseLine()
 
 		_tOTGWStatus _status;
 		int idx=0;
-		m_bFirmware5 = (results.size()==34);
+		bool bIsFirmware5 = (results.size()==34);
 
 		std::string sFirmwareMsg = "pre version 5 firmware";
-		if (m_bFirmware5)
+		if (bIsFirmware5)
 			sFirmwareMsg = "firmware 5 or higher";
 		Debug(DEBUG_HARDWARE, "OTGW: Assuming %s! Parsing the following PS=1 input line : .%s.", sFirmwareMsg.c_str(), sLine.c_str());
 
@@ -422,7 +421,7 @@ void OTGWBase::ParseLine()
 
 		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID1, 255, _status.Control_setpoint, "Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
-		if(m_bFirmware5)
+		if(bIsFirmware5)
 		{
 			idx+=2;
 		}
@@ -446,7 +445,7 @@ void OTGWBase::ParseLine()
 		{
 			SendPressureSensor(0, MsgID18, 255, _status.CH_water_pressure, "CH Water Pressure");
 		}
-		if(m_bFirmware5)
+		if(bIsFirmware5)
 		{
 			idx+=2;
 		}
@@ -455,7 +454,7 @@ void OTGWBase::ParseLine()
 		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(MsgID26, 255, _status.DHW_temperature, "DHW Temperature");
 		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID27, 255, _status.Outside_temperature, "Outside Temperature");
 		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID28, 255, _status.Return_water_temperature, "Return Water Temperature");
-		if(m_bFirmware5)
+		if(bIsFirmware5)
 		{
 			idx+=2;
 		}
@@ -471,7 +470,7 @@ void OTGWBase::ParseLine()
 		{
 			UpdateSetPointSensor((uint8_t)MsgID57, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
 		}
-		if(m_bFirmware5)
+		if(bIsFirmware5)
 		{
 			idx+=3;
 		}
