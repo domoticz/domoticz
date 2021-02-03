@@ -69,6 +69,7 @@ typedef enum
 // Xiaomi Wireless Dual Wall Switch | WXKG02LM
 #define MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 "86sw2"
 #define MODEL_SELECTOR_WIRELESS_WALL_DUAL_2 "remote.b286acn01"
+#define MODEL_SELECTOR_WIRELESS_WALL_DUAL_3 "remote.b286acn02"
 #define NAME_SELECTOR_WIRELESS_WALL_DUAL "Xiaomi Wireless Dual Wall Switch"
 
 // Xiaomi Wired Single Wall Switch
@@ -1190,7 +1191,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					type = STYPE_Selector;
 					name = NAME_SELECTOR_WIRELESS_WALL_SINGLE;
 				}
-				else if (model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_2)
+				else if (model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_1 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_2 || model == MODEL_SELECTOR_WIRELESS_WALL_DUAL_3)
 				{
 					type = STYPE_Selector;
 					name = NAME_SELECTOR_WIRELESS_WALL_DUAL;
