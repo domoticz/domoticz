@@ -14,6 +14,7 @@ class OTGWBase : public CDomoticzHardwareBase
 		float Room_Setpoint;
 		float Relative_modulation_level;
 		float CH_water_pressure;
+		float DHW_flow_rate;
 		float Room_temperature;
 		float Boiler_water_temperature;
 		float DHW_temperature;

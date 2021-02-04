@@ -586,8 +586,9 @@ bool MQTT::ConnectIntEx()
 	int keepalive = 40;
 
 	if (!m_CAFilename.empty()) {
-		rc = tls_opts_set(SSL_VERIFY_PEER, szTLSVersions[m_TLS_Version], nullptr);
+		rc = tls_opts_set(SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], nullptr);
 		rc = tls_set(m_CAFilename.c_str());
+		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{

@@ -969,7 +969,7 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if (item.SubType == "Text") {
-                                var logLink = '#/Devices/'+item.idx+'/Log';
+								var logLink = '#/Devices/'+item.idx+'/Log';
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
@@ -1000,7 +1000,7 @@ define(['app', 'livesocket'], function (app) {
 							else if ((item.Type == "General") && (item.SubType == "Distance")) {
 								xhtm += '<a class="btnsmall" href="' + graphLogLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal + '\', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
+									xhtm += '<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal + '\, ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Current")) {
@@ -1028,7 +1028,7 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							else if ((item.Type == "General") && (item.SubType == "Alert")) {
-                                var logLink = '#/Devices/'+item.idx+'/Log';
+								var logLink = '#/Devices/'+item.idx+'/Log';
 
 								xhtm += '<a class="btnsmall" href="' + logLink + '" data-i18n="Log">Log</a> ';
 								if (permissions.hasPermission("Admin")) {
@@ -1042,7 +1042,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							if (item.ShowNotifications == true) {
 								if (permissions.hasPermission("Admin")) {
-                                    var notificationLink = '#/Devices/'+item.idx+'/Notifications';
+										var notificationLink = '#/Devices/'+item.idx+'/Notifications';
 
 									if (item.Notifications == "true")
 										xhtm += '<a class="btnsmall-sel" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';

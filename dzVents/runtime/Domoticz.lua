@@ -259,10 +259,10 @@ local function Domoticz(settings)
 			local postData, headers
 
 			-- process body data
-			if (method ~= 'GET') then
+			if method ~= 'GET' then
 				postData = ''
-				if (options.postData ~= nil) then
-					if (type(options.postData) == 'table') then
+				if options.postData then
+					if type(options.postData) == 'table' then
 						postData = utils.toJSON(options.postData)
 
 						if (options.headers == nil) then
@@ -276,6 +276,9 @@ local function Domoticz(settings)
 
 			-- process headers
 			if options.headers then
+				if type(options.headers) == 'string' then
+					option.headers = utils.fromJSON(options.headers)
+				end
 				headers = ''
 				for key, value in pairs(options.headers) do
 					headers = headers .. '!#' .. key .. ': ' .. tostring(value)

@@ -28,7 +28,7 @@ local function getSMs(s)
 end
 
 local function parseDate(sDate)
-	return string.match(sDate, "(%d+)%-(%d+)%-(%d+)% (%d+):(%d+):([0-9%.]+)")
+	return string.match(sDate, "(%d+)%-(%d+)%-(%d+)[%sT]+(%d+):(%d+):([0-9%.]+)")
 end
 
 local function _getMS()
@@ -163,7 +163,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	end
 
-	if (isUTC~=nil and isUTC==true) then
+	if isUTC and isUTC == true then
 		now = os.date('!*t')
 	else
 		now = os.date('*t')
