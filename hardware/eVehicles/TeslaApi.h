@@ -52,6 +52,7 @@ private:
 	std::string m_username;
 	std::string m_password;
 	std::string m_VIN;
+	std::string m_apikey;
 
 	std::string m_authtoken;
 	std::string m_refreshtoken;

@@ -1046,6 +1046,7 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var vinnr = $("#hardwarecontent #divtesla #vinnr").val();
+				var apikey = $("#hardwarecontent #divtesla #apikey").val();
 				var activeinterval = parseInt($("#hardwarecontent #divtesla #activeinterval").val());
 				if (activeinterval < 1) {
 					activeinterval = 1;
@@ -1055,6 +1056,10 @@ define(['app'], function (app) {
 					defaultinterval = 20;
 				}
 				var allowwakeup = $("#hardwarecontent #divtesla #comboallowwakeup").val();
+				var extra = vinnr;
+				if (apikey != "") {
+					extra = extra + "|" + btoa(apikey);
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -1064,7 +1069,7 @@ define(['app'], function (app) {
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&extra=" + vinnr +
+					"&extra=" + extra +
 					"&Mode1=" + defaultinterval +
 					"&Mode2=" + activeinterval + 
 					"&Mode3=" + allowwakeup,
@@ -2511,6 +2516,7 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var vinnr = encodeURIComponent($("#hardwarecontent #divtesla #vinnr").val());
+				var apikey = $("#hardwarecontent #divtesla #apikey").val();
 				var activeinterval = parseInt($("#hardwarecontent #divtesla #activeinterval").val());
 				if (activeinterval < 1) {
 					activeinterval = 1;
@@ -2520,6 +2526,10 @@ define(['app'], function (app) {
 					defaultinterval = 20;
 				}
 				var allowwakeup = $("#hardwarecontent #divtesla #comboallowwakeup").val();
+				var extra = vinnr;
+				if (apikey != "") {
+					extra = extra + "|" + btoa(apikey);
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2528,7 +2538,7 @@ define(['app'], function (app) {
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout +
-					"&extra=" + vinnr +
+					"&extra=" + extra +
 					"&Mode1=" + defaultinterval +
 					"&Mode2=" + activeinterval +
 					"&Mode3=" + allowwakeup,
@@ -4134,7 +4144,14 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
 						}
 						else if (data["Type"].indexOf("Tesla") >= 0) {
-							$("#hardwarecontent #hardwareparamstesla #vinnr").val(data["Extra"]);
+							var tmp = data["Extra"];
+							var tmparray = tmp.split("|");
+							if (tmparray.length >= 1) {
+								$("#hardwarecontent #hardwareparamstesla #vinnr").val(tmparray[0]);
+								if (tmparray.length >= 2) {
+									$("#hardwarecontent #hardwareparamstesla #apikey").val(atob(tmparray[1]));
+								}
+							}
 							$("#hardwarecontent #hardwareparamstesla #defaultinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamstesla #activeinterval").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamstesla #comboallowwakeup").val(data["Mode3"]);
