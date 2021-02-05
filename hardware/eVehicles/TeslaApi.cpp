@@ -14,8 +14,10 @@ License: Public domain
 #include "TeslaApi.h"
 #include "VehicleApi.h"
 #include "../../main/Logger.h"
+#include "../../main/Helper.h"
 #include "../../httpclient/UrlEncode.h"
 #include "../../httpclient/HTTPClient.h"
+#include "../../webserver/Base64.h"
 #include "../../main/json_helper.h"
 #include <sstream>
 #include <iomanip>
@@ -32,11 +34,25 @@ License: Public domain
 
 #define TLAPITIMEOUT (25)
 
-CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, const std::string &vinnr)
+CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, const std::string &extra)
 {
 	m_username = username;
 	m_password = password;
-	m_VIN = vinnr;
+
+	m_apikey = "";
+	m_VIN = "";
+
+	std::vector<std::string> strextra;
+	StringSplit(extra, "|", strextra);
+	if (strextra.size() == 1 || strextra.size() == 2)
+	{
+		m_VIN = strextra[0];
+		if (strextra.size() >= 2)
+		{
+			m_apikey = base64_decode(strextra[1]);
+		}
+	}
+
 	m_authtoken = "";
 	m_refreshtoken = "";
 	m_carid = 0;
@@ -78,7 +94,7 @@ bool CTeslaApi::Login()
 bool CTeslaApi::RefreshLogin()
 {
 	_log.Log(LOG_NORM, "TeslaApi: Refreshing login credentials.");
-	if (GetAuthToken("", "", true))
+	if (GetAuthToken(m_username, m_password, true))
 	{	
 		_log.Log(LOG_NORM, "TeslaApi: Refresh successful.");
 		return true;
@@ -421,12 +437,12 @@ bool CTeslaApi::SendCommand(const std::string &command, Json::Value &reply, cons
 // Requests an authentication token from the Tesla OAuth Api.
 bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &password, const bool refreshUsingToken)
 {
-	if (username.empty() && !refreshUsingToken)
+	if (username.empty())
 	{
 		_log.Log(LOG_ERROR, "TeslaApi: No username specified.");
 		return false;
 	}
-	if (username.empty() && !refreshUsingToken)
+	if (username.empty())
 	{
 		_log.Log(LOG_ERROR, "TeslaApi: No password specified.");
 		return false;
@@ -436,18 +452,18 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 	ss << TESLA_URL << TESLA_API_AUTH;
 	std::string _sUrl = ss.str();
 	std::ostringstream s;
-	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
 
-	s << "client_id=" << TESLA_CLIENT_ID << "&grant_type=";
-	s << _sGrantType << "&client_secret=";
-	s << TESLA_CLIENT_SECRET;
+	s << "client_id=" << TESLA_CLIENT_ID;
+	s << "&client_secret=" << TESLA_CLIENT_SECRET;
 
-	if (refreshUsingToken)
+	if ((refreshUsingToken) && (!m_refreshtoken.empty()))
 	{
+		s << "&grant_type=" << "refresh_token";
 		s << "&refresh_token=" << m_refreshtoken;
 	}
 	else
 	{
+		s << "&grant_type=" << "password";
 		s << "&password=" << CURLEncode::URLEncode(password);
 		s << "&email=" << CURLEncode::URLEncode(username);
 	}
@@ -469,7 +485,14 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 	m_authtoken = _jsRoot["access_token"].asString();
 	if (m_authtoken.empty())
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: Received token is zero length.");
+		if (m_apikey != "")
+		{
+			_log.Log(LOG_STATUS, "TeslaApi: Cannot retrieve token from account. Using manual API key");
+			m_authtoken = m_apikey;
+			return true;
+		}
+		else
+			_log.Log(LOG_ERROR, "TeslaApi: Received token is zero length.");
 		return false;
 	}
 
@@ -532,7 +555,14 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				for (auto &_vResponseHeader : _vResponseHeaders)
+				{
+					if ((_vResponseHeader.find("HTTP") != std::string::npos) && (_vResponseHeader.find("401") != std::string::npos))
+					{
+						_log.Log(LOG_ERROR, "TeslaApi: Access token no longer valid. Clearing token.");
+						m_authtoken = "";
+					}
 					_ssResponseHeaderString << _vResponseHeader;
+				}
 				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform POST request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 				return false;
 			}
@@ -542,8 +572,16 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				for (auto &_vResponseHeader : _vResponseHeaders)
+				{
+					if ((_vResponseHeader.find("HTTP") != std::string::npos) && (_vResponseHeader.find("401") != std::string::npos))
+					{
+						_log.Log(LOG_ERROR, "TeslaApi: Access token no longer valid. Clearing token.");
+						m_authtoken = "";
+					}
 					_ssResponseHeaderString << _vResponseHeader;
+				}
 				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform GET request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+
 				return false;
 			}
 			break;
