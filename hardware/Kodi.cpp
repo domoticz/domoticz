@@ -973,7 +973,7 @@ void CKodi::Do_Work()
 				if (!node->IsBusy())
 				{
 					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", node->m_Name.c_str());
-					boost::thread *tAsync = new boost::thread(&CKodiNode::Do_Work, node);
+					std::thread *tAsync = new std::thread(&CKodiNode::Do_Work, node);
 					SetThreadName(tAsync->native_handle(), "KodiNode");
 					m_ios.stop();
 				}
@@ -987,7 +987,7 @@ void CKodi::Do_Work()
 				// Note that this is the only thread that handles async i/o so we don't
 				// need to worry about locking or concurrency issues when processing messages
 				_log.Log(LOG_NORM, "Kodi: Restarting I/O service thread.");
-				boost::thread bt([p = &m_ios] { p->run(); });
+				std::thread bt([p = &m_ios] { p->run(); });
 				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
@@ -1156,12 +1156,12 @@ void CKodi::ReloadNodes()
 		for (const auto &m_pNode : m_pNodes)
 		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", m_pNode->m_Name.c_str());
-			boost::thread *tAsync = new boost::thread(&CKodiNode::Do_Work, m_pNode);
+			std::thread *tAsync = new std::thread(&CKodiNode::Do_Work, m_pNode);
 			SetThreadName(tAsync->native_handle(), "KodiNode");
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
-		boost::thread bt([p = &m_ios] { p->run(); });
+		std::thread bt([p = &m_ios] { p->run(); });
 		SetThreadName(bt.native_handle(), "KodiIO");
 	}
 }
