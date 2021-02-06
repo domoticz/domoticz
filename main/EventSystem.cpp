@@ -213,7 +213,7 @@ void CEventSystem::LoadEvents()
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
 
-	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
+	std::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
 
@@ -433,7 +433,7 @@ void CEventSystem::GetCurrentStates()
 {
 	std::vector<std::vector<std::string> > result;
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
@@ -519,7 +519,7 @@ void CEventSystem::GetCurrentStates()
 
 void CEventSystem::GetCurrentUserVariables()
 {
-	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+	std::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	//_log.Log(LOG_STATUS, "EventSystem: reset all user variables...");
 	m_uservariables.clear();
@@ -543,7 +543,7 @@ void CEventSystem::GetCurrentUserVariables()
 
 void CEventSystem::GetCurrentScenesGroups()
 {
-	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+	std::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 
 	m_scenesgroups.clear();
 
@@ -1087,12 +1087,12 @@ void CEventSystem::RemoveSingleState(const uint64_t ulDevID, const _eReason reas
 
 	if (reason == REASON_DEVICE)
 	{
-		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		m_devicestates.erase(ulDevID);
 	}
 	else if (reason == REASON_SCENEGROUP)
 	{
-		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		std::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 		m_scenesgroups.erase(ulDevID);
 	}
 }
@@ -1106,7 +1106,7 @@ void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::strin
 
 	if (reason == REASON_DEVICE)
 	{
-		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
@@ -1118,7 +1118,7 @@ void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::strin
 	}
 	else if (reason == REASON_SCENEGROUP)
 	{
-		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		std::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 		auto itt = m_scenesgroups.find(ulDevID);
 		if (itt != m_scenesgroups.end())
 		{
@@ -1144,7 +1144,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 
 bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger)
 {
-	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+	std::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (!m_eventtrigger.empty())
 	{
 		time_t atime = mytime(nullptr);
@@ -1215,7 +1215,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+	std::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (!m_eventtrigger.empty())
 	{
 		time_t atime = mytime(nullptr) + static_cast<int>(fDelayTime);
@@ -1240,7 +1240,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 		return true; // seems counterintuitive, but prevents device triggers being queued
 
 	bool bEventTrigger = true;
-	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+	std::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
 	if (itt != m_scenesgroups.end())
 	{
@@ -1275,7 +1275,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+	std::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
 	if (itt == m_uservariables.end())
@@ -1303,7 +1303,7 @@ void CEventSystem::UpdateBatteryLevel(const uint64_t ulDevID, const unsigned cha
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 
 	if (itt != m_devicestates.end())
@@ -1335,7 +1335,7 @@ std::string CEventSystem::UpdateSingleState(
 	std::string l_nValueWording;	l_nValueWording.reserve(20);	l_nValueWording.assign(nValueWording);
 	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 
@@ -1498,7 +1498,7 @@ void CEventSystem::ProcessDevice(
 		item.sValue = osValue;
 
 		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
-		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
 		{
@@ -1609,7 +1609,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		}
 
 #ifdef ENABLE_PYTHON
-		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+		std::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		try
 		{
 			for (const auto &filename : FileEntriesPython)
@@ -1935,7 +1935,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 				else if (event.Interpreter == "Python")
 				{
 #ifdef ENABLE_PYTHON
-					boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+					std::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 					EvaluatePython(item, event.Name, event.Actions);
 #else
 					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
