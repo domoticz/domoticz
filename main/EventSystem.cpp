@@ -24,6 +24,7 @@
 #include "../main/LuaTable.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <shared_mutex>
 
 extern "C" {
 #include <lua.h>
@@ -612,7 +613,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_windgustValuesByID.clear();
 	m_zwaveAlarmValuesByID.clear();
 
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	//char szTmp[300];
 
@@ -1575,7 +1576,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 				if (item.reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
 				{
 					bDeviceFileFound = false;
-					boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+					std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 					for (const auto &state : m_devicestates)
 					{
 						std::string deviceName = SpaceToUnderscore(LowerCase(state.second.deviceName));
@@ -1681,8 +1682,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
 
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-	
+	std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+
 	CLuaTable luaTable(lua_state, "device", (int)m_devicestates.size(), 0);
 
 	for (const auto &state : m_devicestates)
@@ -1693,8 +1694,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	luaTable.Publish();
 	devicestatesMutexLock.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-	
+	std::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+
 	luaTable.InitTable(lua_state, "variable", (int)m_uservariables.size(), 0);
 
 	for (const auto &variable : m_uservariables)
@@ -1885,7 +1886,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 {
 	lua_State *lua_state = nullptr;
 
-	boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
+	std::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	try
 	{
 		for (const auto &event : m_events)
@@ -2188,7 +2189,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		int deviceNo = atoi(deviceName.c_str());
 		if (deviceNo)
 		{
-			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 			if (m_devicestates.count(deviceNo)) {
 				devicestatesMutexLock.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
 				if (ScheduleEvent(deviceNo, doWhat, false, item.Name, 0)) {
@@ -2626,7 +2627,7 @@ void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &f
 
 void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	CLuaTable luaTable(lua_state, "otherdevices", (int)m_devicestates.size(), 0);
 	for (const auto &state : m_devicestates)
@@ -2939,7 +2940,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 
 	ExportDeviceStatesToLua(lua_state, item);
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+	std::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	CLuaTable luaTable(lua_state, "uservariables", (int)m_uservariables.size(), 0);
 
@@ -2985,7 +2986,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	}
 	uservariablesMutexLock.unlock();
 
-	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+	std::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	luaTable.InitTable(lua_state, "otherdevices_scenesgroups", (int)m_scenesgroups.size(), 0);
 	for (const auto &group : m_scenesgroups)
 	{
@@ -3501,7 +3502,7 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
 	{
-		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		int devIdx = atoi(doWhat.c_str());
 		if (m_devicestates[devIdx].devType == pTypeHUM)
 		{
@@ -3515,7 +3516,7 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogSwitch")
 	{
-		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		_log.Log(LOG_STATUS, "%s", m_devicestates[atoi(doWhat.c_str())].nValueWording.c_str());
 	}
 }
@@ -3577,7 +3578,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 
 bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::string previousState = m_devicestates[deviceID].nValueWording;
 	int previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
 	int level = 0;
@@ -3954,7 +3955,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	if (!m_bEnabled)
 		return;
 
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	iStates.clear();
 	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates),
