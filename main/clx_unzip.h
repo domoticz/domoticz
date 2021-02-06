@@ -39,7 +39,6 @@
 #include <string>
 #include <ios>
 //#include "config.h"
-//#include "shared_ptr.h"
 #include <minizip/unzip.h>
 #include <boost/shared_ptr.hpp>
 
