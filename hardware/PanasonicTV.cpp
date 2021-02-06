@@ -386,7 +386,7 @@ std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend
 		return "ERROR";
 	}
 
-	boost::array<char, 512> _Buffer;
+	std::array<char, 512> _Buffer;
 	size_t request_length = std::strlen(pMessageToSend.c_str());
 	_log.Debug(DEBUG_HARDWARE, "Panasonic Plugin: (%s) Attemping write.", m_Name.c_str());
 
@@ -397,7 +397,7 @@ std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend
 		size_t reply_length = boost::asio::read(socket, boost::asio::buffer(_Buffer, request_length));
 		//_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Error code: (%i).'.", m_Name.c_str(),error);
 		socket.close();
-		std::string pReceived(_Buffer.begin(), reply_length);
+		std::string pReceived(_Buffer.data(), reply_length);
 		return pReceived;
 	}
 	catch (...)

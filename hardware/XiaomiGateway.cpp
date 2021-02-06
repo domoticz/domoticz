@@ -498,7 +498,7 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
 	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
 	sleep_milliseconds(150);
-	boost::array<char, 512> recv_buffer_;
+	std::array<char, 512> recv_buffer_;
 	memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "XiaomiGateway: request to %s - %s", m_GatewayIp.c_str(), message.c_str());
