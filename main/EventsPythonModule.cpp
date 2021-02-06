@@ -257,7 +257,7 @@
 				}
 
 				// Mutex
-				// boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
+				// std::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 
 				std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
 				for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
