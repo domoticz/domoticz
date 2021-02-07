@@ -537,7 +537,7 @@ namespace http {
 			RegisterCommandCode("updatecustomicon", std::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1, _2, _3));
 
 			RegisterCommandCode("renamedevice", std::bind(&CWebServer::Cmd_RenameDevice, this, _1, _2, _3));
-			RegisterCommandCode("setunused", std::bind(&CWebServer::Cmd_SetUnused, this, _1, _2, _3));
+			RegisterCommandCode("setdevused", std::bind(&CWebServer::Cmd_SetDeviceUsed, this, _1, _2, _3));
 
 			RegisterCommandCode("addlogmessage", std::bind(&CWebServer::Cmd_AddLogMessage, this, _1, _2, _3));
 			RegisterCommandCode("clearshortlog", std::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2, _3));
@@ -12668,7 +12668,7 @@ namespace http {
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
-		void CWebServer::Cmd_SetUnused(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_SetDeviceUsed(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -12676,13 +12676,32 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string sidx = request::findValue(&req, "idx");
-			if (sidx.empty())
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sUsed = request::findValue(&req, "used");
+			std::string sName = request::findValue(&req, "name");
+			std::string sMainDeviceIdx = request::findValue(&req, "maindeviceidx");
+			if (sIdx.empty() || sUsed.empty())
 				return;
-			int idx = atoi(sidx.c_str());
+			const int idx = atoi(sIdx.c_str());
 			root["status"] = "OK";
 			root["title"] = "SetUnused";
-			m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)", idx);
+			
+			m_sql.safe_query("UPDATE DeviceStatus SET Used=%d WHERE (ID == %d)", (sUsed == "true") ? 1 : 0, idx);
+			if (!sName.empty())
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sName.c_str(), idx);
+
+			if ((!sMainDeviceIdx.empty()) && (sMainDeviceIdx != sIdx))
+			{
+				// this is a sub device for another light/switch
+				// first check if it is not already a sub device
+				auto result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", sIdx.c_str(), sMainDeviceIdx.c_str());
+				if (result.empty())
+				{
+					// no it is not, add it
+					m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", sIdx.c_str(), sMainDeviceIdx.c_str());
+				}
+			}
+
 			if (m_sql.m_bEnableEventSystem)
 				m_mainworker.m_eventsystem.RemoveSingleState(idx, m_mainworker.m_eventsystem.REASON_DEVICE);
 
