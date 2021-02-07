@@ -13057,7 +13057,7 @@ namespace http {
 			if ((idx.empty()) || (sused.empty()))
 				return;
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
+			result = m_sql.safe_query("SELECT Type,SubType,HardwareID,CustomImage FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
 			if (result.empty())
 				return;
 
@@ -13107,7 +13107,14 @@ namespace http {
 			if (!maindeviceidx.empty())
 				used = 0;
 
-			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : 0;
+			std::vector<std::string> sd = result[0];
+			unsigned char dType = atoi(sd[0].c_str());
+			unsigned char dSubType=atoi(sd[1].c_str());
+			int HwdID = atoi(sd[2].c_str());
+			std::string sHwdID = sd[2];
+			int OldCustomImage = atoi(sd[3].c_str());
+
+			int CustomImage = (!sCustomImage.empty()) ? std::stoi(sCustomImage) : OldCustomImage;
 
 			//Strip trailing spaces in 'name'
 			name = stdstring_trim(name);
@@ -13115,12 +13122,6 @@ namespace http {
 			//Strip trailing spaces in 'description'
 			description = stdstring_trim(description);
 
-			std::vector<std::string> sd = result[0];
-
-			unsigned char dType = atoi(sd[0].c_str());
-			//unsigned char dSubType=atoi(sd[1].c_str());
-			int HwdID = atoi(sd[2].c_str());
-			std::string sHwdID = sd[2];
 
 			if (!setPoint.empty() || !state.empty())
 			{
@@ -13245,7 +13246,7 @@ namespace http {
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
-					_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[0].c_str());
+					_eHardwareTypes Type = (_eHardwareTypes)dType;
 					if (Type == HTYPE_PythonPlugin)
 					{
 						bUpdateUnit = false;
