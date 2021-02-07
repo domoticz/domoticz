@@ -3,15 +3,12 @@
 // ~~~~~~~~~~
 //
 #include "stdafx.h"
-#include <boost/bind/bind.hpp>
 #include "server.hpp"
 #include <fstream>
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-
-using namespace boost::placeholders;
 
 namespace http {
 namespace server {
@@ -97,7 +94,7 @@ void server_base::stop() {
 		// Rene, set is_running to false, because the following is an io_service call, which makes is_running
 		// never set to false whilst in the call itself
 		is_running = false;
-		io_service_.post(boost::bind(&server_base::handle_stop, this));
+		io_service_.post([this] { handle_stop(); });
 	} else {
 		// if io_service is not running then the post call will not be performed
 		handle_stop();
@@ -142,14 +139,14 @@ void server_base::heart_beat(const boost::system::error_code& error)
 
 		// Schedule next heartbeat
 		m_heartbeat_timer.expires_from_now(std::chrono::seconds(4));
-		m_heartbeat_timer.async_wait(boost::bind(&server_base::heart_beat, this, boost::asio::placeholders::error));
+		m_heartbeat_timer.async_wait([this](auto &&err) { heart_beat(err); });
 	}
 }
 
-server::server(const server_settings & settings, request_handler & user_request_handler) :
-		server_base(settings, user_request_handler) {
-	init(boost::bind(&server::init_connection, this),
-			boost::bind(&server::handle_accept, this, _1));
+server::server(const server_settings &settings, request_handler &user_request_handler)
+	: server_base(settings, user_request_handler)
+{
+	init([this] { init_connection(); }, [this](auto &&err) { handle_accept(err); });
 }
 
 void server::init_connection() {
@@ -165,29 +162,26 @@ void server::handle_accept(const boost::system::error_code& e) {
 		new_connection_.reset(new connection(io_service_,
 				connection_manager_, request_handler_, timeout_));
 		// listen for a subsequent request
-		acceptor_.async_accept(new_connection_->socket(),
-				boost::bind(&server::handle_accept, this,
-						boost::asio::placeholders::error));
+		acceptor_.async_accept(new_connection_->socket(), [this](auto &&err) { handle_accept(err); });
 	}
 }
 
 #ifdef WWW_ENABLE_SSL
-ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) :
-		server_base(ssl_settings, user_request_handler),
-		settings_(ssl_settings),
-		context_(ssl_settings.get_ssl_method())
+ssl_server::ssl_server(const ssl_server_settings &ssl_settings, request_handler &user_request_handler)
+	: server_base(ssl_settings, user_request_handler)
+	, settings_(ssl_settings)
+	, context_(ssl_settings.get_ssl_method())
 {
-	init(boost::bind(&ssl_server::init_connection, this),
-			boost::bind(&ssl_server::handle_accept, this, _1));
+	init([this] { init_connection(); }, [this](auto &&err) { handle_accept(err); });
 }
 
 // this constructor will send std::bad_cast exception if the settings argument is not a ssl_server_settings object
-ssl_server::ssl_server(const server_settings & settings, request_handler & user_request_handler) :
-		server_base(settings, user_request_handler),
-		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
-		context_(dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
-	init(boost::bind(&ssl_server::init_connection, this),
-			boost::bind(&ssl_server::handle_accept, this, _1));
+ssl_server::ssl_server(const server_settings &settings, request_handler &user_request_handler)
+	: server_base(settings, user_request_handler)
+	, settings_(dynamic_cast<ssl_server_settings const &>(settings))
+	, context_(dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method())
+{
+	init([this] { init_connection(); }, [this](auto &&err) { handle_accept(err); });
 }
 
 void ssl_server::init_connection() {
@@ -195,7 +189,7 @@ void ssl_server::init_connection() {
 	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
 
 	// the following line gets the passphrase for protected private server keys
-	context_.set_password_callback(boost::bind(&ssl_server::get_passphrase, this));
+	context_.set_password_callback([this](auto &&...) { return ssl_server::get_passphrase(); });
 
 	if (settings_.ssl_options.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL options parameter !", settings_.listening_port.c_str());
@@ -321,9 +315,7 @@ void ssl_server::handle_accept(const boost::system::error_code& e) {
 		connection_manager_.start(new_connection_);
 		reinit_connection();
 		// listen for a subsequent request
-		acceptor_.async_accept(new_connection_->socket(),
-				boost::bind(&ssl_server::handle_accept, this,
-						boost::asio::placeholders::error));
+		acceptor_.async_accept(new_connection_->socket(), [this](auto &&err) { handle_accept(err); });
 	}
 }
 

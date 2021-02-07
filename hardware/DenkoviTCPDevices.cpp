@@ -57,7 +57,7 @@ bool CDenkoviTCPDevices::StartHardware()
 	m_uiReceivedDataLength = 0;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	m_bIsStarted = true;
 	Log(LOG_STATUS, "%s: Started.",szDenkoviHardwareNamesTCP[m_iModel]);
 	return (m_thread != nullptr);

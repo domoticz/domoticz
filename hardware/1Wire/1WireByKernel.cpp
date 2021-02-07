@@ -31,7 +31,7 @@
 
 C1WireByKernel::C1WireByKernel()
 {
-	m_thread = std::make_shared<std::thread>(&C1WireByKernel::ThreadFunction, this);
+	m_thread = std::make_shared<std::thread>([this] { ThreadFunction(); });
 	SetThreadName(m_thread->native_handle(), "1WireByKernel");
 	_log.Log(LOG_STATUS, "Using 1-Wire support (kernel W1 module)...");
 }

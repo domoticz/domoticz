@@ -112,7 +112,7 @@ bool CHardwareMonitor::StartHardware()
 #endif
 
 	m_lastquerytime = 0;
-	m_thread = std::make_shared<std::thread>(&CHardwareMonitor::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);

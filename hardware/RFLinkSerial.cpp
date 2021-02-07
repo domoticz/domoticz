@@ -5,8 +5,6 @@
 #include "../main/localtime_r.h"
 #include <boost/exception/diagnostic_information.hpp>
 
-using namespace boost::placeholders;
-
 CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
 m_szSerialPort(devname)
 {
@@ -21,7 +19,7 @@ bool CRFLinkSerial::StartHardware()
 	m_retrycntr = RFLINK_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CRFLinkSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -179,7 +177,7 @@ bool CRFLinkSerial::OpenSerialDevice()
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(nullptr);
 
-	setReadCallback(boost::bind(&CRFLinkSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 
 	return true;

@@ -179,7 +179,7 @@ bool CEvohomeWeb::StartHardware()
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
-	m_thread = std::make_shared<std::thread>(&CEvohomeWeb::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;

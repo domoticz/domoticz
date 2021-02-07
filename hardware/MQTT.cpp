@@ -11,8 +11,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace boost::placeholders;
-
 #define RETRY_DELAY 30
 
 #define CLIENTID	"Domoticz"
@@ -86,7 +84,7 @@ bool MQTT::StartHardware()
 	m_LastUpdatedSceneRowIdx = 0;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MQTT::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	StartHeartbeatThread();
@@ -155,8 +153,8 @@ void MQTT::on_connect(int rc)
 			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
-			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
-			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect(boost::bind(&MQTT::SendSceneInfo, this, _1, _2));
+			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto cmd) { SendDeviceInfo(id, idx, name, cmd); });
+			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect([this](auto scene, const auto &name) { SendSceneInfo(scene, name); });
 		}
 		subscribe(nullptr, m_TopicIn.c_str());
 	}

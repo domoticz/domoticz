@@ -184,7 +184,7 @@ bool I2C::StartHardware()
 		MCP23017_Init();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&I2C::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	sOnConnected(this);
 	m_bIsStarted = true;

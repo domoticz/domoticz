@@ -5,7 +5,6 @@
 //Modified, extended etc by Robbert E. Peters/RTSS B.V.
 #include "stdafx.h"
 #include "cWebem.h"
-#include <boost/bind/bind.hpp>
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
@@ -53,8 +52,8 @@ namespace http {
 			, m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
 		{
 			// associate handler to timer and schedule the first iteration
-			m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
-			m_io_service_thread = std::make_shared<std::thread>(boost::bind(&boost::asio::io_service::run, &m_io_service));
+			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
+			m_io_service_thread = std::make_shared<std::thread>([this] { m_io_service.run(); });
 			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
 		}
 
@@ -1199,7 +1198,7 @@ namespace http {
 			}
 			// Schedule next cleanup
 			m_session_clean_timer.expires_at(m_session_clean_timer.expires_at() + boost::posix_time::minutes(15));
-			m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
+			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
 		// Return 1 on success. Always initializes the ah structure.

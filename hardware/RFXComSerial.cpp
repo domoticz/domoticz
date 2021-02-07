@@ -12,8 +12,6 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
-
 #include <ctime>
 
 #ifndef WIN32
@@ -22,8 +20,6 @@
 #include <sys/types.h>
 #include <pwd.h>
 #endif
-
-using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -101,7 +97,7 @@ bool RFXComSerial::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&RFXComSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -192,7 +188,7 @@ bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
 	}
 	m_bIsStarted = true;
 	m_rxbufferpos = 0;
-	setReadCallback(boost::bind(&RFXComSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	if (!bIsFirmwareUpgrade)
 		sOnConnected(this);
 	return true;

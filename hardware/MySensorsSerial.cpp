@@ -8,13 +8,10 @@
 #include "hardwaretypes.h"
 
 #include <algorithm>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
-
-using namespace boost::placeholders;
 
 //#define DEBUG_MYSENSORS
 
@@ -49,7 +46,7 @@ bool MySensorsSerial::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MySensorsSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	StartSendQueue();
 	return (m_thread != nullptr);
@@ -186,7 +183,7 @@ bool MySensorsSerial::OpenSerialDevice()
 #endif
 	m_bIsStarted = true;
 	m_LineReceived.clear();
-	setReadCallback(boost::bind(&MySensorsSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 	}

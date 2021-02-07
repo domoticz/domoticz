@@ -3290,7 +3290,7 @@ void CSQLHelper::StopThread()
 bool CSQLHelper::StartThread()
 {
 	RequestStart();
-	m_thread = std::make_shared<std::thread>(&CSQLHelper::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "SQLHelper");
 	return (m_thread != nullptr);
 }

@@ -9,12 +9,9 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
 #include <ctime>
-
-using namespace boost::placeholders;
 
 //#define DEBUG_KMTronic
 
@@ -40,7 +37,7 @@ bool KMTronic433::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&KMTronic433::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -131,7 +128,7 @@ bool KMTronic433::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_bufferpos = 0;
-	setReadCallback(boost::bind(&KMTronic433::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

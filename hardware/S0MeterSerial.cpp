@@ -8,12 +8,9 @@
 
 #include <algorithm>
 #include <ctime>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <iostream>
 #include <string>
-
-using namespace boost::placeholders;
 
 #ifdef _DEBUG
 	//#define DEBUG_S0
@@ -88,7 +85,7 @@ bool S0MeterSerial::StartHardware()
 	}
 	write(sstr.str());
 	*/
-	setReadCallback(boost::bind(&S0MeterSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 
 #ifdef DEBUG_S0
