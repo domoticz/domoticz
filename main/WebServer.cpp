@@ -12683,12 +12683,14 @@ namespace http {
 			if (sIdx.empty() || sUsed.empty())
 				return;
 			const int idx = atoi(sIdx.c_str());
-			root["status"] = "OK";
-			root["title"] = "SetUnused";
-			
-			m_sql.safe_query("UPDATE DeviceStatus SET Used=%d WHERE (ID == %d)", (sUsed == "true") ? 1 : 0, idx);
+
 			if (!sName.empty())
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sName.c_str(), idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q' WHERE (ID == %d)", (sUsed == "true") ? 1 : 0, sName.c_str(), idx);
+			else
+				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d WHERE (ID == %d)", (sUsed == "true") ? 1 : 0, idx);
+
+			root["status"] = "OK";
+			root["title"] = "SetDeviceUsed";
 
 			if ((!sMainDeviceIdx.empty()) && (sMainDeviceIdx != sIdx))
 			{
