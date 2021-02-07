@@ -1260,6 +1260,36 @@ namespace http {
 				ah->response = decoded.substr(npos + 1);
 				return 1;
 			}
+			// Bearer Auth header
+			if (boost::icontains(auth_header, "Bearer "))
+			{
+				std::string decoded = auth_header + 7;
+				size_t npos = decoded.find('.');
+				if (npos != std::string::npos)
+				{
+					// Might be a JWT token, decode the first piece to check
+					std::string tokentype = base64_decode(decoded.substr(0,npos));
+					if(tokentype.find("JWT") != std::string::npos)
+					{
+						std::string remainder = decoded.substr(npos + 1);
+						npos = remainder.find('.');
+						if(npos != std::string::npos)
+						{
+							ah->method = "JWT";
+							ah->user = base64_decode(remainder.substr(0, npos));
+							ah->response = decoded;
+							ah->nc = tokentype;
+							return 1;
+						}
+					}
+				}
+
+				// No dot found or not a JWT, so assume non-JWT type of Bearer token
+				ah->method = "Bearer";
+				ah->user = "";
+				ah->response = decoded;
+				return 1;
+			}
 
 			return 0;
 		}
@@ -1273,7 +1303,7 @@ namespace http {
 			std::string upass;
 
 			if (!parse_auth_header(req, &_ah))
-			{
+			{	// No username, password (or other identification) found in Authorization header. Check URI for user parameters.
 				size_t uPos = req.uri.find("username=");
 				size_t pPos = req.uri.find("password=");
 				if (
@@ -1297,36 +1327,19 @@ namespace http {
 					tmpupass = req.uri.substr(pPos);
 				else
 					tmpupass = req.uri.substr(pPos, pEnd - pPos);
-				if (request_handler::url_decode(tmpuname, uname))
-				{
-					if (request_handler::url_decode(tmpupass, upass))
-					{
-						uname = base64_decode(uname);
-						upass = GenerateMD5Hash(base64_decode(upass));
-
-						for (const auto &my : myWebem->m_userpasswords)
-						{
-							if (my.Username == uname)
-							{
-								if (my.Password != upass)
-								{
-									m_failcounter++;
-									return 0;
-								}
-								session.isnew = true;
-								session.username = my.Username;
-								session.rights = my.userrights;
-								session.rememberme = false;
-								m_failcounter = 0;
-								return 1;
-							}
-						}
-					}
+				if (request_handler::url_decode(tmpuname, uname) && request_handler::url_decode(tmpupass, upass))
+				{	// Found parameters, so lets use these to check
+					_ah.user = base64_decode(uname);
+					_ah.response = base64_decode(upass);
 				}
-				m_failcounter++;
-				return 0;
+				else
+				{
+					m_failcounter++;
+					return 0;
+				}
 			}
 
+			// Check if valid password has been provided for the user
 			for (const auto &my : myWebem->m_userpasswords)
 			{
 				if (my.Username == _ah.user)
@@ -1411,15 +1424,6 @@ namespace http {
 			return buffer;
 		}
 
-		void cWebemRequestHandler::send_remove_cookie(reply& rep)
-		{
-			std::stringstream sstr;
-			sstr << "DMZSID=none";
-			// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
-			sstr << "; HttpOnly; Expires=" << make_web_time(0);
-			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
-		}
-
 		std::string cWebemRequestHandler::generateSessionID()
 		{
 			// Session id should not be predictable
@@ -1439,7 +1443,7 @@ namespace http {
 
 			std::string authToken = base64_encode(randomValue);
 
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] generate new authentication token %s for user %s", myWebem->GetPort().c_str(), authToken.c_str(), session.username.c_str());
 
 			session_store_impl_ptr sstore = myWebem->GetSessionStore();
 			if (sstore != nullptr)
@@ -1462,6 +1466,61 @@ namespace http {
 			sstr << "DMZSID=" << session.id << "_" << session.auth_token << "." << session.expires;
 			sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
 			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
+		}
+
+		void cWebemRequestHandler::send_remove_cookie(reply& rep)
+		{
+			std::stringstream sstr;
+			sstr << "DMZSID=none";
+			// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
+			sstr << "; HttpOnly; Expires=" << make_web_time(0);
+			reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
+		}
+
+		bool cWebemRequestHandler::parse_cookie(const request& req, std::string& sSID, std::string& sAuthToken, std::string& szTime, bool& expired)
+		{
+			bool bCookie = false;
+			sSID.clear();
+			sAuthToken.clear();
+			szTime.clear();
+			expired = false;
+
+			//Check if cookie available and still valid
+			const char* cookie_header = request::get_req_header(&req, "Cookie");
+			if (cookie_header != nullptr)
+			{
+				// Parse session id and its expiration date
+				std::string scookie = cookie_header;
+				size_t fpos = scookie.find("DMZSID=");
+				if (fpos != std::string::npos)
+				{
+					bCookie = true;
+					scookie = scookie.substr(fpos);
+					fpos = 0;
+					size_t epos = scookie.find(';');	// Check if there are more cookies in this Header (and ignore those)
+					if (epos != std::string::npos)
+					{
+						scookie = scookie.substr(0, epos);
+					}
+					size_t upos = scookie.find('_', fpos);
+					size_t ppos = scookie.find('.', upos);
+					time_t now = mytime(nullptr);
+					if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
+					{
+						sSID = scookie.substr(fpos + 7, upos - fpos - 7);
+						sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
+						szTime = scookie.substr(ppos + 1);
+
+						time_t stime;
+						std::stringstream sstr;
+						sstr << szTime;
+						sstr >> stime;
+
+						expired = stime < now;
+					}
+				}
+			}
+			return bCookie;
 		}
 
 		void cWebemRequestHandler::send_authorization_request(reply& rep)
@@ -1555,13 +1614,6 @@ namespace http {
 				return false;
 			}
 
-/*
-			std::string connection_header = h;
-			if (!boost::iequals(connection_header, "upgrade"))
-			{
-				return false;
-			};
-*/
 			// client MUST include Upgrade: websocket
 			h = request::get_req_header(&req, "Upgrade");
 			if (!h)
@@ -1569,15 +1621,12 @@ namespace http {
 				return false;
 			}
 
-			if (!CheckAuthentication(session, req, rep))
-				return false;
-
-
 			std::string upgrade_header = h;
 			if (!boost::iequals(upgrade_header, "websocket"))
 			{
 				return false;
 			};
+
 			// we only have one service until now
 			if (req.uri.find("/json") == std::string::npos)
 			{
@@ -1592,28 +1641,32 @@ namespace http {
 				rep = reply::stock_reply(reply::forbidden);
 				return true;
 			}
-			h = request::get_req_header(&req, "Origin");
 			// request MUST include an origin header, even if we don't check it
 			// we only "allow" connections from browser clients
+			h = request::get_req_header(&req, "Origin");
 			if (h == nullptr)
 			{
-				rep = reply::stock_reply(reply::forbidden);
+				rep = reply::stock_reply(reply::bad_request);
 				return true;
 			}
-			h = request::get_req_header(&req, "Sec-Websocket-Version");
 			// request MUST include a version number
+			h = request::get_req_header(&req, "Sec-Websocket-Version");
 			if (h == nullptr)
 			{
-				rep = reply::stock_reply(reply::internal_server_error);
+				rep = reply::stock_reply(reply::bad_request);
 				return true;
 			}
-			int version = atoi(h);
-			// we support versions 13 (and higher)
-			if (version < 13)
+			else
 			{
-				rep = reply::stock_reply(reply::internal_server_error);
-				return true;
+				int version = atoi(h);
+				// we support versions 13 (and higher)
+				if (version < 13)
+				{
+					rep = reply::stock_reply(reply::bad_request);
+					return true;
+				}
 			}
+
 			h = request::get_req_header(&req, "Sec-Websocket-Protocol");
 			// check if a protocol is given, and it includes the {websocket_protocol}.
 			if (!h)
@@ -1623,14 +1676,14 @@ namespace http {
 			std::string protocol_header = h;
 			if (protocol_header.find(websocket_protocol) == std::string::npos)
 			{
-				rep = reply::stock_reply(reply::internal_server_error);
+				rep = reply::stock_reply(reply::bad_request);
 				return true;
 			}
 			h = request::get_req_header(&req, "Sec-Websocket-Key");
 			// request MUST include a sec-websocket-key header and we need to respond to it
 			if (h == nullptr)
 			{
-				rep = reply::stock_reply(reply::internal_server_error);
+				rep = reply::stock_reply(reply::bad_request);
 				return true;
 			}
 			std::string websocket_key = h;
@@ -1694,45 +1747,30 @@ namespace http {
 				session.rights = 2;
 			}
 
-			//Check cookie if still valid
-			const char* cookie_header = request::get_req_header(&req, "Cookie");
-			if (cookie_header != nullptr)
+			//Check for valid JWT token
+			struct ah _ah;
+			if (parse_auth_header(req, &_ah))
 			{
-				std::string sSID;
-				std::string sAuthToken;
-				std::string szTime;
-				bool expired = false;
-
-				// Parse session id and its expiration date
-				std::string scookie = cookie_header;
-				size_t fpos = scookie.find("DMZSID=");
-				if (fpos != std::string::npos)
+				if (_ah.method == "JWT")
 				{
-					scookie = scookie.substr(fpos);
-					fpos = 0;
-					size_t epos = scookie.find(';');
-					if (epos != std::string::npos)
-					{
-						scookie = scookie.substr(0, epos);
-					}
+					_log.Debug(DEBUG_WEBSERVER, "Found JWT Authorization token (%s): Method %s, Userdata %s", _ah.response.c_str(), _ah.method.c_str(), _ah.user.c_str());
+					session.rights = 2;
+					session.isnew = false;
+					session.rememberme = false;
+					session.username = _ah.user;
+					session.auth_token = _ah.nc;
+					return true;
 				}
-				size_t upos = scookie.find('_', fpos);
-				size_t ppos = scookie.find('.', upos);
+			}
+
+			//Check if cookie available and still valid
+			std::string sSID;
+			std::string sAuthToken;
+			std::string szTime;
+			bool expired = false;
+			if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
+			{
 				time_t now = mytime(nullptr);
-				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
-				{
-					sSID = scookie.substr(fpos + 7, upos - fpos - 7);
-					sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
-					szTime = scookie.substr(ppos + 1);
-
-					time_t stime;
-					std::stringstream sstr;
-					sstr << szTime;
-					sstr >> stime;
-
-					expired = stime < now;
-				}
-
 				if (session.rights == 2)
 				{
 					if (!sSID.empty())
@@ -1978,6 +2016,11 @@ namespace http {
 
 			// Initialize session
 			WebEmSession session;
+			session.reply_status = reply::ok;
+			session.isnew = false;
+			session.forcelogin = false;
+			session.rememberme = false;
+
 			session.remote_host = req.host_address;
 
 			if (!myWebem->myRemoteProxyIPs.empty())
@@ -2006,16 +2049,8 @@ namespace http {
 				}
 			}
 
-			session.reply_status = reply::ok;
-			session.isnew = false;
-			session.forcelogin = false;
-			session.rememberme = false;
-
 			rep.status = reply::ok;
 			rep.bIsGZIP = false;
-
-			bool isPage = myWebem->IsPageOverride(req, rep);
-			bool isAction = myWebem->IsAction(req);
 
 			// Respond to CORS Preflight request (for JSON API)
 			if (req.method == "OPTIONS")
@@ -2029,50 +2064,44 @@ namespace http {
 				return;
 			}
 
-			// Check authentication on each page or action, if it exists.
-			bool bCheckAuthentication = false;
-			if (isPage || isAction)
-			{
-				bCheckAuthentication = true;
-			}
+			bool isPage = myWebem->IsPageOverride(req, rep);
+			bool isAction = myWebem->IsAction(req);		// This isn't used as far as known (no .webem 'pages' in this project)
 
 			if (isPage && (req.uri.find("dologout") != std::string::npos))
 			{
 				//Remove session id based on cookie
-				const char *cookie;
-				cookie = request::get_req_header(&req, "Cookie");
-				if (cookie != nullptr)
+				std::string sSID;
+				std::string sAuthToken;
+				std::string szTime;
+				bool expired = false;
+				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
-					std::string scookie = cookie;
-					size_t fpos = scookie.find("DMZSID=");
-					size_t upos = scookie.find('_', fpos);
-					if ((fpos != std::string::npos) && (upos != std::string::npos))
+					_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
+					auto itt = myWebem->m_sessions.find(sSID);
+					if (itt != myWebem->m_sessions.end())
 					{
-						std::string sSID = scookie.substr(fpos + 7, upos - fpos - 7);
-						_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
-						auto itt = myWebem->m_sessions.find(sSID);
-						if (itt != myWebem->m_sessions.end())
-						{
-							myWebem->m_sessions.erase(itt);
-						}
-						removeAuthToken(sSID);
+						myWebem->m_sessions.erase(itt);
 					}
+					removeAuthToken(sSID);
 				}
 				session.username = "";
 				session.rights = -1;
 				session.forcelogin = true;
-				bCheckAuthentication = false; // do not authenticate the user, just logout
-				send_authorization_request(rep);
+				rep = reply::stock_reply(reply::ok);
+				send_remove_cookie(rep);
 				return;
 			}
 
 			// Check if this is an upgrade request to a websocket connection
-			if (is_upgrade_request(session, req, rep))
+			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
+			// Check user authentication on each page or action, if it exists.
+			if ((isPage || isAction || isUpgradeRequest) && !CheckAuthentication(session, req, rep))
 			{
+				_log.Debug(DEBUG_WEBSERVER, "Web: Did not find suitable Authorization!");
+				send_authorization_request(rep);
 				return;
 			}
-			// Check user authentication on each page or action, if it exists.
-			if ((isPage || isAction || bCheckAuthentication) && !CheckAuthentication(session, req, rep))
+			if (isUpgradeRequest)
 			{
 				return;
 			}
@@ -2081,7 +2110,7 @@ namespace http {
 			request requestCopy = req;
 
 			bool bHandledAction = false;
-			// Run action if exists
+			// Run action if exists (not used at the moment, see above)
 			if (isAction)
 			{
 				// Post actions only allowed when authenticated and user has admin rights
