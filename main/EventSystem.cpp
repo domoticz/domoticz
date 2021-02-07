@@ -1439,8 +1439,7 @@ void CEventSystem::ProcessDevice(
 	const unsigned char signallevel, 
 	const unsigned char batterylevel, 
 	const int nValue, 
-	const char* sValue, 
-	const std::string &devname)
+	const char* sValue)
 {
 	if (!m_bEnabled)
 		return;
@@ -1450,7 +1449,7 @@ void CEventSystem::ProcessDevice(
 	if (result.empty())
 	{
 		//impossible as we just updated it
-		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: ((ID=%" PRIu64 ": %s)", ulDevID, devname.c_str());
+		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: (idx %" PRIu64 ")",  ulDevID);
 		return; 
 	}
 
@@ -1460,7 +1459,7 @@ void CEventSystem::ProcessDevice(
 	std::string lastUpdate = sd[1];
 	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
 	std::string dev_options = sd[3];
-	std::string dev_name = sd[4];
+	std::string devname = sd[4];
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(dev_options);
 
@@ -1490,10 +1489,10 @@ void CEventSystem::ProcessDevice(
 		_tEventQueue item;
 		item.reason = REASON_DEVICE;
 		item.id = ulDevID;
-		item.devname = dev_name;
+		item.devname = devname;
 		item.nValue = nValue;
 		item.sValue = osValue;
-		item.nValueWording = UpdateSingleState(ulDevID, dev_name, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
