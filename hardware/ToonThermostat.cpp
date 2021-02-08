@@ -339,7 +339,7 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-	if (root["agreements"].size() < (size_t)(m_Agreement+1))
+	if (root["agreements"].size() < size_t(m_Agreement) + 1)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Agreement not found, did you setup your toon correctly?");
 		return false;
