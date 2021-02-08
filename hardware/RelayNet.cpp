@@ -536,7 +536,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 	std::string sChkstr;
 
 	sDump = Dump;
-	boost::to_upper(sDump);
+	stdupper(sDump);
 
 	if (!m_skip_relay_update && m_relay_count && (m_poll_relays || m_setup_devices))
 	{

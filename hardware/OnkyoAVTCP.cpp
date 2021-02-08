@@ -273,7 +273,7 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char /*length
 					snprintf(buf, 6, "%s%02X", switch_types[ID].iscpCmd, level / 10);
 				else {
 					// Seriously. They *send* us the ID with lower case, and then refuse to accept it like that.
-					boost::to_upper(val);
+					stdupper(val);
 					snprintf(buf, 6, "%s%s", switch_types[ID].iscpCmd, val.c_str());
 				}
 			} else {

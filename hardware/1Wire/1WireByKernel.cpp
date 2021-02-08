@@ -534,13 +534,6 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 		throw OneWireWriteErrorException(deviceFileName);
 }
 
-inline void std_to_upper(const std::string& str, std::string& converted)
-{
-	converted = "";
-	for (char c : str)
-		converted += (char)toupper(c);
-}
-
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const
 {
 	// 1W-Kernel device name format : ff-iiiiiiiiiiii, with :
@@ -551,7 +544,8 @@ void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevi
 	device.family = ToFamily(deviceName.substr(0, 2));
 
 	// Device Id (6 chars after '.')
-	std_to_upper(deviceName.substr(3, 3 + 6 * 2), device.devid);
+	auto substr = deviceName.substr(3, 3 + 6 * 2);
+	stdupper(substr);
 
 	// Filename (full path)
 	device.filename = Wire1_Base_Dir;
