@@ -12710,7 +12710,7 @@ namespace http {
 				if (!bIsUsed)
 					m_mainworker.m_eventsystem.RemoveSingleState(idx, m_mainworker.m_eventsystem.REASON_DEVICE);
 				else
-					m_mainworker.m_eventsystem.GetCurrentStates();
+					m_mainworker.m_eventsystem.WWWUpdateSingleState(idx, sName, m_mainworker.m_eventsystem.REASON_DEVICE);
 			}
 #ifdef ENABLE_PYTHON
 			// Notify plugin framework about the change
