@@ -100,7 +100,7 @@ namespace
 		{ "pl", "Polish" },    { "pt", "Portuguese" }, { "ro", "Romanian" }, { "ru", "Russian" },      { "sr", "Serbian" },   { "sk", "Slovak" },
 		{ "sl", "Slovenian" }, { "es", "Spanish" },    { "sv", "Swedish" },  { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },   { "uk", "Ukrainian" },
 	} };
-}
+} // namespace
 
 extern http::server::CWebServerHelper m_webservers;
 
