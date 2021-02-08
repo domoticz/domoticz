@@ -655,7 +655,8 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(const std::string &tmpstr, const int
 std::string CDenkoviDevices::DAEnetIP2GetName(const std::string &tmpstr, const int &nmr)
 { // nmr should be from 1 to 24
 	size_t pos1 = 0, pos2 = 0;
-	for (uint8_t ii = 0; ii < (((nmr - 1) * 2) + 1); ii++) {
+	for (int ii = 0; ii < (((nmr - 1) * 2) + 1); ii++)
+	{
 		pos1 = tmpstr.find('"', pos1 + 1);
 	}
 	pos2 = tmpstr.find('"', pos1 + 1);

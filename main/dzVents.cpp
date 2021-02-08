@@ -892,7 +892,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			StringSplit(sitem.sValue, ";", strarray);
 
 			luaTable.OpenSubTableEntry("rawData", 0, 0);
-			for (uint8_t i = 0; i < strarray.size(); i++)
+			for (size_t i = 0; i < strarray.size(); i++)
 				luaTable.AddString(i + 1, strarray[i]);
 
 			luaTable.CloseSubTableEntry();
