@@ -12683,11 +12683,12 @@ namespace http {
 			if (sIdx.empty() || sUsed.empty())
 				return;
 			const int idx = atoi(sIdx.c_str());
+			bool bIsUsed = (sUsed == "true");
 
 			if (!sName.empty())
-				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q' WHERE (ID == %d)", (sUsed == "true") ? 1 : 0, sName.c_str(), idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q' WHERE (ID == %d)", bIsUsed ? 1 : 0, sName.c_str(), idx);
 			else
-				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d WHERE (ID == %d)", (sUsed == "true") ? 1 : 0, idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d WHERE (ID == %d)", bIsUsed ? 1 : 0, idx);
 
 			root["status"] = "OK";
 			root["title"] = "SetDeviceUsed";
@@ -12705,8 +12706,12 @@ namespace http {
 			}
 
 			if (m_sql.m_bEnableEventSystem)
-				m_mainworker.m_eventsystem.RemoveSingleState(idx, m_mainworker.m_eventsystem.REASON_DEVICE);
-
+			{
+				if (!bIsUsed)
+					m_mainworker.m_eventsystem.RemoveSingleState(idx, m_mainworker.m_eventsystem.REASON_DEVICE);
+				else
+					m_mainworker.m_eventsystem.GetCurrentStates();
+			}
 #ifdef ENABLE_PYTHON
 			// Notify plugin framework about the change
 			m_mainworker.m_pluginsystem.DeviceModified(idx);
