@@ -500,15 +500,14 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 	m_authtoken = _jsRoot["access_token"].asString();
 	if (m_authtoken.empty())
 	{
-		if (m_apikey != "")
+		if (m_apikey.empty())
 		{
-			_log.Log(LOG_STATUS, "TeslaApi: Cannot retrieve token from account. Using manual API key");
-			m_authtoken = m_apikey;
-			return true;
-		}
-		else
 			_log.Log(LOG_ERROR, "TeslaApi: Received token is zero length.");
-		return false;
+			return false;
+		}
+		_log.Log(LOG_STATUS, "TeslaApi: Cannot retrieve token from account. Using manual API key");
+		m_authtoken = m_apikey;
+		return true;
 	}
 
 	m_refreshtoken = _jsRoot["refresh_token"].asString();
