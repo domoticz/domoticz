@@ -190,7 +190,7 @@ size_t Serial::readline(string &buffer, size_t size, const string &eol)
 string Serial::readline(size_t size, const string &eol)
 {
   std::string buffer;
-  this->readline(buffer, size, std::move(eol));
+  this->readline(buffer, size, eol);
   return buffer;
 }
 

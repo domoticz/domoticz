@@ -105,7 +105,7 @@ namespace Plugins {
 		}
 	}
 
-	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
@@ -374,7 +374,7 @@ namespace Plugins {
 		}
 	};
 
-	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
