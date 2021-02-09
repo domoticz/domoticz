@@ -43,7 +43,7 @@ bool CRtl433::StartHardware()
 {
 	RequestStart();
 
-	m_thread = std::make_shared<std::thread>(&CRtl433::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);

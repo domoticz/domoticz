@@ -23,7 +23,7 @@ define(['app', 'livesocket'], function(app) {
                 $ctrl.isSaving = true;
                 var mainDevice = $ctrl.isMainDevice ? undefined : $ctrl.mainDevice;
 
-                deviceApi.includeDevice($ctrl.device.idx, $ctrl.device.Name, mainDevice)
+                deviceApi.setDeviceUsed($ctrl.device.idx, true, $ctrl.device.Name, mainDevice)
                     .then($scope.$close);
             }
         }
@@ -132,7 +132,7 @@ define(['app', 'livesocket'], function(app) {
 
                     bootbox.confirm('Are you sure to remove this Device from your used devices?')
                         .then(function() {
-                            return deviceApi.excludeDevice(row.idx);
+                            return deviceApi.setDeviceUsed(row.idx, false);
                         })
                         .then($ctrl.onUpdate);
 

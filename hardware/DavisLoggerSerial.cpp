@@ -8,14 +8,11 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
-
-using namespace boost::placeholders;
 
 #ifdef _DEBUG
 //#define DEBUG_DAVIS
@@ -44,7 +41,7 @@ bool CDavisLoggerSerial::StartHardware()
 
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CDavisLoggerSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 
@@ -88,7 +85,7 @@ bool CDavisLoggerSerial::OpenSerialDevice()
 		return false;
 	}
 	m_bIsStarted = true;
-	setReadCallback(boost::bind(&CDavisLoggerSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

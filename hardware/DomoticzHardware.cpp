@@ -69,7 +69,7 @@ void CDomoticzHardwareBase::StartHeartbeatThread()
 
 void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
 {
-	m_Heartbeatthread = std::make_shared<std::thread>(&CDomoticzHardwareBase::Do_Heartbeat_Work, this);
+	m_Heartbeatthread = std::make_shared<std::thread>([this] { Do_Heartbeat_Work(); });
 	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
 }
 

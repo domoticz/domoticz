@@ -39,7 +39,7 @@ bool CDenkoviSmartdenLan::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CDenkoviSmartdenLan::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "DenkoviSmartdenLAN");
 	m_bIsStarted=true;
 	sOnConnected(this);

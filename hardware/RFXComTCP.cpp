@@ -27,7 +27,7 @@ bool RFXComTCP::StartHardware()
 	m_rxbufferpos=0;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }

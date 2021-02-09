@@ -21,8 +21,6 @@ extern "C" {
 #include <boost/python.hpp>
 #endif
 
-using namespace boost::placeholders;
-
 extern std::string szUserDataFolder;
 extern CGooglePubSubPush m_googlepubsubpush;
 
@@ -43,7 +41,7 @@ void CGooglePubSubPush::Start()
 {
 	UpdateActive();
 	ReloadPushLinks(m_PushType);
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CGooglePubSubPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
 }
 
 void CGooglePubSubPush::Stop()

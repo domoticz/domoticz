@@ -567,7 +567,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name);
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str());
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -596,8 +596,7 @@ void CKodiNode::handleConnect()
 					m_CurrentStatus.Status(MSTAT_ON);
 					UpdateStatus();
 				}
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-					boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this, self = shared_from_this()](auto err, auto bytes) { handleRead(err, bytes); });
 				handleWrite(std::string(R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007})"));
 			}
 			else
@@ -657,11 +656,9 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 
 		//ready for next read
 		if (!IsStopRequested(0) && m_Socket)
-			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-										boost::bind(&CKodiNode::handleRead,
-										shared_from_this(),
-										boost::asio::placeholders::error,
-										boost::asio::placeholders::bytes_transferred));
+		{
+			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this, self = shared_from_this()](auto &&err, auto &&bytes) { handleRead(err, bytes); });
+		}
 	}
 	else
 	{
@@ -929,7 +926,7 @@ bool CKodi::StartHardware()
 	StartHeartbeatThread();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CKodi::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "Kodi: Started");
 
@@ -990,7 +987,7 @@ void CKodi::Do_Work()
 				// Note that this is the only thread that handles async i/o so we don't
 				// need to worry about locking or concurrency issues when processing messages
 				_log.Log(LOG_NORM, "Kodi: Restarting I/O service thread.");
-				boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
+				boost::thread bt([this] { m_ios.run(); });
 				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
@@ -1164,7 +1161,7 @@ void CKodi::ReloadNodes()
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
-		boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
+		boost::thread bt([this] { m_ios.run(); });
 		SetThreadName(bt.native_handle(), "KodiIO");
 	}
 }

@@ -31,7 +31,7 @@
 
 C1WireByKernel::C1WireByKernel()
 {
-	m_thread = std::make_shared<std::thread>(&C1WireByKernel::ThreadFunction, this);
+	m_thread = std::make_shared<std::thread>([this] { ThreadFunction(); });
 	SetThreadName(m_thread->native_handle(), "1WireByKernel");
 	_log.Log(LOG_STATUS, "Using 1-Wire support (kernel W1 module)...");
 }
@@ -105,6 +105,7 @@ void C1WireByKernel::ReadStates()
 			{
 			case high_precision_digital_thermometer:
 			case programmable_resolution_digital_thermometer:
+			case Temperature_memory:
 			{
 				Locker l(m_Mutex);
 				device->m_Temperature = ThreadReadRawDataHighPrecisionDigitalThermometer(device->GetDevice().filename);
@@ -238,6 +239,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 						case dual_channel_addressable_switch:
 						case _8_channel_addressable_switch:
 						case programmable_resolution_digital_thermometer:
+						case Temperature_memory:
 							m_Devices[device.devid] = new DeviceState(device);
 							_log.Log(LOG_STATUS, "1Wire: Added Device: %s", sLine.c_str());
 							break;
@@ -278,6 +280,7 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
 	{
 	case high_precision_digital_thermometer:
 	case programmable_resolution_digital_thermometer:
+	case Temperature_memory:
 	{
 		DeviceCollection::const_iterator devIt = m_Devices.find(device.devid);
 		return (devIt == m_Devices.end()) ? -1000.0F : (*devIt).second->m_Temperature;

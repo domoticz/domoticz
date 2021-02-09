@@ -103,13 +103,13 @@ bool COpenWebNetTCP::StartHardware()
 	LastScanTimeEnergy = LastScanTimeEnergyTot = LastScanTime = LastScanSync = 0;	// Force first request command
 
 	//Start monitor thread
-	m_monitorThread = std::make_shared<std::thread>(&COpenWebNetTCP::MonitorFrames, this);
+	m_monitorThread = std::make_shared<std::thread>([this] { MonitorFrames(); });
 	SetThreadName(m_monitorThread->native_handle(), "OpenWebNetTCPMF");
 
 	//Start worker thread
 	if (m_monitorThread != nullptr)
 	{
-		m_heartbeatThread = std::make_shared<std::thread>(&COpenWebNetTCP::Do_Work, this);
+		m_heartbeatThread = std::make_shared<std::thread>([this] { Do_Work(); });
 		SetThreadName(m_heartbeatThread->native_handle(), "OpenWebNetTCPW");
 	}
 

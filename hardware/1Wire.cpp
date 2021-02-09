@@ -72,11 +72,11 @@ bool C1Wire::StartHardware()
 
 	// Start worker thread
 	if (m_sensorThreadPeriod != 0) {
-		m_threadSensors = std::make_shared<std::thread>(&C1Wire::SensorThread, this);
+		m_threadSensors = std::make_shared<std::thread>([this] { SensorThread(); });
 		SetThreadName(m_threadSensors->native_handle(), "1WireSensors");
 	}
 	if (m_switchThreadPeriod != 0) {
-		m_threadSwitches = std::make_shared<std::thread>(&C1Wire::SwitchThread, this);
+		m_threadSwitches = std::make_shared<std::thread>([this] { SwitchThread(); });
 		SetThreadName(m_threadSwitches->native_handle(), "1WireSwitches");
 	}
 	m_bIsStarted = true;

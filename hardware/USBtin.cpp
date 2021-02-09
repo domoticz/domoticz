@@ -27,15 +27,12 @@ History :
 #include "../main/SQLHelper.h"
 
 #include <algorithm>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <string>
 #include <time.h>
-
-using namespace boost::placeholders;
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none
@@ -90,7 +87,7 @@ bool USBtin::StartHardware()
 
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
-	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -225,7 +222,7 @@ bool USBtin::OpenSerialDevice()
 	m_bIsStarted = true;
 	m_USBtinBufferpos = 0;
 	memset(&m_USBtinBuffer,0,sizeof(m_USBtinBuffer));
-	setReadCallback(boost::bind(&USBtin::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 
 	sOnConnected(this);
 

@@ -117,7 +117,7 @@ bool CLogitechMediaServer::StartHardware()
 	StartHeartbeatThread();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CLogitechMediaServer::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -204,7 +204,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				{
 					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus), sStatus);
 					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, node.ID, 1, int(pTypeLighting2), int(sTypeAC), 12,
-										 100, int(nStatus), sStatus.c_str(), sDevName);
+										 100, int(nStatus), sStatus.c_str());
 				}
 
 				node.nStatus = nStatus;
@@ -342,7 +342,7 @@ void CLogitechMediaServer::Do_Work()
 					if (m_iThreadsRunning < 1000)
 					{
 						m_iThreadsRunning++;
-						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, node));
+						boost::thread t([this, node] { Do_Node_Work(node); });
 						SetThreadName(t.native_handle(), "LogitechNode");
 						t.join();
 					}

@@ -9,13 +9,10 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #include <ctime>
-
-using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -50,7 +47,7 @@ bool Meteostick::StartHardware()
 
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
-	m_thread = std::make_shared<std::thread>(&Meteostick::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return true;
@@ -107,7 +104,7 @@ bool Meteostick::OpenSerialDevice()
 		m_ActRainCounter[ii]	= -1;
 		m_LastRainValue[ii]		= -1;
 	}
-	setReadCallback(boost::bind(&Meteostick::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }

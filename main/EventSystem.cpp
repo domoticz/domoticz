@@ -154,9 +154,9 @@ void CEventSystem::StartEventSystem()
 	Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
 
-	m_thread = std::make_shared<std::thread>(&CEventSystem::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadName(m_thread->native_handle(), "EventSystem");
-	m_eventqueuethread = std::make_shared<std::thread>(&CEventSystem::EventQueueThread, this);
+	m_eventqueuethread = std::make_shared<std::thread>([this] { EventQueueThread(); });
 	SetThreadName(m_eventqueuethread->native_handle(), "EventSystemQueue");
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
@@ -1439,18 +1439,17 @@ void CEventSystem::ProcessDevice(
 	const unsigned char signallevel, 
 	const unsigned char batterylevel, 
 	const int nValue, 
-	const char* sValue, 
-	const std::string &devname)
+	const char* sValue)
 {
 	if (!m_bEnabled)
 		return;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')", devname.c_str());
+	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
 	if (result.empty())
 	{
-		//inpossible as we just updated it
-		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: ((ID=%" PRIu64 ": %s)", ulDevID, devname.c_str());
+		//impossible as we just updated it
+		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: (idx %" PRIu64 ")",  ulDevID);
 		return; 
 	}
 
@@ -1460,6 +1459,7 @@ void CEventSystem::ProcessDevice(
 	std::string lastUpdate = sd[1];
 	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
 	std::string dev_options = sd[3];
+	std::string devname = sd[4];
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(dev_options);
 
@@ -3123,7 +3123,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
-		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
+		boost::thread luaThread([this, lua_state, filename] { CEventSystem::luaThread(lua_state, filename); });
 		SetThreadName(luaThread.native_handle(), "luaThread");
 
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))

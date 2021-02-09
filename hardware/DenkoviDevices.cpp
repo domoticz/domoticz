@@ -118,8 +118,8 @@ bool CDenkoviDevices::StartHardware()
 
 	Init();
 
-	//Start worker thread 
-	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
+	// Start worker thread
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
