@@ -57,7 +57,7 @@ namespace tcp_proxy
 		else
 			end=*i;
 
-		upstream_socket_.async_connect(end, [this, self = shared_from_this()](auto &&err) { handle_upstream_connect(err); });
+		upstream_socket_.async_connect(end, [p = shared_from_this()](auto &&err) { p->handle_upstream_connect(err); });
 	}
 
 	void bridge::handle_upstream_connect(const boost::system::error_code& error)
@@ -65,10 +65,10 @@ namespace tcp_proxy
 		if (!error)
 		{
 			upstream_socket_.async_read_some(boost::asio::buffer(upstream_data_, max_data_length),
-							 [this, self = shared_from_this()](auto &err, auto bytes) { handle_upstream_read(err, bytes); });
+							 [p = shared_from_this()](auto &&err, auto bytes) { p->handle_upstream_read(err, bytes); });
 
 			downstream_socket_.async_read_some(boost::asio::buffer(downstream_data_, max_data_length),
-							   [this, self = shared_from_this()](const boost::system::error_code &err, size_t bytes) { handle_downstream_read(err, bytes); });
+							   [p = shared_from_this()](auto &&err, auto bytes) { p->handle_downstream_read(err, bytes); });
 		}
 		else
 		close();
@@ -79,7 +79,7 @@ namespace tcp_proxy
 		if (!error)
 		{
 			upstream_socket_.async_read_some(boost::asio::buffer(upstream_data_, max_data_length),
-							 [this, self = shared_from_this()](auto &&err, auto bytes) { handle_upstream_read(err, bytes); });
+							 [p = shared_from_this()](auto &&err, auto bytes) { p->handle_upstream_read(err, bytes); });
 		}
 		else
 		close();
@@ -92,7 +92,7 @@ namespace tcp_proxy
 			//std::unique_lock<std::mutex> lock(mutex_);
 			sDownstreamData(reinterpret_cast<unsigned char*>(&downstream_data_[0]),static_cast<size_t>(bytes_transferred));
 			async_write(upstream_socket_, boost::asio::buffer(downstream_data_, bytes_transferred),
-				    [this, self = shared_from_this()](auto &&err, auto &&bytes) { handle_downstream_read(err, bytes); });
+				    [p = shared_from_this()](auto &&err, auto bytes) { p->handle_downstream_read(err, bytes); });
 		}
 		else
 			close();
@@ -103,7 +103,7 @@ namespace tcp_proxy
 		if (!error)
 		{
 			downstream_socket_.async_read_some(boost::asio::buffer(downstream_data_, max_data_length),
-							   [this, self = shared_from_this()](auto &&err, auto bytes) { handle_downstream_read(err, bytes); });
+							   [p = shared_from_this()](auto &&err, auto bytes) { p->handle_downstream_read(err, bytes); });
 		}
 		else
 			close();
@@ -117,8 +117,7 @@ namespace tcp_proxy
 			//std::unique_lock<std::mutex> lock(mutex_);
 			sUpstreamData(reinterpret_cast<unsigned char*>(&upstream_data_[0]),static_cast<size_t>(bytes_transferred));
 
-			async_write(downstream_socket_, boost::asio::buffer(upstream_data_, bytes_transferred),
-				    [this, self = shared_from_this()](auto &&err, auto bytes) { handle_downstream_read(err, bytes); });
+			async_write(downstream_socket_, boost::asio::buffer(upstream_data_, bytes_transferred), [p = shared_from_this()](auto &&err, auto) { p->handle_downstream_write(err); });
 		}
 		else
 			close();

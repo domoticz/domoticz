@@ -596,7 +596,7 @@ void CKodiNode::handleConnect()
 					m_CurrentStatus.Status(MSTAT_ON);
 					UpdateStatus();
 				}
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this, self = shared_from_this()](auto err, auto bytes) { handleRead(err, bytes); });
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [p = shared_from_this()](auto err, auto bytes) { p->handleRead(err, bytes); });
 				handleWrite(std::string(R"({"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007})"));
 			}
 			else
@@ -657,7 +657,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		//ready for next read
 		if (!IsStopRequested(0) && m_Socket)
 		{
-			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this, self = shared_from_this()](auto &&err, auto &&bytes) { handleRead(err, bytes); });
+			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [p = shared_from_this()](auto &&err, auto &&bytes) { p->handleRead(err, bytes); });
 		}
 	}
 	else
@@ -987,7 +987,7 @@ void CKodi::Do_Work()
 				// Note that this is the only thread that handles async i/o so we don't
 				// need to worry about locking or concurrency issues when processing messages
 				_log.Log(LOG_NORM, "Kodi: Restarting I/O service thread.");
-				boost::thread bt([this] { m_ios.run(); });
+				boost::thread bt([p = &m_ios] { p->run(); });
 				SetThreadName(bt.native_handle(), "KodiIO");
 			}
 		}
@@ -1161,7 +1161,7 @@ void CKodi::ReloadNodes()
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
-		boost::thread bt([this] { m_ios.run(); });
+		boost::thread bt([p = &m_ios] { p->run(); });
 		SetThreadName(bt.native_handle(), "KodiIO");
 	}
 }
