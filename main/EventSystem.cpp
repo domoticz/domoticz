@@ -3127,10 +3127,10 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
-		boost::thread luaThread([this, lua_state, filename] { CEventSystem::luaThread(lua_state, filename); });
-		SetThreadName(luaThread.native_handle(), "luaThread");
+		boost::thread aluaThread([this, lua_state, filename] { luaThread(lua_state, filename); });
+		SetThreadName(aluaThread.native_handle(), "luaThread");
 
-		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
+		if (!aluaThread.timed_join(boost::posix_time::seconds(10)))
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
 		}
