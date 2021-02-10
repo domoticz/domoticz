@@ -2210,6 +2210,9 @@
     <ClInclude Include="..\hardware\serial\impl\win.h">
       <Filter>Devices\SerialTCP\Serial\impl</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\eVehicles\TestcarApi.h">
+      <Filter>Devices\eVehicles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2952,6 +2955,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Meteorologisk.cpp">
       <Filter>Devices\Meteorologisk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp">
+      <Filter>Devices\eVehicles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
