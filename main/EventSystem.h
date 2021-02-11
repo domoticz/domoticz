@@ -62,6 +62,7 @@ public:
 		uint8_t subType;
 		std::string nValueWording;
 		std::string lastUpdate;
+		std::string user;
 		uint8_t lastLevel;
 		uint8_t switchtype;
 		std::string description;
@@ -100,6 +101,7 @@ public:
 		int scenesgroupType;
 		int protection;
 		std::string lastUpdate;
+		std::string user;
 		std::vector<uint64_t> memberID;
 	};
 
@@ -129,7 +131,7 @@ public:
 	void GetCurrentStates();
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
-	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate);
+	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate, const std::string &user);
 	void UpdateUserVariable(uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate);
 	bool PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(uint64_t ulDevID, _eReason reason, bool bEventTrigger);
@@ -172,6 +174,7 @@ private:
 		std::string sValue;
 		std::string nValueWording;
 		std::string lastUpdate;
+		std::string user;
 		std::string errorText;
 		bool timeoutOccurred;
 		uint8_t lastLevel;

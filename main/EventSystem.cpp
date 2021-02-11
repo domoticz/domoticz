@@ -289,6 +289,7 @@ void CEventSystem::LoadEvents()
 			}
 		}
 	}
+	m_mainworker.m_notificationsystem.Notify(Notification::DZ_ALLEVENTRESET, Notification::STATUS_INFO);
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
 #endif
@@ -437,7 +438,7 @@ void CEventSystem::GetCurrentStates()
 	m_devicestates.clear();
 
 	result = m_sql.safe_query(
-		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options, A.Description, A.BatteryLevel, A.SignalLevel, A.Unit, A.DeviceID, A.Protected, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2 "
+		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options, A.Description, A.BatteryLevel, A.SignalLevel, A.Unit, A.DeviceID, A.Protected, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.User "
 		"FROM DeviceStatus AS A, Hardware AS B "
 		"WHERE (A.Used = '1') AND (B.ID == A.HardwareID) AND (B.Enabled == 1)");
 	if (!result.empty())
@@ -454,6 +455,7 @@ void CEventSystem::GetCurrentStates()
 			std::string l_lastUpdate;		l_lastUpdate.reserve(30);
 			std::string l_description;		l_description.reserve(200);
 			std::string l_deviceID;			l_deviceID.reserve(25);
+			std::string l_user;				l_user.reserve(250);
 
 			sitem.hardwareID = atoi(sd[0].c_str());
 			sitem.ID = std::stoull(sd[1]);
@@ -503,6 +505,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.AddjMulti = std::stof(sd[18]);
 			sitem.AddjValue2 = std::stof(sd[19]);
 			sitem.AddjMulti2 = std::stof(sd[20]);
+			sitem.user = l_user.assign(sd[21]);
 
 			if (!m_sql.m_bDisableDzVentsSystem)
 			{
@@ -512,6 +515,7 @@ void CEventSystem::GetCurrentStates()
 		}
 		m_devicestates = m_devicestates_temp;
 	}
+	m_mainworker.m_notificationsystem.Notify(Notification::DZ_ALLDEVICESTATUSRESET, Notification::STATUS_INFO);
 }
 
 void CEventSystem::GetCurrentUserVariables()
@@ -1230,7 +1234,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	m_eventtrigger.push_back(item);
 }
 
-bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
+bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate, const std::string &user)
 {
 	if (!m_bEnabled)
 		return true; // seems counterintuitive, but prevents device triggers being queued
@@ -1258,9 +1262,11 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			item.devname = replaceitem.scenesgroupName;
 			item.sValue = replaceitem.scenesgroupValue;
 			item.lastUpdate = itt->second.lastUpdate;
+			item.user = replaceitem.user;
 			m_eventqueue.push(item);
 		}
 		replaceitem.lastUpdate = lastUpdate;
+		replaceitem.user = user;
 		itt->second = replaceitem;
 	}
 	return bEventTrigger;
@@ -1445,7 +1451,7 @@ void CEventSystem::ProcessDevice(
 		return;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
+	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name, User FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
 	if (result.empty())
 	{
 		//impossible as we just updated it
@@ -1460,6 +1466,7 @@ void CEventSystem::ProcessDevice(
 	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
 	std::string dev_options = sd[3];
 	std::string devname = sd[4];
+	std::string user = sd[5];
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(dev_options);
 
@@ -1492,6 +1499,7 @@ void CEventSystem::ProcessDevice(
 		item.devname = devname;
 		item.nValue = nValue;
 		item.sValue = osValue;
+		item.user = user;
 		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
@@ -1508,6 +1516,7 @@ void CEventSystem::ProcessDevice(
 			}
 			_tDeviceStatus replaceitem = itt->second;
 			replaceitem.lastUpdate = lastUpdate;
+			replaceitem.user = user;
 			replaceitem.lastLevel = lastLevel;
 			itt->second = replaceitem;
 		}

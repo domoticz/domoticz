@@ -911,6 +911,7 @@ If for some reason you miss a specific attribute or data for a device, then like
 * '''unit''': ''Number''. Device unit. See device list in Domoticz’ settings for the unit.
 * '''update(&lt; params &gt;)''': ''Function''. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: <code>device.update(0,12)</code>. This will eventually result in a commandArray entry <code>['UpdateDevice']='&lt;idx&gt;|0|12'</code>. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''updateQuiet(nValue, sValue)''': ''Function''. <sup>3.0.18</sup> Uses the JSON/API to send nValue and/or sValue to domoticz (at least one should be supplied). Will update the device status in the GUI and trigger events but will not execute the action on the device. Only useful when the status in the GUI is not in line with the actual status. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''user''': ''String''. <sup>3.2.0</sup> Identifies the user, script or hardware that last updated the state of the type switch device. nil otherwise
 
 === Device attributes and methods for specific devices ===
 
@@ -953,8 +954,8 @@ Note that if you do not find your specific device type here you can always inspe
 * '''updateHistory( date, sValues )''': ''Strings'' <sup>3.1.3</sup> ''function'' Managed counter only! Used to write values to short or long term storage.
 
 <source lang="lua">    local mCounter = domoticz.devices('device name')
-    mCounter.updateHistory('2021-01-22', 10;1777193') -- Write to long term storage (meter_calendar table)
-    mCounter.updateHistory('2021-01-22 10:05:02', 10;1777193') -- Write to short term storage (meter table)</source>
+    mCounter.updateHistory('2021-01-22', '10;1777193') -- Write to long term storage (meter_calendar table)
+    mCounter.updateHistory('2021-01-22 10:05:02', '10;1777193') -- Write to short term storage (meter table)</source>
 * '''incrementCounter(value)''': ''Function''. (counter incremental) Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]]. To update with a complete new value you will have to do some calculation and take the counter divider into account.
 
 <source lang="lua">    local newValue = value
@@ -1022,6 +1023,7 @@ Note that if you do not find your specific device type here you can always inspe
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''toggleGroup()''': Toggles the state of a group. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''user''': ''String''. <sup>3.2.0</sup> Identifies the user, script or hardware that last updated the state of the group. nil otherwise
 
 ==== Hardware <sup>3.0.7</sup> ====
 
@@ -1075,6 +1077,8 @@ Note that if you do not find your specific device type here you can always inspe
 * '''stop()''': ''Function''. Will stop the device (only effective if the device is streaming). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''volumeUp()''': ''Function''. Will turn the device volume up with 2 points. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''volumeDown()''': ''Function''. Will turn the device volume down with 2 points. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+
+“shuffle”, “playlist” and &quot;status
 
 ==== Lux sensor ====
 
@@ -1148,6 +1152,7 @@ See switch below.
 * '''rename(newName)''': ''Function''. Change current scene-name to new scene-name Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOn()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''switchOff()''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''user''': ''String''. <sup>3.2.0</sup> Identifies the user, script or hardware that last switched the scene. nil otherwise
 
 ==== Security Panel ====
 
@@ -2195,10 +2200,8 @@ Of course you can combine the script that issues the request and handles the res
 * '''url''': ''String''.
 * '''method''': ''String''. Optional. Either <code>'GET'</code> (default), <code>'POST'</code>, <code>'PUT'</code><sup>3.0.2</sup> or <code>'DELETE'</code><sup>3.0.2</sup> .
 * '''callback''': ''String''. Optional. A custom string that will be used by dzVents to trigger the callback handler script(s).
-* '''headers''': ''Table''. Optional. A Lua table with additions http request-headers.
-* '''postData''': Optional. When doing a <code>POST</code>, <code>PUT</code> <sup>3.0.2</sup> or <code>DELETE</code><sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header <code>application/json</code> is set. So no need to do that manually.
-
-Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''headers''': ''Table / String''. Optional. A Lua table or JSON string with additional http request-headers.
+* '''postData''': ''Table / String''. Optional. When doing a <code>POST</code>, <code>PUT</code> <sup>3.0.2</sup> or <code>DELETE</code><sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header <code>application/json</code> is set. So no need to do that manually. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
 === The response object ===
 
@@ -2525,6 +2528,11 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))</source>
 Check out the documentation [https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html here].
 
 = History [https://www.domoticz.com/wiki/DzVents_version_History link to changes in previous versions]. =
+
+== [3.2.0] ==
+
+* Add attribute user to switchable devices, groups and scenes (identifies who / what updated the item)
+* Add resetAllDevicestatus and resetAllEvents to type system trigger
 
 == [3.1.4] ==
 

@@ -34,7 +34,8 @@ local function getDevice_(
 	batteryLevel,
 	signalLevel,
 	nValue,
-	customImage)
+	customImage,
+    user)
 
 	local Device = require('Device')
 
@@ -85,7 +86,8 @@ local function getDevice_(
 		["hardwareID"] = 1,
 		['protected'] = true,
 		['_nValue'] = nValue or 123,
-		['unit'] = 1
+		['unit'] = 1,
+		['user'] = 'validated',
 		},
 		["rawData"] = rawData,
 		["baseType"] = baseType or "device",
@@ -122,7 +124,8 @@ local function getDevice(domoticz, options)
 		options.batteryLevel,
 		options.signalLevel,
 		options.nValue,
-		options.customImage)
+		options.customImage,
+        options.user)
 
 end
 
@@ -208,6 +211,7 @@ describe('device', function()
 				hardwareTypeValue = 'hvalue',
 				state = 'bla',
 				id = 1,
+                user = 'validated'
 			})
 
 			assert.is_same(true, device.changed)
@@ -225,6 +229,7 @@ describe('device', function()
 			assert.is_same(55, device.signalLevel)
 			assert.is_same('sub', device.deviceSubType)
 			assert.is_same(2016, device.lastUpdate.year)
+			assert.is_same('validated', device.user)
 			assert.is_same({'1', '2', '3'}, device.rawData)
 			assert.is_same(123, device.nValue)
 			assert.is_same('123abc', device.deviceId)

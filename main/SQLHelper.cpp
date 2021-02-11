@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 148
+#define DB_VERSION 149
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -59,7 +59,8 @@ const char* sqlCreateDeviceStatus =
 "[BatteryLevel] INTEGER DEFAULT 0, "
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200) DEFAULT null, "
-"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
+"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')), "
+"[User] VARCHAR(100) NOT NULL DEFAULT '', "
 "[Order] INTEGER BIGINT(10) default 0, "
 "[AddjValue] FLOAT DEFAULT 0, "
 "[AddjMulti] FLOAT DEFAULT 1, "
@@ -331,19 +332,20 @@ const char* sqlCreatePlanOrderTrigger =
 "END;\n";
 
 const char* sqlCreateScenes =
-"CREATE TABLE IF NOT EXISTS [Scenes] (\n"
-"[ID] INTEGER PRIMARY KEY, \n"
-"[Name] VARCHAR(100) NOT NULL, \n"
-"[Favorite] INTEGER DEFAULT 0, \n"
-"[Order] INTEGER BIGINT(10) default 0, \n"
-"[nValue] INTEGER DEFAULT 0, \n"
-"[SceneType] INTEGER DEFAULT 0, \n"
-"[Protected] INTEGER DEFAULT 0, \n"
+"CREATE TABLE IF NOT EXISTS [Scenes] ( "
+"[ID] INTEGER PRIMARY KEY, "
+"[Name] VARCHAR(100) NOT NULL, "
+"[Favorite] INTEGER DEFAULT 0, "
+"[Order] INTEGER BIGINT(10) default 0, "
+"[nValue] INTEGER DEFAULT 0, "
+"[SceneType] INTEGER DEFAULT 0, "
+"[Protected] INTEGER DEFAULT 0, "
 "[OnAction] VARCHAR(200) DEFAULT '', "
 "[OffAction] VARCHAR(200) DEFAULT '', "
 "[Description] VARCHAR(200) DEFAULT '', "
 "[Activators] VARCHAR(200) DEFAULT '', "
-"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
+"[User] VARCHAR(100) NOT NULL DEFAULT '', "
+"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime'))); ";
 
 const char* sqlCreateScenesTrigger =
 "CREATE TRIGGER IF NOT EXISTS scenesupdate AFTER INSERT ON Scenes\n"
@@ -2776,6 +2778,11 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
 		}
+		if (dbversion < 149)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [User] VARCHAR(100) NOT NULL DEFAULT '' ");
+			query("ALTER TABLE Scenes ADD COLUMN [User] VARCHAR(100) NOT NULL DEFAULT '' ");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3334,7 +3341,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 }
 #endif
 
-void CSQLHelper::PerformThreadedAction(const _tTaskItem itt)
+void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 {
 	if (itt._ItemType == TITEM_EXECUTESHELLCOMMAND)
 	{
@@ -4770,11 +4777,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
 		{
 			result = safe_query(
-				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
+				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', user='%q' "
 				"WHERE (ID = %" PRIu64 ")",
 				signallevel, batterylevel,
 				nValue, sValue,
 				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				m_mainworker.m_szLastSwitchUser.c_str(),
 				ulID);
 		}
 		else
@@ -4872,11 +4880,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			}
 
 			result = safe_query(
-				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
+				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', User='%q' "
 				"WHERE (ID = %" PRIu64 ")",
 				signallevel, batterylevel,
 				nValue, sValue,
 				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				m_mainworker.m_szLastSwitchUser.c_str(),
 				ulID);
 		}
 	}

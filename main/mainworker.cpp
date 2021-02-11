@@ -13061,9 +13061,10 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue, User) VALUES ('%" PRIu64 "', '%d', '%q')", idx, nValue, User.c_str());
 
 	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
-	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
+	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q', User='%q' WHERE (ID == %" PRIu64 ")",
 		nValue,
 		szLastUpdate.c_str(),
+		User.c_str(),
 		idx);
 
 	//Check if we need to email a snapshot of a Camera
@@ -13099,7 +13100,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 
 	bool bEventTrigger = true;
 	if (m_sql.m_bEnableEventSystem)
-		bEventTrigger = m_eventsystem.UpdateSceneGroup(idx, nValue, szLastUpdate);
+		bEventTrigger = m_eventsystem.UpdateSceneGroup(idx, nValue, szLastUpdate, User.c_str());
 
 	// Notify listeners
 	sOnSwitchScene(idx, Name);

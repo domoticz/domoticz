@@ -30,7 +30,7 @@ extern http::server::ssl_server_settings secure_webserver_settings;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.1.4")
+	: m_version("3.2.0")
 {
 	m_bdzVentsExist = false;
 }
@@ -123,6 +123,7 @@ void CdzVents::ProcessNotificationItem(CLuaTable &luaTable, int &index, const CE
 		}
 		luaTable.CloseSubTableEntry();
 	}
+
 	luaTable.AddString("type", type);
 	luaTable.AddString("status", status);
 	luaTable.CloseSubTableEntry();
@@ -147,7 +148,9 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 				case Notification::DZ_STOP:
 				case Notification::DZ_BACKUP_DONE:
 				case Notification::DZ_NOTIFICATION:
-					ProcessNotificationItem(luaTable, index, item);
+				case Notification::DZ_ALLDEVICESTATUSRESET:
+				case Notification::DZ_ALLEVENTRESET:
+				ProcessNotificationItem(luaTable, index, item);
 					break;
 				case Notification::DZ_CUSTOM:
 					bCustomEvent = true;
@@ -851,6 +854,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			{
 				triggerDevice = true;
 				sitem.lastUpdate = item.lastUpdate;
+				sitem.user = item.user;
 				sitem.lastLevel = item.lastLevel;
 				sitem.sValue = item.sValue;
 				sitem.nValueWording = item.nValueWording;
@@ -870,7 +874,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 		if (sitem.ID > 0)
 		{
-			luaTable.OpenSubTableEntry(index, 1, 14);
+			luaTable.OpenSubTableEntry(index, 1, 15);
 
 			luaTable.AddString("name", sitem.deviceName);
 			luaTable.AddBool("protected", (sitem.protection == 1) );
@@ -883,6 +887,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			luaTable.AddString("switchType", Switch_Type_Desc((_eSwitchType)sitem.switchtype));
 			luaTable.AddInteger("switchTypeValue", sitem.switchtype);
 			luaTable.AddString("lastUpdate", sitem.lastUpdate);
+			luaTable.AddString("user", sitem.user);
 			luaTable.AddInteger("lastLevel", sitem.lastLevel);
 			luaTable.AddBool("changed", triggerDevice);
 			luaTable.AddBool("timedOut", timed_out);
@@ -892,7 +897,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			StringSplit(sitem.sValue, ";", strarray);
 
 			luaTable.OpenSubTableEntry("rawData", 0, 0);
-			for (uint8_t i = 0; i < strarray.size(); i++)
+			for (size_t i = 0; i < strarray.size(); i++)
 				luaTable.AddString(i + 1, strarray[i]);
 
 			luaTable.CloseSubTableEntry();
@@ -977,21 +982,18 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				sgitem.scenesgroupValue = item.sValue;
 			}
 		}
+		result = m_sql.safe_query("SELECT coalesce(Description, '') Description, user FROM Scenes WHERE (ID=='%d')", sgitem.ID);
+			description = result[0][1].c_str();
 
-		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
-		if (result.empty())
-			description = "";
-		else
-			description = result[0][0].c_str();
-
-		luaTable.OpenSubTableEntry(index, 1, 7);
+		luaTable.OpenSubTableEntry(index, 1, 8);
 
 		luaTable.AddString("name", sgitem.scenesgroupName);
 		luaTable.AddInteger("id", sgitem.ID);
-		luaTable.AddString("description", description);
+		luaTable.AddString("description", result[0][0].c_str() );
 		luaTable.AddString("baseType", (sgitem.scenesgroupType == 0) ? "scene" : "group");
 		luaTable.AddBool("protected", (lua_Number)sgitem.protection == 1);
 		luaTable.AddString("lastUpdate", sgitem.lastUpdate);
+		luaTable.AddString("user", result[0][1].c_str() );
 		luaTable.AddBool("changed", triggerScene);
 
 		luaTable.OpenSubTableEntry("data", 0, 0);

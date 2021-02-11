@@ -97,7 +97,6 @@ return {
 
 			if (data.batteryLevel <= 100) then bat = data.batteryLevel end
 			if (data.signalLevel <= 100) then sig = data.signalLevel end
-
 			device['deviceType'] = data.deviceType
 			device['hardwareName'] = data.data.hardwareName
 			device['hardwareType'] = data.data.hardwareType
@@ -114,6 +113,7 @@ return {
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
 			device['sValue'] = data.data._state or ( table.concat(device.rawData,';') ~= '' and  table.concat(device.rawData,';') ) or nil
+			device['user'] = ( data.user ~= '' and data.user ) or nil
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel', {
 					type = 'device',
@@ -129,6 +129,7 @@ return {
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
 			device['rawData'] = { [1] = data.data._state }
+			device['user'] = ( data.user ~= '' and data.user ) or nil
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel', {
 					type = 'scene',

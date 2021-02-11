@@ -1,4 +1,9 @@
 __NOTOC__
+== [3.2.0] ==
+
+* Add attribute user to switchable devices, groups and scenes (identifies who / what updated the item)
+* Add resetAllDevicestatus and resetAllEvents to type system trigger
+
 == [3.1.4] ==
 
 * Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
