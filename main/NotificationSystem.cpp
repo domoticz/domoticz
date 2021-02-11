@@ -6,27 +6,31 @@
 #include <boost/thread.hpp>
 #include "NotificationSystem.h"
 
-const CNotificationSystem::_tNotificationTypeTable CNotificationSystem::typeTable[] =
-{ // don't change order
-	{ Notification::DZ_START,                "start"                },
-	{ Notification::DZ_STOP,                 "stop"                 },
-	{ Notification::DZ_BACKUP_DONE,          "backupDone"           },
-	{ Notification::DZ_NOTIFICATION,         "notification"         },
-	{ Notification::HW_TIMEOUT,              "hardwareTimeout"      },
-	{ Notification::HW_START,                "hardwareStart"        },
-	{ Notification::HW_STOP,                 "hardwareStop"         },
-	{ Notification::HW_THREAD_ENDED,         "threadEnded"          },
-	{ Notification::DZ_CUSTOM,               "customEvent"          },
-	{ Notification::DZ_ALLEVENTRESET,        "resetAllEvents"       },
-	{ Notification::DZ_ALLDEVICESTATUSRESET, "resetAllDeviceStatus" },
+constexpr std::array<CNotificationSystem::_tNotificationTypeTable, 11> CNotificationSystem::typeTable{
+	{
+		// don't change order
+		{ Notification::DZ_START, "start" },
+		{ Notification::DZ_STOP, "stop" },
+		{ Notification::DZ_BACKUP_DONE, "backupDone" },
+		{ Notification::DZ_NOTIFICATION, "notification" },
+		{ Notification::HW_TIMEOUT, "hardwareTimeout" },
+		{ Notification::HW_START, "hardwareStart" },
+		{ Notification::HW_STOP, "hardwareStop" },
+		{ Notification::HW_THREAD_ENDED, "threadEnded" },
+		{ Notification::DZ_CUSTOM, "customEvent" },
+		{ Notification::DZ_ALLEVENTRESET, "resetAllEvents" },
+		{ Notification::DZ_ALLDEVICESTATUSRESET, "resetAllDeviceStatus" },
+	},
 };
 
-const CNotificationSystem::_tNotificationStatusTable CNotificationSystem::statusTable[] =
-{ // don't change order
-	{ Notification::STATUS_OK,             "ok"              },
-	{ Notification::STATUS_INFO,           "info"            },
-	{ Notification::STATUS_ERROR,          "error"           },
-	{ Notification::STATUS_WARNING,        "warning"         }
+constexpr std::array<CNotificationSystem::_tNotificationStatusTable, 4> CNotificationSystem::statusTable{
+	{
+		// don't change order
+		{ Notification::STATUS_OK, "ok" },
+		{ Notification::STATUS_INFO, "info" },
+		{ Notification::STATUS_ERROR, "error" },
+		{ Notification::STATUS_WARNING, "warning" },
+	},
 };
 
 CNotificationSystem::~CNotificationSystem()
@@ -62,14 +66,14 @@ void CNotificationSystem::UnlockNotificationQueueThread()
 
 std::string CNotificationSystem::GetTypeString(const int type)
 {
-	if (type < sizeof(typeTable) / sizeof(typeTable[0]))
+	if (type < int(typeTable.size()))
 		return typeTable[type].name;
 	return "unknown";
 }
 
 std::string CNotificationSystem::GetStatusString(const int status)
 {
-	if (status < sizeof(statusTable) / sizeof(statusTable[0]))
+	if (status < int(statusTable.size()))
 		return statusTable[status].name;
 	return "unknown";
 }

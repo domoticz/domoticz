@@ -19,7 +19,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-using SatelModel = struct
+struct SatelModel
 {
 	unsigned int id;
 	const char* name;
@@ -27,20 +27,18 @@ using SatelModel = struct
 	unsigned int outputs;
 };
 
-#define TOT_MODELS 9
-
-constexpr std::array<SatelModel, TOT_MODELS> models{
+constexpr std::array<SatelModel, 9> models{
 	{
-		{ 0, "Integra 24", 24, 20 },		   //
-		{ 1, "Integra 32", 32, 32 },		   //
-		{ 2, "Integra 64", 64, 64 },		   //
-		{ 3, "Integra 128", 128, 128 },		   //
-		{ 4, "Integra 128 WRL SIM300", 128, 128 }, //
-		{ 132, "Integra 128 WRL LEON", 128, 128 }, //
-		{ 66, "Integra 64 Plus", 64, 64 },	   //
-		{ 67, "Integra 128 Plus", 128, 128 },	   //
-		{ 72, "Integra 256 Plus", 256, 256 },	   //
-	}						   //
+		{ 0, "Integra 24", 24, 20 },
+		{ 1, "Integra 32", 32, 32 },
+		{ 2, "Integra 64", 64, 64 },
+		{ 3, "Integra 128", 128, 128 },
+		{ 4, "Integra 128 WRL SIM300", 128, 128 },
+		{ 132, "Integra 128 WRL LEON", 128, 128 },
+		{ 66, "Integra 64 Plus", 64, 64 },
+		{ 67, "Integra 128 Plus", 128, 128 },
+		{ 72, "Integra 256 Plus", 256, 256 },
+	},
 };
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1
@@ -55,16 +53,16 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 {
 	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
 	m_HwdID = ID;
-	memset(m_newData, 0, sizeof(m_newData));
+	m_newData = {};
 
 	// clear last local state of zones and outputs
-	std::fill(std::begin(m_zonesLastState), std::end(m_zonesLastState), false);
-	std::fill(std::begin(m_outputsLastState), std::end(m_outputsLastState), false);
-	std::fill(std::begin(m_isOutputSwitch), std::end(m_isOutputSwitch), false);
-	std::fill(std::begin(m_isTemperature), std::end(m_isTemperature), false);
-	std::fill(std::begin(m_isPartitions), std::end(m_isPartitions), false);
-	std::fill(std::begin(m_armLastState), std::end(m_armLastState), false);
-	m_alarmLast = false;
+	m_zonesLastState = {};
+	m_outputsLastState = {};
+	m_isOutputSwitch = {};
+	m_isTemperature = {};
+	m_isPartitions = {};
+	m_armLastState = {};
+	m_alarmLast = {};
 
 	errorCodes[1] = "requesting user code not found";
 	errorCodes[2] = "no access";
@@ -97,7 +95,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 			result += 0x0F;
 		}
 	}
-	for (unsigned int i = 0; i < 8; ++i)
+	for (unsigned int i = 0; i < m_userCode.size(); ++i)
 	{
 		unsigned int c = (unsigned int)(result >> ((7 - i) * 8));
 		m_userCode[i] = c;
@@ -301,7 +299,7 @@ bool SatelIntegra::ReadNewData()
 {
 	unsigned char cmd[2];
 	cmd[0] = 0x7F; // list of new data
-	if (SendCommand(cmd, 1, m_newData, 6) > 0)
+	if (SendCommand(cmd, 1, m_newData.data(), 6) > 0)
 	{
 		return true;
 	}
@@ -318,7 +316,7 @@ bool SatelIntegra::GetInfo()
 	cmd[0] = 0x7E; // Integra version
 	if (SendCommand(cmd, 1, buffer, 15) > 0)
 	{
-		for (unsigned int i = 0; i < TOT_MODELS; ++i)
+		for (unsigned int i = 0; i < models.size(); ++i)
 		{
 			if (models[i].id == buffer[1])
 			{
@@ -794,7 +792,7 @@ bool SatelIntegra::ArmPartitions(const int partition, const int mode)
 
 	unsigned char cmd[13] = { 0 };
 	cmd[0] = (unsigned char)(0x80 + mode); // arm in mode 0
-	for (unsigned int i = 0; i < 8; ++i)
+	for (unsigned int i = 0; i < m_userCode.size(); ++i)
 	{
 		cmd[i + 1] = m_userCode[i];
 	}
@@ -825,7 +823,7 @@ bool SatelIntegra::DisarmPartitions(const int partition)
 
 	unsigned char cmd[13];
 	cmd[0] = 0x84; // disarm
-	for (unsigned int i = 0; i < 8; ++i)
+	for (unsigned int i = 0; i < m_userCode.size(); ++i)
 	{
 		cmd[i + 1] = m_userCode[i];
 	}
@@ -866,7 +864,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			unsigned char buffer[2];
 			unsigned char cmd[41] = { 0 };
 
-			for (unsigned int i = 0; i < sizeof(m_userCode); ++i)
+			for (unsigned int i = 0; i < m_userCode.size(); ++i)
 			{
 				cmd[i + 1] = m_userCode[i];
 			}

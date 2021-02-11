@@ -949,7 +949,7 @@ namespace http {
 
 		void cWebem::AddLocalNetworks(std::string network)
 		{
-			_tIPNetwork ipnetwork;
+			IPNetwork ipnetwork;
 			ipnetwork.bIsIPv6 = (network.find(':') != std::string::npos);
 
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
@@ -1004,7 +1004,7 @@ namespace http {
 
 				//Apply mask to network address
 				for (ii = 0; ii < iASize; ii++)
-					ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
+					ipnetwork.Network[ii] &= ipnetwork.Mask[ii];
 			}
 			else
 			{
@@ -1038,7 +1038,7 @@ namespace http {
 
 					//Apply mask to network address
 					for (ii = 0; ii < iASize; ii++)
-						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
+						ipnetwork.Network[ii] &= ipnetwork.Mask[ii];
 				}
 				else
 				{
@@ -1072,7 +1072,7 @@ namespace http {
 
 					//Apply mask to network address
 					for (ii = 0; ii < iASize; ii++)
-						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
+						ipnetwork.Network[ii] &= ipnetwork.Mask[ii];
 				}
 			}
 
@@ -1349,7 +1349,7 @@ namespace http {
 			return 0;
 		}
 
-		bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork)
+		bool IsIPInRange(const std::string &ip, const IPNetwork &ipnetwork)
 		{
 			bool bIsIPv6 = (ip.find(':') != std::string::npos);
 			if (ipnetwork.bIsIPv6 != bIsIPv6)
@@ -1376,8 +1376,7 @@ namespace http {
 			if (sHost.size() < 3)
 				return false;
 
-			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
-					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my); });
+			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(), [&](auto &&my) { return IsIPInRange(sHost, my); });
 		}
 
 		constexpr std::array<const char *, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
@@ -1397,16 +1396,8 @@ namespace http {
 			}
 			else
 			{
-				sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
-					wkdays[gmt.tm_wday],
-					gmt.tm_mday,
-					months[gmt.tm_mon],
-					gmt.tm_year + 1900,
-					gmt.tm_hour,
-					gmt.tm_min,
+				sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT", wkdays.at(gmt.tm_wday), gmt.tm_mday, months.at(gmt.tm_mon), gmt.tm_year + 1900, gmt.tm_hour, gmt.tm_min,
 					gmt.tm_sec);
-
-
 			}
 			return buffer;
 		}

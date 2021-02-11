@@ -144,7 +144,7 @@ class CEvohomeWeb : public CEvohomeBase
 	int m_lastDST;
 	bool m_loggedon;
 	int m_logonfailures;
-	unsigned long m_zones[13];
+	std::array<unsigned long, 13> m_zones;
 	time_t m_sessiontimer;
 	bool m_bequiet;
 	bool m_showlocation;
@@ -159,8 +159,8 @@ class CEvohomeWeb : public CEvohomeBase
 	uint8_t m_hdprecision;
 	int m_wdayoff;
 
-	static const uint8_t m_dczToEvoWebAPIMode[7];
-	static const std::string weekdays[7];
+	static const std::array<uint8_t, 7> m_dczToEvoWebAPIMode;
+	static const std::array<const char *, 7> weekdays;
 	std::vector<std::string> m_SessionHeaders;
 
 	Json::Value m_j_fi;

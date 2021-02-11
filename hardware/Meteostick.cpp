@@ -32,13 +32,10 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 	m_iBaudRate=baud_rate;
 	m_state = MSTATE_INIT;
 	m_bufferpos = 0;
-	for (int ii = 0; ii < MAX_IDS; ii++)
-	{
-		m_LastOutsideTemp[ii] = 12345;
-		m_LastOutsideHum[ii] = 0;
-		m_ActRainCounter[ii] = -1;
-		m_LastRainValue[ii] = -1;
-	}
+	m_LastOutsideTemp.fill(12345);
+	m_LastOutsideHum.fill(0);
+	m_ActRainCounter.fill(-1);
+	m_LastRainValue.fill(-1);
 }
 
 bool Meteostick::StartHardware()
@@ -96,14 +93,11 @@ bool Meteostick::OpenSerialDevice()
 	m_state = MSTATE_INIT;
 	m_bIsStarted = true;
 	m_bufferpos = 0;
+	m_LastOutsideTemp.fill(12345);
+	m_LastOutsideHum.fill(0);
+	m_ActRainCounter.fill(-1);
+	m_LastRainValue.fill(-1);
 
-	for (int ii = 0; ii < MAX_IDS; ii++)
-	{
-		m_LastOutsideTemp[ii]	= 12345;
-		m_LastOutsideHum[ii]	= 0;
-		m_ActRainCounter[ii]	= -1;
-		m_LastRainValue[ii]		= -1;
-	}
 	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;

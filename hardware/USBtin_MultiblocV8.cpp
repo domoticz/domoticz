@@ -225,16 +225,7 @@ void USBtin_MultiblocV8::ManageThreadV8(bool States)
 void USBtin_MultiblocV8::ClearingBlocList(){
 	_log.Log(LOG_NORM,"MultiblocV8: clearing BlocList");
 	//effacement du tableau à l'init
-	for (auto &i : m_BlocList_CAN)
-	{
-		i.BlocID = 0;
-		i.Status = 0;
-		i.NbAliveFrameReceived = 0;
-		i.VersionH = 0;
-		i.VersionM = 0;
-		i.VersionL = 0;
-		i.CongifurationCrc = 0;
-	}
+	m_BlocList_CAN = {};
 }
 
 void USBtin_MultiblocV8::Do_Work()
@@ -388,15 +379,16 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const char Codage, const char Ssreseau,unsigned int bufferdata[8])
 {
 	unsigned long sID=(RefBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
-	int i = 0;
 	bool BIT_FIND_BLOC = false;
-	int IndexBLoc = 0;
+	size_t IndexBLoc = 0;
 	unsigned long Rqid = 0;
 
-	for(i = 0;i < MAX_NUMBER_BLOC;i++){
-		if( m_BlocList_CAN[i].BlocID == sID ){
+	for (const auto &can : m_BlocList_CAN)
+	{
+		if (can.BlocID == sID)
+		{
 			BIT_FIND_BLOC = true;
-			IndexBLoc = i;
+			++IndexBLoc;
 			break;
 		}
 	}
@@ -411,11 +403,12 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 		m_BlocList_CAN[IndexBLoc].NbAliveFrameReceived++;
 	}
 	else{
-		i = 0;
 		//or just been detected :
-		for(i = 0;i < MAX_NUMBER_BLOC;i++){
-			if( m_BlocList_CAN[i].BlocID == 0 ){
-				m_BlocList_CAN[i].BlocID = sID;
+		for (auto &can : m_BlocList_CAN)
+		{
+			if (can.BlocID == 0)
+			{
+				can.BlocID = sID;
 				m_BlocList_CAN[IndexBLoc].VersionH = bufferdata[0];
 				m_BlocList_CAN[IndexBLoc].VersionM = bufferdata[1];
 				m_BlocList_CAN[IndexBLoc].VersionL = bufferdata[2];
@@ -428,14 +421,14 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 					case BLOC_SFSP_M :
 					case BLOC_SFSP_E :
 						//requete analogique (tension alim) / analog send request for Power tension of SFSP Blocs
-						Rqid= (type_E_ANA_1_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + can.BlocID;
 						SendRequest(Rqid);
 						//Envoi 6 requetes STOR vers les SFSP : / sending 3 request to obtains states of the 6 outputs
-						Rqid= (type_STATE_S_TOR_1_TO_2<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+						Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + can.BlocID;
 						SendRequest(Rqid);
-						Rqid= (type_STATE_S_TOR_3_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+						Rqid = (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME) + can.BlocID;
 						SendRequest(Rqid);
-						Rqid= (type_STATE_S_TOR_5_TO_6<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+						Rqid = (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME) + can.BlocID;
 						SendRequest(Rqid);
 
 						//Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
@@ -497,15 +490,17 @@ void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int C
 
 //call every 3 sec...
 void  USBtin_MultiblocV8::BlocList_CheckBloc(){
-	int i;
 	int RefBlocAlive = 0;
 	unsigned long Rqid = 0;
-	for(i = 0;i < MAX_NUMBER_BLOC;i++){
-		if( m_BlocList_CAN[i].BlocID != 0 ){ //Si présence d'un ID
-			//we extract the blocs reference :
-			RefBlocAlive = (( m_BlocList_CAN[i].BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+	for (auto &can : m_BlocList_CAN)
+	{
+		if (can.BlocID != 0)
+		{ // Si présence d'un ID
+			// we extract the blocs reference :
+			RefBlocAlive = ((can.BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
 			//and check the bloc state :
-			if( m_BlocList_CAN[i].Status == BLOC_NOTALIVE ){
+			if (can.Status == BLOC_NOTALIVE)
+			{
 				//le bloc a été perdu / bloc lost...
 				_log.Log(LOG_ERROR,"MultiblocV8: Bloc Lost with ref #%d# ",RefBlocAlive);
 			}
@@ -516,26 +511,26 @@ void  USBtin_MultiblocV8::BlocList_CheckBloc(){
 					case BLOC_SFSP_M :
 					case BLOC_SFSP_E :
 						if( m_BOOL_TaskAGo == true ){
-							Rqid= (type_E_ANA_1_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+							Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + can.BlocID;
 							SendRequest(Rqid);
 						}
 						if( m_BOOL_TaskRqStorGo == true ){
-							m_BlocList_CAN[i].ForceUpdateSTOR[0] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[1] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[2] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[3] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[4] = true;
-							m_BlocList_CAN[i].ForceUpdateSTOR[5] = true;
-							Rqid= (type_STATE_S_TOR_1_TO_2<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+							can.ForceUpdateSTOR[0] = true;
+							can.ForceUpdateSTOR[1] = true;
+							can.ForceUpdateSTOR[2] = true;
+							can.ForceUpdateSTOR[3] = true;
+							can.ForceUpdateSTOR[4] = true;
+							can.ForceUpdateSTOR[5] = true;
+							Rqid = (type_STATE_S_TOR_1_TO_2 << SHIFT_TYPE_TRAME) + can.BlocID;
 							SendRequest(Rqid);
-							Rqid= (type_STATE_S_TOR_3_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+							Rqid = (type_STATE_S_TOR_3_TO_4 << SHIFT_TYPE_TRAME) + can.BlocID;
 							SendRequest(Rqid);
-							Rqid= (type_STATE_S_TOR_5_TO_6<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
+							Rqid = (type_STATE_S_TOR_5_TO_6 << SHIFT_TYPE_TRAME) + can.BlocID;
 							SendRequest(Rqid);
 						}
 						break;
 				}
-				m_BlocList_CAN[i].Status = BLOC_NOTALIVE; //RAZ ici de l'info toutes les 3 sec !
+				can.Status = BLOC_NOTALIVE; // RAZ ici de l'info toutes les 3 sec !
 			}
 		}
 	}
@@ -599,7 +594,6 @@ void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned char RefBloc, 
 
 bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int OutputNumber,bool CdeReceive,int LevelReceive){
 	char szDeviceID[10];
-	int i;
 	bool returnvalue = true;
 	std::vector<std::vector<std::string> > result;
 	bool ForceUpdate = false;
@@ -607,12 +601,14 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int OutputNumber,bo
 	int nvalue = 0;
 	unsigned long StoreIdToFind = sID &(MSK_INDEX_MODULE+MSK_CODAGE_MODULE+MSK_SRES_MODULE);
 	//serching for the bloc in bloclist :
-	for(i = 0;i < MAX_NUMBER_BLOC;i++){
-		if( m_BlocList_CAN[i].BlocID == StoreIdToFind ){
+	for (auto &can : m_BlocList_CAN)
+	{
+		if (can.BlocID == StoreIdToFind)
+		{
 			//bloc trouvé on vérifie si on doit forcer l'update ou non des composants associés :
 			//bloc find, check if update is necessary :
-			ForceUpdate = m_BlocList_CAN[i].ForceUpdateSTOR[OutputNumber];
-			m_BlocList_CAN[i].ForceUpdateSTOR[OutputNumber] = false; //RAZ ici
+			ForceUpdate = can.ForceUpdateSTOR[OutputNumber];
+			can.ForceUpdateSTOR[OutputNumber] = false; // RAZ ici
 			break;
 		}
 	}
@@ -810,20 +806,21 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 }
 
 void USBtin_MultiblocV8::SetOutputBlinkInDomoticz (unsigned long sID,int OutputNumber,bool Blink){
-	int i;
 	unsigned long StoreIdToFind = sID &(MSK_INDEX_MODULE+MSK_CODAGE_MODULE+MSK_SRES_MODULE);
 	//serching for the bloc to :
-	for(i = 0;i < MAX_NUMBER_BLOC;i++){
-		if( m_BlocList_CAN[i].BlocID == StoreIdToFind ){
+	for (auto &can : m_BlocList_CAN)
+	{
+		if (can.BlocID == StoreIdToFind)
+		{
 			//bloc trouvé:
 			//we extract the blocs reference :
-			int RefBlocAlive = (( m_BlocList_CAN[i].BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+			int RefBlocAlive = ((can.BlocID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
 			switch(RefBlocAlive){ //Switch because the Number of output can be different for over ref blocks !
 					case BLOC_SFSP_M :
 					case BLOC_SFSP_E :
 						//6 outputs on sfsp blocks //OutputNumber
-						m_BlocList_CAN[i].IsOutputBlink[OutputNumber] = Blink;
-					break;
+						can.IsOutputBlink[OutputNumber] = Blink;
+						break;
 			}
 		}
 	}

@@ -108,7 +108,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 	udpClient.sin_addr.s_addr = INADDR_ANY;
 	udpClient.sin_port = 0;
 
-	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
+	::bind(udpSocket, (struct sockaddr *)&udpClient, sizeof(udpClient));
 
 	/** make the packet as shown above **/
 

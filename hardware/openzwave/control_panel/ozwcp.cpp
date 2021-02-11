@@ -310,20 +310,19 @@ void MyNode::updateGroup(uint8 node, uint8 grp, char* glist)
 	/* Look for nodes in the passed-in argument list, if not present add them */
 	std::vector<uint8>::iterator nit;
 	for (j = 0; j < n; j++) {
-		for (nit = (*it)->grouplist.begin(); nit != (*it)->grouplist.end(); ++nit)
-			if (*nit == v[j])
-				break;
+		nit = std::find_if((*it)->grouplist.begin(), (*it)->grouplist.end(), [v, j](auto &&n) { return n == v[j]; });
 		if (nit == (*it)->grouplist.end()) // not found
 			OpenZWave::Manager::Get()->AddAssociation(homeId, node, grp, v[j]);
 	}
 	/* Look for nodes in the std::vector (current list) and those not found in
 	   the passed-in list need to be removed */
-	for (nit = (*it)->grouplist.begin(); nit != (*it)->grouplist.end(); ++nit) {
+	for (const auto &group : (*it)->grouplist)
+	{
 		for (j = 0; j < n; j++)
-			if (*nit == v[j])
+			if (group == v[j])
 				break;
 		if (j >= n)
-			OpenZWave::Manager::Get()->RemoveAssociation(homeId, node, grp, *nit);
+			OpenZWave::Manager::Get()->RemoveAssociation(homeId, node, grp, group);
 	}
 	delete[] v;
 }

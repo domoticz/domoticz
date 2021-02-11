@@ -20,24 +20,24 @@ enum _eDenkoviTCPDevice
 
 struct _sDenkoviTCPModbusRequest
 {
-	uint8_t trId[2] = { 0, 0 };    // transaction ID
-	uint8_t prId[2] = { 0, 0 };    // protocol ID
-	uint8_t length[2] = { 0, 6 };  // message length
-	uint8_t unitId = 1;	       // unit ID
-	uint8_t fc = 1;		       // function code
-	uint8_t address[2] = { 0, 0 }; // address of first Register/Coil
-	uint8_t data[100] = { 16 };    // different data for different Function Code
+	std::array<uint8_t, 2> trId{};	     // transaction ID
+	std::array<uint8_t, 2> prId{};	     // protocol ID
+	std::array<uint8_t, 2> length{};     // message length
+	uint8_t unitId = 1;		     // unit ID
+	uint8_t fc = 1;			     // function code
+	std::array<uint8_t, 2> address{};    // address of first Register/Coil
+	std::array<uint8_t, 100> data{ 16 }; // different data for different Function Code
 };
 
 struct _sDenkoviTCPModbusResponse
 {
-	uint8_t trId[2] = { 0, 0 };   // transaction ID
-	uint8_t prId[2] = { 0, 0 };   // protocol ID
-	uint8_t length[2] = { 0, 6 }; // message length
+	std::array<uint8_t, 2> trId{};	       // transaction ID
+	std::array<uint8_t, 2> prId{};	       // protocol ID
+	std::array<uint8_t, 2> length{ 0, 6 }; // message length
 	uint8_t unitId = 1;	      // unit ID
 	uint8_t fc = 1;		      // function code
 	uint8_t dataLength = 2;	      // data buffer length
-	uint8_t data[100] = { 16 };   // different data for different Function Code
+	std::array<uint8_t, 100> data{ 16 }; // different data for different Function Code
 };
 
 class CDenkoviTCPDevices : public CDomoticzHardwareBase, ASyncTCP

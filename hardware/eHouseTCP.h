@@ -24,23 +24,23 @@ class eHouseTCP : public CDomoticzHardwareBase
 	int ConnectTCP(unsigned int ip);
 	void AddTextEvents(unsigned char *ev, int size);		       // Add hex coded string with eHouse events/codes
 	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset); // Add binary coded event from buffer
-	struct CtrlADCT *(m_adcs[MAX_AURA_DEVS]);
+	std::array<struct CtrlADCT *, MAX_AURA_DEVS> m_adcs;
 	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
 	void CalculateAdcWiFi(unsigned char index);
 	char eH1(unsigned char addrh, unsigned char addrl);
 	void InitStructs();
 
-	union ERMFullStatT *(m_eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);    // full ERM status decoded
-	union ERMFullStatT *(m_eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]); // full ERM status decoded previous for detecting changes
+	std::array<union ERMFullStatT *, ETHERNET_EHOUSE_RM_MAX + 1> m_eHERMs;	  // full ERM status decoded
+	std::array<union ERMFullStatT *, ETHERNET_EHOUSE_RM_MAX + 1> m_eHERMPrev; // full ERM status decoded previous for detecting changes
 
-	union ERMFullStatT *(m_eHRMs[EHOUSE1_RM_MAX + 1]);    // full RM status decoded
-	union ERMFullStatT *(m_eHRMPrev[EHOUSE1_RM_MAX + 1]); // full RM status decoded previous for detecting changes
+	std::array<union ERMFullStatT *, EHOUSE1_RM_MAX + 1> m_eHRMs;	 // full RM status decoded
+	std::array<union ERMFullStatT *, EHOUSE1_RM_MAX + 1> m_eHRMPrev; // full RM status decoded previous for detecting changes
 
-	struct EventQueueT *(
-		m_EvQ[EVENT_QUEUE_MAX]); // eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
-	struct AURAT *(m_AuraDev[MAX_AURA_DEVS]);    // Aura status thermostat
-	struct AURAT *(m_AuraDevPrv[MAX_AURA_DEVS]); // previous for detecting changes
-	struct AuraNamesT *(m_AuraN[MAX_AURA_DEVS]);
+	std::array<struct EventQueueT *, EVENT_QUEUE_MAX>
+		m_EvQ; // eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
+	std::array<struct AURAT *, MAX_AURA_DEVS> m_AuraDev;	// Aura status thermostat
+	std::array<struct AURAT *, MAX_AURA_DEVS> m_AuraDevPrv; // previous for detecting changes
+	std::array<struct AuraNamesT *, MAX_AURA_DEVS> m_AuraN;
 
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -108,7 +108,7 @@ class eHouseTCP : public CDomoticzHardwareBase
 	unsigned int m_eHOptB; // Admin options
 
 	// Variables stored dynamically added during status reception (should be added sequentially)
-	union WiFiStatusT *(m_eHWiFi[EHOUSE_WIFI_MAX + 1]);
+	std::array<union WiFiStatusT *, EHOUSE_WIFI_MAX + 1> m_eHWiFi;
 	struct CommManagerNamesT *m_ECMn;
 	union CMStatusT *m_ECM;
 	union CMStatusT *m_ECMPrv; // Previous statuses for Update MSQL optimalization  (change data only updated)

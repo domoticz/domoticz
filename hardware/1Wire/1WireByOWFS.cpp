@@ -319,11 +319,11 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
    {
    case smart_battery_monitor:
       {
-         static const std::string unitNames[] = { "VAD", "VDD", "vis" };
-         if (unit >= int((sizeof(unitNames)/sizeof(unitNames[0]))))
-            return 0;
-         fileName.append("/").append(unitNames[unit]);
-         break;
+	   static const std::array<std::string, 3> unitNames{ "VAD", "VDD", "vis" };
+	   if (unit >= int(unitNames.size()))
+		   return 0;
+	   fileName.append("/").append(unitNames[unit]);
+	   break;
       }
    default:
       {

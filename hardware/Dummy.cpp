@@ -62,14 +62,14 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-		using _mappedsensorname = struct
+		struct mappedsensorname
 		{
 			int mappedvalue;
 			int type;
 			int subtype;
 		};
 
-		constexpr std::array<_mappedsensorname, 40> mappedsensorname{ {
+		constexpr std::array<mappedsensorname, 40> mappedsensornames{ {
 			{ 249, pTypeAirQuality, sTypeVoltcraft },	   // Air Quality
 			{ 7, pTypeGeneral, sTypeAlert },		   // Alert
 			{ 9, pTypeCURRENT, sTypeELEC1 },		   // Ampere (3 Phase)
@@ -137,7 +137,7 @@ namespace http {
 			unsigned int subType = 0;
 			uint64_t DeviceRowIdx = (uint64_t )-1;
 
-			for (const auto &sensor : mappedsensorname)
+			for (const auto &sensor : mappedsensornames)
 			{
 				if (sensor.mappedvalue == sensortype)
 				{

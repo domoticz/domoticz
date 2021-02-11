@@ -56,7 +56,7 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 	int m_V8minCounterBase;
 	int m_V8minCounter1;
 
-	struct
+	struct BlocList_CAN
 	{
 		long BlocID;
 		int VersionH;
@@ -67,9 +67,10 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		int Status;
 		int AliveFrameReceived;
 		int NbAliveFrameReceived;
-		bool ForceUpdateSTOR[12];
-		bool IsOutputBlink[12];
-	} m_BlocList_CAN[MAX_NUMBER_BLOC]; // 30 blocs Maxi
+		std::array<bool, 12> ForceUpdateSTOR;
+		std::array<bool, 12> IsOutputBlink;
+	};
+	std::array<BlocList_CAN, MAX_NUMBER_BLOC> m_BlocList_CAN; // 30 blocs Maxi
 
 	std::shared_ptr<std::thread> m_thread;
 };

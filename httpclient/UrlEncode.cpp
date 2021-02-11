@@ -39,9 +39,9 @@ std::string CURLEncode::decToHex(char num, int radix)
 	{
 		int temp = num_char % radix;
 		num_char = (int)std::floor((float)num_char / radix);
-		csTmp = hexVals[temp];
+		csTmp = hexVals.at(temp);
 	}
-	csTmp += hexVals[num_char%16];
+	csTmp += hexVals.at(num_char % 16);
 
 	if(csTmp.size() < 2)
 	{

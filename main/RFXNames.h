@@ -275,7 +275,7 @@ const char *Get_Moisture_Desc(int moisture);
 const char *Get_Alert_Desc(int level);
 const char *Media_Player_States(_eMediaStatus Status);
 const char *ZWave_Clock_Days(unsigned char Day);
-extern const char *ZWave_Thermostat_Fan_Modes[];
+extern const std::array<const char *, 8> ZWave_Thermostat_Fan_Modes;
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode);
 int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
 

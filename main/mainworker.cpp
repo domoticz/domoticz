@@ -9820,7 +9820,7 @@ void MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase* pHardware, cons
 	const _tRego6XXTemp* pRego = reinterpret_cast<const _tRego6XXTemp*>(pResponse);
 	uint8_t devType = pRego->type;
 	uint8_t subType = pRego->subtype;
-	std::string ID = pRego->ID;
+	std::string ID = pRego->ID.data();
 	uint8_t Unit = subType;
 	uint8_t cmnd = 0;
 	uint8_t SignalLevel = 12;
@@ -9852,7 +9852,7 @@ void MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase* pHardware, con
 	const _tRego6XXStatus* pRego = reinterpret_cast<const _tRego6XXStatus*>(pResponse);
 	uint8_t devType = pRego->type;
 	uint8_t subType = pRego->subtype;
-	std::string ID = pRego->ID;
+	std::string ID = pRego->ID.data();
 	uint8_t Unit = subType;
 	int numValue = pRego->value;
 	uint8_t SignalLevel = 12;
@@ -12377,7 +12377,7 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 		nStatus = CEvohomeBase::cmEvoDayOff;
 	else if (status == "DayOffWithEco")
 		nStatus = CEvohomeBase::cmEvoDayOffWithEco;
- 	else if (status == "Custom")
+	else if (status == "Custom")
 		nStatus = CEvohomeBase::cmEvoCustom;
 	else if (status == "Auto")
 		nStatus = CEvohomeBase::cmEvoAuto;

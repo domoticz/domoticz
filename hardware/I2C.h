@@ -57,10 +57,10 @@ class I2C : public CDomoticzHardwareBase
 	uint8_t CalculateForecast(float pressure);
 	float m_LastPressure;
 	int m_LastMinute;
-	float m_pressureSamples[180];
+	std::array<float, 180> m_pressureSamples;
 	int m_minuteCount;
 	bool m_firstRound;
-	float m_pressureAvg[7];
+	std::array<float, 7> m_pressureAvg;
 	int m_LastForecast;
 	unsigned char m_LastSendForecast;
 	int bmp_Calibration(int fd);

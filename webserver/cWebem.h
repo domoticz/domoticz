@@ -50,12 +50,12 @@ namespace http {
 			bool forcelogin;
 		} WebEmSession;
 
-		typedef struct _tIPNetwork
+		struct IPNetwork
 		{
 			bool bIsIPv6 = false;
-			uint8_t Network[16] = { 0 };
-			uint8_t Mask[16] = { 0 };
-		} IPNetwork;
+			std::array<uint8_t, 16> Network{};
+			std::array<uint8_t, 16> Mask{};
+		};
 
 		// Parsed Authorization header
 		struct ah {
@@ -191,7 +191,7 @@ namespace http {
 			std::vector<_tWebUserPassword> m_userpasswords;
 			void AddLocalNetworks(std::string network);
 			void ClearLocalNetworks();
-			std::vector<_tIPNetwork> m_localnetworks;
+			std::vector<IPNetwork> m_localnetworks;
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(const std::string &password);

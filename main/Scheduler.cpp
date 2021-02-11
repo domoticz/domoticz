@@ -47,7 +47,7 @@ void CScheduler::StopScheduler()
 std::vector<tScheduleItem> CScheduler::GetScheduleItems()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	return std::vector<tScheduleItem>{ m_scheduleitems };
+	return { m_scheduleitems };
 }
 
 void CScheduler::ReloadSchedules()
@@ -349,9 +349,9 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		localtime_r(&atime, &ltime);
 		struct tm tm1;
 
-		auto allSchedules = std::array<std::string, 9>{ sSunRise, sSunSet, sSunAtSouth, sCivTwStart, sCivTwEnd, sNautTwStart, sNautTwEnd, sAstTwStart, sAstTwEnd };
-		time_t *allTimes[] = {&m_tSunRise, &m_tSunSet, &m_tSunAtSouth, &m_tCivTwStart, &m_tCivTwEnd, &m_tNautTwStart, &m_tNautTwEnd, &m_tAstTwStart, &m_tAstTwEnd};
-		for (size_t a = 0; a < allSchedules.size(); a = a + 1)
+		const auto allSchedules = std::array<std::string, 9>{ sSunRise, sSunSet, sSunAtSouth, sCivTwStart, sCivTwEnd, sNautTwStart, sNautTwEnd, sAstTwStart, sAstTwEnd };
+		time_t *allTimes[] = { &m_tSunRise, &m_tSunSet, &m_tSunAtSouth, &m_tCivTwStart, &m_tCivTwEnd, &m_tNautTwStart, &m_tNautTwEnd, &m_tAstTwStart, &m_tAstTwEnd };
+		for (size_t a = 0; a < allSchedules.size(); ++a)
 		{
 			//std::cout << allSchedules[a].c_str() << ' ';
 			int hour = atoi(allSchedules[a].substr(0, 2).c_str());
@@ -379,8 +379,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	int isdst = ltime.tm_isdst;
-	struct tm tm1;
-	memset(&tm1, 0, sizeof(tm));
+	struct tm tm1 = {};
 	tm1.tm_isdst = -1;
 
 	if (bForceAddDay)

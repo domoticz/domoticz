@@ -393,8 +393,8 @@ typedef struct  ECMStatusBT				//struct offset =72-2;
 	unsigned char AddrH;				//address high byte of current controller
 	unsigned char AddrL;				//address low  byte 
 	ADCs ADC[16];						//offset in status 72
-	unsigned char outs[20];         //1 bit fields	20B size 1-160 outputs offset in status 72+32
-	unsigned char inputs[12];       //	 INPUTSExt;
+	std::array<unsigned char, 20> outs;			// 1 bit fields	20B size 1-160 outputs offset in status 72+32
+	std::array<unsigned char, 12> inputs;			//	 INPUTSExt;
 	unsigned char Alarms[12];
 	unsigned char Warnings[12];
 	unsigned char Monitorings[12];
@@ -427,10 +427,8 @@ typedef struct ERMFullStatusT  				//struct offset =72-2;
 	int TempH[16];
 	unsigned char Unit[16];
 	unsigned char Type;
-	unsigned char Outs[5];
-	unsigned char Inputs[6];
-
-
+	std::array<unsigned char, 5> Outs;
+	std::array<unsigned char, 6> Inputs;
 
 	unsigned char CURRENT_PROGRAM;		//Current Program Nr.
 	unsigned char CURRENT_ZONE;		//Current Security Zone Nr.
@@ -455,10 +453,8 @@ typedef struct WIFIFullStatusT 				//struct offset =72-2;
 	int TempH[4];
 	unsigned char Unit[4];
 	unsigned char Type;
-	unsigned char Outs[2];
-	unsigned char Inputs[2];
-
-
+	std::array<unsigned char, 2> Outs;
+	std::array<unsigned char, 2> Inputs;
 
 	unsigned char CURRENT_PROGRAM;		//Current Program Nr.
 	unsigned char CURRENT_ZONE;		//Current Security Zone Nr.
@@ -1018,8 +1014,8 @@ typedef struct EHOUSEPROT
 
 	int16_t AdcVal[MAX_ADCS];               //256 bytes   - by 2 byte status
 
-	unsigned char Outputs[MAX_OUTPUTS / 8];           //64B
-	unsigned char Inputs[MAX_INPUTS / 8];             //64B
+	std::array<unsigned char, MAX_OUTPUTS / 8> Outputs; // 64B
+	std::array<unsigned char, MAX_INPUTS / 8> Inputs;   // 64B
 	unsigned char Horn[MAX_INPUTS / 8];               //64B
 	unsigned char Warning[MAX_INPUTS / 8];            //64B
 
@@ -1195,11 +1191,11 @@ typedef struct eHouse1NamesT
 	int         AddrL;          //Address L
 	struct timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[35];           //Outputs Names
-	StringN Inputs[16];         //Inputs Names
-	StringN ADCs[16];           //ADC measurement Names
-	StringN Programs[24];       //Program Names
-	StringN Dimmers[3];        //Dimers Names
+	std::array<StringN, 35> Outs;	  // Outputs Names
+	std::array<StringN, 16> Inputs;	  // Inputs Names
+	std::array<StringN, 16> ADCs;	  // ADC measurement Names
+	std::array<StringN, 24> Programs; // Program Names
+	std::array<StringN, 3> Dimmers;	  // Dimers Names
 	unsigned char BinaryStatus[200];
 	unsigned int BinaryStatusLength;
 	unsigned int TCPQuery;
@@ -1223,14 +1219,12 @@ typedef struct eHouseCANNamesT
 	int         AddrL;          //Address L
 	struct timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[8];           //Outputs Names
-	StringN Inputs[8];         //Inputs Names
-	StringN ADCs[4];           //ADC measurement Names
-	StringN Programs[24];       //Program Names
-	StringN ADCPrograms[24];    //ADC PRogram names
-	StringN Dimmmers[4];        //Dimers Names
-
-
+	std::array<StringN, 8> Outs;	     // Outputs Names
+	std::array<StringN, 8> Inputs;	     // Inputs Names
+	std::array<StringN, 4> ADCs;	     // ADC measurement Names
+	std::array<StringN, 24> Programs;    // Program Names
+	std::array<StringN, 24> ADCPrograms; // ADC PRogram names
+	std::array<StringN, 4> Dimmmers;     // Dimers Names
 
 	char   ADCConfig[4];         //adc type config
 	double Vcc[4];
@@ -1263,13 +1257,13 @@ typedef struct EtherneteHouseNamesT
 	char   DevAddr[7];             //Address Combined
 	struct timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[35];           //Outputs Names
-	StringN Inputs[24];         //Inputs Names
-	StringN ADCs[16];           //ADC measurement Names
-	StringN Programs[24];       //Program Names
-	StringN ADCPrograms[24];       //Program Names
-	StringN Dimmers[3];        //Dimers Names
-	StringN Rollers[16];
+	std::array<StringN, 35> Outs;	     // Outputs Names
+	std::array<StringN, 24> Inputs;	     // Inputs Names
+	std::array<StringN, 16> ADCs;	     // ADC measurement Names
+	std::array<StringN, 24> Programs;    // Program Names
+	std::array<StringN, 24> ADCPrograms; // Program Names
+	std::array<StringN, 3> Dimmers;	     // Dimers Names
+	std::array<StringN, 16> Rollers;
 	char ADCConfig[16];         //adc type config
 	double Vcc[16];
 	double SensorTempsLM335[16];
@@ -1299,9 +1293,9 @@ typedef struct AuraNamesT
 	char   DevAddr[7];              //Address Combined
 	struct timeval tim;             //Recent status
 	StringN Name;                   //Controller Name
-	StringN Outs[4];                //Outputs Names
-	StringN Inputs[4];              //Inputs Names
-	StringN ADCs[8];                //ADC measurement Names
+	std::array<StringN, 4> Outs;	// Outputs Names
+	std::array<StringN, 4> Inputs;	// Inputs Names
+	std::array<StringN, 8> ADCs;	// ADC measurement Names
 	unsigned char  ADCUnit[8];
 	unsigned char ParamSymbol[8];      //unit symbol
 	int Vcc;
@@ -1324,13 +1318,13 @@ typedef struct WiFieHouseNamesT
 	char   DevAddr[7];             //Address Combined
 	struct timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[8];           //Outputs Names
-	StringN Inputs[8];         //Inputs Names
-	StringN ADCs[4];           //ADC measurement Names
-	StringN Programs[24];       //Program Names
-	StringN ADCPrograms[24];       //Program Names
-	StringN Dimmers[4];        //Dimers Names
-	StringN Rollers[2];        //Rollers Names
+	std::array<StringN, 8> Outs;	     // Outputs Names
+	std::array<StringN, 8> Inputs;	     // Inputs Names
+	std::array<StringN, 4> ADCs;	     // ADC measurement Names
+	std::array<StringN, 24> Programs;    // Program Names
+	std::array<StringN, 24> ADCPrograms; // Program Names
+	std::array<StringN, 4> Dimmers;	     // Dimers Names
+	std::array<StringN, 2> Rollers;	     // Rollers Names
 	char    ADCConfig[4];         //adc type config
 	double Vcc[4];
 	double SensorTempsLM335[4];
@@ -1361,15 +1355,15 @@ typedef struct eHouseProNamesT
 	char   DevAddr[7];          //Address Combined
 	struct timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[256];           //Outputs Names
-	StringN Inputs[256];         //Inputs Names
-	StringN ADCs[128];           //ADC measurement Names
-	StringN Programs[256];       //Program Names
-	StringN SecuPrograms[256];   //Rollers+Zone Program Names
-	StringN Zones[256];          //Zone Names
-	StringN ADCPrograms[256];    //ADCProgram Names //heating measurement
-	StringN Dimmers[256];         //Dimers Names
-	StringN Rollers[256];        //Rollers Names
+	std::array<StringN, 256> Outs;	       // Outputs Names
+	std::array<StringN, 256> Inputs;       // Inputs Names
+	std::array<StringN, 128> ADCs;	       // ADC measurement Names
+	std::array<StringN, 256> Programs;     // Program Names
+	std::array<StringN, 256> SecuPrograms; // Rollers+Zone Program Names
+	std::array<StringN, 256> Zones;	       // Zone Names
+	std::array<StringN, 256> ADCPrograms;  // ADCProgram Names //heating measurement
+	std::array<StringN, 256> Dimmers;      // Dimers Names
+	std::array<StringN, 256> Rollers;      // Rollers Names
 	StringN InputsSMS[256];         //Inputs Names for SMS
 	StringN ZonesSMS[256];          //Zone Names for SMS
 	unsigned char BinaryStatus[SIZE_OF_EHOUSE_PRO_STATUS / 2];
@@ -1389,9 +1383,9 @@ typedef struct SatelT
 	char    DevAddr[7];          //Address Combined
 	struct  timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[256];           //Outputs Names
-	StringN Inputs[256];         //Inputs Names
-	StringN ADCs[128];           //ADC measurement Names
+	std::array<StringN, 256> Outs;	 // Outputs Names
+	std::array<StringN, 256> Inputs; // Inputs Names
+	std::array<StringN, 128> ADCs;	 // ADC measurement Names
 	StringN Programs[256];       //Program Names
 	StringN SecuPrograms[256];   //Rollers+Zone Program Names
 	StringN Zones[256];          //Zone Names
@@ -1417,15 +1411,15 @@ typedef struct CommManagerNamesT
 	char   DevAddr[7];          //Address Combined
 	struct timeval tim;         //Recent status
 	StringN Name;               //Controller Name
-	StringN Outs[80];           //Outputs Names
-	StringN Inputs[48];         //Inputs Names
-	StringN ADCs[16];           //ADC measurement Names
-	StringN Programs[24];       //Program Names
-	StringN SecuPrograms[24];   //Rollers+Zone Program Names
-	StringN Zones[24];          //Zone Names
-	StringN ADCPrograms[24];    //ADCProgram Names //heating measurement
-	StringN Dimmers[3];         //Dimers Names
-	StringN Rollers[24];        //Rollers Names
+	std::array<StringN, 80> Outs;	      // Outputs Names
+	std::array<StringN, 48> Inputs;	      // Inputs Names
+	std::array<StringN, 16> ADCs;	      // ADC measurement Names
+	std::array<StringN, 24> Programs;     // Program Names
+	std::array<StringN, 24> SecuPrograms; // Rollers+Zone Program Names
+	std::array<StringN, 24> Zones;	      // Zone Names
+	std::array<StringN, 24> ADCPrograms;  // ADCProgram Names //heating measurement
+	std::array<StringN, 3> Dimmers;	      // Dimers Names
+	std::array<StringN, 24> Rollers;      // Rollers Names
 	char ADCConfig[16];         //adc type config
 	double Vcc[16];
 	double SensorTempsLM335[16];

@@ -56,7 +56,7 @@ private:
       union
       {
          float m_Temperature;      // °C
-         bool m_DigitalIo[MAX_DIGITAL_IO];
+	 std::array<bool, MAX_DIGITAL_IO> m_DigitalIo;
       };
       int m_Unit;
    protected:

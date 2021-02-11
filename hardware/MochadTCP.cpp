@@ -26,7 +26,7 @@ enum _eMochadType {
 	MOCHAD_RFSEC
 };
 
-using MochadMatch = struct
+struct MochadMatch
 {
 	_eMochadMatchType matchtype;
 	_eMochadType type;

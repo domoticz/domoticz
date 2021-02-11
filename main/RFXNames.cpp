@@ -1009,8 +1009,9 @@ const char *ZWave_Thermostat_Modes[] =
 NULL
 };
 */
-const char *ZWave_Thermostat_Fan_Modes[]
-	= { "Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown", nullptr };
+const std::array<const char *, 8> ZWave_Thermostat_Fan_Modes{
+	"Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown",
+};
 
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const std::string& sMode)
 {
@@ -1027,13 +1028,13 @@ int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const s
 int Lookup_ZWave_Thermostat_Fan_Modes(const std::string& sMode)
 {
 	int ii = 0;
-	while (ZWave_Thermostat_Fan_Modes[ii] != nullptr)
+	for (const auto &mode : ZWave_Thermostat_Fan_Modes)
 	{
-		if (ZWave_Thermostat_Fan_Modes[ii] == sMode)
+		if (mode == sMode)
 		{
 			return ii;
 		}
-		ii++;
+		++ii;
 	}
 	return -1;
 }

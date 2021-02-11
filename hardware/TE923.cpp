@@ -125,12 +125,11 @@ void CTE923::GetSensorDetails()
 		return;
 	}
 
-	int ii;
-	for (ii=0; ii<6; ii++)
+	for (const auto &t : data._t)
 	{
-		if (data._t[ii]==0)
+		if (t == 0)
 		{
-			if ((data.t[ii]<-60)||(data.t[ii]>60))
+			if ((t < -60) || (t > 60))
 			{
 				_log.Log(LOG_ERROR, "TE923: Invalid weather station data received (temp)!");
 				return;
@@ -139,6 +138,7 @@ void CTE923::GetSensorDetails()
 	}
 
 	//Add temp sensors
+	int ii;
 	for (ii=0; ii<6; ii++)
 	{
 		int BatLevel = 100;

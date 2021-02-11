@@ -123,7 +123,7 @@ class CEvohomeRadio : public CEvohomeBase
 	int m_retrycntr;
 	int m_nBufPtr;
 
-	unsigned int MultiControllerID[5];
+	std::array<unsigned int, 5> MultiControllerID;
 	bool AllSensors;
 	std::mutex m_mtxRelayCheck;
 	tmap_relay_check m_RelayCheck;
@@ -133,17 +133,11 @@ class CEvohomeRadio : public CEvohomeBase
 	int nStartup;
 	int nStarts;
 
-	static const int m_evoToDczControllerMode[8];
-	static const int m_evoToDczOverrideMode[5];
-	static const uint8_t m_dczToEvoZoneMode[3];
-	static const uint8_t m_dczToEvoControllerMode[7];
-
-	template <typename RT> RT ConvertMode(RT *pArray, uint8_t nIdx)
-	{
-		return pArray[nIdx];
-	}
-
-	static const char m_szNameErr[18];
+	static const std::array<int, 8> m_evoToDczControllerMode;
+	static const std::array<int, 5> m_evoToDczOverrideMode;
+	static const std::array<uint8_t, 3> m_dczToEvoZoneMode;
+	static const std::array<uint8_t, 7> m_dczToEvoControllerMode;
+	static const std::array<char, 18> m_szNameErr;
 	static const int m_nBufSize = 4096;
 	char m_buf[m_nBufSize];
 
@@ -162,7 +156,7 @@ class CEvohomeRadio : public CEvohomeBase
 	typedef tmap_relay_check::iterator tmap_relay_check_it;
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 
-	bool m_bStartup[2];
+	std::array<bool, 2> m_bStartup;
 
 	int16_t m_DHWSetpoint = 6000;
 };

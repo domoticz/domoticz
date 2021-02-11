@@ -1,5 +1,3 @@
-#include <list>
-
 #include "stdafx.h"
 #include "MultiFun.h"
 #include "hardwaretypes.h"
@@ -20,83 +18,86 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-#define sensorsCount 16
 #define registersCount 34
 
-using dictionary = std::vector<std::pair<int, std::string>>;
-
-const auto alarmsType = dictionary{
-	{ 0x0001, "BOILER STOP - FIRING FAILURE" }, //
-	{ 0x0004, "BOILER OVERHEATING" },	    //
-	{ 0x0010, "EXTINUISHED BOILER" },	    //
-	{ 0x0080, "DAMAGED SENSOR BOILER" },	    //
-	{ 0x0100, "DAMAGED SENSOR FEEDER" },	    //
-	{ 0x0200, "FLUE GAS SENSOR" },		    //
-	{ 0x0400, "FAILURE - LOCK WORKS" },	    //
+const std::array<std::pair<int, std::string>, 7> alarmsType{
+	{
+		{ 0x0001, "BOILER STOP - FIRING FAILURE" },
+		{ 0x0004, "BOILER OVERHEATING" },
+		{ 0x0010, "EXTINUISHED BOILER" },
+		{ 0x0080, "DAMAGED SENSOR BOILER" },
+		{ 0x0100, "DAMAGED SENSOR FEEDER" },
+		{ 0x0200, "FLUE GAS SENSOR" },
+		{ 0x0400, "FAILURE - LOCK WORKS" },
+	},
 };
 
-const auto warningsType = dictionary{
-	{ 0x0001, "No external sensor" },		   //
-	{ 0x0002, "No room sensor 1" },			   //
-	{ 0x0004, "Wrong version supply module program" }, //
-	{ 0x0008, "No return sensor" },			   //
-	{ 0x0010, "No room sensor 2" },			   //
-	{ 0x0020, "Open flap" },			   //
-	{ 0x0040, "Thermal protection has tripped" },	   //
+const std::array<std::pair<int, std::string>, 7> warningsType{
+	{
+		{ 0x0001, "No external sensor" },
+		{ 0x0002, "No room sensor 1" },
+		{ 0x0004, "Wrong version supply module program" },
+		{ 0x0008, "No return sensor" },
+		{ 0x0010, "No room sensor 2" },
+		{ 0x0020, "Open flap" },
+		{ 0x0040, "Thermal protection has tripped" },
+	},
 };
 
 constexpr std::array<std::pair<int, const char *>, 10> devicesType{
 	{
-		{ 0x0001, "C.H.1 PUMP" },	 //
-		{ 0x0002, "C.H.2 PUMP" },	 //
-		{ 0x0004, "RESERVE PUMP" },	 //
-		{ 0x0008, "H.W.U.PUMP" },	 //
-		{ 0x0010, "CIRCULATION PUMP" },	 //
-		{ 0x0020, "PUFFER PUMP" },	 //
-		{ 0x0040, "MIXER C.H.1 Close" }, //
-		{ 0x0080, "MIXER C.H.1 Open" },	 //
-		{ 0x0100, "MIXER C.H.2 Close" }, //
-		{ 0x0200, "MIXER C.H.2 Open" },	 //
-	}					 //
+		{ 0x0001, "C.H.1 PUMP" },
+		{ 0x0002, "C.H.2 PUMP" },
+		{ 0x0004, "RESERVE PUMP" },
+		{ 0x0008, "H.W.U.PUMP" },
+		{ 0x0010, "CIRCULATION PUMP" },
+		{ 0x0020, "PUFFER PUMP" },
+		{ 0x0040, "MIXER C.H.1 Close" },
+		{ 0x0080, "MIXER C.H.1 Open" },
+		{ 0x0100, "MIXER C.H.2 Close" },
+		{ 0x0200, "MIXER C.H.2 Open" },
+	},
 };
 
-const auto statesType = dictionary{
-	{ 0x0001, "STOP" },	//
-	{ 0x0002, "Firing" },	//
-	{ 0x0004, "Heating" },	//
-	{ 0x0008, "Maintain" }, //
-	{ 0x0010, "Blanking" }, //
+const std::array<std::pair<int, std::string>, 7> statesType{
+	{
+		{ 0x0001, "STOP" },
+		{ 0x0002, "Firing" },
+		{ 0x0004, "Heating" },
+		{ 0x0008, "Maintain" },
+		{ 0x0010, "Blanking" },
+	},
 };
 
 constexpr std::array<std::pair<const char *, float>, 16> sensors{
 	{
-		{ "External", 10.0F },		//
-		{ "Room 1", 10.0F },		//
-		{ "Room 2", 10.0F },		//
-		{ "Return", 10.0F },		//
-		{ "C.H.1", 10.0F },		//
-		{ "C.H.2", 10.0F },		//
-		{ "H.W.U.", 10.0F },		//
-		{ "Heat", 1.0F },		//
-		{ "Flue gas", 10.0F },		//
-		{ "Module", 10.0F },		//
-		{ "Boiler", 10.0F },		//
-		{ "Feeder", 10.0F },		//
-		{ "Calculated Boiler", 10.0F }, //
-		{ "Calculated H.W.U.", 10.0F }, //
-		{ "Calculated C.H.1", 10.0F },	//
-		{ "Calculated C.H.2", 10.0F },	//
-	}					//
+		{ "External", 10.0F },
+		{ "Room 1", 10.0F },
+		{ "Room 2", 10.0F },
+		{ "Return", 10.0F },
+		{ "C.H.1", 10.0F },
+		{ "C.H.2", 10.0F },
+		{ "H.W.U.", 10.0F },
+		{ "Heat", 1.0F },
+		{ "Flue gas", 10.0F },
+		{ "Module", 10.0F },
+		{ "Boiler", 10.0F },
+		{ "Feeder", 10.0F },
+		{ "Calculated Boiler", 10.0F },
+		{ "Calculated H.W.U.", 10.0F },
+		{ "Calculated C.H.1", 10.0F },
+		{ "Calculated C.H.2", 10.0F },
+	},
 };
 
 constexpr std::array<std::pair<int, const char *>, 5> quickAccessType{
 	{
-		{ 0x0001, "Shower" },		//
-		{ 0x0002, "Party" },		//
-		{ 0x0004, "Comfort" },		//
-		{ 0x0008, "Airing" },		//
-		{ 0x0010, "Frost protection" }, //
-	}					//
+		{ 0x0001, "Shower" },
+		{ 0x0002, "Party" },
+		{ 0x0004, "Comfort" },
+		{ 0x0008, "Airing" },
+		{ 0x0010, "Frost protection" },
+	},
 };
 
 constexpr std::array<const char *, 4> errors{
@@ -324,18 +325,18 @@ void MultiFun::GetTemperatures()
 	cmd[8] = 0x00; // start address (2 bytes)
 	cmd[9] = 0x00;
 	cmd[10] = 0x00; // number of sensor (2 bytes)
-	cmd[11] = sensorsCount;
+	cmd[11] = uint8_t(sensors.size());
 
 	int ret = SendCommand(cmd, 12, buffer, false);
 	if (ret > 0)
 	{
-		if ((ret != 1 + sensorsCount * 2) || (buffer[0] != sensorsCount * 2))
+		if ((ret != 1 + sensors.size() * 2) || (buffer[0] != sensors.size() * 2))
 		{
 			_log.Log(LOG_ERROR, "MultiFun: Receive wrong number of bytes");
 		}
 		else
 		{
-			for (int i = 0; i < sensorsCount; i++)
+			for (int i = 0; i < int(sensors.size()); i++)
 			{
 				unsigned int val = (buffer[i * 2 + 1] & 127) * 256 + buffer[i * 2 + 2];
 				int signedVal = (((buffer[i * 2 + 1] & 128) >> 7) * -32768) + val;

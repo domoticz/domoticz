@@ -12,7 +12,7 @@ typedef struct _tRego6XXTemp
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
-	char ID[25];
+	std::array<char, 25> ID;
 	float temperature;
 } Rego6XXTemp;
 
@@ -21,7 +21,7 @@ typedef struct _tRego6XXStatus
 	unsigned char len;
 	unsigned char type;
 	unsigned char subtype;
-	char ID[25];
+	std::array<char, 25> ID;
 	int value;
 } Rego6XXStatus;
 

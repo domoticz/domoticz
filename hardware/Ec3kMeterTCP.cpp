@@ -252,8 +252,7 @@ Ec3kLimiter::Ec3kLimiter()
 
 bool Ec3kLimiter::update(int id)
 {
-	int i;
-	for (i = 0; i < no_meters; i++)
+	for (size_t i = 0; i < no_meters; i++)
 	{
 		if (meters[i].id == id)
 		{

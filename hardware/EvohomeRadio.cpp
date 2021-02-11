@@ -56,13 +56,13 @@ enum evoCommands
 	//0x0404
 };
 
-const char  CEvohomeRadio::m_szNameErr[18] = { 0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F };
-const int CEvohomeRadio::m_evoToDczControllerMode[8] = { 0,6,1,2,3,4,-1,5 };//are the hidden modes actually valid?
-const int  CEvohomeRadio::m_evoToDczOverrideMode[5] = { zmAuto,-1,zmPerm,-1,zmTmp };//are the hidden modes actually valid?
-const uint8_t CEvohomeRadio::m_dczToEvoZoneMode[3] = { 0,2,4 };
-const uint8_t CEvohomeRadio::m_dczToEvoControllerMode[7] = { 0,2,3,4,5,7,1 };
+constexpr std::array<char, 18> CEvohomeRadio::m_szNameErr{ 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F };
+constexpr std::array<int, 8> CEvohomeRadio::m_evoToDczControllerMode{ 0, 6, 1, 2, 3, 4, -1, 5 };     // are the hidden modes actually valid?
+constexpr std::array<int, 5> CEvohomeRadio::m_evoToDczOverrideMode{ zmAuto, -1, zmPerm, -1, zmTmp }; // are the hidden modes actually valid?
+constexpr std::array<uint8_t, 3> CEvohomeRadio::m_dczToEvoZoneMode{ 0, 2, 4 };
+constexpr std::array<uint8_t, 7> CEvohomeRadio::m_dczToEvoControllerMode{ 0, 2, 3, 4, 5, 7, 1 };
 
-char const CEvohomeMsg::szPacketType[5][8] = { "Unknown","I","RQ","RP","W" };
+constexpr std::array<const char *, 5> CEvohomeMsg::szPacketType{ "Unknown", "I", "RQ", "RP", "W" };
 
 CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 {
@@ -70,7 +70,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	m_nDevID = 0;
 	m_nMyID = 0;
 	m_nBindID = 0;
-	std::fill(std::begin(m_bStartup), std::end(m_bStartup), true);
+	m_bStartup.fill(true);
 	m_nBufPtr = 0;
 	m_nSendFail = 0;
 	m_nZoneCount = 0;
@@ -221,21 +221,10 @@ bool CEvohomeRadio::WriteToHardware(const char* pdata, const unsigned char lengt
 		if (length < sizeof(_tEVOHOME1))
 			return false;
 		_tEVOHOME1* tsen = (_tEVOHOME1*)pdata;
-		AddSendQueue(
-			CEvohomeMsg(
-				CEvohomeMsg::pktwrt,
-				GetControllerID(),
-				cmdControllerMode).Add(
-					ConvertMode(
-						m_dczToEvoControllerMode,
-						tsen->status
-					)
-				).Add(
-				(tsen->mode == 1) ? CEvohomeDateTime(tsen) : CEvohomeDateTime()
-				).Add(
-					tsen->mode
-				)
-		);
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt, GetControllerID(), cmdControllerMode)
+				     .Add(m_dczToEvoControllerMode.at(tsen->status))
+				     .Add((tsen->mode == 1) ? CEvohomeDateTime(tsen) : CEvohomeDateTime())
+				     .Add(tsen->mode));
 	}
 	break;
 	case pTypeEvohomeZone:
@@ -243,28 +232,13 @@ bool CEvohomeRadio::WriteToHardware(const char* pdata, const unsigned char lengt
 		if (length < sizeof(_tEVOHOME2))
 			return false;
 		_tEVOHOME2* tsen = (_tEVOHOME2*)pdata;
-		AddSendQueue(
-			CEvohomeMsg(
-				CEvohomeMsg::pktwrt,
-				GetControllerID(),
-				cmdSetpointOverride).Add(
-				(uint8_t)(tsen->zone - 1)
-				).Add(
-					tsen->temperature
-				).Add(
-					ConvertMode(
-						m_dczToEvoZoneMode,
-						tsen->mode
-					)
-				).Add(
-				(uint16_t)0xFFFF
-				).Add(
-				(uint8_t)0xFF
-				).Add_if(
-					CEvohomeDateTime(tsen),
-					(tsen->mode == 2)
-				)
-		);
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt, GetControllerID(), cmdSetpointOverride)
+				     .Add((uint8_t)(tsen->zone - 1))
+				     .Add(tsen->temperature)
+				     .Add(m_dczToEvoZoneMode.at(tsen->mode))
+				     .Add((uint16_t)0xFFFF)
+				     .Add((uint8_t)0xFF)
+				     .Add_if(CEvohomeDateTime(tsen), (tsen->mode == 2)));
 	}
 	break;
 	case pTypeEvohomeWater:
@@ -272,27 +246,13 @@ bool CEvohomeRadio::WriteToHardware(const char* pdata, const unsigned char lengt
 		if (length < sizeof(_tEVOHOME2))
 			return false;
 		_tEVOHOME2* tsen = (_tEVOHOME2*)pdata;
-		AddSendQueue(
-			CEvohomeMsg(
-				CEvohomeMsg::pktwrt,
-				GetControllerID(),
-				cmdDHWState
-			).Add(
-			(uint8_t)(tsen->zone - 1)
-			).Add(
-			(uint8_t)tsen->temperature).Add(
-				ConvertMode(
-					m_dczToEvoZoneMode,
-					tsen->mode)
-			).Add(
-			(uint16_t)0
-			).Add(
-			(uint8_t)0
-			).Add_if(
-				CEvohomeDateTime(tsen),
-				(tsen->mode == 2)
-			)
-		);
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt, GetControllerID(), cmdDHWState)
+				     .Add((uint8_t)(tsen->zone - 1))
+				     .Add((uint8_t)tsen->temperature)
+				     .Add(m_dczToEvoZoneMode.at(tsen->mode))
+				     .Add((uint16_t)0)
+				     .Add((uint8_t)0)
+				     .Add_if(CEvohomeDateTime(tsen), (tsen->mode == 2)));
 	}
 	break;
 	case pTypeEvohomeRelay:
@@ -690,7 +650,7 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 			{
 				if (msg.id[n].GetIDType() == CEvohomeID::devController)//id type 1 is for controllers
 				{
-					for (unsigned int &i : MultiControllerID)
+					for (auto &i : MultiControllerID)
 					{
 						if (i == msg.GetID(n))
 							break;
@@ -930,14 +890,14 @@ bool CEvohomeRadio::DecodeSetpointOverride(CEvohomeMsg& msg)//0x2349
 		Log(true, LOG_STATUS, "evohome: %s: A local override is in effect for zone %d", tag, tsen.zone);
 		return true;
 	}
-	int nMode = ConvertMode(m_evoToDczOverrideMode, msg.payload[3]);
+	int nMode = m_evoToDczOverrideMode.at(msg.payload[3]);
 	if (nMode == -1)
 	{
 		Log(false, LOG_STATUS, "evohome: %s: WARNING unexpected mode %d", tag, msg.payload[3]);
 		return false;
 	}
-	tsen.mode = static_cast<uint8_t>(nMode);
-	tsen.controllermode = (uint8_t)ConvertMode(m_evoToDczControllerMode, GetControllerMode());
+	tsen.mode = uint8_t(nMode);
+	tsen.controllermode = uint8_t(m_evoToDczControllerMode.at(GetControllerMode()));
 	if (msg.payloadsize == 13)
 	{
 		CEvohomeDateTime::DecodeDateTime(tsen, msg.payload, 7);
@@ -1086,14 +1046,14 @@ bool CEvohomeRadio::DecodeDHWState(CEvohomeMsg& msg)//1F41
 	tsen.temperature = msg.payload[1] ? m_DHWSetpoint : 0;//no longer just on or off for DHW
 	if (tsen.temperature == 0xFF)// temperature = 255 if DHW not installed
 		return true;
-	int nMode = ConvertMode(m_evoToDczOverrideMode, msg.payload[2]);
+	int nMode = m_evoToDczOverrideMode.at(msg.payload[2]);
 	if (nMode == -1)
 	{
 		Log(false, LOG_STATUS, "evohome: %s: WARNING unexpected mode %d", tag, msg.payload[2]);
 		return false;
 	}
-	tsen.mode = static_cast<uint8_t>(nMode);
-	tsen.controllermode = (uint8_t)ConvertMode(m_evoToDczControllerMode, GetControllerMode());
+	tsen.mode = uint8_t(nMode);
+	tsen.controllermode = uint8_t(m_evoToDczControllerMode.at(GetControllerMode()));
 	if (msg.payloadsize == 12)
 	{
 		CEvohomeDateTime::DecodeDateTime(tsen, msg.payload, 6);
@@ -1215,7 +1175,7 @@ bool CEvohomeRadio::DecodeControllerMode(CEvohomeMsg& msg)//2E04
 	RFX_SETID3(msg.GetID(0), tsen.id1, tsen.id2, tsen.id3);
 
 	int nControllerMode = msg.payload[0];
-	int nMode = ConvertMode(m_evoToDczControllerMode, (uint8_t)nControllerMode);//this converts to the modes originally setup with the web client ver
+	int nMode = m_evoToDczControllerMode.at(uint8_t(nControllerMode)); // this converts to the modes originally setup with the web client ver
 	if (nMode == -1)
 	{
 		Log(false, LOG_STATUS, "evohome: %s: WARNING unexpected mode %d", tag, nControllerMode);
@@ -1275,7 +1235,7 @@ bool CEvohomeRadio::DecodeZoneName(CEvohomeMsg& msg)
 		Log(false, LOG_ERROR, "evohome: %s: Error decoding zone name, unknown packet size: %d", tag, msg.payloadsize);
 		return false;
 	}
-	if (memcmp(&msg.payload[2], m_szNameErr, 18) == 0)
+	if (memcmp(&msg.payload[2], m_szNameErr.data(), 18) == 0)
 	{
 		Log(true, LOG_STATUS, "evohome: %s: Warning zone name not set: %d", tag, msg.payload[0] + 1);
 		m_bStartup[0] = false;

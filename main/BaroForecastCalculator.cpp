@@ -16,11 +16,8 @@ void CBaroForecastCalculator::Init()
 	m_dP_dt = 0; // Pressure delta over time
 	m_last_forecast = wsbaroforecast_unknown;
 	mytime(&m_BaroCalcLastTime);
-	for (int ii = 0; ii < 9; ii++)
-	{
-		std::fill(std::begin(m_pressureSamples[ii]), std::end(m_pressureSamples[ii]), 0);
-		m_pressureAvg[ii] = 0;
-	}
+	m_pressureSamples = {};
+	m_pressureAvg = {};
 }
 
 //Should be called every minute

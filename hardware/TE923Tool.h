@@ -6,8 +6,8 @@ typedef struct
 {
 	// this are the values from station
 	unsigned long timestamp; // timestamp for this dataset
-	float t[6];		 // temperature of the sensors in °C
-	signed short h[6];	 // humidity of the sensors in % rel
+	std::array<float, 6> t;	 // temperature of the sensors in °C
+	std::array<signed short, 6> h; // humidity of the sensors in % rel
 	float uv;		 // UV index
 	float press;		 // air pressure in mBar
 	unsigned char forecast;	 // weather forecast from station
@@ -30,7 +30,7 @@ typedef struct
 	// -2 => sensor is out of range
 	// -3 => missing link
 	// -4 => any other error
-	signed char _t[6], _h[6];
+	std::array<signed char, 6> _t, _h;
 	signed char _press, _uv, _wDir, _wSpeed, _wGust, _wChill, _RainCount, _storm, _forecast;
 	unsigned int __src; // source address of dataset (needed for dump)
 } Te923DataSet_t;
@@ -42,7 +42,7 @@ typedef struct
 	unsigned char UvVer;   // program version UV sensor and ext. channels
 	unsigned char RccVer;  // program version remote controlled clock and sunset
 	unsigned char WindVer; // program version wind- rain sensor
-	bool battery[5];       // battery in sensor 1 till 5
+	std::array<bool, 5> battery; // battery in sensor 1 till 5
 	bool batteryUV;	       // battery in UV sensor
 	bool batteryWind;      // battery in wind sensor
 	bool batteryRain;      // battery in rain sensor

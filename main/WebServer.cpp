@@ -90,14 +90,46 @@ struct _tGuiLanguage {
 
 namespace
 {
-	constexpr std::array<std::pair<const char *, const char *>, 36> guiLanguage{ {
-		{ "en", "English" },   { "sq", "Albanian" },   { "ar", "Arabic" },   { "bs", "Bosnian" },      { "bg", "Bulgarian" }, { "ca", "Catalan" },
-		{ "zh", "Chinese" },   { "cs", "Czech" },      { "da", "Danish" },   { "nl", "Dutch" },	       { "et", "Estonian" },  { "de", "German" },
-		{ "el", "Greek" },     { "fr", "French" },     { "fi", "Finnish" },  { "he", "Hebrew" },       { "hu", "Hungarian" }, { "is", "Icelandic" },
-		{ "it", "Italian" },   { "lt", "Lithuanian" }, { "lv", "Latvian" },  { "mk", "Macedonian" },   { "no", "Norwegian" }, { "fa", "Persian" },
-		{ "pl", "Polish" },    { "pt", "Portuguese" }, { "ro", "Romanian" }, { "ru", "Russian" },      { "sr", "Serbian" },   { "sk", "Slovak" },
-		{ "sl", "Slovenian" }, { "es", "Spanish" },    { "sv", "Swedish" },  { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },   { "uk", "Ukrainian" },
-	} };
+	constexpr std::array<std::pair<const char *, const char *>, 36> guiLanguage{
+		{
+			{ "en", "English" },	  //
+			{ "sq", "Albanian" },	  //
+			{ "ar", "Arabic" },	  //
+			{ "bs", "Bosnian" },	  //
+			{ "bg", "Bulgarian" },	  //
+			{ "ca", "Catalan" },	  //
+			{ "zh", "Chinese" },	  //
+			{ "cs", "Czech" },	  //
+			{ "da", "Danish" },	  //
+			{ "nl", "Dutch" },	  //
+			{ "et", "Estonian" },	  //
+			{ "de", "German" },	  //
+			{ "el", "Greek" },	  //
+			{ "fr", "French" },	  //
+			{ "fi", "Finnish" },	  //
+			{ "he", "Hebrew" },	  //
+			{ "hu", "Hungarian" },	  //
+			{ "is", "Icelandic" },	  //
+			{ "it", "Italian" },	  //
+			{ "lt", "Lithuanian" },	  //
+			{ "lv", "Latvian" },	  //
+			{ "mk", "Macedonian" },	  //
+			{ "no", "Norwegian" },	  //
+			{ "fa", "Persian" },	  //
+			{ "pl", "Polish" },	  //
+			{ "pt", "Portuguese" },	  //
+			{ "ro", "Romanian" },	  //
+			{ "ru", "Russian" },	  //
+			{ "sr", "Serbian" },	  //
+			{ "sk", "Slovak" },	  //
+			{ "sl", "Slovenian" },	  //
+			{ "es", "Spanish" },	  //
+			{ "sv", "Swedish" },	  //
+			{ "zh_TW", "Taiwanese" }, //
+			{ "tr", "Turkish" },	  //
+			{ "uk", "Ukrainian" },	  //
+		},
+	};
 } // namespace
 
 extern http::server::CWebServerHelper m_webservers;
@@ -10835,7 +10867,8 @@ namespace http {
 							try {
 								 gasactual = std::stoull(sValue);
 							}
-							catch( std::invalid_argument e ) {
+							catch (std::invalid_argument e)
+							{
 								_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
 								continue;
 							}
@@ -13069,10 +13102,9 @@ namespace http {
 			//First delete all devices for this user, then add the (new) onces
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 
-			int nDevices = static_cast<int>(strarray.size());
-			for (int ii = 0; ii < nDevices; ii++)
+			for (const auto &dev : strarray)
 			{
-				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), dev.c_str());
 			}
 			LoadUsers();
 		}
@@ -15147,7 +15179,7 @@ namespace http {
 					if (!result.empty())
 					{
 						std::map<int, int> _directions;
-						int wdirtabletemp[17][8];
+						int wdirtabletemp[17][8]{};
 						std::string szLegendLabels[7];
 						int ii = 0;
 
@@ -15156,8 +15188,6 @@ namespace http {
 						int idir;
 						for (idir = 0; idir < 360 + 1; idir++)
 							_directions[idir] = 0;
-						for (ii = 0; ii < 17; ii++)
-							std::fill(std::begin(wdirtabletemp[ii]), std::end(wdirtabletemp[ii]), 0);
 
 						if (m_sql.m_windunit == WINDUNIT_MS)
 						{

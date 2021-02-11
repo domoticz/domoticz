@@ -40,6 +40,6 @@ class MultiFun : public CDomoticzHardwareBase
 	int m_LastDevices;
 	int m_LastState;
 	int m_LastQuickAccess;
-	bool m_isSensorExists[2];
-	bool m_isWeatherWork[2];
+	std::array<bool, 2> m_isSensorExists;
+	std::array<bool, 2> m_isWeatherWork;
 };

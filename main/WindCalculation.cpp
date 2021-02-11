@@ -21,7 +21,7 @@ _tWindCalculator::_tWindCalculator()
 void _tWindCalculator::Init()
 {
 	//clear buffer
-	memset(&m_minute_counter,0,sizeof(m_minute_counter));
+	m_minute_counter = {};
 	m_FirstMeasureTime = mytime(nullptr);
 	m_history_fifo.clear();
 	m_bHaveLastDirection=false;
@@ -89,14 +89,15 @@ double _tWindCalculator::CalculateAvarage()
 {
 	int highpos=0;
 	int highestval=0;
-	int ii;
-	for (ii=0; ii<WIND_DEGREE_TABLE_COUNT; ii++)
+	size_t i = 0;
+	for (const auto &minute : m_minute_counter)
 	{
-		if (m_minute_counter[ii]>highestval)
+		if (minute > highestval)
 		{
-			highestval=m_minute_counter[ii];
-			highpos=ii;
+			highestval = minute;
+			highpos = i;
 		}
+		++i;
 	}
 	return highpos*WIND_DEGREE_RESOLUTION;
 }

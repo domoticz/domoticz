@@ -39,10 +39,10 @@ class Meteostick : public AsyncSerial, public CDomoticzHardwareBase
 	void SendSolarRadiationSensor(unsigned char Idx, float Radiation, const std::string &defaultname);
 
       private:
-	float m_LastOutsideTemp[MAX_IDS];
-	int m_LastOutsideHum[MAX_IDS];
-	float m_ActRainCounter[MAX_IDS];
-	int m_LastRainValue[MAX_IDS];
+	std::array<float, MAX_IDS> m_LastOutsideTemp;
+	std::array<int, MAX_IDS> m_LastOutsideHum;
+	std::array<float, MAX_IDS> m_ActRainCounter;
+	std::array<int, MAX_IDS> m_LastRainValue;
 
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;

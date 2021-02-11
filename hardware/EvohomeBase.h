@@ -575,7 +575,7 @@ class CEvohomeMsg
 	{
 		flags = src.flags;
 		type = src.type;
-		for (int i = 0; i < 3; i++)
+		for (size_t i = 0; i < id.size(); i++)
 			id[i] = src.id[i]; // maintain flags
 		timestamp = src.timestamp;
 		command = src.command;
@@ -591,7 +591,7 @@ class CEvohomeMsg
 		// ignore timestamp as not sure this would change the intent of the packet if present
 		if (type != other.type)
 			return false;
-		for (int i = 1; i < 3; i++) // ignore the source address as the special 18:730 addr used for sending will not match the one read back in
+		for (size_t i = 1; i < id.size(); i++) // ignore the source address as the special 18:730 addr used for sending will not match the one read back in
 			if (id[i] != other.id[i])
 				return false;
 		if (command != other.command)
@@ -696,11 +696,11 @@ class CEvohomeMsg
 		return (enccount > 30);
 	}
 
-	static char const szPacketType[5][8];
+	static const std::array<const char *, 5> szPacketType;
 
 	unsigned char flags{ 0 };
 	packettype type{ pktunk };
-	CEvohomeID id[3];
+	std::array<CEvohomeID, 3> id;
 	unsigned char timestamp{ 0 };
 	unsigned int command{ 0 };
 	unsigned char payloadsize{ 0 };

@@ -32,7 +32,7 @@ class MochadTCP : public CDomoticzHardwareBase, ASyncTCP
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::shared_ptr<std::thread> m_thread;
-	int selected[17][17];
+	std::array<std::array<int, 17>, 17> selected;
 	int currentHouse;
 	int currentUnit;
 	unsigned char m_linecount;

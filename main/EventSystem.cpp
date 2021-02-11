@@ -46,81 +46,81 @@ extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds
 #endif
 
 // Helper table for Blockly and SQL name mapping
-const std::string CEventSystem::m_szReason[] =
-{
-	"device",			// 0
-	"scenegroup",			// 1
-	"uservariable",			// 2
-	"time",				// 3
-	"security",			// 4
-	"url",				// 5
-	"notification"			// 6
+constexpr std::array<const char *, 7> CEventSystem::m_szReason{
+	"device",	// 0
+	"scenegroup",	// 1
+	"uservariable", // 2
+	"time",		// 3
+	"security",	// 4
+	"url",		// 5
+	"notification", // 6
 };
 
 // Security status
-const std::string CEventSystem::m_szSecStatus[] =
-{
-	"Disarmed",		// 0
-	"Armed Home",	// 1
-	"Armed Away"	// 2
+constexpr std::array<const char *, 3> CEventSystem::m_szSecStatus{
+	"Disarmed",   // 0
+	"Armed Home", // 1
+	"Armed Away", // 2
 };
 
 // This table specifies which JSON fields are passed to the LUA scripts.
 // If new return fields are added in CWebServer::GetJSonDevices, they should
 // be added to this table.
-const CEventSystem::_tJsonMap CEventSystem::JsonMap[] = {
-	{ "Barometer", "barometer", JTYPE_FLOAT },
-	{ "CameraIndx", "cameraIdx", JTYPE_STRING },
-	{ "Chill", "chill", JTYPE_FLOAT },
-	{ "Color", "color", JTYPE_STRING },
-	{ "Counter", "counter", JTYPE_STRING },
-	{ "CounterDeliv", "counterDelivered", JTYPE_FLOAT },
-	{ "CounterDelivToday", "counterDeliveredToday", JTYPE_STRING },
-	{ "CounterToday", "counterToday", JTYPE_STRING },
-	{ "Current", "current", JTYPE_FLOAT },
-	{ "CustomImage", "customImage", JTYPE_INT },
-	{ "DewPoint", "dewPoint", JTYPE_FLOAT },
-	{ "Direction", "direction", JTYPE_FLOAT },
-	{ "DirectionStr", "directionString", JTYPE_STRING },
-	{ "Forecast", "forecast", JTYPE_INT },
-	{ "ForecastStr", "forecastString", JTYPE_STRING },
-	{ "HardwareName", "hardwareName", JTYPE_STRING },
-	{ "HardwareType", "hardwareType", JTYPE_STRING },
-	{ "HardwareTypeVal", "hardwareTypeValue", JTYPE_INT },
-	{ "Humidity", "humidity", JTYPE_INT },
-	{ "HumidityStatus", "humidityStatus", JTYPE_STRING },
-	{ "Image", "Image", JTYPE_STRING },
-	{ "InternalState", "internalState", JTYPE_STRING }, // door contact
-	{ "LevelActions", "levelActions", JTYPE_STRING },
-	{ "LevelInt", "levelVal", JTYPE_INT },
-	{ "LevelNames", "levelNames", JTYPE_STRING },
-	{ "LevelOffHidden", "levelOffHidden", JTYPE_BOOL },
-	{ "MaxDimLevel", "maxDimLevel", JTYPE_INT },
-	{ "Mode", "mode", JTYPE_INT }, // zwave thermostat
-	{ "Modes", "modes", JTYPE_STRING },
-	{ "Moisture", "moisture", JTYPE_STRING },
-	{ "Pressure", "pressure", JTYPE_FLOAT },
-	{ "Protected", "protected", JTYPE_BOOL },
-	{ "Quality", "quality", JTYPE_STRING },
-	{ "Radiation", "radiation", JTYPE_FLOAT },
-	{ "Rain", "rain", JTYPE_FLOAT },
-	{ "RainRate", "rainRate", JTYPE_FLOAT },
-	{ "SensorType", "sensorType", JTYPE_INT },
-	{ "SensorUnit", "sensorUnit", JTYPE_STRING },
-	{ "SetPoint", "setPoint", JTYPE_FLOAT },
-	{ "Speed", "speed", JTYPE_FLOAT },
-	{ "Temp", "temperature", JTYPE_FLOAT },
-	{ "TypeImg", "icon", JTYPE_STRING },
-	{ "Unit", "unit", JTYPE_INT },
-	{ "Until", "until", JTYPE_STRING }, // evohome zone/water
-	{ "Usage", "usage", JTYPE_STRING },
-	{ "UsedByCamera", "usedByCamera", JTYPE_BOOL },
-	{ "UsageDeliv", "usageDelivered", JTYPE_STRING },
-	{ "ValueQuantity", "valueQuantity", JTYPE_STRING },
-	{ "ValueUnits", "valueUnits", JTYPE_STRING },
-	{ "Visibility", "visibility", JTYPE_FLOAT },
-	{ "Voltage", "voltage", JTYPE_FLOAT },
-	{ nullptr, nullptr, JTYPE_STRING },
+constexpr std::array<CEventSystem::_tJsonMap, 52> CEventSystem::JsonMap{
+	{
+		{ "Barometer", "barometer", JTYPE_FLOAT },
+		{ "CameraIndx", "cameraIdx", JTYPE_STRING },
+		{ "Chill", "chill", JTYPE_FLOAT },
+		{ "Color", "color", JTYPE_STRING },
+		{ "Counter", "counter", JTYPE_STRING },
+		{ "CounterDeliv", "counterDelivered", JTYPE_FLOAT },
+		{ "CounterDelivToday", "counterDeliveredToday", JTYPE_STRING },
+		{ "CounterToday", "counterToday", JTYPE_STRING },
+		{ "Current", "current", JTYPE_FLOAT },
+		{ "CustomImage", "customImage", JTYPE_INT },
+		{ "DewPoint", "dewPoint", JTYPE_FLOAT },
+		{ "Direction", "direction", JTYPE_FLOAT },
+		{ "DirectionStr", "directionString", JTYPE_STRING },
+		{ "Forecast", "forecast", JTYPE_INT },
+		{ "ForecastStr", "forecastString", JTYPE_STRING },
+		{ "HardwareName", "hardwareName", JTYPE_STRING },
+		{ "HardwareType", "hardwareType", JTYPE_STRING },
+		{ "HardwareTypeVal", "hardwareTypeValue", JTYPE_INT },
+		{ "Humidity", "humidity", JTYPE_INT },
+		{ "HumidityStatus", "humidityStatus", JTYPE_STRING },
+		{ "Image", "Image", JTYPE_STRING },
+		{ "InternalState", "internalState", JTYPE_STRING }, // door contact
+		{ "LevelActions", "levelActions", JTYPE_STRING },
+		{ "LevelInt", "levelVal", JTYPE_INT },
+		{ "LevelNames", "levelNames", JTYPE_STRING },
+		{ "LevelOffHidden", "levelOffHidden", JTYPE_BOOL },
+		{ "MaxDimLevel", "maxDimLevel", JTYPE_INT },
+		{ "Mode", "mode", JTYPE_INT }, // zwave thermostat
+		{ "Modes", "modes", JTYPE_STRING },
+		{ "Moisture", "moisture", JTYPE_STRING },
+		{ "Pressure", "pressure", JTYPE_FLOAT },
+		{ "Protected", "protected", JTYPE_BOOL },
+		{ "Quality", "quality", JTYPE_STRING },
+		{ "Radiation", "radiation", JTYPE_FLOAT },
+		{ "Rain", "rain", JTYPE_FLOAT },
+		{ "RainRate", "rainRate", JTYPE_FLOAT },
+		{ "SensorType", "sensorType", JTYPE_INT },
+		{ "SensorUnit", "sensorUnit", JTYPE_STRING },
+		{ "SetPoint", "setPoint", JTYPE_FLOAT },
+		{ "Speed", "speed", JTYPE_FLOAT },
+		{ "Temp", "temperature", JTYPE_FLOAT },
+		{ "TypeImg", "icon", JTYPE_STRING },
+		{ "Unit", "unit", JTYPE_INT },
+		{ "Until", "until", JTYPE_STRING }, // evohome zone/water
+		{ "Usage", "usage", JTYPE_STRING },
+		{ "UsedByCamera", "usedByCamera", JTYPE_BOOL },
+		{ "UsageDeliv", "usageDelivered", JTYPE_STRING },
+		{ "ValueQuantity", "valueQuantity", JTYPE_STRING },
+		{ "ValueUnits", "valueUnits", JTYPE_STRING },
+		{ "Visibility", "visibility", JTYPE_FLOAT },
+		{ "Voltage", "voltage", JTYPE_FLOAT },
+		{ nullptr, nullptr, JTYPE_STRING },
+	},
 };
 
 CEventSystem::CEventSystem()
@@ -414,10 +414,7 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 					item.JsonMapInt[index] = atoi(value.c_str());
 					break;
 				case JTYPE_BOOL:
-					if (value == "true")
-						item.JsonMapBool[index] = true;
-					else
-						item.JsonMapBool[index] = false;
+					item.JsonMapBool[index] = (value == "true");
 					break;
 				default:
 					item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");

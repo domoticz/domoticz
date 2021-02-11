@@ -4,7 +4,7 @@
 
 class S0MeterBase : public CDomoticzHardwareBase
 {
-	struct _tS0Meter
+	struct S0Meter
 	{
 		int m_type;
 		double m_counter_start;
@@ -14,7 +14,7 @@ class S0MeterBase : public CDomoticzHardwareBase
 		unsigned long total_pulses;
 		int m_value_buffer_total;
 		int m_value_buffer_write_pos;
-		double m_last_values[5];
+		std::array<double, 5> m_last_values;
 		double m_CurrentUsage;
 		int m_PacketsSinceLastPulseChange;
 		bool m_firstTime;
@@ -35,7 +35,7 @@ class S0MeterBase : public CDomoticzHardwareBase
 	unsigned char m_buffer[1028];
 
 	static const int max_s0_meters = 5;
-	_tS0Meter m_meters[max_s0_meters];
+	std::array<S0Meter, max_s0_meters> m_meters;
 
 	int m_bufferpos;
 };

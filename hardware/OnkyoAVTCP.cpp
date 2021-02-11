@@ -93,7 +93,7 @@ namespace
 		{ 0, nullptr },
 	};
 
-	using _switch_types = struct
+	struct switch_types
 	{
 		const char *iscpCmd;
 		const char *iscpMute;
@@ -105,32 +105,32 @@ namespace
 		const struct selector_name *default_names;
 	};
 
-	constexpr std::array<_switch_types, 13> switch_types{
+	constexpr std::array<switch_types, 13> switch_types{
 		{
-			{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
-			{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
-			{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
-			{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },										    //
-			{ "PWR", nullptr, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
-			{ "ZPW", nullptr, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
-			{ "PW3", nullptr, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
-			{ "PW4", nullptr, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },										    //
-			{ "SLI", nullptr, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
-			{ "SLZ", nullptr, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
-			{ "SL2", nullptr, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
-			{ "SL3", nullptr, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },	    //
-			{ "HDO", nullptr, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" }, //
-		}																						    //
+			{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+			{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+			{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+			{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, nullptr, nullptr },
+			{ "PWR", nullptr, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+			{ "ZPW", nullptr, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+			{ "PW3", nullptr, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+			{ "PW4", nullptr, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, nullptr, nullptr },
+			{ "SLI", nullptr, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+			{ "SLZ", nullptr, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+			{ "SL2", nullptr, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+			{ "SL3", nullptr, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:1;LevelNames:Off;LevelOffHidden:true;LevelActions:00", input_names },
+			{ "HDO", nullptr, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
+		},
 	};
 
 	constexpr std::array<std::pair<const char *, const char *>, 5> text_types{
 		{
-			{ "NAL", "Album name" },    //
-			{ "NAT", "Artist name" },   //
-			{ "NTI", "Title name" },    //
-			{ "NTM", "Playback time" }, //
-			{ "NTR", "Track info" },    //
-		}				    //
+			{ "NAL", "Album name" },
+			{ "NAT", "Artist name" },
+			{ "NTI", "Title name" },
+			{ "NTM", "Playback time" },
+			{ "NTR", "Track info" },
+		},
 	};
 
 #define IS_END_CHAR(x) ((x) == 0x1a)

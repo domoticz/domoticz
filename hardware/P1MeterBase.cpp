@@ -83,7 +83,7 @@ enum _eP1Type {
 	P1TYPE_GASUSAGE
 };
 
-using P1Match = struct
+struct P1Match
 {
 	_eP1MatchType matchtype;
 	_eP1Type type;
@@ -166,10 +166,10 @@ void P1MeterBase::Init()
 	m_powerdell3 = -1;
 
 	memset(&m_buffer, 0, sizeof(m_buffer));
-	memset(&l_buffer, 0, sizeof(l_buffer));
+	l_buffer = {};
 
-	memset(&m_power, 0, sizeof(m_power));
-	memset(&m_gas, 0, sizeof(m_gas));
+	m_power = {};
+	m_gas = {};
 
 	m_power.len = sizeof(P1Power) - 1;
 	m_power.type = pTypeP1Power;
@@ -221,20 +221,19 @@ bool P1MeterBase::MatchLine()
 {
 	if ((strlen((const char*)&l_buffer) < 1) || (l_buffer[0] == 0x0a))
 		return true; //null value (startup)
-	uint8_t i;
 	bool found = false;
 	const P1Match *t;
 	char value[20] = "";
 	std::string vString;
 
-	for (i = 0; i < p1_matchlist.size(); ++i)
+	for (size_t i = 0; i < p1_matchlist.size(); ++i)
 	{
 		if (found)
 		{
 			break;
 		}
 
-		t = &p1_matchlist[i];
+		t = &p1_matchlist.at(i);
 		switch (t->matchtype)
 		{
 		case _eP1MatchType::ID:
@@ -408,14 +407,14 @@ bool P1MeterBase::MatchLine()
 			if (ePos == std::string::npos)
 			{
 				// invalid message: value not delimited
-				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value is not delimited in line \"%s\"", l_buffer);
+				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value is not delimited in line \"%s\"", l_buffer.data());
 				return false;
 			}
 
 			if (ePos > 19)
 			{
 				// invalid message: line too long
-				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value in line \"%s\" is oversized", l_buffer);
+				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value in line \"%s\" is oversized", l_buffer.data());
 				return false;
 			}
 
@@ -595,7 +594,7 @@ bool P1MeterBase::MatchLine()
 			if (ePos > 0 && ((validate - value) != ePos))
 			{
 				// invalid message: value is not a number
-				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value in line \"%s\" is not a number", l_buffer);
+				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value in line \"%s\" is not a number", l_buffer.data());
 				return false;
 			}
 

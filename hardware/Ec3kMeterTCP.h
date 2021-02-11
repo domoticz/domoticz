@@ -21,12 +21,13 @@ class Ec3kLimiter
 	bool update(int id);
 
       private:
-	int no_meters;
-	struct
+	size_t no_meters;
+	struct M
 	{
 		int id;
 		time_t last_update;
-	} meters[MAX_EC3K_METERS];
+	};
+	std::array<M, MAX_EC3K_METERS> meters;
 };
 
 class Ec3kMeterTCP : public CDomoticzHardwareBase, ASyncTCP

@@ -21,9 +21,9 @@
 namespace
 {
 	constexpr std::array<const char *, 3> szTLSVersions{
-		"tlsv1",   //
-		"tlsv1.1", //
-		"tlsv1.2", //
+		"tlsv1",
+		"tlsv1.1",
+		"tlsv1.2",
 	};
 } // namespace
 

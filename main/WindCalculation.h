@@ -5,7 +5,7 @@
 //We use a resolution of 5 degrees (360/5 = 72)
 struct _tWindCalculator
 {
-	int m_minute_counter[100];//WIND_DEGREE_TABLE_COUNT
+	std::array<int, 100> m_minute_counter; // WIND_DEGREE_TABLE_COUNT
 	std::deque<unsigned char> m_history_fifo;
 	time_t m_FirstMeasureTime;
 

@@ -46,8 +46,8 @@ class CDaikin : public CDomoticzHardwareBase
 	std::string m_led;
 	std::shared_ptr<std::thread> m_thread;
 	int m_sec_counter;
-	std::string m_dt[8]; // Memorized Temp target for each mode.
-	std::string m_dh[8]; // Memorized Humidity target for each mode.
+	std::array<std::string, 8> m_dt; // Memorized Temp target for each mode.
+	std::array<std::string, 8> m_dh; // Memorized Humidity target for each mode.
 	std::string m_sci_Temp;
 	std::string m_sci_OnOFF;
 	std::string m_sci_ModeLevel;

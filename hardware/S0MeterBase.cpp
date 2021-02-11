@@ -19,22 +19,21 @@
 S0MeterBase::S0MeterBase()
 {
 	m_bufferpos = 0;
-	int ii;
-	for (ii = 0; ii < max_s0_meters; ii++)
+	for (auto meter : m_meters)
 	{
-		m_meters[ii].m_counter_start = 0;
-		m_meters[ii].m_current_counter = 0;
-		m_meters[ii].total_pulses = 0;
-		m_meters[ii].first_total_pulses_received = 0;
-		m_meters[ii].m_CurrentUsage = 0;
-		m_meters[ii].m_value_buffer_total = 0;
-		m_meters[ii].m_value_buffer_write_pos = 0;
-		m_meters[ii].m_PacketsSinceLastPulseChange = 0;
-		m_meters[ii].m_last_values[0] = 0;
-		m_meters[ii].m_last_values[1] = 0;
-		m_meters[ii].m_last_values[2] = 0;
-		m_meters[ii].m_last_values[3] = 0;
-		m_meters[ii].m_firstTime = true;
+		meter.m_counter_start = 0;
+		meter.m_current_counter = 0;
+		meter.total_pulses = 0;
+		meter.first_total_pulses_received = 0;
+		meter.m_CurrentUsage = 0;
+		meter.m_value_buffer_total = 0;
+		meter.m_value_buffer_write_pos = 0;
+		meter.m_PacketsSinceLastPulseChange = 0;
+		meter.m_last_values[0] = 0;
+		meter.m_last_values[1] = 0;
+		meter.m_last_values[2] = 0;
+		meter.m_last_values[3] = 0;
+		meter.m_firstTime = true;
 	}
 }
 
@@ -80,8 +79,7 @@ void S0MeterBase::InitBase()
 void S0MeterBase::ReloadLastTotals()
 {
 	//Reset internals
-	int ii;
-	for (ii=0; ii<max_s0_meters; ii++)
+	for (size_t ii = 0; ii < m_meters.size(); ii++)
 	{
 		m_meters[ii].m_counter_start=0;
 		m_meters[ii].m_current_counter = 0;
@@ -275,9 +273,9 @@ void S0MeterBase::ParseLine()
 		_log.Log(LOG_ERROR,"S0 Meter: Invalid Data received! %s",sLine.c_str());
 		return;
 	}
-	int totmeters=(results.size()-4)/3;
-	if (totmeters>max_s0_meters)
-		totmeters=max_s0_meters;
+	size_t totmeters = (results.size() - 4) / 3;
+	if (totmeters > m_meters.size())
+		totmeters = m_meters.size();
 	//ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)
 	//std::string MeterID=results[1];
 	double s0_pulse_interval=atof(results[3].c_str());
@@ -285,7 +283,7 @@ void S0MeterBase::ParseLine()
 	int roffset = 4;
 	if (results[0] == "ID")
 	{
-		for (int ii = 0; ii < totmeters; ii++)
+		for (size_t ii = 0; ii < totmeters; ii++)
 		{
 			m_meters[ii].m_PacketsSinceLastPulseChange++;
 
@@ -342,7 +340,7 @@ void S0MeterBase::ParseLine()
 
 				double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
 				m_meters[ii].m_current_counter = counter_value;
-				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, counter_value);
+				SendMeter(uint8_t(ii + 1), m_meters[ii].m_CurrentUsage / 1000.0F, counter_value);
 			}
 
 			roffset += 3;
@@ -351,7 +349,7 @@ void S0MeterBase::ParseLine()
 	else if(results[0] == "EID")
 	{
 		roffset = 2;
-		for (int ii = 0; ii < totmeters; ii++)
+		for (size_t ii = 0; ii < totmeters; ii++)
 		{
 			double s0_counter = atof(results[roffset + 1].c_str());
 			if (s0_counter != 0)
@@ -370,7 +368,7 @@ void S0MeterBase::ParseLine()
 				m_meters[ii].m_CurrentUsage = atof(results[roffset + 2].c_str());
 
 				//double counter_value = m_meters[ii].m_counter_start + s0_counter;
-				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, m_meters[ii].m_current_counter);
+				SendMeter(uint8_t(ii + 1), m_meters[ii].m_CurrentUsage / 1000.0F, m_meters[ii].m_current_counter);
 			}
 
 			roffset += 3;

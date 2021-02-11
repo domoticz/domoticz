@@ -78,18 +78,18 @@ class SatelIntegra : public CDomoticzHardwareBase
 	std::shared_ptr<std::thread> m_thread;
 	std::map<unsigned int, const char *> errorCodes;
 	// filled by 0x7F command
-	unsigned char m_newData[7];
+	std::array<unsigned char, 7> m_newData;
 
 	// password to Integra
-	unsigned char m_userCode[8];
+	std::array<unsigned char, 8> m_userCode;
 
 	// TODO maybe create dynamic array ?
-	bool m_zonesLastState[256];
-	bool m_outputsLastState[256];
-	bool m_isOutputSwitch[256];
-	bool m_isTemperature[256];
-	bool m_isPartitions[32];
-	bool m_armLastState[32];
+	std::array<bool, 256> m_zonesLastState;
+	std::array<bool, 256> m_outputsLastState;
+	std::array<bool, 256> m_isOutputSwitch;
+	std::array<bool, 256> m_isTemperature;
+	std::array<bool, 32> m_isPartitions;
+	std::array<bool, 32> m_armLastState;
 
 	// thread-safe for read and write
 	std::mutex m_mutex;
