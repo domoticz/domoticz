@@ -1186,7 +1186,7 @@ bool MainWorker::Start()
 	{
 		char szPort[100];
 		sprintf(szPort, "%d", rnvalue);
-		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto userName) { DecodeRXMessage(hw, rx, name, battery, userName); });
+		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto user) { DecodeRXMessage(hw, rx, name, battery, user); });
 		m_sharedserver.StartServer("::", szPort);
 
 		LoadSharedUsers();
