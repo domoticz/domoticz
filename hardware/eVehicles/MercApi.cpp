@@ -200,7 +200,7 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 
 	if (GetData("electricvehicle", reply))
 	{
-		data.battery_level = 255.0f;	// Initialize at 'no reading'
+		data.battery_level = 255.0F;	// Initialize at 'no reading'
 		if (reply.empty())
 		{
 			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data

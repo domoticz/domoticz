@@ -597,7 +597,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			int level = atoi(rawsendValue.c_str());
 
 			if (maxDimLevel != 0)
-				level = (int) float((100.0f / float(maxDimLevel)) * level);
+				level = (int) float((100.0F / float(maxDimLevel)) * level);
 
 			if (lstatus.find("Off") != std::string::npos)
 				level = 0;

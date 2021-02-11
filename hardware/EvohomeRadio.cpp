@@ -1801,7 +1801,10 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	if (nDevType == 0x04) { sprintf(sDevType, "ACTUATOR"); }
 	else if (nDevType == 0x01) { sprintf(sDevType, "SENSOR"); }
 	else if (nDevType == 0x05) { sprintf(sDevType, "HOT WATER"); }
-        else if (nDevType == 0x06) { sprintf(sDevType, "REMOTE GW"); }
+	else if (nDevType == 0x06)
+	{
+		sprintf(sDevType, "REMOTE GW");
+	}
 	else if (nDevType == 0x00)
 	{
 		sprintf(sDevType, "CONTROLLER");

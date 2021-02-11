@@ -199,9 +199,9 @@ void CeVehicle::SendPercentage(int percType, float value)
 	{
 		int iBattLevel = static_cast<int>(value);
 		float fBattLevel = value;
-		if (fBattLevel < 0.0f || fBattLevel > 100.0f)	// Filter out wrong readings
+		if (fBattLevel < 0.0F || fBattLevel > 100.0F)	// Filter out wrong readings
 		{
-			fBattLevel = 0.0f;
+			fBattLevel = 0.0F;
 			iBattLevel = 255;	// Means no batterylevel available (and hides batterylevel indicator in UI)
 		}
 		SendPercentageSensor(VEHICLE_LEVEL_BATTERY, 1, iBattLevel, fBattLevel, m_Name + " Battery Level");

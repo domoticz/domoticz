@@ -70,22 +70,22 @@ const auto statesType = dictionary{
 
 constexpr std::array<std::pair<const char *, float>, 16> sensors{
 	{
-		{ "External", 10.0f },		//
-		{ "Room 1", 10.0f },		//
-		{ "Room 2", 10.0f },		//
-		{ "Return", 10.0f },		//
-		{ "C.H.1", 10.0f },		//
-		{ "C.H.2", 10.0f },		//
-		{ "H.W.U.", 10.0f },		//
-		{ "Heat", 1.0f },		//
-		{ "Flue gas", 10.0f },		//
-		{ "Module", 10.0f },		//
-		{ "Boiler", 10.0f },		//
-		{ "Feeder", 10.0f },		//
-		{ "Calculated Boiler", 10.0f }, //
-		{ "Calculated H.W.U.", 10.0f }, //
-		{ "Calculated C.H.1", 10.0f },	//
-		{ "Calculated C.H.2", 10.0f },	//
+		{ "External", 10.0F },		//
+		{ "Room 1", 10.0F },		//
+		{ "Room 2", 10.0F },		//
+		{ "Return", 10.0F },		//
+		{ "C.H.1", 10.0F },		//
+		{ "C.H.2", 10.0F },		//
+		{ "H.W.U.", 10.0F },		//
+		{ "Heat", 1.0F },		//
+		{ "Flue gas", 10.0F },		//
+		{ "Module", 10.0F },		//
+		{ "Boiler", 10.0F },		//
+		{ "Feeder", 10.0F },		//
+		{ "Calculated Boiler", 10.0F }, //
+		{ "Calculated H.W.U.", 10.0F }, //
+		{ "Calculated C.H.1", 10.0F },	//
+		{ "Calculated C.H.2", 10.0F },	//
 	}					//
 };
 

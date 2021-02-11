@@ -300,7 +300,7 @@ void USBtin::ParseData(const char *pData, int Len)
 
 				unsigned int ValData;
 				if( DLChexNumber > 0 ){ //bytes presents
-					for (unsigned char i = 0; i <= DLChexNumber; i++)
+					for (int i = 0; i <= DLChexNumber; i++)
 					{
 						ValData = 0;
 
