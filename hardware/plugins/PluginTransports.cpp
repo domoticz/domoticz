@@ -213,7 +213,7 @@ namespace Plugins {
 			}
 
 			pTcpTransport->m_Socket->async_read_some(boost::asio::buffer(pTcpTransport->m_Buffer, sizeof pTcpTransport->m_Buffer),
-								 [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+								 [pTcpTransport](auto &&err, auto bytes) { pTcpTransport->handleRead(err, bytes); });
 
 			// Requeue listener
 			if (m_Acceptor)

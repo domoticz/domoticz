@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+09/02/2021 1.4 Added Testcar Class for easier testing of eVehicle framework
 
 License: Public domain
 
@@ -38,13 +39,15 @@ public:
 		bool has_battery_level;
 		bool has_charge_limit;
 		bool has_custom_data;
-		int  sleep_interval;
+		int  seconds_to_sleep;
+		int  minimum_poll_interval;
 	};
 
 	struct tLocationData {
 		double latitude;
 		double longitude;
 		bool is_driving;
+		bool is_home;
 		int speed;
 	};
 
@@ -77,6 +80,8 @@ public:
 		std::string distance_unit;
 		bool unit_miles;
 		std::string car_name;
+		double home_longitude;
+		double home_latitude;
 	};
 
 	struct tAllCarData {

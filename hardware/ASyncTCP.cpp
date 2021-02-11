@@ -62,7 +62,7 @@ void ASyncTCP::connect(const std::string& ip, uint16_t port)
 	// RK: After the reset, we need to provide it work anew
 	mTcpwork = std::make_shared<boost::asio::io_service::work>(mIos);
 	if (!mTcpthread)
-		mTcpthread = std::make_shared<std::thread>([this] { mIos.run(); });
+		mTcpthread = std::make_shared<std::thread>([p = &mIos] { p->run(); });
 
 	mIp = ip;
 	mPort = port;

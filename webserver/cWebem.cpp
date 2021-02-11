@@ -53,7 +53,7 @@ namespace http {
 		{
 			// associate handler to timer and schedule the first iteration
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
-			m_io_service_thread = std::make_shared<std::thread>([this] { m_io_service.run(); });
+			m_io_service_thread = std::make_shared<std::thread>([p = &m_io_service] { p->run(); });
 			SetThreadName(m_io_service_thread->native_handle(), "Webem_ssncleaner");
 		}
 

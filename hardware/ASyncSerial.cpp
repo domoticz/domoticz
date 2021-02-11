@@ -123,7 +123,7 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 	// This gives some work to the io_service before it is started
 	pimpl->io.post([this] { return doRead(); });
 
-	boost::thread t([this] { pimpl->io.run(); });
+	boost::thread t([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false); // If we get here, no error
 	pimpl->open = true;    // Port is now open
@@ -155,7 +155,7 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 	//This gives some work to the io_service before it is started
 	pimpl->io.post([this] { return doRead(); });
 
-	boost::thread t([this] { pimpl->io.run(); });
+	boost::thread t([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false);//If we get here, no error
 	pimpl->open=true; //Port is now open
