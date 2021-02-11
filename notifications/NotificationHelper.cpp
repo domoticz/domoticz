@@ -162,8 +162,7 @@ void CNotificationHelper::ConfigFromGetvars(const request& req, const bool save)
 
 bool CNotificationHelper::IsInConfig(const std::string &Key)
 {
-	return std::any_of(m_notifiers.begin(), m_notifiers.end(),
-			   [&](std::pair<const std::string, CNotificationBase *> &n) { return n.second->IsInConfig(Key); });
+	return std::any_of(m_notifiers.begin(), m_notifiers.end(), [&](auto &&n) { return n.second->IsInConfig(Key); });
 }
 
 void CNotificationHelper::LoadConfig()

@@ -8172,8 +8172,7 @@ namespace http {
 
 		bool CWebServer::FindAdminUser()
 		{
-			return std::any_of(m_users.begin(), m_users.end(),
-					   [](const _tWebUserPassword &user) { return user.userrights == URIGHTS_ADMIN; });
+			return std::any_of(m_users.begin(), m_users.end(), [](auto &&user) { return user.userrights == URIGHTS_ADMIN; });
 		}
 
 		void CWebServer::PostSettings(WebEmSession& session, const request& req, reply& rep)
@@ -12930,7 +12929,7 @@ namespace http {
 						result[0][0].c_str(), result[0][1].c_str(), idx);
 				}
 
-				std::sort(std::begin(result), std::end(result), [](std::vector<std::string> a, std::vector<std::string> b) {return a[1] < b[1]; });
+				std::sort(result.begin(), result.end(), [](auto a, auto b) { return a[1] < b[1]; });
 
 				int ii = 0;
 				for (const auto &sd : result)

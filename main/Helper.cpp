@@ -154,8 +154,7 @@ void stdreplace(
 
 void stdupper(std::string &inoutstring)
 {
-	for (char &i : inoutstring)
-		i = toupper(i);
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::toupper);
 }
 
 void stdlower(std::string &inoutstring)
@@ -165,8 +164,7 @@ void stdlower(std::string &inoutstring)
 
 void stdupper(std::wstring& inoutstring)
 {
-	for (wchar_t &i : inoutstring)
-		i = towupper(i);
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::towupper);
 }
 
 void stdlower(std::wstring& inoutstring)
@@ -1163,7 +1161,7 @@ bool IsArgumentSecure(const std::string &arg)
 {
 	std::string larg(arg);
 	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
-	return std::all_of(szInsecureArgumentOptions.begin(), szInsecureArgumentOptions.end(), [&](const char *arg) { return larg.find(arg) == std::string::npos; });
+	return std::all_of(szInsecureArgumentOptions.begin(), szInsecureArgumentOptions.end(), [&](auto arg) { return larg.find(arg) == std::string::npos; });
 }
 
 uint32_t SystemUptime()

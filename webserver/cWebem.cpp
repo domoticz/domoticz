@@ -1376,8 +1376,7 @@ namespace http {
 			if (sHost.size() < 3)
 				return false;
 
-			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
-					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my); });
+			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(), [&](auto &&my) { return IsIPInRange(sHost, my); });
 		}
 
 		constexpr std::array<const char *, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };

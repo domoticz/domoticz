@@ -201,7 +201,7 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 				if (pUser->Devices.empty())
 					bOk2Send=true;
 				else
-					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(), [DeviceRowID](uint64_t d) { return d == DeviceRowID; });
+					bOk2Send = std::any_of(pUser->Devices.begin(), pUser->Devices.end(), [DeviceRowID](auto d) { return d == DeviceRowID; });
 
 				if (bOk2Send)
 					pClient->write(pData,Length);

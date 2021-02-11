@@ -277,7 +277,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 					mSensor.childID = atoi(sd2[0].c_str());
 					mSensor.presType = (_ePresentationType)atoi(sd2[1].c_str());
 					gID += std::count_if(mNode.m_childs.begin(), mNode.m_childs.end(),
-							     [&](const _tMySensorChild &child) { return (child.presType == mSensor.presType) && (child.groupID == gID); });
+							     [&](auto &&child) { return (child.presType == mSensor.presType) && (child.groupID == gID); });
 					mSensor.groupID = gID;
 					mSensor.childName = sd2[2];
 					mSensor.useAck = atoi(sd2[3].c_str()) != 0;

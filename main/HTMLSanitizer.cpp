@@ -69,7 +69,7 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 		//See if we have a forbidden tag, if yes remove it
 		stdlower(tag);
 
-		bool bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](const std::string &content) { return tag.find(content) != std::string::npos; });
+		bool bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](auto &&content) { return tag.find(content) != std::string::npos; });
 		if (!bHaveForbiddenTag)
 			ret += org_tag;
 	} while (true);
@@ -108,7 +108,7 @@ std::wstring HTMLSanitizer::Sanitize(const std::wstring& szText)
 		//See if we have a forbidden tag, if yes remove it
 		stdlower(tag);
 
-		bool bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](const std::string &content) {
+		bool bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](auto &&content) {
 			std::wstring wsTmp(content.begin(), content.end());
 			return tag.find(wsTmp) != std::wstring::npos;
 		});

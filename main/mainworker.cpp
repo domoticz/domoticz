@@ -336,7 +336,7 @@ void MainWorker::GetAvailableWebThemes()
 	bool bFound = false;
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
-		bFound = std::any_of(m_webthemes.begin(), m_webthemes.end(), [&](const std::string &s) { return s == sValue; });
+		bFound = std::any_of(m_webthemes.begin(), m_webthemes.end(), [&](auto &&s) { return s == sValue; });
 
 	if (!bFound)
 		m_sql.UpdatePreferencesVar("WebTheme", "default");

@@ -3990,8 +3990,7 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 	if (currentTasks.empty())
 		return false;
 
-	return std::any_of(currentTasks.begin(), currentTasks.end(),
-			   [&](const _tTaskItem &currentTask) { return currentTask._relatedEvent == eventName; });
+	return std::any_of(currentTasks.begin(), currentTasks.end(), [&](auto &&currentTask) { return currentTask._relatedEvent == eventName; });
 }
 
 int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
