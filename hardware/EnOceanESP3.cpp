@@ -1117,12 +1117,28 @@ bool CEnOceanESP3::ParseData()
 void CEnOceanESP3::ParseRadioDatagram()
 {
 	char szTmp[100];
+	int rssi = 12;  // RSSI for Domoticz
+	// normal value is between 0 (very weak) and 11 (strong)
+	// 12 = no RSSI value in device list
 	if (m_OptionalDataSize == 7)
 	{
-		sprintf(szTmp,"destination: 0x%02x%02x%02x%02x RSSI: %i",
-			m_buffer[m_DataSize+1],m_buffer[m_DataSize+2],m_buffer[m_DataSize+3],m_buffer[m_DataSize+4],
-			(100-m_buffer[m_DataSize+5])
+		int rssi_dbm = m_buffer[m_DataSize+5] * -1;  // RSSI reported by Enocean Dongle in dBm
+		// convert RSSI dBm to RSSI Domoticz
+		// this is not the best conversion algo
+		// but, according to my tests, it's a good start
+		if (rssi_dbm > -50) {
+			rssi = 11;
+		}
+		else if (rssi_dbm < -100) {
+			rssi = 0;
+		}
+		else {
+			rssi = static_cast<int>((rssi_dbm + 100) / 5);
+		}
+		sprintf(szTmp,"destination: 0x%02x%02x%02x%02x RSSI: %i dBm (%i/11)",
+			m_buffer[m_DataSize+1],m_buffer[m_DataSize+2],m_buffer[m_DataSize+3],m_buffer[m_DataSize+4],rssi_dbm,rssi
 			);
+
 	}
 	else {
 		sprintf(szTmp, "Optional data size: %i",m_OptionalDataSize);
@@ -1160,7 +1176,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
 				tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
 				tsen.LIGHTING2.level=0;
-				tsen.LIGHTING2.rssi=12;
+				tsen.LIGHTING2.rssi=rssi;
 				tsen.LIGHTING2.unitcode=1;
 				tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1263,7 +1279,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
 						tsen.RFXMETER.packettype=pTypeRFXMeter;
 						tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-						tsen.RFXMETER.rssi=12;
+						tsen.RFXMETER.rssi=rssi;
 						tsen.RFXMETER.id1=ID_BYTE2;
 						tsen.RFXMETER.id2=ID_BYTE1;
 						tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
@@ -1294,7 +1310,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
 						tsen.RFXMETER.packettype=pTypeRFXMeter;
 						tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-						tsen.RFXMETER.rssi=12;
+						tsen.RFXMETER.rssi=rssi;
 						tsen.RFXMETER.id1=ID_BYTE2;
 						tsen.RFXMETER.id2=ID_BYTE1;
 						tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
@@ -1312,7 +1328,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
 						tsen.RFXMETER.packettype=pTypeRFXMeter;
 						tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-						tsen.RFXMETER.rssi=12;
+						tsen.RFXMETER.rssi=rssi;
 						tsen.RFXMETER.id1=ID_BYTE2;
 						tsen.RFXMETER.id2=ID_BYTE1;
 						tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
@@ -1412,7 +1428,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id=ID_BYTE1;
 							tsen.RFXSENSOR.filler=ID_BYTE0&0x0F;
-							tsen.RFXSENSOR.rssi=(ID_BYTE0&0xF0)>>4;
+							tsen.RFXSENSOR.rssi=rssi;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1478,7 +1494,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.id1=ID_BYTE2;
 						tsen.TEMP.id2=ID_BYTE1;
 						tsen.TEMP.battery_level=ID_BYTE0&0x0F;
-						tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
+						tsen.TEMP.rssi=rssi;
 
 						tsen.TEMP.tempsign=(temp>=0)?0:1;
 						int at10 = round(std::abs(temp * 10.0F));
@@ -1503,7 +1519,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 						tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 						tsen.TEMP_HUM.subtype=sTypeTH5;
-						tsen.TEMP_HUM.rssi=12;
+						tsen.TEMP_HUM.rssi=rssi;
 						tsen.TEMP_HUM.id1=ID_BYTE2;
 						tsen.TEMP_HUM.id2=ID_BYTE1;
 						tsen.TEMP_HUM.battery_level=9;
@@ -1533,7 +1549,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 								tsen.RFXSENSOR.id = ID_BYTE1;
 								tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-								tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
+								tsen.RFXSENSOR.rssi = rssi;
 								tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 								tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
 								sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1551,7 +1567,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
 							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
 							tsen.LIGHTING2.level = 0;
-							tsen.LIGHTING2.rssi = 12;
+							tsen.LIGHTING2.rssi = rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1574,7 +1590,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id = ID_BYTE1;
 							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
+							tsen.RFXSENSOR.rssi = rssi;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1591,7 +1607,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
 							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
 							tsen.LIGHTING2.level = 0;
-							tsen.LIGHTING2.rssi = 12;
+							tsen.LIGHTING2.rssi = rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1614,7 +1630,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id = ID_BYTE1;
 							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
+							tsen.RFXSENSOR.rssi = rssi;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1643,7 +1659,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
 							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
 							tsen.LIGHTING2.level = 0;
-							tsen.LIGHTING2.rssi = 12;
+							tsen.LIGHTING2.rssi = rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1659,19 +1675,18 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// DB2 = CO2 concentration in 10 ppm steps, 0...255 -> 0...2550 ppm (0x39 = 570 ppm)
 						// DB1 = Temperature in 0.2C steps, 0...255 -> 0...51 C (0x7B = 24.6 C)
 						// DB0 = flags (DB0.3: 1=data, 0=teach-in; DB0.2: 1=Hum Sensor available, 0=no Hum; DB0.1: 1=Temp sensor available, 0=No Temp; DB0.0 not used)
-						// mBuffer[15] is RSSI as -dBm (ie value of 100 means "-100 dBm"), but RssiLevel is in the range 0...15 (or reported as 12 if not known)
+						// mBuffer[15] is RSSI as -dBm (ie value of 100 means "-100 dBm"), but RssiLevel is in the range 0...11 (or reported as 12 if not known)
 						// Battery level is not reported by device, so use fixed value of 9 as per other sensor functions
 
 						// TODO: Check sensor availability flags and only report humidity and/or temp if available.
-						// TODO: Report actual RSSI (scaled from dBm to 0...15 RSSI ?)
 
 						float temp = GetValueRange(DATA_BYTE1, 51, 0, 255, 0);
 						float hum = GetValueRange(DATA_BYTE3, 100, 0, 200, 0);
 						int co2 = (int)GetValueRange(DATA_BYTE2, 2550, 0, 255, 0);
 						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
 
-						// Report battery level as 9 and RSSI as 12
-						SendTempHumSensor(NodeID, 9, temp, round(hum), "GasSensor.04", 12);
+						// Report battery level as 9
+						SendTempHumSensor(NodeID, 9, temp, round(hum), "GasSensor.04", rssi);
 						SendAirQualitySensor((NodeID & 0xFF00) >> 8, NodeID & 0xFF, 9, co2, "GasSensor.04");
 					}
 				}
@@ -1794,7 +1809,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
 							tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
 							tsen.LIGHTING2.level=0;
-							tsen.LIGHTING2.rssi=12;
+							tsen.LIGHTING2.rssi=rssi;
 
 							if (SecondAction==0)
 							{
@@ -1841,10 +1856,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 					}
 					else
 					{
-						printf("RPS ELSE \n");
 						if ((T21 == 1) && (NU == 0))
 						{
-							printf("IF T21 = 1 and NU=0 \n");
 							unsigned char DATA_BYTE3 = m_buffer[1];
 
 							unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
@@ -1873,7 +1886,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
 							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
 							tsen.LIGHTING2.level = 0;
-							tsen.LIGHTING2.rssi = 12;
+							tsen.LIGHTING2.rssi = rssi;
 
 							if (useButtonIDs)
 							{
@@ -1947,7 +1960,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
 							tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
 							tsen.LIGHTING2.level=0;
-							tsen.LIGHTING2.rssi=12;
+							tsen.LIGHTING2.rssi=rssi;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (alarm == 1) ? light2_sOn : light2_sOff;
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -2019,7 +2032,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
 								tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
 								tsen.LIGHTING2.level=0;
-								tsen.LIGHTING2.rssi=12;
+								tsen.LIGHTING2.rssi=rssi;
 
 								tsen.LIGHTING2.unitcode = nbc + 1;
 								tsen.LIGHTING2.cmnd     = light2_sOff;
@@ -2125,7 +2138,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
 						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
 						tsen.LIGHTING2.level = dim_power;
-						tsen.LIGHTING2.rssi = 12;
+						tsen.LIGHTING2.rssi = rssi;
 
 						tsen.LIGHTING2.unitcode = channel + 1;
 						tsen.LIGHTING2.cmnd = (dim_power > 0) ? light2_sOn : light2_sOff;
