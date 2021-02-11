@@ -1,4 +1,4 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
   <MetaData>
     <MetaDataItem name="Name">Heatit Z-Push Button 4</MetaDataItem>
@@ -7,7 +7,7 @@
     <MetaDataItem name="ProductPage">https://www.heatit.com/z-wave/heatit-z-push-button-4/</MetaDataItem>
     <MetaDataItem name="ProductSupport">https://www.heatit.com/z-wave/heatit-z-push-button-4/</MetaDataItem>
     <MetaDataItem name="ProductPic">images/thermofloor/Heatit-Z-Push-button-8-white.png</MetaDataItem>
-    <MetaDataItem name="ProductManual">https://www.heatit.com/wp-content/uploads/2019/07/Manual_Heatit-Z-Push_Button-4-_FW-1.26_Ver2019-A_ENG.pdf</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.thermo-floor.no/media/multicase/documents/_tfasdokumentasjon/heatit%20controls/heatit%20z-push%20button/manual_heatit%20z-push_button%204%20_fw%201.26_ver2019-a_eng.pdf</MetaDataItem>
     <MetaDataItem name="WakeupDescription">short press any button</MetaDataItem>
     <MetaDataItem name="InclusionDescription">set controller in inclusion mode press and hold down group 2 keys for 3 seconds</MetaDataItem>
     <MetaDataItem name="ExclusionDescription">set controller in exclusion mode press and hold down group 2 keys for 3 seconds</MetaDataItem>
@@ -17,6 +17,7 @@
     <MetaDataItem id="0xa306" name="Identifier" type="0x0300">45 126 82 (white) 45 126 83 (black)</MetaDataItem>
     <ChangeLog>
       <Entry author="Jonas Sauge" date="26 August 2020" revision="1">add Heatit Z-Push Button 4</Entry>
+      <Entry author="Pål Kristensen - paalkr77@gmail.com" date="18 January 2021" revision="2">Fixed Association Groups</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
@@ -31,12 +32,10 @@
   </CommandClass>
   <!-- The Association Group Information -->
   <CommandClass id="133">
-    <Associations num_groups="5">
+    <Associations num_groups="3">
       <Group index="1" label="LifeLine" max_associations="5"/>
-      <Group index="2" label="Launch 1" max_associations="5" auto="true"/>
-      <Group index="3" label="Launch 2" max_associations="5" auto="true"/>
-      <Group index="4" label="Launch 3" max_associations="5" auto="true"/>
-      <Group index="5" label="Launch 4" max_associations="5" auto="true"/>
+      <Group index="2" label="Launch 1" max_associations="5"/>
+      <Group index="3" label="Launch 2" max_associations="5"/>
     </Associations>
   </CommandClass>
 </Product>

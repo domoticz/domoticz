@@ -1,4 +1,4 @@
-<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/031E:0001:000a</MetaDataItem>
     <MetaDataItem name="ProductPic">images/inovelli/lzw31-sn.png</MetaDataItem>
@@ -20,6 +20,7 @@
       <Entry author="Jtronicus" date="24 Oct 2020" revision="4">Updates to work with firmware 1.17</Entry>
       <Entry author="Jtronicus" date="27 Oct 2020" revision="5">Updates to work with firmware 1.18</Entry>
       <Entry author="Jtronicus" date="27 Oct 2020" revision="6">Updates parameter 30 to 4 bytes</Entry>
+      <Entry author="nathanfiscus" date="20 Jan 2021" revision="7">Updates parameter 30 value max</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -154,10 +155,10 @@
       Default: 0
       </Help>
     </Value>
-    <Value genre="config" type="int" size="4" index="30" label="Custom Strip Effect Parameter 4" min="0" max="65535" value="0">
+    <Value genre="config" type="int" size="4" index="30" label="Custom Strip Effect Parameter 4" min="0" max="197375" value="0">
       <Help>
       See website for details.
-      Range: 0 - 65535
+      Range: 0 - 197375
       Default: 0
       </Help>
     </Value>

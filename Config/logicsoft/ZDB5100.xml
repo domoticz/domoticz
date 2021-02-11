@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="5"
+  xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="Name">Matrix</MetaDataItem>
     <MetaDataItem name="Description">MATRIX ZDB5100 is a dimmer wall switch module with four backlit pushbuttons. MATRIX is designed to fit into 1-module FUGA® wall boxes (Danish standard).</MetaDataItem>
@@ -16,12 +17,14 @@
     <MetaDataItem id="0121" name="Identifier" type="0003">ZDB5100</MetaDataItem>
     <ChangeLog>
       <Entry author="Dennis Staal - staal.dennis@gmail.com" date="10 August 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3399/xml</Entry>
-      <Entry author="Jean-François Auger - nechry@gmail.com" date="15 January 2021" revision="3">Convert param 1 to a bitset</Entry>    
+      <Entry author="Jean-François Auger - nechry@gmail.com" date="15 January 2021" revision="3">Convert param 1 to a bitset</Entry>
+      <Entry author="Jean-François Auger - nechry@gmail.com" date="15 January 2021" revision="4">Remove duplicate entry</Entry>	 
+      <Entry author="Jean-François Auger - nechry@gmail.com" date="18 January 2021" revision="5">Add bitmask on param 1</Entry>	    
     </ChangeLog>
   </MetaData>
   <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
   <CommandClass id="112">
-    <Value genre="config" index="1" instance="1" label="Operating pushbutton(s) for dimmer" max="15" min="0" size="1" type="bitset" value="1">
+<Value genre="config" index="1" instance="1" label="Operating pushbutton(s) for dimmer" size="1" type="bitset" bitmask="15" value="1">
       <Help>This parameter specifies which pushbutton(s) that shall be used to control the built-in dimmer.</Help>
       <BitSet id="0">
         <Label>No local operation of the dimmer</Label>
@@ -34,10 +37,6 @@
       <BitSet id="2">
         <Label>Pushbutton 2</Label>
         <Help>Pushbutton 2 controls the dimmer</Help>
-      </BitSet>
-      <BitSet id="1">
-        <Label>Pushbutton 1</Label>
-        <Help>Pushbutton 1 controls the dimmer</Help>
       </BitSet>
       <BitSet id="4">
         <Label>Pushbutton 3</Label>
