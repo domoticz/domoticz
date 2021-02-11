@@ -15,8 +15,8 @@
 #pragma once
 
 #include "EvohomeBase.h"
+#include <chrono>
 #include <condition_variable>
-#include <boost/thread/thread_time.hpp>
 
 #define EVOHOME_RETRY_DELAY 30
 
@@ -25,20 +25,20 @@ class CEvohomeRadio : public CEvohomeBase
 	struct _tRelayCheck
 	{
 		_tRelayCheck()
-			: m_stLastCheck(boost::posix_time::min_date_time)
+			: m_stLastCheck(std::chrono::system_clock::time_point::min())
 		{
 		}
 		_tRelayCheck(uint8_t demand)
-			: m_stLastCheck(boost::posix_time::min_date_time)
+			: m_stLastCheck(std::chrono::system_clock::time_point::min())
 			, m_nDemand(demand)
 		{
 		}
-		_tRelayCheck(boost::system_time st, uint8_t demand)
+		_tRelayCheck(std::chrono::time_point<std::chrono::system_clock> st, uint8_t demand)
 			: m_stLastCheck(st)
 			, m_nDemand(demand)
 		{
 		}
-		boost::system_time m_stLastCheck;
+		std::chrono::time_point<std::chrono::system_clock> m_stLastCheck;
 		uint8_t m_nDemand{ 0 };
 	};
 	typedef std::map<uint8_t, _tRelayCheck> tmap_relay_check;
@@ -130,7 +130,7 @@ class CEvohomeRadio : public CEvohomeBase
 	tmap_relay_check m_RelayCheck;
 
 	bool startup;
-	boost::system_time stLastRelayCheck;
+	std::chrono::time_point<std::chrono::system_clock> stLastRelayCheck;
 	int nStartup;
 	int nStarts;
 

@@ -180,11 +180,9 @@ bool CEvohomeRadio::StartHardware()
 	for (auto &i : result)
 	{
 		Log(true, LOG_STATUS, "evohome: Relay: devno=%d demmand=%d", atoi(i[0].c_str()), atoi(i[4].c_str()));
-		m_RelayCheck.insert(
-			tmap_relay_check_pair(static_cast<uint8_t>(atoi(i[0].c_str())),
-					      _tRelayCheck(boost::get_system_time() - boost::posix_time::minutes(19),
-							   static_cast<uint8_t>(atoi(i[4].c_str()))))); // allow 1 minute for startup before
-													// trying to restore demand
+		m_RelayCheck.insert(tmap_relay_check_pair(static_cast<uint8_t>(atoi(i[0].c_str())), _tRelayCheck(std::chrono::system_clock::now() - std::chrono::minutes(19),
+														 static_cast<uint8_t>(atoi(i[4].c_str()))))); // allow 1 minute for startup before
+																			      // trying to restore demand
 	}
 
 	//Start worker thread
@@ -438,7 +436,7 @@ void CEvohomeRadio::SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 void CEvohomeRadio::UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	SendRelayHeatDemand(nDevNo, nDemand);
-	m_RelayCheck[nDevNo] = _tRelayCheck(boost::get_system_time(), nDemand);
+	m_RelayCheck[nDevNo] = _tRelayCheck(std::chrono::system_clock::now(), nDemand);
 }
 
 
@@ -455,7 +453,7 @@ void CEvohomeRadio::CheckRelayHeatDemand()
 {
 	for (const auto& it : m_RelayCheck)
 	{
-		if ((boost::get_system_time() - it.second.m_stLastCheck) > boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
+		if ((std::chrono::system_clock::now() - it.second.m_stLastCheck) > std::chrono::seconds(1202)) // avg seems around 1202-1203 but not clear how reference point derived
 		{
 			Log(true, LOG_STATUS, "evohome: Relay: Refreshing heat demand devno=%d demand=%d", it.first, it.second.m_nDemand);
 			UpdateRelayHeatDemand(it.first, it.second.m_nDemand);
@@ -793,11 +791,11 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		m_nBindIDType = nDevType;
 		/*if(!m_cndBindNotify.wait_for(lock,boost::posix_time::seconds(60)))
 			return 0;*/
-		boost::system_time const timeout = boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
+		auto timeout = std::chrono::system_clock::now() + std::chrono::seconds(60); // monotonic?
 		while (m_nBindID == 0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, nGatewayID, cmdBinding).Add(nDevNo).Add((uint16_t)cmdControllerHeatDemand).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0xFC).Add((uint16_t)cmdActuatorCheck).Add(CEvohomeID(nGatewayID)).Add((uint8_t)nDevNo).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
+			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && std::chrono::system_clock::now() > timeout)
 				return 0;
 		}
 
@@ -813,11 +811,11 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		m_nBindID = 0;
 		m_nBindIDType = CEvohomeID::devController;
 
-		boost::system_time const timeout = boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
+		auto timeout = std::chrono::system_clock::now() + std::chrono::seconds(60); // monotonic?
 		while (m_nBindID == 0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, nGatewayID, cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)2).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
+			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && std::chrono::system_clock::now() > timeout)
 				return 0;
 		}
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, m_nBindID, cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
@@ -845,11 +843,11 @@ int CEvohomeRadio::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID:
 		m_nBindIDType = CEvohomeID::devController;
 		RFX_SETID3(m_MaxDeviceID, ID1, ID2, ID3);
 
-		boost::system_time const timeout = boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
+		auto timeout = std::chrono::system_clock::now() + std::chrono::seconds(60); // monotonic?
 		while (m_nBindID == 0)
 		{
 			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, nGatewayID, cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)2).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
-			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && boost::get_system_time() > timeout)
+			if (m_cndBindNotify.wait_for(lock, std::chrono::duration<int>(5)) == std::cv_status::timeout && std::chrono::system_clock::now() > timeout)
 				return 0;
 		}
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, m_nBindID, cmdBinding).Add((uint8_t)0).Add((uint16_t)0x30C9).Add(ID1).Add(ID2).Add(ID3));
@@ -2121,10 +2119,11 @@ void CEvohomeRadio::Idle_Work()
 	if (!m_RelayCheck.empty() && GetGatewayID() != 0)
 	{
 		CheckRelayHeatDemand();
-		if ((boost::get_system_time() - stLastRelayCheck) > boost::posix_time::seconds(604)) //not sure if it makes a difference but avg time is about 604-605 seconds but not clear how reference point derived - seems steady once started
+		if ((std::chrono::system_clock::now() - stLastRelayCheck) >
+		    std::chrono::seconds(604)) // not sure if it makes a difference but avg time is about 604-605 seconds but not clear how reference point derived - seems steady once started
 		{
 			SendRelayKeepAlive();
-			stLastRelayCheck = boost::get_system_time();
+			stLastRelayCheck = std::chrono::system_clock::now();
 		}
 	}
 }

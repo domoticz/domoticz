@@ -89,7 +89,7 @@ void CEvohomeSerial::ReadCallback(const char *data, size_t len)
 void CEvohomeSerial::Do_Work()
 {
 	startup = true;
-	stLastRelayCheck = boost::posix_time::min_date_time;
+	stLastRelayCheck = std::chrono::system_clock::time_point::min();
 	nStartup = 0;
 	nStarts = 0;
 
