@@ -549,11 +549,11 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Rain rate")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Total rain")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Counter" || vType == "Counter Incremental" )
 		{
