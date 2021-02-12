@@ -2,7 +2,7 @@ return
 {
 	on =
 	{
-		system = { 'manualBackupFinished', 'st*' },
+		system = { 'manualBackupFinished', 'st*', 'reset*' },
 		customEvents = { [ 'myEvents*' ] = { 'at 04:00-03:45'} },
 		shellCommandResponses = { '*' },
 	},

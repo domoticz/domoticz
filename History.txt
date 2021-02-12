@@ -6,6 +6,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Allow custom icons for thermostat setpoints on floorplan
 - Implemented: Allow custom icons for utility sensors
 - Implemented: Build systems for linux based on github actions
+- Implemented: Build system for docker
 - Implemented: Counter meter type now supports a divider
 - Implemented: Custom icons for RGB/W
 - Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
@@ -27,19 +28,22 @@ Version 2020.xxxx (xxxx)
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbor�s overview
 - Updated: Blebox; use of the latest SwitchBox API
-- Updated: dzVents; version 3.1.4 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: dzVents; version 3.1.5 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
+- Updated: eVehicles; added option to manual set API key
 - Updated: EvoHome; decode, display and store hotwater setpoint
 - Updated: Lay-out of notifications tab
 - Updated: MQTT; added option to choose notification subsystem
 - Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
 - Updated: OpenZWave; configuration files
 - Updated: Openweathermap; use latest API and overal improvements
+- Updated: OTGW; ready for firmware 5.0 and added domestic hot water flow rate
 - Updated: Plugwise; update of scene selector and added a migration process
 - Updated: SolarEdge; add support for 3 Phase inverter
 - Updated: Tado; add support for per-zone Open Window Detection
 - Updated: TTNMQTT; Better GPS/Locations handling, distance calculation (Geofencing)
 - Updated: TTNMQTT; Improved calculation and storage of signal-levels
+- Updated: Xiaomi; added new devicetypes
 - Changed: During a database backup we now 'sleep' when the status != OK
 - Changed: Differentiate kWh, kVah, kVar and kVarh
 - Changed: Energy devices allow negative values
@@ -55,11 +59,13 @@ Version 2020.xxxx (xxxx)
 - Fixed: Font in events editor on MacOS
 - Fixed: Motherboard Sensors for big partitions
 - Fixed: Possible crash in CEventSystem::SetEventTrigger
+- Fixed: Preserve custom icon and description when switching device from used -> unused -> used
 - Fixed: Prevent duplicate keys in preferences table
 - Fixed: Pushtype selection mechanism
 - Fixed: Sound device was incorrectly displayed on the Floorplan
 - Fixed: Tado Zone/Home limit, setpoint mix-up
 - Fixed: User field in device logging for switches, -text-devices and for groups/scenes
+- Fixed: Windows installation respects configured log parameters
 - Fixed: Zwave various issues
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
