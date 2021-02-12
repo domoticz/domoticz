@@ -1551,7 +1551,7 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 }
 
 .ui-icon-DayOffWithEco:after {
-        background-image: url("../images/evohome/DayOffWithEco.png");
+	background-image: url("../images/evohome/DayOffWithEco.png");
 }
 
 .ui-icon-HeatingOff:after {
