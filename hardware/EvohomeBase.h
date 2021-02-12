@@ -740,7 +740,7 @@ class CEvohomeBase : public CDomoticzHardwareBase
 		cmEvoAutoWithEco, //  0x01
 		cmEvoAway,	  //  0x02
 		cmEvoDayOff,	  //  0x03
-                cmEvoDayOffWithEco,      //  0x04
+		cmEvoDayOffWithEco,      //  0x04
  		cmEvoCustom,	  //  0x05
 		cmEvoHeatingOff,  //  0x06
 	};
