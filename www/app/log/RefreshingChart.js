@@ -118,6 +118,12 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                                         self.isZoomed = true;
                                         self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
                                     }
+                                    self.seriesSuppliers.forEach(function (seriesSupplier) {
+                                        if (seriesSupplier.chartZoomLevelChanged !== undefined) {
+                                            seriesSupplier.chartZoomLevelChanged(self.chart, zoomLeft, zoomRight);
+                                        }
+                                    });
+
                                     if (self.isMouseDown) {
                                         self.isSynchronizeYaxesRequired = true;
                                     } else {
@@ -400,14 +406,34 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
 
             self.$scope.zoomHours = function (hours) {
                 const xAxis = self.chart.xAxis[0];
-                const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
-                zoom(reference - hours * 3600 * 1000, reference);
+                const right = Math.min(xAxis.max, xAxis.dataMax);
+                zoom(right - hours * 3600 * 1000, right);
             }
 
             self.$scope.zoomDays = function (days) {
                 const xAxis = self.chart.xAxis[0];
-                const reference = xAxis.max < xAxis.dataMax ? xAxis.max : xAxis.dataMax;
-                zoom(reference - days * 24 * 3600 * 1000, reference);
+                const right = Math.min(xAxis.max, xAxis.dataMax);
+                zoom(addDays(right, -days), right);
+
+                function addDays(right, days) {
+                    const leftDate = new Date(right);
+                    leftDate.setDate(leftDate.getDate() + days);
+                    return leftDate.getTime();
+                }
+            }
+
+            self.$scope.zoomMonths = function (months) {
+                const xAxis = self.chart.xAxis[0];
+                const right = Math.min(xAxis.max, xAxis.dataMax);
+                zoom(addMonths(right, -months), right);
+
+                function addMonths(right, months) {
+                    const leftDate = new Date(right);
+                    leftDate.setDate(leftDate.getDate() + 1);
+                    leftDate.setMonth(leftDate.getMonth() + months);
+                    leftDate.setDate(leftDate.getDate() - 1);
+                    return leftDate.getTime();
+                }
             }
 
             self.$scope.zoomreset = function () {

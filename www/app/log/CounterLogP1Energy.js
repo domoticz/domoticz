@@ -6,6 +6,11 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                 highchartTemplate: {
                     chart: {
                         alignTicks: true
+                    },
+                    xAxis: {
+                        dateTimeLabelFormats: {
+                            day: '%a'
+                        }
                     }
                 }
             },

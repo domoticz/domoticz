@@ -23,6 +23,11 @@ define(['app', 'log/Chart'], function (app) {
             return _.merge(
                 {
                     highchartTemplate: {
+                        xAxis: {
+                            dateTimeLabelFormats: {
+                                day: '%a'
+                            }
+                        },
                         plotOptions: {
                             series: {
                                 matchExtremes: true

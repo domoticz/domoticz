@@ -90,7 +90,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
                     dataItemKeys: ['v', 'v2'],
-                    postprocessDatapoints: chart.trendlineAggregator,
+                    postprocessDatapoints: chart.aggregateTrendline,
                     label: 'D',
                     series: {
                         name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
@@ -447,7 +447,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         return data.delivered === true;
                     },
                     dataItemKeys: ['r1', 'r2'],
-                    postprocessDatapoints: chart.trendlineAggregator,
+                    postprocessDatapoints: chart.aggregateTrendline,
                     label: 'W',
                     series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),

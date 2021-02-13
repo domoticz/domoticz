@@ -94,7 +94,8 @@ define(['app'], function (app) {
         deviceCounterName: deviceCounterName,
         valueMultipliers: valueMultipliers,
         valueUnits: valueUnits,
-        trendlineAggregator: trendlineAggregator
+        aggregateTrendline: aggregateTrendline,
+        aggregateTrendlineZoomed: aggregateTrendlineZoomed
     });
 
     function baseParams(jquery) {
@@ -121,12 +122,24 @@ define(['app'], function (app) {
         };
     }
 
-    function trendlineAggregator(datapoints) {
+    function aggregateTrendline(datapoints) {
         const trendline = CalculateTrendLine(datapoints);
         datapoints.length = 0;
         if (trendline !== undefined) {
             datapoints.push([trendline.x0, trendline.y0]);
             datapoints.push([trendline.x1, trendline.y1]);
+        }
+    }
+
+    function aggregateTrendlineZoomed(datapoints) {
+        this.datapointsSource = datapoints.slice();
+        aggregateTrendline(datapoints);
+        this.reaggregateTrendlineZoomed = function (chart, zoomLeft, zoomRight) {
+            this.datapoints = this.datapointsSource.filter(function (datapoint) {
+                return zoomLeft <= datapoint[0] && datapoint[0] <= zoomRight;
+            })
+            aggregateTrendline(this.datapoints);
+            chart.get(this.id).setData(this.datapoints, false);
         }
     }
 });

@@ -67,7 +67,7 @@ define(function () {
                 },
                 function (seriesSupplier) {
                     if (seriesSupplier.postprocessDatapoints !== undefined) {
-                        seriesSupplier.postprocessDatapoints(seriesSupplier.datapoints);
+                        seriesSupplier.postprocessDatapoints.call(seriesSupplier, seriesSupplier.datapoints);
                     }
                 }
             );

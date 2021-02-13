@@ -65,17 +65,18 @@ define(['app', 'log/Chart'], function (app) {
         function counterTrendlineSeriesSuppliers(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
-                    id: 'counterTrendline',
+                    id: 'counterTrendlineOverall',
                     dataItemKeys: ['v'],
                     postprocessDataItemValue: postprocessDataItemValue,
-                    postprocessDatapoints: chart.trendlineAggregator,
+                    postprocessDatapoints: chart.aggregateTrendline,
                     label: 'B',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Trendline') + ' '
                                 + (seriesSupplier.dataSupplier.deviceCounterName !== undefined
                                     ? seriesSupplier.dataSupplier.deviceCounterName
-                                    : deviceTypeCounterName(deviceTypeIndex)),
+                                    : deviceTypeCounterName(deviceTypeIndex))
+                                + ' ' + $.t('Overall'),
                             zIndex: 3,
                             tooltip: {
                                 valueSuffix: ' '
@@ -90,6 +91,36 @@ define(['app', 'log/Chart'], function (app) {
                             visible: false
                         };
                     }
+                },
+                {
+                    id: 'counterTrendlineZoomed',
+                    dataItemKeys: ['v'],
+                    postprocessDataItemValue: postprocessDataItemValue,
+                    postprocessDatapoints: chart.aggregateTrendlineZoomed,
+                    chartZoomLevelChanged: function (chart, zoomLeft, zoomRight) {
+                        this.reaggregateTrendlineZoomed(chart, zoomLeft, zoomRight);
+                    },
+                    label: 'C',
+                    template: function (seriesSupplier) {
+                        return {
+                            name: $.t('Trendline') + ' '
+                                + (seriesSupplier.dataSupplier.deviceCounterName !== undefined
+                                    ? seriesSupplier.dataSupplier.deviceCounterName
+                                    : deviceTypeCounterName(deviceTypeIndex)),
+                            zIndex: 3,
+                            tooltip: {
+                                valueSuffix: ' '
+                                    + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
+                                        ? seriesSupplier.dataSupplier.deviceValueUnit
+                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                valueDecimals: dataItemValueDecimals
+                            },
+                            color: 'rgb(252,3,3,0.8)',
+                            dashStyle: 'DashDot',
+                            yAxis: 0,
+                            visible: false
+                        };
+                    }
                 }
             ];
         }
@@ -100,7 +131,7 @@ define(['app', 'log/Chart'], function (app) {
                     id: 'counterPrevious',
                     useDataItemsFromPrevious: true,
                     postprocessDataItemValue: postprocessDataItemValue,
-                    label: 'C',
+                    label: 'D',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Past') + ' '
