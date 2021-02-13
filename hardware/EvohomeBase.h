@@ -740,8 +740,9 @@ class CEvohomeBase : public CDomoticzHardwareBase
 		cmEvoAutoWithEco, //  0x01
 		cmEvoAway,	  //  0x02
 		cmEvoDayOff,	  //  0x03
-		cmEvoCustom,	  //  0x04
-		cmEvoHeatingOff,  //  0x05
+		cmEvoDayOffWithEco,      //  0x04
+ 		cmEvoCustom,	  //  0x05
+		cmEvoHeatingOff,  //  0x06
 	};
 
 	enum controllerModeType
@@ -794,8 +795,8 @@ class CEvohomeBase : public CDomoticzHardwareBase
 	void InitZoneNames();
 	void SetZoneName(uint8_t nZone, const std::string &szName);
 
-	static const std::array<const char *, 7> m_szControllerMode;
-	static const std::array<const char *, 7> m_szWebAPIMode;
+	static const std::array<const char *, 8> m_szControllerMode;
+	static const std::array<const char *, 8> m_szWebAPIMode;
 	static const std::array<const char *, 7> m_szZoneMode;
 
 	std::vector<zoneModeType> m_ZoneOverrideLocal;
