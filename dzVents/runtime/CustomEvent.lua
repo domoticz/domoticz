@@ -46,7 +46,7 @@ local function CustomEvent(domoticz, eventData)
 	evenItemIdentifier.setType(
 		self,
 		'isCustomEvent',
-		domoticz.BASE_TYPE_CUSTOM_EVENT,
+		domoticz.BASETYPE_CUSTOM_EVENT,
 		self.trigger
 	)
 

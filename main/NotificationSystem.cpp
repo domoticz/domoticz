@@ -8,15 +8,17 @@
 
 const CNotificationSystem::_tNotificationTypeTable CNotificationSystem::typeTable[] =
 { // don't change order
-	{ Notification::DZ_START,        "start"           },
-	{ Notification::DZ_STOP,         "stop"            },
-	{ Notification::DZ_BACKUP_DONE,  "backupDone"	   },
-	{ Notification::DZ_NOTIFICATION, "notification"    },
-	{ Notification::HW_TIMEOUT,      "hardwareTimeout" },
-	{ Notification::HW_START,        "hardwareStart"   },
-	{ Notification::HW_STOP,         "hardwareStop"    },
-	{ Notification::HW_THREAD_ENDED, "threadEnded"     },
-	{ Notification::DZ_CUSTOM,       "customEvent"     },
+	{ Notification::DZ_START,                "start"                },
+	{ Notification::DZ_STOP,                 "stop"                 },
+	{ Notification::DZ_BACKUP_DONE,          "backupDone"           },
+	{ Notification::DZ_NOTIFICATION,         "notification"         },
+	{ Notification::HW_TIMEOUT,              "hardwareTimeout"      },
+	{ Notification::HW_START,                "hardwareStart"        },
+	{ Notification::HW_STOP,                 "hardwareStop"         },
+	{ Notification::HW_THREAD_ENDED,         "threadEnded"          },
+	{ Notification::DZ_CUSTOM,               "customEvent"          },
+	{ Notification::DZ_ALLEVENTRESET,        "resetAllEvents"       },
+	{ Notification::DZ_ALLDEVICESTATUSRESET, "resetAllDeviceStatus" },
 };
 
 const CNotificationSystem::_tNotificationStatusTable CNotificationSystem::statusTable[] =

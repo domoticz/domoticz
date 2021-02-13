@@ -42,14 +42,14 @@ class CEventSystem : public CLuaCommon, StoppableTask, CNotificationObserver
 public:
 	enum _eReason
 	{
-		REASON_DEVICE,			// 0
-		REASON_SCENEGROUP,		// 1
-		REASON_USERVARIABLE,		// 2
-		REASON_TIME,			// 3
-		REASON_SECURITY,		// 4
-		REASON_URL,			// 5
-		REASON_NOTIFICATION,		// 6
-		REASON_SHELLCOMMAND		// 7
+		REASON_DEVICE,       // 0
+		REASON_SCENEGROUP,   // 1
+		REASON_USERVARIABLE, // 2
+		REASON_TIME,         // 3
+		REASON_SECURITY,     // 4
+		REASON_URL,          // 5
+		REASON_NOTIFICATION, // 6
+		REASON_SHELLCOMMAND  // 7
 	};
 
 	struct _tDeviceStatus
@@ -100,6 +100,7 @@ public:
 		int scenesgroupType;
 		int protection;
 		std::string lastUpdate;
+		std::string description;
 		std::vector<uint64_t> memberID;
 	};
 
