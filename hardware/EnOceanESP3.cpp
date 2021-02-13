@@ -1737,7 +1737,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					Log(LOG_NORM, "Sender_ID 0x%08lX inserted in the database with default profile F6-%02x-%02x", id, Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
 				}
-				else if (result.size() == 1)
+				else
 				{
 					// hardware device was already teached-in
 					Profile=atoi(result[0][1].c_str());
@@ -1919,54 +1919,41 @@ void CEnOceanESP3::ParseRadioDatagram()
 				// F6-05-02 : Smoke detector
 				// Tested with an Ubiwizz UBILD001-QM smoke detector
 				else if (Profile == 0x05)
+				{
+					Debug(DEBUG_HARDWARE, "message profile F6-05-xx: Data=0x%02X", m_buffer[1]);
+					bool alarm = false;
+					int batterylevel = 255;
+					if (iType == 0x00 || iType == 0x02)  // only profiles F6-05-00 and F6-05-02 report Energy LOW warning
 					{
-						Debug(DEBUG_HARDWARE, "message profile F6-05-xx: Data=0x%02X", m_buffer[1]);
-						int alarm = 0;
-						switch (m_buffer[1]) {
-							case 0x00:   // profiles F6-05-00 and F6-05-02
-								{
-									Debug(DEBUG_HARDWARE, "Alarm OFF from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
-									break;
-								}
-							case 0x10:  // profiles F6-05-00 and F6-05-02
-								{
-									Log(LOG_NORM, "Alarm ON from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
-									alarm = 1;
-									break;
-								}
-							case 0x11:  // profile F6-05-01
-								{
-									Log(LOG_NORM, "Alarm ON water detected from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
-									alarm = 1;
-									break;
-								}
-							case 0x30:  // profiles F6-05-00 and F6-05-02
-								{
-									Log(LOG_NORM, "Energy LOW warning from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
-									alarm = -1;
-									break;
-								}
-							}
-						if (alarm >= 0)
+						batterylevel = 100;
+					}
+					switch (m_buffer[1]) {
+						case 0x00:   // profiles F6-05-00 and F6-05-02
 						{
-							RBUF tsen;
-							memset(&tsen,0,sizeof(RBUF));
-							tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
-							tsen.LIGHTING2.packettype=pTypeLighting2;
-							tsen.LIGHTING2.subtype=sTypeAC;
-							tsen.LIGHTING2.seqnbr=0;
-							tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
-							tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
-							tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
-							tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
-							tsen.LIGHTING2.level=0;
-							tsen.LIGHTING2.rssi=rssi;
-							tsen.LIGHTING2.unitcode = 1;
-							tsen.LIGHTING2.cmnd = (alarm == 1) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+							Debug(DEBUG_HARDWARE, "Alarm OFF from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							break;
+						}
+						case 0x10:  // profiles F6-05-00 and F6-05-02
+						{
+							Log(LOG_NORM, "Alarm ON from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							alarm = true;
+							break;
+						}
+						case 0x11:  // profile F6-05-01
+						{
+							Log(LOG_NORM, "Alarm ON water detected from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							alarm = true;
+							break;
+						}
+						case 0x30:  // profiles F6-05-00 and F6-05-02
+						{
+							Log(LOG_NORM, "Energy LOW warning from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							batterylevel = 5;
+							break;
 						}
 					}
-
+					SendSwitch(id, 1, batterylevel, alarm, 0, "Detector", m_Name, rssi);
+				}
 			}
 			break;
 
