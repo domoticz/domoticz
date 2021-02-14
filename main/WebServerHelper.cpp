@@ -31,7 +31,7 @@ namespace http {
 			m_pDomServ = sharedServer;
 
 			our_serverpath = serverpath;
-			plainServer_.reset(new CWebServer());
+			plainServer_ = std::make_shared<CWebServer>();
 			serverCollection.push_back(plainServer_);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
 			our_listener_port = web_settings.listening_port;
@@ -40,7 +40,7 @@ namespace http {
 #if (OPENSSL_VERSION_NUMBER < 0x10100000L) || defined(LIBRESSL_VERSION_NUMBER)
 				SSL_library_init();
 #endif
-				secureServer_.reset(new CWebServer());
+				secureServer_ = std::make_shared<CWebServer>();
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection.push_back(secureServer_);
 			}

@@ -150,7 +150,7 @@ server::server(const server_settings &settings, request_handler &user_request_ha
 }
 
 void server::init_connection() {
-	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_));
+	new_connection_ = std::make_shared<connection>(io_service_, connection_manager_, request_handler_, timeout_);
 }
 
 /**
@@ -159,8 +159,7 @@ void server::init_connection() {
 void server::handle_accept(const boost::system::error_code& e) {
 	if (!e) {
 		connection_manager_.start(new_connection_);
-		new_connection_.reset(new connection(io_service_,
-				connection_manager_, request_handler_, timeout_));
+		new_connection_ = std::make_shared<connection>(io_service_, connection_manager_, request_handler_, timeout_);
 		// listen for a subsequent request
 		acceptor_.async_accept(new_connection_->socket(), [this](auto &&err) { handle_accept(err); });
 	}
@@ -186,7 +185,7 @@ ssl_server::ssl_server(const server_settings &settings, request_handler &user_re
 
 void ssl_server::init_connection() {
 
-	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
+	new_connection_ = std::make_shared<connection>(io_service_, connection_manager_, request_handler_, timeout_, context_);
 
 	// the following line gets the passphrase for protected private server keys
 	context_.set_password_callback([this](auto &&...) { return get_passphrase(); });
@@ -270,7 +269,7 @@ void ssl_server::init_connection() {
 
 void ssl_server::reinit_connection()
 {
-	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
+	new_connection_ = std::make_shared<connection>(io_service_, connection_manager_, request_handler_, timeout_, context_);
 
 	struct stat st;
 
@@ -319,24 +318,28 @@ void ssl_server::handle_accept(const boost::system::error_code& e) {
 	}
 }
 
-std::string ssl_server::get_passphrase() const {
+std::string ssl_server::get_passphrase() const
+{
 	return settings_.private_key_pass_phrase;
 }
 #endif
 
-std::shared_ptr<server_base> server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
+std::shared_ptr<server_base> server_factory::create(const server_settings &settings, request_handler &user_request_handler)
+{
 #ifdef WWW_ENABLE_SSL
-		if (settings.is_secure()) {
-			return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
-		}
-#endif
-		return std::shared_ptr<server_base>(new server(settings, user_request_handler));
+	if (settings.is_secure())
+	{
+		return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
 	}
+#endif
+	return std::make_shared<server>(settings, user_request_handler);
+}
 
 #ifdef WWW_ENABLE_SSL
-std::shared_ptr<server_base> server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
-		return std::shared_ptr<server_base>(new ssl_server(ssl_settings, user_request_handler));
-	}
+std::shared_ptr<server_base> server_factory::create(const ssl_server_settings &ssl_settings, request_handler &user_request_handler)
+{
+	return std::make_shared<ssl_server>(ssl_settings, user_request_handler);
+}
 #endif
 
 } // namespace server

@@ -86,13 +86,11 @@ int CCmdLine::SplitLine(int argc, char **argv)
 			// it's not a new switch, so it must be more stuff for the last switch
 
 			// ...let's add it
-			CCmdLine::iterator theIterator;
-
 			// get an iterator for the current param
-			theIterator = find(curParam);
+			auto theIterator = find(curParam);
 			if (theIterator != end())
 			{
-				(*theIterator).second.m_strings.push_back(argv[i]);
+				theIterator->second.m_strings.push_back(argv[i]);
 			}
 			else
 			{

@@ -2649,10 +2649,9 @@ bool CSQLHelper::OpenDatabase()
 					PushType = pushtype;
 				}
 			};
-			std::vector<_tPushHelper> dbToMigrate;
-			dbToMigrate.push_back(_tPushHelper("HttpLink", CBasePush::PushType::PUSHTYPE_HTTP));
-			dbToMigrate.push_back(_tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB));
-			dbToMigrate.push_back(_tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO));
+			std::vector<_tPushHelper> dbToMigrate{ _tPushHelper("HttpLink", CBasePush::PushType::PUSHTYPE_HTTP),
+							       _tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB),
+							       _tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO) };
 
 			for (const auto &sd : dbToMigrate)
 			{
