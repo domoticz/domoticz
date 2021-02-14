@@ -35,11 +35,11 @@ public:
 		time_t logtime;
 		_eLogLevel level;
 		std::string logmessage;
-		_tLogLineStruct(const _eLogLevel nlevel, const std::string &nlogmessage);
+		_tLogLineStruct(_eLogLevel nlevel, const std::string &nlogmessage);
 	};
 
-	CLogger(void);
-	~CLogger(void);
+	CLogger();
+	~CLogger();
 
 	bool SetLogFlags(const std::string &sFlags);
 	void SetLogFlags(const uint32_t iFlags) {
@@ -60,29 +60,29 @@ public:
 
 	void SetOutputFile(const char *OutputFile);
 
-	void Log(const _eLogLevel level, const std::string& sLogline);
-	void Log(const _eLogLevel level, const char* logline, ...)
+	void Log(_eLogLevel level, const std::string &sLogline);
+	void Log(_eLogLevel level, const char *logline, ...)
 #ifdef __GNUC__
-		__attribute__ ((format (printf, 3, 4)))
+		__attribute__((format(printf, 3, 4)))
 #endif
-	;
-	void Debug(const _eDebugLevel level, const std::string& sLogline);
-	void Debug(const _eDebugLevel level, const char* logline, ...)
+		;
+	void Debug(_eDebugLevel level, const std::string &sLogline);
+	void Debug(_eDebugLevel level, const char *logline, ...)
 #ifdef __GNUC__
-		__attribute__ ((format (printf, 3, 4)))
+		__attribute__((format(printf, 3, 4)))
 #endif
-	;
+		;
 	void LogSequenceStart();
 	void LogSequenceAdd(const char* logline);
 	void LogSequenceAddNoLF(const char* logline);
-	void LogSequenceEnd(const _eLogLevel level);
+	void LogSequenceEnd(_eLogLevel level);
 
-	void EnableLogTimestamps(const bool bEnableTimestamps);
+	void EnableLogTimestamps(bool bEnableTimestamps);
 	bool IsLogTimestampsEnabled();
 
-	void ForwardErrorsToNotificationSystem(const bool bDoForward);
+	void ForwardErrorsToNotificationSystem(bool bDoForward);
 
-	std::list<_tLogLineStruct> GetLog(const _eLogLevel level, const time_t lastlogtime = 0);
+	std::list<_tLogLineStruct> GetLog(_eLogLevel level, time_t lastlogtime = 0);
 	void ClearLog();
 
 	std::list<_tLogLineStruct> GetNotificationLogs();

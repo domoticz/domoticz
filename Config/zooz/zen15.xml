@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027A:000D:0101</MetaDataItem>
     <MetaDataItem name="ProductPic">images/zooz/zen15.png</MetaDataItem>
@@ -67,6 +67,7 @@ Press and HOLD the Z-Wave button for at least 3 seconds
 4. A new secure on / off device will be recognized by your Z-Wave controller</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2517/xml</Entry>
+      <Entry author="Vladimir Vukicevic - vladimir@pobox.com" date="22 Nov 2020" revision="3">Fix param 152 size.</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Zooz ZEN15 Power Switch 
@@ -98,7 +99,7 @@ Press and HOLD the Z-Wave button for at least 3 seconds
     <Value genre="config" index="151" label="Power Report Value Threshold" max="65535" min="1" size="2" type="short" units="watts" value="0">
       <Help>Number of Watts the appliance needs to go over for the change to be reported</Help>
     </Value>
-    <Value genre="config" index="152" label="Power Report Percentage Threshold" max="255" min="1" size="4" type="int" units="%" value="10">
+    <Value genre="config" index="152" label="Power Report Percentage Threshold" max="255" min="1" size="1" type="byte" units="%" value="10">
       <Help>Percentage in power usage change the appliance needs to go over for the event to be reported (Default 10)</Help>
     </Value>
     <Value genre="config" index="171" label="Power Report Frequency" max="2678400" min="5" size="4" type="int" value="0">

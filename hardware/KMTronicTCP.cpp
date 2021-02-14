@@ -43,10 +43,6 @@ m_Password(CURLEncode::URLEncode(password))
 	m_bIsTempDevice = false;
 }
 
-KMTronicTCP::~KMTronicTCP(void)
-{
-}
-
 void KMTronicTCP::Init()
 {
 }
@@ -57,7 +53,7 @@ bool KMTronicTCP::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&KMTronicTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -84,7 +80,7 @@ void KMTronicTCP::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		int iPollInterval = KMTRONIC_POLL_INTERVAL;
@@ -233,7 +229,7 @@ void KMTronicTCP::ParseRelays(const std::string &sResult)
 				std::stringstream sstr;
 				int iRelay = (jj + 1);
 				sstr << "Relay " << iRelay;
-				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
+				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
 				if (iRelay > m_TotRelais)
 					m_TotRelais = iRelay;
 			}

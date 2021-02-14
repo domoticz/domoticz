@@ -46,7 +46,7 @@
   * Initialize Client Socket To Set Free / Invalid at the start of program
   * Preconditions none, Perform once on start of application
   */
-void eHouseTCP::EhouseInitTcpClient(void)
+void eHouseTCP::EhouseInitTcpClient()
 {
 	unsigned char i = 0;
 	for (i = 0; i < MAX_CLIENT_SOCKETS; i++)
@@ -67,8 +67,7 @@ char eHouseTCP::SubmitEvent(const unsigned char *Events, unsigned char EventCoun
 	memcpy(Event, Events, EventCount * EVENT_SIZE);
 	if (Event[0] != m_SrvAddrH) //other than lan, wifi
 		return SendTCPEvent((unsigned char *)&Event, EventCount, m_SrvAddrH, m_SrvAddrL, (unsigned char *)&Event);	// Via eHouse PRO Server
-	else
-		return SendTCPEvent((unsigned char *)&Event, EventCount, Event[0], Event[1], (unsigned char *)&Event);	// Directly to IP controllers
+	return SendTCPEvent((unsigned char *)&Event, EventCount, Event[0], Event[1], (unsigned char *)&Event);			// Directly to IP controllers
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define INDEX_PRO  0
@@ -146,7 +145,7 @@ char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCou
 	EhouseSubmitData(tcp_client_socket_index);
 	ExecQueuedEvents();
 #else
-	m_EhouseTcpClientThread[tcp_client_socket_index] = std::make_shared<std::thread>(&eHouseTCP::EhouseSubmitData, this, tcp_client_socket_index);
+	m_EhouseTcpClientThread[tcp_client_socket_index] = std::make_shared<std::thread>([this, tcp_client_socket_index] { EhouseSubmitData(tcp_client_socket_index); });
 	SetThreadNameInt(m_EhouseTcpClientThread[tcp_client_socket_index]->native_handle());
 
 	m_EhouseTcpClientThread[tcp_client_socket_index]->detach();
@@ -171,7 +170,7 @@ void eHouseTCP::performTCPClientThreads()
 			{
 				EhouseTcpClientThread[i]->try_join_for()
 					join();
-				//EhouseTcpClientThread[i] = NULL;
+				//EhouseTcpClientThread[i] = nullptr;
 			}*/
 			m_TC[i].NotFinished = 0;
 			m_TC[i].Socket = -1;
@@ -390,6 +389,5 @@ void eHouseTCP::KillSocket(int SocketIndex)
 
 
 	if (m_DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[!!!!!!!!! TCP Cli ||||| %d] End TCP Client NOT EXITED", SocketIndex);
-	return;
 }
 

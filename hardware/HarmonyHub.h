@@ -7,86 +7,87 @@ class csocket;
 
 class Action
 {
-public:
-    std::string m_strCommand;
-    std::string m_strName;
-    std::string m_strLabel;
-    std::string toString()
-    {
-        return m_strCommand;
-    }
+      public:
+	std::string m_strCommand;
+	std::string m_strName;
+	std::string m_strLabel;
+	std::string toString()
+	{
+		return m_strCommand;
+	}
 };
-
 
 class Function
 {
-public:
-    std::string m_strName;
-    std::vector< Action > m_vecActions;
-    std::string toString()
-    {
-        std::string ret = "    Function: ";
-        ret.append(m_strName);
-        ret.append("\n      Commands:");
-        std::vector<Action>::iterator it = m_vecActions.begin();
-        std::vector<Action>::iterator ite = m_vecActions.end();
-        for(; it != ite; ++it)
-        {
-            ret.append("\n\t");
-            ret.append(it->toString());
-        }
-        ret.append("\n");
-        return ret;
-    }
+      public:
+	std::string m_strName;
+	std::vector<Action> m_vecActions;
+	std::string toString()
+	{
+		std::string ret = "    Function: ";
+		ret.append(m_strName);
+		ret.append("\n      Commands:");
+		std::vector<Action>::iterator it = m_vecActions.begin();
+		std::vector<Action>::iterator ite = m_vecActions.end();
+		for (; it != ite; ++it)
+		{
+			ret.append("\n\t");
+			ret.append(it->toString());
+		}
+		ret.append("\n");
+		return ret;
+	}
 };
 
 class Device
 {
-public:
-    std::string m_strID;
-    std::string m_strLabel;
-    std::string m_strManufacturer;
-    std::string m_strModel;
-    std::string m_strType;
-    std::vector< Function > m_vecFunctions;
+      public:
+	std::string m_strID;
+	std::string m_strLabel;
+	std::string m_strManufacturer;
+	std::string m_strModel;
+	std::string m_strType;
+	std::vector<Function> m_vecFunctions;
 
-    std::string toString()
-    {
-        std::string ret = m_strType;
-        ret.append(": ");
-        ret.append(m_strLabel);
-        ret.append(" (ID = ");
-        ret.append(m_strID);
-        ret.append(")\n");
-        ret.append(m_strManufacturer);
-        ret.append(" - ");
-        ret.append(m_strModel);
-        ret.append("\nFunctions: \n");
-        std::vector<Function>::iterator it = m_vecFunctions.begin();
-        std::vector<Function>::iterator ite = m_vecFunctions.end();
-        for(; it != ite; ++it)
-        {
-            ret.append(it->toString());
-        }
-        return ret;
-    }
+	std::string toString()
+	{
+		std::string ret = m_strType;
+		ret.append(": ");
+		ret.append(m_strLabel);
+		ret.append(" (ID = ");
+		ret.append(m_strID);
+		ret.append(")\n");
+		ret.append(m_strManufacturer);
+		ret.append(" - ");
+		ret.append(m_strModel);
+		ret.append("\nFunctions: \n");
+		std::vector<Function>::iterator it = m_vecFunctions.begin();
+		std::vector<Function>::iterator ite = m_vecFunctions.end();
+		for (; it != ite; ++it)
+		{
+			ret.append(it->toString());
+		}
+		return ret;
+	}
 };
 
 class CHarmonyHub : public CDomoticzHardwareBase
 {
 	enum _eConnectionStatus
 	{
-		DISCONNECTED=0,
+		DISCONNECTED = 0,
 		CONNECTED,
 		INITIALIZED,
 		AUTHENTICATED,
 		BOUND
 	};
-public:
-	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port);
-	~CHarmonyHub(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+
+      public:
+	CHarmonyHub(int ID, const std::string &IPAddress, unsigned int port);
+	~CHarmonyHub() override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -96,11 +97,11 @@ private:
 	void Logout();
 
 	// Helper functions for changing switch status in Domoticz
-	void CheckSetActivity(const std::string &activityID, const bool on);
-	void UpdateSwitch(const unsigned char idx, const char * szIdx, const bool bOn, const std::string &defaultname);
+	void CheckSetActivity(const std::string &activityID, bool on);
+	void UpdateSwitch(unsigned char idx, const char *szIdx, bool bOn, const std::string &defaultname);
 
 	// Raw socket functions
-	bool ConnectToHarmony(const std::string &szHarmonyIPAddress, const int HarmonyPortNumber, csocket* connection);
+	bool ConnectToHarmony(const std::string &szHarmonyIPAddress, int HarmonyPortNumber, csocket *connection);
 	bool SetupCommunicationSocket();
 	void ResetCommunicationSocket();
 	int WriteToSocket(std::string *szReq);
@@ -127,7 +128,8 @@ private:
 
 	// Helper function for XMPP reading
 	bool IsTransmissionComplete(std::string *szHarmonyData);
-private:
+
+      private:
 	// hardware parameters
 	std::string m_szHarmonyAddress;
 	unsigned short m_usHarmonyPort;
@@ -135,7 +137,7 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_mutex;
 
-	csocket * m_connection;
+	csocket *m_connection;
 	_eConnectionStatus m_connectionstatus;
 
 	bool m_bNeedMoreData;

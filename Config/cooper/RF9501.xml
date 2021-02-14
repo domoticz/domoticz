@@ -1,4 +1,4 @@
-<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001A:0000:534C</MetaDataItem>
     <MetaDataItem name="ProductPic">images/cooper/RF9501.png</MetaDataItem>
@@ -10,6 +10,7 @@
     <MetaDataItem name="ProductPage">http://www.cooperindustries.com/content/public/en/wiring_devices/products/lighting_controls/aspire_rf_wireless/switches/aspire_rf_15a_wireless_switch_rf9501.html</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/740/xml</Entry>
+      <Entry author="knightzac19" date="28 Jan 2021" revision="3">Removed Invalid RF9501 Group</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -52,9 +53,8 @@
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">
-    <Associations num_groups="2">
+    <Associations num_groups="1">
       <Group index="1" label="Group #1" max_associations="5"/>
-      <Group index="255" label="Group #255" max_associations="1"/>
     </Associations>
   </CommandClass>
 </Product>

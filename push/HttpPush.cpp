@@ -15,7 +15,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace boost::placeholders;
+extern CHttpPush m_httppush;
 
 CHttpPush::CHttpPush()
 {
@@ -26,7 +26,8 @@ CHttpPush::CHttpPush()
 void CHttpPush::Start()
 {
 	UpdateActive();
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CHttpPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	ReloadPushLinks(m_PushType);
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
 }
 
 void CHttpPush::Stop()
@@ -45,22 +46,29 @@ void CHttpPush::UpdateActive()
 
 void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
 	{
-		DoHttpPush();
+		DoHttpPush(DeviceRowIdx);
 	}
 }
 
-void CHttpPush::DoHttpPush()
+void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 {
-	std::string httpUrl = "";
-	std::string httpData = "";
-	std::string httpHeaders = "";
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, "
+				  "A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM PushLink as A, DeviceStatus as B "
+				  "WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceRowID==B.ID)",
+				  PushType::PUSHTYPE_HTTP, DeviceRowIdx);
+	if (result.empty())
+		return;
+
+	std::string httpUrl;
+	std::string httpData;
+	std::string httpHeaders;
 	int httpMethodInt = 0;
 	int httpAuthInt = 0;
-	std::string httpAuthBasicLogin = "";
-	std::string httpAuthBasicPassword = "";
+	std::string httpAuthBasicLogin;
+	std::string httpAuthBasicPassword;
 	m_sql.GetPreferencesVar("HttpMethod", httpMethodInt);
 	m_sql.GetPreferencesVar("HttpAuth", httpAuthInt);
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);
@@ -72,188 +80,176 @@ void CHttpPush::DoHttpPush()
 	if (httpDebugActiveInt == 1) {
 		httpDebugActive = true;
 	}
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query(
-		"SELECT A.DeviceRowID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM PushLink as A, DeviceStatus as B "
-		"WHERE (A.PushType==%d AND A.DeviceRowID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceRowID==B.ID)",
-		PushType::PUSHTYPE_HTTP,
-		m_DeviceRowIdx);
-	if (!result.empty())
+
+	for (const auto &sd : result)
 	{
 		std::string sendValue;
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
-			m_sql.GetPreferencesVar("HttpData", httpData);
-			m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
-			if (httpUrl == "")
-				return;
+		m_sql.GetPreferencesVar("HttpUrl", httpUrl);
+		m_sql.GetPreferencesVar("HttpData", httpData);
+		m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
+		if (httpUrl.empty())
+			return;
 
-			std::vector<std::string> sd = *itt;
-			//unsigned int deviceId = atoi(sd[0].c_str());
-			std::string sdeviceId = sd[0].c_str();
-			std::string ldelpos = sd[1].c_str();
-			int delpos = atoi(sd[1].c_str());
-			int dType = atoi(sd[3].c_str());
-			int dSubType = atoi(sd[4].c_str());
-			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
-			//int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
-			//int targetDeviceID = atoi(sd[9].c_str());
-			//std::string targetProperty = sd[10].c_str();
-			int includeUnit = atoi(sd[11].c_str());
-			int metertype = atoi(sd[12].c_str());
-			int lastUpdate = atoi(sd[13].c_str());
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
-			sendValue = sValue;
+		//unsigned int deviceId = atoi(sd[0].c_str());
+		std::string sdeviceId = sd[0];
+		std::string ldelpos = sd[1];
+		int delpos = atoi(sd[1].c_str());
+		int dType = atoi(sd[3].c_str());
+		int dSubType = atoi(sd[4].c_str());
+		int nValue = atoi(sd[5].c_str());
+		std::string sValue = sd[6];
+		//int targetType = atoi(sd[7].c_str());
+		std::string targetVariable = sd[8];
+		//int targetDeviceID = atoi(sd[9].c_str());
+		//std::string targetProperty = sd[10].c_str();
+		int includeUnit = atoi(sd[11].c_str());
+		int metertype = atoi(sd[12].c_str());
+		int lastUpdate = atoi(sd[13].c_str());
+		std::string ltargetVariable = sd[8];
+		std::string ltargetDeviceId = sd[9];
+		std::string lname = sd[14];
+		sendValue = sValue;
 
-			unsigned long tzoffset = get_tzoffset();
+		unsigned long tzoffset = get_tzoffset();
 
 #ifdef WIN32
-			unsigned __int64 localTime = lastUpdate;
-			unsigned __int64 localTimeUtc = lastUpdate - tzoffset;
+		unsigned __int64 localTime = lastUpdate;
+		unsigned __int64 localTimeUtc = lastUpdate - tzoffset;
 #else
-			unsigned long long int localTime = lastUpdate;
-			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
+		unsigned long long int localTime = lastUpdate;
+		unsigned long long int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
-			char szLocalTime[21];
-			sprintf(szLocalTime, "%llu", localTime);
-			char szLocalTimeUtc[21];
-			sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
-			char szLocalTimeMs[21];
-			sprintf(szLocalTimeMs, "%llu", localTime * 1000);
-			char szLocalTimeUtcMs[21];
-			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
+		char szLocalTime[21];
+		sprintf(szLocalTime, "%llu", localTime);
+		char szLocalTimeUtc[21];
+		sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
+		char szLocalTimeMs[21];
+		sprintf(szLocalTimeMs, "%llu", localTime * 1000);
+		char szLocalTimeUtcMs[21];
+		sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
-			std::string llastUpdate = get_lastUpdate(localTimeUtc);
+		std::string llastUpdate = get_lastUpdate(localTimeUtc);
 
-			// Replace keywords
-			/*
-			%v : Value
-			%t0 : Timestamp (epoc time localtime)
-			%t1 : Timestamp (epoc ms localtime)
-			%t2 : Timestamp (epoc time UTC)
-			%t3 : Timestamp (epoc ms UTC)
-			%t4 : Timestamp : "2015-01-29T21:50:44Z"
-			%D : Target Device id
-			%V : Target Variable
-			%u : Unit
-			%n : Device name
-			%T0 : Type
-			%T1 : SubType
-			%h : hostname
-			%idx : 'Original device' id (idx)
-			*/
+		// Replace keywords
+		/*
+		%v : Value
+		%t0 : Timestamp (epoc time localtime)
+		%t1 : Timestamp (epoc ms localtime)
+		%t2 : Timestamp (epoc time UTC)
+		%t3 : Timestamp (epoc ms UTC)
+		%t4 : Timestamp : "2015-01-29T21:50:44Z"
+		%D : Target Device id
+		%V : Target Variable
+		%u : Unit
+		%n : Device name
+		%T0 : Type
+		%T1 : SubType
+		%h : hostname
+		%idx : 'Original device' id (idx)
+		*/
 
-			std::string lunit = getUnit(delpos, metertype);
-			std::string lType = RFX_Type_Desc(dType, 1);
-			std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
+		std::string lunit = getUnit(dType, dSubType, delpos, metertype);
+		std::string lType = RFX_Type_Desc(dType, 1);
+		std::string lSubType = RFX_Type_SubType_Desc(dType, dSubType);
 
-			char hostname[256];
-			gethostname(hostname, sizeof(hostname));
+		char hostname[256];
+		gethostname(hostname, sizeof(hostname));
 
-			std::vector<std::string> strarray;
-			if (sendValue.find(";") != std::string::npos)
+		std::vector<std::string> strarray;
+		if (sendValue.find(';') != std::string::npos)
+		{
+			StringSplit(sendValue, ";", strarray);
+			if (int(strarray.size()) >= delpos && delpos > 0)
 			{
-				StringSplit(sendValue, ";", strarray);
-				if (int(strarray.size()) >= delpos && delpos > 0)
-				{
-					std::string rawsendValue = strarray[delpos - 1].c_str();
-					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
-				}
+				std::string rawsendValue = strarray[delpos - 1];
+				sendValue = ProcessSendValue(DeviceRowIdx, rawsendValue, delpos, nValue, false, dType, dSubType, metertype);
 			}
-			else
+		}
+		else
+		{
+			sendValue = ProcessSendValue(DeviceRowIdx, sendValue, delpos, nValue, false, dType, dSubType, metertype);
+		}
+		if (sendValue.empty())
+			continue;
+
+		ltargetDeviceId += "_";
+		ltargetDeviceId += ldelpos;
+
+		replaceAll(httpUrl, "%v", sendValue);
+		replaceAll(httpUrl, "%u", includeUnit ? lunit : "");
+		replaceAll(httpUrl, "%D", ltargetDeviceId);
+		replaceAll(httpUrl, "%V", ltargetVariable);
+		replaceAll(httpUrl, "%t0", std::string(szLocalTime));
+		replaceAll(httpUrl, "%t1", std::string(szLocalTimeMs));
+		replaceAll(httpUrl, "%t2", std::string(szLocalTimeUtc));
+		replaceAll(httpUrl, "%t3", std::string(szLocalTimeUtcMs));
+		replaceAll(httpUrl, "%t4", llastUpdate);
+		replaceAll(httpUrl, "%n", lname);
+		replaceAll(httpUrl, "%T0", lType);
+		replaceAll(httpUrl, "%T1", lSubType);
+		replaceAll(httpUrl, "%h", std::string(hostname));
+		replaceAll(httpUrl, "%idx", sdeviceId);
+
+		replaceAll(httpData, "%v", sendValue);
+		replaceAll(httpData, "%u", includeUnit ? lunit : "");
+		replaceAll(httpData, "%D", ltargetDeviceId);
+		replaceAll(httpData, "%V", ltargetVariable);
+		replaceAll(httpData, "%t0", std::string(szLocalTime));
+		replaceAll(httpData, "%t1", std::string(szLocalTimeMs));
+		replaceAll(httpData, "%t2", std::string(szLocalTimeUtc));
+		replaceAll(httpData, "%t3", std::string(szLocalTimeUtcMs));
+		replaceAll(httpData, "%t4", llastUpdate);
+		replaceAll(httpData, "%n", lname);
+		replaceAll(httpData, "%T0", lType);
+		replaceAll(httpData, "%T1", lSubType);
+		replaceAll(httpData, "%h", std::string(hostname));
+		replaceAll(httpData, "%idx", sdeviceId);
+
+		std::string sResult;
+		std::vector<std::string> ExtraHeaders;
+		if (httpAuthInt == 1) {			// BASIC authentication
+			std::stringstream sstr;
+			sstr << httpAuthBasicLogin << ":" << httpAuthBasicPassword;
+			std::string m_AccessToken = base64_encode(sstr.str());
+			ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+		}
+		sendValue = CURLEncode::URLEncode(sendValue);
+
+		// data
+		if (httpDebugActive) {
+			_log.Log(LOG_NORM, "HttpLink: sending global variable %s with value: %s", targetVariable.c_str(), sendValue.c_str());
+		}
+
+		if (httpMethodInt == 0) {			// GET
+			if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, true))
 			{
-				sendValue = ProcessSendValue(sendValue, delpos, nValue, false, dType, dSubType, metertype);
+				_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
 			}
-			ltargetDeviceId += "_";
-			ltargetDeviceId += ldelpos;
-
-			replaceAll(httpUrl, "%v", sendValue);
-			replaceAll(httpUrl, "%u", includeUnit ? lunit : "");
-			replaceAll(httpUrl, "%D", ltargetDeviceId);
-			replaceAll(httpUrl, "%V", ltargetVariable);
-			replaceAll(httpUrl, "%t0", std::string(szLocalTime));
-			replaceAll(httpUrl, "%t1", std::string(szLocalTimeMs));
-			replaceAll(httpUrl, "%t2", std::string(szLocalTimeUtc));
-			replaceAll(httpUrl, "%t3", std::string(szLocalTimeUtcMs));
-			replaceAll(httpUrl, "%t4", llastUpdate);
-			replaceAll(httpUrl, "%n", lname);
-			replaceAll(httpUrl, "%T0", lType);
-			replaceAll(httpUrl, "%T1", lSubType);
-			replaceAll(httpUrl, "%h", std::string(hostname));
-			replaceAll(httpUrl, "%idx", sdeviceId);
-
-			replaceAll(httpData, "%v", sendValue);
-			replaceAll(httpData, "%u", includeUnit ? lunit : "");
-			replaceAll(httpData, "%D", ltargetDeviceId);
-			replaceAll(httpData, "%V", ltargetVariable);
-			replaceAll(httpData, "%t0", std::string(szLocalTime));
-			replaceAll(httpData, "%t1", std::string(szLocalTimeMs));
-			replaceAll(httpData, "%t2", std::string(szLocalTimeUtc));
-			replaceAll(httpData, "%t3", std::string(szLocalTimeUtcMs));
-			replaceAll(httpData, "%t4", llastUpdate);
-			replaceAll(httpData, "%n", lname);
-			replaceAll(httpData, "%T0", lType);
-			replaceAll(httpData, "%T1", lSubType);
-			replaceAll(httpData, "%h", std::string(hostname));
-			replaceAll(httpData, "%idx", sdeviceId);
-
-			if (sendValue != "") {
-				std::string sResult;
-				std::vector<std::string> ExtraHeaders;
-				if (httpAuthInt == 1) {			// BASIC authentication
-					std::stringstream sstr;
-					sstr << httpAuthBasicLogin << ":" << httpAuthBasicPassword;
-					std::string m_AccessToken = base64_encode(sstr.str());
-					ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
-				}
-				sendValue = CURLEncode::URLEncode(sendValue);
-
-				// data
-				if (httpDebugActive) {
-					_log.Log(LOG_NORM, "HttpLink: sending global variable %s with value: %s", targetVariable.c_str(), sendValue.c_str());
-				}
-
-				if (httpMethodInt == 0) {			// GET
-					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, true))
-					{
-						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
-					}
-				}
-				else if (httpMethodInt == 1) {		// POST
-					if (httpHeaders.size() > 0)
-					{
-						// Add additional headers
-						std::vector<std::string> ExtraHeaders2;
-						StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
-						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-						{
-							ExtraHeaders.push_back(ExtraHeaders2[i]);
-						}
-					}
-					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
-					{
-						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
-					}
-				}
-				else if (httpMethodInt == 2) {		// PUT
-					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult, true))
-					{
-						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
-					}
-				}
-
-				// debug
-				if (httpDebugActive) {
-					_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
-				}
+		}
+		else if (httpMethodInt == 1) {		// POST
+			if (!httpHeaders.empty())
+			{
+				// Add additional headers
+				std::vector<std::string> ExtraHeaders2;
+				StringSplit(httpHeaders, "\r\n", ExtraHeaders2);
+				std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 			}
+			if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
+			{
+				_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
+			}
+		}
+		else if (httpMethodInt == 2) {		// PUT
+			if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult, true))
+			{
+				_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
+			}
+		}
+
+		// debug
+		if (httpDebugActive) {
+			_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
 		}
 	}
 }
@@ -278,26 +274,21 @@ namespace http {
 			std::string auth = request::findValue(&req, "auth");
 			std::string authbasiclogin = request::findValue(&req, "authbasiclogin");
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
-			if (
-				(url == "") ||
-				(method == "") ||
-				(linkactive == "") ||
-				(debugenabled == "")
-				)
+			if ((url.empty()) || (method.empty()) || (linkactive.empty()) || (debugenabled.empty()))
 				return;
 			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("HttpUrl", url.c_str());
+			m_sql.UpdatePreferencesVar("HttpUrl", url);
 			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
-			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
-			m_sql.UpdatePreferencesVar("HttpHeaders", headers.c_str());
+			m_sql.UpdatePreferencesVar("HttpData", data);
+			m_sql.UpdatePreferencesVar("HttpHeaders", headers);
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
 			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
-			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
-			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
+			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin);
+			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword);
 
 			m_httppush.UpdateActive();
 			root["status"] = "OK";
@@ -374,11 +365,9 @@ namespace http {
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_HTTP);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["DeviceID"] = sd[1];
 					root["result"][ii]["Delimitedvalue"] = sd[2];
@@ -414,11 +403,11 @@ namespace http {
 			std::string targetproperty = request::findValue(&req, "targetproperty");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string includeunit = request::findValue(&req, "includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
+			if ((targettypei == 0) && (targetvariable.empty()))
 				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
+			if ((targettypei == 1) && ((targetdeviceid.empty()) || (targetproperty.empty())))
 				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
+			if ((targettypei == 2) && (targetdeviceid.empty()))
 				return;
 			if (idx == "0") {
 				m_sql.safe_query(
@@ -448,6 +437,7 @@ namespace http {
 					idx.c_str()
 				);
 			}
+			m_httppush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_HTTP);
 			root["status"] = "OK";
 			root["title"] = "SaveHttpLink";
 		}
@@ -461,11 +451,12 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			m_sql.safe_query("DELETE FROM PushLink WHERE (ID=='%q')", idx.c_str());
+			m_httppush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_HTTP);
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

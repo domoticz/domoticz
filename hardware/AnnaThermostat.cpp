@@ -79,11 +79,7 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string& IPAddress, con
 	Init();
 }
 
-CAnnaThermostat::~CAnnaThermostat(void)
-{
-}
-
-void CAnnaThermostat::OnError(const std::exception e)
+void CAnnaThermostat::OnError(const std::exception &e)
 {
 	_log.Log(LOG_ERROR, "AnnaTherm: Error: %s", e.what());
 }
@@ -102,7 +98,7 @@ bool CAnnaThermostat::StartHardware()
 	RequestStart();
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CAnnaThermostat::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -133,7 +129,7 @@ void CAnnaThermostat::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if ((sec_counter % ANNA_POLL_INTERVAL == 0) || (bFirstTime))
@@ -162,7 +158,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id4 = Idx;
 	thermos.dunit = 1;
 	thermos.temp = Temp;
-	sDecodeRXMessage(this, (const unsigned char*)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*length*/)
@@ -177,7 +173,7 @@ bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*l
 		{
 			return false; // just return Error as these are not supposed to be switches
 		}
-		else if (node_id == sAnnaProximity)
+		if (node_id == sAnnaProximity)
 		{
 			return AnnaToggleProximity(bIsOn);
 		}
@@ -236,7 +232,7 @@ bool CAnnaThermostat::AnnaSetPreset(uint8_t level)
 	if (!CheckLoginData())
 		return false;
 
-	if (m_AnnaLocation.m_ALocationID.size() == 0)
+	if (m_AnnaLocation.m_ALocationID.empty())
 		AnnaGetLocation();
 
 	if (m_Password.empty())
@@ -318,7 +314,7 @@ bool CAnnaThermostat::AnnaToggleProximity(bool bToggle)
 	if (!CheckLoginData())
 		return false;
 
-	if (m_ProximityID.size() == 0)
+	if (m_ProximityID.empty())
 		GetMeterDetails();
 
 	if (m_Password.empty())
@@ -443,7 +439,7 @@ void CAnnaThermostat::GetMeterDetails()
 		return;
 	}
 	TiXmlDocument doc;
-	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
+	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error())
 	{
 		Log(LOG_ERROR, "AnnaTherm: Cannot parse XML");
 		return;
@@ -466,7 +462,7 @@ void CAnnaThermostat::GetMeterDetails()
 		TiXmlHandle hAppliance = TiXmlHandle(pAppliance);
 
 		pElem = pAppliance->FirstChildElement("name");
-		if (pElem == NULL)
+		if (pElem == nullptr)
 		{
 			Log(LOG_ERROR, "AnnaTherm: Cannot find appliance attributes");
 			return;
@@ -476,7 +472,7 @@ void CAnnaThermostat::GetMeterDetails()
 		if ((m_ThermostatID.empty()) && ((ApplianceName == "Anna") || (ApplianceName == "Adam")))
 		{
 			pAttribute = pAppliance->FirstAttribute();
-			if (pAttribute != NULL)
+			if (pAttribute != nullptr)
 			{
 				std::string aName = pAttribute->Name();
 				if (aName == "id")
@@ -576,11 +572,11 @@ void CAnnaThermostat::GetMeterDetails()
 				{
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname);
+						SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname);
+						SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname, m_Name);
 					}
 				}
 			}
@@ -592,11 +588,11 @@ void CAnnaThermostat::GetMeterDetails()
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
 
-						SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname);
+						SendSwitch(sAnnaFlameState, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname);
+						SendSwitch(sAnnaFlameState, 1, 255, false, 0, sname, m_Name);
 					}
 				}
 			}
@@ -606,7 +602,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (m_ProximityID.empty())
 				{
 					pAttribute = pAppliance->FirstAttribute();
-					if (pAttribute != NULL)
+					if (pAttribute != nullptr)
 					{
 						std::string aName = pAttribute->Name();
 						if (aName == "id")
@@ -631,7 +627,7 @@ void CAnnaThermostat::GetMeterDetails()
 					{
 						bSwitch = false;
 					}
-					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname);
+					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname, m_Name);
 				}
 			}
 			else if (sname == "preset_state")
@@ -672,20 +668,19 @@ void CAnnaThermostat::GetMeterDetails()
 				else strncpy(sPreset, "50", sizeof(sPreset));
 
 				std::string PresetName = "Anna Preset";
-				SendSelectorSwitch(sAnnaPresets,  1, sPreset , PresetName.c_str(), 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true);
+				SendSelectorSwitch(sAnnaPresets, 1, sPreset, PresetName, 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true, m_Name);
 			}
 		}
 		pAppliance = pAppliance->NextSiblingElement("appliance");
 	}
-	return;
 }
 
 // Checks if the Username and password are filled in
 bool CAnnaThermostat::CheckLoginData()
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return false;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return false;
 	return true;
 }
@@ -725,7 +720,7 @@ bool CAnnaThermostat::AnnaGetLocation()
 		return false;
 	}
 	TiXmlDocument doc;
-	if (doc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8) && doc.Error())
+	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error())
 	{
 		Log(LOG_ERROR, "AnnaTherm: Cannot parse XML");
 		return false;
@@ -747,7 +742,7 @@ bool CAnnaThermostat::AnnaGetLocation()
 	if (m_AnnaLocation.m_ALocationID.empty())
 	{
 		pAttribute = pLocation->FirstAttribute();
-		if (pAttribute != NULL)
+		if (pAttribute != nullptr)
 		{
 			std::string aName = pAttribute->Name();
 			if (aName == "id")
@@ -762,18 +757,19 @@ bool CAnnaThermostat::AnnaGetLocation()
 		}
 	}
 	pElem = pLocation->FirstChildElement("name");
-	if (pElem == NULL)
+	if (pElem == nullptr)
 	{
 		Log(LOG_ERROR, "AnnaTherm: Cannot find Location name");
 		return false;
 	}
 	m_AnnaLocation.m_ALocationName = pElem->GetText();
 	pElem = pLocation->FirstChildElement("type");
-	if (pElem == NULL)
+	if (pElem == nullptr)
 	{
 		Log(LOG_ERROR, "AnnaTherm: Cannot find Location type");
 		return false;
-	}	m_AnnaLocation.m_ALocationType = pElem->GetText();
+	}
+	m_AnnaLocation.m_ALocationType = pElem->GetText();
 	return true;
 }
 

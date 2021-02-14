@@ -691,7 +691,7 @@ local testRGBW = function(name)
 		["timedOut"] = false;
 	})
 	dev.setRGB(15, 30, 60)
-	dev.dimTo(15)
+	dev.dimTo(15).afterSec(5)
 	tstMsg('Test RGBW device', res)
 	return res
 end
@@ -870,6 +870,19 @@ local testEmit = function()
 	dz.emitEvent('myEvents5',myEventTable).afterSec(6)
 
 	tstMsg('Test Emits', res)
+	return res
+end
+
+local testExecuteShellCommand = function()
+	local res = true
+
+	dz.executeShellCommand(
+	{
+		command = 'timeout 2 ping 8.8.8.8',
+		callback = 'test executeShellCommand'
+	}).afterSec(1)
+
+	tstMsg('Test executeShellCommand', res)
 	return res
 end
 
@@ -1531,6 +1544,7 @@ return {
 		res = res and testAmpere1('vdAmpere1')
 		res = res and testBackup()
 		res = res and testEmit()
+		res = res and testExecuteShellCommand()
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testBarometer('vdBarometer')
 		res = res and testCounter('vdCounter')

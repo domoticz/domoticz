@@ -23,82 +23,91 @@
           PDevice *self;
 
           self = (PDevice *)type->tp_alloc(type, 0);
-          if (self != NULL) {
-              self->name = PyUnicode_FromString("");
-              if (self->name == NULL) {
-                  Py_DECREF(self);
-                  return NULL;
-              }
+	  if (self != nullptr)
+	  {
+		  self->name = PyUnicode_FromString("");
+		  if (self->name == nullptr)
+		  {
+			  Py_DECREF(self);
+			  return nullptr;
+		  }
 
-              self->n_value_string = PyUnicode_FromString("");
-              if (self->n_value_string == NULL) {
-                  Py_DECREF(self);
-                  return NULL;
-              }
+		  self->n_value_string = PyUnicode_FromString("");
+		  if (self->n_value_string == nullptr)
+		  {
+			  Py_DECREF(self);
+			  return nullptr;
+		  }
 
-              self->s_value = PyUnicode_FromString("");
-              if (self->s_value == NULL) {
-                  Py_DECREF(self);
-                  return NULL;
-              }
+		  self->s_value = PyUnicode_FromString("");
+		  if (self->s_value == nullptr)
+		  {
+			  Py_DECREF(self);
+			  return nullptr;
+		  }
 
-              self->last_update_string = PyUnicode_FromString("");
-              if (self->last_update_string == NULL) {
-                  Py_DECREF(self);
-                  return NULL;
-              }
+		  self->last_update_string = PyUnicode_FromString("");
+		  if (self->last_update_string == nullptr)
+		  {
+			  Py_DECREF(self);
+			  return nullptr;
+		  }
 
-              self->id = 0;
-              self->n_value = 0;
-              self->type = 0;
-              self->sub_type = 0;
-              self->switch_type = 0;
-          }
+		  self->id = 0;
+		  self->n_value = 0;
+		  self->type = 0;
+		  self->sub_type = 0;
+		  self->switch_type = 0;
+	  }
 
-          return (PyObject *)self;
+	  return (PyObject *)self;
       }
 
       int
       PDevice_init(PDevice *self, PyObject *args, PyObject *kwds)
       {
-          PyObject *name=NULL, *s_value=NULL, *n_value_string=NULL, *last_update_string, *tmp;
+	      PyObject *name = nullptr, *s_value = nullptr, *n_value_string = nullptr, *last_update_string, *tmp;
 
-          static char *kwlist[] = {"id", "name", "type", "sub_type", "switch_type", "s_value", "n_value", "n_value_string", "last_update_string", NULL};
+	      static char *kwlist[] = { "id",	   "name",    "type",		"sub_type",	      "switch_type",
+					"s_value", "n_value", "n_value_string", "last_update_string", nullptr };
 
-          if (! PyArg_ParseTupleAndKeywords(args, kwds, "|iOiiiOiOO", kwlist,
-                                            &self->id, &name, &self->type, &self->sub_type, &self->switch_type,
-                                            &s_value, &self->n_value, &n_value_string, &last_update_string))
-              return -1;
+	      if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iOiiiOiOO", kwlist, &self->id, &name, &self->type, &self->sub_type,
+					       &self->switch_type, &s_value, &self->n_value, &n_value_string, &last_update_string))
+		      return -1;
 
-          if (name) {
-              tmp = self->name;
-              Py_INCREF(name);
-              self->name = name;
-              Py_XDECREF(tmp);
-          }
+	      if (name)
+	      {
+		      tmp = self->name;
+		      Py_INCREF(name);
+		      self->name = name;
+		      Py_XDECREF(tmp);
+	      }
 
-          if (s_value) {
-              tmp = self->s_value;
-              Py_INCREF(s_value);
-              self->s_value = s_value;
-              Py_XDECREF(tmp);
-          }
+	      if (s_value)
+	      {
+		      tmp = self->s_value;
+		      Py_INCREF(s_value);
+		      self->s_value = s_value;
+		      Py_XDECREF(tmp);
+	      }
 
-          if (n_value_string) {
-              tmp = self->n_value_string;
-              Py_INCREF(n_value_string);
-              self->n_value_string = n_value_string;
-              Py_XDECREF(tmp);
-          }
+	      if (n_value_string)
+	      {
+		      tmp = self->n_value_string;
+		      Py_INCREF(n_value_string);
+		      self->n_value_string = n_value_string;
+		      Py_XDECREF(tmp);
+	      }
 
-          if (last_update_string) {
-              tmp = self->last_update_string;
-              Py_INCREF(last_update_string);
-              self->last_update_string = last_update_string;
-              Py_XDECREF(tmp);
-          }
+	      if (last_update_string)
+	      {
+		      tmp = self->last_update_string;
+		      Py_INCREF(last_update_string);
+		      self->last_update_string = last_update_string;
+		      Py_XDECREF(tmp);
+	      }
 
-          return 0;
+	      return 0;
       }
 
       PyObject *
@@ -115,16 +124,16 @@
           PyObject* m;
 
           if (PyType_Ready(&PDeviceType) < 0)
-              return NULL;
+		  return nullptr;
 
-          m = PyModule_Create(&PDevicemodule);
-          if (m == NULL)
-              return NULL;
+	  m = PyModule_Create(&PDevicemodule);
+	  if (m == nullptr)
+		  return nullptr;
 
-          Py_INCREF(&PDeviceType);
-          PyModule_AddObject(m, "PDevice", (PyObject *)&PDeviceType);
-          return m;
+	  Py_INCREF(&PDeviceType);
+	  PyModule_AddObject(m, "PDevice", (PyObject *)&PDeviceType);
+	  return m;
       }
     #endif
-    }
+    } // namespace Plugins
 #endif

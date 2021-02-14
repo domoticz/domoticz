@@ -45,11 +45,9 @@ option(GIT_SUBMODULE "Check submodules during build" ON)
 ### COMPILER SETTINGS
 #
 #
-IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CXX_EXTENSIONS NO)
-ENDIF()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
@@ -62,7 +60,7 @@ IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 ENDIF()
 IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-psabi -rdynamic")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi -rdynamic")
   #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
@@ -221,6 +219,7 @@ hardware/EnphaseAPI.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/eVehicles/TeslaApi.cpp
 hardware/eVehicles/MercApi.cpp
+hardware/eVehicles/TestcarApi.cpp
 hardware/eVehicles/eVehicle.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeRadio.cpp
@@ -525,8 +524,10 @@ ENDIF(USE_BUILTIN_JSONCPP)
 IF(USE_BUILTIN_MQTT)
   MESSAGE(STATUS "Using builtin Mosquitto library")
   option(WITH_STATIC_LIBRARIES "Build static versions of the libmosquitto/pp libraries?" ON)
+  option(DOCUMENTATION "Build documentation?" OFF)
   add_subdirectory (extern/mosquitto EXCLUDE_FROM_ALL)
   target_link_libraries(domoticz libmosquitto_static)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mosquitto/include)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/mosquitto/lib)
 ELSE(USE_BUILTIN_MQTT)
   find_library(MQTT_LIBRARIES NAMES libmosquitto.so)

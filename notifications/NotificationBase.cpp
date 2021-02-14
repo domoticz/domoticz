@@ -11,14 +11,10 @@ typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
 using namespace http::server;
 
-CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
-_subsystemid(subsystemid),
-_options(options),
-m_IsEnabled(1)
-{
-}
-
-CNotificationBase::~CNotificationBase()
+CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options)
+	: m_IsEnabled(1)
+	, _subsystemid(subsystemid)
+	, _options(options)
 {
 }
 
@@ -39,28 +35,34 @@ void CNotificationBase::SetupConfig(const std::string &Key, int *Value)
 
 void CNotificationBase::LoadConfig()
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
+	for (auto &_configValue : _configValues)
+	{
 		std::string Value;
-		if (!m_sql.GetPreferencesVar(iter->first, Value)) {
+		if (!m_sql.GetPreferencesVar(_configValue.first, Value))
+		{
 			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
 		if (_options & OPTIONS_URL_PARAMS) {
 			Value = CURLEncode::URLEncode(Value);
 		}
-		*(iter->second) = Value;
+		*(_configValue.second) = Value;
 	}
-	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
+	for (auto &iter2 : _configValuesInt)
+	{
 		int Value;
-		if (!m_sql.GetPreferencesVar(iter2->first, Value)) {
+		if (!m_sql.GetPreferencesVar(iter2.first, Value))
+		{
 			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter2->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
-		*(iter2->second) = Value;
+		*(iter2.second) = Value;
 	}
-	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
+	for (auto &iter3 : _configValuesBase64)
+	{
 		std::string Value;
-		if (!m_sql.GetPreferencesVar(iter3->first, Value)) {
+		if (!m_sql.GetPreferencesVar(iter3.first, Value))
+		{
 			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter3->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
@@ -68,7 +70,7 @@ void CNotificationBase::LoadConfig()
 		if (_options & OPTIONS_URL_PARAMS) {
 			Value = CURLEncode::URLEncode(Value);
 		}
-		*(iter3->second) = Value;
+		*(iter3.second) = Value;
 	}
 }
 
@@ -132,27 +134,33 @@ bool CNotificationBase::SendMessageEx(
 
 void CNotificationBase::SetConfigValue(const std::string &Key, const std::string &Value)
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
+	for (auto &_configValue : _configValues)
+	{
 		std::string fValue = Value;
 		if (_options & OPTIONS_URL_PARAMS) {
 			fValue = CURLEncode::URLEncode(Value);
 		}
-		if (Key == iter->first) {
-			*(iter->second) = fValue;
+		if (Key == _configValue.first)
+		{
+			*(_configValue.second) = fValue;
 		}
 	}
-	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
-		if (Key == iter2->first) {
-			*(iter2->second) = atoi(Value.c_str());
+	for (auto &iter2 : _configValuesInt)
+	{
+		if (Key == iter2.first)
+		{
+			*(iter2.second) = atoi(Value.c_str());
 		}
 	}
-	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
+	for (auto &iter3 : _configValuesBase64)
+	{
 		std::string fValue = Value;
 		if (_options & OPTIONS_URL_PARAMS) {
 			fValue = CURLEncode::URLEncode(Value);
 		}
-		if (Key == iter3->first) {
-			*(iter3->second) = fValue;
+		if (Key == iter3.first)
+		{
+			*(iter3.second) = fValue;
 		}
 	}
 }
@@ -164,19 +172,23 @@ std::string CNotificationBase::GetSubsystemId()
 
 void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
-		if (request::hasValue(&req, iter->first.c_str())) {
-			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter->first.c_str())));
-			*(iter->second) = Value;
+	for (auto &_configValue : _configValues)
+	{
+		if (request::hasValue(&req, _configValue.first.c_str()))
+		{
+			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, _configValue.first.c_str())));
+			*(_configValue.second) = Value;
 			if (save) {
-				m_sql.UpdatePreferencesVar(iter->first, Value);
+				m_sql.UpdatePreferencesVar(_configValue.first, Value);
 			}
 		}
 	}
-	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
+	for (auto &iter2 : _configValuesInt)
+	{
 		int Value = 0;
-		if (request::hasValue(&req, iter2->first.c_str())) {
-			std::string sValue = request::findValue(&req, iter2->first.c_str());
+		if (request::hasValue(&req, iter2.first.c_str()))
+		{
+			std::string sValue = request::findValue(&req, iter2.first.c_str());
 			if (sValue == "on")
 				Value = 1;
 			else if (sValue == "off")
@@ -184,18 +196,20 @@ void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 			else
 				Value=atoi(sValue.c_str());
 		}
-		*(iter2->second) = Value;
+		*(iter2.second) = Value;
 		if (save) {
-			m_sql.UpdatePreferencesVar(iter2->first, Value);
+			m_sql.UpdatePreferencesVar(iter2.first, Value);
 		}
 	}
-	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
-		if (request::hasValue(&req, iter3->first.c_str())) {
-			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter3->first.c_str())));
-			*(iter3->second) = Value;
+	for (auto &iter3 : _configValuesBase64)
+	{
+		if (request::hasValue(&req, iter3.first.c_str()))
+		{
+			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter3.first.c_str())));
+			*(iter3.second) = Value;
 			if (save) {
 				std::string ValueBase64 = base64_encode(Value);
-				m_sql.UpdatePreferencesVar(iter3->first, ValueBase64);
+				m_sql.UpdatePreferencesVar(iter3.first, ValueBase64);
 			}
 		}
 	}
@@ -214,31 +228,16 @@ bool CNotificationBase::IsInConfig(const std::string &Key)
 
 bool CNotificationBase::IsInConfigString(const std::string &Key)
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
-		if (Key == iter->first) {
-			return true;
-		}
-	}
-	return false;
+	return std::any_of(_configValues.begin(), _configValues.end(), [&](const std::pair<std::string, std::string *> &val) { return Key == val.first; });
 }
 
 bool CNotificationBase::IsInConfigInt(const std::string &Key)
 {
-	for (it_conf_type_int iter = _configValuesInt.begin(); iter != _configValuesInt.end(); ++iter) {
-		if (Key == iter->first) {
-			return true;
-		}
-	}
-	return false;
+	return std::any_of(_configValuesInt.begin(), _configValuesInt.end(), [&](const std::pair<std::string, int *> &val) { return Key == val.first; });
 }
 
 bool CNotificationBase::IsInConfigBase64(const std::string &Key)
 {
-	for (it_conf_type iter = _configValuesBase64.begin(); iter != _configValuesBase64.end(); ++iter) {
-		if (Key == iter->first) {
-			return true;
-		}
-	}
-	return false;
+	return std::any_of(_configValuesBase64.begin(), _configValuesBase64.end(), [&](const std::pair<std::string, std::string *> &val) { return Key == val.first; });
 }
 

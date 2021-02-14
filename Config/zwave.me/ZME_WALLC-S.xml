@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="3">
 
 <!-- Z-Wave.Me: ZME_WALLC-S Secure Wall Controller -->
+<MetaData>
+	<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0115:0101:0100</MetaDataItem>
+	<MetaDataItem name="ProductPic">images/zwave.me/zme_wallc_s.png</MetaDataItem>
+	<MetaDataItem id="0101" name="ZWProductPage" type="0100">https://products.z-wavealliance.org/products/1086/</MetaDataItem>
+	<MetaDataItem id="0101" name="FrequencyName" type="0100">CEPT (Europe)</MetaDataItem>
+	<MetaDataItem name="ResetDescription">Use this procedure only if the primary controller is missing or otherwise inoperable.
+(1) Turn the device into Management Mode by keeping all four buttons pushed for 5 seconds, (2) click on Button 3, (3) keep button 4 pushed for 4 seconds.</MetaDataItem>
+	<MetaDataItem name="ExclusionDescription">Re-Inclusion and Exclusion are performed by pushing button 1 in management mode.  Pushing all four buttons for 5 sec. turns the device into management mode (indicated by blinking green LED).</MetaDataItem>
+	<MetaDataItem id="0101" name="Identifier" type="0100">ZME_WALLC-S</MetaDataItem>
+	<MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/1086/ZME_WALLC-S-Manual.pdf</MetaDataItem>
+	<MetaDataItem name="WakeupDescription"> (1) Turn the device into Management Mode by keeping all four buttons pushed for 5 seconds, (2) click on Button 2. </MetaDataItem>
+	<MetaDataItem name="InclusionDescription">Place your primary controller in inclusion mode by following the manufacturer's instructions, then activate inclusion on the wall controller by pressing any one of the four buttons for one second.  Inclusion mode is indicated by the red/green blinking of the LEDs until the timeout occurs after 10 seconds.</MetaDataItem>
+	<MetaDataItem name="Description">The Z-Wave.Me Wall Controller is a Z-Wave device that can both control other Z-Wave devices and activate scenes. Although it is controlling other devices, the Wall Controller cannot act as Z-Wave network controller (primary or secondary) and will always need a Z-Wave network controller to be included into a Z-Wave network. The device can be used in different modes that are selected by configuration parameters:
 
+Control of groups of other Z-Wave devices using 'ON', 'OFF' and Dim commands.
+Activation of predefined scenes in Gateways or other Z-Wave devices.
+This device support secure communication when included by a controller that also supports secure communication. </MetaDataItem>
+	<MetaDataItem name="Name">ZME_WALLC-S Secure Wall Controller</MetaDataItem>
+	<ChangeLog>
+		<Entry author="Nouknouk - nouknouk@gmail.com" date="08 Dec 2020" revision="3">Initial Metadata</Entry>
+	</ChangeLog>
+</MetaData>
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" index="1" genre="config" label="Button 1 and 3 pair mode" units="" min="0" max="2" size="1" value="1">
@@ -94,4 +115,3 @@
 	</CommandClass>
 
 </Product>
-		

@@ -24,24 +24,25 @@ History :
 
 #include "ASyncSerial.h"
 #include "TeleinfoBase.h"
-#define TELEINFO_PARITY            boost::asio::serial_port_base::parity::even
-#define TELEINFO_CARACTER_SIZE      7
-#define TELEINFO_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
-#define TELEINFO_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
+#define TELEINFO_PARITY boost::asio::serial_port_base::parity::even
+#define TELEINFO_CARACTER_SIZE 7
+#define TELEINFO_FLOW_CONTROL boost::asio::serial_port_base::flow_control::none
+#define TELEINFO_STOP_BITS boost::asio::serial_port_base::stop_bits::one
 
 class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
-public:
-	CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate,
-		const bool disable_crc, const int ratelimit);
-	~CTeleinfoSerial();
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+      public:
+	CTeleinfoSerial(int ID, const std::string &devname, int datatimeout, unsigned int baud_rate, bool disable_crc, int ratelimit);
+	~CTeleinfoSerial() override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Init();
 	void readCallback(const char *data, size_t len);
-private:
+
+      private:
 	std::string m_szSerialPort;
 	boost::asio::serial_port_base::parity m_iOptParity;
 	boost::asio::serial_port_base::character_size m_iOptCsize;

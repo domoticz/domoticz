@@ -126,10 +126,6 @@ m_Agreement(Agreement)
 	m_retry_counter = 0;
 }
 
-CToonThermostat::~CToonThermostat(void)
-{
-}
-
 void CToonThermostat::Init()
 {
 	m_ClientID = "";
@@ -176,7 +172,7 @@ bool CToonThermostat::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CToonThermostat::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -235,7 +231,7 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
@@ -280,7 +276,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 std::string CToonThermostat::GetRandom()
@@ -290,7 +286,7 @@ std::string CToonThermostat::GetRandom()
 
 bool CToonThermostat::Login()
 {
-	if (m_ClientID != "")
+	if (!m_ClientID.empty())
 	{
 		Logout();
 	}
@@ -343,7 +339,7 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-	if (root["agreements"].size() < (size_t)(m_Agreement+1))
+	if (root["agreements"].size() < size_t(m_Agreement) + 1)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Agreement not found, did you setup your toon correctly?");
 		return false;
@@ -531,9 +527,9 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 
 bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return false;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return false;
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -572,9 +568,9 @@ double CToonThermostat::GetElectricOffset(const int idx, const double currentKwh
 
 void CToonThermostat::GetMeterDetails()
 {
-	if (m_UserName.size()==0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size()==0)
+	if (m_Password.empty())
 		return;
 	std::string sResult;
 	if (m_bDoLogin)
@@ -661,7 +657,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 	if (root["powerUsage"].empty())
 		return false;
 
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	unsigned long powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
 	unsigned long powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
@@ -734,7 +730,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
 			m_lastelectradeliv = m_p1power.delivcurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, nullptr, 255, nullptr);
 		}
 	}
 	return true;
@@ -744,7 +740,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 {
 	if (root["gasUsage"].empty())
 		return false;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
 
@@ -758,7 +754,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 		{
 			m_lastSharedSendGas = atime;
 			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, nullptr, 255, nullptr);
 		}
 	}
 	return true;
@@ -816,8 +812,8 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 	if (root["thermostatInfo"].empty())
 		return false;
 
-	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0f;
-	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0f;
+	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0F;
+	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0F;
 	SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
 	SendTempSensor(1, 255, currentTemp, "Room Temperature");
 
@@ -871,9 +867,9 @@ bool CToonThermostat::ParseThermostatData(const Json::Value &root)
 
 void CToonThermostat::SetSetpoint(const int idx, const float temp)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return;
 
 	if (m_bDoLogin == true)
@@ -890,7 +886,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 		//Room Set Point
 
 		char szTemp[20];
-		sprintf(szTemp,"%d",int(temp*100.0f));
+		sprintf(szTemp, "%d", int(temp * 100.0F));
 		std::string sTemp = szTemp;
 
 		std::stringstream sstr2;
@@ -936,9 +932,9 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 
 void CToonThermostat::SetProgramState(const int newState)
 {
-	if (m_UserName.size() == 0)
+	if (m_UserName.empty())
 		return;
-	if (m_Password.size() == 0)
+	if (m_Password.empty())
 		return;
 
 	std::string sResult;

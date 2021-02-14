@@ -30,26 +30,25 @@
 
 extern std::string szUserDataFolder;
 
-std::ofstream *CEvohomeBase::m_pEvoLog=NULL;
+std::ofstream *CEvohomeBase::m_pEvoLog = nullptr;
 #ifdef _DEBUG
 bool CEvohomeBase::m_bDebug=true;
 #else
 bool CEvohomeBase::m_bDebug=false;
 #endif
 
-const char CEvohomeBase::m_szControllerMode[7][20]={"Normal","Economy","Away","Day Off","Custom","Heating Off","Unknown"};
-const char CEvohomeBase::m_szWebAPIMode[7][20]={"Auto","AutoWithEco","Away","DayOff","Custom","HeatingOff","Unknown"};
-const char CEvohomeBase::m_szZoneMode[7][20]={"Auto","PermanentOverride","TemporaryOverride","OpenWindow","LocalOverride","RemoteOverride","Unknown"};
-
+constexpr std::array<const char *, 8> CEvohomeBase::m_szControllerMode{ "Normal", "Economy", "Away", "Day Off", "Day Off With Eco", "Custom", "Heating Off", "Unknown" };
+constexpr std::array<const char *, 8> CEvohomeBase::m_szWebAPIMode{ "Auto", "AutoWithEco", "Away", "DayOff", "DayOffWithEco", "Custom", "HeatingOff", "Unknown" };
+constexpr std::array<const char *, 7> CEvohomeBase::m_szZoneMode{ "Auto", "PermanentOverride", "TemporaryOverride", "OpenWindow", "LocalOverride", "RemoteOverride", "Unknown" };
 
 const char* CEvohomeBase::GetControllerModeName(uint8_t nControllerMode)
 {
-	return m_szControllerMode[std::min(nControllerMode,(uint8_t)6)];
+	return m_szControllerMode[std::min(nControllerMode,(uint8_t)7)];
 }
 
 const char* CEvohomeBase::GetWebAPIModeName(uint8_t nControllerMode)
 {
-	return m_szWebAPIMode[std::min(nControllerMode,(uint8_t)6)];
+	return m_szWebAPIMode[std::min(nControllerMode,(uint8_t)7)];
 }
 
 const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
@@ -57,10 +56,9 @@ const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[std::min(nZoneMode, (uint8_t)6)];
 }
 
-
-CEvohomeBase::CEvohomeBase(void) :
-	m_ZoneNames(m_nMaxZones),
-	m_ZoneOverrideLocal(m_nMaxZones)
+CEvohomeBase::CEvohomeBase()
+	: m_ZoneOverrideLocal(m_nMaxZones)
+	, m_ZoneNames(m_nMaxZones)
 {
 	m_HwdID=0;
 	m_nDevID=0;
@@ -69,12 +67,10 @@ CEvohomeBase::CEvohomeBase(void) :
 	m_nControllerMode=0;
 }
 
-
-CEvohomeBase::~CEvohomeBase(void)
+CEvohomeBase::~CEvohomeBase()
 {
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 }
-
 
 bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 {
@@ -204,12 +200,12 @@ void CEvohomeBase::SetGatewayID(unsigned int nID)
 void CEvohomeBase::LogDate()
 {
         char szTmp[256];
-	time_t atime = mytime(NULL);
-        struct tm ltime;
-        localtime_r(&atime, &ltime);
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
 
-        strftime (szTmp,256,"%Y-%m-%d %H:%M:%S ",&ltime);
-        *m_pEvoLog << szTmp;
+	strftime(szTmp, 256, "%Y-%m-%d %H:%M:%S ", &ltime);
+	*m_pEvoLog << szTmp;
 }
 
 
@@ -264,7 +260,7 @@ namespace http {
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensortype = request::findValue(&req, "sensortype");
-			if ((idx == "") || (ssensortype == ""))
+			if ((idx.empty()) || (ssensortype.empty()))
 				return;
 
 			bool bCreated = false;
@@ -335,7 +331,5 @@ namespace http {
 				root["title"] = "CreateEvohomeSensor";
 			}
 		}
-	}
-}
-
-
+	} // namespace server
+} // namespace http

@@ -28,7 +28,7 @@ namespace Plugins {
 		void Do_Work();
 	public:
 		CPluginSystem();
-		~CPluginSystem(void);
+		~CPluginSystem() = default;
 
 		bool StartPluginSystem();
 		void BuildManifest();

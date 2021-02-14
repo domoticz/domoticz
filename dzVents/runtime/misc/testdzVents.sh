@@ -62,7 +62,6 @@ function showTime
 
 checkProces()
 {
-	echo $1
 	ps -ef | grep $1 | grep -v 'grep' 2>&1 >/dev/null
 	result=$?
 }
@@ -102,8 +101,15 @@ function cleanup
 		fi
 	}
 
+function killDomoticz
+	{
+		sleep 3
+		kill -9 $(cat domoticz.pid) 2>&1 >/dev/null
+	}
+
 function stopBackgroundProcesses
 	{
+		sleep 3
 		pkill node  2>&1 >/dev/null
 		pkill domoticz  2>&1 >/dev/null
 		if [[ $1 -eq 1 ]] ;then
@@ -134,15 +140,15 @@ function fillTimes
 
 function fillNumberOfTests
 	{
-		Device_ExpectedTests=116
-		Domoticz_ExpectedTests=80
-		EventHelpers_ExpectedTests=32
+		Device_ExpectedTests=119
+		Domoticz_ExpectedTests=85
+		EventHelpers_ExpectedTests=34
 		EventHelpersStorage_ExpectedTests=50
 		HTTPResponse_ExpectedTests=6
 		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=46
-		Time_ExpectedTests=365
+		Time_ExpectedTests=369
 		Utils_ExpectedTests=36
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
@@ -150,7 +156,7 @@ function fillNumberOfTests
 		EventState_ExpectedTests=2
 		Integration_ExpectedTests=222
 		SelectorSwitch_ExpectedTests=2
-		SystemAndCustomEvents_ExpectedTests=7
+		SystemAndCustomEvents_ExpectedTests=9
 	}
 
 function testDir
@@ -219,7 +225,7 @@ cd $basedir
 cp dzVents/runtime/integration-tests/scriptTestCustomAndSystemEventsScript.lua scripts/dzVents/scripts/scriptTestCustomAndSystemEventsScript.lua
 
 cd $basedir
-./domoticz  -www 8080 -sslwww 444 > domoticz.log$$ &
+./domoticz  -www 8080 -sslwww 444 -pidfile domoticz.pid --> domoticz.log$$ &
 checkStarted "domoticz" 20
 
 clear
@@ -245,12 +251,13 @@ if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | wc -l)
-		if [[ $errorCount -le $expectedErrorCount ]];then
+		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | wc -l)
+		errorLine=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | head -7 | tail -1 | grep -v Segmentation | wc -l)
+		if [ $errorCount -le $expectedErrorCount ] || [ $errorLine -eq 0 ] ;then
 			#echo Errors are to be expected
 			echo -n
 		else
-			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR
+			grep -i Error  domoticz.log$$ | grep -v CheckAuthToken | grep -v LOG_ERROR | grep -v errorText
 			stopBackgroundProcesses 1
 		fi
 	else

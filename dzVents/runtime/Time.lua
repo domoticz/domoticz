@@ -6,14 +6,8 @@ local isEmpty = function(v)
 end
 
 local function getTimezone()
-	local now = os.time()
-	local dnow = os.date('*t', now)
-	local diff = os.difftime(now, os.time(os.date("!*t", now)))
-	if (dnow.isdst) then
-		diff = diff + 3600
-	end
-
-	return diff
+	local diff = os.difftime(os.time(), os.time(os.date("!*t")))
+	return ( os.date('!*t').isdst and ( diff + 3600 ) ) or diff
 end
 
 local LOOKUPDAYABBROFWEEK = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
@@ -34,7 +28,7 @@ local function getSMs(s)
 end
 
 local function parseDate(sDate)
-	return string.match(sDate, "(%d+)%-(%d+)%-(%d+)% (%d+):(%d+):([0-9%.]+)")
+	return string.match(sDate, "(%d+)%-(%d+)%-(%d+)[%sT]+(%d+):(%d+):([0-9%.]+)")
 end
 
 local function _getMS()
@@ -169,7 +163,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	end
 
-	if (isUTC~=nil and isUTC==true) then
+	if isUTC and isUTC == true then
 		now = os.date('!*t')
 	else
 		now = os.date('*t')
@@ -253,10 +247,7 @@ local function Time(sDate, isUTC, _testMS)
 	self.week = getWeekNumberOfYear(dDate)
 
 	self['raw'] = sDate
-	self['isToday'] = (now.year == time.year and
-		now.month==time.month and
-		now.day==time.day)
-
+	self['isToday'] = (now.year == time.year and now.month==time.month and now.day==time.day)
 	self['msAgo'] = math.floor(msDiff)
 	self['millisecondsAgo'] = self.msAgo
 	self['minutesAgo'] = minDiff
@@ -272,6 +263,7 @@ local function Time(sDate, isUTC, _testMS)
 	self['utils'] = utils
 	self['isUTC'] = isUTC
 	self['dDate'] = dDate
+	self['isdst'] = time.isdst
 
 	if (_G.TESTMODE) then
 		function self._getUtilsInstance()
@@ -304,6 +296,94 @@ local function Time(sDate, isUTC, _testMS)
 		end
 	end
 
+	function self.localeMonths()
+		local months =
+		{
+			january = 1, february = 2, march = 3, april = 4, may = 5, june = 6, july = 7, august = 8,
+			september = 9, october = 10, november = 11, december = 12, jan = 1, feb = 2, mar = 3, apr = 4,
+			jun = 6, jul = 7, aug = 8, sep = 9, oct = 10, nov = 11, dec = 12
+		}
+
+		local monthSeconds = 2678400 -- accurate enough for this purpose
+		local startSeconds = 1577833200 -- 2020-1-1 00:00
+		for monthNumber = 1, 12 do
+			months[os.date('%B', startSeconds + ( monthNumber - 1 ) * monthSeconds ):sub(1,3):lower()] = monthNumber
+			months[os.date('%b', startSeconds + ( monthNumber - 1 ) * monthSeconds ):lower()] = monthNumber
+		end
+		return months
+	end
+
+	function self.dateToTimestamp(dateString, control)
+		local tm, dateTable, format = {}, {}, {}
+		local pattern
+		if control and control:find('%%') then
+			pattern = control
+		elseif control ~= nil then -- control = format
+			local index = 1
+			for word in control:gmatch("%w+") do table.insert(format, word) end
+			for value in dateString:gmatch("%w+") do
+				dateTable[format[index]] = value
+				index = index + 1
+			end
+			tm.year = dateTable.yyyy or ( dateTable.yy and ( dateTable.yy + 2000 )) or os.date('%Y')
+			tm.month = dateTable.mm or
+					( dateTable.mmm and self.localeMonths()[dateTable.mmm:lower()]) or
+					( dateTable.mmmm and self.localeMonths()[dateTable.mmmm:lower()]) or 1
+			tm.day = dateTable.dd or 1
+			tm.hour = dateTable.hh or 0
+			tm.min = dateTable.MM or 0
+			tm.sec = dateTable.ss or 0
+			return os.time(tm)
+		end
+
+		pattern = pattern or '(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' -- yyyy-mm--dd hh:mm
+		tm.year, tm.month, tm.day, tm.hour, tm.min, tm.sec = dateString:match(pattern)
+		return os.time(tm)
+	end
+
+	function self.timestampToDate(timestamp, humanizedPattern, offSet)
+
+		local function convertMnemomic2FmtCode(humanizedPattern)
+			local humanizedPattern = humanizedPattern or 'yyyy-mm-dd hh:MM:ss'
+			mnemomics =
+			{
+				{'dddd' , '%A'}, -- full weekdayname(e.g. Wednesday) language depends on locale
+				{'ddd'  , '%a'}, -- abbreviated weekdayname(e.g. Wed) language depends on locale
+				{'dd'   , '%d'}, -- day of the month(16){[01-31]
+				{'mmmm' , '%B'}, -- full monthname(e.g September) language depends on locale
+				{'mmm'  , '%b'}, -- abbreviated monthname(e.g. Sep) language depends on locale
+				{'mm'   , '%m'}, -- month[01-12]
+				{'yyyy' , '%Y'}, -- 4-digit year
+				{'yy'   , '%y'}, -- two-digityear(98){[00-99]
+				{'hh'   , '%H'}, -- hour 24-hour clock){[00-23]
+				{'ii'   , '%I'}, -- hour 12-hour clock[01-12]
+				{'MM'   , '%M'}, -- minute{[00-59]
+				{'ss'   , '%S'}, -- second [00-60]
+				{'W'	, '%W'}, -- weeknumber [01-53]
+				{'w'	, '%w'}, -- weekday{[0-6] Sunday-Saturday
+				{'datm' , '%c'}, -- date and time (e.g. 09/16/98 23:48:10) format depends on locale
+				{'mer'  , '%p'}, -- either "am" or "pm" locale
+				{'date' , '%x'}, -- date(e.g. 09/16/98) format depends on locale
+				{'time' , '%X'}, -- time(e.g. 23:48:10)
+			}
+			for _, conversion in ipairs(mnemomics) do
+				humanizedPattern = string.gsub(humanizedPattern, conversion[1], '%' .. conversion[2])
+			end
+			return humanizedPattern
+		end
+
+		local timestamp = ( timestamp or os.time() ) + ( offSet or 0 )
+		local dateTimeString = os.date( convertMnemomic2FmtCode(humanizedPattern)  , timestamp )
+		if dateTimeString:find('nZero') then  -- remove leading zero's
+			return dateTimeString:gsub('nZero',''):gsub(' 0',' '):gsub('^0',''):gsub('%s*$','')
+		end
+		return dateTimeString:gsub('%s*$','')
+	end
+
+	function self.dateToDate(date, sourceFormat, targetFormat, offSet )
+		return self.timestampToDate(self.dateToTimestamp(date,sourceFormat), targetFormat, offSet)
+	end
+
 	function self.addSeconds(seconds, factor)
 		if type(seconds) ~= 'number' then
 			self.utils.log(tostring(seconds) .. ' is not a valid parameter to this function. Please change to use a number value!', utils.LOG_ERROR)
@@ -327,7 +407,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	function self.makeTime(oDate, isUTC)
 		local sDate = ( type(oDate) == 'table' and os.date("%Y-%m-%d %H:%M:%S", os.time(oDate)) ) or
-						( tonumber(oDate) and timeStamp2string(oDate) ) or oDate
+						( tonumber(oDate) and self.timestampToDate(oDate) ) or oDate
 		return Time(sDate, isUTC)
 	end
 

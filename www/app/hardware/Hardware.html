@@ -472,6 +472,14 @@
 			<td align="right" style="width:110px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
 			<td><select id="combotype" style="width:410px" class="combobox ui-corner-all"></select></td>
 		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="combotype"><span data-i18n="Log Level"></span>:</label></td>
+			<td>
+				<input type="checkbox" id="loglevelInfo" checked="checked" name="loglevelInfo"><label for="loglevelInfo"><span data-i18n="Info">Info</span></label>&nbsp;&nbsp;
+				<input type="checkbox" id="loglevelStatus" checked="checked" name="loglevelStatus"><label for="loglevelStatus"><span data-i18n="Status">Status</span></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="checkbox" id="loglevelError" checked="checked" name="loglevelError"><label for="loglevelError"><span data-i18n="Error">Error</span></label>
+			</td>
+		</tr>
 		<tr valign="top">
 			<td align="right" style="width:110px"><label for="combodatatimeout"><span data-i18n="Data Timeout">Data Timeout</span>:</label></td>
 			<td>
@@ -1128,6 +1136,18 @@
 					</ul>
 				</td>
 			</tr>
+			<tr>
+				<td align="right" style="width:110px"><label for="apikey"><span data-i18n="Manual API key"></span>:</label></td>
+				<td><input type="text" id="apikey" style="width: 500px; padding: .2em;" class="text ui-widget-content ui-corner-all"</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					When user name and password do not work (e.g. Tesla changed the login API) you can provide a manual API key here<br>
+					until it is fixed. There are various tools online available that can generate an API key.<br>
+					Note that an API key has limited validity (usually one month).
+				</td>
+			</tr>
 		</table>
 	</div>
 	<div id="divmercedes">
@@ -1586,6 +1606,7 @@
 						<option value="0xF31E" data-i18n="Waterflow">Waterflow</option>
 						<option value="0x5601" data-i18n="Wind">Wind</option>
 						<option value="0x5604" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
+						<option value="0xF108" data-i18n="WW Switch">WW Switch</option>
 					</select>
 				</td>
 			</tr>

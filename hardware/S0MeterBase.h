@@ -4,7 +4,8 @@
 
 class S0MeterBase : public CDomoticzHardwareBase
 {
-	struct _tS0Meter{
+	struct _tS0Meter
+	{
 		int m_type;
 		double m_counter_start;
 		double m_current_counter;
@@ -18,12 +19,14 @@ class S0MeterBase : public CDomoticzHardwareBase
 		int m_PacketsSinceLastPulseChange;
 		bool m_firstTime;
 	};
-public:
-	S0MeterBase(void);
-	~S0MeterBase(void);
+
+      public:
+	S0MeterBase();
+	~S0MeterBase() override = default;
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-protected:
+
+      protected:
 	void InitBase();
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
@@ -31,9 +34,8 @@ protected:
 	void ReloadLastTotals();
 	unsigned char m_buffer[1028];
 
-	static const int max_s0_meters=5;
+	static const int max_s0_meters = 5;
 	_tS0Meter m_meters[max_s0_meters];
 
 	int m_bufferpos;
 };
-

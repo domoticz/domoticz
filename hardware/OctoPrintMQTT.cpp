@@ -69,7 +69,7 @@ COctoPrintMQTT::COctoPrintMQTT(const int ID, const std::string &IPAddress, const
 	mosqdz::lib_init();
 }
 
-COctoPrintMQTT::~COctoPrintMQTT(void)
+COctoPrintMQTT::~COctoPrintMQTT()
 {
 	mosqdz::lib_cleanup();
 }
@@ -86,7 +86,7 @@ bool COctoPrintMQTT::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&COctoPrintMQTT::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -134,7 +134,7 @@ void COctoPrintMQTT::on_connect(int rc)
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
-		subscribe(NULL, m_TopicIn.c_str());
+		subscribe(nullptr, m_TopicIn.c_str());
 	}
 	else {
 		_log.Log(LOG_ERROR, "OCTO_MQTT: Connection failed!, restarting (rc=%d)", rc);
@@ -178,17 +178,16 @@ bool COctoPrintMQTT::ConnectIntEx()
 
 	if (!m_CAFilename.empty()) {
 		rc = tls_set(m_CAFilename.c_str());
+		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{
 			_log.Log(LOG_ERROR, "OCTO_MQTT: Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		else {
-			_log.Log(LOG_STATUS, "OCTO_MQTT: enabled TLS mode");
-		}
+		_log.Log(LOG_STATUS, "OCTO_MQTT: enabled TLS mode");
 	}
-	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
@@ -233,7 +232,7 @@ void COctoPrintMQTT::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (bFirstTime)
@@ -277,7 +276,7 @@ void COctoPrintMQTT::SendMessage(const std::string &Topic, const std::string &Me
 			_log.Log(LOG_STATUS, "OCTO_MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
@@ -296,7 +295,7 @@ void COctoPrintMQTT::WriteInt(const std::string &sendStr)
 
 void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	int ID;
 
@@ -381,7 +380,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 					return;
 				}
 				std::string szSensorName = strarray[2];
-				time_t atime = mytime(NULL);
+				time_t atime = mytime(nullptr);
 				if (m_LastSendTemp.find(szSensorName) != m_LastSendTemp.end())
 				{
 					time_t lastsend = m_LastSendTemp[szSensorName];
@@ -502,7 +501,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 					}
 					if (bIsPrintStatus)
 					{
-						SendSwitch(1, 1, 255, bIsPrinting, 0, "Printing");
+						SendSwitch(1, 1, 255, bIsPrinting, 0, "Printing", m_Name);
 						SendTextSensor(TID_PRINTING, 1, 255, szEventName, "Print Status");
 					}
 				}

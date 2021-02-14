@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.0.16',
+	DZVERSION = '3.1.5',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -30,8 +30,7 @@ self.toStr = function (value)
 		return '"'..v..'"'
 	end
 
-	local str = '';
-	-- local v;
+	local str = ''
 	if _.isString(value) then
 		str = value
 	elseif _.isBoolean(value) then
@@ -45,14 +44,14 @@ self.toStr = function (value)
 	elseif _.isTable(value) then
 		str = '{'
 		for k, v in pairs(value) do
-			v = _.isString(v) and dblQuote(v) or self.toStr(v)
+			v = ( _.isString(v) and dblQuote(v) ) or self.toStr(v)
 			if _.isNumber(k) then
 				str = str .. v .. ', '
 			else
 				str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
 			end
 		end
-		str = str:sub(0, #str - 2) .. '}'
+		str = str:sub(0, ( #str - 2 ) ) .. '}'
 	end
 	return str
 end
@@ -119,12 +118,15 @@ function self.fileExists(name)
 	return code ~= 2
 end
 
-function self.stringSplit(text, sep, convert)
+function self.stringSplit(text, sep, convertNumber, convertNil)
 	if not(text) then return {} end
 	local sep = sep or '%s'
+	local include = '+'
+	if convertNil then include = '*' end
 	local t = {}
-	for str in string.gmatch(text, "([^"..sep.."]+)") do
-		table.insert(t, ( convert and tonumber(str) ) or str)
+	for str in string.gmatch(text, "([^" ..sep.. "]" .. include .. ")" ) do
+		if convertNil and str == '' then str = convertNil end
+		table.insert(t, ( convertNumber and tonumber(str) ) or str)
 	end
 	return t
 end
@@ -344,6 +346,16 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 	return s:sub(1, #s-pad) .. rep('=', pad)
 end
 
+function self.hasLines(str, eol)
+	local eol = eol or '\n'
+	return str:find(eol)
+end
+
+function self.fromLines(str, eol)
+	local eol = eol or '\n'
+	return self.stringSplit(str, eol)
+end
+
 function self.isXML(str, content)
 
 	local str = str or ''
@@ -455,7 +467,11 @@ function self.log(msg, level)
 	end
 
 	if (level <= lLevel) then
-		self.print(tostring(marker) .. self.toStr(msg))
+		local maxLength = 6000 -- limit 3 * 2048 hardCoded in main/Logger.cpp
+		msg = self.toStr(msg)
+		for i = 1, #msg, maxLength do
+			self.print( marker .. msg:sub(i, i + maxLength - 1 ) )
+		end
 	end
 end
 
@@ -533,13 +549,15 @@ function self.cameraExists(parm)
 	return loopGlobal(parm, 'camera')
 end
 
-function self.dumpTable(t, level, filename)
+function self.dumpTable(t, level, filename, done)
 	local level = level or "> "
+	local done = done or {}
 	for attr, value in pairs(t or {}) do
-		if (type(value) ~= 'function') then
-			if (type(value) == 'table') then
+		if type(value) ~= 'function' then
+			if type(value) == 'table' and not(done[value]) then
+				done[value] = true
 				self.print(level .. attr .. ':', filename)
-				self.dumpTable(value, level .. '	', filename)
+				self.dumpTable(value, level .. '	', filename, done)
 			else
 				self.print(level .. attr .. ': ' .. tostring(value), filename)
 			end

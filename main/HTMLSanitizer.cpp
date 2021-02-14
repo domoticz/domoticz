@@ -2,39 +2,40 @@
 #include "HTMLSanitizer.h"
 #include "Helper.h"
 
-//https://html5sec.org/
-const char* szForbiddenContent[] = {
-	"script", //noscript/onbeforescriptexecute
-	"style",
-	"svg",
-	"audio",
-	"video",
-	"head",
-	"math",
-	"template",
-	"form", //formaction
-	"input", //oninput
-	"onerror",
-	"frame", //iframe/noframe/frameset
-	"img",
-	"marquee",
-	"applet",
-	"object",
-	"embed",
-	"math",
-	"href",
-	"onfocus",
-	"onresize",
-	"onactivate",
-	"onscroll",
-	"onwebkittransitionend",
-	"onanimationstart",
-	"ontoggle",
-	"details",
-	"table",
-
-	nullptr
-};
+namespace
+{
+	// https://html5sec.org/
+	const auto szForbiddenContent = std::array<std::string, 28>{
+		"script",		 // noscript/onbeforescriptexecute
+		"style",		 //
+		"svg",			 //
+		"audio",		 //
+		"video",		 //
+		"head",			 //
+		"math",			 //
+		"template",		 //
+		"form",			 // formaction
+		"input",		 // oninput
+		"onerror",		 //
+		"frame",		 // iframe/noframe/frameset
+		"img",			 //
+		"marquee",		 //
+		"applet",		 //
+		"object",		 //
+		"embed",		 //
+		"math",			 //
+		"href",			 //
+		"onfocus",		 //
+		"onresize",		 //
+		"onactivate",		 //
+		"onscroll",		 //
+		"onwebkittransitionend", //
+		"onanimationstart",	 //
+		"ontoggle",		 //
+		"details",		 //
+		"table",		 //
+	};
+} // namespace
 
 //Maybe the way we search for 'safe' words is to safe, but better safe then sorry
 std::string HTMLSanitizer::Sanitize(const std::string& szText)
@@ -68,20 +69,10 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 		//See if we have a forbidden tag, if yes remove it
 		stdlower(tag);
 
-		size_t ii = 0;
-		bool bHaveForbiddenTag = false;
-		while (szForbiddenContent[ii] != NULL)
-		{
-			if (tag.find(szForbiddenContent[ii]) != std::string::npos)
-			{
-				bHaveForbiddenTag = true;
-				break;
-			}
-			ii++;
-		}
+		bool bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](const std::string &content) { return tag.find(content) != std::string::npos; });
 		if (!bHaveForbiddenTag)
 			ret += org_tag;
-	} while (1);
+	} while (true);
 	//will never be reached
 	return ret;
 }
@@ -117,22 +108,14 @@ std::wstring HTMLSanitizer::Sanitize(const std::wstring& szText)
 		//See if we have a forbidden tag, if yes remove it
 		stdlower(tag);
 
-		size_t ii = 0;
-		bool bHaveForbiddenTag = false;
-		while (szForbiddenContent[ii] != NULL)
-		{
-			std::string s(szForbiddenContent[ii]);
-			std::wstring wsTmp(s.begin(), s.end());
-			if (tag.find(wsTmp) != std::wstring::npos)
-			{
-				bHaveForbiddenTag = true;
-				break;
-			}
-			ii++;
-		}
+		bool bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](const std::string &content) {
+			std::wstring wsTmp(content.begin(), content.end());
+			return tag.find(wsTmp) != std::wstring::npos;
+		});
+
 		if (!bHaveForbiddenTag)
 			ret += org_tag;
-	} while (1);
+	} while (true);
 	//will never be reached
 	return ret;
 }

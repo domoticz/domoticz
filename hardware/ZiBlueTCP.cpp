@@ -15,10 +15,6 @@ CZiBlueTCP::CZiBlueTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_retrycntr = ZiBlue_RETRY_DELAY;
 }
 
-CZiBlueTCP::~CZiBlueTCP(void)
-{
-}
-
 bool CZiBlueTCP::StartHardware()
 {
 	RequestStart();
@@ -28,7 +24,7 @@ bool CZiBlueTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CZiBlueTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -50,7 +46,7 @@ void CZiBlueTCP::OnConnect()
 	_log.Log(LOG_STATUS,"ZiBlue: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 	sOnConnected(this);
 	write("10;PING;\n");
 }
@@ -70,7 +66,7 @@ void CZiBlueTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();

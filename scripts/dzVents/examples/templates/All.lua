@@ -63,6 +63,11 @@ return {
 			'some callback string'
 		},
 
+		-- shellCommand responses
+		shellCommandResponses = {
+			'some callback string'
+		},
+
 		-- system events
 		system = {
 			'start',

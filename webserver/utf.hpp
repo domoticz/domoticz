@@ -35,9 +35,8 @@ public:
 	explicit cUTF( const wchar_t * ws ) {
 		std::string dest;
 		std::wstring src=ws;
-		for (size_t i = 0; i < src.size(); i++)
+		for (wchar_t w : src)
 		{
-			wchar_t w = src[i];
 			if (w <= 0x7f)
 				dest.push_back((char)w);
 			else if (w <= 0x7ff){
@@ -64,7 +63,7 @@ public:
 	explicit cUTF( const char * s );
 	// copy constructor
 	cUTF() {
-		myString8 = NULL;
+		myString8 = nullptr;
 	}
 	/// get UTF8 version
 	const char * get8() {

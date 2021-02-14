@@ -1,4 +1,4 @@
-<!-- Vision ZP3102 PIR Motion Sensor --><Product Revision="10" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Vision ZP3102 PIR Motion Sensor --><Product Revision="11" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0109:0201:2002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/vision/zp3102.png</MetaDataItem>
@@ -17,6 +17,7 @@
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/847/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="9">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1070/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="10">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1702/xml</Entry>
+      <Entry author="Tao Gong - gongtao0607@gmail.com" date="12 Nov 2020" revision="11">Add undocumented config 5 to set temperature report change</Entry>
     </ChangeLog>
     <MetaDataItem id="0201" name="Identifier" type="2002">ZP 3102</MetaDataItem>
     <MetaDataItem id="0202" name="ZWProductPage" type="2002">https://products.z-wavealliance.org/products/728/</MetaDataItem>
@@ -57,6 +58,11 @@
     </Value>
     <Value genre="config" index="4" label="Temperature adjustment" max="255" min="0" type="byte" units="Degrees Celsius" value="0">
       <Help>-10 to -1, 0 to 10 (Signed decimal: 246 to 255, 0 to 10)</Help>
+    </Value>
+    <Value genre="config" index="5" label="Temperature report +/- change" max="2" min="1" size="1" type="list" units="" value="2">
+      <Help>Report temperature update when the temperature changes: (default: +/- 2 Degree)</Help>
+      <Item label="+/- 1 Degree" value="1"/>
+      <Item label="+/- 2 Degree" value="2"/>
     </Value>
   </CommandClass>
   <!-- COMMAND_CLASS_BASIC -->

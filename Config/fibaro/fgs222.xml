@@ -1,4 +1,43 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010f:1002:0202</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/fibaro/fgs222.png</MetaDataItem>
+    <MetaDataItem id="1002" name="ZWProductPage" type="0202">https://products.z-wavealliance.org/products/2731/</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">To remove the device from the Z-Wave network:
+1. Place the device within the direct range of your Z-Wave controller
+2. Identify switch no. 1 (turns the light on) or the B-button (located on the device’s housing)
+3. Set the main controller in remove mode (see the controller's manual).
+4. Quickly, three times press switch no. 1 or the B-button
+5. Wait for the removing process to end
+6. Successful removing will be confirmed by the Z-Wave controller’s message
+</MetaDataItem>
+    <MetaDataItem name="Description">FIBARO Double Relay Switch is designed to be installed in standard wall switch boxes or anywhere else where it is necessary to control two independent devices drawing up to 1500W each.
+As with all other Actors, FIBARO Double Relay Switch allows to control connected devices either via the Z-Wave network or via a switch connected directly to it.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://manuals.fibaro.com/content/manuals/en/FGS-222/FGS-222-EN-A-v1.1.pdf</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">To add the device to the Z-Wave network:
+1. Place the device within the direct range of your Z-Wave controller
+2. Identify switch no. 1 (turns the light on) or the B-button (located on the device’s housing)
+3. Set the main controller into the adding mode (see the controller’s manual).
+4. Quickly, three times press switch no. 1 or the B-button
+5. Wait for the adding process to end
+6. Successful adding will be confirmed by the Z-Wave controller’s message
+</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Reset procedure erases memory of the device, including all information on the Z-Wave network and the main controller.
+1. Disconnect the power supply
+2. Remove the device from the wall switch box
+3. Connect the power supply
+4. Locate the B-button on the housing
+5. Press and hold the B-button for 3 seconds
+6. After few seconds the device will be reset
+</MetaDataItem>
+    <MetaDataItem id="1002" name="Identifier" type="0202">FGS-223</MetaDataItem>
+    <MetaDataItem name="Name">FIBARO Double Switch 2</MetaDataItem>
+    <MetaDataItem id="1002" name="FrequencyName" type="0202">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">The FIBARO Double Switch 2 is powered with the mains voltage so it is always awake.</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Nouknouk - nouknouk@gmail.com" date="08 Dec 2020" revision="6">Initial Metadata</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Enable/Disable ALL ON/OFF" size="1" type="list" value="255">
@@ -35,8 +74,8 @@
       <Item label="Map OFF status to all devices in group 1, Double click on key 1 will send ON to all devices in group 1, all dimmers set to 100%" value="2"/>
     </Value>
     <Value genre="config" index="7" instance="1" label="Control key #2 behaviour" size="1" type="list" value="1">
-      <Help>Key no.2 is not represented by any physical device except of devices on association list. 
-        This functionality prevents of lack of reaction on pressing key no.2 through polling devices 
+      <Help>Key no.2 is not represented by any physical device except of devices on association list.
+        This functionality prevents of lack of reaction on pressing key no.2 through polling devices
         from association list one by one and checking their actual statuses.
       </Help>
       <Item label="Device status is not checked" value="0"/>

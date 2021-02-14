@@ -39,15 +39,11 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	*/
 }
 
-CRtl433::~CRtl433()
-{
-}
-
 bool CRtl433::StartHardware()
 {
 	RequestStart();
 
-	m_thread = std::make_shared<std::thread>(&CRtl433::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -219,7 +215,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "pressure_kPa"))
 	{
-		pressure = 10.0f * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
+		pressure = 10.0F * (float)atof(data["pressure_kPa"].c_str()); // convert to hPA
 		havePressure = true;
 	}
 	if (FindField(data, "rain_mm"))
@@ -234,7 +230,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_avg_km_h")) // wind speed average (converting into m/s note that internal storage if 10.0f*m/s) 
 	{
-		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6f;
+		wind_speed = ((float)atof(data["wind_avg_km_h"].c_str())) / 3.6F;
 		haveWind_Speed = true;
 	}
 	if (FindField(data, "wind_avg_m_s")) // wind speed average
@@ -249,7 +245,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "wind_max_km_h")) // idem, converting to m/s
 	{
-		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6f;
+		wind_gust = ((float)atof(data["wind_max_km_h"].c_str())) / 3.6F;
 		haveWind_Gust = true;
 	}
 	if (FindField(data, "wind_max_m_s"))
@@ -296,7 +292,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (FindField(data, "code"))
 	{
-		code = strtoul(data["code"].c_str(), NULL, 16);
+		code = strtoul(data["code"].c_str(), nullptr, 16);
 	}
 
 	std::string model = data["model"]; // new model format normalized from the 201 different devices presently supported by rtl_433
@@ -315,8 +311,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			(const uint8_t)unit,
 			batterylevel,
 			bOn,
-			0,
-			model, snr);
+			0, model, m_Name, snr);
 		bDone = true;
 	}
 	if (FindField(data, "switch1") && FindField(data, "id"))
@@ -337,8 +332,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 					(const uint8_t)unit,
 					batterylevel,
 					bOn,
-					0,
-					model, snr);
+					0, model, m_Name, snr);
 			}
 			bDone = true;
 		}
@@ -400,7 +394,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveMoisture)
 	{
-		SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
+		//moisture is in percentage
+		SendCustomSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, static_cast<float>(moisture), model, "%", snr);
+		//SendMoistureSensor(sensoridx, batterylevel, moisture, model, snr);
 		bHandled = true;
 	}
 	if (havePower)
@@ -520,7 +516,8 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 			bHandled = false;
 			break;
 		}
-		if (bHandled) SendSecurity1Sensor(strtoul(data["id"].c_str(), NULL, 16), x10_device, batterylevel, x10_status, model, snr);
+		if (bHandled)
+			SendSecurity1Sensor(strtoul(data["id"].c_str(), nullptr, 16), x10_device, batterylevel, x10_status, model, m_Name, snr);
 	} // End of X10-Security section
 
 	return bHandled; //not handled (Yet!)

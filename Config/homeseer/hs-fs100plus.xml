@@ -1,5 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="Name">Flex Sensor</MetaDataItem>
+        <MetaDataItem name="Description">HS-FS100+ (“Flex Sensor”) is a multifunction module that includes a temperature sensor, controllable buzzer and a port to connect optional external light or water sensors. It is designed to work with a variety of Z-Wave certified home controllers to launch automation events or scenes.
+
+- Use to trigger events based on changes in temperature
+- Use the built-in buzzer as an audible notification that triggers when things happen in your home
+- Use with optional light sensor to trigger events when indicator lights on applications turn on or off
+- Use with optional water sensor to trigger events when water is detected
+</MetaDataItem>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/000C:0001:0202</MetaDataItem>
+        <MetaDataItem id="0001" name="ProductPage" type="0202">https://products.z-wavealliance.org/products/3050</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/homeseer/hs-fs100plus.png</MetaDataItem>
+        <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=Manuals/3050/HS-FS100-Manual 081418.pdf</MetaDataItem>
+        <MetaDataItem name="WakeupDescription">When on battery power, the unit will stay awake for 5 minutes when the button is pressed to complete inclusion process. Once included, the unit will wake up every 60 seconds and detect for  water or light depending on which cable is plugged into it.
+
+Also, the unit will wake up every hour to report temperature to the controller.
+</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">Inclusion: Add the device into your network by a Z-Wave certified controller. HS-FS100+ supports the latest S2 security offered by Z-Wave certified controllers. If your controller supports S2, please refer to the user guide of the controller for detailed instructions on adding devices to the network. The device can be added using the traditional method for Z-Wave as follows:
+1. Place your controller into Inclusion (Add) mode by following the controller manufacturer's instructions.
+2. When the controller is ready, single click the button of HS-FS100+. The controller should indicate that the new device was added successfully. If the controller shows it failed, repeat the procedure.
+</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">Exclusion:  Remove the device from your network by a Z-Wave certified controller. HS-FS100+ supports the latest S2 security offered by Z-Wave certified controllers. If your controller supports S2, please refer to the user guide of the controller for detailed instructions on removing devices from the network. The device can be removed using the traditional method for Z-Wave as follows:
+1. Place your controller into Exclusion mode by following the controller manufacturer's instructions.
+2. When the controller is ready, single click the button of HS-FS100+. The controller should indicate that the device was removed successfully. If the controller shows it failed, repeat the procedure.
+</MetaDataItem>
+        <MetaDataItem name="ResetDescription">Use this procedure to reset Flex Sensor to factory settings when the Z-Wave controller is missing or otherwise inoperable.
+
+Press and hold the Z-Wave button on the sensor body for 10 seconds. If successful, the LED will flash 5 times.
+</MetaDataItem>
+        <MetaDataItem id="0001" name="FrequencyName" type="0202">U.S. / Canada / Mexico</MetaDataItem>
+        <MetaDataItem id="0001" name="Identifier" type="0202">HS-FS100+</MetaDataItem>
+        <ChangeLog>
+            <Entry author="Christopher Viel" date="31 December 2020" revision="2">Metadata Import from Z-Wave Alliance Database</Entry>
+        </ChangeLog>
+    </MetaData>
+
     <!--
       HomeSeer HS-FS100+ Flex Sensor
       https://products.z-wavealliance.org/products/3050
@@ -37,8 +72,9 @@
 
     <!-- Association Groups -->
     <CommandClass id="133">
-        <Associations num_groups="1">
+        <Associations num_groups="2">
             <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic Set"/>
         </Associations>
     </CommandClass>
 </Product>

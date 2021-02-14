@@ -59,16 +59,12 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey) :
 	m_totalEnergy = 0;
 }
 
-SolarEdgeAPI::~SolarEdgeAPI(void)
-{
-}
-
 bool SolarEdgeAPI::StartHardware()
 {
 	RequestStart();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&SolarEdgeAPI::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -95,7 +91,7 @@ void SolarEdgeAPI::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -135,9 +131,7 @@ int SolarEdgeAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		if (bGetSunRise) {
 			return sunRiseInMinutes;
 		}
-		else {
-			return sunSetInMinutes;
-		}
+		return sunSetInMinutes;
 	}
 	return 0;
 }
@@ -271,7 +265,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 #ifdef DEBUG_SolarEdgeAPIR_DETAILS
 	sResult = ReadFile("E:\\SolarEdge.json");
 #else
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	//atime = (atime / 300) * 300;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);

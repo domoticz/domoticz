@@ -8,8 +8,6 @@
 #include "../tinyxpath/tinyxml.h"
 #include "hardwaretypes.h"
 
-using namespace boost::placeholders;
-
 //Rainforest RAVEn USB ZigBee Smart Meter Adapter
 //https://rainforestautomation.com/rfa-z106-raven/
 
@@ -17,10 +15,6 @@ RAVEn::RAVEn(const int ID, const std::string& devname)
 : device_(devname), m_wptr(m_buffer), m_currUsage(0), m_totalUsage(0)
 {
     m_HwdID = ID;
-}
-
-RAVEn::~RAVEn(void)
-{
 }
 
 bool RAVEn::StartHardware()
@@ -48,7 +42,7 @@ bool RAVEn::StartHardware()
         _log.Log(LOG_ERROR, "RAVEn: Error opening serial port!!!");
         return false;
     }
-    setReadCallback(boost::bind(&RAVEn::readCallback, this, _1, _2));
+    setReadCallback([this](auto d, auto l) { readCallback(d, l); });
     m_bIsStarted = true;
     sOnConnected(this);
 
@@ -104,14 +98,11 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
 #endif
         return;
     }
-    else
-    {
 #ifdef _DEBUG
-        _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
+    _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
 #endif
-        memmove(m_buffer, endPtr, m_wptr - endPtr);
-        m_wptr = m_buffer + (m_wptr - endPtr);
-    }
+    memmove(m_buffer, endPtr, m_wptr - endPtr);
+    m_wptr = m_buffer + (m_wptr - endPtr);
 
     TiXmlElement *pRoot;
 
@@ -119,14 +110,16 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     bool updated=false;
     if (pRoot)
     {
-        m_currUsage = 1000*double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
-        updated = true;
+	    m_currUsage = 1000 * double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), nullptr, 16))
+			  / strtoul(pRoot->FirstChildElement("Divisor")->GetText(), nullptr, 16);
+	    updated = true;
     }
     pRoot = doc.FirstChildElement("CurrentSummationDelivered");
     if(pRoot)
     {
-        m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
-        updated = true;
+	    m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), nullptr, 16))
+			   / strtoul(pRoot->FirstChildElement("Divisor")->GetText(), nullptr, 16);
+	    updated = true;
     }
 
     if(updated)

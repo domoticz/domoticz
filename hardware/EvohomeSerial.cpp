@@ -7,19 +7,17 @@
 #include "../main/localtime_r.h"
 #include <boost/exception/diagnostic_information.hpp>
 
-using namespace boost::placeholders;
-
 CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID) :
 CEvohomeRadio(ID, UserContID)
 {
-    if(baudrate!=0)
+	if (baudrate != 0)
 	{
-	  m_iBaudRate=baudrate;
+		m_iBaudRate = baudrate;
 	}
 	else
 	{
-	  // allow migration of hardware created before baud rate was configurable
-	  m_iBaudRate=115200;
+		// allow migration of hardware created before baud rate was configurable
+		m_iBaudRate = 115200;
 	}
 	m_szSerialPort=szSerialPort;
 }
@@ -36,7 +34,7 @@ bool CEvohomeSerial::StopHardware()
 	if(m_bDebug && m_pEvoLog)
 	{
 		delete m_pEvoLog;
-		m_pEvoLog=NULL;
+		m_pEvoLog = nullptr;
 	}
 	return true;
 }
@@ -66,7 +64,7 @@ bool CEvohomeSerial::OpenSerialDevice()
 	}
 	m_nBufPtr=0;
 	m_bIsStarted=true;
-	setReadCallback(boost::bind(&CEvohomeSerial::ReadCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { ReadCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }
@@ -101,7 +99,7 @@ void CEvohomeSerial::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())

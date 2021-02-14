@@ -152,12 +152,6 @@ RelayNet::RelayNet(const int ID, const std::string &IPAddress, const unsigned sh
 
 //===========================================================================
 
-RelayNet::~RelayNet(void)
-{
-}
-
-//===========================================================================
-
 bool RelayNet::StartHardware()
 {
 	RequestStart();
@@ -170,7 +164,7 @@ bool RelayNet::StartHardware()
 
 	if (m_input_count || m_relay_count)
 	{
-		m_thread = std::make_shared<std::thread>(&RelayNet::Do_Work, this);
+		m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 		SetThreadNameInt(m_thread->native_handle());
 	}
 
@@ -232,7 +226,7 @@ void RelayNet::Do_Work()
 		/*  Heartbeat maintenance  */
 		if (sec_counter  % 10 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		/*  Prevent disconnect request by Relay Module  */
@@ -445,7 +439,7 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, 100 + InputNumber);
 
-	if ((!result.empty()) && (result.size()>0))
+	if ((!result.empty()) && (!result.empty()))
 	{
 		std::vector<std::string> sd=result[0];
 		bool dbState = true;
@@ -477,7 +471,7 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 		m_Packet.LIGHTING2.seqnbr++;
 
 		/* send packet to Domoticz */
-		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255, m_Name.c_str());
 	}
 }
 
@@ -497,7 +491,7 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, RelayNumber);
 
-	if ((!result.empty()) && (result.size()>0))
+	if ((!result.empty()) && (!result.empty()))
 	{
 		std::vector<std::string> sd = result[0];
 		bool dbState = true;
@@ -529,7 +523,7 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 		m_Packet.LIGHTING2.seqnbr++;
 
 		/* send packet to Domoticz */
-		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Relay", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Relay", 255, m_Name.c_str());
 	}
 }
 
@@ -546,7 +540,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (!m_skip_relay_update && m_relay_count && (m_poll_relays || m_setup_devices))
 	{
-		for (uint16_t i=1; i <= m_relay_count ; i++)
+		for (int i = 1; i <= m_relay_count; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "RELAYON %d", i);
 			sChkstr = cTemp;
@@ -568,7 +562,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (m_input_count && (m_poll_inputs || m_setup_devices))
 	{
-		for (uint16_t i = 1; i <= m_input_count; i++)
+		for (int i = 1; i <= m_input_count; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "IH %d", i);
 			sChkstr = cTemp;

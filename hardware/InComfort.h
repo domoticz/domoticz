@@ -13,13 +13,14 @@
 
 class CInComfort : public CDomoticzHardwareBase
 {
-public:
-	CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
-	~CInComfort(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-	void SetProgramState(const int newState);
-private:
+      public:
+	CInComfort(int ID, const std::string &IPAddress, unsigned short usIPPort);
+	~CInComfort() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float temp);
+	void SetProgramState(int newState);
+
+      private:
 	bool Login();
 	void Logout();
 	void Init();
@@ -27,10 +28,11 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	void GetHeaterDetails();
-	std::string GetHTTPData(std::string sURL);
-	void ParseAndUpdateDevices(std::string jsonData);
+	std::string GetHTTPData(const std::string &sURL);
+	void ParseAndUpdateDevices(const std::string &jsonData);
 	std::string SetRoom1SetTemperature(float tempSetpoint);
-private:
+
+      private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::shared_ptr<std::thread> m_thread;
@@ -51,4 +53,3 @@ private:
 	std::string m_LastStatusText;
 	int m_LastIO;
 };
-

@@ -8,15 +8,12 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
 #include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
-
-using namespace boost::placeholders;
 
 #define ENOCEAN_RETRY_DELAY 30
 
@@ -64,8 +61,7 @@ const char* LookupTable3(const _tTableLookup3* pOrgTable, unsigned long ID1, uns
 
 const char* Get_EnoceanManufacturer(unsigned long ID)
 {
-	const _tTableLookup2 TTable[] =
-	{
+	const _tTableLookup2 TTable[] = {
 		{ 0x001, "Peha" },
 		{ 0x002, "Thermokon" },
 		{ 0x003, "Servodan" },
@@ -178,7 +174,7 @@ const char* Get_EnoceanManufacturer(unsigned long ID)
 		{ 0x075, "Inaba Denki Sangyo Co. Ltd." },
 		{ 0x076, "Hager Control SAS" },
 		{ 0x7FF, "Multi user Manufacturer ID" },
-		{ 0, NULL }
+		{ 0, nullptr },
 	};
 	return LookupTable2(TTable, ID);
 }
@@ -194,146 +190,152 @@ struct _t4BSLookup
 	const char* Label;
 };
 
-const _t4BSLookup T4BSTable[] =
-{
-	//A5-02: Temperature Sensors
-	{ 0xA5, 0x02, 0x01, "Temperature Sensor Range -40C to 0C",																	"Temperature.01" },
-	{ 0xA5, 0x02, 0x02, "Temperature Sensor Range -30C to +10C",																"Temperature.02" },
-	{ 0xA5, 0x02, 0x03, "Temperature Sensor Range -20C to +20C",																"Temperature.03" },
-	{ 0xA5, 0x02, 0x04, "Temperature Sensor Range -10C to +30C",																"Temperature.04" },
-	{ 0xA5, 0x02, 0x05, "Temperature Sensor Range 0C to +40C",																	"Temperature.05" },
-	{ 0xA5, 0x02, 0x06, "Temperature Sensor Range +10C to +50C",																"Temperature.06" },
-	{ 0xA5, 0x02, 0x07, "Temperature Sensor Range +20C to +60C",																"Temperature.07" },
-	{ 0xA5, 0x02, 0x08, "Temperature Sensor Range +30C to +70C",																"Temperature.08" },
-	{ 0xA5, 0x02, 0x09, "Temperature Sensor Range +40C to +80C",																"Temperature.09" },
-	{ 0xA5, 0x02, 0x0A, "Temperature Sensor Range +50C to +90C",																"Temperature.0A" },
-	{ 0xA5, 0x02, 0x0B, "Temperature Sensor Range +60C to +100C",																"Temperature.0B" },
-	{ 0xA5, 0x02, 0x10, "Temperature Sensor Range -60C to +20C",																"Temperature.10" },
-	{ 0xA5, 0x02, 0x11, "Temperature Sensor Range -50C to +30C",																"Temperature.11" },
-	{ 0xA5, 0x02, 0x12, "Temperature Sensor Range -40C to +40C",																"Temperature.12" },
-	{ 0xA5, 0x02, 0x13, "Temperature Sensor Range -30C to +50C",																"Temperature.13" },
-	{ 0xA5, 0x02, 0x14, "Temperature Sensor Range -20C to +60C",																"Temperature.14" },
-	{ 0xA5, 0x02, 0x15, "Temperature Sensor Range -10C to +70C",																"Temperature.15" },
-	{ 0xA5, 0x02, 0x16, "Temperature Sensor Range 0C to +80C",																	"Temperature.16" },
-	{ 0xA5, 0x02, 0x17, "Temperature Sensor Range +10C to +90C",																"Temperature.17" },
-	{ 0xA5, 0x02, 0x18, "Temperature Sensor Range +20C to +100C",																"Temperature.18" },
-	{ 0xA5, 0x02, 0x19, "Temperature Sensor Range +30C to +110C",																"Temperature.19" },
-	{ 0xA5, 0x02, 0x1A, "Temperature Sensor Range +40C to +120C",																"Temperature.1A" },
-	{ 0xA5, 0x02, 0x1B, "Temperature Sensor Range +50C to +130C",																"Temperature.1B" },
-	{ 0xA5, 0x02, 0x20, "10 Bit Temperature Sensor Range -10C to +41.2C",														"Temperature.20" },
-	{ 0xA5, 0x02, 0x30, "10 Bit Temperature Sensor Range -40C to +62.3C",														"Temperature.30" },
+const _t4BSLookup T4BSTable[] = {
+	// A5-02: Temperature Sensors
+	{ 0xA5, 0x02, 0x01, "Temperature Sensor Range -40C to 0C", "Temperature.01" },
+	{ 0xA5, 0x02, 0x02, "Temperature Sensor Range -30C to +10C", "Temperature.02" },
+	{ 0xA5, 0x02, 0x03, "Temperature Sensor Range -20C to +20C", "Temperature.03" },
+	{ 0xA5, 0x02, 0x04, "Temperature Sensor Range -10C to +30C", "Temperature.04" },
+	{ 0xA5, 0x02, 0x05, "Temperature Sensor Range 0C to +40C", "Temperature.05" },
+	{ 0xA5, 0x02, 0x06, "Temperature Sensor Range +10C to +50C", "Temperature.06" },
+	{ 0xA5, 0x02, 0x07, "Temperature Sensor Range +20C to +60C", "Temperature.07" },
+	{ 0xA5, 0x02, 0x08, "Temperature Sensor Range +30C to +70C", "Temperature.08" },
+	{ 0xA5, 0x02, 0x09, "Temperature Sensor Range +40C to +80C", "Temperature.09" },
+	{ 0xA5, 0x02, 0x0A, "Temperature Sensor Range +50C to +90C", "Temperature.0A" },
+	{ 0xA5, 0x02, 0x0B, "Temperature Sensor Range +60C to +100C", "Temperature.0B" },
+	{ 0xA5, 0x02, 0x10, "Temperature Sensor Range -60C to +20C", "Temperature.10" },
+	{ 0xA5, 0x02, 0x11, "Temperature Sensor Range -50C to +30C", "Temperature.11" },
+	{ 0xA5, 0x02, 0x12, "Temperature Sensor Range -40C to +40C", "Temperature.12" },
+	{ 0xA5, 0x02, 0x13, "Temperature Sensor Range -30C to +50C", "Temperature.13" },
+	{ 0xA5, 0x02, 0x14, "Temperature Sensor Range -20C to +60C", "Temperature.14" },
+	{ 0xA5, 0x02, 0x15, "Temperature Sensor Range -10C to +70C", "Temperature.15" },
+	{ 0xA5, 0x02, 0x16, "Temperature Sensor Range 0C to +80C", "Temperature.16" },
+	{ 0xA5, 0x02, 0x17, "Temperature Sensor Range +10C to +90C", "Temperature.17" },
+	{ 0xA5, 0x02, 0x18, "Temperature Sensor Range +20C to +100C", "Temperature.18" },
+	{ 0xA5, 0x02, 0x19, "Temperature Sensor Range +30C to +110C", "Temperature.19" },
+	{ 0xA5, 0x02, 0x1A, "Temperature Sensor Range +40C to +120C", "Temperature.1A" },
+	{ 0xA5, 0x02, 0x1B, "Temperature Sensor Range +50C to +130C", "Temperature.1B" },
+	{ 0xA5, 0x02, 0x20, "10 Bit Temperature Sensor Range -10C to +41.2C", "Temperature.20" },
+	{ 0xA5, 0x02, 0x30, "10 Bit Temperature Sensor Range -40C to +62.3C", "Temperature.30" },
 
-	//A5-04: Temperature and Humidity Sensor
-	{ 0xA5, 0x04, 0x01, "Range 0C to +40C and 0% to 100%",																		"TempHum.01" },
-	{ 0xA5, 0x04, 0x02, "Range -20C to +60C and 0% to 100%",																	"TempHum.02" },
+	// A5-04: Temperature and Humidity Sensor
+	{ 0xA5, 0x04, 0x01, "Range 0C to +40C and 0% to 100%", "TempHum.01" },
+	{ 0xA5, 0x04, 0x02, "Range -20C to +60C and 0% to 100%", "TempHum.02" },
 
-	//A5-06: Light Sensor
-	{ 0xA5, 0x06, 0x01, "Range 300lx to 60.000lx",																				"LightSensor.01" },
-	{ 0xA5, 0x06, 0x02, "Range 0lx to 1.020lx",																					"LightSensor.02" },
-	{ 0xA5, 0x06, 0x03, "10-bit measurement (1-Lux resolution) with range 0lx to 1000lx",										"LightSensor.03" },
+	// A5-06: Light Sensor
+	{ 0xA5, 0x06, 0x01, "Range 300lx to 60.000lx", "LightSensor.01" },
+	{ 0xA5, 0x06, 0x02, "Range 0lx to 1.020lx", "LightSensor.02" },
+	{ 0xA5, 0x06, 0x03, "10-bit measurement (1-Lux resolution) with range 0lx to 1000lx", "LightSensor.03" },
 
-	//A5-07: Occupancy Sensor
-	{ 0xA5, 0x07, 0x01, "Occupancy with Supply voltage monitor",																"OccupancySensor.01" },
-	{ 0xA5, 0x07, 0x02, "Occupancy with Supply voltage monitor",																"OccupancySensor.02" },
-	{ 0xA5, 0x07, 0x03, "Occupancy with Supply voltage monitor and 10-bit illumination measurement",							"OccupancySensor.03" },
+	// A5-07: Occupancy Sensor
+	{ 0xA5, 0x07, 0x01, "Occupancy with Supply voltage monitor", "OccupancySensor.01" },
+	{ 0xA5, 0x07, 0x02, "Occupancy with Supply voltage monitor", "OccupancySensor.02" },
+	{ 0xA5, 0x07, 0x03, "Occupancy with Supply voltage monitor and 10-bit illumination measurement", "OccupancySensor.03" },
 
-	//A5-08: Light, Temperature and Occupancy Sensor
-	{ 0xA5, 0x08, 0x01, "Range 0lx to 510lx, 0C to +51C and Occupancy Button",													"TempOccupancySensor.01" },
-	{ 0xA5, 0x08, 0x02, "Range 0lx to 1020lx, 0C to +51C and Occupancy Button",													"TempOccupancySensor.02" },
-	{ 0xA5, 0x08, 0x03, "Range 0lx to 1530lx, -30C to +50C and Occupancy Button",												"TempOccupancySensor.03" },
+	// A5-08: Light, Temperature and Occupancy Sensor
+	{ 0xA5, 0x08, 0x01, "Range 0lx to 510lx, 0C to +51C and Occupancy Button", "TempOccupancySensor.01" },
+	{ 0xA5, 0x08, 0x02, "Range 0lx to 1020lx, 0C to +51C and Occupancy Button", "TempOccupancySensor.02" },
+	{ 0xA5, 0x08, 0x03, "Range 0lx to 1530lx, -30C to +50C and Occupancy Button", "TempOccupancySensor.03" },
 
-	//A5-09: Gas Sensor
-	{ 0xA5, 0x09, 0x01, "CO Sensor (not in use)",																				"GasSensor.01" },
-	{ 0xA5, 0x09, 0x02, "CO-Sensor 0 ppm to 1020 ppm",																			"GasSensor.02" },
-	{ 0xA5, 0x09, 0x04, "CO2 Sensor",																							"GasSensor.04" },
-	{ 0xA5, 0x09, 0x05, "VOC Sensor",																							"GasSensor.05" },
-	{ 0xA5, 0x09, 0x06, "Radon",																								"GasSensor.06" },
-	{ 0xA5, 0x09, 0x07, "Particles",																							"GasSensor.07" },
+	// A5-09: Gas Sensor
+	{ 0xA5, 0x09, 0x01, "CO Sensor (not in use)", "GasSensor.01" },
+	{ 0xA5, 0x09, 0x02, "CO-Sensor 0 ppm to 1020 ppm", "GasSensor.02" },
+	{ 0xA5, 0x09, 0x04, "CO2 Sensor", "GasSensor.04" },
+	{ 0xA5, 0x09, 0x05, "VOC Sensor", "GasSensor.05" },
+	{ 0xA5, 0x09, 0x06, "Radon", "GasSensor.06" },
+	{ 0xA5, 0x09, 0x07, "Particles", "GasSensor.07" },
 
-	//7. A5-10: Room Operating Panel
-	{ 0xA5, 0x10, 0x01, "Temperature Sensor, Set Point, Fan Speed and Occupancy Control",										"RoomOperatingPanel.01" },
-	{ 0xA5, 0x10, 0x02, "Temperature Sensor, Set Point, Fan Speed and Day/Night Control",										"RoomOperatingPanel.02" },
-	{ 0xA5, 0x10, 0x03, "Temperature Sensor, Set Point Control",																"RoomOperatingPanel.03" },
-	{ 0xA5, 0x10, 0x04, "Temperature Sensor, Set Point and Fan Speed Control",													"RoomOperatingPanel.04" },
-	{ 0xA5, 0x10, 0x05, "Temperature Sensor, Set Point and Occupancy Control",													"RoomOperatingPanel.05" },
-	{ 0xA5, 0x10, 0x06, "Temperature Sensor, Set Point and Day/Night Control",													"RoomOperatingPanel.06" },
-	{ 0xA5, 0x10, 0x07, "Temperature Sensor, Fan Speed Control",																"RoomOperatingPanel.07" },
-	{ 0xA5, 0x10, 0x08, "Temperature Sensor, Fan Speed and Occupancy Control",													"RoomOperatingPanel.08" },
-	{ 0xA5, 0x10, 0x09, "Temperature Sensor, Fan Speed and Day/Night Control",													"RoomOperatingPanel.09" },
-	{ 0xA5, 0x10, 0x0A, "Temperature Sensor, Set Point Adjust and Single Input Contact",										"RoomOperatingPanel.0A" },
-	{ 0xA5, 0x10, 0x0B, "Temperature Sensor and Single Input Contact",															"RoomOperatingPanel.0B" },
-	{ 0xA5, 0x10, 0x0C, "Temperature Sensor and Occupancy Control",																"RoomOperatingPanel.0C" },
-	{ 0xA5, 0x10, 0x0D, "Temperature Sensor and Day/Night Control",																"RoomOperatingPanel.0D" },
-	{ 0xA5, 0x10, 0x10, "Temperature and Humidity Sensor, Set Point and Occupancy Control",										"RoomOperatingPanel.10" },
-	{ 0xA5, 0x10, 0x11, "Temperature and Humidity Sensor, Set Point and Day/Night Control",										"RoomOperatingPanel.11" },
-	{ 0xA5, 0x10, 0x12, "Temperature and Humidity Sensor and Set Point",														"RoomOperatingPanel.12" },
-	{ 0xA5, 0x10, 0x13, "Temperature and Humidity Sensor, Occupancy Control",													"RoomOperatingPanel.13" },
-	{ 0xA5, 0x10, 0x14, "Temperature and Humidity Sensor, Day/Night Control",													"RoomOperatingPanel.14" },
-	{ 0xA5, 0x10, 0x15, "10 Bit Temperature Sensor, 6 bit Set Point Control",													"RoomOperatingPanel.15" },
-	{ 0xA5, 0x10, 0x16, "10 Bit Temperature Sensor, 6 bit Set Point Control;Occupancy Control",									"RoomOperatingPanel.16" },
-	{ 0xA5, 0x10, 0x17, "10 Bit Temperature Sensor, Occupancy Control",															"RoomOperatingPanel.17" },
-	{ 0xA5, 0x10, 0x18, "Illumination, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",				"RoomOperatingPanel.18" },
-	{ 0xA5, 0x10, 0x19, "Humidity, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",					"RoomOperatingPanel.19" },
-	{ 0xA5, 0x10, 0x1A, "Supply voltage monitor, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",	"RoomOperatingPanel.1A" },
-	{ 0xA5, 0x10, 0x1B, "Supply Voltage Monitor, Illumination, Temperature Sensor, Fan Speed and Occupancy Control",			"RoomOperatingPanel.1B" },
-	{ 0xA5, 0x10, 0x1C, "Illumination, Illumination Set Point, Temperature Sensor, Fan Speed and Occupancy Control",			"RoomOperatingPanel.1C" },
-	{ 0xA5, 0x10, 0x1D, "Humidity, Humidity Set Point, Temperature Sensor, Fan Speed and Occupancy Control",					"RoomOperatingPanel.1D" },
-	{ 0xA5, 0x10, 0x1E, "Supply Voltage Monitor, Illumination, Temperature Sensor, Fan Speed and Occupancy Control",			"RoomOperatingPanel.1B" },//same as 1B
-	{ 0xA5, 0x10, 0x1F, "Temperature Sensor, Set Point, Fan Speed, Occupancy and Un-Occupancy Control",							"RoomOperatingPanel.1F" },
+	// 7. A5-10: Room Operating Panel
+	{ 0xA5, 0x10, 0x01, "Temperature Sensor, Set Point, Fan Speed and Occupancy Control", "RoomOperatingPanel.01" },
+	{ 0xA5, 0x10, 0x02, "Temperature Sensor, Set Point, Fan Speed and Day/Night Control", "RoomOperatingPanel.02" },
+	{ 0xA5, 0x10, 0x03, "Temperature Sensor, Set Point Control", "RoomOperatingPanel.03" },
+	{ 0xA5, 0x10, 0x04, "Temperature Sensor, Set Point and Fan Speed Control", "RoomOperatingPanel.04" },
+	{ 0xA5, 0x10, 0x05, "Temperature Sensor, Set Point and Occupancy Control", "RoomOperatingPanel.05" },
+	{ 0xA5, 0x10, 0x06, "Temperature Sensor, Set Point and Day/Night Control", "RoomOperatingPanel.06" },
+	{ 0xA5, 0x10, 0x07, "Temperature Sensor, Fan Speed Control", "RoomOperatingPanel.07" },
+	{ 0xA5, 0x10, 0x08, "Temperature Sensor, Fan Speed and Occupancy Control", "RoomOperatingPanel.08" },
+	{ 0xA5, 0x10, 0x09, "Temperature Sensor, Fan Speed and Day/Night Control", "RoomOperatingPanel.09" },
+	{ 0xA5, 0x10, 0x0A, "Temperature Sensor, Set Point Adjust and Single Input Contact", "RoomOperatingPanel.0A" },
+	{ 0xA5, 0x10, 0x0B, "Temperature Sensor and Single Input Contact", "RoomOperatingPanel.0B" },
+	{ 0xA5, 0x10, 0x0C, "Temperature Sensor and Occupancy Control", "RoomOperatingPanel.0C" },
+	{ 0xA5, 0x10, 0x0D, "Temperature Sensor and Day/Night Control", "RoomOperatingPanel.0D" },
+	{ 0xA5, 0x10, 0x10, "Temperature and Humidity Sensor, Set Point and Occupancy Control", "RoomOperatingPanel.10" },
+	{ 0xA5, 0x10, 0x11, "Temperature and Humidity Sensor, Set Point and Day/Night Control", "RoomOperatingPanel.11" },
+	{ 0xA5, 0x10, 0x12, "Temperature and Humidity Sensor and Set Point", "RoomOperatingPanel.12" },
+	{ 0xA5, 0x10, 0x13, "Temperature and Humidity Sensor, Occupancy Control", "RoomOperatingPanel.13" },
+	{ 0xA5, 0x10, 0x14, "Temperature and Humidity Sensor, Day/Night Control", "RoomOperatingPanel.14" },
+	{ 0xA5, 0x10, 0x15, "10 Bit Temperature Sensor, 6 bit Set Point Control", "RoomOperatingPanel.15" },
+	{ 0xA5, 0x10, 0x16, "10 Bit Temperature Sensor, 6 bit Set Point Control;Occupancy Control", "RoomOperatingPanel.16" },
+	{ 0xA5, 0x10, 0x17, "10 Bit Temperature Sensor, Occupancy Control", "RoomOperatingPanel.17" },
+	{ 0xA5, 0x10, 0x18, "Illumination, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
+	  "RoomOperatingPanel.18" },
+	{ 0xA5, 0x10, 0x19, "Humidity, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
+	  "RoomOperatingPanel.19" },
+	{ 0xA5, 0x10, 0x1A, "Supply voltage monitor, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
+	  "RoomOperatingPanel.1A" },
+	{ 0xA5, 0x10, 0x1B, "Supply Voltage Monitor, Illumination, Temperature Sensor, Fan Speed and Occupancy Control",
+	  "RoomOperatingPanel.1B" },
+	{ 0xA5, 0x10, 0x1C, "Illumination, Illumination Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
+	  "RoomOperatingPanel.1C" },
+	{ 0xA5, 0x10, 0x1D, "Humidity, Humidity Set Point, Temperature Sensor, Fan Speed and Occupancy Control", "RoomOperatingPanel.1D" },
+	{ 0xA5, 0x10, 0x1E, "Supply Voltage Monitor, Illumination, Temperature Sensor, Fan Speed and Occupancy Control",
+	  "RoomOperatingPanel.1B" }, // same as 1B
+	{ 0xA5, 0x10, 0x1F, "Temperature Sensor, Set Point, Fan Speed, Occupancy and Un-Occupancy Control", "RoomOperatingPanel.1F" },
 
-	//A5-11: Controller Status
-	{ 0xA5, 0x11, 0x01, "Lighting Controller",																					"ControllerStatus.01" },
-	{ 0xA5, 0x11, 0x02, "Temperature Controller Output",																		"ControllerStatus.02" },
-	{ 0xA5, 0x11, 0x03, "Blind Status",																							"ControllerStatus.03" },
-	{ 0xA5, 0x11, 0x04, "Extended Lighting Status",																				"ControllerStatus.04" },
+	// A5-11: Controller Status
+	{ 0xA5, 0x11, 0x01, "Lighting Controller", "ControllerStatus.01" },
+	{ 0xA5, 0x11, 0x02, "Temperature Controller Output", "ControllerStatus.02" },
+	{ 0xA5, 0x11, 0x03, "Blind Status", "ControllerStatus.03" },
+	{ 0xA5, 0x11, 0x04, "Extended Lighting Status", "ControllerStatus.04" },
 
-	//A5-12: Automated meter reading (AMR)
-	{ 0xA5, 0x12, 0x00, "Counter",																								"AMR.Counter" },
-	{ 0xA5, 0x12, 0x01, "Electricity",																							"AMR.Electricity" },
-	{ 0xA5, 0x12, 0x02, "Gas",																									"AMR.Gas" },
-	{ 0xA5, 0x12, 0x03, "Water",																								"AMR.Water" },
+	// A5-12: Automated meter reading (AMR)
+	{ 0xA5, 0x12, 0x00, "Counter", "AMR.Counter" },
+	{ 0xA5, 0x12, 0x01, "Electricity", "AMR.Electricity" },
+	{ 0xA5, 0x12, 0x02, "Gas", "AMR.Gas" },
+	{ 0xA5, 0x12, 0x03, "Water", "AMR.Water" },
 
-	//A5-13: Environmental Applications
-	{ 0xA5, 0x13, 0x01, "Weather Station",																						"EnvironmentalApplications.01" },
-	{ 0xA5, 0x13, 0x02, "Sun Intensity",																						"EnvironmentalApplications.02" },
-	{ 0xA5, 0x13, 0x03, "Date Exchange",																						"EnvironmentalApplications.03" },
-	{ 0xA5, 0x13, 0x04, "Time and Day Exchange",																				"EnvironmentalApplications.04" },
-	{ 0xA5, 0x13, 0x05, "Direction Exchange",																					"EnvironmentalApplications.05" },
-	{ 0xA5, 0x13, 0x06, "Geographic Position Exchange",																			"EnvironmentalApplications.06" },
-	{ 0xA5, 0x13, 0x10, "Sun position and radiation",																			"EnvironmentalApplications.10" },
+	// A5-13: Environmental Applications
+	{ 0xA5, 0x13, 0x01, "Weather Station", "EnvironmentalApplications.01" },
+	{ 0xA5, 0x13, 0x02, "Sun Intensity", "EnvironmentalApplications.02" },
+	{ 0xA5, 0x13, 0x03, "Date Exchange", "EnvironmentalApplications.03" },
+	{ 0xA5, 0x13, 0x04, "Time and Day Exchange", "EnvironmentalApplications.04" },
+	{ 0xA5, 0x13, 0x05, "Direction Exchange", "EnvironmentalApplications.05" },
+	{ 0xA5, 0x13, 0x06, "Geographic Position Exchange", "EnvironmentalApplications.06" },
+	{ 0xA5, 0x13, 0x10, "Sun position and radiation", "EnvironmentalApplications.10" },
 
-	//A5-14: Multi-Func Sensor
-	{ 0xA5, 0x14, 0x01, "Single Input Contact (Window/Door), Supply voltage monitor",											"MultiFuncSensor.01" },
-	{ 0xA5, 0x14, 0x02, "Single Input Contact (Window/Door), Supply voltage monitor and Illumination",							"MultiFuncSensor.02" },
-	{ 0xA5, 0x14, 0x03, "Single Input Contact (Window/Door), Supply voltage monitor and Vibration",								"MultiFuncSensor.03" },
-	{ 0xA5, 0x14, 0x04, "Single Input Contact (Window/Door), Supply voltage monitor, Vibration and Illumination",				"MultiFuncSensor.04" },
-	{ 0xA5, 0x14, 0x05, "Vibration/Tilt, Supply voltage monitor",																"MultiFuncSensor.05" },
-	{ 0xA5, 0x14, 0x06, "Vibration/Tilt, Illumination and Supply voltage monitor",												"MultiFuncSensor.06" },
+	// A5-14: Multi-Func Sensor
+	{ 0xA5, 0x14, 0x01, "Single Input Contact (Window/Door), Supply voltage monitor", "MultiFuncSensor.01" },
+	{ 0xA5, 0x14, 0x02, "Single Input Contact (Window/Door), Supply voltage monitor and Illumination", "MultiFuncSensor.02" },
+	{ 0xA5, 0x14, 0x03, "Single Input Contact (Window/Door), Supply voltage monitor and Vibration", "MultiFuncSensor.03" },
+	{ 0xA5, 0x14, 0x04, "Single Input Contact (Window/Door), Supply voltage monitor, Vibration and Illumination",
+	  "MultiFuncSensor.04" },
+	{ 0xA5, 0x14, 0x05, "Vibration/Tilt, Supply voltage monitor", "MultiFuncSensor.05" },
+	{ 0xA5, 0x14, 0x06, "Vibration/Tilt, Illumination and Supply voltage monitor", "MultiFuncSensor.06" },
 
-	//A5-20: HVAC Components
-	{ 0xA5, 0x20, 0x01, "Battery Powered Actuator (BI-DIR)",																	"HVAC.01" },
-	{ 0xA5, 0x20, 0x02, "Basic Actuator (BI-DIR)",																				"HVAC.02" },
-	{ 0xA5, 0x20, 0x03, "Line powered Actuator (BI-DIR)",																		"HVAC.03" },
-	{ 0xA5, 0x20, 0x10, "Generic HVAC Interface (BI-DIR)",																		"HVAC.10" },
-	{ 0xA5, 0x20, 0x11, "Generic HVAC Interface - Error Control (BI-DIR)",														"HVAC.11" },
-	{ 0xA5, 0x20, 0x12, "Temperature Controller Input",																			"HVAC.12" },
+	// A5-20: HVAC Components
+	{ 0xA5, 0x20, 0x01, "Battery Powered Actuator (BI-DIR)", "HVAC.01" },
+	{ 0xA5, 0x20, 0x02, "Basic Actuator (BI-DIR)", "HVAC.02" },
+	{ 0xA5, 0x20, 0x03, "Line powered Actuator (BI-DIR)", "HVAC.03" },
+	{ 0xA5, 0x20, 0x10, "Generic HVAC Interface (BI-DIR)", "HVAC.10" },
+	{ 0xA5, 0x20, 0x11, "Generic HVAC Interface - Error Control (BI-DIR)", "HVAC.11" },
+	{ 0xA5, 0x20, 0x12, "Temperature Controller Input", "HVAC.12" },
 
-	//A5-30: Digital Input
-	{ 0xA5, 0x30, 0x01, "Single Input Contact, Battery Monitor",																"DigitalInput.01" },
-	{ 0xA5, 0x30, 0x02, "Single Input Contact",																					"DigitalInput.02" },
+	// A5-30: Digital Input
+	{ 0xA5, 0x30, 0x01, "Single Input Contact, Battery Monitor", "DigitalInput.01" },
+	{ 0xA5, 0x30, 0x02, "Single Input Contact", "DigitalInput.02" },
 
-	//A5-37: Energy Management
-	{ 0xA5, 0x37, 0x01, "Demand Response",																						"EnergyManagement.01" },
+	// A5-37: Energy Management
+	{ 0xA5, 0x37, 0x01, "Demand Response", "EnergyManagement.01" },
 
-	//A5-38: Central Command
-	{ 0xA5, 0x38, 0x08, "Gateway",																								"CentralCommand.01" },
-	{ 0xA5, 0x38, 0x09, "Extended Lighting-Control",																			"CentralCommand.02" },
+	// A5-38: Central Command
+	{ 0xA5, 0x38, 0x08, "Gateway", "CentralCommand.01" },
+	{ 0xA5, 0x38, 0x09, "Extended Lighting-Control", "CentralCommand.02" },
 
-	//A5-3F: Universal
-	{ 0xA5, 0x3F, 0x00, "Radio Link Test (BI-DIR)",																				"Universal.01" },
+	// A5-3F: Universal
+	{ 0xA5, 0x3F, 0x00, "Radio Link Test (BI-DIR)", "Universal.01" },
 
-	//End of table
-	{ 0, 0, 0, 0, 0 }
+	// End of table
+	{ 0, 0, 0, nullptr, nullptr },
 };
 
 const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
@@ -687,11 +689,6 @@ CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int t
 	m_receivestate = ERS_SYNC1;
 }
 
-CEnOceanESP2::~CEnOceanESP2()
-{
-
-}
-
 bool CEnOceanESP2::StartHardware()
 {
 	RequestStart();
@@ -699,7 +696,7 @@ bool CEnOceanESP2::StartHardware()
 	m_retrycntr = ENOCEAN_RETRY_DELAY * 5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CEnOceanESP2::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -734,7 +731,7 @@ void CEnOceanESP2::Do_Work()
 			sec_counter++;
 			if (sec_counter % 12 == 0)
 			{
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 
@@ -752,7 +749,7 @@ void CEnOceanESP2::Do_Work()
 				OpenSerialDevice();
 			}
 		}
-		if (m_sendqueue.size() > 0)
+		if (!m_sendqueue.empty())
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
 
@@ -836,7 +833,7 @@ unsigned char enocean_calc_checksum(const enocean_data_structure* input_data) {
 char* enocean_gethex_internal(BYTE* in, const int framesize) {
 	char* hexstr = (char*)malloc((framesize * 2) + 1);  // because every hex-byte needs 2 characters
 	if (!hexstr)
-		return NULL;
+		return nullptr;
 	char* tempstr = hexstr;
 
 	int i;
@@ -857,7 +854,7 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 	const int stringsize = (framesize * 2) + 1 + sizeof(HR_TYPE) - 1 + sizeof(HR_RPS) - 1 + sizeof(HR_DATA) - 1 + sizeof(HR_SENDER) - 1 + sizeof(HR_STATUS) - 1;
 	char* humanString = (char*)malloc(stringsize);
 	if (!humanString)
-		return NULL;
+		return nullptr;
 	char* tempstring = humanString;
 	char* temphexstring;
 	sprintf(tempstring, HR_TYPE);
@@ -1037,7 +1034,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_receivestate = ERS_SYNC1;
-	setReadCallback(boost::bind(&CEnOceanESP2::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 
 	enocean_data_structure iframe;
@@ -1177,9 +1174,9 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 			iLevel = tsen->LIGHTING2.level;
 			if (iLevel > 15)
 				iLevel = 15;
-			float fLevel = (100.0f / 15.0f) * float(iLevel);
-			if (fLevel > 99.0f)
-				fLevel = 100.0f;
+			float fLevel = (100.0F / 15.0F) * float(iLevel);
+			if (fLevel > 99.0F)
+				fLevel = 100.0F;
 			iLevel = (uint8_t)(fLevel);
 		}
 		cmnd = light2_sSetLevel;
@@ -1277,10 +1274,10 @@ float CEnOceanESP2::GetValueRange(const float InValue, const float ScaleMax, con
 {
 	float vscale = ScaleMax - ScaleMin;
 	if (vscale == 0)
-		return 0.0f;
+		return 0.0F;
 	float vrange = RangeMax - RangeMin;
 	if (vrange == 0)
-		return 0.0f;
+		return 0.0F;
 	float multiplyer = vscale / vrange;
 	return multiplyer * (InValue - RangeMin) + ScaleMin;
 }
@@ -1404,7 +1401,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.unitcode = SecondRockerID + 10;
 					tsen.LIGHTING2.cmnd = (SecondUpDown == 1) ? light2_sOn : light2_sOff;
 				}
-				sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 			}
 		}
 		break;
@@ -1478,7 +1475,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXMETER, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 			}
 			else if (szST == "AMR.Electricity")
 			{
@@ -1491,7 +1488,7 @@ bool CEnOceanESP2::ParseData()
 				umeter.id4 = (BYTE)pFrame->ID_BYTE0;
 				umeter.dunit = 1;
 				umeter.fusage = (float)cvalue;
-				sDecodeRXMessage(this, (const unsigned char*)&umeter, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
 			}
 			else if (szST == "AMR.Gas")
 			{
@@ -1509,7 +1506,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXMETER, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 			}
 			else if (szST == "AMR.Water")
 			{
@@ -1527,7 +1524,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 				tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-				sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXMETER, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 			}
 			else if (szST.find("RoomOperatingPanel") == 0)
 			{
@@ -1581,11 +1578,11 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 
 					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = round(std::abs(temp * 10.0f));
+					int at10 = round(std::abs(temp * 10.0F));
 					tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE)(at10);
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP, NULL, -1);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 				}
 			}
 			else if (szST == "LightSensor.01")
@@ -1626,7 +1623,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 				}
 				_tLightMeter lmeter;
 				lmeter.id1 = (BYTE)pFrame->ID_BYTE3;
@@ -1635,7 +1632,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
 				lmeter.dunit = 1;
 				lmeter.fLux = lux;
-				sDecodeRXMessage(this, (const unsigned char*)&lmeter, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
 			}
 			else if (szST.find("Temperature") == 0)
 			{
@@ -1665,8 +1662,16 @@ bool CEnOceanESP2::ParseData()
 				else if (iType == 0x19) { ScaleMax = 30; ScaleMin = 110; }
 				else if (iType == 0x1A) { ScaleMax = 40; ScaleMin = 120; }
 				else if (iType == 0x1B) { ScaleMax = 50; ScaleMin = 130; }
-				else if (iType == 0x20) { ScaleMax = -10; ScaleMin = 41.2f; }
-				else if (iType == 0x30) { ScaleMax = -40; ScaleMin = 62.3f; }
+				else if (iType == 0x20)
+				{
+					ScaleMax = -10;
+					ScaleMin = 41.2F;
+				}
+				else if (iType == 0x30)
+				{
+					ScaleMax = -40;
+					ScaleMin = 62.3F;
+				}
 
 				float temp;
 				if (iType < 0x20)
@@ -1684,11 +1689,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp * 10.0f));
+				int at10 = round(std::abs(temp * 10.0F));
 				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 				at10 -= (tsen.TEMP.temperatureh * 256);
 				tsen.TEMP.temperaturel = (BYTE)(at10);
-				sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP, NULL, -1);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 			}
 			else if (szST == "TempHum")
 			{
@@ -1711,13 +1716,13 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
 				tsen.TEMP_HUM.battery_level = 9;
 				tsen.TEMP_HUM.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp * 10.0f));
+				int at10 = round(std::abs(temp * 10.0F));
 				tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
 				at10 -= (tsen.TEMP_HUM.temperatureh * 256);
 				tsen.TEMP_HUM.temperaturel = (BYTE)(at10);
 				tsen.TEMP_HUM.humidity = (BYTE)hum;
 				tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-				sDecodeRXMessage(this, (const unsigned char*)&tsen.TEMP_HUM, NULL, -1);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1, nullptr);
 			}
 			else if (szST == "OccupancySensor.01")
 			{
@@ -1729,7 +1734,7 @@ bool CEnOceanESP2::ParseData()
 					if (pFrame->DATA_BYTE0 & 1)
 					{
 						//Voltage supported
-						float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0f, 0, 250, 0);
+						float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0F, 0, 250, 0);
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1739,7 +1744,7 @@ bool CEnOceanESP2::ParseData()
 						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-						sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 					}
 
 					bool bPIROn = (pFrame->DATA_BYTE1 > 127);
@@ -1757,7 +1762,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 				}
 				else {
 					//Error code
@@ -1770,7 +1775,7 @@ bool CEnOceanESP2::ParseData()
 				{
 					RBUF tsen;
 
-					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0f, 0, 250, 0);
+					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0F, 0, 250, 0);
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1780,7 +1785,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 
 					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1797,7 +1802,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 				}
 				else {
 					//Error code
@@ -1810,7 +1815,7 @@ bool CEnOceanESP2::ParseData()
 				{
 					RBUF tsen;
 
-					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0f, 0, 250, 0);
+					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0F, 0, 250, 0);
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1820,7 +1825,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.RFXSENSOR, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 
 					int lux = (pFrame->DATA_BYTE2 << 2) | (pFrame->DATA_BYTE1 >> 6);
 					if (lux > 1000)
@@ -1832,7 +1837,7 @@ bool CEnOceanESP2::ParseData()
 					lmeter.id4 = (BYTE)pFrame->ID_BYTE0;
 					lmeter.dunit = 1;
 					lmeter.fLux = (float)lux;
-					sDecodeRXMessage(this, (const unsigned char*)&lmeter, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
 
 					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1849,7 +1854,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.rssi = 12;
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char*)&tsen.LIGHTING2, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 				}
 				else {
 					//Error code

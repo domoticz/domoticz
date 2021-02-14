@@ -10,7 +10,6 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "csocket.h"
-#include <boost/assign.hpp>
 
 #ifdef _DEBUG
 	#define DEBUG_MultiFun
@@ -21,97 +20,101 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-typedef struct sensorType {
-	std::string name;
-	float div;
-} Model;
-
 #define sensorsCount 16
 #define registersCount 34
 
-typedef std::map<int, std::string> dictionary;
+using dictionary = std::vector<std::pair<int, std::string>>;
 
-static dictionary alarmsType = boost::assign::map_list_of
-(0x0001, "BOILER STOP - FIRING FAILURE")
-(0x0004, "BOILER OVERHEATING")
-(0x0010, "EXTINUISHED BOILER")
-(0x0080, "DAMAGED SENSOR BOILER")
-(0x0100, "DAMAGED SENSOR FEEDER")
-(0x0200, "FLUE GAS SENSOR")
-(0x0400, "FAILURE - LOCK WORKS");
-
-static dictionary warningsType = boost::assign::map_list_of
-(0x0001, "No external sensor")
-(0x0002, "No room sensor 1")
-(0x0004, "Wrong version supply module program")
-(0x0008, "No return sensor")
-(0x0010, "No room sensor 2")
-(0x0020, "Open flap")
-(0x0040, "Thermal protection has tripped");
-
-static dictionary devicesType = boost::assign::map_list_of
-(0x0001, "C.H.1 PUMP")
-(0x0002, "C.H.2 PUMP")
-(0x0004, "RESERVE PUMP")
-(0x0008, "H.W.U.PUMP")
-(0x0010, "CIRCULATION PUMP")
-(0x0020, "PUFFER PUMP")
-(0x0040, "MIXER C.H.1 Close")
-(0x0080, "MIXER C.H.1 Open")
-(0x0100, "MIXER C.H.2 Close")
-(0x0200, "MIXER C.H.2 Open");
-
-static dictionary statesType = boost::assign::map_list_of
-(0x0001, "STOP")
-(0x0002, "Firing")
-(0x0004, "Heating")
-(0x0008, "Maintain")
-(0x0010, "Blanking");
-
-static sensorType sensors[sensorsCount] =
-{
-	{ "External", 10.0 },
-	{ "Room 1", 10.0 },
-	{ "Room 2", 10.0 },
-	{ "Return", 10.0 },
-	{ "C.H.1", 10.0 },
-	{ "C.H.2", 10.0 },
-	{ "H.W.U.", 10.0 },
-	{ "Heat", 1.0 },
-	{ "Flue gas", 10.0 },
-	{ "Module", 10.0 },
-	{ "Boiler", 10.0 },
-	{ "Feeder", 10.0 },
-	{ "Calculated Boiler", 10.0 },
-	{ "Calculated H.W.U.", 10.0 },
-	{ "Calculated C.H.1", 10.0 },
-	{ "Calculated C.H.2", 10.0 }
+const auto alarmsType = dictionary{
+	{ 0x0001, "BOILER STOP - FIRING FAILURE" }, //
+	{ 0x0004, "BOILER OVERHEATING" },	    //
+	{ 0x0010, "EXTINUISHED BOILER" },	    //
+	{ 0x0080, "DAMAGED SENSOR BOILER" },	    //
+	{ 0x0100, "DAMAGED SENSOR FEEDER" },	    //
+	{ 0x0200, "FLUE GAS SENSOR" },		    //
+	{ 0x0400, "FAILURE - LOCK WORKS" },	    //
 };
 
-static dictionary quickAccessType = boost::assign::map_list_of
-	(0x0001, "Shower")
-	(0x0002, "Party")
-	(0x0004, "Comfort")
-	(0x0008, "Airing")
-	(0x0010, "Frost protection");
+const auto warningsType = dictionary{
+	{ 0x0001, "No external sensor" },		   //
+	{ 0x0002, "No room sensor 1" },			   //
+	{ 0x0004, "Wrong version supply module program" }, //
+	{ 0x0008, "No return sensor" },			   //
+	{ 0x0010, "No room sensor 2" },			   //
+	{ 0x0020, "Open flap" },			   //
+	{ 0x0040, "Thermal protection has tripped" },	   //
+};
 
-static std::string errors[4] =
-{
+constexpr std::array<std::pair<int, const char *>, 10> devicesType{
+	{
+		{ 0x0001, "C.H.1 PUMP" },	 //
+		{ 0x0002, "C.H.2 PUMP" },	 //
+		{ 0x0004, "RESERVE PUMP" },	 //
+		{ 0x0008, "H.W.U.PUMP" },	 //
+		{ 0x0010, "CIRCULATION PUMP" },	 //
+		{ 0x0020, "PUFFER PUMP" },	 //
+		{ 0x0040, "MIXER C.H.1 Close" }, //
+		{ 0x0080, "MIXER C.H.1 Open" },	 //
+		{ 0x0100, "MIXER C.H.2 Close" }, //
+		{ 0x0200, "MIXER C.H.2 Open" },	 //
+	}					 //
+};
+
+const auto statesType = dictionary{
+	{ 0x0001, "STOP" },	//
+	{ 0x0002, "Firing" },	//
+	{ 0x0004, "Heating" },	//
+	{ 0x0008, "Maintain" }, //
+	{ 0x0010, "Blanking" }, //
+};
+
+constexpr std::array<std::pair<const char *, float>, 16> sensors{
+	{
+		{ "External", 10.0F },		//
+		{ "Room 1", 10.0F },		//
+		{ "Room 2", 10.0F },		//
+		{ "Return", 10.0F },		//
+		{ "C.H.1", 10.0F },		//
+		{ "C.H.2", 10.0F },		//
+		{ "H.W.U.", 10.0F },		//
+		{ "Heat", 1.0F },		//
+		{ "Flue gas", 10.0F },		//
+		{ "Module", 10.0F },		//
+		{ "Boiler", 10.0F },		//
+		{ "Feeder", 10.0F },		//
+		{ "Calculated Boiler", 10.0F }, //
+		{ "Calculated H.W.U.", 10.0F }, //
+		{ "Calculated C.H.1", 10.0F },	//
+		{ "Calculated C.H.2", 10.0F },	//
+	}					//
+};
+
+constexpr std::array<std::pair<int, const char *>, 5> quickAccessType{
+	{
+		{ 0x0001, "Shower" },		//
+		{ 0x0002, "Party" },		//
+		{ 0x0004, "Comfort" },		//
+		{ 0x0008, "Airing" },		//
+		{ 0x0010, "Frost protection" }, //
+	}					//
+};
+
+constexpr std::array<const char *, 4> errors{
 	"Incorrect function code",
 	"Incorrect register address",
 	"Incorrect number of registers",
-	"Server error"
+	"Server error",
 };
 
-MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
-	m_IPPort(IPPort),
-	m_IPAddress(IPAddress),
-	m_socket(NULL),
-	m_LastAlarms(0),
-	m_LastWarnings(0),
-	m_LastDevices(0),
-	m_LastState(0),
-	m_LastQuickAccess(0)
+MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort)
+	: m_IPPort(IPPort)
+	, m_IPAddress(IPAddress)
+	, m_socket(nullptr)
+	, m_LastAlarms(0)
+	, m_LastWarnings(0)
+	, m_LastDevices(0)
+	, m_LastState(0)
+	, m_LastQuickAccess(0)
 {
 	_log.Log(LOG_STATUS, "MultiFun: Create instance");
 	m_HwdID = ID;
@@ -135,7 +138,7 @@ bool MultiFun::StartHardware()
 	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif
 
-	m_thread = std::make_shared<std::thread>(&MultiFun::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -173,7 +176,7 @@ void MultiFun::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % MULTIFUN_POLL_INTERVAL == 0)
@@ -275,7 +278,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 bool MultiFun::ConnectToDevice()
 {
-	if (m_socket != NULL)
+	if (m_socket != nullptr)
 		return true;
 
 	m_socket = new csocket();
@@ -296,13 +299,13 @@ bool MultiFun::ConnectToDevice()
 
 void MultiFun::DestroySocket()
 {
-	if (m_socket != NULL)
+	if (m_socket != nullptr)
 	{
 #ifdef DEBUG_MultiFun
 		_log.Log(LOG_STATUS, "MultiFun: destroy socket");
 #endif
 		delete m_socket;
-		m_socket = NULL;
+		m_socket = nullptr;
 	}
 }
 
@@ -336,11 +339,11 @@ void MultiFun::GetTemperatures()
 			{
 				unsigned int val = (buffer[i * 2 + 1] & 127) * 256 + buffer[i * 2 + 2];
 				int signedVal = (((buffer[i * 2 + 1] & 128) >> 7) * -32768) + val;
-				float temp = signedVal / sensors[i].div;
+				float temp = signedVal / sensors[i].second;
 
 				if ((temp > -39) && (temp < 1000))
 				{
-					SendTempSensor(i, 255, temp, sensors[i].name);
+					SendTempSensor(i, 255, temp, sensors[i].first);
 				}
 				if ((i == 1) || (i == 2))
 				{
@@ -389,18 +392,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				{
 				case 0x00:
 				{
-					dictionary::iterator it = alarmsType.begin();
-					for (; it != alarmsType.end(); ++it)
+					for (const auto &alarm : alarmsType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastAlarms))
+						if ((alarm.first & value) && !(alarm.first & m_LastAlarms))
 						{
-							SendTextSensor(1, 0, 255, (*it).second, "Alarms");
+							SendTextSensor(1, 0, 255, alarm.second, "Alarms");
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastAlarms))
-							{
-								SendTextSensor(1, 0, 255, "End - " + (*it).second, "Alarms");
-							}
+						else if (!(alarm.first & value) && (alarm.first & m_LastAlarms))
+						{
+							SendTextSensor(1, 0, 255, "End - " + alarm.second, "Alarms");
+						}
 					}
 					if (((m_LastAlarms != 0) != (value != 0)) || firstTime)
 					{
@@ -411,18 +412,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				}
 				case 0x01:
 				{
-					dictionary::iterator it = warningsType.begin();
-					for (; it != warningsType.end(); ++it)
+					for (const auto &warning : warningsType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastWarnings))
+						if ((warning.first & value) && !(warning.first & m_LastWarnings))
 						{
-							SendTextSensor(1, 1, 255, (*it).second, "Warnings");
+							SendTextSensor(1, 1, 255, warning.second, "Warnings");
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastWarnings))
-							{
-								SendTextSensor(1, 1, 255, "End - " + (*it).second, "Warnings");
-							}
+						else if (!(warning.first & value) && (warning.first & m_LastWarnings))
+						{
+							SendTextSensor(1, 1, 255, "End - " + warning.second, "Warnings");
+						}
 					}
 					if (((m_LastWarnings != 0) != (value != 0)) || firstTime)
 					{
@@ -433,18 +432,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				}
 				case 0x02:
 				{
-					dictionary::iterator it = devicesType.begin();
-					for (; it != devicesType.end(); ++it)
+					for (const auto &device : devicesType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastDevices))
+						if ((device.first & value) && !(device.first & m_LastDevices))
 						{
-							SendGeneralSwitch(2, (*it).first, 255, true, 0, (*it).second.c_str());
+							SendGeneralSwitch(2, device.first, 255, true, 0, device.second, m_Name);
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastDevices))
-							{
-								SendGeneralSwitch(2, (*it).first, 255, false, 0, (*it).second.c_str());
-							}
+						else if (!(device.first & value) && (device.first & m_LastDevices))
+						{
+							SendGeneralSwitch(2, device.first, 255, false, 0, device.second, m_Name);
+						}
 					}
 					m_LastDevices = value;
 
@@ -454,18 +451,16 @@ void MultiFun::GetRegisters(bool firstTime)
 				}
 				case 0x03:
 				{
-					dictionary::iterator it = statesType.begin();
-					for (; it != statesType.end(); ++it)
+					for (const auto &state : statesType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastState))
+						if ((state.first & value) && !(state.first & m_LastState))
 						{
-							SendTextSensor(3, 1, 255, (*it).second, "State");
+							SendTextSensor(3, 1, 255, state.second, "State");
 						}
-						else
-							if (!((*it).first & value) && ((*it).first & m_LastState))
-							{
-								SendTextSensor(3, 1, 255, "End - " + (*it).second, "State");
-							}
+						else if (!(state.first & value) && (state.first & m_LastState))
+						{
+							SendTextSensor(3, 1, 255, "End - " + state.second, "State");
+						}
 					}
 					m_LastState = value;
 
@@ -516,18 +511,16 @@ void MultiFun::GetRegisters(bool firstTime)
 
 				case 0x21:
 				{
-					dictionary::iterator it = quickAccessType.begin();
-					for (; it != quickAccessType.end(); ++it)
+					for (const auto &access : quickAccessType)
 					{
-						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
+						if ((access.first & value) && !(access.first & m_LastQuickAccess))
 						{
-							SendGeneralSwitch(0x21, (*it).first, 255, true, 0, (*it).second.c_str());
+							SendGeneralSwitch(0x21, access.first, 255, true, 0, access.second, m_Name);
 						}
-						else
-							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
-							{
-								SendGeneralSwitch(0x21, (*it).first, 255, false, 0, (*it).second.c_str());
-							}
+						else if ((!(access.first & value) && (access.first & m_LastQuickAccess)) || firstTime)
+						{
+							SendGeneralSwitch(0x21, access.first, 255, false, 0, access.second, m_Name);
+						}
 					}
 					m_LastQuickAccess = value;
 					break;
@@ -565,7 +558,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	}
 
 	bool bIsDataReadable = true;
-	m_socket->canRead(&bIsDataReadable, 3.0f);
+	m_socket->canRead(&bIsDataReadable, 3.0F);
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_LENGHT);
@@ -593,21 +586,16 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 				if ((int)databuffer[4] * 256 + (int)databuffer[5] == (unsigned char)(answerLength + 2))
 				{
-					if (write)
-					{
-						if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
-						{
-							return answerLength;
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "MultiFun: bad response after write");
-						}
-					}
-					else
+					if (!write)
 					{
 						return answerLength;
 					}
+
+					if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
+					{
+						return answerLength;
+					}
+					_log.Log(LOG_ERROR, "MultiFun: bad response after write");
 				}
 				else
 				{
@@ -619,7 +607,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 				{
 					if (databuffer[8] >= 1 && databuffer[8] <= 4)
 					{
-						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8] - 1].c_str());
+						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8] - 1]);
 					}
 					else
 					{

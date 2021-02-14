@@ -51,10 +51,6 @@ std::string SolarMaxTCP::MakeRequestString()
 	return std::string(szSendRequest);
 }
 
-SolarMaxTCP::~SolarMaxTCP(void)
-{
-}
-
 bool SolarMaxTCP::StartHardware()
 {
 	RequestStart();
@@ -77,14 +73,11 @@ bool SolarMaxTCP::StartHardware()
 	{
 		// change Hostname in serveraddr
 		hostent *he = gethostbyname(m_szIPAddress.c_str());
-		if (he == NULL)
+		if (he == nullptr)
 		{
 			return false;
 		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
-		}
+		memcpy(&(m_addr.sin_addr), he->h_addr_list[0], 4);
 	}
 
 	char szIP[20];
@@ -95,7 +88,7 @@ bool SolarMaxTCP::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&SolarMaxTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -168,7 +161,7 @@ void SolarMaxTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (m_socket == INVALID_SOCKET)
@@ -205,10 +198,7 @@ void SolarMaxTCP::Do_Work()
 					m_retrycntr = 0;
 					continue;
 				}
-				else
-				{
-					ParseData((const unsigned char *)&buf, bread);
-				}
+				ParseData((const unsigned char *)&buf, bread);
 			}
 		}
 
@@ -276,14 +266,14 @@ static unsigned long SolarMaxGetHexStringValue(const std::string &svalue)
 void SolarMaxTCP::ParseLine()
 {
 	std::string InputStr = std::string((const char*)&m_buffer);
-	size_t npos = InputStr.find("|");
+	size_t npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
 		return;
 	}
 	InputStr = InputStr.substr(npos + 4);
-	npos = InputStr.find("|");
+	npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
 		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
@@ -296,15 +286,13 @@ void SolarMaxTCP::ParseLine()
 	if (results.size() < 2)
 		return; //invalid data
 
-	std::vector<std::string>::const_iterator itt;
-
 	double kwhCounter = 0;
 	double ActUsage = 0;
 
-	for (itt = results.begin(); itt != results.end(); ++itt)
+	for (const auto &sd : results)
 	{
 		std::vector<std::string> varresults;
-		StringSplit(*itt, "=", varresults);
+		StringSplit(sd, "=", varresults);
 		if (varresults.size() !=2)
 			continue;
 
@@ -323,30 +311,30 @@ void SolarMaxTCP::ParseLine()
 		else if (sLabel == "PAC")
 		{
 			//AC power
-			ActUsage = SolarMaxGetHexStringValue(sVal)/2.0f;
+			ActUsage = SolarMaxGetHexStringValue(sVal) / 2.0F;
 		}
 		else if (sLabel == "UDC")
 		{
 			//DC voltage [mV]
-			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0f;
+			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0F;
 			SendVoltageSensor(1, 2, 255, voltage, "DC voltage");
 		}
 		else if (sLabel == "UL1")
 		{
 			//AC voltage [mV]
-			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0f;
+			float voltage = float(SolarMaxGetHexStringValue(sVal)) / 10.0F;
 			SendVoltageSensor(1, 3, 255, voltage, "AC voltage");
 		}
 		else if (sLabel == "IDC")
 		{
 			//DC current [mA]
-			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0f;
+			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0F;
 			SendCurrentSensor(4, 255, amps, 0, 0, "DC current");
 		}
 		else if (sLabel == "IL1")
 		{
 			//AC current [mA]
-			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0f;
+			float amps = float(SolarMaxGetHexStringValue(sVal)) / 100.0F;
 			SendCurrentSensor(5, 255, amps, 0, 0, "AC current");
 		}
 		else if (sLabel == "PIN")
@@ -375,7 +363,7 @@ void SolarMaxTCP::ParseLine()
 	}
 	if (kwhCounter != 0)
 	{
-		SendKwhMeterOldWay(1, 1, 255, ActUsage/1000.0f, kwhCounter, "kWh Meter");
+		SendKwhMeterOldWay(1, 1, 255, ActUsage / 1000.0F, kwhCounter, "kWh Meter");
 	}
 
 }
