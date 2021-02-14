@@ -1265,7 +1265,7 @@ namespace Plugins
 			m_sql.GetPreferencesVar("Language", sLanguage);
 
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
+			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Configuration, LogLevel FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -1291,6 +1291,8 @@ namespace Plugins
 					ADD_STRING_TO_DICT(this, pParamsDict, "Mode4", sd[10]);
 					ADD_STRING_TO_DICT(this, pParamsDict, "Mode5", sd[11]);
 					ADD_STRING_TO_DICT(this, pParamsDict, "Mode6", sd[12]);
+					ADD_STRING_TO_DICT(this, pParamsDict, "Configuration", sd[13]);
+					ADD_STRING_TO_DICT(this, pParamsDict, "LogLevel", sd[14]);
 
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzVersion", szAppVersion);
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzHash", szAppHash);
