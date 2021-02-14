@@ -45,78 +45,79 @@
 	#include <string.h> 
 #endif
 
-const char *szHelp =
-"Usage: Domoticz -www port\n"
-"\t-version display version number\n"
-"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
-"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
-#ifdef WWW_ENABLE_SSL
-"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
-"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-"\t-sslkey file_path (if different from certificate file)\n"
-"\t-sslpass passphrase (to access to server private key in certificate)\n"
-"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
-"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
-"\t-ssldhparam file_path (for SSL DH parameters)\n"
-#endif
-#if defined WIN32
-"\t-wwwroot file_path (for example D:\\www)\n"
-"\t-dbase file_path (for example D:\\domoticz.db)\n"
-"\t-userdata file_path (for example D:\\domoticzdata)\n"
-"\t-approot file_path (for example D:\\domoticz)\n"
-#else
-"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
-"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
-"\t-userdata file_path (for example /opt/domoticz)\n"
-"\t-approot file_path (for example /opt/domoticz)\n"
-#endif
-"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
-"\t-startupdelay seconds (default=0)\n"
-"\t-nowwwpwd (in case you forgot the web server username/password)\n"
-"\t-nocache (do not return appcache, use only when developing the web pages)\n"
-"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
-#if defined WIN32
-"\t-nobrowser (do not start web browser (Windows Only)\n"
-#endif
-"\t-noupdates do not use the internal update functionality\n"
-#if defined WIN32
-"\t-log file_path (for example D:\\domoticz.log)\n"
-#else
-"\t-log file_path (for example /var/log/domoticz.log)\n"
-#endif
-"\t-loglevel (combination of: normal,status,error,debug)\n"
-"\t-debuglevel (combination of: normal,hardware,received,webserver,eventsystem,python,thread_id)\n"
-"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
-"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
-#ifndef WIN32
-"\t-daemon (run as background daemon)\n"
-"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
-"\t-f config_file (for example /etc/domoticz.conf)\n"
-#endif
-"";
-
-#ifndef WIN32
-struct _facilities {
-	const char* facname;
-	const int   facvalue;
-};
-
-static const _facilities facilities[] =
+namespace
 {
-	{ "daemon", LOG_DAEMON },
-	{ "user",   LOG_USER },
-	{ "local0", LOG_LOCAL0 },
-	{ "local1", LOG_LOCAL1 },
-	{ "local2", LOG_LOCAL2 },
-	{ "local3", LOG_LOCAL3 },
-	{ "local4", LOG_LOCAL4 },
-	{ "local5", LOG_LOCAL5 },
-	{ "local6", LOG_LOCAL6 },
-	{ "local7", LOG_LOCAL7 }
-}; 
-std::string logfacname = "user";
+	constexpr const char *szHelp
+	{
+		"Usage: Domoticz -www port\n"
+		"\t-version display version number\n"
+		"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
+		"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
+#ifdef WWW_ENABLE_SSL
+		"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
+		"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+		"\t-sslkey file_path (if different from certificate file)\n"
+		"\t-sslpass passphrase (to access to server private key in certificate)\n"
+		"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
+		"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
+		"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
+#if defined WIN32
+		"\t-wwwroot file_path (for example D:\\www)\n"
+		"\t-dbase file_path (for example D:\\domoticz.db)\n"
+		"\t-userdata file_path (for example D:\\domoticzdata)\n"
+		"\t-approot file_path (for example D:\\domoticz)\n"
+#else
+		"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
+		"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
+		"\t-userdata file_path (for example /opt/domoticz)\n"
+		"\t-approot file_path (for example /opt/domoticz)\n"
+#endif
+		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
+		"\t-startupdelay seconds (default=0)\n"
+		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
+		"\t-nocache (do not return appcache, use only when developing the web pages)\n"
+		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
+#if defined WIN32
+		"\t-nobrowser (do not start web browser (Windows Only)\n"
+#endif
+		"\t-noupdates do not use the internal update functionality\n"
+#if defined WIN32
+		"\t-log file_path (for example D:\\domoticz.log)\n"
+#else
+		"\t-log file_path (for example /var/log/domoticz.log)\n"
+#endif
+		"\t-loglevel (combination of: normal,status,error,debug)\n"
+		"\t-debuglevel (combination of: normal,hardware,received,webserver,eventsystem,python,thread_id)\n"
+		"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+		"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
+#ifndef WIN32
+		"\t-daemon (run as background daemon)\n"
+		"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
+		"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+		"\t-f config_file (for example /etc/domoticz.conf)\n"
+#endif
+		""
+	};
+
+#ifndef WIN32
+	constexpr std::array<std::pair<const char *, int>, 10> facilities{
+		{
+			{ "daemon", LOG_DAEMON }, //
+			{ "user", LOG_USER },	  //
+			{ "local0", LOG_LOCAL0 }, //
+			{ "local1", LOG_LOCAL1 }, //
+			{ "local2", LOG_LOCAL2 }, //
+			{ "local3", LOG_LOCAL3 }, //
+			{ "local4", LOG_LOCAL4 }, //
+			{ "local5", LOG_LOCAL5 }, //
+			{ "local6", LOG_LOCAL6 }, //
+			{ "local7", LOG_LOCAL7 }, //
+		}				  //
+	};
+	std::string logfacname = "user";
+#endif
+} // namespace
 std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
@@ -150,7 +151,7 @@ std::string szAppHash="???";
 std::string szAppDate="???";
 std::string szPyVersion="None";
 int ActYear;
-time_t m_StartTime=time(NULL);
+time_t m_StartTime = time(nullptr);
 std::string szRandomUUID = "???";
 
 MainWorker m_mainworker;
@@ -202,7 +203,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaddset(&newSigSet, SIGTSTP);  /* ignore Tty stop signals */
 	sigaddset(&newSigSet, SIGTTOU);  /* ignore Tty background writes */
 	sigaddset(&newSigSet, SIGTTIN);  /* ignore Tty background reads */
-	sigprocmask(SIG_BLOCK, &newSigSet, NULL);   /* Block the above specified signals */
+	sigprocmask(SIG_BLOCK, &newSigSet, nullptr); /* Block the above specified signals */
 
 	/* Set up a signal handler */
 	newSigAction.sa_sigaction = signal_handler;
@@ -210,16 +211,14 @@ void daemonize(const char *rundir, const char *pidfile)
 	newSigAction.sa_flags = SA_SIGINFO;
 
 	/* Signals to handle */
-	sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
-	sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
-	sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
-	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
-	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
-	sigaction(SIGUSR1, &newSigAction, NULL);    // catch SIGUSR1 (used by watchdog)
-#ifndef WIN32
-	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for log rotation
-#endif
-	
+	sigaction(SIGTERM, &newSigAction, nullptr); // catch term signal
+	sigaction(SIGINT, &newSigAction, nullptr);  // catch interrupt signal
+	sigaction(SIGSEGV, &newSigAction, nullptr); // catch segmentation fault signal
+	sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
+	sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
+	sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
+	sigaction(SIGHUP, &newSigAction, nullptr); // catch HUP, for log rotation
+
 	/* Fork*/
 	pid = fork();
 
@@ -694,7 +693,8 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
-			if (szroot.size() != 0) {
+			if (!szroot.empty())
+			{
 				szStartupFolder = szroot;
 				FixFolderEnding(szStartupFolder);
 			}
@@ -769,7 +769,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 			{
 				szUserDataFolder = szroot;
 				FixFolderEnding(szUserDataFolder);
@@ -828,7 +828,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWWWFolder = szroot;
 		}
 	}
@@ -998,7 +998,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
-			if (szroot.size() != 0)
+			if (!szroot.empty())
 				szWebRoot = szroot;
 		}
 		if (cmdLine.HasSwitch("-noupdates"))
@@ -1064,14 +1064,14 @@ int main(int argc, char**argv)
 	{
 		int logfacility = 0;
 
-		for ( size_t idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		for (const auto &facility : facilities)
 		{
-			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			if (strcmp(facility.first, logfacname.c_str()) == 0)
 			{
-				logfacility = facilities[idx].facvalue;
+				logfacility = facility.second;
 				break;
 			}
-		} 
+		}
 		if ( logfacility == 0 ) 
 		{
 			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());
@@ -1107,13 +1107,13 @@ int main(int argc, char**argv)
 		newSigAction.sa_flags = SA_SIGINFO;
 
 		/* Signals to handle */
-		sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
-		sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
-		sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
-		sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
-		sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
-		sigaction(SIGFPE,  &newSigAction, NULL);    // catch floating point error
-		sigaction(SIGUSR1, &newSigAction, NULL);    // catch SIGUSR1 (used by watchdog)
+		sigaction(SIGTERM, &newSigAction, nullptr); // catch term signal
+		sigaction(SIGINT, &newSigAction, nullptr);  // catch interrupt signal
+		sigaction(SIGSEGV, &newSigAction, nullptr); // catch segmentation fault signal
+		sigaction(SIGABRT, &newSigAction, nullptr); // catch abnormal termination signal
+		sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
+		sigaction(SIGFPE, &newSigAction, nullptr);  // catch floating point error
+		sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
 #else
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
@@ -1121,7 +1121,7 @@ int main(int argc, char**argv)
 	}
 
 	// start Watchdog thread after daemonization
-	m_LastHeartbeat = mytime(NULL);
+	m_LastHeartbeat = mytime(nullptr);
 	std::thread thread_watchdog(Do_Watchdog_Work);
 	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 
@@ -1129,8 +1129,7 @@ int main(int argc, char**argv)
 	{
 		return 1;
 	}
-	m_StartTime = time(NULL);
-
+	m_StartTime = time(nullptr);
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
@@ -1158,7 +1157,7 @@ int main(int argc, char**argv)
 	while ( !g_bStopApplication )
 	{
 		sleep_seconds(1);
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 	}
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");

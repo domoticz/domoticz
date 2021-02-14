@@ -115,11 +115,9 @@ const char crlf[] = { '\r', '\n', 0 };
 std::string reply::header_to_string()
 {
 	std::string buffers = status_strings::to_string(status);
-	for (std::size_t i = 0; i < headers.size(); ++i)
-	{
-		header& h = headers[i];
+	for (auto &h : headers)
 		buffers += h.name + misc_strings::name_value_separator + h.value + misc_strings::crlf;
-	}
+
 	buffers += misc_strings::crlf;
 	return buffers;
 }
@@ -334,7 +332,7 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path, con
 		return false;
 	reply::add_header_attachment(rep, attachment);
 	if (set_content_type == true) {
-		std::size_t last_dot_pos = attachment.find_last_of(".");
+		std::size_t last_dot_pos = attachment.find_last_of('.');
 		if (last_dot_pos != std::string::npos) {
 			std::string file_extension = attachment.substr(last_dot_pos + 1);
 			std::string mime_type = mime_types::extension_to_type(file_extension);

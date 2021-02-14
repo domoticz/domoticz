@@ -54,6 +54,7 @@ define(['app', 'log/Chart'], function (app) {
                     highchartTemplate: {
                         chart: {
                             type: 'column',
+                            zoomType: false,
                             marginRight: 10
                         },
                         xAxis: {

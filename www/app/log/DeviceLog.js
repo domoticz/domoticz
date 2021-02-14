@@ -23,6 +23,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
                 vm.device = device;
                 vm.pageName = device.Name;
 
+                // TODO REMOVE THIS false
                 if (false && isCounterLog()) {
                     ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
                 }
@@ -109,7 +110,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 
             return vm.device.Type === 'RFXMeter'
                 || (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Gas')
-                || (typeof vm.device.Counter != 'undefined');
+                || (typeof vm.device.Counter != 'undefined' && !isInstantAndCounterLog());
         }
 
         function isGasDevice() {

@@ -3,14 +3,14 @@
 #include "DomoticzHardware.h"
 
 #if defined WIN32
-	// for windows system info
-	#include <wbemidl.h>
-	#pragma comment(lib, "wbemuuid.lib")
+// for windows system info
+#include <wbemidl.h>
+#pragma comment(lib, "wbemuuid.lib")
 #endif
 
 class CHardwareMonitor : public CDomoticzHardwareBase
 {
-public:
+      public:
 	enum nOSType
 	{
 		OStype_Unknown = 0,
@@ -24,12 +24,16 @@ public:
 		OStype_Apple = 15
 	};
 
-	explicit CHardwareMonitor(const int ID);
-	~CHardwareMonitor(void);
-	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) override { return false; };
+	explicit CHardwareMonitor(int ID);
+	~CHardwareMonitor() override;
+	bool WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/) override
+	{
+		return false;
+	};
 	bool GetOSType(nOSType &OStype);
 	std::string TranslateOSTypeToString(nOSType);
-private:
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	double m_lastquerytime;
@@ -49,8 +53,8 @@ private:
 	void GetInternalVoltage();
 	void GetInternalCurrent();
 	void CheckForOnboardSensors();
-	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
-	void SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname);
+	void UpdateSystemSensor(const std::string &qType, int dindex, const std::string &devName, const std::string &devValue);
+	void SendCurrent(unsigned long Idx, float Curr, const std::string &defaultname);
 	bool IsWSL();
 
 	struct _tDUsageStruct
@@ -83,22 +87,22 @@ private:
 	bool InitWMI();
 	void ExitWMI();
 	bool IsOHMRunning();
-	void RunWMIQuery(const char* qTable, const std::string &qType);
+	void RunWMIQuery(const char *qTable, const std::string &qType);
 	IWbemLocator *m_pLocator;
 	IWbemServices *m_pServicesOHM;
 	IWbemServices *m_pServicesSystem;
-#elif defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	void FetchUnixCPU();
 	void FetchUnixMemory();
 	void FetchUnixDisk();
 	double time_so_far();
-#if defined (__linux__)
+#if defined(__linux__)
 	float GetProcessMemUsage();
 #endif
-#if defined (__linux__) || defined (__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__)
 	float GetMemUsageLinux();
 #endif
-#if defined (__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 	float GetMemUsageOpenBSD();
 #endif
 #endif

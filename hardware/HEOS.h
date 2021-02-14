@@ -8,25 +8,26 @@ class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 {
 	struct HEOSNode
 	{
-		int				ID;
-		int				DevID;
-		std::string		Name;
-		time_t			LastOK;
-		_eMediaStatus	nStatus;
-		std::string		sStatus;
-		std::string		sShortStatus;
+		int ID;
+		int DevID;
+		std::string Name;
+		time_t LastOK;
+		_eMediaStatus nStatus;
+		std::string sStatus;
+		std::string sShortStatus;
 	};
 
-public:
-	CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
-	~CHEOS(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+      public:
+	CHEOS(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &User, const std::string &Pwd, int PollIntervalsec, int PingTimeoutms);
+	~CHEOS() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	boost::signals2::signal<void()> sDisconnected;
-	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
-	void SendCommand(const std::string&, const int iValue);
-private:
-	void SendCommand(const std::string&);
-	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
+	void SetSettings(int PollIntervalsec, int PingTimeoutms);
+	void SendCommand(const std::string &, int iValue);
+
+      private:
+	void SendCommand(const std::string &);
+	_eNotificationTypes NotificationType(_eMediaStatus nStatus);
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteInt(const std::string &sendStr);
@@ -35,18 +36,19 @@ private:
 	void OnConnect() override;
 	void OnDisconnect() override;
 	void OnData(const unsigned char *pData, size_t length) override;
-	void OnError(const boost::system::error_code& error) override;
+	void OnError(const boost::system::error_code &error) override;
 
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
 	void AddNode(const std::string &Name, const std::string &PlayerID);
-	void UpdateNode(const int ID, const std::string &Name);
-	void UpdateNodeStatus(const std::string &DevID, const _eMediaStatus nStatus, const std::string &sStatus);
+	void UpdateNode(int ID, const std::string &Name);
+	void UpdateNodeStatus(const std::string &DevID, _eMediaStatus nStatus, const std::string &sStatus);
 	void UpdateNodesStatus(const std::string &DevID, const std::string &sStatus);
 	//	void RemoveNode(const int ID);
 	void ReloadNodes();
-private:
+
+      private:
 	std::vector<HEOSNode> m_nodes;
 	int m_retrycntr;
 
@@ -54,7 +56,7 @@ private:
 
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
-	std::string	m_IP;
+	std::string m_IP;
 	std::string m_User;
 	std::string m_Pwd;
 

@@ -12,7 +12,7 @@ cache:
 #  - install /usr/bin/g++ g++ /usr/bin/g++-6 50
 
 sources:
-  - trusty
+  - focal
 
 # What to install before the build
 before_install:
@@ -34,20 +34,20 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
-    dist: bionic
+    dist: focal
     sudo: required
     compiler: gcc
     env:
           - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+          - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
     addons:
       apt:
         sources:
 #          - george-edison55-bionic-backports  # cmake
           - ubuntu-toolchain-r-test
         packages:
-          - gcc-6
-          - g++-6
+          - gcc-9
+          - g++-9
           - curl
           - libcurl4-gnutls-dev
           - libusb-dev
@@ -64,9 +64,9 @@ matrix:
       - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
       - sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
       - export PATH=/usr/local/bin:$PATH;
-      - wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz >> /dev/null 2>&1
-      - tar xfz boost_1_72_0.tar.gz
-      - cd boost_1_72_0/
+      - wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz >> /dev/null 2>&1
+      - tar xfz boost_1_74_0.tar.gz
+      - cd boost_1_74_0/
       - ./bootstrap.sh
       - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
@@ -104,7 +104,7 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: script
-  script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
+  script: curl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" --retry 3 -s -S -k -u "$FTP_USER:$FTP_PASSWORD" "ftps://$FTP_HOST/beta/"
   on:
     branch: development
     repo: domoticz/domoticz

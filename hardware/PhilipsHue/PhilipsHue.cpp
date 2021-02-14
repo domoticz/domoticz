@@ -81,10 +81,6 @@ m_UserName(Username)
 	Init();
 }
 
-CPhilipsHue::~CPhilipsHue(void)
-{
-}
-
 void CPhilipsHue::Init()
 {
 }
@@ -95,7 +91,7 @@ bool CPhilipsHue::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CPhilipsHue::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -131,7 +127,7 @@ void CPhilipsHue::Do_Work()
 			sec_counter++;
 			if (sec_counter % m_poll_interval == 0)
 			{
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 				GetStates();
 			}
 		}
@@ -148,7 +144,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	int svalue = 0;
 	int svalue2 = 0;
 	int svalue3 = 0;
-	std::string LCmd = "";
+	std::string LCmd;
 	int nodeID = 0;
 
 	if (packettype == pTypeGeneralSwitch)
@@ -171,9 +167,9 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			// From Philips Hue API documentation:
 			// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
 			LCmd = "Set Level";
-			float fvalue = (254.0f / 100.0f)*float(pSwitch->level);
-			if (fvalue > 254.0f)
-				fvalue = 254.0f;
+			float fvalue = (254.0F / 100.0F) * float(pSwitch->level);
+			if (fvalue > 254.0F)
+				fvalue = 254.0F;
 			svalue = round(fvalue);
 		}
 		SwitchLight(nodeID, LCmd, svalue);
@@ -190,14 +186,14 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			SwitchLight(nodeID, LCmd, svalue);
 			return true;
 		}
-		else if (pLed->command == Color_LedOn)
+		if (pLed->command == Color_LedOn)
 		{
 			LCmd = "On";
 			svalue = 254;
 			SwitchLight(nodeID, LCmd, svalue);
 			return true;
 		}
-		else if (pLed->command == Color_SetBrightnessLevel)
+		if (pLed->command == Color_SetBrightnessLevel)
 		{
 			if (pLed->value == 0)
 			{
@@ -211,21 +207,21 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 				// From Philips Hue API documentation:
 				// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
 				LCmd = "Set Level";
-				float fvalue = (254.0f / 100.0f)*float(pLed->value);
-				if (fvalue > 254.0f)
-					fvalue = 254.0f;
+				float fvalue = (254.0F / 100.0F) * float(pLed->value);
+				if (fvalue > 254.0F)
+					fvalue = 254.0F;
 				svalue = round(fvalue);
 				SwitchLight(nodeID, LCmd, svalue);
 			}
 			return true;
 		}
-		else if (pLed->command == Color_SetColorToWhite)
+		if (pLed->command == Color_SetColorToWhite)
 		{
 			LCmd = "Set White";
 			SwitchLight(nodeID, LCmd, 0);
 			return true;
 		}
-		else if (pLed->command == Color_SetColor)
+		if (pLed->command == Color_SetColor)
 		{
 			// From Philips Hue API documentation:
 			// bri: Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
@@ -249,14 +245,14 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			else if (pLed->color.mode == ColorModeTemp)
 			{
 				LCmd = "Set CT";
-				svalue2 = round(float(pLed->color.t)*(500.0f-153.0f)/255.0f+153.0f);
+				svalue2 = round(float(pLed->color.t) * (500.0F - 153.0F) / 255.0F + 153.0F);
 			}
 			else if (pLed->color.mode == ColorModeRGB)
 			{
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				float cHue = (65535.0f)*hsb[0]; // Scale hue from 0..1 to 0..65535
-				float cSat = (254.0f)*hsb[1];   // Scale saturation from 0..1 to 0..254
+				float cHue = (65535.0F) * hsb[0]; // Scale hue from 0..1 to 0..65535
+				float cSat = (254.0F) * hsb[1];	  // Scale saturation from 0..1 to 0..254
 				LCmd = "Set Hue";
 				svalue2 = round(cHue);
 				svalue3 = round(cSat);
@@ -264,9 +260,9 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			else{
 				_log.Log(LOG_STATUS, "Philips Hue: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 			}
-			float fvalue = (254.0f / 100.0f)*float(pLed->value);
-			if (fvalue > 254.0f)
-				fvalue = 254.0f;
+			float fvalue = (254.0F / 100.0F) * float(pLed->value);
+			if (fvalue > 254.0F)
+				fvalue = 254.0F;
 			svalue = round(fvalue);
 			SwitchLight(nodeID, LCmd, svalue, svalue2, svalue3);
 			return true;
@@ -302,18 +298,18 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 	else if (LCmd == "Set Level")
 	{
-		sPostData << "{\"on\": true, \"bri\": " << svalue << " }";
+		sPostData << R"({"on": true, "bri": )" << svalue << " }";
 		setOn = true;
 		setLevel = true;
 	}
 	else if (LCmd == "Set White")
 	{
-		sPostData << "{\"on\": true, \"sat\": 0 , \"bri\": 255, \"hue\": 0 }";
+		sPostData << R"({"on": true, "sat": 0 , "bri": 255, "hue": 0 })";
 		// Do state update next time the light is polled
 	}
 	else if (LCmd == "Set Hue")
 	{
-		sPostData << "{\"on\": true, \"sat\": " << svalue3 << ", \"hue\": " << svalue2 << ", \"bri\": " << svalue << "  }";
+		sPostData << R"({"on": true, "sat": )" << svalue3 << ", \"hue\": " << svalue2 << ", \"bri\": " << svalue << "  }";
 		setOn = true;
 		setLevel = true;
 		setHueSat = true;
@@ -322,7 +318,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 	else if (LCmd == "Set CT")
 	{
-		sPostData << "{\"on\": true, \"ct\": " << svalue2 << ", \"bri\": " << svalue << "  }";
+		sPostData << R"({"on": true, "ct": )" << svalue2 << ", \"bri\": " << svalue << "  }";
 		setOn = true;
 		setLevel = true;
 		setCt = true;
@@ -336,7 +332,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 
 	// Update cached state
-	_tHueLightState *pState = NULL;
+	_tHueLightState *pState = nullptr;
 
 	if (nodeID < 1000)
 	{
@@ -359,7 +355,8 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	if (pState)
 	{
 		if (setOn) pState->on = On;
-		if (setLevel) pState->level = int((100.0f / 254.0f)*float(svalue));
+		if (setLevel)
+			pState->level = int((100.0F / 254.0F) * float(svalue));
 		if (setHueSat) pState->hue = svalue2;
 		if (setHueSat) pState->sat = svalue3;
 		if (setCt) pState->ct = int((float(svalue2)-153.0)/(500.0-153.0));
@@ -398,7 +395,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 		}
 		sPostData.clear();
 		sPostData.str("");
-		sPostData << "{\"scene\": \"" << result[0][0] << "\"}";
+		sPostData << R"({"scene": ")" << result[0][0] << "\"}";
 		sstr2 << "http://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
@@ -438,7 +435,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 	std::string sPostData;
 
 	//Providing own username is not allowed, so don't use it and only provide devicetype
-	sPostData = "{ \"devicetype\": \"domoticz\" }";
+	sPostData = R"({ "devicetype": "domoticz" })";
 
 	std::stringstream sstr2;
 	sstr2 << "http://" << IPAddress
@@ -545,9 +542,9 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 				int r, g, b;
 
 				//convert hue+sat to RGB
-				float iHue = float(tstate.hue)*360.0f/65535.0f;
-				float iSat = float(tstate.sat)/254.0f;
-				hsb2rgb(iHue, iSat, 1.0f, r, g, b, 255);
+				float iHue = float(tstate.hue) * 360.0F / 65535.0F;
+				float iSat = float(tstate.sat) / 254.0F;
+				hsb2rgb(iHue, iSat, 1.0F, r, g, b, 255);
 
 				color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 			}
@@ -562,7 +559,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			}
 			if (tstate.mode == HLMODE_CT)
 			{
-				float iCt = (float(tstate.ct)-153.0f)/(500.0f-153.0f)*255.0f;
+				float iCt = (float(tstate.ct) - 153.0F) / (500.0F - 153.0F) * 255.0F;
 				color = _tColor(round(iCt), ColorModeTemp);
 			}
 			cmd = Color_SetColor;
@@ -575,7 +572,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.value = tstate.level;
 		lcmd.color = color;
 		lcmd.subtype = sType;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -626,7 +623,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.command = cmd;
 		lcmd.value = 0;
 		//lcmd.subtype = sType; // TODO: set type also for groups?
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -689,7 +686,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.cmnd = cmd;
 		lcmd.level = tstate.level;
 		lcmd.seqnbr = 1;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -795,7 +792,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 			// Clamp to conform to HUE API
 			tbri = std::max(1, tbri);
 			tbri = std::min(254, tbri);
-			tlight.level = int(std::ceil((100.0f / 254.0f)*float(tbri)));
+			tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
 		}
 		if (!lightstate["sat"].empty())
 		{
@@ -961,7 +958,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		int tbri = root2["action"]["bri"].asInt();
 		if ((tbri != 0) && (tbri < 3))
 			tbri = 3;
-		tstate.level = int((100.0f / 254.0f)*float(tbri));
+		tstate.level = int((100.0F / 254.0F) * float(tbri));
 	}
 	if (!root2["action"]["sat"].empty())
 	{
@@ -1136,7 +1133,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				if ((previous_sensor.m_state.m_temperature != current_sensor.m_state.m_temperature)
 					|| (bNewSensor))
 				{
-					SendTempSensor(sID, current_sensor.m_config.m_battery, float(current_sensor.m_state.m_temperature / 100.0f), device_name);
+					SendTempSensor(sID, current_sensor.m_config.m_battery, float(current_sensor.m_state.m_temperature / 100.0F), device_name);
 				}
 			}
 			else if (current_sensor.m_type == SensorTypeZLLLightLevel)
@@ -1153,7 +1150,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 					double lux = 0.00001;
 					if (current_sensor.m_state.m_lightlevel != 0)
 					{
-						float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00f);
+						float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00F);
 						lux = pow(10, convertedLightLevel);
 					}
 					SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, (const float)lux, current_sensor.m_type + " Lux " + current_sensor.m_name);
@@ -1184,7 +1181,7 @@ bool CPhilipsHue::InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Uni
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, Name.c_str(), BatteryLevel);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1212,7 +1209,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, Name.c_str(), BatteryLevel);
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1220,7 +1217,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 	}
 }
 
-void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, const std::map<std::string, std::string> options)
+void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, const std::map<std::string, std::string> &options)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, Unitcode);
@@ -1247,10 +1244,7 @@ namespace http {
 			std::string sipaddress = request::findValue(&req, "ipaddress");
 			std::string sport = request::findValue(&req, "port");
 			std::string susername = request::findValue(&req, "username");
-			if (
-				(sipaddress == "") ||
-				(sport == "")
-				)
+			if ((sipaddress.empty()) || (sport.empty()))
 				return;
 
 			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);
@@ -1286,5 +1280,5 @@ namespace http {
 		{
 
 		}
-	}
-}
+	} // namespace server
+} // namespace http

@@ -1,7 +1,9 @@
 #pragma once
 
+#define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/signals2.hpp>
 #include "../main/StoppableTask.h"
+#include <mutex>
 
 class CBasePush : public StoppableTask
 {
@@ -15,21 +17,35 @@ public:
 		PUSHTYPE_INFLUXDB,
 		PUSHTYPE_WEBSOCKET
 	};
-	CBasePush();
+	struct _tPushLinks
+	{
+		uint64_t DeviceRowIdx;
+		std::string DeviceName;
+		int DelimiterPos;
+		int devType;
+		int devSubType;
+		int metertype;
+		PushType pushType;
+	};
 
-	static std::vector<std::string> DropdownOptions(const uint64_t DeviceRowIdxIn);
-	static std::string DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos);
+  CBasePush();
+
+	static std::vector<std::string> DropdownOptions(const int devType, const int devSubType);
+  static std::string DropdownOptionsValue(const int devType, const int devSubType, const int pos);
+
+	void ReloadPushLinks(const PushType PType);
+	bool GetPushLink(const uint64_t DeviceRowIdx, _tPushLinks &plink);
+
 protected:
 	PushType m_PushType;
 	bool m_bLinkActive;
-	uint64_t m_DeviceRowIdx;
 	boost::signals2::connection m_sConnection;
 	boost::signals2::connection m_sDeviceUpdate;
 	boost::signals2::connection m_sNotification;
 	boost::signals2::connection m_sSceneChanged;
 
-	std::string ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType, const int metertype);
-	std::string getUnit(const int delpos, const int metertypein);
+	std::string ProcessSendValue(const uint64_t DeviceRowIdx, const std::string &rawsendValue, int delpos, int nValue, int includeUnit, int devType, int devSubType, int metertype);
+	std::string getUnit(const int devType, const int devSubType, const int delpos, const int metertypein);
 
 	static unsigned long get_tzoffset();
 #ifdef WIN32
@@ -39,5 +55,12 @@ protected:
 #endif
 
 	static void replaceAll(std::string& context, const std::string& from, const std::string& to);
+
+	bool IsLinkInDatabase(const uint64_t DeviceRowIdx);
+
+	std::mutex m_link_mutex;
+
+private:
+	std::vector<_tPushLinks> m_pushlinks;
 };
 

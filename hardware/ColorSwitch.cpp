@@ -81,7 +81,7 @@ void _tColor::fromString(const std::string &s)
 	Json::Value root;
 	mode = ColorModeNone;
 	try {
-		bool parsingSuccessful = ParseJSonStrict(s.c_str(), root);
+		bool parsingSuccessful = ParseJSonStrict(s, root);
 		if ( !parsingSuccessful )
 		{
 			mode = ColorModeNone;

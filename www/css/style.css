@@ -1550,6 +1550,10 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 	background-image: url("../images/evohome/DayOff.png");
 }
 
+.ui-icon-DayOffWithEco:after {
+	background-image: url("../images/evohome/DayOffWithEco.png");
+}
+
 .ui-icon-HeatingOff:after {
 	background-image: url("../images/evohome/HeatingOff.png");
 }
@@ -2252,4 +2256,8 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
+}
+
+.dd-selected-text, .dd-option-text {
+	color: black !important;
 }

@@ -24,10 +24,6 @@ CTE923::CTE923(const int ID)
 	Init();
 }
 
-CTE923::~CTE923(void)
-{
-}
-
 void CTE923::Init()
 {
 }
@@ -38,7 +34,7 @@ bool CTE923::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CTE923::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -108,8 +104,7 @@ void CTE923::GetSensorDetails()
 			_log.Log(LOG_ERROR, "TE923: Could not read weather data!");
 			return;
 		}
-		else
-			_te923tool2.CloseDevice();
+		_te923tool2.CloseDevice();
 	}
 	else
 		_te923tool.CloseDevice();
@@ -188,7 +183,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.packetlength=sizeof(tsen.WIND)-1;
 		tsen.WIND.packettype=pTypeWIND;
 		tsen.WIND.subtype=sTypeWINDNoTemp;
-		dev.batteryWind = 1;
+		dev.batteryWind = true;
 		if (dev.batteryWind)
 			tsen.WIND.battery_level=9;
 		else
@@ -197,7 +192,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.id1=0;
 		tsen.WIND.id2=1;
 
-		float winddir=float(data.wDir)*22.5f;
+		float winddir = float(data.wDir) * 22.5F;
 		int aw=round(winddir);
 		tsen.WIND.directionh=(BYTE)(aw/256);
 		aw-=(tsen.WIND.directionh*256);
@@ -207,7 +202,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.av_speedl=0;
 		if (data._wSpeed==0)
 		{
-			int sw=round(data.wSpeed*10.0f);
+			int sw = round(data.wSpeed * 10.0F);
 			tsen.WIND.av_speedh=(BYTE)(sw/256);
 			sw-=(tsen.WIND.av_speedh*256);
 			tsen.WIND.av_speedl=(BYTE)(sw);
@@ -216,7 +211,7 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.gustl=0;
 		if (data._wGust==0)
 		{
-			int gw=round(data.wGust*10.0f);
+			int gw = round(data.wGust * 10.0F);
 			tsen.WIND.gusth=(BYTE)(gw/256);
 			gw-=(tsen.WIND.gusth*256);
 			tsen.WIND.gustl=(BYTE)(gw);
@@ -231,7 +226,7 @@ void CTE923::GetSensorDetails()
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
-			int at10=round(std::abs(data.wChill*10.0f));
+			int at10 = round(std::abs(data.wChill * 10.0F));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);
@@ -239,39 +234,39 @@ void CTE923::GetSensorDetails()
 			tsen.WIND.chilll=(BYTE)(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, -1);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, -1, nullptr);
 	}
 
 	//Rain
 	if (data._RainCount==0)
 	{
 		int BatLevel = (dev.batteryRain) ? 100 : 0;
-		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7f, "Rain");
-/*
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-		tsen.RAIN.packettype=pTypeRAIN;
-		tsen.RAIN.subtype=sTypeRAIN3;
-		if (dev.batteryRain)
-			tsen.RAIN.battery_level=9;
-		else
-			tsen.RAIN.battery_level=0;
-		tsen.RAIN.rssi=12;
-		tsen.RAIN.id1=0;
-		tsen.RAIN.id2=1;
+		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7F, "Rain");
+		/*
+				RBUF tsen;
+				memset(&tsen,0,sizeof(RBUF));
+				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
+				tsen.RAIN.packettype=pTypeRAIN;
+				tsen.RAIN.subtype=sTypeRAIN3;
+				if (dev.batteryRain)
+					tsen.RAIN.battery_level=9;
+				else
+					tsen.RAIN.battery_level=0;
+				tsen.RAIN.rssi=12;
+				tsen.RAIN.id1=0;
+				tsen.RAIN.id2=1;
 
-		tsen.RAIN.rainrateh=0;
-		tsen.RAIN.rainratel=0;
+				tsen.RAIN.rainrateh=0;
+				tsen.RAIN.rainratel=0;
 
-		int tr10=int((float(data.RainCount)*10.0f)*0.7f);
+				int tr10=int((float(data.RainCount)*10.0f)*0.7f);
 
-		tsen.RAIN.raintotal1=0;
-		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-		tr10-=(tsen.RAIN.raintotal2*256);
-		tsen.RAIN.raintotal3=(BYTE)(tr10);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, -1);
-*/
+				tsen.RAIN.raintotal1=0;
+				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
+				tr10-=(tsen.RAIN.raintotal2*256);
+				tsen.RAIN.raintotal3=(BYTE)(tr10);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, -1, nullptr);
+		*/
 	}
 	//UV
 	if (data._uv==0)

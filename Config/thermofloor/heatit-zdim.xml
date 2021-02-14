@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019b:2200:0003</MetaDataItem>  
     <MetaDataItem name="ProductPic">images/thermofloor/heatit_zdim.png</MetaDataItem>	
@@ -81,9 +81,10 @@ controller is missing or otherwise inoperable</MetaDataItem>
 Press the main button on dimmer 6 times in a rapid sequence. Heatit Z-DIM is now included in your Z-Wave network.</MetaDataItem>
     <ChangeLog>
       <Entry author="Pål Kristensen - paalkr77@gmail.com" date="10 January 2020" revision="1">Initial release</Entry>
+      <Entry author="Pål Kristensen - paalkr77@gmail.com" date="11 January 2021" revision="2">Fixed COMMAND_CLASS_SWITCH_MULTILEVEL get commands</Entry>
     </ChangeLog>
   </MetaData>
-  
+
   <CommandClass id="112">
     <Value genre="config" instance="1" index="1" value="0" label="Connected Load" size="1" min="0" max="200" type="byte">
       <Help>
@@ -162,12 +163,25 @@ The parameter defines the initial dimming level after power loss.
     </Value>
   </CommandClass>
 
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
+  <CommandClass id="38">
+    <Compatibility>
+      <GetSupported>false</GetSupported>
+    </Compatibility>
+  </CommandClass>
+
   <CommandClass id="133">
     <Associations num_groups="3">
       <Group index="1" label="Lifeline" max_associations="8" />
       <Group index="2" label="Dimming level" max_associations="8" auto="true" />
       <Group index="3" label="State of Device ON/OFF" max_associations="8" auto="true" />
     </Associations>
+  </CommandClass>
+
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
   </CommandClass>
 
 </Product>

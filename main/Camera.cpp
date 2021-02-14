@@ -18,13 +18,9 @@
 
 extern std::string szUserDataFolder;
 
-CCameraHandler::CCameraHandler(void)
+CCameraHandler::CCameraHandler()
 {
 	m_seconds_counter = 0;
-}
-
-CCameraHandler::~CCameraHandler(void)
-{
 }
 
 void CCameraHandler::ReloadCameras()
@@ -38,10 +34,8 @@ void CCameraHandler::ReloadCameras()
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Camera: settings (re)loaded");
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
-
 			cameraDevice citem;
 			citem.ID = std::stoull(sd[0]);
 			citem.Name = sd[1];
@@ -56,26 +50,25 @@ void CCameraHandler::ReloadCameras()
 		}
 	}
 
-	for (const auto & ittCam : _AddedCameras)
+	for (const auto &camera : _AddedCameras)
 	{
 		//Get Active Devices/Scenes
-		ReloadCameraActiveDevices(ittCam);
+		ReloadCameraActiveDevices(camera);
 	}
 }
 
 void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 {
 	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return;
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (!result.empty())
 	{
-		for (const auto & itt : result)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = itt;
 			cameraActiveDevice aDevice;
 			aDevice.ID = std::stoull(sd[0]);
 			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
@@ -94,24 +87,18 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	for (const auto & itt : m_cameradevices)
-	{
-		for (const auto & itt2 : itt.mActiveDevices)
-		{
-			if (
-				(itt2.DevSceneType == DevSceneType) &&
-				(itt2.DevSceneRowID == DevSceneID)
-				)
-				return itt.ID;
-		}
-	}
+	for (const auto &sd : m_cameradevices)
+		for (const auto &sd2 : sd.mActiveDevices)
+			if ((sd2.DevSceneType == DevSceneType) && (sd2.DevSceneRowID == DevSceneID))
+				return sd.ID;
+
 	return 0;
 }
 
 std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 {
 	cameraDevice* pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return "";
 	return GetCameraURL(pCamera);
 }
@@ -119,7 +106,7 @@ std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 std::string CCameraHandler::GetCameraURL(const uint64_t CamID)
 {
 	cameraDevice* pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return "";
 	return GetCameraURL(pCamera);
 }
@@ -132,7 +119,7 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
 
-	if ((!bHaveUPinURL) && ((pCamera->Username != "") || (pCamera->Password != "")))
+	if ((!bHaveUPinURL) && ((!pCamera->Username.empty()) || (!pCamera->Password.empty())))
 		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
 		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
@@ -146,12 +133,12 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID
 
 CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
-	for (auto & itt : m_cameradevices)
+	for (auto &m : m_cameradevices)
 	{
-		if (itt.ID == CamID)
-			return &itt;
+		if (m.ID == CamID)
+			return &m;
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
@@ -249,7 +236,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 	std::lock_guard<std::mutex> l(m_mutex);
 
 	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == NULL)
+	if (pCamera == nullptr)
 		return false;
 
 	std::string szURL = GetCameraURL(pCamera);
@@ -259,7 +246,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 
 	if (pCamera->ImageURL == "raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
-	else if (pCamera->ImageURL == "uvccapture.cgi")
+	if (pCamera->ImageURL == "uvccapture.cgi")
 		return TakeUVCSnapshot(pCamera->Username, camimage);
 
 	std::vector<std::string> ExtraHeaders;
@@ -269,7 +256,7 @@ bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned cha
 std::string WrapBase64(const std::string &szSource, const size_t lsize = 72)
 {
 	std::string cstring = szSource;
-	std::string ret = "";
+	std::string ret;
 	while (cstring.size() > lsize)
 	{
 		std::string pstring = cstring.substr(0, lsize);
@@ -300,11 +287,11 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	{
 		return false;//no email setup
 	}
-	if (sValue == "")
+	if (sValue.empty())
 	{
 		return false;//no email setup
 	}
-	if (CamIdx == "")
+	if (CamIdx.empty())
 		return false;
 
 	std::vector<std::string> splitresults;
@@ -328,10 +315,10 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 		"<body>\r\n";
 
 	SMTPClient sclient;
-	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-	sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom));
+	sclient.SetTo(CURLEncode::URLDecode(EmailTo));
 	sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+	sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
 	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
 	for (const auto & camIt : splitresults)
@@ -388,10 +375,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto & itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
@@ -415,10 +400,8 @@ namespace http {
 			if (!result.empty())
 			{
 				int ii = 0;
-				for (const auto& itt : result)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					ii++;
@@ -451,7 +434,8 @@ namespace http {
 		{
 			std::vector<unsigned char> camimage;
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage)) {
@@ -477,11 +461,7 @@ namespace http {
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
-			if (
-				(name == "") ||
-				(address == "") ||
-				(timageurl == "")
-				)
+			if ((name.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
 			std::string imageurl;
@@ -516,7 +496,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
@@ -526,12 +506,7 @@ namespace http {
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
-			if (
-				(name == "") ||
-				(senabled == "") ||
-				(address == "") ||
-				(timageurl == "")
-				)
+			if ((name.empty()) || (senabled.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
 			std::string imageurl;
@@ -569,7 +544,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
+			if (idx.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteCamera";
@@ -577,5 +552,5 @@ namespace http {
 			m_sql.DeleteCamera(idx);
 			m_mainworker.m_cameras.ReloadCameras();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

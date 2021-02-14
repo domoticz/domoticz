@@ -10,13 +10,10 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 
 //#define DEBUG_KMTronic
-
-using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 
@@ -30,11 +27,6 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 	m_bHaveReceived = false;
 }
 
-KMTronicSerial::~KMTronicSerial()
-{
-
-}
-
 bool KMTronicSerial::StartHardware()
 {
 	RequestStart();
@@ -46,7 +38,7 @@ bool KMTronicSerial::StartHardware()
 
 	//Start worker thread
 	m_bIsStarted = true;
-	m_thread = std::make_shared<std::thread>(&KMTronicSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -73,7 +65,7 @@ void KMTronicSerial::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())
@@ -137,7 +129,7 @@ bool KMTronicSerial::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_bufferpos = 0;
-	setReadCallback(boost::bind(&KMTronicSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }
@@ -206,7 +198,7 @@ void KMTronicSerial::GetRelayStates()
 					std::stringstream sstr;
 					int iRelay = (iBoard * 8) + ii + 1;
 					sstr << "Board" << int(iBoard + 1) << " - " << int(ii + 1);
-					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
+					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
 					_log.Debug(DEBUG_HARDWARE, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;
@@ -242,7 +234,7 @@ void KMTronicSerial::GetRelayStates()
 			std::stringstream sstr;
 			int iRelay = (ii + 1);
 			sstr << "Relay " << iRelay;
-			SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
+			SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
 			_log.Debug(DEBUG_HARDWARE, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 			if (iRelay > m_TotRelais)
 				m_TotRelais = iRelay;
@@ -270,7 +262,7 @@ void KMTronicSerial::GetRelayStates()
 					std::stringstream sstr;
 					int iRelay = ii + 1;
 					sstr << "Relay " << iRelay;
-					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
+					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
 					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;

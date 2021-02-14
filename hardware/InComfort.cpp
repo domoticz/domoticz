@@ -39,10 +39,6 @@ m_szIPAddress(IPAddress)
 	Init();
 }
 
-CInComfort::~CInComfort(void)
-{
-}
-
 void CInComfort::Init()
 {
 }
@@ -53,7 +49,7 @@ bool CInComfort::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CInComfort::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -106,7 +102,7 @@ void CInComfort::SetSetpoint(const int /*idx*/, const float temp)
 		ParseAndUpdateDevices(jsonData);
 }
 
-std::string CInComfort::GetHTTPData(std::string sURL)
+std::string CInComfort::GetHTTPData(const std::string &sURL)
 {
 	// Get Data
 	std::vector<std::string> ExtraHeaders;
@@ -120,7 +116,7 @@ std::string CInComfort::GetHTTPData(std::string sURL)
 
 std::string CInComfort::SetRoom1SetTemperature(float tempSetpoint)
 {
-	float setpointToSet = (tempSetpoint - 5.0f) * 10.0f;
+	float setpointToSet = (tempSetpoint - 5.0F) * 10.0F;
 
 	std::stringstream sstr;
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
@@ -150,7 +146,7 @@ void CInComfort::SetProgramState(const int /*newState*/)
 {
 }
 
-void CInComfort::ParseAndUpdateDevices(std::string jsonData)
+void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 {
 	Json::Value root;
 	bool bRet = ParseJSon(jsonData, root);
@@ -165,20 +161,20 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		return;
 	}
 
-	float room1Temperature = (root["room_temp_1_lsb"].asInt() + root["room_temp_1_msb"].asInt() * 256) / 100.0f;
-	float room1SetTemperature = (root["room_temp_set_1_lsb"].asInt() + root["room_temp_set_1_msb"].asInt() * 256) / 100.0f;
-	float room1OverrideTemperature = (root["room_set_ovr_1_lsb"].asInt() + root["room_set_ovr_1_msb"].asInt() * 256) / 100.0f;
-	float room2Temperature = (root["room_temp_2_lsb"].asInt() + root["room_temp_2_msb"].asInt() * 256) / 100.0f;
-	float room2SetTemperature = (root["room_temp_set_2_lsb"].asInt() + root["room_temp_set_2_msb"].asInt() * 256) / 100.0f;
-	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0f;
+	float room1Temperature = (root["room_temp_1_lsb"].asInt() + root["room_temp_1_msb"].asInt() * 256) / 100.0F;
+	float room1SetTemperature = (root["room_temp_set_1_lsb"].asInt() + root["room_temp_set_1_msb"].asInt() * 256) / 100.0F;
+	float room1OverrideTemperature = (root["room_set_ovr_1_lsb"].asInt() + root["room_set_ovr_1_msb"].asInt() * 256) / 100.0F;
+	float room2Temperature = (root["room_temp_2_lsb"].asInt() + root["room_temp_2_msb"].asInt() * 256) / 100.0F;
+	float room2SetTemperature = (root["room_temp_set_2_lsb"].asInt() + root["room_temp_set_2_msb"].asInt() * 256) / 100.0F;
+	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0F;
 
 	int statusDisplayCode = root["displ_code"].asInt();
 	//int rssi = root["rf_message_rssi"].asInt();
 	//int rfStatusCounter = root["rfstatus_cntr"].asInt();
 
-	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0f;
-	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0f;
-	float tapWaterTemperature = (root["tap_temp_lsb"].asInt() + root["tap_temp_msb"].asInt() * 256) / 100.0f;
+	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0F;
+	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0F;
+	float tapWaterTemperature = (root["tap_temp_lsb"].asInt() + root["tap_temp_msb"].asInt() * 256) / 100.0F;
 
 	int io = root["IO"].asInt();
 	bool lockout = (io & 0x01) > 0;
@@ -213,7 +209,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 
 	// Compare the time of the last update to the current time.
 	// For items changing frequently, update the value every 5 minutes, for all others update every 15 minutes
-	time_t currentTime = mytime(NULL);
+	time_t currentTime = mytime(nullptr);
 	bool updateFrequentChangingValues = (currentTime - m_LastUpdateFrequentChangingValues) >= 300;
 	if (updateFrequentChangingValues)
 		m_LastUpdateFrequentChangingValues = currentTime;
@@ -280,8 +276,8 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		bool pumpActive = (io & 0x02) > 0;
 		bool tapFunctionActive = (io & 0x04) > 0;
 		bool burnerActive = (io & 0x08) > 0;
-		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active");
-		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active");
-		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active");
+		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active", m_Name);
+		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active", m_Name);
+		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active", m_Name);
 	}
 }

@@ -1,7 +1,7 @@
 <!--
 Aeotec ZW095 Home Energy Meter Gen5
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584689
---><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:005F:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw095.png</MetaDataItem>
@@ -21,6 +21,7 @@ Products that are Z-Wave certified can be used and communicate with other Z-Wave
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1289/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="23 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1596/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2046/xml</Entry>
+	    <Entry author="Muhammad Zaman - mzaman@microsoft.com" date="18 Jan 2021" revision="6">Configure ordinary lifeline association instead of multi channel lifeline association</Entry>
     </ChangeLog>
     <MetaDataItem id="005F" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2046/</MetaDataItem>
     <MetaDataItem id="005F" name="FrequencyName" type="0002">CEPT (Europe)</MetaDataItem>
@@ -250,5 +251,10 @@ Products that are Z-Wave certified can be used and communicate with other Z-Wave
     <Associations num_groups="1">
       <Group index="1" label="Lifeline" max_associations="5"/>
     </Associations>
+  </CommandClass>  
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>false</ForceInstances>
+    </Compatibility>
   </CommandClass>
 </Product>

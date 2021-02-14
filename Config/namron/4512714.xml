@@ -1,0 +1,84 @@
+<?xml version='1.0'?>
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+   <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+   <MetaData>
+      <MetaDataItem name="Name">Namron Z-Wave 4 Channel Wall Remote K8</MetaDataItem>
+      <MetaDataItem name="Description">The remote control is a Z-Wave device that can both control other Z-Wave devices and activate scenes in
+         Gateways. Although it is controlling other devices, the device cannot act as Z-Wave network controller (primary
+         or secondary) and will always need a Z-Wave network controller to be included into a Z-Wave network. It also
+         supports the Over The Air (OTA) feature for the product’s firmware upgrade.
+
+         The remote control has following functions:
+         1. Control of groups of other Z-Wave devices using 'ON', 'OFF' and Dim commands.
+         2. Activation of scenes in Gateway mode.
+
+         The encryption modes that the remote control supports are S0, S2 Authenticated, S2 Unauthenticated. When
+         the remote control is being included into a Z-Wave network, you can use your primary controller/gateway to
+         enable one encryption mode or disable encryption. (The primary controller/gateway shall support
+         encryption mode configuration).
+      </MetaDataItem>
+      <MetaDataItem name="OzwInfoPage">XX http://www.openzwave.com/device-database/0438:a305:0300</MetaDataItem>
+      <MetaDataItem name="ProductPage">https://www.namron.com/products/namron-z-wave-4-kanaler-bryter-k8-854/</MetaDataItem>
+      <MetaDataItem name="ProductSupport">https://www.namron.com/contact/</MetaDataItem>
+      <MetaDataItem name="ProductPic">images/namron/4512714.jpg</MetaDataItem>
+      <MetaDataItem name="ProductManual">https://www.elektroimportoren.no/docs/lib/4512714-Brukerveiledning-5.pdf</MetaDataItem>
+      <MetaDataItem name="WakeupDescription">The remote control is under sleepy mode for most of the time to save battery power. It can not receive wireless
+         command under sleepy mode. Before the gateway interacts data with the remote, the remote control shall be
+         activated manually first. Short press any button to activate the remote control for 3s, and press and hold down
+         I and O buttons of Group 2 over 1 second to activate the remote control</MetaDataItem>
+      <MetaDataItem name="InclusionDescription">Step 1. Make sure the remote control does not belong to any Z-Wave network, short press any button, if LED 
+         indicator does not turn on, the remote control does not belong to any network, then continue step 2,if LED indicator turns on, it means the remote
+         control has already been included to a network, please first set the remote control to exclusion mode (refer to the part Exclusion"" of this manual),
+         then continue step 2.
+         
+         Step 2. Set primary controller/gateway into inclusion mode (Please refer to your primary controllers manual on how to turn your controller into inclusion).
+         
+         Step 3. Press and hold down both buttons I and O of Group 2 over 3 seconds, LED indicator turns on, the remote control will be set to inclusion mode, 
+         and waiting to be included, after 10s LED indicator blinks 6 times quickly to indicate successful inclusion. The remote control is a sleepy device, 
+         after inclusion it will not enter into sleepy mode immediately, and will continue activation status for 30s and wait data interaction from the gateway, 
+         the LED indicator will stay solid on, please be patient to wait LED indicator to turn off.
+      </MetaDataItem>
+      <MetaDataItem name="ExclusionDescription">There are two exclusion methods:
+         Method 1: Exclusion from the primary controller/gateway as follows:
+            1. Set the primary controller/gateway into exclusion mode (Please refer to your primary controllers manual on how to set your controller into exclusion).
+            2. Press and hold down both buttons I and O of Group 2 over 3 seconds, LED indicator turns on, the remote control will be set to exclusion mode, and
+            waiting to be excluded, after 7s LED indicator blinks 4 times quickly to indicate successful exclusion.
+         Method 2: Factory reset the remote control will force the remote control to be excluded from a network. (please refer to the part “Factory Reset” of this manual)
+      </MetaDataItem>
+      <MetaDataItem name="ResetDescription">Press and hold down both buttons I and O of Group 2 for over 10 seconds, LED indicator turns on and then
+         blinks 4 times quickly to indicate successful factory reset.Please use this procedure only when the network
+         primary controller is missing or otherwise inoperable.</MetaDataItem>
+      <MetaDataItem id="0xa305" name="ZWProductPage" type="0x0300">https://products.z-wavealliance.org/products/3639</MetaDataItem>
+      <MetaDataItem id="0xa305" name="FrequencyName" type="0x0300">CEPT</MetaDataItem>
+      <MetaDataItem id="0xa305" name="Identifier" type="0x0300">4512720</MetaDataItem>
+      <ChangeLog>
+         <Entry author="Petter L. H. Eide" date="28 November 2020" revision="1">Initial addition of product definition.</Entry>
+      </ChangeLog>
+   </MetaData>
+  <CommandClass id="112">
+    <!-- Here is a Byte/Int/Short Value Sample -->
+    <Value genre="config" index="1" label="Factory reset" max="21930" min="21930" type="int" units="" value="0" write_only="true">
+      <Help>Set to 21930 to factory reset the device.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+   <!-- Association Groups -->
+   <CommandClass id="133">
+      <Associations num_groups="5">
+         <Group index="1" label="Lifeline" max_associations="1" />
+         <Group index="2" label="Button 1" max_associations="5" />
+         <Group index="3" label="Button 2" max_associations="5" />
+         <Group index="4" label="Button 3" max_associations="5" />
+         <Group index="5" label="Button 4" max_associations="5" />
+      </Associations>
+   </CommandClass>
+</Product>

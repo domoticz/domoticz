@@ -55,10 +55,6 @@ CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
 	Init();
 }
 
-CMeteorologisk::~CMeteorologisk(void)
-{
-}
-
 void CMeteorologisk::Init()
 {
 }
@@ -69,7 +65,7 @@ bool CMeteorologisk::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CMeteorologisk::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -97,7 +93,7 @@ void CMeteorologisk::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
@@ -220,7 +216,7 @@ void CMeteorologisk::GetMeterDetails()
 	Json::Value timeseries = root["properties"]["timeseries"];
 
 	Json::Value selectedTimeserie = 0;
-	time_t now = time(NULL);
+	time_t now = time(nullptr);
 
 	for(int i = 0; i < (int)timeseries.size(); i++)
 	{
@@ -320,7 +316,7 @@ void CMeteorologisk::GetMeterDetails()
 		else
 			wind_chill = temperature;
 
-		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temperature, wind_chill, temperature != -999.9f, true, "Wind");
+		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temperature, wind_chill, temperature != -999.9F, true, "Wind");
 	}
 
 	//UV
@@ -337,7 +333,7 @@ void CMeteorologisk::GetMeterDetails()
 	if (instantData["cloud_area_fraction"].empty() == false)
 	{
 		float cloudcover = instantData["cloud_area_fraction"].asFloat();
-		if (cloudcover >= 0.0f)
+		if (cloudcover >= 0.0F)
 		{
 			SendPercentageSensor(1, 0, 255, cloudcover, "Cloud Cover");
 		}
@@ -347,7 +343,7 @@ void CMeteorologisk::GetMeterDetails()
 	if (!nextOneHour["details"]["precipitation_amount"].empty())
 	{
 		float rainrateph = nextOneHour["details"]["precipitation_amount"].asFloat();
-		if ((rainrateph !=-9999.00f)&&(rainrateph >=0.00f))
+		if ((rainrateph != -9999.00F) && (rainrateph >= 0.00F))
 		{
 			   SendRainRateSensor(1, 255, rainrateph, "Rain");
 		}

@@ -49,7 +49,7 @@ signed int eHouseTCP::GetIndexOfEvent(unsigned char *TempEvent)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void eHouseTCP::ExecQueuedEvents(void)
+void eHouseTCP::ExecQueuedEvents()
 {
 	unsigned int i;
 	unsigned char localy = 1;
@@ -126,28 +126,27 @@ void eHouseTCP::ExecEvent(unsigned int i)
 		SendTCPEvent(EventBuff, EventSize, m_SrvAddrH, m_SrvAddrL, EventsToRun);       //Submit via tcp client to desired Ethernet eHouse controller
 		return;
 	}
-	else
+	//  printf("[Exec Event] Ethernet \r\n");
+	memset(&EventBuff, 0, sizeof(EventBuff));
+	EventSize = 0;
+	memset(EventsToRun, 0, sizeof(EventsToRun));
+	int mmm = 0;
+	for (m = 0; m < EVENT_QUEUE_MAX; m++)
 	{
-		//  printf("[Exec Event] Ethernet \r\n");
-		memset(&EventBuff, 0, sizeof(EventBuff));
-		EventSize = 0;
-		memset(EventsToRun, 0, sizeof(EventsToRun));
-		int mmm = 0;
-		for (m = 0; m < EVENT_QUEUE_MAX; m++)
+		if ((m_EvQ[m]->LocalEventsToRun[0] == devh) && (m_EvQ[m]->LocalEventsToRun[1] == devl) && (m_EvQ[m]->LocalEventsTimeOuts == RUN_NOW))
 		{
-			if ((m_EvQ[m]->LocalEventsToRun[0] == devh) && (m_EvQ[m]->LocalEventsToRun[1] == devl) && (m_EvQ[m]->LocalEventsTimeOuts == RUN_NOW))
-			{
-				//          printf("[Directly ] %02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\r\n",EvQ[m].LocalEventsToRun[0],EvQ[m].LocalEventsToRun[1],EvQ[m].LocalEventsToRun[2],EvQ[m].LocalEventsToRun[3],EvQ[m].LocalEventsToRun[4],EvQ[m].LocalEventsToRun[5],EvQ[m].LocalEventsToRun[6],EvQ[m].LocalEventsToRun[7],EvQ[m].LocalEventsToRun[8],EvQ[m].LocalEventsToRun[9]);
-				m_EvQ[m]->LocalEventsTimeOuts = RE_TIME_REPLAY;								 //Retry timer interval
-				memcpy(&EventBuff[EventBuffSize], m_EvQ[m]->LocalEventsToRun, EVENT_SIZE);   //Add to send buffer
-				EventBuffSize += EVENT_SIZE;
-				EventsToRun[EventSize] = m;			//We store index of events to control it
-				EventSize++;
-				if (EventSize >= MAX_EVENTS_IN_PACK) break;								//As many events as possible
-			}
+			//          printf("[Directly ]
+			//          %02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\r\n",EvQ[m].LocalEventsToRun[0],EvQ[m].LocalEventsToRun[1],EvQ[m].LocalEventsToRun[2],EvQ[m].LocalEventsToRun[3],EvQ[m].LocalEventsToRun[4],EvQ[m].LocalEventsToRun[5],EvQ[m].LocalEventsToRun[6],EvQ[m].LocalEventsToRun[7],EvQ[m].LocalEventsToRun[8],EvQ[m].LocalEventsToRun[9]);
+			m_EvQ[m]->LocalEventsTimeOuts = RE_TIME_REPLAY;				   // Retry timer interval
+			memcpy(&EventBuff[EventBuffSize], m_EvQ[m]->LocalEventsToRun, EVENT_SIZE); // Add to send buffer
+			EventBuffSize += EVENT_SIZE;
+			EventsToRun[EventSize] = m; // We store index of events to control it
+			EventSize++;
+			if (EventSize >= MAX_EVENTS_IN_PACK)
+				break; // As many events as possible
 		}
-		SendTCPEvent(EventBuff, EventSize, devh, devl, EventsToRun);       //Submit via tcp client to desired Ethernet eHouse controller
 	}
+	SendTCPEvent(EventBuff, EventSize, devh, devl, EventsToRun); // Submit via tcp client to desired Ethernet eHouse controller
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 //

@@ -971,6 +971,12 @@ div.item.statusTimeout td#name{
 div.item.statusLowBattery td#name{
     background-color:#DDDF2D;
 }
+div.item.statusDisabled td#name{
+    background-color:#A6A8AA;
+}
+div.item.statusDisabled{
+   	opacity: 0.5;
+}
 div.item.statusEvoSetPointOff td#name{
     background-color:#9b9b9b;
 }

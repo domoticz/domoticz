@@ -1,4 +1,4 @@
-<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/1879 --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/1879 --><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3036:4952</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/14291-switch.png</MetaDataItem>
@@ -19,6 +19,7 @@
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1438/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="24 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1879/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2501/xml</Entry>
+      <Entry author="Brian France" date="23 Nov 2020" revision="6">Added COMMAND_CLASS_BASIC block to set Value type instead of Node Event for Basic Set, default double tap association auto=true</Entry>
     </ChangeLog>
   </MetaData>
   <CommandClass id="112">
@@ -39,7 +40,14 @@
     <Associations num_groups="3">
       <Group index="1" label="Lifeline" max_associations="5"/>
       <Group index="2" label="Basic - Local Load" max_associations="5"/>
-      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5" auto="true" />
     </Associations>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <IgnoreMapping>true</IgnoreMapping>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
   </CommandClass>
 </Product>

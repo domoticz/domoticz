@@ -53,7 +53,7 @@ py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
 static inline void
 py3__Py_XDECREF(PyObject *op)
 {
-	if (op != NULL)
+	if (op != nullptr)
 	{
 		Py_DECREF(op);
 	}
@@ -98,7 +98,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
 		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
-		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char* COMMA PyObject* (*initfunc)(void));
+		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
 		DECLARE_PYTHON_SYMBOL(int, PyType_Ready, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyCallable_Check, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetAttrString, PyObject* pObj COMMA const char*);
@@ -188,17 +188,19 @@ namespace Plugins {
 		PyObject		_Py_NoneStruct;
 
 		SharedLibraryProxy() {
-			shared_lib_ = 0;
+			shared_lib_ = nullptr;
 			_Py_RefTotal = 0;
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef _DEBUG
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python39_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python38_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
@@ -206,6 +208,7 @@ namespace Plugins {
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.9", true);
 				if (!shared_lib_) FindLibrary("python3.8", true);
 				if (!shared_lib_) FindLibrary("python3.7", true);
 				if (!shared_lib_) FindLibrary("python3.6", true);
@@ -319,9 +322,13 @@ namespace Plugins {
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
 		};
-		~SharedLibraryProxy() {};
+		~SharedLibraryProxy() = default;
+		;
 
-		bool Py_LoadLibrary() { return (shared_lib_ != 0); };
+		bool Py_LoadLibrary()
+		{
+			return (shared_lib_ != nullptr);
+		};
 
 #ifndef WIN32
 		private:
@@ -390,20 +397,27 @@ namespace Plugins {
 				else
 				{
 					std::vector<std::string> entries;
-					std::vector<std::string>::const_iterator itt;
 					DirectoryListing(entries, sLibrary, true, false);
-					for (itt = entries.begin(); !shared_lib_ && itt != entries.end(); ++itt)
+					for (const auto &entry : entries)
 					{
-						library = sLibrary + *itt + "/";
+						if (shared_lib_)
+						{
+							break;
+						}
+
+						library = sLibrary + entry + "/";
 						FindLibrary(library, false);
 					}
 
-					std::string filename;
 					entries.clear();
 					DirectoryListing(entries, sLibrary, false, true);
-					for (itt = entries.begin(); !shared_lib_ && itt != entries.end(); ++itt)
+					for (const auto &filename : entries)
 					{
-						filename = *itt;
+						if (shared_lib_)
+						{
+							break;
+						}
+
 						if (filename.length() > 12 &&
 							filename.compare(0, 11, "libpython3.") == 0 &&
 							filename.compare(filename.length() - 3, 3, ".so") == 0 &&
@@ -412,7 +426,6 @@ namespace Plugins {
 							library = sLibrary + filename;
 							shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 						}
-
 					}
 				}
 			}
@@ -521,4 +534,4 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
 #define	PyObject_GetIter		pythonLib->PyObject_GetIter
 #define	PyIter_Next				pythonLib->PyIter_Next
-}
+} // namespace Plugins

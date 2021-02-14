@@ -9,11 +9,12 @@ class csocket;
 
 class MultiFun : public CDomoticzHardwareBase
 {
-public:
-	MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort);
-	virtual ~MultiFun();
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+      public:
+	MultiFun(int ID, const std::string &IPAddress, unsigned short IPPort);
+	~MultiFun() override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -21,11 +22,12 @@ private:
 	bool ConnectToDevice();
 	void DestroySocket();
 
-	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write);
+	int SendCommand(const unsigned char *cmd, unsigned int cmdLength, unsigned char *answer, bool write);
 
 	void GetTemperatures();
 	void GetRegisters(bool FirstTime);
-private:
+
+      private:
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
 	std::shared_ptr<std::thread> m_thread;

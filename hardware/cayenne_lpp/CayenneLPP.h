@@ -41,33 +41,31 @@ class CayenneLPP {
     public:
         CayenneLPP(uint8_t size);
         ~CayenneLPP();
-        
-        void reset(void);
-        uint8_t getSize(void);
-        uint8_t* getBuffer(void);
-        uint8_t copy(uint8_t* buffer);
-        
-        uint8_t addDigitalInput(uint8_t channel, uint8_t value);
-        uint8_t addDigitalOutput(uint8_t channel, uint8_t value);
 
-        uint8_t addAnalogInput(uint8_t channel, float value);
-        uint8_t addAnalogOutput(uint8_t channel, float value);
+	void reset();
+	uint8_t getSize();
+	uint8_t *getBuffer();
+	uint8_t copy(uint8_t *buffer);
 
-        uint8_t addLuminosity(uint8_t channel, uint16_t lux);
-        uint8_t addPresence(uint8_t channel, uint8_t value);
-        uint8_t addTemperature(uint8_t channel, float celsius);
-        uint8_t addRelativeHumidity(uint8_t channel, float rh);
-        uint8_t addAccelerometer(uint8_t channel, float x, float y, float z);
-        uint8_t addBarometricPressure(uint8_t channel, float hpa);
-        uint8_t addGyrometer(uint8_t channel, float x, float y, float z);
-        uint8_t addGPS(uint8_t channel, float latitude, float longitude, float meters);
-    
-    private:
-        uint8_t *buffer;
-        uint8_t maxsize;
-        uint8_t cursor;
-        
-        
+	uint8_t addDigitalInput(uint8_t channel, uint8_t value);
+	uint8_t addDigitalOutput(uint8_t channel, uint8_t value);
+
+	uint8_t addAnalogInput(uint8_t channel, float value);
+	uint8_t addAnalogOutput(uint8_t channel, float value);
+
+	uint8_t addLuminosity(uint8_t channel, uint16_t lux);
+	uint8_t addPresence(uint8_t channel, uint8_t value);
+	uint8_t addTemperature(uint8_t channel, float celsius);
+	uint8_t addRelativeHumidity(uint8_t channel, float rh);
+	uint8_t addAccelerometer(uint8_t channel, float x, float y, float z);
+	uint8_t addBarometricPressure(uint8_t channel, float hpa);
+	uint8_t addGyrometer(uint8_t channel, float x, float y, float z);
+	uint8_t addGPS(uint8_t channel, float latitude, float longitude, float meters);
+
+      private:
+	uint8_t *buffer;
+	uint8_t maxsize;
+	uint8_t cursor;
 };
 
 

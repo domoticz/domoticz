@@ -322,7 +322,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
             function addLevel() {
                 var levels = vm.ngModelCtrl.$modelValue;
-                var levelName = vm.newLevelName.replace(/[:;|<>]/g, '').trim();
+                var levelName = vm.newLevelName.replace(/[;|<>]/g, '').trim();
 
                 var newItem = {
                     level: levels.length,

@@ -65,10 +65,6 @@ CWinddelen::CWinddelen(const int ID, const std::string &IPAddress, const unsigne
 	m_winddelen_per_mill[191] = 3000.0;
 }
 
-CWinddelen::~CWinddelen(void)
-{
-}
-
 void CWinddelen::Init()
 {
 }
@@ -79,7 +75,7 @@ bool CWinddelen::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CWinddelen::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -109,7 +105,7 @@ void CWinddelen::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % WINDDELEN_POLL_INTERVAL == 0)
 		{
@@ -154,7 +150,7 @@ void CWinddelen::GetMeterDetails()
 			return;
 		}
 
-		if (root.size() < 1)
+		if (root.empty())
 		{
 			_log.Log(LOG_ERROR, "Winddelen: Invalid data received!");
 			return;
@@ -211,37 +207,37 @@ void CWinddelen::GetMeterDetails()
 			int windDir = 0;
 			std::string szWD = root["windDirection"].asString();
 			if (szWD == "N")
-				windDir = static_cast<int>(std::rint(0 * 22.5f));
+				windDir = static_cast<int>(std::rint(0 * 22.5F));
 			else if ((szWD == "NNE") || (szWD == "NNO"))
-				windDir = static_cast<int>(std::rint(1 * 22.5f));
+				windDir = static_cast<int>(std::rint(1 * 22.5F));
 			else if ((szWD == "NE") || (szWD == "NO"))
-				windDir = static_cast<int>(std::rint(2 * 22.5f));
+				windDir = static_cast<int>(std::rint(2 * 22.5F));
 			else if ((szWD == "ENE") || (szWD == "ONO"))
-				windDir = static_cast<int>(std::rint(3 * 22.5f));
+				windDir = static_cast<int>(std::rint(3 * 22.5F));
 			else if ((szWD == "E") || (szWD == "O"))
-				windDir = static_cast<int>(std::rint(4 * 22.5f));
+				windDir = static_cast<int>(std::rint(4 * 22.5F));
 			else if ((szWD == "ESE") || (szWD == "OZO"))
-				windDir = static_cast<int>(std::rint(5 * 22.5f));
+				windDir = static_cast<int>(std::rint(5 * 22.5F));
 			else if ((szWD == "SE") || (szWD == "ZO"))
-				windDir = static_cast<int>(std::rint(6 * 22.5f));
+				windDir = static_cast<int>(std::rint(6 * 22.5F));
 			else if ((szWD == "SSE") || (szWD == "ZZO"))
-				windDir = static_cast<int>(std::rint(7 * 22.5f));
+				windDir = static_cast<int>(std::rint(7 * 22.5F));
 			else if ((szWD == "S") || (szWD == "Z"))
-				windDir = static_cast<int>(std::rint(8 * 22.5f));
+				windDir = static_cast<int>(std::rint(8 * 22.5F));
 			else if ((szWD == "SSW") || (szWD == "ZZW"))
-				windDir = static_cast<int>(std::rint(9 * 22.5f));
+				windDir = static_cast<int>(std::rint(9 * 22.5F));
 			else if ((szWD == "SW") || (szWD == "ZW"))
-				windDir = static_cast<int>(std::rint(10 * 22.5f));
+				windDir = static_cast<int>(std::rint(10 * 22.5F));
 			else if ((szWD == "WSW") || (szWD == "WZW"))
-				windDir = static_cast<int>(std::rint(11 * 22.5f));
+				windDir = static_cast<int>(std::rint(11 * 22.5F));
 			else if ((szWD == "SSW") || (szWD == "ZZW"))
-				windDir = static_cast<int>(std::rint(12 * 22.5f));
+				windDir = static_cast<int>(std::rint(12 * 22.5F));
 			else if (szWD == "WNW")
-				windDir = static_cast<int>(std::rint(13 * 22.5f));
+				windDir = static_cast<int>(std::rint(13 * 22.5F));
 			else if (szWD == "NW")
-				windDir = static_cast<int>(std::rint(14 * 22.5f));
+				windDir = static_cast<int>(std::rint(14 * 22.5F));
 			else if (szWD == "NNW")
-				windDir = static_cast<int>(std::rint(15 * 22.5f));
+				windDir = static_cast<int>(std::rint(15 * 22.5F));
 
 			SendWind(m_usMillID, 255, windDir, windSpeed, windSpeed, 0, 0, false, false, "Wind");
 		}
@@ -268,13 +264,13 @@ void CWinddelen::GetMeterDetails()
 
 	int fpos;
 	std::string pusage = stdstring_trim(results[7]);
-	fpos = pusage.find_first_of(" ");
+	fpos = pusage.find_first_of(' ');
 	if (fpos != std::string::npos)
 		pusage = pusage.substr(0, fpos);
 	stdreplace(pusage, ",", "");
 
 	std::string pcurrent = stdstring_trim(results[2]);
-	fpos = pcurrent.find_first_of(" ");
+	fpos = pcurrent.find_first_of(' ');
 	if (fpos != std::string::npos)
 		pcurrent = pcurrent.substr(0, fpos);
 	stdreplace(pcurrent, ",", "");

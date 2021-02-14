@@ -26,7 +26,7 @@ public:
 	/// Construct the server to listen on the specified TCP address and port, and
 	/// serve up files from the given directory.
 	explicit server_base(const server_settings & settings, request_handler & user_request_handler);
-	virtual ~server_base() {}
+	virtual ~server_base() = default;
 
 	/// Run the server's io_service loop.
 	void run();
@@ -39,32 +39,32 @@ public:
 		return "'server_base[" + settings_.to_string() + "]'";
 	}
 protected:
-	void init(init_connectionhandler_func init_connection_handler, accept_handler_func accept_handler);
+  void init(const init_connectionhandler_func &init_connection_handler, accept_handler_func accept_handler);
 
-	/// The io_service used to perform asynchronous operations.
-	boost::asio::io_service io_service_;
+  /// The io_service used to perform asynchronous operations.
+  boost::asio::io_service io_service_;
 
-	/// Acceptor used to listen for incoming connections.
-	boost::asio::ip::tcp::acceptor acceptor_;
+  /// Acceptor used to listen for incoming connections.
+  boost::asio::ip::tcp::acceptor acceptor_;
 
-	/// The handler for all incoming requests.
-	request_handler& request_handler_;
+  /// The handler for all incoming requests.
+  request_handler &request_handler_;
 
-	/// The next connection to be accepted.
-	connection_ptr new_connection_;
+  /// The next connection to be accepted.
+  connection_ptr new_connection_;
 
-	connection_manager connection_manager_;
-	/// server settings
-	server_settings settings_;
+  connection_manager connection_manager_;
+  /// server settings
+  server_settings settings_;
 
-	/// read timeout in seconds
-	int timeout_;
+  /// read timeout in seconds
+  int timeout_;
 
-	/// indicate if the server is running
-	bool is_running;
+  /// indicate if the server is running
+  bool is_running;
 
-	/// indicate if the server is stopped (acceptor and connections)
-	bool is_stop_complete;
+  /// indicate if the server is stopped (acceptor and connections)
+  bool is_stop_complete;
 
 private:
 	/// Handle a request to stop the server.
@@ -79,12 +79,14 @@ public:
 	/// Construct the HTTP server to listen on the specified TCP address and port, and
 	/// serve up files from the given directory.
 	server(const server_settings & settings, request_handler & user_request_handler);
-	virtual ~server() {}
+	~server() override = default;
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const override {
+	std::string to_string() const override
+	{
 		return "'server[" + settings_.to_string() + "]'";
 	}
+
 protected:
 	/// Initialize acceptor
 	void init_connection();
@@ -101,10 +103,11 @@ public:
 	/// serve up files from the given directory.
 	ssl_server(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 	ssl_server(const server_settings & settings, request_handler & user_request_handler);
-	virtual ~ssl_server() {}
+	~ssl_server() override = default;
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const override {
+	std::string to_string() const override
+	{
 		return "'ssl_server[" + settings_.to_string() + "]'";
 	}
 

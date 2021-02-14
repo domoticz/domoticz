@@ -11,10 +11,6 @@ CNotificationPushbullet::CNotificationPushbullet() : CNotificationBase(std::stri
 	SetupConfig(std::string("PushbulletAPI"), _apikey);
 }
 
-CNotificationPushbullet::~CNotificationPushbullet()
-{
-}
-
 bool CNotificationPushbullet::SendMessageImplementation(
 	const uint64_t Idx,
 	const std::string &Name,
@@ -64,5 +60,5 @@ bool CNotificationPushbullet::SendMessageImplementation(
 
 bool CNotificationPushbullet::IsConfigured()
 {
-	return _apikey != "";
+	return !_apikey.empty();
 }

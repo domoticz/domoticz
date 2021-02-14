@@ -4,36 +4,37 @@
 
 class CAnnaThermostat : public CDomoticzHardwareBase
 {
-	struct AnnaLocationInfo {
-		 std::string m_ALocationID;
-		 std::string m_ALocationName;
-		 std::string m_ALocationType;
+	struct AnnaLocationInfo
+	{
+		std::string m_ALocationID;
+		std::string m_ALocationName;
+		std::string m_ALocationType;
 	};
 
-public:
-	CAnnaThermostat(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password);
-	~CAnnaThermostat(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	void SetSetpoint(const int idx, const float temp);
-	void SetProgramState(const int newState);
+      public:
+	CAnnaThermostat(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password);
+	~CAnnaThermostat() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float temp);
+	void SetProgramState(int newState);
 	bool AnnaSetPreset(uint8_t level);
 
-private:
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
-	void OnError(const std::exception e);
+	void OnError(const std::exception &e);
 	bool CheckLoginData();
 	void GetMeterDetails();
-	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-	bool SetAway(const bool bIsAway);
+	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
+	bool SetAway(bool bIsAway);
 	bool AnnaToggleProximity(bool bToggle);
 	bool AnnaGetLocation();
 	bool InitialMessageMigrateCheck();
 	void FixUnit();
 
-private:
+      private:
 	std::string m_IPAddress;
 	unsigned short m_IPPort;
 	std::string m_UserName;

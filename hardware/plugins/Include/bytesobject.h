@@ -9,23 +9,23 @@ extern "C" {
 
 #include <stdarg.h>
 
-/*
-Type PyBytesObject represents a character string.  An extra zero byte is
-reserved at the end to ensure it is zero-terminated, but a size is
-present so strings with null bytes in them can be represented.  This
-is an immutable object type.
+	/*
+	Type PyBytesObject represents a character string.  An extra zero byte is
+	reserved at the end to ensure it is zero-terminated, but a size is
+	present so strings with nullptr bytes in them can be represented.  This
+	is an immutable object type.
 
-There are functions to create new string objects, to test
-an object for string-ness, and to get the
-string value.  The latter function returns a null pointer
-if the object is not of the proper type.
-There is a variant that takes an explicit size as well as a
-variant that assumes a zero-terminated string.  Note that none of the
-functions should be applied to nil objects.
-*/
+	There are functions to create new string objects, to test
+	an object for string-ness, and to get the
+	string value.  The latter function returns a null pointer
+	if the object is not of the proper type.
+	There is a variant that takes an explicit size as well as a
+	variant that assumes a zero-terminated string.  Note that none of the
+	functions should be applied to nil objects.
+	*/
 
-/* Caching the hash (ob_shash) saves recalculation of a string's hash value.
-   This significantly speeds up dict lookups. */
+	/* Caching the hash (ob_shash) saves recalculation of a string's hash value.
+	   This significantly speeds up dict lookups. */
 
 #ifndef Py_LIMITED_API
 typedef struct {
@@ -83,16 +83,15 @@ PyAPI_FUNC(PyObject *) _PyBytes_Join(PyObject *sep, PyObject *x);
 
 /* Provides access to the internal data buffer and size of a string
    object or the default encoded version of an Unicode object. Passing
-   NULL as *len parameter will force the string buffer to be
-   0-terminated (passing a string with embedded NULL characters will
+   nullptr as *len parameter will force the string buffer to be
+   0-terminated (passing a string with embedded nullptr characters will
    cause an exception).  */
-PyAPI_FUNC(int) PyBytes_AsStringAndSize(
-    PyObject *obj,      /* string or Unicode object */
-    char **s,           /* pointer to buffer variable */
-    Py_ssize_t *len     /* pointer to length variable or NULL
-                           (only possible for 0-terminated
-                           strings) */
-    );
+PyAPI_FUNC(int) PyBytes_AsStringAndSize(PyObject *obj,	/* string or Unicode object */
+					char **s,	/* pointer to buffer variable */
+					Py_ssize_t *len /* pointer to length variable or nullptr
+							   (only possible for 0-terminated
+							   strings) */
+);
 
 /* Using the current locale, insert the thousands grouping
    into the string pointed to by buffer.  For the argument descriptions,

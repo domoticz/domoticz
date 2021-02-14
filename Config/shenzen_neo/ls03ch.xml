@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-  <!--
-  Shenzhen NEO Electronics (Neo-CoolCam) Light Switch (3 channel)
-  -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
   <MetaData>
-    <MetaDataItem name="ProductPage">https://www.szneo.com/en/products/show.php?id=237</MetaDataItem>
-    <MetaDataItem name="ProductPic">images/shenzen_neo/ls03ch.jpg</MetaDataItem>
-    <MetaDataItem name="InclusionDescription">Prepaire z-wave controller for inclusion and press any button 3 times within 1.5 seconds to start the pairing process</MetaDataItem>
-    <MetaDataItem name="ExclusionDescription">Prepaire z-wave controller for exclusion and press any button 3 times within 1.5 seconds to start the exclusion process</MetaDataItem>
+    <MetaDataItem name="Name">Shenzhen NEO Electronics (Neo-CoolCam) Light Switch (3 channels)</MetaDataItem>
     <MetaDataItem name="Description">3 gang lightswitch EU 868.42 MHz</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0258:102b:0200</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://szneo.com/en/products/show.php?id=237</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/shenzhen-neo/eu-3.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Set Z-Wave gateway into inclusion mode (refer to gateway user manual).
+Touch any button three times continuously within 1,5 seconds, then Light Switch will enter into inclusion mode.
+Meanwhile, LED light would flash red colour five time on and off alternately.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Set Z-Wave gateway into exclusion mode (refer to gateway user manual).
+Touch any button three times continuously within 1,5 seconds, then Light Switch will enter into exclusion mode.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Touch and hold any button for 10 seconds, then release the button.
+LEF lights would flash red (1CH:pink) color 5 times within 2s after resetting successfully.
+During the resetting process, please make sure the Light Switch is powered on all the time.</MetaDataItem>
+    <MetaDataItem id="102B" name="ZWProductPage" type="0200">https://szneo.com/en/products/show.php?id=237</MetaDataItem>
+    <MetaDataItem id="102B" name="FrequencyName" type="0200">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="102B" name="Identifier" type="0200">EU-3</MetaDataItem>
+    <MetaDataItem id="002B" name="ZWProductPage" type="0003">https://szneo.com/en/products/show.php?id=236</MetaDataItem>
+    <MetaDataItem id="002B" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="002B" name="Identifier" type="0003">US-3</MetaDataItem>
     <ChangeLog>
       <Entry author="Mark Evers - goldwing@outlook.com" date="04 August 2020" revision="1">Initial Release</Entry>
+      <Entry author="Dmitry Blokhin - santafox@gmail.com" date="17 January 2021" revision="2">Added pictures, descriptions and metadata</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->

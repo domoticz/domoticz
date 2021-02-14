@@ -16,12 +16,15 @@
 #define READ_COILS_CMD_LENGTH				11
 #define WRITE_SINGLE_COIL_CMD_LENGTH		12
 
-const char *szDenkoviHardwareNamesTCP[3] = {
-		"WiFi 16 Relays-VCP", 
-		"WiFi 16 Relays-TCP Modbus", 
-		"smartDEN IP-16R-MT"
-		};
-		
+namespace
+{
+	constexpr std::array<const char *, 3> szDenkoviHardwareNamesTCP{
+		"WiFi 16 Relays-VCP",	     //
+		"WiFi 16 Relays-TCP Modbus", //
+		"smartDEN IP-16R-MT",	     //
+	};
+} // namespace
+
 CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int pollInterval, const int model, const int slaveId) :
 	m_szIPAddress(IPAddress),
 	m_pollInterval(pollInterval)
@@ -39,11 +42,6 @@ CDenkoviTCPDevices::CDenkoviTCPDevices(const int ID, const std::string &IPAddres
 	Init();
 }
 
-
-CDenkoviTCPDevices::~CDenkoviTCPDevices()
-{
-}
-
 void CDenkoviTCPDevices::Init()
 {
 }
@@ -59,13 +57,13 @@ bool CDenkoviTCPDevices::StartHardware()
 	m_uiReceivedDataLength = 0;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CDenkoviTCPDevices::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	m_bIsStarted = true;
 	Log(LOG_STATUS, "%s: Started.",szDenkoviHardwareNamesTCP[m_iModel]);
-	return (m_thread != NULL);
+	return (m_thread != nullptr);
 }
 
-void CDenkoviTCPDevices::ConvertResponse(const std::string pData, const size_t length)
+void CDenkoviTCPDevices::ConvertResponse(const std::string &pData, const size_t length)
 {
 	m_pResp.trId[0] = pData[0];
 	m_pResp.trId[1] = pData[1];
@@ -93,7 +91,7 @@ void CDenkoviTCPDevices::CreateRequest(uint8_t * pData, size_t length)
 	pData[7] = m_pReq.fc;
 	pData[8] = m_pReq.address[0];
 	pData[9] = m_pReq.address[1];
-	for (uint8_t ii = 10; ii < length; ii++)
+	for (size_t ii = 10; ii < length; ii++)
 		pData[ii] = m_pReq.data[ii - 10];
 
 }
@@ -115,10 +113,10 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			uint8_t z = 0;
 			for (uint8_t ii = 1; ii < 9; ii++) {
 				z = (firstEight >> (8 - ii)) & 0x01;
-				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (8 - ii)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii), m_Name);
 			}
 			for (uint8_t ii = 1; ii < 9; ii++)
-				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii + 8, 255, ((secondEight >> (8 - ii) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii), m_Name);
 		}
 		break;
 	}
@@ -143,10 +141,10 @@ void CDenkoviTCPDevices::OnData(const unsigned char * pData, size_t length)
 			firstEight = (uint8_t)m_pResp.data[0];
 			secondEight = (uint8_t)m_pResp.data[1];
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, ii, 255, (((firstEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(ii), m_Name);
 			}
 			for (uint8_t ii = 1; ii < 9; ii++) {
-				SendSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii));
+				SendSwitch(DAE_IO_TYPE_RELAY, 8 + ii, 255, (((secondEight >> (ii - 1)) & 0x01) != 0) ? true : false, 0, "Relay " + std::to_string(8 + ii), m_Name);
 			}
 		}
 		else if (m_Cmd == _eDaeTcpState::DAE_WRITE_COIL_CMD && m_uiReceivedDataLength >= WRITE_SINGLE_COIL_CMD_LENGTH) {
@@ -184,7 +182,7 @@ void CDenkoviTCPDevices::OnError(const boost::system::error_code& /*error*/) {
 
 bool CDenkoviTCPDevices::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread != nullptr)
 	{
 		RequestStop();
 		m_thread->join();
@@ -204,7 +202,7 @@ void CDenkoviTCPDevices::Do_Work()
 		halfsec_counter++;
 
 		if (halfsec_counter % 24 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (halfsec_counter % poll_interval == 0) {
 			if (m_bReadingNow == false && m_bUpdateIo == false)

@@ -75,9 +75,9 @@ request_handler::request_handler(const std::string& doc_root, cWebem* webem)
 #endif
 }
 
+#ifndef WEBSERVER_DONT_USE_ZIP
 request_handler::~request_handler()
 {
-#ifndef WEBSERVER_DONT_USE_ZIP
 	if (m_uf!=NULL)
 	{
 		unzClose(m_uf);
@@ -86,8 +86,10 @@ request_handler::~request_handler()
 	if (m_pUnzipBuffer)
 		free(m_pUnzipBuffer);
 	m_pUnzipBuffer=NULL;
-#endif
 }
+#else
+request_handler::~request_handler() = default;
+#endif
 
 #ifndef WEBSERVER_DONT_USE_ZIP
 int request_handler::do_extract_currentfile(unzFile uf, const char* password, std::string &outputstr)
@@ -168,7 +170,8 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	// propagate timestamp to browser
 	reply::add_header(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
-	if (NULL == if_modified) {
+	if (nullptr == if_modified)
+	{
 		// we have no if-modified header, continue to serve content
 		mInfo.is_modified = true;
 		//_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
@@ -181,11 +184,9 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 			//_log.Log(LOG_STATUS, "%s: Delaying status code", full_path.c_str());
 			return false;
 		}
-		else {
-			rep = reply::stock_reply(reply::not_modified);
-			//_log.Log(LOG_STATUS, "%s: Setting status code reply::not_modified", full_path.c_str());
-			return true;
-		}
+		rep = reply::stock_reply(reply::not_modified);
+		//_log.Log(LOG_STATUS, "%s: Setting status code reply::not_modified", full_path.c_str());
+		return true;
 	}
 	mInfo.is_modified = true;
 	// file is newer, force new content
@@ -219,8 +220,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   request_path = myWebem->ExtractRequestPath(request_path);
 
   // Determine the file extension.
-  std::size_t last_slash_pos = request_path.find_last_of("/");
-  std::size_t last_dot_pos = request_path.find_last_of(".");
+  std::size_t last_slash_pos = request_path.find_last_of('/');
+  std::size_t last_dot_pos = request_path.find_last_of('.');
   std::string extension;
   if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
   {
@@ -239,10 +240,10 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	  )
 	{
 		const char *encoding_header;
-		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
+		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != nullptr)
 		{
 			//see if we support gzip
-			bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
+			bHaveGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
 		}
 	}
   }
@@ -266,67 +267,66 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  fastcgi_parser::handlePHP(myWebem->m_settings, request_path, req, rep, mInfo);
 		  return;
 	  }
-	  else
+
+	  mInfo.delay_status = true;
+	  std::string full_path = doc_root_ + request_path;
+	  if (bHaveGZipSupport) // first try gzip version
 	  {
-		mInfo.delay_status = true;
-		std::string full_path = doc_root_ + request_path;
-		if (bHaveGZipSupport) // first try gzip version
-		{
-			full_path += ".gz";
-		}
+		  full_path += ".gz";
+	  }
 
-		std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-		if (is)
-		{
-			mInfo.delay_status = (!bHaveGZipSupport);
-			bHaveLoadedgzip = bHaveGZipSupport;
-			rep.bIsGZIP = bHaveGZipSupport;
-		}
-		else if (bHaveGZipSupport) // try uncompressed version
-		{
-			full_path = doc_root_ + request_path;
-			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-		}
+	  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+	  if (is)
+	  {
+		  mInfo.delay_status = (!bHaveGZipSupport);
+		  bHaveLoadedgzip = bHaveGZipSupport;
+		  rep.bIsGZIP = bHaveGZipSupport;
+	  }
+	  else if (bHaveGZipSupport) // try uncompressed version
+	  {
+		  full_path = doc_root_ + request_path;
+		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+	  }
 
-		// maybe it is a folder, lets add the index file
-		if (!is.is_open() && (full_path.find('.') == std::string::npos))
-		{
-			full_path = doc_root_ + request_path + "/index.html";
-			if (bHaveGZipSupport) // first try gzip version
-			{
-				full_path += ".gz";
-			}
+	  // maybe it is a folder, lets add the index file
+	  if (!is.is_open() && (full_path.find('.') == std::string::npos))
+	  {
+		  full_path = doc_root_ + request_path + "/index.html";
+		  if (bHaveGZipSupport) // first try gzip version
+		  {
+			  full_path += ".gz";
+		  }
 
-			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-			if (is.is_open())
-			{
-				mInfo.delay_status = (!bHaveGZipSupport);
-				bHaveLoadedgzip = bHaveGZipSupport;
-				rep.bIsGZIP = bHaveGZipSupport;
-			}
-			else if (bHaveGZipSupport) // try uncompressed version
-			{
-				full_path = doc_root_ + request_path + "/index.html";
-				is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-			}
+		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+		  if (is.is_open())
+		  {
+			  mInfo.delay_status = (!bHaveGZipSupport);
+			  bHaveLoadedgzip = bHaveGZipSupport;
+			  rep.bIsGZIP = bHaveGZipSupport;
+		  }
+		  else if (bHaveGZipSupport) // try uncompressed version
+		  {
+			  full_path = doc_root_ + request_path + "/index.html";
+			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+		  }
 
-			if (is.is_open())
-			{
-				extension = "html";
-			}
-		}
+		  if (is.is_open())
+		  {
+			  extension = "html";
+		  }
+	  }
 
-		// maybe its a gz file (and clients browser does not support compression)
-		if (!is.is_open() && (!bHaveGZipSupport))
-		{
-			full_path += ".gz";
-			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-			if (is.is_open())
-			{
-				bHaveLoadedgzip = true;
-				mInfo.delay_status = false;
-			}
-		}
+	  // maybe its a gz file (and clients browser does not support compression)
+	  if (!is.is_open() && (!bHaveGZipSupport))
+	  {
+		  full_path += ".gz";
+		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+		  if (is.is_open())
+		  {
+			  bHaveLoadedgzip = true;
+			  mInfo.delay_status = false;
+		  }
+	  }
 
 		if (!is.is_open())
 		{
@@ -337,7 +337,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			return;
 		}
 
-		if (request_path.find("styles/") != std::string::npos) 
+		if (request_path.find("styles/") != std::string::npos)
 		{
 			mInfo.mtime_support = false; // ignore caching on theme files
 		}
@@ -352,20 +352,16 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		// fill out the reply to be sent to the client.
 		if (bHaveLoadedgzip && (!bHaveGZipSupport))
 		{
-			std::string gzcontent((std::istreambuf_iterator<char>(is)),
-				(std::istreambuf_iterator<char>()));
+			std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 
 			CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
-
 			rep.content.append(decompress.psz, decompress.Length);
 		}
 		else
 		{
-			rep.content.append((std::istreambuf_iterator<char>(is)),
-				(std::istreambuf_iterator<char>()));
+			rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 		}
 		rep.status = reply::ok;
-	}
   }
 #ifndef WEBSERVER_DONT_USE_ZIP
   else

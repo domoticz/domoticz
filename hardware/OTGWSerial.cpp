@@ -8,13 +8,10 @@
 #include "../main/localtime_r.h"
 
 #include <algorithm>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
 #include <string>
-
-using namespace boost::placeholders;
 
 #define RETRY_DELAY 30
 #define OTGW_READ_INTERVAL 10
@@ -31,18 +28,13 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
 
-OTGWSerial::~OTGWSerial()
-{
-
-}
-
 bool OTGWSerial::StartHardware()
 {
 	RequestStart();
 
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
-	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
@@ -103,7 +95,7 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_bufferpos=0;
-	setReadCallback(boost::bind(&OTGWSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	m_bRequestVersion = true;
 	return true;
@@ -118,7 +110,7 @@ void OTGWSerial::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())

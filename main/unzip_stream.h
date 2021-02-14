@@ -64,31 +64,38 @@ namespace clx {
 			super(), handler_(h), buffer_(n, 0) {
 			this->setg(&buffer_.at(0), &buffer_.at(npback), &buffer_.at(npback));
 		}
-		
-		virtual ~basic_unzip_streambuf() throw() {}
-		
-	protected:
-		virtual int_type underflow() {
-			if (this->gptr() == this->egptr()) {
+
+		~basic_unzip_streambuf() noexcept override = default;
+
+	      protected:
+		int_type underflow() override
+		{
+			if (this->gptr() == this->egptr())
+			{
 				int_type n = static_cast<int_type>(this->gptr() - this->eback());
-				if (n > npback) n = npback;
+				if (n > npback)
+					n = npback;
 				std::memcpy(&buffer_.at(npback - n), this->gptr() - n, n);
-				
+
 				int_type byte = static_cast<int_type>((buffer_.size() - npback) * sizeof(char_type));
-				int l = unzReadCurrentFile(handler_, reinterpret_cast<char*>(&buffer_.at(npback)), byte - 1);
-				if (l <= 0) return traits::eof();
+				int l = unzReadCurrentFile(handler_, reinterpret_cast<char *>(&buffer_.at(npback)), byte - 1);
+				if (l <= 0)
+					return traits::eof();
 				this->setg(&buffer_.at(npback - n), &buffer_.at(npback), &buffer_.at(npback + l));
 				return traits::to_int_type(*this->gptr());
 			}
-			else return traits::eof();
+			else
+				return traits::eof();
 		}
-		
-		virtual int_type uflow() {
+
+		int_type uflow() override
+		{
 			int_type c = this->underflow();
-			if (!traits::eq_int_type(c, traits::eof())) this->gbump(1);
+			if (!traits::eq_int_type(c, traits::eof()))
+				this->gbump(1);
 			return c;
 		}
-		
+
 	private:
 		typedef std::basic_streambuf<CharT, Traits> super;
 		
@@ -118,11 +125,12 @@ namespace clx {
 			this->rdbuf(&sbuf_);
 			this->open(h);
 		}
-		
-		virtual ~basic_unzip_stream() throw() {
+
+		~basic_unzip_stream() noexcept override
+		{
 			this->close();
 		}
-		
+
 		const string_type& path() const { return path_; }
 		
 	private:

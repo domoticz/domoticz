@@ -26,7 +26,7 @@ define(['app'], function (app) {
 			HideNotify();
 			RefreshHardwareTable();
 		}
-
+		
 		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name == "") {
@@ -40,8 +40,15 @@ define(['app'], function (app) {
 			}
 
 			var bEnabled = $('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
-
 			var datatimeout = $('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
+			
+			var logLevel = 0;
+			if ($("#hardwarecontent #hardwareparamstable #loglevelInfo").prop("checked"))
+				logLevel |= 1;
+			if ($("#hardwarecontent #hardwareparamstable #loglevelStatus").prop("checked"))
+				logLevel |= 2;
+			if ($("#hardwarecontent #hardwareparamstable #loglevelError").prop("checked"))
+				logLevel |= 4;
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
@@ -61,6 +68,7 @@ define(['app'], function (app) {
 				if (bIsOK) {
 					$.ajax({
 						url: "json.htm?type=command&param=updatehardware&htype=94" +
+						"&loglevel=" + logLevel +
 						"&idx=" + idx +
 						"&name=" + encodeURIComponent(name) +
 						"&username=" + encodeURIComponent(($(selector + " #Username").length == 0) ? "" : $(selector + " #Username").val()) +
@@ -95,6 +103,7 @@ define(['app'], function (app) {
 				var Mode2 = $("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&extra=" + encodeURIComponent(extra) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -173,6 +182,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + encodeURIComponent(i2caddress) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -288,6 +298,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&port=" + encodeURIComponent(serialport) +
 					"&extra=" + extra +
 					"&name=" + encodeURIComponent(name) +
@@ -379,6 +390,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&extra=" + extra +
@@ -480,6 +492,7 @@ define(['app'], function (app) {
 
 				/*$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&port=" + refresh +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
@@ -564,6 +577,7 @@ define(['app'], function (app) {
                 }
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&name=" + encodeURIComponent(name) +
@@ -679,6 +693,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
@@ -735,6 +750,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
@@ -786,6 +802,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&port=" + refresh +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
@@ -818,6 +835,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) +
 					"&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) +
@@ -839,6 +857,7 @@ define(['app'], function (app) {
 				var location = $("#hardwarecontent #divlocation #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -870,6 +889,7 @@ define(['app'], function (app) {
 				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) +
 					"&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) +
@@ -899,6 +919,7 @@ define(['app'], function (app) {
 				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&password=" + location +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -923,6 +944,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -953,13 +975,14 @@ define(['app'], function (app) {
 			    console.log("Updating extra1: " + extra);
 
 			    $.ajax({
-			        url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                       "&username=" + encodeURIComponent(apikey) +
-                       "&name=" + encodeURIComponent(name) +
-                       "&enabled=" + bEnabled +
-                       "&idx=" + idx +
-                       "&extra=" + extra +
-                       "&datatimeout=" + datatimeout,
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+						"&loglevel=" + logLevel +
+						"&username=" + encodeURIComponent(apikey) +
+						"&name=" + encodeURIComponent(name) +
+						"&enabled=" + bEnabled +
+						"&idx=" + idx +
+						"&extra=" + extra +
+						"&datatimeout=" + datatimeout,
 			        async: false,
 			        dataType: 'json',
 			        success: function (data) {
@@ -978,6 +1001,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(configlocation) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -1000,6 +1024,7 @@ define(['app'], function (app) {
 				var agreement = $("#hardwarecontent #divenecotoon #agreement").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -1021,6 +1046,7 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var vinnr = $("#hardwarecontent #divtesla #vinnr").val();
+				var apikey = $("#hardwarecontent #divtesla #apikey").val();
 				var activeinterval = parseInt($("#hardwarecontent #divtesla #activeinterval").val());
 				if (activeinterval < 1) {
 					activeinterval = 1;
@@ -1030,15 +1056,20 @@ define(['app'], function (app) {
 					defaultinterval = 20;
 				}
 				var allowwakeup = $("#hardwarecontent #divtesla #comboallowwakeup").val();
+				var extra = vinnr;
+				if (apikey != "") {
+					extra = extra + "|" + btoa(apikey);
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
-					"&extra=" + vinnr +
+					"&extra=" + extra +
 					"&Mode1=" + defaultinterval +
 					"&Mode2=" + activeinterval + 
 					"&Mode3=" + allowwakeup,
@@ -1067,6 +1098,7 @@ define(['app'], function (app) {
 				var allowwakeup = $("#hardwarecontent #divmercedes #comboallowwakeup").val();
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -1100,6 +1132,7 @@ define(['app'], function (app) {
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -1128,6 +1161,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&address=" + encodeURIComponent(mill_name) +
 					"&port=" + encodeURIComponent(nrofwinddelen) +
@@ -1155,6 +1189,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(accessToken) +
 					"&password=" + encodeURIComponent(refreshToken) +
@@ -1195,6 +1230,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
@@ -1235,6 +1271,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
@@ -1264,6 +1301,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -1315,6 +1353,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -1336,6 +1375,7 @@ define(['app'], function (app) {
 			} else if (text.indexOf("Rtl433 RTL-SDR receiver") >= 0) {
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) +
+					"&loglevel=" + logLevel +
 					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout	+
 					"&idx=" + idx +
 					"&extra=" + encodeURIComponent($("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val()),
@@ -1358,9 +1398,11 @@ define(['app'], function (app) {
 				}
 
 				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				
                 $.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
@@ -1396,6 +1438,14 @@ define(['app'], function (app) {
 			var bEnabled = $('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 			var datatimeout = $('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 
+			var logLevel = 0;
+			if ($("#hardwarecontent #hardwareparamstable #loglevelInfo").prop("checked"))
+				logLevel |= 1;
+			if ($("#hardwarecontent #hardwareparamstable #loglevelStatus").prop("checked"))
+				logLevel |= 2;
+			if ($("#hardwarecontent #hardwareparamstable #loglevelError").prop("checked"))
+				logLevel |= 4;
+
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
@@ -1414,6 +1464,7 @@ define(['app'], function (app) {
 				if (bIsOK) {
 					$.ajax({
 						url: "json.htm?type=command&param=addhardware&htype=94" +
+						"&loglevel=" + logLevel +
 						"&name=" + encodeURIComponent(name) +
 						"&username=" + encodeURIComponent(($(selector + " #Username").length == 0) ? "" : $(selector + " #Username").val()) +
 						"&password=" + encodeURIComponent(($(selector + " #Password").length == 0) ? "" : $(selector + " #Password").val()) +
@@ -1467,6 +1518,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&extra=" + encodeURIComponent(owfspath) +
+					"&loglevel=" + logLevel +
 					"&Mode1=" + oneWireSensorPollPeriod + "&Mode2=" + oneWireSwitchPollPeriod + "&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
@@ -1481,6 +1533,7 @@ define(['app'], function (app) {
 			} else if (text.indexOf("Rtl433 RTL-SDR receiver") >= 0) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) +
+					"&loglevel=" + logLevel +
 					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout	+
 					"&extra=" + encodeURIComponent($("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val()),
 					async: false,
@@ -1550,6 +1603,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&name=" + encodeURIComponent(name) +
@@ -1591,7 +1645,9 @@ define(['app'], function (app) {
 				(text.indexOf("Arilux AL-LC0x") >= 0)
 			) {
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1619,12 +1675,12 @@ define(['app'], function (app) {
 				Mode2 = gpioperiod;
 				Mode3 = gpiopollinterval;
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype="
-					+ hardwaretype
-					+ "&name=" + encodeURIComponent(name)
-					+ "&enabled=" + bEnabled
-					+ "&datatimeout=" + datatimeout
-					+ "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1639,13 +1695,13 @@ define(['app'], function (app) {
 				Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
 				Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype="
-					+ hardwaretype
-					+ "&name=" + encodeURIComponent(name)
-					+ "&enabled=" + bEnabled
-					+ "&datatimeout=" + datatimeout
-					+ "&Mode1=" + Mode1
-					+ "&Mode2=" + Mode2,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1 +
+					"&Mode2=" + Mode2,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1674,6 +1730,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&loglevel=" + logLevel +
 					"&address=" + encodeURIComponent(i2caddress) +
 					"&port=" + encodeURIComponent(i2cpath) +
 					"&Mode1=" + encodeURIComponent(i2cinvert),
@@ -1776,6 +1833,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&port=" + encodeURIComponent(serialport) +
 					"&extra=" + extra +
 					"&name=" + encodeURIComponent(name) +
@@ -1835,7 +1893,12 @@ define(['app'], function (app) {
 					extra = $("#hardwarecontent #divevohometcp #controlleridevohometcp").val();
 				}
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + extra,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + address +
+					"&port=" + port +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + extra,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1971,6 +2034,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&name=" + encodeURIComponent(name) +
@@ -2011,7 +2075,12 @@ define(['app'], function (app) {
 					return;
 				}
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + address +
+					"&port=" + port +
+					"&username=" + encodeURIComponent(username) +
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2120,13 +2189,14 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-					 "&address=" + address + "&port=" + port +
-					 "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) +
-					 "&name=" + encodeURIComponent(name) +
-					 "&enabled=" + bEnabled +
-					 "&datatimeout=" + datatimeout +
-					 "&extra=" + encodeURIComponent(extra) +
-					 "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3,
+						"&loglevel=" + logLevel +
+						"&address=" + address + "&port=" + port +
+						"&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) +
+						"&name=" + encodeURIComponent(name) +
+						"&enabled=" + bEnabled +
+						"&datatimeout=" + datatimeout +
+						"&extra=" + encodeURIComponent(extra) +
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2153,7 +2223,10 @@ define(['app'], function (app) {
 					return;
 				}
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2167,7 +2240,10 @@ define(['app'], function (app) {
 			else if(text.indexOf("Meteorologisk") >= 0){
 				var location = $("#hardwarecontent #divlocation #location").val();
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&password=" + encodeURIComponent(location) +
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2193,6 +2269,7 @@ define(['app'], function (app) {
 			var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
 			$.ajax({
 				url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
+				"&loglevel=" + logLevel +
 				"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
 				"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 				"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast,
@@ -2218,6 +2295,7 @@ define(['app'], function (app) {
 				var location = $("#hardwarecontent #divbuienradar #location").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 					"&Mode1=" + timeframe + "&Mode2=" + threshold,
@@ -2263,7 +2341,11 @@ define(['app'], function (app) {
 					extra = extra + "|" + btoa(postdata);
 				}
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + refresh + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + extra + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&port=" + refresh +
+					"&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + extra + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2282,6 +2364,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(configlocation) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
@@ -2307,6 +2390,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&address=" + encodeURIComponent(mill_name) +
 					"&port=" + encodeURIComponent(nrofwinddelen) +
@@ -2332,6 +2416,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(accessToken) +
 					"&password=" + encodeURIComponent(refreshToken) +
@@ -2356,6 +2441,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(apikey) +
 					"&enabled=" + bEnabled +
@@ -2387,11 +2473,12 @@ define(['app'], function (app) {
 
 			    $.ajax({
 			        url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-                       "&name=" + encodeURIComponent(name) +
-                       "&username=" + encodeURIComponent(apikey) +
-                       "&enabled=" + bEnabled +
-                       "&extra=" + extra +
-                       "&datatimeout=" + datatimeout,
+						"&loglevel=" + logLevel +
+						"&name=" + encodeURIComponent(name) +
+						"&username=" + encodeURIComponent(apikey) +
+						"&enabled=" + bEnabled +
+						"&extra=" + extra +
+						"&datatimeout=" + datatimeout,
 			        async: false,
 			        dataType: 'json',
 			        success: function (data) {
@@ -2408,6 +2495,7 @@ define(['app'], function (app) {
 				var agreement = encodeURIComponent($("#hardwarecontent #divenecotoon #agreement").val());
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -2428,6 +2516,7 @@ define(['app'], function (app) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				var vinnr = encodeURIComponent($("#hardwarecontent #divtesla #vinnr").val());
+				var apikey = $("#hardwarecontent #divtesla #apikey").val();
 				var activeinterval = parseInt($("#hardwarecontent #divtesla #activeinterval").val());
 				if (activeinterval < 1) {
 					activeinterval = 1;
@@ -2437,14 +2526,19 @@ define(['app'], function (app) {
 					defaultinterval = 20;
 				}
 				var allowwakeup = $("#hardwarecontent #divtesla #comboallowwakeup").val();
+				var extra = vinnr;
+				if (apikey != "") {
+					extra = extra + "|" + btoa(apikey);
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout +
-					"&extra=" + vinnr +
+					"&extra=" + extra +
 					"&Mode1=" + defaultinterval +
 					"&Mode2=" + activeinterval +
 					"&Mode3=" + allowwakeup,
@@ -2473,6 +2567,7 @@ define(['app'], function (app) {
 				var allowwakeup = $("#hardwarecontent #divmercedes #comboallowwakeup").val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -2506,6 +2601,7 @@ define(['app'], function (app) {
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -2532,6 +2628,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 					"&Mode1=" + Mode1,
@@ -2579,6 +2676,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
 					"&name=" + encodeURIComponent(name) +
@@ -2611,6 +2709,7 @@ define(['app'], function (app) {
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
@@ -3737,6 +3836,7 @@ define(['app'], function (app) {
 								"Address": item.Address,
 								"Port": SerialName,
 								"DataTimeout": item.DataTimeout,
+								"LogLevel": item.LogLevel,
 								"0": item.idx,
 								"1": item.Name,
 								"2": enabledstr,
@@ -3780,20 +3880,17 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
 						else
 							$("#hardwarecontent #hardwareparamstable #combotype").val(data["Extra"]);
-
-						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
-						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
-
 						if (data["Type"].indexOf("I2C ") >= 0) {
 							$("#hardwarecontent #hardwareparamstable #combotype").val(1000);
 						}
 
 						$.devExtra = data["Extra"];
-						UpdateHardwareParamControls();
-
+						
 						// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.
 						if (data["Type"] == "PLUGIN") {
+							$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
+							$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Username").val(data["Username"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Password").val(data["Password"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Address").val(data["Address"])
@@ -3807,8 +3904,19 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode6").val(data["Mode6"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Extra").val(data["Extra"]);
 							UpdateHardwareParamControls();
+							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
 							return;
 						}
+						
+						UpdateHardwareParamControls();
+
+						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
+						$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
+						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
 						if (
 							(data["Type"].indexOf("TE923") >= 0) ||
@@ -4036,7 +4144,14 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
 						}
 						else if (data["Type"].indexOf("Tesla") >= 0) {
-							$("#hardwarecontent #hardwareparamstesla #vinnr").val(data["Extra"]);
+							var tmp = data["Extra"];
+							var tmparray = tmp.split("|");
+							if (tmparray.length >= 1) {
+								$("#hardwarecontent #hardwareparamstesla #vinnr").val(tmparray[0]);
+								if (tmparray.length >= 2) {
+									$("#hardwarecontent #hardwareparamstesla #apikey").val(atob(tmparray[1]));
+								}
+							}
 							$("#hardwarecontent #hardwareparamstesla #defaultinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamstesla #activeinterval").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamstesla #comboallowwakeup").val(data["Mode3"]);
@@ -4302,6 +4417,9 @@ define(['app'], function (app) {
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combodatatimeout").prop('disabled', false);
+			$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', true);
+			$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', true);
+			$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', true);
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 			$("#hardwarecontent #username").show();
@@ -4772,11 +4890,11 @@ define(['app'], function (app) {
 								var PluginParams = '<table class="display plugin" id="' + item.key + '" border="0" cellpadding="0" cellspacing="20"><tr><td> </td></tr>';
 								if (item.wikiURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Wiki URL">Wiki URL</span>:</td>' +
-										'<td><a href="' + item.wikiURL + '">' + item.wikiURL + '</a></td></tr>';
+										'<td><a href="' + item.wikiURL + '" target="_blank">' + item.wikiURL + '</a></td></tr>';
 								}
 								if (item.externalURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Product URL">Product URL</span>:</td>' +
-										'<td><a href="' + item.externalURL + '">' + item.externalURL + '</a></td></tr>';
+										'<td><a href="' + item.externalURL + '" target="_blank">' + item.externalURL + '</a></td></tr>';
 								}
 								if (item.description.length > 0) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
@@ -4793,14 +4911,24 @@ define(['app'], function (app) {
 											PluginParams += '</select></td>';
 										} else {
 											PluginParams += '<td>'
-											if ((typeof (param.password) != "undefined") && (param.password == "true"))
-												PluginParams += '<input type="password" ';
-											else
-												PluginParams += '<input type="text" ';
-											PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
-											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
-											PluginParams += ' /></td>';
+											var nbRows=parseInt(param.rows);
+											if (nbRows >= 0) {
+												PluginParams += '<textarea id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
+												PluginParams += '>';
+												if (typeof (param.default) != "undefined") PluginParams +=  param.default;
+												PluginParams +='</textarea>';
+											} else {
+												if ((typeof (param.password) != "undefined") && (param.password == "true"))
+													PluginParams += '<input type="password" ';
+												else
+													PluginParams += '<input type="text" ';
+												PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
+												if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+  												PluginParams += ' />';
+											}
+											PluginParams += '</td>';
 										}
 									}
 									else {

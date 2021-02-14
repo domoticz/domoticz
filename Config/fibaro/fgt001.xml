@@ -1,4 +1,4 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:1301</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgt001.png</MetaDataItem>
@@ -51,6 +51,7 @@ Main features:
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2586/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2971/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3194/xml</Entry>
+      <Entry author="Mark Ruys - mark@paracas.nl" date="05 Feb 2021" revision="6">Add new configuration settings for firmware 4.7</Entry>
     </ChangeLog>
   </MetaData>
   <!--
@@ -87,11 +88,16 @@ Main features:
     </Value>
     <Value genre="config" index="2" instance="1" label="Additional functions" size="4" type="int" value="1">
       <Help>This parameter allows to enable different additional functions of the device.
-                1) Enable open window detector
-                2) Enable fast open window detector
+                1) Enable open window detector (normal)
+                2) Enable open window detector (rapid)
                 4) Increase receiver sensitivity (shortens battery life)
                 8) Enable LED indications when controlling remotely
                 16) Protect from setting Full ON and Full OFF mode by turning the knob manually
+                32) Device mounted in vertical position (firmware 4.7+)
+                64) Moderate regulator behaviour (instead of rapid, firmware 4.7+))
+                128) Inverted knob operation (firmware 4.7+)
+                256) Heating medium demand reports (firmware 4.7+)
+                512) Detecting heating system failures (firmware 4.7+)
                 NOTE: Parameter values may be combined, e.g. 1+8=9 means than open window detector and LED indications when controlling remotely are enabled.
             </Help>
     </Value>

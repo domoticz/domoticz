@@ -104,13 +104,13 @@ public:
     m_Addr.sin_port = htons(Port);
     
     struct hostent *h;
-    if (Address == NULL || (h=gethostbyname(Address)) == NULL)
+    if (Address == nullptr || (h = gethostbyname(Address)) == nullptr)
     {
-        if (Address != NULL)
-			printf("Error: Get host by name\n");
+	    if (Address != nullptr)
+		    printf("Error: Get host by name\n");
 
-        m_Addr.sin_addr.s_addr  = INADDR_ANY;
-        m_Addr.sin_family       = AF_INET;
+	    m_Addr.sin_addr.s_addr = INADDR_ANY;
+	    m_Addr.sin_family = AF_INET;
     }
     else
     {
@@ -139,12 +139,12 @@ public:
 class XBMCClientUtils
 {
 public:
-  XBMCClientUtils() {}
-  ~XBMCClientUtils() {}
+  XBMCClientUtils() = default;
+  ~XBMCClientUtils() = default;
   static unsigned int GetUniqueIdentifier()
   {
-    static time_t id = time(NULL);
-	return (unsigned int)id;
+	  static time_t id = time(nullptr);
+	  return (unsigned int)id;
   }
 
   static void Clean()
@@ -195,47 +195,46 @@ public:
   {
     m_PacketType = 0;
   }
-  virtual ~CPacket()
-  { }
+  virtual ~CPacket() = default;
 
   bool Send(int Socket, CAddress &Addr, unsigned int UID = XBMCClientUtils::GetUniqueIdentifier())
   {
-    if (m_Payload.size() == 0)
-      ConstructPayload();
-    bool SendSuccessfull = true;
-    int NbrOfPackages = (m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
-    int Send = 0;
-    int Sent = 0;
-    int Left = m_Payload.size();
-    for (int Package = 1; Package <= NbrOfPackages; Package++)
-    {
-      if (Left > MAX_PAYLOAD_SIZE)
-      {
-        Send = MAX_PAYLOAD_SIZE;
-        Left -= Send;
-      }
-      else
-      {
-        Send = Left;
-        Left = 0;
-      }
+	  if (m_Payload.empty())
+		  ConstructPayload();
+	  bool SendSuccessfull = true;
+	  int NbrOfPackages = (m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
+	  int Send = 0;
+	  int Sent = 0;
+	  int Left = m_Payload.size();
+	  for (int Package = 1; Package <= NbrOfPackages; Package++)
+	  {
+		  if (Left > MAX_PAYLOAD_SIZE)
+		  {
+			  Send = MAX_PAYLOAD_SIZE;
+			  Left -= Send;
+		  }
+		  else
+		  {
+			  Send = Left;
+			  Left = 0;
+		  }
 
-      ConstructHeader(m_PacketType, NbrOfPackages, Package, Send, UID, m_Header);
-      char t[MAX_PACKET_SIZE];
-      int i, j;
-      for (i = 0; i < 32; i++)
-        t[i] = m_Header[i];
+		  ConstructHeader(m_PacketType, NbrOfPackages, Package, Send, UID, m_Header);
+		  char t[MAX_PACKET_SIZE];
+		  int i, j;
+		  for (i = 0; i < 32; i++)
+			  t[i] = m_Header[i];
 
-      for (j = 0; j < Send; j++)
-        t[(32 + j)] = m_Payload[j + Sent];
+		  for (j = 0; j < Send; j++)
+			  t[(32 + j)] = m_Payload[j + Sent];
 
-      int rtn = sendto(Socket, t, (32 + Send), 0, Addr.GetAddress(), sizeof(struct sockaddr));
+		  int rtn = sendto(Socket, t, (32 + Send), 0, Addr.GetAddress(), sizeof(struct sockaddr));
 
-      if (rtn != (32 + Send))
-        SendSuccessfull = false;
+		  if (rtn != (32 + Send))
+			  SendSuccessfull = false;
 
-      Sent += Send;
-    }
+		  Sent += Send;
+	  }
     return SendSuccessfull;
   }
 protected:
@@ -301,12 +300,11 @@ private:
   char *m_IconData;
   unsigned short m_IconSize;
 public:
-  virtual void ConstructPayload()
+  void ConstructPayload() override
   {
     m_Payload.clear();
 
-    for (unsigned int i = 0; i < m_DeviceName.size(); i++)
-      m_Payload.push_back(m_DeviceName[i]);
+    std::copy(m_DeviceName.begin(), m_DeviceName.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
@@ -322,7 +320,7 @@ public:
       m_Payload.push_back(m_IconData[ico]);
   }
 
-  CPacketHELO(const char *DevName, unsigned short IconType, const char *IconFile = NULL) : CPacket()
+  CPacketHELO(const char *DevName, unsigned short IconType, const char *IconFile = nullptr)
   {
     m_PacketType = PT_HELO;
 
@@ -332,11 +330,11 @@ public:
 
     m_IconType = IconType;
 
-    if (IconType == ICON_NONE || IconFile == NULL)
+    if (IconType == ICON_NONE || IconFile == nullptr)
     {
-      m_IconData = NULL;
-      m_IconSize = 0;
-      return;
+	    m_IconData = nullptr;
+	    m_IconSize = 0;
+	    return;
     }
 
     std::ifstream::pos_type size;
@@ -358,7 +356,7 @@ public:
     }
   }
 
-  virtual ~CPacketHELO()
+  ~CPacketHELO() override
   {
     m_DeviceName.clear();
     delete[] m_IconData;
@@ -382,17 +380,15 @@ private:
   char *m_IconData;
   unsigned short m_IconSize;
 public:
-  virtual void ConstructPayload()
+  void ConstructPayload() override
   {
     m_Payload.clear();
 
-    for (unsigned int i = 0; i < m_Title.size(); i++)
-      m_Payload.push_back(m_Title[i]);
+    std::copy(m_Title.begin(), m_Title.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
-    for (unsigned int i = 0; i < m_Message.size(); i++)
-      m_Payload.push_back(m_Message[i]);
+    std::copy(m_Message.begin(), m_Message.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
@@ -405,20 +401,20 @@ public:
       m_Payload.push_back(m_IconData[ico]);
   }
 
-  CPacketNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = NULL) : CPacket()
+  CPacketNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = nullptr)
   {
     m_PacketType = PT_NOTIFICATION;
-    m_IconData = NULL;
+    m_IconData = nullptr;
     m_IconSize = 0;
     unsigned int len = 0;
-    if (Title != NULL)
+    if (Title != nullptr)
     {
       len = strlen(Title);
       for (unsigned int i = 0; i < len; i++)
         m_Title.push_back(Title[i]);
     }
 
-    if (Message != NULL)
+    if (Message != nullptr)
     {
       len = strlen(Message);
       for (unsigned int i = 0; i < len; i++)
@@ -426,8 +422,8 @@ public:
     }
     m_IconType = IconType;
 
-    if (IconType == ICON_NONE || IconFile == NULL)
-      return;
+    if (IconType == ICON_NONE || IconFile == nullptr)
+	    return;
 
     std::ifstream::pos_type size;
 
@@ -445,7 +441,7 @@ public:
       m_IconType = ICON_NONE;
   }
 
-  virtual ~CPacketNOTIFICATION()
+  ~CPacketNOTIFICATION() override
   {
     m_Title.clear();
     m_Message.clear();
@@ -487,11 +483,11 @@ private:
   unsigned short m_Amount;
   unsigned short m_Flags;
 public:
-  virtual void ConstructPayload()
+  void ConstructPayload() override
   {
     m_Payload.clear();
 
-    if (m_Button.size() != 0)
+    if (!m_Button.empty())
     {
       if (!(m_Flags & BTN_USE_NAME)) // If the BTN_USE_NAME isn't flagged for some reason
         m_Flags |= BTN_USE_NAME;
@@ -517,19 +513,16 @@ public:
     m_Payload.push_back(((m_Amount & 0xff00) >> 8) );
     m_Payload.push_back( (m_Amount & 0x00ff));
 
-
-    for (unsigned int i = 0; i < m_DeviceMap.size(); i++)
-      m_Payload.push_back(m_DeviceMap[i]);
+    std::copy(m_DeviceMap.begin(), m_DeviceMap.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
 
-    for (unsigned int i = 0; i < m_Button.size(); i++)
-      m_Payload.push_back(m_Button[i]);
+    std::copy(m_Button.begin(), m_Button.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
   }
 
-  CPacketBUTTON(const char *Button, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0) : CPacket()
+  CPacketBUTTON(const char *Button, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0)
   {
     m_PacketType = PT_BUTTON;
     m_Flags      = Flags;
@@ -545,7 +538,7 @@ public:
       m_Button.push_back(Button[i]);
   }
 
-  CPacketBUTTON(unsigned short ButtonCode, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0) : CPacket()
+  CPacketBUTTON(unsigned short ButtonCode, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0)
   {
     m_PacketType = PT_BUTTON;
     m_Flags      = Flags;
@@ -557,7 +550,7 @@ public:
       m_DeviceMap.push_back(DeviceMap[i]);
   }
 
-  CPacketBUTTON(unsigned short ButtonCode, unsigned short Flags, unsigned short Amount = 0) : CPacket()
+  CPacketBUTTON(unsigned short ButtonCode, unsigned short Flags, unsigned short Amount = 0)
   {
     m_PacketType = PT_BUTTON;
     m_Flags      = Flags;
@@ -566,7 +559,7 @@ public:
   }
 
   // Used to send a release event
-  CPacketBUTTON() : CPacket()
+  CPacketBUTTON()
   {
     m_PacketType = PT_BUTTON;
     m_Flags = BTN_UP;
@@ -574,7 +567,7 @@ public:
     m_ButtonCode = 0;
   }
 
-  virtual ~CPacketBUTTON()
+  ~CPacketBUTTON() override
   {
     m_DeviceMap.clear();
     m_Button.clear();
@@ -590,12 +583,11 @@ class CPacketPING : public CPacket
     /* no payload                                                           */
     /************************************************************************/
 public:
-  CPacketPING() : CPacket()
+  CPacketPING()
   {
     m_PacketType = PT_PING;
   }
-  virtual ~CPacketPING()
-  { }
+  ~CPacketPING() override = default;
 };
 
 class CPacketBYE : public CPacket
@@ -604,12 +596,11 @@ class CPacketBYE : public CPacket
     /* no payload                                                           */
     /************************************************************************/
 public:
-  CPacketBYE() : CPacket()
+  CPacketBYE()
   {
     m_PacketType = PT_BYE;
   }
-  virtual ~CPacketBYE()
-  { }
+  ~CPacketBYE() override = default;
 };
 
 class CPacketMOUSE : public CPacket
@@ -634,7 +625,7 @@ public:
     m_Y = Y;
   }
 
-  virtual void ConstructPayload()
+  void ConstructPayload() override
   {
     m_Payload.clear();
 
@@ -646,9 +637,8 @@ public:
     m_Payload.push_back(((m_Y & 0xff00) >> 8));
     m_Payload.push_back( (m_Y & 0x00ff));
   }
-  
-  virtual ~CPacketMOUSE()
-  { }
+
+  ~CPacketMOUSE() override = default;
 };
 
 class CPacketLOG : public CPacket
@@ -675,7 +665,7 @@ public:
     m_AutoPrintf = AutoPrintf;
   }
 
-  virtual void ConstructPayload()
+  void ConstructPayload() override
   {
     m_Payload.clear();
 
@@ -686,14 +676,12 @@ public:
       char* str=&m_Message[0];
       printf("%s\n", str);
     }
-    for (unsigned int i = 0; i < m_Message.size(); i++)
-      m_Payload.push_back(m_Message[i]);
+    std::copy(m_Message.begin(), m_Message.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
   }
-  
-  virtual ~CPacketLOG()
-  { }
+
+  ~CPacketLOG() override = default;
 };
 
 class CPacketACTION : public CPacket
@@ -717,19 +705,17 @@ public:
       m_Action.push_back(Action[i]);
   }
 
-  virtual void ConstructPayload()
+  void ConstructPayload() override
   {
     m_Payload.clear();
 
     m_Payload.push_back(m_ActionType);
-    for (unsigned int i = 0; i < m_Action.size(); i++)
-      m_Payload.push_back(m_Action[i]);
+    std::copy(m_Action.begin(), m_Action.end(), std::back_inserter(m_Payload));
 
     m_Payload.push_back('\0');
   }
-  
-  virtual ~CPacketACTION()
-  { }
+
+  ~CPacketACTION() override = default;
 };
 
 class CXBMCClient
@@ -753,7 +739,7 @@ public:
       m_UID = XBMCClientUtils::GetUniqueIdentifier();
   }
 
-  void SendNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = NULL)
+  void SendNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = nullptr)
   {
     if (m_Socket < 0)
       return;
@@ -762,7 +748,7 @@ public:
     notification.Send(m_Socket, m_Addr, m_UID);
   }
 
-  void SendHELO(const char *DevName, unsigned short IconType, const char *IconFile = NULL)
+  void SendHELO(const char *DevName, unsigned short IconType, const char *IconFile = nullptr)
   {
     if (m_Socket < 0)
       return;

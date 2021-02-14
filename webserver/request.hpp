@@ -53,14 +53,11 @@ public:
 	// Return HTTP header value, or NULL if not found.
 	static const char *get_req_header(const request *preq, const char *name)
 	{
-		std::vector<header>::const_iterator itt;
+		for (const auto &header : preq->headers)
+			if (!mg_strcasecmp(name, header.name.c_str()))
+				return header.value.c_str();
 
-		for (itt=preq->headers.begin(); itt!=preq->headers.end(); ++itt)
-		{
-			if (!mg_strcasecmp(name, itt->name.c_str()))
-				return itt->value.c_str();
-		}
-		return NULL;
+		return nullptr;
 	}
 
 	/** Find the value of a name set by a form submit action */
@@ -124,13 +121,13 @@ public:
 		size_t p = q;
 		int flag_done = 0;
 		while (!flag_done) {
-			q = uri.find("=", p);
+			q = uri.find('=', p);
 			if (q == std::string::npos) {
 				return;
 			}
 			name = uri.substr(p, q - p);
 			p = q + 1;
-			q = uri.find("&", p);
+			q = uri.find('&', p);
 			if (q != std::string::npos) {
 				value = uri.substr(p, q - p);
 			} else {
@@ -138,8 +135,9 @@ public:
 				flag_done = 1;
 			}
 			// the browser sends blanks as +
-			while (1) {
-				size_t p2 = value.find("+");
+			while (true)
+			{
+				size_t p2 = value.find('+');
 				if (p2 == std::string::npos) {
 					break;
 				}

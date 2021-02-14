@@ -10,9 +10,11 @@ private:
 	static std::string convert(char val);
 
 public:
-	CURLEncode() { };
-	virtual ~CURLEncode() { };
-	static std::string URLEncode(const std::string &vData);
-	static std::string URLDecode(const std::string &SRC);
+  CURLEncode() = default;
+  ;
+  virtual ~CURLEncode() = default;
+  ;
+  static std::string URLEncode(const std::string &vData);
+  static std::string URLDecode(const std::string &SRC);
 };
 

@@ -13,7 +13,7 @@
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port) :
 	m_broadcast_address(BroadcastAddress)
@@ -23,7 +23,7 @@ CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned sho
 	m_wol_port = Port;//9;
 }
 
-CWOL::~CWOL(void)
+CWOL::~CWOL()
 {
 	m_bIsStarted = false;
 }
@@ -252,11 +252,11 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_WOL)
 				return;
@@ -269,12 +269,9 @@ namespace http {
 				iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Mac"] = sd[2];
@@ -294,15 +291,11 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string mac = HTMLSanitizer::Sanitize(request::findValue(&req, "mac"));
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(mac == "")
-				)
+			if ((hwid.empty()) || (name.empty()) || (mac.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
@@ -325,16 +318,11 @@ namespace http {
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string mac = HTMLSanitizer::Sanitize(request::findValue(&req, "mac"));
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(mac == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (mac.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
@@ -356,14 +344,11 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
@@ -384,11 +369,11 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
@@ -398,5 +383,5 @@ namespace http {
 			root["title"] = "WOLClearNodes";
 			pHardware->RemoveAllNodes();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

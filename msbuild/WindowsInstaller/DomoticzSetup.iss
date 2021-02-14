@@ -75,7 +75,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filenam
 
 [Run]
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
-Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParamsService}"""; Flags: runhidden; Tasks: RunAsService
+Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
 Filename: "{app}\{#NSSM}"; Parameters: "set {#MyAppName} DependOnService RpcSS LanmanWorkstation"; Flags: runhidden; Tasks: RunAsService
 Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
 
@@ -97,15 +97,32 @@ Type: filesandordirs; Name: "{app}\scripts\dzVents\runtime"
 var
   ConfigPage: TInputQueryWizardPage;
   LogConfigPage: TInputDirWizardPage;
+  LogNoLogButton: TRadioButton;
+  LogUseLogButton: TRadioButton;
+  LogOldNextButtonOnClick: TNotifyEvent;
  
 function GetParams(Value: string): string;
 begin
-  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1];
+  Result := '-www ' + ConfigPage.Values[0] + ' -sslwww ' + ConfigPage.Values[1];
+  if (LogUseLogButton.Checked) then
+    begin
+      Result := Result + ' -log "' + LogConfigPage.Values[0] + '"';
+    end;
 end;
 
-function GetParamsService(Value: string): string;
+{ WORKAROUND }
+{ Checkboxes and Radio buttons created on runtime do }
+{ not scale their height automatically. }
+{ See https://stackoverflow.com/q/30469660/850848 }
+procedure ScaleFixedHeightControl(Control: TButtonControl);
 begin
-  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1];
+  Control.Height := ScaleY(Control.Height);
+end;
+
+procedure UseLogButtonClick(Sender: TObject);
+begin
+  LogConfigPage.Edits[0].Enabled := LogUseLogButton.Checked;
+  LogConfigPage.Buttons[0].Enabled := LogUseLogButton.Checked;
 end;
 
 procedure InitializeWizard;
@@ -131,8 +148,36 @@ begin
     False, 'New Folder');
   LogConfigPage.Add('');
 
+  LogNoLogButton := TRadioButton.Create(WizardForm);
+  LogNoLogButton.Caption := 'No external Log';
+  LogNoLogButton.Checked := True;
+  LogNoLogButton.Parent :=LogConfigPage.Surface;
+  LogNoLogButton.Top := LogConfigPage.Edits[0].Top;
+  LogNoLogButton.OnClick := @UseLogButtonClick;
+  ScaleFixedHeightControl(LogNoLogButton);
+  
+  LogUseLogButton := TRadioButton.Create(WizardForm);
+  LogUseLogButton.Caption := 'Use external Log';
+  LogUseLogButton.Parent := LogConfigPage.Surface;
+  LogUseLogButton.Top :=
+    LogNoLogButton.Top + LogNoLogButton.Height + ScaleY(8);
+  LogUseLogButton.OnClick := @UseLogButtonClick;
+  ScaleFixedHeightControl(LogNoLogButton);
+
+  LogConfigPage.Buttons[0].Top :=
+    LogConfigPage.Buttons[0].Top +
+    ((LogUseLogButton.Top + LogUseLogButton.Height + ScaleY(8)) -
+      LogConfigPage.Edits[0].Top);
+  LogConfigPage.Edits[0].Top :=
+    LogUseLogButton.Top + LogUseLogButton.Height + ScaleY(8);
+  LogConfigPage.Edits[0].Left := LogConfigPage.Edits[0].Left + ScaleX(16);
+  LogConfigPage.Edits[0].Width := LogConfigPage.Edits[0].Width - ScaleX(16);
+  LogConfigPage.Edits[0].TabOrder := LogUseLogButton.TabOrder + 1;
+  LogConfigPage.Buttons[0].TabOrder := LogConfigPage.Edits[0].TabOrder + 1;
+
+  UseLogButtonClick(nil);
+
   LogConfigPage.Values[0] := WizardDirValue+'\log';
- 
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

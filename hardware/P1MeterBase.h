@@ -8,16 +8,18 @@ class P1MeterBase : public CDomoticzHardwareBase
 	friend class P1MeterSerial;
 	friend class P1MeterTCP;
 	friend class CRFXBase;
-public:
-	P1MeterBase(void);
-	~P1MeterBase(void);
 
-	P1Power	m_power;
-	P1Gas	m_gas;
-private:
+      public:
+	P1MeterBase();
+	~P1MeterBase() override;
+
+	P1Power m_power;
+	P1Gas m_gas;
+
+      private:
 	void Init();
 	bool MatchLine();
-	void ParseP1Data(const uint8_t* pDataIn, const int LenIn, const bool disable_crc, int ratelimit);
+	void ParseP1Data(const uint8_t *pDataIn, int LenIn, bool disable_crc, int ratelimit);
 
 	bool CheckCRC();
 
@@ -48,7 +50,7 @@ private:
 	float m_amperagel1;
 	float m_amperagel2;
 	float m_amperagel3;
-	
+
 	float m_powerdell1;
 	float m_powerdell2;
 	float m_powerdell3;
@@ -63,7 +65,7 @@ private:
 	double m_gasclockskew;
 	time_t m_gasoktime;
 
-	//Encryption
+	// Encryption
 	bool m_bIsEncrypted = false;
 	std::vector<char> m_szHexKey;
 	enum class P1EcryptionState
@@ -88,8 +90,8 @@ private:
 	uint32_t m_frameCounter = 0;
 	std::string m_dataPayload;
 	std::string m_gcmTag;
-	uint8_t* m_pDecryptBuffer = nullptr;
+	uint8_t *m_pDecryptBuffer = nullptr;
 	size_t m_DecryptBufferSize = 0;
 	void InitP1EncryptionState();
-	bool ParseP1EncryptedData(const uint8_t p1_byte);
+	bool ParseP1EncryptedData(uint8_t p1_byte);
 };

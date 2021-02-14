@@ -61,13 +61,9 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 	Init();
 }
 
-CHoneywell::~CHoneywell(void)
-{
-}
-
 void CHoneywell::Init()
 {
-	mTokenExpires = mytime(NULL);
+	mTokenExpires = mytime(nullptr);
 }
 
 bool CHoneywell::StartHardware()
@@ -77,7 +73,7 @@ bool CHoneywell::StartHardware()
 	Init();
 	mLastMinute = -1;
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CHoneywell::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	mIsStarted = true;
 	sOnConnected(this);
@@ -111,7 +107,7 @@ void CHoneywell::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % HONEYWELL_POLL_INTERVAL == 0)
 		{
@@ -163,7 +159,7 @@ bool CHoneywell::refreshToken()
 	if (mRefreshToken.empty())
 		return false;
 
-	if (mTokenExpires > mytime(NULL))
+	if (mTokenExpires > mytime(nullptr))
 		return true;
 
 	std::string sResult;
@@ -202,7 +198,7 @@ bool CHoneywell::refreshToken()
 	std::string ei = root["expires_in"].asString();
 	if (at.length() && rt.length() && ei.length()) {
 		int expires_in = std::stoi(ei);
-		mTokenExpires = mytime(NULL) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
+		mTokenExpires = mytime(nullptr) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
 		mAccessToken = at;
 		mRefreshToken = rt;
 		_log.Log(LOG_NORM, "Honeywell: Storing received access & refresh token. Token expires after %d seconds.",expires_in);
@@ -246,14 +242,12 @@ void CHoneywell::GetThermostatData()
 	int devNr = 0;
 	mDeviceList.clear();
 	mLocationList.clear();
-	for (int locCnt = 0; locCnt < (int)root.size(); locCnt++)
+	for (auto location : root)
 	{
-		Json::Value location = root[locCnt];
 		Json::Value devices = location["devices"];
-		for (int devCnt = 0; devCnt < (int)devices.size(); devCnt++)
+		for (auto device : devices)
 		{
-			
-			Json::Value device = devices[devCnt];
+
 			std::string deviceName = device["name"].asString();
 			mDeviceList[devNr] = device;
 			mLocationList[devNr] = location["locationID"].asString();
@@ -283,7 +277,7 @@ void CHoneywell::GetThermostatData()
 			bool bHeating = (mode == "Heat");
 			desc = kHeatingDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10 * devNr + 3, 1, 255, bHeating, 0, desc);
+			SendSwitch(10 * devNr + 3, 1, 255, bHeating, 0, desc, m_Name);
 
 			if(bHeating){
 				temperature = (float)device["changeableValues"]["heatSetpoint"].asFloat();
@@ -302,42 +296,41 @@ void CHoneywell::GetThermostatData()
 			bool bStatus = (operationstatus == "Heat");
 			desc = kHeatingStatusDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10 * devNr + 5, 1, 255, bStatus, 0, desc);
+			SendSwitch(10 * devNr + 5, 1, 255, bStatus, 0, desc, m_Name);
 
 			//std::string operationstatus = device["operationStatus"]["mode"].asString();
 			bool bCStatus = (operationstatus == "Cool");
 			desc = kCoolingStatusDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10 * devNr + 6, 1, 255, bCStatus, 0, desc);
+			SendSwitch(10 * devNr + 6, 1, 255, bCStatus, 0, desc, m_Name);
 
 			//std::string mode = device["changeableValues"]["mode"].asString();
 			bool bCooling = (mode == "Cool");
 			desc = kCoolingDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10 * devNr + 7, 1, 255, bCooling, 0, desc);
+			SendSwitch(10 * devNr + 7, 1, 255, bCooling, 0, desc, m_Name);
 
 			bool fanRequest = device["operationStatus"]["fanRequest"].asBool();
 			desc = kfanRequest;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10 * devNr + 8, 1, 255, fanRequest, 0, desc);
+			SendSwitch(10 * devNr + 8, 1, 255, fanRequest, 0, desc, m_Name);
 
 			bool circulationFanRequest = device["operationStatus"]["circulationFanRequest"].asBool();
 			desc = kcirculationFanRequest;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10 * devNr + 9, 1, 255, circulationFanRequest, 0, desc);
+			SendSwitch(10 * devNr + 9, 1, 255, circulationFanRequest, 0, desc, m_Name);
 
 			devNr++;
+		}
 
-			}
-		
 		bool geoFenceEnabled = location["geoFenceEnabled"].asBool();
 		if (geoFenceEnabled) {
 			
 			Json::Value geofences = location["geoFences"];
 			bool bAway = true;
-			for (int geofCnt = 0; geofCnt < (int)geofences.size(); geofCnt++)
+			for (auto &geofence : geofences)
 			{
-				int withinFence = geofences[geofCnt]["geoOccupancy"]["withinFence"].asInt();
+				int withinFence = geofence["geoOccupancy"]["withinFence"].asInt();
 				if (withinFence > 0) {
 					bAway = false;
 					break;
@@ -345,7 +338,7 @@ void CHoneywell::GetThermostatData()
 			}
 			std::string desc = kAwayDesc;
 			stdreplace(desc, "[name]", location["name"].asString());
-			SendSwitch(10 * devNr + 6, 1, 255, bAway, 0, desc);
+			SendSwitch(10 * devNr + 6, 1, 255, bAway, 0, desc, m_Name);
 		}
 	}
 }
@@ -365,7 +358,7 @@ void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, c
 
 	thermos.temp = Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 //
@@ -423,11 +416,11 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 	}
 	std::string desc = kHeatingDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-	SendSwitch(10 * idx + 3, 1, 255, nHeat, 0, desc);
+	SendSwitch(10 * idx + 3, 1, 255, nHeat, 0, desc, m_Name);
 	
 	desc = kCoolingDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-	SendSwitch(10 * idx + 7, 1, 255, nCool, 0, desc);
+	SendSwitch(10 * idx + 7, 1, 255, nCool, 0, desc, m_Name);
 	
 	if(bCommand){
 		std::string units = mDeviceList[idx]["units"].asString();
@@ -528,8 +521,8 @@ bool CHoneywell::GetSwitchValue(const int NodeID)
 	{
 		int nvalue = atoi(result[0][1].c_str());
 		return (nvalue != light2_sOff);
-	}else{
-		return false;
-		_log.Log(LOG_ERROR, "Honeywell: Error reading switch data!");
 	}
+
+	_log.Log(LOG_ERROR, "Honeywell: Error reading switch data!");
+	return false;
 }

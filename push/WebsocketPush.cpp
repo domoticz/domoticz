@@ -3,10 +3,7 @@
 #include "../webserver/WebsocketHandler.h"
 #include "../main/mainworker.h"
 
-using namespace boost::placeholders;
-
 extern boost::signals2::signal<void(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)> sOnNotificationReceived;
-
 
 CWebSocketPush::CWebSocketPush(http::server::CWebsocketHandler *sock)
 {
@@ -22,10 +19,10 @@ void CWebSocketPush::Start()
 	if (isStarted) {
 		return;
 	}
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CWebSocketPush::OnDeviceReceived, this, _1, _2, _3, _4));
-	m_sDeviceUpdate = m_mainworker.sOnDeviceUpdate.connect(boost::bind(&CWebSocketPush::OnDeviceUpdate, this, _1, _2));
-	m_sNotification = sOnNotificationReceived.connect(boost::bind(&CWebSocketPush::OnNotificationReceived, this, _1, _2, _3, _4, _5, _6));
-	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect(boost::bind(&CWebSocketPush::OnSceneChange, this, _1, _2));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
+	m_sDeviceUpdate = m_mainworker.sOnDeviceUpdate.connect([this](auto id, auto idx) { OnDeviceUpdate(id, idx); });
+	m_sNotification = sOnNotificationReceived.connect([this](const auto &s, const auto &t, const auto &e, auto p, const auto &sound, auto n) { OnNotificationReceived(s, t, e, p, sound, n); });
+	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect([this](auto idx, const auto &name) { OnSceneChange(idx, name); });
 	isStarted = true;
 }
 

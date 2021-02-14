@@ -28,10 +28,6 @@
 #define TADO_TOKEN_MAXLOOPS 12		// Default token validity is 600 seconds before it needs to be refreshed.
 									// Each cycle takes 30-35 seconds, so let's stay a bit on the safe side.
 
-CTado::~CTado(void)
-{
-}
-
 CTado::CTado(const int ID, const std::string &username, const std::string &password):
 m_TadoUsername(username),
 m_TadoPassword(password)
@@ -47,7 +43,7 @@ bool CTado::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CTado::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -83,7 +79,7 @@ bool CTado::StopHardware()
 
 bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 {
-	if (m_TadoAuthToken.size() == 0)
+	if (m_TadoAuthToken.empty())
 		return false;
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -137,7 +133,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	int ServiceIdx = (idx % 1000) % 100;
 
 	// Check if the zone actually exists.
-	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
+	if (m_TadoHomes.empty() || m_TadoHomes[HomeIdx].Zones.empty())
 	{
 		Log(LOG_ERROR, "No such home/zone combo found: %d/%d", HomeIdx, ZoneIdx);
 		return false;
@@ -206,12 +202,12 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 {
 	try
 	{
-		if (m_TadoUsername.size() == 0 && !refreshUsingToken)
+		if (m_TadoUsername.empty() && !refreshUsingToken)
 		{
 			Log(LOG_ERROR, "No username specified.");
 			return false;
 		}
-		if (m_TadoPassword.size() == 0 && !refreshUsingToken)
+		if (m_TadoPassword.empty() && !refreshUsingToken)
 		{
 			Log(LOG_ERROR, "No password specified.");
 			return false;
@@ -261,14 +257,14 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
-		if (authtoken.size() == 0)
+		if (authtoken.empty())
 		{
 			Log(LOG_ERROR, "Received token is zero length.");
 			return false;
 		}
 
 		refreshtoken = _jsRoot["refresh_token"].asString();
-		if (refreshtoken.size() == 0)
+		if (refreshtoken.empty())
 		{
 			Log(LOG_ERROR, "Received refresh token is zero length.");
 			return false;
@@ -432,7 +428,7 @@ void CTado::SendSetPointSensor(const int Idx, const float Temp, const std::strin
 
 	thermos.temp = Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 // Creates or updates on/off switches.
@@ -484,7 +480,7 @@ void CTado::UpdateSwitch(const int Idx, const bool bOn, const std::string &defau
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 // Removes any active overlay from a specific zone.
@@ -497,7 +493,7 @@ bool CTado::CancelOverlay(const int Idx)
 	//int ServiceIdx = (Idx % 1000) % 100;
 
 	// Check if the home and zone actually exist.
-	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
+	if (m_TadoHomes.empty() || m_TadoHomes[HomeIdx].Zones.empty())
 	{
 		Log(LOG_ERROR, "No such home/zone combo found: %d/%d", HomeIdx, ZoneIdx);
 		return false;
@@ -538,7 +534,7 @@ void CTado::Do_Work()
 		iSecCounter++;
 		if (iSecCounter % 12 == 0)
 		{
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (iSecCounter % TADO_POLL_INTERVAL == 0)
@@ -569,10 +565,8 @@ void CTado::Do_Work()
 					continue;
 				}
 				// Else move on to getting zones for each of the homes.
-				else {
-					m_bDoGetZones = true;
-					m_bDoGetHomes = false;
-				}
+				m_bDoGetZones = true;
+				m_bDoGetHomes = false;
 			}
 
 			// Check if we should be collecting zones for each of the homes.
@@ -580,12 +574,13 @@ void CTado::Do_Work()
 			{
 				// Mark that we don't need to collect zones any more.
 				m_bDoGetZones = false;
-				for (int i = 0; i < (int)m_TadoHomes.size(); i++)
+				for (auto &m_TadoHome : m_TadoHomes)
 				{
-					if (!GetZones(m_TadoHomes[i])){
+					if (!GetZones(m_TadoHome))
+					{
 						// Something went wrong, indicate that we do need to collect zones next time.
 						m_bDoGetZones = true;
-						Log(LOG_ERROR, "Failed to get zones for home '%s'", m_TadoHomes[i].Name.c_str());
+						Log(LOG_ERROR, "Failed to get zones for home '%s'", m_TadoHome.Name.c_str());
 					}
 				}
 			}
@@ -669,21 +664,19 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 
 	Debug(DEBUG_HARDWARE, "MatchValueFromJSKey: Got %zu lines from javascript data.", _sJavascriptDataLines.size());
 
-	if (_sJavascriptDataLines.size() <= 0)
+	if (_sJavascriptDataLines.empty())
 	{
 		Log(LOG_ERROR, "Failed to get any lines from javascript environment file.");
 		return false;
 	}
 
 	// Process each line.
-	for (int i = 0; i < (int)_sJavascriptDataLines.size(); i++)
+	for (const auto &_sLine : _sJavascriptDataLines)
 	{
-		std::string _sLine = _sJavascriptDataLines[i];
-
 		Debug(DEBUG_HARDWARE, "MatchValueFromJSKey: Processing line: '%s'", _sLine.c_str());
 
-		std::string _sLineKey = "";
-		std::string _sLineValue = "";
+		std::string _sLineKey;
+		std::string _sLineValue;
 
 		// Let's split each line on a colon.
 		std::vector<std::string> _sLineParts = StringSplitEx(_sLine, ": ", 2);
@@ -692,10 +685,9 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 			continue;
 		}
 
-		for (int j = 0; j < (int)_sLineParts.size(); j++)
+		for (auto _sLinePart : _sLineParts)
 		{
 			// Do some cleanup on the parts, so we only keep the text that we want.
-			std::string _sLinePart = _sLineParts[j];
 			stdreplace(_sLinePart, "\t", "");
 			stdreplace(_sLinePart, "',", "");
 			stdreplace(_sLinePart, "'","");
@@ -703,7 +695,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 
 			// Check if a Key is already set for the key-value pair. If we don't have a key yet
 			// assume that this first entry in the line is the key.
-			if (_sLineKey == "")
+			if (_sLineKey.empty())
 			{
 				_sLineKey = _sLinePart;
 			}
@@ -720,7 +712,6 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 		}
 	}
 
-
 	// Check the map to get the value we were looking for in the first place.
 	if (_mEnvironmentKeys[sKeyName].empty())
 	{
@@ -729,7 +720,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 	}
 
 	sValue = _mEnvironmentKeys[sKeyName];
-	if (sValue.size() == 0)
+	if (sValue.empty())
 	{
 		Log(LOG_ERROR, "Value for key %s is zero length.", sKeyName.c_str());
 		return false;
@@ -738,7 +729,7 @@ bool CTado::MatchValueFromJSKey(const std::string &sKeyName, const std::string &
 }
 
 // Grabs the web app environment file
-bool CTado::GetTadoApiEnvironment(std::string sUrl)
+bool CTado::GetTadoApiEnvironment(const std::string &sUrl)
 {
 	Debug(DEBUG_HARDWARE, "GetTadoApiEnvironment called with sUrl=%s", sUrl.c_str());
 
@@ -766,11 +757,10 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 	// The key values will be stored in a map, lets clean it out first.
 	m_TadoEnvironment.clear();
 
-	for (int i = 0; i < (int)_vKeysToFetch.size(); i++)
+	for (const auto &_sKeyName : _vKeysToFetch)
 	{
 		// Feed the function the javascript response, and have it attempt to grab the provided key's value from it.
 		// Value is stored in m_TadoEnvironment[keyName]
-		std::string _sKeyName = _vKeysToFetch[i];
 		if (!MatchValueFromJSKey(_sKeyName, _sResponse, m_TadoEnvironment[_sKeyName])) {
 			Log(LOG_ERROR, "Failed to retrieve/match key '%s' from the API environment.", _sKeyName.c_str());
 			return false;
@@ -838,14 +828,16 @@ bool CTado::GetHomes() {
 
 	Debug(DEBUG_HARDWARE, "Found %d homes.", _jsAllHomes.size());
 
-	for (int i = 0; i < (int)_jsAllHomes.size(); i++) {
+	for (auto &_jsAllHome : _jsAllHomes)
+	{
 		// Store the tado home information in a map.
 
-		if (!_jsAllHomes[i].isObject()) continue;
+		if (!_jsAllHome.isObject())
+			continue;
 
 		_tTadoHome _structTadoHome;
-		_structTadoHome.Name = _jsAllHomes[i]["name"].asString();
-		_structTadoHome.Id = _jsAllHomes[i]["id"].asString();
+		_structTadoHome.Name = _jsAllHome["name"].asString();
+		_structTadoHome.Id = _jsAllHome["id"].asString();
 		m_TadoHomes.push_back(_structTadoHome);
 
 		Log(LOG_STATUS, "Registered Home '%s' with id %s", _structTadoHome.Name.c_str(), _structTadoHome.Id.c_str());
@@ -879,14 +871,15 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 	}
 
 	// Loop through each of the zones
-	for (int zoneIdx = 0; zoneIdx < (int)_jsRoot.size(); zoneIdx++) {
+	for (auto &zoneIdx : _jsRoot)
+	{
 		_tTadoZone _TadoZone;
 
 		_TadoZone.HomeId = tTadoHome.Id;
-		_TadoZone.Id = _jsRoot[zoneIdx]["id"].asString();
-		_TadoZone.Name = _jsRoot[zoneIdx]["name"].asString();
-		_TadoZone.Type = _jsRoot[zoneIdx]["type"].asString();
-		_TadoZone.OpenWindowDetectionSupported = _jsRoot[zoneIdx]["openWindowDetection"]["supported"].asBool();
+		_TadoZone.Id = zoneIdx["id"].asString();
+		_TadoZone.Name = zoneIdx["name"].asString();
+		_TadoZone.Type = zoneIdx["type"].asString();
+		_TadoZone.OpenWindowDetectionSupported = zoneIdx["openWindowDetection"]["supported"].asBool();
 
 		Log(LOG_STATUS, "Registered Zone %s '%s' of type %s", _TadoZone.Id.c_str(), _TadoZone.Name.c_str(), _TadoZone.Type.c_str());
 
@@ -907,7 +900,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 	try {
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) {
+		if (m_TadoAuthToken.empty() && bSendAuthHeaders)
+		{
 			Log(LOG_ERROR, "No access token available.");
 			return false;
 		}
@@ -916,7 +910,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 
 		// If the supplied postdata validates as json, add an appropriate content type header
-		if (sPostData.size() > 0)
+		if (!sPostData.empty())
 		{
 			if (ParseJSon(sPostData, *(new Json::Value))) {
 				_vExtraHeaders.push_back("Content-Type: application/json");
@@ -942,7 +936,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 			case Post:
 				if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders, true, bIgnoreEmptyResponse))
 				{
-					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
+					for (auto &_vResponseHeader : _vResponseHeaders)
+						_ssResponseHeaderString << _vResponseHeader;
 					Log(LOG_ERROR, "Failed to perform POST request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 					return false;
 				}
@@ -951,7 +946,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 			case Get:
 				if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, bIgnoreEmptyResponse))
 				{
-					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
+					for (auto &_vResponseHeader : _vResponseHeaders)
+						_ssResponseHeaderString << _vResponseHeader;
 					Log(LOG_ERROR, "Failed to perform GET request to Tado Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 					return false;
 				}
@@ -973,7 +969,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string &sUrl,
 				}
 		}
 
-		if (sResponse.size() == 0)
+		if (sResponse.empty())
 		{
 			if (!bIgnoreEmptyResponse) {
 				Log(LOG_ERROR, "Received an empty response from Api.");

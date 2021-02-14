@@ -58,9 +58,14 @@ return {
 			'myGroup'
 		},
 
-		-- http http responses
+		-- http responses
 		httpResponses = {
 			'some callback string'
+		},
+
+		-- shell commmand responses
+		shellCommandResponses = {
+			'another callback string'
 		},
 
 		-- system events

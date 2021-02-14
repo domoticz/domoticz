@@ -170,10 +170,6 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const int BridgeType, co
 	Init();
 }
 
-CLimitLess::~CLimitLess(void)
-{
-}
-
 void CLimitLess::Init()
 {
 	m_CommandCntr = 1;
@@ -215,7 +211,8 @@ bool CLimitLess::StartHardware()
 
 
 	struct hostent* he;
-	if ((he = gethostbyname(m_szIPAddress.c_str())) == NULL) {  // get the host info
+	if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr)
+	{ // get the host info
 		_log.Log(LOG_ERROR, "AppLamp: Error with IP address!...");
 		return false;
 	}
@@ -263,7 +260,7 @@ bool CLimitLess::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CLimitLess::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
 	return (m_thread != nullptr);
@@ -284,7 +281,7 @@ bool CLimitLess::IsDataAvailable(const SOCKET /*sock*/)
 	tv.tv_usec = 0;
 
 	// Wait until timeout or data received.
-	n = select(m_RemoteSocket + 1, &fds, NULL, NULL, &tv);
+	n = select(m_RemoteSocket + 1, &fds, nullptr, nullptr, &tv);
 	return (n > 0);
 }
 
@@ -317,7 +314,6 @@ bool CLimitLess::GetV6BridgeID()
 			{
 				totRetries++;
 				trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*) & si_other, &slen);
-				continue;
 			}
 		//return false;
 		if ((rbuffer[0x00] != 0x28) || (rbuffer[0x15] != 0x00))
@@ -385,7 +381,6 @@ bool CLimitLess::SendV6Command(const uint8_t* pCmd)
 		//8000000015ACCF23F581D8050200340000000000000000000034
 		while ((RBuffer[0x00] == 0x80) && (RBuffer[0x04] == 0x15)) {
 			trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*) & si_other, &slen);
-			continue;
 		}
 		if (trecv < 1)
 			return false;
@@ -455,7 +450,7 @@ void CLimitLess::Do_Work()
 		}
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	if (m_RemoteSocket != INVALID_SOCKET)
@@ -511,7 +506,7 @@ void CLimitLess::Send_V4V5_RGBW_On(const uint8_t dunit, const long delay)
 bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
 	const _tColorSwitch* pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
-	unsigned char* pCMD = NULL;
+	unsigned char *pCMD = nullptr;
 
 	if (m_BridgeType == LBTYPE_V6)
 	{
@@ -570,10 +565,10 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 						pCMD = (unsigned char*)&V6_RGBWW_SetColor;
 					float hsb[3];
 					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0f);
+					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0F);
 					if (pLed->dunit != 5)
 						pCMD[0x09] = pLed->dunit;
 				}
@@ -739,10 +734,10 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 						pCMD = (unsigned char*)&V6_RGBW_SetColor;
 					float hsb[3];
 					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0f);
-					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0f);
+					pCMD[0x05] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x06] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x07] = (unsigned char)(hsb[0] * 255.0F);
+					pCMD[0x08] = (unsigned char)(hsb[0] * 255.0F);
 					if (pLed->dunit != 5)
 						pCMD[0x09] = pLed->dunit;
 				}
@@ -1017,7 +1012,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 					}
 				}
 		*/
-		if (pCMD != NULL)
+		if (pCMD != nullptr)
 		{
 			SendV6Command(pCMD);
 			sleep_milliseconds(100);
@@ -1088,7 +1083,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = (unsigned char)(hsb[0] * 255.0f);
+				int iHue = (unsigned char)(hsb[0] * 255.0F);
 				//The Hue is inverted/swifted 90 degrees
 				iHue = ((255 - iHue) + 192) & 0xFF;
 				RGBWSetColor[1] = (unsigned char)iHue;
@@ -1267,7 +1262,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 				// Convert RGB to HSV
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				int iHue = (unsigned char)(hsb[0] * 255.0f);
+				int iHue = (unsigned char)(hsb[0] * 255.0F);
 				//The Hue is inverted/swifted 90 degrees
 				iHue = ((255 - iHue) + 192) & 0xFF;
 				RGBSetColour[1] = (unsigned char)iHue;
@@ -1404,7 +1399,7 @@ bool CLimitLess::WriteToHardware(const char* pdata, const unsigned char /*length
 		}
 	}
 
-	if (pCMD != NULL)
+	if (pCMD != nullptr)
 	{
 		sendto(m_RemoteSocket, (const char*)pCMD, 3, 0, (struct sockaddr*) & m_stRemoteDestAddr, sizeof(sockaddr_in));
 		sleep_milliseconds(100);
@@ -1424,7 +1419,8 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 
@@ -1441,8 +1437,6 @@ namespace http {
 			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0, 0);
 
 			m_mainworker.RestartHardware(idx);
-
-			return;
 		}
-	}
-}
+	} // namespace server
+} // namespace http
