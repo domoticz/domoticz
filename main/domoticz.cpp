@@ -90,7 +90,7 @@ namespace
 		"\t-weblog file_path (for example /var/log/domoticz_access.log)\n"
 #endif
 		"\t-loglevel (combination of: all,normal,status,error,debug)\n"
-		"\t-debuglevel (combination of: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql)\n"
+		"\t-debuglevel (combination of: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql,auth)\n"
 		"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 		"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
