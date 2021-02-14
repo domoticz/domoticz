@@ -86,7 +86,7 @@ void CLogger::SetLogFlags(const uint32_t iFlags)
 	m_log_flags = iFlags;
 }
 
-// Supported flags: normal,hardware,received,webserver,eventsystem,python,thread_id
+// Supported flags: normal,hardware,received,webserver,eventsystem,python,thread_id,auth
 bool CLogger::SetDebugFlags(const std::string &sFlags)
 {
 	std::vector<std::string> flags;
@@ -123,6 +123,8 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 			iFlags |= DEBUG_THREADIDS;
 		else if (wflag == "sql")
 			iFlags |= DEBUG_SQL;
+		else if (wflag == "auth")
+			iFlags |= DEBUG_AUTH;
 		else
 			return false; // invalid flag
 	}
