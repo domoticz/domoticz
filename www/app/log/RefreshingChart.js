@@ -120,7 +120,8 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                                     }
                                     self.seriesSuppliers.forEach(function (seriesSupplier) {
                                         if (seriesSupplier.chartZoomLevelChanged !== undefined) {
-                                            seriesSupplier.chartZoomLevelChanged(self.chart, zoomLeft, zoomRight);
+                                            seriesSupplier.chartZoomLevelChanged(self.chart,
+                                                e.min !== null ? e.min : xAxis.dataMin, e.max !== null ? e.max : xAxis.dataMax);
                                         }
                                     });
 
