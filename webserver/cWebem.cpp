@@ -16,6 +16,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <jwt-cpp/jwt.h>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -1244,6 +1245,7 @@ namespace http {
 				{
 					return 0;
 				}
+				_log.Debug(DEBUG_AUTH, "Found a X509 Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
 			// Basic Auth header
@@ -1258,39 +1260,120 @@ namespace http {
 
 				ah->user = decoded.substr(0, npos);
 				ah->response = decoded.substr(npos + 1);
+				_log.Debug(DEBUG_AUTH, "Found a Basic Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
 			// Bearer Auth header
 			if (boost::icontains(auth_header, "Bearer "))
 			{
 				std::string decoded = auth_header + 7;
+
+				// Might be a JWT token, find the first dot
 				size_t npos = decoded.find('.');
 				if (npos != std::string::npos)
 				{
-					// Might be a JWT token, decode the first piece to check
+					// Base64decode the first piece to check
 					std::string tokentype = base64_decode(decoded.substr(0,npos));
 					if(tokentype.find("JWT") != std::string::npos)
 					{
-						std::string remainder = decoded.substr(npos + 1);
-						npos = remainder.find('.');
-						if(npos != std::string::npos)
+						// We found the text JWT, now let's really check if it as a valid JWT Token
+						// Step 1: Check if tje JWT has an algorithm in the header AND an issuer (iss) claim in the payload
+						auto decodedJWT = jwt::decode(decoded);
+						if(!decodedJWT.has_algorithm())
 						{
-							ah->method = "JWT";
-							ah->user = base64_decode(remainder.substr(0, npos));
-							ah->response = decoded;
-							ah->nc = tokentype;
-							return 1;
+							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an algorithm!");
+							return 0;
 						}
+						if(!(decodedJWT.has_audience() && decodedJWT.has_issuer()))
+						{
+							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an intended audience and/or issues!");
+							return 0;
+						}
+						// Step 2: Find the audience = our ClientID (~ the Username of the Domoticz User where the userright = ClientID)
+						std::string clientid = decodedJWT.get_audience().cbegin()->data();	// Assumption: only 1 element in the AUD set!
+						_log.Debug(DEBUG_AUTH,"JWT Token audience : %s", clientid.c_str());
+
+						std::string clientsecret;
+						// Check if the audience has been registered as a User (type CLIENTID)
+						for (const auto &my : myWebem->m_userpasswords)
+						{
+							if (my.Username == clientid)
+							{
+								if (my.userrights == URIGHTS_CLIENTID)
+								{
+									clientsecret = my.Password;
+									//_log.Debug(DEBUG_AUTH, "Found pwd (%s)", clientsecret.c_str());
+								}
+							}
+						}
+						if (clientsecret.empty())
+						{
+							_log.Debug(DEBUG_AUTH, "Unable to verify token as no ClientID for the audience has been found!");
+							return 0;
+						}
+						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
+						std::string JWTalgo = decodedJWT.get_algorithm();
+						std::error_code ec;
+						auto JWTverifyer = jwt::verify().with_issuer("domoticz").with_audience(clientid);
+						if (JWTalgo.compare("HS256") == 0)
+						{
+							JWTverifyer.allow_algorithm(jwt::algorithm::hs256{ clientsecret });
+						}
+						else if (JWTalgo.compare("HS384") == 0)
+						{
+							JWTverifyer.allow_algorithm(jwt::algorithm::hs384{ clientsecret });
+						}
+						else if (JWTalgo.compare("HS512") == 0)
+						{
+							JWTverifyer.allow_algorithm(jwt::algorithm::hs512{ clientsecret });
+						}
+						else
+						{
+							_log.Debug(DEBUG_AUTH, "This JWT is signed with an unsupported algorithm (%s)!", JWTalgo.c_str());
+							return 0;
+						}
+						JWTverifyer.expires_at_leeway(60);	// 60 seconds leeway time in case clocks are NOT fully (NTP) synced
+						JWTverifyer.not_before_leeway(60);
+						JWTverifyer.issued_at_leeway(60);
+						JWTverifyer.verify(decodedJWT, ec);
+						if(ec)
+						{
+							_log.Debug(DEBUG_AUTH, "JWT not valid! (%s)", ec.message().c_str());
+							return 0;
+						}
+						// Step 4: Now also check if other mandatory claims (nbf, exp, sub) have been provided
+						if(!(decodedJWT.has_expires_at() && decodedJWT.has_not_before() && decodedJWT.has_issued_at() && decodedJWT.has_subject()))
+						{
+							_log.Debug(DEBUG_AUTH, "JWT mandatory claims NBF, EXP, IAT, SUB are missing!");
+							return 0;
+						}
+						// Step 5: See of the subject (intended user) is available and exists in the User table
+						std::string JWTsubject = decodedJWT.get_subject();
+						for (const auto &my : myWebem->m_userpasswords)
+						{
+							if (my.Username == JWTsubject)
+							{
+								if (my.userrights != URIGHTS_CLIENTID)
+								{
+									_log.Debug(DEBUG_AUTH,"Decoded valid JWT (%s)", JWTsubject.c_str());
+									ah->method = "JWT";
+									ah->user = JWTsubject;
+									ah->response = my.Password;
+									return 1;
+								}
+							}
+						}
+						_log.Debug(DEBUG_AUTH, "JWT contains non-existing user (%s)!", JWTsubject.c_str());
+						return 0;
 					}
 				}
-
-				// No dot found or not a JWT, so assume non-JWT type of Bearer token
+				// No dot found and/or not a JWT, so assume non-JWT type of Bearer token
 				ah->method = "Bearer";
-				ah->user = "";
-				ah->response = decoded;
+				ah->user = "";				// No clue how to deduce the user from the Bearer token provided
+				ah->response = decoded;		// Let's provide the found token as the 'password'
+				_log.Debug(DEBUG_AUTH, "Found a Bearer Token (%s)", decoded.c_str());
 				return 1;
 			}
-
 			return 0;
 		}
 
@@ -1345,7 +1428,8 @@ namespace http {
 				if (my.Username == _ah.user)
 				{
 					int bOK = check_password(&_ah, my.Password, myWebem->m_DigistRealm);
-					if (!bOK)
+					_log.Debug(DEBUG_AUTH, "User %s password check: %d", _ah.user.c_str(), bOK);
+					if (!bOK || my.userrights == URIGHTS_CLIENTID)	// User with ClientID 'rights' are not real users!
 					{
 						m_failcounter++;
 						return 0;
