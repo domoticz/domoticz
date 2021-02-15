@@ -256,7 +256,7 @@ A list of  one or more system triggers.
 `dailyBackupFinished`,
 `hourlyBackupFinished`,
 `monthlyBackupFinished`,
-`resetAllDevicestatus`, <sup>3.1.5</sup>
+`resetAllDeviceStatus`, <sup>3.1.5</sup>
 `resetAllEvents`, <sup>3.1.5</sup>
 
  - The name of the system-event followed by a time constraint, such as:
@@ -268,7 +268,7 @@ A list of  one or more system triggers.
 		-	**hourlyBackupFinished**  - " "
 		-	**monthlyBackupFinished** - " "
 		-	**manualBackupFinished**  - fired when you start a backup using the Domoticz GUI or via **< domoticz IP:domoticz port >**/backupdatabase.php
-		-	**resetAllDevicestatus**  <sup>3.1.5</sup>- fired when the name, description or used / unused state of a device, variable or scene is updated.
+		-	**resetAllDeviceStatus**  <sup>3.1.5</sup>- fired when the name, description or used / unused state of a device, variable or scene is updated.
 		-	**resetAllEvents**        <sup>3.1.5</sup>- fired when a dzVents script in the internal editor changed.
 
 #### timer = { ... }
@@ -2608,7 +2608,7 @@ Check out the documentation [here](https://htmlpreview.github.io/?https://github
 
 ## [3.1.5] ##
 - Add two new system-events triggers as option to the on = { ... } section. Scripts can now also be triggered based on these system-events:
-	 - resetAllDevicestatus ; when the name, description or used / unused state of a device, variable or scene changes
+	 - resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes
 	 - resetAllEvents ; When a dzVents script in the internal editor changed
 
 ## [3.1.4] ##

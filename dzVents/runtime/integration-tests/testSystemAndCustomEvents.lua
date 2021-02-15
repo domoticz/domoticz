@@ -53,7 +53,7 @@ describe('System events', function()
 			assert.is_true(os.execute('cat ' .. dumpfile .. ' |  grep "type: resetAllEvents"  > /dev/null ' ))
 		end)
 
-		it('should log resetAllDevicestatues ', function()
+		it('should log resetAllDeviceStatus ', function()
 			assert.is_true(os.execute('cat ' .. dumpfile .. ' |  grep "type: resetAllDevice"   > /dev/null ' ))
 		end)
 	end)
