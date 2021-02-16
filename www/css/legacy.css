@@ -1025,6 +1025,9 @@ div.item.statusEvoSetPointMin td#name{
 	font-style: normal;
 	color: #bbd;
 }
+.zwave_help div {
+	padding-left: 2em;
+}
 .zwave_last_update {
 	font-style: italic;
 	font-size: smaller;
