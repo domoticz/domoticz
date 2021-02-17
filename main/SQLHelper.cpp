@@ -3334,7 +3334,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 }
 #endif
 
-void CSQLHelper::PerformThreadedAction(const _tTaskItem itt)
+void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 {
 	if (itt._ItemType == TITEM_EXECUTESHELLCOMMAND)
 	{

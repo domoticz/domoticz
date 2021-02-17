@@ -1550,6 +1550,10 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 	background-image: url("../images/evohome/DayOff.png");
 }
 
+.ui-icon-DayOffWithEco:after {
+	background-image: url("../images/evohome/DayOffWithEco.png");
+}
+
 .ui-icon-HeatingOff:after {
 	background-image: url("../images/evohome/HeatingOff.png");
 }

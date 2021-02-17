@@ -740,7 +740,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 		{
 			int unit = atoi(result[row][0].c_str());
 			m_zones[unit] = atol(result[row][1].c_str());
-			if (m_zones[unit] == (unsigned long)(unit + 92000)) // mark manually added, unlinked zone as free
+			if (m_zones[unit] == uint64_t(unit) + 92000) // mark manually added, unlinked zone as free
 				m_zones[unit] = 0;
 		}
 		m_zones[0] = 1;

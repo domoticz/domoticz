@@ -37,18 +37,18 @@ bool CEvohomeBase::m_bDebug=true;
 bool CEvohomeBase::m_bDebug=false;
 #endif
 
-constexpr std::array<const char *, 7> CEvohomeBase::m_szControllerMode{ "Normal", "Economy", "Away", "Day Off", "Custom", "Heating Off", "Unknown" };
-constexpr std::array<const char *, 7> CEvohomeBase::m_szWebAPIMode{ "Auto", "AutoWithEco", "Away", "DayOff", "Custom", "HeatingOff", "Unknown" };
+constexpr std::array<const char *, 8> CEvohomeBase::m_szControllerMode{ "Normal", "Economy", "Away", "Day Off", "Day Off With Eco", "Custom", "Heating Off", "Unknown" };
+constexpr std::array<const char *, 8> CEvohomeBase::m_szWebAPIMode{ "Auto", "AutoWithEco", "Away", "DayOff", "DayOffWithEco", "Custom", "HeatingOff", "Unknown" };
 constexpr std::array<const char *, 7> CEvohomeBase::m_szZoneMode{ "Auto", "PermanentOverride", "TemporaryOverride", "OpenWindow", "LocalOverride", "RemoteOverride", "Unknown" };
 
 const char* CEvohomeBase::GetControllerModeName(uint8_t nControllerMode)
 {
-	return m_szControllerMode[std::min(nControllerMode,(uint8_t)6)];
+	return m_szControllerMode[std::min(nControllerMode,(uint8_t)7)];
 }
 
 const char* CEvohomeBase::GetWebAPIModeName(uint8_t nControllerMode)
 {
-	return m_szWebAPIMode[std::min(nControllerMode,(uint8_t)6)];
+	return m_szWebAPIMode[std::min(nControllerMode,(uint8_t)7)];
 }
 
 const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)

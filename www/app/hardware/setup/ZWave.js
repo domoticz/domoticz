@@ -845,6 +845,16 @@ define(['app'], function (app) {
 			});
 		};
 
+		HtmlFormatString = function(s) {
+			s = s.trim();
+			s = s.replace(/'\r/g, '');
+			s = s.replace(/\. *\n[ \t]*([^0-9 \t•\*-])/g, '. $1');
+			s = s.replace(/\n[\t ]+([0-9•\*-][^\n]*)/g, '<div>$1</div>');
+			s = s.replace(/<\/div>\n/g, '</div>');
+			s = s.replace(/\n/g, '<br/>');
+			return s;
+		}
+
 		RefreshOpenZWaveNodeTable = function () {
 			$('#modal').show();
 
@@ -1041,8 +1051,8 @@ define(['app'], function (app) {
 									szConfig += " (" + $.t("actual") + ": " + item.value + ")";
 								}
 								szConfig += "<br /><br />";
-								if (item.help !== "") {
-									szConfig += '<span class="zwave_help">' + item.help + '</span><br>';
+								if (item.help.trim() !== "") {
+									szConfig += '<span class="zwave_help">' + HtmlFormatString(item.help) + '</span><br>';
 								}
 /*								
 								if (item.LastUpdate.length > 1) {

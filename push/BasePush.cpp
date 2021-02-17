@@ -480,7 +480,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			if (devType == pTypeHUM)
 				sprintf(szData, "%d", nValue);
 			else
-				sprintf(szData, "%g", std::stof(rawsendValue));
+				strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Humidity Status")
 		{
@@ -488,7 +488,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Barometer")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Forecast")
 		{
@@ -503,15 +503,15 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Altitude")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "UV")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Direction")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Direction string")
 		{
@@ -549,11 +549,11 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Rain rate")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Total rain")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Counter" || vType == "Counter Incremental" )
 		{
@@ -597,7 +597,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 			int level = atoi(rawsendValue.c_str());
 
 			if (maxDimLevel != 0)
-				level = (int) float((100.0f / float(maxDimLevel)) * level);
+				level = (int) float((100.0F / float(maxDimLevel)) * level);
 
 			if (lstatus.find("Off") != std::string::npos)
 				level = 0;
@@ -606,11 +606,11 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Instant")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2"))
 		{
@@ -622,11 +622,11 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Usage current")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Delivery current")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Gas usage")
 		{
@@ -634,15 +634,15 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Weight")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Voltage")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Value")
 		{
-			sprintf(szData, "%d", std::stoi(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Visibility")
 		{
@@ -660,7 +660,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Solar Radiation")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Soil Moisture")
 		{
@@ -672,7 +672,7 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Percentage")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Fanspeed")
 		{
@@ -680,11 +680,11 @@ std::string CBasePush::ProcessSendValue(const uint64_t DeviceRowIdx, const std::
 		}
 		else if (vType == "Pressure")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else if (vType == "Lux")
 		{
-			sprintf(szData, "%g", std::stof(rawsendValue));
+			strcpy(szData, rawsendValue.c_str());
 		}
 		else
 			return ""; //unhandled type

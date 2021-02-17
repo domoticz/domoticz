@@ -256,16 +256,20 @@ A list of  one or more system triggers.
 `dailyBackupFinished`,
 `hourlyBackupFinished`,
 `monthlyBackupFinished`,
+`resetAllDeviceStatus`, <sup>3.1.5</sup>
+`resetAllEvents`, <sup>3.1.5</sup>
 
  - The name of the system-event followed by a time constraint, such as:
 	`['start']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if domoticz is  started, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [time trigger rules](#timer_trigger_rules).
 	-   **start**  - fired when Domoticz has started.
 	-   **stop**  - fired when Domoticz is shutting down. As you probably can imagine you have only a limited amount of time - also depending on the load on your system -  to have Domoticz do stuff when your script has been completed. Some commands will probably not be executed. Just give it a try.
 	-  **Backups** - the trigger item (2nd parameter of the execute function) is a table that holds information about the newly created backup (location,  duration in seconds and type).  You could use this information to copy the file to some other location or for another purpose.
-		-	**dailyBackupFinished**	- automatic backup when set in domoticz
-		-	**hourlyBackupFinished**	 -							  " "
+		-	**dailyBackupFinished**   - automatic backup when set in domoticz
+		-	**hourlyBackupFinished**  - " "
 		-	**monthlyBackupFinished** - " "
 		-	**manualBackupFinished**  - fired when you start a backup using the Domoticz GUI or via **< domoticz IP:domoticz port >**/backupdatabase.php
+		-	**resetAllDeviceStatus**  <sup>3.1.5</sup>- fired when the name, description or used / unused state of a device, variable or scene is updated.
+		-	**resetAllEvents**        <sup>3.1.5</sup>- fired when a dzVents script in the internal editor changed.
 
 #### timer = { ... }
 A list of one ore more time 'rules' like `every minute` or `at 17:*`. See [*timer* trigger rules](#timer_trigger_rules). If any or the rules matches with the current time/date then your execute function is called. E.g.: `on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }`.
@@ -1004,8 +1008,8 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateHistory( date, sValues )**: *Strings* <sup>3.1.3</sup> *function* Managed counter only! Used to write values to short or long term storage.
 ```Lua
 	local mCounter = domoticz.devices('device name')
-	mCounter.updateHistory('2021-01-22', 10;1777193') -- Write to long term storage (meter_calendar table)
-	mCounter.updateHistory('2021-01-22 10:05:02', 10;1777193') -- Write to short term storage (meter table)
+	mCounter.updateHistory('2021-01-22', '10;1777193') -- Write to long term storage (meter_calendar table)
+	mCounter.updateHistory('2021-01-22 10:05:02', '10;1777193') -- Write to short term storage (meter table)
 ```
  - **incrementCounter(value)**: *Function*. (counter incremental) Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29). To update with a complete new value you will have to do some calculation and take the counter divider into account.
 ```Lua
@@ -2258,9 +2262,8 @@ return {
  - **url**: *String*.
  - **method**: *String*. Optional. Either `'GET'` (default), `'POST'`, `'PUT'`<sup>3.0.2</sup>  or `'DELETE'`<sup>3.0.2</sup> .
  - **callback**: *String*. Optional. A custom string that will be used by dzVents to trigger the callback handler script(s).
- - **headers**: *Table*. Optional. A Lua table with additions http request-headers.
- - **postData**: Optional. When doing a `POST`, `PUT` <sup>3.0.2</sup> or `DELETE`<sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
-
+ - **headers**: *Table / String*. Optional. A Lua table or JSON string with additional http request-headers.
+ - **postData**: *Table / String*. Optional. When doing a `POST`, `PUT` <sup>3.0.2</sup> or `DELETE`<sup>3.0.2</sup> this data will be the payload of the request (body). If you provide a Lua table then this will automatically be converted to json and the request-header `application/json` is set. So no need to do that manually.
 Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 ### The response object
@@ -2602,6 +2605,11 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+
+## [3.1.5] ##
+- Add two new system-events triggers as option to the on = { ... } section. Scripts can now also be triggered based on these system-events:
+	 - resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes
+	 - resetAllEvents ; When a dzVents script in the internal editor changed
 
 ## [3.1.4] ##
 - Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind

@@ -91,7 +91,7 @@ void CDenkoviTCPDevices::CreateRequest(uint8_t * pData, size_t length)
 	pData[7] = m_pReq.fc;
 	pData[8] = m_pReq.address[0];
 	pData[9] = m_pReq.address[1];
-	for (uint8_t ii = 10; ii < length; ii++)
+	for (size_t ii = 10; ii < length; ii++)
 		pData[ii] = m_pReq.data[ii - 10];
 
 }

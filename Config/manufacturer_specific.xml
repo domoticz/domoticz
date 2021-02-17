@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="154" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="162" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -280,6 +280,7 @@
     <Product config="assa_abloy/PushButtonDeadbolt.xml" id="0209" name="Yale Push Button Deadbolt (YRD210)" type="0004"/>
     <Product config="assa_abloy/PushButtonDeadbolt.xml" id="aa00" name="Yale Push Button Deadbolt (YRD210)" type="0004"/>
     <Product config="assa_abloy/PushButtonDeadbolt.xml" id="0600" name="Yale Push Button Deadbolt (YRD216)" type="8004"/>
+    <Product config="assa_abloy/ProSLKey-FreeDeadbolt.xml" id="0508" name="Yale ProSL Push Button Deadbolt (YRD136)" type="803b"/>
     <Product config="assa_abloy/TouchDeadbolt.xml" id="0000" name="Yale Key Free Touchscreen Deadbolt (YRD240)" type="0006"/>
     <Product config="assa_abloy/KeyfreeConnected.xml" id="0000" name="Yale Keyless Connected Smart Lock (YSL)" type="0007"/>
     <Product config="assa_abloy/KeyfreeConnected.xml" id="9230" name="Yale Keyless Connected Smart Lock (YSL)" type="1bef"/>
@@ -291,6 +292,7 @@
     <Product config="assa_abloy/nexTouch.xml" id="0b00" name="Yale nexTouch Wireless Push Button (NTB620)" type="8003"/>
     <Product config="assa_abloy/yrd1x0.xml" id="0800" name="YRD110 Push Button Deadbolt" type="0004"/>
     <Product config="assa_abloy/yrd1x0.xml" id="0800" name="YRD120 Touchscreen Deadbolt" type="0002"/>
+    <Product config="assa_abloy/yrm276.xml" id="1604" name="Yale Assure Lock for Andersen Patio Doors (YRM276)" type="8014"/>
   </Manufacturer>
   <Manufacturer id="013B" name="AstraLink"></Manufacturer>
   <Manufacturer id="0134" name="AT&amp;T"></Manufacturer>
@@ -401,6 +403,7 @@
     <Product config="cooper/RF9501.xml" id="0000" name="RF9501 Light Switch" type="534c"/>
     <Product config="cooper/RF9517.xml" id="0000" name="RF9517 Accessory Light Switch" type="5352"/>
     <Product config="cooper/RFWC5.xml" id="0000" name="RFWC5/RFWDC Scene Controller" type="574d"/>
+    <Product config="cooper/RF9601.xml" id="0503" name="RF9601 Light Switch" type="534c"/>
   </Manufacturer>
   <Manufacturer id="009d" name="Coventive Technologies Inc."></Manufacturer>
   <Manufacturer id="0379" name="CPRO"></Manufacturer>
@@ -529,6 +532,7 @@
     <Product config="dome/0087.xml" id="0087" name="On/Off Plug-In Switch" type="0003"/>
     <Product config="dome/0088.xml" id="0088" name="Siren" type="0003"/>
     <Product config="dome/0101.xml" id="0101" name="Door/Window Sensor" type="0003"/>
+    <Product config="dome/0104.xml" id="0104" name="Mouser" type="0003"/>
     <Product config="dome/dmex1.xml" id="0108" name="DMEX1 Range Extender" type="0003"/>
     <Product config="dome/0201.xml" id="0201" name="Door/Window Sensor Pro" type="0003"/>
   </Manufacturer>
@@ -687,6 +691,7 @@
     <Product config="fibaro/fgs213.xml" id="2000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="3000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="4000" name="FGS213 Switch" type="0403"/>
+    <Product config="fibaro/fgs214.xml" id="1000" name="FGS214 Single Relay Switch" type="0404"/>
     <Product config="fibaro/fgs214.xml" id="4000" name="FGS214 Single Relay Switch" type="0404"/>
     <Product config="fibaro/fgs221.xml" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
     <Product config="fibaro/fgs221.xml" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
@@ -810,7 +815,9 @@
     <Product config="frostdale/fdn2311.xml" id="0001" name="Nanogrid: FDN2nxx light switch - where n is 1, 2, 3 or 4 buttons" type="2411"/>
     <Product config="frostdale/fdn2nxx.xml" id="0031" name="Nanogrid: FDN2nxx light switch - where n is 1, 2, 3 or 4 buttons" type="7333"/>
   </Manufacturer>
-  <Manufacturer id="0305" name="Future Home AS"></Manufacturer>
+  <Manufacturer id="0305" name="Future Home AS">
+    <Product config="thermofloor/heatitz8.xml" id="a305" name="Future Home AS (Heatit) Z-Push Button 8" type="0300"/>
+  </Manufacturer>
   <Manufacturer id="033E" name="GE"></Manufacturer>
   <Manufacturer id="0063" name="GE (Jasco Products)">
     <Product config="ge/dimmer_module.xml" id="3030" name="45602 Lamp Dimmer Module" type="4450"/>
@@ -1233,7 +1240,7 @@
     <Product config="mcohome/mhp220.xml" id="1352" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhp220.xml" id="5101" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhp220.xml" id="5102" name="MH-P220 Micro Dimmer" type="220a"/>
-    <Product config="mcohome/mhs220.xml" id="1252" name="MH-S220 One-Load" type="2201"/>	  
+    <Product config="mcohome/mhs220.xml" id="1252" name="MH-S220 One-Load" type="2201"/>
     <Product config="mcohome/mhs311.xml" id="0201" name="MH-S311 One-load" type="3102"/>
     <Product config="mcohome/mhs312.xml" id="0202" name="MH-S312 Two-load" type="3102"/>
     <Product config="mcohome/mhs314.xml" id="0204" name="MH-S314 Four-load" type="3102"/>
@@ -1250,12 +1257,14 @@
     <Product config="mcohome/mh9co2.xml" id="0201" name="MH9-CO2-WD CO2 Monitor" type="0905"/>
     <Product config="mcohome/mh9co2.xml" id="3102" name="MH9-CO2-WD CO2 Monitor" type="0901"/>
     <Product config="mcohome/mh9co2.xml" id="5102" name="MH9-CO2-WD CO2 Monitor" type="0902"/>
+    <Product config="mcohome/mh10pm25wd.xml" id="5102" name="MH10-PM2.5-WD PM 2.5 Monitor" type="0a02"/>
     <Product config="mcohome/a8-9.xml" id="1352" name="A8-9 Multi-sensor" type="a800"/>
     <Product config="mcohome/a8-9.xml" id="1352" name="A8-9 Multi-sensor" type="a803"/>
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0701"/>
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0702"/>
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0712"/>
     <Product config="mcohome/mh7h.xml" id="5102" name="MH7H Water/Electrical Heating Thermostat" type="0732"/>
+	<Product config="mcohome/mhdt411.xml" id="5102" name="MH-DT411 Dimmer Switch" type="d411"/>
     <!--US-->
     <Product config="mcohome/mhs513.xml" id="5102" name="MH-S513 Touch Panel Switch" type="0103"/>
     <!--AU-->
@@ -1298,8 +1307,10 @@
   <Manufacturer id="0438" name="Namron">
     <Product config="namron/1402756.xml" id="0002" type="0202" name="LED Dimmer Z-Wave 200W"/>
     <Product config="namron/4512710.xml" id="d005" type="0200" name="Z-Wave Dimmer 400W"/>
+    <Product config="namron/4512712.xml" id="a30f" type="0300" name="Z-wave 1 Kanal Bryter" />
     <Product config="namron/4512715.xml" id="d006" type="0200" name="Z-Wave Switch 400W"/>
     <Product config="namron/4512724.xml" id="d00c" type="0200" name="Z-Wave Dimmer 2 400W"/>
+    <Product config="namron/4512720.xml" id="a306" type="0300" name="Z-wave 2 Kanaler Bryter" />
     <Product config="namron/4512714.xml" id="a305" type="0300" name="Z-wave 4 Channel Remote" />
   </Manufacturer>
   <Manufacturer id="016E" name="Nanjing Easthouse Electrical Co"></Manufacturer>
@@ -1311,7 +1322,7 @@
   <Manufacturer id="0241" name="NEEO AG"></Manufacturer>
   <Manufacturer id="006D" name="Nefit"></Manufacturer>
   <Manufacturer id="0312" name="NEI Technology">
-    <Product config="nei/ms11z.xml" id="ff04" name="MS11Z" type="ff00"/>  
+    <Product config="nei/ms11z.xml" id="ff04" name="MS11Z" type="ff00"/>
   </Manufacturer>
   <Manufacturer id="0351" name="NEOCONTROL US LLC"></Manufacturer>
   <Manufacturer id="0189" name="Ness Corporation Pty Ltd"></Manufacturer>
@@ -1552,6 +1563,7 @@
   <Manufacturer id="0346" name="Ring">
     <Product config="ring/PIR-SS.xml" id="0201" name="PIR-SS Motion Detector" type="0301"/>
     <Product config="ring/contact-sensor-v2.xml" id="0301" name="Contact Sensor" type="0201"/>
+    <Product config="ring/motion-detector-v2.xml" id="0301" name="Motion Detector" type="0301"/>
     <Product id="0201" name="DW-SS Contact Sensor" type="0201"/>
   </Manufacturer>
   <Manufacturer id="035E" name="RISCO Group"></Manufacturer>
@@ -1635,6 +1647,7 @@
     <Product config="shenzen_neo/nas-pd02z.xml" id="008d" name="NAS-PD02Z Battery Powered PIR Sensor V2" type="0003"/>
     <Product config="shenzen_neo/nas-pd03z.xml" id="1031" name="NAS-PD03Z Battery Powered PIR Sensor V2" type="0200"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="0085" name="Water Leakage Detector" type="0003"/>
+    <Product config="shenzen_neo/nas-ws02z.xml" id="1025" name="Water Leakage Detector" type="0100"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="1085" name="Water Leakage Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="6085" name="Water Leakage Detector" type="0003"/>
     <Product config="shenzen_neo/nas-ws02z.xml" id="2085" name="Water Leakage Detector" type="0003"/>
@@ -1643,6 +1656,7 @@
     <Product config="shenzen_neo/nas-ab01z.xml" id="6088" name="Siren Alarm" type="0003"/>
     <Product config="shenzen_neo/nas-rc01z.xml" id="008a" name="SOS/Remote Control" type="0003"/>
     <Product config="shenzen_neo/nas-rc01z.xml" id="108a" name="SOS/Remote Control" type="0003"/>
+    <Product config="shenzen_neo/ls03ch.xml" id="002b" name="Wall Switch (3 channels)" type="0200"/>
     <Product config="shenzen_neo/ls03ch.xml" id="102b" name="Wall Switch (3 channels)" type="0200"/>
     <Product config="shenzen_neo/ls02ch.xml" id="008b" name="Wall Switch (2 channels)" type="0003"/>
     <Product config="shenzen_neo/ls02ch.xml" id="108b" name="Wall Switch (2 channels)" type="0003"/>
@@ -1663,6 +1677,7 @@
   <Manufacturer id="0356" name="Shenzhen ZHIQU Technology Limited"></Manufacturer>
   <Manufacturer id="0081" name="SIEGENIA-AUBI KG"></Manufacturer>
   <Manufacturer id="0267" name="Simon">
+    <Product config="simon/10002020-13X.xml" id="023a" name="S100 Rocker iO for Dimmer" type="0007"/>
     <Product config="simon/10002034-13X.xml" id="0000" name="S100 Socket iO" type="0001"/>
     <Product config="simon/10002034-13X.xml" id="00da" name="S100 Socket iO" type="0001"/>
     <Product config="simon/10002041-13X.xml" id="0022" name="S100 Socket iO" type="0009"/>
@@ -1777,12 +1792,14 @@
     <Product config="wenzhou/tz68.xml" id="0103" name="TZ68 On/Off Switch Socket" type="0101"/>
     <Product config="wenzhou/tz66d.xml" id="1020" name="TZ66D Dual Wall Switch" type="0102"/>
     <Product config="wenzhou/tz67.xml" id="0611" name="TZ67 Wall Plug Dimmer" type="0202"/>
+    <Product config="wenzhou/tz67.xml" id="0008" name="TZ67G Wall Plug Dimmer" type="0003"/>
     <Product config="wenzhou/tz69.xml" id="0103" name="TZ69E Smart energy plug in switch" type="0311"/>
     <Product config="wenzhou/tz56s.xml" id="0202" name="TZ56S On/Off wall switch" type="0311"/>
     <Product config="wenzhou/tz57.xml" id="0203" name="TZ57 Two channel switch" type="0311"/>
     <Product config="wenzhou/tz79.xml" id="0305" name="TZ79 Power meter Relay Switch" type="0311"/>
     <Product config="wenzhou/tz74.xml" id="0304" name="TZ74 Dual Switch" type="0311"/>
     <Product config="wenzhou/tz78.xml" id="0005" name="TZ78 In-Wall Single Relay Switch" type="0003"/>
+    <Product config="wenzhou/tz77.xml" id="0302" name="TZ77 RGBW Dimmer Switch" type="0311"/>
     <Product config="wenzhou/tze96.xml" id="0506" name="TZE96 Color Touch Weekly Programming Heating Thermostat" type="0311"/>
   </Manufacturer>
   <Manufacturer id="011C" name="TKH Group / Eminent"></Manufacturer>
@@ -2046,7 +2063,9 @@
     <Product config="zooz/zen31.xml" id="2000" name="ZEN31 RGBW Dimmer" type="0902"/>
     <Product config="zooz/zse33.xml" id="0088" name="ZSE33 Smart Chime" type="0003"/>
     <Product config="zooz/zen34.xml" id="f001" name="ZEN34 Remote Switch" type="0004"/>
+    <Product config="zooz/zen34.xml" id="f001" name="ZEN34 Remote Switch" type="7000"/>
     <Product config="zooz/zse40.xml" id="2101" name="ZSE40 4-in-1 sensor" type="2021"/>
+    <Product config="zooz/zen72.xml" id="a002" name="ZEN72 Dimmer Switch 700" type="7000"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">
     <Product config="zooz/zen20.xml" id="f51c" name="ZEN20 Power Strip" type="0651"/>

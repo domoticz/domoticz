@@ -57,10 +57,10 @@ enum evoCommands
 };
 
 const char  CEvohomeRadio::m_szNameErr[18] = { 0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F };
-const int CEvohomeRadio::m_evoToDczControllerMode[8] = { 0,5,1,2,3,-1,-1,4 };//are the hidden modes actually valid?
+const int CEvohomeRadio::m_evoToDczControllerMode[8] = { 0,6,1,2,3,4,-1,5 };//are the hidden modes actually valid?
 const int  CEvohomeRadio::m_evoToDczOverrideMode[5] = { zmAuto,-1,zmPerm,-1,zmTmp };//are the hidden modes actually valid?
 const uint8_t CEvohomeRadio::m_dczToEvoZoneMode[3] = { 0,2,4 };
-const uint8_t CEvohomeRadio::m_dczToEvoControllerMode[6] = { 0,2,3,4,7,1 };
+const uint8_t CEvohomeRadio::m_dczToEvoControllerMode[7] = { 0,2,3,4,5,7,1 };
 
 char const CEvohomeMsg::szPacketType[5][8] = { "Unknown","I","RQ","RP","W" };
 
@@ -1801,7 +1801,10 @@ bool CEvohomeRadio::DecodeDeviceInfo(CEvohomeMsg& msg)
 	if (nDevType == 0x04) { sprintf(sDevType, "ACTUATOR"); }
 	else if (nDevType == 0x01) { sprintf(sDevType, "SENSOR"); }
 	else if (nDevType == 0x05) { sprintf(sDevType, "HOT WATER"); }
-        else if (nDevType == 0x06) { sprintf(sDevType, "REMOTE GW"); }
+	else if (nDevType == 0x06)
+	{
+		sprintf(sDevType, "REMOTE GW");
+	}
 	else if (nDevType == 0x00)
 	{
 		sprintf(sDevType, "CONTROLLER");

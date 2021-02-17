@@ -12,7 +12,7 @@ return {
 		item.isSecurity = false
 		item.isSystem = false
 		item.isHardware = false
-	        item.isCustomEvent = false
+		item.isCustomEvent = false
 
 		item[typeName] = true
 

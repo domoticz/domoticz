@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+09/02/2021 1.4 Added Testcar Class for easier testing of eVehicle framework
 
 License: Public domain
 
@@ -18,7 +19,7 @@ License: Public domain
 class CTeslaApi: public CVehicleApi
 {
 public:
-  CTeslaApi(const std::string &username, const std::string &password, const std::string &vin);
+  CTeslaApi(const std::string &username, const std::string &password, const std::string &extra);
   ~CTeslaApi() override = default;
 
   bool Login() override;

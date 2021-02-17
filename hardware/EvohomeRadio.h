@@ -136,7 +136,7 @@ class CEvohomeRadio : public CEvohomeBase
 	static const int m_evoToDczControllerMode[8];
 	static const int m_evoToDczOverrideMode[5];
 	static const uint8_t m_dczToEvoZoneMode[3];
-	static const uint8_t m_dczToEvoControllerMode[6];
+	static const uint8_t m_dczToEvoControllerMode[7];
 
 	template <typename RT> RT ConvertMode(RT *pArray, uint8_t nIdx)
 	{

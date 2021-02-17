@@ -540,7 +540,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (!m_skip_relay_update && m_relay_count && (m_poll_relays || m_setup_devices))
 	{
-		for (uint16_t i=1; i <= m_relay_count ; i++)
+		for (int i = 1; i <= m_relay_count; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "RELAYON %d", i);
 			sChkstr = cTemp;
@@ -562,7 +562,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (m_input_count && (m_poll_inputs || m_setup_devices))
 	{
-		for (uint16_t i = 1; i <= m_input_count; i++)
+		for (int i = 1; i <= m_input_count; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "IH %d", i);
 			sChkstr = cTemp;

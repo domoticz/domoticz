@@ -12375,7 +12375,9 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 		nStatus = CEvohomeBase::cmEvoAutoWithEco;
 	else if (status == "DayOff")
 		nStatus = CEvohomeBase::cmEvoDayOff;
-	else if (status == "Custom")
+	else if (status == "DayOffWithEco")
+		nStatus = CEvohomeBase::cmEvoDayOffWithEco;
+ 	else if (status == "Custom")
 		nStatus = CEvohomeBase::cmEvoCustom;
 	else if (status == "Auto")
 		nStatus = CEvohomeBase::cmEvoAuto;

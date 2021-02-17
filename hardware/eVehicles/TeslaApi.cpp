@@ -6,6 +6,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 21/02/2020 1.0 Creation
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
+09/02/2021 1.4 Added Testcar Class for easier testing of eVehicle framework
 
 License: Public domain
 
@@ -59,6 +60,8 @@ CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, c
 	m_config.car_name = "";
 	m_config.unit_miles = false;
 	m_config.distance_unit = "km";
+	m_config.home_latitude = 0;
+	m_config.home_longitude = 0;
 
 	m_capabilities.has_battery_level = true;
 	m_capabilities.has_charge_command = true;
@@ -70,7 +73,8 @@ CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, c
 	m_capabilities.has_lock_status = true;
 	m_capabilities.has_charge_limit = true;
 	m_capabilities.has_custom_data = false;
-	m_capabilities.sleep_interval = 20;
+	m_capabilities.seconds_to_sleep = 1200;
+	m_capabilities.minimum_poll_interval = 60;
 }
 
 bool CTeslaApi::Login()
@@ -134,7 +138,7 @@ bool CTeslaApi::GetLocationData(tLocationData& data)
 	return false;
 }
 
-void CTeslaApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
+void CTeslaApi::GetLocationData(Json::Value &jsondata, tLocationData &data)
 {
 	std::string CarLatitude = jsondata["latitude"].asString();
 	std::string CarLongitude = jsondata["longitude"].asString();
@@ -142,6 +146,17 @@ void CTeslaApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
 	data.is_driving = data.speed > 0;
 	data.latitude = std::stod(CarLatitude);
 	data.longitude = std::stod(CarLongitude);
+	if (m_config.home_latitude != 0 && m_config.home_latitude != 0)
+	{
+		if ((std::fabs(m_config.home_latitude - data.latitude) < 2E-4) && (std::fabs(m_config.home_longitude - data.longitude) < 2E-3) && !data.is_driving)
+			data.is_home = true;
+		else
+			data.is_home = false;
+	}
+	else
+	{
+		data.is_home = false;
+	}
 }
 
 bool CTeslaApi::GetChargeData(CVehicleApi::tChargeData& data)
@@ -485,15 +500,14 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 	m_authtoken = _jsRoot["access_token"].asString();
 	if (m_authtoken.empty())
 	{
-		if (m_apikey != "")
+		if (m_apikey.empty())
 		{
-			_log.Log(LOG_STATUS, "TeslaApi: Cannot retrieve token from account. Using manual API key");
-			m_authtoken = m_apikey;
-			return true;
-		}
-		else
 			_log.Log(LOG_ERROR, "TeslaApi: Received token is zero length.");
-		return false;
+			return false;
+		}
+		_log.Log(LOG_STATUS, "TeslaApi: Cannot retrieve token from account. Using manual API key");
+		m_authtoken = m_apikey;
+		return true;
 	}
 
 	m_refreshtoken = _jsRoot["refresh_token"].asString();

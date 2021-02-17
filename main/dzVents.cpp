@@ -30,7 +30,7 @@ extern http::server::ssl_server_settings secure_webserver_settings;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.1.4")
+	: m_version("3.1.5")
 {
 	m_bdzVentsExist = false;
 }
@@ -147,7 +147,9 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 				case Notification::DZ_STOP:
 				case Notification::DZ_BACKUP_DONE:
 				case Notification::DZ_NOTIFICATION:
-					ProcessNotificationItem(luaTable, index, item);
+				case Notification::DZ_ALLDEVICESTATUSRESET:
+				case Notification::DZ_ALLEVENTRESET:
+				ProcessNotificationItem(luaTable, index, item);
 					break;
 				case Notification::DZ_CUSTOM:
 					bCustomEvent = true;
@@ -892,7 +894,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			StringSplit(sitem.sValue, ";", strarray);
 
 			luaTable.OpenSubTableEntry("rawData", 0, 0);
-			for (uint8_t i = 0; i < strarray.size(); i++)
+			for (size_t i = 0; i < strarray.size(); i++)
 				luaTable.AddString(i + 1, strarray[i]);
 
 			luaTable.CloseSubTableEntry();
@@ -959,7 +961,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	devicestatesMutexLock.unlock();
 
 	// Now do the scenes and groups.
-	const char *description = "";
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 
 	std::vector<std::vector<std::string> > result;
@@ -978,17 +979,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			}
 		}
 
-		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
-		if (result.empty())
-			description = "";
-		else
-			description = result[0][0].c_str();
-
 		luaTable.OpenSubTableEntry(index, 1, 7);
 
 		luaTable.AddString("name", sgitem.scenesgroupName);
 		luaTable.AddInteger("id", sgitem.ID);
-		luaTable.AddString("description", description);
+		luaTable.AddString("description", sgitem.description);
 		luaTable.AddString("baseType", (sgitem.scenesgroupType == 0) ? "scene" : "group");
 		luaTable.AddBool("protected", (lua_Number)sgitem.protection == 1);
 		luaTable.AddString("lastUpdate", sgitem.lastUpdate);

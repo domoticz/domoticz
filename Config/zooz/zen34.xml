@@ -1,6 +1,6 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
-    <MetaDataItem name="Name">ZEN34 Remote switch</MetaDataItem>
+    <MetaDataItem name="Name">ZEN34 Remote Switch</MetaDataItem>
     <MetaDataItem name="Description">FEATURES:
 - Control Z-Wave devices or activate scenes with the multi-tap feature
 - Wire-free: the perfect add-on switch to put in an existing switch box or install on any flat surface
@@ -26,12 +26,17 @@ SPECIFICATIONS:
     <MetaDataItem name="ExclusionDescription">Put the primary controller into exclusion mode and click the lower paddle 6 times quickly.</MetaDataItem>
 	<MetaDataItem name="WakeupDescription">Click the upper paddle 7 times quickly. The LED indicator will stay siolid blue during wakeup and will turn off when the device turns the Z-Wave radio off again.</MetaDataItem>
     <MetaDataItem name="ResetDescription">When your network's primary controller is missing or otherwise inoperable, you may need to reset the device to factory settings manually. In order to complete the process, make sure the device is powered, then taptap- tap'and'hold the upper paddle. The LED indicator will blink red 5 times to indicate successful reset.</MetaDataItem>
+    <MetaDataItem id="F001" name="Identifier" type="0004">ZEN34</MetaDataItem>
+    <MetaDataItem id="F001" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="F001" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/xxxx</MetaDataItem>
 	  <!--product page not available as of 11/17/20 -->
-    <MetaDataItem id="F001" name="FrequencyName" type="0004">U.S. / Canada / Mexico</MetaDataItem>
-    <MetaDataItem id="F001" name="Identifier" type="0004">ZEN-34</MetaDataItem>
+    <MetaDataItem id="F001" name="Identifier" type="7000">ZEN34</MetaDataItem>
+    <MetaDataItem id="F001" name="FrequencyName" type="7000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="F001" name="ZWProductPage" type="7000">https://products.z-wavealliance.org/products/xxxx</MetaDataItem>
+	  <!--still unable to locate a product page as of Jan. 31, 2021 -->
     <ChangeLog>
       <Entry author="momo" date="16 Nov 2020" revision="1">Initial Metadata Import</Entry>
+      <Entry author="Matthew Grimes, https://github.com/cybergrimes" date="31 Jan 2021" revision="2">Update to include hardware run with different type code</Entry>
     </ChangeLog>
   </MetaData>
 

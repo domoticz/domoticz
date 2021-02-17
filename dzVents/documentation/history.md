@@ -1,6 +1,12 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+
+## [3.1.5] ##
+- Add two new wsystem-events triggers as option to the on = { ... } section. Scripts can now also be triggered based on these system-events:
+	 - resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes 
+	 - resetAllEvents ; When a dzVents script in the internal editor changed 
+
 ## [3.1.4] ##
 - Fixed issue that prevented dzVents from accessing the domoticz API when using -wwwbind
 

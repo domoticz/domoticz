@@ -57,6 +57,8 @@ CMercApi::CMercApi(const std::string &username, const std::string &password, con
 	m_config.car_name = "";
 	m_config.unit_miles = false;
 	m_config.distance_unit = "km";
+	m_config.home_latitude = 0;
+	m_config.home_longitude = 0;
 
 	m_crc = 0;
 	m_fields = "";
@@ -72,7 +74,8 @@ CMercApi::CMercApi(const std::string &username, const std::string &password, con
 	m_capabilities.has_lock_status = true;
 	m_capabilities.has_charge_limit = false;
 	m_capabilities.has_custom_data = true;
-	m_capabilities.sleep_interval = 0;
+	m_capabilities.seconds_to_sleep = 0;
+	m_capabilities.minimum_poll_interval = 60;
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", m_uservar_refreshtoken.c_str());
@@ -197,7 +200,7 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 
 	if (GetData("electricvehicle", reply))
 	{
-		data.battery_level = 255.0f;	// Initialize at 'no reading'
+		data.battery_level = 255.0F;	// Initialize at 'no reading'
 		if (reply.empty())
 		{
 			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
