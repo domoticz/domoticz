@@ -7815,7 +7815,7 @@ void CSQLHelper::DeleteHistory(const char* ID, const std::string& HistoryType)
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT Name FROM DeviceStatus WHERE (ID==%q)", ID);
 	if (result.empty())
-		return false;
+		return;
 
 	if (HistoryType == "calendarlog" )
 	{
