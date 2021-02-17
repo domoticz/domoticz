@@ -496,6 +496,8 @@ namespace http {
 			RegisterCommandCode("downloadready", std::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
 			RegisterCommandCode("update_application", std::bind(&CWebServer::Cmd_UpdateApplication, this, _1, _2, _3));
 			RegisterCommandCode("deletedatapoint", std::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
+			RegisterCommandCode("deletehistory", std::bind(&CWebServer::Cmd_DeleteHistory, this, _1, _2, _3));
+
 			RegisterCommandCode("customevent", std::bind(&CWebServer::Cmd_CustomEvent, this, _1, _2, _3));
 
 			RegisterCommandCode("setactivetimerplan", std::bind(&CWebServer::Cmd_SetActiveTimerPlan, this, _1, _2, _3));
@@ -3492,6 +3494,25 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "deletedatapoint";
 			m_sql.DeleteDataPoint(idx.c_str(), Date);
+		}
+
+		void CWebServer::Cmd_DeleteHistory(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string HistoryType = request::findValue(&req, "historytype");
+			if ( (idx.empty()) || (HistoryType.empty()) )
+				return;
+
+			m_sql.DeleteHistory(idx.c_str(), HistoryType);
+
+			root["status"] = "OK";
+			root["title"] = "deletehistory";
 		}
 
 		bool CWebServer::IsIdxForUser(const WebEmSession *pSession, const int Idx)
@@ -8765,7 +8786,7 @@ namespace http {
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
 							" ORDER BY ");
 						szQuery += szOrderBy;
-                                                result = m_sql.safe_query(szQuery.c_str(), order.c_str());
+						result = m_sql.safe_query(szQuery.c_str(), order.c_str());
 					}
 
 					if (!result.empty())

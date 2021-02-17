@@ -7810,6 +7810,37 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 	}
 }
 
+void CSQLHelper::DeleteHistory(const char* ID, const std::string& HistoryType)
+{
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT Name FROM DeviceStatus WHERE (ID==%q)", ID);
+	if (result.empty())
+		return false;
+
+	if (HistoryType == "calendarlog" )
+	{
+		safe_query("DELETE FROM Rain_Calendar WHERE (DeviceRowID=='%q')", ID );
+		safe_query("DELETE FROM Wind_Calendar WHERE (DeviceRowID=='%q') ", ID );
+		safe_query("DELETE FROM UV_Calendar WHERE (DeviceRowID=='%q') ", ID );
+		safe_query("DELETE FROM Temperature_Calendar WHERE (DeviceRowID=='%q') ", ID);
+		safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID=='%q')", ID);
+		safe_query("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID=='%q')", ID);
+		safe_query("DELETE FROM Percentage_Calendar WHERE (DeviceRowID=='%q')", ID);
+		safe_query("DELETE FROM Fan_Calendar WHERE (DeviceRowID=='%q')", ID);
+	}
+	else if (HistoryType == "shortlog")
+	{
+		safe_query("DELETE FROM Rain WHERE (DeviceRowID=='%q')", ID );
+		safe_query("DELETE FROM Wind WHERE (DeviceRowID=='%q') ", ID );
+		safe_query("DELETE FROM UV WHERE (DeviceRowID=='%q') ", ID );
+		safe_query("DELETE FROM Temperature WHERE (DeviceRowID=='%q') ", ID);
+		safe_query("DELETE FROM Meter WHERE (DeviceRowID=='%q')", ID);
+		safe_query("DELETE FROM MultiMeter WHERE (DeviceRowID=='%q')", ID);
+		safe_query("DELETE FROM Percentage WHERE (DeviceRowID=='%q')", ID);
+		safe_query("DELETE FROM Fan WHERE (DeviceRowID=='%q')", ID);
+	}
+}
+
 void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 {
 	std::vector<std::vector<std::string> > result;
