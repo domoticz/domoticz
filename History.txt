@@ -1,6 +1,7 @@
 Version 2020.xxxx (xxxx)
 - Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
+- Implemented: Added possibility to delete history on a per device base (API)
 - Implemented: AirconWithMe wifi module
 - Implemented: Allow complete IPv6 address in local network setting
 - Implemented: Allow custom icons for thermostat setpoints on floorplan
@@ -32,6 +33,7 @@ Version 2020.xxxx (xxxx)
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: eVehicles; added option to manual set API key
 - Updated: EvoHome; decode, display and store hotwater setpoint
+- Updated: EvoHome; Add support for day-off
 - Updated: Lay-out of notifications tab
 - Updated: MQTT; added option to choose notification subsystem
 - Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
@@ -64,6 +66,7 @@ Version 2020.xxxx (xxxx)
 - Fixed: Pushtype selection mechanism
 - Fixed: Sound device was incorrectly displayed on the Floorplan
 - Fixed: Tado Zone/Home limit, setpoint mix-up
+- Fixed: Timeplan duplication
 - Fixed: User field in device logging for switches, -text-devices and for groups/scenes
 - Fixed: Windows installation respects configured log parameters
 - Fixed: Zwave various issues
