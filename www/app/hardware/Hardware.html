@@ -1006,14 +1006,23 @@
 				</td>
 			</tr>
 			<tr>
-				<td align="right" style="width:110px"><label for="adddayforecast"><span data-i18n="Daily forecast">Daily forecast</span>:</label></td>
-				<td><input type="checkbox" id="adddayforecast">&nbsp;<label for="adddayforecast">&nbsp;Forecast for today and coming 7 days (if available).</label></td>
+				<td align="right" style="width:110px"><label for="useowmforecast"><span data-i18n="Use in UI">Use in UI</span>:</label></td>
+				<td><input type="checkbox" id="useowmforecast">&nbsp;<label for="useowmforecast">&nbsp;Use OpenWeatherMap forecast data in UI.</label></td>
+			</tr>
+		<tr>
+				<td align="right" style="width:110px"><label for="adddayforecast"><span data-i18n="Daily forecast">Daily forecast (days)</span>:</label></td>
+				<td><input type="text" id="adddayforecast" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;<label for="adddayforecast">&nbsp;Forecast for today and coming 7 days, if available (1 to 8, 0 means no forecast).</label></td>
 			</tr>
 			<tr>
-				<td align="right" style="width:110px"><label for="addhourforecast"><span data-i18n="Hourly forecast">Hourly forecast</span>:</label></td>
-				<td><input type="checkbox" id="addhourforecast">&nbsp;<label for="addhourforecast">&nbsp;Forecast for each hour for 48 hours (if available).</label></td>
+				<td align="right" style="width:110px"><label for="addhourforecast"><span data-i18n="Hourly forecast">Hourly forecast (hours)</span>:</label></td>
+				<td><input type="text" id="addhourforecast" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;<label for="addhourforecast">&nbsp;Forecast for each hour for 48 hours, if available (1 to 48, 0 means no forecast)).</label></td>
 			</tr>
-		</table>
+			<tr>
+				<td align="right" style="width:110px">&nbsp;</td>
+				<td>
+					<span><i>Be aware that requesting forecast information this way will create many devices! By shortening the forecast period, less devices will be created. No need to activate these forecast settings if you just want to use the <a href="/#/Forecast">Forecast screen</a> in the UI (will be fetched on the fly).</i></span>
+				</td>
+			</table>
 	</div>
 	<div id="divbuienradar">
 		<br>
