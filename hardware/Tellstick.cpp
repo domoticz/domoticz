@@ -204,9 +204,9 @@ void CTellstick::sensorEventCallback(const char *protocol, const char *model, in
 void CTellstick::Init()
 {
     m_td.Init();
-    m_deviceEventId = m_td.RegisterDeviceEvent(reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
-    m_rawDeviceEventId = m_td.RegisterRawDeviceEvent(reinterpret_cast<TDRawDeviceEvent>(&CTellstick::rawDeviceEventCallback), this);
-    m_sensorEventId = m_td.RegisterSensorEvent(reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
+    m_deviceEventId = m_td.RegisterDeviceEvent(TDDeviceEvent(&CTellstick::deviceEventCallback), this);
+    m_rawDeviceEventId = m_td.RegisterRawDeviceEvent(TDRawDeviceEvent(&CTellstick::rawDeviceEventCallback), this);
+    m_sensorEventId = m_td.RegisterSensorEvent(TDSensorEvent(&CTellstick::sensorEventCallback), this);
 
     const int numDevices = m_td.GetNumberOfDevices();
     for (int i = 0; i < numDevices; i++)

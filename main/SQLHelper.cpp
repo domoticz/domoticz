@@ -3497,7 +3497,7 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 		{
 			if (timeout > 0)
 			{
-				T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout, this, pid, timeout, &stillRunning, &timeoutOccurred);
+				T = std::make_shared<std::thread>([=]() mutable { ManageExecuteScriptTimeout(pid, timeout, &stillRunning, &timeoutOccurred); });
 			}
 			waitpid(pid, &exitcode, 0);
 			stillRunning = false;
@@ -3919,7 +3919,7 @@ void CSQLHelper::Do_Work()
 				 itt->_ItemType == TITEM_SEND_SMS || itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
 				// All actions which should not be on the main SQL Helper thread will get their own thread
-				std::thread ActionThread(&CSQLHelper::PerformThreadedAction, this, *itt);
+				std::thread ActionThread([this, itt] { PerformThreadedAction(*itt); });
 				ActionThread.detach();
 			}
 

@@ -67,7 +67,7 @@ namespace Plugins {
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
 				//
-				m_Resolver.async_resolve(query, [this](const auto &err, auto end) { handleAsyncResolve(err, end); });
+				m_Resolver.async_resolve(query, [this](auto &&err, auto end) { handleAsyncResolve(err, end); });
 			}
 		}
 		catch (std::exception& e)
@@ -90,7 +90,7 @@ namespace Plugins {
 		if (!err)
 		{
 			boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
-			m_Socket->async_connect(endpoint, [this, endpoint_iterator](const auto &err) mutable { handleAsyncConnect(err, ++endpoint_iterator); });
+			m_Socket->async_connect(endpoint, [this, endpoint_iterator](auto &&err) mutable { handleAsyncConnect(err, ++endpoint_iterator); });
 		}
 		else
 		{
@@ -116,7 +116,7 @@ namespace Plugins {
 		{
 			m_bConnected = true;
 			m_tLastSeen = time(nullptr);
-			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 		}
 		else
 		{
@@ -147,7 +147,7 @@ namespace Plugins {
 				//	Acceptor based on http://www.boost.org/doc/libs/1_62_0/doc/html/boost_asio/tutorial/tutdaytime3/src.html
 				//
 				auto pSocket = new boost::asio::ip::tcp::socket(ios);
-				m_Acceptor->async_accept(*pSocket, [this, pSocket](const auto &err) { handleAsyncAccept(pSocket, err); });
+				m_Acceptor->async_accept(*pSocket, [this, pSocket](auto &&err) { handleAsyncAccept(pSocket, err); });
 				m_bConnecting = true;
 			}
 		}
@@ -245,7 +245,7 @@ namespace Plugins {
 
 			//ready for next read
 			if (m_Socket)
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 		}
 		else
 		{
@@ -391,7 +391,7 @@ namespace Plugins {
 
 			m_TLSSock->set_verify_mode(boost::asio::ssl::verify_none);
 			m_TLSSock->set_verify_callback(boost::asio::ssl::rfc2818_verification(m_IP));
-			// m_TLSSock->set_verify_callback([this](auto v, auto &c){VerifyCertificate(v, c);});
+			// m_TLSSock->set_verify_callback([this](auto v, auto &c){ VerifyCertificate(v, c);});
 			try
 			{
 #ifdef WWW_ENABLE_SSL
@@ -403,7 +403,7 @@ namespace Plugins {
 				pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 
 				m_tLastSeen = time(nullptr);
-				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 			}
 			catch (boost::system::system_error se)
 			{
@@ -460,7 +460,7 @@ namespace Plugins {
 
 			//ready for next read
 			if (m_TLSSock)
-				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 		}
 		else
 		{
@@ -522,7 +522,7 @@ namespace Plugins {
 				}
 			}
 
-			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint, [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint, [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 
 			m_bConnected = true;
 		}
@@ -696,7 +696,7 @@ namespace Plugins {
 			std::vector<byte>	vBody(&body[0], &body[body.length()]);
 			handleWrite(vBody);
 
-			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint, [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint, [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 		}
 		else
 		{
@@ -724,11 +724,11 @@ namespace Plugins {
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
 				//
-				m_Resolver.async_resolve(query, [this](const auto &err, auto i) { handleAsyncResolve(err, i); });
+				m_Resolver.async_resolve(query, [this](auto &&err, auto i) { handleAsyncResolve(err, i); });
 			}
 			else
 			{
-				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint, [this](const auto &err, auto bytes) { handleRead(err, bytes); });
+				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint, [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 			}
 		}
 		catch (std::exception& e)
@@ -848,7 +848,7 @@ namespace Plugins {
 			m_Timer = new boost::asio::deadline_timer(ios);
 		}
 		m_Timer->expires_from_now(boost::posix_time::seconds(5));
-		m_Timer->async_wait([this](const auto &err) { handleTimeout(err); });
+		m_Timer->async_wait([this](auto &&err) { handleTimeout(err); });
 
 		// Create an ICMP header for an echo request.
 		icmp_header echo_request;

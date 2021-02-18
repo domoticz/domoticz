@@ -108,7 +108,7 @@ namespace http {
 #ifdef WWW_ENABLE_SSL
 				status_ = WAITING_HANDSHAKE;
 				// with ssl, we first need to complete the handshake before reading
-				sslsocket_->async_handshake(boost::asio::ssl::stream_base::server, [this, self = shared_from_this()](auto &&err) { handle_handshake(err); });
+				sslsocket_->async_handshake(boost::asio::ssl::stream_base::server, [self = shared_from_this()](auto &&err) { self->handle_handshake(err); });
 #endif
 			}
 			else {
@@ -202,12 +202,12 @@ namespace http {
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
 				// Perform secure read
-				sslsocket_->async_read_some(buf, [this, self = shared_from_this()](auto &&err, auto bytes) { handle_read(err, bytes); });
+				sslsocket_->async_read_some(buf, [self = shared_from_this()](auto &&err, auto bytes) { self->handle_read(err, bytes); });
 #endif
 			}
 			else {
 				// Perform plain read
-				socket_->async_read_some(buf, [this, self = shared_from_this()](auto &&err, auto bytes) { handle_read(err, bytes); });
+				socket_->async_read_some(buf, [self = shared_from_this()](auto &&err, auto bytes) { self->handle_read(err, bytes); });
 			}
 		}
 
@@ -221,11 +221,11 @@ namespace http {
 			write_buffer = buf;
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
-				boost::asio::async_write(*sslsocket_, boost::asio::buffer(write_buffer), [this, self = shared_from_this()](auto &&err, auto bytes) { handle_write(err, bytes); });
+				boost::asio::async_write(*sslsocket_, boost::asio::buffer(write_buffer), [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write(err, bytes); });
 #endif
 			}
 			else {
-				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer), [this, self = shared_from_this()](auto &&err, auto bytes) { handle_write(err, bytes); });
+				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer), [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write(err, bytes); });
 			}
 
 		}
@@ -276,12 +276,12 @@ namespace http {
 				if (secure_) {
 #ifdef WWW_ENABLE_SSL
 					boost::asio::async_write(*sslsocket_, boost::asio::buffer(send_buffer_, bread),
-								 [this, self = shared_from_this()](auto &&err, auto bytes) { handle_write_file(err, bytes); });
+								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 #endif
 				}
 				else {
 					boost::asio::async_write(*socket_, boost::asio::buffer(send_buffer_, bread),
-								 [this, self = shared_from_this()](auto &&err, auto bytes) { handle_write_file(err, bytes); });
+								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 				}
 				return;
 			}
@@ -341,11 +341,11 @@ namespace http {
 
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
-				boost::asio::async_write(*sslsocket_, boost::asio::buffer(write_buffer), [this, self = shared_from_this()](auto &&err, auto bytes) { handle_write_file(err, bytes); });
+				boost::asio::async_write(*sslsocket_, boost::asio::buffer(write_buffer), [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 #endif
 			}
 			else {
-				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer), [this, self = shared_from_this()](auto &&err, auto bytes) { handle_write_file(err, bytes); });
+				boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer), [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 			}
 			return true;
 		}
@@ -550,7 +550,7 @@ namespace http {
 		// schedule read timeout timer
 		void connection::set_read_timeout() {
 			read_timer_.expires_from_now(boost::posix_time::seconds(read_timeout_));
-			read_timer_.async_wait([this, self = shared_from_this()](auto &&err) { handle_read_timeout(err); });
+			read_timer_.async_wait([self = shared_from_this()](auto &&err) { self->handle_read_timeout(err); });
 		}
 
 		/// simply cancel read timeout timer
@@ -593,7 +593,7 @@ namespace http {
 		/// schedule abandoned timeout timer
 		void connection::set_abandoned_timeout() {
 			abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
-			abandoned_timer_.async_wait([this, self = shared_from_this()](auto &&err) { handle_abandoned_timeout(err); });
+			abandoned_timer_.async_wait([self = shared_from_this()](auto &&err) { self->handle_abandoned_timeout(err); });
 		}
 
 		/// simply cancel abandoned timeout timer

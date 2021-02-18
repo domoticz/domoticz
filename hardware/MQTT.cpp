@@ -153,8 +153,8 @@ void MQTT::on_connect(int rc)
 			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
-			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto cmd) { SendDeviceInfo(id, idx, name, cmd); });
-			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect([this](auto scene, const auto &name) { SendSceneInfo(scene, name); });
+			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, auto &&name, auto cmd) { SendDeviceInfo(id, idx, name, cmd); });
+			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect([this](auto scene, auto &&name) { SendSceneInfo(scene, name); });
 		}
 		subscribe(nullptr, m_TopicIn.c_str());
 	}
