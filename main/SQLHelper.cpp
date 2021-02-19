@@ -3334,14 +3334,14 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 }
 #endif
 
-void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
+void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 {
-	if (itt._ItemType == TITEM_EXECUTESHELLCOMMAND)
+	if (tItem._ItemType == TITEM_EXECUTESHELLCOMMAND)
 	{
-		std::string command = itt._sValue;
-		std::string callback = itt._ID;
-		std::string path = itt._sUser;
-		int timeout = itt._nValue;
+		std::string command = tItem._sValue;
+		std::string callback = tItem._ID;
+		std::string path = tItem._sUser;
+		int timeout = tItem._nValue;
 
 		std::ifstream infile;
 		std::string sLine;
@@ -3577,16 +3577,16 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 			}
 		}
 	}
-	else if (itt._ItemType == TITEM_GETURL)
+	else if (tItem._ItemType == TITEM_GETURL)
 	{
 		std::vector<std::string> extraHeaders;
-		std::string postData = itt._command;
-		std::string callback = itt._ID;
-		std::string url = itt._sValue;
-		int method = itt._switchtype;
+		std::string postData = tItem._command;
+		std::string callback = tItem._ID;
+		std::string url = tItem._sValue;
+		int method = tItem._switchtype;
 
-		if (!itt._relatedEvent.empty())
-			StringSplit(itt._relatedEvent, "!#", extraHeaders);
+		if (!tItem._relatedEvent.empty())
+			StringSplit(tItem._relatedEvent, "!#", extraHeaders);
 		std::string response;
 		std::vector<std::string> headerData;
 
@@ -3622,7 +3622,7 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 			_log.Log(LOG_ERROR, "Error opening url: %s", url.c_str());
 		}
 	}
-	else if ((itt._ItemType == TITEM_SEND_EMAIL) || (itt._ItemType == TITEM_SEND_EMAIL_TO))
+	else if ((tItem._ItemType == TITEM_SEND_EMAIL) || (tItem._ItemType == TITEM_SEND_EMAIL_TO))
 	{
 		int nValue;
 		if (GetPreferencesVar("EmailEnabled", nValue))
@@ -3641,13 +3641,13 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 						std::string EmailUsername;
 						std::string EmailPassword;
 						GetPreferencesVar("EmailFrom", EmailFrom);
-						if (itt._ItemType != TITEM_SEND_EMAIL_TO)
+						if (tItem._ItemType != TITEM_SEND_EMAIL_TO)
 						{
 							GetPreferencesVar("EmailTo", EmailTo);
 						}
 						else
 						{
-							EmailTo = itt._command;
+							EmailTo = tItem._command;
 						}
 						GetPreferencesVar("EmailUsername", EmailUsername);
 						GetPreferencesVar("EmailPassword", EmailPassword);
@@ -3659,8 +3659,8 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 						sclient.SetTo(CURLEncode::URLDecode(EmailTo));
 						sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
 						sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
-						sclient.SetSubject(CURLEncode::URLDecode(itt._ID));
-						sclient.SetHTMLBody(itt._sValue);
+						sclient.SetSubject(CURLEncode::URLDecode(tItem._ID));
+						sclient.SetHTMLBody(tItem._sValue);
 						bool bRet = sclient.SendEmail();
 
 						if (bRet)
@@ -3672,22 +3672,22 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem &itt)
 			}
 		}
 	}
-	else if (itt._ItemType == TITEM_SEND_SMS)
+	else if (tItem._ItemType == TITEM_SEND_SMS)
 	{
-		m_notifications.SendMessage(0, std::string(""), "clickatell", itt._ID, itt._ID, std::string(""), 1, std::string(""), false);
+		m_notifications.SendMessage(0, std::string(""), "clickatell", tItem._ID, tItem._ID, std::string(""), 1, std::string(""), false);
 	}
-	else if (itt._ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
+	else if (tItem._ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 	{
-		m_mainworker.m_cameras.EmailCameraSnapshot(itt._ID, itt._sValue);
+		m_mainworker.m_cameras.EmailCameraSnapshot(tItem._ID, tItem._sValue);
 	}
 }
 
 void CSQLHelper::Do_Work()
 {
-	std::vector<_tTaskItem> _items2do;
-
 	while (!IsStopRequested(static_cast<const long>(1000.0F / timer_resolution_hz)))
 	{
+		std::vector<_tTaskItem> _items2do;
+
 		if (m_bAcceptHardwareTimerActive)
 		{
 			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);
@@ -3707,8 +3707,6 @@ void CSQLHelper::Do_Work()
 			std::lock_guard<std::mutex> l(m_background_task_mutex);
 			if (!m_background_task_queue.empty())
 			{
-				_items2do.clear();
-
 				auto itt = m_background_task_queue.begin();
 				while (itt != m_background_task_queue.end())
 				{
@@ -3743,17 +3741,16 @@ void CSQLHelper::Do_Work()
 			continue;
 		}
 
-		auto itt = _items2do.begin();
-		while (itt != _items2do.end())
+		for (const auto &itt : _items2do)
 		{
-			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType:%d Cmd:%s Value:%s ", itt->_ItemType, itt->_command.c_str(), itt->_sValue.c_str());
+			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType:%d Cmd:%s Value:%s ", itt._ItemType, itt._command.c_str(), itt._sValue.c_str());
 
-			if (itt->_ItemType == TITEM_SWITCHCMD)
+			if (itt._ItemType == TITEM_SWITCHCMD)
 			{
-				if (itt->_switchtype == STYPE_Motion)
+				if (itt._switchtype == STYPE_Motion)
 				{
 					std::string devname;
-					switch (itt->_devType)
+					switch (itt._devType)
 					{
 					case pTypeLighting1:
 					case pTypeLighting2:
@@ -3764,93 +3761,93 @@ void CSQLHelper::Do_Work()
 					case pTypeGeneralSwitch:
 					case pTypeHomeConfort:
 					case pTypeFS20:
-						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor, itt->_sUser);
+						SwitchLightFromTasker(itt._idx, "Off", 0, NoColor, itt._sUser);
 						break;
 					case pTypeSecurity1:
-						switch (itt->_subType)
+						switch (itt._subType)
 						{
 						case sTypeSecX10M:
-							SwitchLightFromTasker(itt->_idx, "No Motion", 0, NoColor, itt->_sUser);
+							SwitchLightFromTasker(itt._idx, "No Motion", 0, NoColor, itt._sUser);
 							break;
 						default:
 							//just update internally
-							m_mainworker.m_szLastSwitchUser = itt->_sUser;
-							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
+							m_mainworker.m_szLastSwitchUser = itt._sUser;
+							UpdateValueInt(itt._HardwareID, itt._ID.c_str(), itt._unit, itt._devType, itt._subType, itt._signallevel, itt._batterylevel, itt._nValue, itt._sValue.c_str(), devname, true);
 							break;
 						}
 						break;
 					case pTypeLighting4:
 						//only update internally
-						m_mainworker.m_szLastSwitchUser = itt->_sUser;
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue,
-								   itt->_sValue.c_str(), devname, true);
+						m_mainworker.m_szLastSwitchUser = itt._sUser;
+						UpdateValueInt(itt._HardwareID, itt._ID.c_str(), itt._unit, itt._devType, itt._subType, itt._signallevel, itt._batterylevel, itt._nValue,
+								   itt._sValue.c_str(), devname, true);
 						break;
 					default:
 						//unknown hardware type, sensor will only be updated internally
-						m_mainworker.m_szLastSwitchUser = itt->_sUser;
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue,
-								   itt->_sValue.c_str(), devname, true);
+						m_mainworker.m_szLastSwitchUser = itt._sUser;
+						UpdateValueInt(itt._HardwareID, itt._ID.c_str(), itt._unit, itt._devType, itt._subType, itt._signallevel, itt._batterylevel, itt._nValue,
+								   itt._sValue.c_str(), devname, true);
 						break;
 					}
 				}
 				else
 				{
-					if (itt->_devType == pTypeLighting4)
+					if (itt._devType == pTypeLighting4)
 					{
 						//only update internally
 						std::string devname;
-						m_mainworker.m_szLastSwitchUser = itt->_sUser;
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue,
-								   itt->_sValue.c_str(), devname, true);
+						m_mainworker.m_szLastSwitchUser = itt._sUser;
+						UpdateValueInt(itt._HardwareID, itt._ID.c_str(), itt._unit, itt._devType, itt._subType, itt._signallevel, itt._batterylevel, itt._nValue,
+								   itt._sValue.c_str(), devname, true);
 					}
 					else
-						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor, itt->_sUser);
+						SwitchLightFromTasker(itt._idx, "Off", 0, NoColor, itt._sUser);
 				}
 			}
-			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
+			else if (itt._ItemType == TITEM_EXECUTE_SCRIPT)
 			{
-				_log.Log(LOG_STATUS, "Executing script: %s", itt->_ID.c_str() );
+				_log.Log(LOG_STATUS, "Executing script: %s", itt._ID.c_str() );
 
 				//start script
 #ifdef WIN32
-				ShellExecute(NULL, "open", itt->_ID.c_str(), itt->_sValue.c_str(), NULL, SW_SHOWNORMAL);
+				ShellExecute(NULL, "open", itt._ID.c_str(), itt._sValue.c_str(), NULL, SW_SHOWNORMAL);
 #else
-				std::string lscript = itt->_ID + " " + itt->_sValue;
+				std::string lscript = itt._ID + " " + itt._sValue;
 				int ret = system(lscript.c_str());
 				if (ret != 0)
 				{
-					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", itt->_ID.c_str(), ret);
+					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", itt._ID.c_str(), ret);
 				}
 #endif
 			}
-			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
+			else if (itt._ItemType == TITEM_SWITCHCMD_EVENT)
 			{
-				SwitchLightFromTasker(itt->_idx, itt->_command, itt->_level, itt->_Color, itt->_sUser);
+				SwitchLightFromTasker(itt._idx, itt._command, itt._level, itt._Color, itt._sUser);
 			}
 
-			else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
+			else if (itt._ItemType == TITEM_SWITCHCMD_SCENE)
 			{
-				m_mainworker.SwitchScene(itt->_idx, itt->_command, itt->_sUser);
+				m_mainworker.SwitchScene(itt._idx, itt._command, itt._sUser);
 			}
-			else if (itt->_ItemType == TITEM_SET_VARIABLE)
+			else if (itt._ItemType == TITEM_SET_VARIABLE)
 			{
 				std::vector<std::vector<std::string> > result;
 				std::stringstream s_str;
-				result = safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == %" PRIu64 ")", itt->_idx);
+				result = safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == %" PRIu64 ")", itt._idx);
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
 					s_str.clear();
 					s_str.str("");
-					s_str << itt->_idx;
+					s_str << itt._idx;
 					std::string errorMessage;
-					if (!UpdateUserVariable(s_str.str(), sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), itt->_sValue, (itt->_nValue == 0) ? false : true, errorMessage))
+					if (!UpdateUserVariable(s_str.str(), sd[0], (const _eUsrVariableType)atoi(sd[1].c_str()), itt._sValue, (itt._nValue == 0) ? false : true, errorMessage))
 					{
 						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), errorMessage.c_str());
 					}
 					else
 					{
-						_log.Log(LOG_STATUS, "Set UserVariable %s = %s", sd[0].c_str(), CURLEncode::URLDecode(itt->_sValue).c_str());
+						_log.Log(LOG_STATUS, "Set UserVariable %s = %s", sd[0].c_str(), CURLEncode::URLDecode(itt._sValue).c_str());
 					}
 				}
 				else
@@ -3858,18 +3855,18 @@ void CSQLHelper::Do_Work()
 					_log.Log(LOG_ERROR, "Variable not found!");
 				}
 			}
-			else if (itt->_ItemType == TITEM_SET_SETPOINT)
+			else if (itt._ItemType == TITEM_SET_SETPOINT)
 			{
 				std::stringstream sstr;
-				sstr << itt->_idx;
+				sstr << itt._idx;
 				std::string idx = sstr.str();
-				float fValue = (float)atof(itt->_sValue.c_str());
-				m_mainworker.SetSetPoint(idx, fValue, itt->_command, itt->_sUntil);
+				float fValue = (float)atof(itt._sValue.c_str());
+				m_mainworker.SetSetPoint(idx, fValue, itt._command, itt._sUntil);
 			}
-			else if (itt->_ItemType == TITEM_SEND_NOTIFICATION)
+			else if (itt._ItemType == TITEM_SEND_NOTIFICATION)
 			{
 				std::vector<std::string> splitresults;
-				StringSplit(itt->_command, "!#", splitresults);
+				StringSplit(itt._command, "!#", splitresults);
 				if (splitresults.size() >= 4) {
 					std::string subsystem;
 					if (splitresults.size() > 4)
@@ -3881,13 +3878,13 @@ void CSQLHelper::Do_Work()
 						_log.Log(LOG_STATUS, "Deprecated Notification system specified (gcm), change this to 'fcm'!");
 						subsystem = "fcm";
 					}
-					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt._idx), splitresults[3], true);
 				}
 			}
-			else if (itt->_ItemType == TITEM_SEND_IFTTT_TRIGGER)
+			else if (itt._ItemType == TITEM_SEND_IFTTT_TRIGGER)
 			{
 				std::vector<std::string> splitresults;
-				StringSplit(itt->_command, "!#", splitresults);
+				StringSplit(itt._command, "!#", splitresults);
 				if (!splitresults.empty())
 				{
 					std::string sValue1, sValue2, sValue3;
@@ -3897,35 +3894,32 @@ void CSQLHelper::Do_Work()
 						sValue2 = splitresults[1];
 					if (splitresults.size() > 2)
 						sValue3 = splitresults[2];
-					IFTTT::Send_IFTTT_Trigger(itt->_ID, sValue1, sValue2, sValue3);
+					IFTTT::Send_IFTTT_Trigger(itt._ID, sValue1, sValue2, sValue3);
 				}
 			}
-			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
+			else if (itt._ItemType == TITEM_UPDATEDEVICE)
 			{
-				m_mainworker.UpdateDevice(static_cast<int>(itt->_idx), itt->_nValue, itt->_sValue, itt->_sUser, 12, 255, (itt->_switchtype ? true : false));
+				m_mainworker.UpdateDevice(static_cast<int>(itt._idx), itt._nValue, itt._sValue, itt._sUser, 12, 255, (itt._switchtype ? true : false));
 			}
-			else if (itt->_ItemType == TITEM_CUSTOM_COMMAND)
+			else if (itt._ItemType == TITEM_CUSTOM_COMMAND)
 			{
-				m_mainworker.m_eventsystem.CustomCommand(itt->_idx, itt->_command);
+				m_mainworker.m_eventsystem.CustomCommand(itt._idx, itt._command);
 			}
-			else if (itt->_ItemType == TITEM_CUSTOM_EVENT)
+			else if (itt._ItemType == TITEM_CUSTOM_EVENT)
 			{
 				Json::Value eventInfo;
-				eventInfo["name"] = itt->_ID;
-				eventInfo["data"] = itt->_sValue;
+				eventInfo["name"] = itt._ID;
+				eventInfo["data"] = itt._sValue;
 				m_mainworker.m_notificationsystem.Notify(Notification::DZ_CUSTOM, Notification::STATUS_INFO, JSonToRawString(eventInfo));
 			}
-			else if (itt->_ItemType == TITEM_EXECUTESHELLCOMMAND || itt->_ItemType == TITEM_GETURL || itt->_ItemType == TITEM_SEND_EMAIL || itt->_ItemType == TITEM_SEND_EMAIL_TO ||
-				 itt->_ItemType == TITEM_SEND_SMS || itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
+			else if (itt._ItemType == TITEM_EXECUTESHELLCOMMAND || itt._ItemType == TITEM_GETURL || itt._ItemType == TITEM_SEND_EMAIL || itt._ItemType == TITEM_SEND_EMAIL_TO ||
+				 itt._ItemType == TITEM_SEND_SMS || itt._ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
 				// All actions which should not be on the main SQL Helper thread will get their own thread
-				std::thread ActionThread([this, itt] { PerformThreadedAction(*itt); });
+				std::thread ActionThread([this, itt] { PerformThreadedAction(itt); });
 				ActionThread.detach();
 			}
-
-			++itt;
 		}
-		_items2do.clear();
 	}
 }
 
