@@ -1505,7 +1505,7 @@ Version 1.412 (April 1th 2013)
 - Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
 - Implemented: SQLite faster journal/update mode on non-windows systems
 - Implemented: Started working on support for the CM180i
-- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
+- Implemented: TE932Tool (USB 433MHz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
 - Implemented: Temperature (large) icons now represents global temperature index
 - Implemented: Temperature/Weather sensors now display their main value in large font
 - Implemented: Unix update script

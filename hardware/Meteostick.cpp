@@ -18,7 +18,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-#define USE_868_Mhz
+#define USE_868_MHz
 #define RAIN_IN_MM
 
 
@@ -304,11 +304,11 @@ void Meteostick::ParseLine()
 		m_state = MSTATE_VALUES;
 		return;
 	case MSTATE_VALUES:
-#ifdef USE_868_Mhz
-		//Set listen frequency to 868Mhz
+#ifdef USE_868_MHz
+		//Set listen frequency to 868MHz
 		write("m1\n");
 #else
-		//Set listen frequency to 915Mhz
+		//Set listen frequency to 915MHz
 		write("m0\n");
 #endif
 		m_state = MSTATE_DATA;
