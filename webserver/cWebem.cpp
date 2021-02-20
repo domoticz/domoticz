@@ -2157,7 +2157,7 @@ namespace http {
 				session.username = "";
 				session.rights = -1;
 				session.forcelogin = true;
-				rep = reply::stock_reply(reply::ok);
+				rep = reply::stock_reply(reply::no_content);
 				send_remove_cookie(rep);
 				return;
 			}
@@ -2171,7 +2171,7 @@ namespace http {
 				send_authorization_request(rep);
 				return;
 			}
-			if (isUpgradeRequest)
+			if (isUpgradeRequest)	// And authorized, which has been checked above
 			{
 				return;
 			}
@@ -2204,7 +2204,7 @@ namespace http {
 					}
 				}
 			}
-
+			// So we always move in here
 			if (!bHandledAction)
 			{
 				if (myWebem->CheckForPageOverride(session, requestCopy, rep))
@@ -2212,7 +2212,7 @@ namespace http {
 					if (rep.status == reply::status_type::download_file)
 						return;
 
-					if (session.reply_status != reply::ok) // forbidden
+					if (session.reply_status != reply::ok)
 					{
 						rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
 						return;
