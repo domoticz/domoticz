@@ -3321,7 +3321,6 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 
 	while ( std::chrono::system_clock::now()-start<std::chrono::seconds(timeout) && *stillRunning) // check every second if we have to wait another second
 	{
-
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 
@@ -3497,7 +3496,7 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 		{
 			if (timeout > 0)
 			{
-				T = std::make_shared<std::thread>([=]() mutable { ManageExecuteScriptTimeout(pid, timeout, &stillRunning, &timeoutOccurred); });
+				T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout, this, pid, timeout, &stillRunning, &timeoutOccurred);
 			}
 			waitpid(pid, &exitcode, 0);
 			stillRunning = false;
