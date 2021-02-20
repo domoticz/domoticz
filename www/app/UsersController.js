@@ -196,8 +196,14 @@ define(['app'], function (app) {
 							else if (item.Rights == 1) {
 								rightstr = $.t("User");
 							}
-							else {
+							else if (item.Rights == 2) {
 								rightstr = $.t("Admin");
+							}
+							else if (item.Rights == 255) {
+								rightstr = $.t("ClientID");
+							}
+							else {
+								rightstr = $.t("-Unknown-");
 							}
 
 							var sharedstr = $.t("No");
