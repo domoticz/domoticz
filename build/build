@@ -1,0 +1,36 @@
+#!/bin/sh
+
+BUILD_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
+
+DOMOTICZ_ROOT="${BUILD_ROOT}/.."
+OPENZWAVE_ROOT="${BUILD_ROOT}/../../open-zwave"
+
+if [ ! -d $OPENZWAVE_ROOT ]; then
+	echo "Open Zwave source missing"
+	echo "You might need to to something like: git clone https://github.com/OpenZWave/open-zwave ${OPENZWAVE_ROOT}"
+	exit 1
+fi
+
+if [ "$(uname)" == "Darwin" ]; then
+    OS=macos      
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    OS=linux
+elif [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
+    OS=windows
+else
+	echo "Unknown OS $(uname -s), aborting"
+	exit 1
+fi
+
+# Before using this script you need to build the docker image like:
+# 
+# docker build -t markr/domoticz-build .
+
+docker run --rm -it \
+--env HOST_OS=${OS} \
+--mount type=bind,source="${OPENZWAVE_ROOT}",target=/root/open-zwave \
+--mount type=bind,source="${DOMOTICZ_ROOT}",target=/root/domoticz \
+--mount type=bind,source="${BUILD_ROOT}/build-helper.sh",target=/root/build-helper.sh,readonly \
+--mount source=build,target=/root/build \
+markr/domoticz-build \
+/root/build-helper.sh $*
