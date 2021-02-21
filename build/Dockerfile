@@ -8,6 +8,7 @@ ARG BOOST_VERSION_
 RUN apt-get update -qq \
  && apt-get install -y -qq git make gcc g++ rsync libxml2-utils libxml-simple-perl \
  && apt-get install -y -qq libssl-dev libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev \
+ && apt-get install -y -qq libmosquitto-dev libjsoncpp-dev libsqlite3-dev libminizip-dev \
  && rm -fr /var/lib/apt/lists/*
 
 WORKDIR /root

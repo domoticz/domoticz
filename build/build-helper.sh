@@ -1,7 +1,11 @@
 #!/bin/sh
 
-PROJECT=$1
-CMD=$2
+if [ $# -ge 1 ]; then
+	PROJECT=$1; shift 1
+fi
+if [ $# -ge 1 ]; then
+	CMD=$1; shift 1
+fi
 CPU_COUNT=$(lscpu -e | tail -n +2 | wc -l)
 
 if [ $HOST_OS = "linux" ]; then
@@ -46,22 +50,22 @@ domoticz)
 	cmake)
 		copy_in
 		rm -f CMakeCache.txt
-		cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt || exit 1
+		cmake -DCMAKE_BUILD_TYPE=Release $* CMakeLists.txt || exit 1
 		copy_out
 		;;
 	run)
 		copy_in
-    	make -j $CPU_COUNT || exit 1
+		make -j $CPU_COUNT || exit 1
 		copy_out
 
 		cd $WORKING_DIR
 		./domoticz -verbose 1
 		;;
-    "")
+	"")
 		copy_in
-    	make -j $CPU_COUNT || exit 1
+		make -j $CPU_COUNT || exit 1
 		copy_out
-    	;;
+		;;
 	*)        
 		echo "Wrong second argument"
 		exit 1
@@ -80,6 +84,9 @@ open-zwave)
 		exit 1
 		;;
 	esac
+	;;
+shell)
+	bash
 	;;
 *)
 	echo "Wrong first argument"

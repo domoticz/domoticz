@@ -3,11 +3,12 @@
 usage() { 
 	echo "Usage: $0 init ]" 1>&2
 	echo "Usage: $0 open-zwave [ clean | check | test | updateIndexDefines ]" 1>&2
-	echo "Usage: $0 domoticz [ clean | cmake | run ]" 1>&2
+	echo "Usage: $0 domoticz [ clean | cmake | run ] [ arguments ]" 1>&2
+	echo "Usage: $0 shell ]" 1>&2
 	exit 1
 }
 
-if [ $# -eq 0 -o $# -gt 2 ]; then
+if [ $# -eq 0 ]; then
 	usage
 fi
 

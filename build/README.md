@@ -23,6 +23,16 @@ This can take some time as it builds boost and cmake from source.
 
 ## Usage
 
+```shell
+$ ./domoticz/build/build
+Usage: ./domoticz/build/build init ]
+Usage: ./domoticz/build/build open-zwave [ clean | check | test | updateIndexDefines ]
+Usage: ./domoticz/build/build domoticz [ clean | cmake | run ] [ arguments ]
+Usage: ./domoticz/build/build shell ]
+```
+
+### Build
+
 First build OpenZWave:
 
 ```shell
@@ -32,6 +42,16 @@ $ ./domoticz/build/build open-zwave
 Next build Domoticz:
 
 ```shell
+$ ./domoticz/build/build domoticz cmake
 $ ./domoticz/build/build domoticz
 ```
 
+### CMake
+
+The builder supports CMake arguments like:
+
+```shell
+$ ./domoticz/build/build domoticz cmake -DUSE_BUILTIN_MQTT=NO
+```
+
+Note that `-DUSE_STATIC_BOOST=NO` is not supported.
