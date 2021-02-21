@@ -69,6 +69,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	m_HwdID = ID;
 	m_nDevID = 0;
 	m_nMyID = 0;
+	m_nOtbID = 0;
 	m_nBindID = 0;
 	std::fill(std::begin(m_bStartup), std::end(m_bStartup), true);
 	m_nBufPtr = 0;
@@ -90,6 +91,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	RegisterDecoder(cmdSetpointOverride, [this](auto &&msg) { return DecodeSetpointOverride(msg); });
 	RegisterDecoder(cmdDHWState, [this](auto &&msg) { return DecodeDHWState(msg); });
 	RegisterDecoder(cmdDHWTemp, [this](auto &&msg) { return DecodeDHWTemp(msg); });
+	RegisterDecoder(cmdDHWSettings, [this](auto &&msg) { return DecodeDHWSettings(msg); });
 	RegisterDecoder(cmdControllerMode, [this](auto &&msg) { return DecodeControllerMode(msg); });
 	RegisterDecoder(cmdSysInfo, [this](auto &&msg) { return DecodeSysInfo(msg); });
 	RegisterDecoder(cmdZoneName, [this](auto &&msg) { return DecodeZoneName(msg); });
@@ -410,6 +412,23 @@ void CEvohomeRadio::RequestDeviceInfo(uint8_t nAddr)
 }
 
 
+void CEvohomeRadio::RequestOpenThermBridge()
+{
+	// Manual requests since the Controller no longer requests this information from the OT Bridge
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdActuatorState).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermSetpoint).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x05)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x11)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x12)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x13)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x19)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x1a)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x1b)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x1c)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x73)).Add(uint8_t(0)).Add(uint8_t(0))); 
+}
+
+
 void CEvohomeRadio::SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdControllerHeatDemand).Add(nDevNo).Add(nDemand));
@@ -703,6 +722,12 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 					}
 				}
 			}
+		}
+		if (msg.id[0].GetIDType() == CEvohomeID::devBridge) //if we get a message from the OT Bridge capture it's ID
+		{
+                        if (!m_nOtbID)
+                                m_nOtbID = msg.GetID(0);
+			_log.Log(LOG_STATUS, "evohome: opentherm bridge detected, ID:0x%x", m_nOtbID);
 		}
 		if (msg.id[0].GetIDType() == CEvohomeID::devGateway) //if we just got an echo of a sent packet we don't need to process it
 		{
@@ -1611,8 +1636,8 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 {
 	char tag[] = "OPENTHERM_BRIDGE";
 
-	// Only look for responses from the OT Bridge and Filter out messages from other controllers 
-	if (msg.GetID(1) != GetControllerID())
+	// Only look for responses from the OT Bridge 
+	if (msg.GetID(0) != GetOpenThermBridgeID())
 		return true;
 
 	// All OT messages should have a payload size of 5	
@@ -1671,6 +1696,14 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 		Log(true, LOG_STATUS, "evohome: %s: DHW Temperature = %.2f C", tag, fOTResponse);
 		return true;
 	}
+        // 1B (ID.27) = Outside Temperature
+        if (msg.payload[2] == 0x1b) {
+		// Outside Temperature appears to need a further divison by 16
+                //SendTempSensor(27, 255, fOTResponse / 16, "Outside Temperature");
+
+                Log(false, LOG_STATUS, "evohome: %s: Outside Temperature = %.2f C %02X %02X", tag, fOTResponse/16, msg.payload[3], msg.payload[4]);
+                return true;
+        }
 	// 1C (ID.28) = Return Water Temperature
 	if (msg.payload[2] == 0x1c) {
 		SendTempSensor(28, 255, fOTResponse, "Return Water Temperature");
@@ -1692,9 +1725,9 @@ bool CEvohomeRadio::DecodeOpenThermSetpoint(CEvohomeMsg& msg)
 {
 	char tag[] = "OPENTHERM_SETPOINT";
 
-	// Only look for responses from the OT Bridge and Filter out messages from other controllers
-	if (msg.GetID(1) != GetControllerID())
-		return true;
+        // Only look for responses from the OT Bridge
+        if (msg.GetID(0) != GetOpenThermBridgeID())
+                return true;
 
 	// All OT messages should have a payload size of 3
 	if (msg.payloadsize != 3) {
@@ -2023,6 +2056,7 @@ void CEvohomeRadio::Idle_Work()
 					RequestZoneTemp(i);
 				RequestDHWTemp();  // Request DHW temp from controller as workaround for being unable to identify DeviceID
  			        RequestDHWSettings();
+				RequestOpenThermBridge();  //Request OpenTherm information as the controller no longer requests it
  			}
 			if (AllSensors == false) // Check whether individual zone sensors has been activated
 			{
