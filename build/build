@@ -1,14 +1,26 @@
 #!/bin/sh
 
 usage() { 
-	echo "Usage: $0 init ]" 1>&2
-	echo "Usage: $0 open-zwave [ clean | check | test | updateIndexDefines ]" 1>&2
-	echo "Usage: $0 domoticz [ clean | cmake | run ] [ arguments ]" 1>&2
-	echo "Usage: $0 shell ]" 1>&2
+	cat <<HERE
+Usage:
+  $0 init                              # build the Docker image
+  $0 clean [-p openzwave | domoticz]   # clean source
+  $0 compile [-p openzwave | domoticz] # compile source
+  $0 shell                             # run bash inside the container
+
+Only for Domoticz:
+  $0 cmake                             # (re)creates Makefiles
+  $0 run                               # run Domoticz for testing
+
+Only for OpenZWave:
+  $0 check                             # validates XML configuration files
+  $0 updateIndexDefines
+  $0 test
+HERE
 	exit 1
 }
 
-if [ $# -eq 0 ]; then
+if [ $# -eq 0 -o "$1" = "-h" -o "$1" = "--help" ]; then
 	usage
 fi
 
@@ -20,8 +32,6 @@ BOOST_VERSION=1.75.0
 
 BUILD_ROOT=$(dirname "$0")
 OPENZWAVE_ROOT="${BUILD_ROOT}/../../open-zwave"
-
-DOCKER_IMAGE="domoticz/domoticz-build"
 
 if [ ! -d $OPENZWAVE_ROOT ]; then
 	echo "OpenZWave source missing"
@@ -41,12 +51,15 @@ else
 fi
 
 if [ "$1" = "init" ]; then
-	docker-compose -f ${BUILD_ROOT}/docker-compose.yml build \
+	docker-compose -f ${BUILD_ROOT}/docker-compose.yml \
+	  build \
 	  --build-arg CMAKE_VERSION=${CMAKE_VERSION} \
 	  --build-arg BOOST_VERSION=${BOOST_VERSION} \
 	  --build-arg BOOST_VERSION_=$(echo ${BOOST_VERSION} | tr . _)
 else
-	docker-compose -f ${BUILD_ROOT}/docker-compose.yml run --service-ports \
-	  -e HOST_OS=${OS} \
-	  domoticz $*
+	docker-compose -f ${BUILD_ROOT}/docker-compose.yml \
+	  run \
+	  --rm \
+	  --service-ports \
+	  domoticz -o ${OS} $*
 fi

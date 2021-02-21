@@ -19,31 +19,43 @@ Then create the Docker image:
 $ ./domoticz/build/build init
 ```
 
-This can take some time as it builds boost and cmake from source. 
+This can take some time as it builds Boost and CMake from source. 
 
 ## Usage
 
 ```shell
-$ ./domoticz/build/build
-Usage: ./domoticz/build/build init ]
-Usage: ./domoticz/build/build open-zwave [ clean | check | test | updateIndexDefines ]
-Usage: ./domoticz/build/build domoticz [ clean | cmake | run ] [ arguments ]
-Usage: ./domoticz/build/build shell ]
+$ cd domoticz/build 
+$ ./build
+Usage:
+  ./build init                              # build the Docker image
+  ./build clean [-p openzwave | domoticz]   # clean source
+  ./build compile [-p openzwave | domoticz] # compile source
+  ./build shell                             # run bash inside the container
+
+Only for Domoticz:
+  ./build cmake                             # (re)creates Makefiles
+  ./build run                               # run Domoticz for testing
+
+Only for OpenZWave:
+  ./build check                             # validates XML configuration files
+  ./build updateIndexDefines
+  ./build test
 ```
 
 ### Build
 
-First build OpenZWave:
+First generate the Domoticz Makefiles:
 
 ```shell
-$ ./domoticz/build/build open-zwave
+$ ./domoticz/build/build cmake
 ```
 
-Next build Domoticz:
+Next build OpenZWave and Domoticz:
 
 ```shell
-$ ./domoticz/build/build domoticz cmake
-$ ./domoticz/build/build domoticz
+$ ./domoticz/build/build compile
+$ ls -l domoticz/domoticz
+-rwxr-xr-x  1 markr  staff  17540712 21 feb 23:33 domoticz/domoticz
 ```
 
 ### CMake
