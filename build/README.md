@@ -48,10 +48,26 @@ $ ./domoticz/build/build domoticz
 
 ### CMake
 
-The builder supports CMake arguments like:
+You can configure CMake using an `.env` file with contents like:
 
-```shell
-$ ./domoticz/build/build domoticz cmake -DUSE_BUILTIN_MQTT=NO
+```ini
+USE_BUILTIN_JSONCPP=YES
+USE_BUILTIN_MINIZIP=YES
+USE_BUILTIN_MQTT=YES
+USE_BUILTIN_SQLITE=YES
+
+USE_PYTHON=YES
+INCLUDE_LINUX_I2C=YES
+INCLUDE_SPI=YES
+WITH_LIBUSB=YES
+
+USE_LUA_STATIC=YES
+USE_OPENSSL_STATIC=NO
+USE_STATIC_OPENZWAVE=YES
+
+USE_PRECOMPILED_HEADER=YES
+GIT_SUBMODULE=ON
 ```
 
-Note that `-DUSE_STATIC_BOOST=NO` is not supported.
+Note that `USE_STATIC_BOOST` is not supported, it's always enabled.
+

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -ge 1 ]; then
 	PROJECT=$1; shift 1
@@ -39,6 +39,31 @@ else
 	}
 fi
 
+do_cmake() {
+	copy_in
+	rm -f CMakeCache.txt
+	args="-DCMAKE_BUILD_TYPE=Release"
+	for arg in \
+            USE_BUILTIN_JSONCPP \
+            USE_BUILTIN_MINIZIP \
+            USE_BUILTIN_MQTT \
+            USE_BUILTIN_SQLITE \
+            USE_PYTHON \
+            INCLUDE_LINUX_I2C \
+            INCLUDE_SPI \
+            WITH_LIBUSB \
+            USE_LUA_STATIC \
+            USE_OPENSSL_STATIC \
+            USE_STATIC_OPENZWAVE \
+            USE_PRECOMPILED_HEADER \
+            GIT_SUBMODULE
+	do
+		test -n "${!arg}" && args+=" -D${arg}=${!arg}"
+	done
+	cmake $args CMakeLists.txt || exit 1
+	copy_out
+}
+
 case $PROJECT in
 domoticz)
 	case $CMD in
@@ -48,10 +73,7 @@ domoticz)
 		copy_out
 		;;
 	cmake)
-		copy_in
-		rm -f CMakeCache.txt
-		cmake -DCMAKE_BUILD_TYPE=Release $* CMakeLists.txt || exit 1
-		copy_out
+		do_cmake
 		;;
 	run)
 		copy_in

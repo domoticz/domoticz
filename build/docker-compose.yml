@@ -12,6 +12,23 @@ services:
         ports:
             - 8080:8080
             - 443:443
+        environment:
+            USE_BUILTIN_JSONCPP: ${USE_BUILTIN_JSONCPP:-}
+            USE_BUILTIN_MINIZIP: ${USE_BUILTIN_MINIZIP:-}
+            USE_BUILTIN_MQTT: ${USE_BUILTIN_MQTT:-}
+            USE_BUILTIN_SQLITE: ${USE_BUILTIN_SQLITE:-}
+
+            USE_PYTHON: ${USE_PYTHON:-}
+            INCLUDE_LINUX_I2C: ${INCLUDE_LINUX_I2C:-}
+            INCLUDE_SPI: ${INCLUDE_SPI:-}
+            WITH_LIBUSB: ${WITH_LIBUSB:-}
+
+            USE_LUA_STATIC: ${USE_LUA_STATIC:-}
+            USE_OPENSSL_STATIC: ${USE_OPENSSL_STATIC:-}
+            USE_STATIC_OPENZWAVE: ${USE_STATIC_OPENZWAVE:-}
+            
+            USE_PRECOMPILED_HEADER: ${USE_PRECOMPILED_HEADER:-}
+            GIT_SUBMODULE: ${GIT_SUBMODULE:-}
 
 volumes:
     build: {}
