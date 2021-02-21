@@ -1,7 +1,8 @@
 #!/bin/sh
 
 usage() { 
-	echo "Usage: $0 open-zwave [ clean | check | test| updateIndexDefines]" 1>&2
+	echo "Usage: $0 init ]" 1>&2
+	echo "Usage: $0 open-zwave [ clean | check | test | updateIndexDefines ]" 1>&2
 	echo "Usage: $0 domoticz [ clean | cmake | run ]" 1>&2
 	exit 1
 }
@@ -10,12 +11,19 @@ if [ $# -eq 0 -o $# -gt 2 ]; then
 	usage
 fi
 
-BUILD_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
-DOMOTICZ_ROOT="${BUILD_ROOT}/.."
+# We need CMake version 3.16.0 or higher, so build it from source
+CMAKE_VERSION=3.19.3
+
+# Its recommended that you use the latest Boost libraries
+BOOST_VERSION=1.75.0
+
+BUILD_ROOT=$(dirname "$0")
 OPENZWAVE_ROOT="${BUILD_ROOT}/../../open-zwave"
 
+DOCKER_IMAGE="domoticz/domoticz-build"
+
 if [ ! -d $OPENZWAVE_ROOT ]; then
-	echo "Open Zwave source missing"
+	echo "OpenZWave source missing"
 	echo "You might need to to something like: git clone https://github.com/OpenZWave/open-zwave ${OPENZWAVE_ROOT}"
 	exit 1
 fi
@@ -31,21 +39,13 @@ else
 	exit 1
 fi
 
-if [ "$2" = "run" ]; then
-	DOCKER_ARGS="-p 8080:8080"
+if [ "$1" = "init" ]; then
+	docker-compose -f ${BUILD_ROOT}/docker-compose.yml build \
+	  --build-arg CMAKE_VERSION=${CMAKE_VERSION} \
+	  --build-arg BOOST_VERSION=${BOOST_VERSION} \
+	  --build-arg BOOST_VERSION_=$(echo ${BOOST_VERSION} | tr . _)
 else
-	DOCKER_ARGS=""
+	docker-compose -f ${BUILD_ROOT}/docker-compose.yml run --service-ports \
+	  -e HOST_OS=${OS} \
+	  domoticz $*
 fi
-
-# Before using this script you need to build the docker image like:
-# 
-# docker build -t markr/domoticz-build .
-
-docker run --rm -it ${DOCKER_ARGS} \
---env HOST_OS=${OS} \
---mount type=bind,source="${OPENZWAVE_ROOT}",target=/root/open-zwave \
---mount type=bind,source="${DOMOTICZ_ROOT}",target=/root/domoticz \
---mount type=bind,source="${BUILD_ROOT}/build-helper.sh",target=/root/build-helper.sh,readonly \
---mount source=build,target=/root/build \
-markr/domoticz-build \
-/root/build-helper.sh $*

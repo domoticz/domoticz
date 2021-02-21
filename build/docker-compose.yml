@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+    domoticz:
+        build: 
+            context: .
+        volumes:
+            - ../../open-zwave:/root/open-zwave
+            - ..:/root/domoticz
+            - ./build-helper.sh:/root/build-helper.sh:ro
+            - build:/root/build
+        ports:
+            - 8080:8080
+
+volumes:
+    build: {}
