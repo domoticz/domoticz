@@ -11,6 +11,7 @@ services:
             - build:/root/build
         ports:
             - 8080:8080
+            - 443:443
 
 volumes:
     build: {}

@@ -31,5 +31,6 @@ RUN tar xfz boost_${BOOST_VERSION_}.tar.gz \
  && rm -fr boost_${BOOST_VERSION_} boost_${BOOST_VERSION_}.tar.gz 
 
 EXPOSE 8080
+EXPOSE 443
 
 ENTRYPOINT [ "/root/build-helper.sh" ]
