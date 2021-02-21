@@ -1,7 +1,16 @@
 #!/bin/sh
 
-BUILD_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
+usage() { 
+	echo "Usage: $0 open-zwave [ clean | check | test| updateIndexDefines]" 1>&2
+	echo "Usage: $0 domoticz [ clean | cmake | run ]" 1>&2
+	exit 1
+}
 
+if [ $# -eq 0 -o $# -gt 2 ]; then
+	usage
+fi
+
+BUILD_ROOT="$(cd "$(dirname "$0")" && pwd -P)"
 DOMOTICZ_ROOT="${BUILD_ROOT}/.."
 OPENZWAVE_ROOT="${BUILD_ROOT}/../../open-zwave"
 
@@ -22,11 +31,17 @@ else
 	exit 1
 fi
 
+if [ "$2" = "run" ]; then
+	DOCKER_ARGS="-p 8080:8080"
+else
+	DOCKER_ARGS=""
+fi
+
 # Before using this script you need to build the docker image like:
 # 
 # docker build -t markr/domoticz-build .
 
-docker run --rm -it \
+docker run --rm -it ${DOCKER_ARGS} \
 --env HOST_OS=${OS} \
 --mount type=bind,source="${OPENZWAVE_ROOT}",target=/root/open-zwave \
 --mount type=bind,source="${DOMOTICZ_ROOT}",target=/root/domoticz \

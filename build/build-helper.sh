@@ -1,29 +1,21 @@
 #!/bin/sh
 
-usage() { 
-	echo "Usage: $0 open-zwave [ clean | check | test| updateIndexDefines]" 1>&2
-	echo "Usage: $0 domoticz [ clean | cmake ]" 1>&2
-	exit 1
-}
-
-if [ $# -eq 0 -o $# -gt 2 ]; then
-	usage
-fi
-
 PROJECT=$1
 CMD=$2
 CPU_COUNT=$(lscpu -e | tail -n +2 | wc -l)
 
 if [ $HOST_OS = "linux" ]; then
+	WORKING_DIR=$PROJECT
 	copy_in() {
 		ln -sf open-zwave open-zwave-read-only
 
-		cd $PROJECT
+		cd $WORKING_DIR
 	}
 	copy_out() {
 		cd ..
 	}
 else
+	WORKING_DIR=build/$PROJECT
 	copy_in() {
 		ln -sf open-zwave build/open-zwave-read-only
 
@@ -31,7 +23,7 @@ else
 		rsync -a --delete $PROJECT build || exit 1
 		echo
 
-		cd build/$PROJECT
+		cd $WORKING_DIR
 	}
 	copy_out() {
 		cd ../..
@@ -57,13 +49,22 @@ domoticz)
 		cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt || exit 1
 		copy_out
 		;;
+	run)
+		copy_in
+    	make -j $CPU_COUNT || exit 1
+		copy_out
+
+		cd $WORKING_DIR
+		./domoticz -verbose 1
+		;;
     "")
 		copy_in
     	make -j $CPU_COUNT || exit 1
 		copy_out
     	;;
 	*)        
-		usage 
+		echo "Wrong second argument"
+		exit 1
 		;;
 	esac
 	;;
@@ -75,11 +76,13 @@ open-zwave)
 		copy_out
 		;;
 	*)        
-		usage 
+		echo "Wrong second argument"
+		exit 1
 		;;
 	esac
 	;;
 *)
-	usage 
+	echo "Wrong first argument"
+	exit 1
 	;;
 esac
