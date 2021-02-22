@@ -74,7 +74,6 @@ void CHEOS::ParseLine()
 										{
 											_log.Debug(DEBUG_HARDWARE, "DENON by HEOS: No players found.");
 										}
-										key++;
 									}
 								}
 								else
