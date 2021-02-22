@@ -764,6 +764,8 @@ class CEvohomeBase : public CDomoticzHardwareBase
 
 	unsigned int GetControllerID();
 	unsigned int GetGatewayID();
+	unsigned int GetOpenThermBridgeID();
+
 	uint8_t GetZoneCount();
 	uint8_t GetControllerMode();
 	std::string GetControllerName();
@@ -784,6 +786,7 @@ class CEvohomeBase : public CDomoticzHardwareBase
       private:
 	void SetControllerID(unsigned int nID);
 	void SetGatewayID(unsigned int nID);
+	void SetOpenThermBridgeID(unsigned int nID);
 
 	bool SetMaxZoneCount(uint8_t nZoneCount);
 	bool SetZoneCount(uint8_t nZoneCount);
@@ -818,6 +821,9 @@ class CEvohomeBase : public CDomoticzHardwareBase
 
 	unsigned int m_nMyID; // gateway ID
 	std::mutex m_mtxGatewayID;
+
+	unsigned int m_nOtbID; // OpenTherm Bridge ID
+	std::mutex m_mtxOpenThermBridgeID;
 
 	unsigned int m_nBindID;	     // device ID of bound device
 	unsigned char m_nBindIDType; // what type of device to bind

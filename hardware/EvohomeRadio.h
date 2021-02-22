@@ -69,6 +69,7 @@ class CEvohomeRadio : public CEvohomeBase
 	void RequestDHWState();
 	void RequestDHWTemp();
 	void RequestDHWSettings();
+	void RequestOpenThermBridge();
 	void RequestZoneInfo(uint8_t nZone);
 	void RequestZoneTemp(uint8_t nZone);
 	void RequestZoneName(uint8_t nZone);
