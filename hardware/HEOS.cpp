@@ -63,24 +63,17 @@ void CHEOS::ParseLine()
 							{
 								if (root.isMember("payload"))
 								{
-									int key = 0;
 									for (const auto &r : root["payload"])
 									{
-
-										if (r[key].isMember("name") && r[key].isMember("pid"))
+										if (r.isMember("name") && r.isMember("pid"))
 										{
-											std::string pid
-												= std::to_string(r[key]["pid"].asInt());
-											AddNode(r[key]["nam"
-												       "e"]
-													.asCString(),
-												pid);
+											std::string pid = std::to_string(r["pid"].asInt());
+											AddNode(r["name"].asCString(), pid);
 										}
 										else
 										{
 											_log.Debug(DEBUG_HARDWARE, "DENON by HEOS: No players found.");
 										}
-										key++;
 									}
 								}
 								else
