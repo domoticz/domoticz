@@ -43,550 +43,493 @@
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
 
-const char* sqlCreateDeviceStatus =
-"CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[DeviceID] VARCHAR(25) NOT NULL, "
-"[Unit] INTEGER DEFAULT 0, "
-"[Name] VARCHAR(100) DEFAULT Unknown, "
-"[Used] INTEGER DEFAULT 0, "
-"[Type] INTEGER NOT NULL, "
-"[SubType] INTEGER NOT NULL, "
-"[SwitchType] INTEGER DEFAULT 0, "
-"[Favorite] INTEGER DEFAULT 0, "
-"[SignalLevel] INTEGER DEFAULT 0, "
-"[BatteryLevel] INTEGER DEFAULT 0, "
-"[nValue] INTEGER DEFAULT 0, "
-"[sValue] VARCHAR(200) DEFAULT null, "
-"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
-"[Order] INTEGER BIGINT(10) default 0, "
-"[AddjValue] FLOAT DEFAULT 0, "
-"[AddjMulti] FLOAT DEFAULT 1, "
-"[AddjValue2] FLOAT DEFAULT 0, "
-"[AddjMulti2] FLOAT DEFAULT 1, "
-"[StrParam1] VARCHAR(200) DEFAULT '', "
-"[StrParam2] VARCHAR(200) DEFAULT '', "
-"[LastLevel] INTEGER DEFAULT 0, "
-"[Protected] INTEGER DEFAULT 0, "
-"[CustomImage] INTEGER DEFAULT 0, "
-"[Description] VARCHAR(200) DEFAULT '', "
-"[Options] TEXT DEFAULT null, "
-"[Color] TEXT DEFAULT NULL);";
+constexpr auto sqlCreateDeviceStatus = "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
+				       "[ID] INTEGER PRIMARY KEY, "
+				       "[HardwareID] INTEGER NOT NULL, "
+				       "[DeviceID] VARCHAR(25) NOT NULL, "
+				       "[Unit] INTEGER DEFAULT 0, "
+				       "[Name] VARCHAR(100) DEFAULT Unknown, "
+				       "[Used] INTEGER DEFAULT 0, "
+				       "[Type] INTEGER NOT NULL, "
+				       "[SubType] INTEGER NOT NULL, "
+				       "[SwitchType] INTEGER DEFAULT 0, "
+				       "[Favorite] INTEGER DEFAULT 0, "
+				       "[SignalLevel] INTEGER DEFAULT 0, "
+				       "[BatteryLevel] INTEGER DEFAULT 0, "
+				       "[nValue] INTEGER DEFAULT 0, "
+				       "[sValue] VARCHAR(200) DEFAULT null, "
+				       "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')),"
+				       "[Order] INTEGER BIGINT(10) default 0, "
+				       "[AddjValue] FLOAT DEFAULT 0, "
+				       "[AddjMulti] FLOAT DEFAULT 1, "
+				       "[AddjValue2] FLOAT DEFAULT 0, "
+				       "[AddjMulti2] FLOAT DEFAULT 1, "
+				       "[StrParam1] VARCHAR(200) DEFAULT '', "
+				       "[StrParam2] VARCHAR(200) DEFAULT '', "
+				       "[LastLevel] INTEGER DEFAULT 0, "
+				       "[Protected] INTEGER DEFAULT 0, "
+				       "[CustomImage] INTEGER DEFAULT 0, "
+				       "[Description] VARCHAR(200) DEFAULT '', "
+				       "[Options] TEXT DEFAULT null, "
+				       "[Color] TEXT DEFAULT NULL);";
 
-const char* sqlCreateDeviceStatusTrigger =
-"CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
-"BEGIN\n"
-"	UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE DeviceStatus.ID = NEW.ID;\n"
-"END;\n";
+constexpr auto sqlCreateDeviceStatusTrigger = "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
+					      "BEGIN\n"
+					      "	UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE DeviceStatus.ID = NEW.ID;\n"
+					      "END;\n";
 
-const char* sqlCreateLightingLog =
-"CREATE TABLE IF NOT EXISTS [LightingLog] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[nValue] INTEGER DEFAULT 0, "
-"[sValue] VARCHAR(200), "
-"[User] VARCHAR(100) DEFAULT (''), "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateLightingLog = "CREATE TABLE IF NOT EXISTS [LightingLog] ("
+				      "[DeviceRowID] BIGINT(10) NOT NULL, "
+				      "[nValue] INTEGER DEFAULT 0, "
+				      "[sValue] VARCHAR(200), "
+				      "[User] VARCHAR(100) DEFAULT (''), "
+				      "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateSceneLog =
-"CREATE TABLE IF NOT EXISTS [SceneLog] ("
-"[SceneRowID] BIGINT(10) NOT NULL, "
-"[nValue] INTEGER DEFAULT 0, "
-"[User] VARCHAR(100) DEFAULT (''), "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateSceneLog = "CREATE TABLE IF NOT EXISTS [SceneLog] ("
+				   "[SceneRowID] BIGINT(10) NOT NULL, "
+				   "[nValue] INTEGER DEFAULT 0, "
+				   "[User] VARCHAR(100) DEFAULT (''), "
+				   "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreatePreferences =
-"CREATE TABLE IF NOT EXISTS [Preferences] ("
-"[Key] VARCHAR(50) PRIMARY KEY, "
-"[nValue] INTEGER DEFAULT 0, "
-"[sValue] VARCHAR(200));";
+constexpr auto sqlCreatePreferences = "CREATE TABLE IF NOT EXISTS [Preferences] ("
+				      "[Key] VARCHAR(50) PRIMARY KEY, "
+				      "[nValue] INTEGER DEFAULT 0, "
+				      "[sValue] VARCHAR(200));";
 
-const char* sqlCreateRain =
-"CREATE TABLE IF NOT EXISTS [Rain] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Total] FLOAT NOT NULL, "
-"[Rate] INTEGER DEFAULT 0, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateRain = "CREATE TABLE IF NOT EXISTS [Rain] ("
+			       "[DeviceRowID] BIGINT(10) NOT NULL, "
+			       "[Total] FLOAT NOT NULL, "
+			       "[Rate] INTEGER DEFAULT 0, "
+			       "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateRain_Calendar =
-"CREATE TABLE IF NOT EXISTS [Rain_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Total] FLOAT NOT NULL, "
-"[Rate] INTEGER DEFAULT 0, "
-"[Date] DATE NOT NULL);";
+constexpr auto sqlCreateRain_Calendar = "CREATE TABLE IF NOT EXISTS [Rain_Calendar] ("
+					"[DeviceRowID] BIGINT(10) NOT NULL, "
+					"[Total] FLOAT NOT NULL, "
+					"[Rate] INTEGER DEFAULT 0, "
+					"[Date] DATE NOT NULL);";
 
-const char* sqlCreateTemperature =
-"CREATE TABLE IF NOT EXISTS [Temperature] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Temperature] FLOAT NOT NULL, "
-"[Chill] FLOAT DEFAULT 0, "
-"[Humidity] INTEGER DEFAULT 0, "
-"[Barometer] INTEGER DEFAULT 0, "
-"[DewPoint] FLOAT DEFAULT 0, "
-"[SetPoint] FLOAT DEFAULT 0, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateTemperature = "CREATE TABLE IF NOT EXISTS [Temperature] ("
+				      "[DeviceRowID] BIGINT(10) NOT NULL, "
+				      "[Temperature] FLOAT NOT NULL, "
+				      "[Chill] FLOAT DEFAULT 0, "
+				      "[Humidity] INTEGER DEFAULT 0, "
+				      "[Barometer] INTEGER DEFAULT 0, "
+				      "[DewPoint] FLOAT DEFAULT 0, "
+				      "[SetPoint] FLOAT DEFAULT 0, "
+				      "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateTemperature_Calendar =
-"CREATE TABLE IF NOT EXISTS [Temperature_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Temp_Min] FLOAT NOT NULL, "
-"[Temp_Max] FLOAT NOT NULL, "
-"[Temp_Avg] FLOAT DEFAULT 0, "
-"[Chill_Min] FLOAT DEFAULT 0, "
-"[Chill_Max] FLOAT, "
-"[Humidity] INTEGER DEFAULT 0, "
-"[Barometer] INTEGER DEFAULT 0, "
-"[DewPoint] FLOAT DEFAULT 0, "
-"[SetPoint_Min] FLOAT DEFAULT 0, "
-"[SetPoint_Max] FLOAT DEFAULT 0, "
-"[SetPoint_Avg] FLOAT DEFAULT 0, "
-"[Date] DATE NOT NULL);";
+constexpr auto sqlCreateTemperature_Calendar = "CREATE TABLE IF NOT EXISTS [Temperature_Calendar] ("
+					       "[DeviceRowID] BIGINT(10) NOT NULL, "
+					       "[Temp_Min] FLOAT NOT NULL, "
+					       "[Temp_Max] FLOAT NOT NULL, "
+					       "[Temp_Avg] FLOAT DEFAULT 0, "
+					       "[Chill_Min] FLOAT DEFAULT 0, "
+					       "[Chill_Max] FLOAT, "
+					       "[Humidity] INTEGER DEFAULT 0, "
+					       "[Barometer] INTEGER DEFAULT 0, "
+					       "[DewPoint] FLOAT DEFAULT 0, "
+					       "[SetPoint_Min] FLOAT DEFAULT 0, "
+					       "[SetPoint_Max] FLOAT DEFAULT 0, "
+					       "[SetPoint_Avg] FLOAT DEFAULT 0, "
+					       "[Date] DATE NOT NULL);";
 
-const char* sqlCreateTimers =
-"CREATE TABLE IF NOT EXISTS [Timers] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Active] BOOLEAN DEFAULT true, "
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Date] DATE DEFAULT 0, "
-"[Time] TIME NOT NULL, "
-"[Type] INTEGER NOT NULL, "
-"[Cmd] INTEGER NOT NULL, "
-"[Level] INTEGER DEFAULT 15, "
-"[Color] TEXT DEFAULT NULL, "
-"[UseRandomness] INTEGER DEFAULT 0, "
-"[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL, "
-"[Month] INTEGER DEFAULT 0, "
-"[MDay] INTEGER DEFAULT 0, "
-"[Occurence] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateTimers = "CREATE TABLE IF NOT EXISTS [Timers] ("
+				 "[ID] INTEGER PRIMARY KEY, "
+				 "[Active] BOOLEAN DEFAULT true, "
+				 "[DeviceRowID] BIGINT(10) NOT NULL, "
+				 "[Date] DATE DEFAULT 0, "
+				 "[Time] TIME NOT NULL, "
+				 "[Type] INTEGER NOT NULL, "
+				 "[Cmd] INTEGER NOT NULL, "
+				 "[Level] INTEGER DEFAULT 15, "
+				 "[Color] TEXT DEFAULT NULL, "
+				 "[UseRandomness] INTEGER DEFAULT 0, "
+				 "[TimerPlan] INTEGER DEFAULT 0, "
+				 "[Days] INTEGER NOT NULL, "
+				 "[Month] INTEGER DEFAULT 0, "
+				 "[MDay] INTEGER DEFAULT 0, "
+				 "[Occurence] INTEGER DEFAULT 0);";
 
-const char* sqlCreateUV =
-"CREATE TABLE IF NOT EXISTS [UV] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Level] FLOAT NOT NULL, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateUV = "CREATE TABLE IF NOT EXISTS [UV] ("
+			     "[DeviceRowID] BIGINT(10) NOT NULL, "
+			     "[Level] FLOAT NOT NULL, "
+			     "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateUV_Calendar =
-"CREATE TABLE IF NOT EXISTS [UV_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Level] FLOAT, "
-"[Date] DATE NOT NULL);";
+constexpr auto sqlCreateUV_Calendar = "CREATE TABLE IF NOT EXISTS [UV_Calendar] ("
+				      "[DeviceRowID] BIGINT(10) NOT NULL, "
+				      "[Level] FLOAT, "
+				      "[Date] DATE NOT NULL);";
 
-const char* sqlCreateWind =
-"CREATE TABLE IF NOT EXISTS [Wind] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Direction] FLOAT NOT NULL, "
-"[Speed] INTEGER NOT NULL, "
-"[Gust] INTEGER NOT NULL, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateWind = "CREATE TABLE IF NOT EXISTS [Wind] ("
+			       "[DeviceRowID] BIGINT(10) NOT NULL, "
+			       "[Direction] FLOAT NOT NULL, "
+			       "[Speed] INTEGER NOT NULL, "
+			       "[Gust] INTEGER NOT NULL, "
+			       "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateWind_Calendar =
-"CREATE TABLE IF NOT EXISTS [Wind_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Direction] FLOAT NOT NULL, "
-"[Speed_Min] INTEGER NOT NULL, "
-"[Speed_Max] INTEGER NOT NULL, "
-"[Gust_Min] INTEGER NOT NULL, "
-"[Gust_Max] INTEGER NOT NULL, "
-"[Date] DATE NOT NULL);";
+constexpr auto sqlCreateWind_Calendar = "CREATE TABLE IF NOT EXISTS [Wind_Calendar] ("
+					"[DeviceRowID] BIGINT(10) NOT NULL, "
+					"[Direction] FLOAT NOT NULL, "
+					"[Speed_Min] INTEGER NOT NULL, "
+					"[Speed_Max] INTEGER NOT NULL, "
+					"[Gust_Min] INTEGER NOT NULL, "
+					"[Gust_Max] INTEGER NOT NULL, "
+					"[Date] DATE NOT NULL);";
 
-const char* sqlCreateMultiMeter =
-"CREATE TABLE IF NOT EXISTS [MultiMeter] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Value1] BIGINT NOT NULL, "
-"[Value2] BIGINT DEFAULT 0, "
-"[Value3] BIGINT DEFAULT 0, "
-"[Value4] BIGINT DEFAULT 0, "
-"[Value5] BIGINT DEFAULT 0, "
-"[Value6] BIGINT DEFAULT 0, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateMultiMeter = "CREATE TABLE IF NOT EXISTS [MultiMeter] ("
+				     "[DeviceRowID] BIGINT(10) NOT NULL, "
+				     "[Value1] BIGINT NOT NULL, "
+				     "[Value2] BIGINT DEFAULT 0, "
+				     "[Value3] BIGINT DEFAULT 0, "
+				     "[Value4] BIGINT DEFAULT 0, "
+				     "[Value5] BIGINT DEFAULT 0, "
+				     "[Value6] BIGINT DEFAULT 0, "
+				     "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateMultiMeter_Calendar =
-"CREATE TABLE IF NOT EXISTS [MultiMeter_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Value1] BIGINT NOT NULL, "
-"[Value2] BIGINT NOT NULL, "
-"[Value3] BIGINT NOT NULL, "
-"[Value4] BIGINT NOT NULL, "
-"[Value5] BIGINT NOT NULL, "
-"[Value6] BIGINT NOT NULL, "
-"[Counter1] BIGINT DEFAULT 0, "
-"[Counter2] BIGINT DEFAULT 0, "
-"[Counter3] BIGINT DEFAULT 0, "
-"[Counter4] BIGINT DEFAULT 0, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateMultiMeter_Calendar = "CREATE TABLE IF NOT EXISTS [MultiMeter_Calendar] ("
+					      "[DeviceRowID] BIGINT(10) NOT NULL, "
+					      "[Value1] BIGINT NOT NULL, "
+					      "[Value2] BIGINT NOT NULL, "
+					      "[Value3] BIGINT NOT NULL, "
+					      "[Value4] BIGINT NOT NULL, "
+					      "[Value5] BIGINT NOT NULL, "
+					      "[Value6] BIGINT NOT NULL, "
+					      "[Counter1] BIGINT DEFAULT 0, "
+					      "[Counter2] BIGINT DEFAULT 0, "
+					      "[Counter3] BIGINT DEFAULT 0, "
+					      "[Counter4] BIGINT DEFAULT 0, "
+					      "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateNotifications =
-"CREATE TABLE IF NOT EXISTS [Notifications] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Params] VARCHAR(100), "
-"[CustomMessage] VARCHAR(300) DEFAULT (''), "
-"[ActiveSystems] VARCHAR(200) DEFAULT (''), "
-"[Priority] INTEGER default 0, "
-"[SendAlways] INTEGER default 0, "
-"[LastSend] DATETIME DEFAULT 0);";
+constexpr auto sqlCreateNotifications = "CREATE TABLE IF NOT EXISTS [Notifications] ("
+					"[ID] INTEGER PRIMARY KEY, "
+					"[DeviceRowID] BIGINT(10) NOT NULL, "
+					"[Params] VARCHAR(100), "
+					"[CustomMessage] VARCHAR(300) DEFAULT (''), "
+					"[ActiveSystems] VARCHAR(200) DEFAULT (''), "
+					"[Priority] INTEGER default 0, "
+					"[SendAlways] INTEGER default 0, "
+					"[LastSend] DATETIME DEFAULT 0);";
 
-const char* sqlCreateHardware =
-"CREATE TABLE IF NOT EXISTS [Hardware] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Name] VARCHAR(200) NOT NULL, "
-"[Enabled] INTEGER DEFAULT 1, "
-"[Type] INTEGER NOT NULL, "
-"[LogLevel] INTEGER default 7, " //LOG_NORM + LOG_STATUS + LOG_ERROR
-"[Address] VARCHAR(200), "
-"[Port] INTEGER, "
-"[SerialPort] TEXT DEFAULT (''), "
-"[Username] VARCHAR(100), "
-"[Password] VARCHAR(100), "
-"[Extra] TEXT DEFAULT (''),"
-"[Mode1] CHAR DEFAULT 0, "
-"[Mode2] CHAR DEFAULT 0, "
-"[Mode3] CHAR DEFAULT 0, "
-"[Mode4] CHAR DEFAULT 0, "
-"[Mode5] CHAR DEFAULT 0, "
-"[Mode6] CHAR DEFAULT 0, "
-"[DataTimeout] INTEGER DEFAULT 0, "
-"[Configuration] TEXT DEFAULT (''));";
+constexpr auto sqlCreateHardware = "CREATE TABLE IF NOT EXISTS [Hardware] ("
+				   "[ID] INTEGER PRIMARY KEY, "
+				   "[Name] VARCHAR(200) NOT NULL, "
+				   "[Enabled] INTEGER DEFAULT 1, "
+				   "[Type] INTEGER NOT NULL, "
+				   "[LogLevel] INTEGER default 7, " // LOG_NORM + LOG_STATUS + LOG_ERROR
+				   "[Address] VARCHAR(200), "
+				   "[Port] INTEGER, "
+				   "[SerialPort] TEXT DEFAULT (''), "
+				   "[Username] VARCHAR(100), "
+				   "[Password] VARCHAR(100), "
+				   "[Extra] TEXT DEFAULT (''),"
+				   "[Mode1] CHAR DEFAULT 0, "
+				   "[Mode2] CHAR DEFAULT 0, "
+				   "[Mode3] CHAR DEFAULT 0, "
+				   "[Mode4] CHAR DEFAULT 0, "
+				   "[Mode5] CHAR DEFAULT 0, "
+				   "[Mode6] CHAR DEFAULT 0, "
+				   "[DataTimeout] INTEGER DEFAULT 0, "
+				   "[Configuration] TEXT DEFAULT (''));";
 
-const char* sqlCreateUsers =
-"CREATE TABLE IF NOT EXISTS [Users] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Active] INTEGER NOT NULL DEFAULT 0, "
-"[Username] VARCHAR(200) NOT NULL, "
-"[Password] VARCHAR(200) NOT NULL, "
-"[Rights] INTEGER DEFAULT 255, "
-"[TabsEnabled] INTEGER DEFAULT 255, "
-"[RemoteSharing] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateUsers = "CREATE TABLE IF NOT EXISTS [Users] ("
+				"[ID] INTEGER PRIMARY KEY, "
+				"[Active] INTEGER NOT NULL DEFAULT 0, "
+				"[Username] VARCHAR(200) NOT NULL, "
+				"[Password] VARCHAR(200) NOT NULL, "
+				"[Rights] INTEGER DEFAULT 255, "
+				"[TabsEnabled] INTEGER DEFAULT 255, "
+				"[RemoteSharing] INTEGER DEFAULT 0);";
 
-const char* sqlCreateMeter =
-"CREATE TABLE IF NOT EXISTS [Meter] ("
-"[DeviceRowID] BIGINT NOT NULL, "
-"[Value] BIGINT NOT NULL, "
-"[Usage] INTEGER DEFAULT 0, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateMeter = "CREATE TABLE IF NOT EXISTS [Meter] ("
+				"[DeviceRowID] BIGINT NOT NULL, "
+				"[Value] BIGINT NOT NULL, "
+				"[Usage] INTEGER DEFAULT 0, "
+				"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateMeter_Calendar =
-"CREATE TABLE IF NOT EXISTS [Meter_Calendar] ("
-"[DeviceRowID] BIGINT NOT NULL, "
-"[Value] BIGINT NOT NULL, "
-"[Counter] BIGINT DEFAULT 0, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateMeter_Calendar = "CREATE TABLE IF NOT EXISTS [Meter_Calendar] ("
+					 "[DeviceRowID] BIGINT NOT NULL, "
+					 "[Value] BIGINT NOT NULL, "
+					 "[Counter] BIGINT DEFAULT 0, "
+					 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateLightSubDevices =
-"CREATE TABLE IF NOT EXISTS [LightSubDevices] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[DeviceRowID] INTEGER NOT NULL, "
-"[ParentID] INTEGER NOT NULL);";
+constexpr auto sqlCreateLightSubDevices = "CREATE TABLE IF NOT EXISTS [LightSubDevices] ("
+					  "[ID] INTEGER PRIMARY KEY, "
+					  "[DeviceRowID] INTEGER NOT NULL, "
+					  "[ParentID] INTEGER NOT NULL);";
 
-const char* sqlCreateCameras =
-"CREATE TABLE IF NOT EXISTS [Cameras] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Name] VARCHAR(200) NOT NULL, "
-"[Enabled] INTEGER DEFAULT 1, "
-"[Address] VARCHAR(200), "
-"[Port] INTEGER, "
-"[Protocol] INTEGER DEFAULT 0, "
-"[Username] VARCHAR(100) DEFAULT (''), "
-"[Password] VARCHAR(100) DEFAULT (''), "
-"[ImageURL] VARCHAR(200) DEFAULT (''));";
+constexpr auto sqlCreateCameras = "CREATE TABLE IF NOT EXISTS [Cameras] ("
+				  "[ID] INTEGER PRIMARY KEY, "
+				  "[Name] VARCHAR(200) NOT NULL, "
+				  "[Enabled] INTEGER DEFAULT 1, "
+				  "[Address] VARCHAR(200), "
+				  "[Port] INTEGER, "
+				  "[Protocol] INTEGER DEFAULT 0, "
+				  "[Username] VARCHAR(100) DEFAULT (''), "
+				  "[Password] VARCHAR(100) DEFAULT (''), "
+				  "[ImageURL] VARCHAR(200) DEFAULT (''));";
 
-const char* sqlCreateCamerasActiveDevices =
-"CREATE TABLE IF NOT EXISTS [CamerasActiveDevices] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[CameraRowID] INTEGER NOT NULL, "
-"[DevSceneType] INTEGER NOT NULL, "
-"[DevSceneRowID] INTEGER NOT NULL, "
-"[DevSceneWhen] INTEGER NOT NULL, "
-"[DevSceneDelay] INTEGER NOT NULL);";
+constexpr auto sqlCreateCamerasActiveDevices = "CREATE TABLE IF NOT EXISTS [CamerasActiveDevices] ("
+					       "[ID] INTEGER PRIMARY KEY, "
+					       "[CameraRowID] INTEGER NOT NULL, "
+					       "[DevSceneType] INTEGER NOT NULL, "
+					       "[DevSceneRowID] INTEGER NOT NULL, "
+					       "[DevSceneWhen] INTEGER NOT NULL, "
+					       "[DevSceneDelay] INTEGER NOT NULL);";
 
-const char* sqlCreatePlanMappings =
-"CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[DeviceRowID] BIGINT NOT NULL, "
-"[DevSceneType] INTEGER DEFAULT 0, "
-"[PlanID] BIGINT NOT NULL, "
-"[Order] INTEGER BIGINT(10) DEFAULT 0, "
-"[XOffset] INTEGER default 0, "
-"[YOffset] INTEGER default 0);";
+constexpr auto sqlCreatePlanMappings = "CREATE TABLE IF NOT EXISTS [DeviceToPlansMap] ("
+				       "[ID] INTEGER PRIMARY KEY, "
+				       "[DeviceRowID] BIGINT NOT NULL, "
+				       "[DevSceneType] INTEGER DEFAULT 0, "
+				       "[PlanID] BIGINT NOT NULL, "
+				       "[Order] INTEGER BIGINT(10) DEFAULT 0, "
+				       "[XOffset] INTEGER default 0, "
+				       "[YOffset] INTEGER default 0);";
 
-const char* sqlCreateDevicesToPlanStatusTrigger =
-"CREATE TRIGGER IF NOT EXISTS deviceplantatusupdate AFTER INSERT ON DeviceToPlansMap\n"
-"BEGIN\n"
-"	UPDATE DeviceToPlansMap SET [Order] = (SELECT MAX([Order]) FROM DeviceToPlansMap)+1 WHERE DeviceToPlansMap.ID = NEW.ID;\n"
-"END;\n";
+constexpr auto sqlCreateDevicesToPlanStatusTrigger = "CREATE TRIGGER IF NOT EXISTS deviceplantatusupdate AFTER INSERT ON DeviceToPlansMap\n"
+						     "BEGIN\n"
+						     "	UPDATE DeviceToPlansMap SET [Order] = (SELECT MAX([Order]) FROM DeviceToPlansMap)+1 WHERE DeviceToPlansMap.ID = NEW.ID;\n"
+						     "END;\n";
 
-const char* sqlCreatePlans =
-"CREATE TABLE IF NOT EXISTS [Plans] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Order] INTEGER BIGINT(10) default 0, "
-"[Name] VARCHAR(200) NOT NULL, "
-"[FloorplanID] INTEGER default 0, "
-"[Area] VARCHAR(200) DEFAULT '');";
+constexpr auto sqlCreatePlans = "CREATE TABLE IF NOT EXISTS [Plans] ("
+				"[ID] INTEGER PRIMARY KEY, "
+				"[Order] INTEGER BIGINT(10) default 0, "
+				"[Name] VARCHAR(200) NOT NULL, "
+				"[FloorplanID] INTEGER default 0, "
+				"[Area] VARCHAR(200) DEFAULT '');";
 
-const char* sqlCreatePlanOrderTrigger =
-"CREATE TRIGGER IF NOT EXISTS planordertrigger AFTER INSERT ON Plans\n"
-"BEGIN\n"
-"	UPDATE Plans SET [Order] = (SELECT MAX([Order]) FROM Plans)+1 WHERE Plans.ID = NEW.ID;\n"
-"END;\n";
+constexpr auto sqlCreatePlanOrderTrigger = "CREATE TRIGGER IF NOT EXISTS planordertrigger AFTER INSERT ON Plans\n"
+					   "BEGIN\n"
+					   "	UPDATE Plans SET [Order] = (SELECT MAX([Order]) FROM Plans)+1 WHERE Plans.ID = NEW.ID;\n"
+					   "END;\n";
 
-const char* sqlCreateScenes =
-"CREATE TABLE IF NOT EXISTS [Scenes] (\n"
-"[ID] INTEGER PRIMARY KEY, \n"
-"[Name] VARCHAR(100) NOT NULL, \n"
-"[Favorite] INTEGER DEFAULT 0, \n"
-"[Order] INTEGER BIGINT(10) default 0, \n"
-"[nValue] INTEGER DEFAULT 0, \n"
-"[SceneType] INTEGER DEFAULT 0, \n"
-"[Protected] INTEGER DEFAULT 0, \n"
-"[OnAction] VARCHAR(200) DEFAULT '', "
-"[OffAction] VARCHAR(200) DEFAULT '', "
-"[Description] VARCHAR(200) DEFAULT '', "
-"[Activators] VARCHAR(200) DEFAULT '', "
-"[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
+constexpr auto sqlCreateScenes = "CREATE TABLE IF NOT EXISTS [Scenes] (\n"
+				 "[ID] INTEGER PRIMARY KEY, \n"
+				 "[Name] VARCHAR(100) NOT NULL, \n"
+				 "[Favorite] INTEGER DEFAULT 0, \n"
+				 "[Order] INTEGER BIGINT(10) default 0, \n"
+				 "[nValue] INTEGER DEFAULT 0, \n"
+				 "[SceneType] INTEGER DEFAULT 0, \n"
+				 "[Protected] INTEGER DEFAULT 0, \n"
+				 "[OnAction] VARCHAR(200) DEFAULT '', "
+				 "[OffAction] VARCHAR(200) DEFAULT '', "
+				 "[Description] VARCHAR(200) DEFAULT '', "
+				 "[Activators] VARCHAR(200) DEFAULT '', "
+				 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
-const char* sqlCreateScenesTrigger =
-"CREATE TRIGGER IF NOT EXISTS scenesupdate AFTER INSERT ON Scenes\n"
-"BEGIN\n"
-"	UPDATE Scenes SET [Order] = (SELECT MAX([Order]) FROM Scenes)+1 WHERE Scenes.ID = NEW.ID;\n"
-"END;\n";
+constexpr auto sqlCreateScenesTrigger = "CREATE TRIGGER IF NOT EXISTS scenesupdate AFTER INSERT ON Scenes\n"
+					"BEGIN\n"
+					"	UPDATE Scenes SET [Order] = (SELECT MAX([Order]) FROM Scenes)+1 WHERE Scenes.ID = NEW.ID;\n"
+					"END;\n";
 
-const char* sqlCreateSceneDevices =
-"CREATE TABLE IF NOT EXISTS [SceneDevices] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Order] INTEGER BIGINT(10) default 0, "
-"[SceneRowID] BIGINT NOT NULL, "
-"[DeviceRowID] BIGINT NOT NULL, "
-"[Cmd] INTEGER DEFAULT 1, "
-"[Level] INTEGER DEFAULT 100, "
-"[Color] TEXT DEFAULT NULL, "
-"[OnDelay] INTEGER DEFAULT 0, "
-"[OffDelay] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateSceneDevices = "CREATE TABLE IF NOT EXISTS [SceneDevices] ("
+				       "[ID] INTEGER PRIMARY KEY, "
+				       "[Order] INTEGER BIGINT(10) default 0, "
+				       "[SceneRowID] BIGINT NOT NULL, "
+				       "[DeviceRowID] BIGINT NOT NULL, "
+				       "[Cmd] INTEGER DEFAULT 1, "
+				       "[Level] INTEGER DEFAULT 100, "
+				       "[Color] TEXT DEFAULT NULL, "
+				       "[OnDelay] INTEGER DEFAULT 0, "
+				       "[OffDelay] INTEGER DEFAULT 0);";
 
-const char* sqlCreateSceneDeviceTrigger =
-"CREATE TRIGGER IF NOT EXISTS scenedevicesupdate AFTER INSERT ON SceneDevices\n"
-"BEGIN\n"
-"	UPDATE SceneDevices SET [Order] = (SELECT MAX([Order]) FROM SceneDevices)+1 WHERE SceneDevices.ID = NEW.ID;\n"
-"END;\n";
+constexpr auto sqlCreateSceneDeviceTrigger = "CREATE TRIGGER IF NOT EXISTS scenedevicesupdate AFTER INSERT ON SceneDevices\n"
+					     "BEGIN\n"
+					     "	UPDATE SceneDevices SET [Order] = (SELECT MAX([Order]) FROM SceneDevices)+1 WHERE SceneDevices.ID = NEW.ID;\n"
+					     "END;\n";
 
-const char* sqlCreateTimerPlans =
-"CREATE TABLE IF NOT EXISTS [TimerPlans] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Name] VARCHAR(200) NOT NULL);";
+constexpr auto sqlCreateTimerPlans = "CREATE TABLE IF NOT EXISTS [TimerPlans] ("
+				     "[ID] INTEGER PRIMARY KEY, "
+				     "[Name] VARCHAR(200) NOT NULL);";
 
-const char* sqlCreateSceneTimers =
-"CREATE TABLE IF NOT EXISTS [SceneTimers] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Active] BOOLEAN DEFAULT true, "
-"[SceneRowID] BIGINT(10) NOT NULL, "
-"[Date] DATE DEFAULT 0, "
-"[Time] TIME NOT NULL, "
-"[Type] INTEGER NOT NULL, "
-"[Cmd] INTEGER NOT NULL, "
-"[Level] INTEGER DEFAULT 15, "
-"[UseRandomness] INTEGER DEFAULT 0, "
-"[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL, "
-"[Month] INTEGER DEFAULT 0, "
-"[MDay] INTEGER DEFAULT 0, "
-"[Occurence] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateSceneTimers = "CREATE TABLE IF NOT EXISTS [SceneTimers] ("
+				      "[ID] INTEGER PRIMARY KEY, "
+				      "[Active] BOOLEAN DEFAULT true, "
+				      "[SceneRowID] BIGINT(10) NOT NULL, "
+				      "[Date] DATE DEFAULT 0, "
+				      "[Time] TIME NOT NULL, "
+				      "[Type] INTEGER NOT NULL, "
+				      "[Cmd] INTEGER NOT NULL, "
+				      "[Level] INTEGER DEFAULT 15, "
+				      "[UseRandomness] INTEGER DEFAULT 0, "
+				      "[TimerPlan] INTEGER DEFAULT 0, "
+				      "[Days] INTEGER NOT NULL, "
+				      "[Month] INTEGER DEFAULT 0, "
+				      "[MDay] INTEGER DEFAULT 0, "
+				      "[Occurence] INTEGER DEFAULT 0);";
 
-const char* sqlCreateSetpointTimers =
-"CREATE TABLE IF NOT EXISTS [SetpointTimers] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Active] BOOLEAN DEFAULT true, "
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Date] DATE DEFAULT 0, "
-"[Time] TIME NOT NULL, "
-"[Type] INTEGER NOT NULL, "
-"[Temperature] FLOAT DEFAULT 0, "
-"[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL, "
-"[Month] INTEGER DEFAULT 0, "
-"[MDay] INTEGER DEFAULT 0, "
-"[Occurence] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateSetpointTimers = "CREATE TABLE IF NOT EXISTS [SetpointTimers] ("
+					 "[ID] INTEGER PRIMARY KEY, "
+					 "[Active] BOOLEAN DEFAULT true, "
+					 "[DeviceRowID] BIGINT(10) NOT NULL, "
+					 "[Date] DATE DEFAULT 0, "
+					 "[Time] TIME NOT NULL, "
+					 "[Type] INTEGER NOT NULL, "
+					 "[Temperature] FLOAT DEFAULT 0, "
+					 "[TimerPlan] INTEGER DEFAULT 0, "
+					 "[Days] INTEGER NOT NULL, "
+					 "[Month] INTEGER DEFAULT 0, "
+					 "[MDay] INTEGER DEFAULT 0, "
+					 "[Occurence] INTEGER DEFAULT 0);";
 
-const char* sqlCreateSharedDevices =
-"CREATE TABLE IF NOT EXISTS [SharedDevices] ("
-"[ID] INTEGER PRIMARY KEY,  "
-"[SharedUserID] BIGINT NOT NULL, "
-"[DeviceRowID] BIGINT NOT NULL, "
-"[Favorite] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateSharedDevices = "CREATE TABLE IF NOT EXISTS [SharedDevices] ("
+					"[ID] INTEGER PRIMARY KEY,  "
+					"[SharedUserID] BIGINT NOT NULL, "
+					"[DeviceRowID] BIGINT NOT NULL, "
+					"[Favorite] INTEGER DEFAULT 0);";
 
-const char* sqlCreateEventMaster =
-"CREATE TABLE IF NOT EXISTS [EventMaster] ("
-"[ID] INTEGER PRIMARY KEY,  "
-"[Name] VARCHAR(200) NOT NULL, "
-"[Interpreter] VARCHAR(10) DEFAULT 'Blockly', "
-"[Type] VARCHAR(10) DEFAULT 'All', "
-"[XMLStatement] TEXT NOT NULL, "
-"[Status] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateEventMaster = "CREATE TABLE IF NOT EXISTS [EventMaster] ("
+				      "[ID] INTEGER PRIMARY KEY,  "
+				      "[Name] VARCHAR(200) NOT NULL, "
+				      "[Interpreter] VARCHAR(10) DEFAULT 'Blockly', "
+				      "[Type] VARCHAR(10) DEFAULT 'All', "
+				      "[XMLStatement] TEXT NOT NULL, "
+				      "[Status] INTEGER DEFAULT 0);";
 
-const char* sqlCreateEventRules =
-"CREATE TABLE IF NOT EXISTS [EventRules] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[EMID] INTEGER, "
-"[Conditions] TEXT NOT NULL, "
-"[Actions] TEXT NOT NULL, "
-"[SequenceNo] INTEGER NOT NULL, "
-"FOREIGN KEY (EMID) REFERENCES EventMaster(ID));";
+constexpr auto sqlCreateEventRules = "CREATE TABLE IF NOT EXISTS [EventRules] ("
+				     "[ID] INTEGER PRIMARY KEY, "
+				     "[EMID] INTEGER, "
+				     "[Conditions] TEXT NOT NULL, "
+				     "[Actions] TEXT NOT NULL, "
+				     "[SequenceNo] INTEGER NOT NULL, "
+				     "FOREIGN KEY (EMID) REFERENCES EventMaster(ID));";
 
-const char* sqlCreateZWaveNodes =
-"CREATE TABLE IF NOT EXISTS [ZWaveNodes] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[HomeID] INTEGER NOT NULL, "
-"[NodeID] INTEGER NOT NULL, "
-"[Name] VARCHAR(100) DEFAULT Unknown, "
-"[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
-"[PollTime] INTEGER DEFAULT 0);";
+constexpr auto sqlCreateZWaveNodes = "CREATE TABLE IF NOT EXISTS [ZWaveNodes] ("
+				     "[ID] INTEGER PRIMARY KEY, "
+				     "[HardwareID] INTEGER NOT NULL, "
+				     "[HomeID] INTEGER NOT NULL, "
+				     "[NodeID] INTEGER NOT NULL, "
+				     "[Name] VARCHAR(100) DEFAULT Unknown, "
+				     "[ProductDescription] VARCHAR(100) DEFAULT Unknown, "
+				     "[PollTime] INTEGER DEFAULT 0);";
 
-const char* sqlCreateWOLNodes =
-"CREATE TABLE IF NOT EXISTS [WOLNodes] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[Name] VARCHAR(100) DEFAULT Unknown, "
-"[MacAddress] VARCHAR(50) DEFAULT Unknown, "
-"[Timeout] INTEGER DEFAULT 5);";
+constexpr auto sqlCreateWOLNodes = "CREATE TABLE IF NOT EXISTS [WOLNodes] ("
+				   "[ID] INTEGER PRIMARY KEY, "
+				   "[HardwareID] INTEGER NOT NULL, "
+				   "[Name] VARCHAR(100) DEFAULT Unknown, "
+				   "[MacAddress] VARCHAR(50) DEFAULT Unknown, "
+				   "[Timeout] INTEGER DEFAULT 5);";
 
-const char* sqlCreatePercentage =
-"CREATE TABLE IF NOT EXISTS [Percentage] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Percentage] FLOAT NOT NULL, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreatePercentage = "CREATE TABLE IF NOT EXISTS [Percentage] ("
+				     "[DeviceRowID] BIGINT(10) NOT NULL, "
+				     "[Percentage] FLOAT NOT NULL, "
+				     "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreatePercentage_Calendar =
-"CREATE TABLE IF NOT EXISTS [Percentage_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Percentage_Min] FLOAT NOT NULL, "
-"[Percentage_Max] FLOAT NOT NULL, "
-"[Percentage_Avg] FLOAT DEFAULT 0, "
-"[Date] DATE NOT NULL);";
+constexpr auto sqlCreatePercentage_Calendar = "CREATE TABLE IF NOT EXISTS [Percentage_Calendar] ("
+					      "[DeviceRowID] BIGINT(10) NOT NULL, "
+					      "[Percentage_Min] FLOAT NOT NULL, "
+					      "[Percentage_Max] FLOAT NOT NULL, "
+					      "[Percentage_Avg] FLOAT DEFAULT 0, "
+					      "[Date] DATE NOT NULL);";
 
-const char* sqlCreateFan =
-"CREATE TABLE IF NOT EXISTS [Fan] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Speed] INTEGER NOT NULL, "
-"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+constexpr auto sqlCreateFan = "CREATE TABLE IF NOT EXISTS [Fan] ("
+			      "[DeviceRowID] BIGINT(10) NOT NULL, "
+			      "[Speed] INTEGER NOT NULL, "
+			      "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
-const char* sqlCreateFan_Calendar =
-"CREATE TABLE IF NOT EXISTS [Fan_Calendar] ("
-"[DeviceRowID] BIGINT(10) NOT NULL, "
-"[Speed_Min] INTEGER NOT NULL, "
-"[Speed_Max] INTEGER NOT NULL, "
-"[Speed_Avg] INTEGER DEFAULT 0, "
-"[Date] DATE NOT NULL);";
+constexpr auto sqlCreateFan_Calendar = "CREATE TABLE IF NOT EXISTS [Fan_Calendar] ("
+				       "[DeviceRowID] BIGINT(10) NOT NULL, "
+				       "[Speed_Min] INTEGER NOT NULL, "
+				       "[Speed_Max] INTEGER NOT NULL, "
+				       "[Speed_Avg] INTEGER DEFAULT 0, "
+				       "[Date] DATE NOT NULL);";
 
-const char* sqlCreateBackupLog =
-"CREATE TABLE IF NOT EXISTS [BackupLog] ("
-"[Key] VARCHAR(50) NOT NULL, "
-"[nValue] INTEGER DEFAULT 0); ";
+constexpr auto sqlCreateBackupLog = "CREATE TABLE IF NOT EXISTS [BackupLog] ("
+				    "[Key] VARCHAR(50) NOT NULL, "
+				    "[nValue] INTEGER DEFAULT 0); ";
 
-const char* sqlCreateEnoceanSensors =
-"CREATE TABLE IF NOT EXISTS [EnoceanSensors] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[HardwareID] INTEGER NOT NULL, "
-"[DeviceID] VARCHAR(25) NOT NULL, "
-"[Manufacturer] INTEGER NOT NULL, "
-"[Profile] INTEGER NOT NULL, "
-"[Type] INTEGER NOT NULL);";
+constexpr auto sqlCreateEnoceanSensors = "CREATE TABLE IF NOT EXISTS [EnoceanSensors] ("
+					 "[ID] INTEGER PRIMARY KEY, "
+					 "[HardwareID] INTEGER NOT NULL, "
+					 "[DeviceID] VARCHAR(25) NOT NULL, "
+					 "[Manufacturer] INTEGER NOT NULL, "
+					 "[Profile] INTEGER NOT NULL, "
+					 "[Type] INTEGER NOT NULL);";
 
-const char* sqlCreatePushLink =
-"CREATE TABLE IF NOT EXISTS [PushLink] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[PushType] INTEGER, "
-"[DeviceRowID] BIGINT NOT NULL, "
-"[DelimitedValue] INTEGER DEFAULT 0, "
-"[TargetType] INTEGER DEFAULT 0, "
-"[TargetVariable] VARCHAR(100), "
-"[TargetDeviceID] INTEGER, "
-"[TargetProperty] VARCHAR(100), "
-"[Enabled] INTEGER DEFAULT 1, "
-"[IncludeUnit] INTEGER default 0);";
+constexpr auto sqlCreatePushLink = "CREATE TABLE IF NOT EXISTS [PushLink] ("
+				   "[ID] INTEGER PRIMARY KEY, "
+				   "[PushType] INTEGER, "
+				   "[DeviceRowID] BIGINT NOT NULL, "
+				   "[DelimitedValue] INTEGER DEFAULT 0, "
+				   "[TargetType] INTEGER DEFAULT 0, "
+				   "[TargetVariable] VARCHAR(100), "
+				   "[TargetDeviceID] INTEGER, "
+				   "[TargetProperty] VARCHAR(100), "
+				   "[Enabled] INTEGER DEFAULT 1, "
+				   "[IncludeUnit] INTEGER default 0);";
 
-const char* sqlCreateUserVariables =
-"CREATE TABLE IF NOT EXISTS [UserVariables] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Name] VARCHAR(200), "
-"[ValueType] INT NOT NULL, "
-"[Value] VARCHAR(200), "
-"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')));";
+constexpr auto sqlCreateUserVariables = "CREATE TABLE IF NOT EXISTS [UserVariables] ("
+					"[ID] INTEGER PRIMARY KEY, "
+					"[Name] VARCHAR(200), "
+					"[ValueType] INT NOT NULL, "
+					"[Value] VARCHAR(200), "
+					"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')));";
 
-const char* sqlCreateFloorplans =
-"CREATE TABLE IF NOT EXISTS [Floorplans] ("
-"[ID] INTEGER PRIMARY KEY, "
-"[Name] VARCHAR(200) NOT NULL, "
-"[Image] BLOB, "
-"[ScaleFactor] FLOAT DEFAULT 1.0, "
-"[Order] INTEGER BIGINT(10) default 0);";
+constexpr auto sqlCreateFloorplans = "CREATE TABLE IF NOT EXISTS [Floorplans] ("
+				     "[ID] INTEGER PRIMARY KEY, "
+				     "[Name] VARCHAR(200) NOT NULL, "
+				     "[Image] BLOB, "
+				     "[ScaleFactor] FLOAT DEFAULT 1.0, "
+				     "[Order] INTEGER BIGINT(10) default 0);";
 
-const char* sqlCreateFloorplanOrderTrigger =
-"CREATE TRIGGER IF NOT EXISTS floorplanordertrigger AFTER INSERT ON Floorplans\n"
-"BEGIN\n"
-"	UPDATE Floorplans SET [Order] = (SELECT MAX([Order]) FROM Floorplans)+1 WHERE Floorplans.ID = NEW.ID;\n"
-"END;\n";
+constexpr auto sqlCreateFloorplanOrderTrigger = "CREATE TRIGGER IF NOT EXISTS floorplanordertrigger AFTER INSERT ON Floorplans\n"
+						"BEGIN\n"
+						"	UPDATE Floorplans SET [Order] = (SELECT MAX([Order]) FROM Floorplans)+1 WHERE Floorplans.ID = NEW.ID;\n"
+						"END;\n";
 
-const char* sqlCreateCustomImages =
-"CREATE TABLE IF NOT EXISTS [CustomImages]("
-"	[ID] INTEGER PRIMARY KEY, "
-"	[Base] VARCHAR(80) NOT NULL, "
-"	[Name] VARCHAR(80) NOT NULL, "
-"	[Description] VARCHAR(80) NOT NULL, "
-"	[IconSmall] BLOB, "
-"	[IconOn] BLOB, "
-"	[IconOff] BLOB);";
+constexpr auto sqlCreateCustomImages = "CREATE TABLE IF NOT EXISTS [CustomImages]("
+				       "	[ID] INTEGER PRIMARY KEY, "
+				       "	[Base] VARCHAR(80) NOT NULL, "
+				       "	[Name] VARCHAR(80) NOT NULL, "
+				       "	[Description] VARCHAR(80) NOT NULL, "
+				       "	[IconSmall] BLOB, "
+				       "	[IconOn] BLOB, "
+				       "	[IconOff] BLOB);";
 
-const char* sqlCreateMySensors =
-"CREATE TABLE IF NOT EXISTS [MySensors]("
-" [HardwareID] INTEGER NOT NULL,"
-" [ID] INTEGER NOT NULL,"
-" [Name] VARCHAR(100) DEFAULT Unknown,"
-" [SketchName] VARCHAR(100) DEFAULT Unknown,"
-" [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
+constexpr auto sqlCreateMySensors = "CREATE TABLE IF NOT EXISTS [MySensors]("
+				    " [HardwareID] INTEGER NOT NULL,"
+				    " [ID] INTEGER NOT NULL,"
+				    " [Name] VARCHAR(100) DEFAULT Unknown,"
+				    " [SketchName] VARCHAR(100) DEFAULT Unknown,"
+				    " [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
 
-const char* sqlCreateMySensorsVariables =
-"CREATE TABLE IF NOT EXISTS [MySensorsVars]("
-" [HardwareID] INTEGER NOT NULL,"
-" [NodeID] INTEGER NOT NULL,"
-" [ChildID] INTEGER NOT NULL,"
-" [VarID] INTEGER NOT NULL,"
-" [Value] VARCHAR(100) NOT NULL);";
+constexpr auto sqlCreateMySensorsVariables = "CREATE TABLE IF NOT EXISTS [MySensorsVars]("
+					     " [HardwareID] INTEGER NOT NULL,"
+					     " [NodeID] INTEGER NOT NULL,"
+					     " [ChildID] INTEGER NOT NULL,"
+					     " [VarID] INTEGER NOT NULL,"
+					     " [Value] VARCHAR(100) NOT NULL);";
 
-const char* sqlCreateMySensorsChilds =
-"CREATE TABLE IF NOT EXISTS [MySensorsChilds]("
-" [HardwareID] INTEGER NOT NULL,"
-" [NodeID] INTEGER NOT NULL,"
-" [ChildID] INTEGER NOT NULL,"
-" [Name] VARCHAR(100) DEFAULT '',"
-" [Type] INTEGER NOT NULL,"
-" [UseAck] INTEGER DEFAULT 0,"
-" [AckTimeout] INTEGER DEFAULT 1200);";
+constexpr auto sqlCreateMySensorsChilds = "CREATE TABLE IF NOT EXISTS [MySensorsChilds]("
+					  " [HardwareID] INTEGER NOT NULL,"
+					  " [NodeID] INTEGER NOT NULL,"
+					  " [ChildID] INTEGER NOT NULL,"
+					  " [Name] VARCHAR(100) DEFAULT '',"
+					  " [Type] INTEGER NOT NULL,"
+					  " [UseAck] INTEGER DEFAULT 0,"
+					  " [AckTimeout] INTEGER DEFAULT 1200);";
 
-const char* sqlCreateToonDevices =
-"CREATE TABLE IF NOT EXISTS [ToonDevices]("
-" [HardwareID] INTEGER NOT NULL,"
-" [UUID] VARCHAR(100) NOT NULL);";
+constexpr auto sqlCreateToonDevices = "CREATE TABLE IF NOT EXISTS [ToonDevices]("
+				      " [HardwareID] INTEGER NOT NULL,"
+				      " [UUID] VARCHAR(100) NOT NULL);";
 
-const char* sqlCreateUserSessions =
-"CREATE TABLE IF NOT EXISTS [UserSessions]("
-" [SessionID] VARCHAR(100) NOT NULL,"
-" [Username] VARCHAR(100) NOT NULL,"
-" [AuthToken] VARCHAR(100) UNIQUE NOT NULL,"
-" [ExpirationDate] DATETIME NOT NULL,"
-" [RemoteHost] VARCHAR(50) NOT NULL,"
-" [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
-" PRIMARY KEY([SessionID]));";
+constexpr auto sqlCreateUserSessions = "CREATE TABLE IF NOT EXISTS [UserSessions]("
+				       " [SessionID] VARCHAR(100) NOT NULL,"
+				       " [Username] VARCHAR(100) NOT NULL,"
+				       " [AuthToken] VARCHAR(100) UNIQUE NOT NULL,"
+				       " [ExpirationDate] DATETIME NOT NULL,"
+				       " [RemoteHost] VARCHAR(50) NOT NULL,"
+				       " [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
+				       " PRIMARY KEY([SessionID]));";
 
-const char* sqlCreateMobileDevices =
-"CREATE TABLE IF NOT EXISTS [MobileDevices]("
-"[ID] INTEGER PRIMARY KEY, "
-"[Active] BOOLEAN DEFAULT false, "
-"[Name] VARCHAR(100) DEFAULT '',"
-"[DeviceType] VARCHAR(100) DEFAULT '',"
-"[SenderID] TEXT NOT NULL,"
-"[UUID] TEXT NOT NULL, "
-"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
-");";
+constexpr auto sqlCreateMobileDevices = "CREATE TABLE IF NOT EXISTS [MobileDevices]("
+					"[ID] INTEGER PRIMARY KEY, "
+					"[Active] BOOLEAN DEFAULT false, "
+					"[Name] VARCHAR(100) DEFAULT '',"
+					"[DeviceType] VARCHAR(100) DEFAULT '',"
+					"[SenderID] TEXT NOT NULL,"
+					"[UUID] TEXT NOT NULL, "
+					"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
+					");";
 
 extern std::string szUserDataFolder;
 
