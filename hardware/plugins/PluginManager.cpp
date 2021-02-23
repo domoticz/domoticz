@@ -74,7 +74,6 @@ namespace Plugins {
 		m_bEnabled = false;
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
-		m_InitialPythonThread = nullptr;
 	}
 
 	bool CPluginSystem::StartPluginSystem()
