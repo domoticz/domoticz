@@ -15135,7 +15135,7 @@ namespace http {
 					if (!result.empty())
 					{
 						std::map<int, int> _directions;
-						int wdirtabletemp[17][8];
+						std::array<std::array<int, 8>, 17> wdirtabletemp = {};
 						std::string szLegendLabels[7];
 						int ii = 0;
 
@@ -15144,8 +15144,6 @@ namespace http {
 						int idir;
 						for (idir = 0; idir < 360 + 1; idir++)
 							_directions[idir] = 0;
-						for (ii = 0; ii < 17; ii++)
-							std::fill(std::begin(wdirtabletemp[ii]), std::end(wdirtabletemp[ii]), 0);
 
 						if (m_sql.m_windunit == WINDUNIT_MS)
 						{

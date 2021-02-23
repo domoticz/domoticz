@@ -71,7 +71,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	m_nMyID = 0;
 	m_nOtbID = 0;
 	m_nBindID = 0;
-	std::fill(std::begin(m_bStartup), std::end(m_bStartup), true);
+	m_bStartup.fill(true);
 	m_nBufPtr = 0;
 	m_nSendFail = 0;
 	m_nZoneCount = 0;

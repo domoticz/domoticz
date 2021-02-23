@@ -10,8 +10,8 @@ public:
 
       private:
 	int m_baro_minuteCount = 0;
-	double m_pressureSamples[9][6];
-	double m_pressureAvg[9];
+	std::array<std::array<double, 6>, 9> m_pressureSamples;
+	std::array<double, 9> m_pressureAvg;
 	double m_dP_dt = 0;
 	int m_last_forecast = 0x07; //wsbaroforecast_unknown
 	time_t m_BaroCalcLastTime = 0;
