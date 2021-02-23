@@ -12969,7 +12969,7 @@ namespace http {
 			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
 			ParseSQLdatetime(timeB, LastUpdateTime_B, sLastUpdate_B, tm1.tm_isdst);
 
-			if (timeA < timeB)
+			if (timeA > timeB)
 			{
 				//Swap idx with newidx
 				sidx.swap(newidx);
