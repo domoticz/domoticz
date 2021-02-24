@@ -649,6 +649,7 @@ namespace Plugins
 		PyBytesObject *pErrBytes = nullptr;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject **)&pTraceback);
+		PyErr_Clear();
 
 		if (pExcept)
 		{
@@ -661,6 +662,7 @@ namespace Plugins
 			pErrBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pValue); // Won't normally return text for Import related errors
 			if (!pErrBytes)
 			{
+				PyErr_Clear();
 				// ImportError has name and path attributes
 				if (PyObject_HasAttrString(pValue, "path"))
 				{

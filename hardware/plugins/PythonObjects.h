@@ -7,7 +7,9 @@ namespace Plugins {
 
 	class CPlugin;
 
-	typedef struct {
+	class CImage
+	{
+    public:
 		PyObject_HEAD
 		int			ImageID;
 		PyObject*	Base;
@@ -15,7 +17,7 @@ namespace Plugins {
 		PyObject*	Description;
 		PyObject*	Filename;
 		CPlugin*	pPlugin;
-	} CImage;
+	};
 
 	void CImage_dealloc(CImage* self);
 	PyObject* CImage_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
@@ -78,9 +80,11 @@ namespace Plugins {
 		CImage_new					    /* tp_new */
 	};
 
-	typedef struct {
+	class CDevice
+	{
+	public:
 		PyObject_HEAD
-			PyObject*	PluginKey;
+		PyObject*	PluginKey;
 		int			HwdID;
 		PyObject*	DeviceID;
 		int			Unit;
@@ -102,7 +106,7 @@ namespace Plugins {
 		PyObject*	Description;
 		PyObject*	Color;
 		CPlugin*	pPlugin;
-	} CDevice;
+	};
 
 	void CDevice_dealloc(CDevice* self);
 	PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
@@ -189,7 +193,9 @@ namespace Plugins {
 	class CPluginTransport;
 	class CPluginProtocol;
 
-	typedef struct {
+	class CConnection
+	{
+    public:
 		PyObject_HEAD
 		PyObject*			Name;
 		PyObject*			Address;
@@ -202,7 +208,7 @@ namespace Plugins {
 		PyObject*			Protocol;
 		CPluginProtocol*	pProtocol;
 		PyObject*			Parent;
-	} CConnection;
+	};
 
 	void CConnection_dealloc(CConnection* self);
 	PyObject* CConnection_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
