@@ -246,7 +246,7 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 	if (replace) {
 		for (auto &h : rep->headers)
 		{
-			if (h.name == name)
+			if (iequals(h.name, name))
 			{
 				h.value = value;
 				return;
@@ -262,7 +262,7 @@ void reply::add_header_if_absent(reply *rep, const std::string &name, const std:
 {
 	for (const auto &h : rep->headers)
 	{
-		if (h.name == name)
+		if (iequals(h.name, name)
 		{
 			// is present
 			return;
