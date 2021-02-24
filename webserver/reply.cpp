@@ -13,6 +13,7 @@
 #include "utf.hpp"
 #include <string>
 #include <fstream>
+#include <boost/algorithm/string.hpp>
 
 namespace http {
 namespace server {
@@ -246,7 +247,7 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 	if (replace) {
 		for (auto &h : rep->headers)
 		{
-			if (iequals(h.name, name))
+			if (boost::iequals(h.name, name))
 			{
 				h.value = value;
 				return;
@@ -262,7 +263,7 @@ void reply::add_header_if_absent(reply *rep, const std::string &name, const std:
 {
 	for (const auto &h : rep->headers)
 	{
-		if (iequals(h.name, name)
+		if (boost::iequals(h.name, name)
 		{
 			// is present
 			return;
