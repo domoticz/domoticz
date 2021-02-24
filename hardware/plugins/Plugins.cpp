@@ -1430,9 +1430,9 @@ namespace Plugins
 				return;
 			}
 			if ((sTransport == "TLS/IP") || pConnection->pProtocol->Secure())
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, pConnection, sAddress, sPort);
 			else
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "Serial")
 		{
@@ -1440,7 +1440,7 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
-			pConnection->pTransport = (CPluginTransport *)new CPluginTransportSerial(m_HwdID, (PyObject *)pConnection, sAddress, pConnection->Baud);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportSerial(m_HwdID, pConnection, sAddress, pConnection->Baud);
 		}
 		else
 		{
@@ -1492,9 +1492,9 @@ namespace Plugins
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			if (!pConnection->pProtocol->Secure())
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, (PyObject *)pConnection, "", sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, pConnection, "", sPort);
 			else
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, (PyObject *)pConnection, "", sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, pConnection, "", sPort);
 		}
 		else if (sTransport == "UDP/IP")
 		{
@@ -1503,7 +1503,7 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
@@ -1512,7 +1512,7 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
-			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else
 		{
@@ -1579,7 +1579,7 @@ namespace Plugins
 					else
 						Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
 				}
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, pConnection, sAddress, sPort);
 			}
 			else
 			{
@@ -1615,7 +1615,7 @@ namespace Plugins
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
 		{
-			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject *)pConnection);
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, pConnection);
 		}
 
 		if (pConnection->pTransport)
@@ -1733,7 +1733,7 @@ namespace Plugins
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
 		{
-			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject *)pConnection);
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, pConnection);
 		}
 
 		if (pConnection->pTransport)
@@ -1756,7 +1756,7 @@ namespace Plugins
 			// inform the plugin if transport is connection based
 			if (pMessage->bNotifyPlugin)
 			{
-				MessagePlugin(new onDisconnectCallback(this, (PyObject *)pConnection));
+				MessagePlugin(new onDisconnectCallback(this, pConnection));
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued

@@ -1224,7 +1224,7 @@ namespace Plugins {
 					return nullptr;
 				}
 
-				self->Parent = Py_None;
+				self->Parent = (CConnection *)Py_None;
 				Py_INCREF(Py_None);
 
 				self->pPlugin = nullptr;
@@ -1301,7 +1301,7 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, (PyObject*)self));
+					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, self));
 				}
 			}
 			else
@@ -1325,7 +1325,7 @@ namespace Plugins {
 		return 0;
 	}
 
-	PyObject * CConnection_connect(CConnection * self)
+	PyObject *CConnection_connect(CConnection *self, PyObject *args, PyObject *kwds)
 	{
 		Py_INCREF(Py_None);
 
@@ -1354,7 +1354,20 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, (PyObject*)self));
+		int iTimeout = 0;
+		static char *kwlist[] = { "Timeout", NULL };
+		if (PyArg_ParseTupleAndKeywords(args, kwds, "|I", kwlist, &iTimeout))
+		{
+			if (!iTimeout || (iTimeout > 199))
+			{
+				self->Timeout = iTimeout;
+				self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, self));
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
+			}
+		}
 
 		return Py_None;
 	}
@@ -1388,7 +1401,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, (PyObject*)self));
+		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, self));
 
 		return Py_None;
 	}
@@ -1416,7 +1429,7 @@ namespace Plugins {
 			else
 			{
 				//	Add start command to message queue
-				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay));
+				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, self, pData, iDelay));
 			}
 		}
 
@@ -1430,7 +1443,7 @@ namespace Plugins {
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, (PyObject*)self));
+				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, self));
 			}
 			else
 				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->m_Name.c_str());
@@ -1492,7 +1505,7 @@ namespace Plugins {
 	PyObject * CConnection_str(CConnection * self)
 	{
 		std::string		sParent = "None";
-		if (self->Parent != Py_None)
+		if (((PyObject *)self->Parent) != Py_None)
 		{
 			sParent = PyUnicode_AsUTF8(((CConnection*)self->Parent)->Name);
 		}

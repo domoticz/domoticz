@@ -47,7 +47,7 @@ namespace Plugins {
 	class CHasConnection
 	{
 	public:
-		CHasConnection(PyObject* Connection) : m_pConnection(Connection)
+		CHasConnection(CConnection *Connection) : m_pConnection(Connection)
 		{
 			Py_XINCREF(m_pConnection);
 		};
@@ -55,7 +55,7 @@ namespace Plugins {
 		{
 			Py_XDECREF(m_pConnection);
 		}
-		PyObject*	m_pConnection;
+		CConnection *m_pConnection;
 	};
 
 	class InitializeMessage : public CPluginMessageBase
@@ -136,8 +136,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onConnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onConnectCallback(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) { m_Name = __func__; };
-		onConnectCallback(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string &Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
+		onConnectCallback(CPlugin* pPlugin, CConnection* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) { m_Name = __func__; };
+		onConnectCallback(CPlugin* pPlugin, CConnection* Connection, const int Code, const std::string &Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
 		int						m_Status;
 		std::string				m_Text;
 	protected:
@@ -152,10 +152,21 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  };
 	};
 
+	class onTimeoutCallback : public CCallbackBase, public CHasConnection
+	{
+    public:
+		onTimeoutCallback(CPlugin *pPlugin, CConnection *Connection): CCallbackBase(pPlugin, "onTimeout"), CHasConnection(Connection) { m_Name = __func__; };
+    protected:
+		virtual void ProcessLocked()
+		{
+			Callback(Py_BuildValue("(O)", m_pConnection));
+		};
+	};
+
 	class onDisconnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onDisconnectCallback(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) { m_Name = __func__; };
+		onDisconnectCallback(CPlugin* pPlugin, CConnection* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) { m_Name = __func__; };
 	protected:
 	  void ProcessLocked() override
 	  {
@@ -271,24 +282,18 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onMessageCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-	  onMessageCallback(CPlugin *pPlugin, PyObject *Connection, const std::string &Buffer)
-		  : CCallbackBase(pPlugin, "onMessage")
-		  , CHasConnection(Connection)
-		  , m_Data(nullptr)
+		onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::string &Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
 	  {
 		  m_Name = __func__;
 		  m_Buffer.reserve(Buffer.length());
 		  m_Buffer.assign((const byte *)Buffer.c_str(), (const byte *)Buffer.c_str() + Buffer.length());
 	  };
-	  onMessageCallback(CPlugin *pPlugin, PyObject *Connection, const std::vector<byte> &Buffer)
-		  : CCallbackBase(pPlugin, "onMessage")
-		  , CHasConnection(Connection)
-		  , m_Data(nullptr)
+	  onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::vector<byte> &Buffer): CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
 	  {
 		  m_Name = __func__;
 		  m_Buffer = Buffer;
 	  };
-		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
+		onMessageCallback(CPlugin* pPlugin, CConnection* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_Data = pData;
@@ -388,7 +393,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class ProtocolDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ProtocolDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
+		ProtocolDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
 		void ProcessLocked() override
 		{
 			m_pPlugin->ConnectionProtocol(this);
@@ -398,7 +403,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class ConnectDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ConnectDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
+		ConnectDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
 		void ProcessLocked() override
 		{
 			m_pPlugin->ConnectionConnect(this);
@@ -408,7 +413,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class ListenDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ListenDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
+		ListenDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
 		void ProcessLocked() override
 		{
 			m_pPlugin->ConnectionListen(this);
@@ -418,7 +423,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class DisconnectDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		DisconnectDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
+		DisconnectDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
 		void ProcessLocked() override
 		{
 			m_pPlugin->ConnectionDisconnect(this);
@@ -429,7 +434,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	{
 	public:
 		PyObject*		m_Object;
-		WriteDirective(CPlugin* pPlugin, PyObject* Connection, PyObject* pData, const int Delay) : CDirectiveBase(pPlugin), CHasConnection(Connection)
+		WriteDirective(CPlugin* pPlugin, CConnection* Connection, PyObject* pData, const int Delay) : CDirectiveBase(pPlugin), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_Object = pData;
@@ -498,7 +503,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class ReadEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		ReadEvent(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(pPlugin), CHasConnection(Connection)
+		ReadEvent(CPlugin* pPlugin, CConnection* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(pPlugin), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_ElapsedMs = ElapsedMs;
@@ -517,8 +522,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class DisconnectedEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(true) { m_Name = __func__; };
-		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection, bool NotifyPlugin) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(NotifyPlugin) { m_Name = __func__; };
+		DisconnectedEvent(CPlugin* pPlugin, CConnection* Connection) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(true) { m_Name = __func__; };
+		DisconnectedEvent(CPlugin* pPlugin, CConnection* Connection, bool NotifyPlugin) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(NotifyPlugin) { m_Name = __func__; };
 		void ProcessLocked() override
 		{
 			m_pPlugin->DisconnectEvent(this);
