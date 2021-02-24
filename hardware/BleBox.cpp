@@ -13,27 +13,26 @@
 
 struct STR_DEVICE {
 	int			unit;
-	std::string api_name;
-	std::string name;
+	const char *api_name;
+	const char *name;
 	int			deviceID;
 	uint8_t		subType;
 	int			switchType;
-	std::string api_state;
+	const char *api_state;
 };
 
-#define TOT_DEVICE_TYPES 9
-
-const STR_DEVICE DevicesType[TOT_DEVICE_TYPES] =
-{
-	{ 0, "switchBox", "Switch Box",pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
-	{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
-	{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
-	{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
-	{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
-	{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
-	{ 7, "airSensor", "Air Sensor", pTypeAirQuality, sTypeVoltcraft, 0, "air" },
-	{ 8, "tempSensor", "Temp Sensor", pTypeGeneral, sTypeTemperature, 0, "tempsensor" },
+constexpr std::array<STR_DEVICE, 9> DevicesType{
+	{
+		{ 0, "switchBox", "Switch Box", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
+		{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
+		{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
+		{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
+		{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
+		{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
+		{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
+		{ 7, "airSensor", "Air Sensor", pTypeAirQuality, sTypeVoltcraft, 0, "air" },
+		{ 8, "tempSensor", "Temp Sensor", pTypeGeneral, sTypeTemperature, 0, "tempsensor" },
+	},
 };
 
 BleBox::BleBox(const int id, const int pollIntervalsec)
@@ -1090,7 +1089,7 @@ void BleBox::AddNode(const std::string & name, const std::string & IPAddress, bo
 	if (deviceTypeID == -1)
 		return;
 
-	STR_DEVICE deviceType = DevicesType[deviceTypeID];
+	const auto deviceType = DevicesType[deviceTypeID];
 
 	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
