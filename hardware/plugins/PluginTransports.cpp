@@ -462,6 +462,7 @@ namespace Plugins {
 
 				m_tLastSeen = time(nullptr);
 				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
+				configureTimeout();
 			}
 			catch (boost::system::system_error se)
 			{
@@ -518,7 +519,10 @@ namespace Plugins {
 
 			//ready for next read
 			if (m_TLSSock)
+			{
 				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
+				configureTimeout();
+			}
 		}
 		else
 		{
@@ -546,6 +550,11 @@ namespace Plugins {
 
 	CPluginTransportTCPSecure::~CPluginTransportTCPSecure()
 	{
+		if (m_Timer)
+		{
+			m_Timer->cancel();
+		}
+
 		if (m_TLSSock)
 		{
 			delete m_TLSSock;
