@@ -201,8 +201,9 @@ private:
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
 
-	static const std::string m_szReason[], m_szSecStatus[];
-	static const _tJsonMap JsonMap[];
+	static const std::array<const char *, 7> m_szReason;
+	static const std::array<const char *, 3> m_szSecStatus;
+	static const std::array<_tJsonMap, 52> JsonMap;
 
 	//our thread
 	void Do_Work();
