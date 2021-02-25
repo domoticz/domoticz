@@ -12934,6 +12934,8 @@ namespace http {
 			if (newidx.empty())
 				return;
 
+			std::string keepOld = request::findValue(&req, "keepold");
+
 			std::vector<std::vector<std::string> > result;
 
 			//Check which device is newer
@@ -12957,7 +12959,7 @@ namespace http {
 			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
 			ParseSQLdatetime(timeB, LastUpdateTime_B, sLastUpdate_B, tm1.tm_isdst);
 
-			if (timeA < timeB)
+			if (timeA > timeB)
 			{
 				//Swap idx with newidx
 				sidx.swap(newidx);
@@ -12971,12 +12973,25 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "TransferDevice";
+			if(!keepOld.empty() && !keepOld.compare("y") )
+			{ // keep the old Idx
+				//transfer device logs (new to old)
+				m_sql.TransferDevice(newidx, sidx);
 
-			//transfer device logs (new to old)
-			m_sql.TransferDevice(newidx, sidx);
+				// copy Idx,name, description,addj
+				m_sql.TransferId(newidx, sidx);
 
-			//now delete the NEW device
-			m_sql.DeleteDevices(newidx);
+				//now delete the NEW device
+				m_sql.DeleteDevices(newidx);
+			}
+			else
+			{
+				//transfer device logs (old to new)
+				m_sql.TransferDevice(sidx, newidx);
+
+				//now delete the OLD device
+				m_sql.DeleteDevices(sidx);
+			}
 
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}

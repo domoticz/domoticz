@@ -7529,6 +7529,16 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 	m_notifications.ReloadNotifications();
 }
 
+void CSQLHelper::TransferId(const std::string& newidx, const std::string& idx)
+{
+	// copy values to keep to new device
+	safe_query("UPDATE DeviceStatus set (name,description,used,favorite) = (select name,description,used,favorite from DeviceStatus d2 where d2.id = '%q') where id='%q'" , idx.c_str(), newidx.c_str());
+	// swap the two devices
+	safe_query("UPDATE DeviceStatus set id=-1   where  id='%q'" , idx.c_str());
+	safe_query("UPDATE DeviceStatus set id='%q' where  id='%q'" , idx.c_str(), newidx.c_str());
+	safe_query("UPDATE DeviceStatus set id='%q' where  id=-1" , newidx.c_str());
+}
+
 void CSQLHelper::TransferDevice(const std::string& idx, const std::string& newidx)
 {
 	std::vector<std::vector<std::string> > result;
