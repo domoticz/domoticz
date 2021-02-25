@@ -17,178 +17,141 @@
 	#define ENABLE_LOGGING
 #endif
 
-struct _tRFLinkStringIntHelper
-{
-	std::string szType;
-	int gType;
+using rfswitch = std::pair<const char *, int>;
+constexpr auto rfswitches = std::array<rfswitch, 109>{
+	rfswitch{ "X10", sSwitchTypeX10 },		       // p9
+	rfswitch{ "Kaku", sSwitchTypeARC },		       // p3
+	rfswitch{ "AB400D", sSwitchTypeAB400D },	       // p3
+	rfswitch{ "Waveman", sSwitchTypeWaveman },	       // p-
+	rfswitch{ "EMW200", sSwitchTypeEMW200 },	       // p-
+	rfswitch{ "Impuls", sSwitchTypeIMPULS },	       // p3
+	rfswitch{ "RisingSun", sSwitchTypeRisingSun },	       // p-
+	rfswitch{ "Philips", sSwitchTypePhilips },	       // p-
+	rfswitch{ "Energenie", sSwitchTypeEnergenie },	       // p-
+	rfswitch{ "Energenie5", sSwitchTypeEnergenie5 },       // p-
+	rfswitch{ "GDR2", sSwitchTypeGDR2 },		       // p-
+	rfswitch{ "NewKaku", sSwitchTypeAC },		       // p4
+	rfswitch{ "HomeEasy", sSwitchTypeHEU },		       // p15
+	rfswitch{ "Anslut", sSwitchTypeANSLUT },	       // p17
+	rfswitch{ "Kambrook", sSwitchTypeKambrook },	       // p8
+	rfswitch{ "Ikea Koppla", sSwitchTypeKoppla },	       // p14
+	rfswitch{ "PT2262", sSwitchTypePT2262 },	       // p3
+	rfswitch{ "Lightwave", sSwitchTypeLightwaveRF },       // p18
+	rfswitch{ "EMW100", sSwitchTypeEMW100 },	       // p13
+	rfswitch{ "BSB", sSwitchTypeBBSB },		       // p-
+	rfswitch{ "MDRemote", sSwitchTypeMDREMOTE },	       // p14
+	rfswitch{ "Conrad", sSwitchTypeRSL },		       // p7
+	rfswitch{ "Livolo", sSwitchTypeLivolo },	       // p-
+	rfswitch{ "TRC02RGB", sSwitchTypeTRC02 },	       // p10
+	rfswitch{ "Aoke", sSwitchTypeAoke },		       // p-
+	rfswitch{ "TRC022RGB", sSwitchTypeTRC02_2 },	       // p-
+	rfswitch{ "Eurodomest", sSwitchTypeEurodomest },       // p5
+	rfswitch{ "Livolo App", sSwitchTypeLivoloAppliance },  // p-
+	rfswitch{ "Blyss", sSwitchTypeBlyss },		       // p6
+	rfswitch{ "Byron", sSwitchTypeByronSX },	       // p72
+	rfswitch{ "Byron MP", sSwitchTypeByronMP001 },	       // p74
+	rfswitch{ "SelectPlus", sSwitchTypeSelectPlus },       // p70
+	rfswitch{ "Doorbell", sSwitchTypeSelectPlus3 },	       // p73
+	rfswitch{ "FA20RF", sSwitchTypeFA20 },		       // p80
+	rfswitch{ "Chuango", sSwitchTypeChuango },	       // p62
+	rfswitch{ "Plieger", sSwitchTypePlieger },	       // p71
+	rfswitch{ "SilverCrest", sSwitchTypeSilvercrest },     // p75
+	rfswitch{ "Mertik", sSwitchTypeMertik },	       // p82
+	rfswitch{ "HomeConfort", sSwitchTypeHomeConfort },     // p11
+	rfswitch{ "Powerfix", sSwitchTypePowerfix },	       // p13
+	rfswitch{ "TriState", sSwitchTypeTriState },	       // p16
+	rfswitch{ "Deltronic", sSwitchTypeDeltronic },	       // p73
+	rfswitch{ "FA500", sSwitchTypeFA500 },		       // p12
+	rfswitch{ "HT12E", sSwitchTypeHT12E },		       // p60
+	rfswitch{ "EV1527", sSwitchTypeEV1527 },	       // p61
+	rfswitch{ "Elmes", sSwitchTypeElmes },		       // p65
+	rfswitch{ "Aster", sSwitchTypeAster },		       // p17
+	rfswitch{ "Sartano", sSwitchTypeSartano },	       // p3
+	rfswitch{ "Europe", sSwitchTypeEurope },	       // p18
+	rfswitch{ "Avidsen", sSwitchTypeAvidsen },	       // p..
+	rfswitch{ "BofuMotor", sSwitchTypeBofu },	       // p..
+	rfswitch{ "BrelMotor", sSwitchTypeBrel },	       // p..
+	rfswitch{ "RTS", sSwitchTypeRTS },		       // p..
+	rfswitch{ "ElroDB", sSwitchTypeElroDB },	       // p..
+	rfswitch{ "Dooya", sSwitchTypeDooya },		       // p..
+	rfswitch{ "Unitec", sSwitchTypeUnitec },	       // p..
+	rfswitch{ "Maclean", sSwitchTypeMaclean },	       // p..
+	rfswitch{ "R546", sSwitchTypeR546 },		       // p..
+	rfswitch{ "Diya", sSwitchTypeDiya },		       // p..
+	rfswitch{ "X10Secure", sSwitchTypeX10secu },	       // p..
+	rfswitch{ "Atlantic", sSwitchTypeAtlantic },	       // p..
+	rfswitch{ "SilvercrestDB", sSwitchTypeSilvercrestDB }, // p..
+	rfswitch{ "MedionDB", sSwitchTypeMedionDB },	       // p..
+	rfswitch{ "VMC", sSwitchTypeVMC },		       // p..
+	rfswitch{ "Keeloq", sSwitchTypeKeeloq },	       // p..
+	rfswitch{ "CustomSwitch", sSwitchCustomSwitch },       // NA
+	rfswitch{ "GeneralSwitch", sSwitchGeneralSwitch },     // NA
+	rfswitch{ "Koch", sSwitchTypeKoch },		       // NA
+	rfswitch{ "Kingpin", sSwitchTypeKingpin },	       // NA
+	rfswitch{ "Funkbus", sSwitchTypeFunkbus },	       // NA
+	rfswitch{ "Nice", sSwitchTypeNice },		       // NA
+	rfswitch{ "Forest", sSwitchTypeForest },	       // NA
+	rfswitch{ "MC145026", sSwitchMC145026 },	       // NA
+	rfswitch{ "Lobeco", sSwitchLobeco },		       // NA
+	rfswitch{ "Friedland", sSwitchFriedland },	       // NA
+	rfswitch{ "BFT", sSwitchBFT },			       // NA
+	rfswitch{ "Novatys", sSwitchNovatys },		       // NA
+	rfswitch{ "Halemeier", sSwitchHalemeier },
+	rfswitch{ "Gaposa", sSwitchGaposa },
+	rfswitch{ "MiLightv1", sSwitchMiLightv1 },
+	rfswitch{ "MiLightv2", sSwitchMiLightv2 },
+	rfswitch{ "HT6P20", sSwitchHT6P20 },
+	rfswitch{ "Doitrand", sSwitchTypeDoitrand },
+	rfswitch{ "Warema", sSwitchTypeWarema },
+	rfswitch{ "Ansluta", sSwitchTypeAnsluta },
+	rfswitch{ "Livcol", sSwitchTypeLivcol },
+	rfswitch{ "Bosch", sSwitchTypeBosch },
+	rfswitch{ "Ningbo", sSwitchTypeNingbo },
+	rfswitch{ "Ditec", sSwitchTypeDitec },
+	rfswitch{ "Steffen", sSwitchTypeSteffen },
+	rfswitch{ "AlectoSA", sSwitchTypeAlectoSA },
+	rfswitch{ "GPIOset", sSwitchTypeGPIOset },
+	rfswitch{ "KonigSec", sSwitchTypeKonigSec },
+	rfswitch{ "RM174RF", sSwitchTypeRM174RF },
+	rfswitch{ "Liwin", sSwitchTypeLiwin },
+	rfswitch{ "YW_Secu", sSwitchTypeYW_Secu },
+	rfswitch{ "Mertik_GV60", sSwitchTypeMertik_GV60 },
+	rfswitch{ "Ningbo64", sSwitchTypeNingbo64 },
+	rfswitch{ "X2D", sSwitchTypeX2D },
+	rfswitch{ "HRCMotor", sSwitchTypeHRCMotor },
+	rfswitch{ "Velleman", sSwitchTypeVelleman },
+	rfswitch{ "RFCustom", sSwitchTypeRFCustom },
+	rfswitch{ "YW_Sensor", sSwitchTypeYW_Sensor },
+	rfswitch{ "LEGRANDCAD", sSwitchTypeLegrandcad },
+	rfswitch{ "SysfsGpio", sSwitchTypeSysfsGpio },
+	rfswitch{ "Hager", sSwitchTypeHager },
+	rfswitch{ "Faber", sSwitchTypeFaber },
+	rfswitch{ "Drayton", sSwitchTypeDrayton },
+	rfswitch{ "V2Phoenix", sSwitchTypeV2Phoenix },
 };
 
-const _tRFLinkStringIntHelper rfswitches[] =
-{
-	{ "X10", sSwitchTypeX10 },               // p9
-	{ "Kaku", sSwitchTypeARC },              // p3
-	{ "AB400D", sSwitchTypeAB400D },         // p3
-	{ "Waveman", sSwitchTypeWaveman },       // p-
-	{ "EMW200", sSwitchTypeEMW200 },         // p-
-	{ "Impuls", sSwitchTypeIMPULS },         // p3
-	{ "RisingSun", sSwitchTypeRisingSun },   // p-
-	{ "Philips", sSwitchTypePhilips },       // p-
-	{ "Energenie", sSwitchTypeEnergenie },   // p-
-	{ "Energenie5", sSwitchTypeEnergenie5 }, // p-
-	{ "GDR2", sSwitchTypeGDR2 },             // p-
-	{ "NewKaku", sSwitchTypeAC },            // p4
-	{ "HomeEasy", sSwitchTypeHEU },          // p15
-	{ "Anslut", sSwitchTypeANSLUT },         // p17
-	{ "Kambrook", sSwitchTypeKambrook },     // p8
-	{ "Ikea Koppla", sSwitchTypeKoppla },    // p14
-	{ "PT2262", sSwitchTypePT2262 },         // p3
-	{ "Lightwave", sSwitchTypeLightwaveRF }, // p18
-	{ "EMW100", sSwitchTypeEMW100 },         // p13
-	{ "BSB", sSwitchTypeBBSB },              // p-
-	{ "MDRemote", sSwitchTypeMDREMOTE },     // p14
-	{ "Conrad", sSwitchTypeRSL },            // p7
-	{ "Livolo", sSwitchTypeLivolo },         // p-
-	{ "TRC02RGB", sSwitchTypeTRC02 },        // p10
-	{ "Aoke", sSwitchTypeAoke },             // p-
-	{ "TRC022RGB", sSwitchTypeTRC02_2 },     // p-
-	{ "Eurodomest", sSwitchTypeEurodomest }, // p5
-	{ "Livolo App", sSwitchTypeLivoloAppliance }, // p-
-	{ "Blyss", sSwitchTypeBlyss },           // p6
-	{ "Byron", sSwitchTypeByronSX },         // p72
-	{ "Byron MP", sSwitchTypeByronMP001 },   // p74
-	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
-	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73
-	{ "FA20RF", sSwitchTypeFA20 },           // p80
-	{ "Chuango", sSwitchTypeChuango },       // p62
-	{ "Plieger", sSwitchTypePlieger },       // p71
-	{ "SilverCrest", sSwitchTypeSilvercrest }, // p75
-	{ "Mertik", sSwitchTypeMertik },         // p82
-	{ "HomeConfort", sSwitchTypeHomeConfort }, // p11
-	{ "Powerfix", sSwitchTypePowerfix },     // p13
-	{ "TriState", sSwitchTypeTriState },     // p16
-	{ "Deltronic", sSwitchTypeDeltronic },   // p73
-	{ "FA500", sSwitchTypeFA500 },           // p12
-	{ "HT12E", sSwitchTypeHT12E },           // p60
-	{ "EV1527", sSwitchTypeEV1527 },         // p61
-	{ "Elmes", sSwitchTypeElmes },           // p65
-	{ "Aster", sSwitchTypeAster },           // p17
-	{ "Sartano", sSwitchTypeSartano },       // p3
-	{ "Europe", sSwitchTypeEurope },         // p18
-	{ "Avidsen", sSwitchTypeAvidsen },       // p..
-	{ "BofuMotor", sSwitchTypeBofu },        // p..
-	{ "BrelMotor", sSwitchTypeBrel },        // p..
-	{ "RTS", sSwitchTypeRTS },               // p..
-	{ "ElroDB", sSwitchTypeElroDB },         // p..
-	{ "Dooya", sSwitchTypeDooya },           // p..
-	{ "Unitec", sSwitchTypeUnitec },         // p..
-	{ "Maclean", sSwitchTypeMaclean },		 // p..
-	{ "R546", sSwitchTypeR546 },	         // p..
-	{ "Diya", sSwitchTypeDiya },	         // p..
-	{ "X10Secure", sSwitchTypeX10secu },	 // p..
-	{ "Atlantic", sSwitchTypeAtlantic },	 // p..
-	{ "SilvercrestDB", sSwitchTypeSilvercrestDB }, // p..
-	{ "MedionDB", sSwitchTypeMedionDB },	 // p..
-	{ "VMC", sSwitchTypeVMC },				 // p..
-	{ "Keeloq", sSwitchTypeKeeloq },		 // p..
-	{ "CustomSwitch", sSwitchCustomSwitch }, // NA
-	{ "GeneralSwitch", sSwitchGeneralSwitch }, // NA
-	{ "Koch", sSwitchTypeKoch },			 // NA
-	{ "Kingpin", sSwitchTypeKingpin },		 // NA
-	{ "Funkbus", sSwitchTypeFunkbus },		 // NA
-	{ "Nice", sSwitchTypeNice },			 // NA
-	{ "Forest", sSwitchTypeForest },		 // NA
-	{ "MC145026", sSwitchMC145026 },		 // NA
-	{ "Lobeco", sSwitchLobeco },			 // NA
-	{ "Friedland", sSwitchFriedland },		 // NA
-	{ "BFT", sSwitchBFT },					 // NA
-	{ "Novatys", sSwitchNovatys},			 // NA
-	{ "Halemeier", sSwitchHalemeier},
-	{ "Gaposa", sSwitchGaposa },
-	{ "MiLightv1", sSwitchMiLightv1 },
-	{ "MiLightv2", sSwitchMiLightv2 },
-	{ "HT6P20", sSwitchHT6P20 },
-	{ "Doitrand", sSwitchTypeDoitrand },
-	{ "Warema", sSwitchTypeWarema },
-	{ "Ansluta", sSwitchTypeAnsluta },
-	{ "Livcol", sSwitchTypeLivcol },
-	{ "Bosch", sSwitchTypeBosch },
-	{ "Ningbo", sSwitchTypeNingbo },
-	{ "Ditec", sSwitchTypeDitec },
-	{ "Steffen", sSwitchTypeSteffen },
-	{ "AlectoSA", sSwitchTypeAlectoSA },
-	{ "GPIOset", sSwitchTypeGPIOset },
-	{ "KonigSec", sSwitchTypeKonigSec },
-	{ "RM174RF", sSwitchTypeRM174RF },
-	{ "Liwin", sSwitchTypeLiwin },
-	{ "YW_Secu", sSwitchTypeYW_Secu },
-	{ "Mertik_GV60", sSwitchTypeMertik_GV60 },
-	{ "Ningbo64", sSwitchTypeNingbo64 },
-	{ "X2D", sSwitchTypeX2D },
-	{ "HRCMotor", sSwitchTypeHRCMotor },
-	{ "Velleman", sSwitchTypeVelleman },
-	{ "RFCustom", sSwitchTypeRFCustom },
-	{ "YW_Sensor", sSwitchTypeYW_Sensor },
-	{ "LEGRANDCAD", sSwitchTypeLegrandcad },
-	{ "SysfsGpio", sSwitchTypeSysfsGpio },
-	{ "Hager", sSwitchTypeHager },
-	{ "Faber", sSwitchTypeFaber },
-	{ "Drayton", sSwitchTypeDrayton },
-	{ "V2Phoenix", sSwitchTypeV2Phoenix },
-	{ "", -1 }
+constexpr auto rfswitchcommands = std::array<rfswitch, 12>{
+	rfswitch{ "ON", gswitch_sOn },
+	rfswitch{ "OFF", gswitch_sOff },
+	rfswitch{ "ALLON", gswitch_sGroupOn },
+	rfswitch{ "ALLOFF", gswitch_sGroupOff },
+	rfswitch{ "DIM", gswitch_sDim },
+	rfswitch{ "BRIGHT", gswitch_sBright },
+	rfswitch{ "UP", blinds_sOpen },
+	rfswitch{ "DOWN", blinds_sClose },
+	rfswitch{ "STOP", gswitch_sStop },
+	rfswitch{ "COLOR", gswitch_sColor },
+	rfswitch{ "DISCO+", gswitch_sDiscop },
+	rfswitch{ "DISCO-", gswitch_sDiscom },
 };
 
-const _tRFLinkStringIntHelper rfswitchcommands[] =
-{
-	{ "ON", gswitch_sOn },
-	{ "OFF", gswitch_sOff },
-	{ "ALLON", gswitch_sGroupOn },
-	{ "ALLOFF", gswitch_sGroupOff },
-	{ "DIM", gswitch_sDim },
-	{ "BRIGHT", gswitch_sBright },
-	{ "UP", blinds_sOpen },
-	{ "DOWN", blinds_sClose },
-	{ "STOP", gswitch_sStop },
-	{ "COLOR", gswitch_sColor },
-	{ "DISCO+", gswitch_sDiscop },
-	{ "DISCO-", gswitch_sDiscom },
-	{ "", -1 }
+constexpr auto rfblindcommands = std::array<rfswitch, 5>{
+	rfswitch{ "UP", blinds_sOpen },
+	rfswitch{ "DOWN", blinds_sClose },
+	rfswitch{ "STOP", blinds_sStop },
+	rfswitch{ "CONFIRM", blinds_sConfirm },
+	rfswitch{ "LIMIT", blinds_sLimit },
 };
-
-const _tRFLinkStringIntHelper rfblindcommands[] =
-{
-	{ "UP", blinds_sOpen },
-	{ "DOWN", blinds_sClose },
-	{ "STOP", blinds_sStop },
-	{ "CONFIRM", blinds_sConfirm },
-	{ "LIMIT", blinds_sLimit },
-	{ "", -1 }
-};
-
-
-
-int GetGeneralRFLinkFromString(const _tRFLinkStringIntHelper *pTable, const std::string &szType)
-{
-	int ii = 0;
-	while (pTable[ii].gType!=-1)
-	{
-		if (pTable[ii].szType == szType)
-			return pTable[ii].gType;
-		ii++;
-	}
-	return -1;
-}
-
-std::string GetGeneralRFLinkFromInt(const _tRFLinkStringIntHelper *pTable, const int gType)
-{
-	int ii = 0;
-	while (pTable[ii].gType!=-1)
-	{
-		if (pTable[ii].gType == gType)
-			return pTable[ii].szType;
-		ii++;
-	}
-	return "";
-}
 
 CRFLinkBase::CRFLinkBase()
 {
@@ -272,7 +235,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		return false; //only allowed to control regular switches and MiLight
 
 	//_log.Log(LOG_ERROR, "RFLink: switch type: %d", pSwitch->subtype);
-	std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, pSwitch->subtype);
+	const auto it = std::find_if(rfswitches.begin(), rfswitches.end(), [=](auto &&rf) { return rf.second == pSwitch->subtype; });
+	std::string switchtype = it != rfswitches.end() ? it->first : "";
 	if (switchtype.empty())
 	{
 		_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch type: %d", pSwitch->subtype);
@@ -291,17 +255,27 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	//_log.Log(LOG_ERROR, "RFLink: switch cmd: %d", pSwitch->cmnd);
 
 	if (pSwitch->type == pTypeGeneralSwitch) {
-		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
+		const auto it2 = std::find_if(rfswitchcommands.begin(), rfswitchcommands.end(), [=](auto &&rf) { return rf.second == pSwitch->cmnd; });
+		std::string switchcmnd = it2 != rfswitchcommands.end() ? it->first : "";
 		if (pSwitch->cmnd != gswitch_sStop) {
 			if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds) || (m_SwitchType == STYPE_BlindsInverted)) {
-				switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
+				const auto it3 = std::find_if(rfblindcommands.begin(), rfblindcommands.end(), [=](auto &&rf) { return rf.second == pSwitch->cmnd; });
+				switchcmnd = it3 != rfblindcommands.end() ? it->first : "";
 			}
-			else {
-				if (m_SwitchType == STYPE_VenetianBlindsUS) {
+			else if (m_SwitchType == STYPE_VenetianBlindsUS)
+			{
 				//if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
-					switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
-					if (pSwitch->cmnd == blinds_sOpen) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sClose);
-					else if (pSwitch->cmnd == blinds_sClose) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sOpen);
+				const auto it3 = std::find_if(rfblindcommands.begin(), rfblindcommands.end(), [=](auto &&rf) { return rf.second == pSwitch->cmnd; });
+				switchcmnd = it3 != rfblindcommands.end() ? it->first : "";
+				if (pSwitch->cmnd == blinds_sOpen)
+				{
+					const auto it4 = std::find_if(rfblindcommands.begin(), rfblindcommands.end(), [=](auto &&rf) { return rf.second == blinds_sClose; });
+					switchcmnd = it4 != rfblindcommands.end() ? it->first : "";
+				}
+				else if (pSwitch->cmnd == blinds_sClose)
+				{
+					const auto it4 = std::find_if(rfblindcommands.begin(), rfblindcommands.end(), [=](auto &&rf) { return rf.second == blinds_sOpen; });
+					switchcmnd = it4 != rfblindcommands.end() ? it->first : "";
 				}
 			}
 		}
@@ -375,8 +349,10 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	bool bSendOn = false;
 
 	const int m_LEDType = pLed->type;
-	switchtype = GetGeneralRFLinkFromInt(rfswitches, (pSwitch->subtype == sTypeColor_LivCol) ? sSwitchTypeLivcol : sSwitchMiLightv1);
-	std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pLed->command);
+	const auto it2 = std::find_if(rfswitches.begin(), rfswitches.end(), [=](auto &&rf) { return rf.second == (pSwitch->subtype == sTypeColor_LivCol) ? sSwitchTypeLivcol : sSwitchMiLightv1; });
+	switchtype = it2 != rfswitches.end() ? it->first : "";
+	const auto it3 = std::find_if(rfswitchcommands.begin(), rfswitchcommands.end(), [=](auto &&rf) { return rf.second == pLed->command; });
+	std::string switchcmnd = it3 != rfswitchcommands.end() ? it->first : "";
 	std::string switchcmnd2;
 	unsigned int colorbright = 0;
 
@@ -566,14 +542,16 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int BatteryLevel, const std::string &switchType, const std::string &switchcmd, const int level)
 {
-	int intswitchtype = GetGeneralRFLinkFromString(rfswitches, switchType);
+	const auto it = std::find_if(rfswitches.begin(), rfswitches.end(), [&](auto &rf) { return rf.first == switchType; });
+	int intswitchtype = it != rfswitches.end() ? it->second : -1;
 	if (intswitchtype == -1)
 	{
 		_log.Log(LOG_ERROR, "RFLink: Unhandled switch type: %s", switchType.c_str());
 		return false;
 	}
 
-	int cmnd = GetGeneralRFLinkFromString(rfswitchcommands, switchcmd);
+	const auto it2 = std::find_if(rfswitchcommands.begin(), rfswitchcommands.end(), [&](auto &rf) { return rf.first == switchcmd; });
+	int cmnd = it2 != rfswitchcommands.end() ? it->second : -1;
 
 	int svalue=level;
 	if (cmnd==-1) {
@@ -596,7 +574,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.id = ID;
 	gswitch.unitcode = switchunit;
 	gswitch.cmnd = cmnd;
-    gswitch.level = svalue; //level;
+	gswitch.level = svalue; // level;
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
