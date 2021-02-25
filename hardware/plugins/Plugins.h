@@ -132,6 +132,80 @@ namespace Plugins {
 	struct module_state {
 		CPlugin* pPlugin;
 		PyObject* error;
+		PyTypeObject*	pDeviceClass;
 	};
 
+	//
+	//	Controls lifetime of Python Objects to ensure they always release
+	//
+	class PyBorrowedRef
+	{
+	      protected:
+		PyObject *m_pObject;
+
+	      public:
+		PyBorrowedRef()
+			: m_pObject(NULL){};
+		PyBorrowedRef(PyObject *pObject)
+		{
+			m_pObject = pObject;
+		};
+		operator PyObject *() const
+		{
+			return m_pObject;
+		}
+		operator PyTypeObject *() const
+		{
+			return (PyTypeObject *)m_pObject;
+		}
+		operator PyBytesObject *() const
+		{
+			return (PyBytesObject *)m_pObject;
+		}
+		operator bool() const
+		{
+			return (m_pObject != NULL);
+		}
+		PyObject **operator&()
+		{
+			return &m_pObject;
+		};
+		PyObject *operator->()
+		{
+			return m_pObject;
+		};
+		void operator=(PyObject *pObject)
+		{
+			m_pObject = pObject;
+		}
+		~PyBorrowedRef()
+		{
+			m_pObject = NULL;
+		};
+	};
+
+	class PyNewRef : public PyBorrowedRef
+	{
+	      public:
+		PyNewRef()
+			: PyBorrowedRef(){};
+		PyNewRef(PyObject *pObject)
+			: PyBorrowedRef(pObject){};
+		void operator=(PyObject *pObject)
+		{
+			if (m_pObject)
+			{
+				Py_XDECREF(m_pObject);
+			}
+			m_pObject = pObject;
+		}
+		~PyNewRef()
+		{
+			if (m_pObject)
+			{
+				// Py_CLEAR(m_pObject);  // Need to look into using clear more broadly
+				Py_XDECREF(m_pObject);
+			}
+		};
+	};
 } // namespace Plugins

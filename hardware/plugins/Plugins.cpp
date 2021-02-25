@@ -22,10 +22,9 @@
 
 #define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                                                                                          \
 	{                                                                                                                                                                                              \
-		PyObject *pObj = Py_BuildValue("s", value.c_str());                                                                                                                                    \
+		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                                                                                    \
 		if (PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                                                                      \
 			pPlugin->Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", m_PluginKey.c_str(), key, value.c_str());                                                        \
-		Py_DECREF(pObj);                                                                                                                                                                       \
 	}
 
 #define GETSTATE(m) ((struct module_state *)PyModule_GetState(m))
@@ -51,7 +50,8 @@ namespace Plugins
 	void LogPythonException(CPlugin *pPlugin, const std::string &sHandler)
 	{
 		PyTracebackObject *pTraceback;
-		PyObject *pExcept, *pValue;
+		PyNewRef			pExcept;
+		PyNewRef			pValue;
 		PyTypeObject *TypeName;
 		PyBytesObject *pErrBytes = nullptr;
 		const char *pTypeText = nullptr;
@@ -111,14 +111,12 @@ namespace Plugins
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject *pCode = frame->f_code;
-				PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-				PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
+				PyNewRef	pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+				PyNewRef	pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
 				if (pPlugin)
-					pPlugin->Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
+					pPlugin->Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, ((PyBytesObject*)pFileBytes)->ob_sval, ((PyBytesObject*)pFuncBytes)->ob_sval);
 				else
-					_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
-				Py_XDECREF(pFileBytes);
-				Py_XDECREF(pFuncBytes);
+					_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, ((PyBytesObject*)pFileBytes)->ob_sval, ((PyBytesObject*)pFuncBytes)->ob_sval);
 			}
 			pTraceFrame = pTraceFrame->tb_next;
 		}
@@ -131,10 +129,6 @@ namespace Plugins
 				_log.Log(LOG_ERROR, "(%s) Call to message handler '%s' failed, unable to decode exception.", Name.c_str(), sHandler.c_str());
 		}
 
-		if (pExcept)
-			Py_XDECREF(pExcept);
-		if (pValue)
-			Py_XDECREF(pValue);
 		if (pTraceback)
 			Py_XDECREF(pTraceback);
 	}
@@ -157,15 +151,15 @@ namespace Plugins
 			PyCodeObject *pCode = frame->f_code;
 			if (pCode && pCode->co_filename)
 			{
-				PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-				sFuncName = pFileBytes->ob_sval;
+				PyNewRef pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+				sFuncName = ((PyBytesObject *)pFileBytes)->ob_sval;
 			}
 			if (pCode && pCode->co_name)
 			{
 				if (!sFuncName.empty())
 					sFuncName += "\\";
-				PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
-				sFuncName = pFuncBytes->ob_sval;
+				PyNewRef pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
+				sFuncName += ((PyBytesObject *)pFuncBytes)->ob_sval;
 			}
 
 			switch (what)
@@ -203,15 +197,15 @@ namespace Plugins
 			PyCodeObject *pCode = frame->f_code;
 			if (pCode && pCode->co_filename)
 			{
-				PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-				sFuncName = pFileBytes->ob_sval;
+				PyNewRef	pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+				sFuncName = ((PyBytesObject *)pFileBytes)->ob_sval;
 			}
 			if (pCode && pCode->co_name)
 			{
 				if (!sFuncName.empty())
 					sFuncName += "\\";
-				PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
-				sFuncName = pFuncBytes->ob_sval;
+				PyNewRef	pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
+				sFuncName += ((PyBytesObject *)pFuncBytes)->ob_sval;
 			}
 
 			switch (what)
@@ -521,7 +515,7 @@ namespace Plugins
 		}
 		else
 		{
-			CPluginProtocolJSON *pProtocol = (CPluginProtocolJSON *)CPluginProtocol::Create("JSON");
+			CPluginProtocolJSON jsonProtocol;
 			PyObject *pNewConfig = nullptr;
 			static char *kwlist[] = { "Config", nullptr };
 			if (PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pNewConfig))
@@ -533,7 +527,7 @@ namespace Plugins
 					return pConfig;
 				}
 				//  Convert to JSON and store
-				sConfig = pProtocol->PythontoJSON(pNewConfig);
+				sConfig = jsonProtocol.PythontoJSON(pNewConfig);
 
 				// Update database
 				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
@@ -552,7 +546,7 @@ namespace Plugins
 			sConfig = result[0][0];
 			if (sConfig.empty())
 				sConfig = "{}";
-			pConfig = pProtocol->JSONtoPython(sConfig);
+			pConfig = jsonProtocol.JSONtoPython(sConfig);
 			Py_DECREF(Py_None);
 		}
 
@@ -644,49 +638,45 @@ namespace Plugins
 	void CPlugin::LogPythonException()
 	{
 		PyTracebackObject *pTraceback;
-		PyObject *pExcept, *pValue;
-		PyTypeObject *TypeName;
-		PyBytesObject *pErrBytes = nullptr;
+		PyNewRef	pExcept;
+		PyNewRef	pValue;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject **)&pTraceback);
+		PyErr_NormalizeException(&pExcept, &pValue, (PyObject **)&pTraceback);
 		PyErr_Clear();
 
 		if (pExcept)
 		{
-			TypeName = (PyTypeObject *)pExcept;
-			Log(LOG_ERROR, "(%s) Module Import failed, exception: '%s'", m_Name.c_str(), TypeName->tp_name);
+			Log(LOG_ERROR, "(%s) Module Import failed, exception: '%s'", m_Name.c_str(), ((PyTypeObject *)pExcept)->tp_name);
 		}
 		if (pValue)
 		{
 			std::string sError;
-			pErrBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pValue); // Won't normally return text for Import related errors
+			PyNewRef	pErrBytes = PyUnicode_AsASCIIString(pValue); // Won't normally return text for Import related errors
 			if (!pErrBytes)
 			{
-				PyErr_Clear();
 				// ImportError has name and path attributes
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "path"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "path");
-					PyBytesObject *pBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pString);
+					PyNewRef	pString = PyObject_GetAttrString(pValue, "path");
+					PyNewRef	pBytes = PyUnicode_AsASCIIString(pString);
 					if (pBytes)
 					{
 						sError += "Path: ";
-						sError += pBytes->ob_sval;
-						Py_XDECREF(pBytes);
+						sError += ((PyBytesObject *)pBytes)->ob_sval;
 					}
-					Py_XDECREF(pString);
 				}
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "name"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "name");
-					PyBytesObject *pBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pString);
+					PyNewRef	pString = PyObject_GetAttrString(pValue, "name");
+					PyNewRef	pBytes = PyUnicode_AsASCIIString(pString);
 					if (pBytes)
 					{
 						sError += " Name: ";
-						sError += pBytes->ob_sval;
-						Py_XDECREF(pBytes);
+						sError += ((PyBytesObject *)pBytes)->ob_sval;
 					}
-					Py_XDECREF(pString);
 				}
 				if (!sError.empty())
 				{
@@ -695,28 +685,27 @@ namespace Plugins
 				}
 
 				// SyntaxError, IndentationError & TabError have filename, lineno, offset and text attributes
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "filename"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "filename");
-					PyBytesObject *pBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pString);
+					PyNewRef pString = PyObject_GetAttrString(pValue, "filename");
+					PyNewRef pBytes = PyUnicode_AsASCIIString(pString);
 					sError += "File: ";
-					sError += pBytes->ob_sval;
-					Py_XDECREF(pString);
-					Py_XDECREF(pBytes);
+					sError += ((PyBytesObject *)pBytes)->ob_sval;
 				}
 				long long lineno = -1;
 				long long offset = -1;
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "lineno"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "lineno");
+					PyNewRef pString = PyObject_GetAttrString(pValue, "lineno");
 					lineno = PyLong_AsLongLong(pString);
-					Py_XDECREF(pString);
 				}
-				if (PyObject_HasAttrString(pExcept, "offset"))
+				PyErr_Clear();
+				if (PyObject_HasAttrString(pValue, "offset"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "offset");
+					PyNewRef pString = PyObject_GetAttrString(pValue, "offset");
 					offset = PyLong_AsLongLong(pString);
-					Py_XDECREF(pString);
 				}
 
 				if (!sError.empty())
@@ -732,12 +721,13 @@ namespace Plugins
 					sError = "";
 				}
 
-				if (PyObject_HasAttrString(pExcept, "text"))
+				PyErr_Clear();
+				if (PyObject_HasAttrString(pValue, "text"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "text");
+					PyNewRef pText = PyObject_GetAttrString(pValue, "text");
+					PyNewRef pString = PyObject_Str(pText);
 					std::string sUTF = PyUnicode_AsUTF8(pString);
 					Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), sUTF.c_str());
-					Py_XDECREF(pString);
 				}
 				else
 				{
@@ -750,21 +740,14 @@ namespace Plugins
 				}
 			}
 			else
-				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), pErrBytes->ob_sval);
+				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), ((PyBytesObject *)pErrBytes)->ob_sval);
 		}
-
-		if (pErrBytes)
-			Py_XDECREF(pErrBytes);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
 			Log(LOG_ERROR, "(%s) Call to import module failed, unable to decode exception.", m_Name.c_str());
 		}
 
-		if (pExcept)
-			Py_XDECREF(pExcept);
-		if (pValue)
-			Py_XDECREF(pValue);
 		if (pTraceback)
 			Py_XDECREF(pTraceback);
 	}
@@ -1094,10 +1077,10 @@ namespace Plugins
 				}
 				else
 				{
-					PyObject *pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
+					PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyObject *pSites = PyObject_CallObject(pFunc, nullptr);
+						PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
 						if (!pSites)
 						{
 							LogPythonException("getsitepackages");
@@ -1105,7 +1088,7 @@ namespace Plugins
 						else
 							for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
 							{
-								PyObject *pSite = PyList_GetItem(pSites, i);
+								PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
 								if (pSite && PyUnicode_Check(pSite))
 								{
 									std::wstringstream ssPath;
@@ -1113,7 +1096,6 @@ namespace Plugins
 									sPath += sSeparator + ssPath.str();
 								}
 							}
-						Py_XDECREF(pSites);
 					}
 				}
 			}
@@ -1138,10 +1120,10 @@ namespace Plugins
 				}
 				else
 				{
-					PyObject *pFunc = PyObject_GetAttrString((PyObject *)pFaultModule, "enable");
+					PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pFaultModule, "enable");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyObject_CallObject(pFunc, nullptr);
+						PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
 					}
 				}
 			}
@@ -1317,7 +1299,7 @@ namespace Plugins
 				{
 					CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-					PyObject *pKey = PyLong_FromLong(atoi(sd[0].c_str()));
+					PyNewRef	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
 					if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
 					{
 						Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
@@ -1329,7 +1311,6 @@ namespace Plugins
 					pDevice->Unit = atoi(sd[0].c_str());
 					CDevice_refresh(pDevice);
 					Py_DECREF(pDevice);
-					Py_DECREF(pKey);
 				}
 			}
 
@@ -1350,7 +1331,7 @@ namespace Plugins
 				{
 					CImage *pImage = (CImage *)CImage_new(&CImageType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-					PyObject *pKey = PyUnicode_FromString(sd[1].c_str());
+					PyNewRef	pKey = PyUnicode_FromString(sd[1].c_str());
 					if (PyDict_SetItem((PyObject *)m_ImageDict, pKey, (PyObject *)pImage) == -1)
 					{
 						Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
@@ -1361,7 +1342,6 @@ namespace Plugins
 					pImage->Name = PyUnicode_FromString(sd[2].c_str());
 					pImage->Description = PyUnicode_FromString(sd[3].c_str());
 					Py_DECREF(pImage);
-					Py_DECREF(pKey);
 				}
 			}
 
@@ -1792,19 +1772,18 @@ namespace Plugins
 					Log(LOG_NORM, "(%s) Python exception set prior to callback '%s'", m_Name.c_str(), sHandler.c_str());
 				}
 
-				PyObject *pFunc = PyObject_GetAttrString((PyObject *)m_PyModule, sHandler.c_str());
+				PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)m_PyModule, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
 					if (m_bDebug & PDM_QUEUE)
 						Log(LOG_NORM, "(%s) Calling message handler '%s'.", m_Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					PyObject *pReturnValue = PyObject_CallObject(pFunc, (PyObject *)pParams);
-					if (!pReturnValue)
+					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, (PyObject *)pParams);
+					if (!pReturnValue || PyErr_Occurred())
 					{
 						LogPythonException(sHandler);
 					}
-					Py_XDECREF(pReturnValue);
 				}
 				else
 				{
