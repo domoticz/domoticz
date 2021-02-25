@@ -975,6 +975,18 @@ namespace Plugins
 				delete m_Notifier;
 				m_Notifier = nullptr;
 			}
+
+			if (m_PyInterpreter) {
+				Log(LOG_STATUS, "(%s) Stopping python interpreter.", m_Name.c_str());
+				RestoreThread();
+
+				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
+				m_PyInterpreter = nullptr;
+
+				CPluginSystem pManager;
+				PyThreadState_Swap((PyThreadState *)pManager.PythonThread());
+				PyEval_ReleaseLock();
+			}
 		}
 		catch (...)
 		{
