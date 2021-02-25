@@ -495,7 +495,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define _Py_DEC_REFTOTAL _Py_RefTotal--
 #else
 #define _Py_DEC_REFTOTAL
-//#    define _Py_Dealloc
+#define _Py_Dealloc
 #endif
 #endif
 
