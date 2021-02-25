@@ -1384,7 +1384,7 @@ namespace Plugins
 	void CPlugin::ConnectionProtocol(CDirectiveBase *pMess)
 	{
 		ProtocolDirective *pMessage = (ProtocolDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 		if (m_Notifier)
 		{
 			delete pConnection->pProtocol;
@@ -1399,7 +1399,7 @@ namespace Plugins
 	void CPlugin::ConnectionConnect(CDirectiveBase *pMess)
 	{
 		ConnectDirective *pMessage = (ConnectDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
@@ -1466,7 +1466,7 @@ namespace Plugins
 	void CPlugin::ConnectionListen(CDirectiveBase *pMess)
 	{
 		ListenDirective *pMessage = (ListenDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
@@ -1538,7 +1538,7 @@ namespace Plugins
 	void CPlugin::ConnectionRead(CPluginMessageBase *pMess)
 	{
 		ReadEvent *pMessage = (ReadEvent *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		pConnection->pProtocol->ProcessInbound(pMessage);
 	}
@@ -1546,7 +1546,7 @@ namespace Plugins
 	void CPlugin::ConnectionWrite(CDirectiveBase *pMess)
 	{
 		WriteDirective *pMessage = (WriteDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 		std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
 		if (pConnection->pTransport)
@@ -1610,7 +1610,7 @@ namespace Plugins
 	void CPlugin::ConnectionDisconnect(CDirectiveBase *pMess)
 	{
 		DisconnectDirective *pMessage = (DisconnectDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
@@ -1786,6 +1786,12 @@ namespace Plugins
 			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
 			if (m_PyModule && !sHandler.empty())
 			{
+				if (PyErr_Occurred())
+				{
+					PyErr_Clear();
+					Log(LOG_NORM, "(%s) Python exception set prior to callback '%s'", m_Name.c_str(), sHandler.c_str());
+				}
+
 				PyObject *pFunc = PyObject_GetAttrString((PyObject *)m_PyModule, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
@@ -1800,8 +1806,17 @@ namespace Plugins
 					}
 					Py_XDECREF(pReturnValue);
 				}
-				else if (m_bDebug & PDM_QUEUE)
-					Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", m_Name.c_str(), sHandler.c_str());
+				else
+				{
+					if (m_bDebug & PDM_QUEUE)
+					{
+						Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", m_Name.c_str(), sHandler.c_str());
+					}
+					if (PyErr_Occurred())
+					{
+						PyErr_Clear();
+					}
+				}
 			}
 
 			if (pParams)

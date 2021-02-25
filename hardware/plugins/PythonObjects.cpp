@@ -1517,14 +1517,14 @@ namespace Plugins {
 			localtime_r(&tLastSeen, &ltime);
 			char date[32];
 			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
-			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s, Parent: '%s'",
-				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Timeout: %d, Bytes: %d, Connected: %s, Last Seen: %s, Parent: '%s'",
+				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud, self->Timeout,
 				(self->pTransport ? self->pTransport->TotalBytes() : -1),
 				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date, sParent.c_str());
 			return pRetVal;
 		}
-		PyObject *pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False, Parent: '%s'", self->Name,
-							 self->Transport, self->Protocol, self->Address, self->Port, self->Baud, sParent.c_str());
+		PyObject *pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Timeout: %d, Connected: False, Parent: '%s'", self->Name,
+							 self->Transport, self->Protocol, self->Address, self->Port, self->Baud, self->Timeout, sParent.c_str());
 		return pRetVal;
 	}
 

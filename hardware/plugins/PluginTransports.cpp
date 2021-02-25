@@ -166,6 +166,7 @@ namespace Plugins {
 			m_bConnected = true;
 			m_tLastSeen = time(nullptr);
 			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
+			configureTimeout();
 		}
 		else
 		{
@@ -294,7 +295,10 @@ namespace Plugins {
 
 			//ready for next read
 			if (m_Socket)
+			{
 				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), [this](auto &&err, auto bytes) { handleRead(err, bytes); });
+				configureTimeout();
+			}
 		}
 		else
 		{
@@ -353,6 +357,11 @@ namespace Plugins {
 		}
 
 		m_tLastSeen = time(nullptr);
+
+		if (m_Timer)
+		{
+			m_Timer->cancel();
+		}
 
 		if (m_Socket && m_bConnecting)
 		{
@@ -1001,6 +1010,7 @@ namespace Plugins {
 				{
 					pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully."));
 					setReadCallback([this](auto err, auto bytes) { handleRead(err, bytes); });
+					configureTimeout();
 				}
 				else
 				{
@@ -1025,7 +1035,7 @@ namespace Plugins {
 			std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data));
-
+			configureTimeout();
 			m_tLastSeen = time(nullptr);
 			m_iTotalBytes += bytes_transferred;
 		}
@@ -1050,7 +1060,21 @@ namespace Plugins {
 		{
 			if (isOpen())
 			{
+				// Cancel timeout
+				if (m_Timer)
+				{
+					m_Timer->cancel();
+				}
 				terminate();
+				CPlugin *pPlugin = m_pConnection->pPlugin;
+				if (pPlugin)
+				{
+					pPlugin->MessagePlugin(new onDisconnectCallback(pPlugin, m_pConnection));
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "CPluginTransportSerial: %s, onDisconnect not queued. Plugin was NULL.", __func__);
+				}
 			}
 			m_bConnected = false;
 		}

@@ -157,7 +157,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
     public:
 		onTimeoutCallback(CPlugin *pPlugin, CConnection *Connection): CCallbackBase(pPlugin, "onTimeout"), CHasConnection(Connection) { m_Name = __func__; };
     protected:
-		virtual void ProcessLocked()
+		virtual void ProcessLocked() override
 		{
 			Callback(Py_BuildValue("(O)", m_pConnection));
 		};

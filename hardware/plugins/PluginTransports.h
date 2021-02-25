@@ -29,7 +29,7 @@ namespace Plugins {
 		virtual void configureTimeout();
 
 	      public:
-		CPluginTransport(int HwdID, CConnection *pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bDisconnectQueued(false), m_bConnecting(false), m_bConnected(false), m_iTotalBytes(0), m_tLastSeen(0)
+		CPluginTransport(int HwdID, CConnection *pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bDisconnectQueued(false), m_bConnecting(false), m_bConnected(false), m_iTotalBytes(0), m_tLastSeen(0), m_Timer(NULL)
 	  {
 		  Py_INCREF(m_pConnection);
 	  };
