@@ -497,6 +497,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
             self.chart.xAxis[0].zoom(min, max);
             synchronizeYaxes();
             self.chart.redraw();
+            self.chart.tooltip.hide();
         }
 
         function chartTitle() {
