@@ -6,7 +6,13 @@
 #define PDUSTRING(name)
 #define PDULONG(name)
 #define PDULONGLONG(name)
-#define PROXYPDU(name, members) case ePDU_##name: { /* start a new scope */ std::shared_ptr<ProxyPdu_##name> pdu(new ProxyPdu_##name()); iarchive(pdu); base = pdu; } break;
+#define PROXYPDU(name, members)                                                                                                                                                                        \
+	case ePDU_##name: { /* start a new scope */                                                                                                                                                    \
+		auto pdu = std::make_shared<ProxyPdu_##name>();                                                                                                                                        \
+		iarchive(pdu);                                                                                                                                                                         \
+		base = pdu;                                                                                                                                                                            \
+	}                                                                                                                                                                                              \
+	break;
 std::shared_ptr<CProxyPduBase> CProxyPduBase::FromString(const std::string &str) {
 	std::stringstream stream(str);
 	cereal::PortableBinaryInputArchive iarchive(stream);
