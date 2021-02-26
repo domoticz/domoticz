@@ -154,8 +154,7 @@ void stdreplace(
 
 void stdupper(std::string &inoutstring)
 {
-	for (char &i : inoutstring)
-		i = toupper(i);
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::toupper);
 }
 
 void stdlower(std::string &inoutstring)
@@ -165,8 +164,7 @@ void stdlower(std::string &inoutstring)
 
 void stdupper(std::wstring& inoutstring)
 {
-	for (wchar_t &i : inoutstring)
-		i = towupper(i);
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::towupper);
 }
 
 void stdlower(std::wstring& inoutstring)

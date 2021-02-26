@@ -260,16 +260,15 @@ void C1WireByKernel::ThreadBuildDevicesList()
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 {
 	Locker l(m_Mutex);
-	std::transform(m_Devices.begin(), m_Devices.end(), std::back_inserter(devices),
-		       [](const std::pair<const std::string, C1WireByKernel::DeviceState *> &m) { return m.second->GetDevice(); });
+	std::transform(m_Devices.begin(), m_Devices.end(), std::back_inserter(devices), [](auto &&m) { return m.second->GetDevice(); });
 }
 
 const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const std::string& deviceId) const
 {
-	for (auto & it : m_PendingChanges)
+	for (const auto &change : m_PendingChanges)
 	{
-		if (it.GetDevice().devid == deviceId)
-			return &it;
+		if (change.GetDevice().devid == deviceId)
+			return &change;
 	}
 	return nullptr;
 }
@@ -534,13 +533,6 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 		throw OneWireWriteErrorException(deviceFileName);
 }
 
-inline void std_to_upper(const std::string& str, std::string& converted)
-{
-	converted = "";
-	for (char c : str)
-		converted += (char)toupper(c);
-}
-
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const
 {
 	// 1W-Kernel device name format : ff-iiiiiiiiiiii, with :
@@ -551,7 +543,8 @@ void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevi
 	device.family = ToFamily(deviceName.substr(0, 2));
 
 	// Device Id (6 chars after '.')
-	std_to_upper(deviceName.substr(3, 3 + 6 * 2), device.devid);
+	const auto str = deviceName.substr(3, 3 + 6 * 2);
+	std::transform(str.begin(), str.end(), device.devid.begin(), ::toupper);
 
 	// Filename (full path)
 	device.filename = Wire1_Base_Dir;
