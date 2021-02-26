@@ -562,7 +562,7 @@ void CNestOAuthAPI::GetMeterDetails()
 
 			// Find out if we're using C or F.
 			std::string temperatureScale = ndevice["temperature_scale"].asString();
-			boost::to_lower(temperatureScale);
+			stdlower(temperatureScale);
 
 			std::string sHvacMode = ndevice["hvac_mode"].asString();
 			std::string sHvacState = ndevice["hvac_state"].asString();
@@ -639,7 +639,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 
 	// Find out if we're using C or F.
 	std::string temperatureScale(1, m_sql.m_tempsign[0]);
-	boost::to_lower(temperatureScale);
+	stdlower(temperatureScale);
 
 	Json::Value root;
 	root["target_temperature_" + temperatureScale] = tempDest;

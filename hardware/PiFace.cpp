@@ -147,7 +147,7 @@ std::string & CPiFace::preprocess(std::string &s)
     std::string tempstripped;
 
     temp.resize(s.size());
-    std::transform(s.begin(),s.end(),temp.begin(),::tolower);
+    stdlower(s);
 
     tempstripped = trim(temp);
 

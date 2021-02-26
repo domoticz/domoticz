@@ -1113,7 +1113,7 @@ bool MainWorker::Start()
 	if (uname(&my_uname) == 0)
 	{
 		m_szSystemName = my_uname.sysname;
-		std::transform(m_szSystemName.begin(), m_szSystemName.end(), m_szSystemName.begin(), ::tolower);
+		stdlower(m_szSystemName);
 	}
 
 	if (!m_sql.OpenDatabase())

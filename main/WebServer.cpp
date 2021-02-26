@@ -2690,7 +2690,7 @@ namespace http {
 
 				std::string systemname = my_uname.sysname;
 				std::string machine = my_uname.machine;
-				std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+				stdlower(systemname);
 
 				if (machine == "armv6l")
 				{

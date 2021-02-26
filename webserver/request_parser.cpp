@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "request_parser.hpp"
 #include "request.hpp"
+#include "../main/Helper.h"
 #include <algorithm>
 
 namespace http {
@@ -296,7 +297,7 @@ boost::tribool request_parser::consume(request& req, const char* &pInput, const 
 		  for (auto &ph : req.headers)
 		  {
 			  std::string hname = ph.name;
-			  std::transform(hname.begin(), hname.end(), hname.begin(), ::tolower);
+			  stdlower(hname);
 			  if (hname == "content-length")
 			  {
 				  req.content_length = atoi(ph.value.c_str());

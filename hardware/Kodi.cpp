@@ -783,8 +783,8 @@ void CKodiNode::SendCommand(const std::string &command)
 	else  // Assume generic ExecuteAction  for any unrecognised strings
 	{
 		sKodiCall = "Input.ExecuteAction";
-		std::string	sLower = command;
-		std::transform(sLower.begin(), sLower.end(), sLower.begin(), ::tolower);
+		std::string sLower = command;
+		stdlower(sLower);
 		sKodiParam = sLower;
 	}
 

@@ -543,8 +543,9 @@ void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevi
 	device.family = ToFamily(deviceName.substr(0, 2));
 
 	// Device Id (6 chars after '.')
-	const auto str = deviceName.substr(3, 3 + 6 * 2);
-	std::transform(str.begin(), str.end(), device.devid.begin(), ::toupper);
+	auto str = deviceName.substr(3, 3 + 6 * 2);
+	stdupper(str);
+	device.devid = str;
 
 	// Filename (full path)
 	device.filename = Wire1_Base_Dir;

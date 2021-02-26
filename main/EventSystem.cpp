@@ -229,7 +229,7 @@ void CEventSystem::LoadEvents()
 			eitem.ID = std::stoull(sd[0]);
 			eitem.Name = sd[1] + "_" + sd[5];
 			eitem.Interpreter = sd[6];
-			std::transform(sd[7].begin(), sd[7].end(), sd[7].begin(), ::tolower);
+			stdlower(sd[7]);
 			eitem.Type = sd[7];
 			eitem.Conditions = sd[2];
 			eitem.Actions = sd[3];
@@ -263,7 +263,7 @@ void CEventSystem::LoadEvents()
 			eitem.ID = std::stoull(sd[0]);
 			eitem.Name = sd[1];
 			eitem.Interpreter = sd[2];
-			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
+			stdlower(sd[3]);
 			eitem.Type = sd[3];
 			eitem.EventStatus = atoi(sd[4].c_str());
 			eitem.Actions = sd[5];
