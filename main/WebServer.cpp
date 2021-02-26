@@ -3481,6 +3481,12 @@ namespace http {
 
 		void CWebServer::Cmd_DeleteDateRange(WebEmSession &session, const request &req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				_log.Log(LOG_ERROR, "User: %s tried to delete a daterange!", session.username.c_str());
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			const std::string idx = request::findValue(&req, "idx");
 			const std::string fromDate = request::findValue(&req, "fromdate");
 			const std::string toDate = request::findValue(&req, "todate");
@@ -3493,6 +3499,12 @@ namespace http {
 
 		void CWebServer::Cmd_DeleteDataPoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				_log.Log(LOG_ERROR, "User: %s tried to delete a datapoint!", session.username.c_str());
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			const std::string idx = request::findValue(&req, "idx");
 			const std::string Date = request::findValue(&req, "date");
 
