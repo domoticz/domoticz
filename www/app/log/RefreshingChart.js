@@ -22,6 +22,8 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
         self.seriesSuppliers = completeSeriesSuppliers(params.dataSupplier);
         self.synchronizeYaxes = params.synchronizeYaxes;
         self.chart = self.$element.find('.chartcontainer').highcharts(createChartDefinition(params.highchartTemplate)).highcharts();
+        // Disable the Highcharts Reset Zoom button
+        self.chart.showResetZoom = function () {};
         self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
         self.refreshTimestamp = 0;
 
@@ -78,15 +80,6 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                             type: 'spline',
                             zoomType: 'x',
                             marginTop: 45,
-                            resetZoomButton: {
-                                theme: {
-                                    display: 'none'
-                                },
-                                position: {
-                                    x: -30,
-                                    y: -36
-                                }
-                            },
                             panning: true,
                             panKey: 'shift'
                         },
