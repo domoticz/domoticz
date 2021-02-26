@@ -231,7 +231,7 @@ namespace Plugins {
 				{
 					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
-					PyObject*	pKey = PyLong_FromLong(self->ImageID);
+					PyNewRef	pKey = PyLong_FromLong(self->ImageID);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_ImageDict, pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete image '%d' from images dictionary.", self->pPlugin->m_Name.c_str(), self->ImageID);
@@ -758,9 +758,9 @@ namespace Plugins {
 						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
 						{
-							PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
+							PyBorrowedRef	pValueDict = PyDict_GetItemString(self->Options, "Custom");
 							std::string sOptionValue;
-							if (pValueDict == nullptr)
+							if (!pValueDict)
 								sOptionValue = "";
 							else
 								sOptionValue = PyUnicode_AsUTF8(pValueDict);
@@ -783,7 +783,7 @@ namespace Plugins {
 						{
 							self->ID = atoi(result[0][0].c_str());
 
-							PyObject*	pKey = PyLong_FromLong(self->Unit);
+							PyNewRef	pKey = PyLong_FromLong(self->Unit);
 							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
 							{
 								_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
@@ -799,9 +799,8 @@ namespace Plugins {
 								std::map<std::string, std::string> mpOptions;
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
 									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-									PyObject* pStr = PyObject_Str(pValueDict);
+									PyNewRef pStr = PyObject_Str(pValueDict);
 									std::string sOptionValue = PyUnicode_AsUTF8(pStr);
-									Py_XDECREF(pStr);
 									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -970,9 +969,8 @@ namespace Plugins {
 					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
 					{
 						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-						PyObject* pStr = PyObject_Str(pValueDict);
+						PyNewRef pStr = PyObject_Str(pValueDict);
 						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
-						Py_XDECREF(pStr);
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
 					Py_BEGIN_ALLOW_THREADS
@@ -982,7 +980,7 @@ namespace Plugins {
 				else
 				{
 					std::string sOptionValue;
-					PyObject *pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+					PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
 					if (pValue)
 					{
 						sOptionValue = PyUnicode_AsUTF8(pValue);
@@ -1087,7 +1085,7 @@ namespace Plugins {
 				{
 					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 
-					PyObject*	pKey = PyLong_FromLong(self->Unit);
+					PyNewRef	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete unit '%d' from device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);

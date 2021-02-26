@@ -755,9 +755,10 @@ namespace Plugins
 	void CPlugin::LogPythonException(const std::string &sHandler)
 	{
 		PyTracebackObject *pTraceback;
-		PyObject *pExcept, *pValue;
+		PyNewRef	pExcept;
+		PyNewRef	pValue;
 		PyTypeObject *TypeName;
-		PyBytesObject *pErrBytes = nullptr;
+		PyNewRef	pErrBytes = nullptr;
 		const char *pTypeText = nullptr;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject **)&pTraceback);
@@ -769,11 +770,11 @@ namespace Plugins
 		}
 		if (pValue)
 		{
-			pErrBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pValue);
+			pErrBytes = PyUnicode_AsASCIIString(pValue);
 		}
 		if (pTypeText && pErrBytes)
 		{
-			Log(LOG_ERROR, "(%s) '%s' failed '%s':'%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText, pErrBytes->ob_sval);
+			Log(LOG_ERROR, "(%s) '%s' failed '%s':'%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText, ((PyBytesObject *)pErrBytes)->ob_sval);
 		}
 		if (pTypeText && !pErrBytes)
 		{
@@ -781,19 +782,18 @@ namespace Plugins
 		}
 		if (!pTypeText && pErrBytes)
 		{
-			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), pErrBytes->ob_sval);
+			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), ((PyBytesObject *)pErrBytes)->ob_sval);
 		}
 		if (!pTypeText && !pErrBytes)
 		{
 			Log(LOG_ERROR, "(%s) '%s' failed, unable to determine error.", m_Name.c_str(), sHandler.c_str());
 		}
-		if (pErrBytes)
-			Py_XDECREF(pErrBytes);
 
 		// Log a stack trace if there is one
+		PyTracebackObject *pTraceFrame = pTraceback;
 		while (pTraceback)
 		{
-			PyFrameObject *frame = pTraceback->tb_frame;
+			PyFrameObject *frame = pTraceFrame->tb_frame;
 			if (frame)
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
@@ -801,23 +801,21 @@ namespace Plugins
 				std::string FileName;
 				if (pCode->co_filename)
 				{
-					PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-					FileName = pFileBytes->ob_sval;
-					Py_XDECREF(pFileBytes);
+					PyNewRef pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+					FileName = ((PyBytesObject*)pFileBytes)->ob_sval;
 				}
 				std::string FuncName = "Unknown";
 				if (pCode->co_name)
 				{
-					PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
-					FuncName = pFuncBytes->ob_sval;
-					Py_XDECREF(pFuncBytes);
+					PyNewRef pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
+					FuncName = ((PyBytesObject*)pFuncBytes)->ob_sval;
 				}
 				if (!FileName.empty())
 					Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
 			}
-			pTraceback = pTraceback->tb_next;
+			pTraceFrame = pTraceFrame->tb_next;
 		}
 
 		if (!pExcept && !pValue && !pTraceback)
@@ -825,10 +823,6 @@ namespace Plugins
 			Log(LOG_ERROR, "(%s) Call to message handler '%s' failed, unable to decode exception.", m_Name.c_str(), sHandler.c_str());
 		}
 
-		if (pExcept)
-			Py_XDECREF(pExcept);
-		if (pValue)
-			Py_XDECREF(pValue);
 		if (pTraceback)
 			Py_XDECREF(pTraceback);
 	}
@@ -1228,22 +1222,20 @@ namespace Plugins
 	{
 		try
 		{
-			PyObject *pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
-			PyObject *pParamsDict = PyDict_New();
+			PyBorrowedRef	pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
+			PyNewRef		pParamsDict = PyDict_New();
 			if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add Parameters dictionary.", m_PluginKey.c_str());
 				goto Error;
 			}
-			Py_DECREF(pParamsDict);
 
-			PyObject *pObj = Py_BuildValue("i", m_HwdID);
+			PyNewRef pObj = Py_BuildValue("i", m_HwdID);
 			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
 				goto Error;
 			}
-			Py_DECREF(pObj);
 
 			std::string sLanguage = "en";
 			m_sql.GetPreferencesVar("Language", sLanguage);
@@ -1636,7 +1628,7 @@ namespace Plugins
 	{
 		CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-		PyObject *pKey = PyLong_FromLong(Unit);
+		PyNewRef	pKey = PyLong_FromLong(Unit);
 		if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
 		{
 			Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", m_PluginKey.c_str(), Unit);
@@ -1648,13 +1640,11 @@ namespace Plugins
 		pDevice->Unit = Unit;
 		CDevice_refresh(pDevice);
 		Py_DECREF(pDevice);
-		Py_DECREF(pKey);
 	}
 
 	void CPlugin::onDeviceModified(int Unit)
 	{
-		PyObject *pKey = PyLong_FromLong(Unit);
-
+		PyNewRef	pKey = PyLong_FromLong(Unit);
 		CDevice *pDevice = (CDevice *)PyDict_GetItem((PyObject *)m_DeviceDict, pKey);
 
 		if (!pDevice)
@@ -1668,7 +1658,7 @@ namespace Plugins
 
 	void CPlugin::onDeviceRemoved(int Unit)
 	{
-		PyObject *pKey = PyLong_FromLong(Unit);
+		PyNewRef	pKey = PyLong_FromLong(Unit);
 		if (PyDict_DelItem((PyObject *)m_DeviceDict, pKey) == -1)
 		{
 			Log(LOG_ERROR, "(%s) failed to remove unit '%u' from device dictionary.", m_PluginKey.c_str(), Unit);
@@ -1797,9 +1787,6 @@ namespace Plugins
 					}
 				}
 			}
-
-			if (pParams)
-				Py_XDECREF(pParams);
 		}
 		catch (std::exception *e)
 		{

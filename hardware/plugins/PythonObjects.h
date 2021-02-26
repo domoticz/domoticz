@@ -106,6 +106,11 @@ namespace Plugins {
 		PyObject*	Description;
 		PyObject*	Color;
 		CPlugin*	pPlugin;
+
+		operator PyObject *() const
+		{
+			return (PyObject*)this;
+		}
 	};
 
 	void CDevice_dealloc(CDevice* self);

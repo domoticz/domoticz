@@ -148,7 +148,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 #else
 			std::string textUTF8 = m_Text; // TODO: Is it safe to assume non-Windows will always be UTF-8?
 #endif
-			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, textUTF8.c_str()));  // 0 is success else socket failure code
+			PyNewRef pParams = Py_BuildValue("Ois", m_pConnection, m_Status, textUTF8.c_str());
+			Callback(pParams);
 	  };
 	};
 
@@ -159,7 +160,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
     protected:
 		virtual void ProcessLocked() override
 		{
-			Callback(Py_BuildValue("(O)", m_pConnection));
+			PyNewRef pParams = Py_BuildValue("(O)", m_pConnection);
+			Callback(pParams);
 		};
 	};
 
@@ -170,7 +172,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  Callback(Py_BuildValue("(O)", m_pConnection)); // 0 is success else socket failure code
+		  PyNewRef pParams = Py_BuildValue("(O)", m_pConnection);
+		  Callback(pParams);
 	  };
 	};
 
@@ -183,7 +186,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  {
 		  m_pPlugin->onDeviceAdded(m_Unit);
 
-		  PyObject *pParams = Py_BuildValue("(i)", m_Unit);
+		  PyNewRef	pParams = Py_BuildValue("(i)", m_Unit);
 		  Callback(pParams);
 	  };
 	};
@@ -197,7 +200,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  {
 		  m_pPlugin->onDeviceModified(m_Unit);
 
-		  PyObject *pParams = Py_BuildValue("(i)", m_Unit);
+		  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
 		  Callback(pParams);
 	  };
 	};
@@ -209,7 +212,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyObject *pParams = Py_BuildValue("(i)", m_Unit);
+		  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
 		  Callback(pParams);
 
 		  m_pPlugin->onDeviceRemoved(m_Unit);
@@ -245,7 +248,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyObject *pParams;
+		  PyNewRef pParams;
 		  if (m_fLevel != -273.15F)
 		  {
 			  pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
@@ -274,7 +277,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyObject *pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
+		  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
 		  Callback(pParams);
 	  };
 	};
@@ -304,7 +307,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyObject *pParams = nullptr;
+		  PyNewRef pParams = nullptr;
 
 		  // Data is stored in a single vector of bytes
 		  if (!m_Buffer.empty())
@@ -356,7 +359,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyObject *pParams = Py_BuildValue("ssssiss", m_SuppliedName.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
+		  PyNewRef pParams = Py_BuildValue("ssssiss", m_SuppliedName.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
 		  Callback(pParams);
 	  };
 	};
