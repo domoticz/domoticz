@@ -1746,7 +1746,7 @@ namespace Plugins {
 				// Support both string and bytes
 				//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
 				if (pPayload) {
-					_log.Debug(DEBUG_NORM, "(%s) MQTT Publish: payload %p (%s)", __func__, pPayload, pPayload->ob_type->tp_name);
+					_log.Debug(DEBUG_NORM, "(%s) MQTT Publish: payload %p (%s)", __func__, (PyObject*)pPayload, pPayload->ob_type->tp_name);
 				}
 				if (pPayload && pPayload->ob_type->tp_name == std::string("bytearray"))
 				{
