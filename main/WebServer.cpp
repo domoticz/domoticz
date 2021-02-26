@@ -3483,7 +3483,6 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				_log.Log(LOG_ERROR, "User: %s tried to delete a daterange!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
@@ -3501,7 +3500,6 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				_log.Log(LOG_ERROR, "User: %s tried to delete a datapoint!", session.username.c_str());
 				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
