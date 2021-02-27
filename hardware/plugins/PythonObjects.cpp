@@ -698,17 +698,13 @@ namespace Plugins {
 							Py_END_ALLOW_THREADS
 							for (const auto &opt : mpOptions)
 							{
-								PyObject *pKeyDict = PyUnicode_FromString(opt.first.c_str());
-								PyObject *pValueDict = PyUnicode_FromString(opt.second.c_str());
+								PyNewRef	pKeyDict = PyUnicode_FromString(opt.first.c_str());
+								PyNewRef	pValueDict = PyUnicode_FromString(opt.second.c_str());
 								if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
 								{
 									_log.Log(LOG_ERROR, "(%s) Failed to refresh Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);
-									Py_DECREF(pKeyDict);
-									Py_DECREF(pValueDict);
 									break;
 								}
-								Py_DECREF(pKeyDict);
-								Py_DECREF(pValueDict);
 							}
 						}
 					}

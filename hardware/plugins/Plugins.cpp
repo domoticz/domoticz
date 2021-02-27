@@ -591,7 +591,10 @@ namespace Plugins
 			return pModule;
 		}
 		Py_INCREF((PyObject *)&CDeviceType);
+
 		PyModule_AddObject(pModule, "Device", (PyObject *)&CDeviceType);
+		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		pModState->pDeviceClass = &CDeviceType;
 
 		if (PyType_Ready(&CConnectionType) < 0)
 		{
@@ -791,7 +794,7 @@ namespace Plugins
 
 		// Log a stack trace if there is one
 		PyTracebackObject *pTraceFrame = pTraceback;
-		while (pTraceback)
+		while (pTraceFrame)
 		{
 			PyFrameObject *frame = pTraceFrame->tb_frame;
 			if (frame)
@@ -1816,10 +1819,57 @@ namespace Plugins
 		{
 			PyErr_Clear();
 
+			// Validate Device dictionary prior to shutdown
+			if (m_DeviceDict)
+			{
+				PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+				if (!m_PyModule)
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+					return;
+				}
+
+				module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+				if (!pModState)
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+					return;
+				}
+
+				PyBorrowedRef	key;
+				CDevice *pDevice;
+				Py_ssize_t pos = 0;
+				// Sanity check to make sure the reference counbting is all good.
+				while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, (PyObject **)&pDevice))
+				{
+					// Dictionary should be full of Devices but Python script can make this assumption false, log warning if this has happened
+					int isDevice = PyObject_IsInstance((PyObject *)pDevice, (PyObject *)pModState->pDeviceClass);
+					if (isDevice == -1)
+					{
+						LogPythonException("Error determining type of Python object during dealloc");
+					}
+					else if (isDevice == 0)
+					{
+						_log.Log(LOG_NORM, "%s: Device dictionary contained non-Device entry.", __func__);
+					}
+					else
+					{
+						if (pDevice->ob_base.ob_refcnt > 1)
+						{
+							std::string sName = PyUnicode_AsUTF8(pDevice->Name);
+							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), pDevice->ob_base.ob_refcnt);
+						}
+						else if (pDevice->ob_base.ob_refcnt < 1)
+						{
+							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, pDevice->ob_base.ob_refcnt);
+						}
+					}
+				}
+			}
+
 			// Stop Python
 			Py_XDECREF(m_PyModule);
-			if (m_DeviceDict)
-				Py_XDECREF(m_DeviceDict);
+			Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict)
 				Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict)
