@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <fmt/core.h>
 #include <iostream>
 #include "DomoticzHardware.h"
 #include "../main/Logger.h"
@@ -357,11 +358,10 @@ std::string CDomoticzHardwareBase::GetTextSensorText(const int NodeID, const int
 
 	std::vector<std::vector<std::string> > result;
 
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (NodeID << 8) | ChildID);
+	auto szTmp = fmt::format("{:08X}", (NodeID << 8) | ChildID);
 
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeTextStatus));
+		m_HwdID, szTmp.c_str(), int(pTypeGeneral), int(sTypeTextStatus));
 	if (!result.empty())
 	{
 		bExists = true;

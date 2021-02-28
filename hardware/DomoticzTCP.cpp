@@ -7,6 +7,8 @@
 #include "../main/WebServerHelper.h"
 #include "../webserver/proxyclient.h"
 
+#include <fmt/core.h>
+
 #define RETRY_DELAY 30
 
 extern http::server::CWebServerHelper m_webservers;
@@ -83,9 +85,8 @@ void DomoticzTCP::OnConnect()
 	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	if (!m_username.empty())
 	{
-		char szAuth[300];
-		snprintf(szAuth, sizeof(szAuth), "AUTH;%s;%s", m_username.c_str(), m_password.c_str());
-		WriteToHardware((const char*)&szAuth, (const unsigned char)strlen(szAuth));
+		auto auth = fmt::format("AUTH;{};{}", m_username.c_str(), m_password.c_str());
+		WriteToHardware(auth.c_str(), (unsigned char)auth.size());
 	}
 	sOnConnected(this);
 }

@@ -412,6 +412,9 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   ENDIF(LUA_FOUND)
 ENDIF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 
+find_package(fmt 5.3 REQUIRED)
+target_link_libraries(domoticz fmt::fmt)
+
 IF(USE_PYTHON)
   find_package(PythonInterp 3.4)
   find_package(PythonLibs 3.4)
