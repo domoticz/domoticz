@@ -493,7 +493,8 @@ namespace http {
 			RegisterCommandCode("downloadupdate", [this](auto &&session, auto &&req, auto &&root) { Cmd_DownloadUpdate(session, req, root); });
 			RegisterCommandCode("downloadready", [this](auto &&session, auto &&req, auto &&root) { Cmd_DownloadReady(session, req, root); });
 			RegisterCommandCode("update_application", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateApplication(session, req, root); });
-			RegisterCommandCode("deletedatapoint", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDatePoint(session, req, root); });
+			RegisterCommandCode("deletedatapoint", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDataPoint(session, req, root); });
+			RegisterCommandCode("deletedaterange", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDateRange(session, req, root); });
 			RegisterCommandCode("customevent", [this](auto &&session, auto &&req, auto &&root) { Cmd_CustomEvent(session, req, root); });
 
 			RegisterCommandCode("setactivetimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetActiveTimerPlan(session, req, root); });
@@ -3478,15 +3479,36 @@ namespace http {
 			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
 		}
 
-		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteDateRange(WebEmSession &session, const request &req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string fromDate = request::findValue(&req, "fromdate");
+			const std::string toDate = request::findValue(&req, "todate");
+			if ( ( idx.empty()) || (fromDate.empty() || toDate.empty() ))
+				return;
+			root["status"] = "OK";
+			root["title"] = "deletedaterange";
+			m_sql.DeleteDateRange(idx.c_str(), fromDate, toDate);
+		}
+
+		void CWebServer::Cmd_DeleteDataPoint(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			const std::string idx = request::findValue(&req, "idx");
 			const std::string Date = request::findValue(&req, "date");
-			if (
-				(idx.empty()) ||
-				(Date.empty())
-				)
+
+			if ( (idx.empty()) || (Date.empty()) )
 				return;
+
 			root["status"] = "OK";
 			root["title"] = "deletedatapoint";
 			m_sql.DeleteDataPoint(idx.c_str(), Date);
