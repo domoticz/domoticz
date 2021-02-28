@@ -35,6 +35,7 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
+#include <boost/smart_ptr/shared_array.hpp>  // for shared_array
 #include <boost/system/error_code.hpp>       // for error_code
 #include <boost/system/system_error.hpp>     // for system_error
 
@@ -63,7 +64,7 @@ public:
 
     /// Data are queued here before they go in writeBuffer
     std::vector<char> writeQueue;
-    std::shared_ptr<char> writeBuffer;	   ///< Data being written
+    boost::shared_array<char> writeBuffer; ///< Data being written
     size_t writeBufferSize{ 0 };	   ///< Size of writeBuffer
     std::mutex writeQueueMutex; ///< Mutex for access to writeQueue
     char readBuffer[BUFFER_SIZE]; ///< data being read
@@ -255,7 +256,7 @@ void AsyncSerial::doWrite()
     {
 	    std::lock_guard<std::mutex> l(pimpl->writeQueueMutex);
 	    pimpl->writeBufferSize = pimpl->writeQueue.size();
-	    pimpl->writeBuffer = std::make_shared<char>(pimpl->writeQueue.size());
+	    pimpl->writeBuffer.reset(new char[pimpl->writeQueue.size()]);
 
 	    copy(pimpl->writeQueue.begin(), pimpl->writeQueue.end(), pimpl->writeBuffer.get());
 	    pimpl->writeQueue.clear();
@@ -276,9 +277,10 @@ void AsyncSerial::writeEnd(const boost::system::error_code& error)
             return;
         }
         pimpl->writeBufferSize=pimpl->writeQueue.size();
-	pimpl->writeBuffer = std::make_shared<char>(pimpl->writeQueue.size());
-	copy(pimpl->writeQueue.begin(), pimpl->writeQueue.end(), pimpl->writeBuffer.get());
-	pimpl->writeQueue.clear();
+        pimpl->writeBuffer.reset(new char[pimpl->writeQueue.size()]);
+        copy(pimpl->writeQueue.begin(),pimpl->writeQueue.end(),
+                pimpl->writeBuffer.get());
+        pimpl->writeQueue.clear();
 	async_write(pimpl->port, boost::asio::buffer(pimpl->writeBuffer.get(), pimpl->writeBufferSize), [this](auto &&err, auto) { writeEnd(err); });
     } else {
 		try

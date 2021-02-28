@@ -21,7 +21,7 @@ ASyncTCP::ASyncTCP(const bool secure)
 	mContext.set_verify_mode(boost::asio::ssl::verify_none);
 	if (mSecure) 
 	{
-		mSslSocket = std::make_shared<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(mIos, mContext);
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, mContext));
 	}
 #endif
 }
@@ -97,7 +97,7 @@ void ASyncTCP::connect_start(boost::asio::ip::tcp::resolver::iterator& endpoint_
 	if (mSecure)
 	{
 		// we reset the ssl socket, because the ssl context needs to be reinitialized after a reconnect
-		mSslSocket = std::make_shared<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(mIos, mContext);
+		mSslSocket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(mIos, mContext));
 		mSslSocket->lowest_layer().async_connect(mEndPoint, [this, endpoint_iterator](auto &&err) mutable { cb_connect_done(err, endpoint_iterator); });
 	}
 	else

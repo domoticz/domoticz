@@ -493,7 +493,7 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 	boost::asio::io_service io_service;
 	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 	stdreplace(message, "@gatewaykey", GetGatewayKey());
-	auto message1 = std::make_shared<std::string>(message);
+	std::shared_ptr<std::string> message1(new std::string(message));
 	boost::asio::ip::udp::endpoint remote_endpoint_;
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
 	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
@@ -1041,7 +1041,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 				boost::asio::ip::udp::endpoint listen_endpoint(mcast_addr, 9898);
 
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-				auto message = std::make_shared<std::string>(R"({"cmd":"whois"})");
+				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
 				remote_endpoint = boost::asio::ip::udp::endpoint(mcast_addr, 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
@@ -1050,7 +1050,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-				auto message = std::make_shared<std::string>(R"({"cmd":"whois"})");
+				std::shared_ptr<std::string> message(new std::string(R"({"cmd":"whois"})"));
 				boost::asio::ip::udp::endpoint remote_endpoint;
 				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
@@ -1507,7 +1507,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					std::string message = R"({"cmd" : "read","sid":")";
 					message.append(r.asString());
 					message.append("\"}");
-					auto message1 = std::make_shared<std::string>(message);
+					std::shared_ptr<std::string> message1(new std::string(message));
 					boost::asio::ip::udp::endpoint remote_endpoint;
 					remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(TrueGateway->GetGatewayIp().c_str()), 9898);
 					socket_.send_to(boost::asio::buffer(*message1), remote_endpoint);
@@ -1533,7 +1533,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 					// Query for list of devices
 					std::string message = R"({"cmd" : "get_id_list"})";
-					auto message2 = std::make_shared<std::string>(message);
+					std::shared_ptr<std::string> message2(new std::string(message));
 					boost::asio::ip::udp::endpoint remote_endpoint;
 					remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(TrueGateway->GetGatewayIp().c_str()), 9898);
 					socket_.send_to(boost::asio::buffer(*message2), remote_endpoint);

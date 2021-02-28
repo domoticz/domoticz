@@ -103,17 +103,19 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	connections_.insert(new_connection_);
 	new_connection_->start();
 
-	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
+	new_connection_.reset(new CTCPClient(io_service_, this));
 
 	acceptor_.async_accept(*(new_connection_->socket()), [this](auto &&err) { handleAccept(err); });
 }
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
 {
-	for (auto &user : m_users)
+	int ii=0;
+	for (const auto &user : m_users)
 	{
 		if (user.Username == username)
-			return &user;
+			return &m_users[ii];
+		ii++;
 	}
 	return nullptr;
 }

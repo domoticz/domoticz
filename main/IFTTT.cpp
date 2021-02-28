@@ -28,7 +28,8 @@ bool IFTTT::Send_IFTTT_Trigger(const std::string &eventid, const std::string &sv
 			root["value3"] = svalue3;
 
 			std::string szPostdata = root.toStyledString();
-			std::vector<std::string> ExtraHeaders{ "content-type: application/json" };
+			std::vector<std::string> ExtraHeaders;
+			ExtraHeaders.push_back("content-type: application/json");
 
 			std::string sURL;
 			sURL = "https://maker.ifttt.com/trigger/" + eventid + "/with/key/" + base64_decode(sKey);
