@@ -62,9 +62,9 @@ namespace Plugins {
 	  ~CPlugin() override;
 
 	  int PollInterval(int Interval = -1);
-	  void *PythonModule()
+	  PyObject*	PythonModule()
 	  {
-		  return m_PyModule;
+		  return (PyObject*)m_PyModule;
 	  };
 	  void Notifier(const std::string &Notifier = "");
 	  void AddConnection(CPluginTransport *);
@@ -80,7 +80,7 @@ namespace Plugins {
 	  void ConnectionWrite(CDirectiveBase *);
 	  void ConnectionDisconnect(CDirectiveBase *);
 	  void DisconnectEvent(CEventBase *);
-	  void Callback(const std::string &sHandler, void *pParams);
+	  void Callback(PyObject* pTarget, const std::string &sHandler, PyObject *pParams);
 	  void RestoreThread();
 	  void ReleaseThread();
 	  void Stop();

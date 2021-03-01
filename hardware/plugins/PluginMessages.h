@@ -74,12 +74,16 @@ namespace Plugins {
 	class CCallbackBase : public CPluginMessageBase
 	{
 	protected:
-		std::string	m_Callback;
+		PyNewRef	m_Target;
+		std::string m_Callback;
 		void ProcessLocked() override = 0;
 
 	      public:
-		CCallbackBase(CPlugin* pPlugin, const std::string &Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
-		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
+		CCallbackBase(CPlugin* pPlugin, const std::string &Callback) : CPluginMessageBase(pPlugin), m_Target(pPlugin->PythonModule()), m_Callback(Callback)
+		{
+			Py_INCREF(m_Target);
+		};
+		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Target, m_Callback, pParams); };
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 	};
 

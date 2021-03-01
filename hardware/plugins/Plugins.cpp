@@ -1764,12 +1764,12 @@ namespace Plugins
 			PyEval_SaveThread();
 	}
 
-	void CPlugin::Callback(const std::string &sHandler, void *pParams)
+	void CPlugin::Callback(PyObject *pTarget, const std::string &sHandler, PyObject *pParams)
 	{
 		try
 		{
 			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
-			if (m_PyModule && !sHandler.empty())
+			if (pTarget && !sHandler.empty())
 			{
 				if (PyErr_Occurred())
 				{
@@ -1777,17 +1777,54 @@ namespace Plugins
 					Log(LOG_NORM, "(%s) Python exception set prior to callback '%s'", m_Name.c_str(), sHandler.c_str());
 				}
 
-				PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)m_PyModule, sHandler.c_str());
+				PyNewRef pFunc = PyObject_GetAttrString(pTarget, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
 					if (m_bDebug & PDM_QUEUE)
 						Log(LOG_NORM, "(%s) Calling message handler '%s'.", m_Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, (PyObject *)pParams);
+					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, pParams);
 					if (!pReturnValue || PyErr_Occurred())
 					{
 						LogPythonException(sHandler);
+						{
+							PyErr_Clear();
+						}
+						if (m_bDebug & PDM_PYTHON)
+						{
+							// See if additional information is available
+							PyNewRef pLocals = PyObject_Dir(pTarget);
+							if (PyList_Check(pLocals))
+							{
+								Log(LOG_NORM, "(%s) Local context:", m_Name.c_str());
+								PyNewRef pIter = PyObject_GetIter(pLocals);
+								PyNewRef pItem = PyIter_Next(pIter);
+								while (pItem)
+								{
+									std::string sAttrName = PyUnicode_AsUTF8(pItem);
+									if (sAttrName.substr(0, 2) != "__") // ignore system stuff
+									{
+										if (PyObject_HasAttrString(pTarget, sAttrName.c_str()))
+										{
+											PyNewRef pValue = PyObject_GetAttrString(pTarget, sAttrName.c_str());
+											if (!PyCallable_Check(pValue)) // Filter out methods
+											{
+												PyNewRef nrString = PyObject_Str(pValue);
+												if (nrString)
+												{
+													std::string sUTF = PyUnicode_AsUTF8(nrString);
+													std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
+													Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", m_Name.c_str(), sAttrName.c_str(), sBlank.c_str(),
+													    sUTF.c_str());
+												}
+											}
+										}
+									}
+									pItem = PyIter_Next(pIter);
+								}
+							}
+						}
 					}
 				}
 				else
