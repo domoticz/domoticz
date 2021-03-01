@@ -2938,17 +2938,16 @@ namespace http {
 				sValue.clear();
 			}
 
-			root["Forecasthardware"] = "0";
-			if (m_sql.GetUserVariable("forecasthardware", USERVARTYPE_INTEGER, sValue))
+			root["Forecasthardware"] = 0;
+			int iValue = 0;
+			if (m_sql.GetPreferencesVar("ForecastHardwareID", iValue))
 			{
-				root["Forecasthardware"] = sValue;
-				sValue = "";
-				sValue.clear();
+				root["Forecasthardware"] = iValue;
 			}
 
-			if (root["Forecasthardware"] != "0")
+			if (root["Forecasthardware"] > 0)
 			{
-				int iHardwareID = atoi(root["Forecasthardware"].asString().c_str());
+				int iHardwareID = root["Forecasthardware"].asInt();
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 				if (pHardware != nullptr)
 				{
@@ -2980,17 +2979,17 @@ namespace http {
 					}
 					else
 					{
-						root["Forecasthardware"] = "0";	// reset to 0
+						root["Forecasthardware"] = 0;	// reset to 0
 					}
 				}
 				else
 				{
 					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
-					root["Forecasthardware"] = "0";	// reset to 0
+					root["Forecasthardware"] = 0;	// reset to 0
 				}
 			}
 
-			if (root["Forecasthardware"] == "0" && iSucces == 1)
+			if (root["Forecasthardware"] == 0 && iSucces == 1)
 			{
 				// No forecast device, but we have geo coords, so enough for fallback
 				iSucces++;

@@ -51,12 +51,14 @@ std::string ReadFile(std::string filename)
 #define OWM_icon_URL "https://openweathermap.org/img/wn/"	// for example 10d@4x.png
 #define OWM_forecast_URL "https://openweathermap.org/city/"
 
-COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast) :
+COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast, const int adddescdev, const int owmforecastscreen) :
 	m_APIKey(APIKey),
 	m_Location(Location),
 	m_Language("en"),
 	m_add_dayforecast(adddayforecast),
-	m_add_hourforecast(addhourforecast)
+	m_add_hourforecast(addhourforecast),
+	m_add_descriptiondevices(adddescdev),
+	m_use_owminforecastscreen(owmforecastscreen)
 {
 	m_HwdID=ID;
 
@@ -140,7 +142,7 @@ bool COpenWeatherMap::StartHardware()
 	std::vector<std::string> strarray;
 	uint32_t cityid;
 	Debug(DEBUG_NORM, "Got location parameter %s", m_Location.c_str());
-	Debug(DEBUG_NORM, "Starting with setting %d, %d", m_add_dayforecast, m_add_hourforecast);
+	Debug(DEBUG_NORM, "Starting with setting %d, %d, %d, %d", m_add_dayforecast, m_add_hourforecast, m_add_descriptiondevices, m_use_owminforecastscreen);
 
 	if (m_Location.empty())
 	{
@@ -282,6 +284,24 @@ bool COpenWeatherMap::StartHardware()
 		std::stringstream ss;
 		ss << OWM_forecast_URL << m_CityID;
 		m_ForecastURL = ss.str();
+
+		// So we can use this for the forecast screen of the UI if the users wants that
+		if(m_use_owminforecastscreen)
+		{
+			Log(LOG_STATUS, "Updating preferences for forecastscreen to use OpenWeatherMap!");
+			m_sql.UpdatePreferencesVar("ForecastHardwareID",m_HwdID);
+		}
+	}
+	if(!m_use_owminforecastscreen)
+	{
+		int iValue;
+		m_sql.GetPreferencesVar("ForecastHardwareID", iValue);
+		if (iValue == m_HwdID)
+		{
+			// User has de-activated OWM for the forecast screen
+			m_sql.UpdatePreferencesVar("ForecastHardwareID",0);
+			Log(LOG_STATUS, "Updating preferences for forecastscreen to not use OpenWeatherMap anymore (back to default)!");
+		}
 	}
 
 	RequestStart();
@@ -501,15 +521,18 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0);
-			SendTextSensor(NodeID, 1, 255, wdesc, sName.str());
+			if(m_add_descriptiondevices)
+				SendTextSensor(NodeID, 1, 255, wdesc, sName.str());
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0) << " Icon";
-			SendTextSensor(NodeID, 2, 255, wicon, sName.str());
+			if(m_add_descriptiondevices)
+				SendTextSensor(NodeID, 2, 255, wicon, sName.str());
 			sName.str("");
 			sName.clear();
 			sName << "Weather Description " << period << " " << (count + 0) << " Name";
-			SendTextSensor(NodeID, 3, 255, periodname, sName.str());
+			if(m_add_descriptiondevices)
+				SendTextSensor(NodeID, 3, 255, periodname, sName.str());
 
 			NodeID++;;
 			sName.str("");
