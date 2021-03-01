@@ -22,12 +22,13 @@ else
 	exit 1
 fi
 echo "Updating to latest beta version..."
-echo "Creating backup of current install..."
+echo "Stop Domoticz and create backup of current install...
 # remove old backup
 rm -f domoticz.backup.tar.gz
 base=$(basename $PWD)
 cd ..
 # create backup in parent folder (mostly home)
+sudo service domoticz.sh stop
 tar --exclude $base/backups -czf $base.backup.tar.gz $base
 # move backup to domoticz folder
 mv $base.backup.tar.gz $base/$base.backup.tar.gz
@@ -41,9 +42,10 @@ tar -tzf domoticz_beta.tgz >/dev/null
 if [ $? -ne 0 ]
 then
  echo "Problem in downloaded Domoticz archive. Stopping update!"
+ sudo service domoticz.sh start
  exit 1
 fi
 tar xvfz domoticz_beta.tgz
 rm domoticz_beta.tgz
-echo "Restarting Domoticz... (please standby...)"
-sudo service domoticz.sh restart
+echo "Starting Domoticz... (please standby...)"
+sudo service domoticz.sh start
