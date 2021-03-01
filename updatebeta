@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # This script can be used to upgrade to the latest beta version
 
@@ -13,7 +13,27 @@ then
  MACH="armv7l"
 fi
 
+# Must be root to install
+
+if [[ $EUID -eq 0 ]]; then
+	echo "You are root."
+else
+	echo "Root access is needed, please run this command with sudo"
+	exit 1
+fi
 echo "Updating to latest beta version..."
+echo "Creating backup of current install..."
+# remove old backup
+rm -f domoticz.backup.tar.gz
+base=$(basename $PWD)
+cd ..
+# create backup in parent folder (mostly home)
+tar --exclude $base/backups -czf $base.backup.tar.gz $base
+# move backup to domoticz folder
+mv $base.backup.tar.gz $base/$base.backup.tar.gz
+echo "Backup ready"
+cd $base
+echo "Downloading and installing new beta..."
 echo "Please Standby..."
 wget -4 -O domoticz_beta.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"
 echo "Checking file Integrity..."
