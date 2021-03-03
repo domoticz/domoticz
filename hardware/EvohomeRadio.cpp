@@ -417,7 +417,8 @@ void CEvohomeRadio::RequestOpenThermBridge()
 	// Manual requests since the Controller no longer requests this information from the OT Bridge
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdActuatorState).Add(uint8_t(0)));
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermSetpoint).Add(uint8_t(0)));
-	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x05)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x00)).Add(uint8_t(0)).Add(uint8_t(0)));
+ 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x05)).Add(uint8_t(0)).Add(uint8_t(0)));
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x11)).Add(uint8_t(0)).Add(uint8_t(0)));
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x12)).Add(uint8_t(0)).Add(uint8_t(0)));
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x13)).Add(uint8_t(0)).Add(uint8_t(0)));
@@ -1647,9 +1648,19 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 	}
 	// The OT command response is in byte 4 and 5
 	int nOTResponse = msg.payload[3] << 8 | msg.payload[4];
+	// Check if f8.8 field is negative. Bit 15 will be 1 if negative
+	if (nOTResponse & (1 << 15)) {
+		nOTResponse = - (0x10000 - nOTResponse);
+	}
 	float fOTResponse = static_cast<float>(nOTResponse) / 256.0F;
 
 	// The OT commands are as per the OT Specification
+        // 00 (ID.00) = Status
+        if (msg.payload[2] == 0x00) {
+
+                Log(true, LOG_STATUS, "evohome: %s: Master Status %02X Slave Status %02X", tag, msg.payload[3], msg.payload[4]);
+                return true;
+        }
 	// 05 (ID.05) = Fault Code
 	if (msg.payload[2] == 0x05) {
 		SendCustomSensor(0, 5, 255, static_cast<float>(msg.payload[3]), "Application fault flags", "");
@@ -1698,10 +1709,9 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 	}
         // 1B (ID.27) = Outside Temperature
         if (msg.payload[2] == 0x1b) {
-		// Outside Temperature appears to need a further divison by 16
-                //SendTempSensor(27, 255, fOTResponse / 16, "Outside Temperature");
+                SendTempSensor(27, 255, fOTResponse, "Outside Temperature");
 
-                Log(false, LOG_STATUS, "evohome: %s: Outside Temperature = %.2f C %02X %02X", tag, fOTResponse/16, msg.payload[3], msg.payload[4]);
+                Log(false, LOG_STATUS, "evohome: %s: Outside Temperature = %.2f C %02X %02X", tag, fOTResponse, msg.payload[3], msg.payload[4]);
                 return true;
         }
 	// 1C (ID.28) = Return Water Temperature
