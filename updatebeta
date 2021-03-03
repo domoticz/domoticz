@@ -23,21 +23,26 @@ else
 fi
 echo "Updating to latest beta version..."
 echo "Stop Domoticz and create backup of current install...
-# remove old backup
-rm -f domoticz.backup.tar.gz
 base=$(basename $PWD)
+timestamp=$(date +%Y%m%d_%H%M%S)
+# remove old backup
+rm -f $base.backup*.tar.gz
 cd ..
 # create backup in parent folder (mostly home)
 sudo service domoticz.sh stop
-tar --exclude $base/backups -czf $base.backup.tar.gz $base
+tar --exclude $base/backups -czf $base.backup_$timestamp.tar.gz $base
 # move backup to domoticz folder
-mv $base.backup.tar.gz $base/$base.backup.tar.gz
+mv $base.backup_$timestamp.tar.gz $base/$base.backup_$timestamp.tar.gz
 echo "Backup ready"
 cd $base
 echo "Downloading and installing new beta..."
-echo "Please Standby..."
 wget -4 -O domoticz_beta.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"
-echo "Checking file Integrity..."
+if [ $? -ne 0 ]
+then
+ echo "Problem in downloaded Domoticz archive. Stopping update!"
+ sudo service domoticz.sh start
+ exit 1
+ficho "Checking file Integrity..."
 tar -tzf domoticz_beta.tgz >/dev/null
 if [ $? -ne 0 ]
 then
