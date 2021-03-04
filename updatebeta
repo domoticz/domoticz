@@ -2,6 +2,8 @@
 
 # This script can be used to upgrade to the latest beta version
 
+set -e
+
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
 }
@@ -22,7 +24,7 @@ else
 	exit 1
 fi
 echo "Updating to latest beta version..."
-echo "Stop Domoticz and create backup of current install...
+echo "Stop Domoticz and create backup of current install..."
 base=$(basename $PWD)
 timestamp=$(date +%Y%m%d_%H%M%S)
 # remove old backup
