@@ -16,53 +16,25 @@ $ git clone https://github.com/domoticz/domoticz.git
 Then create the Docker image:
 
 ```shell
-$ ./domoticz/build/build init
+$ docker-compose -f domoticz/build/docker-compose.yml build
 ```
 
-This can take some time as it builds Boost and CMake from source. 
+This can take a while as it builds CMake and Boost from source. 
 
-## Usage
 
-```shell
-$ cd domoticz/build 
-$ ./build
-Usage:
-  ./build init                              # build the Docker image
-  ./build clean [-p openzwave | domoticz]   # clean source
-  ./build compile [-p openzwave | domoticz] # compile source
-  ./build shell                             # run bash inside the container
 
-Only for Domoticz:
-  ./build cmake                             # (re)creates Makefiles
-  ./build run                               # run Domoticz for testing
+## Configuration
 
-Only for OpenZWave:
-  ./build check                             # validates XML configuration files
-  ./build updateIndexDefines
-  ./build test
-```
-
-### Build
-
-First generate the Domoticz Makefiles:
-
-```shell
-$ ./domoticz/build/build cmake
-```
-
-Next build OpenZWave and Domoticz:
-
-```shell
-$ ./domoticz/build/build compile
-$ ls -l domoticz/domoticz
--rwxr-xr-x  1 markr  staff  17540712 21 feb 23:33 domoticz/domoticz
-```
-
-### CMake
-
-You can configure CMake using an `.env` file with contents like:
+Optionally you can use `.env.example` as a template to create an `.env` file in the same directory:
 
 ```ini
+HTTP_PORT=8080
+HTTPS_PORT=443
+
+# On Windows and macOS compilation typically will go faster with:
+CACHE_BIND_MOUNTS=YES
+
+# Configure CMake:
 USE_BUILTIN_JSONCPP=YES
 USE_BUILTIN_MINIZIP=YES
 USE_BUILTIN_MQTT=YES
@@ -82,4 +54,52 @@ GIT_SUBMODULE=ON
 ```
 
 Note that `USE_STATIC_BOOST` is not supported, it's always enabled.
+
+
+
+## Build Domiticz
+
+First generate the Domoticz Makefiles:
+
+```shell
+$ ./domoticz/build/build cmake
+```
+
+Now you can build OpenZWave and Domoticz:
+
+```shell
+$ ./domoticz/build/build compile
+$ ls -l domoticz/domoticz
+-rwxr-xr-x  1 markr  staff  17540712 21 feb 23:33 domoticz/domoticz
+```
+
+For testing it can be useful to run Domoticz containerized:
+
+```shell
+$ ./domoticz/build/build run
+```
+
+Open http://127.0.0.1:8080/ in your browser.
+
+
+
+## Usage
+
+```shell
+$ cd domoticz/build 
+$ ./build
+Usage:
+  build clean [-p openzwave | domoticz]   # clean source
+  build compile [-p openzwave | domoticz] # compile source
+  build shell                             # run bash inside the container
+
+Only for Domoticz:
+  build cmake                             # (re)creates Makefiles
+  build run                               # run Domoticz for testing
+
+Only for OpenZWave:
+  build check                             # validates XML configuration files
+  build updateIndexDefines
+  build test
+```
 

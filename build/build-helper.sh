@@ -1,19 +1,42 @@
 #!/bin/bash
 
-while getopts 'o:p:' c; do
+usage() {
+	cat <<HERE
+Usage:
+  build clean [-p openzwave | domoticz]   # clean source
+  build compile [-p openzwave | domoticz] # compile source
+  build shell                             # run bash inside the container
+
+Only for Domoticz:
+  build cmake                             # (re)creates Makefiles
+  build run                               # run Domoticz for testing
+
+Only for OpenZWave:
+  build check                             # validates XML configuration files
+  build updateIndexDefines
+  build test
+HERE
+	exit 1
+}
+
+if [ $# -eq 0 -o "$1" = "-h" -o "$1" = "--help" ]; then
+	usage
+fi
+
+
+while getopts 'p:' c; do
   case $c in
-    o) 
-    	HOST_OS=$OPTARG
-    	;;
     p)
     	PROJECT=$OPTARG
     	if [ $PROJECT = openzwave ]; then
     		PROJECT=open-zwave
     	elif [ $PROJECT != domoticz ]; then
-    		echo Unknown project $PROJECT
-    		exit 1
+    		usage
     	fi
     	;;
+    *)
+    	usage
+        ;;
   esac
 done
 shift $(($OPTIND - 1))
@@ -21,7 +44,7 @@ CMD=$1
 
 CPU_COUNT=$(lscpu -e | tail -n +2 | wc -l)
 
-if [ $HOST_OS = "linux" ]; then
+if [ $CACHE_BIND_MOUNTS = "NO" ]; then
 	DOMOTICZ_ROOT=domoticz
 	ln -sf open-zwave open-zwave-read-only
 
@@ -115,7 +138,7 @@ do_make() {
 		echo "No make for $1"
 		exit 1
 	else
-		copy_in $1 
+		copy_in $1
 		make $2 || exit 1
 		copy_out $1
 	fi
@@ -152,7 +175,7 @@ run)
 		do_run domoticz
 	fi
 	;;
-check|updateIndexDefines|test) 
+check|updateIndexDefines|test)
 	if [ -n "$PROJECT" ]; then
 		do_make $PROJECT $CMD
 	else
@@ -162,8 +185,7 @@ check|updateIndexDefines|test)
 shell)
 	bash
 	;;
-*)        
-	echo "Wrong invocation"
-	exit 1
+*)
+	usage
 	;;
 esac

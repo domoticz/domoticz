@@ -1,14 +1,32 @@
 FROM debian:buster-slim
-MAINTAINER Mark Ruys <mark@paracas.nl>
+
+LABEL maintainer="Mark Ruys <mark@paracas.nl>"
 
 ARG CMAKE_VERSION
 ARG BOOST_VERSION
-ARG BOOST_VERSION_
 
 RUN apt-get update -qq \
- && apt-get install -y -qq git make gcc g++ rsync libxml2-utils libxml-simple-perl \
- && apt-get install -y -qq libssl-dev libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev \
- && apt-get install -y -qq libmosquitto-dev libjsoncpp-dev libsqlite3-dev libminizip-dev \
+ && apt-get install -y -qq \
+      g++ \
+      gcc \
+      git \
+      libcereal-dev \
+      libcurl4-gnutls-dev \
+      libjsoncpp-dev \
+      liblua5.3-dev \
+      libminizip-dev \
+      libmosquitto-dev \
+      libsqlite3-dev \
+      libssl-dev \
+      libusb-dev \
+      libxml-simple-perl \
+      libxml2-utils \
+      make \
+      python3-dev \
+      rsync \
+      uthash-dev \
+      wget \
+      zlib1g-dev \
  && rm -fr /var/lib/apt/lists/*
 
 WORKDIR /root
@@ -21,15 +39,18 @@ RUN tar xzf cmake-${CMAKE_VERSION}.tar.gz \
  && make install \
  && cd .. \
  && rm -fr cmake-${CMAKE_VERSION} cmake-${CMAKE_VERSION}.tar.gz
-  
-ADD https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION_}.tar.gz .
-RUN tar xfz boost_${BOOST_VERSION_}.tar.gz \
- && cd boost_${BOOST_VERSION_} \
+
+RUN VERSION_=$(echo ${BOOST_VERSION} | tr . _) \
+ && wget -nv -O - https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${VERSION_}.tar.gz \
+  | tar xfz - \
+ && cd boost_${VERSION_} \
  && ./bootstrap.sh \
  && ./b2 stage threading=multi link=static --with-thread --with-system \
  && ./b2 install threading=multi link=static --with-thread --with-system \
  && cd .. \
- && rm -fr boost_${BOOST_VERSION_} boost_${BOOST_VERSION_}.tar.gz 
+ && rm -fr boost_${VERSION_}
+
+COPY build-helper.sh .
 
 EXPOSE 8080
 EXPOSE 443
