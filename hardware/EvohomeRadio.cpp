@@ -1657,6 +1657,33 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 	// The OT commands are as per the OT Specification
         // 00 (ID.00) = Status
         if (msg.payload[2] == 0x00) {
+		// Record all status flags in the same way that the OTGW hardware device currently does
+		// However Evohome seems not to use all of them
+		bool bCH_enabled=(nOTResponse & (1 << 8));
+			UpdateSwitch(101,bCH_enabled,"CH_enabled");
+		bool bDHW_enabled=(nOTResponse & (1 << 9));
+			UpdateSwitch(102,bDHW_enabled,"DHW_enabled");
+		bool bCooling_enable=(nOTResponse & (1 << 10));
+			UpdateSwitch(103,bCooling_enable,"Cooling_enable");
+		bool bOTC_active=(nOTResponse & (1 << 11));
+			UpdateSwitch(104,bOTC_active,"OTC_active");
+		bool bCH2_enabled=(nOTResponse & (1 << 12));
+			UpdateSwitch(105,bCH2_enabled,"CH2_enabled");
+
+		bool bFault_indication=(nOTResponse & (1 << 0));
+			UpdateSwitch(110,bFault_indication,"Fault_indication");
+		bool bCH_active=(nOTResponse & (1 << 1));
+			UpdateSwitch(111,bCH_active,"CH_active");
+		bool bDHW_active=(nOTResponse & (1 << 2));
+			UpdateSwitch(112,bDHW_active,"DHW_active");
+		bool bFlameOn=(nOTResponse & (1 << 3));
+			UpdateSwitch(113,bFlameOn,"FlameOn");
+		bool bCooling_Mode_Active=(nOTResponse & (1 << 4));
+			UpdateSwitch(114,bCooling_Mode_Active,"Cooling_Mode_Active");
+		bool bCH2_Active=(nOTResponse & (1 << 5));
+			UpdateSwitch(115,bCH2_Active,"CH2_Active");
+		bool bDiagnosticEvent=(nOTResponse & (1 << 6));
+			UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 
                 Log(true, LOG_STATUS, "evohome: %s: Master Status %02X Slave Status %02X", tag, msg.payload[3], msg.payload[4]);
                 return true;
@@ -1666,7 +1693,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 		SendCustomSensor(0, 5, 255, static_cast<float>(msg.payload[3]), "Application fault flags", "");
 		SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
 
-		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags %02X OEM fault code %d", tag, msg.payload[3], msg.payload[4]);
+		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags %02X OEM fault code %02X", tag, msg.payload[3], msg.payload[4]);
 		return true;
 	}
 	// 11 (ID.17) = Relative modulation level
@@ -1711,7 +1738,7 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
         if (msg.payload[2] == 0x1b) {
                 SendTempSensor(27, 255, fOTResponse, "Outside Temperature");
 
-                Log(false, LOG_STATUS, "evohome: %s: Outside Temperature = %.2f C %02X %02X", tag, fOTResponse, msg.payload[3], msg.payload[4]);
+                Log(true, LOG_STATUS, "evohome: %s: Outside Temperature = %.2f C %02X %02X", tag, fOTResponse, msg.payload[3], msg.payload[4]);
                 return true;
         }
 	// 1C (ID.28) = Return Water Temperature
