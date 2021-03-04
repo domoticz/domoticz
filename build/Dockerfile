@@ -29,7 +29,7 @@ RUN apt-get update -qq \
       zlib1g-dev \
  && rm -fr /var/lib/apt/lists/*
 
-WORKDIR /root
+WORKDIR /opt
 
 ADD https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz .
 RUN tar xzf cmake-${CMAKE_VERSION}.tar.gz \
@@ -55,4 +55,4 @@ COPY build-helper.sh .
 EXPOSE 8080
 EXPOSE 443
 
-ENTRYPOINT [ "/root/build-helper.sh" ]
+ENTRYPOINT [ "./build-helper.sh" ]
