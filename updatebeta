@@ -42,7 +42,8 @@ then
  echo "Problem in downloaded Domoticz archive. Stopping update!"
  sudo service domoticz.sh start
  exit 1
-ficho "Checking file Integrity..."
+fi
+echo "Checking file Integrity..."
 tar -tzf domoticz_beta.tgz >/dev/null
 if [ $? -ne 0 ]
 then
