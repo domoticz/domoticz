@@ -5,7 +5,6 @@
 #include "../main/localtime_r.h"
 #include <string>
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
 
 class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
 {
@@ -211,7 +210,7 @@ class CKodiNode : public std::enable_shared_from_this<CKodiNode>, StoppableTask
 	std::string m_sLastMessage;
 	boost::asio::io_service *m_Ios;
 	boost::asio::ip::tcp::socket *m_Socket;
-	boost::array<char, 256> m_Buffer;
+	std::array<char, 256> m_Buffer;
 };
 
 class CKodi : public CDomoticzHardwareBase

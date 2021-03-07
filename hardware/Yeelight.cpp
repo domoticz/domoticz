@@ -402,8 +402,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	return true;
 }
 
-
-boost::array<char, 1024> recv_buffer_;
+std::array<char, 1024> recv_buffer_;
 int hardwareId;
 
 Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdID)

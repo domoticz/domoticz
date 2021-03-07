@@ -2,7 +2,6 @@
 
 #include "../main/Noncopyable.h"
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
 
 namespace http {
 	namespace server {
@@ -56,8 +55,7 @@ public:
 	void handleWrite(const boost::system::error_code& error);
 
 	/// Buffer for incoming data.
-	boost::array<char, 8192> buffer_;
-
+	std::array<char, 8192> buffer_;
 };
 
 #ifndef NOCLOUD
