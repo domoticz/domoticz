@@ -154,7 +154,7 @@ class CIOPort
 	}
 	void ConfigureCounter(unsigned char Pin, bool Enable);
 	void *Callback_pntr;
-	std::array<CIOPinState, 8> Pin;
+	CIOPinState Pin[8];
 	unsigned int PortType;
 
       private:
@@ -200,6 +200,7 @@ class CPiFace : public CDomoticzHardwareBase
 	std::string &trim(std::string &s);
 	std::string &ltrim(std::string &s);
 	std::string &rtrim(std::string &s);
+	int LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items);
 	int GetParameterString(const std::string &TargetString, const char *SearchStr, int StartPos, std::string &Parameter);
 	int LoadConfig();
 	void LoadDefaultConfig();
@@ -215,10 +216,16 @@ class CPiFace : public CDomoticzHardwareBase
 
 	int m_fd;
 
-	std::array<CIOPort, 4> m_Inputs;
-	std::array<CIOPort, 4> m_Outputs;
+	CIOPort m_Inputs[4];
+	CIOPort m_Outputs[4];
 
-	std::array<bool, 4> m_DetectedHardware;
+	bool m_DetectedHardware[4];
+
+	// config file functions
+	static const std::string ParameterNames[CONFIG_NR_OF_PARAMETER_TYPES];
+	static const std::string ParameterBooleanValueNames[CONFIG_NR_OF_PARAMETER_BOOL_TYPES];
+	static const std::string ParameterPinTypeValueNames[CONFIG_NR_OF_PARAMETER_PIN_TYPES];
+	static const std::string ParameterCountTypeValueNames[CONFIG_NR_OF_PARAMETER_COUNT_TYPES];
 
 	std::mutex m_queue_mutex;
 	std::vector<std::string> m_send_queue;

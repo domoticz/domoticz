@@ -67,41 +67,10 @@
 
 extern std::string szUserDataFolder;
 
-namespace
-{
-	constexpr auto ParameterNames = std::array<const char *, CONFIG_NR_OF_PARAMETER_TYPES>{
-		"enable",
-		"enabled",
-		"pin_type",
-		"count_enable",
-		"count_enabled",
-		"count_update_interval_sec",
-		"count_update_interval_s",
-		"count_update_interval",
-		"count_update_interval_diff_perc",
-		"count_initial_value",
-		"count_minimum_pulse_period_msec",
-		"count_type",
-		"count_divider",
-	};
-	constexpr auto ParameterBooleanValueNames = std::array<const char *, CONFIG_NR_OF_PARAMETER_BOOL_TYPES>{
-		"false",
-		"0",
-		"true",
-		"1",
-	};
-	constexpr auto ParameterPinTypeValueNames = std::array<const char *, CONFIG_NR_OF_PARAMETER_PIN_TYPES>{
-		"level",
-		"inv_level",
-		"rising",
-		"falling",
-	};
-	constexpr auto ParameterCountTypeValueNames = std::array<const char *, CONFIG_NR_OF_PARAMETER_COUNT_TYPES>{
-		"generic",
-		"rfxmeter",
-		"energy",
-	};
-} // namespace
+const std::string CPiFace::ParameterNames[CONFIG_NR_OF_PARAMETER_TYPES]                       = {"enable","enabled","pin_type","count_enable","count_enabled","count_update_interval_sec","count_update_interval_s","count_update_interval","count_update_interval_diff_perc","count_initial_value","count_minimum_pulse_period_msec","count_type","count_divider"};
+const std::string CPiFace::ParameterBooleanValueNames[CONFIG_NR_OF_PARAMETER_BOOL_TYPES]      = {"false","0","true","1"};
+const std::string CPiFace::ParameterPinTypeValueNames[CONFIG_NR_OF_PARAMETER_PIN_TYPES]       = {"level","inv_level","rising","falling"};
+const std::string CPiFace::ParameterCountTypeValueNames[CONFIG_NR_OF_PARAMETER_COUNT_TYPES]   = {"generic","rfxmeter","energy"};
 
 CPiFace::CPiFace(const int ID)
 {
@@ -155,15 +124,19 @@ std::string & CPiFace::preprocess(std::string &s)
     return s;
 }
 
-template <class T> int LocateValueInParameterArray(const std::string &Parametername, T ParameterArray, int Items)
+int CPiFace::LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items)
 {
-	auto r = std::find(ParameterArray.begin(), ParameterArray.end(), Parametername);
-	if (r != ParameterArray.end())
-	{
-		return std::distance(ParameterArray.begin(), r);
-	}
+    int NameFound=-1; //assume not found
+    int Parameter_Index;
 
-	return -1;
+    for (Parameter_Index=0;(Parameter_Index < Items) && (NameFound==-1);Parameter_Index++)
+    {
+	    if (Parametername == ParameterArray[Parameter_Index])
+	    {
+		    NameFound = Parameter_Index;
+	    }
+    }
+    return (NameFound);
 }
 
 int CPiFace::GetParameterString(const std::string &TargetString, const char *SearchStr, int StartPos, std::string &Parameter)
@@ -754,7 +727,7 @@ bool CPiFace::StartHardware()
     m_InputSample_waitcntr=(PIFACE_INPUT_PROCESS_INTERVAL)*20;
     m_CounterEdgeSample_waitcntr=(PIFACE_COUNTER_COUNTER_INTERVAL)*20;
 
-    m_DetectedHardware = {};
+    memset(m_DetectedHardware,0,sizeof(m_DetectedHardware));
 
 #ifndef DISABLE_NEW_FUNCTIONS
     LoadConfig();
@@ -767,7 +740,7 @@ bool CPiFace::StartHardware()
 			//we have hardware, so lets use it
 			for (int devId = 0; devId < 4; devId++)
 			{
-				if (m_DetectedHardware[devId])
+				if (m_DetectedHardware[devId] == true)
 					Init_Hardware(devId);
 			}
 #ifdef DISABLE_NEW_FUNCTIONS
@@ -776,7 +749,7 @@ bool CPiFace::StartHardware()
 
 			for (int devId = 0; devId < 4; devId++)
 			{
-				if (m_DetectedHardware[devId])
+				if (m_DetectedHardware[devId] == true)
 					GetAndSetInitialDeviceState(devId);
 			}
 
@@ -1022,9 +995,9 @@ int CPiFace::Detect_PiFace_Hardware()
         _log.Log(LOG_STATUS,"PiFace: Found the following PiFaces:");
         for (devId=0; devId<4; devId++)
         {
-		if (m_DetectedHardware[devId])
-			_log.Log(LOG_STATUS, "PiFace: %d", devId);
-	}
+            if (m_DetectedHardware[devId]==true)
+                _log.Log(LOG_STATUS,"PiFace: %d",devId);
+        }
     }
     else _log.Log(LOG_STATUS,"PiFace: Sorry, no PiFaces were found");
     return NrOfFoundBoards;
@@ -1553,12 +1526,12 @@ int CIOPort::UpdateInterrupt(unsigned char IntFlag,unsigned char PinState)
     int ChangeState=-1; //nothing changed
     int Changed;
 
-    for (auto p : Pin)
+    for (int PinNr=0; PinNr<=7 ;PinNr++)
     {
-	    Changed = p.UpdateInterrupt(((IntFlag & mask) == mask), ((PinState & mask) == mask));
-	    if (Changed != -1)
-		    ChangeState = Changed;
-	    mask <<= 1;
+        Changed=Pin[PinNr].UpdateInterrupt(((IntFlag&mask)==mask),((PinState&mask)==mask));
+        if (Changed != -1)
+            ChangeState=Changed;
+        mask<<=1;
     }
     return (ChangeState);
 }
