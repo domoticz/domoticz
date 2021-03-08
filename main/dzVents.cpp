@@ -824,7 +824,7 @@ void CdzVents::ExportHardwareData(CLuaTable &luaTable, int& index, const std::ve
 
 void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
+	std::lock_guard<std::mutex> l1(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
 	time_t now = mytime(nullptr);
 	struct tm tm1;
@@ -958,10 +958,9 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		}
 	}
 
-	devicestatesMutexLock.unlock();
 
 	// Now do the scenes and groups.
-	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
+	std::lock_guard<std::mutex> l2(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -1010,12 +1009,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		luaTable.CloseSubTableEntry(); // end entry
 		index++;
 	}
-	scenesgroupsMutexLock.unlock();
 
 	std::string vtype;
 
 	// Now do the user variables.
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_mainworker.m_eventsystem.m_uservariablesMutex);
+	std::lock_guard<std::mutex> l3(m_mainworker.m_eventsystem.m_uservariablesMutex);
 	for (const auto &var : m_mainworker.m_eventsystem.m_uservariables)
 	{
 		CEventSystem::_tUserVariable uvitem = var.second;

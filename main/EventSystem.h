@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <boost/thread/shared_mutex.hpp>
 
 #include "../httpclient/HTTPClient.h"
 
@@ -187,11 +186,11 @@ private:
 
 	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
-	boost::shared_mutex m_devicestatesMutex;
-	boost::shared_mutex m_eventsMutex;
-	boost::shared_mutex m_uservariablesMutex;
-	boost::shared_mutex m_scenesgroupsMutex;
-	boost::shared_mutex m_eventtriggerMutex;
+	std::mutex m_devicestatesMutex;
+	std::mutex m_eventsMutex;
+	std::mutex m_uservariablesMutex;
+	std::mutex m_scenesgroupsMutex;
+	std::mutex m_eventtriggerMutex;
 	std::mutex m_measurementStatesMutex;
 	std::mutex luaMutex;
 	std::shared_ptr<std::thread> m_thread;
