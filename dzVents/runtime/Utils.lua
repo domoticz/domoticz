@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.1.5',
+	DZVERSION = '3.1.6',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -22,6 +22,17 @@ end
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
 	return x^y
+end
+
+function self.cloneTable(original)
+	local copy = {}
+	for k, v in pairs(original) do
+		if type(v) == 'table' then
+			v = self.cloneTable(v)
+		end
+		copy[k] = v
+	end
+	return copy
 end
 
 -- Cast anything but functions to string
@@ -267,12 +278,13 @@ function self.isJSON(str, content)
 	local jsonPatternOK = '^%s*%[*%s*{.+}%s*%]*%s*$'
 	local jsonPatternOK2 = '^%s*%[.+%]*%s*$'
 	local ret = ( str:match(jsonPatternOK) == str ) or ( str:match(jsonPatternOK2) == str ) or content:find('application/json')
+	-- self.log('ret ' .. _.str(ret) , self.LOG_FORCE)
 	return ret ~= nil
 end
 
 function self.fromJSON(json, fallback)
 
-	if not(json) then
+	if json == nil or json == '' then
 		return fallback
 	end
 
