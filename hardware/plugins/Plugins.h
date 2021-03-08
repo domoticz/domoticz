@@ -36,8 +36,8 @@ namespace Plugins {
 	private:
 		int				m_iPollInterval;
 
-		void*			m_PyInterpreter;
-		void*			m_PyModule;
+		PyThreadState*	m_PyInterpreter;
+		PyObject*		m_PyModule;
 
 		std::string		m_Version;
 		std::string		m_Author;
@@ -46,13 +46,15 @@ namespace Plugins {
 
 		std::mutex	m_TransportsMutex;
 		std::vector<CPluginTransport*>	m_Transports;
+		std::mutex m_QueueMutex; // controls access to the message queue
+		std::deque<CPluginMessageBase *> m_MessageQueue;
 
 		std::shared_ptr<std::thread> m_thread;
 
-		bool StartHardware() override;
+		bool m_bIsStarting;
+		bool m_bIsStopped;
+
 		void Do_Work();
-		bool StopHardware() override;
-		void ClearMessageQueue();
 
 		void LogPythonException();
 		void LogPythonException(const std::string &);
@@ -61,11 +63,11 @@ namespace Plugins {
 	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
 	  ~CPlugin() override;
 
+	  bool StartHardware() override;
+	  bool StopHardware() override;
+
 	  int PollInterval(int Interval = -1);
-	  PyObject*	PythonModule()
-	  {
-		  return (PyObject*)m_PyModule;
-	  };
+	  PyObject*	PythonModule() { return m_PyModule; };
 	  void Notifier(const std::string &Notifier = "");
 	  void AddConnection(CPluginTransport *);
 	  void RemoveConnection(CPluginTransport *);
@@ -107,7 +109,6 @@ namespace Plugins {
 	  void *m_SettingsDict;
 	  std::string m_HomeFolder;
 	  PluginDebugMask m_bDebug;
-	  bool m_bIsStarting;
 	  bool m_bTracing;
 	};
 
