@@ -21,8 +21,20 @@ local function Device(domoticz, data, dummyLogger)
 		return TimedCommand(domoticz, 'UpdateDevice', params, 'updatedevice')
 	end
 
-	function self.dump( filename )
+	function self.fullDump( filename )
 		domoticz.logObject(self, filename, 'device')
+	end
+
+	function self.dump( filename )
+		cloned = utils.cloneTable( self )
+		cloned.lastUpdate = self.lastUpdate.raw
+		cloned.utils = nil
+		for attr, value in pairs(cloned) do
+			if type(value) == 'function' then
+				cloned[attr] = nil
+			end
+		end
+		domoticz.logObject(cloned, filename, 'device')
 	end
 
 	function self.dumpSelection( selection )
