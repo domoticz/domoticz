@@ -377,7 +377,7 @@
 				Py_DECREF(m_uservariablesDict);
 
 				// This doesn't work
-				// boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
+				// std::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
 
 				std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
 				for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
