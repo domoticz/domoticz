@@ -7809,13 +7809,12 @@ void CSQLHelper::DeleteDateRange(const char *ID, const std::string &fromDate, co
 	if (result.empty())
 		return;
 
-	std::vector<std::string> historyTables =
-	{
-		"Rain", "Wind",  "UV", "Temperature", "Meter", "MultiMeter", "Percentage", "Fan",
+	const std::vector<std::string> historyTables{
+		"Rain",		 "Wind",	  "UV",		 "Temperature",		 "Meter",	   "MultiMeter",	  "Percentage",		 "Fan",
 		"Rain_Calendar", "Wind_Calendar", "UV_Calendar", "Temperature_Calendar", "Meter_Calendar", "MultiMeter_Calendar", "Percentage_Calendar", "Fan_Calendar"
 	};
 
-	for (std::string historyTable : historyTables)
+	for (const auto &historyTable : historyTables)
 	{
 		safe_query("DELETE FROM %q WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", historyTable.c_str(), ID, fromDate.c_str(), toDate.c_str() );
 		_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDateRange; delete from %s with idx: %s and Date >= %s and date <= %s " , historyTable.c_str(), std::string(ID).c_str(), fromDate.c_str(), toDate.c_str() );
