@@ -67,6 +67,7 @@ jobs:
 
       # Packaging
       - name: package domoticz
+        if: ${{ false }}
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
@@ -77,6 +78,7 @@ jobs:
       
       # Artifact upload
       - name: Upload artifacts
+        if: ${{ false }}
         uses: actions/upload-artifact@v2
         with:
           name: domoticz_linux_x86_64-${{ github.sha }}
@@ -85,7 +87,8 @@ jobs:
  
       # Deploy
       - name: FTP Deployment
-        if: github.repository_owner == 'domoticz'
+        if: ${{ false }}
+        #if: github.repository_owner == 'domoticz'
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
           server: ${{ secrets.FTP_SERVER }}
