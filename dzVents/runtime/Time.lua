@@ -45,7 +45,7 @@ local function _getMS()
 
 	if (_MS == nil) then
 
-		local dzCurrentTime = _G.globalvariables['currentTime']
+		local dzCurrentTime = _G.globalvariables.currentTime
 		local y, mon, d, h, min, s = parseDate(dzCurrentTime)
 		local ms
 		s, ms = getSMs(s)
@@ -144,8 +144,7 @@ function getWeekNumberOfYear(tm)
 		dayOfYearCorrected = dayOfYear + dayAdd
 	end
 	local weekNum = math.floor((dayOfYearCorrected) / 7) + 1
-	if( (dayOfYearCorrected > 0) and weekNum == 53) then
-		-- check if it is not considered as part of week 1 of next year
+	if( (dayOfYearCorrected > 0) and weekNum == 53) then -- check if it is not considered as part of week 1 of next year
 		local nextYearBegin = os.time{year=os.date("*t",tm).year+1,month=1,day=1}
 		local yearBeginDayOfWeek = getYearBeginDayOfWeek(nextYearBegin)
 		if(yearBeginDayOfWeek < 5 ) then
@@ -157,8 +156,8 @@ end
 
 local function Time(sDate, isUTC, _testMS)
 
-	_G = _G or {}	 -- For test only
-	_G.timeofday = _G.timeofday or {}	 -- For test only
+	_G = _G or {} -- Only used when testing testTime.lua
+	_G.timeofday = _G.timeofday or {} -- Only used when testing testTime.lua
 
 	for originalName, dzVentsName in pairs(LOOKUPASTRO) do
 		_G.timeofday[dzVentsName] = _G.timeofday[originalName]
@@ -220,7 +219,6 @@ local function Time(sDate, isUTC, _testMS)
 
 	time = os.date('*t', dDate)
 
-	-- calculate how many minutes that was from now
 	local tToday = os.time{
 		day= now.day,
 		year= now.year,
@@ -230,10 +228,10 @@ local function Time(sDate, isUTC, _testMS)
 		sec= now.sec
 	}
 
+	-- calculate how many minutes that was from now
 	local msDiff, secDiff, minDiff, hourDiff, dayDiff, cmp = getDiffParts(os.difftime(tToday, dDate), ms, getMS())
 
-	if (cmp > 0) then
-		-- time is in the future so the xxAgo items should be negative
+	if (cmp > 0) then -- time is in the future so the xxAgo items should be negative
 		msDiff = -msDiff
 		secDiff = -secDiff
 		minDiff = -minDiff
@@ -244,20 +242,18 @@ local function Time(sDate, isUTC, _testMS)
 	if (isUTC) then
 		localTime = os.date('*t', os.time(time) + getTimezone())
 		self = localTime
-		self['utcSystemTime'] = now
-		self['utcTime'] = time
-		self['utcTime'].minutes = time.min
-		self['utcTime'].seconds = time.sec
+		self.utcSystemTime = now
+		self.utcTime = time
+		self.utcTime.minutes = time.min
+		self.utcTime.seconds = time.sec
 	else
 		self = time
 	end
 
-	self.gTimes = utils.cloneTable(_G.timeofday)
-
 	self.rawDate = self.year .. '-' .. string.format("%02d", self.month) .. '-' .. string.format("%02d", self.day)
 	self.time = string.format("%02d", self.hour) .. ':' .. string.format("%02d", self.min)
 	self.minutesnow = self.hour * 60 + self.min
-	self.rawTime =  self.time .. ':' .. string.format("%02d", self.sec)
+	self.rawTime = self.time .. ':' .. string.format("%02d", self.sec)
 	self.rawDateTime = self.rawDate .. ' ' .. self.rawTime
 	self.milliSeconds = ms
 	self.milliseconds = ms
@@ -266,9 +262,9 @@ local function Time(sDate, isUTC, _testMS)
 	self.monthAbbrName = LOOKUPMONTHABBR[self.month]
 	self.monthName = LOOKUPMONTH[self.month]
 
-	self.gTimes = _G.timeofday
-	self.gTimes.astronomicaldaytime = ( self.minutesnow <= ( self.gTimes.AstrTwilightEndInMinutes or 0 ) and self.minutesnow >= ( self.gTimes.AstrTwilightStartInMinutes or 9999) )
-	self.gTimes.nauticaldaytime = ( self.minutesnow <= ( self.gTimes.NautTwilightEndInMinutes or 0 ) and self.minutesnow >= ( self.gTimes.NautTwilightStartInMinutes or 9999 ) )
+	self.gTimes = utils.cloneTable(_G.timeofday) -- _G can change during execution
+	self.gTimes.astronomicaldaytime = ( self.minutesnow <= (self.gTimes.AstrTwilightEndInMinutes or 0) and self.minutesnow >= (self.gTimes.AstrTwilightStartInMinutes or 9999))
+	self.gTimes.nauticaldaytime = (self.minutesnow <= (self.gTimes.NautTwilightEndInMinutes or 0) and self.minutesnow >= (self.gTimes.NautTwilightStartInMinutes or 9999))
 	self.gTimes.nauticalnighttime = not(self.gTimes.nauticaldaytime)
 	self.gTimes.astronomicalnighttime = not(self.gTimes.astronomicaldaytime)
 
@@ -276,24 +272,24 @@ local function Time(sDate, isUTC, _testMS)
 	-- doesn't work: self.week = tonumber(os.date('%V', dDate))
 	self.week = getWeekNumberOfYear(dDate)
 
-	self['raw'] = sDate
-	self['isToday'] = (now.year == time.year and now.month==time.month and now.day==time.day)
-	self['msAgo'] = math.floor(msDiff)
-	self['millisecondsAgo'] = self.msAgo
-	self['minutesAgo'] = minDiff
-	self['secondsAgo'] = math.floor(secDiff)
-	self['hoursAgo'] = hourDiff
-	self['daysAgo'] = dayDiff
+	self.raw = sDate
+	self.isToday = (now.year == time.year and now.month == time.month and now.day == time.day)
+	self.msAgo = math.floor(msDiff)
+	self.millisecondsAgo = self.msAgo
+	self.minutesAgo = minDiff
+	self.secondsAgo = math.floor(secDiff)
+	self.hoursAgo = hourDiff
+	self.daysAgo = dayDiff
 
-	self['minutes'] = self.min
-	self['seconds'] = self.sec
+	self.minutes = self.min
+	self.seconds = self.sec
 
-	self['minutesSinceMidnight'] = self.hour * 60 + self.min
-	self['secondsSinceMidnight'] = self.minutesSinceMidnight * 60 + self.sec
-	self['utils'] = utils
-	self['isUTC'] = isUTC
-	self['dDate'] = dDate
-	self['isdst'] = time.isdst
+	self.minutesSinceMidnight = self.hour * 60 + self.min
+	self.secondsSinceMidnight = self.minutesSinceMidnight * 60 + self.sec
+	self.utils = utils
+	self.isUTC = isUTC
+	self.dDate = dDate
+	self.isdst = time.isdst
 
 	if (_G.TESTMODE) then
 		function self._getUtilsInstance()
@@ -301,7 +297,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 	end
 
-	self['current'] = os.date('*t')
+	self.current = os.date('*t')
 
 	-- compares to self against the provided Time object (t)
 	function self.compare(t)
@@ -403,8 +399,8 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		local timestamp = ( timestamp or os.time() ) + ( offSet or 0 )
-		local dateTimeString = os.date( convertMnemomic2FmtCode(humanizedPattern)  , timestamp )
-		if dateTimeString:find('nZero') then  -- remove leading zero's
+		local dateTimeString = os.date( convertMnemomic2FmtCode(humanizedPattern) , timestamp )
+		if dateTimeString:find('nZero') then -- remove leading zero's
 			return dateTimeString:gsub('nZero',''):gsub(' 0',' '):gsub('^0',''):gsub('%s*$','')
 		end
 		return dateTimeString:gsub('%s*$','')
@@ -419,7 +415,7 @@ local function Time(sDate, isUTC, _testMS)
 			self.utils.log(tostring(seconds) .. ' is not a valid parameter to this function. Please change to use a number value!', utils.LOG_ERROR)
 		else
 			factor = factor or 1
-			return Time( os.date("%Y-%m-%d %X", self.dDate +  factor * math.floor(seconds) ))
+			return Time( os.date("%Y-%m-%d %X", self.dDate + factor * math.floor(seconds) ))
 		end
 	end
 
@@ -529,8 +525,7 @@ local function Time(sDate, isUTC, _testMS)
 
 		-- from here on, if there is a match we return true otherwise false
 		-- remove spaces and add a comma
-		weeks = string.gsub(weeks, ' ', '') .. ',' -- remove spaces and add a ,
-												   -- so we can do simple search for the number
+		weeks = string.gsub(weeks, ' ', '') .. ',' -- remove spaces and add a ',' so we can do simple search for the number
 
 		-- do a quick scan first to see if we already have a match without needing to search for ranges
 		if (string.find(weeks, tostring(self.week) .. ',')) then
@@ -619,7 +614,7 @@ local function Time(sDate, isUTC, _testMS)
 					( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
 					( self.month == fromMonth and toMonth < fromMonth and self.day >= fromDay ) or
 					( self.month == fromMonth and toMonth > fromMonth and self.day >= fromDay ) or
-					( self.month == toMonth and toMonth < fromMonth and  self.day <= toDay ) or
+					( self.month == toMonth and toMonth < fromMonth and self.day <= toDay ) or
 					( self.month == toMonth and toMonth > fromMonth and self.day <= toDay )
 				) then
 					return true
@@ -630,57 +625,6 @@ local function Time(sDate, isUTC, _testMS)
 		return false
 	end
 
---[[
-	--returns true if self.time is at civil twilight start
-	function self.ruleIsAtCivilTwilightStart(rule)
-		if (string.find(rule, 'at civiltwilightstart')) then
-			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getCivilTwilightStart())
-		end
-		return nil
-	end
-
-	-- returns true if self.time is in the rule 'xx minutes before civiltwilightstart'
-	function self.ruleIsBeforeCivilTwilightStart(rule)
-		local minutes = tonumber(string.match(rule, '(%d+) minutes before civiltwilightstart'))
-		if (minutes ~= nil) then
-			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getMinutesBeforeCivilTwilightStart(minutes))
-		end
-		return nil
-	end
-
-	-- return true if the self.time is in the rule xx minutes after civil twilight start
-	function self.ruleIsAfterCivilTwilightStart(rule)
-		local minutes = tonumber(string.match(rule, '(%d+) minutes after civiltwilightstart'))
-		if (minutes ~= nil) then
-			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getMinutesAfterCivilTwilightStart(minutes))
-		end
-		return nil
-	end
-
-	-- returns true if self.time is in the rule 'xx minutes before civiltwilightend'
-	function self.ruleIsBeforeCivilTwilightEnd(rule)
-		local minutes = tonumber(string.match(rule, '(%d+) minutes before civiltwilightend'))
-		if (minutes ~= nil) then
-			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getMinutesBeforeCivilTwilightEnd(minutes))
-		end
-		return nil
-	end
-
-	-- return true if the self.time is in the rule xx minutes after civil twilight end
-	function self.ruleIsAfterCivilTwilightEnd(rule)
-		local minutes = tonumber(string.match(rule, '(%d+) minutes after civiltwilightend'))
-		if (minutes ~= nil) then
-			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getMinutesAfterCivilTwilightEnd(minutes))
-		end
-		return nil
-	end
-]]
-
 	function self.ruleIsBeforeAstrologicalMoment(rule)
 		local minutes = tonumber(string.match(rule, '%.*(%d+) minutes before%.*'))
 		if (minutes ~= nil) then
@@ -690,7 +634,7 @@ local function Time(sDate, isUTC, _testMS)
 					return ( self.minutesnow + minutes ) == self.gTimes[astronomicalString]
 				end
 			end
-		 end
+		end
 		return nil
 	end
 
@@ -703,7 +647,7 @@ local function Time(sDate, isUTC, _testMS)
 					return ( self.minutesnow - minutes ) == self.gTimes[astronomicalString]
 				end
 			end
-		 end
+		end
 		return nil
 	end
 
@@ -796,7 +740,7 @@ local function Time(sDate, isUTC, _testMS)
 		local hours = tonumber(string.match(rule, 'every% (%d+)% hours'))
 		if (hours ~= nil) then
 			if ((24 / hours) ~= math.floor(24 / hours) or hours >= 24) then
-				self.utils.log(rule .. ' is not a valid timer definition. Can only run every  1, 2, 3, 4, 6, 8, 12 hours.', utils.LOG_ERROR)
+				self.utils.log(rule .. ' is not a valid timer definition. Can only run every 1, 2, 3, 4, 6, 8, 12 hours.', utils.LOG_ERROR)
 				return false
 			end
 
@@ -840,7 +784,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.time is in time range: at hh:mm-hh:mm
 	function self.ruleMatchesTimeRange(rule)
-		local fromH, fromM, toH, toM =  string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)')
+		local fromH, fromM, toH, toM = string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)')
 
 		if (fromH ~= nil) then
 			-- all will be nil if fromH is nil
@@ -849,8 +793,8 @@ local function Time(sDate, isUTC, _testMS)
 			toH = tonumber(toH)
 			toM = tonumber(toM)
 
-			if (fromH == nil or fromM == nil or toH == nil or toM == nil) then
-				return false					 -- invalid format
+			if (fromH == nil or fromM == nil or toH == nil or toM == nil) then -- invalid format
+				return false 
 			else
 				return timeIsInRange(fromH, fromM, toH, toM)
 			end
@@ -928,72 +872,58 @@ local function Time(sDate, isUTC, _testMS)
 		elseif type(rule) == 'string' and not(processed) then
 			local rule = rule:lower()
 			local validPositiveRules = true
-			local validNegativeRules = false
-			local negate = false
+			local negativeKeyword = 'except'
 
 			local function ruleSplit(rawRule)
 				local ruleKeywords = 'on, between, every, in'
-
-				local allNegativeRules = {}
-				local allPositiveRules = {}
-
+				local allRules = {}
 				local aRule = ''
 
 				for ruleWord in string.gmatch(rawRule, "[%S]*") do -- all "words" separated by spaces
-					if ruleWord == 'except' then
-						negate = true
-						aRule = ''
-					else
 						if ruleKeywords:find(ruleWord) and aRule ~= '' then
-							if negate then
-								table.insert(allNegativeRules, aRule)
-							else
-								table.insert(allPositiveRules, aRule)
-							end
-							aRule = ''
+								table.insert(allRules, aRule)
+								aRule = ''
 						end
-						aRule =  ( aRule == '' and ruleWord ) or ( aRule .. ' ' .. ruleWord )
-					end
+						aRule = ( aRule == '' and ruleWord ) or ( aRule .. ' ' .. ruleWord )
 				end
-				if negate then
-					table.insert(allNegativeRules, aRule)
-				else
-					table.insert(allPositiveRules, aRule)
-				end
-				return allPositiveRules, allNegativeRules or {}
+				if aRule ~= '' then table.insert(allRules, aRule) end
+				return allRules or {}
 			end
 
-			-- recursive call matchesRule with atomic rules
-			local posRules, negRules = ruleSplit(rule)
+			local positiveRules, negativeRules
+			local exceptPosition = rule:find(negativeKeyword)
 
-			if next(negRules) then			 -- first do the excepts..
-				for _, aRule in ipairs( negRules) do
-					if self.matchesRule(aRule, true) then
-						return false
-					end
-				end
+			if exceptPosition then
+				positiveRules = ruleSplit(rule:sub(1, exceptPosition - 1))
+				negativeRules = ruleSplit(rule:sub(exceptPosition + #negativeKeyword, #rule))
+			else
+				negativeRules = nil
+				positiveRules = ruleSplit(rule)
 			end
 
-			for _, aRule in ipairs( posRules) do
+			for _, aRule in ipairs(positiveRules) do
 				validPositiveRules = validPositiveRules and self.matchesRule(aRule, true)
-				if validPositiveRules == false then break end
+				if validPositiveRules == false then return false end
 			end
 
-			return  validPositiveRules
+			if exceptPosition then
+				for _, aRule in ipairs( negativeRules) do
+					if self.matchesRule(aRule, true) then return false end
+				end
+			end
+
+			return validPositiveRules
 		end
 
 		local res
 		local total = false
-		-- at least one processor should return something else than nil
-		-- a processor returns true, false or nil. It is nil when the
-		-- rule the processor requires is not present
 
 		local function updateTotal(res)
 			total = res ~= nil and (total or res) or total
 		end
 
 		res = self.ruleIsInWeek(rule)
-		if (res == false) then  --in week <weeks> was specified but 'now' is not on any of the specified weeks
+		if (res == false) then --in week <weeks> was specified but 'now' is not on any of the specified weeks
 			return false
 		end
 		updateTotal(res)
@@ -1011,7 +941,7 @@ local function Time(sDate, isUTC, _testMS)
 		updateTotal(res)
 
 		local _between = self.ruleMatchesBetweenRange(rule) -- range
-		if (_between == false) then		  -- rule had between xxx and yyy is not in that range now
+		if (_between == false) then -- rule had between xxx and yyy is not in that range now
 			return false
 		end
 		res = _between
@@ -1021,13 +951,13 @@ local function Time(sDate, isUTC, _testMS)
 		-- A between-range can have before/after sunrise/set rules so it cannot be combined with these here
 
 			res = self.ruleIsBeforeAstrologicalMoment(rule) -- moment
-			if (res == false) then
+			if (res == false) then -- (sub)rule has before xxstart, xxend, sunset, sunrise or solarnoon
 				return false
 			end
 			updateTotal(res)
 
 			res = self.ruleIsAfterAstrologicalMoment(rule) -- moment
-			if (res == false) then
+			if (res == false) then -- (sub)rule has after xxstart, xxend, sunset, sunrise or solarnoon
 				return false
 			end
 			updateTotal(res)
@@ -1035,19 +965,19 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		res = self.ruleIsAtAstronomicalMoment(rule)
-		if (res == false) then
+		if (res == false) then -- rule has at xxstart, xxend, sunset, sunrise or solarnoon
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleIsAtAstronomicalRange(rule)
-		if (res == false) then
+		if (res == false) then -- rule has at xxdaytime or xx nighttime
 			return false
 		end
 		updateTotal(res)
 
 		res = self.ruleMatchesHourSpecification(rule) -- moment
-		if (res == false) then  -- rule has every xx hour but its not the right time
+		if (res == false) then -- rule has every xx hour but its not the right time
 			return false
 		end
 		updateTotal(res)
@@ -1060,7 +990,7 @@ local function Time(sDate, isUTC, _testMS)
 
 		rule = sanitize(rule)
 		res = self.ruleMatchesTime(rule) -- moment / range
-		if (res == false) then	 -- rule has at hh:mm part but didn't match (or was invalid)
+		if (res == false) then -- rule has at hh:mm part but didn't match (or was invalid)
 			return false
 		end
 		updateTotal(res)
