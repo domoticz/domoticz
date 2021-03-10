@@ -1139,6 +1139,7 @@ namespace Plugins {
 			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
+		Py_XDECREF(self->Target);
 		Py_XDECREF(self->Address);
 		Py_XDECREF(self->Port);
 		Py_XDECREF(self->LastSeen);
@@ -1187,6 +1188,7 @@ namespace Plugins {
 					Py_DECREF(self);
 					return nullptr;
 				}
+				self->Target = NULL;
 				self->Address = PyUnicode_FromString("");
 				if (self->Address == nullptr)
 				{
@@ -1348,10 +1350,16 @@ namespace Plugins {
 			return Py_None;
 		}
 
+		PyObject *pTarget = NULL;
 		int iTimeout = 0;
-		static char *kwlist[] = { "Timeout", NULL };
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "|I", kwlist, &iTimeout))
+		static char *kwlist[] = { "Target", "Timeout", NULL };
+		if (PyArg_ParseTupleAndKeywords(args, kwds, "|OI", kwlist, &pTarget, &iTimeout))
 		{
+			if (pTarget)
+			{
+				Py_INCREF(pTarget);
+				self->Target = pTarget;
+			}
 			if (!iTimeout || (iTimeout > 199))
 			{
 				self->Timeout = iTimeout;
@@ -1366,7 +1374,7 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	PyObject * CConnection_listen(CConnection * self)
+	PyObject *CConnection_listen(CConnection *self, PyObject *args, PyObject *kwds)
 	{
 		Py_INCREF(Py_None);
 
@@ -1393,6 +1401,17 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
+		}
+
+		PyObject *pTarget = NULL;
+		static char *kwlist[] = { "Target", NULL };
+		if (PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+		{
+			if (pTarget)
+			{
+				Py_INCREF(pTarget);
+				self->Target = pTarget;
+			}
 		}
 
 		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, self));

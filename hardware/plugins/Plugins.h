@@ -179,6 +179,20 @@ namespace Plugins {
 		{
 			m_pObject = pObject;
 		}
+		void operator++()
+		{
+			if (m_pObject)
+			{
+				Py_INCREF(m_pObject);
+			}
+		}
+		void operator--()
+		{
+			if (m_pObject)
+			{
+				Py_DECREF(m_pObject);
+			}
+		}
 		~PyBorrowedRef()
 		{
 			m_pObject = NULL;
@@ -199,6 +213,18 @@ namespace Plugins {
 				Py_XDECREF(m_pObject);
 			}
 			m_pObject = pObject;
+		}
+		void operator+=(PyObject *pObject)
+		{
+			if (m_pObject)
+			{
+				Py_XDECREF(m_pObject);
+			}
+			m_pObject = pObject;
+			if (m_pObject)
+			{
+				Py_INCREF(m_pObject);
+			}
 		}
 		~PyNewRef()
 		{

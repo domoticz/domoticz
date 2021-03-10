@@ -81,7 +81,10 @@ namespace Plugins {
 	      public:
 		CCallbackBase(CPlugin* pPlugin, const std::string &Callback) : CPluginMessageBase(pPlugin), m_Target(pPlugin->PythonModule()), m_Callback(Callback)
 		{
-			Py_INCREF(m_Target);
+			if (m_Target)
+			{
+				Py_INCREF(m_Target);
+			}
 		};
 		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Target, m_Callback, pParams); };
 		virtual const char* PythonName() { return m_Callback.c_str(); };
@@ -140,8 +143,14 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onConnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onConnectCallback(CPlugin* pPlugin, CConnection* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) { m_Name = __func__; };
-		onConnectCallback(CPlugin* pPlugin, CConnection* Connection, const int Code, const std::string &Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
+		onConnectCallback(CPlugin* pPlugin, CConnection* Connection, const int Code, const std::string &Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text)
+		{
+			m_Name = __func__;
+			if (Connection->Target)
+			{
+				m_Target += Connection->Target;
+			}
+		};
 		int						m_Status;
 		std::string				m_Text;
 	protected:
@@ -160,7 +169,14 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onTimeoutCallback : public CCallbackBase, public CHasConnection
 	{
     public:
-		onTimeoutCallback(CPlugin *pPlugin, CConnection *Connection): CCallbackBase(pPlugin, "onTimeout"), CHasConnection(Connection) { m_Name = __func__; };
+		onTimeoutCallback(CPlugin *pPlugin, CConnection *Connection): CCallbackBase(pPlugin, "onTimeout"), CHasConnection(Connection) 
+		{
+			m_Name = __func__;
+			if (Connection->Target)
+			{
+				m_Target += Connection->Target;
+			}
+		};
     protected:
 		virtual void ProcessLocked() override
 		{
@@ -172,7 +188,14 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onDisconnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onDisconnectCallback(CPlugin* pPlugin, CConnection* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) { m_Name = __func__; };
+		onDisconnectCallback(CPlugin* pPlugin, CConnection* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection)
+		{
+			m_Name = __func__;
+			if (Connection->Target)
+			{
+				m_Target += Connection->Target;
+			}
+		};
 	protected:
 	  void ProcessLocked() override
 	  {
@@ -290,20 +313,32 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	{
 	public:
 		onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::string &Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
-	  {
-		  m_Name = __func__;
-		  m_Buffer.reserve(Buffer.length());
-		  m_Buffer.assign((const byte *)Buffer.c_str(), (const byte *)Buffer.c_str() + Buffer.length());
-	  };
-	  onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::vector<byte> &Buffer): CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
-	  {
-		  m_Name = __func__;
-		  m_Buffer = Buffer;
-	  };
+		{
+			m_Name = __func__;
+			m_Buffer.reserve(Buffer.length());
+			m_Buffer.assign((const byte *)Buffer.c_str(), (const byte *)Buffer.c_str() + Buffer.length());
+			if (Connection->Target)
+			{
+				m_Target += Connection->Target;
+			}
+		};
+		onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::vector<byte> &Buffer): CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
+		{
+			m_Name = __func__;
+			m_Buffer = Buffer;
+			if (Connection->Target)
+			{
+				m_Target += Connection->Target;
+			}
+		};
 		onMessageCallback(CPlugin* pPlugin, CConnection* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_Data = pData;
+			if (Connection->Target)
+			{
+				m_Target += Connection->Target;
+			}
 		};
 		std::vector<byte>		m_Buffer;
 		PyObject*				m_Data;

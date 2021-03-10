@@ -290,7 +290,10 @@ namespace Plugins {
 			sleep_milliseconds(500);
 		}
 
-		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
+		if (m_pPlugins.size())
+		{
+			_log.Log(LOG_STATUS, "PluginSystem: %d plugins started.", m_pPlugins.size());
+		}
 
 		// Create initial IO Service thread
 		ios.restart();
@@ -311,7 +314,7 @@ namespace Plugins {
 		ios.stop();
 		BoostThreads.join_all();
 
-		_log.Log(LOG_STATUS, "PluginSystem: Exiting work loop.");
+		_log.Log(LOG_STATUS, "PluginSystem: Exited work loop.");
 	}
 
 	void CPluginSystem::DeviceModified(uint64_t DevIdx)
