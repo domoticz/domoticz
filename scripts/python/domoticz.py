@@ -35,7 +35,14 @@ import reloader
 import datetime
 import re
 
-# Enable plugins to do: from Domoticz import Devices, Images, Parameters, Settings
+# Enable plugins to do:
+# from Domoticz import Connections, Devices, Images, Parameters, Settings
+try:
+    Connections
+except NameError:
+    Connections = {}
+    domoticz_.Log(1, "Connections was not created by Domoticz C++ code")
+
 try:
     Devices
 except NameError:
