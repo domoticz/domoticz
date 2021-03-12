@@ -186,13 +186,6 @@ private:
 
 	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
-	std::mutex m_devicestatesMutex;
-	std::mutex m_eventsMutex;
-	std::mutex m_uservariablesMutex;
-	std::mutex m_scenesgroupsMutex;
-	std::mutex m_eventtriggerMutex;
-	std::mutex m_measurementStatesMutex;
-	std::mutex luaMutex;
 	std::shared_ptr<std::thread> m_thread;
 	std::shared_ptr<std::thread> m_eventqueuethread;
 	StoppableTask m_TaskQueue;
@@ -285,4 +278,7 @@ private:
 	std::string LowerCase(std::string sResult);
 
 	bool Update(Notification::_eType type, Notification::_eStatus status, const std::string &eventdata) override;
+
+public:
+	std::mutex m_luaMutex;
 };

@@ -21,9 +21,11 @@
             PyObject*	error;
         };
 
-	static PyMethodDef DomoticzEventsMethods[] = { { "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
-						       { "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
-						       { nullptr, nullptr, 0, nullptr } };
+	static PyMethodDef DomoticzEventsMethods[] = {
+			{ "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
+			{ "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
+			{ nullptr, nullptr, 0, nullptr }
+};
 
 	static int DomoticzEventsTraverse(PyObject *m, visitproc visit, void *arg)
 	{
@@ -63,10 +65,6 @@
 		char *action;
 		char *device;
 
-		// _log.Log(LOG_STATUS, "Python EventSystem: Running command.");
-		// m_eventsystem.CEventSystem::PythonScheduleEvent("Test_Target", "On", "Testing");
-		//
-
 		if (!PyArg_ParseTuple(args, "ss", &device, &action))
 		{
 			_log.Log(LOG_ERROR, "Pyhton EventSystem: Failed to parse parameters: Two strings expected.");
@@ -77,7 +75,8 @@
 			// std::string	dev = device;
 			// std::string act = action;
 			// _log.Log((_eLogLevel)LOG_NORM, "Python EventSystem - Command: Target: %s Command: %s", dev.c_str(), act.c_str());
-			m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test");
+			std::lock_guard<std::mutex> l(m_mainworker.m_eventsystem.m_luaMutex); 
+			m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test"); //Why is the event labeled test ? Is there a good/better name here?
 		}
 
 		Py_INCREF(Py_None);

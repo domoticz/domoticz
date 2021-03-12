@@ -212,7 +212,7 @@ void CEventSystem::LoadEvents()
 	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
 
-	std::lock_guard<std::mutex> l(m_eventsMutex); 
+	std::lock_guard<std::mutex> l(m_luaMutex); 
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
 
@@ -432,7 +432,7 @@ void CEventSystem::GetCurrentStates()
 {
 	std::vector<std::vector<std::string> > result;
 
-	std::lock_guard<std::mutex> l(m_devicestatesMutex); 
+	std::lock_guard<std::mutex> l(m_luaMutex); 
 
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
@@ -518,7 +518,7 @@ void CEventSystem::GetCurrentStates()
 
 void CEventSystem::GetCurrentUserVariables()
 {
-	std::lock_guard<std::mutex> l(m_uservariablesMutex); 
+	std::lock_guard<std::mutex> l(m_luaMutex); 
 
 	//_log.Log(LOG_STATUS, "EventSystem: reset all user variables...");
 	m_uservariables.clear();
@@ -542,7 +542,7 @@ void CEventSystem::GetCurrentUserVariables()
 
 void CEventSystem::GetCurrentScenesGroups()
 {
-	std::lock_guard<std::mutex> l(m_scenesgroupsMutex); 
+	std::lock_guard<std::mutex> l(m_luaMutex); 
 
 	m_scenesgroups.clear();
 
@@ -611,8 +611,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_windspeedValuesByID.clear();
 	m_windgustValuesByID.clear();
 	m_zwaveAlarmValuesByID.clear();
-
-	std::lock_guard<std::mutex> l(m_devicestatesMutex); 
 
 	//char szTmp[300];
 
@@ -1084,14 +1082,13 @@ void CEventSystem::RemoveSingleState(const uint64_t ulDevID, const _eReason reas
 	if (!m_bEnabled)
 		return;
 
+	std::lock_guard<std::mutex> l(m_luaMutex);
 	if (reason == REASON_DEVICE)
 	{
-		std::lock_guard<std::mutex> l(m_devicestatesMutex); 
 		m_devicestates.erase(ulDevID);
 	}
 	else if (reason == REASON_SCENEGROUP)
 	{
-		std::lock_guard<std::mutex> l(m_scenesgroupsMutex);
 		m_scenesgroups.erase(ulDevID);
 	}
 }
@@ -1103,10 +1100,10 @@ void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::strin
 
 	std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
 
+	std::lock_guard<std::mutex> l(m_luaMutex);
+
 	if (reason == REASON_DEVICE)
 	{
-		std::lock_guard<std::mutex> l(m_devicestatesMutex);
-
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
 		{
@@ -1117,7 +1114,6 @@ void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::strin
 	}
 	else if (reason == REASON_SCENEGROUP)
 	{
-		std::lock_guard<std::mutex> l(m_scenesgroupsMutex);
 		auto itt = m_scenesgroups.find(ulDevID);
 		if (itt != m_scenesgroups.end())
 		{
@@ -1143,7 +1139,6 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 
 bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger)
 {
-	std::lock_guard<std::mutex> l(m_eventtriggerMutex);
 	if (!m_eventtrigger.empty())
 	{
 		time_t atime = mytime(nullptr);
@@ -1165,10 +1160,13 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
+//Notifications
 bool CEventSystem::Update(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata)
 {
 	if (!m_bEnabled)
 		return false;
+	std::lock_guard<std::mutex> l(m_luaMutex);
+
 	_tEventQueue item;
 	item.reason = REASON_NOTIFICATION;
 	item.nValue = static_cast<int>(type);
@@ -1214,7 +1212,6 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	if (!m_bEnabled)
 		return;
 
-	std::lock_guard<std::mutex> l(m_eventtriggerMutex);
 	if (!m_eventtrigger.empty())
 	{
 		time_t atime = mytime(nullptr) + static_cast<int>(fDelayTime);
@@ -1233,13 +1230,15 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	m_eventtrigger.push_back(item);
 }
 
+//Called from Mainworker
 bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return true; // seems counterintuitive, but prevents device triggers being queued
 
+	std::lock_guard<std::mutex> l(m_luaMutex);
+
 	bool bEventTrigger = true;
-	std::lock_guard<std::mutex> l(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
 	if (itt != m_scenesgroups.end())
 	{
@@ -1269,12 +1268,13 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 	return bEventTrigger;
 }
 
+//Called from outside this class
 void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
 
-	std::lock_guard<std::mutex> l(m_uservariablesMutex);
+	std::lock_guard<std::mutex> l(m_luaMutex);
 
 	std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
 	if (itt == m_uservariables.end())
@@ -1297,12 +1297,13 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	itt->second = replaceitem;
 }
 
+//Called from Mainworker
 void CEventSystem::UpdateBatteryLevel(const uint64_t ulDevID, const unsigned char batteryLevel)
 {
 	if (!m_bEnabled)
 		return;
 
-	std::lock_guard<std::mutex> l(m_devicestatesMutex);
+	std::lock_guard<std::mutex> l(m_luaMutex);
 	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 
 	if (itt != m_devicestates.end())
@@ -1313,7 +1314,7 @@ void CEventSystem::UpdateBatteryLevel(const uint64_t ulDevID, const unsigned cha
 	}
 }
 
-
+//Called from CEventSystem::ProcessDevice
 std::string CEventSystem::UpdateSingleState(
 	const uint64_t ulDevID, 
 	const std::string &devname, 
@@ -1333,8 +1334,6 @@ std::string CEventSystem::UpdateSingleState(
 	std::string l_sValue;			l_sValue.reserve(200);			l_sValue.assign(sValue);
 	std::string l_nValueWording;	l_nValueWording.reserve(20);	l_nValueWording.assign(nValueWording);
 	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
-
-	std::lock_guard<std::mutex> l(m_devicestatesMutex);
 
 	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 
@@ -1408,6 +1407,8 @@ void CEventSystem::EventQueueThread()
 
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
+		std::lock_guard<std::mutex> l(m_luaMutex);
+
 #ifdef _DEBUG
 		//_log.Log(LOG_STATUS, "EventSystem: \n reason => %d\n id => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n lastUpdate => %s\n lastLevel => %d\n",
 			//item.reason, item.id, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.lastUpdate.c_str(), item.lastLevel);
@@ -1433,6 +1434,7 @@ void CEventSystem::EventQueueThread()
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread stopped...");
 }
 
+//Called from external
 void CEventSystem::ProcessDevice(
 	const int HardwareID, 
 	const uint64_t ulDevID, 
@@ -1445,6 +1447,8 @@ void CEventSystem::ProcessDevice(
 	const char* sValue)
 {
 	if (!m_bEnabled)
+		return;
+	if (!g_bUseEventTrigger)
 		return;
 
 	std::vector<std::vector<std::string> > result;
@@ -1487,7 +1491,9 @@ void CEventSystem::ProcessDevice(
 		}
 	}
 
-	if (g_bUseEventTrigger && GetEventTrigger(ulDevID, REASON_DEVICE, true))
+	std::lock_guard<std::mutex> l(m_luaMutex);
+
+	if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 	{
 		_tEventQueue item;
 		item.reason = REASON_DEVICE;
@@ -1497,7 +1503,6 @@ void CEventSystem::ProcessDevice(
 		item.sValue = osValue;
 
 		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
-		std::lock_guard<std::mutex> l(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
 		{
@@ -1575,7 +1580,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 				if (item.reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
 				{
 					bDeviceFileFound = false;
-					m_devicestatesMutex.lock();
 					for (const auto &state : m_devicestates)
 					{
 						std::string deviceName = SpaceToUnderscore(LowerCase(state.second.deviceName));
@@ -1584,7 +1588,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 							bDeviceFileFound = true;
 							if (deviceName == SpaceToUnderscore(LowerCase(item.devname)))
 							{
-								m_devicestatesMutex.unlock();
 								EvaluateLua(item, m_lua_Dir + filename, "");
 								break;
 							}
@@ -1592,7 +1595,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 					}
 					if (!bDeviceFileFound)
 					{
-						m_devicestatesMutex.unlock();
 						EvaluateLua(item, m_lua_Dir + filename, "");
 					}
 				}
@@ -1609,7 +1611,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 
 #ifdef ENABLE_PYTHON
 		{
-			std::lock_guard<std::mutex> l(m_uservariablesMutex);
 			try
 			{
 				for (const auto &filename : FileEntriesPython)
@@ -1680,7 +1681,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
 
-	m_devicestatesMutex.lock();
 	CLuaTable luaTable(lua_state, "device", (int)m_devicestates.size(), 0);
 
 	for (const auto &state : m_devicestates)
@@ -1689,9 +1689,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		luaTable.AddString(sitem.ID, sitem.nValueWording);
 	}
 	luaTable.Publish();
-	m_devicestatesMutex.unlock();
-
-	m_uservariablesMutex.lock();
 
 	luaTable.InitTable(lua_state, "variable", (int)m_uservariables.size(), 0);
 
@@ -1712,9 +1709,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 	}
 	luaTable.Publish();
-	m_uservariablesMutex.unlock();
 
-	std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
 
 	if (!m_tempValuesByID.empty())
@@ -1883,7 +1878,6 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 {
 	lua_State *lua_state = nullptr;
 
-	std::lock_guard<std::mutex> l(m_eventsMutex); 
 	try
 	{
 		for (const auto &event : m_events)
@@ -1932,7 +1926,6 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 				else if (event.Interpreter == "Python")
 				{
 #ifdef ENABLE_PYTHON
-					std::lock_guard<std::mutex> l(m_uservariablesMutex); 
 					EvaluatePython(item, event.Name, event.Actions);
 #else
 					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
@@ -2186,9 +2179,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 		int deviceNo = atoi(deviceName.c_str());
 		if (deviceNo)
 		{
-			m_devicestatesMutex.lock();
 			if (m_devicestates.count(deviceNo)) {
-				m_devicestatesMutex.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
 				if (ScheduleEvent(deviceNo, doWhat, false, item.Name, 0)) {
 					actionsDone = true;
 				}
@@ -2545,7 +2536,7 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 
 #ifdef ENABLE_PYTHON
 
-// Python EventModule helper functions
+// Called from Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName)
 {
 	if (ID.find("Variable:") == 0) {
@@ -2624,8 +2615,6 @@ void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &f
 
 void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item)
 {
-	std::lock_guard<std::mutex> l(m_devicestatesMutex);
-
 	CLuaTable luaTable(lua_state, "otherdevices", (int)m_devicestates.size(), 0);
 	for (const auto &state : m_devicestates)
 	{
@@ -2674,270 +2663,265 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
 
+	GetCurrentMeasurementStates();
+
+	float thisDeviceTemp = 0;
+	float thisDeviceDew = 0;
+	float thisDeviceRain = 0;
+	float thisDeviceRainLastHour = 0;
+	float thisDeviceUV = 0;
+	unsigned char thisDeviceHum = 0;
+	float thisDeviceBaro = 0;
+	float thisDeviceUtility = 0;
+	//float thisDeviceWindDir = 0;
+	//float thisDeviceWindSpeed = 0;
+	//float thisDeviceWindGust = 0;
+	float thisDeviceWeather = 0;
+	int thisZwaveAlarm = 0;
+
+	if (!m_tempValuesByName.empty())
 	{
-		std::lock_guard<std::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
-		GetCurrentMeasurementStates();
+		CLuaTable luaTable(lua_state, "otherdevices_temperature", (int)m_tempValuesByName.size(), 0);
+		for (const auto &temp : m_tempValuesByName)
+		{
+			luaTable.AddNumber(temp.first, temp.second);
+			if (temp.first == item.devname)
+			{
+				thisDeviceTemp = temp.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_dewValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_dewpoint", (int)m_dewValuesByName.size(), 0);
+		for (const auto &dew : m_dewValuesByName)
+		{
+			luaTable.AddNumber(dew.first, dew.second);
+			if (dew.first == item.devname)
+			{
+				thisDeviceDew = dew.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_humValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_humidity", (int)m_humValuesByName.size(), 0);
+		for (const auto &hum : m_humValuesByName)
+		{
+			luaTable.AddNumber(hum.first, hum.second);
+			if (hum.first == item.devname)
+			{
+				thisDeviceHum = hum.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_baroValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_barometer", (int)m_baroValuesByName.size(), 0);
+		for (const auto &baro : m_baroValuesByName)
+		{
+			luaTable.AddNumber(baro.first, baro.second);
+			if (baro.first == item.devname)
+			{
+				thisDeviceBaro = (float)baro.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_utilityValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_utility", (int)m_utilityValuesByName.size(), 0);
+		for (const auto &utility : m_utilityValuesByName)
+		{
+			luaTable.AddNumber(utility.first, utility.second);
+			if (utility.first == item.devname)
+			{
+				thisDeviceUtility = utility.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_rainValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_rain", (int)m_rainValuesByName.size(), 0);
+		for (const auto &rain : m_rainValuesByName)
+		{
+			luaTable.AddNumber(rain.first, rain.second);
+			if (rain.first == item.devname)
+			{
+				thisDeviceRain = rain.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_rainLastHourValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_rain_lasthour", (int)m_rainLastHourValuesByName.size(), 0);
+		for (const auto &rainlh : m_rainLastHourValuesByName)
+		{
+			luaTable.AddNumber(rainlh.first, rainlh.second);
+			if (rainlh.first == item.devname)
+			{
+				thisDeviceRainLastHour = rainlh.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_uvValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_uv", (int)m_uvValuesByName.size(), 0);
+		for (const auto &uv : m_uvValuesByName)
+		{
+			luaTable.AddNumber(uv.first, uv.second);
+			if (uv.first == item.devname)
+			{
+				thisDeviceUV = uv.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_winddirValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_winddir", (int)m_winddirValuesByName.size(), 0);
+		for (const auto &winddir : m_winddirValuesByName)
+		{
+			luaTable.AddNumber(winddir.first, winddir.second);
+			// if (winddir.first == item.devname) {
+			// thisDeviceWindDir = winddir.second;
+			//}
+		}
+		luaTable.Publish();
+	}
+	if (!m_windspeedValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_windspeed", (int)m_windspeedValuesByName.size(), 0);
+		for (const auto &windspeed : m_windspeedValuesByName)
+		{
+			luaTable.AddNumber(windspeed.first, windspeed.second);
+			// if (windspeed.first == item.devname) {
+			// thisDeviceWindSpeed = windspeed.second;
+			//}
+		}
+		luaTable.Publish();
+	}
+	if (!m_windgustValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_windgust", (int)m_windgustValuesByName.size(), 0);
+		for (const auto &windgust : m_windgustValuesByName)
+		{
+			luaTable.AddNumber(windgust.first, windgust.second);
+			// if (windgust.first == item.devname) {
+			// thisDeviceWindGust = windgust.second;
+			//}
+		}
+		luaTable.Publish();
+	}
+	if (!m_weatherValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_weather", (int)m_weatherValuesByName.size(), 0);
+		for (const auto &weather : m_weatherValuesByName)
+		{
+			luaTable.AddNumber(weather.first, weather.second);
+			if (weather.first == item.devname)
+			{
+				thisDeviceWeather = weather.second;
+			}
+		}
+		luaTable.Publish();
+	}
+	if (!m_zwaveAlarmValuesByName.empty())
+	{
+		CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
+		for (const auto &alarm : m_zwaveAlarmValuesByName)
+		{
+			luaTable.AddNumber(alarm.first, alarm.second);
+			if (alarm.first == item.devname)
+			{
+				thisZwaveAlarm = alarm.second;
+			}
+		}
+		luaTable.Publish();
+	}
 
-		float thisDeviceTemp = 0;
-		float thisDeviceDew = 0;
-		float thisDeviceRain = 0;
-		float thisDeviceRainLastHour = 0;
-		float thisDeviceUV = 0;
-		unsigned char thisDeviceHum = 0;
-		float thisDeviceBaro = 0;
-		float thisDeviceUtility = 0;
-		//float thisDeviceWindDir = 0;
-		//float thisDeviceWindSpeed = 0;
-		//float thisDeviceWindGust = 0;
-		float thisDeviceWeather = 0;
-		int thisZwaveAlarm = 0;
+	if (item.reason == REASON_DEVICE)
+	{
+		CLuaTable luaTable(lua_state, "devicechanged", 1, 0);
+		luaTable.AddString(item.devname, item.nValueWording);
+		if (thisDeviceTemp != 0)
+		{
+			std::string tempName = item.devname;
+			tempName += "_Temperature";
+			luaTable.AddNumber(tempName, thisDeviceTemp);
+		}
+		if (thisDeviceDew != 0)
+		{
+			std::string tempName = item.devname;
+			tempName += "_Dewpoint";
+			luaTable.AddNumber(tempName, thisDeviceDew);
+		}
+		if (thisDeviceHum != 0) {
+			std::string humName = item.devname;
+			humName += "_Humidity";
+			luaTable.AddNumber(humName, thisDeviceHum);
+		}
+		if (thisDeviceBaro != 0) {
+			std::string baroName = item.devname;
+			baroName += "_Barometer";
+			luaTable.AddNumber(baroName, thisDeviceBaro);
+		}
+		if (thisDeviceUtility != 0) {
+			std::string utilityName = item.devname;
+			utilityName += "_Utility";
+			luaTable.AddNumber(utilityName, thisDeviceUtility);
+		}
+		if (thisDeviceWeather != 0) {
+			std::string weatherName = item.devname;
+			weatherName += "_Weather";
+			luaTable.AddNumber(weatherName, thisDeviceWeather);
+		}
+		if (thisDeviceRain != 0)
+		{
+			std::string tempName = item.devname;
+			tempName += "_Rain";
+			luaTable.AddNumber(tempName, thisDeviceRain);
+		}
+		if (thisDeviceRainLastHour != 0)
+		{
+			std::string tempName = item.devname;
+			tempName += "_RainLastHour";
+			luaTable.AddNumber(tempName, thisDeviceRainLastHour);
+		}
+		if (thisDeviceUV != 0)
+		{
+			std::string tempName = item.devname;
+			tempName += "_UV";
+			luaTable.AddNumber(tempName, thisDeviceUV);
+		}
+		if (thisZwaveAlarm != 0) {
+			std::string alarmName = item.devname;
+			alarmName += "_ZWaveAlarm";
+			luaTable.AddNumber(alarmName, thisZwaveAlarm);
+		}
+		luaTable.Publish();
 
-		if (!m_tempValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_temperature", (int)m_tempValuesByName.size(), 0);
-			for (const auto &temp : m_tempValuesByName)
-			{
-				luaTable.AddNumber(temp.first, temp.second);
-				if (temp.first == item.devname)
-				{
-					thisDeviceTemp = temp.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_dewValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_dewpoint", (int)m_dewValuesByName.size(), 0);
-			for (const auto &dew : m_dewValuesByName)
-			{
-				luaTable.AddNumber(dew.first, dew.second);
-				if (dew.first == item.devname)
-				{
-					thisDeviceDew = dew.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_humValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_humidity", (int)m_humValuesByName.size(), 0);
-			for (const auto &hum : m_humValuesByName)
-			{
-				luaTable.AddNumber(hum.first, hum.second);
-				if (hum.first == item.devname)
-				{
-					thisDeviceHum = hum.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_baroValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_barometer", (int)m_baroValuesByName.size(), 0);
-			for (const auto &baro : m_baroValuesByName)
-			{
-				luaTable.AddNumber(baro.first, baro.second);
-				if (baro.first == item.devname)
-				{
-					thisDeviceBaro = (float)baro.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_utilityValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_utility", (int)m_utilityValuesByName.size(), 0);
-			for (const auto &utility : m_utilityValuesByName)
-			{
-				luaTable.AddNumber(utility.first, utility.second);
-				if (utility.first == item.devname)
-				{
-					thisDeviceUtility = utility.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_rainValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_rain", (int)m_rainValuesByName.size(), 0);
-			for (const auto &rain : m_rainValuesByName)
-			{
-				luaTable.AddNumber(rain.first, rain.second);
-				if (rain.first == item.devname)
-				{
-					thisDeviceRain = rain.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_rainLastHourValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_rain_lasthour", (int)m_rainLastHourValuesByName.size(), 0);
-			for (const auto &rainlh : m_rainLastHourValuesByName)
-			{
-				luaTable.AddNumber(rainlh.first, rainlh.second);
-				if (rainlh.first == item.devname)
-				{
-					thisDeviceRainLastHour = rainlh.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_uvValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_uv", (int)m_uvValuesByName.size(), 0);
-			for (const auto &uv : m_uvValuesByName)
-			{
-				luaTable.AddNumber(uv.first, uv.second);
-				if (uv.first == item.devname)
-				{
-					thisDeviceUV = uv.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_winddirValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_winddir", (int)m_winddirValuesByName.size(), 0);
-			for (const auto &winddir : m_winddirValuesByName)
-			{
-				luaTable.AddNumber(winddir.first, winddir.second);
-				// if (winddir.first == item.devname) {
-				// thisDeviceWindDir = winddir.second;
-				//}
-			}
-			luaTable.Publish();
-		}
-		if (!m_windspeedValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_windspeed", (int)m_windspeedValuesByName.size(), 0);
-			for (const auto &windspeed : m_windspeedValuesByName)
-			{
-				luaTable.AddNumber(windspeed.first, windspeed.second);
-				// if (windspeed.first == item.devname) {
-				// thisDeviceWindSpeed = windspeed.second;
-				//}
-			}
-			luaTable.Publish();
-		}
-		if (!m_windgustValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_windgust", (int)m_windgustValuesByName.size(), 0);
-			for (const auto &windgust : m_windgustValuesByName)
-			{
-				luaTable.AddNumber(windgust.first, windgust.second);
-				// if (windgust.first == item.devname) {
-				// thisDeviceWindGust = windgust.second;
-				//}
-			}
-			luaTable.Publish();
-		}
-		if (!m_weatherValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_weather", (int)m_weatherValuesByName.size(), 0);
-			for (const auto &weather : m_weatherValuesByName)
-			{
-				luaTable.AddNumber(weather.first, weather.second);
-				if (weather.first == item.devname)
-				{
-					thisDeviceWeather = weather.second;
-				}
-			}
-			luaTable.Publish();
-		}
-		if (!m_zwaveAlarmValuesByName.empty())
-		{
-			CLuaTable luaTable(lua_state, "otherdevices_zwavealarms", (int)m_zwaveAlarmValuesByName.size(), 0);
-			for (const auto &alarm : m_zwaveAlarmValuesByName)
-			{
-				luaTable.AddNumber(alarm.first, alarm.second);
-				if (alarm.first == item.devname)
-				{
-					thisZwaveAlarm = alarm.second;
-				}
-			}
-			luaTable.Publish();
-		}
+		// BEGIN OTO: populate changed info
+		luaTable.InitTable(lua_state, "devicechanged_ext", 3, 0);
+		luaTable.AddInteger("idx", item.id);
+		luaTable.AddString("svalue", item.sValue);
+		luaTable.AddInteger("nvalue", item.nValue);
 
-		if (item.reason == REASON_DEVICE)
-		{
-			CLuaTable luaTable(lua_state, "devicechanged", 1, 0);
-			luaTable.AddString(item.devname, item.nValueWording);
-			if (thisDeviceTemp != 0)
-			{
-				std::string tempName = item.devname;
-				tempName += "_Temperature";
-				luaTable.AddNumber(tempName, thisDeviceTemp);
-			}
-			if (thisDeviceDew != 0)
-			{
-				std::string tempName = item.devname;
-				tempName += "_Dewpoint";
-				luaTable.AddNumber(tempName, thisDeviceDew);
-			}
-			if (thisDeviceHum != 0) {
-				std::string humName = item.devname;
-				humName += "_Humidity";
-				luaTable.AddNumber(humName, thisDeviceHum);
-			}
-			if (thisDeviceBaro != 0) {
-				std::string baroName = item.devname;
-				baroName += "_Barometer";
-				luaTable.AddNumber(baroName, thisDeviceBaro);
-			}
-			if (thisDeviceUtility != 0) {
-				std::string utilityName = item.devname;
-				utilityName += "_Utility";
-				luaTable.AddNumber(utilityName, thisDeviceUtility);
-			}
-			if (thisDeviceWeather != 0) {
-				std::string weatherName = item.devname;
-				weatherName += "_Weather";
-				luaTable.AddNumber(weatherName, thisDeviceWeather);
-			}
-			if (thisDeviceRain != 0)
-			{
-				std::string tempName = item.devname;
-				tempName += "_Rain";
-				luaTable.AddNumber(tempName, thisDeviceRain);
-			}
-			if (thisDeviceRainLastHour != 0)
-			{
-				std::string tempName = item.devname;
-				tempName += "_RainLastHour";
-				luaTable.AddNumber(tempName, thisDeviceRainLastHour);
-			}
-			if (thisDeviceUV != 0)
-			{
-				std::string tempName = item.devname;
-				tempName += "_UV";
-				luaTable.AddNumber(tempName, thisDeviceUV);
-			}
-			if (thisZwaveAlarm != 0) {
-				std::string alarmName = item.devname;
-				alarmName += "_ZWaveAlarm";
-				luaTable.AddNumber(alarmName, thisZwaveAlarm);
-			}
-			luaTable.Publish();
-
-			// BEGIN OTO: populate changed info
-			luaTable.InitTable(lua_state, "devicechanged_ext", 3, 0);
-			luaTable.AddInteger("idx", item.id);
-			luaTable.AddString("svalue", item.sValue);
-			luaTable.AddInteger("nvalue", item.nValue);
-
-			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged =>
-			luaTable.AddInteger("name", nValue);
-			*/
-			luaTable.Publish();
-			// END OTO
-		}
+		/* USELESS, WE HAVE THE DEVICE INDEX
+		// replace devicechanged =>
+		luaTable.AddInteger("name", nValue);
+		*/
+		luaTable.Publish();
+		// END OTO
 	}
 
 	ExportDeviceStatesToLua(lua_state, item);
-
-	m_uservariablesMutex.lock();
 
 	CLuaTable luaTable(lua_state, "uservariables", (int)m_uservariables.size(), 0);
 
@@ -2981,9 +2965,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 			}
 		}
 	}
-	m_uservariablesMutex.unlock();
 
-	m_scenesgroupsMutex.lock();
 	luaTable.InitTable(lua_state, "otherdevices_scenesgroups", (int)m_scenesgroups.size(), 0);
 	for (const auto &group : m_scenesgroups)
 	{
@@ -2999,7 +2981,6 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		luaTable.AddInteger(sgitem.scenesgroupName, sgitem.ID);
 	}
 	luaTable.Publish();
-	m_scenesgroupsMutex.unlock();
 
 	luaTable.InitTable(lua_state, "globalvariables", 0, 0);
 	luaTable.AddString("Security", m_szSecStatus[secStatus]);
@@ -3025,8 +3006,6 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString)
 {
-	std::lock_guard<std::mutex> l(luaMutex);
-
 	lua_State *lua_state;
 	lua_state = luaL_newstate();
 
@@ -3499,7 +3478,6 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
 	{
-		std::lock_guard<std::mutex> l(m_devicestatesMutex); 
 		int devIdx = atoi(doWhat.c_str());
 		if (m_devicestates[devIdx].devType == pTypeHUM)
 		{
@@ -3513,7 +3491,6 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogSwitch")
 	{
-		std::lock_guard<std::mutex> l(m_devicestatesMutex);
 		_log.Log(LOG_STATUS, "%s", m_devicestates[atoi(doWhat.c_str())].nValueWording.c_str());
 	}
 }
@@ -3575,11 +3552,9 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 
 bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool isScene, const std::string &eventName, int sceneType)
 {
-	m_devicestatesMutex.lock();
 	std::string previousState = m_devicestates[deviceID].nValueWording;
 	int previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
 	int level = 0;
-	m_devicestatesMutex.unlock();
 
 	_tActionParseResults oParseResults;
 	oParseResults.bEventTrigger = true;
@@ -3952,7 +3927,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	if (!m_bEnabled)
 		return;
 
-	std::lock_guard<std::mutex> l(m_devicestatesMutex);
+	std::lock_guard<std::mutex> l(m_luaMutex);
 
 	iStates.clear();
 	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates),

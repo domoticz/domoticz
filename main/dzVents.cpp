@@ -824,7 +824,6 @@ void CdzVents::ExportHardwareData(CLuaTable &luaTable, int& index, const std::ve
 
 void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
-	std::lock_guard<std::mutex> l1(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
 	time_t now = mytime(nullptr);
 	struct tm tm1;
@@ -960,7 +959,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 
 	// Now do the scenes and groups.
-	std::lock_guard<std::mutex> l2(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 
 	std::vector<std::vector<std::string> > result;
 
@@ -1013,7 +1011,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	std::string vtype;
 
 	// Now do the user variables.
-	std::lock_guard<std::mutex> l3(m_mainworker.m_eventsystem.m_uservariablesMutex);
 	for (const auto &var : m_mainworker.m_eventsystem.m_uservariables)
 	{
 		CEventSystem::_tUserVariable uvitem = var.second;
