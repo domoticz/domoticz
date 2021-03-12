@@ -256,9 +256,6 @@
 					return;
 				}
 
-				// Mutex
-				// boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
-
 				std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
 				for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
 				{
@@ -311,8 +308,6 @@
 					Py_DECREF(aDevice);
 					Py_DECREF(pKey);
 				}
-				// devicestatesMutexLock1.unlock();
-
 				// Time related
 
 				// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
@@ -376,9 +371,6 @@
 				}
 				Py_DECREF(m_uservariablesDict);
 
-				// This doesn't work
-				// boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
-
 				std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
 				for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
 				{
@@ -386,8 +378,6 @@
 					Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(),
 								      Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
 				}
-
-				// uservariablesMutexLock2.unlock();
 
 				// Add __main__ module
 				PyObject *pModule = Plugins::PyImport_AddModule("__main__");
