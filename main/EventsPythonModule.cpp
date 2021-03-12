@@ -255,10 +255,9 @@
 					return;
 				}
 
-				std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
-				for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
+				for (const auto &itt : m_devicestates)
 				{
-					CEventSystem::_tDeviceStatus sitem = it_type->second;
+					CEventSystem::_tDeviceStatus sitem = itt.second;
 					// object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType,
 					// sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue,
 					// sitem.lastUpdate); devices[sitem.deviceName] = deviceStatus;
