@@ -5,8 +5,6 @@ on:
     branches:
       - development
       - master
-    paths:
-      - '**.py'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -21,12 +19,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # lint Python code
-      - name: lint Python code
-        run: |
-          python3 -m pip install --user flake8
-          python3 -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       # install dependencies
       - name: dependencies
