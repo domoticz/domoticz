@@ -106,7 +106,7 @@ begin
   Result := '-www ' + ConfigPage.Values[0] + ' -sslwww ' + ConfigPage.Values[1];
   if (LogUseLogButton.Checked) then
     begin
-      Result := Result + ' -log "' + LogConfigPage.Values[0] + '"';
+      Result := Result + ' -log """' + LogConfigPage.Values[0] + '"""';
     end;
 end;
 
