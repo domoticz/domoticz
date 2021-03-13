@@ -252,7 +252,7 @@ if [[ $? -eq 0 ]];then
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
 		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | wc -l)
-		errorLine=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | head -7 | tail -1 | grep -v Segmentation | wc -l)
+		errorLine=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | grep -v latitude | head -7 | tail -1 | grep -v Segmentation | wc -l)
 		if [ $errorCount -le $expectedErrorCount ] || [ $errorLine -eq 0 ] ;then
 			#echo Errors are to be expected
 			echo -n

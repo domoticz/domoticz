@@ -1,5 +1,6 @@
 local utils = require('Utils')
 local _MS -- kind of a cache so we don't have to extract ms every time
+local gTimes --
 
 local isEmpty = function(v)
 	return (v == nil or v == '')
@@ -9,21 +10,6 @@ local function getTimezone()
 	local diff = os.difftime(os.time(), os.time(os.date("!*t")))
 	return ( os.date('!*t').isdst and ( diff + 3600 ) ) or diff
 end
-
-local LOOKUPDAYABBROFWEEK = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
-local LOOKUPDAYNAME = { 'Sunday', 'Monday', 'Tuesday', 'WednesDay', 'Thursday', 'Friday', 'Saturday' }
-local LOOKUPMONTHABBR = { 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' }
-local LOOKUPMONTH = { 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' }
-local LOOKUPASTRO =
-{
-	CivTwilightEndInMinutes = 'CivilTwilightEndInMinutes',
-	AstrTwilightStartInMinutes = 'AstronomicalTwilightStartInMinutes',
-	AstrTwilightEndInMinutes = 'AstronomicalTwilightEndInMinutes',
-	SunAtSouthInMinutes = 'SolarNoonInMinutes',
-	NautTwilightEndInMinutes = 'NauticalTwilightEndInMinutes',
-	NautTwilightStartInMinutes = 'NauticalTwilightStartInMinutes',
-	CivTwilightStartInMinutes = 'CivilTwilightStartInMinutes',
-}
 
 local function getSMs(s)
 	local ms = 0
@@ -100,7 +86,7 @@ end
 -- Get day of a week at year beginning
 --(tm can be any date and will be forced to 1st of january same year)
 -- return 1=mon 7=sun
-function getYearBeginDayOfWeek(tm)
+local function getYearBeginDayOfWeek(tm)
 	local yearBegin = os.time{year=os.date("*t",tm).year,month=1,day=1}
 	local yearBeginDayOfWeek = tonumber(os.date("%w",yearBegin))
 	-- sunday correct from 0 -> 7
@@ -114,7 +100,7 @@ end
 -- returns basic correction to be add for counting number of week
 -- weekNum = math.floor((dayOfYear + returnedNumber) / 7) + 1
 -- (does not consider correction at begin and end of year)
-function getDayAdd(tm)
+local function getDayAdd(tm)
 	local yearBeginDayOfWeek = getYearBeginDayOfWeek(tm)
 	local dayAdd
 	if(yearBeginDayOfWeek < 5 ) then
@@ -131,7 +117,7 @@ end
 -- return week number in year based on ISO8601
 -- (week with 1st thursday since Jan 1st (including) is considered as Week 1)
 -- (if Jan 1st is Fri,Sat,Sun then it is part of week number from last year -> 52 or 53)
-function getWeekNumberOfYear(tm)
+local function getWeekNumberOfYear(tm)
 	local dayOfYear = os.date("%j",tm)
 	local dayAdd = getDayAdd(tm)
 	local dayOfYearCorrected = dayOfYear + dayAdd
@@ -156,16 +142,10 @@ end
 
 local function Time(sDate, isUTC, _testMS)
 
-	_G = _G or {} -- Only used when testing testTime.lua
-	_G.timeofday = _G.timeofday or {} -- Only used when testing testTime.lua
-
-	for originalName, dzVentsName in pairs(LOOKUPASTRO) do
-		_G.timeofday[dzVentsName] = _G.timeofday[originalName]
-	end
-
-	for key, value in pairs(_G.timeofday) do
-		_G.timeofday[key:lower()] = value
-	end
+	local LOOKUPDAYABBROFWEEK = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
+	local LOOKUPDAYNAME = { 'Sunday', 'Monday', 'Tuesday', 'WednesDay', 'Thursday', 'Friday', 'Saturday' }
+	local LOOKUPMONTHABBR = { 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' }
+	local LOOKUPMONTH = { 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' }
 
 	local ms
 	local now
@@ -262,12 +242,6 @@ local function Time(sDate, isUTC, _testMS)
 	self.monthAbbrName = LOOKUPMONTHABBR[self.month]
 	self.monthName = LOOKUPMONTH[self.month]
 
-	self.gTimes = utils.cloneTable(_G.timeofday) -- _G can change during execution
-	self.gTimes.astronomicaldaytime = ( self.minutesnow <= (self.gTimes.AstrTwilightEndInMinutes or 0) and self.minutesnow >= (self.gTimes.AstrTwilightStartInMinutes or 9999))
-	self.gTimes.nauticaldaytime = (self.minutesnow <= (self.gTimes.NautTwilightEndInMinutes or 0) and self.minutesnow >= (self.gTimes.NautTwilightStartInMinutes or 9999))
-	self.gTimes.nauticalnighttime = not(self.gTimes.nauticaldaytime)
-	self.gTimes.astronomicalnighttime = not(self.gTimes.astronomicaldaytime)
-
 	-- Note: %V doesn't work on Windows so we have to use a custom function here
 	-- doesn't work: self.week = tonumber(os.date('%V', dDate))
 	self.week = getWeekNumberOfYear(dDate)
@@ -292,6 +266,8 @@ local function Time(sDate, isUTC, _testMS)
 	self.isdst = time.isdst
 
 	if (_G.TESTMODE) then
+		_G = _G or {} -- Only used when testing testTime.lua
+		_G.timeofday = _G.timeofday or {} -- Only used when testing testTime.lua
 		function self._getUtilsInstance()
 			return utils
 		end
@@ -628,10 +604,10 @@ local function Time(sDate, isUTC, _testMS)
 	function self.ruleIsBeforeAstrologicalMoment(rule)
 		local minutes = tonumber(string.match(rule, '%.*(%d+) minutes before%.*'))
 		if (minutes ~= nil) then
-			for astronomicalString, tMinutes in pairs(self.gTimes) do
-				if type(self.gTimes[astronomicalString]) ~= 'boolean' then
+			for astronomicalString, tMinutes in pairs(gTimes) do
+				if type(gTimes[astronomicalString]) ~= 'boolean' then
 					local moment = astronomicalString:gsub('InMinutes','')
-					return ( self.minutesnow + minutes ) == self.gTimes[astronomicalString]
+					return ( self.minutesnow + minutes ) == gTimes[astronomicalString]
 				end
 			end
 		end
@@ -641,10 +617,10 @@ local function Time(sDate, isUTC, _testMS)
 	function self.ruleIsAfterAstrologicalMoment(rule)
 		local minutes = tonumber(string.match(rule, '%.*(%d+) minutes after%.*'))
 		if (minutes ~= nil) then
-			for astronomicalString, tMinutes in pairs(self.gTimes) do
-				if type(self.gTimes[astronomicalString]) ~= 'boolean' then
+			for astronomicalString, tMinutes in pairs(gTimes) do
+				if type(gTimes[astronomicalString]) ~= 'boolean' then
 					local moment = astronomicalString:gsub('InMinutes','')
-					return ( self.minutesnow - minutes ) == self.gTimes[astronomicalString]
+					return ( self.minutesnow - minutes ) == gTimes[astronomicalString]
 				end
 			end
 		end
@@ -665,12 +641,11 @@ local function Time(sDate, isUTC, _testMS)
 	-- sunset, sunrise, CivilTwilightEnd, NautTwilightStart, etc
 	function self.ruleIsAtAstronomicalMoment(rule)
 
-		for astronomicalString, value in pairs(self.gTimes) do
-			if type(self.gTimes[astronomicalString]) ~= 'boolean' then
+		for astronomicalString, value in pairs(gTimes) do
+			if type(gTimes[astronomicalString]) ~= 'boolean' then
 				local moment = astronomicalString:gsub('InMinutes','')
-				-- utils.log('at ' .. moment .. ': ' .. tostring(value),utils.LOG_FORCE)
 				if rule:find('%.*%s*at%s*' .. moment:lower()) then
-					return self.minutesnow == self.gTimes[astronomicalString]
+					return self.minutesnow == gTimes[astronomicalString]
 				end
 			end
 		end
@@ -681,12 +656,11 @@ local function Time(sDate, isUTC, _testMS)
 	-- daytime, nightime, etc
 	function self.ruleIsAtAstronomicalRange(rule)
 
-		for astronomicalString, value in pairs(self.gTimes) do
-			if type(self.gTimes[astronomicalString]) == 'boolean' then
+		for astronomicalString, value in pairs(gTimes) do
+			if type(gTimes[astronomicalString]) == 'boolean' then
 				local moment = astronomicalString
-				-- utils.log('at ' .. moment .. ': ' .. tostring(value),utils.LOG_FORCE)
 				if rule:find('%.*%s*at%s*' .. moment:lower()) then
-					return self.gTimes[astronomicalString]
+					return gTimes[astronomicalString]
 				end
 			end
 		end
@@ -794,7 +768,7 @@ local function Time(sDate, isUTC, _testMS)
 			toM = tonumber(toM)
 
 			if (fromH == nil or fromM == nil or toH == nil or toM == nil) then -- invalid format
-				return false 
+				return false
 			else
 				return timeIsInRange(fromH, fromM, toH, toM)
 			end
@@ -818,18 +792,18 @@ local function Time(sDate, isUTC, _testMS)
 		-- check if it is before astroMoment
 		minutes, astrologicalMoment = string.match(moment, '%.*(%d+) minutes before (%a+)')
 		if minutes and astrologicalMoment then
-			return minutesToTime(self.gTimes[astrologicalMoment .. 'inminutes'] - tonumber(minutes))
+			return minutesToTime(gTimes[astrologicalMoment .. 'inminutes'] - tonumber(minutes))
 		end
 
 		-- check if it is after astroMoment
 		minutes, astrologicalMoment = string.match(moment, '%.*(%d+) minutes after (%a+)')
 		if minutes and astrologicalMoment then
-			return minutesToTime(self.gTimes[astrologicalMoment .. 'inminutes'] + tonumber(minutes))
+			return minutesToTime(gTimes[astrologicalMoment .. 'inminutes'] + tonumber(minutes))
 		end
 
 		-- check at astroMoment
-		if (self.gTimes[moment .. 'inminutes']) then
-			return minutesToTime(self.gTimes[moment .. 'inminutes'])
+		if (gTimes[moment .. 'inminutes']) then
+			return minutesToTime(gTimes[moment .. 'inminutes'])
 		end
 
 		return nil
@@ -862,6 +836,36 @@ local function Time(sDate, isUTC, _testMS)
 		return rule
 	end
 
+	local function populateAstrotimes()
+
+		local LOOKUPASTRO =
+		{
+		CivTwilightEndInMinutes = 'CivilTwilightEndInMinutes',
+		AstrTwilightStartInMinutes = 'AstronomicalTwilightStartInMinutes',
+		AstrTwilightEndInMinutes = 'AstronomicalTwilightEndInMinutes',
+		SunAtSouthInMinutes = 'SolarNoonInMinutes',
+		NautTwilightEndInMinutes = 'NauticalTwilightEndInMinutes',
+		NautTwilightStartInMinutes = 'NauticalTwilightStartInMinutes',
+		CivTwilightStartInMinutes = 'CivilTwilightStartInMinutes',
+		}
+
+		gTimes = utils.cloneTable(_G.timeofday) -- _G can change during execution
+
+		for originalName, dzVentsName in pairs(LOOKUPASTRO) do
+			gTimes[dzVentsName] = gTimes[originalName]
+		end
+
+		for key, value in pairs(gTimes) do
+			gTimes[key:lower()] = value
+		end
+
+		gTimes.astronomicaldaytime = ( self.minutesnow <= (gTimes.AstrTwilightEndInMinutes or 0) and self.minutesnow >= (gTimes.AstrTwilightStartInMinutes or 9999))
+		gTimes.nauticaldaytime = (self.minutesnow <= (gTimes.NautTwilightEndInMinutes or 0) and self.minutesnow >= (gTimes.NautTwilightStartInMinutes or 9999))
+		gTimes.nauticalnighttime = not(gTimes.nauticaldaytime)
+		gTimes.astronomicalnighttime = not(gTimes.astronomicaldaytime)
+		return true
+	end
+
 	-- returns true if self.time matches the rule
 	function self.matchesRule(rule, processed)
 
@@ -870,6 +874,7 @@ local function Time(sDate, isUTC, _testMS)
 
 		-- split into atomic time rules to simplify and speedup processing
 		elseif type(rule) == 'string' and not(processed) then
+			populateAstrotimes()
 			local rule = rule:lower()
 			local validPositiveRules = true
 			local negativeKeyword = 'except'
@@ -880,11 +885,11 @@ local function Time(sDate, isUTC, _testMS)
 				local aRule = ''
 
 				for ruleWord in string.gmatch(rawRule, "[%S]*") do -- all "words" separated by spaces
-						if ruleKeywords:find(ruleWord) and aRule ~= '' then
-								table.insert(allRules, aRule)
-								aRule = ''
-						end
-						aRule = ( aRule == '' and ruleWord ) or ( aRule .. ' ' .. ruleWord )
+					if ruleKeywords:find(ruleWord) and aRule ~= '' then
+						table.insert(allRules, aRule)
+						aRule = ''
+					end
+					aRule = ( aRule == '' and ruleWord ) or ( aRule .. ' ' .. ruleWord )
 				end
 				if aRule ~= '' then table.insert(allRules, aRule) end
 				return allRules or {}

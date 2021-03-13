@@ -146,7 +146,6 @@ describe('Time', function()
 		end)
 
 		it('should have time properties', function()
-			-- time should be converted to local time
 			assert.is_same(localPast.year, utcT.year)
 			assert.is_same(localPast.moth, utcT.mont)
 			assert.is_same(localPast.day, utcT.day)
@@ -156,7 +155,6 @@ describe('Time', function()
 			assert.is_same(localPast.sec, utcT.sec)
 			assert.is_same(localPast.sec, utcT.seconds)
 
-			-- however utcTime holds the utc time
 			assert.is_same(utcPast.year, utcT.utcTime.year)
 			assert.is_same(utcPast.moth, utcT.utcTime.mont)
 			assert.is_same(utcPast.day, utcT.utcTime.day)
@@ -820,11 +818,9 @@ describe('Time', function()
 			end)
 
 			describe('at civiltwilightend', function()
-
 				it('should return true if it is at civiltwilightend', function()
 					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:04:00')
-                    -- assert.is_same(t.matchesRule('at civiltwilightend'),_G.timeofday)
 					assert.is_true(t.matchesRule('at civiltwilightend'))
 				end)
 
@@ -837,7 +833,7 @@ describe('Time', function()
 				it('should return false if the rule is not present', function()
 					_G.timeofday = { ['CivTwilightEndInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:04:00')
-                    assert.is_false(t.matchesRule('at blabalbba'))
+					assert.is_false(t.matchesRule('at blabalbba'))
 				end)
 
 				it('should detect the rule within a random string', function()
@@ -1073,7 +1069,7 @@ describe('Time', function()
 					local t = Time('2017-01-01 00:00:00')
 					assert.is_false(t.matchesRule('at civilnighttime'))
 				end)
-				
+
 			end)
 
 			describe('at sunset', function()
@@ -1458,10 +1454,10 @@ describe('Time', function()
 
 						-- time between 18:00 and 06:00
 						local t = Time('2017-01-01 01:04:00')
-						assert.is_true(t.ruleMatchesBetweenRange('between sunset and sunrise'))
+						assert.is_true(t.matchesRule('between sunset and sunrise'))
 
 						t = Time('2017-01-01 17:00:00')
-						assert.is_false(t.ruleMatchesBetweenRange('between sunset and sunrise'))
+						assert.is_false(t.matchesRule('between sunset and sunrise'))
 					end)
 
 					it('between solarnoon and sunrise', function()
@@ -1472,7 +1468,7 @@ describe('Time', function()
 						}
 
 						-- time between 07:00 and 12:00
-						local t = Time('2017-01-01 07:04:00')
+						local t = Time('2017-01-01 09:04:00')
 						assert.is_true(t.matchesRule('between sunrise and solarnoon'))
 
 						t = Time('2017-01-01 17:00:00')
@@ -2109,14 +2105,14 @@ describe('Time', function()
 				assert.is_true(t.matchesRule('at nighttime at 21:32-05:44 every 5 minutes'))
 			end)
 
-            it('at nauticalnighttime at 21:32-05:44 every 5 minutes', function()
+			it('at nauticalnighttime at 21:32-05:44 every 5 minutes', function()
 				_G.timeofday = { NautTwilightEndInMinutes = 1185 }
 				_G.timeofday = { NautTwilightStartInMinutes = 361 }
 				local t = Time('2017-06-05 01:05:00') -- on monday
 				assert.is_true(t.matchesRule('at NauticalNightTime at 21:32-05:44 every 5 minutes'))
 			end)
 
-            it('at nauticalnighttime at 21:32-05:44 every 5 minutes', function()
+			it('at nauticalnighttime at 21:32-05:44 every 5 minutes', function()
 				_G.timeofday = { NautTwilightEndInMinutes = 1185 }
 				_G.timeofday = { NautTwilightStartInMinutes = 361 }
 				local t = Time('2017-06-05 01:06:00') -- on monday
