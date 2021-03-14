@@ -1280,7 +1280,7 @@ namespace http {
 						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
 						std::string JWTalgo = decodedJWT.get_algorithm();
 						std::error_code ec;
-						auto JWTverifyer = jwt::verify().with_issuer("domoticz").with_audience(clientid);
+						auto JWTverifyer = jwt::verify().with_issuer(myWebem->m_DigistRealm).with_audience(clientid);
 						if (JWTalgo.compare("HS256") == 0)
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::hs256{ clientsecret });
@@ -1410,6 +1410,40 @@ namespace http {
 			}
 			m_failcounter++;
 			return 0;
+		}
+
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint16_t exptime)
+		{
+			bool bOk = false;
+
+			// Check if the clientID exists and we have a valid clientSecret for it
+			for (const auto &my : myRequestHandler.Get_myWebem()->m_userpasswords)
+			{
+				if (my.Username == clientid)
+				{
+					if (my.userrights == URIGHTS_CLIENTID)	// The 'user' should have CLIENTID rights to be a real Client (and not a normal user)
+					{
+						if (my.Password == GenerateMD5Hash(clientsecret))
+						{
+							auto JWT = jwt::create()
+								.set_type("JWT")
+								.set_issuer(m_DigistRealm)
+								.set_issued_at(std::chrono::system_clock::now())
+								.set_not_before(std::chrono::system_clock::now())
+								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
+								.set_audience(clientid)
+								.set_subject(user)
+								.sign(jwt::algorithm::hs256{my.Password});
+
+							jwttoken = JWT;
+							bOk = true;
+						}
+					}
+					_log.Debug(DEBUG_AUTH, "ClientID %s password check: %d", clientid.c_str(), bOk);
+				}
+			}
+
+			return bOk;
 		}
 
 		bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork)
