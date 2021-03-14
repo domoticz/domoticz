@@ -643,8 +643,8 @@ local function Time(sDate, isUTC, _testMS)
 
 		for astronomicalString, value in pairs(gTimes) do
 			if type(gTimes[astronomicalString]) ~= 'boolean' then
-				local moment = astronomicalString:gsub('InMinutes','')
-				if rule:find('%.*%s*at%s*' .. moment:lower()) then
+				local moment = astronomicalString:gsub('inminutes','')
+				if rule:find('%.*%s*at%s*' .. moment) then
 					return self.minutesnow == gTimes[astronomicalString]
 				end
 			end
@@ -659,7 +659,7 @@ local function Time(sDate, isUTC, _testMS)
 		for astronomicalString, value in pairs(gTimes) do
 			if type(gTimes[astronomicalString]) == 'boolean' then
 				local moment = astronomicalString
-				if rule:find('%.*%s*at%s*' .. moment:lower()) then
+				if rule:find('%.*%s*at%s*' .. moment) then
 					return gTimes[astronomicalString]
 				end
 			end
@@ -840,27 +840,29 @@ local function Time(sDate, isUTC, _testMS)
 
 		local LOOKUPASTRO =
 		{
-		CivTwilightEndInMinutes = 'CivilTwilightEndInMinutes',
-		AstrTwilightStartInMinutes = 'AstronomicalTwilightStartInMinutes',
-		AstrTwilightEndInMinutes = 'AstronomicalTwilightEndInMinutes',
-		SunAtSouthInMinutes = 'SolarNoonInMinutes',
-		NautTwilightEndInMinutes = 'NauticalTwilightEndInMinutes',
-		NautTwilightStartInMinutes = 'NauticalTwilightStartInMinutes',
-		CivTwilightStartInMinutes = 'CivilTwilightStartInMinutes',
+			CivTwilightEndInMinutes = 'civiltwilightendinminutes',
+			AstrTwilightStartInMinutes = 'astronomicaltwilightstartinminutes',
+			AstrTwilightEndInMinutes = 'astronomicaltwilightendinminutes',
+			SunAtSouthInMinutes = 'solarnooninminutes',
+			NautTwilightEndInMinutes = 'nauticaltwilightendinminutes',
+			NautTwilightStartInMinutes = 'nauticaltwilightstartinminutes',
+			CivTwilightStartInMinutes = 'civiltwilightstartinminutes',
+			Daytime = 'daytime',
+			SunsetInMinutes = 'sunsetinminutes',
+			Civildaytime = 'civildaytime',
+			Civilnighttime = 'civilnighttime',
+			SunriseInMinutes = 'sunriseinminutes',
+			Nighttime = 'nighttime',
 		}
 
-		gTimes = utils.cloneTable(_G.timeofday) -- _G can change during execution
-
+		gTimes = {}
 		for originalName, dzVentsName in pairs(LOOKUPASTRO) do
-			gTimes[dzVentsName] = gTimes[originalName]
+			gTimes[dzVentsName] = _G.timeofday[originalName]
 		end
 
-		for key, value in pairs(gTimes) do
-			gTimes[key:lower()] = value
-		end
-
-		gTimes.astronomicaldaytime = ( self.minutesnow <= (gTimes.AstrTwilightEndInMinutes or 0) and self.minutesnow >= (gTimes.AstrTwilightStartInMinutes or 9999))
-		gTimes.nauticaldaytime = (self.minutesnow <= (gTimes.NautTwilightEndInMinutes or 0) and self.minutesnow >= (gTimes.NautTwilightStartInMinutes or 9999))
+		gTimes.sunatsouthinMinutes = gTimes.solarnooninminutes
+		gTimes.astronomicaldaytime = ( self.minutesnow <= (gTimes.astronomicaltwilightendinminutes or 0) and self.minutesnow >= (gTimes.astronomicaltwilightstartinminutes or 9999))
+		gTimes.nauticaldaytime = (self.minutesnow <= (gTimes.nauticaltwilightendinminutes or 0) and self.minutesnow >= (gTimes.nauticaltwilightstartinminutes or 9999))
 		gTimes.nauticalnighttime = not(gTimes.nauticaldaytime)
 		gTimes.astronomicalnighttime = not(gTimes.astronomicaldaytime)
 		return true
