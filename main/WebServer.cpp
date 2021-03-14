@@ -351,6 +351,8 @@ namespace http {
 			RegisterCommandCode("logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
 			m_pWebEm->RegisterPageCode("/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
 
+			RegisterCommandCode("getjwttoken", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetJwtToken(session, req, root); }, true);
+
 			RegisterCommandCode("getversion", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetVersion(session, req, root); }, true);
 			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
 			RegisterCommandCode("clearlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearLog(session, req, root); });
@@ -954,6 +956,48 @@ namespace http {
 					session.rememberme = (rememberme == "true");
 					root["user"] = session.username;
 					root["rights"] = session.rights;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_GetJwtToken(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string auth_header;
+			std::string clientid;
+			std::string clientsecret;
+			std::string user;
+			std::string jwttoken;
+			uint16_t exptime = 3600;
+
+			root["title"] = "getjwttoken";
+			root["status"] = "ERR";
+			if (req.method == "POST")
+			{
+				user = request::findValue(&req, "username");
+				if (!user.empty())
+				{
+					if (request::get_req_header(&req, "Authorization") != nullptr)
+					{
+						auth_header = request::get_req_header(&req, "Authorization");
+						// Basic Auth header
+						size_t npos = auth_header.find("Basic ");
+						if (npos != std::string::npos)
+						{
+							std::string decoded = base64_decode(auth_header.substr(6));
+							npos = decoded.find(':');
+							if (npos != std::string::npos)
+							{
+								clientid = decoded.substr(0, npos);
+								clientsecret = decoded.substr(npos + 1);
+								_log.Debug(DEBUG_AUTH, "GetJWTToken: Found a Basic Auth Header for ClientID (%s) and User (%s)", clientid.c_str(), user.c_str());
+								if (m_pWebEm->GenerateJwtToken(jwttoken, clientid, clientsecret, user, exptime))
+								{
+									root["accesstoken"] = jwttoken;
+									root["status"] = "OK";
+								}
+							}
+						}
+					}
 				}
 			}
 		}
