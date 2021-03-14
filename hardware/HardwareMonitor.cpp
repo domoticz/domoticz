@@ -268,7 +268,7 @@ void CHardwareMonitor::GetInternalARMClockSpeed()
 
 	Debug(DEBUG_NORM,"Updating sensor with value %.2f",ArmClockSpeed);
 
-	SendCustomSensor(0, 1, 255, ArmClockSpeed, "Arm Clock Speed","Mhz");
+	SendCustomSensor(0, 1, 255, ArmClockSpeed, "Arm Clock Speed","MHz");
 }
 
 void CHardwareMonitor::GetInternalV3DClockSpeed()
@@ -299,7 +299,7 @@ void CHardwareMonitor::GetInternalV3DClockSpeed()
 
 	Debug(DEBUG_NORM,"Updating sensor with value %.2f",V3DClockSpeed);
 
-	SendCustomSensor(0, 2, 255, V3DClockSpeed, "V3D Clock Speed","Mhz");
+	SendCustomSensor(0, 2, 255, V3DClockSpeed, "V3D Clock Speed","MHz");
 }
 
 void CHardwareMonitor::GetInternalCoreClockSpeed()
@@ -330,7 +330,7 @@ void CHardwareMonitor::GetInternalCoreClockSpeed()
 
 	Debug(DEBUG_NORM,"Updating sensor with value %.2f",CoreClockSpeed);
 
-	SendCustomSensor(0, 3, 255, CoreClockSpeed, "Core Clock Speed","Mhz");
+	SendCustomSensor(0, 3, 255, CoreClockSpeed, "Core Clock Speed","MHz");
 }
 
 void CHardwareMonitor::GetInternalVoltage()

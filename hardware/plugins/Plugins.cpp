@@ -22,10 +22,9 @@
 
 #define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                                                                                          \
 	{                                                                                                                                                                                              \
-		PyObject *pObj = Py_BuildValue("s", value.c_str());                                                                                                                                    \
+		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                                                                                    \
 		if (PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                                                                      \
 			pPlugin->Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", m_PluginKey.c_str(), key, value.c_str());                                                        \
-		Py_DECREF(pObj);                                                                                                                                                                       \
 	}
 
 #define GETSTATE(m) ((struct module_state *)PyModule_GetState(m))
@@ -43,15 +42,13 @@ extern MainWorker m_mainworker;
 namespace Plugins
 {
 
-	extern std::mutex PluginMutex; // controls access to the message queue
-	extern std::queue<CPluginMessageBase *> PluginMessageQueue;
-
 	std::mutex PythonMutex; // controls access to Python
 
 	void LogPythonException(CPlugin *pPlugin, const std::string &sHandler)
 	{
 		PyTracebackObject *pTraceback;
-		PyObject *pExcept, *pValue;
+		PyNewRef			pExcept;
+		PyNewRef			pValue;
 		PyTypeObject *TypeName;
 		PyBytesObject *pErrBytes = nullptr;
 		const char *pTypeText = nullptr;
@@ -111,14 +108,12 @@ namespace Plugins
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject *pCode = frame->f_code;
-				PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-				PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
+				PyNewRef	pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+				PyNewRef	pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
 				if (pPlugin)
-					pPlugin->Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
+					pPlugin->Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, ((PyBytesObject*)pFileBytes)->ob_sval, ((PyBytesObject*)pFuncBytes)->ob_sval);
 				else
-					_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
-				Py_XDECREF(pFileBytes);
-				Py_XDECREF(pFuncBytes);
+					_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, ((PyBytesObject*)pFileBytes)->ob_sval, ((PyBytesObject*)pFuncBytes)->ob_sval);
 			}
 			pTraceFrame = pTraceFrame->tb_next;
 		}
@@ -131,10 +126,6 @@ namespace Plugins
 				_log.Log(LOG_ERROR, "(%s) Call to message handler '%s' failed, unable to decode exception.", Name.c_str(), sHandler.c_str());
 		}
 
-		if (pExcept)
-			Py_XDECREF(pExcept);
-		if (pValue)
-			Py_XDECREF(pValue);
 		if (pTraceback)
 			Py_XDECREF(pTraceback);
 	}
@@ -157,15 +148,15 @@ namespace Plugins
 			PyCodeObject *pCode = frame->f_code;
 			if (pCode && pCode->co_filename)
 			{
-				PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-				sFuncName = pFileBytes->ob_sval;
+				PyNewRef pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+				sFuncName = ((PyBytesObject *)pFileBytes)->ob_sval;
 			}
 			if (pCode && pCode->co_name)
 			{
 				if (!sFuncName.empty())
 					sFuncName += "\\";
-				PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
-				sFuncName = pFuncBytes->ob_sval;
+				PyNewRef pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
+				sFuncName += ((PyBytesObject *)pFuncBytes)->ob_sval;
 			}
 
 			switch (what)
@@ -203,15 +194,15 @@ namespace Plugins
 			PyCodeObject *pCode = frame->f_code;
 			if (pCode && pCode->co_filename)
 			{
-				PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-				sFuncName = pFileBytes->ob_sval;
+				PyNewRef	pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+				sFuncName = ((PyBytesObject *)pFileBytes)->ob_sval;
 			}
 			if (pCode && pCode->co_name)
 			{
 				if (!sFuncName.empty())
 					sFuncName += "\\";
-				PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
-				sFuncName = pFuncBytes->ob_sval;
+				PyNewRef	pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
+				sFuncName += ((PyBytesObject *)pFuncBytes)->ob_sval;
 			}
 
 			switch (what)
@@ -521,7 +512,7 @@ namespace Plugins
 		}
 		else
 		{
-			CPluginProtocolJSON *pProtocol = (CPluginProtocolJSON *)CPluginProtocol::Create("JSON");
+			CPluginProtocolJSON jsonProtocol;
 			PyObject *pNewConfig = nullptr;
 			static char *kwlist[] = { "Config", nullptr };
 			if (PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pNewConfig))
@@ -533,7 +524,7 @@ namespace Plugins
 					return pConfig;
 				}
 				//  Convert to JSON and store
-				sConfig = pProtocol->PythontoJSON(pNewConfig);
+				sConfig = jsonProtocol.PythontoJSON(pNewConfig);
 
 				// Update database
 				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
@@ -552,7 +543,7 @@ namespace Plugins
 			sConfig = result[0][0];
 			if (sConfig.empty())
 				sConfig = "{}";
-			pConfig = pProtocol->JSONtoPython(sConfig);
+			pConfig = jsonProtocol.JSONtoPython(sConfig);
 			Py_DECREF(Py_None);
 		}
 
@@ -597,7 +588,10 @@ namespace Plugins
 			return pModule;
 		}
 		Py_INCREF((PyObject *)&CDeviceType);
+
 		PyModule_AddObject(pModule, "Device", (PyObject *)&CDeviceType);
+		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		pModState->pDeviceClass = &CDeviceType;
 
 		if (PyType_Ready(&CConnectionType) < 0)
 		{
@@ -644,47 +638,45 @@ namespace Plugins
 	void CPlugin::LogPythonException()
 	{
 		PyTracebackObject *pTraceback;
-		PyObject *pExcept, *pValue;
-		PyTypeObject *TypeName;
-		PyBytesObject *pErrBytes = nullptr;
+		PyNewRef	pExcept;
+		PyNewRef	pValue;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject **)&pTraceback);
+		PyErr_NormalizeException(&pExcept, &pValue, (PyObject **)&pTraceback);
+		PyErr_Clear();
 
 		if (pExcept)
 		{
-			TypeName = (PyTypeObject *)pExcept;
-			Log(LOG_ERROR, "(%s) Module Import failed, exception: '%s'", m_Name.c_str(), TypeName->tp_name);
+			Log(LOG_ERROR, "(%s) Module Import failed, exception: '%s'", m_Name.c_str(), ((PyTypeObject *)pExcept)->tp_name);
 		}
 		if (pValue)
 		{
 			std::string sError;
-			pErrBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pValue); // Won't normally return text for Import related errors
+			PyNewRef	pErrBytes = PyUnicode_AsASCIIString(pValue); // Won't normally return text for Import related errors
 			if (!pErrBytes)
 			{
 				// ImportError has name and path attributes
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "path"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "path");
-					PyBytesObject *pBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pString);
+					PyNewRef	pString = PyObject_GetAttrString(pValue, "path");
+					PyNewRef	pBytes = PyUnicode_AsASCIIString(pString);
 					if (pBytes)
 					{
 						sError += "Path: ";
-						sError += pBytes->ob_sval;
-						Py_XDECREF(pBytes);
+						sError += ((PyBytesObject *)pBytes)->ob_sval;
 					}
-					Py_XDECREF(pString);
 				}
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "name"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "name");
-					PyBytesObject *pBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pString);
+					PyNewRef	pString = PyObject_GetAttrString(pValue, "name");
+					PyNewRef	pBytes = PyUnicode_AsASCIIString(pString);
 					if (pBytes)
 					{
 						sError += " Name: ";
-						sError += pBytes->ob_sval;
-						Py_XDECREF(pBytes);
+						sError += ((PyBytesObject *)pBytes)->ob_sval;
 					}
-					Py_XDECREF(pString);
 				}
 				if (!sError.empty())
 				{
@@ -693,28 +685,27 @@ namespace Plugins
 				}
 
 				// SyntaxError, IndentationError & TabError have filename, lineno, offset and text attributes
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "filename"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "filename");
-					PyBytesObject *pBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pString);
+					PyNewRef pString = PyObject_GetAttrString(pValue, "filename");
+					PyNewRef pBytes = PyUnicode_AsASCIIString(pString);
 					sError += "File: ";
-					sError += pBytes->ob_sval;
-					Py_XDECREF(pString);
-					Py_XDECREF(pBytes);
+					sError += ((PyBytesObject *)pBytes)->ob_sval;
 				}
 				long long lineno = -1;
 				long long offset = -1;
+				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "lineno"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "lineno");
+					PyNewRef pString = PyObject_GetAttrString(pValue, "lineno");
 					lineno = PyLong_AsLongLong(pString);
-					Py_XDECREF(pString);
 				}
-				if (PyObject_HasAttrString(pExcept, "offset"))
+				PyErr_Clear();
+				if (PyObject_HasAttrString(pValue, "offset"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "offset");
+					PyNewRef pString = PyObject_GetAttrString(pValue, "offset");
 					offset = PyLong_AsLongLong(pString);
-					Py_XDECREF(pString);
 				}
 
 				if (!sError.empty())
@@ -730,12 +721,13 @@ namespace Plugins
 					sError = "";
 				}
 
-				if (PyObject_HasAttrString(pExcept, "text"))
+				PyErr_Clear();
+				if (PyObject_HasAttrString(pValue, "text"))
 				{
-					PyObject *pString = PyObject_GetAttrString(pValue, "text");
+					PyNewRef pText = PyObject_GetAttrString(pValue, "text");
+					PyNewRef pString = PyObject_Str(pText);
 					std::string sUTF = PyUnicode_AsUTF8(pString);
 					Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), sUTF.c_str());
-					Py_XDECREF(pString);
 				}
 				else
 				{
@@ -748,21 +740,14 @@ namespace Plugins
 				}
 			}
 			else
-				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), pErrBytes->ob_sval);
+				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), ((PyBytesObject *)pErrBytes)->ob_sval);
 		}
-
-		if (pErrBytes)
-			Py_XDECREF(pErrBytes);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
 			Log(LOG_ERROR, "(%s) Call to import module failed, unable to decode exception.", m_Name.c_str());
 		}
 
-		if (pExcept)
-			Py_XDECREF(pExcept);
-		if (pValue)
-			Py_XDECREF(pValue);
 		if (pTraceback)
 			Py_XDECREF(pTraceback);
 	}
@@ -770,9 +755,10 @@ namespace Plugins
 	void CPlugin::LogPythonException(const std::string &sHandler)
 	{
 		PyTracebackObject *pTraceback;
-		PyObject *pExcept, *pValue;
+		PyNewRef	pExcept;
+		PyNewRef	pValue;
 		PyTypeObject *TypeName;
-		PyBytesObject *pErrBytes = nullptr;
+		PyNewRef	pErrBytes = nullptr;
 		const char *pTypeText = nullptr;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject **)&pTraceback);
@@ -784,11 +770,11 @@ namespace Plugins
 		}
 		if (pValue)
 		{
-			pErrBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pValue);
+			pErrBytes = PyUnicode_AsASCIIString(pValue);
 		}
 		if (pTypeText && pErrBytes)
 		{
-			Log(LOG_ERROR, "(%s) '%s' failed '%s':'%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText, pErrBytes->ob_sval);
+			Log(LOG_ERROR, "(%s) '%s' failed '%s':'%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText, ((PyBytesObject *)pErrBytes)->ob_sval);
 		}
 		if (pTypeText && !pErrBytes)
 		{
@@ -796,19 +782,18 @@ namespace Plugins
 		}
 		if (!pTypeText && pErrBytes)
 		{
-			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), pErrBytes->ob_sval);
+			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), ((PyBytesObject *)pErrBytes)->ob_sval);
 		}
 		if (!pTypeText && !pErrBytes)
 		{
 			Log(LOG_ERROR, "(%s) '%s' failed, unable to determine error.", m_Name.c_str(), sHandler.c_str());
 		}
-		if (pErrBytes)
-			Py_XDECREF(pErrBytes);
 
 		// Log a stack trace if there is one
-		while (pTraceback)
+		PyTracebackObject *pTraceFrame = pTraceback;
+		while (pTraceFrame)
 		{
-			PyFrameObject *frame = pTraceback->tb_frame;
+			PyFrameObject *frame = pTraceFrame->tb_frame;
 			if (frame)
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
@@ -816,23 +801,21 @@ namespace Plugins
 				std::string FileName;
 				if (pCode->co_filename)
 				{
-					PyBytesObject *pFileBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_filename);
-					FileName = pFileBytes->ob_sval;
-					Py_XDECREF(pFileBytes);
+					PyNewRef pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
+					FileName = ((PyBytesObject*)pFileBytes)->ob_sval;
 				}
 				std::string FuncName = "Unknown";
 				if (pCode->co_name)
 				{
-					PyBytesObject *pFuncBytes = (PyBytesObject *)PyUnicode_AsASCIIString(pCode->co_name);
-					FuncName = pFuncBytes->ob_sval;
-					Py_XDECREF(pFuncBytes);
+					PyNewRef pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
+					FuncName = ((PyBytesObject*)pFuncBytes)->ob_sval;
 				}
 				if (!FileName.empty())
 					Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
 				else
 					Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
 			}
-			pTraceback = pTraceback->tb_next;
+			pTraceFrame = pTraceFrame->tb_next;
 		}
 
 		if (!pExcept && !pValue && !pTraceback)
@@ -840,10 +823,6 @@ namespace Plugins
 			Log(LOG_ERROR, "(%s) Call to message handler '%s' failed, unable to decode exception.", m_Name.c_str(), sHandler.c_str());
 		}
 
-		if (pExcept)
-			Py_XDECREF(pExcept);
-		if (pValue)
-			Py_XDECREF(pValue);
 		if (pTraceback)
 			Py_XDECREF(pTraceback);
 	}
@@ -893,6 +872,35 @@ namespace Plugins
 
 		RequestStart();
 
+		// Flush the message queue (should already be empty)
+		{
+			std::lock_guard<std::mutex> l(m_QueueMutex);
+			while (!m_MessageQueue.empty())
+			{
+				m_MessageQueue.pop_front();
+			}
+		}
+
+		// Start worker thread
+		try
+		{
+			std::lock_guard<std::mutex> l(m_QueueMutex);
+			m_thread = std::make_shared<std::thread>(&CPlugin::Do_Work, this);
+			if (!m_thread)
+			{
+				_log.Log(LOG_ERROR, "Failed start interface worker thread.");
+			}
+			else
+			{
+				SetThreadName(m_thread->native_handle(), m_Name.c_str());
+				_log.Log(LOG_NORM, "%s hardware started.", m_Name.c_str());
+			}
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "Exception caught in '%s'.", __func__);
+		}
+
 		//	Add start command to message queue
 		m_bIsStarting = true;
 		MessagePlugin(new InitializeMessage(this));
@@ -900,36 +908,6 @@ namespace Plugins
 		Log(LOG_STATUS, "(%s) Started.", m_Name.c_str());
 
 		return true;
-	}
-
-	void CPlugin::ClearMessageQueue()
-	{
-		// Copy the event queue to a temporary one, then copy back the events for other plugins
-		std::lock_guard<std::mutex> l(PluginMutex);
-		std::queue<CPluginMessageBase *> TempMessageQueue(PluginMessageQueue);
-		while (!PluginMessageQueue.empty())
-			PluginMessageQueue.pop();
-
-		while (!TempMessageQueue.empty())
-		{
-			CPluginMessageBase *FrontMessage = TempMessageQueue.front();
-			TempMessageQueue.pop();
-			if (FrontMessage->m_pPlugin == this)
-			{
-				// log events that will not be processed
-				CCallbackBase *pCallback = dynamic_cast<CCallbackBase *>(FrontMessage);
-				if (pCallback)
-					Log(LOG_ERROR, "(%s) Callback event '%s' (Python call '%s') discarded.", m_Name.c_str(), FrontMessage->Name(), pCallback->PythonName());
-				else
-					Log(LOG_ERROR, "(%s) Non-callback event '%s' discarded.", m_Name.c_str(), FrontMessage->Name());
-			}
-			else
-			{
-				// Message is for a different plugin so requeue it
-				Log(LOG_NORM, "(%s) requeuing '%s' message for '%s'", m_Name.c_str(), FrontMessage->Name(), FrontMessage->Plugin()->m_Name.c_str());
-				PluginMessageQueue.push(FrontMessage);
-			}
-		}
 	}
 
 	bool CPlugin::StopHardware()
@@ -990,6 +968,18 @@ namespace Plugins
 				delete m_Notifier;
 				m_Notifier = nullptr;
 			}
+
+			if (m_PyInterpreter) {
+				Log(LOG_STATUS, "(%s) Stopping python interpreter.", m_Name.c_str());
+				RestoreThread();
+
+				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
+				m_PyInterpreter = nullptr;
+
+				CPluginSystem pManager;
+				PyThreadState_Swap((PyThreadState *)pManager.PythonThread());
+				PyEval_ReleaseLock();
+			}
 		}
 		catch (...)
 		{
@@ -1006,8 +996,61 @@ namespace Plugins
 		Log(LOG_STATUS, "(%s) Entering work loop.", m_Name.c_str());
 		m_LastHeartbeat = mytime(nullptr);
 		int scounter = m_iPollInterval * 2;
-		while (!IsStopRequested(500))
+		while (!IsStopRequested(50) || !m_bIsStopped)
 		{
+			time_t Now = time(nullptr);
+			bool bProcessed = true;
+			while (bProcessed)
+			{
+				CPluginMessageBase *Message = nullptr;
+				bProcessed = false;
+
+				// Cycle once through the queue looking for the 1st message that is ready to process
+				{
+					std::lock_guard<std::mutex> l(m_QueueMutex);
+					for (size_t i = 0; i < m_MessageQueue.size(); i++)
+					{
+						CPluginMessageBase *FrontMessage = m_MessageQueue.front();
+						m_MessageQueue.pop_front();
+						if (!FrontMessage->m_Delay || FrontMessage->m_When <= Now)
+						{
+							// Message is ready now or was already ready (this is the case for almost all messages)
+							Message = FrontMessage;
+							break;
+						}
+						// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
+						m_MessageQueue.push_back(FrontMessage);
+					}
+				}
+
+				if (Message)
+				{
+					bProcessed = true;
+					try
+					{
+						const CPlugin *pPlugin = Message->Plugin();
+						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
+						{
+							_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") Processing '" + std::string(Message->Name()) + "' message");
+						}
+						Message->Process();
+					}
+					catch (...)
+					{
+						_log.Log(LOG_ERROR, "PluginSystem: Exception processing message.");
+					}
+				}
+				// Free the memory for the message
+				if (Message)
+				{
+					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
+					CPlugin *pPlugin = (CPlugin *)Message->Plugin();
+					pPlugin->RestoreThread();
+					delete Message;
+					pPlugin->ReleaseThread();
+				}
+			}
+
 			if (!--scounter)
 			{
 				//	Add heartbeat to message queue
@@ -1092,10 +1135,10 @@ namespace Plugins
 				}
 				else
 				{
-					PyObject *pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
+					PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyObject *pSites = PyObject_CallObject(pFunc, nullptr);
+						PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
 						if (!pSites)
 						{
 							LogPythonException("getsitepackages");
@@ -1103,7 +1146,7 @@ namespace Plugins
 						else
 							for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
 							{
-								PyObject *pSite = PyList_GetItem(pSites, i);
+								PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
 								if (pSite && PyUnicode_Check(pSite))
 								{
 									std::wstringstream ssPath;
@@ -1111,7 +1154,6 @@ namespace Plugins
 									sPath += sSeparator + ssPath.str();
 								}
 							}
-						Py_XDECREF(pSites);
 					}
 				}
 			}
@@ -1136,10 +1178,10 @@ namespace Plugins
 				}
 				else
 				{
-					PyObject *pFunc = PyObject_GetAttrString((PyObject *)pFaultModule, "enable");
+					PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pFaultModule, "enable");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyObject_CallObject(pFunc, nullptr);
+						PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
 					}
 				}
 			}
@@ -1174,17 +1216,6 @@ namespace Plugins
 			}
 			module_state *pModState = ((struct module_state *)PyModule_GetState(pMod));
 			pModState->pPlugin = this;
-
-			// Start worker thread
-			m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
-			std::string plugin_name = "Plugin_" + m_PluginKey;
-			SetThreadName(m_thread->native_handle(), plugin_name.c_str());
-
-			if (!m_thread)
-			{
-				Log(LOG_ERROR, "(%s) failed start worker thread.", m_PluginKey.c_str());
-				goto Error;
-			}
 
 			//	Add start command to message queue
 			MessagePlugin(new onStartCallback(this));
@@ -1244,22 +1275,20 @@ namespace Plugins
 	{
 		try
 		{
-			PyObject *pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
-			PyObject *pParamsDict = PyDict_New();
+			PyBorrowedRef	pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
+			PyNewRef		pParamsDict = PyDict_New();
 			if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add Parameters dictionary.", m_PluginKey.c_str());
 				goto Error;
 			}
-			Py_DECREF(pParamsDict);
 
-			PyObject *pObj = Py_BuildValue("i", m_HwdID);
+			PyNewRef pObj = Py_BuildValue("i", m_HwdID);
 			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
 				goto Error;
 			}
-			Py_DECREF(pObj);
 
 			std::string sLanguage = "en";
 			m_sql.GetPreferencesVar("Language", sLanguage);
@@ -1315,7 +1344,7 @@ namespace Plugins
 				{
 					CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-					PyObject *pKey = PyLong_FromLong(atoi(sd[0].c_str()));
+					PyNewRef	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
 					if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
 					{
 						Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
@@ -1327,7 +1356,6 @@ namespace Plugins
 					pDevice->Unit = atoi(sd[0].c_str());
 					CDevice_refresh(pDevice);
 					Py_DECREF(pDevice);
-					Py_DECREF(pKey);
 				}
 			}
 
@@ -1348,7 +1376,7 @@ namespace Plugins
 				{
 					CImage *pImage = (CImage *)CImage_new(&CImageType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-					PyObject *pKey = PyUnicode_FromString(sd[1].c_str());
+					PyNewRef	pKey = PyUnicode_FromString(sd[1].c_str());
 					if (PyDict_SetItem((PyObject *)m_ImageDict, pKey, (PyObject *)pImage) == -1)
 					{
 						Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
@@ -1359,7 +1387,6 @@ namespace Plugins
 					pImage->Name = PyUnicode_FromString(sd[2].c_str());
 					pImage->Description = PyUnicode_FromString(sd[3].c_str());
 					Py_DECREF(pImage);
-					Py_DECREF(pKey);
 				}
 			}
 
@@ -1367,6 +1394,7 @@ namespace Plugins
 
 			m_bIsStarted = true;
 			m_bIsStarting = false;
+			m_bIsStopped = false;
 			return true;
 		}
 		catch (...)
@@ -1382,7 +1410,7 @@ namespace Plugins
 	void CPlugin::ConnectionProtocol(CDirectiveBase *pMess)
 	{
 		ProtocolDirective *pMessage = (ProtocolDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 		if (m_Notifier)
 		{
 			delete pConnection->pProtocol;
@@ -1397,7 +1425,7 @@ namespace Plugins
 	void CPlugin::ConnectionConnect(CDirectiveBase *pMess)
 	{
 		ConnectDirective *pMessage = (ConnectDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
@@ -1428,9 +1456,9 @@ namespace Plugins
 				return;
 			}
 			if ((sTransport == "TLS/IP") || pConnection->pProtocol->Secure())
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, pConnection, sAddress, sPort);
 			else
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "Serial")
 		{
@@ -1438,7 +1466,7 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
-			pConnection->pTransport = (CPluginTransport *)new CPluginTransportSerial(m_HwdID, (PyObject *)pConnection, sAddress, pConnection->Baud);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportSerial(m_HwdID, pConnection, sAddress, pConnection->Baud);
 		}
 		else
 		{
@@ -1464,7 +1492,7 @@ namespace Plugins
 	void CPlugin::ConnectionListen(CDirectiveBase *pMess)
 	{
 		ListenDirective *pMessage = (ListenDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
@@ -1490,9 +1518,9 @@ namespace Plugins
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			if (!pConnection->pProtocol->Secure())
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, (PyObject *)pConnection, "", sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCP(m_HwdID, pConnection, "", sPort);
 			else
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, (PyObject *)pConnection, "", sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportTCPSecure(m_HwdID, pConnection, "", sPort);
 		}
 		else if (sTransport == "UDP/IP")
 		{
@@ -1501,7 +1529,7 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
@@ -1510,7 +1538,7 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str());
-			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else
 		{
@@ -1536,7 +1564,7 @@ namespace Plugins
 	void CPlugin::ConnectionRead(CPluginMessageBase *pMess)
 	{
 		ReadEvent *pMessage = (ReadEvent *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		pConnection->pProtocol->ProcessInbound(pMessage);
 	}
@@ -1544,7 +1572,7 @@ namespace Plugins
 	void CPlugin::ConnectionWrite(CDirectiveBase *pMess)
 	{
 		WriteDirective *pMessage = (WriteDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 		std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
 		if (pConnection->pTransport)
@@ -1577,7 +1605,7 @@ namespace Plugins
 					else
 						Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
 				}
-				pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, (PyObject *)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport *)new CPluginTransportUDP(m_HwdID, pConnection, sAddress, sPort);
 			}
 			else
 			{
@@ -1608,12 +1636,12 @@ namespace Plugins
 	void CPlugin::ConnectionDisconnect(CDirectiveBase *pMess)
 	{
 		DisconnectDirective *pMessage = (DisconnectDirective *)pMess;
-		CConnection *pConnection = (CConnection *)pMessage->m_pConnection;
+		CConnection *pConnection = pMessage->m_pConnection;
 
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
 		{
-			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject *)pConnection);
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, pConnection);
 		}
 
 		if (pConnection->pTransport)
@@ -1654,7 +1682,7 @@ namespace Plugins
 	{
 		CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-		PyObject *pKey = PyLong_FromLong(Unit);
+		PyNewRef	pKey = PyLong_FromLong(Unit);
 		if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
 		{
 			Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", m_PluginKey.c_str(), Unit);
@@ -1666,13 +1694,11 @@ namespace Plugins
 		pDevice->Unit = Unit;
 		CDevice_refresh(pDevice);
 		Py_DECREF(pDevice);
-		Py_DECREF(pKey);
 	}
 
 	void CPlugin::onDeviceModified(int Unit)
 	{
-		PyObject *pKey = PyLong_FromLong(Unit);
-
+		PyNewRef	pKey = PyLong_FromLong(Unit);
 		CDevice *pDevice = (CDevice *)PyDict_GetItem((PyObject *)m_DeviceDict, pKey);
 
 		if (!pDevice)
@@ -1686,7 +1712,7 @@ namespace Plugins
 
 	void CPlugin::onDeviceRemoved(int Unit)
 	{
-		PyObject *pKey = PyLong_FromLong(Unit);
+		PyNewRef	pKey = PyLong_FromLong(Unit);
 		if (PyDict_DelItem((PyObject *)m_DeviceDict, pKey) == -1)
 		{
 			Log(LOG_ERROR, "(%s) failed to remove unit '%u' from device dictionary.", m_PluginKey.c_str(), Unit);
@@ -1701,8 +1727,8 @@ namespace Plugins
 		}
 
 		// Add message to queue
-		std::lock_guard<std::mutex> l(PluginMutex);
-		PluginMessageQueue.push(pMessage);
+		std::lock_guard<std::mutex> l(m_QueueMutex);
+		m_MessageQueue.push_back(pMessage);
 	}
 
 	void CPlugin::DeviceAdded(int Unit)
@@ -1731,7 +1757,7 @@ namespace Plugins
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
 		{
-			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject *)pConnection);
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, pConnection);
 		}
 
 		if (pConnection->pTransport)
@@ -1754,7 +1780,7 @@ namespace Plugins
 			// inform the plugin if transport is connection based
 			if (pMessage->bNotifyPlugin)
 			{
-				MessagePlugin(new onDisconnectCallback(this, (PyObject *)pConnection));
+				MessagePlugin(new onDisconnectCallback(this, pConnection));
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
@@ -1777,33 +1803,81 @@ namespace Plugins
 			PyEval_SaveThread();
 	}
 
-	void CPlugin::Callback(const std::string &sHandler, void *pParams)
+	void CPlugin::Callback(PyObject *pTarget, const std::string &sHandler, PyObject *pParams)
 	{
 		try
 		{
 			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
-			if (m_PyModule && !sHandler.empty())
+			if (pTarget && !sHandler.empty())
 			{
-				PyObject *pFunc = PyObject_GetAttrString((PyObject *)m_PyModule, sHandler.c_str());
+				if (PyErr_Occurred())
+				{
+					PyErr_Clear();
+					Log(LOG_NORM, "(%s) Python exception set prior to callback '%s'", m_Name.c_str(), sHandler.c_str());
+				}
+
+				PyNewRef pFunc = PyObject_GetAttrString(pTarget, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
 					if (m_bDebug & PDM_QUEUE)
 						Log(LOG_NORM, "(%s) Calling message handler '%s'.", m_Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					PyObject *pReturnValue = PyObject_CallObject(pFunc, (PyObject *)pParams);
-					if (!pReturnValue)
+					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, pParams);
+					if (!pReturnValue || PyErr_Occurred())
 					{
 						LogPythonException(sHandler);
+						{
+							PyErr_Clear();
+						}
+						if (m_bDebug & PDM_PLUGIN)
+						{
+							// See if additional information is available
+							PyNewRef pLocals = PyObject_Dir(pTarget);
+							if (PyList_Check(pLocals))
+							{
+								Log(LOG_NORM, "(%s) Local context:", m_Name.c_str());
+								PyNewRef pIter = PyObject_GetIter(pLocals);
+								PyNewRef pItem = PyIter_Next(pIter);
+								while (pItem)
+								{
+									std::string sAttrName = PyUnicode_AsUTF8(pItem);
+									if (sAttrName.substr(0, 2) != "__") // ignore system stuff
+									{
+										if (PyObject_HasAttrString(pTarget, sAttrName.c_str()))
+										{
+											PyNewRef pValue = PyObject_GetAttrString(pTarget, sAttrName.c_str());
+											if (!PyCallable_Check(pValue)) // Filter out methods
+											{
+												PyNewRef nrString = PyObject_Str(pValue);
+												if (nrString)
+												{
+													std::string sUTF = PyUnicode_AsUTF8(nrString);
+													std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
+													Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", m_Name.c_str(), sAttrName.c_str(), sBlank.c_str(),
+													    sUTF.c_str());
+												}
+											}
+										}
+									}
+									pItem = PyIter_Next(pIter);
+								}
+							}
+						}
 					}
-					Py_XDECREF(pReturnValue);
 				}
-				else if (m_bDebug & PDM_QUEUE)
-					Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", m_Name.c_str(), sHandler.c_str());
+				else
+				{
+					if (m_bDebug & PDM_QUEUE)
+					{
+						Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", m_Name.c_str(), sHandler.c_str());
+					}
+					if (PyErr_Occurred())
+					{
+						PyErr_Clear();
+					}
+				}
 			}
-
-			if (pParams)
-				Py_XDECREF(pParams);
 		}
 		catch (std::exception *e)
 		{
@@ -1821,10 +1895,57 @@ namespace Plugins
 		{
 			PyErr_Clear();
 
+			// Validate Device dictionary prior to shutdown
+			if (m_DeviceDict)
+			{
+				PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+				if (!m_PyModule)
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+					return;
+				}
+
+				module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+				if (!pModState)
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+					return;
+				}
+
+				PyBorrowedRef	key;
+				CDevice *pDevice;
+				Py_ssize_t pos = 0;
+				// Sanity check to make sure the reference counbting is all good.
+				while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, (PyObject **)&pDevice))
+				{
+					// Dictionary should be full of Devices but Python script can make this assumption false, log warning if this has happened
+					int isDevice = PyObject_IsInstance((PyObject *)pDevice, (PyObject *)pModState->pDeviceClass);
+					if (isDevice == -1)
+					{
+						LogPythonException("Error determining type of Python object during dealloc");
+					}
+					else if (isDevice == 0)
+					{
+						_log.Log(LOG_NORM, "%s: Device dictionary contained non-Device entry.", __func__);
+					}
+					else
+					{
+						if (pDevice->ob_base.ob_refcnt > 1)
+						{
+							std::string sName = PyUnicode_AsUTF8(pDevice->Name);
+							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), pDevice->ob_base.ob_refcnt);
+						}
+						else if (pDevice->ob_base.ob_refcnt < 1)
+						{
+							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, pDevice->ob_base.ob_refcnt);
+						}
+					}
+				}
+			}
+
 			// Stop Python
 			Py_XDECREF(m_PyModule);
-			if (m_DeviceDict)
-				Py_XDECREF(m_DeviceDict);
+			Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict)
 				Py_XDECREF(m_ImageDict);
 			if (m_SettingsDict)
@@ -1845,13 +1966,24 @@ namespace Plugins
 		{
 			Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
 		}
-		ClearMessageQueue();
+
 		m_PyModule = nullptr;
 		m_DeviceDict = nullptr;
 		m_ImageDict = nullptr;
 		m_SettingsDict = nullptr;
 		m_PyInterpreter = nullptr;
 		m_bIsStarted = false;
+
+		// Flush the message queue (should already be empty)
+		{
+			std::lock_guard<std::mutex> l(m_QueueMutex);
+			while (!m_MessageQueue.empty())
+			{
+				m_MessageQueue.pop_front();
+			}
+		}
+
+		m_bIsStopped = true;
 	}
 
 	bool CPlugin::LoadSettings()

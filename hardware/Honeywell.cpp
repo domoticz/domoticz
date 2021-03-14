@@ -14,22 +14,22 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-const std::string HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
-const std::string HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";
-const std::string HONEYWELL_LOCATIONS_PATH = "https://api.honeywell.com/v2/locations?apikey=[apikey]";
-const std::string HONEYWELL_UPDATE_THERMOSTAT = "https://api.honeywell.com/v2/devices/thermostats/[deviceid]?apikey=[apikey]&locationId=[locationid]";
-const std::string HONEYWELL_TOKEN_PATH = "https://api.honeywell.com/oauth2/token";
+constexpr auto HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
+constexpr auto HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";
+constexpr auto HONEYWELL_LOCATIONS_PATH = "https://api.honeywell.com/v2/locations?apikey=[apikey]";
+constexpr auto HONEYWELL_UPDATE_THERMOSTAT = "https://api.honeywell.com/v2/devices/thermostats/[deviceid]?apikey=[apikey]&locationId=[locationid]";
+constexpr auto HONEYWELL_TOKEN_PATH = "https://api.honeywell.com/oauth2/token";
 
-const std::string kSetPointDesc = "Target temperature ([devicename])";
-const std::string kHeatingDesc = "Heating Mode([devicename])";
-const std::string kCoolingDesc = "Cooling Mome([devicename])";
-const std::string kHeatingStatusDesc = "Heating State ([devicename])";
-const std::string kCoolingStatusDesc = "Cooling State ([devicename])";
-const std::string kOutdoorTempDesc = "Outdoor temperature ([devicename])";
-const std::string kRoomTempDesc = "Room temperature ([devicename])";
-const std::string kAwayDesc = "Away ([name])";
-const std::string kfanRequest = "Fan Request ([devicename])";
-const std::string kcirculationFanRequest = "Circulation Fan Request ([devicename])";
+constexpr auto kSetPointDesc = "Target temperature ([devicename])";
+constexpr auto kHeatingDesc = "Heating Mode([devicename])";
+constexpr auto kCoolingDesc = "Cooling Mome([devicename])";
+constexpr auto kHeatingStatusDesc = "Heating State ([devicename])";
+constexpr auto kCoolingStatusDesc = "Cooling State ([devicename])";
+constexpr auto kOutdoorTempDesc = "Outdoor temperature ([devicename])";
+constexpr auto kRoomTempDesc = "Room temperature ([devicename])";
+constexpr auto kAwayDesc = "Away ([name])";
+constexpr auto kfanRequest = "Fan Request ([devicename])";
+constexpr auto kcirculationFanRequest = "Circulation Fan Request ([devicename])";
 
 extern http::server::CWebServerHelper m_webservers;
 

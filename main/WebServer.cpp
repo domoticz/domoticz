@@ -66,8 +66,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-using namespace std::placeholders;
-
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;
@@ -312,339 +310,340 @@ namespace http {
 			}
 
 			//register callbacks
-			m_pWebEm->RegisterIncludeCode("switchtypes", std::bind(&CWebServer::DisplaySwitchTypesCombo, this, _1));
-			m_pWebEm->RegisterIncludeCode("metertypes", std::bind(&CWebServer::DisplayMeterTypesCombo, this, _1));
-			m_pWebEm->RegisterIncludeCode("timertypes", std::bind(&CWebServer::DisplayTimerTypesCombo, this, _1));
-			m_pWebEm->RegisterIncludeCode("combolanguage", std::bind(&CWebServer::DisplayLanguageCombo, this, _1));
+			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto &&content_part) { DisplaySwitchTypesCombo(content_part); });
+			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto &&content_part) { DisplayMeterTypesCombo(content_part); });
+			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto &&content_part) { DisplayTimerTypesCombo(content_part); });
+			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto &&content_part) { DisplayLanguageCombo(content_part); });
 
-			m_pWebEm->RegisterPageCode("/json.htm", std::bind(&CWebServer::GetJSonPage, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/uploadcustomicon", std::bind(&CWebServer::Post_UploadCustomIcon, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/html5.appcache", std::bind(&CWebServer::GetAppCache, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", std::bind(&CWebServer::GetCameraSnapshot, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/backupdatabase.php", std::bind(&CWebServer::GetDatabaseBackup, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/raspberry.cgi", std::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/uvccapture.cgi", std::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/images/floorplans/plan", std::bind(&CWebServer::GetFloorplanImage, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/uploadcustomicon", [this](auto &&session, auto &&req, auto &&rep) { Post_UploadCustomIcon(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto &&session, auto &&req, auto &&rep) { GetCameraSnapshot(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto &&session, auto &&req, auto &&rep) { GetDatabaseBackup(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/raspberry.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/uvccapture.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/images/floorplans/plan", [this](auto &&session, auto &&req, auto &&rep) { GetFloorplanImage(session, req, rep); });
 
-			m_pWebEm->RegisterPageCode("/storesettings", std::bind(&CWebServer::PostSettings, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("setrfxcommode", std::bind(&CWebServer::SetRFXCOMMode, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("rfxupgradefirmware", std::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2, _3));
-			RegisterCommandCode("rfxfirmwaregetpercentage", std::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2, _3), true);
-			m_pWebEm->RegisterActionCode("setrego6xxtype", std::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("sets0metertype", std::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("setlimitlesstype", std::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/storesettings", [this](auto &&session, auto &&req, auto &&rep) { PostSettings(session, req, rep); });
+			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
+			m_pWebEm->RegisterActionCode("rfxupgradefirmware", [this](auto &&session, auto &&req, auto &&redirect_uri) { RFXComUpgradeFirmware(session, req, redirect_uri); });
+			RegisterCommandCode("rfxfirmwaregetpercentage", [this](auto &&session, auto &&req, auto &&root) { Cmd_RFXComGetFirmwarePercentage(session, req, root); }, true);
+			m_pWebEm->RegisterActionCode("setrego6xxtype", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetRego6XXType(session, req, redirect_uri); });
+			m_pWebEm->RegisterActionCode("sets0metertype", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetS0MeterType(session, req, redirect_uri); });
+			m_pWebEm->RegisterActionCode("setlimitlesstype", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetLimitlessType(session, req, redirect_uri); });
 
-			m_pWebEm->RegisterActionCode("uploadfloorplanimage", std::bind(&CWebServer::UploadFloorplanImage, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("uploadfloorplanimage", [this](auto &&session, auto &&req, auto &&redirect_uri) { UploadFloorplanImage(session, req, redirect_uri); });
 
-			m_pWebEm->RegisterActionCode("setopenthermsettings", std::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
-			RegisterCommandCode("sendopenthermcommand", std::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
+			m_pWebEm->RegisterActionCode("setopenthermsettings", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetOpenThermSettings(session, req, redirect_uri); });
+			RegisterCommandCode("sendopenthermcommand", [this](auto &&session, auto &&req, auto &&root) { Cmd_SendOpenThermCommand(session, req, root); }, true);
 
-			m_pWebEm->RegisterActionCode("reloadpiface", std::bind(&CWebServer::ReloadPiFace, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", std::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("restoredatabase", std::bind(&CWebServer::RestoreDatabase, this, _1, _2, _3));
-			m_pWebEm->RegisterActionCode("sbfspotimportolddata", std::bind(&CWebServer::SBFSpotImportOldData, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("reloadpiface", [this](auto &&session, auto &&req, auto &&redirect_uri) { ReloadPiFace(session, req, redirect_uri); });
+			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetCurrentCostUSBType(session, req, redirect_uri); });
+			m_pWebEm->RegisterActionCode("restoredatabase", [this](auto &&session, auto &&req, auto &&redirect_uri) { RestoreDatabase(session, req, redirect_uri); });
+			m_pWebEm->RegisterActionCode("sbfspotimportolddata", [this](auto &&session, auto &&req, auto &&redirect_uri) { SBFSpotImportOldData(session, req, redirect_uri); });
 
-			m_pWebEm->RegisterActionCode("event_create", std::bind(&CWebServer::EventCreate, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("event_create", [this](auto &&session, auto &&req, auto &&redirect_uri) { EventCreate(session, req, redirect_uri); });
 
-			RegisterCommandCode("getlanguage", std::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
-			RegisterCommandCode("getthemes", std::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
-			RegisterCommandCode("gettitle", std::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
+			RegisterCommandCode("getlanguage", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguage(session, req, root); }, true);
+			RegisterCommandCode("getthemes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetThemes(session, req, root); }, true);
+			RegisterCommandCode("gettitle", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetTitle(session, req, root); }, true);
 
-			RegisterCommandCode("logincheck", std::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
-			m_pWebEm->RegisterPageCode("/logincheck", std::bind(&CWebServer::PostLoginCheck, this, _1, _2, _3), true);
+			RegisterCommandCode("logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
+			m_pWebEm->RegisterPageCode("/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
 
-			RegisterCommandCode("getversion", std::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
-			RegisterCommandCode("getlog", std::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
-			RegisterCommandCode("clearlog", std::bind(&CWebServer::Cmd_ClearLog, this, _1, _2, _3));
-			RegisterCommandCode("getauth", std::bind(&CWebServer::Cmd_GetAuth, this, _1, _2, _3), true);
-			RegisterCommandCode("getuptime", std::bind(&CWebServer::Cmd_GetUptime, this, _1, _2, _3), true);
+			RegisterCommandCode("getversion", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetVersion(session, req, root); }, true);
+			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
+			RegisterCommandCode("clearlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearLog(session, req, root); });
+			RegisterCommandCode("getauth", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetAuth(session, req, root); }, true);
+			RegisterCommandCode("getuptime", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetUptime(session, req, root); }, true);
 
-			RegisterCommandCode("gethardwaretypes", std::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1, _2, _3));
-			RegisterCommandCode("addhardware", std::bind(&CWebServer::Cmd_AddHardware, this, _1, _2, _3));
-			RegisterCommandCode("updatehardware", std::bind(&CWebServer::Cmd_UpdateHardware, this, _1, _2, _3));
-			RegisterCommandCode("deletehardware", std::bind(&CWebServer::Cmd_DeleteHardware, this, _1, _2, _3));
+			RegisterCommandCode("gethardwaretypes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetHardwareTypes(session, req, root); });
+			RegisterCommandCode("addhardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddHardware(session, req, root); });
+			RegisterCommandCode("updatehardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateHardware(session, req, root); });
+			RegisterCommandCode("deletehardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteHardware(session, req, root); });
 
-			RegisterCommandCode("addcamera", std::bind(&CWebServer::Cmd_AddCamera, this, _1, _2, _3));
-			RegisterCommandCode("updatecamera", std::bind(&CWebServer::Cmd_UpdateCamera, this, _1, _2, _3));
-			RegisterCommandCode("deletecamera", std::bind(&CWebServer::Cmd_DeleteCamera, this, _1, _2, _3));
+			RegisterCommandCode("addcamera", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddCamera(session, req, root); });
+			RegisterCommandCode("updatecamera", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateCamera(session, req, root); });
+			RegisterCommandCode("deletecamera", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteCamera(session, req, root); });
 
-			RegisterCommandCode("wolgetnodes", std::bind(&CWebServer::Cmd_WOLGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("woladdnode", std::bind(&CWebServer::Cmd_WOLAddNode, this, _1, _2, _3));
-			RegisterCommandCode("wolupdatenode", std::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1, _2, _3));
-			RegisterCommandCode("wolremovenode", std::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("wolclearnodes", std::bind(&CWebServer::Cmd_WOLClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("wolgetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_WOLGetNodes(session, req, root); });
+			RegisterCommandCode("woladdnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_WOLAddNode(session, req, root); });
+			RegisterCommandCode("wolupdatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_WOLUpdateNode(session, req, root); });
+			RegisterCommandCode("wolremovenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_WOLRemoveNode(session, req, root); });
+			RegisterCommandCode("wolclearnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_WOLClearNodes(session, req, root); });
 
-			RegisterCommandCode("mysensorsgetnodes", std::bind(&CWebServer::Cmd_MySensorsGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("mysensorsgetchilds", std::bind(&CWebServer::Cmd_MySensorsGetChilds, this, _1, _2, _3));
-			RegisterCommandCode("mysensorsupdatenode", std::bind(&CWebServer::Cmd_MySensorsUpdateNode, this, _1, _2, _3));
-			RegisterCommandCode("mysensorsremovenode", std::bind(&CWebServer::Cmd_MySensorsRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("mysensorsremovechild", std::bind(&CWebServer::Cmd_MySensorsRemoveChild, this, _1, _2, _3));
-			RegisterCommandCode("mysensorsupdatechild", std::bind(&CWebServer::Cmd_MySensorsUpdateChild, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsgetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_MySensorsGetNodes(session, req, root); });
+			RegisterCommandCode("mysensorsgetchilds", [this](auto &&session, auto &&req, auto &&root) { Cmd_MySensorsGetChilds(session, req, root); });
+			RegisterCommandCode("mysensorsupdatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_MySensorsUpdateNode(session, req, root); });
+			RegisterCommandCode("mysensorsremovenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_MySensorsRemoveNode(session, req, root); });
+			RegisterCommandCode("mysensorsremovechild", [this](auto &&session, auto &&req, auto &&root) { Cmd_MySensorsRemoveChild(session, req, root); });
+			RegisterCommandCode("mysensorsupdatechild", [this](auto &&session, auto &&req, auto &&root) { Cmd_MySensorsUpdateChild(session, req, root); });
 
-			RegisterCommandCode("pingersetmode", std::bind(&CWebServer::Cmd_PingerSetMode, this, _1, _2, _3));
-			RegisterCommandCode("pingergetnodes", std::bind(&CWebServer::Cmd_PingerGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("pingeraddnode", std::bind(&CWebServer::Cmd_PingerAddNode, this, _1, _2, _3));
-			RegisterCommandCode("pingerupdatenode", std::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1, _2, _3));
-			RegisterCommandCode("pingerremovenode", std::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("pingerclearnodes", std::bind(&CWebServer::Cmd_PingerClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("pingersetmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PingerSetMode(session, req, root); });
+			RegisterCommandCode("pingergetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_PingerGetNodes(session, req, root); });
+			RegisterCommandCode("pingeraddnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PingerAddNode(session, req, root); });
+			RegisterCommandCode("pingerupdatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PingerUpdateNode(session, req, root); });
+			RegisterCommandCode("pingerremovenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PingerRemoveNode(session, req, root); });
+			RegisterCommandCode("pingerclearnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_PingerClearNodes(session, req, root); });
 
-			RegisterCommandCode("kodisetmode", std::bind(&CWebServer::Cmd_KodiSetMode, this, _1, _2, _3));
-			RegisterCommandCode("kodigetnodes", std::bind(&CWebServer::Cmd_KodiGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("kodiaddnode", std::bind(&CWebServer::Cmd_KodiAddNode, this, _1, _2, _3));
-			RegisterCommandCode("kodiupdatenode", std::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1, _2, _3));
-			RegisterCommandCode("kodiremovenode", std::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("kodiclearnodes", std::bind(&CWebServer::Cmd_KodiClearNodes, this, _1, _2, _3));
-			RegisterCommandCode("kodimediacommand", std::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1, _2, _3));
+			RegisterCommandCode("kodisetmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiSetMode(session, req, root); });
+			RegisterCommandCode("kodigetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiGetNodes(session, req, root); });
+			RegisterCommandCode("kodiaddnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiAddNode(session, req, root); });
+			RegisterCommandCode("kodiupdatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiUpdateNode(session, req, root); });
+			RegisterCommandCode("kodiremovenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiRemoveNode(session, req, root); });
+			RegisterCommandCode("kodiclearnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiClearNodes(session, req, root); });
+			RegisterCommandCode("kodimediacommand", [this](auto &&session, auto &&req, auto &&root) { Cmd_KodiMediaCommand(session, req, root); });
 
-			RegisterCommandCode("panasonicsetmode", std::bind(&CWebServer::Cmd_PanasonicSetMode, this, _1, _2, _3));
-			RegisterCommandCode("panasonicgetnodes", std::bind(&CWebServer::Cmd_PanasonicGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("panasonicaddnode", std::bind(&CWebServer::Cmd_PanasonicAddNode, this, _1, _2, _3));
-			RegisterCommandCode("panasonicupdatenode", std::bind(&CWebServer::Cmd_PanasonicUpdateNode, this, _1, _2, _3));
-			RegisterCommandCode("panasonicremovenode", std::bind(&CWebServer::Cmd_PanasonicRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("panasonicclearnodes", std::bind(&CWebServer::Cmd_PanasonicClearNodes, this, _1, _2, _3));
-			RegisterCommandCode("panasonicmediacommand", std::bind(&CWebServer::Cmd_PanasonicMediaCommand, this, _1, _2, _3));
+			RegisterCommandCode("panasonicsetmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicSetMode(session, req, root); });
+			RegisterCommandCode("panasonicgetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicGetNodes(session, req, root); });
+			RegisterCommandCode("panasonicaddnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicAddNode(session, req, root); });
+			RegisterCommandCode("panasonicupdatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicUpdateNode(session, req, root); });
+			RegisterCommandCode("panasonicremovenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicRemoveNode(session, req, root); });
+			RegisterCommandCode("panasonicclearnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicClearNodes(session, req, root); });
+			RegisterCommandCode("panasonicmediacommand", [this](auto &&session, auto &&req, auto &&root) { Cmd_PanasonicMediaCommand(session, req, root); });
 
-			RegisterCommandCode("heossetmode", std::bind(&CWebServer::Cmd_HEOSSetMode, this, _1, _2, _3));
-			RegisterCommandCode("heosmediacommand", std::bind(&CWebServer::Cmd_HEOSMediaCommand, this, _1, _2, _3));
+			RegisterCommandCode("heossetmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_HEOSSetMode(session, req, root); });
+			RegisterCommandCode("heosmediacommand", [this](auto &&session, auto &&req, auto &&root) { Cmd_HEOSMediaCommand(session, req, root); });
 
-			RegisterCommandCode("onkyoeiscpcommand", std::bind(&CWebServer::Cmd_OnkyoEiscpCommand, this, _1, _2, _3));
+			RegisterCommandCode("onkyoeiscpcommand", [this](auto &&session, auto &&req, auto &&root) { Cmd_OnkyoEiscpCommand(session, req, root); });
 
-			RegisterCommandCode("bleboxsetmode", std::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxgetnodes", std::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("bleboxaddnode", std::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxremovenode", std::bind(&CWebServer::Cmd_BleBoxRemoveNode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxclearnodes", std::bind(&CWebServer::Cmd_BleBoxClearNodes, this, _1, _2, _3));
-			RegisterCommandCode("bleboxautosearchingnodes", std::bind(&CWebServer::Cmd_BleBoxAutoSearchingNodes, this, _1, _2, _3));
-			RegisterCommandCode("bleboxupdatefirmware", std::bind(&CWebServer::Cmd_BleBoxUpdateFirmware, this, _1, _2, _3));
+			RegisterCommandCode("bleboxsetmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxSetMode(session, req, root); });
+			RegisterCommandCode("bleboxgetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxGetNodes(session, req, root); });
+			RegisterCommandCode("bleboxaddnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxAddNode(session, req, root); });
+			RegisterCommandCode("bleboxremovenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxRemoveNode(session, req, root); });
+			RegisterCommandCode("bleboxclearnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxClearNodes(session, req, root); });
+			RegisterCommandCode("bleboxautosearchingnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxAutoSearchingNodes(session, req, root); });
+			RegisterCommandCode("bleboxupdatefirmware", [this](auto &&session, auto &&req, auto &&root) { Cmd_BleBoxUpdateFirmware(session, req, root); });
 
-			RegisterCommandCode("lmssetmode", std::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
-			RegisterCommandCode("lmsgetnodes", std::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
-			RegisterCommandCode("lmsgetplaylists", std::bind(&CWebServer::Cmd_LMSGetPlaylists, this, _1, _2, _3));
-			RegisterCommandCode("lmsmediacommand", std::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1, _2, _3));
-			RegisterCommandCode("lmsdeleteunuseddevices", std::bind(&CWebServer::Cmd_LMSDeleteUnusedDevices, this, _1, _2, _3));
+			RegisterCommandCode("lmssetmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_LMSSetMode(session, req, root); });
+			RegisterCommandCode("lmsgetnodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_LMSGetNodes(session, req, root); });
+			RegisterCommandCode("lmsgetplaylists", [this](auto &&session, auto &&req, auto &&root) { Cmd_LMSGetPlaylists(session, req, root); });
+			RegisterCommandCode("lmsmediacommand", [this](auto &&session, auto &&req, auto &&root) { Cmd_LMSMediaCommand(session, req, root); });
+			RegisterCommandCode("lmsdeleteunuseddevices", [this](auto &&session, auto &&req, auto &&root) { Cmd_LMSDeleteUnusedDevices(session, req, root); });
 
-			RegisterCommandCode("savefibarolinkconfig", std::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("getfibarolinkconfig", std::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("getfibarolinks", std::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1, _2, _3));
-			RegisterCommandCode("savefibarolink", std::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1, _2, _3));
-			RegisterCommandCode("deletefibarolink", std::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1, _2, _3));
+			RegisterCommandCode("savefibarolinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveFibaroLinkConfig(session, req, root); });
+			RegisterCommandCode("getfibarolinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetFibaroLinkConfig(session, req, root); });
+			RegisterCommandCode("getfibarolinks", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetFibaroLinks(session, req, root); });
+			RegisterCommandCode("savefibarolink", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveFibaroLink(session, req, root); });
+			RegisterCommandCode("deletefibarolink", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteFibaroLink(session, req, root); });
 
-			RegisterCommandCode("saveinfluxlinkconfig", std::bind(&CWebServer::Cmd_SaveInfluxLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("getinfluxlinkconfig", std::bind(&CWebServer::Cmd_GetInfluxLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("getinfluxlinks", std::bind(&CWebServer::Cmd_GetInfluxLinks, this, _1, _2, _3));
-			RegisterCommandCode("saveinfluxlink", std::bind(&CWebServer::Cmd_SaveInfluxLink, this, _1, _2, _3));
-			RegisterCommandCode("deleteinfluxlink", std::bind(&CWebServer::Cmd_DeleteInfluxLink, this, _1, _2, _3));
+			RegisterCommandCode("saveinfluxlinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveInfluxLinkConfig(session, req, root); });
+			RegisterCommandCode("getinfluxlinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetInfluxLinkConfig(session, req, root); });
+			RegisterCommandCode("getinfluxlinks", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetInfluxLinks(session, req, root); });
+			RegisterCommandCode("saveinfluxlink", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveInfluxLink(session, req, root); });
+			RegisterCommandCode("deleteinfluxlink", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteInfluxLink(session, req, root); });
 
-			RegisterCommandCode("savehttplinkconfig", std::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("gethttplinkconfig", std::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("gethttplinks", std::bind(&CWebServer::Cmd_GetHttpLinks, this, _1, _2, _3));
-			RegisterCommandCode("savehttplink", std::bind(&CWebServer::Cmd_SaveHttpLink, this, _1, _2, _3));
-			RegisterCommandCode("deletehttplink", std::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1, _2, _3));
+			RegisterCommandCode("savehttplinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveHttpLinkConfig(session, req, root); });
+			RegisterCommandCode("gethttplinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetHttpLinkConfig(session, req, root); });
+			RegisterCommandCode("gethttplinks", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetHttpLinks(session, req, root); });
+			RegisterCommandCode("savehttplink", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveHttpLink(session, req, root); });
+			RegisterCommandCode("deletehttplink", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteHttpLink(session, req, root); });
 
-			RegisterCommandCode("savegooglepubsublinkconfig", std::bind(&CWebServer::Cmd_SaveGooglePubSubLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("getgooglepubsublinkconfig", std::bind(&CWebServer::Cmd_GetGooglePubSubLinkConfig, this, _1, _2, _3));
-			RegisterCommandCode("getgooglepubsublinks", std::bind(&CWebServer::Cmd_GetGooglePubSubLinks, this, _1, _2, _3));
-			RegisterCommandCode("savegooglepubsublink", std::bind(&CWebServer::Cmd_SaveGooglePubSubLink, this, _1, _2, _3));
-			RegisterCommandCode("deletegooglepubsublink", std::bind(&CWebServer::Cmd_DeleteGooglePubSubLink, this, _1, _2, _3));
+			RegisterCommandCode("savegooglepubsublinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveGooglePubSubLinkConfig(session, req, root); });
+			RegisterCommandCode("getgooglepubsublinkconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetGooglePubSubLinkConfig(session, req, root); });
+			RegisterCommandCode("getgooglepubsublinks", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetGooglePubSubLinks(session, req, root); });
+			RegisterCommandCode("savegooglepubsublink", [this](auto &&session, auto &&req, auto &&root) { Cmd_SaveGooglePubSubLink(session, req, root); });
+			RegisterCommandCode("deletegooglepubsublink", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteGooglePubSubLink(session, req, root); });
 
-			RegisterCommandCode("getdevicevalueoptions", std::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2, _3));
-			RegisterCommandCode("getdevicevalueoptionwording", std::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2, _3));
+			RegisterCommandCode("getdevicevalueoptions", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetDeviceValueOptions(session, req, root); });
+			RegisterCommandCode("getdevicevalueoptionwording", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetDeviceValueOptionWording(session, req, root); });
 
-			RegisterCommandCode("adduservariable", std::bind(&CWebServer::Cmd_AddUserVariable, this, _1, _2, _3));
-			RegisterCommandCode("updateuservariable", std::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1, _2, _3));
-			RegisterCommandCode("deleteuservariable", std::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
-			RegisterCommandCode("getuservariables", std::bind(&CWebServer::Cmd_GetUserVariables, this, _1, _2, _3));
-			RegisterCommandCode("getuservariable", std::bind(&CWebServer::Cmd_GetUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("adduservariable", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddUserVariable(session, req, root); });
+			RegisterCommandCode("updateuservariable", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateUserVariable(session, req, root); });
+			RegisterCommandCode("deleteuservariable", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteUserVariable(session, req, root); });
+			RegisterCommandCode("getuservariables", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetUserVariables(session, req, root); });
+			RegisterCommandCode("getuservariable", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetUserVariable(session, req, root); });
 
-			RegisterCommandCode("allownewhardware", std::bind(&CWebServer::Cmd_AllowNewHardware, this, _1, _2, _3));
+			RegisterCommandCode("allownewhardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_AllowNewHardware(session, req, root); });
 
-			RegisterCommandCode("addplan", std::bind(&CWebServer::Cmd_AddPlan, this, _1, _2, _3));
-			RegisterCommandCode("updateplan", std::bind(&CWebServer::Cmd_UpdatePlan, this, _1, _2, _3));
-			RegisterCommandCode("deleteplan", std::bind(&CWebServer::Cmd_DeletePlan, this, _1, _2, _3));
-			RegisterCommandCode("getunusedplandevices", std::bind(&CWebServer::Cmd_GetUnusedPlanDevices, this, _1, _2, _3));
-			RegisterCommandCode("addplanactivedevice", std::bind(&CWebServer::Cmd_AddPlanActiveDevice, this, _1, _2, _3));
-			RegisterCommandCode("getplandevices", std::bind(&CWebServer::Cmd_GetPlanDevices, this, _1, _2, _3));
-			RegisterCommandCode("deleteplandevice", std::bind(&CWebServer::Cmd_DeletePlanDevice, this, _1, _2, _3));
-			RegisterCommandCode("setplandevicecoords", std::bind(&CWebServer::Cmd_SetPlanDeviceCoords, this, _1, _2, _3));
-			RegisterCommandCode("deleteallplandevices", std::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1, _2, _3));
-			RegisterCommandCode("changeplanorder", std::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1, _2, _3));
-			RegisterCommandCode("changeplandeviceorder", std::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1, _2, _3));
+			RegisterCommandCode("addplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddPlan(session, req, root); });
+			RegisterCommandCode("updateplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdatePlan(session, req, root); });
+			RegisterCommandCode("deleteplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeletePlan(session, req, root); });
+			RegisterCommandCode("getunusedplandevices", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetUnusedPlanDevices(session, req, root); });
+			RegisterCommandCode("addplanactivedevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddPlanActiveDevice(session, req, root); });
+			RegisterCommandCode("getplandevices", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetPlanDevices(session, req, root); });
+			RegisterCommandCode("deleteplandevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeletePlanDevice(session, req, root); });
+			RegisterCommandCode("setplandevicecoords", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetPlanDeviceCoords(session, req, root); });
+			RegisterCommandCode("deleteallplandevices", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteAllPlanDevices(session, req, root); });
+			RegisterCommandCode("changeplanorder", [this](auto &&session, auto &&req, auto &&root) { Cmd_ChangePlanOrder(session, req, root); });
+			RegisterCommandCode("changeplandeviceorder", [this](auto &&session, auto &&req, auto &&root) { Cmd_ChangePlanDeviceOrder(session, req, root); });
 
-			RegisterCommandCode("gettimerplans", std::bind(&CWebServer::Cmd_GetTimerPlans, this, _1, _2, _3));
-			RegisterCommandCode("addtimerplan", std::bind(&CWebServer::Cmd_AddTimerPlan, this, _1, _2, _3));
-			RegisterCommandCode("updatetimerplan", std::bind(&CWebServer::Cmd_UpdateTimerPlan, this, _1, _2, _3));
-			RegisterCommandCode("deletetimerplan", std::bind(&CWebServer::Cmd_DeleteTimerPlan, this, _1, _2, _3));
-			RegisterCommandCode("duplicatetimerplan", std::bind(&CWebServer::Cmd_DuplicateTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("gettimerplans", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetTimerPlans(session, req, root); });
+			RegisterCommandCode("addtimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddTimerPlan(session, req, root); });
+			RegisterCommandCode("updatetimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateTimerPlan(session, req, root); });
+			RegisterCommandCode("deletetimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteTimerPlan(session, req, root); });
+			RegisterCommandCode("duplicatetimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_DuplicateTimerPlan(session, req, root); });
 
-			RegisterCommandCode("getactualhistory", std::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
-			RegisterCommandCode("getnewhistory", std::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
+			RegisterCommandCode("getactualhistory", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetActualHistory(session, req, root); });
+			RegisterCommandCode("getnewhistory", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetNewHistory(session, req, root); });
 
-			RegisterCommandCode("getconfig", std::bind(&CWebServer::Cmd_GetConfig, this, _1, _2, _3), true);
-			RegisterCommandCode("getlocation", std::bind(&CWebServer::Cmd_GetLocation, this, _1, _2, _3));
-			RegisterCommandCode("getforecastconfig", std::bind(&CWebServer::Cmd_GetForecastConfig, this, _1, _2, _3));
-			RegisterCommandCode("sendnotification", std::bind(&CWebServer::Cmd_SendNotification, this, _1, _2, _3));
-			RegisterCommandCode("emailcamerasnapshot", std::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1, _2, _3));
-			RegisterCommandCode("udevice", std::bind(&CWebServer::Cmd_UpdateDevice, this, _1, _2, _3));
-			RegisterCommandCode("udevices", std::bind(&CWebServer::Cmd_UpdateDevices, this, _1, _2, _3));
-			RegisterCommandCode("thermostatstate", std::bind(&CWebServer::Cmd_SetThermostatState, this, _1, _2, _3));
-			RegisterCommandCode("system_shutdown", std::bind(&CWebServer::Cmd_SystemShutdown, this, _1, _2, _3));
-			RegisterCommandCode("system_reboot", std::bind(&CWebServer::Cmd_SystemReboot, this, _1, _2, _3));
-			RegisterCommandCode("execute_script", std::bind(&CWebServer::Cmd_ExcecuteScript, this, _1, _2, _3));
-			RegisterCommandCode("getcosts", std::bind(&CWebServer::Cmd_GetCosts, this, _1, _2, _3));
-			RegisterCommandCode("checkforupdate", std::bind(&CWebServer::Cmd_CheckForUpdate, this, _1, _2, _3));
-			RegisterCommandCode("downloadupdate", std::bind(&CWebServer::Cmd_DownloadUpdate, this, _1, _2, _3));
-			RegisterCommandCode("downloadready", std::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
-			RegisterCommandCode("update_application", std::bind(&CWebServer::Cmd_UpdateApplication, this, _1, _2, _3));
-			RegisterCommandCode("deletedatapoint", std::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
-			RegisterCommandCode("customevent", std::bind(&CWebServer::Cmd_CustomEvent, this, _1, _2, _3));
+			RegisterCommandCode("getconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getlocation", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLocation(session, req, root); });
+			RegisterCommandCode("getforecastconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetForecastConfig(session, req, root); });
+			RegisterCommandCode("sendnotification", [this](auto &&session, auto &&req, auto &&root) { Cmd_SendNotification(session, req, root); });
+			RegisterCommandCode("emailcamerasnapshot", [this](auto &&session, auto &&req, auto &&root) { Cmd_EmailCameraSnapshot(session, req, root); });
+			RegisterCommandCode("udevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateDevice(session, req, root); });
+			RegisterCommandCode("udevices", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateDevices(session, req, root); });
+			RegisterCommandCode("thermostatstate", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetThermostatState(session, req, root); });
+			RegisterCommandCode("system_shutdown", [this](auto &&session, auto &&req, auto &&root) { Cmd_SystemShutdown(session, req, root); });
+			RegisterCommandCode("system_reboot", [this](auto &&session, auto &&req, auto &&root) { Cmd_SystemReboot(session, req, root); });
+			RegisterCommandCode("execute_script", [this](auto &&session, auto &&req, auto &&root) { Cmd_ExcecuteScript(session, req, root); });
+			RegisterCommandCode("getcosts", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetCosts(session, req, root); });
+			RegisterCommandCode("checkforupdate", [this](auto &&session, auto &&req, auto &&root) { Cmd_CheckForUpdate(session, req, root); });
+			RegisterCommandCode("downloadupdate", [this](auto &&session, auto &&req, auto &&root) { Cmd_DownloadUpdate(session, req, root); });
+			RegisterCommandCode("downloadready", [this](auto &&session, auto &&req, auto &&root) { Cmd_DownloadReady(session, req, root); });
+			RegisterCommandCode("update_application", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateApplication(session, req, root); });
+			RegisterCommandCode("deletedatapoint", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDataPoint(session, req, root); });
+			RegisterCommandCode("deletedaterange", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDateRange(session, req, root); });
+			RegisterCommandCode("customevent", [this](auto &&session, auto &&req, auto &&root) { Cmd_CustomEvent(session, req, root); });
 
-			RegisterCommandCode("setactivetimerplan", std::bind(&CWebServer::Cmd_SetActiveTimerPlan, this, _1, _2, _3));
-			RegisterCommandCode("addtimer", std::bind(&CWebServer::Cmd_AddTimer, this, _1, _2, _3));
-			RegisterCommandCode("updatetimer", std::bind(&CWebServer::Cmd_UpdateTimer, this, _1, _2, _3));
-			RegisterCommandCode("deletetimer", std::bind(&CWebServer::Cmd_DeleteTimer, this, _1, _2, _3));
-			RegisterCommandCode("enabletimer", std::bind(&CWebServer::Cmd_EnableTimer, this, _1, _2, _3));
-			RegisterCommandCode("disabletimer", std::bind(&CWebServer::Cmd_DisableTimer, this, _1, _2, _3));
-			RegisterCommandCode("cleartimers", std::bind(&CWebServer::Cmd_ClearTimers, this, _1, _2, _3));
+			RegisterCommandCode("setactivetimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetActiveTimerPlan(session, req, root); });
+			RegisterCommandCode("addtimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddTimer(session, req, root); });
+			RegisterCommandCode("updatetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateTimer(session, req, root); });
+			RegisterCommandCode("deletetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteTimer(session, req, root); });
+			RegisterCommandCode("enabletimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnableTimer(session, req, root); });
+			RegisterCommandCode("disabletimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_DisableTimer(session, req, root); });
+			RegisterCommandCode("cleartimers", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearTimers(session, req, root); });
 
-			RegisterCommandCode("addscenetimer", std::bind(&CWebServer::Cmd_AddSceneTimer, this, _1, _2, _3));
-			RegisterCommandCode("updatescenetimer", std::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1, _2, _3));
-			RegisterCommandCode("deletescenetimer", std::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1, _2, _3));
-			RegisterCommandCode("enablescenetimer", std::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1, _2, _3));
-			RegisterCommandCode("disablescenetimer", std::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1, _2, _3));
-			RegisterCommandCode("clearscenetimers", std::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1, _2, _3));
-			RegisterCommandCode("getsceneactivations", std::bind(&CWebServer::Cmd_GetSceneActivations, this, _1, _2, _3));
-			RegisterCommandCode("addscenecode", std::bind(&CWebServer::Cmd_AddSceneCode, this, _1, _2, _3));
-			RegisterCommandCode("removescenecode", std::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1, _2, _3));
-			RegisterCommandCode("clearscenecodes", std::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1, _2, _3));
-			RegisterCommandCode("renamescene", std::bind(&CWebServer::Cmd_RenameScene, this, _1, _2, _3));
+			RegisterCommandCode("addscenetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddSceneTimer(session, req, root); });
+			RegisterCommandCode("updatescenetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateSceneTimer(session, req, root); });
+			RegisterCommandCode("deletescenetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteSceneTimer(session, req, root); });
+			RegisterCommandCode("enablescenetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnableSceneTimer(session, req, root); });
+			RegisterCommandCode("disablescenetimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_DisableSceneTimer(session, req, root); });
+			RegisterCommandCode("clearscenetimers", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearSceneTimers(session, req, root); });
+			RegisterCommandCode("getsceneactivations", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetSceneActivations(session, req, root); });
+			RegisterCommandCode("addscenecode", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddSceneCode(session, req, root); });
+			RegisterCommandCode("removescenecode", [this](auto &&session, auto &&req, auto &&root) { Cmd_RemoveSceneCode(session, req, root); });
+			RegisterCommandCode("clearscenecodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearSceneCodes(session, req, root); });
+			RegisterCommandCode("renamescene", [this](auto &&session, auto &&req, auto &&root) { Cmd_RenameScene(session, req, root); });
 
-			RegisterCommandCode("setsetpoint", std::bind(&CWebServer::Cmd_SetSetpoint, this, _1, _2, _3));
-			RegisterCommandCode("addsetpointtimer", std::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1, _2, _3));
-			RegisterCommandCode("updatesetpointtimer", std::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1, _2, _3));
-			RegisterCommandCode("deletesetpointtimer", std::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1, _2, _3));
-			RegisterCommandCode("enablesetpointtimer", std::bind(&CWebServer::Cmd_EnableSetpointTimer, this, _1, _2, _3));
-			RegisterCommandCode("disablesetpointtimer", std::bind(&CWebServer::Cmd_DisableSetpointTimer, this, _1, _2, _3));
-			RegisterCommandCode("clearsetpointtimers", std::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1, _2, _3));
+			RegisterCommandCode("setsetpoint", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetSetpoint(session, req, root); });
+			RegisterCommandCode("addsetpointtimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddSetpointTimer(session, req, root); });
+			RegisterCommandCode("updatesetpointtimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateSetpointTimer(session, req, root); });
+			RegisterCommandCode("deletesetpointtimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteSetpointTimer(session, req, root); });
+			RegisterCommandCode("enablesetpointtimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnableSetpointTimer(session, req, root); });
+			RegisterCommandCode("disablesetpointtimer", [this](auto &&session, auto &&req, auto &&root) { Cmd_DisableSetpointTimer(session, req, root); });
+			RegisterCommandCode("clearsetpointtimers", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearSetpointTimers(session, req, root); });
 
-			RegisterCommandCode("serial_devices", std::bind(&CWebServer::Cmd_GetSerialDevices, this, _1, _2, _3));
-			RegisterCommandCode("devices_list", std::bind(&CWebServer::Cmd_GetDevicesList, this, _1, _2, _3));
-			RegisterCommandCode("devices_list_onoff", std::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1, _2, _3));
+			RegisterCommandCode("serial_devices", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetSerialDevices(session, req, root); });
+			RegisterCommandCode("devices_list", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetDevicesList(session, req, root); });
+			RegisterCommandCode("devices_list_onoff", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetDevicesListOnOff(session, req, root); });
 
-			RegisterCommandCode("registerhue", std::bind(&CWebServer::Cmd_PhilipsHueRegister, this, _1, _2, _3));
+			RegisterCommandCode("registerhue", [this](auto &&session, auto &&req, auto &&root) { Cmd_PhilipsHueRegister(session, req, root); });
 
-			RegisterCommandCode("getcustomiconset", std::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1, _2, _3));
-			RegisterCommandCode("deletecustomicon", std::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1, _2, _3));
-			RegisterCommandCode("updatecustomicon", std::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1, _2, _3));
+			RegisterCommandCode("getcustomiconset", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetCustomIconSet(session, req, root); });
+			RegisterCommandCode("deletecustomicon", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteCustomIcon(session, req, root); });
+			RegisterCommandCode("updatecustomicon", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateCustomIcon(session, req, root); });
 
-			RegisterCommandCode("renamedevice", std::bind(&CWebServer::Cmd_RenameDevice, this, _1, _2, _3));
-			RegisterCommandCode("setdevused", std::bind(&CWebServer::Cmd_SetDeviceUsed, this, _1, _2, _3));
+			RegisterCommandCode("renamedevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_RenameDevice(session, req, root); });
+			RegisterCommandCode("setdevused", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetDeviceUsed(session, req, root); });
 
-			RegisterCommandCode("addlogmessage", std::bind(&CWebServer::Cmd_AddLogMessage, this, _1, _2, _3));
-			RegisterCommandCode("clearshortlog", std::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2, _3));
-			RegisterCommandCode("vacuumdatabase", std::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
+			RegisterCommandCode("addlogmessage", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddLogMessage(session, req, root); });
+			RegisterCommandCode("clearshortlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearShortLog(session, req, root); });
+			RegisterCommandCode("vacuumdatabase", [this](auto &&session, auto &&req, auto &&root) { Cmd_VacuumDatabase(session, req, root); });
 
-			RegisterCommandCode("addmobiledevice", std::bind(&CWebServer::Cmd_AddMobileDevice, this, _1, _2, _3));
-			RegisterCommandCode("updatemobiledevice", std::bind(&CWebServer::Cmd_UpdateMobileDevice, this, _1, _2, _3));
-			RegisterCommandCode("deletemobiledevice", std::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
+			RegisterCommandCode("addmobiledevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddMobileDevice(session, req, root); });
+			RegisterCommandCode("updatemobiledevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateMobileDevice(session, req, root); });
+			RegisterCommandCode("deletemobiledevice", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteMobileDevice(session, req, root); });
 
-			RegisterCommandCode("addyeelight", std::bind(&CWebServer::Cmd_AddYeeLight, this, _1, _2, _3));
+			RegisterCommandCode("addyeelight", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddYeeLight(session, req, root); });
 
-			RegisterCommandCode("addArilux", std::bind(&CWebServer::Cmd_AddArilux, this, _1, _2, _3));
+			RegisterCommandCode("addArilux", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddArilux(session, req, root); });
 
-			RegisterRType("graph", std::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
-			RegisterRType("lightlog", std::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
-			RegisterRType("textlog", std::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
-			RegisterRType("scenelog", std::bind(&CWebServer::RType_SceneLog, this, _1, _2, _3));
-			RegisterRType("settings", std::bind(&CWebServer::RType_Settings, this, _1, _2, _3));
-			RegisterRType("events", std::bind(&CWebServer::RType_Events, this, _1, _2, _3));
+			RegisterRType("graph", [this](auto &&session, auto &&req, auto &&root) { RType_HandleGraph(session, req, root); });
+			RegisterRType("lightlog", [this](auto &&session, auto &&req, auto &&root) { RType_LightLog(session, req, root); });
+			RegisterRType("textlog", [this](auto &&session, auto &&req, auto &&root) { RType_TextLog(session, req, root); });
+			RegisterRType("scenelog", [this](auto &&session, auto &&req, auto &&root) { RType_SceneLog(session, req, root); });
+			RegisterRType("settings", [this](auto &&session, auto &&req, auto &&root) { RType_Settings(session, req, root); });
+			RegisterRType("events", [this](auto &&session, auto &&req, auto &&root) { RType_Events(session, req, root); });
 
-			RegisterRType("hardware", std::bind(&CWebServer::RType_Hardware, this, _1, _2, _3));
-			RegisterRType("devices", std::bind(&CWebServer::RType_Devices, this, _1, _2, _3));
-			RegisterRType("deletedevice", std::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
-			RegisterRType("cameras", std::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
-			RegisterRType("cameras_user", std::bind(&CWebServer::RType_CamerasUser, this, _1, _2, _3));
-			RegisterRType("users", std::bind(&CWebServer::RType_Users, this, _1, _2, _3));
-			RegisterRType("mobiles", std::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
+			RegisterRType("hardware", [this](auto &&session, auto &&req, auto &&root) { RType_Hardware(session, req, root); });
+			RegisterRType("devices", [this](auto &&session, auto &&req, auto &&root) { RType_Devices(session, req, root); });
+			RegisterRType("deletedevice", [this](auto &&session, auto &&req, auto &&root) { RType_DeleteDevice(session, req, root); });
+			RegisterRType("cameras", [this](auto &&session, auto &&req, auto &&root) { RType_Cameras(session, req, root); });
+			RegisterRType("cameras_user", [this](auto &&session, auto &&req, auto &&root) { RType_CamerasUser(session, req, root); });
+			RegisterRType("users", [this](auto &&session, auto &&req, auto &&root) { RType_Users(session, req, root); });
+			RegisterRType("mobiles", [this](auto &&session, auto &&req, auto &&root) { RType_Mobiles(session, req, root); });
 
-			RegisterRType("timers", std::bind(&CWebServer::RType_Timers, this, _1, _2, _3));
-			RegisterRType("scenetimers", std::bind(&CWebServer::RType_SceneTimers, this, _1, _2, _3));
-			RegisterRType("setpointtimers", std::bind(&CWebServer::RType_SetpointTimers, this, _1, _2, _3));
+			RegisterRType("timers", [this](auto &&session, auto &&req, auto &&root) { RType_Timers(session, req, root); });
+			RegisterRType("scenetimers", [this](auto &&session, auto &&req, auto &&root) { RType_SceneTimers(session, req, root); });
+			RegisterRType("setpointtimers", [this](auto &&session, auto &&req, auto &&root) { RType_SetpointTimers(session, req, root); });
 
-			RegisterRType("gettransfers", std::bind(&CWebServer::RType_GetTransfers, this, _1, _2, _3));
-			RegisterRType("transferdevice", std::bind(&CWebServer::RType_TransferDevice, this, _1, _2, _3));
-			RegisterRType("notifications", std::bind(&CWebServer::RType_Notifications, this, _1, _2, _3));
-			RegisterRType("schedules", std::bind(&CWebServer::RType_Schedules, this, _1, _2, _3));
-			RegisterRType("getshareduserdevices", std::bind(&CWebServer::RType_GetSharedUserDevices, this, _1, _2, _3));
-			RegisterRType("setshareduserdevices", std::bind(&CWebServer::RType_SetSharedUserDevices, this, _1, _2, _3));
-			RegisterRType("setused", std::bind(&CWebServer::RType_SetUsed, this, _1, _2, _3));
-			RegisterRType("scenes", std::bind(&CWebServer::RType_Scenes, this, _1, _2, _3));
-			RegisterRType("addscene", std::bind(&CWebServer::RType_AddScene, this, _1, _2, _3));
-			RegisterRType("deletescene", std::bind(&CWebServer::RType_DeleteScene, this, _1, _2, _3));
-			RegisterRType("updatescene", std::bind(&CWebServer::RType_UpdateScene, this, _1, _2, _3));
-			RegisterRType("createvirtualsensor", std::bind(&CWebServer::RType_CreateMappedSensor, this, _1, _2, _3));
-			RegisterRType("createdevice", std::bind(&CWebServer::RType_CreateDevice, this, _1, _2, _3));
+			RegisterRType("gettransfers", [this](auto &&session, auto &&req, auto &&root) { RType_GetTransfers(session, req, root); });
+			RegisterRType("transferdevice", [this](auto &&session, auto &&req, auto &&root) { RType_TransferDevice(session, req, root); });
+			RegisterRType("notifications", [this](auto &&session, auto &&req, auto &&root) { RType_Notifications(session, req, root); });
+			RegisterRType("schedules", [this](auto &&session, auto &&req, auto &&root) { RType_Schedules(session, req, root); });
+			RegisterRType("getshareduserdevices", [this](auto &&session, auto &&req, auto &&root) { RType_GetSharedUserDevices(session, req, root); });
+			RegisterRType("setshareduserdevices", [this](auto &&session, auto &&req, auto &&root) { RType_SetSharedUserDevices(session, req, root); });
+			RegisterRType("setused", [this](auto &&session, auto &&req, auto &&root) { RType_SetUsed(session, req, root); });
+			RegisterRType("scenes", [this](auto &&session, auto &&req, auto &&root) { RType_Scenes(session, req, root); });
+			RegisterRType("addscene", [this](auto &&session, auto &&req, auto &&root) { RType_AddScene(session, req, root); });
+			RegisterRType("deletescene", [this](auto &&session, auto &&req, auto &&root) { RType_DeleteScene(session, req, root); });
+			RegisterRType("updatescene", [this](auto &&session, auto &&req, auto &&root) { RType_UpdateScene(session, req, root); });
+			RegisterRType("createvirtualsensor", [this](auto &&session, auto &&req, auto &&root) { RType_CreateMappedSensor(session, req, root); });
+			RegisterRType("createdevice", [this](auto &&session, auto &&req, auto &&root) { RType_CreateDevice(session, req, root); });
 
-			RegisterRType("createevohomesensor", std::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1, _2, _3));
-			RegisterRType("bindevohome", std::bind(&CWebServer::RType_BindEvohome, this, _1, _2, _3));
-			RegisterRType("createrflinkdevice", std::bind(&CWebServer::RType_CreateRFLinkDevice, this, _1, _2, _3));
+			RegisterRType("createevohomesensor", [this](auto &&session, auto &&req, auto &&root) { RType_CreateEvohomeSensor(session, req, root); });
+			RegisterRType("bindevohome", [this](auto &&session, auto &&req, auto &&root) { RType_BindEvohome(session, req, root); });
+			RegisterRType("createrflinkdevice", [this](auto &&session, auto &&req, auto &&root) { RType_CreateRFLinkDevice(session, req, root); });
 
-			RegisterRType("custom_light_icons", std::bind(&CWebServer::RType_CustomLightIcons, this, _1, _2, _3));
-			RegisterRType("plans", std::bind(&CWebServer::RType_Plans, this, _1, _2, _3));
-			RegisterRType("floorplans", std::bind(&CWebServer::RType_FloorPlans, this, _1, _2, _3));
+			RegisterRType("custom_light_icons", [this](auto &&session, auto &&req, auto &&root) { RType_CustomLightIcons(session, req, root); });
+			RegisterRType("plans", [this](auto &&session, auto &&req, auto &&root) { RType_Plans(session, req, root); });
+			RegisterRType("floorplans", [this](auto &&session, auto &&req, auto &&root) { RType_FloorPlans(session, req, root); });
 #ifdef WITH_OPENZWAVE
 			//ZWave
-			RegisterCommandCode("updatezwavenode", std::bind(&CWebServer::Cmd_ZWaveUpdateNode, this, _1, _2, _3));
-			RegisterCommandCode("deletezwavenode", std::bind(&CWebServer::Cmd_ZWaveDeleteNode, this, _1, _2, _3));
-			RegisterCommandCode("zwaveinclude", std::bind(&CWebServer::Cmd_ZWaveInclude, this, _1, _2, _3));
-			RegisterCommandCode("zwaveexclude", std::bind(&CWebServer::Cmd_ZWaveExclude, this, _1, _2, _3));
+			RegisterCommandCode("updatezwavenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveUpdateNode(session, req, root); });
+			RegisterCommandCode("deletezwavenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveDeleteNode(session, req, root); });
+			RegisterCommandCode("zwaveinclude", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveInclude(session, req, root); });
+			RegisterCommandCode("zwaveexclude", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveExclude(session, req, root); });
 
-			RegisterCommandCode("zwaveisnodeincluded", std::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1, _2, _3));
-			RegisterCommandCode("zwaveisnodeexcluded", std::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1, _2, _3));
-			RegisterCommandCode("zwaveisnodereplaced", std::bind(&CWebServer::Cmd_ZWaveIsNodeReplaced, this, _1, _2, _3));
-			RegisterCommandCode("zwaveishasnodefaileddone", std::bind(&CWebServer::Cmd_ZWaveIsHasNodeFailedDone, this, _1, _2, _3));
+			RegisterCommandCode("zwaveisnodeincluded", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveIsNodeIncluded(session, req, root); });
+			RegisterCommandCode("zwaveisnodeexcluded", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveIsNodeExcluded(session, req, root); });
+			RegisterCommandCode("zwaveisnodereplaced", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveIsNodeReplaced(session, req, root); });
+			RegisterCommandCode("zwaveishasnodefaileddone", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveIsHasNodeFailedDone(session, req, root); });
 
-			RegisterCommandCode("zwavesoftreset", std::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1, _2, _3));
-			RegisterCommandCode("zwavehardreset", std::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1, _2, _3));
-			RegisterCommandCode("zwavenetworkheal", std::bind(&CWebServer::Cmd_ZWaveNetworkHeal, this, _1, _2, _3));
-			RegisterCommandCode("zwavenodeheal", std::bind(&CWebServer::Cmd_ZWaveNodeHeal, this, _1, _2, _3));
-			RegisterCommandCode("zwavenetworkinfo", std::bind(&CWebServer::Cmd_ZWaveNetworkInfo, this, _1, _2, _3));
-			RegisterCommandCode("zwaveremovegroupnode", std::bind(&CWebServer::Cmd_ZWaveRemoveGroupNode, this, _1, _2, _3));
-			RegisterCommandCode("zwaveaddgroupnode", std::bind(&CWebServer::Cmd_ZWaveAddGroupNode, this, _1, _2, _3));
-			RegisterCommandCode("zwavegroupinfo", std::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1, _2, _3));
-			RegisterCommandCode("zwavecancel", std::bind(&CWebServer::Cmd_ZWaveCancel, this, _1, _2, _3));
-			RegisterCommandCode("applyzwavenodeconfig", std::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1, _2, _3));
-			RegisterCommandCode("zwavehasnodefailed", std::bind(&CWebServer::Cmd_ZWaveHasNodeFailed, this, _1, _2, _3));
-			RegisterCommandCode("zwavereplacefailednode", std::bind(&CWebServer::Cmd_ZWaveReplaceFailedNode, this, _1, _2, _3));
-			RegisterCommandCode("requestzwavenodeconfig", std::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1, _2, _3));
-			RegisterCommandCode("requestzwavenodeinfo", std::bind(&CWebServer::Cmd_ZWaveRequestNodeInfo, this, _1, _2, _3));
-			RegisterCommandCode("zwavestatecheck", std::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1, _2, _3));
-			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", std::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1, _2, _3));
-			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", std::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1, _2, _3));
-			RegisterCommandCode("zwavetransferprimaryrole", std::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole, this, _1, _2, _3));
-			RegisterCommandCode("zwavestartusercodeenrollmentmode", std::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1, _2, _3));
-			RegisterCommandCode("zwavegetusercodes", std::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1, _2, _3));
-			RegisterCommandCode("zwaveremoveusercode", std::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1, _2, _3));
-			RegisterCommandCode("zwavegetbatterylevels", std::bind(&CWebServer::Cmd_ZWaveGetBatteryLevels, this, _1, _2, _3));
+			RegisterCommandCode("zwavesoftreset", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveSoftReset(session, req, root); });
+			RegisterCommandCode("zwavehardreset", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveHardReset(session, req, root); });
+			RegisterCommandCode("zwavenetworkheal", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveNetworkHeal(session, req, root); });
+			RegisterCommandCode("zwavenodeheal", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveNodeHeal(session, req, root); });
+			RegisterCommandCode("zwavenetworkinfo", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveNetworkInfo(session, req, root); });
+			RegisterCommandCode("zwaveremovegroupnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveRemoveGroupNode(session, req, root); });
+			RegisterCommandCode("zwaveaddgroupnode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveAddGroupNode(session, req, root); });
+			RegisterCommandCode("zwavegroupinfo", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveGroupInfo(session, req, root); });
+			RegisterCommandCode("zwavecancel", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveCancel(session, req, root); });
+			RegisterCommandCode("applyzwavenodeconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_ApplyZWaveNodeConfig(session, req, root); });
+			RegisterCommandCode("zwavehasnodefailed", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveHasNodeFailed(session, req, root); });
+			RegisterCommandCode("zwavereplacefailednode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveReplaceFailedNode(session, req, root); });
+			RegisterCommandCode("requestzwavenodeconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveRequestNodeConfig(session, req, root); });
+			RegisterCommandCode("requestzwavenodeinfo", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveRequestNodeInfo(session, req, root); });
+			RegisterCommandCode("zwavestatecheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveStateCheck(session, req, root); });
+			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",[this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveReceiveConfigurationFromOtherController(session, req, root); });
+			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveSendConfigurationToSecondaryController(session, req, root); });
+			RegisterCommandCode("zwavetransferprimaryrole", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveTransferPrimaryRole(session, req, root); });
+			RegisterCommandCode("zwavestartusercodeenrollmentmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveSetUserCodeEnrollmentMode(session, req, root); });
+			RegisterCommandCode("zwavegetusercodes", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveGetNodeUserCodes(session, req, root); });
+			RegisterCommandCode("zwaveremoveusercode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveRemoveUserCode(session, req, root); });
+			RegisterCommandCode("zwavegetbatterylevels", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveGetBatteryLevels(session, req, root); });
 
-			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", std::bind(&CWebServer::ZWaveGetConfigFile, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", [this](auto &&session, auto &&req, auto &&rep) { ZWaveGetConfigFile(session, req, rep); });
 
-			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", std::bind(&CWebServer::ZWaveCPPollXml, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", std::bind(&CWebServer::ZWaveCPIndex, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", std::bind(&CWebServer::ZWaveCPNodeGetConf, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", std::bind(&CWebServer::ZWaveCPNodeGetValues, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", std::bind(&CWebServer::ZWaveCPNodeSetValue, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", std::bind(&CWebServer::ZWaveCPNodeSetButton, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", std::bind(&CWebServer::ZWaveCPAdminCommand, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", std::bind(&CWebServer::ZWaveCPNodeChange, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/thpost.html", std::bind(&CWebServer::ZWaveCPTestHeal, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", std::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", std::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", std::bind(&CWebServer::ZWaveCPSetGroup, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPPollXml(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPIndex(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPNodeGetConf(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPNodeGetValues(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPNodeSetValue(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPNodeSetButton(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPAdminCommand(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPNodeChange(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/thpost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPTestHeal(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPGetTopo(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPGetStats(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", [this](auto &&session, auto &&req, auto &&rep) { ZWaveCPSetGroup(session, req, rep); });
 			//
 			//pollpost.html
-			RegisterRType("openzwavenodes", std::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
+			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
-			RegisterCommandCode("tellstickApplySettings", std::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
+			RegisterCommandCode("tellstickApplySettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_TellstickApplySettings(session, req, root); });
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
@@ -2939,17 +2938,16 @@ namespace http {
 				sValue.clear();
 			}
 
-			root["Forecasthardware"] = "0";
-			if (m_sql.GetUserVariable("forecasthardware", USERVARTYPE_INTEGER, sValue))
+			root["Forecasthardware"] = 0;
+			int iValue = 0;
+			if (m_sql.GetPreferencesVar("ForecastHardwareID", iValue))
 			{
-				root["Forecasthardware"] = sValue;
-				sValue = "";
-				sValue.clear();
+				root["Forecasthardware"] = iValue;
 			}
 
-			if (root["Forecasthardware"] != "0")
+			if (root["Forecasthardware"] > 0)
 			{
-				int iHardwareID = atoi(root["Forecasthardware"].asString().c_str());
+				int iHardwareID = root["Forecasthardware"].asInt();
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 				if (pHardware != nullptr)
 				{
@@ -2981,17 +2979,17 @@ namespace http {
 					}
 					else
 					{
-						root["Forecasthardware"] = "0";	// reset to 0
+						root["Forecasthardware"] = 0;	// reset to 0
 					}
 				}
 				else
 				{
 					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
-					root["Forecasthardware"] = "0";	// reset to 0
+					root["Forecasthardware"] = 0;	// reset to 0
 				}
 			}
 
-			if (root["Forecasthardware"] == "0" && iSucces == 1)
+			if (root["Forecasthardware"] == 0 && iSucces == 1)
 			{
 				// No forecast device, but we have geo coords, so enough for fallback
 				iSucces++;
@@ -3480,15 +3478,36 @@ namespace http {
 			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
 		}
 
-		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteDateRange(WebEmSession &session, const request &req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string fromDate = request::findValue(&req, "fromdate");
+			const std::string toDate = request::findValue(&req, "todate");
+			if ( ( idx.empty()) || (fromDate.empty() || toDate.empty() ))
+				return;
+			root["status"] = "OK";
+			root["title"] = "deletedaterange";
+			m_sql.DeleteDateRange(idx.c_str(), fromDate, toDate);
+		}
+
+		void CWebServer::Cmd_DeleteDataPoint(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			const std::string idx = request::findValue(&req, "idx");
 			const std::string Date = request::findValue(&req, "date");
-			if (
-				(idx.empty()) ||
-				(Date.empty())
-				)
+
+			if ( (idx.empty()) || (Date.empty()) )
 				return;
+
 			root["status"] = "OK";
 			root["title"] = "deletedatapoint";
 			m_sql.DeleteDataPoint(idx.c_str(), Date);
@@ -15137,7 +15156,7 @@ namespace http {
 					if (!result.empty())
 					{
 						std::map<int, int> _directions;
-						int wdirtabletemp[17][8];
+						std::array<std::array<int, 8>, 17> wdirtabletemp = {};
 						std::string szLegendLabels[7];
 						int ii = 0;
 
@@ -15146,8 +15165,6 @@ namespace http {
 						int idir;
 						for (idir = 0; idir < 360 + 1; idir++)
 							_directions[idir] = 0;
-						for (ii = 0; ii < 17; ii++)
-							std::fill(std::begin(wdirtabletemp[ii]), std::end(wdirtabletemp[ii]), 0);
 
 						if (m_sql.m_windunit == WINDUNIT_MS)
 						{

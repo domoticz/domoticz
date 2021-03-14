@@ -19,6 +19,7 @@
 </plugin>
 """
 import Domoticz
+from Domoticz import Devices, Parameters
 import hmac
 import hashlib
 import time

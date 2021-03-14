@@ -69,6 +69,7 @@ class CEvohomeRadio : public CEvohomeBase
 	void RequestDHWState();
 	void RequestDHWTemp();
 	void RequestDHWSettings();
+	void RequestOpenThermBridge();
 	void RequestZoneInfo(uint8_t nZone);
 	void RequestZoneTemp(uint8_t nZone);
 	void RequestZoneName(uint8_t nZone);
@@ -162,7 +163,7 @@ class CEvohomeRadio : public CEvohomeBase
 	typedef tmap_relay_check::iterator tmap_relay_check_it;
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 
-	bool m_bStartup[2];
+	std::array<bool, 2> m_bStartup;
 
 	int16_t m_DHWSetpoint = 6000;
 };

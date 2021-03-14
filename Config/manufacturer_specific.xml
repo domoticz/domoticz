@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="162" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="167" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -760,6 +760,7 @@
     <Product config="fibaro/fgt001.xml" id="1001" name="FGT001 Heat Controller" type="1301"/>
     <Product config="fibaro/fgwpg111.xml" id="2000" name="FGWPG111 US Wall Plug" type="1701"/>
     <Product config="fibaro/fgwpg111.xml" id="1000" name="FGWPG111 UK Wall Plug" type="1801"/>
+    <Product config="fibaro/fgwds221ss.xml" id="1000" name="FGWDS221 Walli Double Switch (Single switch mode)" type="1A01"/>
     <Product config="fibaro/fgwds221.xml" id="1000" name="FGWDS221 Walli Double Switch" type="1B01"/>
     <Product config="fibaro/fgwd111.xml" id="1000" name="FGWD111 Walli Dimmer" type="1C01"/>
     <Product config="fibaro/fgwr111.xml" id="1000" name="FGWR111 Walli Roller Shutter" type="1d01"/>
@@ -1256,6 +1257,7 @@
     <Product config="mcohome/mh8fceu0803.xml" id="5102" name="MH8-FC-EU Thermostat" type="0803"/>
     <Product config="mcohome/mh9co2.xml" id="0201" name="MH9-CO2-WD CO2 Monitor" type="0905"/>
     <Product config="mcohome/mh9co2.xml" id="3102" name="MH9-CO2-WD CO2 Monitor" type="0901"/>
+    <Product config="mcohome/mh9co2.xml" id="5102" name="MH9-CO2-WD CO2 Monitor" type="0901"/>
     <Product config="mcohome/mh9co2.xml" id="5102" name="MH9-CO2-WD CO2 Monitor" type="0902"/>
     <Product config="mcohome/mh10pm25wd.xml" id="5102" name="MH10-PM2.5-WD PM 2.5 Monitor" type="0a02"/>
     <Product config="mcohome/a8-9.xml" id="1352" name="A8-9 Multi-sensor" type="a800"/>
@@ -2039,6 +2041,9 @@
     <Product config="zipato/ne-nas-ab02z.xml" id="1083" name="Indoor Siren" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0120" name="Zonoff"></Manufacturer>
+  <Manufacturer id="0000" name="Zooz">
+    <Product id="0004" name="ZST10 700 S2 Z-Wave Plus USB Stick" type="0004" />
+  </Manufacturer>
   <Manufacturer id="027a" name="Zooz">
     <Product id="0002" name="ZST10 S2 Z-Wave Plus USB Stick" type="0401"/>
     <Product config="zooz/zen06.xml" id="000a" name="ZEN06 Smart Plug" type="0101"/>
@@ -2047,6 +2052,7 @@
     <Product config="zooz/zse09.xml" id="0083" name="ZSE09 Mini Sensor" type="0003"/>
     <Product config="zooz/zen15.xml" id="000D" name="ZEN15 Power Switch" type="0101"/>
     <Product config="zooz/zen16.xml" id="a00a" name="ZEN16 Multirelay" type="a000"/>
+    <Product config="zooz/zen17.xml" id="a00a" name="ZEN17 Universal Relay" type="7000"/>
     <Product config="zooz/zse18.xml" id="0012" name="ZSE18 Motion Sensor" type="0301"/>
     <Product config="zooz/zse19.xml" id="0003" name="ZSE19 S2 Multisiren" type="000c"/>
     <Product config="zooz/zen20v2.xml" id="a004" name="ZEN20 V2.0 Power Strip" type="a000"/>
@@ -2062,10 +2068,14 @@
     <Product config="zooz/zse30.xml" id="0085" name="ZSE30 Water Sensor" type="0003"/>
     <Product config="zooz/zen31.xml" id="2000" name="ZEN31 RGBW Dimmer" type="0902"/>
     <Product config="zooz/zse33.xml" id="0088" name="ZSE33 Smart Chime" type="0003"/>
+    <Product config="zooz/zen32.xml" id="a008" name="ZEN32 Scene Controller" type="7000"/>
     <Product config="zooz/zen34.xml" id="f001" name="ZEN34 Remote Switch" type="0004"/>
     <Product config="zooz/zen34.xml" id="f001" name="ZEN34 Remote Switch" type="7000"/>
     <Product config="zooz/zse40.xml" id="2101" name="ZSE40 4-in-1 sensor" type="2021"/>
-    <Product config="zooz/zen72.xml" id="a002" name="ZEN72 Dimmer Switch 700" type="7000"/>
+    <Product config="zooz/zen71.xml" id="a001" name="ZEN71 On Off Switch" type="7000"/>
+    <Product config="zooz/zen72.xml" id="a002" name="ZEN72 Dimmer Switch" type="7000"/>
+    <Product config="zooz/zen76.xml" id="a006" name="ZEN76 S2 On Off Switch" type="7000"/>
+    <Product config="zooz/zen77.xml" id="a007" name="ZEN77 S2 Dimmer Switch" type="7000"/>
   </Manufacturer>
   <Manufacturer id="015d" name="Zooz (Willis Electric)">
     <Product config="zooz/zen20.xml" id="f51c" name="ZEN20 Power Strip" type="0651"/>

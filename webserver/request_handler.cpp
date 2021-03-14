@@ -87,8 +87,6 @@ request_handler::~request_handler()
 		free(m_pUnzipBuffer);
 	m_pUnzipBuffer=NULL;
 }
-#else
-request_handler::~request_handler() = default;
 #endif
 
 #ifndef WEBSERVER_DONT_USE_ZIP

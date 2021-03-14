@@ -19,10 +19,10 @@ void CWebSocketPush::Start()
 	if (isStarted) {
 		return;
 	}
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, const auto &name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, auto &&name, auto rx) { OnDeviceReceived(id, idx, name, rx); });
 	m_sDeviceUpdate = m_mainworker.sOnDeviceUpdate.connect([this](auto id, auto idx) { OnDeviceUpdate(id, idx); });
-	m_sNotification = sOnNotificationReceived.connect([this](const auto &s, const auto &t, const auto &e, auto p, const auto &sound, auto n) { OnNotificationReceived(s, t, e, p, sound, n); });
-	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect([this](auto idx, const auto &name) { OnSceneChange(idx, name); });
+	m_sNotification = sOnNotificationReceived.connect([this](auto &&s, auto &&t, auto &&e, auto p, auto &&sound, auto n) { OnNotificationReceived(s, t, e, p, sound, n); });
+	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect([this](auto idx, auto &&name) { OnSceneChange(idx, name); });
 	isStarted = true;
 }
 

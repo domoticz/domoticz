@@ -14,55 +14,6 @@
 #include <frameobject.h>
 #include "../../main/Helper.h"
 
-#ifndef _Py_DEC_REFTOTAL
-  /* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by:
-    https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
-#  ifdef Py_REF_DEBUG
-#    define _Py_DEC_REFTOTAL _Py_RefTotal--
-#  else
-#    define _Py_DEC_REFTOTAL
-#    define _Py_Dealloc
-#  endif
-#endif
-
-#if PY_VERSION_HEX >= 0x030800f0
-static inline void
-py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
-{
-	(void)filename; /* may be unused, shut up -Wunused-parameter */
-	(void)lineno; /* may be unused, shut up -Wunused-parameter */
-	_Py_DEC_REFTOTAL;
-	if (--op->ob_refcnt != 0)
-	{
-#ifdef Py_REF_DEBUG
-	if (op->ob_refcnt < 0)
-	{
-		_Py_NegativeRefcount(filename, lineno, op);
-	}
-#endif
-	}
-	else
-	{
-		_Py_Dealloc(op);
-	}
-}
-
-#undef Py_DECREF
-#define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
-
-static inline void
-py3__Py_XDECREF(PyObject *op)
-{
-	if (op != nullptr)
-	{
-		Py_DECREF(op);
-	}
-}
-
-#undef Py_XDECREF
-#define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
-#endif
-
 namespace Plugins {
 
 #ifdef WIN32
@@ -135,7 +86,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Clear, );
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Fetch, PyObject** COMMA PyObject** COMMA PyObject**);
-		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_ImportModule, const char*);
+		DECLARE_PYTHON_SYMBOL(void, PyErr_NormalizeException, PyObject **COMMA PyObject **COMMA PyObject **);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_ImportModule, const char *);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallObject, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
@@ -147,7 +99,10 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject *, _PyObject_New, PyTypeObject *);
+		DECLARE_PYTHON_SYMBOL(int, PyObject_IsInstance, PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyObject_IsSubclass, PyObject *COMMA PyObject *);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_Dir, PyObject *);
 #ifdef _DEBUG
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2TraceRefs, struct PyModuleDef* COMMA int);
 #else
@@ -271,6 +226,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Fetch);
+					RESOLVE_PYTHON_SYMBOL(PyErr_NormalizeException);
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
@@ -284,6 +240,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyGILState_Check);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
+					RESOLVE_PYTHON_SYMBOL(PyObject_IsInstance);
+					RESOLVE_PYTHON_SYMBOL(PyObject_IsSubclass);
+					RESOLVE_PYTHON_SYMBOL(PyObject_Dir);
 #ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2TraceRefs);
 #else
@@ -484,7 +443,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear
 #define PyErr_Fetch				pythonLib->PyErr_Fetch
-#define PyImport_ImportModule	pythonLib->PyImport_ImportModule
+#define PyErr_NormalizeException pythonLib->PyErr_NormalizeException
+#define PyImport_ImportModule pythonLib->PyImport_ImportModule
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
 #define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
@@ -497,6 +457,9 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyGILState_Check		pythonLib->PyGILState_Check
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
+#define PyObject_IsInstance		pythonLib->PyObject_IsInstance
+#define PyObject_IsSubclass		pythonLib->PyObject_IsSubclass
+#define PyObject_Dir			pythonLib->PyObject_Dir
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
@@ -534,4 +497,72 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
 #define	PyObject_GetIter		pythonLib->PyObject_GetIter
 #define	PyIter_Next				pythonLib->PyIter_Next
+
+#ifndef _Py_DEC_REFTOTAL
+/* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by: https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
+#ifdef Py_REF_DEBUG
+#define _Py_DEC_REFTOTAL _Py_RefTotal--
+#else
+#define _Py_DEC_REFTOTAL
+#define _Py_Dealloc
+#endif
+#endif
+
+#if PY_VERSION_HEX >= 0x030800f0
+	static inline void py3__Py_INCREF(PyObject *op)
+	{
+#ifdef Py_REF_DEBUG
+		_Py_RefTotal++;
+#endif
+		op->ob_refcnt++;
+	}
+
+#undef Py_INCREF
+#define Py_INCREF(op) py3__Py_INCREF(_PyObject_CAST(op))
+
+	static inline void py3__Py_XINCREF(PyObject *op)
+	{
+		if (op != NULL)
+		{
+			Py_INCREF(op);
+		}
+	}
+
+#undef Py_XINCREF
+#define Py_XINCREF(op) py3__Py_XINCREF(_PyObject_CAST(op))
+
+	static inline void py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
+	{
+		(void)filename; /* may be unused, shut up -Wunused-parameter */
+		(void)lineno;	/* may be unused, shut up -Wunused-parameter */
+		_Py_DEC_REFTOTAL;
+		if (--op->ob_refcnt != 0)
+		{
+#ifdef Py_REF_DEBUG
+			if (op->ob_refcnt < 0)
+			{
+				_Py_NegativeRefcount(filename, lineno, op);
+			}
+#endif
+		}
+		else
+		{
+			_Py_Dealloc(op);
+		}
+	}
+
+#undef Py_DECREF
+#define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
+
+	static inline void py3__Py_XDECREF(PyObject *op)
+	{
+		if (op != nullptr)
+		{
+			Py_DECREF(op);
+		}
+	}
+
+#undef Py_XDECREF
+#define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
+#endif
 } // namespace Plugins

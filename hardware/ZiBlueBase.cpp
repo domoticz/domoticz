@@ -449,7 +449,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 		int dlen = len - 8;
 		REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER *pIncomming = (REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER*)data;
 #ifdef DEBUG_ZIBLUE
-		_log.Log(LOG_NORM, "ZiBlue: frameType: %d, cluster: %d, dataFlag: %d (%s Mhz)", pIncomming->frameType, pIncomming->cluster, pIncomming->dataFlag, (pIncomming->dataFlag == 0) ? "433" : "868");
+		_log.Log(LOG_NORM, "ZiBlue: frameType: %d, cluster: %d, dataFlag: %d (%s MHz)", pIncomming->frameType, pIncomming->cluster, pIncomming->dataFlag, (pIncomming->dataFlag == 0) ? "433" : "868");
 		_log.Log(LOG_NORM, "ZiBlue: rfLevel: %d dBm, floorNoise:: %d dBm, rfQuality: %d", pIncomming->rfLevel, pIncomming->floorNoise, pIncomming->rfQuality);
 		_log.Log(LOG_NORM, "ZiBlue: protocol: %d (%s), infoType: %d", pIncomming->protocol, szZiBlueProtocol(pIncomming->protocol), pIncomming->infoType);
 #endif

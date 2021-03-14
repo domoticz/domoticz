@@ -2055,7 +2055,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			bHaveValue = true;
 			break;
 		case V_IR_RECEIVE:
-			pChild->SetValue(vType, atoi(payload.c_str()));
+			pChild->SetValue(vType, (int)std::stoul(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_IR_SEND:

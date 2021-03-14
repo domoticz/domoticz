@@ -48,7 +48,7 @@ struct REGULAR_INCOMING_BINARY_USB_FRAME
  *
 Binary Data[]	Size	Type	Remark
 FrameType	1	unsigned char	Value = 0
-DataFlag	1	unsigned char	0: 433Mhz, 1: 868Mhz
+DataFlag	1	unsigned char	0: 433MHz, 1: 868MHz
 RFLevel	1	signed char	Unit : dB  (high signal :-40dB to low : -110dB)
 FloorNoise	1	signed char	Unit : dB  (high signal :-40dB to low : -110dB)
 Protocol	1	unsigned char	See below
@@ -61,7 +61,7 @@ InfosType	1	unsigned char	See below
 /*
 Binary Data[]	Size	Type	Remark
 FrameType	1	unsigned char	Value = 0
-DataFlag	1	unsigned char	0: 433Mhz, 1: 868Mhz
+DataFlag	1	unsigned char	0: 433MHz, 1: 868MHz
 RFLevel	1	signed char	Unit : dB  (high signal :-40dB to low : -110dB)
 FloorNoise	1	signed char	Unit : dB  (high signal :-40dB to low : -110dB)
 RFQuality	1	unsigned char
@@ -308,7 +308,7 @@ struct REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER
 {				 // public binary API   RF to USB
 	unsigned char frameType; // Value = 0
 	unsigned char cluster;	 // cluster origin. Reserved field
-	unsigned char dataFlag;	 // 0: 433Mhz, 1: 868Mhz
+	unsigned char dataFlag;	 // 0: 433Mhz, 1: 868MHz
 	signed char rfLevel;	 // Unit : dBm  (high signal :-40dBm to low : -110dB)
 	signed char floorNoise;	 // Unit : dBm  (high signal :-40dBm to low : -110dB)
 	unsigned char rfQuality; // factor or receiving quality : 1...10 : 1 : worst quality, 10 : best quality

@@ -1,4 +1,4 @@
-Version 2020.xxxx (xxxx)
+Version 2020.xxxxx (xxxxx)
 - Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: AirconWithMe wifi module
@@ -26,9 +26,10 @@ Version 2020.xxxx (xxxx)
 - Implemented: Autorefresh feature for graphical logs
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
-- Implemented: ZWave, Legend and tooltips in Neighbor�s overview
-- Updated: Blebox; use of the latest SwitchBox API
-- Updated: dzVents; version 3.1.5 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Implemented: ZWave, Legend and tooltips in Neighbors overview
+- Updated: API/JSON: added API to delete daterange in history logs for one ID
+- Updated: Blebox; use of the latest SwitchBox APIthe latest SwitchBox API
+- Updated: dzVents; version 3.1.6 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: eVehicles; added option to manual set API key
 - Updated: EvoHome; decode, display and store hotwater setpoint
@@ -38,6 +39,7 @@ Version 2020.xxxx (xxxx)
 - Updated: OpenZWave; configuration files
 - Updated: Openweathermap; use latest API and overal improvements
 - Updated: OTGW; ready for firmware 5.0 and added domestic hot water flow rate
+- Updated: Plugin manager: ready for Python 3.9+
 - Updated: Plugwise; update of scene selector and added a migration process
 - Updated: SolarEdge; add support for 3 Phase inverter
 - Updated: Tado; add support for per-zone Open Window Detection
@@ -1505,7 +1507,7 @@ Version 1.412 (April 1th 2013)
 - Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
 - Implemented: SQLite faster journal/update mode on non-windows systems
 - Implemented: Started working on support for the CM180i
-- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
+- Implemented: TE932Tool (USB 433MHz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
 - Implemented: Temperature (large) icons now represents global temperature index
 - Implemented: Temperature/Weather sensors now display their main value in large font
 - Implemented: Unix update script

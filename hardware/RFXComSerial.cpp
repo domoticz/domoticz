@@ -1002,7 +1002,7 @@ namespace http {
 			}
 			else
 			{
-				//For now disable setting the protocols on a 868Mhz device
+				//For now disable setting the protocols on a 868MHz device
 			}
 		}
 

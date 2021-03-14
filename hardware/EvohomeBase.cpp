@@ -197,6 +197,20 @@ void CEvohomeBase::SetGatewayID(unsigned int nID)
 }
 
 
+unsigned int CEvohomeBase::GetOpenThermBridgeID()
+{
+	std::lock_guard<std::mutex> l(m_mtxOpenThermBridgeID);
+	return m_nOtbID;
+}
+
+
+void CEvohomeBase::SetOpenThermBridgeID(unsigned int nID)
+{
+	std::lock_guard<std::mutex> l(m_mtxOpenThermBridgeID);
+	m_nOtbID=nID;
+}
+
+
 void CEvohomeBase::LogDate()
 {
         char szTmp[256];

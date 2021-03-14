@@ -189,7 +189,7 @@ void ssl_server::init_connection() {
 	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
 
 	// the following line gets the passphrase for protected private server keys
-	context_.set_password_callback([this](auto &&...) { return ssl_server::get_passphrase(); });
+	context_.set_password_callback([this](auto &&...) { return get_passphrase(); });
 
 	if (settings_.ssl_options.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL options parameter !", settings_.listening_port.c_str());

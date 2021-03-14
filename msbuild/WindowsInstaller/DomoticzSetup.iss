@@ -73,6 +73,9 @@ Name: "{commonstartup}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters:
 Name: "{commondesktop}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp\desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Tasks: RunAsApp\quicklaunchicon
 
+[Setup]
+UninstallDisplayIcon={app}\{#MyAppExeName}
+
 [Run]
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
 Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
@@ -106,7 +109,7 @@ begin
   Result := '-www ' + ConfigPage.Values[0] + ' -sslwww ' + ConfigPage.Values[1];
   if (LogUseLogButton.Checked) then
     begin
-      Result := Result + ' -log "' + LogConfigPage.Values[0] + '"';
+      Result := Result + ' -log """' + LogConfigPage.Values[0] + '"""';
     end;
 end;
 

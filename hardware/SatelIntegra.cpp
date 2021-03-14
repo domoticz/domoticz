@@ -58,12 +58,12 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	memset(m_newData, 0, sizeof(m_newData));
 
 	// clear last local state of zones and outputs
-	std::fill(std::begin(m_zonesLastState), std::end(m_zonesLastState), false);
-	std::fill(std::begin(m_outputsLastState), std::end(m_outputsLastState), false);
-	std::fill(std::begin(m_isOutputSwitch), std::end(m_isOutputSwitch), false);
-	std::fill(std::begin(m_isTemperature), std::end(m_isTemperature), false);
-	std::fill(std::begin(m_isPartitions), std::end(m_isPartitions), false);
-	std::fill(std::begin(m_armLastState), std::end(m_armLastState), false);
+	m_zonesLastState = {};
+	m_outputsLastState = {};
+	m_isOutputSwitch = {};
+	m_isTemperature = {};
+	m_isPartitions = {};
+	m_armLastState = {};
 	m_alarmLast = false;
 
 	errorCodes[1] = "requesting user code not found";

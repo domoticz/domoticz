@@ -25,7 +25,9 @@
 </plugin>
 """
 import Domoticz
+from Domoticz import Devices, Parameters
 import random
+
 
 class BasePlugin:
     enabled = False
