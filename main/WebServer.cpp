@@ -992,7 +992,9 @@ namespace http {
 								_log.Debug(DEBUG_AUTH, "GetJWTToken: Found a Basic Auth Header for ClientID (%s) and User (%s)", clientid.c_str(), user.c_str());
 								if (m_pWebEm->GenerateJwtToken(jwttoken, clientid, clientsecret, user, exptime))
 								{
-									root["accesstoken"] = jwttoken;
+									root["access_token"] = jwttoken;
+									root["token_type"] = "Bearer";
+									root["expires_in"] = exptime;
 									root["status"] = "OK";
 								}
 							}
