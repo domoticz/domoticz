@@ -459,7 +459,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		local isDayRule = false
-		for i,day in pairs({'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'}) do
+		for i,day in pairs(LOOKUPDAYABBROFWEEK) do
 			if (string.find(days, day) ~= nil) then
 				isDayRule = true
 				break
@@ -607,7 +607,7 @@ local function Time(sDate, isUTC, _testMS)
 		local moment = tonumber(gTimes[astronomicalString .. 'inminutes']) or ''
 
 		if minutes ~= nil and moment ~= '' then
-			return ( self.minutesnow + minutes ) == moment
+			return ( self.minutesnow + minutes ) % 1440 == moment
 		end
 		return nil
 	end
@@ -618,7 +618,7 @@ local function Time(sDate, isUTC, _testMS)
 		local moment = tonumber(gTimes[astronomicalString .. 'inminutes']) or ''
 
 		if minutes ~= nil and moment ~= '' then
-			return ( self.minutesnow - minutes ) == moment
+			return ( self.minutesnow - minutes ) % 1440 == moment
 		end
 		return nil
 	end
@@ -836,11 +836,12 @@ local function Time(sDate, isUTC, _testMS)
 			gTimes[dzVentsName] = _G.timeofday[originalName]
 		end
 
-		gTimes.sunatsouthinMinutes = gTimes.solarnooninminutes
+		gTimes.sunatsouthinminutes = gTimes.solarnooninminutes
 		gTimes.astronomicaldaytime = ( self.minutesnow <= (gTimes.astronomicaltwilightendinminutes or 0) and self.minutesnow >= (gTimes.astronomicaltwilightstartinminutes or 9999))
 		gTimes.nauticaldaytime = (self.minutesnow <= (gTimes.nauticaltwilightendinminutes or 0) and self.minutesnow >= (gTimes.nauticaltwilightstartinminutes or 9999))
 		gTimes.nauticalnighttime = not(gTimes.nauticaldaytime)
 		gTimes.astronomicalnighttime = not(gTimes.astronomicaldaytime)
+		gTimes.midnightinminutes = 0
 		return true
 	end
 

@@ -1134,6 +1134,12 @@ describe('Time', function()
 					assert.is_true(t.matchesRule('2 minutes after sunset'))
 				end)
 
+				it('should return true if it is xx minutes after sunset (crossing dates', function()
+					_G.timeofday = { ['SunsetInMinutes'] = 64 }
+					local t = Time('2017-01-01 01:02:00')
+					assert.is_true(t.matchesRule('1438 minutes after sunset'))
+				end)
+
 				it('should return if it is more less 2 minutes after sunset', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:05:00')
@@ -1146,7 +1152,7 @@ describe('Time', function()
 					assert.is_false(t.matchesRule('2 minutes after sunset'))
 				end)
 
-				it('should return nil if the rule is not present', function()
+				it('should return false if the rule is not present', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:04:00')
 					assert.is_false(t.matchesRule('minutes after sunset'))
@@ -1156,6 +1162,29 @@ describe('Time', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:06:00')
 					assert.is_true(t.matchesRule('some random 2 minutes after sunset text'))
+				end)
+			end)
+
+			describe('xx minutes after . before midnight', function()
+
+				it('should return true if it is xx minutes after midNight', function()
+					local t = Time('2017-01-01 01:06:00')
+					assert.is_true(t.matchesRule('66 minutes after midNight'))
+				end)
+
+				it('should return if it is more than 2 minutes before midNight', function()
+					local t = Time('2017-01-01 23:58:00')
+					assert.is_true(t.matchesRule('2 minutes before midNight'))
+				end)
+
+				it('should return false if the rule is not present', function()
+					local t = Time('2017-01-01 01:04:00')
+					assert.is_false(t.matchesRule('minutes after midNight'))
+				end)
+
+				it('should detect the rule within a random string', function()
+					local t = Time('2017-01-01 00:02:00')
+					assert.is_true(t.matchesRule('some random 2 minutes after midNight text'))
 				end)
 			end)
 

@@ -566,9 +566,7 @@ Let’s say you have a script that checks the status of a lamp and is triggered 
 
 There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm): Keywords recognized are “at, between, every, except, in, on” ( except supported from version <sup>3.0.16</sup> onwards ).
 
-At every place you read <astroMoment> you can use one of: sunset, sunrise, solarnoon, sunatsouth '', civiltwilightstart, civiltwilightend, astronomicaltwilightstart '', astronomicaltwilightend '', nauticaltwilightstart '' or nauticaltwilightend *.
-
-At every place you read <astroRange> you can use one of: daytime, civildaytime, astronomicaldaytime '', nauticaldaytime '', nighttime, civilnighttime, astronomicalnighttime * or nauticalnighttime * .
+At every place you read <astroMoment> you can use one of: sunset, sunrise, solarnoon, midnight '', sunatsouth '', civiltwilightstart, civiltwilightend, astronomicaltwilightstart '', astronomicaltwilightend '', nauticaltwilightstart * or nauticaltwilightend *.
 
 * <sup>3.1.16</sup>
 
@@ -594,8 +592,8 @@ At every place you read <astroRange> you can use one of: daytime, civildaytime, 
             'at sunrise',
             'at <astroMoment>',         -- dzVents >= 3.0.16 Uses the times received from Domoticz
             'at <astroMoment> on sat,sun',
-            'xx minutes before <astroMoment>',      --
-            'xx minutes after <astroMoment>,        -- Please note that these relative times
+            'xx minutes before <astroMoment>',  --
+            'xx minutes after <astroMoment>,    -- Please note that these relative times will cross dates
             'between aa and bb'         -- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
                                         -- aa/bb can be sunrise/sunset/solarnoon ('between sunset and sunrise' and 'between solarnoon and sunrise' will cross dates)
                                         -- aa/bb can be 'xx minutes before/after <astroMoment>'
@@ -2524,7 +2522,7 @@ Check out the documentation [https://htmlpreview.github.io/?https://github.com/r
 
 == [3.1.6] ==
 
-* Add astronomical times. Now every -start, -end, - xx minutes before, -xx minutes after, -at and between aa and bb can be done for all available astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon)
+* Add astronomical times. Now every -start, -end, - xx minutes before, -xx minutes after, -at and between aa and bb can be done for all available astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon, midnight)
 * limited output of dump() so it will only show attributes. (fullDump() available for complete overview)
 * Suppress error message when application/json return is empty
 
