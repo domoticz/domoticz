@@ -96,6 +96,7 @@ void CNotificationSystem::QueueThread()
 
 void CNotificationSystem::Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata)
 {
+	std::lock_guard<std::mutex> l(m_mutex);
 	_tNotificationQueue item;
 	item.type = type;
 	item.status = status;
