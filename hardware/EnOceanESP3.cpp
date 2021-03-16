@@ -1731,8 +1731,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 					// with a default profile and type. The profile and type
 					// will have to be updated manually by the user.
 					int manufacturer = 0x7FF;  // generic manufacturer
-					Profile = 0x05;
-					iType = 0x02;
+					Profile = 0x02;
+					iType = 0x01;
 					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, szDeviceID, manufacturer, Profile, iType);
 					Log(LOG_NORM, "Sender_ID 0x%08lX inserted in the database with default profile F6-%02x-%02x", id, Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
