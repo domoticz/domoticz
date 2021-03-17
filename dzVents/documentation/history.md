@@ -3,7 +3,7 @@ __NOTOC__
 ```
 ## [3.1.6] ##
 - Add astronomical times. Now every -start, -end, -xx minutes before, -xx minutes after, -at and between aa and bb  can be done for all available
-astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon)
+astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon, midnight)
 - limited output of dump() so it will only show attributes. (fullDump() available for complete overview)
 - Suppress error message when application/json return is empty
 

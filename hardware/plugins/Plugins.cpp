@@ -41,7 +41,6 @@ extern MainWorker m_mainworker;
 
 namespace Plugins
 {
-
 	std::mutex PythonMutex; // controls access to Python
 
 	void LogPythonException(CPlugin *pPlugin, const std::string &sHandler)
@@ -995,7 +994,6 @@ namespace Plugins
 	{
 		Log(LOG_STATUS, "(%s) Entering work loop.", m_Name.c_str());
 		m_LastHeartbeat = mytime(nullptr);
-		int scounter = m_iPollInterval * 2;
 		while (!IsStopRequested(50) || !m_bIsStopped)
 		{
 			time_t Now = time(nullptr);
@@ -1051,11 +1049,10 @@ namespace Plugins
 				}
 			}
 
-			if (!--scounter)
+			if (Now >= (m_LastHeartbeat + m_iPollInterval))
 			{
 				//	Add heartbeat to message queue
 				MessagePlugin(new onHeartbeatCallback(this));
-				scounter = m_iPollInterval * 2;
 				m_LastHeartbeat = mytime(nullptr);
 			}
 
@@ -1327,10 +1324,24 @@ namespace Plugins
 				}
 			}
 
-			m_DeviceDict = PyDict_New();
+			m_DeviceDict = (PyDictObject*)PyDict_New();
 			if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject *)m_DeviceDict) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add Device dictionary.", m_PluginKey.c_str());
+				goto Error;
+			}
+
+			PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+			if (!brModule)
+			{
+				Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+				goto Error;
+			}
+
+			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			if (!pModState)
+			{
+				Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 				goto Error;
 			}
 
@@ -1342,24 +1353,30 @@ namespace Plugins
 				// Add device objects into the device dictionary with Unit as the key
 				for (const auto &sd : result)
 				{
-					CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
+					PyNewRef nrArgList = Py_BuildValue("(si)", "", atoi(sd[0].c_str()));
+					if (!nrArgList)
+					{
+						Log(LOG_ERROR, "Building Device argument list failed for Unit %d.", atoi(sd[0].c_str()));
+						goto Error;
+					}
+					PyNewRef pDevice = PyObject_CallObject((PyObject *)pModState->pDeviceClass, nrArgList);
+					if (!pDevice)
+					{
+						Log(LOG_ERROR, "Device object creation failed for Unit %d.", atoi(sd[0].c_str()));
+						goto Error;
+					}
 
-					PyNewRef	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
-					if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
+					PyNewRef pKey = PyLong_FromLong(atoi(sd[0].c_str()));
+					if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, pDevice) == -1)
 					{
 						Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
 						goto Error;
 					}
-					pDevice->pPlugin = this;
-					pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
-					pDevice->HwdID = m_HwdID;
-					pDevice->Unit = atoi(sd[0].c_str());
 					CDevice_refresh(pDevice);
-					Py_DECREF(pDevice);
 				}
 			}
 
-			m_ImageDict = PyDict_New();
+			m_ImageDict = (PyDictObject *)PyDict_New();
 			if (PyDict_SetItemString(pModuleDict, "Images", (PyObject *)m_ImageDict) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add Image dictionary.", m_PluginKey.c_str());
@@ -1913,7 +1930,7 @@ namespace Plugins
 				}
 
 				PyBorrowedRef	key;
-				CDevice *pDevice;
+				PyBorrowedRef	pDevice;
 				Py_ssize_t pos = 0;
 				// Sanity check to make sure the reference counbting is all good.
 				while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, (PyObject **)&pDevice))
@@ -1930,14 +1947,14 @@ namespace Plugins
 					}
 					else
 					{
-						if (pDevice->ob_base.ob_refcnt > 1)
+						if (pDevice->ob_refcnt > 1)
 						{
-							std::string sName = PyUnicode_AsUTF8(pDevice->Name);
-							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), pDevice->ob_base.ob_refcnt);
+							std::string sName = PyUnicode_AsUTF8(((CDevice*)pDevice)->Name);
+							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), pDevice->ob_refcnt);
 						}
-						else if (pDevice->ob_base.ob_refcnt < 1)
+						else if (pDevice->ob_refcnt < 1)
 						{
-							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, pDevice->ob_base.ob_refcnt);
+							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, pDevice->ob_refcnt);
 						}
 					}
 				}
@@ -1991,7 +2008,7 @@ namespace Plugins
 		PyObject *pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
 		if (m_SettingsDict)
 			Py_XDECREF(m_SettingsDict);
-		m_SettingsDict = PyDict_New();
+		m_SettingsDict = (PyDictObject *)PyDict_New();
 		if (PyDict_SetItemString(pModuleDict, "Settings", (PyObject *)m_SettingsDict) == -1)
 		{
 			Log(LOG_ERROR, "(%s) failed to add Settings dictionary.", m_PluginKey.c_str());

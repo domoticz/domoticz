@@ -104,9 +104,9 @@ namespace Plugins {
 	  bool HasNodeFailed(int Unit);
 
 	  std::string m_PluginKey;
-	  void *m_DeviceDict;
-	  void *m_ImageDict;
-	  void *m_SettingsDict;
+	  PyDictObject*	m_DeviceDict;
+	  PyDictObject* m_ImageDict;
+	  PyDictObject* m_SettingsDict;
 	  std::string m_HomeFolder;
 	  PluginDebugMask m_bDebug;
 	  bool m_bTracing;
@@ -166,6 +166,10 @@ namespace Plugins {
 		operator bool() const
 		{
 			return (m_pObject != NULL);
+		}
+		operator CDevice *() const
+		{
+			return (CDevice *)m_pObject;
 		}
 		PyObject **operator&()
 		{

@@ -405,6 +405,27 @@ bool CEnOceanESP3::sendFrameQueue(unsigned char frametype, unsigned char *databu
 	return true;
 }
 
+#ifndef _DEBUG
+//#define USE_TEST
+#endif
+
+#ifdef USE_TEST
+struct _tEnocean3TestStruct
+{
+	uint8_t PacketType;
+	uint8_t DataSize;
+	uint8_t OptionalDataSize;
+	uint8_t pData[40];
+};
+
+const std::vector<uint8_t> TestArray[] = { { 0x01, 0x07, 0x07, 0xF6, 0x50, 0x00, 0x32, 0x9C, 0xE3, 0x30, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00 }, // 3 button rockker
+					   { 0x01, 0x07, 0x07, 0xF6, 0x00, 0x00, 0x32, 0x9C, 0xE3, 0x20, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x53, 0x00 },
+
+					   { 0x01, 0x07, 0x07, 0xF6, 0x10, 0x00, 0x32, 0x9C, 0xE3, 0x30, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x58, 0x00 },
+					   { 0x01, 0x07, 0x07, 0xF6, 0x00, 0x00, 0x32, 0x9C, 0xE3, 0x20, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x56, 0x00 } };
+#endif
+
+
 CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int type)
 {
 	m_HwdID=ID;
@@ -414,14 +435,21 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	memset(&m_buffer,0,sizeof(m_buffer));
 	m_id_base=0;
 	m_receivestate=ERS_SYNCBYTE;
+#ifdef USE_TEST
+	// Test
+	for (const auto &itt : TestArray)
+	{
+		_tEnocean3TestStruct *pTest = (_tEnocean3TestStruct *)&itt.at(0);
 
-	//Test
-	//m_ReceivedPacketType = 0x01;
-	//m_DataSize = 0x0A;
-	//m_OptionalDataSize = 0x07;
-	//m_bufferpos = 0;
-	//m_buffer[m_bufferpos++] = 0xA5;
-	//ParseData();
+		m_ReceivedPacketType = pTest->PacketType;
+		m_DataSize = pTest->DataSize;
+		m_OptionalDataSize = pTest->OptionalDataSize;
+		m_bufferpos = 0;
+		for (int ii = 0; ii < m_DataSize + m_OptionalDataSize; ii++)
+			m_buffer[m_bufferpos++] = pTest->pData[ii];
+		ParseData();
+	}
+#endif
 }
 
 bool CEnOceanESP3::StartHardware()
@@ -1731,8 +1759,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 					// with a default profile and type. The profile and type
 					// will have to be updated manually by the user.
 					int manufacturer = 0x7FF;  // generic manufacturer
-					Profile = 0x05;
-					iType = 0x02;
+					Profile = 0x02;
+					iType = 0x01;
 					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, szDeviceID, manufacturer, Profile, iType);
 					Log(LOG_NORM, "Sender_ID 0x%08lX inserted in the database with default profile F6-%02x-%02x", id, Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");

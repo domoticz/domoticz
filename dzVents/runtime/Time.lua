@@ -459,7 +459,7 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		local isDayRule = false
-		for i,day in pairs({'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'}) do
+		for i,day in pairs(LOOKUPDAYABBROFWEEK) do
 			if (string.find(days, day) ~= nil) then
 				isDayRule = true
 				break
@@ -602,37 +602,23 @@ local function Time(sDate, isUTC, _testMS)
 	end
 
 	function self.ruleIsBeforeAstrologicalMoment(rule)
-		local minutes = tonumber(string.match(rule, '%.*(%d+) minutes before%.*'))
-		if (minutes ~= nil) then
-			for astronomicalString, tMinutes in pairs(gTimes) do
-				if type(gTimes[astronomicalString]) ~= 'boolean' then
-					local moment = astronomicalString:gsub('InMinutes','')
-					return ( self.minutesnow + minutes ) == gTimes[astronomicalString]
-				end
-			end
+		local minutes = tonumber(string.match(rule, '%.*(%d+)%s+minutes%s+before%.*'))
+		local astronomicalString = rule:match('minutes%s+before%s+(%a+)') or ''
+		local moment = tonumber(gTimes[astronomicalString .. 'inminutes']) or ''
+
+		if minutes ~= nil and moment ~= '' then
+			return ( self.minutesnow + minutes ) % 1440 == moment
 		end
 		return nil
 	end
 
 	function self.ruleIsAfterAstrologicalMoment(rule)
-		local minutes = tonumber(string.match(rule, '%.*(%d+) minutes after%.*'))
-		if (minutes ~= nil) then
-			for astronomicalString, tMinutes in pairs(gTimes) do
-				if type(gTimes[astronomicalString]) ~= 'boolean' then
-					local moment = astronomicalString:gsub('InMinutes','')
-					return ( self.minutesnow - minutes ) == gTimes[astronomicalString]
-				end
-			end
-		end
-		return nil
-	end
+		local minutes = tonumber(string.match(rule, '%.*(%d+)%s+minutes%s+after%.*'))
+		local astronomicalString = rule:match('minutes%s+after%s+(%a+)') or ''
+		local moment = tonumber(gTimes[astronomicalString .. 'inminutes']) or ''
 
-	-- return true if the self.time is in the rule xx minutes after sunrise
-	function self.ruleIsAfterSunrise(rule)
-		local minutes = tonumber(string.match(rule, '(%d+) minutes after sunrise'))
-		if (minutes ~= nil) then
-			local minutesnow = self.min + self.hour * 60
-			return (minutesnow == getMinutesAfterSunrise(minutes))
+		if minutes ~= nil and moment ~= '' then
+			return ( self.minutesnow - minutes ) % 1440 == moment
 		end
 		return nil
 	end
@@ -641,30 +627,20 @@ local function Time(sDate, isUTC, _testMS)
 	-- sunset, sunrise, CivilTwilightEnd, NautTwilightStart, etc
 	function self.ruleIsAtAstronomicalMoment(rule)
 
-		for astronomicalString, value in pairs(gTimes) do
-			if type(gTimes[astronomicalString]) ~= 'boolean' then
-				local moment = astronomicalString:gsub('inminutes','')
-				if rule:find('%.*%s*at%s*' .. moment) then
-					return self.minutesnow == gTimes[astronomicalString]
-				end
-			end
-		end
-		return nil
+		local astronomicalString = rule:match('at%s+(%a+)') or ''
+		local moment = tonumber(gTimes[astronomicalString .. 'inminutes']) or -1
+
+		return moment == self.minutesnow or nil
 	end
 
 	-- returns true if self.time is at a astronomical range
 	-- daytime, nightime, etc
 	function self.ruleIsAtAstronomicalRange(rule)
 
-		for astronomicalString, value in pairs(gTimes) do
-			if type(gTimes[astronomicalString]) == 'boolean' then
-				local moment = astronomicalString
-				if rule:find('%.*%s*at%s*' .. moment) then
-					return gTimes[astronomicalString]
-				end
-			end
+		local astronomicalString = rule:match('at%s+(%a+)') or ''
+		if type(gTimes[astronomicalString]) == 'boolean' then
+			return gTimes[astronomicalString] or nil
 		end
-		return nil
 	end
 
 	-- returns true if self.min fits in the every xx minute /every other minute/every minute rule
@@ -790,13 +766,13 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		-- check if it is before astroMoment
-		minutes, astrologicalMoment = string.match(moment, '%.*(%d+) minutes before (%a+)')
+		minutes, astrologicalMoment = string.match(moment, '%.*(%d+)%s+minutes%s+before%s+(%a+)')
 		if minutes and astrologicalMoment then
 			return minutesToTime(gTimes[astrologicalMoment .. 'inminutes'] - tonumber(minutes))
 		end
 
 		-- check if it is after astroMoment
-		minutes, astrologicalMoment = string.match(moment, '%.*(%d+) minutes after (%a+)')
+		minutes, astrologicalMoment = string.match(moment, '%.*(%d+)%s+minutes%s+after%s+(%a+)')
 		if minutes and astrologicalMoment then
 			return minutesToTime(gTimes[astrologicalMoment .. 'inminutes'] + tonumber(minutes))
 		end
@@ -860,11 +836,12 @@ local function Time(sDate, isUTC, _testMS)
 			gTimes[dzVentsName] = _G.timeofday[originalName]
 		end
 
-		gTimes.sunatsouthinMinutes = gTimes.solarnooninminutes
+		gTimes.sunatsouthinminutes = gTimes.solarnooninminutes
 		gTimes.astronomicaldaytime = ( self.minutesnow <= (gTimes.astronomicaltwilightendinminutes or 0) and self.minutesnow >= (gTimes.astronomicaltwilightstartinminutes or 9999))
 		gTimes.nauticaldaytime = (self.minutesnow <= (gTimes.nauticaltwilightendinminutes or 0) and self.minutesnow >= (gTimes.nauticaltwilightstartinminutes or 9999))
 		gTimes.nauticalnighttime = not(gTimes.nauticaldaytime)
 		gTimes.astronomicalnighttime = not(gTimes.astronomicaldaytime)
+		gTimes.midnightinminutes = 0
 		return true
 	end
 
@@ -886,7 +863,7 @@ local function Time(sDate, isUTC, _testMS)
 				local allRules = {}
 				local aRule = ''
 
-				for ruleWord in string.gmatch(rawRule, "[%S]*") do -- all "words" separated by spaces
+				for ruleWord in string.gmatch(rawRule, "[%S]+") do -- all "words" separated by spaces
 					if ruleKeywords:find(ruleWord) and aRule ~= '' then
 						table.insert(allRules, aRule)
 						aRule = ''
