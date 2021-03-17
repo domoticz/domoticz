@@ -106,8 +106,8 @@ void CNotificationSystem::Notify(const Notification::_eType type, const Notifica
 
 bool CNotificationSystem::NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata)
 {
-	bool response = false;
 	std::lock_guard<std::mutex> l(m_mutex);
+	bool response = false;
 	for (auto &m_notifier : m_notifiers)
 		response |= m_notifier->Update(type, status);
 	return response;
