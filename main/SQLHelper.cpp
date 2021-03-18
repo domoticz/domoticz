@@ -4764,11 +4764,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 					sValue = sCompValue;
 				}
-				else
-					sValue = "0;0";
 			}
-			else
-				sValue = "0;0";
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
