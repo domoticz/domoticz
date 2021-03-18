@@ -4741,6 +4741,9 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		//Default is option 0, read from device
 		if (options["EnergyMeterMode"] == "1" && devType == pTypeGeneral && subType == sTypeKwh)
 		{
+			std::string wpart = result[0][5];
+			if (wpart.empty())
+				wpart = "0;0";
 			std::vector<std::string> parts;
 			struct tm ntime;
 			double interval;
@@ -4751,12 +4754,21 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
 			interval = difftime(now, lutime);
-			StringSplit(result[0][5], ";", parts);
-			nEnergy = static_cast<float>(strtof(parts[0].c_str(), nullptr) * interval / 3600
-							 + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
-			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
-			sValue = sCompValue;
+			StringSplit(wpart, ";", parts);
+			if (parts.size() == 2)
+			{
+				nEnergy = std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]);
+				StringSplit(sValue, ";", parts);
+				if (parts.size() == 2)
+				{
+					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
+					sValue = sCompValue;
+				}
+				else
+					sValue = "0;0";
+			}
+			else
+				sValue = "0;0";
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
