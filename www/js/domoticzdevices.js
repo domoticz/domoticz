@@ -1287,19 +1287,24 @@ function Blinds(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.data = '';
+	var onoff = ((item.SwitchType.match(/inverted/i)) ? 'Off' : 'On');
+	    
         if (item.Status == 'Closed') {
             this.image = 'images/blinds48sel.png';
             this.image2 = 'images/blindsopen48.png';
-        }
+            this.onClick = 'SwitchLight(' + this.index + ",'" + onoff + "'," + this.protected + ');';
+            this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((onoff == 'On') ? 'Off' :  'On') + "'," + this.protected + ');';
+         }
         else {
             this.image = 'images/blindsopen48sel.png';
             this.image2 = 'images/blinds48.png';
-        }
-		this.onClick = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'On' : 'Off') + "'," + this.protected + ');';
-		this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((item.SwitchType == "Blinds Inverted") ? 'Off' : 'On') + "'," + this.protected + ');';
-        if (item.SwitchType == "Blinds Percentage") {
+            this.onClick = 'SwitchLight(' + this.index + ",'" + ((onoff == 'On') ? 'Off' :  'On') + "'," + this.protected + ');';
+            this.onClick2 = 'SwitchLight(' + this.index + ",'" + onoff + "'," + this.protected + ');';
+	}
+        if (item.SwitchType.match(/percentage/i)) {
             this.haveDimmer = true;
             this.image2 = '';
+	    this.onClick = this.onClick2;
             this.onClick2 = '';
         }
     }
