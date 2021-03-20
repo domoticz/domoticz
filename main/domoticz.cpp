@@ -101,19 +101,18 @@ namespace
 	};
 
 #ifndef WIN32
-	constexpr std::array<std::pair<const char *, int>, 10> facilities{
-		{
-			{ "daemon", LOG_DAEMON }, //
-			{ "user", LOG_USER },	  //
-			{ "local0", LOG_LOCAL0 }, //
-			{ "local1", LOG_LOCAL1 }, //
-			{ "local2", LOG_LOCAL2 }, //
-			{ "local3", LOG_LOCAL3 }, //
-			{ "local4", LOG_LOCAL4 }, //
-			{ "local5", LOG_LOCAL5 }, //
-			{ "local6", LOG_LOCAL6 }, //
-			{ "local7", LOG_LOCAL7 }, //
-		}				  //
+	using facility = std::pair<const char *, int>;
+	constexpr auto facilities = std::array<facility, 10>{
+		facility{ "daemon", LOG_DAEMON }, //
+		facility{ "user", LOG_USER },	  //
+		facility{ "local0", LOG_LOCAL0 }, //
+		facility{ "local1", LOG_LOCAL1 }, //
+		facility{ "local2", LOG_LOCAL2 }, //
+		facility{ "local3", LOG_LOCAL3 }, //
+		facility{ "local4", LOG_LOCAL4 }, //
+		facility{ "local5", LOG_LOCAL5 }, //
+		facility{ "local6", LOG_LOCAL6 }, //
+		facility{ "local7", LOG_LOCAL7 }, //
 	};
 	std::string logfacname = "user";
 #endif

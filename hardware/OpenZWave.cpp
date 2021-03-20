@@ -38,33 +38,32 @@ extern std::string szWWWFolder;
 //This is for backwards compatability .... but should not be used
 namespace
 {
-	constexpr std::array<std::pair<const char *, uint8_t>, 24> AlarmToIndexMapping{
-		{
-			{ "General", 0x28 },
-			{ "Smoke", 0x29 },
-			{ "Carbon Monoxide", 0x2A },
-			{ "Carbon Dioxide", 0x2B },
-			{ "Heat", 0x2C },
-			{ "Water", 0x2D },
-			{ "Flood", 0x2D },
-			{ "Alarm Level", 0x32 },
-			{ "Alarm Type", 0x33 },
-			{ "Access Control", 0x34 },
-			{ "Burglar", 0x35 },
-			{ "Home Security", 0x35 },
-			{ "Power Management", 0x36 },
-			{ "System", 0x37 },
-			{ "Emergency", 0x38 },
-			{ "Clock", 0x39 },
-			{ "Appliance", 0x3A },
-			{ "HomeHealth", 0x3B },
-			{ "Siren", 0x3C },
-			{ "Water Valve", 0x3D },
-			{ "Weather", 0x3E },
-			{ "Irrigation", 0x3F },
-			{ "Gas", 0x40 },
-			{ "Volatile Organic Compound", 0x41 },
-		}
+	using map = std::pair<const char *, uint8_t>;
+	constexpr auto AlarmToIndexMapping = std::array<map, 24>{
+		map{ "General", 0x28 },
+		map{ "Smoke", 0x29 },
+		map{ "Carbon Monoxide", 0x2A },
+		map{ "Carbon Dioxide", 0x2B },
+		map{ "Heat", 0x2C },
+		map{ "Water", 0x2D },
+		map{ "Flood", 0x2D },
+		map{ "Alarm Level", 0x32 },
+		map{ "Alarm Type", 0x33 },
+		map{ "Access Control", 0x34 },
+		map{ "Burglar", 0x35 },
+		map{ "Home Security", 0x35 },
+		map{ "Power Management", 0x36 },
+		map{ "System", 0x37 },
+		map{ "Emergency", 0x38 },
+		map{ "Clock", 0x39 },
+		map{ "Appliance", 0x3A },
+		map{ "HomeHealth", 0x3B },
+		map{ "Siren", 0x3C },
+		map{ "Water Valve", 0x3D },
+		map{ "Weather", 0x3E },
+		map{ "Irrigation", 0x3F },
+		map{ "Gas", 0x40 },
+		map{ "Volatile Organic Compound", 0x41 },
 	};
 } // namespace
 

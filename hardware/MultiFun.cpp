@@ -45,19 +45,18 @@ const auto warningsType = dictionary{
 	{ 0x0040, "Thermal protection has tripped" },	   //
 };
 
-constexpr std::array<std::pair<int, const char *>, 10> devicesType{
-	{
-		{ 0x0001, "C.H.1 PUMP" },	 //
-		{ 0x0002, "C.H.2 PUMP" },	 //
-		{ 0x0004, "RESERVE PUMP" },	 //
-		{ 0x0008, "H.W.U.PUMP" },	 //
-		{ 0x0010, "CIRCULATION PUMP" },	 //
-		{ 0x0020, "PUFFER PUMP" },	 //
-		{ 0x0040, "MIXER C.H.1 Close" }, //
-		{ 0x0080, "MIXER C.H.1 Open" },	 //
-		{ 0x0100, "MIXER C.H.2 Close" }, //
-		{ 0x0200, "MIXER C.H.2 Open" },	 //
-	}					 //
+using type = std::pair<int, const char *>;
+constexpr auto devicesType = std::array<type, 10>{
+	type{ 0x0001, "C.H.1 PUMP" },	     //
+	type{ 0x0002, "C.H.2 PUMP" },	     //
+	type{ 0x0004, "RESERVE PUMP" },	     //
+	type{ 0x0008, "H.W.U.PUMP" },	     //
+	type{ 0x0010, "CIRCULATION PUMP" },  //
+	type{ 0x0020, "PUFFER PUMP" },	     //
+	type{ 0x0040, "MIXER C.H.1 Close" }, //
+	type{ 0x0080, "MIXER C.H.1 Open" },  //
+	type{ 0x0100, "MIXER C.H.2 Close" }, //
+	type{ 0x0200, "MIXER C.H.2 Open" },  //
 };
 
 const auto statesType = dictionary{
@@ -68,38 +67,35 @@ const auto statesType = dictionary{
 	{ 0x0010, "Blanking" }, //
 };
 
-constexpr std::array<std::pair<const char *, float>, 16> sensors{
-	{
-		{ "External", 10.0F },		//
-		{ "Room 1", 10.0F },		//
-		{ "Room 2", 10.0F },		//
-		{ "Return", 10.0F },		//
-		{ "C.H.1", 10.0F },		//
-		{ "C.H.2", 10.0F },		//
-		{ "H.W.U.", 10.0F },		//
-		{ "Heat", 1.0F },		//
-		{ "Flue gas", 10.0F },		//
-		{ "Module", 10.0F },		//
-		{ "Boiler", 10.0F },		//
-		{ "Feeder", 10.0F },		//
-		{ "Calculated Boiler", 10.0F }, //
-		{ "Calculated H.W.U.", 10.0F }, //
-		{ "Calculated C.H.1", 10.0F },	//
-		{ "Calculated C.H.2", 10.0F },	//
-	}					//
+using sensor = std::pair<const char *, float>;
+constexpr auto sensors = std::array<sensor, 16>{
+	sensor{ "External", 10.0F },
+	sensor{ "Room 1", 10.0F },
+	sensor{ "Room 2", 10.0F },
+	sensor{ "Return", 10.0F },
+	sensor{ "C.H.1", 10.0F },
+	sensor{ "C.H.2", 10.0F },
+	sensor{ "H.W.U.", 10.0F },
+	sensor{ "Heat", 1.0F },
+	sensor{ "Flue gas", 10.0F },
+	sensor{ "Module", 10.0F },
+	sensor{ "Boiler", 10.0F },
+	sensor{ "Feeder", 10.0F },
+	sensor{ "Calculated Boiler", 10.0F },
+	sensor{ "Calculated H.W.U.", 10.0F },
+	sensor{ "Calculated C.H.1", 10.0F },
+	sensor{ "Calculated C.H.2", 10.0F },
 };
 
-constexpr std::array<std::pair<int, const char *>, 5> quickAccessType{
-	{
-		{ 0x0001, "Shower" },		//
-		{ 0x0002, "Party" },		//
-		{ 0x0004, "Comfort" },		//
-		{ 0x0008, "Airing" },		//
-		{ 0x0010, "Frost protection" }, //
-	}					//
+constexpr auto quickAccessType = std::array<type, 5>{
+	type{ 0x0001, "Shower" },	    //
+	type{ 0x0002, "Party" },	    //
+	type{ 0x0004, "Comfort" },	    //
+	type{ 0x0008, "Airing" },	    //
+	type{ 0x0010, "Frost protection" }, //
 };
 
-constexpr std::array<const char *, 4> errors{
+constexpr auto errors = std::array<const char *, 4>{
 	"Incorrect function code",
 	"Incorrect register address",
 	"Incorrect number of registers",

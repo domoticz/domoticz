@@ -35,19 +35,17 @@ using MochadMatch = struct
 	int width;
 };
 
-constexpr std::array<MochadMatch, 10> matchlist{
-	{
-		{ STD, MOCHAD_STATUS, "House ", 6, 255 },	  //
-		{ STD, MOCHAD_UNIT, "Tx PL HouseUnit: ", 17, 9 }, //
-		{ STD, MOCHAD_UNIT, "Rx PL HouseUnit: ", 17, 9 }, //
-		{ STD, MOCHAD_UNIT, "Tx RF HouseUnit: ", 17, 9 }, //
-		{ STD, MOCHAD_UNIT, "Rx RF HouseUnit: ", 17, 9 }, //
-		{ STD, MOCHAD_ACTION, "Tx PL House: ", 13, 9 },	  //
-		{ STD, MOCHAD_ACTION, "Rx PL House: ", 13, 9 },	  //
-		{ STD, MOCHAD_ACTION, "Tx RF House: ", 13, 9 },	  //
-		{ STD, MOCHAD_ACTION, "Rx RF House: ", 13, 9 },	  //
-		{ STD, MOCHAD_RFSEC, "Rx RFSEC Addr: ", 15, 8 },  //
-	}							  //
+constexpr auto matchlist = std::array<MochadMatch, 10>{
+	MochadMatch{ STD, MOCHAD_STATUS, "House ", 6, 255 },	     //
+	MochadMatch{ STD, MOCHAD_UNIT, "Tx PL HouseUnit: ", 17, 9 }, //
+	MochadMatch{ STD, MOCHAD_UNIT, "Rx PL HouseUnit: ", 17, 9 }, //
+	MochadMatch{ STD, MOCHAD_UNIT, "Tx RF HouseUnit: ", 17, 9 }, //
+	MochadMatch{ STD, MOCHAD_UNIT, "Rx RF HouseUnit: ", 17, 9 }, //
+	MochadMatch{ STD, MOCHAD_ACTION, "Tx PL House: ", 13, 9 },   //
+	MochadMatch{ STD, MOCHAD_ACTION, "Rx PL House: ", 13, 9 },   //
+	MochadMatch{ STD, MOCHAD_ACTION, "Tx RF House: ", 13, 9 },   //
+	MochadMatch{ STD, MOCHAD_ACTION, "Rx RF House: ", 13, 9 },   //
+	MochadMatch{ STD, MOCHAD_RFSEC, "Rx RFSEC Addr: ", 15, 8 },  //
 };
 //end
 

@@ -93,33 +93,31 @@ using P1Match = struct
 	int width;
 };
 
-constexpr std::array<P1Match, 24> p1_matchlist{
-	{
-		{ _eP1MatchType::ID, P1TYPE_SMID, P1SMID, "", 0, 0 },				      //
-		{ _eP1MatchType::EXCLMARK, P1TYPE_END, P1EOT, "", 0, 0 },			      //
-		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VER, "version", 10, 2 },		      //
-		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VERBE, "versionBE", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSAGE, P1PUSG, "powerusage", 10, 9 },		      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELIV, P1PDLV, "powerdeliv", 10, 9 },		      //
-		{ _eP1MatchType::STD, P1TYPE_USAGECURRENT, P1PUC, "powerusagec", 10, 7 },	      //
-		{ _eP1MatchType::STD, P1TYPE_DELIVCURRENT, P1PDC, "powerdelivc", 10, 7 },	      //
-		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL1, P1VOLTL1, "voltagel1", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL2, P1VOLTL2, "voltagel2", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL3, P1VOLTL3, "voltagel3", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL1, P1AMPEREL1, "amperagel1", 11, 3 },	      //
-		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL2, P1AMPEREL2, "amperagel2", 11, 3 },	      //
-		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL3, P1AMPEREL3, "amperagel3", 11, 3 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSEL1, P1POWUSL1, "powerusel1", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSEL2, P1POWUSL2, "powerusel2", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSEL3, P1POWUSL3, "powerusel3", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELL1, P1POWDLL1, "powerdell1", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELL2, P1POWDLL2, "powerdell2", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELL3, P1POWDLL3, "powerdell3", 11, 6 },	      //
-		{ _eP1MatchType::DEVTYPE, P1TYPE_MBUSDEVICETYPE, P1MBTYPE, "mbusdevicetype", 11, 3 }, //
-		{ _eP1MatchType::GAS, P1TYPE_GASUSAGEDSMR4, P1GUDSMR4, "gasusage", 26, 8 },	      //
-		{ _eP1MatchType::LINE17, P1TYPE_GASTIMESTAMP, P1GTS, "gastimestamp", 11, 12 },	      //
-		{ _eP1MatchType::LINE18, P1TYPE_GASUSAGE, P1GUDSMR2, "gasusage", 1, 9 },	      //
-	}											      // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
+constexpr auto p1_matchlist = std::array<P1Match, 24>{
+	P1Match{ _eP1MatchType::ID, P1TYPE_SMID, P1SMID, "", 0, 0 },
+	P1Match{ _eP1MatchType::EXCLMARK, P1TYPE_END, P1EOT, "", 0, 0 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_VERSION, P1VER, "version", 10, 2 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_VERSION, P1VERBE, "versionBE", 11, 5 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERUSAGE, P1PUSG, "powerusage", 10, 9 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERDELIV, P1PDLV, "powerdeliv", 10, 9 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_USAGECURRENT, P1PUC, "powerusagec", 10, 7 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_DELIVCURRENT, P1PDC, "powerdelivc", 10, 7 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_VOLTAGEL1, P1VOLTL1, "voltagel1", 11, 5 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_VOLTAGEL2, P1VOLTL2, "voltagel2", 11, 5 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_VOLTAGEL3, P1VOLTL3, "voltagel3", 11, 5 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_AMPERAGEL1, P1AMPEREL1, "amperagel1", 11, 3 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_AMPERAGEL2, P1AMPEREL2, "amperagel2", 11, 3 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_AMPERAGEL3, P1AMPEREL3, "amperagel3", 11, 3 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERUSEL1, P1POWUSL1, "powerusel1", 11, 6 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERUSEL2, P1POWUSL2, "powerusel2", 11, 6 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERUSEL3, P1POWUSL3, "powerusel3", 11, 6 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERDELL1, P1POWDLL1, "powerdell1", 11, 6 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERDELL2, P1POWDLL2, "powerdell2", 11, 6 },
+	P1Match{ _eP1MatchType::STD, P1TYPE_POWERDELL3, P1POWDLL3, "powerdell3", 11, 6 },
+	P1Match{ _eP1MatchType::DEVTYPE, P1TYPE_MBUSDEVICETYPE, P1MBTYPE, "mbusdevicetype", 11, 3 },
+	P1Match{ _eP1MatchType::GAS, P1TYPE_GASUSAGEDSMR4, P1GUDSMR4, "gasusage", 26, 8 },
+	P1Match{ _eP1MatchType::LINE17, P1TYPE_GASTIMESTAMP, P1GTS, "gastimestamp", 11, 12 },
+	P1Match{ _eP1MatchType::LINE18, P1TYPE_GASUSAGE, P1GUDSMR2, "gasusage", 1, 9 },
 };
 
 P1MeterBase::P1MeterBase()

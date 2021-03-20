@@ -83,21 +83,20 @@ extern time_t m_StartTime;
 
 extern bool g_bDontCacheWWW;
 
-struct _tGuiLanguage {
-	const char* szShort;
-	const char* szLong;
-};
-
 namespace
 {
-	constexpr std::array<std::pair<const char *, const char *>, 36> guiLanguage{ {
-		{ "en", "English" },   { "sq", "Albanian" },   { "ar", "Arabic" },   { "bs", "Bosnian" },      { "bg", "Bulgarian" }, { "ca", "Catalan" },
-		{ "zh", "Chinese" },   { "cs", "Czech" },      { "da", "Danish" },   { "nl", "Dutch" },	       { "et", "Estonian" },  { "de", "German" },
-		{ "el", "Greek" },     { "fr", "French" },     { "fi", "Finnish" },  { "he", "Hebrew" },       { "hu", "Hungarian" }, { "is", "Icelandic" },
-		{ "it", "Italian" },   { "lt", "Lithuanian" }, { "lv", "Latvian" },  { "mk", "Macedonian" },   { "no", "Norwegian" }, { "fa", "Persian" },
-		{ "pl", "Polish" },    { "pt", "Portuguese" }, { "ro", "Romanian" }, { "ru", "Russian" },      { "sr", "Serbian" },   { "sk", "Slovak" },
-		{ "sl", "Slovenian" }, { "es", "Spanish" },    { "sv", "Swedish" },  { "zh_TW", "Taiwanese" }, { "tr", "Turkish" },   { "uk", "Ukrainian" },
-	} };
+	using _tGuiLanguage = std::pair<const char *, const char *>;
+	constexpr auto guiLanguage = std::array<_tGuiLanguage, 36>{
+		_tGuiLanguage{ "en", "English" },   _tGuiLanguage{ "sq", "Albanian" },	   _tGuiLanguage{ "ar", "Arabic" },    _tGuiLanguage{ "bs", "Bosnian" },
+		_tGuiLanguage{ "bg", "Bulgarian" }, _tGuiLanguage{ "ca", "Catalan" },	   _tGuiLanguage{ "zh", "Chinese" },   _tGuiLanguage{ "cs", "Czech" },
+		_tGuiLanguage{ "da", "Danish" },    _tGuiLanguage{ "nl", "Dutch" },	   _tGuiLanguage{ "et", "Estonian" },  _tGuiLanguage{ "de", "German" },
+		_tGuiLanguage{ "el", "Greek" },	    _tGuiLanguage{ "fr", "French" },	   _tGuiLanguage{ "fi", "Finnish" },   _tGuiLanguage{ "he", "Hebrew" },
+		_tGuiLanguage{ "hu", "Hungarian" }, _tGuiLanguage{ "is", "Icelandic" },	   _tGuiLanguage{ "it", "Italian" },   _tGuiLanguage{ "lt", "Lithuanian" },
+		_tGuiLanguage{ "lv", "Latvian" },   _tGuiLanguage{ "mk", "Macedonian" },   _tGuiLanguage{ "no", "Norwegian" }, _tGuiLanguage{ "fa", "Persian" },
+		_tGuiLanguage{ "pl", "Polish" },    _tGuiLanguage{ "pt", "Portuguese" },   _tGuiLanguage{ "ro", "Romanian" },  _tGuiLanguage{ "ru", "Russian" },
+		_tGuiLanguage{ "sr", "Serbian" },   _tGuiLanguage{ "sk", "Slovak" },	   _tGuiLanguage{ "sl", "Slovenian" }, _tGuiLanguage{ "es", "Spanish" },
+		_tGuiLanguage{ "sv", "Swedish" },   _tGuiLanguage{ "zh_TW", "Taiwanese" }, _tGuiLanguage{ "tr", "Turkish" },   _tGuiLanguage{ "uk", "Ukrainian" },
+	};
 } // namespace
 
 extern http::server::CWebServerHelper m_webservers;

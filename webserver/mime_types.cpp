@@ -16,46 +16,45 @@ namespace http
 	{
 		namespace mime_types
 		{
-			constexpr std::array<std::pair<const char *, const char *>, 37> mappings{
-				{
-					{ "gif", "image/gif" },								//
-					{ "htm", "text/html" },								//
-					{ "html", "text/html" },							//
-					{ "jpg", "image/jpeg" },							//
-					{ "png", "image/png" },								//
-					{ "css", "text/css" },								//
-					{ "xml", "application/xml" },							//
-					{ "js", "application/javascript" },						//
-					{ "json", "application/json" },							//
-					{ "swf", "application/x-shockwave-flash" },					//
-					{ "manifest", "text/cache-manifest" },						//
-					{ "appcache", "text/cache-manifest" },						//
-					{ "xls", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }, //
-					{ "m3u", "audio/mpegurl" },							//
-					{ "mp3", "audio/mpeg" },							//
-					{ "ogg", "audio/ogg" },								//
-					{ "php", "text/html" },								//
-					{ "wav", "audio/x-wav" },							//
-					{ "svg", "image/svg+xml" },							//
-					{ "ico", "image/x-icon" },							//
-					{ "db", "application/octet-stream" },						//
-					{ "otf", "application/x-font-otf" },						//
-					{ "ttf", "application/x-font-ttf" },						//
-					{ "woff", "application/x-font-woff" },						//
-					{ "flv", "video/x-flv" },							//
-					{ "mp4", "video/mp4" },								//
-					{ "m3u8", "application/x-mpegURL" },						//
-					{ "ts", "video/MP2T" },								//
-					{ "3gp", "video/3gpp" },							//
-					{ "mov", "video/quicktime" },							//
-					{ "avi", "video/x-msvideo" },							//
-					{ "wmv", "video/x-ms-wmv" },							//
-					{ "h264", "video/h264" },							//
-					{ "mp4", "video/mp4" },								//
-					{ "wmv", "video/x-ms-wmv" },							//
-					{ "txt", "text/plain" },							//
-					{ "pdf", "application/pdf" },							//
-				}											//
+			using mapping = std::pair<const char *, const char *>;
+			constexpr auto mappings = std::array<mapping, 37>{
+				mapping{ "gif", "image/gif" },
+				mapping{ "htm", "text/html" },
+				mapping{ "html", "text/html" },
+				mapping{ "jpg", "image/jpeg" },
+				mapping{ "png", "image/png" },
+				mapping{ "css", "text/css" },
+				mapping{ "xml", "application/xml" },
+				mapping{ "js", "application/javascript" },
+				mapping{ "json", "application/json" },
+				mapping{ "swf", "application/x-shockwave-flash" },
+				mapping{ "manifest", "text/cache-manifest" },
+				mapping{ "appcache", "text/cache-manifest" },
+				mapping{ "xls", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+				mapping{ "m3u", "audio/mpegurl" },
+				mapping{ "mp3", "audio/mpeg" },
+				mapping{ "ogg", "audio/ogg" },
+				mapping{ "php", "text/html" },
+				mapping{ "wav", "audio/x-wav" },
+				mapping{ "svg", "image/svg+xml" },
+				mapping{ "ico", "image/x-icon" },
+				mapping{ "db", "application/octet-stream" },
+				mapping{ "otf", "application/x-font-otf" },
+				mapping{ "ttf", "application/x-font-ttf" },
+				mapping{ "woff", "application/x-font-woff" },
+				mapping{ "flv", "video/x-flv" },
+				mapping{ "mp4", "video/mp4" },
+				mapping{ "m3u8", "application/x-mpegURL" },
+				mapping{ "ts", "video/MP2T" },
+				mapping{ "3gp", "video/3gpp" },
+				mapping{ "mov", "video/quicktime" },
+				mapping{ "avi", "video/x-msvideo" },
+				mapping{ "wmv", "video/x-ms-wmv" },
+				mapping{ "h264", "video/h264" },
+				mapping{ "mp4", "video/mp4" },
+				mapping{ "wmv", "video/x-ms-wmv" },
+				mapping{ "txt", "text/plain" },
+				mapping{ "pdf", "application/pdf" },
 			};
 
 			std::string extension_to_type(const std::string &extension)

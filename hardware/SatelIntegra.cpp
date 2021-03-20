@@ -29,18 +29,16 @@ using SatelModel = struct
 
 #define TOT_MODELS 9
 
-constexpr std::array<SatelModel, TOT_MODELS> models{
-	{
-		{ 0, "Integra 24", 24, 20 },		   //
-		{ 1, "Integra 32", 32, 32 },		   //
-		{ 2, "Integra 64", 64, 64 },		   //
-		{ 3, "Integra 128", 128, 128 },		   //
-		{ 4, "Integra 128 WRL SIM300", 128, 128 }, //
-		{ 132, "Integra 128 WRL LEON", 128, 128 }, //
-		{ 66, "Integra 64 Plus", 64, 64 },	   //
-		{ 67, "Integra 128 Plus", 128, 128 },	   //
-		{ 72, "Integra 256 Plus", 256, 256 },	   //
-	}						   //
+constexpr auto models = std::array<SatelModel, TOT_MODELS>{
+	SatelModel{ 0, "Integra 24", 24, 20 },		     //
+	SatelModel{ 1, "Integra 32", 32, 32 },		     //
+	SatelModel{ 2, "Integra 64", 64, 64 },		     //
+	SatelModel{ 3, "Integra 128", 128, 128 },	     //
+	SatelModel{ 4, "Integra 128 WRL SIM300", 128, 128 }, //
+	SatelModel{ 132, "Integra 128 WRL LEON", 128, 128 }, //
+	SatelModel{ 66, "Integra 64 Plus", 64, 64 },	     //
+	SatelModel{ 67, "Integra 128 Plus", 128, 128 },	     //
+	SatelModel{ 72, "Integra 256 Plus", 256, 256 },	     //
 };
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1

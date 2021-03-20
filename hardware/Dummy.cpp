@@ -69,48 +69,48 @@ namespace http {
 			int subtype;
 		};
 
-		constexpr std::array<_mappedsensorname, 40> mappedsensorname{ {
-			{ 249, pTypeAirQuality, sTypeVoltcraft },	   // Air Quality
-			{ 7, pTypeGeneral, sTypeAlert },		   // Alert
-			{ 9, pTypeCURRENT, sTypeELEC1 },		   // Ampere (3 Phase)
-			{ 19, pTypeGeneral, sTypeCurrent },		   // Ampere (1 Phase)
-			{ 11, pTypeGeneral, sTypeBaro },		   // Barometer
-			{ 113, pTypeRFXMeter, sTypeRFXMeterCount },	   // Counter
-			{ 14, pTypeGeneral, sTypeCounterIncremental },	   // Counter Incremental
-			{ 1004, pTypeGeneral, sTypeCustom },		   // Custom Sensor
-			{ 13, pTypeGeneral, sTypeDistance },		   // Distance
-			{ 18, pTypeGeneral, sTypeKwh },			   // Electric (Instant+Counter)
-			{ 3, pTypeP1Gas, sTypeP1Gas },			   // Gas
-			{ 81, pTypeHUM, sTypeHUM1 },			   // Humidity
-			{ 16, pTypeGeneral, sTypeLeafWetness },		   // Leaf Wetness
-			{ 246, pTypeLux, sTypeLux },			   // Lux
-			{ 250, pTypeP1Power, sTypeP1Power },		   // P1 Smart Meter (Electric)
-			{ 1005, pTypeGeneral, sTypeManagedCounter },	   // Managed Counter
-			{ 2, pTypeGeneral, sTypePercentage },		   // Percentage
-			{ 1, pTypeGeneral, sTypePressure },		   // Pressure (Bar)
-			{ 85, pTypeRAIN, sTypeRAIN3 },			   // Rain
-			{ 241, pTypeColorSwitch, sTypeColor_RGB },	   // RGB Switch
-			{ 1003, pTypeColorSwitch, sTypeColor_RGB_W },	   // RGBW Switch
-			{ 93, pTypeWEIGHT, sTypeWEIGHT1 },		   // Scale
-			{ 1002, pTypeGeneralSwitch, sSwitchTypeSelector }, // Selector Switch
-			{ 15, pTypeGeneral, sTypeSoilMoisture },	   // Soil Moisture
-			{ 20, pTypeGeneral, sTypeSolarRadiation },	   // Solar Radiation
-			{ 10, pTypeGeneral, sTypeSoundLevel },		   // Sound Level
-			{ 6, pTypeGeneralSwitch, sSwitchGeneralSwitch },   // Switch
-			{ 80, pTypeTEMP, sTypeTEMP5 },			   // Temperature
-			{ 82, pTypeTEMP_HUM, sTypeTH1 },		   // Temp+Hum
-			{ 84, pTypeTEMP_HUM_BARO, sTypeTHB1 },		   // Temp+Hum+Baro
-			{ 247, pTypeTEMP_BARO, sTypeBMP085 },		   // Temp+Baro
-			{ 5, pTypeGeneral, sTypeTextStatus },		   // Text
-			{ 8, pTypeThermostat, sTypeThermSetpoint },	   // Thermostat Setpoint
-			{ 248, pTypeUsage, sTypeElectric },		   // Usage (Electric)
-			{ 87, pTypeUV, sTypeUV1 },			   // UV
-			{ 12, pTypeGeneral, sTypeVisibility },		   // Visibility
-			{ 4, pTypeGeneral, sTypeVoltage },		   // Voltage
-			{ 1000, pTypeGeneral, sTypeWaterflow },		   // Waterflow
-			{ 86, pTypeWIND, sTypeWIND1 },			   // Wind
-			{ 1001, pTypeWIND, sTypeWIND4 }			   // Wind+Temp+Chill
-		} };
+		constexpr auto mappedsensorname = std::array<_mappedsensorname, 40>{
+			_mappedsensorname{ 249, pTypeAirQuality, sTypeVoltcraft },	    // Air Quality
+			_mappedsensorname{ 7, pTypeGeneral, sTypeAlert },		    // Alert
+			_mappedsensorname{ 9, pTypeCURRENT, sTypeELEC1 },		    // Ampere (3 Phase)
+			_mappedsensorname{ 19, pTypeGeneral, sTypeCurrent },		    // Ampere (1 Phase)
+			_mappedsensorname{ 11, pTypeGeneral, sTypeBaro },		    // Barometer
+			_mappedsensorname{ 113, pTypeRFXMeter, sTypeRFXMeterCount },	    // Counter
+			_mappedsensorname{ 14, pTypeGeneral, sTypeCounterIncremental },	    // Counter Incremental
+			_mappedsensorname{ 1004, pTypeGeneral, sTypeCustom },		    // Custom Sensor
+			_mappedsensorname{ 13, pTypeGeneral, sTypeDistance },		    // Distance
+			_mappedsensorname{ 18, pTypeGeneral, sTypeKwh },		    // Electric (Instant+Counter)
+			_mappedsensorname{ 3, pTypeP1Gas, sTypeP1Gas },			    // Gas
+			_mappedsensorname{ 81, pTypeHUM, sTypeHUM1 },			    // Humidity
+			_mappedsensorname{ 16, pTypeGeneral, sTypeLeafWetness },	    // Leaf Wetness
+			_mappedsensorname{ 246, pTypeLux, sTypeLux },			    // Lux
+			_mappedsensorname{ 250, pTypeP1Power, sTypeP1Power },		    // P1 Smart Meter (Electric)
+			_mappedsensorname{ 1005, pTypeGeneral, sTypeManagedCounter },	    // Managed Counter
+			_mappedsensorname{ 2, pTypeGeneral, sTypePercentage },		    // Percentage
+			_mappedsensorname{ 1, pTypeGeneral, sTypePressure },		    // Pressure (Bar)
+			_mappedsensorname{ 85, pTypeRAIN, sTypeRAIN3 },			    // Rain
+			_mappedsensorname{ 241, pTypeColorSwitch, sTypeColor_RGB },	    // RGB Switch
+			_mappedsensorname{ 1003, pTypeColorSwitch, sTypeColor_RGB_W },	    // RGBW Switch
+			_mappedsensorname{ 93, pTypeWEIGHT, sTypeWEIGHT1 },		    // Scale
+			_mappedsensorname{ 1002, pTypeGeneralSwitch, sSwitchTypeSelector }, // Selector Switch
+			_mappedsensorname{ 15, pTypeGeneral, sTypeSoilMoisture },	    // Soil Moisture
+			_mappedsensorname{ 20, pTypeGeneral, sTypeSolarRadiation },	    // Solar Radiation
+			_mappedsensorname{ 10, pTypeGeneral, sTypeSoundLevel },		    // Sound Level
+			_mappedsensorname{ 6, pTypeGeneralSwitch, sSwitchGeneralSwitch },   // Switch
+			_mappedsensorname{ 80, pTypeTEMP, sTypeTEMP5 },			    // Temperature
+			_mappedsensorname{ 82, pTypeTEMP_HUM, sTypeTH1 },		    // Temp+Hum
+			_mappedsensorname{ 84, pTypeTEMP_HUM_BARO, sTypeTHB1 },		    // Temp+Hum+Baro
+			_mappedsensorname{ 247, pTypeTEMP_BARO, sTypeBMP085 },		    // Temp+Baro
+			_mappedsensorname{ 5, pTypeGeneral, sTypeTextStatus },		    // Text
+			_mappedsensorname{ 8, pTypeThermostat, sTypeThermSetpoint },	    // Thermostat Setpoint
+			_mappedsensorname{ 248, pTypeUsage, sTypeElectric },		    // Usage (Electric)
+			_mappedsensorname{ 87, pTypeUV, sTypeUV1 },			    // UV
+			_mappedsensorname{ 12, pTypeGeneral, sTypeVisibility },		    // Visibility
+			_mappedsensorname{ 4, pTypeGeneral, sTypeVoltage },		    // Voltage
+			_mappedsensorname{ 1000, pTypeGeneral, sTypeWaterflow },	    // Waterflow
+			_mappedsensorname{ 86, pTypeWIND, sTypeWIND1 },			    // Wind
+			_mappedsensorname{ 1001, pTypeWIND, sTypeWIND4 }		    // Wind+Temp+Chill
+		};
 
 		//TODO: Is this function called from anywhere, or can it be removed?
 		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
