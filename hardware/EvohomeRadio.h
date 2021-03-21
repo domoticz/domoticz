@@ -59,7 +59,7 @@ class CEvohomeRadio : public CEvohomeBase
 	void UpdateSwitch(unsigned char Idx, bool bOn, const std::string &defaultname);
 
       private:
-	typedef boost::function<bool(CEvohomeMsg &msg)> fnc_evohome_decode;
+	typedef std::function<bool(CEvohomeMsg &msg)> fnc_evohome_decode;
 	void Send();
 	void RequestCurrentState();
 	void RequestZoneState();

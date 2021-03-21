@@ -14,7 +14,7 @@
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite)
+		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, std::function<void(const std::string &packet_data)> _MyWrite)
 			: MyWrite(std::move(_MyWrite))
 			, myWebem(pWebem)
 			, m_Push(this)

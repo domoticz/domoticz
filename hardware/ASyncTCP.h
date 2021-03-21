@@ -8,7 +8,6 @@
 #include <boost/asio/ip/tcp.hpp>	 // for tcp, tcp::endpoint, tcp::s...
 #include <boost/asio/ssl.hpp>		 // for secure sockets
 #include <boost/asio/ssl/stream.hpp>	 // for secure sockets
-#include <boost/function.hpp>
 #include <exception>			  // for exception
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
