@@ -4759,7 +4759,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			{
 				nEnergy = std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]);
 				StringSplit(sValue, ";", parts);
-				if (parts.size() == 2)
+				if (parts.size() >= 1)
 				{
 					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 					sValue = sCompValue;
