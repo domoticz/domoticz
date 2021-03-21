@@ -54,7 +54,7 @@ public:
 
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, int ExtraDelay, const std::string &User);
 	bool SwitchLight(uint64_t idx, const std::string &switchcmd, int level, _tColor color, bool ooc, int ExtraDelay, const std::string &User);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, bool IsTesting, const std::string &User);
+	bool SwitchLightInt(uint64_t idx, const std::vector<std::string> &sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string &User);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd, const std::string& User);
 	bool SwitchScene(uint64_t idx, std::string switchcmd, const std::string &User);
@@ -63,7 +63,7 @@ public:
 
 	bool SetSetPoint(const std::string &idx, float TempValue);
 	bool SetSetPoint(const std::string &idx, float TempValue, const std::string &newMode, const std::string &until);
-	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue);
+	bool SetSetPointInt(uint64_t idx, const std::vector<std::string> &sd, const float TempValue);
 	bool SetThermostatState(const std::string &idx, int newState);
 	bool SetClock(const std::string &idx, const std::string &clockstr);
 	bool SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr);

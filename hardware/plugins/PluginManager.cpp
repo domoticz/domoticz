@@ -323,17 +323,15 @@ namespace Plugins {
 		result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", DevIdx);
 		if (result.empty())
 			return;
-		std::vector<std::string> sd = result[0];
-		std::string sHwdID = sd[0];
-		std::string Unit = sd[1];
+		std::string sHwdID = result[0][0];
+		int Unit = std::stoi(result[0][1]);
 		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
-		if (pHardware == nullptr)
+		if (!pHardware)
 			return;
-		//std::vector<std::string> sd = result[0];
-		//GizMoCuz: Why does this work with UNIT ? Why not use the device idx which is always unique ?
-		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
-		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-		pPlugin->DeviceModified(atoi(Unit.c_str()));
+		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %s about modification of device %" PRIu64":%d",
+			   sHwdID.c_str(), DevIdx, Unit);
+		auto *pPlugin = reinterpret_cast<Plugins::CPlugin*>(pHardware);
+		pPlugin->DeviceModified(DevIdx, Unit);
 	}
 } // namespace Plugins
 
@@ -497,17 +495,19 @@ namespace http {
 			if (sIdx.empty())
 				return;
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID=='%q') ", sIdx.c_str());
+			uint64_t nIdx = std::stoull(sIdx);
+
+			result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID=%" PRIu64 ")", nIdx);
 			if (result.size() == 1)
 			{
-				int HwID = atoi(result[0][0].c_str());
-				int Unit = atoi(result[0][1].c_str());
+				int HwID = std::stoi(result[0][0]);
+				int Unit = std::stoi(result[0][1]);
 				Plugins::CPluginSystem Plugins;
 				std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
-				Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];
+				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];
 				if (pPlugin)
 				{
-					pPlugin->SendCommand(Unit, sAction, 0, NoColor);
+					pPlugin->SendCommand(nIdx, Unit, sAction, 0, NoColor);
 				}
 			}
 		}

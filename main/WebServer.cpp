@@ -5058,7 +5058,7 @@ namespace http {
 						level = 5;
 				}
 				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
-				m_mainworker.SwitchLightInt(sd, switchcmd, level, NoColor, true, Username);
+				m_mainworker.SwitchLightInt(-1, sd, switchcmd, level, NoColor, true, Username);
 			}
 			else if (cparam == "addswitch")
 			{
@@ -11523,7 +11523,7 @@ namespace http {
 						if (pHardware->HwdType == HTYPE_PythonPlugin)
 						{
 							Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-							bHaveTimeout = pPlugin->HasNodeFailed(atoi(sd[2].c_str()));
+							bHaveTimeout = pPlugin->HasNodeFailed(std::stoull(sd[0]), std::stoi(sd[2]));
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}

@@ -31,6 +31,8 @@ namespace Plugins {
 		PDM_ALL = 65535
 	};
 
+	struct module_state;
+
 	class CPlugin : public CDomoticzHardwareBase
 	{
 	private:
@@ -54,10 +56,15 @@ namespace Plugins {
 		bool m_bIsStarting;
 		bool m_bIsStopped;
 
+		bool m_bUseDeviceIndex = false;
+
 		void Do_Work();
 
 		void LogPythonException();
 		void LogPythonException(const std::string &);
+
+		bool LoadDevicesByUnit(module_state *pModState);
+		bool LoadDevicesByIdx(module_state *pModState);
 
 	public:
 	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
@@ -90,18 +97,20 @@ namespace Plugins {
 	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
 
 	  bool WriteToHardware(const char *pdata, unsigned char length) override;
-	  void SendCommand(int Unit, const std::string &command, int level, _tColor color);
-	  void SendCommand(int Unit, const std::string &command, float level);
+	  void SendCommand(uint64_t idx, int Unit, const std::string &command, int level, _tColor color);
+	  void SendCommand(uint64_t idx, int Unit, const std::string &command, float level);
 
-	  void onDeviceAdded(int Unit);
-	  void onDeviceModified(int Unit);
-	  void onDeviceRemoved(int Unit);
+	  void onDeviceAdded(uint64_t key);
+	  void onDeviceModified(uint64_t key);
+	  void onDeviceRemoved(uint64_t key);
 	  void MessagePlugin(CPluginMessageBase *pMessage);
-	  void DeviceAdded(int Unit);
-	  void DeviceModified(int Unit);
-	  void DeviceRemoved(int Unit);
+	  void DeviceAdded(uint64_t idx, int Unit);
+	  void DeviceModified(uint64_t idx, int Unit);
+	  void DeviceRemoved(uint64_t idx, int Unit);
 
-	  bool HasNodeFailed(int Unit);
+	  bool HasNodeFailed(uint64_t idx, int Unit);
+
+	  bool UseDeviceIndex() const { return m_bUseDeviceIndex; }
 
 	  std::string m_PluginKey;
 	  PyDictObject*	m_DeviceDict;
@@ -132,8 +141,8 @@ namespace Plugins {
 //
 	struct module_state {
 		CPlugin* pPlugin;
-		PyObject* error;
 		PyTypeObject*	pDeviceClass;
+		bool bUseDeviceIndex;
 	};
 
 	//

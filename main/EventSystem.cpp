@@ -1644,10 +1644,10 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 			if (!result.empty())
 			{
 				std::vector<std::string> sd = result[0];
-				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(atoi(sd[0].c_str()));
+				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(std::stoi(sd[0]));
 				if (pPlugin)
 					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(
-						pPlugin, atoi(sd[2].c_str()), item.nValue, m_szSecStatus[item.nValue]));
+						pPlugin, std::stoull(sd[1]), std::stoi(sd[2]), item.nValue, m_szSecStatus[item.nValue]));
 			}
 		}
 #endif

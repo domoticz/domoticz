@@ -85,13 +85,13 @@ namespace Plugins {
 	public:
 		PyObject_HEAD
 		PyObject*	PluginKey;
+		uint64_t			ID;
 		int			HwdID;
 		PyObject*	DeviceID;
 		int			Unit;
 		int			Type;
 		int			SubType;
 		int			SwitchType;
-		int			ID;
 		int			LastLevel;
 		PyObject*	Name;
 		PyObject*	LastUpdate;
@@ -107,6 +107,8 @@ namespace Plugins {
 		PyObject*	Color;
 		CPlugin*	pPlugin;
 	};
+
+	PyObject* CDevice_new_with_id(PyTypeObject *type, uint64_t id);
 
 	void CDevice_dealloc(CDevice* self);
 	PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);

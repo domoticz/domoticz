@@ -20,6 +20,9 @@
 
 #include "../../notifications/NotificationHelper.h"
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                                                                                          \
 	{                                                                                                                                                                                              \
 		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                                                                                    \
@@ -492,6 +495,14 @@ namespace Plugins
 		return Py_None;
 	}
 
+	static PyObject *PyDomoticz_UseDeviceIndex(PyObject *self, PyObject *args)
+	{
+		auto *pModState = static_cast<module_state*>(PyModule_GetState(self));
+		pModState->bUseDeviceIndex = true;
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
 	static PyObject *PyDomoticz_Configuration(PyObject *self, PyObject *args, PyObject *kwds)
 	{
 		PyObject *pConfig = Py_None;
@@ -558,21 +569,10 @@ namespace Plugins
 						 { "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
 						 { "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
 						 { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
+						 { "UseDeviceIndex", (PyCFunction)PyDomoticz_UseDeviceIndex, METH_NOARGS, "Use Domoticz Device Index for device addressing (support >256 devices)."},
 						 { nullptr, nullptr, 0, nullptr } };
 
-	static int DomoticzTraverse(PyObject *m, visitproc visit, void *arg)
-	{
-		Py_VISIT(GETSTATE(m)->error);
-		return 0;
-	}
-
-	static int DomoticzClear(PyObject *m)
-	{
-		Py_CLEAR(GETSTATE(m)->error);
-		return 0;
-	}
-
-	struct PyModuleDef DomoticzModuleDef = { PyModuleDef_HEAD_INIT, "Domoticz", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, DomoticzTraverse, DomoticzClear, nullptr };
+	struct PyModuleDef DomoticzModuleDef = { PyModuleDef_HEAD_INIT, "Domoticz", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, nullptr, nullptr, nullptr };
 
 	PyMODINIT_FUNC PyInit_Domoticz(void)
 	{
@@ -1211,8 +1211,9 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) start up failed, Domoticz module not found in interpreter.", m_PluginKey.c_str());
 				goto Error;
 			}
-			module_state *pModState = ((struct module_state *)PyModule_GetState(pMod));
+			auto *pModState = static_cast<module_state*>(PyModule_GetState(pMod));
 			pModState->pPlugin = this;
+			m_bUseDeviceIndex = pModState->bUseDeviceIndex;
 
 			//	Add start command to message queue
 			MessagePlugin(new onStartCallback(this));
@@ -1266,6 +1267,67 @@ namespace Plugins
 		PyEval_SaveThread();
 		m_bIsStarting = false;
 		return false;
+	}
+
+	bool CPlugin::LoadDevicesByUnit(module_state *pModState)
+	{
+		auto result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
+		if (!result.empty())
+		{
+			PyType_Ready(&CDeviceType);
+			// Add device objects into the device dictionary with Unit as the key
+			for (const auto &sd : result)
+			{
+				PyNewRef nrArgList = Py_BuildValue("(si)", "", atoi(sd[0].c_str()));
+				if (!nrArgList)
+				{
+					Log(LOG_ERROR, "Building Device argument list failed for Unit %d.", atoi(sd[0].c_str()));
+					return false;
+				}
+				PyNewRef pDevice = PyObject_CallObject((PyObject *)pModState->pDeviceClass, nrArgList);
+				if (!pDevice)
+				{
+					Log(LOG_ERROR, "Device object creation failed for Unit %d.", atoi(sd[0].c_str()));
+					return false;
+				}
+
+				PyNewRef pKey = PyLong_FromLong(atoi(sd[0].c_str()));
+				if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, pDevice) == -1)
+				{
+					Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+					return false;
+				}
+				CDevice_refresh(pDevice);
+			}
+		}
+		return true;
+	}
+
+	bool CPlugin::LoadDevicesByIdx(module_state *pModState)
+	{
+		auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY ID ASC", m_HwdID);
+		if (!result.empty())
+		{
+			PyType_Ready(&CDeviceType);
+			for (const auto &sd : result)
+			{
+				PyNewRef pDevice = CDevice_new_with_id(&CDeviceType, std::stoull(sd[0]));
+				uint64_t idx = std::stoull(sd[0]);
+				if (!pDevice)
+				{
+					Log(LOG_ERROR, "Device object creation failed for Idx %" PRIu64, idx);
+					return false;
+				}
+				PyNewRef pKey = PyLong_FromUnsignedLongLong(idx);
+				if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, pDevice) == -1)
+				{
+					Log(LOG_ERROR, "(%s) failed to add Idx '%" PRIu64"' to device dictionary.", m_PluginKey.c_str(), idx);
+					return false;
+				}
+				CDevice_refresh(pDevice);
+			}
+		}
+		return true;
 	}
 
 	bool CPlugin::Start()
@@ -1346,34 +1408,15 @@ namespace Plugins
 			}
 
 			// load associated devices to make them available to python
-			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
-			if (!result.empty())
+			if (m_bUseDeviceIndex)
 			{
-				PyType_Ready(&CDeviceType);
-				// Add device objects into the device dictionary with Unit as the key
-				for (const auto &sd : result)
-				{
-					PyNewRef nrArgList = Py_BuildValue("(si)", "", atoi(sd[0].c_str()));
-					if (!nrArgList)
-					{
-						Log(LOG_ERROR, "Building Device argument list failed for Unit %d.", atoi(sd[0].c_str()));
-						goto Error;
-					}
-					PyNewRef pDevice = PyObject_CallObject((PyObject *)pModState->pDeviceClass, nrArgList);
-					if (!pDevice)
-					{
-						Log(LOG_ERROR, "Device object creation failed for Unit %d.", atoi(sd[0].c_str()));
-						goto Error;
-					}
-
-					PyNewRef pKey = PyLong_FromLong(atoi(sd[0].c_str()));
-					if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, pDevice) == -1)
-					{
-						Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
-						goto Error;
-					}
-					CDevice_refresh(pDevice);
-				}
+				if (!LoadDevicesByIdx(pModState))
+					goto Error;
+			}
+			else
+			{
+				if (!LoadDevicesByUnit(pModState))
+					goto Error;
 			}
 
 			m_ImageDict = (PyDictObject *)PyDict_New();
@@ -1695,44 +1738,51 @@ namespace Plugins
 		}
 	}
 
-	void CPlugin::onDeviceAdded(int Unit)
+	void CPlugin::onDeviceAdded(uint64_t key)
 	{
 		CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
 
-		PyNewRef	pKey = PyLong_FromLong(Unit);
+		PyNewRef pKey = PyLong_FromUnsignedLongLong(key);
 		if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
 		{
-			Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", m_PluginKey.c_str(), Unit);
+			Log(LOG_ERROR, "(%s) failed to add device '%" PRIu64 "' to device dictionary.", m_PluginKey.c_str(), key);
 			return;
 		}
 		pDevice->pPlugin = this;
 		pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
 		pDevice->HwdID = m_HwdID;
-		pDevice->Unit = Unit;
+		if (UseDeviceIndex())
+		{
+			pDevice->ID = key;
+		}
+		else
+		{
+			pDevice->Unit = key;
+		}
 		CDevice_refresh(pDevice);
 		Py_DECREF(pDevice);
 	}
 
-	void CPlugin::onDeviceModified(int Unit)
+	void CPlugin::onDeviceModified(uint64_t key)
 	{
-		PyNewRef	pKey = PyLong_FromLong(Unit);
+		PyNewRef pKey = PyLong_FromUnsignedLongLong(key);
 		CDevice *pDevice = (CDevice *)PyDict_GetItem((PyObject *)m_DeviceDict, pKey);
 
 		if (!pDevice)
 		{
-			Log(LOG_ERROR, "(%s) failed to refresh unit '%u' in device dictionary.", m_PluginKey.c_str(), Unit);
+			Log(LOG_ERROR, "(%s) failed to refresh device '%" PRIu64 "' in device dictionary.", m_PluginKey.c_str(), key);
 			return;
 		}
 
 		CDevice_refresh(pDevice);
 	}
 
-	void CPlugin::onDeviceRemoved(int Unit)
+	void CPlugin::onDeviceRemoved(uint64_t key)
 	{
-		PyNewRef	pKey = PyLong_FromLong(Unit);
+		PyNewRef pKey = PyLong_FromUnsignedLongLong(key);
 		if (PyDict_DelItem((PyObject *)m_DeviceDict, pKey) == -1)
 		{
-			Log(LOG_ERROR, "(%s) failed to remove unit '%u' from device dictionary.", m_PluginKey.c_str(), Unit);
+			Log(LOG_ERROR, "(%s) failed to remove unit '%" PRIu64 "' from device dictionary.", m_PluginKey.c_str(), key);
 		}
 	}
 
@@ -1748,21 +1798,21 @@ namespace Plugins
 		m_MessageQueue.push_back(pMessage);
 	}
 
-	void CPlugin::DeviceAdded(int Unit)
+	void CPlugin::DeviceAdded(uint64_t idx, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceAddedCallback(this, Unit);
+		CPluginMessageBase *pMessage = new onDeviceAddedCallback(this, idx, Unit);
 		MessagePlugin(pMessage);
 	}
 
-	void CPlugin::DeviceModified(int Unit)
+	void CPlugin::DeviceModified(uint64_t idx, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceModifiedCallback(this, Unit);
+		CPluginMessageBase *pMessage = new onDeviceModifiedCallback(this, idx, Unit);
 		MessagePlugin(pMessage);
 	}
 
-	void CPlugin::DeviceRemoved(int Unit)
+	void CPlugin::DeviceRemoved(uint64_t idx, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(this, Unit);
+		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(this, idx, Unit);
 		MessagePlugin(pMessage);
 	}
 
@@ -2090,20 +2140,20 @@ namespace Plugins
 		return true;
 	}
 
-	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const _tColor color)
+	void CPlugin::SendCommand(uint64_t idx, int Unit, const std::string &command, int level, _tColor color)
 	{
 		//	Add command to message queue
 		std::string JSONColor = color.toJSONString();
-		MessagePlugin(new onCommandCallback(this, Unit, command, level, JSONColor));
+		MessagePlugin(new onCommandCallback(this, idx, Unit, command, level, JSONColor));
 	}
 
-	void CPlugin::SendCommand(const int Unit, const std::string &command, const float level)
+	void CPlugin::SendCommand(uint64_t idx, int Unit, const std::string &command, float level)
 	{
 		//	Add command to message queue
-		MessagePlugin(new onCommandCallback(this, Unit, command, level));
+		MessagePlugin(new onCommandCallback(this, idx, Unit, command, level));
 	}
 
-	bool CPlugin::HasNodeFailed(const int Unit)
+	bool CPlugin::HasNodeFailed(uint64_t idx, int Unit)
 	{
 		if (!m_DeviceDict)
 			return true;
@@ -2119,9 +2169,9 @@ namespace Plugins
 				return false;
 			}
 
-			if (iKey == Unit)
+			if (iKey == UseDeviceIndex() ? idx : Unit)
 			{
-				CDevice *pDevice = (CDevice *)value;
+				auto *pDevice = reinterpret_cast<CDevice *>(value);
 				return (pDevice->TimedOut != 0);
 			}
 		}

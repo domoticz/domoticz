@@ -11322,7 +11322,7 @@ bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sVa
 	return true;
 }
 
-bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string& User)
+bool MainWorker::SwitchLightInt(uint64_t idx, const std::vector<std::string> &sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string &User)
 {
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -11427,7 +11427,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				switchcmd = "Set Color";
 			}
 		}
-		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, color);
+		((Plugins::CPlugin *)m_hardwaredevices[hindex])->SendCommand(idx, Unit, switchcmd, level, color);
 #endif
 		return true;
 	}
@@ -12433,7 +12433,7 @@ bool MainWorker::SwitchEvoModal(const std::string& idx, const std::string& statu
 
 bool MainWorker::SwitchLight(const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& ooc, const int ExtraDelay, const std::string& User)
 {
-	uint64_t ID = std::strtoull(idx.c_str(), nullptr, 10);
+	uint64_t ID = std::stoull(idx);
 	int ilevel = -1;
 	if (!level.empty())
 		ilevel = atoi(level.c_str());
@@ -12485,7 +12485,7 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchcmd, level, color, "Switch with Delay", User));
 		return true;
 	}
-	return SwitchLightInt(sd, switchcmd, level, color, false, User);
+	return SwitchLightInt(idx, sd, switchcmd, level, color, false, User);
 }
 
 bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, const std::string& newMode, const std::string& until)
@@ -12509,7 +12509,7 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue, cons
 		return false;
 
 	if (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT && pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_WEB && pHardware->HwdType != HTYPE_EVOHOME_TCP)
-		return SetSetPointInt(sd, TempValue);
+		return SetSetPointInt(std::stoull(idx), sd, TempValue);
 
 	int nEvoMode = 0;
 	if (newMode == "PermanentOverride" || newMode.empty())
@@ -12575,10 +12575,10 @@ bool MainWorker::SetSetPoint(const std::string& idx, const float TempValue)
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	return SetSetPointInt(sd, TempValue);
+	return SetSetPointInt(std::stoull(idx), sd, TempValue);
 }
 
-bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float TempValue)
+bool MainWorker::SetSetPointInt(uint64_t idx, const std::vector<std::string> &sd, const float TempValue)
 {
 	int HardwareID = atoi(sd[0].c_str());
 	int hindex = FindDomoticzHardware(HardwareID);
@@ -12609,7 +12609,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
 #ifdef ENABLE_PYTHON
-		((Plugins::CPlugin*)pHardware)->SendCommand(Unit, "Set Level", TempValue);
+		((Plugins::CPlugin *)pHardware)->SendCommand(idx, Unit, "Set Level", TempValue);
 #endif
 	}
 	else if (

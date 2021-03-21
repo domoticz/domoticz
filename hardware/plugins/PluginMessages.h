@@ -20,12 +20,12 @@ namespace Plugins {
 	  CPlugin *m_pPlugin;
 	  std::string m_Name;
 	  int m_HwdID;
-	  int m_Unit;
+	  uint64_t m_DeviceKey;
 	  bool m_Delay;
 	  time_t m_When;
 
 	protected:
-		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1), m_Delay(false)
+		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_DeviceKey(-1), m_Delay(false)
 		{
 			m_Name = __func__;
 			m_When = time(nullptr);
@@ -204,64 +204,77 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  };
 	};
 
-	class onDeviceAddedCallback : public CCallbackBase
+	class CDeviceCallbackBase : public CCallbackBase
 	{
 	public:
-		onDeviceAddedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceAdded") { m_Unit = Unit; };
+	  CDeviceCallbackBase(CPlugin *pPlugin, const std::string &Callback, uint64_t idx, int Unit)
+		  : CCallbackBase(pPlugin, Callback)
+	  {
+		  m_DeviceKey = pPlugin->UseDeviceIndex() ? idx : Unit;
+	  }
+	};
+
+	class onDeviceAddedCallback : public CDeviceCallbackBase
+	{
+	public:
+	  onDeviceAddedCallback(CPlugin *pPlugin, uint64_t idx, int Unit)
+		  : CDeviceCallbackBase(pPlugin, "onDeviceAdded", idx, Unit) {}
 	protected:
 	  void ProcessLocked() override
 	  {
-		  m_pPlugin->onDeviceAdded(m_Unit);
+		  m_pPlugin->onDeviceAdded(m_DeviceKey);
 
-		  PyNewRef	pParams = Py_BuildValue("(i)", m_Unit);
+		  PyNewRef	pParams = Py_BuildValue("(K)", m_DeviceKey);
 		  Callback(pParams);
 	  };
 	};
 
-	class onDeviceModifiedCallback : public CCallbackBase
+	class onDeviceModifiedCallback : public CDeviceCallbackBase
 	{
 	public:
-		onDeviceModifiedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceModified") { m_Unit = Unit; };
+	  onDeviceModifiedCallback(CPlugin *pPlugin, uint64_t idx, int Unit)
+		  : CDeviceCallbackBase(pPlugin, "onDeviceModified", idx, Unit) {}
 	protected:
 	  void ProcessLocked() override
 	  {
-		  m_pPlugin->onDeviceModified(m_Unit);
+		  m_pPlugin->onDeviceModified(m_DeviceKey);
 
-		  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+		  PyNewRef pParams = Py_BuildValue("(K)", m_DeviceKey);
 		  Callback(pParams);
 	  };
 	};
 
-	class onDeviceRemovedCallback : public CCallbackBase
+	class onDeviceRemovedCallback : public CDeviceCallbackBase
 	{
 	public:
-		onDeviceRemovedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceRemoved") { m_Unit = Unit; };
+	  onDeviceRemovedCallback(CPlugin *pPlugin, uint64_t idx, int Unit)
+		  : CDeviceCallbackBase(pPlugin, "onDeviceRemoved", idx, Unit) {}
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+		  PyNewRef pParams = Py_BuildValue("(K)", m_DeviceKey);
 		  Callback(pParams);
 
-		  m_pPlugin->onDeviceRemoved(m_Unit);
+		  m_pPlugin->onDeviceRemoved(m_DeviceKey);
 	  };
 	};
 
-	class onCommandCallback : public CCallbackBase
+	class onCommandCallback : public CDeviceCallbackBase
 	{
 	public:
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const std::string &color) : CCallbackBase(pPlugin, "onCommand")
+	  onCommandCallback(CPlugin *pPlugin, uint64_t idx, int Unit, const std::string &Command, const int level, const std::string &color)
+		  : CDeviceCallbackBase(pPlugin, "onCommand", idx, Unit)
 		{
 			m_Name = __func__;
-			m_Unit = Unit;
 			m_fLevel = -273.15F;
 			m_Command = Command;
 			m_iLevel = level;
 			m_iColor = color;
 		};
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin *pPlugin, uint64_t idx, int Unit, const std::string &Command, const float level)
+			: CDeviceCallbackBase(pPlugin, "onCommand", idx, Unit)
 		{
 			m_Name = __func__;
-			m_Unit = Unit;
 			m_fLevel = level;
 			m_Command = Command;
 			m_iLevel = -1;
@@ -278,23 +291,23 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		  PyNewRef pParams;
 		  if (m_fLevel != -273.15F)
 		  {
-			  pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
+			  pParams = Py_BuildValue("Ksfs", m_DeviceKey, m_Command.c_str(), m_fLevel, "");
 		  }
 		  else
 		  {
-			  pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+			  pParams = Py_BuildValue("Ksis", m_DeviceKey, m_Command.c_str(), m_iLevel, m_iColor.c_str());
 		  }
 		  Callback(pParams);
 	  };
 	};
 
-	class onSecurityEventCallback : public CCallbackBase
+	class onSecurityEventCallback : public CDeviceCallbackBase
 	{
 	public:
-		onSecurityEventCallback(CPlugin* pPlugin, int Unit, const int level, const std::string& Description) : CCallbackBase(pPlugin, "onSecurityEvent")
+		onSecurityEventCallback(CPlugin* pPlugin, uint64_t idx, int Unit, const int level, const std::string& Description)
+		  : CDeviceCallbackBase(pPlugin, "onSecurityEvent", idx, Unit)
 		{
 			m_Name = __func__;
-			m_Unit = Unit;
 			m_iLevel = level;
 			m_Description = Description;
 		};
@@ -304,7 +317,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
+		  PyNewRef pParams = Py_BuildValue("Kis", m_DeviceKey, m_iLevel, m_Description.c_str());
 		  Callback(pParams);
 	  };
 	};

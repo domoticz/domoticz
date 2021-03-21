@@ -3309,7 +3309,7 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false, User);
+	return m_mainworker.SwitchLightInt(idx, sd, switchcmd, level, color, false, User);
 }
 
 #ifndef WIN32
@@ -4719,7 +4719,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-			pPlugin->DeviceAdded(unit);
+			pPlugin->DeviceAdded(ulID, unit);
 		}
 #endif
 	}
@@ -7417,11 +7417,15 @@ void CSQLHelper::DeleteEvent(const std::string& idx)
 //Argument, one or multiple devices separated by a semicolumn (;)
 void CSQLHelper::DeleteDevices(const std::string& idx)
 {
+	struct RemovedDevice {
+		std::string ID, HwID, Unit;
+		bool operator <(const RemovedDevice &rhs) const { return ID < rhs.ID; }
+	};
 	std::vector<std::string> _idx;
 	StringSplit(idx, ";", _idx);
 	if (_idx.empty())
 		return;
-	std::set<std::pair<std::string, std::string> > removeddevices;
+	std::set<RemovedDevice> removeddevices;
 #ifdef ENABLE_PYTHON
 	for (const auto &str : _idx)
 	{
@@ -7431,12 +7435,12 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
-			std::string HwID = sd[0];
-			std::string Unit = sd[1];
+			const auto& HwID = sd[0];
+			const auto& Unit = sd[1];
 			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
 			if (pHardware != nullptr)
 			{
-				removeddevices.insert(std::make_pair(HwID, Unit));
+				removeddevices.insert({str, HwID, Unit});
 			}
 		}
 	}
@@ -7489,15 +7493,17 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #ifdef ENABLE_PYTHON
 	for (const auto& it : removeddevices)
 	{
-		int HwID = atoi(it.first.c_str());
-		int Unit = atoi(it.second.c_str());
+		uint64_t id = std::stoull(it.ID);
+		int HwID = std::stoi(it.HwID);
+		int Unit = std::stoi(it.Unit);
 		// Notify plugin to sync plugins' device list
 		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwID);
 		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
-			_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %u", HwID, Unit);
-			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-			pPlugin->DeviceRemoved(Unit);
+			_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %" PRIu64 ":%u",
+				   HwID, id, Unit);
+			auto* pPlugin = static_cast<Plugins::CPlugin*>(pHardware);
+			pPlugin->DeviceRemoved(id, Unit);
 		}
 	}
 #endif
