@@ -69,7 +69,7 @@ local function getDevice_(
 		["description"] = "Description 1",
 		["batteryLevel"] = batteryLevel and batteryLevel or 50,
 		["protected"] = true,
-		["signalLevel"] = signalLevel and signalLevel or 55,
+		["signalLevel"] = signalLevel and signalLevel or 11,
 		["deviceType"] = type and type or "someSubType",
 		["deviceID"] = "123abc",
 		["subType"] = subType and subType or "someDeviceType",
@@ -222,7 +222,7 @@ describe('device', function()
 			assert.is_same(true, device.timedOut)
 			assert.is_same(true, device.protected)
 			assert.is_same(50, device.batteryLevel)
-			assert.is_same(55, device.signalLevel)
+			assert.is_same(11, device.signalLevel)
 			assert.is_same('sub', device.deviceSubType)
 			assert.is_same(2016, device.lastUpdate.year)
 			assert.is_same({'1', '2', '3'}, device.rawData)
@@ -284,12 +284,12 @@ describe('device', function()
 				hardwareType = 'hwtype',
 				hardwareTypeValue = 'hvalue',
 				state = 'bla',
-				batteryLevel = 100,
-				signalLevel = 100
+				batteryLevel = 31,
+				signalLevel = 11
 			})
 
-			assert.is_same(100, device.batteryLevel)
-			assert.is_same(100, device.signalLevel)
+			assert.is_same(31, device.batteryLevel)
+			assert.is_same(11, device.signalLevel)
 
 			device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -299,12 +299,12 @@ describe('device', function()
 				hardwareType = 'hwtype',
 				hardwareTypeValue = 'hvalue',
 				state = 'bla',
-				batteryLevel = 0,
-				signalLevel = 0
+				batteryLevel = -1,
+				signalLevel = 100
 			})
 
-			assert.is_same(0, device.batteryLevel)
-			assert.is_same(0, device.signalLevel)
+			assert.is_nil(device.batteryLevel)
+			assert.is_nil(device.signalLevel)
 		end)
 
 		it('should detect a lux device', function()

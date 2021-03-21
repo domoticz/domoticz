@@ -599,6 +599,8 @@ Keywords recognized are "at, between, every, except, in, on " ( except supported
 At every place you read <astroMoment> you can use one of:
 sunset, sunrise, solarnoon, midnight *, sunatsouth *, civiltwilightstart, civiltwilightend, astronomicaltwilightstart *, astronomicaltwilightend *, nauticaltwilightstart * or nauticaltwilightend *.
 
+Full daynames are allowed in dzVents >= 3.1.7
+
 * <sup>3.1.16</sup>
 
 ```Lua
@@ -619,7 +621,7 @@ sunset, sunrise, solarnoon, midnight *, sunatsouth *, civiltwilightstart, civilt
 			'at 19:30-08:20',			-- between 19:30 and 8:20 (next day)
 			'at 13:45 on mon,tue',		-- at 13:45 only on Mondays and Tuesdays (english)
 			'on mon,tue',				-- on Mondays and Tuesdays
-			'every hour on sat',		-- you guessed it correctly
+			'every hour on Saturday',	-- you guessed it correctly
 			'at sunset',				-- uses sunset/sunrise/solarnoon info from Domoticz
 			'at sunrise',
 			'at <astroMoment>',			-- dzVents >= 3.0.16 Uses the times received from Domoticz
@@ -960,7 +962,7 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. Generic alternative method to update device nValue, sValues. Uses domoticz JSON API to force subsequent pushes like influxdb and MQTT. nValue required but when set to nil it defaults to current nValue. sValue parms are optional and can be many. <sup>3.0.8</sup> If one of sValue parms is 'parsetrigger', subsequent eventscripts will be triggered.
  - **state**: *String*. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
- - **signalLevel**: *Number* If applicable for that device then it will be from 0-100.
+ - **signalLevel**: *Number* If applicable for that device then it will be from 0-12
  - **switchType**: *String*. See Domoticz devices table in Domoticz GUI(Switches tab). E.g. 'On/Off', 'Door Contact', 'Motion Sensor' or 'Blinds'
  - **sValue**: *String*. Returns the sValue (string Value) of a device.
  - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
@@ -2600,6 +2602,11 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+
+## [3.1.7] ##
+- Fix for race condition at midnight when internal scripts are refreshed
+- Allow both abbreviated and full names for days in time rules
+- Better protection for battery and signal levels outside valid ranges
 
 ## [3.1.6] ##
 - Add astronomical times. Now every -start, -end, - xx minutes before, -xx minutes after, -at and between aa and bb can be done for all available
