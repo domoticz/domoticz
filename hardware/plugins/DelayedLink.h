@@ -29,6 +29,8 @@ namespace Plugins {
 #define DECLARE_PYTHON_SYMBOL(type, symbol, params)	typedef type (PYTHON_CALL symbol##_t)(params); symbol##_t  symbol
 #define RESOLVE_PYTHON_SYMBOL(symbol)  symbol = (symbol##_t)RESOLVE_SYMBOL(shared_lib_, #symbol)
 
+#define DECLARE_PYTHON_DATA_SYMBOL(type, symbol) typedef const type *symbol##_t; symbol##_t symbol;
+
 	struct SharedLibraryProxy
 	{
 #ifdef WIN32
@@ -62,6 +64,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(const char*, PyUnicode_AsUTF8, PyObject*);
 		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromKindAndData, int COMMA const void* COMMA Py_ssize_t);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromUnsignedLongLong, unsigned long long);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
@@ -135,6 +138,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetIter, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyIter_Next, PyObject*);
 
+		DECLARE_PYTHON_DATA_SYMBOL(PyTypeObject, PyUnicode_Type);
+
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
@@ -203,6 +208,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromKindAndData);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
+					RESOLVE_PYTHON_SYMBOL(PyLong_FromUnsignedLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
@@ -277,6 +283,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyFloat_AsDouble);
 					RESOLVE_PYTHON_SYMBOL(PyObject_GetIter);
 					RESOLVE_PYTHON_SYMBOL(PyIter_Next);
+
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_Type);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -420,6 +428,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyByteArray_AsString	pythonLib->PyByteArray_AsString
 #define PyUnicode_FromKindAndData  pythonLib->PyUnicode_FromKindAndData
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
+#define PyLong_FromUnsignedLongLong  pythonLib->PyLong_FromUnsignedLongLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
@@ -497,6 +506,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
 #define	PyObject_GetIter		pythonLib->PyObject_GetIter
 #define	PyIter_Next				pythonLib->PyIter_Next
+
+#define PyUnicode_Type (*pythonLib->PyUnicode_Type)
 
 #ifndef _Py_DEC_REFTOTAL
 /* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by: https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
