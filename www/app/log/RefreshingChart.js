@@ -443,9 +443,20 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                 const plotRange = xAxis.max - xAxis.min;
                 const plotRangeNew = plotRange * .5;
                 const plotRangeCut = plotRange - plotRangeNew;
-                const plotRangeCutLeft = plotRangeCut * (plotX / plotWidth);
-                const plotRangeCutRight = plotRangeCut * ((plotWidth - plotX) / plotWidth);
-                zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
+                if (plotX <= plotWidth/3) {
+                    // keep left edge on same position
+                    zoom(xAxis.min, -plotRangeCut + xAxis.max);
+                } else if (0+plotWidth/3 < plotX && plotX < -(plotWidth/3)+plotWidth) {
+                    // keep center on same position
+                    zoom(xAxis.min + plotRangeCut/2, -plotRangeCut/2 + xAxis.max);
+                } else {
+                    // keep right edge on same position
+                    zoom(xAxis.min + plotRangeCut, xAxis.max);
+                }
+                // keep touchpoint on same position
+                // const plotRangeCutLeft = plotRangeCut * (plotX / plotWidth);
+                // const plotRangeCutRight = plotRangeCut * ((plotWidth - plotX) / plotWidth);
+                // zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
             });
 
             function intParam(parameterName, defaultValue) {
