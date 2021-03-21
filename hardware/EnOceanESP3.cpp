@@ -563,7 +563,6 @@ void CEnOceanESP3::Do_Work()
 
 void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)
 {
-	std::lock_guard<std::mutex> l(m_sendMutex);
 #ifdef ENABLE_LOGGING
 	std::stringstream sstr;
 
@@ -575,10 +574,13 @@ void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)
 	}
 	_log.Log(LOG_STATUS,"EnOcean Send: %s",sstr.str().c_str());
 #endif
+
 	std::string sBytes;
-	sBytes.insert(0, pData, length);
+	sBytes.insert(0,pData,length);
+	std::lock_guard<std::mutex> l(m_sendMutex);
 	m_sendqueue.push_back(sBytes);
 }
+
 
 bool CEnOceanESP3::OpenSerialDevice()
 {

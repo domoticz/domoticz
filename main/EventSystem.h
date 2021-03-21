@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <boost/thread/shared_mutex.hpp>
 
 #include "../httpclient/HTTPClient.h"
 
@@ -186,6 +187,13 @@ private:
 
 	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
+	boost::shared_mutex m_devicestatesMutex;
+	boost::shared_mutex m_eventsMutex;
+	boost::shared_mutex m_uservariablesMutex;
+	boost::shared_mutex m_scenesgroupsMutex;
+	boost::shared_mutex m_eventtriggerMutex;
+	std::mutex m_measurementStatesMutex;
+	std::mutex luaMutex;
 	std::shared_ptr<std::thread> m_thread;
 	std::shared_ptr<std::thread> m_eventqueuethread;
 	StoppableTask m_TaskQueue;
@@ -278,7 +286,4 @@ private:
 	std::string LowerCase(std::string sResult);
 
 	bool Update(Notification::_eType type, Notification::_eStatus status, const std::string &eventdata) override;
-
-public:
-	std::mutex m_luaMutex;
 };
