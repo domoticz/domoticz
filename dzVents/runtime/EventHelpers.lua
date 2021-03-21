@@ -612,7 +612,7 @@ local function EventHelpers(domoticz, mainMethod)
 				return ok, module
 			elseif not(ok) then
 				while not(ok) and requireTimeout > 0 do
-					utils.log(os.time() .. ': Loading of ' .. location .. ' script "'.. moduleName .. '.lua" failed. Retrying in a second.', utils.LOG_FORCE)
+					utils.log('Loading of ' .. location .. ' script "'.. moduleName .. '.lua" failed. Retrying in a second.', utils.LOG_FORCE)
 					if not(_G.TESTMODE) then self.wait(1) end
 					ok, module = pcall(require, moduleName)
 					if not(ok) then
