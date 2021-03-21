@@ -4747,7 +4747,6 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			std::vector<std::string> parts;
 			struct tm ntime;
 			double interval;
-			float nEnergy;
 			char sCompValue[100];
 			std::string sLastUpdate = result[0][6];
 			time_t lutime;
@@ -4757,7 +4756,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			StringSplit(wpart, ";", parts);
 			if (parts.size() == 2)
 			{
-				nEnergy = std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]);
+				double nEnergy = std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]);
 				StringSplit(sValue, ";", parts);
 				if (parts.size() >= 1)
 				{
