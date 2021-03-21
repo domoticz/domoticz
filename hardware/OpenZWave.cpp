@@ -3310,8 +3310,6 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 	break;
 	case ZDTYPE_SWITCH_DIMMER:
-		if (vLabel.find("Level") == std::string::npos)
-			return;
 		if (vType != OpenZWave::ValueID::ValueType_Byte)
 			return;
 		if (byteValue == 99)
