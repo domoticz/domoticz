@@ -21,11 +21,9 @@
             PyObject*	error;
         };
 
-	static PyMethodDef DomoticzEventsMethods[] = {
-			{ "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
-			{ "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
-			{ nullptr, nullptr, 0, nullptr }
-};
+	static PyMethodDef DomoticzEventsMethods[] = { { "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
+						       { "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
+						       { nullptr, nullptr, 0, nullptr } };
 
 	static int DomoticzEventsTraverse(PyObject *m, visitproc visit, void *arg)
 	{
@@ -65,6 +63,10 @@
 		char *action;
 		char *device;
 
+		// _log.Log(LOG_STATUS, "Python EventSystem: Running command.");
+		// m_eventsystem.CEventSystem::PythonScheduleEvent("Test_Target", "On", "Testing");
+		//
+
 		if (!PyArg_ParseTuple(args, "ss", &device, &action))
 		{
 			_log.Log(LOG_ERROR, "Pyhton EventSystem: Failed to parse parameters: Two strings expected.");
@@ -75,8 +77,7 @@
 			// std::string	dev = device;
 			// std::string act = action;
 			// _log.Log((_eLogLevel)LOG_NORM, "Python EventSystem - Command: Target: %s Command: %s", dev.c_str(), act.c_str());
-			std::lock_guard<std::mutex> l(m_mainworker.m_eventsystem.m_luaMutex); 
-			m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test"); //Why is the event labeled test ? Is there a good/better name here?
+			m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test");
 		}
 
 		Py_INCREF(Py_None);
@@ -255,9 +256,13 @@
 					return;
 				}
 
-				for (const auto &itt : m_devicestates)
+				// Mutex
+				// boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
+
+				std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
+				for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
 				{
-					CEventSystem::_tDeviceStatus sitem = itt.second;
+					CEventSystem::_tDeviceStatus sitem = it_type->second;
 					// object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType,
 					// sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue,
 					// sitem.lastUpdate); devices[sitem.deviceName] = deviceStatus;
@@ -306,6 +311,8 @@
 					Py_DECREF(aDevice);
 					Py_DECREF(pKey);
 				}
+				// devicestatesMutexLock1.unlock();
+
 				// Time related
 
 				// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
@@ -369,6 +376,9 @@
 				}
 				Py_DECREF(m_uservariablesDict);
 
+				// This doesn't work
+				// boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
+
 				std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
 				for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
 				{
@@ -376,6 +386,8 @@
 					Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(),
 								      Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
 				}
+
+				// uservariablesMutexLock2.unlock();
 
 				// Add __main__ module
 				PyObject *pModule = Plugins::PyImport_AddModule("__main__");
