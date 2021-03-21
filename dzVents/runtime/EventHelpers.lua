@@ -608,8 +608,8 @@ local function EventHelpers(domoticz, mainMethod)
 		function self.tryRequire(moduleName, requireTimeout, location)
 			local ok = true
 			ok, module = pcall(require, moduleName)
-			if ( ok and module ) or requireTimeout < 1 then
-				return ok, module
+			if ( ok and module ) or requireTimeout < 1 or not(tostring(module):match('^module')) then
+				return ok, module, requireTimeout
 			elseif not(ok) then
 				while not(ok) and requireTimeout > 0 do
 					utils.log('Loading of ' .. location .. ' script "'.. moduleName .. '.lua" failed. Retrying in a second.', utils.LOG_FORCE)
