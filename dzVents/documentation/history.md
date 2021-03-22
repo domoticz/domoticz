@@ -1,6 +1,11 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## [3.1.7] ##
+- Fix for race condition at midnight when internal scripts are refreshed
+- Allow both abbreviated and full names for days in time rules
+- Better protection for battery and signal levels outside valid ranges
+
 ## [3.1.6] ##
 - Add astronomical times. Now every -start, -end, -xx minutes before, -xx minutes after, -at and between aa and bb  can be done for all available
 astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunrise, sunset, solarNoon, midnight)

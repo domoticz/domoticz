@@ -230,6 +230,10 @@ local function Time(sDate, isUTC, _testMS)
 		self = time
 	end
 
+	function self.containsWholeWord(input, word)
+		return string.find(input, "%f[%a]" .. word .. "%f[%A]")
+	end
+
 	self.rawDate = self.year .. '-' .. string.format("%02d", self.month) .. '-' .. string.format("%02d", self.day)
 	self.time = string.format("%02d", self.hour) .. ':' .. string.format("%02d", self.min)
 	self.minutesnow = self.hour * 60 + self.min
@@ -453,33 +457,14 @@ local function Time(sDate, isUTC, _testMS)
 	-- returns true if self.day is on the rule: on day1,day2...
 	function self.ruleIsOnDay(rule)
 
-		local days = string.match(rule, '%s+on%s+(.+)$') or string.match(rule, '^%s*on%s+(.+)$')
-		if (isEmpty(days)) then
-			return nil
-		end
-
-		local isDayRule = false
-		for i,day in pairs(LOOKUPDAYABBROFWEEK) do
-			if (string.find(days, day) ~= nil) then
-				isDayRule = true
-				break
+		if self.containsWholeWord(rule, self.dayAbbrOfWeek) or self.containsWholeWord(rule, self.dayName:lower() ) then  -- current day
+			return true -- current day found
+		else
+			for _, day in ipairs(LOOKUPDAYABBROFWEEK) do
+				if rule:find(day) then return false end
 			end
 		end
 
-		if (not isDayRule) then
-			return nil
-		end
-
-		local days = string.match(rule, '%s+on%s+(.+)$') or string.match(rule, '^%s*on%s+(.+)$')
-		if (days ~= nil) then -- on <day>' was specified
-			local hasDayMatch = string.find(days, self.dayAbbrOfWeek)
-			if (hasDayMatch) then
-				return true
-			else
-				return false
-			end
-		end
-		return nil
 	end
 
 	-- returns true if self.week matches rule in week 1,3,4 / every odd-week, every even-week, in week 5-12,23,44
@@ -912,19 +897,19 @@ local function Time(sDate, isUTC, _testMS)
 		end
 		updateTotal(res)
 
-		res = self.ruleIsOnDay(rule) -- range
+		res = self.containsWholeWord(rule, 'on') and self.ruleIsOnDay(rule) -- range
 		if (res == false) then -- on <days> was specified but 'now' is not on any of the specified days
 			return false
 		end
 		updateTotal(res)
 
-		res = self.ruleIsOnDate(rule)
+		res = self.containsWholeWord(rule, 'on') and self.ruleIsOnDate(rule)
 		if (res == false) then -- on date <dates> was specified but 'now' is not on any of the specified dates
 			return false
 		end
 		updateTotal(res)
 
-		local _between = self.ruleMatchesBetweenRange(rule) -- range
+		local _between = self.containsWholeWord(rule, 'between') and self.ruleMatchesBetweenRange(rule) -- range
 		if (_between == false) then -- rule had between xxx and yyy is not in that range now
 			return false
 		end

@@ -66,13 +66,12 @@ local function EventHelpers(domoticz, mainMethod)
 			longitude = _gv.longitude or 0,
 		}
 	}
+	_G.logLevel = settings['Log level']
 
 	if settings.webRoot ~= nil and settings.webRoot ~= '' then
 		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. settings.webRoot
 		settings.url = settings['Domoticz url']
 	end
-
-	_G.logLevel = settings['Log level']
 
 	if (domoticz == nil) then
 		local Domoticz = require('Domoticz')
@@ -80,9 +79,9 @@ local function EventHelpers(domoticz, mainMethod)
 	end
 
 	local self = {
-		['utils'] = utils, -- convenient for testing and stubbing
-		['domoticz'] = domoticz,
-		['settings'] = settings,
+		utils = utils, -- convenient for testing and stubbing
+		domoticz = domoticz,
+		settings = settings,
 	}
 
 	if (_G.TESTMODE) then
@@ -106,7 +105,6 @@ local function EventHelpers(domoticz, mainMethod)
 				-- only transfer data as defined in storageDef
 				for _var, _def in pairs(storageDef) do
 					local var, def
-
 					if (type(_var) == 'number' and type(_def) == 'string') then
 						var = _def
 						def = {}
@@ -555,10 +553,9 @@ local function EventHelpers(domoticz, mainMethod)
 	local function loadEventScripts()
 		local scripts = {}
 		local errModules = {}
-		local internalScripts
-		local ok, diskScripts, externalNames, moduleName, i, event, j, err
 		local modules = {}
 		local scripts = {}
+		local requireTimeout, moduleName, event, err, ok, diskScripts, externalNames, internalScripts
 
 		ok, diskScripts, externalNames = pcall(self.scandir, _G.scriptsFolderPath, 'external')
 
@@ -601,6 +598,31 @@ local function EventHelpers(domoticz, mainMethod)
 			table.insert(modules, 1, globalModule)
 		end
 
+		function self.wait(time)
+			local isWindows = string.sub(package.config, 1, 1) ~= '/'
+			local delayCommand = ( isWindows and 'timeout /T 1' ) or 'sleep 1'
+			local duration = os.time() + ( time or 1 )
+			while os.time() < duration do os.execute(delayCommand) end
+		end
+
+		function self.tryRequire(moduleName, requireTimeout, location)
+			local ok = true
+			ok, module = pcall(require, moduleName)
+			if ( ok and module ) or requireTimeout < 1 or not(tostring(module):match('^module')) then
+				return ok, module, requireTimeout
+			elseif not(ok) then
+				while not(ok) and requireTimeout > 0 do
+					utils.log('Loading of ' .. location .. ' script "'.. moduleName .. '.lua" failed. Retrying in a second.', utils.LOG_FORCE)
+					if not(_G.TESTMODE) then self.wait(1) end
+					ok, module = pcall(require, moduleName)
+					if not(ok) then
+						requireTimeout = requireTimeout - 1
+					end
+				end
+			end
+			return ok, module, requireTimeout
+		end
+
 		for i, moduleInfo in ipairs(modules) do
 
 			local module, skip
@@ -609,18 +631,18 @@ local function EventHelpers(domoticz, mainMethod)
 			local logScript = (moduleInfo.type == 'external' and 'Script ' or 'Internal script ')
 
 			_G.domoticz = {
-				['LOG_INFO'] = utils.LOG_INFO,
-				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
-				['LOG_DEBUG'] = utils.LOG_DEBUG,
-				['LOG_ERROR'] = utils.LOG_ERROR,
-				['SECURITY_DISARMED'] = self.domoticz.SECURITY_DISARMED,
-				['SECURITY_ARMEDAWAY'] = self.domoticz.SECURITY_ARMEDAWAY,
-				['SECURITY_ARMEDHOME'] = self.domoticz.SECURITY_ARMEDHOME,
+				LOG_INFO = utils.LOG_INFO,
+				LOG_MODULE_EXEC_INFO = utils.LOG_MODULE_EXEC_INFO,
+				LOG_DEBUG = utils.LOG_DEBUG,
+				LOG_ERROR = utils.LOG_ERROR,
+				LOG_FORCE = utils.LOG_FORCE,
+				SECURITY_DISARMED = self.domoticz.SECURITY_DISARMED,
+				SECURITY_ARMEDAWAY = self.domoticz.SECURITY_ARMEDAWAY,
+				SECURITY_ARMEDHOME = self.domoticz.SECURITY_ARMEDHOME,
 			}
 
-			ok = true
-
-			ok, module = pcall(require, moduleName)
+			local ok = true
+			ok, module, requireTimeout = self.tryRequire(moduleName, ( requireTimeout or 3 ), moduleInfo.type )
 
 			_G.domoticz = nil
 
