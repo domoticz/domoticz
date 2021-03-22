@@ -20,11 +20,10 @@ fi
 if [[ $EUID -eq 0 ]]; then
 	echo "You are root."
 else
-	echo "Root access is needed, please run this command with sudo"
+	echo "Root access is required, please run this script with sudo"
 	exit 1
 fi
-echo "Updating to latest beta version..."
-echo "Stop Domoticz and create backup of current install..."
+echo "Stopping Domoticz and creating backup of current install..."
 base=$(basename $PWD)
 timestamp=$(date +%Y%m%d_%H%M%S)
 # remove old backup
@@ -35,25 +34,27 @@ sudo service domoticz.sh stop
 tar --exclude $base/backups -czf $base.backup_$timestamp.tar.gz $base
 # move backup to domoticz folder
 mv $base.backup_$timestamp.tar.gz $base/$base.backup_$timestamp.tar.gz
-echo "Backup ready"
+echo "Backup finished..."
 cd $base
-echo "Downloading and installing new beta..."
+echo "Downloading latest beta version..."
 wget -4 -O domoticz_beta.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"
 if [ $? -ne 0 ]
 then
- echo "Problem in downloaded Domoticz archive. Stopping update!"
+ echo "Problem downloading new Domoticz version!!. Stopping and restarting current version..."
  sudo service domoticz.sh start
  exit 1
 fi
-echo "Checking file Integrity..."
+echo "Checking file integrity..."
 tar -tzf domoticz_beta.tgz >/dev/null
 if [ $? -ne 0 ]
 then
- echo "Problem in downloaded Domoticz archive. Stopping update!"
+ echo "Problem in downloaded Domoticz archive!!. Stopping and restarting current version..."
  sudo service domoticz.sh start
  exit 1
 fi
+echo "Installing new version..."
 tar xvfz domoticz_beta.tgz
 rm domoticz_beta.tgz
 echo "Starting Domoticz... (please standby...)"
 sudo service domoticz.sh start
+echo "Done..."
