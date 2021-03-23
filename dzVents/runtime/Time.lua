@@ -1,6 +1,7 @@
 local utils = require('Utils')
 local _MS -- kind of a cache so we don't have to extract ms every time
 local gTimes --
+local ruleWords = {}
 
 local isEmpty = function(v)
 	return (v == nil or v == '')
@@ -457,7 +458,7 @@ local function Time(sDate, isUTC, _testMS)
 	-- returns true if self.day is on the rule: on day1,day2...
 	function self.ruleIsOnDay(rule)
 
-		if self.containsWholeWord(rule, self.dayAbbrOfWeek) or self.containsWholeWord(rule, self.dayName:lower() ) then  -- current day
+		if utils.containsWord(rule, self.dayAbbrOfWeek) or utils.containsWord(rule, self.dayName:lower() ) then  -- current day
 			return true -- current day found
 		else
 			for _, day in ipairs(LOOKUPDAYABBROFWEEK) do
@@ -891,25 +892,29 @@ local function Time(sDate, isUTC, _testMS)
 			total = res ~= nil and (total or res) or total
 		end
 
-		res = self.ruleIsInWeek(rule)
+		for _, word in pairs({'week', 'every', 'on', 'after', 'before', 'at' , 'between' }) do
+			ruleWords[word] = utils.containsWord(rule, word)
+		end
+
+		res = ruleWords.week and self.ruleIsInWeek(rule)
 		if (res == false) then --in week <weeks> was specified but 'now' is not on any of the specified weeks
 			return false
 		end
 		updateTotal(res)
 
-		res = self.containsWholeWord(rule, 'on') and self.ruleIsOnDay(rule) -- range
+		res = ruleWords.on and self.ruleIsOnDay(rule) -- range
 		if (res == false) then -- on <days> was specified but 'now' is not on any of the specified days
 			return false
 		end
 		updateTotal(res)
 
-		res = self.containsWholeWord(rule, 'on') and self.ruleIsOnDate(rule)
+		res = ruleWords.on and self.ruleIsOnDate(rule)
 		if (res == false) then -- on date <dates> was specified but 'now' is not on any of the specified dates
 			return false
 		end
 		updateTotal(res)
 
-		local _between = self.containsWholeWord(rule, 'between') and self.ruleMatchesBetweenRange(rule) -- range
+		local _between = ruleWords.between and self.ruleMatchesBetweenRange(rule) -- range
 		if (_between == false) then -- rule had between xxx and yyy is not in that range now
 			return false
 		end
@@ -919,13 +924,13 @@ local function Time(sDate, isUTC, _testMS)
 		if (_between == nil) then -- there was not a between rule.
 		-- A between-range can have before/after sunrise/set rules so it cannot be combined with these here
 
-			res = self.ruleIsBeforeAstrologicalMoment(rule) -- moment
+			res = ruleWords.before and self.ruleIsBeforeAstrologicalMoment(rule) -- moment
 			if (res == false) then -- (sub)rule has before xxstart, xxend, sunset, sunrise or solarnoon
 				return false
 			end
 			updateTotal(res)
 
-			res = self.ruleIsAfterAstrologicalMoment(rule) -- moment
+			res = ruleWords.after and self.ruleIsAfterAstrologicalMoment(rule) -- moment
 			if (res == false) then -- (sub)rule has after xxstart, xxend, sunset, sunrise or solarnoon
 				return false
 			end
@@ -933,38 +938,38 @@ local function Time(sDate, isUTC, _testMS)
 
 		end
 
-		res = self.ruleIsAtAstronomicalMoment(rule)
+		res = ruleWords.at and self.ruleIsAtAstronomicalMoment(rule)
 		if (res == false) then -- rule has at xxstart, xxend, sunset, sunrise or solarnoon
 			return false
 		end
 		updateTotal(res)
 
-		res = self.ruleIsAtAstronomicalRange(rule)
+		res = ruleWords.at and self.ruleIsAtAstronomicalRange(rule)
 		if (res == false) then -- rule has at xxdaytime or xx nighttime
 			return false
 		end
 		updateTotal(res)
 
-		res = self.ruleMatchesHourSpecification(rule) -- moment
+		res = ruleWords.every and self.ruleMatchesHourSpecification(rule) -- moment
 		if (res == false) then -- rule has every xx hour but its not the right time
 			return false
 		end
 		updateTotal(res)
 
-		res = self.ruleMatchesMinuteSpecification(rule) -- moment
+		res = ruleWords.every and self.ruleMatchesMinuteSpecification(rule) -- moment
 		if (res == false) then -- rule has every xx minute but its not the right time
 			return false
 		end
 		updateTotal(res)
 
 		rule = sanitize(rule)
-		res = self.ruleMatchesTime(rule) -- moment / range
+		res = ruleWords.at  and self.ruleMatchesTime(rule) -- moment / range
 		if (res == false) then -- rule has at hh:mm part but didn't match (or was invalid)
 			return false
 		end
 		updateTotal(res)
 
-		res = self.ruleMatchesTimeRange(sanitize(rule)) -- range
+		res = ruleWords.at and self.ruleMatchesTimeRange(sanitize(rule)) -- range
 		if (res == false) then -- rule has at hh:mm-hh:mm but time is not in that range now
 			return false
 		end

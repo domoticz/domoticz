@@ -94,6 +94,10 @@ self.fuzzyLookup = function (search, target) -- search must be string/number, ta
 	end
 end
 
+function self.containsWord(input, word)
+	return input:find("%f[%w_%-]" .. (word or ''):gsub('-','%%-') .. "%f[%W_]")
+end
+
 function self.setLogMarker(logMarker)
 	_G.logMarker = logMarker or _G.moduleLabel
 end
