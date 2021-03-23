@@ -16,19 +16,21 @@ then
 fi
 
 echo "Stopping Domoticz..."
-base=$(basename $PWD)
-timestamp=$(date +%Y%m%d_%H%M%S)
-# remove old backup
-rm -f $base.backup*.tar.gz
-cd ..
-# create backup in parent folder (mostly home)
 sudo service domoticz.sh stop
-echo "Making backup of current installation..."
-sudo tar --exclude $base/backups -czf $base.backup_$timestamp.tar.gz $base
-# move backup to domoticz folder
-mv $base.backup_$timestamp.tar.gz $base/$base.backup_$timestamp.tar.gz
-echo "Backup finished..."
-cd $base
+if [ $1 != "-nobackup" ]; then
+    # create backup in parent folder (mostly home)
+    base=$(basename $PWD)
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    # remove old backup
+    rm -f $base.backup*.tar.gz
+    cd ..
+    echo "Making backup of current installation..."
+    sudo tar --exclude $base/backups -czf $base.backup_$timestamp.tar.gz $base
+    # move backup to domoticz folder
+    mv $base.backup_$timestamp.tar.gz $base/$base.backup_$timestamp.tar.gz
+    cd $base
+    echo "Backup finished..."
+fi
 echo "Downloading latest beta version..."
 wget -4 -O domoticz_beta.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"
 if [ $? -ne 0 ]
