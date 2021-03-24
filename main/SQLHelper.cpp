@@ -4741,27 +4741,26 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		//Default is option 0, read from device
 		if (options["EnergyMeterMode"] == "1" && devType == pTypeGeneral && subType == sTypeKwh)
 		{
-			std::string wpart = result[0][5];
-			if (wpart.empty())
-				wpart = "0;0";
 			std::vector<std::string> parts;
 			struct tm ntime;
 			double interval;
+			float nEnergy;
 			char sCompValue[100];
 			std::string sLastUpdate = result[0][6];
 			time_t lutime;
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
 			interval = difftime(now, lutime);
-			StringSplit(wpart, ";", parts);
+			StringSplit(result[0][5], ";", parts);
 			if (parts.size() == 2)
 			{
-				double nEnergy = std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]);
+				nEnergy = static_cast<float>(std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]));
 				StringSplit(sValue, ";", parts);
-				if (parts.size() >= 1)
+				if (!parts.empty())
 				{
 					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 					sValue = sCompValue;
+			
 				}
 			}
 		}
