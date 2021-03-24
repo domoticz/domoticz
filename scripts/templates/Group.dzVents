@@ -4,6 +4,10 @@ return {
 			'myGroup'
 		}
 	},
+	logging = {
+		level = domoticz.LOG_INFO,
+		marker = 'template',
+	},
 	execute = function(domoticz, group)
 		domoticz.log('Group ' .. group.name .. ' was changed', domoticz.LOG_INFO)
 	end

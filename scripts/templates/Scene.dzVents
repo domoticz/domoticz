@@ -4,6 +4,10 @@ return {
 			'myScene'
 		}
 	},
+	logging = {
+		level = domoticz.LOG_INFO,
+		marker = 'template',
+	},
 	execute = function(domoticz, scene)
 		domoticz.log('Scene ' .. scene.name .. ' was changed', domoticz.LOG_INFO)
 	end

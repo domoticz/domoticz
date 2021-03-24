@@ -92,8 +92,8 @@ return {
 
 	-- custom logging level for this script
 	logging = {
-        level = domoticz.LOG_DEBUG,
-        marker = "Cool script"
+        level = domoticz.LOG_INFO,
+        marker = "template"
     },
 
 	-- actual event code
