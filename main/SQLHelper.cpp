@@ -4762,8 +4762,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					old_sValue = sCompValue;
 				}
 			}
+			sValue = old_sValue.c_str();
 		}
-		sValue = old_sValue.c_str();
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
 		{
