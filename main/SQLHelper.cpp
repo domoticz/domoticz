@@ -4762,6 +4762,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					sValue = sCompValue;
 			
 				}
+				else
+				{
+					// This should not happen!
+					_log.Log(LOG_ERROR, "CSQLHelper::UpdateValueInt: Invalid sValue for device idx: %s", result[0][0].c_str());
+				}
 			}
 			else
 			{
