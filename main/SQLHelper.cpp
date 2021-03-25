@@ -4763,6 +4763,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			
 				}
 			}
+			else
+			{
+				//This should not happen!
+				_log.Log(LOG_ERROR, "CSQLHelper::UpdateValueInt: Invalid sValue for device idx: %s", result[0][0].c_str());
+			}
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
