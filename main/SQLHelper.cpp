@@ -4751,7 +4751,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
 			interval = difftime(now, lutime);
-			StringSplit(result[0][5], ";", parts);
+			StringSplit(old_sValue, ";", parts);
 			if (parts.size() == 2)
 			{
 				nEnergy = static_cast<float>(std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]));
@@ -4759,21 +4759,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				if (!parts.empty())
 				{
 					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
-					sValue = sCompValue;
-			
+					old_sValue = sCompValue;
 				}
-				else
-				{
-					// This should not happen!
-					_log.Log(LOG_ERROR, "CSQLHelper::UpdateValueInt: Invalid sValue for device idx: %s", result[0][0].c_str());
-				}
-			}
-			else
-			{
-				//This should not happen!
-				_log.Log(LOG_ERROR, "CSQLHelper::UpdateValueInt: Invalid sValue for device idx: %s", result[0][0].c_str());
 			}
 		}
+		sValue = old_sValue.c_str();
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
 		{
