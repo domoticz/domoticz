@@ -4754,7 +4754,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			StringSplit(old_sValue, ";", parts);
 			if (parts.size() == 2)
 			{
-				nEnergy = static_cast<float>(std::stof(parts[0]) * interval / 3600 + std::stof(parts[1]));
+				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
+				nEnergy = static_cast<float>(atof(parts[0].c_str()) * interval / 3600 + atof(parts[1].c_str()));
 				StringSplit(sValue, ";", parts);
 				if (!parts.empty())
 				{
