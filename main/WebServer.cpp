@@ -962,23 +962,17 @@ namespace http {
 
 		void CWebServer::Cmd_GetJwtToken(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string auth_header;
-			std::string clientid;
-			std::string clientsecret;
-			std::string user;
-			std::string jwttoken;
-			uint16_t exptime = 3600;
-
 			root["title"] = "getjwttoken";
 			root["status"] = "ERR";
+			
 			if (req.method == "POST")
 			{
-				user = request::findValue(&req, "username");
+				std::string user = request::findValue(&req, "username");
 				if (!user.empty())
 				{
 					if (request::get_req_header(&req, "Authorization") != nullptr)
 					{
-						auth_header = request::get_req_header(&req, "Authorization");
+						std::string auth_header = request::get_req_header(&req, "Authorization");
 						// Basic Auth header
 						size_t npos = auth_header.find("Basic ");
 						if (npos != std::string::npos)
@@ -987,9 +981,13 @@ namespace http {
 							npos = decoded.find(':');
 							if (npos != std::string::npos)
 							{
-								clientid = decoded.substr(0, npos);
-								clientsecret = decoded.substr(npos + 1);
+								std::string clientid = decoded.substr(0, npos);
+								std::string clientsecret = decoded.substr(npos + 1);
 								_log.Debug(DEBUG_AUTH, "GetJWTToken: Found a Basic Auth Header for ClientID (%s) and User (%s)", clientid.c_str(), user.c_str());
+								
+								std::string jwttoken;
+								uint16_t exptime = 3600;
+								
 								if (m_pWebEm->GenerateJwtToken(jwttoken, clientid, clientsecret, user, exptime))
 								{
 									root["access_token"] = jwttoken;
