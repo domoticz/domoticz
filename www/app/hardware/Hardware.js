@@ -854,7 +854,11 @@ define(['app'], function (app) {
 				});
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
-				var location = $("#hardwarecontent #divlocation #location").val();
+				var location = $("#hardwarecontent #divmeteorologisk #location").val();
+				if (location == "") {
+					ShowNotify($.t('Please enter an Location specifying Latitude, Longitude (or 0 to use Domoticz home location)!'), 2500, true);
+					return;
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2248,7 +2252,11 @@ define(['app'], function (app) {
 				});
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
-				var location = $("#hardwarecontent #divlocation #location").val();
+				var location = $("#hardwarecontent #divmeteorologisk #location").val();
+				if (location == "") {
+					ShowNotify($.t('Please enter an Location specifying Latitude, Longitude (or 0 to use Domoticz home location)!'), 2500, true);
+					return;
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -2265,38 +2273,38 @@ define(['app'], function (app) {
 				});
 			}
 			else if (text.indexOf("Open Weather Map") >= 0) {
-			var apikey = $("#hardwarecontent #divopenweathermap #apikey").val();
-			if (apikey == "") {
-				ShowNotify($.t('Please enter an API Key!'), 2500, true);
-				return;
-			}
-			var location = $("#hardwarecontent #divopenweathermap #location").val();
-			if (location == "") {
-				ShowNotify($.t('Please enter an Location (or 0 to use Domoticz own location)!'), 2500, true);
-				return;
-			}
-			var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
-			var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
-			var adddescdev = $("#hardwarecontent #divopenweathermap #adddescdev").prop("checked") ? 1 : 0;
-			var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
-			$.ajax({
-				url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
-				"&loglevel=" + logLevel +
-				"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
-				"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
-				"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast +
-				"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					RefreshHardwareTable();
-				},
-				error: function () {
-					ShowNotify($.t('Problem adding hardware!'), 2500, true);
+				var apikey = $("#hardwarecontent #divopenweathermap #apikey").val();
+				if (apikey == "") {
+					ShowNotify($.t('Please enter an API Key!'), 2500, true);
+					return;
 				}
-			});
-		}
-		else if (text.indexOf("Buienradar") >= 0) {
+				var location = $("#hardwarecontent #divopenweathermap #location").val();
+				if (location == "") {
+					ShowNotify($.t('Please enter an Location (or 0 to use Domoticz own location)!'), 2500, true);
+					return;
+				}
+				var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
+				var addhourforecast = $("#hardwarecontent #divopenweathermap #addhourforecast").prop("checked") ? 1 : 0;
+				var adddescdev = $("#hardwarecontent #divopenweathermap #adddescdev").prop("checked") ? 1 : 0;
+				var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
+					"&loglevel=" + logLevel +
+					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast +
+					"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Buienradar") >= 0) {
 				var timeframe = $("#hardwarecontent #divbuienradar #timeframe").val();
 				if (timeframe == 0) {
 					timeframe = 30;
@@ -4100,7 +4108,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("Meteorologisk") >= 0)) {
-							$("#hardwarecontent #hardwareparamslocation #location").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamsmeteorologisk #location").val(data["Password"]);
 						}
 						else if (data["Type"].indexOf("Open Weather Map") >= 0) {
 							$("#hardwarecontent #hardwareparamsopenweathermap #apikey").val(data["Username"]);
@@ -4483,6 +4491,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divunderground").hide();
 			$("#hardwarecontent #divopenweathermap").hide();
 			$("#hardwarecontent #divbuienradar").hide();
+			$("#hardwarecontent #divmeteorologisk").hide();
 			$("#hardwarecontent #divserial").hide();
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
@@ -4694,7 +4703,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").show();
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
-				$("#hardwarecontent #divlocation").show();
+				$("#hardwarecontent #divmeteorologisk").show();
 			}
 			else if(text.indexOf("Open Weather Map") >= 0){
 				$("#hardwarecontent #divopenweathermap").show();
