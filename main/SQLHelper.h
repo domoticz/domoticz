@@ -404,7 +404,8 @@ class CSQLHelper : public StoppableTask
 	void DeleteDevices(const std::string &idx);
 	void DeleteScenes(const std::string &idx);
 
-	void TransferId(const std::string &oldidx, const std::string &newidx);
+	void CopyNewDevice(const std::string &oldidx, const std::string &newidx);
+        void Transfer1Log(const char* table,const std::string& idx, const std::string& newidx);
 	void TransferDevice(const std::string &oldidx, const std::string &newidx);
 
 	bool DoesSceneByNameExits(const std::string &SceneName);

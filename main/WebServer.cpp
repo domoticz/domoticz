@@ -12973,13 +12973,13 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "TransferDevice";
-			if(!keepOld.empty() && !keepOld.compare("y") )
-			{ // keep the old Idx
+			if(!keepOld.empty() && !keepOld.compare("true") )
+			{ // we keep the old Idx
 				//transfer device logs (new to old)
 				m_sql.TransferDevice(newidx, sidx);
 
-				// copy Idx,name, description,addj
-				m_sql.TransferId(newidx, sidx);
+				// copy all fields from new to old, except : idx, name, description, used and favorite
+				m_sql.CopyNewDevice(newidx, sidx);
 
 				//now delete the NEW device
 				m_sql.DeleteDevices(newidx);

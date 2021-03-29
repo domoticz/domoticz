@@ -7529,15 +7529,37 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 	m_notifications.ReloadNotifications();
 }
 
-void CSQLHelper::TransferId(const std::string& newidx, const std::string& idx)
+void CSQLHelper::CopyNewDevice(const std::string& newidx, const std::string& idx)
 {
+	// This function copy all fields from the new device to the old, except : idx, name, description, used and favorite.
+	// In fact, we copy name, description, used and favorite from the old to the new, then we swap the two idx.
+	// This makes it possible to have all the informations of the newly created device, even if new fields are added to the DeviceStatus table.
+	//
 	// copy values to keep to new device
 	safe_query("UPDATE DeviceStatus set (name,description,used,favorite) = (select name,description,used,favorite from DeviceStatus d2 where d2.id = '%q') where id='%q'" , idx.c_str(), newidx.c_str());
-	// swap the two devices
+	// swap the two idx devices (sqlite allow this)
 	safe_query("UPDATE DeviceStatus set id=-1   where  id='%q'" , idx.c_str());
 	safe_query("UPDATE DeviceStatus set id='%q' where  id='%q'" , idx.c_str(), newidx.c_str());
 	safe_query("UPDATE DeviceStatus set id='%q' where  id=-1" , newidx.c_str());
 }
+
+// tranfer logs from idx to newidx for table "table"
+void CSQLHelper::Transfer1Log(const char* table,const std::string& idx, const std::string& newidx)
+{
+	std::vector<std::vector<std::string> > result;
+	// first delete logs without measurement, ie after last device update.
+	result = safe_query("DELETE FROM %q WHERE (DeviceRowID == '%q') and date >(select LastUpdate from DeviceStatus where Id == '%q')", table, newidx.c_str(),newidx.c_str());
+	result = safe_query("DELETE FROM %q WHERE (DeviceRowID == '%q') and date >(select LastUpdate from DeviceStatus where Id == '%q')", table, idx.c_str(),idx.c_str());
+	// get extreme dates for old device
+	result = safe_query("SELECT min(Date),max(date) FROM %q WHERE (DeviceRowID == '%q')", table, newidx.c_str());
+	if (!result.empty())
+	{ // transfer rows outside extreme dates
+		safe_query("UPDATE %q SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND ((Date<'%q') or (date>'%q'))", table, newidx.c_str(), idx.c_str(), result[0][0].c_str(),result[0][1].c_str());
+	}
+	else
+		safe_query("UPDATE %q SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", table, newidx.c_str(), idx.c_str());
+}
+
 
 void CSQLHelper::TransferDevice(const std::string& idx, const std::string& newidx)
 {
@@ -7552,108 +7574,36 @@ void CSQLHelper::TransferDevice(const std::string& idx, const std::string& newid
 	safe_query("UPDATE Timers SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
 
 	//Rain
-	result = safe_query("SELECT Date FROM Rain WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Rain_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("Rain",idx,newidx);
+        Transfer1Log("Rain_Calendar",idx,newidx);
 
 	//Temperature
-	result = safe_query("SELECT Date FROM Temperature WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Temperature_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Temperature_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("Temperature",idx,newidx);
+        Transfer1Log("Temperature_Calendar",idx,newidx);
 
 	//UV
-	result = safe_query("SELECT Date FROM UV WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM UV_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("UV",idx,newidx);
+        Transfer1Log("UV_Calendar",idx,newidx);
 
 	//Wind
-	result = safe_query("SELECT Date FROM Wind WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Wind_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("Wind",idx,newidx);
+        Transfer1Log("Wind_Calendar",idx,newidx);
 
 	//Meter
-	result = safe_query("SELECT Date FROM Meter WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Meter_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("Meter",idx,newidx);
+        Transfer1Log("Meter_Calendar",idx,newidx);
 
 	//Multimeter
-	result = safe_query("SELECT Date FROM MultiMeter WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM MultiMeter_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("MultiMeter",idx,newidx);
+        Transfer1Log("MultiMeter_Calendar",idx,newidx);
 
 	//Fan
-	result = safe_query("SELECT Date FROM Fan WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Fan SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Fan_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Fan_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("Fan",idx,newidx);
+        Transfer1Log("Fan_Calendar",idx,newidx);
 
 	//Percentage
-	result = safe_query("SELECT Date FROM Percentage WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
-
-	result = safe_query("SELECT Date FROM Percentage_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
-	if (!result.empty())
-		safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
-	else
-		safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+        Transfer1Log("Percentage",idx,newidx);
+        Transfer1Log("Percentage_Calendar",idx,newidx);
 }
 
 void CSQLHelper::CheckAndUpdateDeviceOrder()
