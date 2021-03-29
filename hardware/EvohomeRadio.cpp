@@ -728,7 +728,7 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 		{
                         if (!m_nOtbID)
                                 m_nOtbID = msg.GetID(0);
-			Log(true, LOG_STATUS, "evohome: opentherm bridge detected, ID:0x%x", m_nOtbID);
+			Log(LOG_STATUS, "evohome: opentherm bridge detected, ID:0x%x", m_nOtbID);
 		}
 		if (msg.id[0].GetIDType() == CEvohomeID::devGateway) //if we just got an echo of a sent packet we don't need to process it
 		{
