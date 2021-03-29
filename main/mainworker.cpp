@@ -53,6 +53,7 @@
 #include "../hardware/OTGWTCP.h"
 #include "../hardware/TeleinfoBase.h"
 #include "../hardware/TeleinfoSerial.h"
+#include "../hardware/TeleinfoTCP.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
 #include "../hardware/EnOceanESP2.h"
@@ -1088,6 +1089,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_AirconWithMe:
 		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_TeleinfoMeterTCP:
+		pHardware = new CTeleinfoTCP(ID, Address, Port, DataTimeout, (Mode2 != 0), Mode3);
 		break;
 	}
 
@@ -13537,6 +13541,8 @@ void MainWorker::HeartbeatCheck()
 
 bool MainWorker::UpdateDevice(const int DevIdx, const int nValue, const std::string &sValue, const std::string &userName, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
+	_log.Debug(DEBUG_NORM, "MainWorker::UpdateDevice: ID: %d", DevIdx);
+
 	// Get the raw device parameters
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%d)", DevIdx);

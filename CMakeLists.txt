@@ -310,6 +310,7 @@ hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/TeleinfoBase.cpp
 hardware/TeleinfoSerial.cpp
+hardware/TeleinfoTCP.cpp
 hardware/Tellstick.cpp
 hardware/TellstickFactory.cpp
 hardware/Thermosmart.cpp
