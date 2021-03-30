@@ -13541,8 +13541,6 @@ void MainWorker::HeartbeatCheck()
 
 bool MainWorker::UpdateDevice(const int DevIdx, const int nValue, const std::string &sValue, const std::string &userName, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
-	_log.Debug(DEBUG_NORM, "MainWorker::UpdateDevice: ID: %d", DevIdx);
-
 	// Get the raw device parameters
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%d)", DevIdx);
