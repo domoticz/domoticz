@@ -53,6 +53,7 @@
 #include "../hardware/OTGWTCP.h"
 #include "../hardware/TeleinfoBase.h"
 #include "../hardware/TeleinfoSerial.h"
+#include "../hardware/TeleinfoTCP.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
 #include "../hardware/EnOceanESP2.h"
@@ -1088,6 +1089,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_AirconWithMe:
 		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_TeleinfoMeterTCP:
+		pHardware = new CTeleinfoTCP(ID, Address, Port, DataTimeout, (Mode2 != 0), Mode3);
 		break;
 	}
 

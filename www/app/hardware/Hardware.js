@@ -200,7 +200,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
+			else if (text.indexOf("USB") >= 0 || text == "Teleinfo EDF") {
 				var Mode1 = "0";
 				var password = "";
 				var serialport = $("#hardwarecontent #divserial #comboserialport option:selected").text();
@@ -1603,6 +1603,14 @@ define(['app'], function (app) {
 					}
 					password = decryptionkey;
 				}
+				else if (text.indexOf("Teleinfo EDF") >= 0) {
+					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
+					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+					if (ratelimitp1 == "") {
+						ratelimitp1 = "60";
+					}
+					Mode3 = ratelimitp1;
+				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
@@ -1746,7 +1754,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
+			else if (text.indexOf("USB") >= 0 || text == "Teleinfo EDF") {
 				var Mode1 = "0";
 				var extra = "";
 				var password = "";
@@ -3961,7 +3969,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure").prop("checked", data["Mode1"] == 1);
 							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce").val(data["Mode2"]);
 						}
-						else if (data["Type"].indexOf("USB") >= 0 || data["Type"].indexOf("Teleinfo EDF") >= 0) {
+						else if (data["Type"].indexOf("USB") >= 0 || data["Type"] == "Teleinfo EDF") {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 							if (data["Type"].indexOf("Evohome") >= 0) {
 								$("#hardwarecontent #divevohome #combobaudrateevohome").val(data["Mode1"]);
@@ -4010,6 +4018,10 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
 								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
 								$("#hardwarecontent #divkeyp1p1 #decryptionkey").val(data["Password"]);
+							}
+							if (data["Type"].indexOf("Teleinfo EDF") >= 0 ) {
+								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
+								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
 							}
 							if (data["Type"].indexOf("Eco Devices") >= 0) {
 								$("#hardwarecontent #divmodelecodevices #combomodelecodevices").val(data["Mode1"]);
@@ -4509,7 +4521,7 @@ define(['app'], function (app) {
 			else if (text.indexOf("sysfs GPIO") >= 0) {
 				$("#hardwarecontent #divsysfsgpio").show();
 			}
-			else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
+			else if (text.indexOf("USB") >= 0 || text == "Teleinfo EDF") {
 				if (text.indexOf("Evohome") >= 0) {
 					$("#hardwarecontent #divevohome").show();
 				}
@@ -4556,6 +4568,10 @@ define(['app'], function (app) {
 						$("#hardwarecontent #divratelimitp1").show();
 						$("#hardwarecontent #divcrcp1").show();
 						$("#hardwarecontent #divkeyp1p1").show();
+					}
+					if (text.indexOf("Teleinfo EDF") >= 0) {
+						$("#hardwarecontent #divratelimitp1").show();
+						$("#hardwarecontent #divcrcp1").show();
 					}
 					if (text.indexOf("Evohome") >= 0) {
 						$("#hardwarecontent #divevohometcp").show();
