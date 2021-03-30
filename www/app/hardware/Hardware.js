@@ -383,7 +383,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "60";
 					}
 					Mode3 = ratelimitp1;
 				}
@@ -1607,7 +1607,7 @@ define(['app'], function (app) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
-						ratelimitp1 = "0";
+						ratelimitp1 = "60";
 					}
 					Mode3 = ratelimitp1;
 				}
