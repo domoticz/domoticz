@@ -125,10 +125,6 @@ bool CMeteorologisk::StartHardware()
 {
 	Init();
 
-	if(m_URL.empty()) {
-		Log(LOG_ERROR, "Unable to properly start due to missing or incorrect Location parameters (Latitude, Longitude)!");
-	}
-
 	RequestStart();
 
 	//Start worker thread
@@ -158,7 +154,7 @@ void CMeteorologisk::Do_Work()
 	Log(LOG_STATUS, "Started...");
 	Debug(DEBUG_NORM, "Metereologisk module started with Location parameters Latitude %f, Longitude %f!", m_Lat, m_Lon);
 
-	int sec_counter = 290;
+	int sec_counter = Meteorologisk_Poll_Interval - 5;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -180,7 +176,7 @@ void CMeteorologisk::Do_Work()
 			}
 			else
 			{
-				Log(LOG_STATUS, "Unable to perform work due to missing/incorrect startup parameters!");
+				Log(LOG_STATUS, "Unable to properly run due to missing or incorrect Location parameters (Latitude, Longitude)!");
 			}
 		}
 	}
