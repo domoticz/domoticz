@@ -55,7 +55,6 @@ CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
 	m_Location(Location)
 {
 	m_HwdID=ID;
-	m_URL = "";
 }
 
 void CMeteorologisk::Init()
@@ -115,7 +114,8 @@ void CMeteorologisk::Init()
 	}
 
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL.flush();
+	sURL.str(std::string());
+	sURL.clear();
 	sURL << Meteorologisk_forecast_URL << szLoc;
 	m_ForecastURL = sURL.str();
 	Debug(DEBUG_HARDWARE, "Meteorologisk: Set Forecast URL to: %s", m_ForecastURL.c_str());
@@ -157,7 +157,7 @@ bool CMeteorologisk::StopHardware()
 void CMeteorologisk::Do_Work()
 {
 	Log(LOG_STATUS, "Started...");
-	Debug(DEBUG_HARDWARE, "Metereologisk module started with Location parameters Latitude %f, Longitude %f!", m_Lat, m_Lon);
+	Debug(DEBUG_NORM, "Metereologisk module started with Location parameters Latitude %f, Longitude %f!", m_Lat, m_Lon);
 
 	int sec_counter = 290;
 	while (!IsStopRequested(1000))
