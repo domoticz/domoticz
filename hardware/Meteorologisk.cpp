@@ -82,7 +82,7 @@ void CMeteorologisk::Init()
 				{
 					m_Lat = strtod(strarray[0].c_str(),nullptr);
 					m_Lon = strtod(strarray[1].c_str(),nullptr);
-					Log(LOG_STATUS, "Found Location with semicolon as seperator instead of comma.");
+					Log(LOG_STATUS, "Found Location with semicolon as seperator instead of expected comma.");
 				}
 			}
 		}
@@ -101,7 +101,7 @@ void CMeteorologisk::Init()
 				{
 					m_Lat = strtod(strarray[0].c_str(),nullptr);
 					m_Lon = strtod(strarray[1].c_str(),nullptr);
-					Log(LOG_STATUS, "Using Domoticz default location from Settings as Location!");
+					Log(LOG_STATUS, "Using Domoticz default location from Settings as Location.");
 				}
 			}
 		}
@@ -126,8 +126,7 @@ bool CMeteorologisk::StartHardware()
 	Init();
 
 	if(m_URL.empty()) {
-		Log(LOG_STATUS, "Unable to start due to missing or incorrect Location parameters (Latitude, Longitude)!");
-		return false;
+		Log(LOG_ERROR, "Unable to properly start due to missing or incorrect Location parameters (Latitude, Longitude)!");
 	}
 
 	RequestStart();
@@ -168,13 +167,20 @@ void CMeteorologisk::Do_Work()
 		}
 		if (sec_counter % Meteorologisk_Poll_Interval == 0)
 		{
-			try
+			if(!m_URL.empty())
 			{
-				GetMeterDetails();
+				try
+				{
+					GetMeterDetails();
+				}
+				catch (...)
+				{
+					Log(LOG_ERROR, "Unhandled failure getting/parsing data!");
+				}
 			}
-			catch (...)
+			else
 			{
-				Log(LOG_ERROR, "Unhandled failure getting/parsing http data!");
+				Log(LOG_STATUS, "Unable to perform work due to missing/incorrect startup parameters!");
 			}
 		}
 	}
@@ -208,7 +214,7 @@ void CMeteorologisk::GetMeterDetails()
 	}
 	catch (...)
 	{
-		Log(LOG_ERROR, "Error getting http data!");
+		Log(LOG_ERROR, "Recovered from crash during attempt to get http data!");
 		return;
 	}
 #ifdef DEBUG_MeteorologiskW
@@ -218,17 +224,17 @@ void CMeteorologisk::GetMeterDetails()
 #endif
 	Json::Value root;
 
-	Debug(DEBUG_RECEIVED, "Meteorologisk: Received .%s.",sResult.c_str());
-
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		Log(LOG_ERROR,"Invalid data received! Check Location, use Latitude, Longitude Coordinates (xx.yyyy,xx.yyyyy)!");
+		Debug(DEBUG_NORM, "Meteorologisk: Received invalid JSON data .%s.",sResult.c_str());
 		return;
 	}
+	Debug(DEBUG_RECEIVED, "Meteorologisk: Received JSON data .%s.",root.toStyledString().c_str());
 	if (root["properties"].empty()==true || root["properties"]["timeseries"].empty()==true)
 	{
-		Log(LOG_ERROR,"Invalid data received, or unknown location!");
+		Log(LOG_ERROR,"Unexpected data structure received!");
 		return;
 	}
 
