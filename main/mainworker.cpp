@@ -3188,6 +3188,9 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
 			break;
+		case sTypeRAINByRate:
+			WriteMessage("subtype       = DarkSky for example (Only rate, no total, no counter) rate in mm/hour x 10000, so all decimals will fit");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
 			WriteMessage(szTmp);
