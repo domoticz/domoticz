@@ -12978,7 +12978,7 @@ namespace http {
 				//transfer device logs (new to old)
 				m_sql.TransferDevice(newidx, sidx);
 
-				// copy all fields from new to old, except : idx, name, description, used and favorite
+				// copy essential fields from new to old
 				m_sql.CopyNewDevice(newidx, sidx);
 
 				//now delete the NEW device
