@@ -32,7 +32,7 @@ local function _getMS()
 
 	if (_MS == nil) then
 
-		local dzCurrentTime = _G.globalvariables.currentTime
+		local dzCurrentTime = globalvariables.currentTime
 		local y, mon, d, h, min, s = parseDate(dzCurrentTime)
 		local ms
 		s, ms = getSMs(s)
@@ -271,8 +271,8 @@ local function Time(sDate, isUTC, _testMS)
 	self.isdst = time.isdst
 
 	if (_G.TESTMODE) then
-		_G = _G or {} -- Only used when testing testTime.lua
-		_G.timeofday = _G.timeofday or {} -- Only used when testing testTime.lua
+--		_G = _G or {} -- Only used when testing testTime.lua
+		timeofday = timeofday or {} -- Only used when testing testTime.lua
 		function self._getUtilsInstance()
 			return utils
 		end
@@ -819,7 +819,7 @@ local function Time(sDate, isUTC, _testMS)
 
 		gTimes = {}
 		for originalName, dzVentsName in pairs(LOOKUPASTRO) do
-			gTimes[dzVentsName] = _G.timeofday[originalName]
+			gTimes[dzVentsName] = timeofday[originalName]
 		end
 
 		gTimes.sunatsouthinminutes = gTimes.solarnooninminutes

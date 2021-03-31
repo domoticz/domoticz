@@ -288,7 +288,7 @@ end
 
 function self.fromJSON(json, fallback)
 
-	if json == nil or json == '' then
+	if type(json) ~= 'string' or json == '' then
 		return fallback
 	end
 
