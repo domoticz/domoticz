@@ -17,6 +17,7 @@
 #define TOPIC_OUT	"domoticz/out"
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
+#define RETAIN		true
 
 namespace
 {
@@ -701,7 +702,7 @@ void MQTT::SendMessage(const std::string& Topic, const std::string& Message)
 			Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), QOS, RETAIN);
 	}
 	catch (...)
 	{
