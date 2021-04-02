@@ -461,6 +461,9 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+    <div id="debugconsole" style="display: none; position: absolute; top: 52px; z-index: 1;">
+		debug console
+	</div>
 	<script type="text/ng-template" id="timesuntemplate">
 		<div id="timesun" ng-show="::$ctrl.data.serverTime">
 			<span ng-hide="::$ctrl.isMobile">{{ $ctrl.data.serverTime }}</span>

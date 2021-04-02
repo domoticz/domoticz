@@ -1,15 +1,33 @@
 define(function() {
     function Base(params) {
         this.$ = params.jquery;
-        this.debugIsEnabled = params.debugIsEnabled;
+        this.consoledebugIsEnabled = params.consoledebugIsEnabled;
+        this.windowdebugIsEnabled = params.windowdebugIsEnabled;
     }
 
     Base.prototype.consoledebug = function(lineOrLineFunction) {
-        if (this.debugIsEnabled() && console) {
+        if (this.consoledebugIsEnabled()) {
+            if (console) {
+                console.log(logtext(lineOrLineFunction));
+            }
+        }
+        if (this.windowdebugIsEnabled()) {
+            const debugconsole = this.$('#debugconsole');
+            if (debugconsole) {
+                if (!debugconsole.isShown) {
+                    debugconsole.show();
+                }
+                const html = debugconsole.html();
+                const bottomHtml = html.replace(/^([\s\S]*?<br>)*(([\s\S]*?<br>){9}[\s\S]*)$/, '$2');
+                debugconsole.html(bottomHtml + '<br>' + logtext(lineOrLineFunction));
+            }
+        }
+
+        function logtext(lineOrLineFunction) {
             if (typeof lineOrLineFunction === 'function') {
-                console.log(lineOrLineFunction());
+                return lineOrLineFunction();
             } else {
-                console.log(lineOrLineFunction);
+                return lineOrLineFunction;
             }
         }
     }
