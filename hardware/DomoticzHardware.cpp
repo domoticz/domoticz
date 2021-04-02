@@ -120,7 +120,7 @@ void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
 
 int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_type& thread)
 {
-	return SetThreadName(thread, m_ShortName.c_str());
+	return SetThreadName(thread, m_Name.c_str());
 }
 
 //Log Helper functions
@@ -130,7 +130,7 @@ void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogl
 	if (!(m_LogLevelEnabled & (uint32_t)level))
 		return; //this type of log is disabled
 
-	_log.Log(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+	_log.Log(level, "%s: %s", m_Name.c_str(), sLogline.c_str());
 }
 
 void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
@@ -143,12 +143,12 @@ void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
-	_log.Log(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+	_log.Log(level, "%s: %s", m_Name.c_str(), cbuffer);
 }
 
 void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const std::string& sLogline)
 {
-	_log.Debug(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+	_log.Debug(level, "%s: %s", m_Name.c_str(), sLogline.c_str());
 }
 
 void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline, ...)
@@ -158,7 +158,7 @@ void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline,
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
-	_log.Debug(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+	_log.Debug(level, "%s: %s", m_Name.c_str(), cbuffer);
 }
 
 //Sensor Helpers

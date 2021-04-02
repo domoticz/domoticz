@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.1.6',
+	DZVERSION = '3.1.7',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -92,6 +92,10 @@ self.fuzzyLookup = function (search, target) -- search must be string/number, ta
 		end
 		return res[searchLength][targetLength]
 	end
+end
+
+function self.containsWord(input, word)
+	return input:find("%f[%w_%-]" .. (word or ''):gsub('-','%%-') .. "%f[%W_]")
 end
 
 function self.setLogMarker(logMarker)
@@ -278,13 +282,16 @@ function self.isJSON(str, content)
 	local jsonPatternOK = '^%s*%[*%s*{.+}%s*%]*%s*$'
 	local jsonPatternOK2 = '^%s*%[.+%]*%s*$'
 	local ret = ( str:match(jsonPatternOK) == str ) or ( str:match(jsonPatternOK2) == str ) or content:find('application/json')
-	-- self.log('ret ' .. _.str(ret) , self.LOG_FORCE)
 	return ret ~= nil
 end
 
 function self.fromJSON(json, fallback)
 
-	if json == nil or json == '' then
+	local deSerializeJSON  = function(j)
+		return j:gsub('"{','{'):gsub('"%["','["'):gsub('"%]"','"]'):gsub('}"','}'):gsub('"%[{"','[{"'):gsub('"}%]"','"}]'):gsub('%]"}',']}')
+	end
+
+	if type(json) ~= 'string' or json == '' then
 		return fallback
 	end
 
@@ -297,6 +304,8 @@ function self.fromJSON(json, fallback)
 	end
 
 	if self.isJSON(json) then
+
+		local json = deSerializeJSON(json)
 
 		local parse = function(j)
 			return jsonParser:decode(j)

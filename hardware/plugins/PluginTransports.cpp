@@ -537,6 +537,7 @@ namespace Plugins {
 					(e.value() != 1) &&	// Stream truncated, this exception occurs when third party closes the connection
 					(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
 					(e.value() != 125) &&	// Operation canceled
+					(e.value() != 335544539) &&	// SSL/TLS short read, should be ignored
 					(e != boost::asio::error::operation_aborted) &&
 					(e.value() != 1236))	// local disconnect cause by hardware reload
 					_log.Log(LOG_ERROR, "(%s): Async Secure Read Exception: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());

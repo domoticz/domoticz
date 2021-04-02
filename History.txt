@@ -29,7 +29,7 @@ Version 2020.xxxxx (xxxxx)
 - Implemented: ZWave, Legend and tooltips in Neighbors overview
 - Updated: API/JSON: added API to delete daterange in history logs for one ID
 - Updated: Blebox; use of the latest SwitchBox APIthe latest SwitchBox API
-- Updated: dzVents; version 3.1.6 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: dzVents; version 3.1.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: eVehicles; added option to manual set API key
 - Updated: EvoHome; decode, display and store hotwater setpoint

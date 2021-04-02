@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/smart_ptr/shared_array.hpp>  // for shared_array
 #include <boost/system/error_code.hpp>       // for error_code
@@ -70,7 +69,7 @@ public:
     char readBuffer[BUFFER_SIZE]; ///< data being read
 
     /// Read complete callback
-    boost::function<void (const char*, size_t)> callback;
+    std::function<void(const char *, size_t)> callback;
 };
 
 AsyncSerial::AsyncSerial(): pimpl(new AsyncSerialImpl)
@@ -310,7 +309,7 @@ void AsyncSerial::setErrorStatus(bool e)
     pimpl->error=e;
 }
 
-void AsyncSerial::setReadCallback(const boost::function<void (const char*, size_t)>& callback)
+void AsyncSerial::setReadCallback(const std::function<void(const char *, size_t)> &callback)
 {
     pimpl->callback=callback;
 }
@@ -320,7 +319,7 @@ void AsyncSerial::setReadCallback(const boost::function<void (const char*, size_
  */
 void AsyncSerial::clearReadCallback()
 {
-    pimpl->callback.clear();
+	pimpl->callback = {};
 }
 
 /**

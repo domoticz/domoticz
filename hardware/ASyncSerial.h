@@ -5,7 +5,6 @@
 #include <stddef.h> // for size_t
 #include "../main/Noncopyable.h"
 #include <boost/asio/serial_port_base.hpp>	      // for serial_port_base
-#include <boost/function/function_fwd.hpp>	      // for function
 #include <boost/exception/diagnostic_information.hpp> //for exception printing
 namespace boost
 {
@@ -160,7 +159,7 @@ class AsyncSerial : private domoticz::noncopyable
 	/**
 	 * To allow derived classes to set a read callback
 	 */
-	void setReadCallback(const boost::function<void(const char *, size_t)> &callback);
+	void setReadCallback(const std::function<void(const char *, size_t)> &callback);
 
 	/**
 	 * Unregister the read callback.

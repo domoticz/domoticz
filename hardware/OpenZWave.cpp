@@ -38,32 +38,33 @@ extern std::string szWWWFolder;
 //This is for backwards compatability .... but should not be used
 namespace
 {
-	constexpr std::array<std::pair<const char *, uint8_t>, 23> AlarmToIndexMapping{
+	constexpr std::array<std::pair<const char *, uint8_t>, 24> AlarmToIndexMapping{
 		{
-			{ "General", 0x28 },	      //
-			{ "Smoke", 0x29 },	      //
-			{ "Carbon Monoxide", 0x2A },  //
-			{ "Carbon Dioxide", 0x2B },   //
-			{ "Heat", 0x2C },	      //
-			{ "Water", 0x2D },	      //
-			{ "Flood", 0x2D },	      //
-			{ "Alarm Level", 0x32 },      //
-			{ "Alarm Type", 0x33 },	      //
-			{ "Access Control", 0x34 },   //
-			{ "Burglar", 0x35 },	      //
-			{ "Home Security", 0x35 },    //
-			{ "Power Management", 0x36 }, //
-			{ "System", 0x37 },	      //
-			{ "Emergency", 0x38 },	      //
-			{ "Clock", 0x39 },	      //
-			{ "Appliance", 0x3A },	      //
-			{ "HomeHealth", 0x3B },	      //
-			{ "Siren", 0x3C },	      //
-			{ "Water Valve", 0x3D },      //
-			{ "Weather", 0x3E },	      //
-			{ "Irrigation", 0x3F },	      //
-			{ "Gas", 0x40 },	      //
-		}				      //
+			{ "General", 0x28 },
+			{ "Smoke", 0x29 },
+			{ "Carbon Monoxide", 0x2A },
+			{ "Carbon Dioxide", 0x2B },
+			{ "Heat", 0x2C },
+			{ "Water", 0x2D },
+			{ "Flood", 0x2D },
+			{ "Alarm Level", 0x32 },
+			{ "Alarm Type", 0x33 },
+			{ "Access Control", 0x34 },
+			{ "Burglar", 0x35 },
+			{ "Home Security", 0x35 },
+			{ "Power Management", 0x36 },
+			{ "System", 0x37 },
+			{ "Emergency", 0x38 },
+			{ "Clock", 0x39 },
+			{ "Appliance", 0x3A },
+			{ "HomeHealth", 0x3B },
+			{ "Siren", 0x3C },
+			{ "Water Valve", 0x3D },
+			{ "Weather", 0x3E },
+			{ "Irrigation", 0x3F },
+			{ "Gas", 0x40 },
+			{ "Volatile Organic Compound", 0x41 },
+		}
 	};
 } // namespace
 
@@ -3309,8 +3310,6 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 	}
 	break;
 	case ZDTYPE_SWITCH_DIMMER:
-		if (vLabel.find("Level") == std::string::npos)
-			return;
 		if (vType != OpenZWave::ValueID::ValueType_Byte)
 			return;
 		if (byteValue == 99)

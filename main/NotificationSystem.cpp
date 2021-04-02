@@ -128,9 +128,13 @@ bool CNotificationSystem::Register(CNotificationObserver *pNotifier)
 
 bool CNotificationSystem::Unregister(CNotificationObserver *pNotifier)
 {
-	std::lock_guard<std::mutex> l(m_mutex);
 	if (std::find(m_notifiers.begin(), m_notifiers.end(), pNotifier) == m_notifiers.end())
 		return false;
-	m_notifiers.erase(std::remove(m_notifiers.begin(), m_notifiers.end(), pNotifier), m_notifiers.end());
+
+	std::lock_guard<std::mutex> l(m_mutex);
+	auto itt = std::find(m_notifiers.begin(), m_notifiers.end(), pNotifier);
+	if (itt == m_notifiers.end())
+		return false;
+	m_notifiers.erase(itt);
 	return true;
 }

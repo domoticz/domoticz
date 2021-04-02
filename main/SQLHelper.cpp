@@ -4751,12 +4751,19 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
 			interval = difftime(now, lutime);
-			StringSplit(result[0][5], ";", parts);
-			nEnergy = static_cast<float>(strtof(parts[0].c_str(), nullptr) * interval / 3600
-							 + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
-			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
-			sValue = sCompValue;
+			StringSplit(old_sValue, ";", parts);
+			if (parts.size() == 2)
+			{
+				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
+				nEnergy = static_cast<float>(atof(parts[0].c_str()) * interval / 3600 + atof(parts[1].c_str()));
+				StringSplit(sValue, ";", parts);
+				if (!parts.empty())
+				{
+					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
+					old_sValue = sCompValue;
+				}
+			}
+			sValue = old_sValue.c_str();
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
