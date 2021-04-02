@@ -719,7 +719,7 @@ ELSE()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-IF(EXISTS /sys/class/gpio)
+IF(EXISTS /sys/class/gpio OR WITH_GPIO)
   message(STATUS "GPIO is available")
   add_definitions(-DWITH_GPIO)
 ELSE()
