@@ -282,11 +282,14 @@ function self.isJSON(str, content)
 	local jsonPatternOK = '^%s*%[*%s*{.+}%s*%]*%s*$'
 	local jsonPatternOK2 = '^%s*%[.+%]*%s*$'
 	local ret = ( str:match(jsonPatternOK) == str ) or ( str:match(jsonPatternOK2) == str ) or content:find('application/json')
-	-- self.log('ret ' .. _.str(ret) , self.LOG_FORCE)
 	return ret ~= nil
 end
 
 function self.fromJSON(json, fallback)
+
+	local deSerializeJSON  = function(j)
+		return j:gsub('"{','{'):gsub('"%["','["'):gsub('"%]"','"]'):gsub('}"','}'):gsub('"%[{"','[{"'):gsub('"}%]"','"}]'):gsub('%]"}',']}')
+	end
 
 	if type(json) ~= 'string' or json == '' then
 		return fallback
@@ -301,6 +304,8 @@ function self.fromJSON(json, fallback)
 	end
 
 	if self.isJSON(json) then
+
+		local json = deSerializeJSON(json)
 
 		local parse = function(j)
 			return jsonParser:decode(j)
