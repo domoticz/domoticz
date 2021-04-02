@@ -443,20 +443,21 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 const plotRange = xAxis.max - xAxis.min;
                 const plotRangeNew = plotRange * .5;
                 const plotRangeCut = plotRange - plotRangeNew;
-                if (plotX <= plotWidth/3) {
+                self.consoledebug('plotX:' + plotX + ', plotWidth:' + plotWidth);
+                if (plotX <= 10) {
                     // keep left edge on same position
                     zoom(xAxis.min, -plotRangeCut + xAxis.max);
-                } else if (0+plotWidth/3 < plotX && plotX < -(plotWidth/3)+plotWidth) {
+                } else if (0+10 < plotX && plotX < -10+plotWidth) {
+                    // keep touchpoint on same position
+                    const plotRangeCutLeft = plotRangeCut * (plotX/plotWidth);
+                    const plotRangeCutRight = plotRangeCut * ((plotWidth-plotX)/plotWidth);
+                    zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
                     // keep center on same position
-                    zoom(xAxis.min + plotRangeCut/2, -plotRangeCut/2 + xAxis.max);
+                    // zoom(xAxis.min + plotRangeCut/2, -plotRangeCut/2 + xAxis.max);
                 } else {
                     // keep right edge on same position
                     zoom(xAxis.min + plotRangeCut, xAxis.max);
                 }
-                // keep touchpoint on same position
-                // const plotRangeCutLeft = plotRangeCut * (plotX / plotWidth);
-                // const plotRangeCutRight = plotRangeCut * ((plotWidth - plotX) / plotWidth);
-                // zoom(xAxis.min + plotRangeCutLeft, -plotRangeCutRight + xAxis.max);
             });
 
             function intParam(parameterName, defaultValue) {
