@@ -156,6 +156,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                 point: {
                                     events: {
                                         click: function (event) {
+                                            self.consoledebug('Chart click: ' + event.point);
+                                            self.chartPoint = event.point;
+                                            self.chartPointPosition = self.touchStartPosition || self.mouseDownPosition;
                                             if (event.shiftKey !== true) {
                                                 return;
                                             }
@@ -333,46 +336,66 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function configureZoomingAndPanning() {
             const interTouchEndTouchStartPeriod = intParam('endDelay', 500);
-            const touchStartDelay = intParam('startDelay', 400);
+            const touchStartPanningDelay = intParam('startPanningDelay', 400);
 
             self.isMouseDown = false;
 
             self.chart.container.addEventListener('touchstart', function (e) {
+                self.consoledebug('Touchstart at ' + e.touches[0].clientX + ' on ' + e.timeStamp
+                    + (self.touchEndTimestamp === undefined ? '' : ', te:' + self.touchEndTimestamp));
                 if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + interTouchEndTouchStartPeriod < e.timeStamp) {
                     self.touchStartTimestamp = e.timeStamp;
+                    self.touchStartPosition = e.touches[0].clientX;
                     self.touchEndTimestamp = undefined;
-                    self.consoledebug('Touch start at ' + dateToString(self.touchStartTimestamp));
+                    self.touchMoveTimestamp = undefined;
                 }
             });
             self.chart.container.addEventListener('touchmove', function (e) {
-                if (self.touchStartTimestamp !== undefined) {
-                    if (self.touchStartTimestamp + touchStartDelay < e.timeStamp) {
+                self.consoledebug('Touchmove at ' + e.touches[0].clientX + ' on ' + e.timeStamp
+                    + (self.touchStartTimestamp === undefined ? '' : ', ts:' + self.touchStartTimestamp));
+                if (self.touchMoveTimestamp === undefined) {
+                    self.touchMoveTimestamp = e.timeStamp;
+                    if (self.touchStartTimestamp + touchStartPanningDelay < e.timeStamp) {
                         self.chart.pointer.followTouchMove = false;
-                        self.consoledebug('Touch start panning');
+                        self.consoledebug('Start panning');
                     } else {
-                        self.consoledebug('Touch start tooltipping');
+                        self.consoledebug('Start following tooltip');
                     }
-                    self.touchStartTimestamp = undefined;
                 }
             });
             self.chart.container.addEventListener('touchend', function (e) {
-                if (!self.chart.pointer.followTouchMove) {
-                    self.consoledebug('Touch end panning');
+                self.consoledebug('Touchend at ' + e.changedTouches[0].clientX + ' on ' + e.timeStamp);
+                if (self.touchMoveTimestamp !== undefined) {
+                    if (!self.chart.pointer.followTouchMove) {
+                        self.consoledebug('End panning');
+                    } else {
+                        self.consoledebug('End following tooltip');
+                    }
                 } else {
-                    self.consoledebug('Touch end tooltipping');
+                    if (self.touchStartTimestamp + touchStartPanningDelay < e.timeStamp) {
+                        if (self.chartPoint !== undefined && self.chartPointPosition === self.touchStartPosition) {
+                            self.consoledebug('Delete point ' + self.chartPoint + ' at ' + self.chartPointPosition);
+                            self.domoticzDatapointApi
+                                .deletePoint(self.device.idx, self.chartPoint, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
+                                .then(function () {
+                                    self.$route.reload();
+                                });
+                        }
+                    }
                 }
                 self.touchEndTimestamp = e.timeStamp;
                 self.chart.pointer.followTouchMove = true;
-                self.touchStartTimestamp = undefined;
             });
             self.chart.container.addEventListener('mousedown', function (e) {
-                self.consoledebug('Mousedown ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                self.consoledebug('Mousedown ' + e.timeStamp + ' ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                self.mouseDownTimestamp = e.timeStamp;
                 self.wasCtrlMouseDown = e.ctrlKey;
                 self.mouseDownPosition = e.clientX;
                 self.isMouseDown = true;
             });
             self.chart.container.addEventListener('mouseup', function (e) {
-                self.consoledebug('Mouseup ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                self.consoledebug('Mouseup at ' + e.timeStamp + ' ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                self.mouseUpTimestamp = e.timeStamp;
                 self.wasCtrlMouseUp = e.ctrlKey;
                 self.mouseUpPosition = e.clientX;
                 self.isMouseDown = false;
@@ -380,6 +403,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     synchronizeYaxes(true);
                     self.isSynchronizeYaxesRequired = false;
                 }
+            });
+            self.chart.container.addEventListener('click', function (e) {
+                self.consoledebug('Click ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey);
             });
 
             self.$scope.zoomed = false;
