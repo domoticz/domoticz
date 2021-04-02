@@ -23,7 +23,7 @@ then
  echo "Problem in downloaded Domoticz archive. Stopping update!"
  exit 1
 fi
-tar xvfz domoticz_release.tgz
+tar xfz domoticz_release.tgz
 rm domoticz_release.tgz
 echo "Restarting Domoticz... (please standby...)"
 sudo service domoticz.sh restart
