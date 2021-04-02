@@ -234,6 +234,16 @@ describe('event helpers', function()
 			assert.is_same(1, t['a'])
 		end)
 
+		it('should convert a serialized json to a table', function()
+			local json = '{"level 1":{"level 2_1":{"level 3":{\"level 4\":'..
+						 '{\"level 5_1\":[\"a\"],\"level 5_2\":[\"b\",\"c"]}}},' ..
+						 '"level 2_2":{"level 3":"[\"found\",\"1\",\"2\",\"3\"]},' ..
+						 '"level 2_3":{"level 3":"[block] as data"}}}'
+			local t = utils.fromJSON(json)
+			assert.is_same('found', t['level 1']['level 2_2']['level 3'][1])
+			assert.is_same('[block] as data', t['level 1']['level 2_3']['level 3'])
+		end)
+
 		it('should recognize an xml string', function()
 			local xml = '<testXML>What a nice feature!</testXML>'
 			assert.is_true(utils.isXML(xml))
