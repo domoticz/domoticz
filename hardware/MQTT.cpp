@@ -18,6 +18,7 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 #define RETAIN		true
+#define RETAIN_BIT	0x80
 
 namespace
 {
@@ -42,7 +43,9 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 	mosqdz::lib_init();
 
 	m_usIPPort = usIPPort;
-	m_publish_scheme = (_ePublishTopics)PublishScheme;
+	m_bRetain = (PublishScheme & RETAIN_BIT);
+	m_publish_scheme = (_ePublishTopics)(PublishScheme & ~RETAIN_BIT);
+	Debug(DEBUG_HARDWARE, "MQTT PublishSchema %d (%d), Retain %d", m_publish_scheme, PublishScheme, m_bRetain);
 
 	m_TopicIn = TOPIC_IN;
 	m_TopicOut = TOPIC_OUT;
@@ -702,7 +705,7 @@ void MQTT::SendMessage(const std::string& Topic, const std::string& Message)
 			Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), QOS, RETAIN);
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), QOS, m_bRetain);
 	}
 	catch (...)
 	{
@@ -732,7 +735,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 	}
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", HwdID, DeviceRowIdx);
+	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", HwdID, DeviceRowIdx);
 	if (!result.empty())
 	{
 		int iIndex = 0;
@@ -752,6 +755,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		std::string description = sd[iIndex++];
 		int LastLevel = atoi(sd[iIndex++].c_str());
 		std::string sColor = sd[iIndex++];
+		std::string sLastUpdate = sd[iIndex++];
 
 		Json::Value root;
 
@@ -781,6 +785,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		root["Battery"] = BatteryLevel;
 		root["nvalue"] = nvalue;
 		root["description"] = description;
+		root["LastUpdate"] = sLastUpdate;
 
 		if (switchType == STYPE_Dimmer)
 		{

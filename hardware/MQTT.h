@@ -66,6 +66,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	boost::signals2::connection m_sSwitchSceneConnection;
 	_ePublishTopics m_publish_scheme;
 	bool m_bPreventLoop = false;
+	bool m_bRetain = false;
 	uint64_t m_LastUpdatedDeviceRowIdx = 0;
 	uint64_t m_LastUpdatedSceneRowIdx = 0;
 };
