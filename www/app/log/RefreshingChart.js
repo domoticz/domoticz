@@ -1,4 +1,4 @@
-define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], function (_, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
+define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], function (_, Base, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
 
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
@@ -93,8 +93,8 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                                     const xAxis = self.chart.xAxis[0];
                                     self.consoledebug(function () {
                                         return 'xAxis.setExtremes():\n'
-                                            + '    dataMin:' + dateToString(xAxis.dataMin) + ', e.min:' + dateToString(e.min) + '\n'
-                                            + '    dataMax:' + dateToString(xAxis.dataMax) + ', e.max:' + dateToString(e.max);
+                                            + '    dataMin:' + Base.dateToString(xAxis.dataMin) + ', e.min:' + Base.dateToString(e.min) + '\n'
+                                            + '    dataMax:' + Base.dateToString(xAxis.dataMax) + ', e.max:' + Base.dateToString(e.max);
                                     });
                                     if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
                                         self.isZoomLeftSticky = false;
@@ -254,7 +254,7 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                 .sendRequest(dataRequest)
                 .then(function (data) {
                     self.consoledebug(function () { return stopwatchDataRequest.log(); });
-                    self.consoledebug(function () { return '[' + new Date().toString() + '] refreshing ' + self; });
+                    self.consoledebug(function () { return '[' + Base.dateToString(new Date()) + '] refreshing ' + self; });
 
                     if (typeof data.result === 'undefined') {
                         return;
@@ -563,22 +563,6 @@ define(['lodash', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], f
                         }
                     }, seriesSupplier);
                 });
-        }
-
-        function dateToString(date) {
-            if (date === undefined) {
-                return 'undefined';
-            }
-            if (date === null) {
-                return 'null';
-            }
-            if (date === Infinity) {
-                return 'Infinity';
-            }
-            if (date === -Infinity) {
-                return '-Infinity';
-            }
-            return new Date(date).toString();
         }
 
         function yAxisToString(yAxis) {
