@@ -30,17 +30,17 @@ License: Public domain
 // - Vehicle status
 // - Electric Vehicle status (even possible for non-electric/hybrid vehicles)
 // so use the following 5 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock mb:vehicle:mbdata:evstatus
-#define MERC_URL_AUTH "https://api.secure.mercedes-benz.com"
-#define MERC_API_AUTH "/oidc10/auth/oauth/v2/authorize"
-#define MERC_API_TOKEN "/oidc10/auth/oauth/v2/token"
+// and we need the additional scope to get a refresh token: offline_access
+#define MERC_URL_AUTH "https://id.mercedes-benz.com"
+#define MERC_API_TOKEN "/as/token.oauth2"
 #define MERC_URL "https://api.mercedes-benz.com"
-#define MERC_API "/vehicledata/v1/vehicles"
+#define MERC_API "/vehicledata/v2/vehicles"
 
 #define MERC_APITIMEOUT (30)
 #define MERC_REFRESHTOKEN_CLEARED "Refreshtoken cleared because it was invalid!"
 #define MERC_REFRESHTOKEN_USERVAR "mercedesme_refreshtoken"
 
-CMercApi::CMercApi(const std::string username, const std::string password, const std::string vinnr)
+CMercApi::CMercApi(const std::string &username, const std::string &password, const std::string &vinnr)
 {
 	m_username = username;
 	m_password = base64_encode(username);
@@ -57,11 +57,14 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_config.car_name = "";
 	m_config.unit_miles = false;
 	m_config.distance_unit = "km";
+	m_config.home_latitude = 0;
+	m_config.home_longitude = 0;
 
 	m_crc = 0;
 	m_fields = "";
+	m_fieldcnt = -1;
 
-	m_capabilities.has_battery_level = false;
+	m_capabilities.has_battery_level = true;
 	m_capabilities.has_charge_command = false;
 	m_capabilities.has_climate_command = false;
 	m_capabilities.has_defrost_command = false;
@@ -71,7 +74,8 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	m_capabilities.has_lock_status = true;
 	m_capabilities.has_charge_limit = false;
 	m_capabilities.has_custom_data = true;
-	m_capabilities.sleep_interval = 0;
+	m_capabilities.seconds_to_sleep = 0;
+	m_capabilities.minimum_poll_interval = 60;
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", m_uservar_refreshtoken.c_str());
@@ -84,19 +88,15 @@ CMercApi::CMercApi(const std::string username, const std::string password, const
 	}
 
 	m_uservar_refreshtoken_idx = atoi(result[0][0].c_str());
-	m_refreshtoken = result[0][1].c_str();
-}
-
-CMercApi::~CMercApi()
-{
+	m_refreshtoken = result[0][1];
 }
 
 bool CMercApi::Login()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
-	if (m_refreshtoken == "" || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
+	if (m_refreshtoken.empty() || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
 		_log.Log(LOG_NORM, "MercApi: Attempting login (using provided Authorization code).");
 
@@ -127,7 +127,7 @@ bool CMercApi::Login()
 bool CMercApi::RefreshLogin()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	_log.Debug(DEBUG_NORM, "MercApi: Refreshing login credentials.");
 	m_authenticating = true;
@@ -141,7 +141,7 @@ bool CMercApi::RefreshLogin()
 	{
 		_log.Log(LOG_ERROR, "MercApi: Failed to refresh login credentials.");
 		m_accesstoken = "";
-		if (m_refreshtoken != "")
+		if (!m_refreshtoken.empty())
 		{
 			m_refreshtoken = MERC_REFRESHTOKEN_CLEARED;
 		}
@@ -183,12 +183,14 @@ bool CMercApi::GetLocationData(tLocationData& data)
 
 void CMercApi::GetLocationData(Json::Value& jsondata, tLocationData& data)
 {
+	/*
 	std::string CarLatitude = jsondata["latitude"].asString();
 	std::string CarLongitude = jsondata["longitude"].asString();
 	data.speed = jsondata["speed"].asInt();
 	data.is_driving = data.speed > 0;
 	data.latitude = std::stod(CarLatitude);
 	data.longitude = std::stod(CarLongitude);
+	*/
 }
 
 bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
@@ -198,7 +200,8 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 
 	if (GetData("electricvehicle", reply))
 	{
-		if (reply.size() == 0)
+		data.battery_level = 255.0F;	// Initialize at 'no reading'
+		if (reply.empty())
 		{
 			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
 		}
@@ -213,6 +216,14 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 				GetChargeData(reply, data);
 				bData = true;
 			}
+		}
+	}
+	else
+	{
+		if (m_httpresultcode == 403)
+		{
+			_log.Log(LOG_STATUS, "Access has been denied to the ElectricVehicle data!");
+			bData = true;	// We should see if we can continue with the rest
 		}
 	}
 
@@ -276,10 +287,12 @@ bool CMercApi::GetClimateData(tClimateData& data)
 
 void CMercApi::GetClimateData(Json::Value& jsondata, tClimateData& data)
 {
+	/*
 	data.inside_temp = jsondata["inside_temp"].asFloat();
 	data.outside_temp = jsondata["outside_temp"].asFloat();
 	data.is_climate_on = jsondata["is_climate_on"].asBool();
 	data.is_defrost_on = (jsondata["defrost_mode"].asInt() != 0);
+	*/
 }
 
 bool CMercApi::GetVehicleData(tVehicleData& data)
@@ -289,7 +302,7 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 
 	if (GetData("vehiclelockstatus", reply))
 	{
-		if (reply.size() == 0)
+		if (reply.empty())
 		{
 			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
 		}
@@ -306,12 +319,20 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 			}
 		}
 	}
+	else
+	{
+		if (m_httpresultcode == 403)
+		{
+			_log.Log(LOG_STATUS, "Access has been denied to the VehicleLockStatus data!");
+			bData = true;	// We should see if we can continue with the rest
+		}
+	}
 
 	reply.clear();
 
 	if (GetData("payasyoudrive", reply))
 	{
-		if (reply.size() == 0)
+		if (reply.empty())
 		{
 			bData = true;	// This occurs when the API call return a 204 (No Content). So everything is valid/ok, just no data
 		}
@@ -328,6 +349,14 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 			}
 		}
 	}
+	else
+	{
+		if (m_httpresultcode == 403)
+		{
+			_log.Log(LOG_STATUS, "Access has been denied to the PayAsYouDrive data!");
+			bData = true;	// We should see if we can continue with the rest
+		}
+	}
 
 	return bData;
 }
@@ -335,52 +364,56 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 bool CMercApi::GetCustomData(tCustomData& data)
 {
 	Json::Value reply;
-	bool bCustom = true;
+	std::vector<std::string> strarray;
 
 	if (m_capabilities.has_custom_data)
 	{
-		std::vector<std::string> strarray;
-
+		m_fieldcnt--;
 		StringSplit(m_fields, ",", strarray);
-		for(uint8_t i=0; i<strarray.size(); i++)
+
+		if(m_fieldcnt < 0)
 		{
-			reply.clear();
-			if (GetResourceData(strarray[i], reply))
+			m_fieldcnt = static_cast<int16_t>(strarray.size());
+			_log.Debug(DEBUG_NORM, "MercApi: Reset Customfield count to %d", m_fieldcnt);
+		}
+		else
+		{
+			if (GetResourceData(strarray[m_fieldcnt], reply))
 			{
-				if(reply.size() == 0)
+				if (reply.empty())
 				{
-					_log.Debug(DEBUG_NORM, "MercApi: Got empty data for resource %s", strarray[i].c_str());
+					_log.Debug(DEBUG_NORM, "MercApi: Got empty data for resource %s", strarray[m_fieldcnt].c_str());
 				}
 				else
 				{
-					//_log.Debug(DEBUG_NORM, "MercApi: Got data for resource %s :\n%s", strarray[i].c_str(),reply.toStyledString().c_str());
+					_log.Debug(DEBUG_RECEIVED, "MercApi: Got data for resource %s :\n%s", strarray[m_fieldcnt].c_str(),reply.toStyledString().c_str());
 
-					if (!reply[strarray[i]].empty())
+					if (!reply[strarray[m_fieldcnt]].empty())
 					{
-						if (reply[strarray[i]].isMember("value"))
+						if (reply[strarray[m_fieldcnt]].isMember("value"))
 						{
-							std::string resourceValue = reply[strarray[i]]["value"].asString();
+							std::string resourceValue = reply[strarray[m_fieldcnt]]["value"].asString();
 
 							Json::Value customItem;
-							customItem["id"] = i;
+							customItem["id"] = m_fieldcnt;
 							customItem["value"] = resourceValue;
-							customItem["label"] = strarray[i];
+							customItem["label"] = strarray[m_fieldcnt];
 
 							data.customdata.append(customItem);
 
-							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%d) %s : %s", i, strarray[i].c_str(), resourceValue.c_str());
+							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%d) %s : %s", m_fieldcnt, strarray[m_fieldcnt].c_str(), resourceValue.c_str());
 						}
 					}
 				}
 			}
 			else
 			{
-				_log.Debug(DEBUG_NORM,"MercApi: Failed to retrieve data for resource %s!", strarray[i].c_str());
+				_log.Debug(DEBUG_NORM,"MercApi: Failed to retrieve data for resource %s!", strarray[m_fieldcnt].c_str());
 			}
 		}
 	}
 
-	return bCustom;
+	return true;
 }
 
 void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
@@ -431,7 +464,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 	} while (!jsondata[cnt].empty());
 }
 
-bool CMercApi::GetData(std::string datatype, Json::Value& reply)
+bool CMercApi::GetData(const std::string &datatype, Json::Value &reply)
 {
 	std::stringstream ss;
 	ss << MERC_URL << MERC_API << "/" << m_VIN << "/containers/" << datatype;
@@ -449,7 +482,7 @@ bool CMercApi::GetData(std::string datatype, Json::Value& reply)
 	return true;
 }
 
-bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
+bool CMercApi::GetResourceData(const std::string &datatype, Json::Value &reply)
 {
 	std::stringstream ss;
 	ss << MERC_URL << MERC_API << "/" << m_VIN << "/resources/" << datatype;
@@ -470,7 +503,7 @@ bool CMercApi::GetResourceData(std::string datatype, Json::Value& reply)
 bool CMercApi::IsAwake()
 {
 	// Current Mercedes Me (API) does not have an 'Awake' state
-	// So we fake one, we just request all available resources that are available for the current (BYO)CAR
+	// So we fake one, we just request the list of all available resources that are available for the current (BYO)CAR
 
 	std::stringstream ss;
 	ss << MERC_URL << MERC_API << "/" << m_VIN << "/resources";
@@ -516,12 +549,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 		_log.Debug(DEBUG_NORM, "CRC32 of content is the same.. skipping processing");
 		return true;
 	}
-	else
-	{
-		_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
-	}
-
-	m_crc = crc;
+	_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
 
 	try
 	{
@@ -556,8 +584,15 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 
 		if (ss.str().length() > 0)
 		{
+			std::vector<std::string> strarray;
+
 			m_fields = ss.str();
-			_log.Log(LOG_STATUS, "Found resource fields: %s", m_fields.c_str());
+			StringSplit(m_fields, ",", strarray);
+			m_fieldcnt = static_cast<int16_t>(strarray.size());
+
+			_log.Log(LOG_STATUS, "Found %d resource fields: %s", m_fieldcnt, m_fields.c_str());
+
+			m_crc = crc;
 
 			bProcessed = true;
 		}
@@ -639,7 +674,7 @@ bool CMercApi::SendCommand(eCommandType command, std::string parameter)
 	*/
 }
 
-bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string parameters)
+bool CMercApi::SendCommand(const std::string &command, Json::Value &reply, const std::string &parameters)
 {
 	/*
 	std::stringstream ss;
@@ -668,20 +703,20 @@ bool CMercApi::SendCommand(std::string command, Json::Value& reply, std::string 
 }
 
 // Requests an access token from the MB OAuth Api.
-bool CMercApi::GetAuthToken(const std::string username, const std::string password, const bool refreshUsingToken)
+bool CMercApi::GetAuthToken(const std::string &username, const std::string &password, const bool refreshUsingToken)
 {
-	if (!refreshUsingToken && username.size() == 0)
+	if (!refreshUsingToken && username.empty())
 	{
 		_log.Log(LOG_ERROR, "MercApi: No username specified.");
 		return false;
 	}
-	if (!refreshUsingToken && username.size() == 0)
+	if (!refreshUsingToken && username.empty())
 	{
 		_log.Log(LOG_ERROR, "MercApi: No password specified.");
 		return false;
 	}
 
-	if (refreshUsingToken && (m_refreshtoken.size() == 0 || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED))
+	if (refreshUsingToken && (m_refreshtoken.empty() || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED))
 	{
 		_log.Log(LOG_ERROR, "MercApi: No refresh token to perform refresh!");
 		return false;
@@ -727,23 +762,19 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 	}
 
 	m_accesstoken = _jsRoot["access_token"].asString();
-	if (m_accesstoken.size() == 0)
+	if (m_accesstoken.empty())
 	{
 		_log.Log(LOG_ERROR, "MercApi: Received access token is zero length.");
 		return false;
 	}
 
 	m_refreshtoken = _jsRoot["refresh_token"].asString();
-	if (m_refreshtoken.size() == 0)
+	if (m_refreshtoken.empty())
 	{
 		_log.Log(LOG_ERROR, "MercApi: Received refresh token is zero length.");
 		return false;
 	}
-	else
-	{
-		_log.Log(LOG_STATUS, "MercApi: Received new refresh token %s .", m_refreshtoken.c_str());
-	}
-
+	_log.Log(LOG_STATUS, "MercApi: Received new refresh token %s .", m_refreshtoken.c_str());
 	_log.Debug(DEBUG_NORM, "MercApi: Received access token from API.");
 
 	return true;
@@ -753,9 +784,11 @@ bool CMercApi::GetAuthToken(const std::string username, const std::string passwo
 bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, const std::string& sPostData,
 	std::string& sResponse, const std::vector<std::string>& vExtraHeaders, Json::Value& jsDecodedResponse, const bool bSendAuthHeaders, const int timeout)
 {
+	m_httpresultcode = 0;	// Reset to 0
+
 	// If there is no token stored then there is no point in doing a request. Unless we specifically
 	// decide not to do authentication.
-	if (m_accesstoken.size() == 0 && bSendAuthHeaders)
+	if (m_accesstoken.empty() && bSendAuthHeaders)
 	{
 		_log.Log(LOG_ERROR, "MercApi: No access token available.");
 		return false;
@@ -767,7 +800,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 
 		// If the supplied postdata validates as json, add an appropriate content type header
-		if (sPostData.size() > 0)
+		if (!sPostData.empty())
 			if (ParseJSon(sPostData, *(new Json::Value))) 
 				_vExtraHeaders.push_back("Content-Type: application/json");
 
@@ -775,7 +808,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		if (bSendAuthHeaders) 
 			_vExtraHeaders.push_back("Authorization: Bearer " + m_accesstoken);
 
-		// Increase default timeout
+		// In/Decrease default timeout
 		if(timeout == 0)
 		{
 			HTTPClient::SetConnectionTimeout(MERC_APITIMEOUT);
@@ -798,7 +831,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		case Post:
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
-				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
+				_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 				_log.Log(LOG_ERROR, "Failed to perform POST request (%d)!", _iHttpCode);
 			}
 			break;
@@ -806,7 +839,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		case Get:
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, true))
 			{
-				_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 9999);
+				_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 				_log.Log(LOG_ERROR, "Failed to perform GET request (%d)!", _iHttpCode);
 			}
 			break;
@@ -818,15 +851,19 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			}
 		}
 
-		_iHttpCode = (!_vResponseHeaders[0].empty() ? (uint16_t) std::stoi(_vResponseHeaders[0].substr(9,3).c_str()) : 0);
+		m_httpresultcode = ExtractHTTPResultCode(_vResponseHeaders[0]);
 
 		// Debug response
-		for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) 
-			_ssResponseHeaderString << _vResponseHeaders[i];
-		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", _iHttpCode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+		for (auto &_vResponseHeader : _vResponseHeaders)
+			_ssResponseHeaderString << _vResponseHeader;
+		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", m_httpresultcode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
-		switch(_iHttpCode)
+		switch(m_httpresultcode)
 		{
+		case 28:
+			_log.Log(LOG_STATUS, "Received (Curl) returncode 28.. API request response took too long, timed-out!");
+			return false;
+			break;
 		case 200:
 			break; // Ok, continue to process content
 		case 204:
@@ -846,6 +883,17 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			}			
 			return false;
 			break;
+		case 403:
+			if(!m_authenticating)
+			{
+				_log.Log(LOG_STATUS, "Received 403.. Access has been denied!");
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "Received 403.. Access denied during authorisation proces. Aborting!");
+			}
+			return false;
+			break;
 		case 429:
 			_log.Log(LOG_STATUS, "Received 429.. Too many request... we need to back off!");
 			return false;
@@ -856,19 +904,19 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			return false;
 			break;
 		default:
-			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", _iHttpCode);
+			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", m_httpresultcode);
 			return false;
 		}
 
-		if (sResponse.size() == 0)
+		if (sResponse.empty())
 		{
-			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %d).", _iHttpCode);
+			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %d).", m_httpresultcode);
 			return false;
 		}
 
 		if (!ParseJSon(sResponse, jsDecodedResponse))
 		{
-			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %d).", _iHttpCode);
+			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %d).", m_httpresultcode);
 			return false;
 		}
 	}
@@ -879,4 +927,30 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		return false;
 	}
 	return true;
+}
+
+// Interpret the return message headers to extract the HTTP resultcode
+uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0)
+{
+	uint16_t iHttpCode = 9999;
+	uint8_t iHttpCodeStartPos = 0;
+
+	if(!sResponseHeaderLine0.empty())
+	{
+		if (sResponseHeaderLine0.find("HTTP") == 0)		// Ok, so this header indeeds starts with HTTP
+		{
+			if (sResponseHeaderLine0.find_first_of(' ') != std::string::npos)
+			{
+				iHttpCodeStartPos = (uint8_t)sResponseHeaderLine0.find_first_of(' ') + 1;	// So look for a SPACE as the seperator (RFC2616)
+
+				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
+				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range
+				{
+					_log.Log(LOG_STATUS, "Found non-standard resultcode (%d) in HTTP response statusline: %s", iHttpCode, sResponseHeaderLine0.c_str());
+				}
+			}
+		}
+	}
+
+	return iHttpCode;
 }

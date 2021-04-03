@@ -30,7 +30,7 @@ int CLuaCommon::l_domoticz_applyXPath(lua_State* lua_state)
 			std::string xpath = lua_tostring(lua_state, 2);
 
 			TiXmlDocument doc;
-			doc.Parse(buffer.c_str(), 0, TIXML_ENCODING_UTF8);
+			doc.Parse(buffer.c_str(), nullptr, TIXML_ENCODING_UTF8);
 
 			TiXmlElement* root = doc.RootElement();
 			if (!root)
@@ -47,10 +47,7 @@ int CLuaCommon::l_domoticz_applyXPath(lua_State* lua_state)
 			lua_pushstring(lua_state, xresult.c_str());
 			return 1;
 		}
-		else
-		{
-			_log.Log(LOG_ERROR, "CLuaHandler (applyXPath from LUA) : Incorrect parameters type");
-		}
+		_log.Log(LOG_ERROR, "CLuaHandler (applyXPath from LUA) : Incorrect parameters type");
 	}
 	else
 	{

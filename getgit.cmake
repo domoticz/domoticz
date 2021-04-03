@@ -45,7 +45,7 @@ MACRO(Gitversion_GET_DATE dir variable)
 ENDMACRO(Gitversion_GET_DATE)
 
 MACRO(Gitversion_CHECK_DIRTY dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git diff-index -m --name-only HEAD
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git diff-index -m --ignore-submodules --name-only HEAD
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)

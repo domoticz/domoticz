@@ -1,6 +1,6 @@
-define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
+define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
-		'ngRoute', 'ngAnimate', 'ngGrid', 'ngSanitize',
+		'ngRoute', 'ngAnimate', 'ui.grid', 'ngSanitize',
 		'highcharts-ng', 'treeControl', 'ngDraggable', 'angular-md5',
 		'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue',
 		appRoutesModule.name, appPermissionsModule.name, appNotificationsModule.name,
@@ -431,23 +431,33 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									$.t('Friday'),
 									$.t('Saturday')
 								]
-							}
+							}/* to be used when all graphs are timezone aware,
+							global: {
+								timezoneOffset: new Date().getTimezoneOffset()
+							}*/
 						});
 
 						$rootScope.MakeGlobalConfig();
 
-						if (typeof data.result.templates != 'undefined') {
-							var customHTML = "";
+						var customHTML = "";
+						if (typeof data.result.templates != 'undefined')  {
 							$.each(data.result.templates, function (i, item) {
 								var cFile = item;
 								var cName = cFile.charAt(0).toUpperCase() + cFile.slice(1);
 								var cURL = "templates/" + cFile;
 								customHTML += '<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
 							});
-							if (customHTML != "") {
-								$("#custommenu").html(customHTML);
-								$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
-							}
+						}
+						if (typeof data.result.urls != 'undefined')  {
+							$.each(data.result.urls, function (name, url) {
+								var cName = name.charAt(0).toUpperCase() + name.slice(1);
+								var cURL = url;
+								customHTML += '<li><a target="_blank" href="' + cURL + '">' + cName + '</a></li>';
+							});
+						}
+						if (customHTML != "") {
+							$("#custommenu").html(customHTML);
+							$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
 						}
 					}
 				},
@@ -565,7 +575,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
                 itemStyle: {
                     fontFamily: 'Trebuchet MS, Verdana, sans-serif',
                     fontWeight: 'normal'
-                }
+                },
+				backgroundColor: '#373739'
             }
 		});
 
@@ -604,7 +615,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$rootScope.GetItemBackgroundStatus = function (item) {
 			// generate protected/timeout/lowbattery status
 			var backgroundClass = "statusNormal";
-			if (item.HaveTimeout == true) {
+			if (item.HardwareDisabled == true) {
+				backgroundClass = "statusDisabled";
+			}
+			else if (item.HaveTimeout == true) {
 				backgroundClass = "statusTimeout";
 			}
 			else {

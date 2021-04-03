@@ -20,20 +20,21 @@ class bt_openwebnet;
 
 class COpenWebNetUSB : public AsyncSerial, public CDomoticzHardwareBase
 {
-public:
-	COpenWebNetUSB(const int ID, const std::string& devname, unsigned int baud_rate);
-	~COpenWebNetUSB(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+      public:
+	COpenWebNetUSB(int ID, const std::string &devname, unsigned int baud_rate);
+	~COpenWebNetUSB() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	void Do_Work();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	bool sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, bool silent = false);
-	bool FindDevice(int deviceID, int deviceUnit, int subType, int* used);
-	bool writeRead(const char* command, unsigned int commandSize, bool silent);
+	bool sendCommand(bt_openwebnet &command, std::vector<bt_openwebnet> &response, bool silent = false);
+	bool FindDevice(int deviceID, int deviceUnit, int subType, int *used);
+	bool writeRead(const char *command, unsigned int commandSize, bool silent);
 	void readCallback(const char *data, size_t len);
-	bool ParseData(char* data, int length, std::vector<bt_openwebnet>& messages);//same as OpenWebNet class, TODO : inherit from mother class
-private:
+	bool ParseData(char *data, int length, std::vector<bt_openwebnet> &messages); // same as OpenWebNet class, TODO : inherit from mother class
+      private:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 

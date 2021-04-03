@@ -78,7 +78,7 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	mosqdz::lib_init();
 }
 
-CTTNMQTT::~CTTNMQTT(void)
+CTTNMQTT::~CTTNMQTT()
 {
 	mosqdz::lib_cleanup();
 }
@@ -127,7 +127,7 @@ bool CTTNMQTT::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CTTNMQTT::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -175,7 +175,7 @@ void CTTNMQTT::on_connect(int rc)
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
-		subscribe(NULL, m_TopicIn.c_str());
+		subscribe(nullptr, m_TopicIn.c_str());
 	}
 	else {
 		Log(LOG_ERROR, "Connection failed!, restarting (rc=%d)", rc);
@@ -218,17 +218,16 @@ bool CTTNMQTT::ConnectIntEx()
 
 	if (!m_CAFilename.empty()) {
 		rc = tls_set(m_CAFilename.c_str());
+		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{
 			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		else {
-			Log(LOG_STATUS, "Enabled TLS mode");
-		}
+		Log(LOG_STATUS, "Enabled TLS mode");
 	}
-	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
@@ -273,7 +272,7 @@ void CTTNMQTT::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (bFirstTime)
@@ -316,7 +315,7 @@ void CTTNMQTT::SendMessage(const std::string &Topic, const std::string &Message)
 			Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
+		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
@@ -336,26 +335,26 @@ void CTTNMQTT::WriteInt(const std::string &sendStr)
 Json::Value CTTNMQTT::GetSensorWithChannel(const Json::Value &root, const uint8_t sChannel)
 {
 	Json::Value ret;
-	for (auto itt = root.begin(); itt != root.end(); ++itt)
+	for (const auto &r : root)
 	{
-		uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
+		uint8_t channel = (uint8_t)r["channel"].asInt();
 
-		if ((channel == sChannel) && !(*itt)["used"])
-			return (*itt);
+		if ((channel == sChannel) && !r["used"])
+			return r;
 	}
 	return ret;
 }
 
 void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, const uint8_t sChannel)
 {
-	for (auto itt = root.begin(); itt != root.end(); ++itt)
+	for (auto &r : root)
 	{
-		uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
-		std::string type = (*itt)["type"].asString();
+		uint8_t channel = (uint8_t)r["channel"].asInt();
+		std::string type = r["type"].asString();
 
 		if ((type == stype) && (channel == sChannel))
 		{
-			(*itt)["used"] = true;
+			r["used"] = true;
 			return;
 		}
 	}
@@ -363,7 +362,7 @@ void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &s
 
 void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	int ID;
 
@@ -416,7 +415,7 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 	return DeviceID;
 }
 
-bool CTTNMQTT::ConvertField2Payload(const std::string sType, const std::string sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
+bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string &sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
 {
 	bool ret = false;
 
@@ -507,12 +506,12 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 	bool ret = false;
 	uint8_t index = 0;
 
-    if( fields.size() > 0 )
+	if (!fields.empty())
 	{
 		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
-		for (auto const& id : fields.getMemberNames())
+		for (const auto &id : fields.getMemberNames())
 		{
-			if(!(fields[id].isNull()) && ConvertField2Payload(id.c_str(), fields[id].asString().c_str(), index + 1, index, payload))
+			if (!(fields[id].isNull()) && ConvertField2Payload(id, fields[id].asString(), index + 1, index, payload))
 			{
 				Debug(DEBUG_NORM, "Converted field %s !", id.c_str());
 				index++;
@@ -670,7 +669,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName.c_str(), DeviceSerial.c_str());
+		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, DeviceSerial);
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;
@@ -821,18 +820,19 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
-		for (auto itt = payload.begin(); itt != payload.end(); ++itt)
+		for (const auto &p : payload)
 		{
-			std::string type = (*itt)["type"].asString();
-			uint8_t channel = (uint8_t)(*itt)["channel"].asInt();
+			std::string type = p["type"].asString();
+			uint8_t channel = (uint8_t)p["channel"].asInt();
 
 			// The following IS NOT part of the CayenneLPP specification
 			// But a 'hack'; when using the payload_fields (using the TTN external payload decoder)
 			// a 'batterylevel' field can be created (integer range between 0 and 100)
 			// Also, we do skip this reading for further processing
 			if (type == "batterylevel") {
-				if ((*itt)["value"].isNumeric()) {
-					BatteryLevel = (int)(*itt)["value"].asInt();
+				if (p["value"].isNumeric())
+				{
+					BatteryLevel = (int)p["value"].asInt();
 				}
 			}
 			else
@@ -893,11 +893,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 						}
 						else if (type == "digital_input") {
-							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, rssi);
+							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, m_Name, rssi);
 							bDin = true;
 						}
 						else if (type == "digital_output") {
-							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, rssi);
+							SendGeneralSwitch(DeviceID, channel, BatteryLevel, vSensor["value"].asInt(), 0, DeviceName, m_Name, rssi);
 							bDout = true;
 						}
 						else if (type == "analog_input") {

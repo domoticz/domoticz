@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="Name">Multirelay</MetaDataItem>
     <MetaDataItem name="Description">PRODUCT FEATURES:
@@ -38,6 +38,7 @@ SPECIFICATIONS:
     <ChangeLog>
       <Entry author="David Alden - dave@alden.name" date="16 Feb 2020" revision="2">Initial Metadata Import</Entry>
       <Entry author="Brad Parker - https://github.com/bepsoccer" date="6 May 2020" revision="3">Updated for firmware version 1.02</Entry>
+      <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="20 January 2021" revision="4">Updated for firmware version 1.03</Entry>
     </ChangeLog>
   </MetaData>
 
@@ -152,6 +153,29 @@ SPECIFICATIONS:
       <Item label="minutes" value="0"/>
       <Item label="seconds" value="1"/>
       <Item label="hours" value="2"/>
+    </Value>
+     <Value type="list" genre="config" index="21" label="Normally open/close for Relay 1" size="1" min="0" max="2" value="0">
+      <Help>Decide whether you'd like Relay 1 to be normally open (NO) or normally closed (NC). Default normally open.</Help>
+      <Item label="normally open (relay reports off when it's open / switch is off and on when it's closed / switch is on)" value="0"/>
+      <Item label="normally closed (relay reports off when it's open / switch is on and on when it's closed / switch is off)" value="1"/>
+      <Item label="normally closed (relay reports off when it's closed / switch is off and on when it's open / switch is on)" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="22" label="Normally open/close for Relay 2" size="1" min="0" max="2" value="0">
+      <Help>Decide whether you'd like Relay 2 to be normally open (NO) or normally closed (NC). Default normally open.</Help>
+      <Item label="normally open (relay reports off when it's open / switch is off and on when it's closed / switch is on)" value="0"/>
+      <Item label="normally closed (relay reports off when it's open / switch is on and on when it's closed / switch is off)" value="1"/>
+      <Item label="normally closed (relay reports off when it's closed / switch is off and on when it's open / switch is on)" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="23" label="Normally open/close for Relay 3" size="1" min="0" max="2" value="0">
+      <Help>Decide whether you'd like Relay 3 to be normally open (NO) or normally closed (NC). Default normally open.</Help>
+      <Item label="normally open (relay reports off when it's open / switch is off and on when it's closed / switch is on)" value="0"/>
+      <Item label="normally closed (relay reports off when it's open / switch is on and on when it's closed / switch is off)" value="1"/>
+      <Item label="normally closed (relay reports off when it's closed / switch is off and on when it's open / switch is on)" value="2"/>
+    </Value>
+    <Value type="list" genre="config" index="24" label="DC Motor Mode" size="1" min="0" max="1" value="0">
+      <Help>Sync Relay 1 and Relay 2 together to prevent them from being activated at the same time. Default disabled.</Help>
+      <Item label="DC motor mode disabled (relays will always turn on whenever activated)" value="0"/>
+      <Item label="DC motor mode enabled (relay checks the status of the other relay after being triggered and shuts the other relay off before activating so that only one of the relays is on at a time)" value="1"/>
     </Value>
   </CommandClass>
 

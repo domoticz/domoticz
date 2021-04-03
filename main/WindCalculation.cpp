@@ -22,7 +22,7 @@ void _tWindCalculator::Init()
 {
 	//clear buffer
 	memset(&m_minute_counter,0,sizeof(m_minute_counter));
-	m_FirstMeasureTime=mytime(NULL);
+	m_FirstMeasureTime = mytime(nullptr);
 	m_history_fifo.clear();
 	m_bHaveLastDirection=false;
 	m_last_direction = 0;

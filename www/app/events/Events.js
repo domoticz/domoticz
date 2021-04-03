@@ -24,6 +24,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
                 { id: 'Bare', name: 'Minimal' },
                 { id: 'CustomEvents', name: 'Custom events' },
                 { id: 'Device', name: 'Device' },
+                { id: 'ExecuteShellCommand', name: 'Async OS command' },
                 { id: 'Group', name: 'Group' },
                 { id: 'HTTPRequest', name: 'HTTP request' },
                 { id: 'Scene', name: 'Scene' },

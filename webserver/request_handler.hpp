@@ -40,7 +40,11 @@ class request_handler
 public:
   /// Construct with a directory containing files to be served.
   explicit request_handler(const std::string& doc_root, cWebem* webem);
+#ifndef WEBSERVER_DONT_USE_ZIP
   ~request_handler();
+#else
+  ~request_handler() = default;
+#endif
 
   /// Handle a request and produce a reply.
   virtual void handle_request(const request& req, reply& rep);

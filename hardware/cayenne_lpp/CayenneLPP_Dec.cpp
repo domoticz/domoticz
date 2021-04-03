@@ -86,7 +86,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "analog_input";
 
-			float value = float((pBuffer[2] << 8) | pBuffer[3]) / 100.0f;
+			float value = float((pBuffer[2] << 8) | pBuffer[3]) / 100.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_ANALOG_INPUT_SIZE;
@@ -99,7 +99,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "analog_output";
 
-			float value = float((pBuffer[2] << 8) | pBuffer[3]) / 100.0f;
+			float value = float((pBuffer[2] << 8) | pBuffer[3]) / 100.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_ANALOG_OUTPUT_SIZE;
@@ -137,7 +137,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "temp";
 
-			float value = float(int16_t((pBuffer[2] << 8) | pBuffer[3])) / 10.0f;
+			float value = float(int16_t((pBuffer[2] << 8) | pBuffer[3])) / 10.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_TEMPERATURE_SIZE;
@@ -150,7 +150,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "humidity";
 
-			float value = float(pBuffer[2]) / 2.0f;
+			float value = float(pBuffer[2]) / 2.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_RELATIVE_HUMIDITY_SIZE;
@@ -164,13 +164,13 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["type"] = "accel";
 
 			int16_t tvalue = (pBuffer[2] << 8) | pBuffer[3];
-			float value = float(tvalue) / 1000.0f;
+			float value = float(tvalue) / 1000.0F;
 			root[iIndex]["X"] = value;
 			tvalue = (pBuffer[4] << 8) | pBuffer[5];
-			value = float(tvalue) / 1000.0f;
+			value = float(tvalue) / 1000.0F;
 			root[iIndex]["Y"] = value;
 			tvalue = (pBuffer[6] << 8) | pBuffer[7];
-			value = float(tvalue) / 1000.0f;
+			value = float(tvalue) / 1000.0F;
 			root[iIndex++]["Z"] = value;
 
 			pBuffer += LPP_ACCELEROMETER_SIZE;
@@ -183,7 +183,7 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "baro";
 
-			float value = float(int16_t((pBuffer[2] << 8) | pBuffer[3])) / 10.0f;
+			float value = float(int16_t((pBuffer[2] << 8) | pBuffer[3])) / 10.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_BAROMETRIC_PRESSURE_SIZE;
@@ -210,13 +210,13 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["type"] = "gyro";
 
 			int16_t tvalue = (pBuffer[2] << 8) | pBuffer[3];
-			float value = float(tvalue) / 100.0f;
+			float value = float(tvalue) / 100.0F;
 			root[iIndex]["X"] = value;
 			tvalue = (pBuffer[4] << 8) | pBuffer[5];
-			value = float(tvalue) / 100.0f;
+			value = float(tvalue) / 100.0F;
 			root[iIndex]["Y"] = value;
 			tvalue = (pBuffer[6] << 8) | pBuffer[7];
-			value = float(tvalue) / 100.0f;
+			value = float(tvalue) / 100.0F;
 			root[iIndex++]["Z"] = value;
 
 			pBuffer += LPP_GYROMETER_SIZE;
@@ -232,17 +232,17 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			int32_t tvalue = (int32_t)(pBuffer[2] << 16) | (pBuffer[3] << 8) | pBuffer[4];
 			if ((pBuffer[2]&0xF0) == 0xF0)
 				tvalue |= 0xFF000000;
-			float value = float(tvalue) / 10000.0f;
+			float value = float(tvalue) / 10000.0F;
 			root[iIndex]["lat"] = value;
 			tvalue = (pBuffer[5] << 16) | (pBuffer[6] << 8) | pBuffer[7];
 			if ((pBuffer[5] & 0xF0) == 0xF0)
 				tvalue |= 0xFF000000;
-			value = float(tvalue) / 10000.0f;
+			value = float(tvalue) / 10000.0F;
 			root[iIndex]["lon"] = value;
 			tvalue = (int32_t)((pBuffer[8] << 16) | (pBuffer[9] << 8) | pBuffer[10]);
 			if ((pBuffer[8] & 0xF0) == 0xF0)
 				tvalue |= 0xFF000000;
-			value = float(tvalue) / 100.0f;
+			value = float(tvalue) / 100.0F;
 			root[iIndex++]["alt"] = value;
 
 			pBuffer += LPP_GPS_SIZE;

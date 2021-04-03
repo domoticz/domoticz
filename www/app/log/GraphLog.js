@@ -1,226 +1,169 @@
-define(['app', 'log/factories'], function (app) {
-    app.component('deviceGraphLog', {
-        bindings: {
-            device: '<'
-        },
-        templateUrl: 'app/log/GraphLog.html',
-    });
+define(['app', 'lodash', 'RefreshingChart'],
+    function (app, _, RefreshingChart) {
 
-    app.component('deviceLogChart', {
-        bindings: {
-            device: '<',
-            deviceType: '<',
-            degreeType: '<',
-            range: '@'
-        },
-        template: '<div></div>',
-        controllerAs: 'vm',
-        controller: function ($scope, $element, $route, domoticzApi, domoticzDataPointApi, domoticzGlobals) {
-            var vm = this;
-            var chart;
+        app.component('deviceGraphLog', {
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/GraphLog.html',
+            controllerAs: '$ctrl',
+            controller: function () {
+                const $ctrl = this;
+                $ctrl.autoRefresh = true;
+            }
+        });
 
-            vm.$onInit = init;
-            vm.$onChanges = onChanges;
+        app.component('deviceShortChart', {
+            require: {
+                logCtrl: '^deviceGraphLog'
+            },
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/chart-day.html',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+                self.range = 'day';
 
-            function init() {
-                var sensor = getSensorName();
-                var unit = getChartUnit();
-                var axisTitle = vm.device.SubType === 'Custom Sensor'
-                    ? unit
-                    : sensor + ' (' + unit + ')';
-
-                chart = $element.highcharts({
-                    chart: {
-                        type: 'spline',
-                        zoomType: 'x',
-                        resetZoomButton: {
-                            position: {
-                                x: -30,
-                                y: -36
-                            }
-                        }
-                    },
-                    xAxis: {
-                        type: 'datetime'
-                    },
-                    yAxis: {
-                        title: {
-                            text: axisTitle
-                        },
-                        labels: {
-                            formatter: function () {
-                                var value = unit === 'vM'
-                                    ? Highcharts.numberFormat(this.value, 0)
-                                    : this.value;
-
-                                return value + ' ' + unit;
-                            }
-                        }
-                    },
-                    tooltip: {
-                        crosshairs: true,
-                        shared: true,
-                        valueSuffix: ' ' + unit
-                    },
-                    plotOptions: {
-                        series: {
-                            point: {
-                                events: {
-                                    click: function (event) {
-                                        if (event.shiftKey != true) {
-                                            return;
-                                        }
-
-                                        domoticzDataPointApi
-                                            .deletePoint(vm.device.idx, event.point, vm.range === 'day')
-                                            .then(function () {
-                                                $route.reload();
-                                            });
-                                    }
-                                }
-                            }
-                        },
-                        spline: {
-                            lineWidth: 3,
-                            states: {
-                                hover: {
-                                    lineWidth: 3
-                                }
+                self.$onInit = function () {
+                    new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $timeout, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParams(
+                            domoticzGlobals,
+                            self,
+                            true, function (dataItem, yearOffset = 0) {
+                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
-                            marker: {
-                                enabled: false,
-                                states: {
-                                    hover: {
-                                        enabled: true,
-                                        symbol: 'circle',
-                                        radius: 5,
-                                        lineWidth: 1
+                            [
+                                {
+                                    id: 'power',
+                                    valueKeySuffix: '',
+                                    colorIndex: 0,
+                                    template: {
+                                        name: domoticzGlobals.sensorNameForDevice(self.device),
+                                        showInLegend: false
                                     }
+                                }
+                            ]
+                        )
+                    );
+                }
+            }
+        });
+
+        app.component('deviceLongChart', {
+            require: {
+                logCtrl: '^deviceGraphLog'
+            },
+            bindings: {
+                device: '<',
+                range: '@'
+            },
+            templateUrl: function($element, $attrs) { return 'app/log/chart-' + $attrs.range + '.html'; },
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi) {
+                const self = this;
+
+                self.$onInit = function () {
+                    new RefreshingChart(
+                        baseParams($),
+                        angularParams($location, $route, $scope, $timeout, $element),
+                        domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        chartParams(
+                            domoticzGlobals,
+                            self,
+                            false,
+                            function (dataItem, yearOffset = 0) {
+                                return GetLocalDateFromString(dataItem.d, yearOffset);
+                            },
+                            [
+                                {
+                                    id: 'min',
+                                    valueKeySuffix: '_min',
+                                    colorIndex: 3,
+                                    template: {
+                                        name: $.t('Minimum')
+                                    }
+                                },
+                                {
+                                    id: 'max',
+                                    valueKeySuffix: '_max',
+                                    colorIndex: 2,
+                                    template: {
+                                        name: $.t('Maximum')
+                                    }
+                                },
+                                {
+                                    id: 'avg',
+                                    valueKeySuffix: '_avg',
+                                    colorIndex: 0,
+                                    template: {
+                                        name: $.t('Average')
+                                    }
+                                }
+                            ]
+                        )
+                    );
+                }
+            }
+        });
+
+        function baseParams(jquery) {
+            return {
+                jquery: jquery
+            };
+        }
+        function angularParams(location, route, scope, timeout, element) {
+            return {
+                location: location,
+                route: route,
+                scope: scope,
+                timeout: timeout,
+                element: element
+            };
+        }
+        function domoticzParams(globals, api, datapointApi) {
+            return {
+                globals: globals,
+                api: api,
+                datapointApi: datapointApi
+            };
+        }
+        function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
+            return {
+                range: ctrl.range,
+                device: ctrl.device,
+				sensorType: domoticzGlobals.sensorTypeForDevice(ctrl.device),
+                autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
+                dataSupplier: {
+                    yAxes: [
+                        {
+                            title: {
+                                text: domoticzGlobals.axisTitleForDevice(ctrl.device)
+                            },
+                            labels: {
+                                formatter: function () {
+                                    return ctrl.device.getUnit() === 'vM' ? Highcharts.numberFormat(this.value, 0) : this.value;
                                 }
                             }
                         }
-                    },
-                    title: {
-                        text: getChartTitle()
-                    },
-                    series: [],
-                    legend: {
-                        enabled: true
-                    }
-                }).highcharts();
-
-                refreshChartData();
-            }
-
-            function onChanges(changesObj) {
-                if (!chart) {
-                    return;
-                }
-
-                if (changesObj.deviceIdx || changesObj.range) {
-                    refreshChartData();
-                }
-
-                if (changesObj.deviceType) {
-                    chart.setTitle({text: getChartTitle()});
-                }
-            }
-
-            function refreshChartData() {
-                domoticzApi
-                    .sendRequest({
-                        type: 'graph',
-                        sensor: getChartType(),
-                        range: vm.range,
-                        idx: vm.device.idx
+                    ],
+                    valueSuffix: ' ' + ctrl.device.getUnit(),
+                    timestampFromDataItem: timestampFromDataItem,
+                    isShortLogChart: isShortLogChart,
+                    seriesSuppliers: seriesSuppliers.map(function (seriesSupplier) {
+                        return _.merge(
+                            {
+                                dataItemKeys: [domoticzGlobals.valueKeyForDevice(ctrl.device) + seriesSupplier.valueKeySuffix]
+                            },
+                            seriesSupplier
+                        );
                     })
-                    .then(function (data) {
-                        if (typeof data.result === 'undefined') {
-                            return;
-                        }
-
-                        var valueKey = getPointValueKey();
-
-                        if (vm.range === 'day') {
-                            var sensor = getSensorName();
-
-                            chart.addSeries({
-                                showInLegend: false,
-                                name: sensor,
-                                data: data.result.map(function (item) {
-                                    return [GetUTCFromString(item.d), parseFloat(item[valueKey])]
-                                })
-                            }, false);
-                        }
-
-                        if (vm.range === 'month' || vm.range === 'year') {
-                            var series = [
-                                {name: 'min', data: []},
-                                {name: 'max', data: []},
-                                {name: 'avg', data: []}
-                            ];
-
-                            data.result.forEach(function (item) {
-                                series[0].data.push([GetDateFromString(item.d), parseFloat(item[valueKey + '_min'])]);
-                                series[1].data.push([GetDateFromString(item.d), parseFloat(item[valueKey + '_max'])]);
-
-                                if (item[valueKey + '_avg'] !== undefined) {
-                                    series[2].data.push([GetDateFromString(item.d), parseFloat(item[valueKey + '_avg'])]);
-                                }
-                            });
-
-                            series
-                                .filter(function (item) {
-                                    return item.data.length > 0;
-                                })
-                                .forEach(function (item) {
-                                    chart.addSeries(item, false);
-                                });
-                        }
-
-                        chart.redraw();
-                    });
-            }
-
-            function getPointValueKey() {
-                if (vm.device.SubType === 'Lux') {
-                    return 'lux'
-                } else if (vm.device.Type === 'Usage') {
-                    return 'u'
-                } else {
-                    return 'v';
                 }
-            }
-
-            function getChartTitle() {
-                if (vm.range === 'day') {
-                    return domoticzGlobals.Get5MinuteHistoryDaysGraphTitle();
-                } else if (vm.range === 'month') {
-                    return $.t('Last Month');
-                } else if (vm.range === 'year') {
-                    return $.t('Last Year');
-                }
-            }
-
-            function getChartUnit() {
-                return vm.device.getUnit();
-            }
-
-            function getChartType() {
-                if (['Custom Sensor', 'Waterflow', 'Percentage'].includes(vm.device.SubType)) {
-                    return 'Percentage';
-                } else {
-                    return 'counter';
-                }
-            }
-
-            function getSensorName() {
-                if (vm.device.Type === 'Usage') {
-                    return $.t('Usage');
-                } else {
-                    return $.t(vm.device.SubType)
-                }
-            }
+            };
         }
-    });
-});
+    }
+);

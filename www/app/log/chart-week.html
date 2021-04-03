@@ -1,0 +1,13 @@
+<div class="chart noselect">
+    <div class="chart-title-center">
+        <div class="chart-title-container">
+            <h2 ng-bind="chartTitle"></h2>
+        </div>
+    </div>
+    <div class="chartarea">
+        <div class="zoom-buttons-container">
+            <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
+        </div>
+        <div class="chartcontainer"></div>
+    </div>
+</div>

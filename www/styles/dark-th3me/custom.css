@@ -1,4 +1,5 @@
 @import url("../css/legacy.css"); /* Don't remove this line! */
+@import url("base.css"); /* Don't remove this line! */
 
 /*
   --== Dark th3me by G3rard ==--
@@ -13,8 +14,8 @@
 }
 /* Font Ubuntu everywhere */
 html * {
-  font-family: Ubuntu !important;
-  font-weight: normal !important;
+  font-family: Ubuntu;
+  font-weight: normal;
   border-radius: 0 !important;
 }
 .navbar-inverse .navbar-inner {
@@ -111,6 +112,10 @@ h2 {
   margin-bottom: 5px;
   font-size: 14px;
   text-transform: uppercase;
+}
+.chart h2 {
+  margin-top: 0px;
+  font-size: 1em;
 }
 body table#itemtablenostatus tbody tr {
   color: #eee;

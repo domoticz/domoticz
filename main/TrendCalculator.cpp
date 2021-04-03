@@ -10,7 +10,7 @@ void _tTrendCalculator::Init()
 {
 	m_state = TENDENCY_UNKNOWN;
 	m_lastValue = 0;
-	m_timeLastAvarage=time(NULL);
+	m_timeLastAvarage = time(nullptr);
 	m_totValues=0;
 	m_calcValue=0;
 }
@@ -22,12 +22,12 @@ _tTrendCalculator::_eTendencyType _tTrendCalculator::AddValueAndReturnTendency(c
 	if (m_state == TENDENCY_UNKNOWN)
 	{
 		m_state = TENDENCY_STABLE;
-		m_timeLastAvarage = time(NULL);
+		m_timeLastAvarage = time(nullptr);
 		m_lastValue = Value; //got to start somewhere
 	}
 	else
 	{
-		time_t atime = time(NULL);
+		time_t atime = time(nullptr);
 		int AvarageMinutes = (int)TendType;
 		if (atime - m_timeLastAvarage >= (AvarageMinutes * 60))
 		{

@@ -13,10 +13,6 @@ CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_usIPPort = usIPPort;
 }
 
-CRFLinkTCP::~CRFLinkTCP(void)
-{
-}
-
 bool CRFLinkTCP::StartHardware()
 {
 	RequestStart();
@@ -28,7 +24,7 @@ bool CRFLinkTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CRFLinkTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -51,7 +47,7 @@ void CRFLinkTCP::OnConnect()
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 	sOnConnected(this);
 	write("10;PING;\n");
 	write("10;VERSION;\n");
@@ -73,13 +69,13 @@ void CRFLinkTCP::Do_Work()
 	{
 		sec_counter++;
 
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if ((sec_counter % 20 == 0) && (isConnected()))
 		{
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			//Send ping (keep alive)
 			if (atime - m_LastReceivedTime > 30)
 			{

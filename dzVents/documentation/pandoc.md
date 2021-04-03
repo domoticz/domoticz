@@ -3,3 +3,4 @@
 Make sure you have pandoc installed, then run in this folder:
 
 pandoc -r markdown README.md -t mediawiki -o README.wiki
+pandoc -r markdown history.md -t mediawiki -o history.wiki

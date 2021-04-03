@@ -16,10 +16,6 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 }
 
-OTGWTCP::~OTGWTCP(void)
-{
-}
-
 bool OTGWTCP::StartHardware()
 {
 	RequestStart();
@@ -29,7 +25,7 @@ bool OTGWTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&OTGWTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -69,7 +65,7 @@ void OTGWTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (isConnected())

@@ -2,33 +2,57 @@ define(['app'], function (app) {
 	app.controller('ForecastController', ['$scope', '$rootScope', '$location', '$http', '$interval', function ($scope, $rootScope, $location, $http, $interval) {
 		init();
 
+		goBack = function () {
+			SwitchLayout("Weather");
+		}
+
 		function init() {
 			$scope.MakeGlobalConfig();
 			$http({
-				url: "json.htm?type=command&param=getlocation",
+				url: "json.htm?type=command&param=getforecastconfig",
 				async: true,
 				dataType: 'json'
 			}).then(function successCallback(response) {
 				var data = response.data;
-				if (typeof data.Latitude != 'undefined') {
-					var htmlcontent = '';
-					var units = "ca24";
-					if ($rootScope.config.TempSign == "F") {
-						units = "us12";
-					} else {
-						if ($rootScope.config.WindSign == "m/s")
-							units = "si24";
-						else if ($rootScope.config.WindSign == "km/h")
-							units = "ca24";
-						else if ($rootScope.config.WindSign == "mph")
-							units = "uk224";
+				var htmlcontent = '<b>Error loading config or incorrect config data!</b>';
+
+				if (typeof data.status != 'undefined' && data.status == 'OK') {
+					var fallbackurl = "//forecast.io/embed/#lat=" + data.Latitude + "&lon=" + data.Longitude + "&units=ca&color=#00aaff";
+					var fallbackhtml = '<iframe style="background: #fff; height:245px;" class="cIFrame" id="IMain" src="' + fallbackurl + '"></iframe>';
+					if (typeof data.Forecastdata != 'undefined' ) {
+						if (data.Forecasthardwaretype == 83) { // OpenWeatherMap
+							htmlcontent = '<div id="openweathermap-widget-21"></div>';
+							htmlcontent += '<script src="https://openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js"></script>';
+							htmlcontent += '<script>window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = [];';
+							htmlcontent += 'window.myWidgetParam.push({id: 21,cityid: ' + data.Forecastdata.cityid + ',appid: "' + data.Forecastdata.appid + '",units: "metric",containerid: "openweathermap-widget-21",  });';
+							htmlcontent += ' (function() {var script = document.createElement("script");script.async = true;script.charset = "utf-8";script.src = "https://openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js";';
+							htmlcontent += 'var s = document.getElementsByTagName("script")[0];s.parentNode.insertBefore(script, s);  })();</script>';
+							$('#openweathermap').html(htmlcontent);
+							$('#openweathermap').i18n();
+							$scope.showOWM = true;
+						} else {
+							htmlcontent = 'Forecastdata for hardwaretype ' + data.Forecasthardwaretype + ' is not supported!';
+							$('#fallback').html(htmlcontent);
+							$('#fallback').i18n();
+							$scope.showFallback = true;
+						}
+					} else { 
+						htmlcontent = fallbackhtml;
+						if (typeof data.Forecasturl != 'undefined' && data.Forecasturl != '') {
+							if (data.Forecasturl.substr(0,4) == 'http') {
+								htmlcontent = '<iframe class="cIFrame" id="IMain" src="' + data.Forecasturl + '"></iframe>';
+							} else {
+								htmlcontent = data.Forecasturl;
+							}
+						}
+						$('#fallback').html(htmlcontent);
+						$('#fallback').i18n();
+						$scope.showFallback = true;
 					}
-					//htmlcontent += '<iframe class="cIFrameLarge" id="IMain" src="//darksky.net/forecast/' + data.Latitude + ',' + data.Longitude + '/' + units + '/' + $rootScope.config.language + '"></iframe>';
-					htmlcontent += '<iframe style="background: #fff; height:245px;" class="cIFrameLarge" id="IMain" src="//forecast.io/embed/#lat=' + data.Latitude + '&lon=' + data.Longitude + '&units=ca&color=#00aaff"></iframe>';
-					//htmlcontent += '<iframe class="cIFrameLarge" id="IMain" src="//forecast.io/embed/#lat=42.3583&lon=-71.0603&color=#00aaff&units=ca"></iframe>';
-					//console.log(htmlcontent);
-					$('#maincontent').html(htmlcontent);
-					$('#maincontent').i18n();
+				} else {
+					$('#fallback').html(htmlcontent);
+					$('#fallback').i18n();
+					$scope.showFallback = true;
 				}
 			});
 		};

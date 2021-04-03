@@ -5,7 +5,7 @@ define(function () {
 
         function DeviceIcon(device) {
             this.isConfigurable = function() {
-                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Lighting 6','Color Switch','Home Confort'].includes(device.Type) &&
+                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Lighting 6','Color Switch','Home Confort','Thermostat 3'].includes(device.Type) &&
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
@@ -26,7 +26,10 @@ define(function () {
                 } else if (device.Type === 'Scene' || device.Type === 'Group') {
                     image = device.isActive() ? 'push.png' : 'pushoff.png'
                 } else {
-                    image = device.TypeImg + '.png'
+                    if(device.CustomImage == 0)
+                        image = device.TypeImg + '.png'
+                    else
+                        image = device.Image + '48_On.png';
                 }
 
                 return 'images/' + image;
@@ -169,7 +172,7 @@ define(function () {
                 var deviceType = this.Type;
                 var logLink = '#/Devices/' + this.idx + '/Log';
 
-                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy'];
+                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating'];
                 var deviceSubTypes = [
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
@@ -194,6 +197,19 @@ define(function () {
                 if (this.Counter !== undefined) {
                     return logLink;
                 }
+            };
+
+            this.isCustomLog = function () {
+				var deviceTypes = ['Air Quality','UV','Rain','Current'];
+				var deviceSubTypes = ['Barometer'];
+
+				if (deviceTypes.includes(this.Type)) {
+					return true;
+				}
+				if (deviceSubTypes.includes(this.SubType)) {
+					return true;
+				}
+				return false;
             };
 
             this.openCustomLog = function (container, backFn) {

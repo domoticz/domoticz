@@ -56,10 +56,13 @@ namespace clx {
 		typedef std::shared_ptr<stream_type> stream_ptr;
 		typedef unzFile handler_type;
 		typedef std::basic_string<CharT, Traits> string_type;
-		
-		basic_unzip_iterator() :
-			cur_(), handler_(NULL), pass_() {}
-		
+
+		basic_unzip_iterator()
+			: cur_()
+			, pass_()
+		{
+		}
+
 		basic_unzip_iterator(const basic_unzip_iterator& cp) :
 			cur_(cp.cur_), handler_(cp.handler_), pass_(cp.pass_) {}
 		
@@ -148,7 +151,7 @@ namespace clx {
 		
 	private:
 		stream_ptr cur_;
-		handler_type handler_;
+		handler_type handler_{ nullptr };
 		string_type pass_;
 		
 		basic_unzip_iterator& create() {

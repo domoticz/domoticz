@@ -1,4 +1,5 @@
-<!-- GE(Jasco) 26931 Z-Wave Plus Smart Motion Switch --><Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- GE(Jasco) 26931 Z-Wave Plus Smart Motion Switch -->
+<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3032:494D</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/26931-motion-switch.png</MetaDataItem>
@@ -26,6 +27,7 @@ on the smart switch to include it in the network.</MetaDataItem>
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2035/26931 EnFrSp QSG v1.3 and Parameters.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2035/xml</Entry>
+      <Entry author="Tao Gong - gongtao0607@gmail.com" date="11 Nov 2020" revision="3">Update ForceInstance flag</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2035 -->
@@ -80,6 +82,13 @@ on the smart switch to include it in the network.</MetaDataItem>
       <Item label="Press any button" value="0"/>
       <Item label="Press X then press ON" value="1"/>
     </Value>
+  </CommandClass>
+  <!-- Compatibility Flags -->
+  <!-- This flag is to fix OpenZWave unable to add association '1.0'. Without this flag, attempting to add assiciation '1.0' will become '1.1' -->
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>false</ForceInstances>
+    </Compatibility>
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">

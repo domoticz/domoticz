@@ -2,15 +2,9 @@
 #include "CurrentCostMeterBase.h"
 #include "hardwaretypes.h"
 
-CurrentCostMeterBase::CurrentCostMeterBase(void) :
-	m_tempuratureCounter(0)
+CurrentCostMeterBase::CurrentCostMeterBase()
 {
 	Init();
-}
-
-
-CurrentCostMeterBase::~CurrentCostMeterBase(void)
-{
 }
 
 void CurrentCostMeterBase::Init()
@@ -169,11 +163,9 @@ bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, 
 	{
 		return true;
 	}
-	else
-	{
-		*pResult = -1.0;
-		return false;
-	}
+
+	*pResult = -1.0;
+	return false;
 }
 
 void CurrentCostMeterBase::ParseData(const char *pData, int Len)

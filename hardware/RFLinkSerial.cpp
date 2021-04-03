@@ -5,18 +5,11 @@
 #include "../main/localtime_r.h"
 #include <boost/exception/diagnostic_information.hpp>
 
-using namespace boost::placeholders;
-
 CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
 m_szSerialPort(devname)
 {
 	m_HwdID = ID;
 	m_retrycntr = RFLINK_RETRY_DELAY * 5;
-}
-
-CRFLinkSerial::~CRFLinkSerial()
-{
-
 }
 
 bool CRFLinkSerial::StartHardware()
@@ -26,7 +19,7 @@ bool CRFLinkSerial::StartHardware()
 	m_retrycntr = RFLINK_RETRY_DELAY*5; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CRFLinkSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -58,16 +51,17 @@ void CRFLinkSerial::Do_Work()
 			sec_counter++;
 
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			if (isOpen())
 			{
 				/*
 				if (sec_counter % 40 == 0)
 				{
-				time_t atime = mytime(NULL);
+				time_t atime = mytime(nullptr);
 				//Send ping (keep alive)
-				_log.Log(LOG_STATUS, "RFLink: t1=%d t2=%d t3=%d", m_LastHeartbeat, m_LastHeartbeatReceive, m_LastReceivedTime);
+				_log.Log(LOG_STATUS, "RFLink: t1=%d t2=%d t3=%d", m_LastHeartbeat, m_LastHeartbeatReceive,
+				m_LastReceivedTime);
 
 				if (atime - m_LastReceivedTime > 25) {
 				//_log.Log(LOG_STATUS, "RFLink: ping...");
@@ -90,7 +84,7 @@ void CRFLinkSerial::Do_Work()
 
 				if (sec_counter % 50 == 0)
 				{
-					time_t atime = mytime(NULL);
+					time_t atime = mytime(nullptr);
 					//Send ping (keep alive)
 					//_log.Log(LOG_STATUS, "RFLink: t1=%d t3=%d", atime, m_LastReceivedTime);
 					if (difftime(atime,m_LastReceivedTime) > 50) {
@@ -181,9 +175,9 @@ bool CRFLinkSerial::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
-	m_LastReceivedTime = mytime(NULL);
+	m_LastReceivedTime = mytime(nullptr);
 
-	setReadCallback(boost::bind(&CRFLinkSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 
 	return true;

@@ -691,7 +691,7 @@ local testRGBW = function(name)
 		["timedOut"] = false;
 	})
 	dev.setRGB(15, 30, 60)
-	dev.dimTo(15)
+	dev.dimTo(15).afterSec(5)
 	tstMsg('Test RGBW device', res)
 	return res
 end
@@ -870,6 +870,19 @@ local testEmit = function()
 	dz.emitEvent('myEvents5',myEventTable).afterSec(6)
 
 	tstMsg('Test Emits', res)
+	return res
+end
+
+local testExecuteShellCommand = function()
+	local res = true
+
+	dz.executeShellCommand(
+	{
+		command = 'timeout 2 ping 8.8.8.8',
+		callback = 'test executeShellCommand'
+	}).afterSec(1)
+
+	tstMsg('Test executeShellCommand', res)
 	return res
 end
 
@@ -1316,10 +1329,20 @@ end
 
 local testSnapshot = function()
 	local res = true
+	res = res and dz.snapshot()
+	tstMsg('Test camera snaphot with defaults',res)
 	res = res and dz.snapshot(1,"stage1 snapshot").afterSec(4)
 	tstMsg('Test camera snaphot with id',res)
 	res = res and dz.snapshot("camera1","stage1 snapshot").afterSec(4)
 	tstMsg('Test camera snaphot with name',res)
+	res = res and dz.snapshot("camera1;camera1","stage1 snapshot").afterSec(5)
+	tstMsg('Test camera snaphot with names',res)
+	res = res and dz.snapshot("1;1","stage1 snapshot").afterSec(5)
+	tstMsg('Test camera snaphot with IDs',res)
+	res = res and dz.snapshot({"camera1","camera1"},"stage1 snapshot")
+	tstMsg('Test camera snaphot with names',res)
+	res = res and dz.snapshot({1,1},"stage1 snapshot").afterSec(5)
+	tstMsg('Test camera snaphot with IDs in table',res)
 	return res
 end
 
@@ -1521,6 +1544,7 @@ return {
 		res = res and testAmpere1('vdAmpere1')
 		res = res and testBackup()
 		res = res and testEmit()
+		res = res and testExecuteShellCommand()
 		res = res and testDimmer('vdSwitchDimmer')
 		res = res and testBarometer('vdBarometer')
 		res = res and testCounter('vdCounter')
@@ -1599,7 +1623,7 @@ return {
 			log('Results stage 1: FAILED!!!!', dz.LOG_ERROR)
 		else
 			log('Results stage 1: SUCCEEDED')
-			dz.devices('stage2Trigger').switchOn().afterSec(20)   -- 20 seconds because of repeatAfter tests
+			dz.devices('stage2Trigger').switchOn().afterSec(20) -- 20 seconds because of repeatAfter tests
 		end
 	end
 }

@@ -16,6 +16,13 @@ fi
 echo "Updating to latest release version..."
 echo "Please Standby..."
 wget -4 -O domoticz_release.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=stable&type=release&system=${OS}&machine=${MACH}"
+echo "Checking file Integrity..."
+tar -tzf domoticz_release.tgz >/dev/null
+if [ $? -ne 0 ]
+then
+ echo "Problem in downloaded Domoticz archive. Stopping update!"
+ exit 1
+fi
 tar xvfz domoticz_release.tgz
 rm domoticz_release.tgz
 echo "Restarting Domoticz... (please standby...)"

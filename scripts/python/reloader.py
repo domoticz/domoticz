@@ -8,13 +8,17 @@ reloader.auto_reload(__name__)
 import sys
 import os
 
+try:
+	reload  # Python 2
+except NameError:
+	from importlib import reload  # Python 3
+
 
 # mark module as a module to reload
 def auto_reload(module_name):
 	import domoticz as dz
 	path = _py_source(sys.modules[module_name])
 	_module_mtimes[module_name] = os.path.getmtime(path)
-
 
 
 # below this is internal stuff

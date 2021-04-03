@@ -5,10 +5,10 @@
 
 <div class="container" id="hardwarecontent"></div>
 
-<z-wave-hardware ng-if="$ctrl.hardware.Type === 21" hardware="$ctrl.hardware" />
-<wol-hardware ng-if="$ctrl.hardware.Type === 29" hardware="$ctrl.hardware" />
-<my-sensors-hardware ng-if="[41, 42, 92].includes($ctrl.hardware.Type)" hardware="$ctrl.hardware" />
-<pinger-hardware ng-if="$ctrl.hardware.Type === 51" hardware="$ctrl.hardware" />
-<kodi-hardware ng-if="$ctrl.hardware.Type === 55" hardware="$ctrl.hardware" />
-<panasonic-tv-hardware ng-if="$ctrl.hardware.Type === 69" hardware="$ctrl.hardware" />
-<ble-box-hardware ng-if="$ctrl.hardware.Type === 82" hardware="$ctrl.hardware" />
+<z-wave-hardware ng-if="$ctrl.hardware.Type === 21" hardware="$ctrl.hardware"></z-wave-hardware>
+<wol-hardware ng-if="$ctrl.hardware.Type === 29" hardware="$ctrl.hardware"></wol-hardware>
+<my-sensors-hardware ng-if="[41, 42, 92].includes($ctrl.hardware.Type)" hardware="$ctrl.hardware"></my-sensors-hardware>
+<pinger-hardware ng-if="$ctrl.hardware.Type === 51" hardware="$ctrl.hardware"></pinger-hardware>
+<kodi-hardware ng-if="$ctrl.hardware.Type === 55" hardware="$ctrl.hardware"></kodi-hardware>
+<panasonic-tv-hardware ng-if="$ctrl.hardware.Type === 69" hardware="$ctrl.hardware"></panasonic-tv-hardware>
+<ble-box-hardware ng-if="$ctrl.hardware.Type === 82" hardware="$ctrl.hardware"></ble-box-hardware>

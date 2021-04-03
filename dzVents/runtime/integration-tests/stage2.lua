@@ -61,9 +61,7 @@ end
 local testSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
-	res = res and checkAttributes(dev, {
-		["state"] = "On",
-	})
+	res = res and checkAttributes(dev, {["state"] = "On",})
 	handleResult ('Test switch device', res)
 	return res
 end
@@ -536,7 +534,7 @@ local testGroup = function(name)
 		["id"] = 2,
 		["name"] = name,
 		['state'] = 'On',
-		['baseType'] = 'group'
+		['baseType'] = 'group',
 	})
 	handleResult('Test group', res)
 	return res

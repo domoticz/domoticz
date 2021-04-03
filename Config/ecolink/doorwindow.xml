@@ -1,7 +1,7 @@
 <!--
 Ecolink Door Window Sensor (DWZWAVE2.5-ECO)
 http://products.z-wavealliance.org/products/1498
---><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014A:0002:0001</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ecolink/doorwindow.png</MetaDataItem>
@@ -21,6 +21,7 @@ Includes white and brown cases</MetaDataItem>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 May 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/790/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1498/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2927/xml</Entry>
+      <Entry author="Jean-François Auger - nechry@gmail.com" date="03 Jan 2021" revision="8">Add parameter 1 and 2</Entry>
     </ChangeLog>
     <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=Manuals/2927/EU Z-wave Door Window Sensor H114101 ZWAVE_Ver03.pdf</MetaDataItem>
     <MetaDataItem name="WakeupDescription">The sensor will wake up every so often and when the case is closed to send a Wake-Up Notification to allow the life line master node controller that the sensor is now available for any queued messages that the controller may have for the sensor. The time between Wake-Up Notifications can be configured with the Wake-Up Notification command class to be between 1 hour and 1 week with interval steps of 200 seconds. </MetaDataItem>
@@ -48,6 +49,24 @@ STEP THREE    Test the sensor.  Place the magnet next to the sensor to represent
       <SetAsReport>true</SetAsReport>
     </Compatibility>
   </CommandClass>
+  <!-- Configuration Parameters -->
+<CommandClass id="112">
+  <Value type="list" index="1" genre="config" label="Basic Set Report when sensor is restored" units="" max="1" min="0" size="1" value="0">
+    <Help>
+	Configures the sensor to send or not send Basic Sets to nodes IDs in Association group 2 when the sensor is in a restored state (i.e. Door/Window Closed).  
+	By default the sensor does NOT send Basic Set commands.
+    </Help>
+    <Item label="Disable" value="0"/>
+    <Item label="Enable" value="255"/>
+  </Value>
+  <Value type="list" index="2" genre="config" label="Sensor Binary / Notification Reports" units="" max="1" min="0" size="1" value="0">
+    <Help>
+	Configures the sensor to either send Sensor Binary Report and Notification Reports or only Notification Reports when the sensor is faulted and restored.  
+    </Help>
+    <Item label="Enable" value="0"/>
+    <Item label="Disable" value="255"/>
+  </Value>
+</CommandClass>
   <!-- Refresh Battery Level on wakeup-->
   <CommandClass id="128">
     <Compatibility>

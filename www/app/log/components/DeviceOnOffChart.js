@@ -68,6 +68,8 @@ define(['app', 'luxon'], function (app, luxon) {
             $element.highcharts({
                 chart: {
                     zoomType: 'x',
+                    panning: true,
+                    panKey: 'shift'
                 },
                 title: {
                     text: null

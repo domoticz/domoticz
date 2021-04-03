@@ -4,19 +4,23 @@
 
 class CMeteorologisk : public CDomoticzHardwareBase
 {
-public:
-	CMeteorologisk(const int ID, const std::string &Location);
-	~CMeteorologisk(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+      public:
+	CMeteorologisk(int ID, const std::string &Location);
+	~CMeteorologisk() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
-private:
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-private:
+
 	std::string m_Location;
+	std::string m_URL;
+	std::string m_ForecastURL;
+	double m_Lat = 0;
+	double m_Lon = 0;
 	std::shared_ptr<std::thread> m_thread;
 };
-

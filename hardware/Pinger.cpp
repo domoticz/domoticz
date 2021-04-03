@@ -19,8 +19,6 @@
 
 #include <iostream>
 
-using namespace boost::placeholders;
-
 #if BOOST_VERSION >= 107000
 #define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
 #else
@@ -31,18 +29,22 @@ class pinger
 	: private domoticz::noncopyable
 {
 public:
-	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)
-		: resolver_(io_service), socket_(io_service, boost::asio::ip::icmp::v4()),
-		timer_(io_service), sequence_number_(0), m_PingState(false), num_replies_(0)
-	{
-		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
-		destination_ = *resolver_.resolve(query);
+  pinger(boost::asio::io_service &io_service, const char *destination, const int iPingTimeoutms)
+	  : num_replies_(0)
+	  , m_PingState(false)
+	  , resolver_(io_service)
+	  , socket_(io_service, boost::asio::ip::icmp::v4())
+	  , timer_(io_service)
+	  , sequence_number_(0)
+  {
+	  boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
+	  destination_ = *resolver_.resolve(query);
 
-		num_tries_ = 1;
-		PingTimeoutms_ = iPingTimeoutms;
-		start_send();
-		start_receive();
-	}
+	  num_tries_ = 1;
+	  PingTimeoutms_ = iPingTimeoutms;
+	  start_send();
+	  start_receive();
+  }
 	int num_replies_;
 	int num_tries_;
 	int PingTimeoutms_;
@@ -71,7 +73,7 @@ private:
 
 		num_replies_ = 0;
 		timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(PingTimeoutms_));
-		timer_.async_wait(boost::bind(&pinger::handle_timeout, this, boost::asio::placeholders::error));
+		timer_.async_wait([this](auto err) { handle_timeout(err); });
 	}
 
 	void handle_timeout(const boost::system::error_code& error)
@@ -89,7 +91,7 @@ private:
 				}
 				else
 				{
-					timer_.async_wait(boost::bind(&pinger::start_send, this));
+					timer_.async_wait([this](auto &) { start_send(); });
 				}
 			}
 		}
@@ -101,8 +103,7 @@ private:
 		reply_buffer_.consume(reply_buffer_.size());
 
 		// Wait for a reply. We prepare the buffer to receive up to 64KB.
-		socket_.async_receive(reply_buffer_.prepare(65536),
-			boost::bind(&pinger::handle_receive, this, _2));
+		socket_.async_receive(reply_buffer_.prepare(65536), [this](auto, auto bytes) { handle_receive(bytes); });
 	}
 
 	void handle_receive(std::size_t length)
@@ -163,7 +164,7 @@ CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutm
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CPinger::~CPinger(void)
+CPinger::~CPinger()
 {
 	m_bIsStarted = false;
 }
@@ -183,7 +184,7 @@ bool CPinger::StartHardware()
 	ReloadNodes();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CPinger::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
@@ -249,7 +250,7 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
-	SendSwitch(ID, 1, 255, false, 0, Name);
+	SendSwitch(ID, 1, 255, false, 0, Name, m_Name);
 	ReloadNodes();
 }
 
@@ -314,16 +315,13 @@ void CPinger::ReloadNodes()
 		m_HwdID);
 	if (!result.empty())
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+		for (const auto &sd : result)
 		{
-			std::vector<std::string> sd = *itt;
-
 			PingNode pnode;
 			pnode.ID = atoi(sd[0].c_str());
 			pnode.Name = sd[1];
 			pnode.IP = sd[2];
-			pnode.LastOK = mytime(NULL);
+			pnode.LastOK = mytime(nullptr);
 
 			int SensorTimeoutSec = atoi(sd[3].c_str());
 			pnode.SensorTimeoutSec = (SensorTimeoutSec > 0) ? SensorTimeoutSec : 5;
@@ -367,24 +365,23 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 	}
 
 	//Find out node, and update it's status
-	std::vector<PingNode>::iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	for (auto &node : m_nodes)
 	{
-		if (itt->ID == Node.ID)
+		if (node.ID == Node.ID)
 		{
 			//Found it
-			time_t atime = mytime(NULL);
+			time_t atime = mytime(nullptr);
 			if (bPingOK)
 			{
-				itt->LastOK = atime;
-				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
+				node.LastOK = atime;
+				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name, m_Name);
 			}
 			else
 			{
-				if (difftime(atime, itt->LastOK) >= Node.SensorTimeoutSec)
+				if (difftime(atime, node.LastOK) >= Node.SensorTimeoutSec)
 				{
-					itt->LastOK = atime;
-					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
+					node.LastOK = atime;
+					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name, m_Name);
 				}
 			}
 			break;
@@ -395,15 +392,14 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 void CPinger::DoPingHosts()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	std::vector<PingNode>::const_iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	for (const auto &node : m_nodes)
 	{
 		if (IsStopRequested(0))
 			return;
 		if (m_iThreadsRunning < 1000)
 		{
 			//m_iThreadsRunning++;
-			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			boost::thread t([this, node] { Do_Ping_Worker(node); });
 			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}
@@ -462,11 +458,11 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
+			if (pHardware == nullptr)
 				return;
 			if (pHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -479,12 +475,9 @@ namespace http {
 				iHardwareID);
 			if (!result.empty())
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
 				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				for (const auto &sd : result)
 				{
-					std::vector<std::string> sd = *itt;
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];
@@ -504,15 +497,11 @@ namespace http {
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
+			if ((hwid.empty()) || (mode1.empty()) || (mode2.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -546,16 +535,11 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Timeout == 0)
-				)
+			if ((hwid.empty()) || (name.empty()) || (ip.empty()) || (Timeout == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -579,17 +563,11 @@ namespace http {
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
 			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Timeout == 0)
-				)
+			if ((hwid.empty()) || (nodeid.empty()) || (name.empty()) || (ip.empty()) || (Timeout == 0))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -611,14 +589,11 @@ namespace http {
 
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
+			if ((hwid.empty()) || (nodeid.empty()))
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -639,11 +614,11 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
+			if (hwid.empty())
 				return;
 			int iHardwareID = atoi(hwid.c_str());
 			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
+			if (pBaseHardware == nullptr)
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
@@ -653,5 +628,5 @@ namespace http {
 			root["title"] = "PingerClearNodes";
 			pHardware->RemoveAllNodes();
 		}
-	}
-}
+	} // namespace server
+} // namespace http

@@ -1,27 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
-  <!--
-  Shenzhen NEO Electronics (Neo-CoolCam) Light Switch (2 channel)
-  -->
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="2">
+  <MetaData>
+    <MetaDataItem name="Name">Shenzhen NEO Electronics (Neo-CoolCam) Light Switch (2 channels)</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0258:108b:0003</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://szneo.com/en/products/show.php?id=196</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/shenzhen-neo/eu-2.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Set Z-Wave gateway into inclusion mode (refer to gateway user manual).
+Touch any button three times continuously within 1,5 seconds, then Light switch will enter into inclusion mode.
+Meanwhile, LED light would flash red colour five time on and off alternately.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Set Z-Wave gateway into exclusion mode (refer to gateway user manual).
+Touch any button three times continuously within 1,5 seconds, then Light switch will enter into exclusion mode.</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Touch and hold any button for 10 seconds, then release the button.
+LEF lights would flash red (1CH:pink) color 5 times within 2s after resetting successfully.
+During the resetting process, please make sure the light switch is powered on all the time.</MetaDataItem>
+    <MetaDataItem id="108B" name="ZWProductPage" type="0003">https://szneo.com/en/products/show.php?id=196</MetaDataItem>
+    <MetaDataItem id="108B" name="FrequencyName" type="0003">CEPT (Europe)</MetaDataItem>
+    <MetaDataItem id="108B" name="Identifier" type="0003">EU-2</MetaDataItem>
+    <MetaDataItem id="008B" name="ZWProductPage" type="0003">https://szneo.com/en/products/show.php?id=203</MetaDataItem>
+    <MetaDataItem id="008B" name="FrequencyName" type="0003">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="008B" name="Identifier" type="0003">US-2</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Attila Lukács" date="29 August 2017" revision="1">Initial version</Entry>
+      <Entry author="Dmitry Blokhin - santafox@gmail.com" date="17 January 2021" revision="2">Added pictures, descriptions and metadata</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" genre="config" instance="1" index="1" label="Back light Enable" value="1" size="1">
-      <Help>This parameter defines the back light state of the touch button. The back light led would be on when Light Switch is powered on if the parameter is set to '1'. Otherwise the back light led would be off.</Help>
+    <Value type="list" genre="config" instance="1" index="1" label="Back Light Enable" value="1" size="1">
+      <Help>This parameter defines the back light state of the touch button.
+The back light led would be on when Light Switch is powered on if the parameter is set to '1'.
+Otherwise the back light led would be off.</Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="2" label="Relay On/Off indicate" value="1" size="1">
-      <Help>This parameter defines the relays state. The led will be turned on with pink color when the button is touched to tur on relay if this paramtere is set to '1'. Otherwise the ledstate is not changed.</Help>
+    <Value type="list" genre="config" instance="1" index="2" label="Relay On/Off Indicate" value="1" size="1">
+      <Help>This parameter defines the relays state.
+The led will be turned on with pink color when the button is touched to turn on relay if this paramtere is set to '1'.
+Otherwise the led state is not changed.</Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="3" label="Relay On/Off States Saved Enable" value="1" size="1">
-      <Help>This parameter defines the on/off status of relay needs to be saved. The status will be saved when relay status is changed if this parameter is set to '1'. Otherwise the relay stataus is not saved. The Light Switch will restore the relay On/Off  status when powered again.</Help>
+    <Value type="list" genre="config" instance="1" index="3" label="Relay On/Off Status Saved Enable" value="1" size="1">
+      <Help>This parameter defines the on/off status of relay needs to be saved or not.
+The status will be saved when relay status is changed if this parameter is set to '1'; otherwise the relay stataus is not saved.
+The Light Switch will restore the relay On/Off status when is powered on again.</Help>
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="4" label="Root Device Mapped Setting" min="0" max="3" value="0" size="1">
-      <Help>This parameter defines which endpoint is mapped to root device (Endpoint 0). 0 - No endpoint is mapped to root device. 1 - Endpoint 1 is mapped to root device. 2 - Endpoint 2 is mapped to root device. 3 - Both endpoint 1 and 2 are mapped to root device.</Help>
+    <Value type="list" genre="config" instance="1" index="4" label="Root Device Mapped Setting" min="0" max="3" value="1" size="1">
+      <Help>This parameter defines which endpoint is mapped to root device (Endpoint 0).
+The valid values are explaned as follows. Default value is 1.
+0 - No endpoint is mapped to root device; 1 - Endpoint 1 is mapped to root device; 2 - Endpoint 2 is mapped to root device; 3 - Both endpoint 1 and 2 are mapped to root device.
+For example, assume this parameter is set to 1 (default value). Gateway or other devices (such as door/window sensor, motion sensor, etc.) that is associated
+with Light Switch send a command BASIC_SET = 0xFF to Light Switch, the relay in endpoint 1 will be turned on, and other relay status will not be changed.</Help>
       <Item label="No endpoint is mapped to root device" value="0"/>
       <Item label="Endpoint 1 is mapped to root device" value="1"/>
       <Item label="Endpoint 2 is mapped to root device" value="2"/>

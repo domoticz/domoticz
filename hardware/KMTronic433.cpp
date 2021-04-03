@@ -9,12 +9,9 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
 #include <ctime>
-
-using namespace boost::placeholders;
 
 //#define DEBUG_KMTronic
 
@@ -30,11 +27,6 @@ KMTronic433::KMTronic433(const int ID, const std::string& devname)
 	m_retrycntr = RETRY_DELAY;
 }
 
-KMTronic433::~KMTronic433()
-{
-
-}
-
 bool KMTronic433::StartHardware()
 {
 	RequestStart();
@@ -45,7 +37,7 @@ bool KMTronic433::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&KMTronic433::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -72,7 +64,7 @@ void KMTronic433::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())
@@ -136,7 +128,7 @@ bool KMTronic433::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 	m_bufferpos = 0;
-	setReadCallback(boost::bind(&KMTronic433::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 }
@@ -178,6 +170,6 @@ void KMTronic433::GetRelayStates()
 		std::stringstream sstr;
 		sstr << "Relay " << (ii + 1);
 		bool bIsOn = false;
-		SendSwitchIfNotExists(ii + 1, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+		SendSwitchIfNotExists(ii + 1, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str(), m_Name);
 	}
 }

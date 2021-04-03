@@ -1,4 +1,4 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3135:4952</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/46201-switch.png</MetaDataItem>
@@ -17,6 +17,7 @@
 3. Once your controller has confirmed that the device has been included, refresh the Z-Wave network to optimize performance.</MetaDataItem>
     <ChangeLog>
       <Entry author="Caleb Mingle - caleb@mingle.cm" date="07 Sept 2019" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3317/xml</Entry>
+      <Entry author="Brian France" date="23 Nov 2020" revision="2">Added COMMAND_CLASS_BASIC block to set Value type instead of Node Event for Basic Set, Added COMMAND_CLASS_ASSOCIATION block for double tap with double tap defauled to auto</Entry>
     </ChangeLog>
   </MetaData>
   <CommandClass id="112">
@@ -38,7 +39,14 @@
     <Associations num_groups="3">
       <Group index="1" label="Lifeline" max_associations="5"/>
       <Group index="2" label="Basic - Local Load" max_associations="5"/>
-      <Group index="3" label="Basic - Double Tap" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5" auto="true"/>
     </Associations>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <IgnoreMapping>true</IgnoreMapping>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
   </CommandClass>
 </Product>

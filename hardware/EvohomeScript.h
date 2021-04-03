@@ -10,15 +10,14 @@
  *
  *  Copyright 2014 - fullTalgoRythm https://github.com/fullTalgoRythm/Domoticz-evohome
  *
- *  Licensed under GNU General Public License 3.0 or later. 
+ *  Licensed under GNU General Public License 3.0 or later.
  *  Some rights reserved. See COPYING, AUTHORS.
  *
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
- * 
+ *
  * based in part on https://github.com/mouse256/evomon
  * and details available at http://www.domoticaforum.eu/viewtopic.php?f=7&t=5806&start=90#p72564
  */
-
 
 #pragma once
 
@@ -26,14 +25,14 @@
 
 class CEvohomeScript : public CEvohomeBase
 {
-public:
-	explicit CEvohomeScript(const int ID);
-	~CEvohomeScript(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
+      public:
+	explicit CEvohomeScript(int ID);
+	~CEvohomeScript() override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
-	void RunScript(const char *pdata, const unsigned char length);
+	void RunScript(const char *pdata, unsigned char length);
 };
-

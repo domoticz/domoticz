@@ -52,8 +52,8 @@
                     </span>
 
                     <a ng-show="item.forecast_url" class="btnsmall" ng-click="ctrl.ShowForecast('#tempcontent', 'ShowTemps')" data-i18n="Forecast">Forecast</a>
-                    <a ng-show="item.SetPoint" id="set" class="btnsmall" ng-click="ctrl.EditSetPoint('ShowTemps')" data-i18n="Set">Set</a>
-                    <a ng-show="item.State" id="set" class="btnsmall" ng-click="ctrl.EditState('ShowTemps')" data-i18n="Set">Set</a>
+		    <a ng-show="(item.SetPoint && item.SubType != 'Hot Water')" id="set" class="btnsmall" ng-click="ctrl.EditSetPoint('ShowTemps')" data-i18n="Set">Set</a>
+                    <a ng-show="(item.State || item.SubType == 'Hot Water')" id="set" class="btnsmall" ng-click="ctrl.EditState('ShowTemps')" data-i18n="Set">Set</a>                    
                 </td>
             </tr>
         </table>

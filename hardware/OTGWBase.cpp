@@ -12,26 +12,57 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include <json/json.h>
 
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
 
+// Mapping to device idx for backwards compatibility
+#define MsgID0		101
+#define MsgID1		1
+#define MsgID6		2
+#define MsgID7		25
+#define MsgID8		26
+#define MsgID14		3
+#define MsgID15		4
+#define MsgID16		5
+#define MsgID17		6
+#define MsgID18		7
+#define MsgID19		27
+#define MsgID23		28
+#define MsgID24		8
+#define MsgID25		9
+#define MsgID26		10
+#define MsgID27		11
+#define MsgID28		12
+#define MsgID31		29
+#define MsgID33		30
+#define MsgID48		13
+#define MsgID49		14
+#define MsgID56		15
+#define MsgID57		16
+#define MsgID70		31
+#define MsgID71		32
+#define MsgID77		33
+#define MsgID116	17
+#define MsgID117	18
+#define MsgID118	19
+#define MsgID119	20
+#define MsgID120	21
+#define MsgID121	22
+#define MsgID122	23
+#define MsgID123	24
+
 extern http::server::CWebServerHelper m_webservers;
 
-OTGWBase::OTGWBase(void) :
-	m_Version("--")
+OTGWBase::OTGWBase()
+	: m_Version("--")
 {
 	m_OutsideTemperatureIdx=0;//use build in
 	m_bufferpos = 0;
-	m_OverrideTemperature = 0.0f;
+	m_OverrideTemperature = 0.0F;
 	m_bRequestVersion = true;
-}
-
-OTGWBase::~OTGWBase(void)
-{
 }
 
 void OTGWBase::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*/, const int /*Mode4*/, const int /*Mode5*/, const int /*Mode6*/)
@@ -108,7 +139,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	lcmd.LIGHTING2.level= (uint8_t)level;
 	lcmd.LIGHTING2.filler=0;
 	lcmd.LIGHTING2.rssi=12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -120,10 +151,9 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255, nullptr);
 }
 
 bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
@@ -139,7 +169,6 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	if (tsize < 1)
 		return false;
 
-	Json::Value::const_iterator itt;
 	Json::ArrayIndex rsize = tempjson["result"].size();
 	if (rsize < 1)
 		return false;
@@ -183,7 +212,7 @@ bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int /*s
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "OTGW: Invalid switch command received!");
+			Log(LOG_ERROR, "Invalid switch command received!");
 			return false;
 		}
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
@@ -200,7 +229,7 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char /*length*/
 
 	if (packettype == pTypeLighting2)
 	{
-		std::string LCmd = "";
+		std::string LCmd;
 		int nodeID = 0;
 		int svalue = 0;
 		//light command
@@ -216,17 +245,17 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char /*length*/
 			svalue = 255;
 		}
 		SwitchLight(nodeID, LCmd, svalue);
-  }
-  else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
-  {
-      const _tThermostat *pMeter=reinterpret_cast<const _tThermostat*>(pdata);
-      float temp = pMeter->temp;
-      unsigned char idx = pMeter->id4;
-      SetSetpoint(idx, temp);
-   }
-  else
-  {
-     _log.Log(LOG_STATUS, "OTGW: Skipping writing to Hardware for type: %02X, subType: %02X", packettype, subtype);
+	}
+	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
+	{
+		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pdata);
+		float temp = pMeter->temp;
+		unsigned char idx = pMeter->id4;
+		SetSetpoint(idx, temp);
+	}
+	else
+	{
+		Log(LOG_STATUS, "Skipping writing to Hardware for type: %02X, subType: %02X", packettype, subtype);
 	}
 	return true;
 }
@@ -253,7 +282,7 @@ void OTGWBase::GetGatewayDetails()
 
 void OTGWBase::SendTime()
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -284,7 +313,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	if (idx == 1)
 	{
 		//Control Set Point (MsgID=1)
-		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Control SetPoint to: %.1f", temp);
 		sprintf(szCmd, "CS=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
@@ -292,7 +321,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
-		_log.Log(LOG_STATUS, "OTGW: Setting Room SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Room SetPoint to: %.1f", temp);
 		sprintf(szCmd, "TT=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 		UpdateSetPointSensor((uint8_t)idx, temp, "Room Setpoint");
@@ -300,7 +329,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	else if (idx == 15)
 	{
 		//DHW setpoint (MsgID=56)
-		_log.Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Heating SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SW=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 		UpdateSetPointSensor((uint8_t)idx, temp, "DHW Setpoint");
@@ -308,7 +337,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	else if (idx == 16)
 	{
 		//Max CH water setpoint (MsgID=57)
-		_log.Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
+		Log(LOG_STATUS, "Setting Max CH water SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 		UpdateSetPointSensor((uint8_t)idx, temp, "Max_CH Water Setpoint");
@@ -324,36 +353,47 @@ void OTGWBase::ParseLine()
 
 	std::vector<std::string> results;
 	StringSplit(sLine,",",results);
-	if (results.size()==25)
-	{
+	if (results.size()==25 || results.size()==34)
+	{	// Size = 25 for Firmware version < 5 and Size = 34 for Firmware version 5 and up
 		//status report
-		//0    Status (MsgID=0) - Printed as two 8-bit bitfields
-		//1    Control setpoint (MsgID=1) - Printed as a floating point value
-		//2    Remote parameter flags (MsgID= 6) - Printed as two 8-bit bitfields
-		//3    Maximum relative modulation level (MsgID=14) - Printed as a floating point value
-		//4    Boiler capacity and modulation limits (MsgID=15) - Printed as two bytes
-		//5    Room Setpoint (MsgID=16) - Printed as a floating point value
-		//6    Relative modulation level (MsgID=17) - Printed as a floating point value
-		//7    CH water pressure (MsgID=18) - Printed as a floating point value
-		//8    Room temperature (MsgID=24) - Printed as a floating point value
-		//9    Boiler water temperature (MsgID=25) - Printed as a floating point value
-		//10    DHW temperature (MsgID=26) - Printed as a floating point value
-		//11    Outside temperature (MsgID=27) - Printed as a floating point value
-		//12    Return water temperature (MsgID=28) - Printed as a floating point value
-		//13    DHW setpoint boundaries (MsgID=48) - Printed as two bytes
-		//14    Max CH setpoint boundaries (MsgID=49) - Printed as two bytes
-		//15    DHW setpoint (MsgID=56) - Printed as a floating point value
-		//16    Max CH water setpoint (MsgID=57) - Printed as a floating point value
-		//17    Burner starts (MsgID=116) - Printed as a decimal value
-		//18    CH pump starts (MsgID=117) - Printed as a decimal value
-		//19    DHW pump/valve starts (MsgID=118) - Printed as a decimal value
-		//20    DHW burner starts (MsgID=119) - Printed as a decimal value
-		//21    Burner operation hours (MsgID=120) - Printed as a decimal value
-		//22    CH pump operation hours (MsgID=121) - Printed as a decimal value
-		//23    DHW pump/valve operation hours (MsgID=122) - Printed as a decimal value
-		//24    DHW burner operation hours (MsgID=123) - Printed as a decimal value
+		//0    0	Status (MsgID=0) - Printed as two 8-bit bitfields
+		//1    1	Control setpoint (MsgID=1) - Printed as a floating point value
+		//2    2	Remote parameter flags (MsgID=6) - Printed as two 8-bit bitfields
+		// 	   3	Cooling control (MsgID=7) - Printed as a floating point value
+		//     4	Control setpoint 2 (MsgID=8) - Printed as a floating point value
+		//3    5	Maximum relative modulation level (MsgID=14) - Printed as a floating point value
+		//4    6	Boiler capacity and modulation limits (MsgID=15) - Printed as two bytes
+		//5    7	Room Setpoint (MsgID=16) - Printed as a floating point value
+		//6    8	Relative modulation level (MsgID=17) - Printed as a floating point value
+		//7    9	CH water pressure (MsgID=18) - Printed as a floating point value
+		//     10	DHW flow rate (MsgID=19) - Printed as a floating point value
+		//     11	CH2 room setpoint (MsgID=23) - Printed as a floating point value
+		//8    12	Room temperature (MsgID=24) - Printed as a floating point value
+		//9    13	Boiler water temperature (MsgID=25) - Printed as a floating point value
+		//10   14	DHW temperature (MsgID=26) - Printed as a floating point value
+		//11   15	Outside temperature (MsgID=27) - Printed as a floating point value
+		//12   16	Return water temperature (MsgID=28) - Printed as a floating point value
+		// 	   17	CH2 flow temperature (MsgID=31) - Printed as a floating point value
+		//     18	Boiler exhaust temperature (MsgID=33) - Printed as a signed decimal value
+		//13   19	DHW setpoint boundaries (MsgID=48) - Printed as two bytes
+		//14   20 	Max CH setpoint boundaries (MsgID=49) - Printed as two bytes
+		//15   21	DHW setpoint (MsgID=56) - Printed as a floating point value
+		//16   22	Max CH water setpoint (MsgID=57) - Printed as a floating point value
+		//     23	V/H master status (MsgID=70) - Printed as two 8-bit bitfields
+		//     24	V/H control setpoint (MsgID=71) - Printed as a byte
+		//     25	Relative ventilation (MsgID=77) - Printed as a byte
+		//17   26	Burner starts (MsgID=116) - Printed as a decimal value
+		//18   27	CH pump starts (MsgID=117) - Printed as a decimal value
+		//19   28	DHW pump/valve starts (MsgID=118) - Printed as a decimal value
+		//20   29	DHW burner starts (MsgID=119) - Printed as a decimal value
+		//21   30	Burner operation hours (MsgID=120) - Printed as a decimal value
+		//22   31	CH pump operation hours (MsgID=121) - Printed as a decimal value
+		//23   32	DHW pump/valve operation hours (MsgID=122) - Printed as a decimal value
+		//24   33	DHW burner operation hours (MsgID=123) - Printed as a decimal value
+
 		_tOTGWStatus _status;
 		int idx=0;
+		bool bIsFirmware5 = (results.size()==34);
 
 		_status.MsgID=results[idx++];
 		if (_status.MsgID.size()==17)
@@ -373,44 +413,67 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 
-		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Control_setpoint, "Control Setpoint");
+		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID1, 255, _status.Control_setpoint, "Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
+		if(bIsFirmware5)
+		{
+			idx+=2;
+		}
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
-		bool bExists = CheckPercentageSensorExists(idx - 1, 1);
+		bool bExists = CheckPercentageSensorExists(MsgID14, 1);
 		if ((_status.Maximum_relative_modulation_level != 0) || (bExists))
 		{
-			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
+			SendPercentageSensor(MsgID14, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor((uint8_t)idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		UpdateSetPointSensor((uint8_t)MsgID16, ((m_OverrideTemperature != 0.0F) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
-		bExists = CheckPercentageSensorExists(idx - 1, 1);
+		bExists = CheckPercentageSensorExists(MsgID17, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
 		{
-			SendPercentageSensor(idx - 1, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
+			SendPercentageSensor(MsgID17, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
 		}
 		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.CH_water_pressure != 0)
 		{
-			SendPressureSensor(0, idx - 1, 255, _status.CH_water_pressure, "CH Water Pressure");
+			SendPressureSensor(0, MsgID18, 255, _status.CH_water_pressure, "CH Water Pressure");
 		}
-
-		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Room_temperature, "Room Temperature");
-		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
-		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(idx - 1, 255, _status.DHW_temperature, "DHW Temperature");
-		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Outside_temperature, "Outside Temperature");
-		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
+		if(bIsFirmware5)
+		{
+			_status.DHW_flow_rate = static_cast<float>(atof(results[idx++].c_str()));						SendWaterflowSensor(MsgID19, 1, 255, _status.DHW_flow_rate, "DHW Flow Rate");
+			//CH2 room setpoint (MsgID=23)
+			idx+=1;
+		}
+		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID24, 255, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID25, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(MsgID26, 255, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(MsgID27, 255, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(MsgID28, 255, _status.Return_water_temperature, "Return Water Temperature");
+		if(bIsFirmware5)
+		{
+			//CH2 flow temperature(MsgID = 31)
+			//Boiler exhaust temperature(MsgID = 33)
+			idx+=2;
+		}
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
-		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str())); 
-		if (_status.DHW_setpoint != 0.0f)
+		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.DHW_setpoint != 0.0F)
 		{
-			UpdateSetPointSensor((uint8_t)idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+			UpdateSetPointSensor((uint8_t)MsgID56, _status.DHW_setpoint, "DHW Setpoint");
 		}
-		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));		
-		if (_status.Max_CH_water_setpoint != 0.0f)
+		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.Max_CH_water_setpoint != 0.0F)
 		{
-			UpdateSetPointSensor((uint8_t)idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+			UpdateSetPointSensor((uint8_t)MsgID57, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+		}
+		if(bIsFirmware5)
+		{
+			//V/H master status(MsgID = 70)
+			//V/H control setpoint(MsgID = 71)
+			//Relative ventilation(MsgID = 77)
+			idx+=3;
 		}
 		_status.Burner_starts=atol(results[idx++].c_str());
 		_status.CH_pump_starts=atol(results[idx++].c_str());
@@ -422,77 +485,70 @@ void OTGWBase::ParseLine()
 		_status.DHW_burner_operation_hours=atol(results[idx++].c_str());
 		return;
 	}
-	else
+
+	if (sLine == "SE")
 	{
-		if (sLine=="SE")
+		Log(LOG_ERROR, "Error received!");
+	}
+	else if (sLine.find("PR: G") != std::string::npos)
+	{
+		_tOTGWGPIO _GPIO;
+		_GPIO.A = static_cast<int>(sLine[6] - '0');
+		//		if (_GPIO.A==0 || _GPIO.A==1)
+		//		{
+		UpdateSwitch(96, (_GPIO.A == 1), "GPIOAPulledToGround");
+		//		}
+		//		else
+		//		{
+		// Remove device (how?)
+		//		}
+		_GPIO.B = static_cast<int>(sLine[7] - '0');
+		//		if (_GPIO.B==0 || _GPIO.B==1)
+		//		{
+		UpdateSwitch(97, (_GPIO.B == 1), "GPIOBPulledToGround");
+		//		}
+		//		else
+		//		{
+		// Remove device (how?)
+		//		}
+	}
+	else if (sLine.find("PR: I") != std::string::npos)
+	{
+		_tOTGWGPIO _GPIO;
+		_GPIO.A = static_cast<int>(sLine[6] - '0');
+		UpdateSwitch(98, (_GPIO.A == 1), "GPIOAStatusIsHigh");
+		_GPIO.B = static_cast<int>(sLine[7] - '0');
+		UpdateSwitch(99, (_GPIO.B == 1), "GPIOBStatusIsHigh");
+	}
+	else if (sLine.find("PR: O") != std::string::npos)
+	{
+		// Check if setpoint is overriden
+		m_OverrideTemperature = 0.0F;
+		char status = sLine[6];
+		if (status == 'c' || status == 't')
 		{
-			_log.Log(LOG_ERROR,"OTGW: Error received!");
-		}
-		else if (sLine.find("PR: G")!=std::string::npos)
-		{
-			_tOTGWGPIO _GPIO;
-			_GPIO.A=static_cast<int>(sLine[6]- '0');
-//			if (_GPIO.A==0 || _GPIO.A==1)
-//			{
-				UpdateSwitch(96,(_GPIO.A==1),"GPIOAPulledToGround");
-//			}
-//			else
-//			{
-				// Remove device (how?)
-//			}
-			_GPIO.B=static_cast<int>(sLine[7]- '0');
-//			if (_GPIO.B==0 || _GPIO.B==1)
-//			{
-				UpdateSwitch(97,(_GPIO.B==1),"GPIOBPulledToGround");
-//			}
-//			else
-//			{
-				// Remove device (how?)
-//			}
-		}
-		else if (sLine.find("PR: I")!=std::string::npos)
-		{
-			_tOTGWGPIO _GPIO;
-			_GPIO.A=static_cast<int>(sLine[6]- '0');
-			UpdateSwitch(98,(_GPIO.A==1),"GPIOAStatusIsHigh");
-			_GPIO.B=static_cast<int>(sLine[7]- '0');
-			UpdateSwitch(99,(_GPIO.B==1),"GPIOBStatusIsHigh");
-		}
-		else if (sLine.find("PR: O")!=std::string::npos)
-		{
-			// Check if setpoint is overriden
- 			m_OverrideTemperature=0.0f;
-			char status=sLine[6];
-			if (status == 'c' || status == 't')
-			{
-				// Get override setpoint value
-				m_OverrideTemperature=static_cast<float>(atof(sLine.substr(7).c_str()));
-			}
-		}
-		else if (sLine.find("PR: A") != std::string::npos)
-		{
-			//Gateway Version
-			std::string tmpstr = sLine.substr(6);
-			size_t tpos = tmpstr.find(' ');
-			if (tpos != std::string::npos)
-			{
-				m_Version = tmpstr.substr(tpos + 9);
-			}
-		}
-		else
-		{
-			if (
-				(sLine.find("OT") == std::string::npos)&&
-				(sLine.find("PS") == std::string::npos)&&
-				(sLine.find("SC") == std::string::npos)
-				)
-			{
-				//Dont report OT/PS/SC feedback
-				_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
-			}
+			// Get override setpoint value
+			m_OverrideTemperature = static_cast<float>(atof(sLine.substr(7).c_str()));
 		}
 	}
-
+	else if (sLine.find("PR: A") != std::string::npos)
+	{
+		// Gateway Version
+		std::string tmpstr = sLine.substr(6);
+		size_t tpos = tmpstr.find(' ');
+		if (tpos != std::string::npos)
+		{
+			m_Version = tmpstr.substr(tpos + 9);
+		}
+	}
+	else
+	{
+		if ((sLine.find("OT") == std::string::npos) && (sLine.find("PS") == std::string::npos) && (sLine.find("SC") == std::string::npos))
+		{
+			// Dont report OT/PS/SC feedback
+			Log(LOG_STATUS, "%s", sLine.c_str());
+		}
+	}
 }
 
 //Webserver helpers
@@ -508,7 +564,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -546,7 +603,7 @@ namespace http {
 			size_t tpos = cmnd.find('=');
 			if (tpos != 2)
 			{
-				_log.Log(LOG_STATUS, "OTGW: Invalid user command!: %s", cmnd.c_str());
+				_log.Log(LOG_STATUS, "Invalid user command!: %s", cmnd.c_str());
 				return;
 			}
 			std::string rcmnd = cmnd.substr(0, 2);
@@ -555,7 +612,7 @@ namespace http {
 			cmnd = rcmnd + rdata;
 
 			OTGWBase *pOTGW = reinterpret_cast<OTGWBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
-			if (pOTGW == NULL)
+			if (pOTGW == nullptr)
 				return;
 
 			_log.Log(LOG_STATUS, "User: %s initiated a manual command: %s", session.username.c_str(), cmnd.c_str());
@@ -566,5 +623,5 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "SendOpenThermCommand";
 		}
-	}
-}
+	} // namespace server
+} // namespace http

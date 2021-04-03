@@ -1,0 +1,61 @@
+name: Domoticz PR Check
+
+on:
+  pull_request:
+    branches:
+      - development
+      - master
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # install dependencies
+      - name: dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install
+          sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+
+      # get CMake
+      - name: cmake-compile
+        run: |
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
+          export PATH=/usr/local/bin:$PATH;
+
+      # Boost
+      - name: build boost libraries
+        run: |
+          wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_74_0.tar.gz
+          cd boost_1_74_0/
+          ./bootstrap.sh
+          ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+          sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
+
+      # OpenZWave
+      - name: openzwave
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ..
+          git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+          cd open-zwave-read-only
+          make
+          sudo make install >> /dev/null 2>&1
+
+      # Domoticz
+      - name: build domoticz
+        run: |
+          cd $GITHUB_WORKSPACE
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
+          make

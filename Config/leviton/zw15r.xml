@@ -1,0 +1,41 @@
+<!--
+ZW15R Decora Smart Tamper-Resistant Outlet with Z-Wave Technology, https://products.z-wavealliance.org/products/3829?selectedFrequencyId=2
+-->
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+    <MetaData>
+        <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/001D:0002:0037</MetaDataItem>
+        <MetaDataItem name="ProductPic">images/leviton/zw15r.png</MetaDataItem>
+        <MetaDataItem name="ZWProductPage" id="0002" type="0037">https://products.z-wavealliance.org/products/3829/</MetaDataItem>
+        <MetaDataItem name="ResetDescription">When removing an outlet from a network it is best practice to use the exclusion process. In situations where a device needs to be returned to factory default follow the following steps. A reset should only be used when a controller is inoperable or missing. 1. Hold the button for 7 seconds, the status light will turn amber. Continue holding the button for another 7 seconds (total of 14 seconds). The status light will quickly flash red/amber. 2. Release the button and the device will reset.</MetaDataItem>
+        <MetaDataItem name="InclusionDescription">For older controllers Classic Inclusion is supported. Depending on the age of the controller the controller will need to be 3 to 35 feet from the device when including. 1. To enter programming mode, hold the button for 7 seconds. The status light will turn amber, release and the status light will blink. 2. Follow the Z-Wave controller instructions to enter exclusion mode. 3. Tap the top of the button one time. The status light will quickly flash green. 4. The Z-Wave controller will confirm successful exclusion from the network.</MetaDataItem>
+        <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3829/Draft%20ZW4SF%203-25-20.pdf</MetaDataItem>
+        <MetaDataItem name="Identifier" id="0002" type="0037">ZW15R</MetaDataItem>
+        <MetaDataItem name="Name">Fan Speed Controller</MetaDataItem>
+        <MetaDataItem name="Description">4 Speed Fan controller 120VAC. Compatible with pull chain ceiling fans without electronic control. White paddle and vanishing LEDs. Color change kits are available to change to Light Almond, Ivory, Black, Brown, Gray. </MetaDataItem>
+        <MetaDataItem name="FrequencyName" id="0002" type="0037">U.S. / Canada / Mexico</MetaDataItem>
+        <MetaDataItem name="ExclusionDescription">When removing an outlet from a Z-Wave network, best practice is to use the exclusion command found in the Z-Wave controller. 1. To enter programming mode, hold the button for 7 seconds. The status light will turn amber, release and the status light will blink. 2. Follow Z-Wave controller directions to enter exclusion mode 3. Tap the button 1 time. The status light will quickly flash green. 4. The Z-Wave controller will remove the device from the network</MetaDataItem>
+        <ChangeLog>
+            <Entry author="Bill Li" date="28 Nov 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3829/xml</Entry>
+        </ChangeLog>
+    </MetaData>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value genre="config" index="7" label="Locator LED Status" max="255" min="0" size="1" type="list" units="" value="255">
+            <Help>Change the mode of the LED to Status Mode where the LED is illuminated when the load is On, Locator Mode where the LED is illuminated when the Load is Off, or turns off the LED completely for any other setting values.</Help>
+            <Item label="LED Off" value="0"/>
+            <Item label="Status Mode" value="254"/>
+            <Item label="Locator Mode" value="255"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" label="Lifeline" max_associations="5"/>
+        </Associations>
+    </CommandClass>
+    <CommandClass id="134">
+        <Compatibility>
+            <ClassGetVersionSupported>false</ClassGetVersionSupported>
+        </Compatibility>
+    </CommandClass>
+</Product>

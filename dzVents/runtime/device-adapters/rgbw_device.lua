@@ -33,27 +33,28 @@ return {
 			domoticz.log('If you believe this is not correct, please report on the forum.', utils.LOG_ERROR)
 		end
 
-		if (device.deviceSubType == 'RGBWW') or (device.deviceSubType == 'WW')  then
-			function device.setKelvin(kelvin)
-				local url
-				url = domoticz.settings['Domoticz url'] ..
+		function device.setKelvin(kelvin)
+
+			if (device.deviceSubType == 'RGBWW') or (device.deviceSubType == 'WW') or (device.deviceSubType == 'White') then
+				local url = domoticz.settings['Domoticz url'] ..
 						'/json.htm?param=setkelvinlevel&type=command&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
 				return domoticz.openURL(url)
+			else
+				methodNotAvailableMessage(device, 'setKelvin')
 			end
+
 		end
 
 		function device.setWhiteMode()
-			local url
-			url = domoticz.settings['Domoticz url'] ..
+			local url = domoticz.settings['Domoticz url'] ..
 					'/json.htm?param=whitelight&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
 		function device.increaseBrightness()
 			-- API will be removed; kept here until then to get user reports (if any)
-			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then 
-				local url
-				url = domoticz.settings['Domoticz url'] ..
+			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then
+				local url = domoticz.settings['Domoticz url'] ..
 						'/json.htm?param=brightnessup&type=command&idx=' .. device.id
 				return domoticz.openURL(url)
 			else
@@ -62,10 +63,9 @@ return {
 		end
 
 		function device.decreaseBrightness()
-            -- API will be removed; kept here until then to get user reports (if any)
-			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then 
-				local url
-				url = domoticz.settings['Domoticz url'] ..
+			-- API will be removed; kept here until then to get user reports (if any)
+			if false and device.hardwareType and device.hardwareType == 'YeeLight LED' then
+				local url = domoticz.settings['Domoticz url'] ..
 						'/json.htm?param=brightnessdown&type=command&idx=' .. device.id
 				return domoticz.openURL(url)
 			else
@@ -74,22 +74,20 @@ return {
 		end
 
 		function device.setNightMode()
-			local url
-			url = domoticz.settings['Domoticz url'] ..
+			local url = domoticz.settings['Domoticz url'] ..
 					'/json.htm?param=nightlight&type=command&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
 
 		function device.setDiscoMode(modeNum)
 			if false then  -- API will be removed; kept here until then to get user reports (if any)
-                if (type(modeNum) ~= 'number' or modeNum < 1 or modeNum > 9) then
-                    domoticz.log('Mode number needs to be a number from 1-9', utils.LOG_ERROR)
-                end
-                local url
-                url = domoticz.settings['Domoticz url'] ..
-                        '/json.htm?param=discomodenum' .. tonumber(modeNum) .. '&type=command&idx=' .. device.id
-                return domoticz.openURL(url)
-            else
+				if (type(modeNum) ~= 'number' or modeNum < 1 or modeNum > 9) then
+					domoticz.log('Mode number needs to be a number from 1-9', utils.LOG_ERROR)
+				end
+				local url = domoticz.settings['Domoticz url'] ..
+						'/json.htm?param=discomodenum' .. tonumber(modeNum) .. '&type=command&idx=' .. device.id
+				return domoticz.openURL(url)
+			else
 				methodNotAvailableMessage(device, 'setDiscoMode')
 			end
 		end
@@ -119,7 +117,7 @@ return {
 			local url = domoticz.settings['Domoticz url'] ..
 						'/json.htm?param=setcolbrightnessvalue&type=command'  ..
 						'&idx=' .. device.id ..
-						'&hue=' .. math.floor(tonumber(h) + 0.5) .. 
+						'&hue=' .. math.floor(tonumber(h) + 0.5) ..
 						'&brightness=' .. math.floor(tonumber(b) + 0.5) ..
 						'&iswhite=' .. tostring(isWhite)
 			return domoticz.openURL(url)
@@ -133,10 +131,7 @@ return {
 			end
 			if m == nil then m = 3 end
 			local colors = domoticz.utils.fromJSON(device.color,{ t=0, cw=0, ww=0})
-			local brightness = br or 100
-			if br == nil then
-				local _ , _ , brightness = domoticz.utils.rgbToHSB(r, g, b)
-			end
+			local brightness = br or device.level or 100
 			if cw == nil then cw = colors.cw end
 			if ww == nil then ww = colors.ww end
 			if t  == nil then t = colors.t end
@@ -205,6 +200,7 @@ return {
 			ct["cold white"] = ct.cw
 			ct.temperature = ct.t
 			ct.mode = ct.m
+			ct.br = device.level
 			ct.brightness = ct.value
 			return (ct)
 		end

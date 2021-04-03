@@ -7,7 +7,8 @@ class bt_openwebnet;
 
 class COpenWebNetTCP : public CDomoticzHardwareBase
 {
-	enum _eArea {
+	enum _eArea
+	{
 		WHERE_CEN_0 = -1,
 		WHERE_AREA_0 = 0,
 		WHERE_AREA_1 = 1,
@@ -23,7 +24,8 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 		MAX_WHERE_AREA = 11
 	};
 
-	enum _eWhereEnergy {
+	enum _eWhereEnergy
+	{
 		WHERE_ENERGY_1 = 51,
 		WHERE_ENERGY_2 = 52,
 		WHERE_ENERGY_3 = 53,
@@ -32,46 +34,48 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 		WHERE_ENERGY_6 = 56,
 		MAX_WHERE_ENERGY = 57
 	};
-public:
-	COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownEnSync);
-	~COpenWebNetTCP(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	bool SetSetpoint(const int idx, const float temp);
-	boost::signals2::signal<void()>	sDisconnected;
-private:
+
+      public:
+	COpenWebNetTCP(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &ownPassword, int ownScanTime, int ownEnSync);
+	~COpenWebNetTCP() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	bool SetSetpoint(int idx, float temp);
+	boost::signals2::signal<void()> sDisconnected;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool isStatusSocketConnected();
 	void Do_Work();
 	void MonitorFrames();
 	uint32_t ownCalcPass(const std::string &password, const std::string &nonce);
-	bool ownAuthentication(csocket* connectionSocket);
-	bool nonceHashAuthentication(csocket *connectionSocket, std::string nonce);
-	const std::string decToHexStrConvert(std::string paramString);
-	const std::string hexToDecStrConvert(std::string paramString);
-	const std::string byteToHexStrConvert(uint8_t* digest, size_t digestLen, char* pArray);
-	const std::string shaCalc(std::string paramString, int auth_type);
-	bool hmacAuthentication(csocket* connectionSocket, int auth_type);
-	csocket* connectGwOwn(const char *connectionMode);
+	bool ownAuthentication(csocket *connectionSocket);
+	bool nonceHashAuthentication(csocket *connectionSocket, const std::string &nonce);
+	std::string decToHexStrConvert(const std::string &paramString);
+	std::string hexToDecStrConvert(const std::string &paramString);
+	std::string byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray);
+	std::string shaCalc(const std::string &paramString, int auth_type);
+	bool hmacAuthentication(csocket *connectionSocket, int auth_type);
+	csocket *connectGwOwn(const char *connectionMode);
 	void disconnect();
-	bool ownWrite(csocket* connectionSocket, const char* pdata, size_t size);
-	int ownRead(csocket* connectionSocket, char* pdata, size_t size);
-	bool sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent = false);
-	bool ParseData(char* data, int length, std::vector<bt_openwebnet>& messages);
-	void SendGeneralSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const int cmd, const int level, const std::string& defaultname, const int RssiLevel = 12);
-	void UpdateSwitch(const int who, const int where, const int Level, const int iInterface, const int BatteryLevel, const char *devname);
-	void UpdateBlinds(const int who, const int where, const int Command, const int iInterface, const int iLevel, const int BatteryLevel, const char *devname);
-	void UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, const int iInterface, const int BatteryLevel, const char *devname);
-	void UpdateCenPlus(const int who, const int where, const int Command, const int iAppValue, const int what, const int iInterface, const int BatteryLevel, const char* devname);
-	void UpdateTemp(const int who, const int where, float fval, const int iInterface, const int BatteryLevel, const char *devname);
-	void UpdateSetPoint(const int who, const int where, float fval, const int iInterface, const char *devname);
-	void UpdatePower(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname);
-	void UpdateEnergy(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname);
-	void UpdateSoundDiffusion(const int who, const int where, const int what, const int iInterface, const int BatteryLevel, const char* devname);
-	bool GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy);
-	void decodeWhereAndFill(const int who, std::string where, std::vector<std::string> whereParam, std::string* devname, int* iWhere);
+	bool ownWrite(csocket *connectionSocket, const char *pdata, size_t size);
+	int ownRead(csocket *connectionSocket, char *pdata, size_t size);
+	bool sendCommand(bt_openwebnet &command, std::vector<bt_openwebnet> &response, int waitForResponse = 0, bool silent = false);
+	bool ParseData(char *data, int length, std::vector<bt_openwebnet> &messages);
+	void SendGeneralSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, int cmd, int level, const std::string &defaultname, int RssiLevel = 12);
+	void UpdateSwitch(int who, int where, int Level, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateBlinds(int who, int where, int Command, int iInterface, int iLevel, int BatteryLevel, const char *devname);
+	void UpdateAlarm(int who, int where, int Command, const char *sCommand, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateCenPlus(int who, int where, int Command, int iAppValue, int what, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateTemp(int who, int where, float fval, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateSetPoint(int who, int where, float fval, int iInterface, const char *devname);
+	void UpdatePower(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateEnergy(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateSoundDiffusion(int who, int where, int what, int iInterface, int BatteryLevel, const char *devname);
+	bool GetValueMeter(int NodeID, int ChildID, double *usage, double *energy);
+	void decodeWhereAndFill(int who, const std::string &where, std::vector<std::string> whereParam, std::string *devname, int *iWhere);
 	void UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter);
-	void scan_automation_lighting(const int cen_area);
+	void scan_automation_lighting(int cen_area);
 	void scan_sound_diffusion();
 	void scan_temperature_control();
 	void scan_device();
@@ -83,7 +87,8 @@ private:
 	void requestEnergyTotalizer();
 	void requestAutomaticUpdatePower(int time);
 	std::string getWhereForWrite(int where);
-private:
+
+      private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_ownPassword;
@@ -96,6 +101,6 @@ private:
 	std::shared_ptr<std::thread> m_heartbeatThread;
 	volatile uint32_t mask_request_status;
 	int m_heartbeatcntr;
-	csocket* m_pStatusSocket;
+	csocket *m_pStatusSocket;
 	std::mutex readQueueMutex;
 };

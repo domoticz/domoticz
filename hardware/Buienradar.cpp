@@ -90,14 +90,10 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 	}
 }
 
-CBuienRadar::~CBuienRadar(void)
-{
-}
-
 void CBuienRadar::Init()
 {
 	struct tm ltime;
-	time_t now = mytime(0);
+	time_t now = mytime(nullptr);
 	localtime_r(&now, &ltime);
 	m_itIsRaining = false;
 }
@@ -108,7 +104,7 @@ bool CBuienRadar::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CBuienRadar::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	if (!m_thread)
 		return false;
@@ -141,7 +137,7 @@ void CBuienRadar::Do_Work()
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		time_t now = mytime(0);
+		time_t now = mytime(nullptr);
 		m_LastHeartbeat = now;
 
 		if (sec_counter % 600 == 0)
@@ -264,13 +260,13 @@ bool CBuienRadar::GetStationDetails()
 		double shortest_station_lat = 0;
 		double shortest_station_lon = 0;
 
-		for (const auto& itt : root["actual"]["stationmeasurements"])
+		for (const auto &measurement : root["actual"]["stationmeasurements"])
 		{
-			if (itt["temperature"].empty())
+			if (measurement["temperature"].empty())
 				continue;
 
-			double lat = itt["lat"].asDouble();
-			double lon = itt["lon"].asDouble();
+			double lat = measurement["lat"].asDouble();
+			double lon = measurement["lon"].asDouble();
 
 			double distance_km = distanceEarth(
 				MyLatitude, MyLongitude,
@@ -281,9 +277,9 @@ bool CBuienRadar::GetStationDetails()
 				shortest_distance_km = distance_km;
 				shortest_station_lat = lat;
 				shortest_station_lon = lon;
-				m_iStationID = itt["stationid"].asInt();
-				m_sStationName = itt["stationname"].asString();
-				m_sStationRegion = itt["regio"].asString();
+				m_iStationID = measurement["stationid"].asInt();
+				m_sStationName = measurement["stationname"].asString();
+				m_sStationRegion = measurement["regio"].asString();
 			}
 		}
 		if (m_iStationID == 0)
@@ -296,20 +292,20 @@ bool CBuienRadar::GetStationDetails()
 	}
 
 	// StationID was provided, find it in the list
-	for (const auto& itt : root["actual"]["stationmeasurements"])
+	for (const auto &measurement : root["actual"]["stationmeasurements"])
 	{
-		if (itt["temperature"].empty())
+		if (measurement["temperature"].empty())
 			continue;
 
-		int StationID = itt["stationid"].asInt();
+		int StationID = measurement["stationid"].asInt();
 
 		if (StationID == m_iStationID)
 		{
 			// Station Found, set name and region
-			m_sStationName = itt["stationname"].asString();
-			m_sStationRegion = itt["regio"].asString();
-			m_szMyLatitude = std::to_string(itt["lat"].asDouble());
-			m_szMyLongitude = std::to_string(itt["lon"].asDouble());
+			m_sStationName = measurement["stationname"].asString();
+			m_sStationRegion = measurement["regio"].asString();
+			m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
+			m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
 			Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, std::stod(m_szMyLatitude), std::stod(m_szMyLongitude));
 			return true;
 		}
@@ -392,7 +388,7 @@ void CBuienRadar::GetMeterDetails()
 		}
 	}
 
-	float temp = -999.9f;
+	float temp = -999.9F;
 	int humidity = 0;
 	float barometric = 0;
 	uint8_t barometric_forecast = wsbaroforecast_unknown;
@@ -411,7 +407,7 @@ void CBuienRadar::GetMeterDetails()
 		if (barometric < 1000)
 		{
 			barometric_forecast = wsbaroforecast_rain;
-			if (temp != -999.9f)
+			if (temp != -999.9F)
 			{
 				if (temp <= 0)
 					barometric_forecast = wsbaroforecast_snow;
@@ -424,22 +420,15 @@ void CBuienRadar::GetMeterDetails()
 		else
 			barometric_forecast = wsbaroforecast_sunny;
 	}
-	if (
-		(temp != -999.9f)
-		&& (humidity != 0)
-		&& (barometric != 0)
-		)
+	if ((temp != -999.9F) && (humidity != 0) && (barometric != 0))
 	{
 		SendTempHumBaroSensorFloat(1, 255, temp, humidity, barometric, barometric_forecast, "TempHumBaro");
 	}
-	else if (
-		(temp != -999.9f)
-		&& (humidity != 0)
-		)
+	else if ((temp != -999.9F) && (humidity != 0))
 	{
 		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
 	}
-	else if (temp != -999.9f)
+	else if (temp != -999.9F)
 	{
 		SendTempSensor(1, 255, temp, "Temp");
 	}
@@ -474,7 +463,7 @@ void CBuienRadar::GetMeterDetails()
 		else
 			wind_chill = temp;
 
-		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temp, wind_chill, temp != -999.9f, true, "Wind");
+		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temp, wind_chill, temp != -999.9F, true, "Wind");
 	}
 
 	if (!root["visibility"].empty())
@@ -494,7 +483,7 @@ void CBuienRadar::GetMeterDetails()
 		float precipitation = root["precipitationmm"].asFloat();
 		SendRainRateSensor(1, 255, precipitation, "Rain");
 		m_itIsRaining = precipitation > 0;
-		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining");
+		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining", m_Name);
 	}
 }
 
@@ -524,7 +513,7 @@ void CBuienRadar::GetRainPrediction()
 		Log(LOG_ERROR, "Problem Connecting to Buienradar! (Check your Internet Connection!)");
 		return;
 	}
-	if (sResult.size()==0)
+	if (sResult.empty())
 	{
 		// Log(LOG_ERROR, "Problem getting Rainprediction: no prediction available at Buienradar");
 		// no data to process, so don't update the sensros
@@ -536,7 +525,7 @@ void CBuienRadar::GetRainPrediction()
 #endif
 #endif
 
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -718,7 +707,7 @@ void CBuienRadar::GetRainPrediction()
 			//double rain_mm_hour = pow(10, ((rain_avg - 109) / 32));
 			double rain_perc = (rain_avg == 0) ? 0 : (rain_avg * 0.392156862745098);
 			SendPercentageSensor(1, 1, 255, static_cast<float>(rain_perc), "Rain Intensity");
-			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain");
+			SendSwitch(2, 1, 255, (rain_perc >= m_iThreshold), 0, "Possible Rain", m_Name);
 		}
 		if (total_rain_values_next_hour)
 		{

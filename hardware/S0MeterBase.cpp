@@ -13,12 +13,10 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 
 #include <ctime>
 
-
-S0MeterBase::S0MeterBase(void)
+S0MeterBase::S0MeterBase()
 {
 	m_bufferpos = 0;
 	int ii;
@@ -54,7 +52,7 @@ void S0MeterBase::InitBase()
 	m_meters[4].m_pulse_per_unit = 1000.0;
 
 	//Get settings from the database
-	std::string Settings("");
+	std::string Settings;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)", m_HwdID);
 	if (!result.empty())
@@ -77,11 +75,6 @@ void S0MeterBase::InitBase()
 		m_meters[4].m_type = atoi(splitresults[8].c_str());
 		m_meters[4].m_pulse_per_unit = atof(splitresults[9].c_str());
 	}
-}
-
-
-S0MeterBase::~S0MeterBase(void)
-{
 }
 
 void S0MeterBase::ReloadLastTotals()
@@ -221,8 +214,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		total-=tsen.ENERGY.total5*0x100;
 		tsen.ENERGY.total6=(unsigned char)(total);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, NULL, 255);
-
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, nullptr, 255, nullptr);
 	}
 	else if (meterype==MTYPE_GAS)
 	{
@@ -232,7 +224,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		m_p1gas.subtype=sTypeP1Gas;
 		m_p1gas.gasusage=(unsigned long)(mtotal*1000.0);
 		m_p1gas.ID = ID;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, nullptr, 255, nullptr);
 	}
 	else
 	{
@@ -253,7 +245,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
 		tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
 		tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 	}
 }
 
@@ -265,7 +257,7 @@ void S0MeterBase::ParseLine()
 
 	std::vector<std::string> results;
 	StringSplit(sLine,":",results);
-	if (results.size()<1)
+	if (results.empty())
 		return; //invalid data
 
 	if (results[0][0]=='/') {
@@ -350,7 +342,7 @@ void S0MeterBase::ParseLine()
 
 				double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
 				m_meters[ii].m_current_counter = counter_value;
-				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, counter_value);
+				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, counter_value);
 			}
 
 			roffset += 3;
@@ -378,7 +370,7 @@ void S0MeterBase::ParseLine()
 				m_meters[ii].m_CurrentUsage = atof(results[roffset + 2].c_str());
 
 				//double counter_value = m_meters[ii].m_counter_start + s0_counter;
-				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, m_meters[ii].m_current_counter);
+				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0F, m_meters[ii].m_current_counter);
 			}
 
 			roffset += 3;
@@ -399,7 +391,8 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
+			if (idx.empty())
+			{
 				return;
 			}
 
@@ -426,5 +419,5 @@ namespace http {
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", szExtra.str().c_str(), idx.c_str());
 			m_mainworker.RestartHardware(idx);
 		}
-	}
-}
+	} // namespace server
+} // namespace http

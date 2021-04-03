@@ -7,6 +7,7 @@ Author: MrHobbes74 (github.com/MrHobbes74)
 13/03/2020 1.1 Added keep asleep support
 28/04/2020 1.2 Added new devices (odometer, lock alert, max charge switch)
 24/07/2020 1.3 Added new Mercedes Class (KidDigital)
+09/02/2021 1.4 Added Testcar Class for easier testing of eVehicle framework
 
 License: Public domain
 
@@ -22,13 +23,15 @@ class CeVehicle : public CDomoticzHardwareBase
 public:
 	enum eVehicleType {
 		Tesla,
-		Mercedes
+		Mercedes,
+		Testcar
 	};
 
-	CeVehicle(const int ID, const eVehicleType vehicletype, const std::string& username, const std::string& password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string& carid);
-	~CeVehicle(void);
-	bool WriteToHardware(const char* pdata, const unsigned char length) override;
-private:
+	CeVehicle(int ID, eVehicleType vehicletype, const std::string &username, const std::string &password, int defaultinterval, int activeinterval, bool allowwakeup, const std::string &carid);
+	~CeVehicle() override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
 	enum eApiCommandType {
 		Send_Climate_Off,
 		Send_Climate_On,
@@ -86,7 +89,7 @@ private:
 
 	void Init();
 	bool ConditionalReturn(bool commandOK, eApiCommandType command);
-
+	
 	void Login();
 	bool WakeUp();
 	bool IsAwake();
@@ -99,21 +102,22 @@ private:
 	void UpdateClimateData(CVehicleApi::tClimateData& data);
 	void UpdateVehicleData(CVehicleApi::tVehicleData& data);
 	void UpdateCustomVehicleData(CVehicleApi::tCustomData& data);
-	bool DoSetCommand(tApiCommand command);
+	bool DoSetCommand(const tApiCommand &command);
 
 	void AddCommand(eApiCommandType command_type, std::string command_parameter = "");
 	bool DoNextCommand();
-	std::string GetCommandString(const eApiCommandType command);
-	
+	std::string GetCommandString(eApiCommandType command);
+
 	void SendAlert();
-	void SendAlert(int alertType, int value, std::string title);
+	void SendAlert(int alertType, int value, const std::string &title);
 	void SendSwitch(int switchType, bool value);
 	void SendValueSwitch(int switchType, int value);
 	void SendTemperature(int tempType, float value);
 	void SendPercentage(int percType, float value);
 	void SendCounter(int countType, float value);
-	void SendCustom(int countType, int ChildId, float value, std::string label);
-	void SendText(int countType, int ChildId, std::string value, std::string label);
+	void SendCustom(int customType, int ChildId, float value, const std::string &label);
+	void SendCustomSwitch(int customType, int ChildId, bool value, const std::string &label);
+	void SendCustomText(int customType, int ChildId, const std::string &value, const std::string &label);
 
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -125,8 +129,6 @@ private:
 	int m_defaultinterval;
 	int m_activeinterval;
 	bool m_allowwakeup;
-	double m_home_lat;
-	double m_home_lon;
 
 	tVehicle m_car;
 	CVehicleApi *m_api;

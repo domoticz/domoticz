@@ -27,15 +27,12 @@ History :
 #include "../main/SQLHelper.h"
 
 #include <algorithm>
-#include <boost/bind/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <string>
 #include <time.h>
-
-using namespace boost::placeholders;
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none
@@ -74,7 +71,8 @@ m_szSerialPort(devname)
 	Init();
 }
 
-USBtin::~USBtin(void){
+USBtin::~USBtin()
+{
 	StopHardware();
 }
 
@@ -89,7 +87,7 @@ bool USBtin::StartHardware()
 
 	m_USBtinBelErrorCount = 0;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
-	m_thread = std::make_shared<std::thread>(&USBtin::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -121,7 +119,7 @@ void USBtin::Do_Work()
 			m_V8secCounterBase++;
 
 			if (m_V8secCounterBase % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 
 			if (isOpen()) //Serial port open, we can initiate the Can BUS :
@@ -224,7 +222,7 @@ bool USBtin::OpenSerialDevice()
 	m_bIsStarted = true;
 	m_USBtinBufferpos = 0;
 	memset(&m_USBtinBuffer,0,sizeof(m_USBtinBuffer));
-	setReadCallback(boost::bind(&USBtin::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 
 	sOnConnected(this);
 
@@ -297,15 +295,12 @@ void USBtin::ParseData(const char *pData, int Len)
 
 				memset(&value[0], 0, sizeof(value));
 
-				unsigned int Buffer_Octets[8]; //buffer of 8 bytes(max in the frame)
-				char i=0;
-				for(i=0;i<8;i++){ //Reset of 8 bytes
-					Buffer_Octets[i]=0;
-				}
-				unsigned int ValData;
+				unsigned int Buffer_Octets[8] = {}; //buffer of 8 bytes(max in the frame)
 
+				unsigned int ValData;
 				if( DLChexNumber > 0 ){ //bytes presents
-					for(i=0;i<=DLChexNumber;i++){
+					for (int i = 0; i <= DLChexNumber; i++)
+					{
 						ValData = 0;
 
 						strncpy(value, (char*)&(m_USBtinBuffer[10+(2*i)]), 2); //to fill the Buffer of 8 bytes

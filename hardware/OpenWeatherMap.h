@@ -8,22 +8,24 @@
 
 class COpenWeatherMap : public CDomoticzHardwareBase
 {
-public:
-	COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location, const int adddayforecast, const int addhourforecast);
-	~COpenWeatherMap(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+      public:
+	COpenWeatherMap(int ID, const std::string &APIKey, const std::string &Location, int adddayforecast, int addhourforecast, int adddescdev, int owmforecastscreen);
+	~COpenWeatherMap() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
-private:
+	Json::Value GetForecastData();
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
-	int GetForecastFromBarometricPressure(const float pressure, const float temp = -999.9f);
-	std::string GetDayFromUTCtimestamp(const uint8_t daynr, std::string UTCtimestamp);
-	std::string GetHourFromUTCtimestamp(const uint8_t hournr, std::string UTCtimestamp);
-	bool ProcessForecast(Json::Value &forecast, const std::string period, const std::string periodname, const uint8_t count, const int startNodeID);
+	int GetForecastFromBarometricPressure(float pressure, float temp = -999.9F);
+	std::string GetDayFromUTCtimestamp(uint8_t daynr, const std::string &UTCtimestamp);
+	std::string GetHourFromUTCtimestamp(uint8_t hournr, const std::string &UTCtimestamp);
+	bool ProcessForecast(Json::Value &forecast, const std::string &period, const std::string &periodname, uint8_t count, int startNodeID);
 
-	bool ResolveLocation(const std::string& Location, double& latitude, double& longitude, const bool IsCityName = true);
+	bool ResolveLocation(const std::string &Location, double &latitude, double &longitude, uint32_t &cityid, bool IsCityName = true);
 
 	std::string m_APIKey;
 	std::string m_Location;
@@ -32,7 +34,10 @@ private:
 	bool m_itIsRaining = false;
 	bool m_add_dayforecast = false;
 	bool m_add_hourforecast = false;
+	bool m_add_descriptiondevices = false;
+	bool m_use_owminforecastscreen = false;
 	double m_Lat = 0;
 	double m_Lon = 0;
+	uint32_t m_CityID = 0;
 	std::shared_ptr<std::thread> m_thread;
 };

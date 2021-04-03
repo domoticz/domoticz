@@ -2,7 +2,7 @@
 Eurotronic Spirit Z-Wave Plus Thermostat
 Product website: https://www.eurotronic.org/produkte/spirit-z-wave-plus.html
 Tech manual: https://www.eurotronic.org/fileadmin/user_upload/eurotronic.org/Produktbilder/spirit_z_wave_plus/Spirit_Z-Wave_BAL_web_EN_view_04.pdf
---><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0148:0001:0003</MetaDataItem>
     <MetaDataItem name="ProductPic">images/eurotronic/eur_spiritz.png</MetaDataItem>
@@ -39,6 +39,7 @@ To perform the factory reset press boost button.
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2543/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2650/xml</Entry>
+      <Entry author="Jasper Plantinga - jplantinga@gmail.com" date="10 Feb 2021" revision="6">Updated changed default behavior backlight</Entry>
     </ChangeLog>
     <MetaDataItem id="0003" name="ZWProductPage" type="0003">https://products.z-wavealliance.org/products/2650/</MetaDataItem>
     <MetaDataItem id="0003" name="Identifier" type="0003">4250848804063</MetaDataItem>
@@ -101,9 +102,9 @@ To perform the factory reset press boost button.
                 Default: 0 (LCD always on)
             </Help>
     </Value>
-    <Value genre="config" index="3" instance="1" label="Backlight" max="1" min="0" size="1" type="list" units="" value="1">
+    <Value genre="config" index="3" instance="1" label="Backlight" max="1" min="0" size="1" type="list" units="" value="0">
       <Help>
-                Default: Backlight enabled
+                Default: Backlight disabled
             </Help>
       <Item label="Backlight disabled" value="0"/>
       <Item label="Backlight enabled" value="1"/>

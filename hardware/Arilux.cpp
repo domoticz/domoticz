@@ -33,10 +33,6 @@ Arilux::Arilux(const int ID)
   m_color.ww = 0xff;
 }
 
-Arilux::~Arilux(void)
-{
-}
-
 bool Arilux::StartHardware()
 {
 	RequestStart();
@@ -45,7 +41,7 @@ bool Arilux::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&Arilux::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -74,14 +70,13 @@ void Arilux::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
 }
 
-
-void Arilux::InsertUpdateSwitch(const std::string lightName, const int subType, const std::string location)
+void Arilux::InsertUpdateSwitch(const std::string &lightName, const int subType, const std::string &location)
 {
 	uint32_t sID;
 	try {
@@ -104,7 +99,7 @@ void Arilux::InsertUpdateSwitch(const std::string lightName, const int subType, 
 		ycmd.dunit = 0;
 		ycmd.value = 0;
 		ycmd.command = Color_LedOff;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', switchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), STYPE_Dimmer, m_HwdID, szDeviceID);
 	}
 }
@@ -150,14 +145,9 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 
 	//Code for On/Off and RGB command
-	unsigned char Arilux_On_Command_Tab[] = { 0x71, 0x23, 0x0f };
-	unsigned char Arilux_Off_Command_Tab[] = { 0x71, 0x24, 0x0f };
-	unsigned char Arilux_RGBCommand_Command_Tab[] = { 0x31, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x0f };
-
-	//C++98 Vector Init
-	std::vector<unsigned char> Arilux_On_Command(Arilux_On_Command_Tab, Arilux_On_Command_Tab+sizeof(Arilux_On_Command_Tab)/sizeof(unsigned char));
-	std::vector<unsigned char> Arilux_Off_Command(Arilux_Off_Command_Tab, Arilux_Off_Command_Tab + sizeof(Arilux_Off_Command_Tab) / sizeof(unsigned char));
-	std::vector<unsigned char> Arilux_RGBCommand_Command(Arilux_RGBCommand_Command_Tab, Arilux_RGBCommand_Command_Tab + sizeof(Arilux_RGBCommand_Command_Tab) / sizeof(unsigned char));
+	auto Arilux_On_Command = std::vector<unsigned char>{ 0x71, 0x23, 0x0f };
+	auto Arilux_Off_Command = std::vector<unsigned char>{ 0x71, 0x24, 0x0f };
+	auto Arilux_RGBCommand_Command = std::vector<unsigned char>{ 0x31, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x0f };
 
 	switch (pLed->command)
 	{
@@ -234,5 +224,5 @@ namespace http {
 			Arilux Arilux(HwdID);
 			Arilux.InsertUpdateSwitch(sname, (stype == "0") ? sTypeColor_RGB : sTypeColor_RGB_W_Z, sipaddress);
 		}
-	}
-}
+	} // namespace server
+} // namespace http

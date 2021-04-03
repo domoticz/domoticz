@@ -3,17 +3,17 @@
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<meta name="description" content="" />
-		<meta name="keywords" content="" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<link rel="shortcut icon" href="favicon.ico" />
-		<link rel="apple-touch-icon" href="images/iphone-icon.png"/>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta name="description" content="">
+		<meta name="keywords" content="">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<link rel="shortcut icon" href="favicon.ico">
+		<link rel="apple-touch-icon" href="images/iphone-icon.png">
 		<link rel="icon" sizes="196x196" href="images/logo.png">
 		<link rel="icon" sizes="192x192" href="images/logo192.png">
 
@@ -75,22 +75,23 @@
 
 		<link rel="stylesheet" href="css/bootstrap.css">
 		<link rel="stylesheet" href="css/bootstrap-responsive.css" media="screen">
-		<link rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css" />
-		<link rel="stylesheet" href="css/demo_table_jui.css" />
-		<link rel="stylesheet" href="css/jquery.uix.multiselect.css" />
-		<link rel="stylesheet" href="css/style.css" />
-		<link rel="stylesheet" href="css/colpick.css" />
-		<link rel="stylesheet" href="css/jquery-ui-timepicker-addon.css" />
-		<link rel="stylesheet" href="css/remote.css" />
-		<link rel="stylesheet" href="css/wheelcolorpicker.css" />
-		<link rel="stylesheet" href="js/noty/noty.css" />
-		<link rel="stylesheet" href="js/noty/relax.css" />
-		<link rel="stylesheet" href="app/events/Events.css" />
-		<link rel="stylesheet" href="app/devices/Devices.css" />
-		<link rel="stylesheet" href="acttheme/custom.css" />
+		<link rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css">
+		<link rel="stylesheet" href="css/ui-grid.min.css">
+		<link rel="stylesheet" href="css/demo_table_jui.css">
+		<link rel="stylesheet" href="css/jquery.uix.multiselect.css">
+		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="css/colpick.css">
+		<link rel="stylesheet" href="css/jquery-ui-timepicker-addon.css">
+		<link rel="stylesheet" href="css/remote.css">
+		<link rel="stylesheet" href="css/wheelcolorpicker.css">
+		<link rel="stylesheet" href="js/noty/noty.css">
+		<link rel="stylesheet" href="js/noty/relax.css">
+		<link rel="stylesheet" href="app/events/Events.css">
+		<link rel="stylesheet" href="app/devices/Devices.css">
+		<link rel="stylesheet" href="acttheme/custom.css">
 
 		<script src="js/babel-polyfill-6.26.0.js"></script>
-		<script src="js/jquery-3.4.1.min.js"></script>
+		<script src="js/jquery-3.5.1.min.js"></script>
 		<script src="js/i18next-1.8.0.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
@@ -101,12 +102,15 @@
 		<script src="js/colpick.js"></script>
 		<script src="js/jquery.wheelcolorpicker.js"></script>
 		<script src="js/noty/noty.min.js"></script>
+		<script charset="utf-8" src="js/moment-with-locales.min.js"></script>
+		<script charset="utf-8" src="js/moment-timezone-with-data.min.js"></script>
 		<script charset="utf-8" src="js/data-tables/jquery.dataTables.min.js"></script>
 		<script charset="utf-8" src="js/data-tables/dataTables.tableTools.min.js"></script>
 		<script charset="utf-8" src="js/data-tables/dataTables.select.min.js"></script>
 		<script charset="utf-8" src="js/ZeroClipboard.js"></script>
 		<script charset="utf-8" src="js/date.format.js"></script>
-		<script charset="utf-8" src="js/highcharts/highcharts.js"></script>
+		<!-- Temporary fix for highcharts/highcharts#9612 -->
+		<script charset="utf-8" src="js/highcharts/highcharts-8.2.2-patch.9612.src.js"></script>
 		<script charset="utf-8" src="js/highcharts/highcharts-more.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/sankey.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/dependency-wheel.js"></script>
@@ -119,7 +123,7 @@
 		<script charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
 		<script charset="utf-8" src="acttheme/custom.js"></script>
-		<script data-main="app/main" src="js/require.js"></script>
+		<script data-main="app/main" src="js/require.min.js"></script>
 <script charset="utf-8" id="init-code">
 
 function NotifyCacheRefresh()
@@ -513,7 +517,7 @@ $(document).ready(function() {
 							</tr>
 							<tr>
 								<td align="left" style="width:200px">
-									<input type="text" id="popup_picker" data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl" />
+									<input type="text" id="popup_picker" data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl">
 									<div class="btn-group">
 										<button id="popup_bright_up" class="btn btn-small" type="button">
 											Brightness Up
@@ -555,7 +559,7 @@ $(document).ready(function() {
 				</td>
 				<td align="center" style="vertical-align: center;">
 					<a id="popup_temp_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="SetpointUp()"></a><br>
-					<input id="popup_setpoint" type="text" style="width: 50px; padding: .2em; margin-top: 10px; margin-bottom: 10px; font-size: 24px; font-weight: bold; border: 3px solid white; text-align: center;" class="text ui-widget-content ui-corner-all" /><br>
+					<input id="popup_setpoint" type="text" style="width: 50px; padding: .2em; margin-top: 10px; margin-bottom: 10px; font-size: 24px; font-weight: bold; border: 3px solid white; text-align: center;" class="text ui-widget-content ui-corner-all"><br>
 					<a id="popup_temp_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="SetpointDown()"></a>
 				</td>
 				<td align="center" style="vertical-align: center;">
@@ -854,6 +858,7 @@ $(document).ready(function() {
 						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow" />
 					</g>
 				</g>
+				<g id="MediaRemote-custom-buttons"></g>
 			</g>
 		</svg>
 	</div>

@@ -16,10 +16,6 @@ S0MeterTCP::S0MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 	InitBase();
 }
 
-S0MeterTCP::~S0MeterTCP(void)
-{
-}
-
 bool S0MeterTCP::StartHardware()
 {
 	RequestStart();
@@ -32,7 +28,7 @@ bool S0MeterTCP::StartHardware()
 	ReloadLastTotals();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&S0MeterTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -72,7 +68,7 @@ void S0MeterTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();

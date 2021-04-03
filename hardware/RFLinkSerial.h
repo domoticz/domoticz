@@ -3,12 +3,13 @@
 #include "ASyncSerial.h"
 #include "RFLinkBase.h"
 
-class CRFLinkSerial: public AsyncSerial, public CRFLinkBase
+class CRFLinkSerial : public AsyncSerial, public CRFLinkBase
 {
-public:
-	CRFLinkSerial(const int ID, const std::string& devname);
-    ~CRFLinkSerial();
-private:
+      public:
+	CRFLinkSerial(int ID, const std::string &devname);
+	~CRFLinkSerial() override = default;
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -17,6 +18,5 @@ private:
 	bool WriteInt(const std::string &sendString) override;
 	std::shared_ptr<std::thread> m_thread;
 	std::string m_szSerialPort;
-    void readCallback(const char *data, size_t len);
+	void readCallback(const char *data, size_t len);
 };
-

@@ -1,12 +1,19 @@
-Version 2020.xxxx (xxxx)
+Version 2020.xxxxx (xxxxx)
+- Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
+- Implemented: AirconWithMe wifi module
 - Implemented: Allow complete IPv6 address in local network setting
+- Implemented: Allow custom icons for thermostat setpoints on floorplan
+- Implemented: Allow custom icons for utility sensors
+- Implemented: Build systems for linux based on github actions
+- Implemented: Build system for docker
 - Implemented: Counter meter type now supports a divider
 - Implemented: Custom icons for RGB/W
 - Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
 - Implemented: Honeywell, Add cooling control and Fahrenheit support
 - Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
 - Implemented: Inverted energy icon colors in report
+- Implemented: Max. Watt settings for power devices (defaults to 6000W)
 - Implemented: Mercedes Me API's (BYOCAR) as an (e)Vehicle supporting lock/open, odo, fuellevel
 - Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
 - Implemented: P1 Meter, added support for Encryption
@@ -16,29 +23,58 @@ Version 2020.xxxx (xxxx)
 - Implemented: RTL433, Added UV type
 - Implemented: RTL433, Added X-10 Security support
 - Implemented: RTL433, Switched to Json input
+- Implemented: Autorefresh feature for graphical logs
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
-- Implemented: ZWave, Legend and tooltips in Neighbor�s overview
-- Updated: dzVents version 3.0.12 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting#History )
-- Updated: eVehicles, added ODO meter, unlock/open alert, max charge level to Tesla module
-- Updated: OpenZWave configuration files
-- Updated: Openweathermap has been improved
-- Updated: TTNMQTT, Better GPS/Locations handling, distance calculation (Geofencing)
-- Updated: TTNMQTT, Improved calculation and storage of signal-levels
+- Implemented: ZWave, Legend and tooltips in Neighbors overview
+- Updated: API/JSON: added API to delete daterange in history logs for one ID
+- Updated: Blebox; use of the latest SwitchBox APIthe latest SwitchBox API
+- Updated: dzVents; version 3.1.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
+- Updated: eVehicles; added option to manual set API key
+- Updated: EvoHome; decode, display and store hotwater setpoint
+- Updated: Lay-out of notifications tab
+- Updated: MQTT; added option to choose notification subsystem
+- Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
+- Updated: OpenZWave; configuration files
+- Updated: Openweathermap; use latest API and overal improvements
+- Updated: OTGW; ready for firmware 5.0 and added domestic hot water flow rate
+- Updated: Plugin manager: ready for Python 3.9+
+- Updated: Plugwise; update of scene selector and added a migration process
+- Updated: SolarEdge; add support for 3 Phase inverter
+- Updated: Tado; add support for per-zone Open Window Detection
+- Updated: TTNMQTT; Better GPS/Locations handling, distance calculation (Geofencing)
+- Updated: TTNMQTT; Improved calculation and storage of signal-levels
+- Updated: Xiaomi; added new devicetypes
 - Changed: During a database backup we now 'sleep' when the status != OK
 - Changed: Differentiate kWh, kVah, kVar and kVarh
+- Changed: Energy devices allow negative values
+- Changed: Use of Clang-Tidy rules to force ++ coding consistency
+- Fixed: Annatherm Presets usage in Events. Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
+- Fixed: Cache refresh issue on Safari
 - Fixed: Changing a value from a Thermostat Setpoint via the JSON API/MQTT resulted in a double event trigger
+- Fixed: Control for thermostat setpoints on floorplan
+- Fixed: Compiling on systems with recent Python versions
 - Fixed: Distance sensor was converting to miles instead of inches
+- Fixed: Icon uploading from linux clients/browsers
+- Fixed: Floorplan uploading
 - Fixed: Font in events editor on MacOS
+- Fixed: Motherboard Sensors for big partitions
 - Fixed: Possible crash in CEventSystem::SetEventTrigger
+- Fixed: Preserve custom icon and description when switching device from used -> unused -> used
+- Fixed: Prevent duplicate keys in preferences table
+- Fixed: Pushtype selection mechanism
 - Fixed: Sound device was incorrectly displayed on the Floorplan
-- Fixed Annatherm Presets usage in Events, Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
+- Fixed: Tado Zone/Home limit, setpoint mix-up
+- Fixed: User field in device logging for switches, -text-devices and for groups/scenes
+- Fixed: Windows installation respects configured log parameters
+- Fixed: Zwave various issues
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
 - Implemented: GUI: Real-time updates of history-logs on device / scene changes
-- Fixed: Battery level Real-time updates 
+- Fixed: Battery level Real-time updates
 - Fixed: Daikin wifi adaptor module
 - Fixed: Delete device now propagates to all relevant tables
 - Fixed: Possible security issue in the websocket layer
@@ -92,7 +128,7 @@ Version 2020.1 (March 22th 2020)
 - Fixed: Enery Generated report icon colors
 - Fixed: Evohome Web for updated library
 - Fixed: Google Notification System
-  Fixed: PhilipsHue
+- Fixed: PhilipsHue
 - Fixed: SMS Notification System
 - Fixed: Telegram notification when odd number of underscores in text
 - Fixed: Youless, possible buffer overflow (#3261)
@@ -111,7 +147,7 @@ Version 4.10717 (May 9th 2019)
 - Fixed: EcoCompteur now uses the port specified in the hardware setup (#3184)
 - Fixed: Log for Weight sensor (#3192)
 - Fixed: issue with Session ID/Login
-- Fixed: issue with slightly  to large labels for the selector switch (#3187)
+- Fixed: issue with slightly too large labels for the selector switch (#3187)
 - Updated: dzVents (version 2.4.19, See dzVents/documentation/history.md)
 
 Version 4.10658 (May 5th 2019)
@@ -1368,7 +1404,7 @@ Version 1.666 (May 28th 2013)
 Version 1.607 (May 11th 2013)
 - Implemented: 5th parameter for light/switch script (full status descriptor)
 - Implemented: Date/Time/SunSet/SunRise on every page (except mobile browsers will have only SunSet/SunRise)
-- Implemented: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX /  Media Mount)
+- Implemented: Device type Blinds (Safy / RollerTrol / Hasta / A-OK RF01,AC114 / RAEX / Media Mount)
 - Implemented: Email connection timeout (10 seconds)
 - Implemented: Email Notifications
 - Implemented: Email notifications now send in background
@@ -1471,7 +1507,7 @@ Version 1.412 (April 1th 2013)
 - Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
 - Implemented: SQLite faster journal/update mode on non-windows systems
 - Implemented: Started working on support for the CM180i
-- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
+- Implemented: TE932Tool (USB 433MHz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
 - Implemented: Temperature (large) icons now represents global temperature index
 - Implemented: Temperature/Weather sensors now display their main value in large font
 - Implemented: Unix update script

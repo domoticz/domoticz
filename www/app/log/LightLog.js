@@ -72,4 +72,3 @@ define(['app', 'log/components/DeviceLevelChart', 'log/components/DeviceOnOffCha
         }
     }
 });
-

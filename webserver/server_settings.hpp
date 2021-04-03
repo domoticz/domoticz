@@ -18,29 +18,16 @@ namespace server {
 
 struct server_settings {
 public:
-	server_settings() :
-		is_secure_(false) {}
-	server_settings(const server_settings & s) :
-		www_root(s.www_root),
-		listening_address(s.listening_address),
-		listening_port(s.listening_port),
-		php_cgi_path(s.php_cgi_path),
-		is_secure_(s.is_secure_)
-		{}
-	virtual ~server_settings() {}
-	server_settings & operator=(const server_settings & s) {
-		www_root = s.www_root;
-		listening_address = s.listening_address;
-		listening_port = s.listening_port;
-		php_cgi_path = s.php_cgi_path;
-		is_secure_ = s.is_secure_;
-		return *this;
-	}
-	bool is_secure() const {
-		return is_secure_;
-	}
+  server_settings() = default;
+  server_settings(const server_settings &s) = default;
+  virtual ~server_settings() = default;
+  server_settings &operator=(const server_settings &s) = default;
+  bool is_secure() const
+  {
+	  return is_secure_;
+  }
 	bool is_enabled() const {
-		return ((listening_port != "0") && (listening_port != ""));
+		return ((listening_port != "0") && (!listening_port.empty()));
 	}
 	bool is_php_enabled() const {
 		return !php_cgi_path.empty();
@@ -71,7 +58,8 @@ protected:
 	explicit server_settings(bool is_secure) :
 		is_secure_(is_secure) {}
 	std::string get_valid_value(const std::string & old_value, const std::string & new_value) {
-		if ((!new_value.empty()) && (new_value.compare(old_value) != 0)) {
+		if ((!new_value.empty()) && (new_value != old_value))
+		{
 			return new_value;
 		}
 		return old_value;
@@ -85,7 +73,7 @@ public:
 	//feature
 	//std::string fastcgi_php_server; (like nginx)
 private:
-	bool is_secure_;
+  bool is_secure_{ false };
 };
 
 #ifdef WWW_ENABLE_SSL
@@ -103,63 +91,54 @@ public:
 	std::string ssl_options;
 	std::string tmp_dh_file_path;
 
-	bool verify_peer;
-	bool verify_fail_if_no_peer_cert;
+	bool verify_peer{ false };
+	bool verify_fail_if_no_peer_cert{ false };
 	std::string verify_file_path;
 
-	ssl_server_settings() :
-			server_settings(true),
-			verify_peer(false),
-			verify_fail_if_no_peer_cert(false) {}
-	ssl_server_settings(const ssl_server_settings & s) :
-		server_settings::server_settings(s),
-		ssl_method(s.ssl_method),
-		certificate_chain_file_path(s.certificate_chain_file_path),
-		ca_cert_file_path(s.ca_cert_file_path),
-		cert_file_path(s.cert_file_path),
-		private_key_file_path(s.private_key_file_path),
-		private_key_pass_phrase(s.private_key_pass_phrase),
-		ssl_options(s.ssl_options),
-		tmp_dh_file_path(s.tmp_dh_file_path),
-		verify_peer(s.verify_peer),
-		verify_fail_if_no_peer_cert(s.verify_fail_if_no_peer_cert),
-		verify_file_path(s.verify_file_path) {}
-	virtual ~ssl_server_settings() {}
-	ssl_server_settings & operator=(const ssl_server_settings & s) {
-		server_settings::operator=(s);
-		ssl_method = s.ssl_method;
-		certificate_chain_file_path = s.certificate_chain_file_path;
-		ca_cert_file_path = s.ca_cert_file_path;
-		cert_file_path = s.cert_file_path;
-		private_key_file_path = s.private_key_file_path;
-		private_key_pass_phrase = s.private_key_pass_phrase;
-		ssl_options = s.ssl_options;
-		tmp_dh_file_path = s.tmp_dh_file_path;
-		verify_peer = s.verify_peer;
-		verify_fail_if_no_peer_cert = s.verify_fail_if_no_peer_cert;
-		verify_file_path = s.verify_file_path;
-		return *this;
+	ssl_server_settings()
+		: server_settings(true)
+	{
 	}
+	ssl_server_settings(const ssl_server_settings &s) = default;
+	~ssl_server_settings() override = default;
+	ssl_server_settings &operator=(const ssl_server_settings &s) = default;
 
 	boost::asio::ssl::context::method get_ssl_method() const {
 		boost::asio::ssl::context::method method;
-		if (ssl_method.compare("tlsv1") == 0) {
+		if (ssl_method == "tlsv1")
+		{
 			method = boost::asio::ssl::context::tlsv1;
-		} else if (ssl_method.compare("tlsv1_server") == 0) {
+		}
+		else if (ssl_method == "tlsv1_server")
+		{
 			method = boost::asio::ssl::context::tlsv1_server;
-		} else if (ssl_method.compare("sslv23") == 0) {
+		}
+		else if (ssl_method == "sslv23")
+		{
 			method = boost::asio::ssl::context::sslv23;
-		} else if (ssl_method.compare("sslv23_server") == 0) {
+		}
+		else if (ssl_method == "sslv23_server")
+		{
 			method = boost::asio::ssl::context::sslv23_server;
-		} else if (ssl_method.compare("tlsv11") == 0) {
+		}
+		else if (ssl_method == "tlsv11")
+		{
 			method = boost::asio::ssl::context::tlsv11;
-		} else if (ssl_method.compare("tlsv11_server") == 0) {
+		}
+		else if (ssl_method == "tlsv11_server")
+		{
 			method = boost::asio::ssl::context::tlsv11_server;
-		} else if (ssl_method.compare("tlsv12") == 0) {
+		}
+		else if (ssl_method == "tlsv12")
+		{
 			method = boost::asio::ssl::context::tlsv12;
-		} else if (ssl_method.compare("tlsv12_server") == 0) {
+		}
+		else if (ssl_method == "tlsv12_server")
+		{
 			method = boost::asio::ssl::context::tlsv12_server;
-		} else {
+		}
+		else
+		{
 			std::string error_message("invalid SSL method ");
 			error_message.append("'").append(ssl_method).append("'");
 			throw std::invalid_argument(error_message);
@@ -170,34 +149,51 @@ public:
 	boost::asio::ssl::context::options get_ssl_options() const {
 		boost::asio::ssl::context::options opts(0x0L);
 
-		std::string error_message("");
+		std::string error_message;
 
 		std::vector<std::string> options_array;
 		boost::split(options_array, ssl_options, boost::is_any_of(","), boost::token_compress_on);
-		std::vector<std::string>::iterator itt;
-		for (itt = options_array.begin(); itt != options_array.end(); ++itt) {
-			std::string option = *itt;
-			if (option.compare("default_workarounds") == 0) {
+		for (const auto &option : options_array)
+		{
+			if (option == "default_workarounds")
+			{
 				update_options(opts, boost::asio::ssl::context::default_workarounds);
-			} else if (option.compare("single_dh_use") == 0) {
+			}
+			else if (option == "single_dh_use")
+			{
 				update_options(opts, boost::asio::ssl::context::single_dh_use);
-			} else if (option.compare("no_sslv2") == 0) {
+			}
+			else if (option == "no_sslv2")
+			{
 				update_options(opts, boost::asio::ssl::context::no_sslv2);
-			} else if (option.compare("no_sslv3") == 0) {
+			}
+			else if (option == "no_sslv3")
+			{
 				update_options(opts, boost::asio::ssl::context::no_sslv3);
-			} else if (option.compare("no_tlsv1") == 0) {
+			}
+			else if (option == "no_tlsv1")
+			{
 				update_options(opts, boost::asio::ssl::context::no_tlsv1);
-			} else if (option.compare("no_tlsv1_1") == 0) {
+			}
+			else if (option == "no_tlsv1_1")
+			{
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
-			} else if (option.compare("no_tlsv1_2") == 0) {
+			}
+			else if (option == "no_tlsv1_2")
+			{
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_2);
-			} else if (option.compare("no_compression") == 0) {
+			}
+			else if (option == "no_compression")
+			{
 				update_options(opts, boost::asio::ssl::context::no_compression);
-			} else {
+			}
+			else
+			{
 				if (error_message.empty()) {
 					error_message.append("unknown SSL option(s) : ");
 				}
-				if (error_message.find("'") != std::string::npos) {
+				if (error_message.find('\'') != std::string::npos)
+				{
 					error_message.append(", ");
 				}
 				error_message.append("'").append(option).append("'");
@@ -212,13 +208,14 @@ public:
 	/**
 	 * Set relevant values
 	 */
+	using http::server::server_settings::set;
 	virtual void set(const ssl_server_settings & ssl_settings) {
 		server_settings::set(ssl_settings);
 
 		ssl_method = server_settings::get_valid_value(ssl_method, ssl_settings.ssl_method);
 
 		std::string path = server_settings::get_valid_value(cert_file_path, ssl_settings.cert_file_path);
-		bool update_cert = path.compare(ssl_settings.cert_file_path) == 0;
+		bool update_cert = path == ssl_settings.cert_file_path;
 		if (update_cert) {
 			cert_file_path = ssl_settings.cert_file_path;
 			// use certificate file for all usage by default
@@ -242,7 +239,8 @@ public:
 		verify_file_path = server_settings::get_valid_value(verify_file_path, ssl_settings.verify_file_path);
 	}
 
-	virtual std::string to_string() const  override {
+	std::string to_string() const override
+	{
 		return std::string("ssl_server_settings[") + server_settings::to_string() +
 				", ssl_method='" + ssl_method + "'" +
 				", certificate_chain_file_path='" + certificate_chain_file_path + "'" +

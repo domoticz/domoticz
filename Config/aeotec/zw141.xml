@@ -3,7 +3,7 @@ Aeotec ZW141 Nano Shutter, based on Engineering Spec 8/22/2019
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 
 -->
-<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:008D:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw141.png</MetaDataItem>
@@ -41,6 +41,7 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2953/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3075/xml</Entry>
       <Entry author="Duy Nguyen - dooz127@gmail.com" date="16 Feb 2020" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3693/XML</Entry>	    
+      <Entry author="Matej Drobnič - matejdro@gmail.com" date="02 Oct 2020" revision="7">Fixed timing types, Fixed button list types</Entry>	    
     </ChangeLog>
     <MetaDataItem id="008D" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="008D" name="Identifier" type="0103">ZW141-A</MetaDataItem>
@@ -58,10 +59,10 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
     <Value genre="config" index="22" label="Motor direction" size="1" type="list" units="" value="2">
       <Help>Set to toggle the motor running direction</Help>
     </Value>
-    <Value genre="config" index="34" label="Blade turn time" size="2" max="32767" min="10" type="decimal" units="0.01 seconds" value="150">
+    <Value genre="config" index="34" label="Blade turn time" size="2" max="32767" min="10" type="short" units="0.01 seconds" value="150">
       <Help>Set the blade turn time for Venetian mode. Details can be found in section 4.2 of Advanced information Product Manual.</Help>
     </Value>
-    <Value genre="config" index="35" label="Curtain trip time" size="2" max="32767" min="500" type="decimal" units="0.01 seconds" value="15000">
+    <Value genre="config" index="35" label="Curtain trip time" size="2" max="32767" min="500" type="short" units="0.01 seconds" value="15000">
       <Help>Set the run time of the curtain. Details can be found in section 4.2 of Advanced information Product Manual.</Help>
     </Value>
     <Value genre="config" index="36" label="Enter/exit calibration mode" size="1" type="list" units="" value="0" write_only="true"> 
@@ -72,6 +73,8 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
     </Value>
     <Value genre="config" index="37" label="User confirmation for calibration" size="1" type="list" units="" value="0" write_only="true">
       <Help>Set user confirmation for calibration</Help>
+      <Item label="Default" value="0" />
+      <Item label="Confirm calibration" value="1" />
     </Value>
     <Value genre="config" index="38" label="Calibration mode status report" size="1" type="list" units="" value="0" read_only="true">
       <Help>Get calibration mode status report</Help>
@@ -89,6 +92,8 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
     </Value>
     <Value genre="config" index="40" label="Repositioning" size="1" type="list" units="" value="1" write_only="true">
       <Help>Set to begin repositioning</Help>
+      <Item label="Default" value="0" />
+      <Item label="In repositioning" value="1" />
     </Value>		
     <Value genre="config" index="41" label="Repositioning status report" size="1" type="list" units="" value="0" read_only="true">
       <Help>Get repositioning status report</Help>

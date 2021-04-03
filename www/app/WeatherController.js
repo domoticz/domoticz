@@ -372,6 +372,10 @@ define(['app', 'livesocket'], function (app) {
 					}
 				});
 			};
+			dialog_editvisibilitydevice_buttons[$.t("Replace")] = function () {
+				$(this).dialog("close");
+				ReplaceDevice($.devIdx, ShowWeathers);
+			};
 			dialog_editvisibilitydevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};

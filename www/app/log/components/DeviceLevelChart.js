@@ -72,7 +72,9 @@ define(['app', 'luxon'], function (app, luxon) {
                             y: 10
                         }
                     },
-                    marginRight: 10
+                    marginRight: 10,
+                   panning: true,
+                   panKey: 'shift'
                 },
                 title: {
                     text: null

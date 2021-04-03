@@ -59,7 +59,7 @@
                title="{{:: 'dzVents Documentation' | translate}}"
                ng-if="$ctrl.eventData.interpreter === 'dzVents'"
             >
-               <i class="icon-question-sign" /> {{:: 'Help' | translate }}
+               <i class="icon-question-sign"></i> {{:: 'Help' | translate }}
             </a>
 
             <div class="btn-group">
@@ -101,8 +101,7 @@
                             readonly
                             rows="12"
                             style="width: 100%"
-                            ng-model="scriptData"
-                    />
+                            ng-model="scriptData"></textarea>
                 </div>
             </div>
         </form>
@@ -127,8 +126,7 @@
                             class="form-control"
                             rows="12"
                             style="width: 100%"
-                            ng-model="scriptData"
-                    />
+                            ng-model="scriptData"></textarea>
                 </div>
             </div>
         </form>

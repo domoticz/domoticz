@@ -1,4 +1,4 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="Name">ID Lock 150 Z-Wave module</MetaDataItem>
     <MetaDataItem name="Description">A module enabling your ID Lock digital door lock to a Z-Wave Plus enabled digital door Lock.
@@ -55,6 +55,7 @@ FACTORY RESET DOOR LOCK FIRMWARE:
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="2">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2780/xml</Entry>
       <Entry author="Eirik Hodne" date="25 Aug 2019" revision="3">Update as per the 1.4.9/1.6 firmware specification</Entry>
+      <Entry author="into-void" date="09 Sep 2020" revision="4">Update as per the 1.5.6/1.6 firmware specification</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -116,7 +117,7 @@ FACTORY RESET DOOR LOCK FIRMWARE:
       <Help>
         Service PIN Mode
         A configuration get command on this parameter returns the latest set parameter value (set by Z-wave).
-        This is a set only value, if changed locally on keypad these values are not changed on Z-wave module. Value 5 and 6 are for future use on door lock.
+        This is a set only value, if changed locally on keypad these values are not changed on Z-wave module. Value 5 and 6 will generate a random PIN in location 108.
         Disabled: Disables both PIN and Service PIN menu on door lock
 
         Default Value: 0 (Deactivated)
@@ -126,8 +127,8 @@ FACTORY RESET DOOR LOCK FIRMWARE:
       <Item label="2 times used" value="2"/>
       <Item label="5 times used" value="3"/>
       <Item label="10 times used" value="4"/>
-      <Item label="Not used (for future use)" value="5"/>
-      <Item label="Not used (for future use)" value="6"/>
+      <Item label="Random PIN 1x use" value="5"/>
+      <Item label="Random PIN 24hrs use" value="6"/>
       <Item label="Always valid" value="7"/>
       <Item label="12 Hours used" value="8"/>
       <Item label="24 Hours used" value="9"/>
@@ -158,15 +159,6 @@ FACTORY RESET DOOR LOCK FIRMWARE:
       </Help>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
-    </Value>
-    <Value genre="config" index="10" label="Retrieve RFID Information" type="int" units="">
-      <Help>
-        Configuration Report for retriving the RFID information
-        Byte 1: Para1 (msb)
-        Byte 2: Para2
-        Byte 3: Para3
-        Byte 4: Para4 (lsb)
-      </Help>
     </Value>
   </CommandClass>
   <!-- Association Groups -->

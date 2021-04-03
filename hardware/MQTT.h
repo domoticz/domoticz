@@ -5,38 +5,44 @@
 
 class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
-public:
-	MQTT(
-		const int ID,
-		const std::string& IPAddress, const unsigned short usIPPort,
-		const std::string& Username, const std::string& Password, const std::string& CAFile, const int TLS_Version,
-		const int Topics, const std::string& MQTTClientID,
-		const bool PreventLoop
-	);
-	~MQTT(void);
-	bool isConnected() { return m_IsConnected; };
+      public:
+	MQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra, int TLS_Version,
+	     int PublishScheme, const std::string &MQTTClientID, bool PreventLoop);
+	~MQTT() override;
+	bool isConnected()
+	{
+		return m_IsConnected;
+	};
 
-	virtual void on_connect(int rc) override;
+	void on_connect(int rc) override;
 	void on_disconnect(int rc) override;
-	virtual void on_message(const struct mosquitto_message* message) override;
-	void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
+	void on_message(const struct mosquitto_message *message) override;
+	void on_subscribe(int mid, int qos_count, const int *granted_qos) override;
 
-	void on_log(int level, const char* str) override;
+	void on_log(int level, const char *str) override;
 	void on_error() override;
 
-	void SendMessage(const std::string& Topic, const std::string& Message);
+	void SendMessage(const std::string &Topic, const std::string &Message);
 
 	bool m_bDoReconnect;
 	bool m_IsConnected;
-public:
+
+      public:
 	// signals
-	boost::signals2::signal<void()>	sDisconnected;
-private:
-	bool ConnectInt();
-	bool ConnectIntEx();
-	void SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
-	void SendSceneInfo(const uint64_t SceneIdx, const std::string& SceneName);
-protected:
+	boost::signals2::signal<void()> sDisconnected;
+
+      protected:
+	bool StartHardware() override;
+	bool StopHardware() override;
+	enum _ePublishTopics
+	{
+		PT_none = 0x00,
+		PT_out = 0x01,	      // publish on domoticz/out
+		PT_floor_room = 0x02, // publish on domoticz/<floor>/<room>
+		PT_floor_room_and_out = PT_out | PT_floor_room,
+		PT_device_idx = 0x04,  // publish on domoticz/out/idx
+		PT_device_name = 0x08, // publish on domoticz/out/name
+	};
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_UserName;
@@ -45,24 +51,21 @@ protected:
 	int m_TLS_Version;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
-	virtual bool StartHardware() override;
-	virtual bool StopHardware() override;
+
+      private:
+	bool ConnectInt();
+	bool ConnectIntEx();
+	void SendDeviceInfo(int HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void SendSceneInfo(uint64_t SceneIdx, const std::string &SceneName);
 	void StopMQTT();
 	void Do_Work();
 	virtual void SendHeartbeat();
-	void WriteInt(const std::string& sendStr) override;
+	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
 	boost::signals2::connection m_sDeviceReceivedConnection;
 	boost::signals2::connection m_sSwitchSceneConnection;
-	enum _ePublishTopics {
-		PT_none = 0x00,
-		PT_out = 0x01, 	// publish on domoticz/out
-		PT_floor_room = 0x02 	// publish on domoticz/<floor>/<room>
-	};
-	_ePublishTopics m_publish_topics;
-private:
+	_ePublishTopics m_publish_scheme;
 	bool m_bPreventLoop = false;
 	uint64_t m_LastUpdatedDeviceRowIdx = 0;
 	uint64_t m_LastUpdatedSceneRowIdx = 0;
 };
-
