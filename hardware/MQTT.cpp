@@ -17,7 +17,6 @@
 #define TOPIC_OUT	"domoticz/out"
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
-#define RETAIN		true
 #define RETAIN_BIT	0x80
 
 namespace
