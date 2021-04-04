@@ -341,7 +341,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.isMouseDown = false;
 
             self.chart.container.addEventListener('touchstart', function (e) {
-                self.consoledebug('Touchstart at ' + e.touches[0].clientX + ' on ' + e.timeStamp
+                self.consoledebug('Touchstart at ' + e.touches[0].clientX + ' on ' + Math.round(e.timeStamp)
                     + (self.touchEndTimestamp === undefined ? '' : ', te:' + self.touchEndTimestamp));
                 if (self.touchEndTimestamp === undefined || self.touchEndTimestamp + interTouchEndTouchStartPeriod < e.timeStamp) {
                     self.touchStartTimestamp = e.timeStamp;
@@ -351,7 +351,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 }
             });
             self.chart.container.addEventListener('touchmove', function (e) {
-                self.consoledebug('Touchmove at ' + e.touches[0].clientX + ' on ' + e.timeStamp
+                self.consoledebug('Touchmove at ' + e.touches[0].clientX + ' on ' + Math.round(e.timeStamp)
                     + (self.touchStartTimestamp === undefined ? '' : ', ts:' + self.touchStartTimestamp));
                 if (self.touchMoveTimestamp === undefined) {
                     self.touchMoveTimestamp = e.timeStamp;
@@ -364,7 +364,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 }
             });
             self.chart.container.addEventListener('touchend', function (e) {
-                self.consoledebug('Touchend at ' + e.changedTouches[0].clientX + ' on ' + e.timeStamp);
+                self.consoledebug('Touchend at ' + e.changedTouches[0].clientX + ' on ' + Math.round(e.timeStamp));
                 if (self.touchMoveTimestamp !== undefined) {
                     if (!self.chart.pointer.followTouchMove) {
                         self.consoledebug('End panning');
@@ -387,14 +387,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 self.chart.pointer.followTouchMove = true;
             });
             self.chart.container.addEventListener('mousedown', function (e) {
-                self.consoledebug('Mousedown ' + e.timeStamp + ' ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                debugMouseAction('Mousedown', e);
                 self.mouseDownTimestamp = e.timeStamp;
                 self.wasCtrlMouseDown = e.ctrlKey;
                 self.mouseDownPosition = e.clientX;
                 self.isMouseDown = true;
             });
             self.chart.container.addEventListener('mouseup', function (e) {
-                self.consoledebug('Mouseup at ' + e.timeStamp + ' ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey);
+                debugMouseAction('Mouseup', e);
                 self.mouseUpTimestamp = e.timeStamp;
                 self.wasCtrlMouseUp = e.ctrlKey;
                 self.mouseUpPosition = e.clientX;
@@ -405,8 +405,12 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 }
             });
             self.chart.container.addEventListener('click', function (e) {
-                self.consoledebug('Click ' + self + ' clientX:' + e.clientX + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey);
+                self.consoledebug('Click at ' + ' (' + e.clientX + ',' + e.clientY + ')' + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey);
             });
+
+            function debugMouseAction(action, e) {
+                self.consoledebug(action + (e.ctrlKey ? ' +ctrl' : '') + (e.shiftKey ? ' +shift' : '') + ' at (' + e.clientX + ',' + e.clientY + ') on ' + Math.round(e.timeStamp));
+            }
 
             self.$scope.zoomed = false;
 
