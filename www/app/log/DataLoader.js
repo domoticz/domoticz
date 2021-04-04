@@ -52,14 +52,7 @@ define(function () {
                 }),
                 function (seriesSupplier, dataItem) {
                     if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(dataItem)) {
-                        const datapoint = [seriesSupplier.timestampFromDataItem(dataItem)];
-                        seriesSupplier.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
-                            const dataItemValue = seriesSupplier.postprocessDataItemValue === undefined
-                                ? valueFromDataItem
-                                : seriesSupplier.postprocessDataItemValue(valueFromDataItem);
-                            datapoint.push(seriesSupplier.convertZeroToNull && dataItemValue === 0 ? null : dataItemValue);
-                        });
-                        seriesSupplier.datapoints.push(datapoint);
+                        seriesSupplier.datapoints.push(seriesSupplier.datapointFromDataItem(dataItem));
                     }
                 },
                 function (seriesSupplier) {

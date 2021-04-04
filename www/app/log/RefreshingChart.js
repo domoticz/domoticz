@@ -250,7 +250,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 );
         }
 
-        function refreshChartData(afterChartRefreshed) {
+        function refreshChartData(afterRefreshChartData) {
             const dataRequest = createDataRequest();
             const stopwatchDataRequest = stopwatch(function() { return 'sendRequest(' + JSON.stringify(dataRequest) + ')'; });
             self.domoticzApi
@@ -268,8 +268,8 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     synchronizeYaxes();
                     redrawChart();
                     self.consoledebug(function () { return stopwatchCycle.log(); });
-                    if (afterChartRefreshed !== undefined) {
-                        afterChartRefreshed();
+                    if (afterRefreshChartData !== undefined) {
+                        afterRefreshChartData();
                     }
 
                     function loadDataInChart(data) {
@@ -579,11 +579,27 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                     return dataItem[dataItemKey] !== undefined;
                                 });
                             },
+                        datapointFromDataItem:
+                            function (dataItem) {
+                                const datapoint = [this.timestampFromDataItem(dataItem)];
+                                this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
+                                    datapoint.push(valueFromDataItem);
+                                });
+                                return datapoint;
+                            },
                         valuesFromDataItem:
                             function (dataItem) {
+                                const valueFromDataItem = this.valueFromDataItem;
                                 return this.dataItemKeys.map(function (dataItemKey) {
-                                    return parseFloat(dataItem[dataItemKey]);
+                                    return valueFromDataItem(dataItem[dataItemKey]);
                                 });
+                            },
+                        valueFromDataItem:
+                            function (dataItemValue) {
+                                const parsedValue = parseFloat(dataItemValue);
+                                const processedValue =
+                                    this.postprocessDataItemValue === undefined ? parsedValue : this.postprocessDataItemValue(parsedValue);
+                                return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
                             },
                         timestampFromDataItem: function (dataItem) {
                             if (!this.useDataItemsFromPrevious) {
