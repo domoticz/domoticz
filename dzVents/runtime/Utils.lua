@@ -288,7 +288,7 @@ end
 function self.fromJSON(json, fallback)
 
 	local deSerializeJSON  = function(j)
-		return j:gsub('"{','{'):gsub('"%["','["'):gsub('"%]"','"]'):gsub('}"','}'):gsub('"%[{"','[{"'):gsub('"}%]"','"}]'):gsub('%]"}',']}')
+		return j:gsub('\\"','"'):gsub('"{','{'):gsub('"%["','["'):gsub('"%]"','"]'):gsub('}"','}'):gsub('"%[{"','[{"'):gsub('"}%]"','"}]'):gsub('%]"}',']}')
 	end
 
 	if type(json) ~= 'string' or json == '' then
