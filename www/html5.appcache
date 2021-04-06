@@ -694,7 +694,7 @@ js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
-js/lodash-custom.merge.min.js
+js/lodash-custom.min.js
 js/luxon.min.js
 js/md5.js
 js/moment-with-locales.min.js
