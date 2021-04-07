@@ -3,7 +3,7 @@ define(function () {
 
     }
 
-    DataLoader.prototype.loadData = function (data, receiver) {
+    DataLoader.prototype.prepareData = function (data, receiver) {
         if (receiver.dataSupplier.preprocessData !== undefined) {
             receiver.dataSupplier.preprocessData(data);
         }
@@ -13,7 +13,65 @@ define(function () {
                 receiver.dataSupplier.preprocessDataItems(data.resultprev);
             }
         }
+        receiver.seriesSuppliers = completeSeriesSuppliers(receiver.dataSupplier);
 
+        function completeSeriesSuppliers(dataSupplier) {
+            const seriesSuppliers = typeof dataSupplier.seriesSuppliers === 'function' ? dataSupplier.seriesSuppliers(data) : dataSupplier.seriesSuppliers;
+            return seriesSuppliers
+                .map(function (seriesSupplierOrFunction) {
+                    if (typeof seriesSupplierOrFunction === 'function') {
+                        return seriesSupplierOrFunction(dataSupplier);
+                    } else {
+                        return seriesSupplierOrFunction;
+                    }
+                })
+                .map(function (seriesSupplier) {
+                    return _.merge({
+                        useDataItemsFromPrevious: false,
+                        dataSupplier: dataSupplier,
+                        dataItemKeys: [],
+                        dataItemIsValid:
+                            function (dataItem) {
+                                return this.dataItemKeys.every(function (dataItemKey) {
+                                    return dataItem[dataItemKey] !== undefined;
+                                });
+                            },
+                        datapointFromDataItem:
+                            function (dataItem) {
+                                const datapoint = [this.timestampFromDataItem(dataItem)];
+                                this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
+                                    datapoint.push(valueFromDataItem);
+                                });
+                                return datapoint;
+                            },
+                        valuesFromDataItem:
+                            function (dataItem) {
+                                const self = this;
+                                const valueFromDataItem = this.valueFromDataItem;
+                                return this.dataItemKeys.map(function (dataItemKey) {
+                                    return self.valueFromDataItem.call(self, (dataItem[dataItemKey]));
+                                });
+                            },
+                        valueFromDataItem:
+                            function (dataItemValue) {
+                                const parsedValue = parseFloat(dataItemValue);
+                                const processedValue =
+                                    this.postprocessDataItemValue === undefined ? parsedValue : this.postprocessDataItemValue(parsedValue);
+                                return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
+                            },
+                        timestampFromDataItem: function (dataItem) {
+                            if (!this.useDataItemsFromPrevious) {
+                                return dataSupplier.timestampFromDataItem(dataItem);
+                            } else {
+                                return dataSupplier.timestampFromDataItem(dataItem, 1);
+                            }
+                        }
+                    }, seriesSupplier);
+                });
+        }
+    };
+
+    DataLoader.prototype.loadData = function (data, receiver) {
         const seriesSuppliersOnData = receiver.seriesSuppliers.filter(function (seriesSupplier) {
             return seriesSupplier.dataIsValid === undefined || seriesSupplier.dataIsValid(data);
         });

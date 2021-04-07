@@ -7,6 +7,12 @@ define(['Base'], function (Base) {
         return analyseChartEdges(receiver.chart);
 
         function analyseChartEdges(chart) {
+            if (receiver.seriesSuppliers === undefined) {
+                return {
+                    chartEdgeLeft: -1,
+                    chartEdgeRight: -1
+                };
+            }
             const timestamps = seriesSuppliersDatapointsTimestamps(receiver.seriesSuppliers);
             const chartEdgeLeft = timestamps.reduce(min, Infinity);
             const chartEdgeRight = timestamps.reduce(max, -Infinity);

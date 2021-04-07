@@ -3,7 +3,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
             dataLoader = new DataLoader(),
-            chartLoader = new ChartLoader(),
+            chartLoader = new ChartLoader({ extendSeriesNameWithLabel: angularParams.location.search().serieslabels === 'true' }),
             chartZoomer = new ChartZoomer()) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
@@ -19,7 +19,6 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
         self.extendDataRequest = params.dataSupplier.extendDataRequest || function (dataRequest) { return dataRequest; };
-        self.seriesSuppliers = completeSeriesSuppliers(params.dataSupplier);
         self.synchronizeYaxes = params.synchronizeYaxes;
         self.chart = self.$element.find('.chartcontainer').highcharts(createChartDefinition(params.highchartTemplate)).highcharts();
         // Disable the Highcharts Reset Zoom button
@@ -274,12 +273,15 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                     function loadDataInChart(data) {
                         const chartAnalysis = chartZoomer.analyseChart(self);
+                        dataLoader.prepareData(data, self);
                         dataLoader.loadData(data, self);
                         chartLoader.loadChart(self);
                         chartZoomer.zoomChart(self, chartAnalysis);
                     }
 
                     function redrawChart() {
+                        // Forces the legend to be redrawn as well
+                        // self.chart.isDirtyLegend = true;
                         self.chart.redraw();
                     }
                 });
@@ -465,6 +467,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 zoom(xAxis.dataMin, xAxis.dataMax);
             }
 
+            self.$element.find('.chartcontainer').on('refreshChartData', function (e) {
+                refreshChartData();
+            });
             self.$element.find('.chartcontainer').on('dblclick', function (e) {
                 const event = self.chart.pointer.normalize(e);
                 const plotX = event.chartX - self.chart.plotLeft;
@@ -556,60 +561,6 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             : self.range === 'year' ? $.t('Last Year')
                                 : '';
             }
-        }
-
-        function completeSeriesSuppliers(dataSupplier) {
-            return dataSupplier.seriesSuppliers
-                .map(function (seriesSupplierOrFunction) {
-                    if (typeof seriesSupplierOrFunction === 'function') {
-                        return seriesSupplierOrFunction(dataSupplier);
-                    } else {
-                        return seriesSupplierOrFunction;
-                    }
-                })
-                .map(function (seriesSupplier) {
-                    return _.merge({
-                        useDataItemsFromPrevious: false,
-                        extendSeriesNameWithLabel: self.$location.search().serieslabels === 'true',
-                        dataSupplier: dataSupplier,
-                        dataItemKeys: [],
-                        dataItemIsValid:
-                            function (dataItem) {
-                                return this.dataItemKeys.every(function (dataItemKey) {
-                                    return dataItem[dataItemKey] !== undefined;
-                                });
-                            },
-                        datapointFromDataItem:
-                            function (dataItem) {
-                                const datapoint = [this.timestampFromDataItem(dataItem)];
-                                this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
-                                    datapoint.push(valueFromDataItem);
-                                });
-                                return datapoint;
-                            },
-                        valuesFromDataItem:
-                            function (dataItem) {
-                                const valueFromDataItem = this.valueFromDataItem;
-                                return this.dataItemKeys.map(function (dataItemKey) {
-                                    return valueFromDataItem(dataItem[dataItemKey]);
-                                });
-                            },
-                        valueFromDataItem:
-                            function (dataItemValue) {
-                                const parsedValue = parseFloat(dataItemValue);
-                                const processedValue =
-                                    this.postprocessDataItemValue === undefined ? parsedValue : this.postprocessDataItemValue(parsedValue);
-                                return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
-                            },
-                        timestampFromDataItem: function (dataItem) {
-                            if (!this.useDataItemsFromPrevious) {
-                                return dataSupplier.timestampFromDataItem(dataItem);
-                            } else {
-                                return dataSupplier.timestampFromDataItem(dataItem, 1);
-                            }
-                        }
-                    }, seriesSupplier);
-                });
         }
 
         function yAxisToString(yAxis) {
