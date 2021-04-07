@@ -17,7 +17,10 @@ class CMeteorologisk : public CDomoticzHardwareBase
 	void Do_Work();
 	void GetMeterDetails();
 
-      private:
 	std::string m_Location;
+	std::string m_URL;
+	std::string m_ForecastURL;
+	double m_Lat = 0;
+	double m_Lon = 0;
 	std::shared_ptr<std::thread> m_thread;
 };

@@ -53,6 +53,7 @@
 #include "../hardware/OTGWTCP.h"
 #include "../hardware/TeleinfoBase.h"
 #include "../hardware/TeleinfoSerial.h"
+#include "../hardware/TeleinfoTCP.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
 #include "../hardware/EnOceanESP2.h"
@@ -1088,6 +1089,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_AirconWithMe:
 		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_TeleinfoMeterTCP:
+		pHardware = new CTeleinfoTCP(ID, Address, Port, DataTimeout, (Mode2 != 0), Mode3);
 		break;
 	}
 
@@ -3183,6 +3187,9 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			break;
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
+			break;
+		case sTypeRAINByRate:
+			WriteMessage("subtype       = DarkSky for example (Only rate, no total, no counter) rate in mm/hour x 10000, so all decimals will fit");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
