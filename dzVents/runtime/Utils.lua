@@ -200,7 +200,10 @@ end
 function self.round(value, decimals)
 	local nVal = tonumber(value)
 	local nDec = ( decimals == nil and 0 ) or tonumber(decimals)
-	if nVal >= 0 and nDec > 0 then
+	if nVal == nil then
+		self.log(self.toStr(value) .. ' is not a number!', self.LOG_ERROR)
+		return
+	elseif nVal >= 0 and nDec > 0 then
 		return math.floor( (nVal * 10 ^ nDec) + 0.5) / (10 ^ nDec)
 	elseif nVal >=0 then
 		return math.floor(nVal + 0.5)
