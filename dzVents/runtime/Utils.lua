@@ -285,7 +285,7 @@ function self.isJSON(str, content)
 	return ret ~= nil
 end
 
-function self.fromJSON(json, fallback)
+function self.fromJSON(json, fallback, deSerialize)
 
 	local deSerializeJSON  = function(j)
 		return j:gsub('\\"','"'):gsub('"{','{'):gsub('"%["','["'):gsub('"%]"','"]'):gsub('}"','}'):gsub('"%[{"','[{"'):gsub('"}%]"','"}]'):gsub('%]"}',']}')
@@ -305,7 +305,7 @@ function self.fromJSON(json, fallback)
 
 	if self.isJSON(json) then
 
-		local json = deSerializeJSON(json)
+		if deSerialize then json = deSerializeJSON(json) end
 
 		local parse = function(j)
 			return jsonParser:decode(j)
