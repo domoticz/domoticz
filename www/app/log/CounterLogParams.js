@@ -16,7 +16,8 @@ define(['app', 'log/Chart'], function (app) {
         return {
             chartParamsDay: chartParamsDay,
             chartParamsWeek: chartParamsWeek,
-            chartParamsMonthYear: chartParamsMonthYear
+            chartParamsMonthYear: chartParamsMonthYear,
+            chartParamsCompare: chartParamsCompare
         }
 
         function chartParamsDay(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
@@ -96,6 +97,48 @@ define(['app', 'log/Chart'], function (app) {
             return _.merge(
                 {
                     highchartTemplate: {
+                        chart: {
+                            marginRight: 10
+                        },
+                        tooltip: {
+                            crosshairs: false
+                        }
+                    },
+                    range: ctrl.range,
+                    device: ctrl.device,
+                    sensorType: 'counter',
+                    chartName: ctrl.device.SwitchTypeVal === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Usage'),
+                    autoRefreshIsEnabled: function () {
+                        return ctrl.logCtrl.autoRefresh;
+                    },
+                    dataSupplier:
+                        _.merge(
+                            {
+                                seriesSuppliers: seriesSuppliers
+                            },
+                            dataSupplierTemplate
+                        )
+                },
+                chartParamsTemplate
+            );
+        }
+
+        function chartParamsCompare(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
+            return _.merge(
+                {
+                    highchartTemplate: {
+                        xAxis: {
+                            type: 'category'
+                        },
+                        plotOptions: {
+                            column: {
+                                pointPlacement: 0,
+                                stacking: 'normal'
+                            },
+                            series: {
+                                colorByPoint: true
+                            }
+                        },
                         chart: {
                             marginRight: 10
                         },

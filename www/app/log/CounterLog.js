@@ -162,5 +162,48 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                 }
             }
         });
+
+        app.component('counterYearCompareChart', {
+            require: {
+                logCtrl: '^deviceCounterLog'
+            },
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/chart-year-compare.html',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
+                const self = this;
+                self.range = 'year';
+
+                self.$onInit = function () {
+                    const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
+                    self.chart = new RefreshingChart(
+                        chart.baseParams($),
+                        chart.angularParams($location, $route, $scope, $timeout, $element),
+                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        counterLogParams.chartParamsCompare(domoticzGlobals, self,
+                            subtype.chartParamsCompareTemplate,
+                            {
+                                isShortLogChart: false,
+                                yAxes: subtype.yAxesCompare(self.device.SwitchTypeVal),
+                                extendDataRequest: function (dataRequest) {
+                                    dataRequest['granularity'] = 'year';
+                                    return dataRequest;
+                                },
+                                preprocessData: function (data) {
+                                    if (subtype.preprocessData !== undefined) {
+                                        subtype.preprocessData.call(this, data);
+                                    }
+                                    this.firstYear = data.firstYear;
+                                },
+                                preprocessDataItems: subtype.preprocessDataItems
+                            },
+                            subtype.compareSeriesSuppliers(self.device.SwitchTypeVal)
+                        )
+                    );
+                }
+            }
+        });
     }
 );

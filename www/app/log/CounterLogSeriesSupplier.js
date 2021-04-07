@@ -3,7 +3,8 @@ define(['app'], function (app) {
     app.factory('counterLogSeriesSupplier', function () {
         return {
             dataItemsKeysPredicatedSeriesSupplier: dataItemsKeysPredicatedSeriesSupplier,
-            summingSeriesSupplier: summingSeriesSupplier
+            summingSeriesSupplier: summingSeriesSupplier,
+            counterCompareYearSeriesSuppliers: counterCompareYearSeriesSuppliers
         };
 
         function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplier) {
@@ -85,6 +86,58 @@ define(['app'], function (app) {
                 },
                 seriesSupplier
             );
+        }
+
+        function counterCompareYearSeriesSuppliers(deviceTypeIndex) {
+            return function (data) {
+                return _.range(data.firstYear, new Date().getFullYear() + 1)
+                    .reduce(
+                        function (seriesSuppliers, year) {
+                            return seriesSuppliers.concat({
+                                id: year.toString(),
+                                year: year,
+                                template: {
+                                    name: year.toString()
+                                },
+                                postprocessXaxis: function (xAxis) {
+                                    xAxis.categories =
+                                        _.range(this.dataSupplier.firstYear, new Date().getFullYear() + 1)
+                                            .map(year => year.toString())
+                                            .reduce((categories, year) => {
+                                                    if (!categories.includes(year)) {
+                                                        categories.push(year);
+                                                    }
+                                                    return categories;
+                                                },
+                                                (xAxis.categories === true ? [] : xAxis.categories)
+                                            )
+                                            .sort();
+                                },
+                                datapointFromDataItem: function (dataItem) {
+                                    const datapoint = [];
+                                    this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
+                                        datapoint.push(valueFromDataItem);
+                                    });
+                                    return datapoint;
+                                },
+                                valuesFromDataItem: function (dataItem) {
+                                    const year = this.valueFromDataItem(dataItem["y"]);
+                                    if (year !== this.year) {
+                                        return [null];
+                                    }
+                                    const previousLast = this.valueFromDataItem(dataItem["pl"]);
+                                    const currentFirst = this.valueFromDataItem(dataItem["cf"]);
+                                    const currentLast = this.valueFromDataItem(dataItem["cl"]);
+                                    if (currentLast == null || currentFirst == null && previousLast == null) {
+                                        return [null];
+                                    }
+                                    return [currentLast - (previousLast || currentFirst)];
+                                }
+                            });
+                        },
+                        []
+                    );
+            }
         }
     });
 
