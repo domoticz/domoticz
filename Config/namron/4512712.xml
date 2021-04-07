@@ -1,0 +1,47 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <!-- Please refer to https://github.com/OpenZWave/open-zwave/wiki/Adding-Devices for instructions -->
+  <MetaData>
+    <MetaDataItem name="Name">Namron Z-Wave 1 kanal bryter K2</MetaDataItem>
+    <MetaDataItem name="Description">The remote control is a Z-Wave device that can both control other Z-Wave devices and activate scenes in Gateways. Although it is controlling other devices, the device cannot act as Z-Wave network controller (primary or secondary) and will always need a Z-Wave network controller to be added into a Z-Wave network.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0438:a30f:0300</MetaDataItem>
+    <MetaDataItem name="ProductPage">https://www.namron.com/products/namron-z-wave-1-kanal-bryter-k2/</MetaDataItem>
+    <MetaDataItem name="ProductSupport">https://www.namron.com/contact/</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/namron/4512712.jpg</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://www.elektroimportoren.no/docs/lib/4512712-Brukerveiledning-5.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">short press any button</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Set controller in inclusion mode press and hold down group 2 keys for 3 seconds</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Set controller in exclusion mode press and hold down group 2 keys for 3 seconds</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold down group 2 keys for more than 10 seconds use only if controller is unavailable</MetaDataItem>
+    <MetaDataItem id="0xa30f" name="ZWProductPage" type="0x0300">https://products.z-wavealliance.org/products/3910</MetaDataItem>
+    <MetaDataItem id="0xa30f" name="FrequencyName" type="0x0300">CEPT</MetaDataItem>
+    <MetaDataItem id="0xa30f" name="Identifier" type="0x0300">4512712</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Joachim M. Giæver" date="28 November 2020" revision="2">Fix id. </Entry>
+      <Entry author="Joachim M. Giæver" date="28 November 2020" revision="1">Initial release. </Entry>
+    </ChangeLog>
+  </MetaData>
+  <!-- Configuration Command Class - All Configuration Parameters should be entered into the section below -->
+  <CommandClass id="112">
+    <!-- Here is a Byte/Int/Short Value Sample -->
+    <Value genre="config" index="1" label="Factory reset" max="21930" min="21930" type="int" units="" value="0" write_only="true">
+      <Help>Set to 21930 to factory reset the device.</Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="142">
+    <Compatibility>
+      <ForceInstances>true</ForceInstances>
+    </Compatibility>
+  </CommandClass>
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>
+  <!-- The Association Group Information -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" label="LifeLine" max_associations="5"/>
+      <Group index="2" label="Launch 1" max_associations="5" auto="true"/>
+    </Associations>
+  </CommandClass>
+</Product>

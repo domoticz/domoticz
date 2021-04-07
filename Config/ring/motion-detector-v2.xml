@@ -1,0 +1,97 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Motion Detector</MetaDataItem>
+    <MetaDataItem name="Description">Ring Alarm Motion Detector is a wireless sensor for the Ring Alarm system which provides users the ability to know when there is movement of a person or similar object within an area. After installing the sensor and setting up the sensor in the Ring app, monitor and receive notifications motion is detected. The Ring Alarm Base Station is required to enable Motion Detector features and functions within the Ring app.</MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0346:0301:0301</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/ring/motion-detector-v2.png</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/3869/Z-WaveUserManual_Motion_Detector_700.pdf</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">Not applicable. Ring Alarm Motion Detector is a Frequently Listening Receiver Slave (FLiRS) device and does not support Wake Up Command Class.
+    </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">After powering on the device, press and hold the button on the front of the device for ~3 seconds. Release the button and the device will enter Classic inclusion mode which implements both classic inclusion with a Node Information Frame, and Network Wide Inclusion. During Classic Inclusion mode, the green LED will blink three times followed by a brief pause, repeatedly. When Classic inclusion times-out, the device will blink alternating red and green a few times.
+    </MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Exclusion Instructions: 
+1.	Initiate remove “Ring Alarm Motion Detector” flow in the Ring Alarm mobile application – Select the settings icon from device details page and choose “Remove Device” to remove the device. This will place the controller into Remove or “Z-Wave Exclusion” mode. 
+2.	Locate the pinhole reset button on the back of the device in the battery compartment. 
+3.	With the controller in Remove (Z-Wave Exclusion) mode, use a paper clip or similar object and tap the pinhole button. The device’s red LED turns on solid to indicate the device was removed from the network. 
+    </MetaDataItem>
+    <MetaDataItem name="ResetDescription">Factory Default Instructions 
+1.	To restore Ring Alarm Motion Detector to factory default settings, locate the pinhole reset button on the device. This is found inside the battery compartment on the back of the device after removing the back bracket. 
+2.	Using a paperclip or similar object, insert it into the pinhole, press and hold the button down for 10 seconds. 
+3.	The device will rapidly blink green continuously for 10 seconds. After about 10 seconds, when the green blinking stops, release the button. The red LED will turn on solid to indicate the device was removed from the network. 
+
+Note: Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.
+    </MetaDataItem>
+    <MetaDataItem id="0301" name="ZWProductPage" type="0301">https://products.z-wavealliance.org/products/3869/</MetaDataItem>
+    <MetaDataItem id="0301" name="Identifier" type="0301">Motion Detector v2</MetaDataItem>
+    <MetaDataItem id="0301" name="FrequencyName" type="0301">U.S. / Canada / Mexico</MetaDataItem>
+    <ChangeLog>
+	<Entry author="gongtao0607@gmail.com" date="17 Jan 2021" revision="1">Initial Metadata Creation</Entry>
+    </ChangeLog>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Heartbeat Interval" max="70" min="1" size="1" type="byte" units="minutes" value="70">
+      <Help>
+        This parameter is the number minutes between heartbeats. Heartbeats are automatic battery reports on a timer after the last event.
+      </Help>
+    </Value>
+    <Value genre="config" index="2" label="Application Retriess" max="5" min="0" size="1" type="byte" units="" value="1">
+      <Help>
+        Number of application level retries attempted for messages either not ACKed or messages encapsulated via supervision get that did not receive a report.
+      </Help>
+    </Value>
+    <Value genre="config" index="3" label="Application Level Retry Base Wait Time Period" max="96" min="1" size="1" type="byte" units="seconds" value="5">
+      <Help>
+        The number base seconds used in the calculation for sleeping between retry messages.
+      </Help>
+    </Value>
+    <Value genre="config" index="4" label="LED Indicator Enable" max="2" min="0" size="1" type="list" value="1">
+      <Help>
+        This parameter allows a user, via software, to configure the various LED indications on the device.
+      </Help>
+      <Item label="Don't show green" value="0"/>
+      <Item label="Show green after Supervision Report Intrusion (Fault)" value="1"/>
+      <Item label="Show green after Supervision Report both Intrusion and Intrusion clear" value="2"/>
+    </Value>
+    <Value genre="config" index="5" label="Runtime Occ Clear Delay" max="255" min="0" size="1" type="byte" units="seconds" value="0">
+      <Help>
+        Delay time in seconds for occupancy signal to clear
+      </Help>
+    </Value>
+    <Value genre="config" index="6" label="Runtime Intrusion Clear Delay" max="255" min="0" size="1" type="byte" units="seconds" value="15">
+      <Help>
+        Delay time in seconds for intrusion signal to clear
+      </Help>
+    </Value>
+    <Value genre="config" index="7" label="Runtime Std Clear Delay" max="255" min="0" size="1" type="byte" units="seconds" value="0">
+      <Help>
+        Standard delay time in seconds
+      </Help>
+    </Value>
+    <Value genre="config" index="8" label="Motion Detection Mode" max="4" min="0" size="1" type="byte" units="" value="3">
+      <Help>
+        Adjusts motion sensitivity
+      </Help>
+    </Value>
+    <Value genre="config" index="9" label="Lighting Enabled" max="1" min="0" size="1" type="byte" units="" value="0">
+      <Help>
+        Enable or Disable light sensor
+      </Help>
+    </Value>
+    <Value genre="config" index="10" label="Lighting Delay" max="60" min="0" size="1" type="byte" units="minutes" value="2">
+      <Help>
+        Delay used to turn off lights when motion is no longer detected
+      </Help>
+    </Value>
+    <Value genre="config" index="11" label="Supervisory Report Timeout" max="30000" min="500" size="2" type="short" units="milliseconds" value="10000">
+      <Help>
+        The number of milliseconds waiting for a Supervisory Report response to a Supervisory Get encapsulated command from the sensor before attempting a retry.
+      </Help>
+    </Value>
+  </CommandClass>
+  <CommandClass id="133">
+    <Associations num_groups="1">
+       <Group index="1" label="LifeLine" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+</Product>
+
