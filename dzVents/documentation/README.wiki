@@ -735,7 +735,7 @@ end</source></li>
 <li><p>'''dumpTable(table,[levelIndicator],[osfile]<sup>3.0.0</sup>))''': ''Function'': print table structure and contents to log</p></li>
 <li><p>'''fileExists(path)''': ''Function'': Returns <code>true</code> if the file (with full path) exists.</p></li>
 <li><p>'''fromBase64(string)''': ''Function'': Decode a base64 string</p></li>
-<li><p>'''fromJSON(json, fallback)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid.</p></li>
+<li><p>'''fromJSON(json, fallback, deSerialize)''': ''Function''. Turns a json string to a Lua table. Example: <code>local t = domoticz.utils.fromJSON('{ &quot;a&quot;: 1 }')</code>. Followed by: <code>print( t.a )</code> will print 1. Optional 2nd param fallback will be returned if json is nil or invalid. Optional 3rd param deSerialize (boolean) determines if the JSON should be deserialized before converting.</p></li>
 <li><p>'''fromXML(xml, fallback )''': ''Function'': Turns a xml string to a Lua table. Example: <code>local t = domoticz.utils.fromXML('&lt;testtag&gt;What a nice feature!&lt;/testtag&gt;') Followed by:</code>print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.</p></li>
 <li><p>'''fuzzyLookup([string|array of strings], parm)''': ''Function'': <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.</p></li>
 <li><p>'''groupExists(parm)''': ''Function'': returns name when entered with a valid group <sup>3.0.12</sup> or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group</p></li>
@@ -1391,15 +1391,17 @@ See table below
 
 {| class="wikitable"
 !width="17%"| option
-!align="center" width="12%"| state changes
-!align="center" width="12%"| update commands
+!align="center" width="10%"| state changes
+!align="center" width="11%"| update commands
 !align="center" width="12%"| user variables
 !align="center" width="12%"| updateSetpoint
-!align="center" width="12%"| snapshot
-!align="center" width="12%"| triggerIFTTT
+!align="center" width="8%"| snapshot
+!align="center" width="10%"| triggerIFTTT
+!align="center" width="12%"| execute ShellCommand
 !align="center" width="12%"| emitEvent
 |-
 | <code>afterAAA()</code><sup>1</sup>
+|align="center"| •
 |align="center"| •
 |align="center"| •
 |align="center"| •
@@ -1416,9 +1418,11 @@ See table below
 |align="center"| •
 |align="center"| •
 |align="center"| •
+|align="center"| •
 |-
 | <code>forAAA()</code>
 |align="center"| •
+|align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
@@ -1433,6 +1437,7 @@ See table below
 |align="center"| •
 |align="center"| •
 |align="center"| n/a
+|align="center"| n/a
 |align="center"| •
 |-
 | <code>silent()</code>
@@ -1443,9 +1448,11 @@ See table below
 |align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
 |-
 | <code>repeatAfterAAA()</code>
 |align="center"| •
+|align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
@@ -1461,6 +1468,7 @@ See table below
 |align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
 |-
 | <code>cancelQueuedCommands()</code>
 |align="center"| •
@@ -1470,8 +1478,10 @@ See table below
 |align="center"| n/a
 |align="center"| n/a
 |align="center"| n/a
+|align="center"| n/a
 
 |}
+
 ==== Notes on table ====
 
 * '''Note 1''': AAA is a placeholder for <code>Min/Sec/Hour</code> affix e.g. <code>afterMin()</code>.

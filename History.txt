@@ -1,4 +1,4 @@
-Version 2020.xxxxx (xxxxx)
+Version 2021.xxxxx (xxxxx)
 - Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: AirconWithMe wifi module
@@ -23,7 +23,7 @@ Version 2020.xxxxx (xxxxx)
 - Implemented: RTL433, Added UV type
 - Implemented: RTL433, Added X-10 Security support
 - Implemented: RTL433, Switched to Json input
-- Implemented: Autorefresh feature for graphical logs
+- Implemented: Auto refresh feature for graphical logs
 - Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: Websocket notification for secondary/sub devices
 - Implemented: ZWave, Legend and tooltips in Neighbors overview
@@ -37,17 +37,18 @@ Version 2020.xxxxx (xxxxx)
 - Updated: MQTT; added option to choose notification subsystem
 - Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
 - Updated: OpenZWave; configuration files
-- Updated: Openweathermap; use latest API and overal improvements
+- Updated: Openweathermap; use latest API and overall improvements
 - Updated: OTGW; ready for firmware 5.0 and added domestic hot water flow rate
 - Updated: Plugin manager: ready for Python 3.9+
 - Updated: Plugwise; update of scene selector and added a migration process
-- Updated: SolarEdge; add support for 3 Phase inverter
+- Updated: SolarEdge; add support for 3 Phase inverters
 - Updated: Tado; add support for per-zone Open Window Detection
 - Updated: TTNMQTT; Better GPS/Locations handling, distance calculation (Geofencing)
 - Updated: TTNMQTT; Improved calculation and storage of signal-levels
-- Updated: Xiaomi; added new devicetypes
-- Changed: During a database backup we now 'sleep' when the status != OK
+- Updated: Xiaomi; added new device types
+- Changed: Devices, ZWave, each node as separate hardware for easy selection
 - Changed: Differentiate kWh, kVah, kVar and kVarh
+- Changed: During a database backup we now 'sleep' when the status != OK
 - Changed: Energy devices allow negative values
 - Changed: Use of Clang-Tidy rules to force ++ coding consistency
 - Fixed: Annatherm Presets usage in Events. Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
@@ -56,7 +57,7 @@ Version 2020.xxxxx (xxxxx)
 - Fixed: Control for thermostat setpoints on floorplan
 - Fixed: Compiling on systems with recent Python versions
 - Fixed: Distance sensor was converting to miles instead of inches
-- Fixed: Icon uploading from linux clients/browsers
+- Fixed: Icon uploading from Linux clients/browsers
 - Fixed: Floorplan uploading
 - Fixed: Font in events editor on MacOS
 - Fixed: Motherboard Sensors for big partitions

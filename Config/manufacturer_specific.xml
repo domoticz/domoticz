@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="167" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="169" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -1503,6 +1503,7 @@
     <Product config="qubino/ZMNKIDx.xml" id="0054" name="ZMNKIDx OnOff Thermostat 2" type="0005"/>
     <Product config="qubino/ZMNHQDx.xml" id="0051" name="ZMNHQDx LUXY Smart Light" type="0008"/>
     <Product config="qubino/ZMNKADx.xml" id="0052" name="ZMNKADx LUXY Smart Switch" type="0008"/>
+	<Product config="qubino/ZMNHMDx.xml" id="0051" name="ZMNHMDx Smart leak protector" type="0006"/>
   </Manufacturer>
   <Manufacturer id="0130" name="Quby">
     <Product config="quby/qb2.xml" id="0001" name="Energy Management System" type="0001"/>
@@ -2041,9 +2042,6 @@
     <Product config="zipato/ne-nas-ab02z.xml" id="1083" name="Indoor Siren" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0120" name="Zonoff"></Manufacturer>
-  <Manufacturer id="0000" name="Zooz">
-    <Product id="0004" name="ZST10 700 S2 Z-Wave Plus USB Stick" type="0004" />
-  </Manufacturer>
   <Manufacturer id="027a" name="Zooz">
     <Product id="0002" name="ZST10 S2 Z-Wave Plus USB Stick" type="0401"/>
     <Product config="zooz/zen06.xml" id="000a" name="ZEN06 Smart Plug" type="0101"/>
