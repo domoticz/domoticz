@@ -1,4 +1,3 @@
-local _ = require('lodash')
 local evenItemIdentifier = require('eventItemIdentifier')
 
 local eventMapping = {
