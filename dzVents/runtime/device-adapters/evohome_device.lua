@@ -59,11 +59,15 @@ return {
 			device.untilDate = tostring(device.rawData[4] or "n/a")
 
 			function device.updateSetPoint(setPoint, mode, untilDate)
-				return TimedCommand(domoticz,
-					'SetSetPoint:' .. tostring(device.id),
-					tostring(setPoint) .. '#' ..
-					tostring(mode) .. '#' ..
-					tostring(untilDate) , 'setpoint')
+				if mode == domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE and not(untilDate) then 
+					return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint) .. '#' .. mode, 'setpoint' )
+				else
+					return TimedCommand(domoticz,
+						'SetSetPoint:' .. tostring(device.id),
+						tostring(setPoint) .. '#' ..
+						tostring(mode) .. '#' ..
+						tostring(untilDate) , 'setpoint')
+				end
 			end
 
 			function device.setMode(mode, dParm, action, ooc)
