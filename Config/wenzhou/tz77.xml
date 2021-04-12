@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/wenzhou/tz77.png</MetaDataItem>
+    <MetaDataItem name="Name">RGBW Dimmer Switch</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">1) Have Z-Wave controller with exclusion mode; 2) Press the on/off button three times within 1.5 seconds to be excluded from the controller</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">1) Have Z-Wave controller with inclusion mode; 2) Press the on/off button three times within 1.5 seconds to be included to the controller</MetaDataItem>
+    <MetaDataItem id="0302" name="Identifier" type="0311">TZ77</MetaDataItem>
+    <MetaDataItem name="Description">This insert switch module is a transceiver which is a Z-Wave enabled device and is fully compatible with any Z-Wave enabled network. Remote on/off control of the connected load is possible with other manufacturer's wireless controller. Each switch is designed to act as a repeater.</MetaDataItem>
+    <MetaDataItem id="0302" name="FrequencyName" type="0311">CEPT (Europe)</MetaDataItem>
+    <ChangeLog>
+      <Entry author="fratsloos" date="02 Feb 2021" revision="1">Created</Entry>
+      <Entry author="fratsloos" date="02 Feb 2021" revision="2">Fixed index of config variables</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration  -->
+  <CommandClass id="112">
+    <Value genre="config" index="1" label="Indicator light state" max="1" min="0" type="byte" value="1">
+      <Help>Change the state of indicator light. Default status of socket: LED is on as indicator when the load is off.</Help>
+    </Value>
+    <Value genre="config" index="2" label="Memory function" max="1" min="0" type="byte" value="1">
+      <Help>Socket status when powered on. Default with memory: the socket status is same as before when power on</Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Group 1" />
+    </Associations>
+  </CommandClass>
+</Product>
