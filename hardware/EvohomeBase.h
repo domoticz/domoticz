@@ -390,6 +390,8 @@ class CEvohomeDateTime : public CEvohomeDataType
 	template <class T> static void DecodeISODate(T &out, const char *str)
 	{
 		unsigned int y, m, d, h, n;
+		if(!str[0])
+			return;
 		sscanf(str, "%04u-%02u-%02uT%02u:%02u:", &y, &m, &d, &h, &n);
 		out.year = static_cast<uint16_t>(y);
 		out.month = static_cast<uint8_t>(m);
