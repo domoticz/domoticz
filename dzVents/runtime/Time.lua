@@ -520,7 +520,6 @@ local function Time(sDate, isUTC, _testMS)
 			return nil
 		end
 
-		local _ = require('lodash')
 		local dateTable = utils.stringSplit(dates,',') -- get all date(ranges)
 
 		-- remove spaces and add a comma

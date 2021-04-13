@@ -524,6 +524,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
 	{
+		lID = (lID & 0xFFFFFF00) | pDevice->orgInstanceID;
 		SendVoltageSensor(0, lID, BatLevel, pDevice->floatValue, "Voltage");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_PERCENTAGE)
