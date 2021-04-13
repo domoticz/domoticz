@@ -11,8 +11,6 @@
 
 #include "../tinyxpath/tinyxml.h"
 
-#include <fmt/core.h>
-
 #define round(a) ( int ) ( a + .5 )
 
 // Plugwise Anna Thermostat

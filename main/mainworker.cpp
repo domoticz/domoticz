@@ -17,7 +17,6 @@
 #include "../main/json_helper.h"
 
 #include <boost/crc.hpp>
-#include <fmt/core.h>
 #include <algorithm>
 #include <set>
 
@@ -1167,9 +1166,9 @@ bool MainWorker::Start()
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 	if (rnvalue != 0)
 	{
-		auto szPort = fmt::format("{}", rnvalue);
+		auto sPort = fmt::format("{}", rnvalue);
 		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto user) { DecodeRXMessage(hw, rx, name, battery, user); });
-		m_sharedserver.StartServer("::", szPort.c_str());
+		m_sharedserver.StartServer("::", sPort.c_str());
 
 		LoadSharedUsers();
 	}

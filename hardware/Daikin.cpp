@@ -7,7 +7,6 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include <fmt/core.h>
 #include <sstream>
 
 // NodeId
@@ -771,8 +770,8 @@ bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	Debug(DEBUG_HARDWARE, "Set Point...");
 
 	// cible température
-	auto tmp = fmt::format("{:.1f}", temp);
-	AggregateSetControlInfo(tmp.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr);
+	std::string sTmp = fmt::format("{:.1f}", temp);
+	AggregateSetControlInfo(sTmp.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr);
 
 	SendSetPointSensor(20, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface
 	return true;

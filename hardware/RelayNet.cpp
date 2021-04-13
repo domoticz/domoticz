@@ -101,7 +101,6 @@
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 #include "../httpclient/HTTPClient.h"
-#include <fmt/core.h>
 #include <sstream>
 
 //===========================================================================

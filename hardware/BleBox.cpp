@@ -11,8 +11,6 @@
 #include "../main/WebServer.h"
 #include "../httpclient/HTTPClient.h"
 
-#include <fmt/core.h>
-
 struct STR_DEVICE {
 	int			unit;
 	const char *api_name;
