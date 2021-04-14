@@ -216,8 +216,6 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char /*length*/)
 
 		Debug(DEBUG_HARDWARE, "Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
 
-		char szTmp[10];
-		sprintf(szTmp, "%.1f", pMeter->temp);
 		result = SetSetpoint(node_id, pMeter->temp);
 	}
 	else
