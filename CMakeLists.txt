@@ -24,6 +24,7 @@ option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+option(USE_BUILTIN_LIBFMT "Use builtin FMT library" YES)
 
 # Optional dependencies
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
@@ -131,7 +132,7 @@ ENDIF()
 IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalgamation/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
-IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmtlib/CMakeLists.txt")
+IF(USE_BUILTIN_LIBFMT AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmtlib/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 
@@ -563,9 +564,23 @@ ELSE(USE_BUILTIN_SQLITE)
 ENDIF(USE_BUILTIN_SQLITE)
 
 # FmtLib
-add_subdirectory (extern/fmtlib EXCLUDE_FROM_ALL)
-target_link_libraries(domoticz fmt::fmt)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/fmtlib)
+IF(USE_BUILTIN_LIBFMT)
+  add_subdirectory (extern/fmtlib EXCLUDE_FROM_ALL)
+  target_link_libraries(domoticz fmt::fmt)
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/fmtlib)
+ELSE
+  find_package(PkgConfig)
+  pkg_check_modules(FMT REQUIRED fmt)
+  IF(FMT_FOUND)
+    MESSAGE(STATUS "FMT includes found at: ${FMT_INCLUDE_DIRS}")
+    target_include_directories(domoticz PRIVATE ${FMT_INCLUDE_DIRS})
+    target_link_directories(domoticz PRIVATE ${FMT_LIBRARY_DIRS})
+    target_link_libraries(domoticz ${FMT_LIBRARIES})
+  ELSE(FMT_FOUND)
+    MESSAGE(FATAL_ERROR "FMT not found on your system!")
+  ENDIF(FMT_FOUND)
+ENDIF(USE_BUILTIN_LIBFMT)
+
 
 # minizip
 IF(USE_BUILTIN_MINIZIP)
@@ -747,7 +762,7 @@ ELSE()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 ENDIF(TELLDUSCORE_INCLUDE)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${FMT_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz -lresolv)
