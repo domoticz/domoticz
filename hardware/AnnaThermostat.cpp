@@ -209,12 +209,9 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-	char szTemp[10];
-	sprintf(szTemp, "%.1f", temp);
-
 	sPostData << "<thermostat>";
 	sPostData << "<setpoint>";
-	sPostData << szTemp;
+	sPostData << fmt::format("{:.1f}", temp);
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
 
