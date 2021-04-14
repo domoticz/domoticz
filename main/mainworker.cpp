@@ -1166,7 +1166,7 @@ bool MainWorker::Start()
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 	if (rnvalue != 0)
 	{
-		auto sPort = fmt::format("{}", rnvalue);
+		std::string sPort = fmt::format("{}", rnvalue);
 		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto user) { DecodeRXMessage(hw, rx, name, battery, user); });
 		m_sharedserver.StartServer("::", sPort.c_str());
 

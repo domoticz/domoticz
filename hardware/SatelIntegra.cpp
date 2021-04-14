@@ -998,7 +998,7 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 {
 	std::vector<std::vector<std::string> > result;
 
-	std::string sTmp = fmt::format("{}", Idx);
+	std::string sTmp = fmt::format("{:08X}", Idx);
 
 	std::string shortName((char*)name, 16);
 
@@ -1040,7 +1040,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	}
 
 	//Arm
-	for (unsigned int i = 0; m_isPartitions.size(); ++i)
+	for (size_t i = 0; m_isPartitions.size(); ++i)
 	{
 		if (m_isPartitions[i])
 		{
