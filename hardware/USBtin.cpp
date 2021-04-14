@@ -66,6 +66,7 @@ m_szSerialPort(devname)
 	m_HwdID = ID;
 	m_USBtinRetrycntr=USBTIN_RETRY_DELAY*5;
 	Bus_CANType = BusCanType;
+	m_bOutputLog = false;
 	if( DebugMode == 0 )m_BOOL_USBtinDebug = false;
 	else m_BOOL_USBtinDebug = true;
 	Init();
@@ -237,7 +238,7 @@ void USBtin::readCallback(const char *data, size_t len)
 		Log(LOG_ERROR,"USBtin: Warning Error buffer size reaches/ maybe Can is overrun...");
 		return;
 	}
-	ParseData(data, static_cast<int>(len));
+	ParseData(data, len);
 }
 
 void USBtin::ParseData(const char *pData, int Len)

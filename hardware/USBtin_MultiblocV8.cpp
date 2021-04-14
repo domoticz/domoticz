@@ -226,6 +226,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 
 USBtin_MultiblocV8::USBtin_MultiblocV8()
 {
+	m_bOutputLog = false;
 	m_BOOL_DebugInMultiblocV8 = false;
 }
 
@@ -363,6 +364,9 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber,unsigned int rxD
 	char Codage = (IDhexNumber & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE;
 	char SsReseau = IDhexNumber & MSK_SRES_MODULE;
 
+	if (RefBloc >= NomRefBloc.size()) //security, if we receive a frame with a RefBLoc beyond limits
+		return;
+	
 	if( m_thread ){
 		switch(FrameType){ //First switch !
 			case type_ALIVE_FRAME:
@@ -411,6 +415,9 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	unsigned int codetouche = bufferdata[4];
 	std::string defaultname=" ";
 
+	if (RefBloc >= NomRefBloc.size())
+		return;
+	
 	Log(LOG_NORM, "MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X", NomRefBloc[RefBloc], Codage, Ssreseau, SwitchId, codetouche);
 
 	tRBUF lcmd;
@@ -460,6 +467,9 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 	int IndexBLoc = 0;
 	unsigned long Rqid = 0;
 
+	if (RefBloc >= NomRefBloc.size())
+		return;
+	
 	for(i = 0;i < MAX_NUMBER_BLOC;i++){
 		if( m_BlocList_CAN[i].BlocID == sID ){
 			BIT_FIND_BLOC = true;
@@ -577,6 +587,9 @@ void  USBtin_MultiblocV8::BlocList_CheckBloc(){
 			Codage = (m_BlocList_CAN[i].BlocID & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE;
 			Subnetwork = m_BlocList_CAN[i].BlocID & MSK_SRES_MODULE;
 			//and check the bloc state :
+			if (RefBloc >= NomRefBloc.size())
+				return;
+			
 			if( m_BlocList_CAN[i].Status == BLOC_NOTALIVE && m_BlocList_CAN[i].NbAliveFrameReceived > 0){
 				//le bloc a été perdu / bloc lost...
 				//Log(LOG_ERROR,"MultiblocV8: Bloc Lost with ref #%d# ",RefBloc);
@@ -907,7 +920,9 @@ void USBtin_MultiblocV8::SetOutputBlinkInDomoticz (unsigned long sID,int OutputN
 void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType,const unsigned char RefBloc, const char Codage, const char Ssreseau,unsigned int bufferdata[8])
 {
 	unsigned long sID = (RefBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
-
+	if (RefBloc >= NomRefBloc.size())
+		return;
+	
 	switch(RefBloc){
 		case BLOC_SFSP_M :
 		case BLOC_SFSP_E :
