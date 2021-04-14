@@ -496,38 +496,16 @@ bool MainWorker::GetSunSettings()
 	SunRiseSet::_tSubRiseSetResults sresult;
 	SunRiseSet::GetSunRiseSet(dLatitude, dLongitude, year, month, day, sresult);
 
-	std::string sunrise;
-	std::string sunset;
-	std::string daylength;
-	std::string sunatsouth;
-	std::string civtwstart;
-	std::string civtwend;
-	std::string nauttwstart;
-	std::string nauttwend;
-	std::string asttwstart;
-	std::string asttwend;
-
-	char szRiseSet[30];
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunRiseHour, sresult.SunRiseMin);
-	sunrise = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunSetHour, sresult.SunSetMin);
-	sunset = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.DaylengthHours, sresult.DaylengthMins);
-	daylength = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
-	sunatsouth = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
-	civtwstart = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
-	civtwend = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
-	nauttwstart = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
-	nauttwend = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
-	asttwstart = szRiseSet;
-	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
-	asttwend = szRiseSet;
+	std::string sunrise = fmt::format("{:02}:{:02}:00", sresult.SunRiseHour, sresult.SunRiseMin);
+	std::string sunset = fmt::format("{:02}:{:02}:00", sresult.SunSetHour, sresult.SunSetMin);
+	std::string daylength = fmt::format("{:02}:{:02}:00", sresult.DaylengthHours, sresult.DaylengthMins);
+	std::string sunatsouth = fmt::format("{:02}:{:02}:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
+	std::string civtwstart = fmt::format("{:02}:{:02}:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
+	std::string civtwend = fmt::format("{:02}:{:02}:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
+	std::string nauttwstart = fmt::format("{:02}:{:02}:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
+	std::string nauttwend = fmt::format("{:02}:{:02}:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
+	std::string asttwstart = fmt::format("{:02}:{:02}:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
+	std::string asttwend = fmt::format("{:02}:{:02}:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
 
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
 
@@ -1188,10 +1166,9 @@ bool MainWorker::Start()
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 	if (rnvalue != 0)
 	{
-		char szPort[100];
-		sprintf(szPort, "%d", rnvalue);
+		std::string sPort = fmt::format("{}", rnvalue);
 		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto user) { DecodeRXMessage(hw, rx, name, battery, user); });
-		m_sharedserver.StartServer("::", szPort);
+		m_sharedserver.StartServer("::", sPort.c_str());
 
 		LoadSharedUsers();
 	}
@@ -1829,8 +1806,7 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 
 	switch (devType) {
 	case pTypeLighting1:
-		sprintf(szTmp, "%d", pResponse->LIGHTING1.housecode);
-		ID = szTmp;
+		ID = fmt::format("{}", pResponse->LIGHTING1.housecode);
 		Unit = pResponse->LIGHTING1.unitcode;
 		break;
 	case pTypeLighting2:

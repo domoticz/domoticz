@@ -445,6 +445,22 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 	if ((pEvo->mode) == 2) // temporary override
 	{
 		std::string szISODate(CEvohomeDateTime::GetISODate(pEvo));
+		if((!pEvo->year) && !pEvo->hrs)
+		{
+			std::string szsetpoint_tmp;
+			if ((!hz->schedule.isNull()) || get_zone_schedule(zoneId))
+			{
+				szISODate = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint_tmp));
+				if (!szISODate.empty())
+				{
+					pEvo->year = (uint16_t)(atoi(szISODate.substr(0, 4).c_str()));
+					pEvo->month = (uint8_t)(atoi(szISODate.substr(5, 2).c_str()));
+					pEvo->day = (uint8_t)(atoi(szISODate.substr(8, 2).c_str()));
+					pEvo->hrs = (uint8_t)(atoi(szISODate.substr(11, 2).c_str()));
+					pEvo->mins = (uint8_t)(atoi(szISODate.substr(14, 2).c_str()));
+				}
+			}
+		}
 		return set_temperature(zoneId, s_setpoint.str(), szISODate);
 	}
 	return false;

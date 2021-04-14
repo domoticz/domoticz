@@ -531,7 +531,6 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 
 void RelayNet::ProcessRelaycardDump(char* Dump)
 {
-	char	cTemp[16];
 	std::string sDump;
 	std::string sChkstr;
 
@@ -542,16 +541,14 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 	{
 		for (int i = 1; i <= m_relay_count; i++)
 		{
-			snprintf(&cTemp[0], sizeof(cTemp), "RELAYON %d", i);
-			sChkstr = cTemp;
+			sChkstr = fmt::format("RELAYON {}", i);
 
 			if(sDump.find(sChkstr) != std::string::npos)
 			{
 				UpdateDomoticzRelay(i, true);
 			}
 
-			snprintf(&cTemp[0], sizeof(cTemp), "RELAYOFF %d", i);
-			sChkstr = cTemp;
+			sChkstr = fmt::format("RELAYOFF {}", i);
 
 			if (sDump.find(sChkstr) != std::string::npos)
 			{
@@ -564,16 +561,14 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 	{
 		for (int i = 1; i <= m_input_count; i++)
 		{
-			snprintf(&cTemp[0], sizeof(cTemp), "IH %d", i);
-			sChkstr = cTemp;
+			sChkstr = fmt::format("IH {}", i);
 
 			if (sDump.find(sChkstr) != std::string::npos)
 			{
 				UpdateDomoticzInput(i, true);
 			}
 
-			snprintf(&cTemp[0], sizeof(cTemp), "IL %d", i);
-			sChkstr = cTemp;
+			sChkstr = fmt::format("IL {}", i);
 
 			if (sDump.find(sChkstr) != std::string::npos)
 			{

@@ -96,7 +96,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local storageContext = {}
 		local fileStorage, value, ok
-		--require('lodash').print(1, storageDef)
+		
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
 			ok, fileStorage = pcall(require, module)
@@ -154,7 +154,6 @@ local function EventHelpers(domoticz, mainMethod)
 						def = _def
 					end
 
-					--require('lodash').print('>', var, def, '<')
 					if (def.history ~= nil and def.history == true) then
 						-- no initial value, just an empty history
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
@@ -863,7 +862,7 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 				if (type(v) == 'table') then
 					for kk, vv in pairs(v) do
-						utils.log('- ' .. kk .. ' = ' .. _.str(vv), level)
+						utils.log('- ' .. kk .. ' = ' .. utils.toStr(vv), level)
 					end
 				else
 					utils.log(k .. ' = ' .. v, level)
@@ -914,7 +913,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			local ok, res = pcall(strFind, scriptTrigger, '*');
 			if not ok then
-				utils.log('Script name: ' .. scripts[1].name  .. '.lua, has a malformed on = section. The trigger = ' .. _.str(scriptTrigger) , utils.LOG_ERROR)
+				utils.log('Script name: ' .. scripts[1].name  .. '.lua, has a malformed on = section. The trigger = ' .. utils.toStr(scriptTrigger) , utils.LOG_ERROR)
 				allEventScripts[scriptTrigger] = ''
 			elseif res then -- a wild-card was used
 				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')

@@ -131,6 +131,9 @@ ENDIF()
 IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalgamation/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
+IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmtlib/CMakeLists.txt")
+  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+ENDIF()
 
 # Target
 set(
@@ -558,6 +561,11 @@ ELSE(USE_BUILTIN_SQLITE)
     MESSAGE(FATAL_ERROR "SQLite3 not found on your system! try 'sudo apt-get install libsqlite3-dev'")
   ENDIF(SQLite3_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
+
+# FmtLib
+add_subdirectory (extern/fmtlib EXCLUDE_FROM_ALL)
+target_link_libraries(domoticz fmt::fmt)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/fmtlib)
 
 # minizip
 IF(USE_BUILTIN_MINIZIP)

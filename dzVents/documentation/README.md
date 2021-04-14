@@ -1052,7 +1052,9 @@ Note that if you do not find your specific device type here you can always inspe
  - **setPoint**: *Number*.
  - **mode**: *string* .
  - **untilDate**: *string in ISO 8601 format* or n/a .
- - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE, domoticz.EVOHOME_MODE_FOLLOW_SCHEDULE or domoticz.EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). 
+When leaving out untilDate for mode domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE the untilDate will be the next scheduled zone-update time/date.
+Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
 #### Gas
  - **counter**: *Number*. Value in m<sup>3</sup>

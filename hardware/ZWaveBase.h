@@ -90,6 +90,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 		std::string label;
 		std::string custom_label;
 
+		//Unit
+		std::string unit;
+
 		time_t lastreceived{ 0 };
 		unsigned char sequence_number;
 

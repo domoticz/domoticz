@@ -4,21 +4,22 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
-#define MAX_NUMBER_BLOC 30
+#define MAX_NUMBER_BLOC 50
+#define MAX_BUFFER_SFSP_SWITCH 50
 
 class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 {
-      public:
+public:
 	USBtin_MultiblocV8();
 	~USBtin_MultiblocV8() override;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
-      protected:
+ protected:
 	void ManageThreadV8(bool States);
 	void Traitement_MultiblocV8(int IDhexNumber, unsigned int rxDLC, unsigned int Buffer_Octets[8]);
 	unsigned long m_V8switch_id_base;
 
-      private:
+private:
 	void StopThread();
 	bool StartThread();
 
@@ -41,20 +42,30 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 	void InsertUpdateControlSwitch(int NodeID, int ChildID, const std::string &defaultname);
 	void SetOutputBlinkInDomoticz(unsigned long sID, int OutputNumber, bool Blink);
 	void Traitement_Trame_EtatBloc(unsigned char RefBloc, char Codage, char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
+	int getIndexFromBlocname(std::string blocname);
+	void FillBufferSFSP_toSend(int Sid, char KeyCode);
 
 	bool m_BOOL_DebugInMultiblocV8;
 	bool m_BOOL_TaskAGo;
 	bool m_BOOL_TaskRqStorGo;
-	bool m_BOOL_SendPushOffSwitch;
 	bool m_BOOL_GlobalBlinkOutputs;
 	char m_CHAR_CommandBlocToSend;
-	char m_CHAR_CodeTouchePushOff_ToSend;
+
 	int m_INT_SidPushoffToSend;
 	int m_V8secCounterBase;
 	int m_V8secCounter1;
 	int m_V8secCounter2;
 	int m_V8minCounterBase;
 	int m_V8minCounter1;
+
+	bool m_BOOL_parsing_buffer_go;
+
+	struct
+	{
+		bool m_BOOL_SendSFSP_Switch;
+		int m_INT_PushOffBufferToSend;
+		char m_CHAR_CodeTouchePushOff_ToSend;
+	} m_sfsp_switch_tosend[MAX_BUFFER_SFSP_SWITCH];
 
 	struct
 	{
