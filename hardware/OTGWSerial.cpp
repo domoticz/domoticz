@@ -70,7 +70,7 @@ bool OTGWSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"OTGW: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS,"Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -80,9 +80,9 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"OTGW:Error opening serial port!");
+		Log(LOG_ERROR,"OTGW:Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -90,7 +90,7 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"OTGW:Error opening serial port!!!");
+		Log(LOG_ERROR,"OTGW:Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
@@ -117,7 +117,7 @@ void OTGWSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_STATUS,"OTGW: serial setup retry in %d seconds...", RETRY_DELAY);
+				Log(LOG_STATUS,"serial setup retry in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
@@ -147,7 +147,7 @@ void OTGWSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"OTGW: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool OTGWSerial::WriteInt(const unsigned char *pData, const unsigned char Len)

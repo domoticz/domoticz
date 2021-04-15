@@ -52,14 +52,14 @@ bool CDenkoviUSBDevices::StartHardware()
 	catch (boost::exception & e)
 	{
 		if (m_iModel == DDEV_USB_16R)
-			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port!");
+			Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port!");
 		(void)e;
 		return false;
 	}
 	catch (...)
 	{
 		if (m_iModel == DDEV_USB_16R)
-			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port!");
+			Log(LOG_ERROR, "USB 16 Relays-VCP: Error opening serial port!");
 		return false;
 	}
 
@@ -87,7 +87,7 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 				secondEight = (unsigned char)data[1];
 			}
 			else {
-				_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Response error.");
+				Log(LOG_ERROR, "USB 16 Relays-VCP: Response error.");
 				return;
 			}
 			for (uint8_t ii = 1; ii < 9; ii++) {
@@ -105,7 +105,7 @@ void CDenkoviUSBDevices::readCallBack(const char * data, size_t len)
 
 void CDenkoviUSBDevices::OnError(const std::exception &e)
 {
-	_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Error: %s", e.what());
+	Log(LOG_ERROR, "USB 16 Relays-VCP: Error: %s", e.what());
 }
 
 bool CDenkoviUSBDevices::StopHardware()
@@ -127,7 +127,7 @@ void CDenkoviUSBDevices::Do_Work()
 
 	int msec_counter = 0;
 
-	_log.Log(LOG_STATUS, "Denkovi: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(100))
 	{
@@ -143,7 +143,7 @@ void CDenkoviUSBDevices::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "Denkovi: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -163,7 +163,7 @@ bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char 
 		//int ioType = pSen->id;
 		if (ioType != DAE_IO_TYPE_RELAY)
 		{
-			_log.Log(LOG_ERROR, "USB 16 Relays-VCP: Not a valid Relay");
+			Log(LOG_ERROR, "USB 16 Relays-VCP: Not a valid Relay");
 			return false;
 		}
 		//int io = pSen->unitcode;//Relay1 to Relay16
@@ -180,7 +180,7 @@ bool CDenkoviUSBDevices::WriteToHardware(const char *pdata, const unsigned char 
 		return true;
 	}
 	}
-	_log.Log(LOG_ERROR, "Denkovi: Unknown Device!");
+	Log(LOG_ERROR, "Unknown Device!");
 	return false;
 }
 

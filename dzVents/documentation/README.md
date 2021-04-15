@@ -1636,7 +1636,6 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
 ```
 
  - **day**: *Number*
- - **day**: *Number*
  - **dayAbbrOfWeek**: *String*. sun,mon,tue,wed,thu,fri or sat
  - **daysAgo**: *Number*
  - **dayName**: *String*. complete name Sunday, Monday, etc
@@ -2494,7 +2493,7 @@ return
 				callback = scriptVar,
 				timeout = timeoutinseconds,
 			})
-		elseif item.isShellCommandResponse and then
+		elseif item.isShellCommandResponse then
 			if item.statusCode == 0 then
 				... -- process result (in item.json, -item.xml, -item.lines or item.data)
 			end

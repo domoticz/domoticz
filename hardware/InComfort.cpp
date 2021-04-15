@@ -73,7 +73,7 @@ bool CInComfort::StopHardware()
 void CInComfort::Do_Work()
 {
 	int sec_counter = 0;
-	_log.Log(LOG_STATUS, "InComfort: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -85,7 +85,7 @@ void CInComfort::Do_Work()
 			GetHeaterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS, "InComfort: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CInComfort::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
@@ -96,7 +96,7 @@ bool CInComfort::WriteToHardware(const char * /*pdata*/, const unsigned char /*l
 
 void CInComfort::SetSetpoint(const int /*idx*/, const float temp)
 {
-	_log.Log(LOG_NORM, "InComfort: Setpoint of sensor with idx idx changed to temp");
+	Log(LOG_NORM, "Setpoint of sensor with idx idx changed to temp");
 	std::string jsonData = SetRoom1SetTemperature(temp);
 	if (jsonData.length() > 0)
 		ParseAndUpdateDevices(jsonData);
@@ -109,7 +109,7 @@ std::string CInComfort::GetHTTPData(const std::string &sURL)
 	std::string sResult;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "InComfort: Error getting current state!");
+		Log(LOG_ERROR, "Error getting current state!");
 	}
 	return sResult;
 }
@@ -136,7 +136,7 @@ void CInComfort::GetHeaterDetails()
 	std::string sResult = GetHTTPData(sstr.str());
 	if (sResult.empty())
 	{
-		_log.Log(LOG_ERROR, "InComfort: Error getting current state!");
+		Log(LOG_ERROR, "Error getting current state!");
 		return;
 	}
 	ParseAndUpdateDevices(sResult);
@@ -152,12 +152,12 @@ void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 	bool bRet = ParseJSon(jsonData, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
+		Log(LOG_ERROR, "Invalid data received. Data is not json formatted.");
 		return;
 	}
 	if (root["nodenr"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Nodenr not found.");
+		Log(LOG_ERROR, "Invalid data received. Nodenr not found.");
 		return;
 	}
 

@@ -7,6 +7,7 @@ local Variable = require('Variable')
 local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
+local _ = require('lodash')
 local constants = require('constants');
 
 local function merge(toTable, fromTable)

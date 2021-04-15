@@ -720,7 +720,7 @@ void CEnOceanESP2::Do_Work()
 	int msec_counter = 0;
 	int sec_counter = 0;
 
-	_log.Log(LOG_STATUS, "EnOcean: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(200))
 	{
@@ -739,7 +739,7 @@ void CEnOceanESP2::Do_Work()
 		{
 			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS, "EnOcean: serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
+				Log(LOG_STATUS, "serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr / 5 >= ENOCEAN_RETRY_DELAY)
@@ -764,7 +764,7 @@ void CEnOceanESP2::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "EnOcean: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void CEnOceanESP2::Add2SendQueue(const char* pData, const size_t length)
@@ -1015,13 +1015,13 @@ bool CEnOceanESP2::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 9600); //ECP2 open with 9600
-		_log.Log(LOG_STATUS, "EnOcean: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception& e)
 	{
-		_log.Log(LOG_ERROR, "EnOcean: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -1029,7 +1029,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "EnOcean: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted = true;
@@ -1096,7 +1096,7 @@ void CEnOceanESP2::readCallback(const char* data, size_t len)
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "EnOcean: Frame Checksum Error!...");
+				Log(LOG_ERROR, "Frame Checksum Error!...");
 			}
 			m_receivestate = ERS_SYNC1;
 			break;
@@ -1123,7 +1123,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
 	if ((sID < m_id_base) || (sID > m_id_base + 129))
 	{
-		_log.Log(LOG_ERROR, "EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+		Log(LOG_ERROR, "Can not switch with this DeviceID, use a switch created with our id_base!...");
 		return false;
 	}
 
@@ -1241,7 +1241,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 		unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
 		if ((sID < m_id_base) || (sID > m_id_base + 129))
 		{
-			_log.Log(LOG_ERROR, "EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+			Log(LOG_ERROR, "Can not switch with this DeviceID, use a switch created with our id_base!...");
 			return;
 		}
 
@@ -1302,44 +1302,44 @@ bool CEnOceanESP2::ParseData()
 		case 0x58:
 			//OK
 #ifdef _DEBUG
-			_log.Log(LOG_NORM, "EnOcean: OK");
+			Log(LOG_NORM, "OK");
 #endif
 			bStopProcessing = true;
 			break;
 		case 0x28:
-			_log.Log(LOG_ERROR, "EnOcean: ERR_MODEM_NOTWANTEDACK");
+			Log(LOG_ERROR, "ERR_MODEM_NOTWANTEDACK");
 			bStopProcessing = true;
 			break;
 		case 0x29:
-			_log.Log(LOG_ERROR, "EnOcean: ERR_MODEM_NOTACK");
+			Log(LOG_ERROR, "ERR_MODEM_NOTACK");
 			bStopProcessing = true;
 			break;
 		case 0x0C:
-			_log.Log(LOG_ERROR, "EnOcean: ERR_MODEM_DUP_ID");
+			Log(LOG_ERROR, "ERR_MODEM_DUP_ID");
 			bStopProcessing = true;
 			break;
 		case 0x08:
-			_log.Log(LOG_ERROR, "EnOcean: Error in H_SEQ");
+			Log(LOG_ERROR, "Error in H_SEQ");
 			bStopProcessing = true;
 			break;
 		case 0x09:
-			_log.Log(LOG_ERROR, "EnOcean: Error in LENGTH");
+			Log(LOG_ERROR, "Error in LENGTH");
 			bStopProcessing = true;
 			break;
 		case 0x0A:
-			_log.Log(LOG_ERROR, "EnOcean: Error in CHECKSUM");
+			Log(LOG_ERROR, "Error in CHECKSUM");
 			bStopProcessing = true;
 			break;
 		case 0x0B:
-			_log.Log(LOG_ERROR, "EnOcean: Error in ORG");
+			Log(LOG_ERROR, "Error in ORG");
 			bStopProcessing = true;
 			break;
 		case 0x22:
-			_log.Log(LOG_ERROR, "EnOcean: ERR_TX_IDRANGE");
+			Log(LOG_ERROR, "ERR_TX_IDRANGE");
 			bStopProcessing = true;
 			break;
 		case 0x1A:
-			_log.Log(LOG_ERROR, "EnOcean: ERR_ IDRANGE");
+			Log(LOG_ERROR, "ERR_ IDRANGE");
 			bStopProcessing = true;
 			break;
 		}
@@ -1351,7 +1351,7 @@ bool CEnOceanESP2::ParseData()
 	{
 	case C_ORG_INF_IDBASE:
 		m_id_base = (pFrame->DATA_BYTE3 << 24) + (pFrame->DATA_BYTE2 << 16) + (pFrame->DATA_BYTE1 << 8) + pFrame->DATA_BYTE0;
-		_log.Log(LOG_STATUS, "EnOcean: Transceiver ID_Base: 0x%08lx", m_id_base);
+		Log(LOG_STATUS, "Transceiver ID_Base: 0x%08lx", m_id_base);
 		break;
 	case C_ORG_RPS:
 		if (pFrame->STATUS & S_RPS_NU) {
@@ -1364,7 +1364,7 @@ bool CEnOceanESP2::ParseData()
 			unsigned char SecondUpDown = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD) >> DB3_RPS_NU_SUD_SHIFT;
 			unsigned char SecondAction = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SA) >> DB3_RPS_NU_SA_SHIFT;
 #ifdef _DEBUG
-			_log.Log(LOG_NORM, "Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
+			Log(LOG_NORM, "Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
 				id,
 				RockerID,
 				UpDown,
@@ -1420,7 +1420,7 @@ bool CEnOceanESP2::ParseData()
 				int manufacturer = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 				int profile = pFrame->DATA_BYTE3 >> 2;
 				int ttype = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
-				_log.Log(LOG_NORM, "EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08lX\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
+				Log(LOG_NORM, "4BS, Teach-in diagram: Sender_ID: 0x%08lX\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
 					id, manufacturer, Get_EnoceanManufacturer(manufacturer),
 					profile, ttype, Get_Enocean4BSType(0xA5, profile, ttype));
 
@@ -1448,7 +1448,7 @@ bool CEnOceanESP2::ParseData()
 				char* pszHumenTxt = enocean_hexToHuman(pFrame);
 				if (pszHumenTxt)
 				{
-					_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", pszHumenTxt);
+					Log(LOG_NORM, "Need Teach-In for %s", pszHumenTxt);
 					free(pszHumenTxt);
 				}
 				return true;
@@ -1868,7 +1868,7 @@ bool CEnOceanESP2::ParseData()
 		char* pszHumenTxt = enocean_hexToHuman(pFrame);
 		if (pszHumenTxt)
 		{
-			_log.Log(LOG_NORM, "EnOcean: %s", pszHumenTxt);
+			Log(LOG_NORM, "%s", pszHumenTxt);
 			free(pszHumenTxt);
 		}
 	}

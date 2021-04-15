@@ -51,14 +51,14 @@ bool CTeleinfoTCP::StopHardware()
 
 void CTeleinfoTCP::Do_Work()
 {
-	_log.Log(LOG_STATUS, "(%s) attempt connect to %s:%d",  m_Name.c_str(), m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "attempt connect to %s:%d",  m_szIPAddress.c_str(), m_usIPPort);
 	connect(m_szIPAddress, m_usIPPort);
 	while (!IsStopRequested(1000))
 	{
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "(%s): TCP/IP Worker stopped...",  m_Name.c_str());
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
 
@@ -72,18 +72,18 @@ void CTeleinfoTCP::OnConnect()
 {
 	Init();
 
-	_log.Log(LOG_STATUS, "(%s) connected to: %s:%d",  m_Name.c_str(), m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d",  m_szIPAddress.c_str(), m_usIPPort);
 
 	if (m_bDisableCRC)
-		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", m_Name.c_str());
+		Log(LOG_STATUS, "CRC checks on incoming data are disabled");
 	else
-		_log.Log(LOG_STATUS, "(%s) CRC checks will be performed on incoming data", m_Name.c_str());
+		Log(LOG_STATUS, "CRC checks will be performed on incoming data");
 }
 
 
 void CTeleinfoTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS, "(%s) disconnected",  m_Name.c_str());
+	Log(LOG_STATUS, "disconnected");
 }
 
 
@@ -103,17 +103,17 @@ void CTeleinfoTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "(%s) Can not connect to: %s:%d",  m_Name.c_str(), m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d",  m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
 		(error == boost::asio::error::connection_reset)
 		)
 	{
-		_log.Log(LOG_STATUS, "(%s) Connection reset!",  m_Name.c_str());
+		Log(LOG_STATUS, "Connection reset!");
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) %s",  m_Name.c_str(), error.message().c_str());
+		Log(LOG_ERROR, "%s",  error.message().c_str());
 	}
 }

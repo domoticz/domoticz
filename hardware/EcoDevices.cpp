@@ -119,7 +119,7 @@ bool CEcoDevices::StopHardware()
 void CEcoDevices::Do_Work()
 {
 	int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
-	_log.Log(LOG_STATUS, "(%s): Worker started...", m_Name.c_str());
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -133,7 +133,7 @@ void CEcoDevices::Do_Work()
 				GetMeterRT2Details();
 		}
 	}
-	_log.Log(LOG_STATUS, "(%s): Worker stopped...", m_Name.c_str());
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CEcoDevices::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -148,7 +148,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "Error parsing XML for /protect/settings/teleinfo?.xml: %s", XMLdoc.ErrorDesc());
+		Log(LOG_ERROR, "Error parsing XML for /protect/settings/teleinfo?.xml: %s", XMLdoc.ErrorDesc());
 		return;
 	}
 
@@ -182,9 +182,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(), "/response/ADPS/text()");
 
 #ifdef DEBUG_EcoDevices
-	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
-	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
-	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
+	Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+	Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
 #endif
 }
 
@@ -210,11 +210,11 @@ void CEcoDevices::GetMeterDetails()
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_NORM, "(%s) Fetching counters and status data", m_Name.c_str());
+		Log(LOG_NORM, "Fetching counters and status data");
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting data from: %s", m_Name.c_str(), sstr.str().c_str());
+		Log(LOG_ERROR, "Error getting data from: %s", sstr.str().c_str());
 		return;
 	}
 
@@ -222,7 +222,7 @@ void CEcoDevices::GetMeterDetails()
 	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
+		Log(LOG_ERROR, "Error parsing XML at /status.xml: %s", XMLdoc.ErrorDesc());
 		return;
 	}
 
@@ -231,7 +231,7 @@ void CEcoDevices::GetMeterDetails()
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
 #ifdef DEBUG_EcoDevices
-	_log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
+	Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 #endif
 
 	m_status.version = m_status.version + "..";
@@ -285,7 +285,7 @@ void CEcoDevices::GetMeterDetails()
 		message = "EcoDevices firmware needs to be at least version ";
 		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
-		_log.Log(LOG_ERROR, "(%s) %s", m_Name.c_str(), message.c_str());
+		Log(LOG_ERROR, "%s", message.c_str());
 		return;
 	}
 
@@ -297,14 +297,14 @@ void CEcoDevices::GetMeterDetails()
 		sstr.str("");
 		sstr << m_ssURL.str() << "/protect/settings/teleinfo1.xml";
 
-		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", m_Name.c_str());
+		Log(LOG_NORM, "Fetching Teleinfo 1 data");
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo1.xml from EcoDevices!", m_Name.c_str());
+			Log(LOG_ERROR, "Error getting teleinfo1.xml from EcoDevices!");
 			return;
 		}
 #ifdef DEBUG_EcoDevices
-		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
+		Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
 #endif
 
 		// Remove all "T1_"s from output as it prevents writing generic code for both counters
@@ -322,14 +322,14 @@ void CEcoDevices::GetMeterDetails()
 		sstr.str("");
 		sstr << m_ssURL.str() << "/protect/settings/teleinfo2.xml";
 
-		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", m_Name.c_str());
+		Log(LOG_NORM, "Fetching Teleinfo 2 data");
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo2.xml!", m_Name.c_str());
+			Log(LOG_ERROR, "Error getting teleinfo2.xml!");
 			return;
 		}
 #ifdef DEBUG_EcoDevices
-		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
+		Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
 #endif
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
@@ -369,7 +369,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::string sURL = sstr.str();
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting system information from: %s", m_Name.c_str(), sstr.str().c_str());
+		Log(LOG_ERROR, "Error getting system information from: %s", sstr.str().c_str());
 		return;
 	}
 
@@ -377,12 +377,12 @@ void CEcoDevices::GetMeterRT2Details()
 	bool bRet = ParseJSon(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", m_Name.c_str());
+		Log(LOG_ERROR, "Invalid JSON data received from /admin/system.json");
 		return;
 	}
 	if (root["confighostname"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", m_Name.c_str());
+		Log(LOG_ERROR, "Invalid JSON data received from /admin/system.json, hostname missing");
 	}
 	else
 	{
@@ -402,11 +402,11 @@ void CEcoDevices::GetMeterRT2Details()
 
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", m_Name.c_str());
+		Log(LOG_NORM, "Fetching data from /admin/status.xml");
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", m_Name.c_str());
+		Log(LOG_ERROR, "Error getting status.xml!");
 		return;
 	}
 
@@ -414,7 +414,7 @@ void CEcoDevices::GetMeterRT2Details()
 	XMLdoc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", m_Name.c_str(), XMLdoc.ErrorDesc());
+		Log(LOG_ERROR, "Error parsing XML at /admin/status.xml: %s", XMLdoc.ErrorDesc());
 		return;
 	}
 
@@ -423,13 +423,13 @@ void CEcoDevices::GetMeterRT2Details()
 	std::string product = S_xpath_string(XMLdoc.RootElement(), "/response/product/text()").c_str();
 	if (product != "ECODEVICES RT 2")
 	{
-		_log.Log(LOG_ERROR, "(%s) Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", m_Name.c_str(), product.c_str());
+		Log(LOG_ERROR, "Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", product.c_str());
 		return;
 	}
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/infofirm/text()").c_str();
 
 #ifdef DEBUG_EcoDevices
-	_log.Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
+	Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
 #endif
 
 	m_status.version = m_status.version + "..";
@@ -445,7 +445,7 @@ void CEcoDevices::GetMeterRT2Details()
 		message = "EcoDevices RT2 firmware needs to be at least version ";
 		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
-		_log.Log(LOG_ERROR, "(%s) %s", m_Name.c_str(), message.c_str());
+		Log(LOG_ERROR, "%s", message.c_str());
 		return;
 	}
 
@@ -492,9 +492,9 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 
 #ifdef DEBUG_EcoDevices
-	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
-	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
-	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
+	Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
+	Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
+	Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
 #endif
 	ProcessTeleinfo(m_status.hostname, 1, m_teleinfo1);
 

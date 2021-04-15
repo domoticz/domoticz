@@ -23,14 +23,14 @@ History :
 
 class USBtin : public USBtin_MultiblocV8, AsyncSerial
 {
-      public:
+public:
 	USBtin(int ID, const std::string &devname, unsigned int BusCanType, unsigned int DebugMode /*,unsigned int baud_rate = USBTIN_BAUD_RATE*/);
 	~USBtin() override;
 	std::string m_szSerialPort;
 	unsigned int Bus_CANType;
 	unsigned long switch_id_base;
 
-      private:
+private:
 	unsigned int m_EtapeInitCan;
 	int m_USBtinRetrycntr;
 	int m_USBtinBelErrorCount;

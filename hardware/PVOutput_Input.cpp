@@ -57,7 +57,7 @@ bool CPVOutputInput::StopHardware()
 void CPVOutputInput::Do_Work()
 {
 	int LastMinute = -1;
-	_log.Log(LOG_STATUS, "PVOutput (Input): Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		time_t atime = mytime(nullptr);
@@ -70,7 +70,7 @@ void CPVOutputInput::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS, "PVOutput (Input): Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CPVOutputInput::WriteToHardware(const char* pdata, const unsigned char length)
@@ -91,14 +91,14 @@ void CPVOutputInput::GetMeterDetails()
 	sstr << "https://pvoutput.org/service/r2/getstatus.jsp?sid=" << m_SID << "&key=" << m_KEY;
 	if (!HTTPClient::GET(sstr.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "PVOutput (Input): Error login!");
+		Log(LOG_ERROR, "Error login!");
 		return;
 	}
 	std::vector<std::string> splitresult;
 	StringSplit(sResult, ",", splitresult);
 	if (splitresult.size() < 9)
 	{
-		_log.Log(LOG_ERROR, "PVOutput (Input): Invalid Data received!");
+		Log(LOG_ERROR, "Invalid Data received!");
 		return;
 	}
 	/*
@@ -155,13 +155,13 @@ void CPVOutputInput::GetMeterDetails()
 	sstr << "https://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY << "&c=1&df=19700101&dt=26000101";
 	if (!HTTPClient::GET(sstr.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "PVOutput (Input): Error login!");
+		Log(LOG_ERROR, "Error login!");
 		return;
 	}
 	StringSplit(sResult, ",", splitresult);
 	if (splitresult.size() < 11)
 	{
-		_log.Log(LOG_ERROR, "PVOutput (Input): Invalid Data received!");
+		Log(LOG_ERROR, "Invalid Data received!");
 		return;
 	}
 /*

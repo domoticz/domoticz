@@ -324,7 +324,7 @@ bool RFXComSerial::UpgradeFirmware()
 			spercentage.precision(2);
 			spercentage << std::setprecision(2) << std::fixed << m_FirmwareUploadPercentage;
 			m_szUploadMessage = saddress.str() + ", " + spercentage.str() + " %";
-			_log.Log(LOG_STATUS, m_szUploadMessage);
+			Log(LOG_STATUS, m_szUploadMessage);
 
 			unsigned char bcmd[PKT_writeblock + 10];
 			bcmd[0] = COMMAND_WRITEPM;
@@ -803,7 +803,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 					sstr << ", ";
 				szRespone+=sstr.str();
 			}
-			_log.Log(LOG_STATUS, "%s", szRespone.c_str());
+			Log(LOG_STATUS, "%s", szRespone.c_str());
 			*/
 			m_bHaveRX = true;
 			return true;

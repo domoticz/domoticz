@@ -169,7 +169,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 	if (this->m_bIsChangingActivity)
 	{
-		_log.Log(LOG_ERROR, "Harmony Hub: Command cannot be sent. Hub is changing activity");
+		Log(LOG_ERROR, "Command cannot be sent. Hub is changing activity");
 		return false;
 	}
 
@@ -183,12 +183,12 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 		{
 			// "secret" undefined state request to silence connection error reporting
 			if (this->m_bShowConnectError)
-				_log.Log(LOG_STATUS, "Harmony Hub: disable connection error logging");
+				Log(LOG_STATUS, "disable connection error logging");
 			this->m_bShowConnectError = false;
 			return false;
 		}
 
-		_log.Log(LOG_STATUS, "Harmony Hub: Received a switch command but we are not connected - attempting connect now");
+		Log(LOG_STATUS, "Received a switch command but we are not connected - attempting connect now");
 		this->m_bLoginNow = true;
 		int retrycount = 0;
 		while ( (retrycount < 10) && (!IsStopRequested(500)) )
@@ -203,7 +203,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 		if (this->m_connectionstatus == DISCONNECTED)
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Connect failed: cannot send the switch command");
+			Log(LOG_ERROR, "Connect failed: cannot send the switch command");
 			return false;
 		}
 	}
@@ -228,13 +228,13 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			}
 			if (SubmitCommand(START_ACTIVITY_COMMAND, "-1") <= 0)
 			{
-				_log.Log(LOG_ERROR, "Harmony Hub: Error sending the power-off command");
+				Log(LOG_ERROR, "Error sending the power-off command");
 				return false;
 			}
 		}
 		else if (SubmitCommand(START_ACTIVITY_COMMAND, realID) <= 0)
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Error sending the switch command");
+			Log(LOG_ERROR, "Error sending the switch command");
 			return false;
 		}
 	}
@@ -244,7 +244,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 void CHarmonyHub::Do_Work()
 {
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started...");
+	Log(LOG_STATUS,"Worker thread started...");
 
 	unsigned int pcounter = 0;		// ping interval counter
 	unsigned int tcounter = 0;		// 1/25 seconds
@@ -281,7 +281,7 @@ void CHarmonyHub::Do_Work()
 					else if (m_szCurActivityID.empty())
 					{
 						fcounter = 0;
-						_log.Log(LOG_STATUS, "Harmony Hub: Connected to Hub.");
+						Log(LOG_STATUS, "Connected to Hub.");
 						SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND);
 					}
 				}
@@ -298,7 +298,7 @@ void CHarmonyHub::Do_Work()
 					if (m_bNeedEcho || SendPing() < 0)
 					{
 						// Hub dropped our connection
-						_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
+						Log(LOG_ERROR, "Error pinging server.. Resetting connection.");
 						ResetCommunicationSocket();
 						pcounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
 					}
@@ -313,7 +313,7 @@ void CHarmonyHub::Do_Work()
 					if (SendPing() < 0)
 					{
 						// Hub dropped our connection
-						_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
+						Log(LOG_ERROR, "Error pinging server.. Resetting connection.");
 						ResetCommunicationSocket();
 						pcounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
 					}
@@ -333,7 +333,7 @@ void CHarmonyHub::Do_Work()
 						{
 							m_bLoginNow = true;
 							if (fcounter > 0)
-								_log.Log(LOG_NORM, "Harmony Hub: Reattempt login.");
+								Log(LOG_NORM, "Reattempt login.");
 						}
 					}
 				}
@@ -366,7 +366,7 @@ void CHarmonyHub::Do_Work()
 				if ((pcounter % HARMONY_RETRY_LOGIN_SECONDS) > 1)
 				{
 					// timeout
-					_log.Log(LOG_ERROR, "Harmony Hub: setup command socket timed out");
+					Log(LOG_ERROR, "setup command socket timed out");
 					ResetCommunicationSocket();
 				}
 			}
@@ -418,7 +418,7 @@ void CHarmonyHub::Do_Work()
 	}
 	Logout();
 
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 
@@ -520,7 +520,7 @@ bool CHarmonyHub::SetupCommunicationSocket()
 	if(!ConnectToHarmony(m_szHarmonyAddress, m_usHarmonyPort, m_connection))
 	{
 		if (m_bShowConnectError)
-			_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
+			Log(LOG_ERROR,"Cannot connect to Harmony Hub. Check IP/Port.");
 		return false;
 	}
 	m_connectionstatus = CONNECTED;
@@ -835,7 +835,7 @@ void CHarmonyHub::ProcessHarmonyConnect(std::string *szHarmonyData)
 	if (sendStatus < 0)
 	{
 		// error while sending commands to hub
-		_log.Log(LOG_ERROR, "Harmony Hub: Cannot setup command socket to Harmony Hub");
+		Log(LOG_ERROR, "Cannot setup command socket to Harmony Hub");
 		ResetCommunicationSocket();
 	}
 }
@@ -903,7 +903,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 				std::string szCurrentActivity = szJsonString.substr(0, pos);
 				if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 				{
-					_log.Debug(DEBUG_HARDWARE, "Harmony Hub: Current activity ID = %d (%s)", atoi(szCurrentActivity.c_str()), m_mapActivities[szCurrentActivity].c_str());
+					Debug(DEBUG_HARDWARE, "Current activity ID = %d (%s)", atoi(szCurrentActivity.c_str()), m_mapActivities[szCurrentActivity].c_str());
 				}
 
 				if (m_szCurActivityID.empty()) // initialize all switches
@@ -965,13 +965,13 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 		bool ret = ParseJSon(szJsonString, j_result);
 		if ((!ret) || (!j_result.isObject()))
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
+			Log(LOG_ERROR, "Invalid data received! (Update Activities)");
 			return;
 		}
 
 		if (j_result["activity"].empty())
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
+			Log(LOG_ERROR, "Invalid data received! (Update Activities)");
 			return;
 		}
 
@@ -987,12 +987,12 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 		}
 		catch (...)
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities, JSon activity)");
+			Log(LOG_ERROR, "Invalid data received! (Update Activities, JSon activity)");
 		}
 
 		if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 		{
-			std::string resultString = "Harmony Hub: Activity list: {";
+			std::string resultString = "Activity list: {";
 
 			std::map<std::string, std::string>::iterator it = m_mapActivities.begin();
 			std::map<std::string, std::string>::iterator ite = m_mapActivities.end();
@@ -1007,7 +1007,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			resultString=resultString.substr(0, resultString.size()-1);
 			resultString.append("}");
 
-			_log.Debug(DEBUG_HARDWARE, resultString);
+			Debug(DEBUG_HARDWARE, resultString);
 		}
 	}
 
@@ -1095,9 +1095,9 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			{
 				m_bIsChangingActivity = bIsChanging;
 				if (m_bIsChangingActivity)
-					_log.Log(LOG_STATUS, "Harmony Hub: Changing activity");
+					Log(LOG_STATUS, "Changing activity");
 				else
-					_log.Log(LOG_STATUS, "Harmony Hub: Finished changing activity");
+					Log(LOG_STATUS, "Finished changing activity");
 			}
 		}
 
@@ -1111,7 +1111,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 				if (jpos != std::string::npos)
 				{
 					if (m_szHubSwVersion.empty())
-						_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_szHubSwVersion.c_str());
+						Log(LOG_STATUS, "Software version: %s", m_szHubSwVersion.c_str());
 					m_szHubSwVersion = m_szHubSwVersion.substr(0, jpos);
 				}
 			}
@@ -1144,7 +1144,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if ((jpos == std::string::npos) || stateVersion.empty())
 				stateVersion = "NaN";
 
-			_log.Debug(DEBUG_HARDWARE, "Harmony Hub: Event state notification: stateVersion = %s, hubSwVersion = %s, activityStatus = %c, activityId = %s", stateVersion.c_str(), m_szHubSwVersion.c_str(), cActivityStatus, activityId.c_str() );
+			Debug(DEBUG_HARDWARE, "Event state notification: stateVersion = %s, hubSwVersion = %s, activityStatus = %c, activityId = %s", stateVersion.c_str(), m_szHubSwVersion.c_str(), cActivityStatus, activityId.c_str() );
 		}
 	}
 

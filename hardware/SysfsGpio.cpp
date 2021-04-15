@@ -134,26 +134,26 @@ HEATBEAT_COUNT, UPDATE_MASTER_COUNT and GPIO_POLL_MSEC are related.
 Set values so that that heartbeat occurs every 10 seconds and update
 master occurs once, 30 seconds after startup.
 */
-#define HEARTBEAT_COUNT		40
+#define HEARTBEAT_COUNT 40
 #define UPDATE_MASTER_COUNT 120
-#define DB_UPDATE_DELAY		4
-#define GPIO_POLL_MSEC		250
+#define DB_UPDATE_DELAY 4
+#define GPIO_POLL_MSEC 250
 
-#define GPIO_IN				0
-#define GPIO_OUT			1
-#define GPIO_LOW			0
-#define GPIO_HIGH			1
-#define GPIO_EDGE_NONE		0
-#define GPIO_EDGE_RISING	1
-#define GPIO_EDGE_FALLING	2
-#define GPIO_EDGE_BOTH		3
-#define GPIO_EDGE_UNKNOWN	-1
-#define GPIO_PIN_MIN		0
-#define GPIO_PIN_MAX		1023
-#define GPIO_MAX_VALUE_SIZE	16
-#define GPIO_MAX_PATH		64
-#define GPIO_PATH			"/sys/class/gpio/gpio"
-#define GPIO_DEVICE_ID_BASE	0x030E0E00
+#define GPIO_IN 0
+#define GPIO_OUT 1
+#define GPIO_LOW 0
+#define GPIO_HIGH 1
+#define GPIO_EDGE_NONE 0
+#define GPIO_EDGE_RISING 1
+#define GPIO_EDGE_FALLING 2
+#define GPIO_EDGE_BOTH 3
+#define GPIO_EDGE_UNKNOWN -1
+#define GPIO_PIN_MIN 0
+#define GPIO_PIN_MAX 1023
+#define GPIO_MAX_VALUE_SIZE 16
+#define GPIO_MAX_PATH 64
+#define GPIO_PATH "/sys/class/gpio/gpio"
+#define GPIO_DEVICE_ID_BASE 0x030E0E00
 
 std::vector<gpio_info> CSysfsGpio::m_saved_state;
 int CSysfsGpio::m_sysfs_hwdid;
@@ -198,7 +198,6 @@ bool CSysfsGpio::StopHardware()
 	}
 	catch (...)
 	{
-
 	}
 	try
 	{
@@ -210,7 +209,6 @@ bool CSysfsGpio::StopHardware()
 	}
 	catch (...)
 	{
-
 	}
 
 	m_bIsStarted = false;
@@ -220,7 +218,7 @@ bool CSysfsGpio::StopHardware()
 bool CSysfsGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	bool bOk = false;
-	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+	const tRBUF *pSen = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pSen->ICMND.packettype;
 	int gpio_pin = pSen->LIGHTING2.unitcode;
 
@@ -248,7 +246,7 @@ void CSysfsGpio::Do_Work()
 	{
 		counter++;
 
-		if (counter % HEARTBEAT_COUNT == 0)	/* Heartbeat maintenance */
+		if (counter % HEARTBEAT_COUNT == 0) /* Heartbeat maintenance */
 		{
 			m_LastHeartbeat = mytime(nullptr);
 		}
@@ -261,15 +259,15 @@ void CSysfsGpio::Do_Work()
 
 		if (bUpdateMaster)
 		{
-			if (counter == UPDATE_MASTER_COUNT)	/* only executes once, and only if we have a master/slave configuration */
+			if (counter == UPDATE_MASTER_COUNT) /* only executes once, and only if we have a master/slave configuration */
 			{
 				bUpdateMaster = false;
-				std::vector<std::vector<std::string> > result;
+				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
 
 				if (!result.empty())
 				{
-					_log.Log(LOG_STATUS, "Sysfs GPIO: Update master devices");
+					Log(LOG_STATUS, "Update master devices");
 					UpdateDomoticzInputs(true);
 				}
 			}
@@ -296,7 +294,7 @@ void CSysfsGpio::Do_Work()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Worker stopped");
+	Log(LOG_STATUS, "Worker stopped");
 }
 
 void CSysfsGpio::EdgeDetectThread()
@@ -344,11 +342,11 @@ void CSysfsGpio::EdgeDetectThread()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection started");
+	Log(LOG_STATUS, "Edge detection started");
 
 	while (!IsStopRequested(0)) /* detect gpio state changes */
 	{
-		tv.tv_sec = 1;	// Set select timeout to 1 second.
+		tv.tv_sec = 1; // Set select timeout to 1 second.
 		tv.tv_usec = 0;
 		memcpy(&tmp_fds, &m_rfds, sizeof(tmp_fds));
 
@@ -371,9 +369,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 			for (int i = 0; i < m_saved_state.size(); i++)
 			{
-				if ((FD_ISSET(m_saved_state[i].edge_fd, &tmp_fds) &&
-					(m_saved_state[i].direction == GPIO_IN) &&
-					(m_saved_state[i].edge != GPIO_EDGE_NONE)))
+				if ((FD_ISSET(m_saved_state[i].edge_fd, &tmp_fds) && (m_saved_state[i].direction == GPIO_IN) && (m_saved_state[i].edge != GPIO_EDGE_NONE)))
 				{
 					int value = GpioReadFd(m_saved_state[i].edge_fd);
 					GpioSaveState(i, value);
@@ -411,7 +407,7 @@ void CSysfsGpio::EdgeDetectThread()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Edge detection stopped");
+	Log(LOG_STATUS, "Edge detection stopped");
 }
 
 void CSysfsGpio::Init()
@@ -434,8 +430,8 @@ void CSysfsGpio::Init()
 	m_Packet.LIGHTING2.unitcode = 0;
 	m_Packet.LIGHTING2.id1 = (id >> 24) & 0xFF;
 	m_Packet.LIGHTING2.id2 = (id >> 16) & 0xFF;
-	m_Packet.LIGHTING2.id3 = (id >> 8)  & 0xFF;
-	m_Packet.LIGHTING2.id4 = (id >> 0)  & 0xFF;
+	m_Packet.LIGHTING2.id3 = (id >> 8) & 0xFF;
+	m_Packet.LIGHTING2.id4 = (id >> 0) & 0xFF;
 	m_Packet.LIGHTING2.cmnd = 0;
 	m_Packet.LIGHTING2.level = 0;
 	m_Packet.LIGHTING2.filler = 0;
@@ -472,12 +468,8 @@ void CSysfsGpio::Init()
 
 	UpdateDomoticzInputs(false); /* Make sure database inputs are in sync with actual hardware */
 
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Startup - polling:%s interrupts:%s debounce:%dmsec inputs:%d outputs:%d",
-		m_polling_enabled ? "yes":"no",
-		m_interrupts_enabled ? "yes":"no",
-		m_debounce_msec,
-		input_count,
-		output_count);
+	Log(LOG_STATUS, "Startup - polling:%s interrupts:%s debounce:%dmsec inputs:%d outputs:%d", m_polling_enabled ? "yes" : "no", m_interrupts_enabled ? "yes" : "no", m_debounce_msec, input_count,
+	    output_count);
 
 	if (m_interrupts_enabled)
 	{
@@ -529,9 +521,8 @@ void CSysfsGpio::PollGpioInputs(bool PollOnce)
 	{
 		for (int i = 0; i < m_saved_state.size(); i++)
 		{
-			if ((m_saved_state[i].direction == GPIO_IN) &&
-				(m_saved_state[i].read_value_fd != -1) &&
-				(PollOnce || (m_saved_state[i].edge == GPIO_EDGE_NONE) || (m_saved_state[i].edge == GPIO_EDGE_UNKNOWN)))
+			if ((m_saved_state[i].direction == GPIO_IN) && (m_saved_state[i].read_value_fd != -1) &&
+			    (PollOnce || (m_saved_state[i].edge == GPIO_EDGE_NONE) || (m_saved_state[i].edge == GPIO_EDGE_UNKNOWN)))
 			{
 				GpioSaveState(i, GpioReadFd(m_saved_state[i].read_value_fd));
 			}
@@ -541,12 +532,12 @@ void CSysfsGpio::PollGpioInputs(bool PollOnce)
 
 void CSysfsGpio::CreateDomoticzDevices()
 {
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string>> result;
 	std::vector<std::string> deviceid;
 
 	for (auto &s : m_saved_state)
 	{
-		bool  createNewDevice = false;
+		bool createNewDevice = false;
 		deviceid = GetGpioDeviceId();
 
 		if (s.direction == GPIO_IN)
@@ -652,7 +643,7 @@ void CSysfsGpio::UpdateDomoticzDatabase()
 
 			if (!result.empty())
 			{
-				//std::vector<std::string> sd = result[0];
+				// std::vector<std::string> sd = result[0];
 				s.value = GpioRead(s.pin_number, "value");
 
 				m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d,Options=%d WHERE (HardwareID==%d) AND (Unit==%d)", s.value, s.direction, m_HwdID, s.pin_number);
@@ -672,7 +663,7 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 	{
 		if ((s.direction == GPIO_IN) && (s.value != -1))
 		{
-			int		state = GPIO_LOW;
+			int state = GPIO_LOW;
 
 			if (s.active_low)
 			{
@@ -691,8 +682,8 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 
 			if ((s.db_state != state) || (forceUpdate))
 			{
-				bool	updateDatabase = false;
-				bool	log_db_change = false;
+				bool updateDatabase = false;
+				bool log_db_change = false;
 				std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, s.pin_number);
 
 				if ((!result.empty()) && (!result.empty()))
@@ -741,7 +732,7 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 
 					if (log_db_change)
 					{
-						_log.Log(LOG_STATUS, "Sysfs GPIO: gpio%d new state = %s", s.pin_number, state ? "on" : "off");
+						Log(LOG_STATUS, "gpio%d new state = %s", s.pin_number, state ? "on" : "off");
 					}
 				}
 			}
@@ -772,9 +763,7 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 		if (m_saved_state[index].id_valid == -1)
 		{
 			std::string sdeviceid;
-			std::vector< std::vector<std::string> > result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
-				m_HwdID,
-				pin);
+			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, pin);
 
 			if ((!result.empty() && (!result.empty())))
 			{
@@ -846,32 +835,26 @@ std::vector<std::string> CSysfsGpio::GetGpioDeviceId()
 //---------------------------------------------------------------------------
 //	sysfs gpio helper functions
 //
-int CSysfsGpio::GetReadResult(int bytecount, char* value_str)
+int CSysfsGpio::GetReadResult(int bytecount, char *value_str)
 {
 	int retval = -1;
 
 	switch (bytecount)
 	{
 		case -1:
-		case  0:
-		case  1:
-		{
+		case 0:
+		case 1: {
 			break;
 		}
 
-		default:
-		{
-			if ((memcmp("0", value_str, strlen("0")) == 0) ||
-				(memcmp("in", value_str, strlen("in")) == 0) ||
-				(memcmp("none", value_str, strlen("none")) == 0))
+		default: {
+			if ((memcmp("0", value_str, strlen("0")) == 0) || (memcmp("in", value_str, strlen("in")) == 0) || (memcmp("none", value_str, strlen("none")) == 0))
 			{
 				retval = 0;
 				break;
 			}
 
-			if ((memcmp("1", value_str, strlen("1")) == 0) ||
-				(memcmp("out", value_str, strlen("out")) == 0) ||
-				(memcmp("rising", value_str, strlen("rising")) == 0))
+			if ((memcmp("1", value_str, strlen("1")) == 0) || (memcmp("out", value_str, strlen("out")) == 0) || (memcmp("rising", value_str, strlen("rising")) == 0))
 			{
 				retval = 1;
 				break;
@@ -906,7 +889,7 @@ int CSysfsGpio::GpioRead(int gpio_pin, const char *param)
 
 	if (fd == -1)
 	{
-		return(-1);
+		return (-1);
 	}
 
 	bytecount = read(fd, value_str, GPIO_MAX_VALUE_SIZE);
@@ -915,10 +898,10 @@ int CSysfsGpio::GpioRead(int gpio_pin, const char *param)
 	if (-1 == bytecount)
 	{
 		close(fd);
-		return(-1);
+		return (-1);
 	}
 
-	return(GetReadResult(bytecount, &value_str[0]));
+	return (GetReadResult(bytecount, &value_str[0]));
 }
 
 int CSysfsGpio::GpioReadFd(int fd)
@@ -928,7 +911,7 @@ int CSysfsGpio::GpioReadFd(int fd)
 
 	if (fd == -1)
 	{
-		return(-1);
+		return (-1);
 	}
 
 	if (lseek(fd, 0, SEEK_SET) == -1)
@@ -938,7 +921,7 @@ int CSysfsGpio::GpioReadFd(int fd)
 
 	bytecount = read(fd, value_str, GPIO_MAX_VALUE_SIZE);
 
-	return(GetReadResult(bytecount, &value_str[0]));
+	return (GetReadResult(bytecount, &value_str[0]));
 }
 
 int CSysfsGpio::GpioWrite(int gpio_pin, int value)
@@ -951,17 +934,17 @@ int CSysfsGpio::GpioWrite(int gpio_pin, int value)
 
 	if (fd == -1)
 	{
-		return(-1);
+		return (-1);
 	}
 
 	if (1 != write(fd, value ? "1" : "0", 1))
 	{
 		close(fd);
-		return(-1);
+		return (-1);
 	}
 
 	close(fd);
-	return(0);
+	return (0);
 }
 
 int CSysfsGpio::GpioOpenRw(int gpio_pin)
@@ -971,7 +954,7 @@ int CSysfsGpio::GpioOpenRw(int gpio_pin)
 	snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, gpio_pin);
 	int fd = open(path, O_RDWR);
 
-	return(fd);
+	return (fd);
 }
 
 //---------------------------------------------------------------------------
