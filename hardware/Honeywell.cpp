@@ -50,12 +50,12 @@ CHoneywell::CHoneywell(const int ID, const std::string &Username, const std::str
 		mApiSecret = base64_decode(strextra[1]);
 	}
 	if (mApiKey.empty()) {
-		_log.Log(LOG_STATUS, "Honeywell: No API key was set. Using default API key. This will result in many errors caused by quota limitations.");
+		Log(LOG_STATUS, "No API key was set. Using default API key. This will result in many errors caused by quota limitations.");
 		mApiKey = HONEYWELL_DEFAULT_APIKEY;
 		mApiSecret = HONEYWELL_DEFAULT_APISECRET;
 	}
 	if (Username.empty() || Password.empty()) {
-		_log.Log(LOG_ERROR, "Honeywell: Please update your access token/request token!...");
+		Log(LOG_ERROR, "Please update your access token/request token!...");
 	}
 	mLastMinute = -1;
 	Init();
@@ -101,7 +101,7 @@ bool CHoneywell::StopHardware()
 //
 void CHoneywell::Do_Work()
 {
-	_log.Log(LOG_STATUS, "Honeywell: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	int sec_counter = HONEYWELL_POLL_INTERVAL - 5;
 	while (!IsStopRequested(1000))
 	{
@@ -114,7 +114,7 @@ void CHoneywell::Do_Work()
 			GetThermostatData();
 		}
 	}
-	_log.Log(LOG_STATUS, "Honeywell: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 
@@ -182,14 +182,14 @@ bool CHoneywell::refreshToken()
 	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::POST(HONEYWELL_TOKEN_PATH, postData, headers, sResult)) {
-		_log.Log(LOG_ERROR, "Honeywell: Error refreshing token");
+		Log(LOG_ERROR, "Error refreshing token");
 		return false;
 	}
 
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
 	if (!ret) {
-		_log.Log(LOG_ERROR, "Honeywell: Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received...");
 		return false;
 	}
 
@@ -201,7 +201,7 @@ bool CHoneywell::refreshToken()
 		mTokenExpires = mytime(nullptr) + (expires_in > 0 ? expires_in : 600) - HWAPITIMEOUT;
 		mAccessToken = at;
 		mRefreshToken = rt;
-		_log.Log(LOG_NORM, "Honeywell: Storing received access & refresh token. Token expires after %d seconds.",expires_in);
+		Log(LOG_NORM, "Storing received access & refresh token. Token expires after %d seconds.",expires_in);
 		m_sql.safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE (ID==%d)", mAccessToken.c_str(), mRefreshToken.c_str(), m_HwdID);
 		mSessionHeaders.clear();
 		mSessionHeaders.push_back("Authorization:Bearer " + mAccessToken);
@@ -228,14 +228,14 @@ void CHoneywell::GetThermostatData()
 	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::GET(sURL, mSessionHeaders, sResult)) {
-		_log.Log(LOG_ERROR, "Honeywell: Error getting thermostat data!");
+		Log(LOG_ERROR, "Error getting thermostat data!");
 		return;
 	}
 
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
 	if (!ret) {
-		_log.Log(LOG_ERROR, "Honeywell: Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received...");
 		return;
 	}
 
@@ -367,7 +367,7 @@ void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, c
 void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 {
 	if (!refreshToken()) {
-		_log.Log(LOG_ERROR,"Honeywell: No token available. Failed setting thermostat data");
+		Log(LOG_ERROR,"No token available. Failed setting thermostat data");
 		return;
 	}
 
@@ -411,7 +411,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 	HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
-		_log.Log(LOG_ERROR, "Honeywell: Error setting thermostat data!");
+		Log(LOG_ERROR, "Error setting thermostat data!");
 		return;
 	}
 	std::string desc = kHeatingDesc;
@@ -448,7 +448,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 {
 	if (!refreshToken()) {
-		_log.Log(LOG_ERROR, "Honeywell: No token available. Error setting thermostat data!");
+		Log(LOG_ERROR, "No token available. Error setting thermostat data!");
 		return;
 	}
 
@@ -490,7 +490,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 		HTTPClient::SetConnectionTimeout(HWAPITIMEOUT);
 		HTTPClient::SetTimeout(HWAPITIMEOUT);
 		if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
-			_log.Log(LOG_ERROR, "Honeywell: Error setting thermostat data!");
+			Log(LOG_ERROR, "Error setting thermostat data!");
 			return;
 		}
 
@@ -523,6 +523,6 @@ bool CHoneywell::GetSwitchValue(const int NodeID)
 		return (nvalue != light2_sOff);
 	}
 
-	_log.Log(LOG_ERROR, "Honeywell: Error reading switch data!");
+	Log(LOG_ERROR, "Error reading switch data!");
 	return false;
 }

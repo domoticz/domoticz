@@ -241,7 +241,7 @@ void C1Wire::SensorThread()
 				sleep_milliseconds(pollPeriod);
 	}
 
-	_log.Log(LOG_STATUS, "1-Wire: Sensor thread terminating");
+	Log(LOG_STATUS, "Sensor thread terminating");
 }
 
 void C1Wire::SwitchThread()
@@ -272,7 +272,7 @@ void C1Wire::SwitchThread()
 		PollSwitches();
 	}
 
-	_log.Log(LOG_STATUS, "1-Wire: Switch thread terminating");
+	Log(LOG_STATUS, "Switch thread terminating");
 }
 
 

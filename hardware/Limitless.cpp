@@ -212,7 +212,7 @@ bool CLimitLess::StartHardware()
 	struct hostent *he;
 	if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr)
 	{ // get the host info
-		_log.Log(LOG_ERROR, "AppLamp: Error with IP address!...");
+		Log(LOG_ERROR, "Error with IP address!...");
 		return false;
 	}
 	m_RemoteSocket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -221,7 +221,7 @@ bool CLimitLess::StartHardware()
 	int broadcast = 1;
 	if (setsockopt(m_RemoteSocket, SOL_SOCKET, SO_BROADCAST, (const char *)&broadcast, sizeof(broadcast)) == -1)
 	{
-		_log.Log(LOG_ERROR, "AppLamp: Error with IP address (SO_BROADCAST)!...");
+		Log(LOG_ERROR, "Error with IP address (SO_BROADCAST)!...");
 		return false;
 	}
 
@@ -264,7 +264,7 @@ bool CLimitLess::StartHardware()
 	// Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
-	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
+	Log(LOG_STATUS, "Worker Started...");
 	return (m_thread != nullptr);
 }
 
@@ -401,7 +401,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 				recvfrom(m_RemoteSocket, (char *)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr *)&si_other, &slen);
 				if (RBuffer[0x07] != 0x00)
 				{
-					_log.Log(LOG_ERROR, "AppLamp: Error sending command to Bridge!...");
+					Log(LOG_ERROR, "Error sending command to Bridge!...");
 				}
 				else
 					return true;
@@ -409,13 +409,13 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "AppLamp: Invalid command send to Bridge!...");
+				Log(LOG_ERROR, "Invalid command send to Bridge!...");
 			}
 			return false;
 		}
 		return true;
 	}
-	_log.Log(LOG_ERROR, "AppLamp: Error sending command to Bridge!...");
+	Log(LOG_ERROR, "Error sending command to Bridge!...");
 	return false;
 }
 
@@ -447,11 +447,11 @@ void CLimitLess::Do_Work()
 			{
 				if (!GetV6BridgeID())
 				{
-					_log.Log(LOG_ERROR, "AppLamp: Bridge not found, check IP Address/Port!...");
-					_log.Log(LOG_ERROR, "AppLamp: Worker stopped!...");
+					Log(LOG_ERROR, "Bridge not found, check IP Address/Port!...");
+					Log(LOG_ERROR, "Worker stopped!...");
 					return;
 				}
-				_log.Log(LOG_STATUS, "AppLamp: Bridge found!...");
+				Log(LOG_STATUS, "Bridge found!...");
 			}
 		}
 
@@ -466,7 +466,7 @@ void CLimitLess::Do_Work()
 		m_RemoteSocket = INVALID_SOCKET;
 	}
 
-	_log.Log(LOG_STATUS, "AppLamp: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void CLimitLess::Send_V6_RGBWW_On(const uint8_t dunit, const long delay)
@@ -582,8 +582,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char /*length
 					}
 					else
 					{
-						_log.Log(LOG_STATUS,
-							 "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
+						Log(LOG_STATUS,
+							 "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
 							 pLed->color.mode);
 					}
 					SendV6Command(pCMD);
@@ -755,8 +755,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char /*length
 					}
 					else
 					{
-						_log.Log(LOG_STATUS,
-							 "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
+						Log(LOG_STATUS,
+							 "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
 							 pLed->color.mode);
 					}
 					SendV6Command(pCMD);
@@ -1104,7 +1104,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char /*length
 				}
 				else
 				{
-					_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
+					Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
 						 pLed->color.mode);
 				}
 			}
@@ -1284,7 +1284,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char /*length
 				}
 				else
 				{
-					_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
+					Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum",
 						 pLed->color.mode);
 				}
 			}

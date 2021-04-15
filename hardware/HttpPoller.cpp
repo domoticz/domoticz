@@ -79,7 +79,7 @@ bool CHttpPoller::StopHardware()
 void CHttpPoller::Do_Work()
 {
 	int sec_counter = 300 - 5;
-	_log.Log(LOG_STATUS, "Http: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -90,7 +90,7 @@ void CHttpPoller::Do_Work()
 			GetScript();
 		}
 	}
-	_log.Log(LOG_STATUS,"Http: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 void CHttpPoller::GetScript()
@@ -129,15 +129,15 @@ void CHttpPoller::GetScript()
 	if (m_method == 0) {
 		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 		{
-			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err);
+			std::string err = "Error getting data from url \"" + sURL + "\"";
+			Log(LOG_ERROR, err);
 			return;
 		}
 	}
 	if (m_method == 1) {
 		if (!HTTPClient::POST(sURL, m_postdata, ExtraHeaders, sResult)) {
-			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err);
+			std::string err = "Error getting data from url \"" + sURL + "\"";
+			Log(LOG_ERROR, err);
 			return;
 		}
 	}

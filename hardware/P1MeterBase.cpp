@@ -197,7 +197,7 @@ void P1MeterBase::Init()
 		{
 			m_gasmbuschannel = (char)s_gasmbuschannel[0];
 			m_gasprefix[2] = m_gasmbuschannel;
-			_log.Log(LOG_STATUS, "P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+			Log(LOG_STATUS, "Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
 		}
 	}
 	InitP1EncryptionState();
@@ -298,7 +298,7 @@ bool P1MeterBase::MatchLine()
 		{
 			if (m_p1version == 0)
 			{
-				_log.Log(LOG_STATUS, "P1 Smart Meter: Meter is pre DSMR 4.0 - using DSMR 2.2 compatibility");
+				Log(LOG_STATUS, "Meter is pre DSMR 4.0 - using DSMR 2.2 compatibility");
 				m_p1version = 2;
 			}
 			time_t atime = mytime(nullptr);
@@ -386,11 +386,11 @@ bool P1MeterBase::MatchLine()
 							m_gasclockskew = difftime(gtime, atime);
 							if (m_gasclockskew >= 300)
 							{
-								_log.Log(LOG_ERROR, "P1 Smart Meter: Unable to synchronize to the gas meter clock because it is more than 5 minutes ahead of my time");
+								Log(LOG_ERROR, "Unable to synchronize to the gas meter clock because it is more than 5 minutes ahead of my time");
 							}
 							else {
 								m_gasoktime = gtime;
-								_log.Log(LOG_STATUS, "P1 Smart Meter: Gas meter clock is %i seconds ahead - wait for my clock to catch up", (int)m_gasclockskew);
+								Log(LOG_STATUS, "Gas meter clock is %i seconds ahead - wait for my clock to catch up", (int)m_gasclockskew);
 							}
 						}
 					}
@@ -408,14 +408,14 @@ bool P1MeterBase::MatchLine()
 			if (ePos == std::string::npos)
 			{
 				// invalid message: value not delimited
-				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value is not delimited in line \"%s\"", l_buffer);
+				Log(LOG_NORM, "Dismiss incoming - value is not delimited in line \"%s\"", l_buffer);
 				return false;
 			}
 
 			if (ePos > 19)
 			{
 				// invalid message: line too long
-				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value in line \"%s\" is oversized", l_buffer);
+				Log(LOG_NORM, "Dismiss incoming - value in line \"%s\" is oversized", l_buffer);
 				return false;
 			}
 
@@ -423,7 +423,7 @@ bool P1MeterBase::MatchLine()
 			{
 				strcpy(value, vString.substr(0, ePos).c_str());
 #ifdef _DEBUG
-				_log.Log(LOG_NORM, "P1 Smart Meter: Key: %s, Value: %s", t->topic, value);
+				Log(LOG_NORM, "Key: %s, Value: %s", t->topic, value);
 #endif
 			}
 
@@ -452,7 +452,7 @@ bool P1MeterBase::MatchLine()
 						if (m_p1version < 5)
 							szVersion[0] = 'D';
 					}
-					_log.Log(LOG_STATUS, "P1 Smart Meter: Meter reports as %s", szVersion);
+					Log(LOG_STATUS, "Meter reports as %s", szVersion);
 				}
 				break;
 			case P1TYPE_MBUSDEVICETYPE:
@@ -461,7 +461,7 @@ bool P1MeterBase::MatchLine()
 				{
 					m_gasmbuschannel = (char)l_buffer[2];
 					m_gasprefix[2] = m_gasmbuschannel;
-					_log.Log(LOG_STATUS, "P1 Smart Meter: Found gas meter on M-Bus channel %c", m_gasmbuschannel);
+					Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
 				}
 				break;
 			case P1TYPE_POWERUSAGE:
@@ -595,7 +595,7 @@ bool P1MeterBase::MatchLine()
 			if (ePos > 0 && ((validate - value) != ePos))
 			{
 				// invalid message: value is not a number
-				_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - value in line \"%s\" is not a number", l_buffer);
+				Log(LOG_NORM, "Dismiss incoming - value in line \"%s\" is not a number", l_buffer);
 				return false;
 			}
 
@@ -605,7 +605,7 @@ bool P1MeterBase::MatchLine()
 				vString = (const char*)&l_buffer + 11;
 				m_gastimestamp = vString.substr(0, 13);
 #ifdef _DEBUG
-				_log.Log(LOG_NORM, "P1 Smart Meter: Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
+				Log(LOG_NORM, "Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
 #endif
 			}
 		}
@@ -628,7 +628,7 @@ bool P1MeterBase::CheckCRC()
 	{
 		if (m_p1version == 0)
 		{
-			_log.Log(LOG_STATUS, "P1 Smart Meter: Meter is pre DSMR 4.0 and does not send a CRC checksum - using DSMR 2.2 compatibility");
+			Log(LOG_STATUS, "Meter is pre DSMR 4.0 and does not send a CRC checksum - using DSMR 2.2 compatibility");
 			m_p1version = 2;
 		}
 		// always return true with pre DSMRv4 format message
@@ -638,13 +638,13 @@ bool P1MeterBase::CheckCRC()
 	if (l_buffer[5] != 0)
 	{
 		// trailing characters after CRC
-		_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - CRC value in message has trailing characters");
+		Log(LOG_NORM, "Dismiss incoming - CRC value in message has trailing characters");
 		return false;
 	}
 
 	if (!m_CRfound)
 	{
-		_log.Log(LOG_NORM, "P1 Smart Meter: You appear to have middleware that changes the message content - skipping CRC validation");
+		Log(LOG_NORM, "You appear to have middleware that changes the message content - skipping CRC validation");
 		return true;
 	}
 
@@ -675,7 +675,7 @@ bool P1MeterBase::CheckCRC()
 	}
 	if (crc != m_crc16)
 	{
-		_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - CRC failed");
+		Log(LOG_NORM, "Dismiss incoming - CRC failed");
 	}
 	return (crc == m_crc16);
 }
@@ -861,7 +861,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 				}
 				catch (const std::exception& e)
 				{
-					_log.Log(LOG_ERROR, "P1Meter: Error decrypting payload (%s)", e.what());
+					Log(LOG_ERROR, "P1Meter: Error decrypting payload (%s)", e.what());
 				}
 				break;
 			}
@@ -884,7 +884,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 	{
 		if ((l_buffer[0] == 0x21) && !l_exclmarkfound && (m_linecount > 0))
 		{
-			_log.Log(LOG_STATUS, "P1 Smart Meter: WARNING: got new message but buffer still contains unprocessed data from previous message.");
+			Log(LOG_STATUS, "WARNING: got new message but buffer still contains unprocessed data from previous message.");
 			l_buffer[l_bufferpos] = 0;
 			if (disable_crc || CheckCRC())
 			{
@@ -920,7 +920,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 		if ((Len > 400) || (pData[0] == 0x21))
 		{
 			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
-			_log.Log(LOG_NORM, "P1 Smart Meter: Dismiss incoming - message oversized");
+			Log(LOG_NORM, "Dismiss incoming - message oversized");
 		}
 		m_linecount = 0;
 		return;

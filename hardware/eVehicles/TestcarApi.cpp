@@ -9,6 +9,7 @@ License: Public domain
 
 ************************************************************************/
 #include "stdafx.h"
+#include "eVehicle.h"
 #include "TestcarApi.h"
 #include "VehicleApi.h"
 #include "../../main/Logger.h"
@@ -152,13 +153,13 @@ bool CTestcarApi::SendCommand(eCommandType command, std::string parameter)
 			{
 				m_wakeup_counter = 0;
 				m_car.is_awake = true;
-				_log.Log(LOG_NORM, "TestcarApi: 'Wake_Up = %d", m_car.is_awake);
+				m_pBase->Log(LOG_NORM, "'Wake_Up = %d", m_car.is_awake);
 				return WriteCar();
 			}
 			else
 			{
 				m_wakeup_counter++;
-				_log.Log(LOG_NORM, "TestcarApi: 'Wake_Up = %d", m_car.is_awake);
+				m_pBase->Log(LOG_NORM, "'Wake_Up = %d", m_car.is_awake);
 				return false;
 			}
 			break;
@@ -202,7 +203,7 @@ bool CTestcarApi::ReadCar(bool is_awake_check)
 		return true;
 	}
 
-	_log.Log(LOG_ERROR, "TestcarApi: Car unreachable.");
+	m_pBase->Log(LOG_ERROR, "Car unreachable.");
 
 	return false;
 }

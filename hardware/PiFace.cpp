@@ -187,8 +187,8 @@ int CPiFace::LoadConfig()
     {
         //try to create one for the default board 0
         ConfigFile.close();
-        _log.Log(LOG_ERROR,"PiFace: Error config file: %s not found", configfile.c_str() );
-        _log.Log(LOG_ERROR,"PiFace: Auto creating for board 0");
+        Log(LOG_ERROR,"Error config file: %s not found", configfile.c_str() );
+        Log(LOG_ERROR,"Auto creating for board 0");
         LoadDefaultConfig();
         AutoCreate_piface_config();
         std::fstream ConfigFile(configfile.c_str(), std::ios::in);
@@ -278,7 +278,7 @@ int CPiFace::LoadConfig()
 
 		    if ((Address <= 3) && (PinNumber <= 7) && ((PortType == 'I') || (PortType == 'O')) && (Parametername.length() > 0) && (Parametervalue.length() > 0))
 		    {
-			    _log.Log(LOG_STATUS, "PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s", Address, PinNumber, PortType, Parametername.c_str(),
+			    Log(LOG_STATUS, "config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s", Address, PinNumber, PortType, Parametername.c_str(),
 				     Parametervalue.c_str());
 			    NameFound = LocateValueInParameterArray(Parametername, ParameterNames, CONFIG_NR_OF_PARAMETER_TYPES);
 
@@ -298,7 +298,7 @@ int CPiFace::LoadConfig()
 			    switch (NameFound)
 			    {
 				    default:
-					    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown parameter %s found", Parametername.c_str());
+					    Log(LOG_ERROR, "Error config file: unknown parameter %s found", Parametername.c_str());
 					    break;
 				    case 0:
 				    case 1:
@@ -317,7 +317,7 @@ int CPiFace::LoadConfig()
 						    result++;
 					    }
 					    else
-						    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found", Parametervalue.c_str());
+						    Log(LOG_ERROR, "Error config file: unknown value %s found", Parametervalue.c_str());
 					    break;
 
 				    case 2:
@@ -326,8 +326,8 @@ int CPiFace::LoadConfig()
 					    switch (ValueFound)
 					    {
 						    default:
-							    _log.Log(LOG_ERROR,
-								     "PiFace: Error config file: unknown value %s found =>setting default "
+							    Log(LOG_ERROR,
+								     "Error config file: unknown value %s found =>setting default "
 								     "level %d",
 								     Parametervalue.c_str(), ValueFound);
 							    IOport->Pin[PinNumber].Type = LEVEL;
@@ -367,7 +367,7 @@ int CPiFace::LoadConfig()
 						    result++;
 					    }
 					    else
-						    _log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found", Parametervalue.c_str());
+						    Log(LOG_ERROR, "Error config file: unknown value %s found", Parametervalue.c_str());
 					    break;
 
 				    case 5:
@@ -388,7 +388,7 @@ int CPiFace::LoadConfig()
 					    UpdateIntervalPerc = strtol(Parametervalue.c_str(), nullptr, 0);
 					    if (UpdateIntervalPerc < 1 || UpdateIntervalPerc > 1000)
 					    {
-						    _log.Log(LOG_ERROR, "PiFace: Error config file: invalid value %s found", Parametervalue.c_str());
+						    Log(LOG_ERROR, "Error config file: invalid value %s found", Parametervalue.c_str());
 						    break;
 					    }
 					    IOport->Pin[PinNumber].Count.SetUpdateIntervalPerc(UpdateIntervalPerc);
@@ -422,7 +422,7 @@ int CPiFace::LoadConfig()
 				switch (ValueFound)
 				{
 					default:
-						_log.Log(LOG_ERROR, "PiFace: Error config file: unknown value %s found",
+						Log(LOG_ERROR, "Error config file: unknown value %s found",
 							 Parametervalue.c_str());
 						break;
 
@@ -447,7 +447,7 @@ int CPiFace::LoadConfig()
 			    }
 		    }
 		    else
-			    _log.Log(LOG_ERROR, "PiFace: Error config file: misformed config line %s found", Line.c_str());
+			    Log(LOG_ERROR, "Error config file: misformed config line %s found", Line.c_str());
 	    }
 	}
 	ConfigFile.close();
@@ -455,14 +455,14 @@ int CPiFace::LoadConfig()
         if (Regenerate_Config)
         {
             Regenerate_Config=false;
-            _log.Log(LOG_ERROR,"PiFace: We got an initial value setting, so we are now recreating the logfile to avoid looping", configfile.c_str() );
+            Log(LOG_ERROR,"We got an initial value setting, so we are now recreating the logfile to avoid looping", configfile.c_str() );
             AutoCreate_piface_config();
         }
 #endif
     }
     else {
-        _log.Log(LOG_ERROR,"PiFace: Error PiFace config file: %s not found", configfile.c_str() );
-        _log.Log(LOG_ERROR,"PiFace: loading defaults for PiFace(s)");
+        Log(LOG_ERROR,"Error PiFace config file: %s not found", configfile.c_str() );
+        Log(LOG_ERROR,"loading defaults for PiFace(s)");
         LoadDefaultConfig();
         AutoCreate_piface_config();
     }
@@ -692,7 +692,7 @@ void CPiFace::CallBackSendEvent(const unsigned char *pEventPacket, const unsigne
     if (m_send_queue.size() < 100)
         m_send_queue.push_back(sendData);
     else
-        _log.Log(LOG_ERROR, "PiFace: to much messages on queue!");
+        Log(LOG_ERROR, "to much messages on queue!");
 }
 
 void CPiFace::CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinID, bool Interrupt_Enable)
@@ -713,7 +713,7 @@ void CPiFace::CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinI
 
     Write_MCP23S17_Register (devId, MCP23x17_GPINTENB, Cur_Int_Enable_State);
 
-    //_log.Log(LOG_NORM,"PiFace: SetPin Interrupt mode: devid: %d, Pinnr: %d, Enable %d-- Prev 0x%02X Cur 0x%02X",devId,pinID,Interrupt_Enable,Prev_Int_Enable_State,Cur_Int_Enable_State);
+    //Log(LOG_NORM,"SetPin Interrupt mode: devid: %d, Pinnr: %d, Enable %d-- Prev 0x%02X Cur 0x%02X",devId,pinID,Interrupt_Enable,Prev_Int_Enable_State,Cur_Int_Enable_State);
 }
 
 
@@ -816,9 +816,9 @@ bool CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
         pinnr =(SendData->LIGHTING1.unitcode %10)&0x07;
         if (PortType == 'O')
         {
-            //_log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, packetlength %d", SendData->LIGHTING1.housecode,SendData->LIGHTING1.packetlength );
+            //Log(LOG_NORM,"WriteToHardware housecode %c, packetlength %d", SendData->LIGHTING1.housecode,SendData->LIGHTING1.packetlength );
             CurrentLatchState = Read_MCP23S17_Register(devId, MCP23x17_OLATA);
-            //_log.Log(LOG_NORM,"PiFace: Read input state 0x%02X", m_OutputState[devId].Current);
+            //Log(LOG_NORM,"Read input state 0x%02X", m_OutputState[devId].Current);
 
             OutputData = CurrentLatchState;
             mask <<= pinnr;
@@ -830,17 +830,17 @@ bool CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
             else OutputData |= mask;
 
             Write_MCP23S17_Register(devId, MCP23x17_GPIOA, OutputData);
-            //  _log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
+            //  Log(LOG_NORM,"WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
         }
         else
         {
-            _log.Log(LOG_ERROR, "Piface: wrong housecode %c", PortType);
+            Log(LOG_ERROR, "wrong housecode %c", PortType);
             return false;
         }
     }
     else
     {
-        _log.Log(LOG_ERROR, "PiFace: WriteToHardware packet type %d or subtype %d unknown", SendData->LIGHTING1.packettype, SendData->LIGHTING1.subtype);
+        Log(LOG_ERROR, "WriteToHardware packet type %d or subtype %d unknown", SendData->LIGHTING1.packettype, SendData->LIGHTING1.subtype);
         return false;
     }
     return true;
@@ -849,7 +849,7 @@ bool CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
 void CPiFace::Do_Work()
 {
     int devId;
-    _log.Log(LOG_STATUS,"PiFace: Worker started...");
+    Log(LOG_STATUS,"Worker started...");
     int msec_counter = 0;
     int sec_counter = 0;
     while (!IsStopRequested(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS))
@@ -888,7 +888,7 @@ void CPiFace::Do_Work()
 		}
 	}
     }
-    _log.Log(LOG_STATUS,"PiFace: Worker stopped...");
+    Log(LOG_STATUS,"Worker stopped...");
 }
 
 void CPiFace::Do_Work_Queue()
@@ -919,7 +919,7 @@ int CPiFace::Init_SPI_Device(int Init)
     unsigned char spiBPW   = 8 ;
     int           speed       = 4000000 ;
 
-    _log.Log(LOG_STATUS,"PiFace: Starting PiFace_SPI_Start()");
+    Log(LOG_STATUS,"Starting PiFace_SPI_Start()");
 #ifdef HAVE_LINUX_SPI
     // Open port for reading and writing
     if ((m_fd = open("/dev/spidev0.0", O_RDWR)) >= 0)
@@ -933,21 +933,21 @@ int CPiFace::Init_SPI_Device(int Init)
                 {
                     result=1;
                     //we are successfull
-                    _log.Log(LOG_NORM,"PiFace: SPI device opened successfully");
+                    Log(LOG_NORM,"SPI device opened successfully");
 
                 }
                 else
-                    _log.Log(LOG_NORM,"PiFace: SPI Speed Change failure: %s", strerror (errno)) ;
+                    Log(LOG_NORM,"SPI Speed Change failure: %s", strerror (errno)) ;
             }
             else
-                _log.Log(LOG_NORM,"PiFace: SPI BPW Change failure: %s", strerror (errno)) ;
+                Log(LOG_NORM,"SPI BPW Change failure: %s", strerror (errno)) ;
 
         }
         else
-            _log.Log(LOG_NORM,"PiFace: SPI Mode Change failure: %s", strerror (errno)) ;
+            Log(LOG_NORM,"SPI Mode Change failure: %s", strerror (errno)) ;
     }
     else
-        _log.Log(LOG_NORM,"PiFace: Unable to open SPI device: %s", strerror (errno));
+        Log(LOG_NORM,"Unable to open SPI device: %s", strerror (errno));
 
 #endif
 
@@ -992,14 +992,14 @@ int CPiFace::Detect_PiFace_Hardware()
 
     if (NrOfFoundBoards)
     {
-        _log.Log(LOG_STATUS,"PiFace: Found the following PiFaces:");
+        Log(LOG_STATUS,"Found the following PiFaces:");
         for (devId=0; devId<4; devId++)
         {
             if (m_DetectedHardware[devId]==true)
-                _log.Log(LOG_STATUS,"PiFace: %d",devId);
+                Log(LOG_STATUS,"%d",devId);
         }
     }
-    else _log.Log(LOG_STATUS,"PiFace: Sorry, no PiFaces were found");
+    else Log(LOG_STATUS,"Sorry, no PiFaces were found");
     return NrOfFoundBoards;
 }
 
@@ -1479,13 +1479,13 @@ int CIOPort::Update(unsigned char New)
                     if (Count != LastCount)
                     {
                         Pin[PinNr].Count.SetLastTotal(Count);
-                        //    _log.Log(LOG_NORM,"Counter %lu\n",Count);
+                        //    Log(LOG_NORM,"Counter %lu\n",Count);
                         Pin[PinNr].IOPinCounterPacket.RFXMETER.count1 = (unsigned char)((Count >> 24) & 0xFF);
                         Pin[PinNr].IOPinCounterPacket.RFXMETER.count2 = (unsigned char)((Count >> 16) & 0xFF);
                         Pin[PinNr].IOPinCounterPacket.RFXMETER.count3 = (unsigned char)((Count >> 8) & 0xFF);
                         Pin[PinNr].IOPinCounterPacket.RFXMETER.count4 = (unsigned char)((Count)& 0xFF);
                         Pin[PinNr].IOPinCounterPacket.RFXMETER.seqnbr++;
-                        //    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",Pin[PinNr].IOPinCounterPacket.RFXMETER.count1,Pin[PinNr].IOPinCounterPacket.RFXMETER.count2,Pin[PinNr].IOPinCounterPacket.RFXMETER.count3,Pin[PinNr].IOPinCounterPacket.RFXMETER.count4);
+                        //    Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",Pin[PinNr].IOPinCounterPacket.RFXMETER.count1,Pin[PinNr].IOPinCounterPacket.RFXMETER.count2,Pin[PinNr].IOPinCounterPacket.RFXMETER.count3,Pin[PinNr].IOPinCounterPacket.RFXMETER.count4);
                         myCallback->CallBackSendEvent((const unsigned char *)&Pin[PinNr].IOPinCounterPacket, sizeof(Pin[PinNr].IOPinCounterPacket.RFXMETER));
                     }
                     break;

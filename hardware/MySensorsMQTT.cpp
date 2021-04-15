@@ -48,7 +48,7 @@ MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::s
 		if (std::string::npos == nextPiece)
 		{
 			// No second to last delimiter? Shouldn't happen.
-			_log.Log(LOG_ERROR, "MySensorsMQTT: Truncating CAfilename; Stray topic was present.");
+			Log(LOG_ERROR, "Truncating CAfilename; Stray topic was present.");
 			break;
 		}
 
@@ -105,7 +105,7 @@ void MySensorsMQTT::on_message(const struct mosquitto_message *message)
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
-	_log.Log(LOG_NORM, "MySensorsMQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+	Log(LOG_NORM, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 
 	if (topic.empty() && qMessage.empty())
 		return;
@@ -133,7 +133,7 @@ void MySensorsMQTT::on_connect(int rc)
 
 	if (m_IsConnected)
 	{
-		_log.Log(LOG_STATUS, "MySensorsMQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 		//Request gateway version
 		std::string sRequest = "0;0;3;0;2;";

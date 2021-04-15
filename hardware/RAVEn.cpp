@@ -24,14 +24,14 @@ bool RAVEn::StartHardware()
     //Try to open the Serial Port
     try
     {
-        _log.Log(LOG_STATUS, "RAVEn: Using serial port: %s", device_.c_str());
+        Log(LOG_STATUS, "Using serial port: %s", device_.c_str());
         open(device_, 115200);
     }
     catch (boost::exception & e)
     {
-        _log.Log(LOG_ERROR, "RAVEn: Error opening serial port!");
+        Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-        _log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+        Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
         (void)e;
 #endif
@@ -39,7 +39,7 @@ bool RAVEn::StartHardware()
     }
     catch (...)
     {
-        _log.Log(LOG_ERROR, "RAVEn: Error opening serial port!!!");
+        Log(LOG_ERROR, "Error opening serial port!!!");
         return false;
     }
     setReadCallback([this](auto d, auto l) { readCallback(d, l); });
@@ -72,16 +72,16 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     }
     if(data == (indata+inlen))
     {
-        _log.Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%d of them)", (int)inlen);
+        Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%d of them)", (int)inlen);
         return;
     }
     size_t len = (indata+inlen) - data;
 #ifdef _DEBUG
-    _log.Log(LOG_NORM, "RAVEn::readCallback got %d, have %d.  Incoming: %s, Current: %s", len, m_wptr-m_buffer, data, m_buffer);
+    Log(LOG_NORM, "RAVEn::readCallback got %d, have %d.  Incoming: %s, Current: %s", len, m_wptr-m_buffer, data, m_buffer);
 #endif
     if(m_wptr+len > m_buffer+MAX_BUFFER_LEN)
     {
-        _log.Log(LOG_ERROR, "Exceeded buffer space...resetting buffer");
+        Log(LOG_ERROR, "Exceeded buffer space...resetting buffer");
         m_wptr = m_buffer;
     }
 
@@ -94,12 +94,12 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     if (!endPtr)
     {
 #ifdef _DEBUG
-        _log.Log(LOG_ERROR, "RAVEn: Not enough data received (%d): %s", len, m_buffer);
+        Log(LOG_ERROR, "Not enough data received (%d): %s", len, m_buffer);
 #endif
         return;
     }
 #ifdef _DEBUG
-    _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
+    Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
 #endif
     memmove(m_buffer, endPtr, m_wptr - endPtr);
     m_wptr = m_buffer + (m_wptr - endPtr);
@@ -125,7 +125,7 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     if(updated)
         SendKwhMeter(m_HwdID, 1, 255, m_currUsage, m_totalUsage, "Power Meter");
     else
-        _log.Log(LOG_ERROR, "RAVEn: Unknown node");
+        Log(LOG_ERROR, "Unknown node");
 }
 
 bool RAVEn::WriteToHardware(const char *pdata, const unsigned char length)
