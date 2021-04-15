@@ -568,7 +568,7 @@ IF(USE_BUILTIN_LIBFMT)
   add_subdirectory (extern/fmtlib EXCLUDE_FROM_ALL)
   target_link_libraries(domoticz fmt::fmt)
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/fmtlib)
-ELSE
+ELSE(USE_BUILTIN_LIBFMT)
   find_package(PkgConfig)
   pkg_check_modules(FMT REQUIRED fmt)
   IF(FMT_FOUND)
