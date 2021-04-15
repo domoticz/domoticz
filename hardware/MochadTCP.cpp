@@ -115,7 +115,7 @@ bool MochadTCP::StopHardware()
 
 void MochadTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -123,7 +123,7 @@ void MochadTCP::OnConnect()
 
 void MochadTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS, "Mochad: disconnected");
+	Log(LOG_STATUS, "disconnected");
 }
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
@@ -133,7 +133,7 @@ void MochadTCP::OnData(const unsigned char *pData, size_t length)
 
 void MochadTCP::Do_Work()
 {
-	_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	int sec_counter = 0;
 	connect(m_szIPAddress, m_usIPPort);
 	while (!IsStopRequested(1000))
@@ -147,7 +147,7 @@ void MochadTCP::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"TCP/IP Worker stopped...");
 }
 
 void MochadTCP::OnError(const boost::system::error_code& error)
@@ -160,17 +160,17 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
 		(error == boost::asio::error::connection_reset)
 		)
 	{
-		_log.Log(LOG_STATUS, "Mochad: Connection reset!");
+		Log(LOG_STATUS, "Connection reset!");
 	}
 	else
-		_log.Log(LOG_ERROR, "Mochad: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
 bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -189,10 +189,10 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 //			case light1_sBright:
 //			case light1_sAllOn:
 //			case light1_sAllOff:
-		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d", pdata[1],pdata[2],pdata[6]);
+		Log(LOG_STATUS, "Unknown command %d:%d:%d", pdata[1],pdata[2],pdata[6]);
 		return false;
 	}
-//	_log.Log(LOG_STATUS, "Mochad: send '%s'", s_buffer);
+//	Log(LOG_STATUS, "send '%s'", s_buffer);
 	write((const unsigned char *)s_buffer, strlen(s_buffer));
 	return true;
 }
@@ -407,7 +407,7 @@ checkFunc:
 	}
 	return;
 onError:
-	_log.Log(LOG_ERROR, "Mochad: Cannot decode '%s'", m_mochadbuffer);
+	Log(LOG_ERROR, "Cannot decode '%s'", m_mochadbuffer);
 
 }
 
@@ -436,7 +436,7 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 					i++;
 				}
 				m_mochadbuffer[i] = 0;
-//				_log.Log(LOG_STATUS, "Mochad: recv '%s'", m_mochadbuffer);
+//				Log(LOG_STATUS, "recv '%s'", m_mochadbuffer);
 				MatchLine();
 			}
 			m_bufferpos = 0;

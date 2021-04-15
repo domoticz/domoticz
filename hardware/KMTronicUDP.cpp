@@ -50,7 +50,7 @@ void KMTronicUDP::Do_Work()
 {
 	int sec_counter = KMTRONIC_POLL_INTERVAL - 2;
 
-	_log.Log(LOG_STATUS, "KMTronic: UDP Worker started...");
+	Log(LOG_STATUS, "UDP Worker started...");
 
 	while (!IsStopRequested(1000))
 	{
@@ -65,7 +65,7 @@ void KMTronicUDP::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS, "KMTronic: UDP Worker stopped...");
+	Log(LOG_STATUS, "UDP Worker stopped...");
 }
 
 bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -90,7 +90,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*lengt
         	struct hostent *he;
 		if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr)
 		{ // get the host info
-			_log.Log(LOG_ERROR, "KMTronic: Error with IP address!...");
+			Log(LOG_ERROR, "Error with IP address!...");
 			return false;
 		}
 
@@ -113,7 +113,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	        n=sendto(udpSocket, buf, 6, 0, (struct sockaddr*)&udpClient, sizeof(udpClient));
 		closesocket(udpSocket);
     		if (n < 0) {
-			_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
@@ -138,7 +138,7 @@ void KMTronicUDP::GetMeterDetails()
         struct hostent *he;
 	if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr)
 	{ // get the host info
-		_log.Log(LOG_ERROR, "KMTronic: Error with IP address!...");
+		Log(LOG_ERROR, "Error with IP address!...");
 		return;
 	}
 
@@ -165,7 +165,7 @@ void KMTronicUDP::GetMeterDetails()
 	n=sendto(udpSocket, "FF0000", 6, 0, (struct sockaddr*)&udpClient, serverlen);
     	if (n < 0) {
 		closesocket(udpSocket);
-		_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
@@ -173,11 +173,11 @@ void KMTronicUDP::GetMeterDetails()
 	n = recvfrom(udpSocket, buf, 8, 0, (struct sockaddr*)&udpClient, &serverlen);
 	closesocket(udpSocket);
     	if (n < 0) {
-		_log.Log(LOG_ERROR, "KMTronic: Error reading relay status from: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error reading relay status from: %s", m_szIPAddress.c_str());
 		return;
 	}
 
-//	_log.Debug(DEBUG_HARDWARE, "KMTronic: response %s",buf);
+//	Debug(DEBUG_HARDWARE, "response %s",buf);
 
 	m_TotRelais=n;
 	int jj;

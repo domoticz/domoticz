@@ -77,7 +77,7 @@ void CYouLess::Do_Work()
 {
 	int sec_counter = YOULESS_POLL_INTERVAL - 2;
 
-	_log.Log(LOG_STATUS, "YouLess: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -90,7 +90,7 @@ void CYouLess::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"YouLess: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
@@ -111,7 +111,7 @@ bool CYouLess::GetP1Details()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "YouLess: Error getting meter details from %s !", m_szIPAddress.c_str() );
+		Log(LOG_ERROR, "Error getting meter details from %s !", m_szIPAddress.c_str() );
 		return false;
 	}
 	Json::Value root;
@@ -192,7 +192,7 @@ void CYouLess::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
@@ -200,7 +200,7 @@ void CYouLess::GetMeterDetails()
 	StringSplit(sResult, "\n", results);
 	if (results.size()<2)
 	{
-		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	int fpos;

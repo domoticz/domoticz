@@ -88,7 +88,7 @@ bool Comm5Serial::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"Error opening serial port!!!");
+		Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;

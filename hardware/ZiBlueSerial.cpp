@@ -8,10 +8,10 @@
 
 #define ZiBlue_RETRY_DELAY 30
 
-CZiBlueSerial::CZiBlueSerial(const int ID, const std::string& devname) :
-m_szSerialPort(devname)
+CZiBlueSerial::CZiBlueSerial(const int ID, const std::string &devname)
+	: m_szSerialPort(devname)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	m_retrycntr = ZiBlue_RETRY_DELAY * 5;
 }
 
@@ -19,9 +19,9 @@ bool CZiBlueSerial::StartHardware()
 {
 	RequestStart();
 
-	m_retrycntr=ZiBlue_RETRY_DELAY*5; //will force reconnect first thing
+	m_retrycntr = ZiBlue_RETRY_DELAY * 5; // will force reconnect first thing
 
-	//Start worker thread
+	// Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
@@ -36,10 +36,9 @@ bool CZiBlueSerial::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
-
 
 void CZiBlueSerial::Do_Work()
 {
@@ -53,7 +52,8 @@ void CZiBlueSerial::Do_Work()
 			msec_counter = 0;
 			sec_counter++;
 
-			if (sec_counter % 12 == 0) {
+			if (sec_counter % 12 == 0)
+			{
 				m_LastHeartbeat = mytime(nullptr);
 			}
 			if (isOpen())
@@ -63,20 +63,20 @@ void CZiBlueSerial::Do_Work()
 								{
 									time_t atime = mytime(nullptr);
 									//Send ping (keep alive)
-									//_log.Log(LOG_STATUS, "ZiBlue: t1=%d t3=%d", atime,
+									//Log(LOG_STATUS, "t1=%d t3=%d", atime,
 				   m_LastReceivedTime); if (atime - m_LastReceivedTime > 50) {
 										//Receive Timeout
-										//_log.Log(LOG_STATUS, "ZiBlue: ping50...");
+										//Log(LOG_STATUS, "ping50...");
 										write("10;PING;\n");
 										m_retrycntr = 0;
 										m_LastReceivedTime = atime;
 									} else {
 										if (atime - m_LastReceivedTime > 25) {
-										   //_log.Log(LOG_STATUS, "ZiBlue: ping25...");
+										   //Log(LOG_STATUS, "ping25...");
 										   write("10;PING;\n");
 										}
 										//else {
-											//_log.Log(LOG_STATUS, "ZiBlue: ping0...");
+											//Log(LOG_STATUS, "ping0...");
 										//}
 									}
 								}
@@ -86,48 +86,48 @@ void CZiBlueSerial::Do_Work()
 
 		if (!isOpen())
 		{
-			if (m_retrycntr==0)
+			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS,"ZiBlue: serial retrying in %d seconds...", ZiBlue_RETRY_DELAY);
+				Log(LOG_STATUS, "serial retrying in %d seconds...", ZiBlue_RETRY_DELAY);
 			}
 			m_retrycntr++;
-			if (m_retrycntr/5>=ZiBlue_RETRY_DELAY)
+			if (m_retrycntr / 5 >= ZiBlue_RETRY_DELAY)
 			{
-				m_retrycntr=0;
-				m_rfbufferpos=0;
+				m_retrycntr = 0;
+				m_rfbufferpos = 0;
 				OpenSerialDevice();
 			}
 		}
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"ZiBlue: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CZiBlueSerial::OpenSerialDevice()
 {
-	//Try to open the Serial Port
+	// Try to open the Serial Port
 	try
 	{
 		open(m_szSerialPort, 115200);
-		_log.Log(LOG_STATUS,"ZiBlue: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 	}
-	catch (boost::exception & e)
+	catch (boost::exception &e)
 	{
-		_log.Log(LOG_ERROR,"ZiBlue: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
 		return false;
 	}
-	catch ( ... )
+	catch (...)
 	{
-		_log.Log(LOG_ERROR,"ZiBlue: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(nullptr);
 
@@ -156,6 +156,6 @@ bool CZiBlueSerial::WriteInt(const uint8_t *pData, const size_t length)
 {
 	if (!isOpen())
 		return false;
-	write((const char*)pData,length);
+	write((const char *)pData, length);
 	return true;
 }

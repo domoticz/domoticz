@@ -116,7 +116,7 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 	, m_LastState(0)
 	, m_LastQuickAccess(0)
 {
-	_log.Log(LOG_STATUS, "MultiFun: Create instance");
+	Log(LOG_STATUS, "Create instance");
 	m_HwdID = ID;
 
 	m_isSensorExists[0] = false;
@@ -127,7 +127,7 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 
 MultiFun::~MultiFun()
 {
-	_log.Log(LOG_STATUS, "MultiFun: Destroy instance");
+	Log(LOG_STATUS, "Destroy instance");
 }
 
 bool MultiFun::StartHardware()
@@ -135,7 +135,7 @@ bool MultiFun::StartHardware()
 	RequestStart();
 
 #ifdef DEBUG_MultiFun
-	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
+	Log(LOG_STATUS, "Start hardware");
 #endif
 
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
@@ -148,7 +148,7 @@ bool MultiFun::StartHardware()
 bool MultiFun::StopHardware()
 {
 #ifdef DEBUG_MultiFun
-	_log.Log(LOG_STATUS, "MultiFun: Stop hardware");
+	Log(LOG_STATUS, "Stop hardware");
 #endif
 
 	if (m_thread)
@@ -164,7 +164,7 @@ bool MultiFun::StopHardware()
 void MultiFun::Do_Work()
 {
 #ifdef DEBUG_MultiFun
-	_log.Log(LOG_STATUS, "MultiFun: Start work");
+	Log(LOG_STATUS, "Start work");
 #endif
 
 	int sec_counter = MULTIFUN_POLL_INTERVAL;
@@ -185,7 +185,7 @@ void MultiFun::Do_Work()
 			GetRegisters(firstTime);
 			firstTime = false;
 #ifdef DEBUG_MultiFun
-			_log.Log(LOG_STATUS, "MultiFun: fetching changed data");
+			Log(LOG_STATUS, "fetching changed data");
 #endif
 		}
 	}
@@ -287,12 +287,12 @@ bool MultiFun::ConnectToDevice()
 
 	if (m_socket->getState() != csocket::CONNECTED)
 	{
-		_log.Log(LOG_ERROR, "MultiFun: Unable to connect to specified IP Address on specified Port (%s:%d)", m_IPAddress.c_str(), m_IPPort);
+		Log(LOG_ERROR, "Unable to connect to specified IP Address on specified Port (%s:%d)", m_IPAddress.c_str(), m_IPPort);
 		DestroySocket();
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
+	Log(LOG_STATUS, "connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }
@@ -302,7 +302,7 @@ void MultiFun::DestroySocket()
 	if (m_socket != nullptr)
 	{
 #ifdef DEBUG_MultiFun
-		_log.Log(LOG_STATUS, "MultiFun: destroy socket");
+		Log(LOG_STATUS, "destroy socket");
 #endif
 		delete m_socket;
 		m_socket = nullptr;
@@ -331,7 +331,7 @@ void MultiFun::GetTemperatures()
 	{
 		if ((ret != 1 + sensorsCount * 2) || (buffer[0] != sensorsCount * 2))
 		{
-			_log.Log(LOG_ERROR, "MultiFun: Receive wrong number of bytes");
+			Log(LOG_ERROR, "Receive wrong number of bytes");
 		}
 		else
 		{
@@ -355,7 +355,7 @@ void MultiFun::GetTemperatures()
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MultiFun: Receive info about temperatures failed");
+		Log(LOG_ERROR, "Receive info about temperatures failed");
 	}
 }
 
@@ -381,7 +381,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	{
 		if ((ret != 1 + registersCount * 2) || (buffer[0] != registersCount * 2))
 		{
-			_log.Log(LOG_ERROR, "MultiFun: Receive wrong number of bytes");
+			Log(LOG_ERROR, "Receive wrong number of bytes");
 		}
 		else
 		{
@@ -533,7 +533,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MultiFun: Receive info about registers failed");
+		Log(LOG_ERROR, "Receive info about registers failed");
 	}
 }
 
@@ -552,7 +552,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 	if (m_socket->write((char*)cmd, cmdLength) != (int)cmdLength)
 	{
-		_log.Log(LOG_ERROR, "MultiFun: Send command failed");
+		Log(LOG_ERROR, "Send command failed");
 		DestroySocket();
 		return -1;
 	}
@@ -567,7 +567,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 	if ((ret <= 0) || (ret >= BUFFER_LENGHT))
 	{
-		_log.Log(LOG_ERROR, "MultiFun: no data received");
+		Log(LOG_ERROR, "no data received");
 		return -1;
 	}
 
@@ -595,11 +595,11 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 					{
 						return answerLength;
 					}
-					_log.Log(LOG_ERROR, "MultiFun: bad response after write");
+					Log(LOG_ERROR, "bad response after write");
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "MultiFun: bad size of frame");
+					Log(LOG_ERROR, "bad size of frame");
 				}
 			}
 			else
@@ -607,26 +607,26 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 				{
 					if (databuffer[8] >= 1 && databuffer[8] <= 4)
 					{
-						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8] - 1]);
+						Log(LOG_ERROR, "Receive error (%s)", errors[databuffer[8] - 1]);
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "MultiFun: Receive unknown error");
+						Log(LOG_ERROR, "Receive unknown error");
 					}
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "MultiFun: Receive error (unknown function code)");
+					Log(LOG_ERROR, "Receive error (unknown function code)");
 				}
 		}
 		else
 		{
-				_log.Log(LOG_ERROR, "MultiFun: received bad frame prefix");
+				Log(LOG_ERROR, "received bad frame prefix");
 		}
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MultiFun: received frame is too short.");
+		Log(LOG_ERROR, "received frame is too short.");
 		DestroySocket();
 	}
 

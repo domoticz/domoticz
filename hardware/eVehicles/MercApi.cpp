@@ -9,6 +9,7 @@ License: Public domain
 
 ************************************************************************/
 #include "stdafx.h"
+#include "eVehicle.h"
 #include "MercApi.h"
 #include "VehicleApi.h"
 #include "../../main/Logger.h"
@@ -98,26 +99,26 @@ bool CMercApi::Login()
 
 	if (m_refreshtoken.empty() || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
-		_log.Log(LOG_NORM, "MercApi: Attempting login (using provided Authorization code).");
+		m_pBase->Log(LOG_NORM, "Attempting login (using provided Authorization code).");
 
 		m_authenticating = true;
 
 		if (GetAuthToken(m_username, m_authtoken, false))
 		{
-			_log.Log(LOG_NORM, "MercApi: Login successful.");
+			m_pBase->Log(LOG_NORM, "Login successful.");
 			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
 			bSuccess = true;
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "MercApi: Login unsuccessful!");
+			m_pBase->Log(LOG_ERROR, "Login unsuccessful!");
 		}
 
 		m_authenticating = false;
 	}
 	else
 	{
-		_log.Log(LOG_NORM, "MercApi: Attempting (re)login (using stored refresh token!).");
+		m_pBase->Log(LOG_NORM, "Attempting (re)login (using stored refresh token!).");
 		bSuccess = RefreshLogin();
 	}
 
@@ -129,17 +130,17 @@ bool CMercApi::RefreshLogin()
 	bool bSuccess = false;
 	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
 
-	_log.Debug(DEBUG_NORM, "MercApi: Refreshing login credentials.");
+	m_pBase->Debug(DEBUG_NORM, "Refreshing login credentials.");
 	m_authenticating = true;
 
 	if (GetAuthToken("", "", true))
 	{	
-		_log.Log(LOG_NORM, "MercApi: Login credentials Refresh successful.");
+		m_pBase->Log(LOG_NORM, "Login credentials Refresh successful.");
 		bSuccess = true;
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to refresh login credentials.");
+		m_pBase->Log(LOG_ERROR, "Failed to refresh login credentials.");
 		m_accesstoken = "";
 		if (!m_refreshtoken.empty())
 		{
@@ -209,7 +210,7 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 		{
 			if (!reply.isArray())
 			{
-				_log.Log(LOG_ERROR, "MercApi: Unexpected reply from ElectricVehicle.");
+				m_pBase->Log(LOG_ERROR, "Unexpected reply from ElectricVehicle.");
 			}
 			else
 			{
@@ -222,7 +223,7 @@ bool CMercApi::GetChargeData(CVehicleApi::tChargeData& data)
 	{
 		if (m_httpresultcode == 403)
 		{
-			_log.Log(LOG_STATUS, "Access has been denied to the ElectricVehicle data!");
+			m_pBase->Log(LOG_STATUS, "Access has been denied to the ElectricVehicle data!");
 			bData = true;	// We should see if we can continue with the rest
 		}
 	}
@@ -242,7 +243,7 @@ void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& da
 		{
 			if(!(iter[id].isNull()))
 			{
-				_log.Debug(DEBUG_NORM, "MercApi: Found non empty field %s", id.c_str());
+				m_pBase->Debug(DEBUG_NORM, "Found non empty field %s", id.c_str());
 
 				if (id == "soc")
 				{
@@ -250,7 +251,7 @@ void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& da
 					iter2 = iter[id];
 					if(!iter2["value"].empty())
 					{
-						_log.Debug(DEBUG_NORM, "MercApi: SoC has value %s", iter2["value"].asString().c_str());
+						m_pBase->Debug(DEBUG_NORM, "SoC has value %s", iter2["value"].asString().c_str());
 						data.battery_level = static_cast<float>(atof(iter2["value"].asString().c_str()));
 					}
 				}
@@ -260,7 +261,7 @@ void CMercApi::GetChargeData(Json::Value& jsondata, CVehicleApi::tChargeData& da
 					iter2 = iter[id];
 					if(!iter2["value"].empty())
 					{
-						_log.Debug(DEBUG_NORM, "MercApi: RangeElectric has value %s", iter2["value"].asString().c_str());
+						m_pBase->Debug(DEBUG_NORM, "RangeElectric has value %s", iter2["value"].asString().c_str());
 						data.status_string = "Approximate range " + iter2["value"].asString() + " " + m_config.distance_unit;
 					}
 				}
@@ -310,7 +311,7 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 		{
 			if (!reply.isArray())
 			{
-				_log.Log(LOG_ERROR, "MercApi: Unexpected reply from VehicleLockStatus.");
+				m_pBase->Log(LOG_ERROR, "Unexpected reply from VehicleLockStatus.");
 			}
 			else
 			{
@@ -323,7 +324,7 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 	{
 		if (m_httpresultcode == 403)
 		{
-			_log.Log(LOG_STATUS, "Access has been denied to the VehicleLockStatus data!");
+			m_pBase->Log(LOG_STATUS, "Access has been denied to the VehicleLockStatus data!");
 			bData = true;	// We should see if we can continue with the rest
 		}
 	}
@@ -340,7 +341,7 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 		{
 			if (!reply.isArray())
 			{
-				_log.Log(LOG_ERROR, "MercApi: Unexpected reply from PayasyouDrive.");
+				m_pBase->Log(LOG_ERROR, "Unexpected reply from PayasyouDrive.");
 			}
 			else
 			{
@@ -353,7 +354,7 @@ bool CMercApi::GetVehicleData(tVehicleData& data)
 	{
 		if (m_httpresultcode == 403)
 		{
-			_log.Log(LOG_STATUS, "Access has been denied to the PayAsYouDrive data!");
+			m_pBase->Log(LOG_STATUS, "Access has been denied to the PayAsYouDrive data!");
 			bData = true;	// We should see if we can continue with the rest
 		}
 	}
@@ -374,7 +375,7 @@ bool CMercApi::GetCustomData(tCustomData& data)
 		if(m_fieldcnt < 0)
 		{
 			m_fieldcnt = static_cast<int16_t>(strarray.size());
-			_log.Debug(DEBUG_NORM, "MercApi: Reset Customfield count to %d", m_fieldcnt);
+			m_pBase->Debug(DEBUG_NORM, "Reset Customfield count to %d", m_fieldcnt);
 		}
 		else
 		{
@@ -382,11 +383,11 @@ bool CMercApi::GetCustomData(tCustomData& data)
 			{
 				if (reply.empty())
 				{
-					_log.Debug(DEBUG_NORM, "MercApi: Got empty data for resource %s", strarray[m_fieldcnt].c_str());
+					m_pBase->Debug(DEBUG_NORM, "Got empty data for resource %s", strarray[m_fieldcnt].c_str());
 				}
 				else
 				{
-					_log.Debug(DEBUG_RECEIVED, "MercApi: Got data for resource %s :\n%s", strarray[m_fieldcnt].c_str(),reply.toStyledString().c_str());
+					m_pBase->Debug(DEBUG_RECEIVED, "Got data for resource %s :\n%s", strarray[m_fieldcnt].c_str(),reply.toStyledString().c_str());
 
 					if (!reply[strarray[m_fieldcnt]].empty())
 					{
@@ -401,14 +402,14 @@ bool CMercApi::GetCustomData(tCustomData& data)
 
 							data.customdata.append(customItem);
 
-							_log.Debug(DEBUG_NORM, "MercApi: Got data for resource (%d) %s : %s", m_fieldcnt, strarray[m_fieldcnt].c_str(), resourceValue.c_str());
+							m_pBase->Debug(DEBUG_NORM, "Got data for resource (%d) %s : %s", m_fieldcnt, strarray[m_fieldcnt].c_str(), resourceValue.c_str());
 						}
 					}
 				}
 			}
 			else
 			{
-				_log.Debug(DEBUG_NORM,"MercApi: Failed to retrieve data for resource %s!", strarray[m_fieldcnt].c_str());
+				m_pBase->Debug(DEBUG_NORM,"Failed to retrieve data for resource %s!", strarray[m_fieldcnt].c_str());
 			}
 		}
 	}
@@ -428,7 +429,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 		{
 			if(!(iter[id].isNull()))
 			{
-				_log.Debug(DEBUG_NORM, "MercApi: Found non empty field %s", id.c_str());
+				m_pBase->Debug(DEBUG_NORM, "Found non empty field %s", id.c_str());
 
 				if (id == "doorlockstatusvehicle")
 				{
@@ -436,7 +437,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					iter2 = iter[id];
 					if(!iter2["value"].empty())
 					{
-						_log.Debug(DEBUG_NORM, "MercApi: DoorLockStatusVehicle has value %s", iter2["value"].asString().c_str());
+						m_pBase->Debug(DEBUG_NORM, "DoorLockStatusVehicle has value %s", iter2["value"].asString().c_str());
 						data.car_open = (iter2["value"].asString() == "1" || iter2["value"].asString() == "2" ? false : true);
 						if(iter2["value"].asString() == "3")
 						{
@@ -454,7 +455,7 @@ void CMercApi::GetVehicleData(Json::Value& jsondata, tVehicleData& data)
 					iter2 = iter[id];
 					if(!iter2["value"].empty())
 					{
-						_log.Debug(DEBUG_NORM, "MercApi: Odo has value %s", iter2["value"].asString().c_str());
+						m_pBase->Debug(DEBUG_NORM, "Odo has value %s", iter2["value"].asString().c_str());
 						data.odo = static_cast<float>(atof(iter2["value"].asString().c_str()));
 					}
 				}
@@ -473,11 +474,11 @@ bool CMercApi::GetData(const std::string &datatype, Json::Value &reply)
 
 	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true))
 	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to get data %s.", datatype.c_str());
+		m_pBase->Log(LOG_ERROR, "Failed to get data %s.", datatype.c_str());
 		return false;
 	}
 
-	_log.Debug(DEBUG_NORM, "MercApi: Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
 
 	return true;
 }
@@ -491,11 +492,11 @@ bool CMercApi::GetResourceData(const std::string &datatype, Json::Value &reply)
 
 	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true, (MERC_APITIMEOUT / 2)))
 	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to get resource data %s.", datatype.c_str());
+		m_pBase->Log(LOG_ERROR, "Failed to get resource data %s.", datatype.c_str());
 		return false;
 	}
 
-	_log.Debug(DEBUG_NORM, "MercApi: Get resource data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Get resource data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
 
 	return true;
 }
@@ -518,19 +519,19 @@ bool CMercApi::IsAwake()
 		nr_retry++;
 		if (nr_retry == 4)
 		{
-			_log.Log(LOG_ERROR, "Failed to get awake state (available resources)!");
+			m_pBase->Log(LOG_ERROR, "Failed to get awake state (available resources)!");
 			return false;
 		}
 	}
 
 	if (!ProcessAvailableResources(_jsRoot))
 	{
-		_log.Log(LOG_ERROR, "Unable to process list of available resources!");
+		m_pBase->Log(LOG_ERROR, "Unable to process list of available resources!");
 	}
 	else
 	{
 		is_awake = true;
-		_log.Debug(DEBUG_NORM, "MercApi: Awake state checked. We are awake.");
+		m_pBase->Debug(DEBUG_NORM, "Awake state checked. We are awake.");
 	}
 
 	return(is_awake);
@@ -546,10 +547,10 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 	crc = jsondata.size();	// hm.. not easy to create something of a real crc32 of JSON content.. so for now we just compare the amount of 'keys'
 	if (crc == m_crc)
 	{
-		_log.Debug(DEBUG_NORM, "CRC32 of content is the same.. skipping processing");
+		m_pBase->Debug(DEBUG_NORM, "CRC32 of content is the same.. skipping processing");
 		return true;
 	}
-	_log.Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
+	m_pBase->Debug(DEBUG_NORM, "CRC32 of content is the not the same (%d).. start processing", crc);
 
 	try
 	{
@@ -564,7 +565,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 				{
 					Json::Value iter2;
 					iter2 = iter[id];
-					//_log.Debug(DEBUG_NORM, "MercApi: Field (%d) %s has value %s",cnt, id.c_str(), iter2.asString().c_str());
+					//m_pBase->Debug(DEBUG_NORM, "Field (%d) %s has value %s",cnt, id.c_str(), iter2.asString().c_str());
 					if (id == "name")
 					{
 						if (cnt > 0)
@@ -575,7 +576,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 					}
 					if (id == "version" && iter2.asString() != "1.0")
 					{
-						_log.Log(LOG_STATUS, "Found resources with another version (%s) than expected 1.0! Continueing but results may be wrong!", iter2.asString().c_str());
+						m_pBase->Log(LOG_STATUS, "Found resources with another version (%s) than expected 1.0! Continueing but results may be wrong!", iter2.asString().c_str());
 					}
 				}
 			}
@@ -590,7 +591,7 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 			StringSplit(m_fields, ",", strarray);
 			m_fieldcnt = static_cast<int16_t>(strarray.size());
 
-			_log.Log(LOG_STATUS, "Found %d resource fields: %s", m_fieldcnt, m_fields.c_str());
+			m_pBase->Log(LOG_STATUS, "Found %d resource fields: %s", m_fieldcnt, m_fields.c_str());
 
 			m_crc = crc;
 
@@ -598,13 +599,13 @@ bool CMercApi::ProcessAvailableResources(Json::Value& jsondata)
 		}
 		else
 		{
-			_log.Debug(DEBUG_NORM, "MercApi: Found %d resource fields but none called name!",cnt);
+			m_pBase->Debug(DEBUG_NORM, "Found %d resource fields but none called name!",cnt);
 		}
 	}
 	catch(const std::exception& e)
 	{
 		std::string what = e.what();
-		_log.Log(LOG_ERROR, "MercApi: Crashed during processing of resources: %s", what.c_str());
+		m_pBase->Log(LOG_ERROR, "Crashed during processing of resources: %s", what.c_str());
 	}
 
 	return bProcessed;
@@ -692,12 +693,12 @@ bool CMercApi::SendCommand(const std::string &command, Json::Value &reply, const
 
 	if (!SendToApi(Post, _sUrl, sPostData, _sResponse, *(new std::vector<std::string>()), reply, true))
 	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to send command %s.", command.c_str());
+		m_pBase->Log(LOG_ERROR, "Failed to send command %s.", command.c_str());
 		return false;
 	}
 
-	//_log.Log(LOG_NORM, "MercApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
-	_log.Debug(DEBUG_NORM, "MercApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
+	//m_pBase->Log(LOG_NORM, "Command %s received reply: %s", command.c_str(), _sResponse.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Command %s received reply: %s", command.c_str(), _sResponse.c_str());
 	*/
 	return true;
 }
@@ -707,18 +708,18 @@ bool CMercApi::GetAuthToken(const std::string &username, const std::string &pass
 {
 	if (!refreshUsingToken && username.empty())
 	{
-		_log.Log(LOG_ERROR, "MercApi: No username specified.");
+		m_pBase->Log(LOG_ERROR, "No username specified.");
 		return false;
 	}
 	if (!refreshUsingToken && username.empty())
 	{
-		_log.Log(LOG_ERROR, "MercApi: No password specified.");
+		m_pBase->Log(LOG_ERROR, "No password specified.");
 		return false;
 	}
 
 	if (refreshUsingToken && (m_refreshtoken.empty() || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED))
 	{
-		_log.Log(LOG_ERROR, "MercApi: No refresh token to perform refresh!");
+		m_pBase->Log(LOG_ERROR, "No refresh token to perform refresh!");
 		return false;
 	}
 
@@ -751,31 +752,31 @@ bool CMercApi::GetAuthToken(const std::string &username, const std::string &pass
 
 	if (!SendToApi(Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, false))
 	{
-		_log.Log(LOG_ERROR, "MercApi: Failed to get token.");
+		m_pBase->Log(LOG_ERROR, "Failed to get token.");
 		return false;
 	}
 
 	if(!_jsRoot["error"].empty()) 
 	{
-		_log.Log(LOG_ERROR, "MercApi: Received error response (%s).", _jsRoot["error"].asString().c_str());
+		m_pBase->Log(LOG_ERROR, "Received error response (%s).", _jsRoot["error"].asString().c_str());
 		return false;
 	}
 
 	m_accesstoken = _jsRoot["access_token"].asString();
 	if (m_accesstoken.empty())
 	{
-		_log.Log(LOG_ERROR, "MercApi: Received access token is zero length.");
+		m_pBase->Log(LOG_ERROR, "Received access token is zero length.");
 		return false;
 	}
 
 	m_refreshtoken = _jsRoot["refresh_token"].asString();
 	if (m_refreshtoken.empty())
 	{
-		_log.Log(LOG_ERROR, "MercApi: Received refresh token is zero length.");
+		m_pBase->Log(LOG_ERROR, "Received refresh token is zero length.");
 		return false;
 	}
-	_log.Log(LOG_STATUS, "MercApi: Received new refresh token %s .", m_refreshtoken.c_str());
-	_log.Debug(DEBUG_NORM, "MercApi: Received access token from API.");
+	m_pBase->Log(LOG_STATUS, "Received new refresh token %s .", m_refreshtoken.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Received access token from API.");
 
 	return true;
 }
@@ -790,7 +791,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 	// decide not to do authentication.
 	if (m_accesstoken.empty() && bSendAuthHeaders)
 	{
-		_log.Log(LOG_ERROR, "MercApi: No access token available.");
+		m_pBase->Log(LOG_ERROR, "No access token available.");
 		return false;
 	}
 
@@ -824,7 +825,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		std::stringstream _ssResponseHeaderString;
 		uint16_t _iHttpCode;
 
-		_log.Debug(DEBUG_RECEIVED, "MercApi: Performing request to Api: %s", sUrl.c_str());
+		m_pBase->Debug(DEBUG_RECEIVED, "Performing request to Api: %s", sUrl.c_str());
 
 		switch (eMethod)
 		{
@@ -832,7 +833,7 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders))
 			{
 				_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
-				_log.Log(LOG_ERROR, "Failed to perform POST request (%d)!", _iHttpCode);
+				m_pBase->Log(LOG_ERROR, "Failed to perform POST request (%d)!", _iHttpCode);
 			}
 			break;
 
@@ -840,13 +841,13 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, true))
 			{
 				_iHttpCode = ExtractHTTPResultCode(_vResponseHeaders[0]);
-				_log.Log(LOG_ERROR, "Failed to perform GET request (%d)!", _iHttpCode);
+				m_pBase->Log(LOG_ERROR, "Failed to perform GET request (%d)!", _iHttpCode);
 			}
 			break;
 
 		default:
 			{
-				_log.Log(LOG_ERROR, "MercApi: Unknown method specified.");
+				m_pBase->Log(LOG_ERROR, "Unknown method specified.");
 				return false;
 			}
 		}
@@ -856,74 +857,74 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 		// Debug response
 		for (auto &_vResponseHeader : _vResponseHeaders)
 			_ssResponseHeaderString << _vResponseHeader;
-		_log.Debug(DEBUG_RECEIVED, "MercApi: Performed request to Api: (%d)\n%s\nResponse headers: %s", m_httpresultcode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+		m_pBase->Debug(DEBUG_RECEIVED, "Performed request to Api: (%d)\n%s\nResponse headers: %s", m_httpresultcode, sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 		switch(m_httpresultcode)
 		{
 		case 28:
-			_log.Log(LOG_STATUS, "Received (Curl) returncode 28.. API request response took too long, timed-out!");
+			m_pBase->Log(LOG_STATUS, "Received (Curl) returncode 28.. API request response took too long, timed-out!");
 			return false;
 			break;
 		case 200:
 			break; // Ok, continue to process content
 		case 204:
-			_log.Log(LOG_STATUS, "Received (204) No Content.. likely because of no activity/updates in the last 12 hours!");
+			m_pBase->Log(LOG_STATUS, "Received (204) No Content.. likely because of no activity/updates in the last 12 hours!");
 			return true; // OK and directly return as there is no content to actually process
 			break;
 		case 400:
 		case 401:
 			if(!m_authenticating) 
 			{
-				_log.Log(LOG_STATUS, "Received 400/401.. Let's try to (re)authorize again!");
+				m_pBase->Log(LOG_STATUS, "Received 400/401.. Let's try to (re)authorize again!");
 				RefreshLogin();
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "Received 400/401.. During authorisation proces. Aborting!");
+				m_pBase->Log(LOG_STATUS, "Received 400/401.. During authorisation proces. Aborting!");
 			}			
 			return false;
 			break;
 		case 403:
 			if(!m_authenticating)
 			{
-				_log.Log(LOG_STATUS, "Received 403.. Access has been denied!");
+				m_pBase->Log(LOG_STATUS, "Received 403.. Access has been denied!");
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "Received 403.. Access denied during authorisation proces. Aborting!");
+				m_pBase->Log(LOG_STATUS, "Received 403.. Access denied during authorisation proces. Aborting!");
 			}
 			return false;
 			break;
 		case 429:
-			_log.Log(LOG_STATUS, "Received 429.. Too many request... we need to back off!");
+			m_pBase->Log(LOG_STATUS, "Received 429.. Too many request... we need to back off!");
 			return false;
 			break;
 		case 500:
 		case 503:
-			_log.Log(LOG_STATUS, "Received 500/503.. Service is not available!");
+			m_pBase->Log(LOG_STATUS, "Received 500/503.. Service is not available!");
 			return false;
 			break;
 		default:
-			_log.Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", m_httpresultcode);
+			m_pBase->Log(LOG_STATUS, "Received unhandled HTTP returncode %d !", m_httpresultcode);
 			return false;
 		}
 
 		if (sResponse.empty())
 		{
-			_log.Log(LOG_ERROR, "MercApi: Received an empty response from Api (HTTP %d).", m_httpresultcode);
+			m_pBase->Log(LOG_ERROR, "Received an empty response from Api (HTTP %d).", m_httpresultcode);
 			return false;
 		}
 
 		if (!ParseJSon(sResponse, jsDecodedResponse))
 		{
-			_log.Log(LOG_ERROR, "MercApi: Failed to decode Json response from Api (HTTP %d).", m_httpresultcode);
+			m_pBase->Log(LOG_ERROR, "Failed to decode Json response from Api (HTTP %d).", m_httpresultcode);
 			return false;
 		}
 	}
 	catch (std::exception & e)
 	{
 		std::string what = e.what();
-		_log.Log(LOG_ERROR, "MercApi: Error sending information to Api: %s", what.c_str());
+		m_pBase->Log(LOG_ERROR, "Error sending information to Api: %s", what.c_str());
 		return false;
 	}
 	return true;
@@ -946,7 +947,7 @@ uint16_t CMercApi::ExtractHTTPResultCode(const std::string& sResponseHeaderLine0
 				iHttpCode = (uint16_t)std::stoi(sResponseHeaderLine0.substr(iHttpCodeStartPos, 3));
 				if (iHttpCode < 100 || iHttpCode > 599)		// Check valid resultcode range
 				{
-					_log.Log(LOG_STATUS, "Found non-standard resultcode (%d) in HTTP response statusline: %s", iHttpCode, sResponseHeaderLine0.c_str());
+					m_pBase->Log(LOG_STATUS, "Found non-standard resultcode (%d) in HTTP response statusline: %s", iHttpCode, sResponseHeaderLine0.c_str());
 				}
 			}
 		}

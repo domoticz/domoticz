@@ -14,6 +14,8 @@ License: Public domain
 #pragma once
 #include <string>
 
+class CeVehicle;
+
 class CVehicleApi
 {
 public:
@@ -106,5 +108,5 @@ public:
 	
 	tCapabilities m_capabilities;
 	tConfigData m_config;
-
+	CeVehicle *m_pBase = nullptr;
 };

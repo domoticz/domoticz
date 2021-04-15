@@ -112,7 +112,7 @@ bool COctoPrintMQTT::StopHardware()
 
 void COctoPrintMQTT::on_subscribe(int mid, int qos_count, const int *granted_qos)
 {
-	_log.Log(LOG_STATUS, "OCTO_MQTT: Subscribed");
+	Log(LOG_STATUS, "Subscribed");
 	m_IsConnected = true;
 }
 
@@ -127,17 +127,17 @@ void COctoPrintMQTT::on_connect(int rc)
 
 	if (rc == 0) {
 		if (m_IsConnected) {
-			_log.Log(LOG_STATUS, "OCTO_MQTT: re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			Log(LOG_STATUS, "re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		}
 		else {
-			_log.Log(LOG_STATUS, "OCTO_MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
 		subscribe(nullptr, m_TopicIn.c_str());
 	}
 	else {
-		_log.Log(LOG_ERROR, "OCTO_MQTT: Connection failed!, restarting (rc=%d)", rc);
+		Log(LOG_ERROR, "Connection failed!, restarting (rc=%d)", rc);
 		m_bDoReconnect = true;
 	}
 }
@@ -150,11 +150,11 @@ void COctoPrintMQTT::on_disconnect(int rc)
 		{
 			if (rc == 5)
 			{
-				_log.Log(LOG_ERROR, "OCTO_MQTT: disconnected, Invalid Username/Password (rc=%d)", rc);
+				Log(LOG_ERROR, "disconnected, Invalid Username/Password (rc=%d)", rc);
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "OCTO_MQTT: disconnected, restarting (rc=%d)", rc);
+				Log(LOG_ERROR, "disconnected, restarting (rc=%d)", rc);
 			}
 			m_bDoReconnect = true;
 		}
@@ -171,7 +171,7 @@ bool COctoPrintMQTT::ConnectInt()
 bool COctoPrintMQTT::ConnectIntEx()
 {
 	m_bDoReconnect = false;
-	_log.Log(LOG_STATUS, "OCTO_MQTT: Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
 	int keepalive = 60;
@@ -182,17 +182,17 @@ bool COctoPrintMQTT::ConnectIntEx()
 
 		if (rc != MOSQ_ERR_SUCCESS)
 		{
-			_log.Log(LOG_ERROR, "OCTO_MQTT: Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
+			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		_log.Log(LOG_STATUS, "OCTO_MQTT: enabled TLS mode");
+		Log(LOG_STATUS, "enabled TLS mode");
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
 	{
-		_log.Log(LOG_ERROR, "OCTO_MQTT: Failed to start, return code: %d (Check IP/Port)", rc);
+		Log(LOG_ERROR, "Failed to start, return code: %d (Check IP/Port)", rc);
 		m_bDoReconnect = true;
 		return false;
 	}
@@ -259,7 +259,7 @@ void COctoPrintMQTT::Do_Work()
 	if (isConnected())
 		disconnect();
 
-	_log.Log(LOG_STATUS, "OCTO_MQTT: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void COctoPrintMQTT::SendHeartbeat()
@@ -273,14 +273,14 @@ void COctoPrintMQTT::SendMessage(const std::string &Topic, const std::string &Me
 	try {
 		if (!m_IsConnected)
 		{
-			_log.Log(LOG_STATUS, "OCTO_MQTT: Not Connected, failed to send message: %s", Message.c_str());
+			Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
 		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "OCTO_MQTT: Failed to send message: %s", Message.c_str());
+		Log(LOG_ERROR, "Failed to send message: %s", Message.c_str());
 	}
 }
 
@@ -332,9 +332,9 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 	SaveString2Disk(qMessage, "E:\\OCTO_mqtt.json");
 #endif
 #ifdef _DEBUG
-	_log.Log(LOG_NORM, "OCTO_MQTT: Topic: %s", topic.c_str());
+	Log(LOG_NORM, "Topic: %s", topic.c_str());
 #else
-	_log.Debug(DEBUG_HARDWARE, "OCTO_MQTT: Topic: %s", topic.c_str());
+	Debug(DEBUG_HARDWARE, "Topic: %s", topic.c_str());
 #endif
 	if (qMessage.empty())
 		return;
@@ -357,13 +357,13 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 			bool ret = ParseJSon(qMessage, root);
 			if ((!ret) || (!root.isObject()))
 			{
-				_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid data received!");
+				Log(LOG_ERROR, "Invalid data received!");
 				return;
 			}
 
 			if (root["_timestamp"].empty())
 			{
-				_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid data received! (no _timestamp field in JSON payload ?)");
+				Log(LOG_ERROR, "Invalid data received! (no _timestamp field in JSON payload ?)");
 				return;
 			}
 
@@ -371,12 +371,12 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 			{
 				if (strarray.size() < 3)
 				{
-					_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid temperature received!");
+					Log(LOG_ERROR, "Invalid temperature received!");
 					return;
 				}
 				if (root["actual"].empty())
 				{
-					_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid temperature data received! (no actual field in JSON payload ?)");
+					Log(LOG_ERROR, "Invalid temperature data received! (no actual field in JSON payload ?)");
 					return;
 				}
 				std::string szSensorName = strarray[2];
@@ -395,7 +395,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 			{
 				if (strarray.size() < 3)
 				{
-					_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid event received!");
+					Log(LOG_ERROR, "Invalid event received!");
 					return;
 				}
 				std::string szProgrssName = strarray[2];
@@ -403,7 +403,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 				{
 					if (root["progress"].empty())
 					{
-						_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid progress data received! (no progress field in JSON payload ?)");
+						Log(LOG_ERROR, "Invalid progress data received! (no progress field in JSON payload ?)");
 						return;
 					}
 
@@ -440,7 +440,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 			{
 				if (strarray.size() < 3)
 				{
-					_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid event received!");
+					Log(LOG_ERROR, "Invalid event received!");
 					return;
 				}
 				std::string szEventName = strarray[2];
@@ -493,7 +493,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 						//Z-Position changed (new layer)
 						if (root["new"].empty())
 						{
-							_log.Log(LOG_ERROR, "OCTO_MQTT: Invalid ZChange data received! (no new field in JSON payload ?)");
+							Log(LOG_ERROR, "Invalid ZChange data received! (no new field in JSON payload ?)");
 							return;
 						}
 						//SendCustomSensor(1, 1, 255, std::stof(root["new"].asString()), "ZChange", "Z");
@@ -509,7 +509,7 @@ void COctoPrintMQTT::on_message(const struct mosquitto_message *message)
 		}
 		catch (...)
 		{
-			_log.Log(LOG_ERROR, "OCTO_MQTT: Error parsing message!!! (JSON Payload)");
+			Log(LOG_ERROR, "Error parsing message!!! (JSON Payload)");
 			return;
 		}
 	}
