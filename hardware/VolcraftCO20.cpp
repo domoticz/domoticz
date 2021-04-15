@@ -103,11 +103,11 @@ static int read_one_sensor(struct usb_device *dev, uint16_t &value)
 	ret = usb_get_driver_np(devh, 0 /*intrf*/, driver_name, sizeof(driver_name));
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Warning: device is claimed by driver %s, trying to unbind it.", driver_name);
+		_log.Log(LOG_ERROR, "Warning: device is claimed by driver %s, trying to unbind it.", driver_name);
 		ret = usb_detach_kernel_driver_np(devh, 0 /*intrf*/);
 		if (ret)
 		{
-			Log(LOG_ERROR, "Warning: Failed to detatch kernel driver.");
+			_log.Log(LOG_ERROR, "Warning: Failed to detatch kernel driver.");
 			ret = -2;
 			goto out;
 		}
@@ -118,7 +118,7 @@ static int read_one_sensor(struct usb_device *dev, uint16_t &value)
 	ret = usb_claim_interface(devh, 0 /*intrf*/);
 	if (ret)
 	{
-		Log(LOG_ERROR, "usb_claim_interface() failed with error %d=%s", ret, strerror(-ret));
+		_log.Log(LOG_ERROR, "usb_claim_interface() failed with error %d=%s", ret, strerror(-ret));
 		ret = -3;
 		goto out;
 	}
@@ -127,7 +127,7 @@ static int read_one_sensor(struct usb_device *dev, uint16_t &value)
 	ret = usb_interrupt_write(devh, 0x0002 /*endpoint*/, usb_io_buf, 0x10 /*len*/, 1000 /*msec*/);
 	if (ret < 0)
 	{
-		Log(LOG_ERROR, " Failed to usb_interrupt_write() the initial buffer, ret = %d", ret);
+		_log.Log(LOG_ERROR, " Failed to usb_interrupt_write() the initial buffer, ret = %d", ret);
 		ret = -4;
 		goto out_unlock;
 	}
@@ -136,7 +136,7 @@ static int read_one_sensor(struct usb_device *dev, uint16_t &value)
 	ret = usb_interrupt_read(devh, 0x0081 /*endpoint*/, usb_io_buf, 0x10 /*len*/, 1000 /*msec*/);
 	if (ret < 0)
 	{
-		Log(LOG_ERROR, "Failed to usb_interrupt_read() #1");
+		_log.Log(LOG_ERROR, "Failed to usb_interrupt_read() #1");
 		ret = -5;
 		goto out_unlock;
 	}
@@ -170,7 +170,7 @@ out:
 	return ret;
 }
 
-static int get_voc_value(int vendor, int product, uint16_t &voc)
+int get_voc_value(int vendor, int product, uint16_t &voc)
 {
 	voc = 0;
 	struct usb_bus *bus;
