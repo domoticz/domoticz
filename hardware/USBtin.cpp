@@ -132,7 +132,7 @@ void USBtin::Do_Work()
 				switch (m_EtapeInitCan)
 				{
 					case 0:
-						Log(LOG_STATUS, "USBtin: Serial port is now open !");
+						Log(LOG_STATUS, "Serial port is now open !");
 						CloseCanPort(); // more cleaner to close in first, sometimes the gateway maybe already open...
 						memset(&m_USBtinBuffer, 0, sizeof(m_USBtinBuffer));
 						m_USBtinBelErrorCount = 0;
@@ -152,14 +152,14 @@ void USBtin::Do_Work()
 						break;
 					case 4:
 						SetBaudRate250Kbd();
-						// Log(LOG_STATUS, "USBtin: BusCantType value: %d ",Bus_CANType);
+						// Log(LOG_STATUS, "BusCantType value: %d ",Bus_CANType);
 						if ((Bus_CANType & Multibloc_V8) == Multibloc_V8)
-							Log(LOG_STATUS, "USBtin: MultiblocV8 is Selected !");
+							Log(LOG_STATUS, "MultiblocV8 is Selected !");
 						if ((Bus_CANType & FreeCan) == FreeCan)
-							Log(LOG_STATUS, "USBtin: FreeCAN is Selected !");
+							Log(LOG_STATUS, "FreeCAN is Selected !");
 
 						if (Bus_CANType == 0)
-							Log(LOG_ERROR, "USBtin: WARNING: No Can management Selected !");
+							Log(LOG_ERROR, "WARNING: No Can management Selected !");
 						m_EtapeInitCan++;
 						break;
 					case 5: // openning can port :
@@ -184,7 +184,7 @@ void USBtin::Do_Work()
 		{
 			if (m_USBtinRetrycntr == 0)
 			{
-				Log(LOG_STATUS, "USBtin: serial retrying in %d seconds...", USBTIN_RETRY_DELAY);
+				Log(LOG_STATUS, "serial retrying in %d seconds...", USBTIN_RETRY_DELAY);
 			}
 			m_USBtinRetrycntr++;
 			if (m_USBtinRetrycntr / 5 >= USBTIN_RETRY_DELAY)
@@ -200,7 +200,7 @@ void USBtin::Do_Work()
 	terminate();
 	m_EtapeInitCan = 0;
 
-	Log(LOG_STATUS, "USBtin: Can Gateway stopped, goodbye !");
+	Log(LOG_STATUS, "Can Gateway stopped, goodbye !");
 }
 
 bool USBtin::OpenSerialDevice()
@@ -208,12 +208,12 @@ bool USBtin::OpenSerialDevice()
 	// Try to open the Serial Port
 	try
 	{
-		Log(LOG_STATUS, "USBtin: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 		open(m_szSerialPort, 115200);
 	}
 	catch (boost::exception &e)
 	{
-		Log(LOG_ERROR, "USBtin: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
 		Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
@@ -223,7 +223,7 @@ bool USBtin::OpenSerialDevice()
 	}
 	catch (...)
 	{
-		Log(LOG_ERROR, "USBtin: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
 
@@ -243,7 +243,7 @@ void USBtin::readCallback(const char *data, size_t len)
 		return; // receiving not enabled
 	if (len > sizeof(m_USBtinBuffer))
 	{
-		Log(LOG_ERROR, "USBtin: Warning Error buffer size reaches/ maybe Can is overrun...");
+		Log(LOG_ERROR, "Warning Error buffer size reaches/ maybe Can is overrun...");
 		return;
 	}
 	ParseData(data, static_cast<int>(len));
@@ -251,8 +251,7 @@ void USBtin::readCallback(const char *data, size_t len)
 
 void USBtin::ParseData(const char *pData, int Len)
 {
-	char value[30] = "";
-	std::string vString;
+	char value[30];
 
 	int ii = 0;
 	while (ii < Len)
@@ -265,12 +264,12 @@ void USBtin::ParseData(const char *pData, int Len)
 			m_USBtinBelErrorCount++;
 			if (m_USBtinBelErrorCount > 3)
 			{ // If more than 3 BEL receive : restart the Gateway !
-				Log(LOG_ERROR, "USBtin: 3x times BEL signal receive : restart gateway ");
+				Log(LOG_ERROR, "3x times BEL signal receive : restart gateway");
 				RestartWithDelay(3);
 			}
 			else
 			{
-				Log(LOG_ERROR, "USBtin: BEL signal (commande allready active or Gateway error) ! ");
+				Log(LOG_ERROR, "BEL signal (commande allready active or Gateway error) !");
 			}
 			m_USBtinBufferpos = 0;
 		}
@@ -280,36 +279,37 @@ void USBtin::ParseData(const char *pData, int Len)
 			m_USBtinBelErrorCount = 0;
 			if (m_USBtinBuffer[0] == USBTIN_HARDWARE_VERSION)
 			{
+				memset(value, 0, sizeof(value));
 				strncpy(value, (char *)&(m_USBtinBuffer[1]), 4);
-				Log(LOG_STATUS, "USBtin: Hardware Version: %s", value);
+				Log(LOG_STATUS, "Hardware Version: %s", value);
 			}
 			else if (m_USBtinBuffer[0] == USBTIN_FIRMWARE_VERSION)
 			{
+				memset(value, 0, sizeof(value));
 				strncpy(value, (char *)&(m_USBtinBuffer[1]), 4);
-				Log(LOG_STATUS, "USBtin: Firware Version: %s", value);
+				Log(LOG_STATUS, "Firware Version: %s", value);
 			}
 			else if (m_USBtinBuffer[0] == USBTIN_SERIAL_NUMBER)
 			{
+				memset(value, 0, sizeof(value));
 				strncpy(value, (char *)&(m_USBtinBuffer[1]), 4);
-				Log(LOG_STATUS, "USBtin: Serial Number: %s", value);
+				Log(LOG_STATUS, "Serial Number: %s", value);
 			}
 			else if (m_USBtinBuffer[0] == USBTIN_CR)
 			{
-				Log(LOG_STATUS, "USBtin: return OK :-)");
+				Log(LOG_STATUS, "return OK :-)");
 			}
 			else if (m_USBtinBuffer[0] == USBTIN_EXT_TRAME_RECEIVE)
 			{							 // Receive Extended Frame :
+				memset(value, 0, sizeof(value));
 				strncpy(value, (char *)&(m_USBtinBuffer[1]), 8); // take the "Extended ID" CAN parts and paste it in the char table
 				int IDhexNumber;
 				sscanf(value, "%x", &IDhexNumber); // IDhexNumber now contains the the digital value of the Ext ID
 
-				memset(&value[0], 0, sizeof(value));
-
+				memset(value, 0, sizeof(value));
 				strncpy(value, (char *)&(m_USBtinBuffer[9]), 1); // read the DLC (lenght of message)
 				int DLChexNumber;
 				sscanf(value, "%x", &DLChexNumber);
-
-				memset(&value[0], 0, sizeof(value));
 
 				unsigned int Buffer_Octets[8] = {}; // buffer of 8 bytes(max in the frame)
 
@@ -320,11 +320,11 @@ void USBtin::ParseData(const char *pData, int Len)
 					{
 						ValData = 0;
 
+						memset(value, 0, sizeof(value));
 						strncpy(value, (char *)&(m_USBtinBuffer[10 + (2 * i)]), 2); // to fill the Buffer of 8 bytes
 						sscanf(value, "%x", &ValData);
 
 						Buffer_Octets[i] = ValData;
-						memset(&value[0], 0, sizeof(value));
 					}
 				}
 
@@ -333,30 +333,30 @@ void USBtin::ParseData(const char *pData, int Len)
 					Traitement_MultiblocV8(IDhexNumber, DLChexNumber, Buffer_Octets);
 					// So in debug mode we can check good reception after treatment :
 					if (m_BOOL_USBtinDebug == true)
-						Log(LOG_NORM, "USBtin: Traitement trame multiblocV8 : #%s#", m_USBtinBuffer);
+						Log(LOG_NORM, "Traitement trame multiblocV8 : #%s#", m_USBtinBuffer);
 				}
 
 				if (Bus_CANType == 0)
 				{ // No management !
 					if (m_BOOL_USBtinDebug == true)
-						Log(LOG_NORM, "USBtin: Frame receive not managed: #%s#", m_USBtinBuffer);
+						Log(LOG_NORM, "Frame receive not managed: #%s#", m_USBtinBuffer);
 				}
 			}
 			else if (m_USBtinBuffer[0] == USBTIN_NOR_TRAME_RECEIVE)
 			{	// Receive Normale Frame (ie: ID is not extended)
-				// Log(LOG_NORM,"USBtin: Normale Frame receive : #%s#",m_buffer);
+				// Log(LOG_NORM,"Normale Frame receive : #%s#",m_buffer);
 			}
 			else if (m_USBtinBuffer[0] == USBTIN_GOODSENDING_NOR_TRAME || m_USBtinBuffer[0] == USBTIN_GOODSENDING_EXT_TRAME)
 			{
 				// The Gateway answers USBTIN_GOODSENDING_NOR_TRAME or USBTIN_GOODSENDING_EXT_TRAME each times a frame is sent correctly
 				if (m_BOOL_USBtinDebug == true)
-					Log(LOG_NORM, "USBtin: Frame Send OK !"); // So in debug mode we CAN check it, convenient way to check
+					Log(LOG_NORM, "Frame Send OK !"); // So in debug mode we CAN check it, convenient way to check
 				// if the CAN communication is in good life ;-)
 			}
 			else
 			{ // over things here...
 				if (m_BOOL_USBtinDebug == true)
-					Log(LOG_ERROR, "USBtin: receive command not supported : #%s#", m_USBtinBuffer);
+					Log(LOG_ERROR, "receive command not supported : #%s#", m_USBtinBuffer);
 			}
 			// rreset of the pointer here
 			m_USBtinBufferpos = 0;
@@ -378,7 +378,7 @@ bool USBtin::writeFrame(const std::string &data)
 		return false;
 	}
 	if (m_BOOL_USBtinDebug == true)
-		Log(LOG_NORM, "USBtin: write frame to Can Gateway: #%s# ", data.c_str());
+		Log(LOG_NORM, "write frame to Can Gateway: #%s# ", data.c_str());
 	std::string frame;
 	frame.append(data);
 	frame.append("\x0D"); // add the "carry return" at end
@@ -404,19 +404,19 @@ void USBtin::GetFWVersion()
 }
 void USBtin::SetBaudRate250Kbd()
 {
-	Log(LOG_STATUS, "USBtin: Setting Can speed to 250Kb/s");
+	Log(LOG_STATUS, "Setting Can speed to 250Kb/s");
 	std::string data("S5");
 	writeFrame(data);
 }
 void USBtin::OpenCanPort()
 {
-	Log(LOG_STATUS, "USBtin: Openning Canport...");
+	Log(LOG_STATUS, "Openning Canport...");
 	std::string data("O");
 	writeFrame(data);
 }
 void USBtin::CloseCanPort()
 {
-	Log(LOG_STATUS, "USBtin: Closing Canport...");
+	Log(LOG_STATUS, "Closing Canport...");
 	std::string data("C");
 	writeFrame(data);
 }
