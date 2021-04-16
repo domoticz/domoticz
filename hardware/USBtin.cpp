@@ -125,11 +125,12 @@ void USBtin::Do_Work()
 
 			if (isOpen()) //Serial port open, we can initiate the Can BUS :
 			{
-				switch(m_EtapeInitCan){
-					case 0 :
+				switch (m_EtapeInitCan)
+				{
+					case 0:
 						Log(LOG_STATUS, "USBtin: Serial port is now open !");
-						CloseCanPort(); //more cleaner to close in first, sometimes the gateway maybe already open...
-						memset(&m_USBtinBuffer,0,sizeof(m_USBtinBuffer));
+						CloseCanPort(); // more cleaner to close in first, sometimes the gateway maybe already open...
+						memset(&m_USBtinBuffer, 0, sizeof(m_USBtinBuffer));
 						m_USBtinBelErrorCount = 0;
 						m_EtapeInitCan++;
 						break;
@@ -193,7 +194,7 @@ void USBtin::Do_Work()
 	terminate();
 	m_EtapeInitCan = 0;
 
-	Log(LOG_STATUS, "USBtin: Can Gateway stopped, goodbye !");
+	Log(LOG_STATUS, "Can Gateway stopped, goodbye !");
 }
 
 bool USBtin::OpenSerialDevice()
@@ -216,7 +217,7 @@ bool USBtin::OpenSerialDevice()
 	}
 	catch (...)
 	{
-		Log(LOG_ERROR, "USBtin: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
 
@@ -243,8 +244,7 @@ void USBtin::readCallback(const char *data, size_t len)
 
 void USBtin::ParseData(const char *pData, int Len)
 {
-	char value[30] = "";
-	std::string vString;
+	char value[30];
 
 	int ii = 0;
 	while (ii<Len)
@@ -384,13 +384,13 @@ void USBtin::SetBaudRate250Kbd()
 }
 void USBtin::OpenCanPort()
 {
-	Log(LOG_STATUS, "USBtin: Openning Canport...");
+	Log(LOG_STATUS, "Openning Canport...");
 	std::string data("O");
 	writeFrame(data);
 }
 void USBtin::CloseCanPort()
 {
-	Log(LOG_STATUS, "USBtin: Closing Canport...");
+	Log(LOG_STATUS, "Closing Canport...");
 	std::string data("C");
 	writeFrame(data);
 }
