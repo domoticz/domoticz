@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "RFXComTCP.h"
 #include "../main/Logger.h"
-//#include <boost/bind.hpp>
-//#include <boost/asio.hpp>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
@@ -18,10 +16,6 @@ RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_bReceiverStarted = false;
 }
 
-RFXComTCP::~RFXComTCP(void)
-{
-}
-
 bool RFXComTCP::StartHardware()
 {
 	RequestStart();
@@ -33,7 +27,7 @@ bool RFXComTCP::StartHardware()
 	m_rxbufferpos=0;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&RFXComTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -72,7 +66,7 @@ void RFXComTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();

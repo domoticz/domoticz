@@ -42,11 +42,6 @@ CTeleinfoBase::CTeleinfoBase()
 	InitTeleinfo();
 }
 
-
-CTeleinfoBase::~CTeleinfoBase()
-{
-}
-
 void CTeleinfoBase::InitTeleinfo()
 {
 	m_bufferpos = 0;
@@ -95,12 +90,12 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	int alertI1, alertI2, alertI3, alertEJP, alertPPOT;
 	char szTmp[100];
 	std::string message;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 
 	// We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
 	if ((rank < 1) || (rank > 4))
 	{
-		_log.Log(LOG_ERROR, "(%s) TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", m_Name.c_str(), rank);
+		Log(LOG_ERROR, "Invalid rank passed to function (%i), must be between 1 and 4", rank);
 		return;
 	}
 	rank = rank - 1;		// Now it is 0 to 3
@@ -158,7 +153,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	// Process only if maximum time between updates (5mn) has been reached (or power consumption changed => removed)
 	// If it did not, then alerts and intensity have not changed either
 #ifdef DEBUG_TeleinfoBase
-	_log.Log(LOG_NORM, "(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", m_Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP) ? "true" : "false", difftime(atime, teleinfo.last));
+	Log(LOG_NORM, "TeleinfoBase called. Power changed: %s, last update %.f sec", (teleinfo.pAlertPAPP != teleinfo.PAPP) ? "true" : "false", difftime(atime, teleinfo.last));
 #endif
 	// 1.6 version: if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
 
@@ -172,12 +167,12 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			if (teleinfo.OPTARIF == "BASE")
 			{
 #ifdef DEBUG_TeleinfoBase
-				_log.Log(LOG_STATUS, "Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
+				Log(LOG_STATUS, "Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
 #endif
 				teleinfo.tariff = "Tarif de Base";
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255, nullptr);
 			}
 			else if (teleinfo.OPTARIF == "HC..")
 			{
@@ -186,7 +181,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendKwhMeter(m_HwdID, 32 * rank + 4, 255, m_pappHP, teleinfo.HCHP / 1000.0, name + " kWh Heures Pleines");
 				m_p1power.powerusage1 = teleinfo.HCHP;
 				m_p1power.powerusage2 = teleinfo.HCHC;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255, nullptr);
 			}
 			else if (teleinfo.OPTARIF == "EJP.")
 			{
@@ -195,7 +190,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendKwhMeter(m_HwdID, 32 * rank + 7, 255, m_pappHP, teleinfo.EJPHPM / 1000.0, name + " kWh Pointe Mobile");
 				m_p1power.powerusage1 = teleinfo.EJPHPM;
 				m_p1power.powerusage2 = teleinfo.EJPHN;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255, nullptr);
 				alertEJP = (teleinfo.PEJP == 30) ? 4 : 1;
 				if (alertEJP != teleinfo.pAlertEJP)
 				{
@@ -255,9 +250,9 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				m_p3power.powerusage1 = teleinfo.BBRHPJR;
 				m_p3power.powerusage2 = teleinfo.BBRHCJR;
 				m_p3power.usagecurrent = m_pappHCJR + m_pappHPJR;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + "kWh Jours Bleus").c_str(), 255);
-				sDecodeRXMessage(this, (const unsigned char *)&m_p2power, (name + "kWh Jours Blancs").c_str(), 255);
-				sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "kWh Jours Rouges").c_str(), 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + "kWh Jours Bleus").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p2power, (name + "kWh Jours Blancs").c_str(), 255, nullptr);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "kWh Jours Rouges").c_str(), 255, nullptr);
 				if (color_alert != teleinfo.pAlertColor)
 				{
 					SendAlertSensor(32 * rank + 2, 255, color_alert, "Jour " + teleinfo.color, name + " Couleur du jour");
@@ -409,7 +404,7 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 		if (isMode1 != (int)true)// This will evaluate to false when isMode still equals to 255 at second run
 		{
 			isMode1 = true;
-			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", m_Name.c_str());
+			Log(LOG_STATUS, "CRC check mode set to 1");
 		}
 	}
 	else if (mode2 == checksum)
@@ -418,16 +413,16 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 		if (isMode1 != false)	 // if this is first run, will still be at 255
 		{
 			isMode1 = false;
-			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", m_Name.c_str());
+			Log(LOG_STATUS, "CRC check mode set to 2");
 		}
 	}
 	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
 		if (isMode1 != 255)
-			_log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", m_Name.c_str(), sLine.c_str());
+			Log(LOG_ERROR, "CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", sLine.c_str());
 
 	if (line_ok)
 	{
-		_log.Debug(DEBUG_HARDWARE, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", m_Name.c_str(), sLine.c_str());
+		Debug(DEBUG_HARDWARE, "CRC check passed on Teleinfo line '%s'. Line processed", sLine.c_str());
 	}
 
 	return line_ok;
@@ -440,12 +435,12 @@ void CTeleinfoBase::MatchLine()
 	unsigned long value;
 	std::string sline(m_buffer);
 
-	_log.Debug(DEBUG_HARDWARE, "Frame : #%s#", sline.c_str());
+	Debug(DEBUG_HARDWARE, "Frame : #%s#", sline.c_str());
 
 	// Is the line we got worth analysing any further?
 	if ((sline.size() < 4) || (sline[0] == 0x0a))
 	{
-		_log.Debug(DEBUG_HARDWARE, "Frame #%s# ignored, too short or irrelevant", sline.c_str());
+		Debug(DEBUG_HARDWARE, "Frame #%s# ignored, too short or irrelevant", sline.c_str());
 		return;
 	}
 
@@ -453,7 +448,7 @@ void CTeleinfoBase::MatchLine()
 	StringSplit(sline, " ", splitresults);
 	if (splitresults.size() < 3)
 	{
-		_log.Log(LOG_ERROR, "Frame #%s# passed the checksum test but failed analysis", sline.c_str());
+		Log(LOG_ERROR, "Frame #%s# passed the checksum test but failed analysis", sline.c_str());
 		return;
 	}
 
@@ -493,7 +488,7 @@ void CTeleinfoBase::MatchLine()
 	if (m_counter >= m_iBaudRate / 600)
 	{
 		m_counter = 0;
-		_log.Debug(DEBUG_HARDWARE, "(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", m_Name.c_str(), m_teleinfo.PAPP, m_teleinfo.PTEC.c_str());
+		Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str());
 		ProcessTeleinfo(m_teleinfo);
 		mytime(&m_LastHeartbeat);// keep heartbeat happy
 	}

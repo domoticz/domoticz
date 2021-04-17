@@ -26,27 +26,29 @@ enum _eMochadType {
 	MOCHAD_RFSEC
 };
 
-typedef struct {
+using MochadMatch = struct
+{
 	_eMochadMatchType matchtype;
 	_eMochadType type;
 	const char* key;
 	int start;
 	int width;
-} MochadMatch;
-
-static MochadMatch matchlist[] = {
-	{STD,	MOCHAD_STATUS,	"House ",	6, 255},
-	{STD,	MOCHAD_UNIT,	"Tx PL HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_UNIT,	"Rx PL HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_UNIT,	"Tx RF HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_UNIT,	"Rx RF HouseUnit: ",	17, 9},
-	{STD,	MOCHAD_ACTION,	"Tx PL House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Rx PL House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Tx RF House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Rx RF House: ",	13, 9},
-	{STD,	MOCHAD_RFSEC,	"Rx RFSEC Addr: ",	15, 8 }
 };
 
+constexpr std::array<MochadMatch, 10> matchlist{
+	{
+		{ STD, MOCHAD_STATUS, "House ", 6, 255 },	  //
+		{ STD, MOCHAD_UNIT, "Tx PL HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_UNIT, "Rx PL HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_UNIT, "Tx RF HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_UNIT, "Rx RF HouseUnit: ", 17, 9 }, //
+		{ STD, MOCHAD_ACTION, "Tx PL House: ", 13, 9 },	  //
+		{ STD, MOCHAD_ACTION, "Rx PL House: ", 13, 9 },	  //
+		{ STD, MOCHAD_ACTION, "Tx RF House: ", 13, 9 },	  //
+		{ STD, MOCHAD_ACTION, "Rx RF House: ", 13, 9 },	  //
+		{ STD, MOCHAD_RFSEC, "Rx RFSEC Addr: ", 15, 8 },  //
+	}							  //
+};
 //end
 
 MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
@@ -84,10 +86,6 @@ MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned 
 	currentUnit=0;
 }
 
-MochadTCP::~MochadTCP(void)
-{
-}
-
 bool MochadTCP::StartHardware()
 {
 	RequestStart();
@@ -97,7 +95,7 @@ bool MochadTCP::StartHardware()
 //	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MochadTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -117,7 +115,7 @@ bool MochadTCP::StopHardware()
 
 void MochadTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -125,7 +123,7 @@ void MochadTCP::OnConnect()
 
 void MochadTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS, "Mochad: disconnected");
+	Log(LOG_STATUS, "disconnected");
 }
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
@@ -135,7 +133,7 @@ void MochadTCP::OnData(const unsigned char *pData, size_t length)
 
 void MochadTCP::Do_Work()
 {
-	_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	int sec_counter = 0;
 	connect(m_szIPAddress, m_usIPPort);
 	while (!IsStopRequested(1000))
@@ -144,12 +142,12 @@ void MochadTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"Mochad: TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"TCP/IP Worker stopped...");
 }
 
 void MochadTCP::OnError(const boost::system::error_code& error)
@@ -162,17 +160,17 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
 		(error == boost::asio::error::connection_reset)
 		)
 	{
-		_log.Log(LOG_STATUS, "Mochad: Connection reset!");
+		Log(LOG_STATUS, "Connection reset!");
 	}
 	else
-		_log.Log(LOG_ERROR, "Mochad: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
 bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -191,10 +189,10 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char /*length*
 //			case light1_sBright:
 //			case light1_sAllOn:
 //			case light1_sAllOff:
-		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d", pdata[1],pdata[2],pdata[6]);
+		Log(LOG_STATUS, "Unknown command %d:%d:%d", pdata[1],pdata[2],pdata[6]);
 		return false;
 	}
-//	_log.Log(LOG_STATUS, "Mochad: send '%s'", s_buffer);
+//	Log(LOG_STATUS, "send '%s'", s_buffer);
 	write((const unsigned char *)s_buffer, strlen(s_buffer));
 	return true;
 }
@@ -203,55 +201,56 @@ void MochadTCP::MatchLine()
 {
 	if ((strlen((const char*)&m_mochadbuffer)<1)||(m_mochadbuffer[0]==0x0a))
 		return; //null value (startup)
-	uint8_t i;
+
 	int j,k;
-	uint8_t found=0;
+	bool found = false;
 	MochadMatch t;
-	char value[20]="";
-	std::string vString;
 
-
-
-	for(i=0;(i<sizeof(matchlist)/sizeof(MochadMatch))&(!found);i++)
+	for (const auto &m : matchlist)
 	{
-		t = matchlist[i];
+		if (found)
+		{
+			break;
+		}
+
+		t = m;
 		switch(t.matchtype)
 		{
 		case ID:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				m_linecount=1;
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			m_linecount = 1;
+			found = true;
 			break;
 		case STD:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			found = true;
 			break;
 		case LINE17:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				m_linecount = 17;
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			m_linecount = 17;
+			found = true;
 			break;
 		case LINE18:
 			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0)) {
-				found=1;
+				found = true;
 			}
 			break;
 		case EXCLMARK:
-			if(strncmp(t.key, (const char*)&m_mochadbuffer, strlen(t.key)) == 0) {
-				m_exclmarkfound=1;
-				found=1;
-			}
-			else
+			if (strncmp(t.key, (const char *)&m_mochadbuffer, strlen(t.key)) != 0)
+			{
 				continue;
+			}
+			m_exclmarkfound = 1;
+			found = true;
 			break;
 		default:
 			continue;
@@ -278,7 +277,7 @@ void MochadTCP::MatchLine()
 				return;
 			if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '1')) goto onError;
 			m_mochad.LIGHTING1.cmnd = m_mochadbuffer[j++] - '0';
-			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, nullptr, 255, m_Name.c_str());
 			if (!(','==  m_mochadbuffer[j++])) return;
 		}
 		break;
@@ -309,14 +308,14 @@ checkFunc:
 		if (!(' '==  m_mochadbuffer[j++])) goto onError;
 		if (!('O'==  m_mochadbuffer[j++])) goto onError;
 		if ('f'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 0;
-		else
-		if ('n'==  m_mochadbuffer[j]) m_mochad.LIGHTING1.cmnd = 1;
+		else if ('n' == m_mochadbuffer[j])
+			m_mochad.LIGHTING1.cmnd = 1;
 		else goto onError;
 		for (k=1;k<=16;k++) {
 			if (selected[currentHouse][k] >0) {
 				m_mochad.LIGHTING1.housecode = (BYTE)(currentHouse+'A');
 				m_mochad.LIGHTING1.unitcode = (BYTE)k;
-				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, nullptr, 255, m_Name.c_str());
 				selected[currentHouse][k] = 0;
 			}
 		}
@@ -335,7 +334,7 @@ checkFunc:
 			// parse sensor conditions, e.g. "Contact_alert_min_DS10A" or "'Contact_normal_max_low_DS10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != NULL)
+			while (pchar != nullptr)
 			{
 				if (strcmp(pchar, "alert") == 0)
 					m_mochadsec.SECURITY1.status = sStatusAlarm;
@@ -350,7 +349,7 @@ checkFunc:
 				}
 				else if (strcmp(pchar, "low") == 0)
 					m_mochadsec.SECURITY1.battery_level = 1;
-				pchar = strtok(NULL, " _");
+				pchar = strtok(nullptr, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12; // signal strength ?? 12 = no signal strength
 		}
@@ -363,7 +362,7 @@ checkFunc:
 			// parse remote conditions, e.g. "Panic_KR10A" "Lights_On_KR10A" "Lights_Off_KR10A" "Disarm_KR10A" "Arm_KR10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != NULL)
+			while (pchar != nullptr)
 			{
 				if (strcmp(pchar, "Panic") == 0)
 					m_mochadsec.SECURITY1.status = sStatusPanic;
@@ -375,7 +374,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusLightOn;
 				else if (strcmp(pchar, "Off") == 0)
 					m_mochadsec.SECURITY1.status = sStatusLightOff;
-				pchar = strtok(NULL, " _");
+				pchar = strtok(nullptr, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}
@@ -388,7 +387,7 @@ checkFunc:
 			// parse remote conditions, "Motion_alert_MS10A" and "Motion_normal_MS10A"
 			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
 			pchar = strtok(tempRFSECbuf, " _");
-			while (pchar != NULL)
+			while (pchar != nullptr)
 			{
 				if (strcmp(pchar, "alert") == 0)
 					m_mochadsec.SECURITY1.status = sStatusMotion;
@@ -396,19 +395,19 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusNoMotion;
 				else if (strcmp(pchar, "low") == 0)
 					m_mochadsec.SECURITY1.battery_level = 1;
-				pchar = strtok(NULL, " _");
+				pchar = strtok(nullptr, " _");
 			}
 			m_mochadsec.SECURITY1.rssi = 12;
 		}
 		else
 			goto onError;
 
-		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, nullptr, 255, m_Name.c_str());
 		break;
 	}
 	return;
 onError:
-	_log.Log(LOG_ERROR, "Mochad: Cannot decode '%s'", m_mochadbuffer);
+	Log(LOG_ERROR, "Cannot decode '%s'", m_mochadbuffer);
 
 }
 
@@ -437,7 +436,7 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 					i++;
 				}
 				m_mochadbuffer[i] = 0;
-//				_log.Log(LOG_STATUS, "Mochad: recv '%s'", m_mochadbuffer);
+//				Log(LOG_STATUS, "recv '%s'", m_mochadbuffer);
 				MatchLine();
 			}
 			m_bufferpos = 0;

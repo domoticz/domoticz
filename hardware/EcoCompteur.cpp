@@ -30,10 +30,6 @@ CEcoCompteur::CEcoCompteur(const int ID, const std::string& url, const unsigned 
 	Init();
 }
 
-CEcoCompteur::~CEcoCompteur(void)
-{
-}
-
 void CEcoCompteur::Init()
 {
 }
@@ -49,7 +45,7 @@ bool CEcoCompteur::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CEcoCompteur::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -72,18 +68,18 @@ void CEcoCompteur::Do_Work()
 {
 	int sec_counter = m_refresh - 5; // Start 5 sec before refresh
 
-	_log.Log(LOG_STATUS, "EcoCompteur: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % m_refresh == 0) {
 			GetScript();
 		}
 	}
-	_log.Log(LOG_STATUS, "EcoCompteur: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void CEcoCompteur::GetScript()
@@ -95,14 +91,14 @@ void CEcoCompteur::GetScript()
 	szURL << m_url << ":" << m_port << "/inst.json";
 	if (!HTTPClient::GET(szURL.str(), sInst))
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'inst.json' from url : " + m_url);
+		Log(LOG_ERROR, "Error getting 'inst.json' from url : " + m_url);
 		return;
 	}
 	// Parse inst.json
 	Json::Value root;
 	if (!ParseJSon(sInst, root))
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: Error parsing JSON from url : " + m_url);
+		Log(LOG_ERROR, "Error parsing JSON from url : " + m_url);
 		return;
 	}
 
@@ -111,14 +107,14 @@ void CEcoCompteur::GetScript()
 	szLogURL << m_url << ":" << m_port << "/log2.csv";
 	if (!HTTPClient::GET(szLogURL.str(), sLog2))
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'log2.csv' from url : " + m_url);
+		Log(LOG_ERROR, "Error getting 'log2.csv' from url : " + m_url);
 		return;
 	}
 
 	// Parse log2.csv
 	if (sLog2.length() == 0)
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: log2.csv looks empty");
+		Log(LOG_ERROR, "log2.csv looks empty");
 		return;
 	}
 	size_t position = sLog2.rfind("\r\n",sLog2.length()-3);	// Looking for the beginning of lastline

@@ -23,7 +23,7 @@ define(['app', 'livesocket'], function(app) {
                 $ctrl.isSaving = true;
                 var mainDevice = $ctrl.isMainDevice ? undefined : $ctrl.mainDevice;
 
-                deviceApi.includeDevice($ctrl.device.idx, $ctrl.device.Name, mainDevice)
+                deviceApi.setDeviceUsed($ctrl.device.idx, true, $ctrl.device.Name, mainDevice)
                     .then($scope.$close);
             }
         }
@@ -132,7 +132,7 @@ define(['app', 'livesocket'], function(app) {
 
                     bootbox.confirm('Are you sure to remove this Device from your used devices?')
                         .then(function() {
-                            return deviceApi.excludeDevice(row.idx);
+                            return deviceApi.setDeviceUsed(row.idx, false);
                         })
                         .then($ctrl.onUpdate);
 
@@ -316,6 +316,7 @@ define(['app', 'livesocket'], function(app) {
                 var isToggleAvailable =
                     (['Light/Switch', 'Lighting 2'].includes(device.Type) && [0, 7, 9, 10].includes(device.SwitchTypeVal))
                     || device.Type === 'Color Switch'
+                    || device.Type === 'Chime'
                     || device.isScene();
 
                 if (isToggleAvailable) {
@@ -330,6 +331,7 @@ define(['app', 'livesocket'], function(app) {
                 var actions = [];
                 var logLink = device.getLogLink();
                 var isScene = device.isScene();
+                var isCustomLog = device.isCustomLog();
 
                 if (isScene) {
                     actions.push('<img src="images/empty16.png">');
@@ -345,8 +347,8 @@ define(['app', 'livesocket'], function(app) {
                     actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
-                } else {
-                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>')
+                } else if (isCustomLog) {
+					actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
                 }
 
                 actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
@@ -623,8 +625,17 @@ define(['app', 'livesocket'], function(app) {
                     if (response.result !== undefined) {
                         $ctrl.devices = response.result
                             .map(function(item) {
-                                var isScene = ['Group', 'Scene'].includes(item.Type);
+                                if (item.HardwareTypeVal == 21) {
+                                    var ZWID = item.ID.substr(-4, 2);
+                                    if (ZWID == '00') {
+                                        ZWID = item.ID.substr(-2, 2);
+                                    }
+                                    ZWID = '0x' + ZWID;
+                                    var ZWIDdec =  ("00" + parseInt(ZWID)).slice(-3);
+                                    item.HardwareName = item.HardwareName + " " + ZWIDdec + ' (' + ZWID + ')';   
+                                }
 
+                                var isScene = ['Group', 'Scene'].includes(item.Type);
                                 if (isScene) {
                                     item.HardwareName = 'Domoticz';
                                     item.ID = '-';

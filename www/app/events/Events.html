@@ -5,7 +5,7 @@
 	<div class="events-editor">
 		<section class="events-editor__tree" ng-show="$ctrl.isListExpanded">
 			<h2>{{:: 'My automation scripts' | translate }}</h2>
-			<input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="{{:: 'Filter' | translate }}" />
+			<input class="events-editor__search" type="search" ng-model="$ctrl.search.name" placeholder="{{:: 'Filter' | translate }}">
 			<nav class="events-editor-tree">
 				<li class="events-editor-tree-item"
 					ng-class="{
@@ -103,8 +103,7 @@
 
 			<events-current-states
 				class="events-editor-file events-editor__file-content"
-				ng-show="$ctrl.activeEventId === 'states'"
-			/>
+				ng-show="$ctrl.activeEventId === 'states'"></events-current-states>
 
 			<event-viewer
 					class="events-editor-file events-editor__file-content"
@@ -112,8 +111,7 @@
 					ng-show="event.id === $ctrl.activeEventId"
 					event="event"
 					on-update="$ctrl.updateEvent(event)"
-					on-delete="$ctrl.deleteEvent(event)"
-			/>
+					on-delete="$ctrl.deleteEvent(event)"></event-viewer>
 		</section>
 	</div>
 </div>

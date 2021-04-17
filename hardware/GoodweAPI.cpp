@@ -65,10 +65,10 @@
 // Status values
 #define STATUS_WAITING 0
 #define STATUS_NORMAL 1
-// 2 is unknown 
+// 2 is unknown
 #define STATUS_OFFLINE 3
 
-// Child Indexes 
+// Child Indexes
 #define IDX_KWH 0
 #define IDX_STATUS 1
 #define IDX_ERRORMSG 2
@@ -83,17 +83,16 @@
 #define IDX_CUR_S1 11
 #define IDX_CUR_S2 12
 
-
-enum _eGoodweLocation {
-	GOODWE_LOCATION_GLOBAL= 0,      // Global server
-	GOODWE_LOCATION_OCEANIA = 1,    // Australian server
-	GOODWE_LOCATION_EUROPE = 2      // European server
+enum _eGoodweLocation
+{
+	GOODWE_LOCATION_GLOBAL = 0,  // Global server
+	GOODWE_LOCATION_OCEANIA = 1, // Australian server
+	GOODWE_LOCATION_EUROPE = 2   // European server
 };
 
 #ifdef _DEBUG
-	//#define DEBUG_GoodweAPIW 1
+//#define DEBUG_GoodweAPIW 1
 #endif
-
 
 #ifdef DEBUG_GoodweAPIW
 void SaveString2Disk(const std::string &str, const std::string &filename)
@@ -107,10 +106,10 @@ void SaveString2Disk(const std::string &str, const std::string &filename)
 }
 #endif
 
-GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int ServerLocation):
-	m_UserName(userName)
+GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int ServerLocation)
+	: m_UserName(userName)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	switch ((_eGoodweLocation)ServerLocation)
 	{
 		case GOODWE_LOCATION_EUROPE:
@@ -126,10 +125,6 @@ GoodweAPI::GoodweAPI(const int ID, const std::string &userName, const int Server
 	Init();
 }
 
-GoodweAPI::~GoodweAPI(void)
-{
-}
-
 void GoodweAPI::Init()
 {
 }
@@ -139,10 +134,10 @@ bool GoodweAPI::StartHardware()
 	RequestStart();
 
 	Init();
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&GoodweAPI::Do_Work, this);
+	// Start worker thread
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 	return (m_thread != nullptr);
 }
@@ -155,44 +150,43 @@ bool GoodweAPI::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-    m_bIsStarted=false;
-    return true;
+	m_bIsStarted = false;
+	return true;
 }
 
 void GoodweAPI::Do_Work()
 {
-	_log.Log(LOG_STATUS, "GoodweAPI Worker started, using server URL %s...", m_Host.c_str());
+	Log(LOG_STATUS, "Worker started, using server URL %s...", m_Host.c_str());
 	int sec_counter = 295;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+		if (sec_counter % 12 == 0)
+		{
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 300 == 0)
 		{
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"GoodweAPI Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
-bool GoodweAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
+bool GoodweAPI::WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
 }
 
 void GoodweAPI::SendCurrentSensor(const int NodeID, const uint8_t ChildID, const int /*BatteryLevel*/, const float Amp, const std::string &defaultname)
 {
-
-        _tGeneralDevice gDevice;
-        gDevice.subtype = sTypeCurrent;
-        gDevice.id = ChildID;
-        gDevice.intval1 = (NodeID << 8) | ChildID;
-        gDevice.floatval1 = Amp;
-        sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeCurrent;
+	gDevice.id = ChildID;
+	gDevice.intval1 = (NodeID << 8) | ChildID;
+	gDevice.floatval1 = Amp;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255, nullptr);
 }
-
 
 int GoodweAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 {
@@ -209,12 +203,12 @@ int GoodweAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
 		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
 
-		if (bGetSunRise) {
+		if (bGetSunRise)
+		{
 			return sunRiseInMinutes;
 		}
-		else {
-			return sunSetInMinutes;
-		}
+
+		return sunSetInMinutes;
 	}
 	return 0;
 }
@@ -230,7 +224,7 @@ uint32_t GoodweAPI::hash(const std::string &str)
 	 * We need a way to generate the NodeId from the stationID
 	 * and the ChildID from device serial.
 	 * This hash is definitely not perfect as we reduce the 128 bit
-         * stationID to an int (normally 32 bits).
+	 * stationID to an int (normally 32 bits).
 	 * But as almost all people will have only a very limited number of
 	 * PV-converters, the risk for collisions should be low enough
 	 * The djb2 hash is taken from http://www.cse.yorku.ca/~oz/hash.html
@@ -249,8 +243,9 @@ uint32_t GoodweAPI::hash(const std::string &str)
 
 bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, std::string &outputValue, const std::string &errorString)
 {
-	if (inputValue.empty()) {
- 		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
+	if (inputValue.empty())
+	{
+		Log(LOG_ERROR, "invalid device data received; %s missing!", errorString.c_str());
 		return false;
 	}
 	outputValue = inputValue.asString();
@@ -259,8 +254,9 @@ bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, std::string &out
 
 bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, float &outputValue, const std::string &errorString)
 {
-	if (inputValue.empty()) {
-		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
+	if (inputValue.empty())
+	{
+		Log(LOG_ERROR, "invalid device data received; %s missing!", errorString.c_str());
 		return false;
 	}
 	std::string tempStr = inputValue.asString();
@@ -272,8 +268,9 @@ bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, float &outputVal
 
 bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, int &outputValue, const std::string &errorString)
 {
-	if (inputValue.empty()) {
-		_log.Log(LOG_ERROR,"GoodweAPI: invalid device data received; %s missing!", errorString.c_str());
+	if (inputValue.empty())
+	{
+		Log(LOG_ERROR, "invalid device data received; %s missing!", errorString.c_str());
 		return false;
 	}
 	std::string tempStr = inputValue.asString();
@@ -285,19 +282,23 @@ bool GoodweAPI::getValueFromJson(const Json::Value &inputValue, int &outputValue
 
 std::string getStatusString(const int status)
 {
-	switch(status) {
-	case STATUS_WAITING: return "Waiting for the Sun";
-	case STATUS_NORMAL: return "Normal/ Working";
-	case STATUS_OFFLINE: return "Offline";
-	default: return ("Unkown status value " + status);
+	switch (status)
+	{
+		case STATUS_WAITING:
+			return "Waiting for the Sun";
+		case STATUS_NORMAL:
+			return "Normal/ Working";
+		case STATUS_OFFLINE:
+			return "Offline";
+		default:
+			return "Unkown status value " + std::to_string(status);
 	}
 }
-
 
 void GoodweAPI::GetMeterDetails()
 {
 	std::string sResult;
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -318,7 +319,7 @@ void GoodweAPI::GetMeterDetails()
 	bool bret = GoodweServerClient(sPATH, sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http user data!");
+		Log(LOG_ERROR, "Error getting http user data!");
 		return;
 	}
 
@@ -326,33 +327,33 @@ void GoodweAPI::GetMeterDetails()
 	SaveString2Disk(sResult, "/tmp/Goodwe2.json");
 #endif
 	Json::Value root;
-	bool ret= ParseJSon(sResult,root);
+	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received!");
+		Log(LOG_ERROR, "Invalid user data received!");
 		return;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 	{
-		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received, or invalid username");
+		Log(LOG_ERROR, "Invalid user data received, or invalid username");
 		return;
 	}
-	for (Json::ArrayIndex i = 0; i < root.size(); i++)
+	for (auto &i : root)
 	{
 		// We use the received data only to retrieve station-id and station-name
 
-		if (root[i][BY_USER_STATION_ID].empty() )
+		if (i[BY_USER_STATION_ID].empty())
 		{
-			 _log.Log(LOG_ERROR,"GoodweAPI: no or invalid data received - StationID is missing!");
+			Log(LOG_ERROR, "no or invalid data received - StationID is missing!");
 			return;
 		}
-		if (root[i][BY_USER_STATION_NAME].empty() )
+		if (i[BY_USER_STATION_NAME].empty())
 		{
-			 _log.Log(LOG_ERROR,"GoodweAPI: invalid data received - stationName is missing!");
+			Log(LOG_ERROR, "invalid data received - stationName is missing!");
 			return;
 		}
-		std::string sStationId = root[i][BY_USER_STATION_ID].asString();
-		std::string sStationName = root[i][BY_USER_STATION_NAME].asString();
+		std::string sStationId = i[BY_USER_STATION_ID].asString();
+		std::string sStationName = i[BY_USER_STATION_NAME].asString();
 
 		ParseDeviceList(sStationId, sStationName);
 	}
@@ -369,7 +370,7 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 	bret = GoodweServerClient(sPATH, sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for device list !");
+		Log(LOG_ERROR, "Error getting http data for device list !");
 		return;
 	}
 #ifdef DEBUG_GoodweAPIW
@@ -380,21 +381,21 @@ void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string
 	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "GoodweAPI: Invalid device list!");
+		Log(LOG_ERROR, "Invalid device list!");
 		return;
 	}
 
 	Json::Value result;
 	result = root[DEVICE_RESULT];
-	if (result.size() < 1)
+	if (result.empty())
 	{
-		_log.Log(LOG_STATUS, "GoodweAPI: devicelist result is empty!");
+		Log(LOG_STATUS, "devicelist result is empty!");
 		return;
 	}
 
-	for (Json::ArrayIndex i = 0; i < result.size(); i++)
+	for (auto &i : result)
 	{
-		ParseDevice(result[i], sStationId, sStationName);
+		ParseDevice(i, sStationId, sStationName);
 	}
 }
 
@@ -419,23 +420,17 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	float fCurrentPhase3;
 
 	// Parse received JSON
-	
-	if (!getValueFromJson( device[DEVICE_SERIAL], sDeviceSerial, "Inverter Serial Number") |
-	    !getValueFromJson( device[DEVICE_CURRENT_POWER_W], fCurrentPowerW, "Current Power") |
-	    !getValueFromJson( device[DEVICE_STATUS], iStatus, "Device Status") |
-	    !getValueFromJson( device[DEVICE_TOTAL_KWH], fTotalEnergyKWh, "Total Energy Produced") |
-	    !getValueFromJson( device[DEVICE_ERROR_MSG], sErrorMsg, "Error Message")|
-	    !getValueFromJson( device[DEVICE_VOLTAGE_STRING1], fVoltageString1, "Voltage String 1") |
-	    !getValueFromJson( device[DEVICE_VOLTAGE_STRING2], fVoltageString2, "Voltage String 2") |
-	    !getValueFromJson( device[DEVICE_CURRENT_STRING1], fCurrentString1, "Current String 1") |
-	    !getValueFromJson( device[DEVICE_CURRENT_STRING2], fCurrentString2, "Current String 2") |
-	    !getValueFromJson( device[DEVICE_VOLTAGE_PHASE1], fVoltagePhase1, "Voltage Phase 1") |
-	    !getValueFromJson( device[DEVICE_VOLTAGE_PHASE2], fVoltagePhase2, "Voltage Phase 2") |
-	    !getValueFromJson( device[DEVICE_VOLTAGE_PHASE3], fVoltagePhase3, "Voltage Phase 3") |
-	    !getValueFromJson( device[DEVICE_CURRENT_PHASE1], fCurrentPhase1, "Current Phase 1") |
-	    !getValueFromJson( device[DEVICE_CURRENT_PHASE2], fCurrentPhase2, "Current Phase 2") |
-	    !getValueFromJson( device[DEVICE_CURRENT_PHASE3], fCurrentPhase3, "Current Phase 3") ) {
-		
+
+	if (!getValueFromJson(device[DEVICE_SERIAL], sDeviceSerial, "Inverter Serial Number") | !getValueFromJson(device[DEVICE_CURRENT_POWER_W], fCurrentPowerW, "Current Power") |
+	    !getValueFromJson(device[DEVICE_STATUS], iStatus, "Device Status") | !getValueFromJson(device[DEVICE_TOTAL_KWH], fTotalEnergyKWh, "Total Energy Produced") |
+	    !getValueFromJson(device[DEVICE_ERROR_MSG], sErrorMsg, "Error Message") | !getValueFromJson(device[DEVICE_VOLTAGE_STRING1], fVoltageString1, "Voltage String 1") |
+	    !getValueFromJson(device[DEVICE_VOLTAGE_STRING2], fVoltageString2, "Voltage String 2") | !getValueFromJson(device[DEVICE_CURRENT_STRING1], fCurrentString1, "Current String 1") |
+	    !getValueFromJson(device[DEVICE_CURRENT_STRING2], fCurrentString2, "Current String 2") | !getValueFromJson(device[DEVICE_VOLTAGE_PHASE1], fVoltagePhase1, "Voltage Phase 1") |
+	    !getValueFromJson(device[DEVICE_VOLTAGE_PHASE2], fVoltagePhase2, "Voltage Phase 2") | !getValueFromJson(device[DEVICE_VOLTAGE_PHASE3], fVoltagePhase3, "Voltage Phase 3") |
+	    !getValueFromJson(device[DEVICE_CURRENT_PHASE1], fCurrentPhase1, "Current Phase 1") | !getValueFromJson(device[DEVICE_CURRENT_PHASE2], fCurrentPhase2, "Current Phase 2") |
+	    !getValueFromJson(device[DEVICE_CURRENT_PHASE3], fCurrentPhase3, "Current Phase 3"))
+	{
+
 		// Error parsing message, return
 		return;
 	}
@@ -446,54 +441,45 @@ void GoodweAPI::ParseDevice(const Json::Value &device, const std::string &sStati
 	uint32_t ChildID = hash(sDeviceSerial);
 
 	// reserve childIDs  0 - 10 for the station
-	if (ChildID <= 10) {
+	if (ChildID <= 10)
+	{
 		ChildID = ChildID + 10;
 	}
 
 	// do not send meter values when status is not normal (meter values are 0 when offline)
-	// It is unknown if other cases exist where 0 values are returned, so we only send 
+	// It is unknown if other cases exist where 0 values are returned, so we only send
 	// values when status is normal
-	
+
 	if (iStatus == STATUS_NORMAL)
-        {
-		SendKwhMeter(NodeID, ChildID + IDX_KWH, 255, fCurrentPowerW, fTotalEnergyKWh, 
-			sStationName + " " + sDeviceSerial + " Return");
+	{
+		SendKwhMeter(NodeID, ChildID + IDX_KWH, 255, fCurrentPowerW, fTotalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
 	}
-	SendTextSensor(NodeID, ChildID + IDX_STATUS , 255, getStatusString(iStatus), 
-		sStationName + " " + sDeviceSerial + " status");
-	SendTextSensor(NodeID, ChildID + IDX_ERRORMSG , 255, sErrorMsg, 
-		sStationName + " " + sDeviceSerial + " error");
-	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L1, 255, fVoltagePhase1, 
-		sStationName + " " + sDeviceSerial + " Mains L1");
-	SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L1, 255, fCurrentPhase1,
-		sStationName + " " + sDeviceSerial + " Mains L1");
+	SendTextSensor(NodeID, ChildID + IDX_STATUS, 255, getStatusString(iStatus), sStationName + " " + sDeviceSerial + " status");
+	SendTextSensor(NodeID, ChildID + IDX_ERRORMSG, 255, sErrorMsg, sStationName + " " + sDeviceSerial + " error");
+	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L1, 255, fVoltagePhase1, sStationName + " " + sDeviceSerial + " Mains L1");
+	SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L1, 255, fCurrentPhase1, sStationName + " " + sDeviceSerial + " Mains L1");
 
 	// Send data for L2 and L3 only when we detect a voltage
 
-	if (fVoltagePhase2 > 0.1f) {
-		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L2, 255, fVoltagePhase2, 
-			sStationName + " " + sDeviceSerial + " Mains L2");
-		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L2, 255, fCurrentPhase2,
-			sStationName + " " + sDeviceSerial + " Mains L2");
+	if (fVoltagePhase2 > 0.1F)
+	{
+		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L2, 255, fVoltagePhase2, sStationName + " " + sDeviceSerial + " Mains L2");
+		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L2, 255, fCurrentPhase2, sStationName + " " + sDeviceSerial + " Mains L2");
 	}
-	if (fVoltagePhase3 > 0.1f) {
-		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L3, 255, fVoltagePhase3, 
-			sStationName + " " + sDeviceSerial + " Mains L3");
-		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L3, 255, fCurrentPhase3,
-			sStationName + " " + sDeviceSerial + " Mains L3");
+	if (fVoltagePhase3 > 0.1F)
+	{
+		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_L3, 255, fVoltagePhase3, sStationName + " " + sDeviceSerial + " Mains L3");
+		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_L3, 255, fCurrentPhase3, sStationName + " " + sDeviceSerial + " Mains L3");
 	}
 
-	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S1, 255, fVoltageString1, 
-		sStationName + " " + sDeviceSerial + "Input string 1");
-	SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S1, 255, fCurrentString1,
-		sStationName + " " + sDeviceSerial + " Input String 1");
+	SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S1, 255, fVoltageString1, sStationName + " " + sDeviceSerial + "Input string 1");
+	SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S1, 255, fCurrentString1, sStationName + " " + sDeviceSerial + " Input String 1");
 
 	// Send data for string 2 only when we detect a voltage
 
-	if (fVoltageString2 > 0.1f) {
-		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S2, 255, fVoltageString2, 
-			sStationName + " " + sDeviceSerial + "Input string 2");
-		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S2, 255, fCurrentString2,
-			sStationName + " " + sDeviceSerial + " Input String 2");
+	if (fVoltageString2 > 0.1F)
+	{
+		SendVoltageSensor(NodeID, ChildID + IDX_VOLT_S2, 255, fVoltageString2, sStationName + " " + sDeviceSerial + "Input string 2");
+		SendCurrentSensor(NodeID, (uint8_t)ChildID + IDX_CUR_S2, 255, fCurrentString2, sStationName + " " + sDeviceSerial + " Input String 2");
 	}
 }

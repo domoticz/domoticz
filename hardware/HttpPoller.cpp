@@ -42,10 +42,6 @@ m_refresh(refresh)
 	Init();
 }
 
-CHttpPoller::~CHttpPoller(void)
-{
-}
-
 void CHttpPoller::Init()
 {
 }
@@ -61,7 +57,7 @@ bool CHttpPoller::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CHttpPoller::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -83,18 +79,18 @@ bool CHttpPoller::StopHardware()
 void CHttpPoller::Do_Work()
 {
 	int sec_counter = 300 - 5;
-	_log.Log(LOG_STATUS, "Http: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % m_refresh == 0) {
 			GetScript();
 		}
 	}
-	_log.Log(LOG_STATUS,"Http: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 void CHttpPoller::GetScript()
@@ -111,10 +107,7 @@ void CHttpPoller::GetScript()
 	{
 		std::vector<std::string> ExtraHeaders2;
 		StringSplit(m_headers, "\n", ExtraHeaders2);
-		for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-		{
-			ExtraHeaders.push_back(ExtraHeaders2[i]);
-		}
+		std::copy(ExtraHeaders2.begin(), ExtraHeaders2.end(), std::back_inserter(ExtraHeaders));
 	}
 
 	std::string auth;
@@ -136,15 +129,15 @@ void CHttpPoller::GetScript()
 	if (m_method == 0) {
 		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 		{
-			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err);
+			std::string err = "Error getting data from url \"" + sURL + "\"";
+			Log(LOG_ERROR, err);
 			return;
 		}
 	}
 	if (m_method == 1) {
 		if (!HTTPClient::POST(sURL, m_postdata, ExtraHeaders, sResult)) {
-			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err);
+			std::string err = "Error getting data from url \"" + sURL + "\"";
+			Log(LOG_ERROR, err);
 			return;
 		}
 	}

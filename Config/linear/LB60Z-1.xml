@@ -1,4 +1,4 @@
-<Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="6" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/014F:3038:4754</MetaDataItem>
     <MetaDataItem name="ProductPic">images/linear/LB60Z-1.png</MetaDataItem>
@@ -41,6 +41,7 @@ Note: If Inclusion still fails after the 2nd attempt, you need to first RESET th
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1290/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1291/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1414/xml</Entry>
+      <Entry author="Socalix" date="08 Sep 2020" revision="6">Updated Configuration Parameters from manufacturer's product data</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters -->
@@ -49,6 +50,16 @@ Note: If Inclusion still fails after the 2nd attempt, you need to first RESET th
       <Help>Using Last Dim Setting will bring the bulb back to the last dimness setting when turning on, instead of full brightness by default.</Help>
       <Item label="Full Brightness" value="0"/>
       <Item label="Last Dim Setting" value="1"/>
+    </Value>
+    <Value genre="config" index="9" label="Dim / Bright Step Level" max="99" min="1" size="1" type="byte" units="steps" value="1">
+      <Help>How much the bulb brightness will change. A low value (1) provides gradual dimming and brightening, a high value (99) makes it change rapidly.</Help>
+      <Item label="Low" value="1"/>
+      <Item label="High" value="99"/>
+    </Value>
+    <Value genre="config" index="10" label="Dim / Bright Speed" max="10" min="1" size="1" type="byte" units="steps" value="3">
+      <Help>How fast the bulb brightness will change. When the value is low (1), the step timing is quick. When the value is high (10), the step timing is slow.</Help>
+      <Item label="Fast" value="1"/>
+      <Item label="Slow" value="10"/>
     </Value>
   </CommandClass>
   <!-- COMMAND_CLASS_ASSOCIATION -->

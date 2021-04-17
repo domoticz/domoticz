@@ -31,7 +31,7 @@
 
 C1WireByKernel::C1WireByKernel()
 {
-	m_thread = std::make_shared<std::thread>(&C1WireByKernel::ThreadFunction, this);
+	m_thread = std::make_shared<std::thread>([this] { ThreadFunction(); });
 	SetThreadName(m_thread->native_handle(), "1WireByKernel");
 	_log.Log(LOG_STATUS, "Using 1-Wire support (kernel W1 module)...");
 }
@@ -83,7 +83,9 @@ void C1WireByKernel::ThreadFunction()
 		// Thread is stopped
 	}
 	m_PendingChanges.clear();
-	for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+	for (auto &m_Device : m_Devices)
+		delete m_Device.second;
+
 	m_Devices.clear();
 }
 
@@ -103,6 +105,7 @@ void C1WireByKernel::ReadStates()
 			{
 			case high_precision_digital_thermometer:
 			case programmable_resolution_digital_thermometer:
+			case Temperature_memory:
 			{
 				Locker l(m_Mutex);
 				device->m_Temperature = ThreadReadRawDataHighPrecisionDigitalThermometer(device->GetDevice().filename);
@@ -198,10 +201,14 @@ void C1WireByKernel::ThreadBuildDevicesList()
 {
 	DIR *dir;
 	struct dirent *ent;
-	if ((dir = opendir (Wire1_Base_Dir)) != NULL) {
-		for (DeviceCollection::iterator it = m_Devices.begin(); it != m_Devices.end(); ++it) { delete (*it).second; }
+	if ((dir = opendir(Wire1_Base_Dir)) != nullptr)
+	{
+		for (auto &m_Device : m_Devices)
+			delete m_Device.second;
+
 		m_Devices.clear();
-		while ((ent = readdir (dir)) != NULL) {
+		while ((ent = readdir(dir)) != nullptr)
+		{
 			std::string directoryName=ent->d_name;
 			if(directoryName.find("w1_bus_master")==0)
 			{
@@ -220,7 +227,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 				while (!infile.eof())
 				{
 					getline(infile, sLine);
-					if (sLine.size() != 0)
+					if (!sLine.empty())
 					{
 						// Get the device from it's name
 						_t1WireDevice device;
@@ -232,6 +239,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 						case dual_channel_addressable_switch:
 						case _8_channel_addressable_switch:
 						case programmable_resolution_digital_thermometer:
+						case Temperature_memory:
 							m_Devices[device.devid] = new DeviceState(device);
 							_log.Log(LOG_STATUS, "1Wire: Added Device: %s", sLine.c_str());
 							break;
@@ -246,14 +254,14 @@ void C1WireByKernel::ThreadBuildDevicesList()
 			}
 		}
 		closedir (dir);
-	}	
+	}
 }
 
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 {
 	Locker l(m_Mutex);
-	for (const auto & it : m_Devices)
-		devices.push_back((it.second)->GetDevice());
+	std::transform(m_Devices.begin(), m_Devices.end(), std::back_inserter(devices),
+		       [](const std::pair<const std::string, C1WireByKernel::DeviceState *> &m) { return m.second->GetDevice(); });
 }
 
 const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const std::string& deviceId) const
@@ -263,7 +271,7 @@ const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const s
 		if (it.GetDevice().devid == deviceId)
 			return &it;
 	}
-	return NULL;
+	return nullptr;
 }
 
 float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
@@ -272,9 +280,10 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
 	{
 	case high_precision_digital_thermometer:
 	case programmable_resolution_digital_thermometer:
+	case Temperature_memory:
 	{
 		DeviceCollection::const_iterator devIt = m_Devices.find(device.devid);
-		return (devIt == m_Devices.end()) ? -1000.0f : (*devIt).second->m_Temperature;
+		return (devIt == m_Devices.end()) ? -1000.0F : (*devIt).second->m_Temperature;
 	}
 	default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
 		return -1000.0;
@@ -288,12 +297,12 @@ int C1WireByKernel::GetWiper(const _t1WireDevice& /*device*/) const
 
 float C1WireByKernel::GetHumidity(const _t1WireDevice& /*device*/) const
 {
-	return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return 0.0F; // Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
 float C1WireByKernel::GetPressure(const _t1WireDevice& /*device*/) const
 {
-	return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return 0.0F; // Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
 bool C1WireByKernel::GetLightState(const _t1WireDevice& device, int unit) const
@@ -383,7 +392,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
 	if (bFoundCrcOk)
 	{
 		if (is_number(data))
-			return (float)atoi(data.c_str()) / 1000.0f; // Temperature given by kernel is in thousandths of degrees
+			return (float)atoi(data.c_str()) / 1000.0F; // Temperature given by kernel is in thousandths of degrees
 	}
 
 	throw OneWireReadErrorException(deviceFileName);
@@ -528,8 +537,8 @@ void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::stri
 inline void std_to_upper(const std::string& str, std::string& converted)
 {
 	converted = "";
-	for (size_t i = 0; i < str.size(); ++i)
-		converted += (char)toupper(str[i]);
+	for (char c : str)
+		converted += (char)toupper(c);
 }
 
 void C1WireByKernel::GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const

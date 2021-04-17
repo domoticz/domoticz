@@ -8,7 +8,6 @@
 #include "../main/localtime_r.h"
 
 #include <algorithm>
-#include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
@@ -29,18 +28,13 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
 
-OTGWSerial::~OTGWSerial()
-{
-
-}
-
 bool OTGWSerial::StartHardware()
 {
 	RequestStart();
 
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
-	m_thread = std::make_shared<std::thread>(&OTGWSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return true;
 }
@@ -76,7 +70,7 @@ bool OTGWSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"OTGW: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS,"Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -86,9 +80,9 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"OTGW:Error opening serial port!");
+		Log(LOG_ERROR,"OTGW:Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -96,12 +90,12 @@ bool OTGWSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"OTGW:Error opening serial port!!!");
+		Log(LOG_ERROR,"OTGW:Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;
 	m_bufferpos=0;
-	setReadCallback(boost::bind(&OTGWSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	m_bRequestVersion = true;
 	return true;
@@ -116,14 +110,14 @@ void OTGWSerial::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (!isOpen())
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_STATUS,"OTGW: serial setup retry in %d seconds...", RETRY_DELAY);
+				Log(LOG_STATUS,"serial setup retry in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
@@ -153,7 +147,7 @@ void OTGWSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"OTGW: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool OTGWSerial::WriteInt(const unsigned char *pData, const unsigned char Len)

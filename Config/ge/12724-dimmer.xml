@@ -1,4 +1,4 @@
-<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="9" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- GE(Jasco) 12724 3-Way Dimmer Switch --><Product Revision="11" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0063:3031:4944</MetaDataItem>
     <MetaDataItem name="ProductPic">images/ge/12724-dimmer.png</MetaDataItem>
@@ -12,13 +12,15 @@
     <MetaDataItem id="3032" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="3032" name="Identifier" type="4944">12725 / ZW3006</MetaDataItem>
     <ChangeLog>
-       <Entry author="Shaun Feakes" date="04 Sep 2019" revision="9">Update for 3032</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="3">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1197/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1201/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1202/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="08 May 2019" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/1221/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="7">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2103/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="8">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2506/xml</Entry>
+      <Entry author="Shaun Feakes" date="04 Sep 2019" revision="9">Update for 3032</Entry>
+      <Entry author="Justin Hammond" date="26 June 2020" revision="10">Add Verifed Change Flag</Entry>
+      <Entry author="Brian France" date="23 Nov 2020" revision="11">Added COMMAND_CLASS_BASIC block to set Value type instead of Node Event for Basic Set, Added COMMAND_CLASS_ASSOCIATION block for double tap with double tap defauled to auto</Entry>
     </ChangeLog>
     <MetaDataItem id="3033" name="ZWProductPage" type="4944">https://products.z-wavealliance.org/products/1201/</MetaDataItem>
     <MetaDataItem id="3033" name="FrequencyName" type="4944">U.S. / Canada / Mexico</MetaDataItem>
@@ -70,5 +72,25 @@ Note: This should only be used in the event your network’s primary controller 
     <Value genre="config" index="12" label="ALL ON/ALL OFF Dim Rate" max="255" min="1" type="byte" units="x 10 milliseconds" value="3">
       <Help>This value indicates in 10 millisecond resolution, how often the dim level will change. For example, if you set this parameter to 1, then every 10ms the dim level will change. If you set it to 255, then every 2.55 seconds the dim level will change.</Help>
     </Value>
+  </CommandClass>
+  <CommandClass id="38">
+    <Compatibility>
+      <VerifyChanged index="0">true</VerifyChanged>
+    </Compatibility>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+      <Group index="2" label="Basic - Local Load" max_associations="5"/>
+      <Group index="3" label="Basic - Double Tap" max_associations="5" auto="true" />
+    </Associations>
+  </CommandClass>
+  <!-- COMMAND_CLASS_BASIC -->
+  <CommandClass id="32">
+    <Compatibility>
+      <IgnoreMapping>true</IgnoreMapping>
+      <SetAsReport>true</SetAsReport>
+    </Compatibility>
   </CommandClass>
 </Product>

@@ -1,4 +1,10 @@
-<Product Revision="3" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/inovelli/nzw30.png</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Daniel Brunt - daniel@brunt.ca" date="30 July 2020" revision="4">Added pic</Entry>
+    </ChangeLog>
+  </MetaData>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value genre="config" index="3" label="LED Indicator Control" max="255" min="0" size="1" type="list" units="" value="0">

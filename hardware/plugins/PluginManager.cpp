@@ -29,10 +29,7 @@
 #endif
 
 #include "DelayedLink.h"
-
-#ifdef ENABLE_PYTHON
 #include "../../main/EventsPythonModule.h"
-#endif
 
 #define MINIMUM_PYTHON_VERSION "3.4.0"
 
@@ -61,38 +58,27 @@ namespace Plugins {
 
 	PyMODINIT_FUNC PyInit_Domoticz(void);
 
-#ifdef ENABLE_PYTHON
-    // Need forward decleration
-    // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
-#endif // ENABLE_PYTHON
+	// Need forward decleration
+	// PyMODINIT_FUNC PyInit_DomoticzEvents(void);
 
 	std::mutex PluginMutex;	// controls accessto the message queue and m_pPlugins map
-	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
 	std::map<std::string, std::string>		CPluginSystem::m_PluginXml;
+	void *CPluginSystem::m_InitialPythonThread;
 
 	CPluginSystem::CPluginSystem()
 	{
 		m_bEnabled = false;
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
-		m_InitialPythonThread = NULL;
-	}
-
-	CPluginSystem::~CPluginSystem(void)
-	{
 	}
 
 	bool CPluginSystem::StartPluginSystem()
 	{
 		// Flush the message queue (should already be empty)
 		std::lock_guard<std::mutex> l(PluginMutex);
-		while (!PluginMessageQueue.empty())
-		{
-			PluginMessageQueue.pop();
-		}
 
 		m_pPlugins.clear();
 
@@ -105,7 +91,7 @@ namespace Plugins {
 		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
-		m_thread = std::make_shared<std::thread>(&CPluginSystem::Do_Work, this);
+		m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 		SetThreadName(m_thread->native_handle(), "PluginMgr");
 
 		szPyVersion = Py_GetVersion();
@@ -171,19 +157,6 @@ namespace Plugins {
 			m_thread.reset();
 		}
 
-		// Hardware should already be stopped so just flush the queue (should already be empty)
-		std::lock_guard<std::mutex> l(PluginMutex);
-		while (!PluginMessageQueue.empty())
-		{
-			CPluginMessageBase* Message = PluginMessageQueue.front();
-			const CPlugin* pPlugin = Message->Plugin();
-			if (pPlugin)
-			{
-				_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
-			}
-			PluginMessageQueue.pop();
-		}
-
 		m_pPlugins.clear();
 
 		if (Py_LoadLibrary() && m_InitialPythonThread)
@@ -201,16 +174,16 @@ namespace Plugins {
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
-		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); ++itt)
+		for (const auto &plugin : m_pPlugins)
 		{
-			if (itt->second)
+			if (plugin.second)
 			{
-				CPlugin*	pPlugin = reinterpret_cast<CPlugin*>(itt->second);
+				auto pPlugin = reinterpret_cast<CPlugin *>(plugin.second);
 				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
+				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, plugin.first);
 			}
 		}
 	}
@@ -233,28 +206,27 @@ namespace Plugins {
 		}
 
 		std::vector<std::string> DirEntries, FileEntries;
-		std::vector<std::string>::const_iterator itt_Dir, itt_File;
 		std::string plugin_Dir, plugin_File;
 
 		DirectoryListing(DirEntries, plugin_BaseDir, true, false);
-		for (itt_Dir = DirEntries.begin(); itt_Dir != DirEntries.end(); ++itt_Dir)
+		for (const auto &dir : DirEntries)
 		{
-			if (*itt_Dir != "examples")
+			if (dir != "examples")
 			{
 #ifdef WIN32
-				plugin_Dir = plugin_BaseDir + *itt_Dir + "\\";
+				plugin_Dir = plugin_BaseDir + dir + "\\";
 #else
-				plugin_Dir = plugin_BaseDir + *itt_Dir + "/";
+				plugin_Dir = plugin_BaseDir + dir + "/";
 #endif
 				DirectoryListing(FileEntries, plugin_Dir, false, true);
-				for (itt_File = FileEntries.begin(); itt_File != FileEntries.end(); ++itt_File)
+				for (const auto &file : FileEntries)
 				{
-					if (*itt_File == "plugin.py")
+					if (file == "plugin.py")
 					{
 						try
 						{
 							std::string sXML;
-							plugin_File = plugin_Dir + *itt_File;
+							plugin_File = plugin_Dir + file;
 							std::string line;
 							std::ifstream readFile(plugin_File.c_str());
 							bool bFound = false;
@@ -282,7 +254,7 @@ namespace Plugins {
 
 	CDomoticzHardwareBase* CPluginSystem::RegisterPlugin(const int HwdID, const std::string & Name, const std::string & PluginKey)
 	{
-		CPlugin*	pPlugin = NULL;
+		CPlugin *pPlugin = nullptr;
 		if (m_bEnabled)
 		{
 			std::lock_guard<std::mutex> l(PluginMutex);
@@ -318,7 +290,10 @@ namespace Plugins {
 			sleep_milliseconds(500);
 		}
 
-		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
+		if (m_pPlugins.size())
+		{
+			_log.Log(LOG_STATUS, "PluginSystem: %d plugins started.", m_pPlugins.size());
+		}
 
 		// Create initial IO Service thread
 		ios.restart();
@@ -331,89 +306,36 @@ namespace Plugins {
 			SetThreadName(bt->native_handle(), "Plugin_ASIO");
 		}
 
-		while (!IsStopRequested(50))
+		while (!IsStopRequested(500))
 		{
-			time_t	Now = time(0);
-			bool	bProcessed = true;
-			while (bProcessed)
-			{
-				CPluginMessageBase* Message = NULL;
-				bProcessed = false;
-
-				// Cycle once through the queue looking for the 1st message that is ready to process
-				{
-					std::lock_guard<std::mutex> l(PluginMutex);
-					for (size_t i = 0; i < PluginMessageQueue.size(); i++)
-					{
-						CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
-						PluginMessageQueue.pop();
-						if (!FrontMessage->m_Delay || FrontMessage->m_When <= Now)
-						{
-							// Message is ready now or was already ready (this is the case for almost all messages)
-							Message = FrontMessage;
-							break;
-						}
-						// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
-						PluginMessageQueue.push(FrontMessage);
-					}
-				}
-
-				if (Message)
-				{
-					bProcessed = true;
-					try
-					{
-						const CPlugin* pPlugin = Message->Plugin();
-						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
-						{
-							_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") Processing '" + std::string(Message->Name()) + "' message");
-						}
-						Message->Process();
-					}
-					catch(...)
-					{
-						_log.Log(LOG_ERROR, "PluginSystem: Exception processing message.");
-					}
-				}
-				// Free the memory for the message
-				if (Message)
-				{
-					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
-					CPlugin* pPlugin = (CPlugin*)Message->Plugin();
-					pPlugin->RestoreThread();
-					delete Message;
-					pPlugin->ReleaseThread();
-				}
-			}
 		}
 
 		// Shutdown IO workers
 		ios.stop();
 		BoostThreads.join_all();
 
-		_log.Log(LOG_STATUS, "PluginSystem: Exiting work loop.");
+		_log.Log(LOG_STATUS, "PluginSystem: Exited work loop.");
 	}
 
-	void CPluginSystem::DeviceModified(uint64_t ID)
+	void CPluginSystem::DeviceModified(uint64_t DevIdx)
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID,Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
-		if (!result.empty())
-		{
-			std::vector<std::string> sd = result[0];
-			std::string sHwdID = sd[0];
-			std::string Unit = sd[1];
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
-			if (pHardware != NULL)
-			{
-				//std::vector<std::string> sd = result[0];
-				_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
-				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-				pPlugin->DeviceModified(atoi(Unit.c_str()));
-			}
-		}
+		result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", DevIdx);
+		if (result.empty())
+			return;
+		std::vector<std::string> sd = result[0];
+		std::string sHwdID = sd[0];
+		std::string Unit = sd[1];
+		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
+		if (pHardware == nullptr)
+			return;
+		//std::vector<std::string> sd = result[0];
+		//GizMoCuz: Why does this work with UNIT ? Why not use the device idx which is always unique ?
+		_log.Debug(DEBUG_NORM, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+		Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+		pPlugin->DeviceModified(atoi(Unit.c_str()));
 	}
-}
+} // namespace Plugins
 
 //Webserver helpers
 namespace http {
@@ -423,13 +345,17 @@ namespace http {
 			int		iPluginCnt = root.size();
 			Plugins::CPluginSystem Plugins;
 			std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
+			for (const auto &type : *PluginXml)
 			{
 				TiXmlDocument	XmlDoc;
-				XmlDoc.Parse(it_type->second.c_str());
+				XmlDoc.Parse(type.second.c_str());
 				if (XmlDoc.Error())
 				{
-					_log.Log(LOG_ERROR, "%s: Parsing '%s', '%s' at line %d column %d in XML '%s'.", __func__, it_type->first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+					_log.Log(LOG_ERROR,
+						 "%s: Parsing '%s', '%s' at line %d column %d in "
+						 "XML '%s'.",
+						 __func__, type.first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(),
+						 type.second.c_str());
 				}
 				else
 				{
@@ -473,6 +399,7 @@ namespace http {
 									ATTRIBUTE_VALUE(pXmlEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
 									ATTRIBUTE_VALUE(pXmlEle, "default", root[iPluginCnt]["parameters"][iParams]["default"]);
 									ATTRIBUTE_VALUE(pXmlEle, "password", root[iPluginCnt]["parameters"][iParams]["password"]);
+									ATTRIBUTE_VALUE(pXmlEle, "rows", root[iPluginCnt]["parameters"][iParams]["rows"]);
 
 									TiXmlNode* pXmlOptionsNode = pXmlEle->FirstChild("options");
 									int	iOptions = 0;
@@ -516,7 +443,7 @@ namespace http {
 			Plugins::CPluginSystem Plugins;
 			std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
 			std::string		sRetVal = Hardware_Type_Desc(HTYPE_PythonPlugin);
-			Plugins::CPlugin*	pPlugin = NULL;
+			Plugins::CPlugin *pPlugin = nullptr;
 
 			// Disabled plugins will not be in plugin hardware map
 			if (PluginHwd->count(HwdID))
@@ -528,15 +455,19 @@ namespace http {
 			{
 				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
 				std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); ++it_type)
+				for (const auto &type : *PluginXml)
 				{
-					if (it_type->second.find(sKey) != std::string::npos)
+					if (type.second.find(sKey) != std::string::npos)
 					{
 						TiXmlDocument	XmlDoc;
-						XmlDoc.Parse(it_type->second.c_str());
+						XmlDoc.Parse(type.second.c_str());
 						if (XmlDoc.Error())
 						{
-							_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+							_log.Log(LOG_ERROR,
+								 "%s: Error '%s' at line %d column "
+								 "%d in XML '%s'.",
+								 __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(),
+								 type.second.c_str());
 						}
 						else
 						{
@@ -580,6 +511,6 @@ namespace http {
 				}
 			}
 		}
-	}
-}
+	} // namespace server
+} // namespace http
 #endif

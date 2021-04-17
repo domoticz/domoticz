@@ -1,13 +1,15 @@
-<!-- Fibaro: FGK101 Door Opening Sensor --><Product Revision="4" xmlns="https://github.com/OpenZWave/open-zwave">
+<!-- Fibaro: FGK101 Door Opening Sensor --><Product Revision="5" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/010F:1000:0702</MetaDataItem>
     <MetaDataItem name="ProductPic">images/fibaro/fgdw2.png</MetaDataItem>
     <MetaDataItem id="1000" name="ZWProductPage" type="0702">https://products.z-wavealliance.org/products/2181/</MetaDataItem>
+	<MetaDataItem id="2000" name="ZWProductPage" type="0702">https://products.z-wavealliance.org/products/2279/</MetaDataItem>
     <MetaDataItem name="Name">FIBARO Door/Window Sensor 2</MetaDataItem>
     <MetaDataItem name="Description">FIBARO Door/Window Sensor 2 is a wireless, battery powered, Z-Wave Plus compatible magnetic contact sensor. Changing the device’s status will automatically send signal to the Z-Wave controller and associated devices. In addition the FIBARO Door/Window Sensor 2 is equipped with a built-in temperature sensor.
 Sensor can be used to trigger scenes and wherever there is a need for information about opening or closing of doors, windows, garage doors, etc. Opening is detected by separating the sensor’s body and the magnet.
 </MetaDataItem>
     <MetaDataItem id="1000" name="Identifier" type="0702">FGDW-002</MetaDataItem>
+	<MetaDataItem id="2000" name="Identifier" type="0702">FGDW-002-1</MetaDataItem>
     <MetaDataItem name="InclusionDescription">1)	Place the Door/Window Sensor 2 within the direct range of your Z-Wave controller.
 2)	Set the main controller in (security/non-security) add mode (see the controller’s manual).
 3)	Click the Button at least six times.
@@ -37,9 +39,11 @@ Sensor can be used to trigger scenes and wherever there is a need for informatio
 
 *Resetting the device is not the recommended way of removing the device from the Z-Wave network. Use reset procedure only if the primary controller is missing or inoperable.</MetaDataItem>
     <MetaDataItem id="1000" name="FrequencyName" type="0702">CEPT (Europe)</MetaDataItem>
+	<MetaDataItem id="2000" name="FrequencyName" type="0702">U.S. / Canada / Mexico</MetaDataItem>
     <ChangeLog>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2181/xml</Entry>
-    </ChangeLog>
+      <Entry author="Justin Dybedahl - madj42@gmail.com" date="12 July 2020" revision="5">Add support for US Model.</Entry>
+	</ChangeLog>
   </MetaData>
   <!-- Configuration -->
   <CommandClass id="112">

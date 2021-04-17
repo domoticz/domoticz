@@ -48,17 +48,12 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CAccuWeather::CAccuWeather(const int ID, const std::string &APIKey, const std::string &Location) :
-m_APIKey(APIKey),
-m_Location(Location),
-m_LocationKey("")
+CAccuWeather::CAccuWeather(const int ID, const std::string &APIKey, const std::string &Location)
+	: m_APIKey(APIKey)
+	, m_Location(Location)
 {
 	m_HwdID=ID;
 	Init();
-}
-
-CAccuWeather::~CAccuWeather(void)
-{
 }
 
 void CAccuWeather::Init()
@@ -72,7 +67,7 @@ bool CAccuWeather::StartHardware()
 	Init();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CAccuWeather::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -98,7 +93,7 @@ void CAccuWeather::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % 1800 == 0) //50 free calls a day.. thats not much guy's!
 		{
@@ -176,11 +171,9 @@ std::string CAccuWeather::GetLocationKey()
 			}
 			return root["Key"].asString();
 		}
-		else
-		{
-			Log(LOG_ERROR, "Invalid data received, unknown location or API key!");
-			return "";
-		}
+
+		Log(LOG_ERROR, "Invalid data received, unknown location or API key!");
+		return "";
 	}
 	catch (...)
 	{
@@ -226,7 +219,7 @@ void CAccuWeather::GetMeterDetails()
 			return;
 		}
 
-		if (root.size() < 1)
+		if (root.empty())
 		{
 			Log(LOG_ERROR, "Invalid data received!");
 			return;
@@ -348,13 +341,13 @@ void CAccuWeather::GetMeterDetails()
 			}
 			if (!root["Wind"]["Speed"].empty())
 			{
-				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
+				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 			}
 			if (!root["WindGust"].empty())
 			{
 				if (!root["WindGust"]["Speed"].empty())
 				{
-					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
+					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 				}
 			}
 			if (!root["RealFeelTemperature"].empty())
@@ -383,7 +376,7 @@ void CAccuWeather::GetMeterDetails()
 			if (!root["PrecipitationSummary"]["Precipitation"].empty())
 			{
 				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
-				if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
+				if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
 				{
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -401,22 +394,22 @@ void CAccuWeather::GetMeterDetails()
 					if (!root["PrecipitationSummary"]["PastHour"].empty())
 					{
 						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
-						if (rainrateph != -9999.00f)
+						if (rainrateph != -9999.00F)
 						{
-							int at10 = round(std::abs(rainrateph*10.0f));
+							int at10 = round(std::abs(rainrateph * 10.0F));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);
 						}
 					}
 
-					int tr10 = int((float(RainCount)*10.0f));
+					int tr10 = int((float(RainCount) * 10.0F));
 					tsen.RAIN.raintotal1 = 0;
 					tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
 					tr10 -= (tsen.RAIN.raintotal2 * 256);
 					tsen.RAIN.raintotal3 = (BYTE)(tr10);
 
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, 255, nullptr);
 				}
 			}
 		}
@@ -432,7 +425,7 @@ void CAccuWeather::GetMeterDetails()
 					_tGeneralDevice gdevice;
 					gdevice.subtype = sTypeVisibility;
 					gdevice.floatval1 = visibility;
-					sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+					sDecodeRXMessage(this, (const unsigned char *)&gdevice, nullptr, 255, nullptr);
 				}
 			}
 		}

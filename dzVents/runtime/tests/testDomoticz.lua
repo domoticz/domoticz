@@ -172,9 +172,30 @@ describe('Domoticz', function()
 			assert.is_same(domoticz['LOG_ERROR'], 1)
 			assert.is_same(domoticz['LOG_MODULE_EXEC_INFO'], 2)
 		end)
+
+		it('should have NSS constants', function()
+			assert.is_same(domoticz['NSS_CLICKATELL'], 'clickatell')
+			assert.is_same(domoticz['NSS_FIREBASE'], 'fcm')
+			assert.is_same(domoticz['NSS_FIREBASE_CLOUD_MESSAGING'], 'fcm')
+			assert.is_same(domoticz['NSS_GOOGLE_CLOUD_MESSAGING'], 'gcm')  -- Only for backward compatibility. Will be deprecated soon
+			assert.is_same(domoticz['NSS_GOOGLE_DEVICES'], 'Google_Devices')
+			assert.is_same(domoticz['NSS_HTTP'], 'http')
+			assert.is_same(domoticz['NSS_KODI'], 'kodi')
+			assert.is_same(domoticz['NSS_LOGITECH_MEDIASERVER'], 'lms')
+			assert.is_same(domoticz['NSS_NMA'], 'nma')
+			assert.is_same(domoticz['NSS_PROWL'], 'prowl')
+			assert.is_same(domoticz['NSS_PUSHALOT'], 'pushalot')
+			assert.is_same(domoticz['NSS_PUSHBULLET'], 'pushbullet')
+			assert.is_same(domoticz['NSS_PUSHOVER'], 'pushover')
+			assert.is_same(domoticz['NSS_PUSHSAFER'], 'pushsafer')
+			assert.is_same(domoticz['NSS_TELEGRAM'], 'telegram')
+
+		end)
+
 	end)
 
 	describe('commands', function()
+
 		it('should send commands', function()
 			local res, command, value = domoticz.sendCommand('do', 'it')
 			assert.is_same('do', command)
@@ -182,10 +203,29 @@ describe('Domoticz', function()
 			assert.is_same({ ['do'] = 'it' }, res)
 		end)
 
+		it('should handle delayed commands', function()
+			local res, command, value = domoticz.sendCommand('do', 'it', 5)
+			assert.is_same('do', command)
+			assert.is_same('it', value)
+			assert.is_same({ ['CustomEvent'] = { ['_after'] = 5, ['data'] ='it', ['name'] = '___do__'} }, res)
+		end)
+
 		it('should send multiple commands', function()
 			domoticz.sendCommand('do', 'it')
 			domoticz.sendCommand('and', 'some more')
 			assert.is_same({ { ["do"] = "it" }, { ["and"] = "some more" } }, domoticz.commandArray)
+		end)
+
+		it('should handle mix of delayed and normal commands', function()
+			domoticz.sendCommand('do', 'it', 5)
+			domoticz.sendCommand('and', 'some more')
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 5, ['data'] ='it', ['name'] = '___do__'}}, { ["and"] = "some more" } }, domoticz.commandArray)
+		end)
+
+		it('should handle multiple delayed commands', function()
+			domoticz.sendCommand('do', 'it', 5)
+			domoticz.sendCommand('and', 'some more', 7)
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 5, ['data'] ='it', ['name'] = '___do__'}}, { ['CustomEvent'] = { ['_after'] = 7, ['data'] ='some more', ['name'] = '___and__'}}}, domoticz.commandArray)
 		end)
 
 		it('should return a reference to a commandArray item', function()
@@ -211,9 +251,41 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
 		end)
 
-		it('should notify with multiple subsystems as table', function()
+		it('should notify with two subsystems as table', function()
 			domoticz.notify('sub', nil, nil, nil, nil, { domoticz.NSS_HTTP, domoticz.NSS_PROWL })
 			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with multiple subsystems as table', function()
+			domoticz.notify('sub', nil, nil, nil, nil,
+			{
+				domoticz.NSS_CLICKATELL,
+				domoticz.NSS_FIREBASE,
+				domoticz.NSS_FIREBASE_CLOUD_MESSAGING,
+				domoticz.NSS_GOOGLE_CLOUD_MESSAGING,
+				domoticz.NSS_GOOGLE_DEVICES,
+				domoticz.NSS_HTTP,
+				domoticz.NSS_KODI,
+				domoticz.NSS_LOGITECH_MEDIASERVER,
+				domoticz.NSS_NMA,
+				domoticz.NSS_PROWL,
+				domoticz.NSS_PUSHALOT,
+				domoticz.NSS_PUSHBULLET,
+				domoticz.NSS_PUSHOVER,
+				domoticz.NSS_PUSHSAFER,
+				domoticz.NSS_TELEGRAM
+			})
+			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##clickatell;fcm;fcm;fcm;Google_Devices;http;kodi;lms;nma;prowl;pushalot;pushbullet;pushover;pushsafer;telegram' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with All subsystems', function()
+			domoticz.notify('sub', 'All')
+			assert.is_same({ { ['SendNotification'] = 'sub#All#0#pushover##' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with multiple subsystems as table and delay', function()
+			domoticz.notify('sub', nil, nil, nil, nil, { domoticz.NSS_HTTP, domoticz.NSS_PROWL }, 9)
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 9, ['data'] ='sub##0#pushover##http;prowl', ['name'] = '___SendNotification__'} } }, domoticz.commandArray)
 		end)
 
 		it('should send email', function()
@@ -221,9 +293,19 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendEmail'] = 'sub#mes#to@someone' } }, domoticz.commandArray)
 		end)
 
+		it('should send delayed email', function()
+			domoticz.email('sub', 'mes', 'to@someone', 8)
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 8, ['data'] ='sub#mes#to@someone', ['name'] = '___SendEmail__'} } }, domoticz.commandArray)
+		end)
+
 		it('should send sms', function()
 			domoticz.sms('mes')
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
+		end)
+
+		it('should send delayed sms', function()
+			domoticz.sms('mes', 13 )
+			assert.is_same({ { ['CustomEvent'] = { ['_after'] = 13, ['data'] ='mes', ['name'] = '___SendSMS__'} } }, domoticz.commandArray)
 		end)
 
 		it('should set a scene', function()
@@ -244,9 +326,21 @@ describe('Domoticz', function()
 			assert.is_same( { OpenURL = {	URL = 'http://127.0.0.1:8080/json.htm?type=command&param=addlogmessage&message=triggerHTTPResponse%3A+hi+there' ,
 											_after = 12,
 											_trigger = 'call me Back',
-											method = 'GET' 
-										} 
+											method = 'GET'
+										}
 							} , domoticz.commandArray[1])
+		end)
+	end)
+
+	describe('executeShellcommand', function()
+
+		it('should create a Shell Command', function()
+			domoticz.executeShellCommand('some command -parm --parm2 "test"')
+			assert.is_same({
+				{
+					['ExecuteShellCommand'] = { ['command'] = 'some command -parm --parm2 "test"' , ['path'] = '/' }
+				}
+			}, domoticz.commandArray)
 		end)
 	end)
 
@@ -275,7 +369,7 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers =  '!#Content-Type: application/json',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
@@ -297,14 +391,14 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'PUT',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#Content-Type: application/json',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
 				}
 			}, domoticz.commandArray)
 		end)
-	
+
 		it('should open a url with options (DEL)', function()
 			local cmd = domoticz.openURL({
 				url = 'some url',
@@ -319,7 +413,7 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'DEL',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#Content-Type: application/json',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
@@ -327,13 +421,15 @@ describe('Domoticz', function()
 			}, domoticz.commandArray)
 		end)
 
-	
 		it('should open a url with options', function()
 
 			local cmd = domoticz.openURL({
 				url = 'some url',
 				method = 'POST',
 				callback = 'trigger1',
+				headers = {
+					['Auth-Required'] = false ,
+				},
 				postData = {
 					a = 1, b = 2
 				}
@@ -343,21 +439,32 @@ describe('Domoticz', function()
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#Auth-Required: false',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}'
 					}
 				}
 			}, domoticz.commandArray)
 
-			cmd = cmd.afterMin(1)
+			domoticz.commandArray = {}
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'POST',
+				callback = 'trigger1',
+				headers = {
+					['X-Apikey'] = '12345ABC_',
+				},
+				postData = {
+					a = 1, b = 2
+				}
+			}).afterMin(1)
 
 			assert.is_same({
 				{
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#X-Apikey: 12345ABC_',
 						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}',
 						_after = 60
@@ -365,22 +472,32 @@ describe('Domoticz', function()
 				}
 			}, domoticz.commandArray)
 
-			cmd.silent()
+			domoticz.commandArray = {}
+			local cmd = domoticz.openURL({
+				url = 'some url',
+				method = 'POST',
+				callback = 'trigger1',
+				headers = {
+					['X-Apikey'] = '12345ABC_',
+				},
+				postData = {
+					a = 1, b = 2
+				}
+			})
 
 			assert.is_same({
 				{
 					['OpenURL'] = {
 						URL = 'some url',
 						method = 'POST',
-						headers = { ['Content-Type'] = 'application/json' },
+						headers = '!#X-Apikey: 12345ABC_',
+						_trigger = 'trigger1',
 						postdata = '{"a":1,"b":2}',
-						_after = 60
 					}
 				}
 			}, domoticz.commandArray)
 		end)
 	end)
-
 
 	describe('triggerIFTTT', function()
 
@@ -397,8 +514,8 @@ describe('Domoticz', function()
 			domoticz.triggerIFTTT('some maker event', 1, 2, 3)
 			assert.is_same({
 				{
-					['TriggerIFTTT'] = { 
-						sID = 'some maker event', 
+					['TriggerIFTTT'] = {
+						sID = 'some maker event',
 						sValue1 = '1',
 						sValue2 = '2',
 						sValue3 = '3',
@@ -410,9 +527,9 @@ describe('Domoticz', function()
 			domoticz.triggerIFTTT('some maker event', 1, 'two').afterMin(2)
 			assert.is_same({
 				{
-					['TriggerIFTTT'] = { 
+					['TriggerIFTTT'] = {
 						_after = 120,
-						sID = 'some maker event', 
+						sID = 'some maker event',
 						sValue1 = '1',
 						sValue2 = 'two',
 				}}
@@ -818,7 +935,7 @@ describe('Domoticz', function()
 			collection.forEach(function(var)
 				table.insert(res, var.name)
 			end)
-			assert.is_same({ "a", "b", "c", "var with spaces", "x", "z",  }, values(res))
+			assert.is_same({ "a", "b", "c", "var with spaces", "x", "z", }, values(res))
 
 			local filtered = collection.filter(function(var)
 				return var.id < 4
@@ -1045,6 +1162,15 @@ describe('Domoticz', function()
 			assert.is_same('{"a":10,"b":20}', domoticz.utils.toJSON(t))
 		end)
 
+		it('should convert from lines', function()
+			local lines = 'a\nb\nc'
+			assert.is_same({
+				[1] = 'a',
+				[2] = 'b',
+				[3] = 'c',
+			}, domoticz.utils.fromLines(lines))
+		end)
+
 		it('should convert from json', function()
 			local json = '{"a":10,"b":20}'
 			assert.is_same({
@@ -1067,7 +1193,9 @@ describe('Domoticz', function()
 
 		it('should split a string ', function()
 			assert.is_same(domoticz.utils.stringSplit("A-B-C", "-")[2],"B")
-			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua")[7], "Domoticz.lua")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua", "%s%p")[7], "Domoticz")
+			assert.is_same(domoticz.utils.stringSplit("I forgot to include this in Domoticz.lua", "%p")[2], "lua")
 		end)
 	end)
 

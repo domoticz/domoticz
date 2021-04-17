@@ -17,18 +17,17 @@ namespace Plugins {
 		bool	m_bAllPluginsStarted;
 		int		m_iPollInterval;
 
-		void*	m_InitialPythonThread;
+		static	void*	m_InitialPythonThread;
 
 		static	std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
 		static	std::map<std::string, std::string>		m_PluginXml;
 
 		std::shared_ptr<std::thread> m_thread;
-		std::mutex m_mutex;
 
 		void Do_Work();
 	public:
 		CPluginSystem();
-		~CPluginSystem(void);
+		~CPluginSystem() = default;
 
 		bool StartPluginSystem();
 		void BuildManifest();
@@ -39,7 +38,7 @@ namespace Plugins {
 		bool	StopPluginSystem();
 		void	AllPluginsStarted() { m_bAllPluginsStarted = true; };
 		static void LoadSettings();
-		void	DeviceModified(uint64_t ID);
+		void	DeviceModified(uint64_t DevIdx);
 		void*	PythonThread() { return m_InitialPythonThread; };
 	};
 };

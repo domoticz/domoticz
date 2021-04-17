@@ -8,7 +8,6 @@
 #include "hardwaretypes.h"
 
 #include <algorithm>
-#include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <ctime>
 #include <iostream>
@@ -34,11 +33,6 @@ MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const
 	m_HwdID = ID;
 }
 
-MySensorsSerial::~MySensorsSerial()
-{
-
-}
-
 bool MySensorsSerial::StartHardware()
 {
 	RequestStart();
@@ -52,7 +46,7 @@ bool MySensorsSerial::StartHardware()
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&MySensorsSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	StartSendQueue();
 	return (m_thread != nullptr);
@@ -75,7 +69,7 @@ void MySensorsSerial::Do_Work()
 {
 	int sec_counter = 0;
 
-	_log.Log(LOG_STATUS, "MySensors: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(1000))
 	{
@@ -89,7 +83,7 @@ void MySensorsSerial::Do_Work()
 		{
 			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS, "MySensors: retrying in %d seconds...", RETRY_DELAY);
+				Log(LOG_STATUS, "retrying in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
@@ -101,7 +95,7 @@ void MySensorsSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "MySensors: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool MySensorsSerial::OpenSerialDevice()
@@ -110,7 +104,7 @@ bool MySensorsSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "MySensors: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
 		openOnlyBaud(
 			m_szSerialPort,
@@ -129,9 +123,9 @@ bool MySensorsSerial::OpenSerialDevice()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "MySensors: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -139,7 +133,7 @@ bool MySensorsSerial::OpenSerialDevice()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "MySensors: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
 #else
@@ -189,7 +183,7 @@ bool MySensorsSerial::OpenSerialDevice()
 #endif
 	m_bIsStarted = true;
 	m_LineReceived.clear();
-	setReadCallback(boost::bind(&MySensorsSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 	return true;
 	}

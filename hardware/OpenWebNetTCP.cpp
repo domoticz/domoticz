@@ -29,6 +29,8 @@ License: Public domain
 
 #include <openssl/sha.h>
 
+#include "../notifications/NotificationHelper.h"
+
 #define OPENWEBNET_HEARTBEAT_DELAY      1
 #define OPENWEBNET_STATUS_NB_HEARTBEAT  600
 #define OPENWEBNET_RETRY_DELAY          30
@@ -39,7 +41,13 @@ License: Public domain
 #define	SCAN_TIME_REQ_AUTO_UPDATE_POWER	(14400) // 4hour = 240min = 14400sec
 #define SCAN_TIME_REQ_ENERGY_TOTALIZER	(900)	// 15min = 900sec
 
-#define OPENWEBNET_GROUP_ID				0x00008000
+/* 2 bits function.. */
+#define OPENWEBNET_DEFAULT				0x00000000	// 0
+#define OPENWEBNET_2CHARS				0x00001000	// 1
+#define OPENWEBNET_4CHARS				0x00002000	// 2
+#define OPENWEBNET_AREA_ID				0x00004000	// 4
+#define OPENWEBNET_GROUP_ID				0x00008000	// 8
+#define OPENWEBNET_MASK_WHERE_FUNCT		0x0000f000
 
 #define OPENWEBNET_AUTOMATION					"AUTOMATION"
 #define OPENWEBNET_LIGHT						"LIGHT"
@@ -67,25 +75,20 @@ enum
  /**
 	 Create new hardware OpenWebNet instance
  **/
-COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime) : m_szIPAddress(IPAddress)
+COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownSynch) : m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_ownPassword = ownPassword;
 
-	if (!ownScanTime)
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan devices DISABLED!");
+	Log(LOG_STATUS, "scan devices %s(%d)!", ownScanTime ? "ENABLED" : "DISABLED", ownScanTime);
+	Log(LOG_STATUS, "sync time %s(%d)!", ownSynch ? "ENABLED" : "DISABLED", ownSynch);
 
 	m_ownScanTime = ownScanTime;
+	m_ownSynch = ownSynch * 60;	// minutes to seconds..
+	
 	m_heartbeatcntr = OPENWEBNET_HEARTBEAT_DELAY;
-	m_pStatusSocket = NULL;
-}
-
-/**
-	destroys hardware OpenWebNet instance
-**/
-COpenWebNetTCP::~COpenWebNetTCP(void)
-{
+	m_pStatusSocket = nullptr;
 }
 
 /**
@@ -97,19 +100,20 @@ bool COpenWebNetTCP::StartHardware()
 
 	m_bIsStarted = true;
 	mask_request_status = 0x1; // Set scan all devices
-	LastScanTimeEnergy = LastScanTimeEnergyTot = 0;	// Force first request command
+	LastScanTimeEnergy = LastScanTimeEnergyTot = LastScanTime = LastScanSync = 0;	// Force first request command
 
 	//Start monitor thread
-	m_monitorThread = std::make_shared<std::thread>(&COpenWebNetTCP::MonitorFrames, this);
+	m_monitorThread = std::make_shared<std::thread>([this] { MonitorFrames(); });
 	SetThreadName(m_monitorThread->native_handle(), "OpenWebNetTCPMF");
 
 	//Start worker thread
-	if (m_monitorThread != NULL) {
-		m_heartbeatThread = std::make_shared<std::thread>(&COpenWebNetTCP::Do_Work, this);
+	if (m_monitorThread != nullptr)
+	{
+		m_heartbeatThread = std::make_shared<std::thread>([this] { Do_Work(); });
 		SetThreadName(m_heartbeatThread->native_handle(), "OpenWebNetTCPW");
 	}
 
-	return (m_monitorThread != NULL && m_heartbeatThread != NULL);
+	return (m_monitorThread != nullptr && m_heartbeatThread != nullptr);
 }
 
 /**
@@ -120,7 +124,7 @@ bool COpenWebNetTCP::StopHardware()
 	RequestStop();
 
 	//Force socket close to stop the blocking thread?
-	if (m_pStatusSocket != NULL)
+	if (m_pStatusSocket != nullptr)
 	{
 		m_pStatusSocket->close();
 	}
@@ -158,12 +162,12 @@ bool COpenWebNetTCP::StopHardware()
 **/
 void COpenWebNetTCP::disconnect()
 {
-	if (m_pStatusSocket != NULL)
+	if (m_pStatusSocket != nullptr)
 	{
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: disconnect");
+		Log(LOG_STATUS, "disconnect");
 		m_pStatusSocket->close();
 		delete m_pStatusSocket;
-		m_pStatusSocket = NULL;
+		m_pStatusSocket = nullptr;
 	}
 }
 
@@ -173,9 +177,8 @@ void COpenWebNetTCP::disconnect()
 **/
 bool COpenWebNetTCP::isStatusSocketConnected()
 {
-	return m_pStatusSocket != NULL && m_pStatusSocket->getState() == csocket::CONNECTED;
+	return m_pStatusSocket != nullptr && m_pStatusSocket->getState() == csocket::CONNECTED;
 };
-
 
 /**
    write ...
@@ -185,7 +188,7 @@ bool COpenWebNetTCP::ownWrite(csocket *connectionSocket, const char* pdata, size
 	int bytesWritten = connectionSocket->write(pdata, size);
 	if (bytesWritten != size) 
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: partial write: %u/%u", bytesWritten, (unsigned int)size);
+		Log(LOG_ERROR, "partial write: %u/%u", bytesWritten, (unsigned int)size);
 		return (false);
 	}
 	return (true);
@@ -317,7 +320,7 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 /**
 	Perform conversion 80/128 DEC-chars to 40/64 HEX-chars
 **/
-const std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
+std::string COpenWebNetTCP::decToHexStrConvert(const std::string &paramString)
 {
 	char retStr[256];
 	size_t idxb, idxh;
@@ -332,7 +335,7 @@ const std::string COpenWebNetTCP::decToHexStrConvert(std::string paramString)
 /**
 	Perform conversion HEX-40/64 chars to 80/128 DEC-chars
 **/
-const std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
+std::string COpenWebNetTCP::hexToDecStrConvert(const std::string &paramString)
 {
 	uint32_t bval;
 	size_t idxb, idxh;
@@ -351,7 +354,7 @@ const std::string COpenWebNetTCP::hexToDecStrConvert(std::string paramString)
 /**
 	Perform conversion byte to HEX-chars
 **/
-const std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray)
+std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t digestLen, char *pArray)
 {
 	size_t idxb, idxh;
 	char arrayOfChar1[] = "0123456789abcdef";
@@ -368,7 +371,7 @@ const std::string COpenWebNetTCP::byteToHexStrConvert(uint8_t *digest, size_t di
 /**
 	Perform SHA1/SHA256 and convert into HEX-chars
 **/
-const std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type)
+std::string COpenWebNetTCP::shaCalc(const std::string &paramString, int auth_type)
 {
 	uint8_t *digest;
 	uint8_t strArray[OPENWEBNET_BUFFER_SIZE];
@@ -378,19 +381,14 @@ const std::string COpenWebNetTCP::shaCalc(std::string paramString, int auth_type
 	if (auth_type == 0)
 	{
 		// Perform SHA1
-		digest = SHA1(strArray, paramString.length(), 0);	
+		digest = SHA1(strArray, paramString.length(), nullptr);
 		char arrayOfChar2[(SHA_DIGEST_LENGTH * 2) + 1];
 		return (byteToHexStrConvert(digest, SHA_DIGEST_LENGTH, arrayOfChar2));
 	}
-	else
-	{
-		// Perform SHA256
-		digest = SHA256(strArray, paramString.length(), 0);
-		char arrayOfChar2[(SHA256_DIGEST_LENGTH * 2) + 1];
-		return (byteToHexStrConvert(digest, SHA256_DIGEST_LENGTH, arrayOfChar2));
-	}
-
-	return(std::string(""));
+	// Perform SHA256
+	digest = SHA256(strArray, paramString.length(), nullptr);
+	char arrayOfChar2[(SHA256_DIGEST_LENGTH * 2) + 1];
+	return (byteToHexStrConvert(digest, SHA256_DIGEST_LENGTH, arrayOfChar2));
 }
 
 /**
@@ -408,7 +406,7 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 	if (responseSrv.IsPwdFrame())
 	{
 		struct timeval tv;
-		gettimeofday(&tv, NULL);
+		gettimeofday(&tv, nullptr);
 
 		// receive Ra
 		const std::string strRcvSrv = responseSrv.Extract_who();							  // Ra from server in DEC-chars
@@ -423,12 +421,12 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 
 #if 0
 		// print some logs for debug..
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: HMAC Ra digits received: '%s'", strRcvSrv.c_str());
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: Ra = '%s'", strRa.c_str());
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: Rb = '%s'", strRb.c_str());
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: A = '%s', B = '%s'", strA.c_str(), strB.c_str());
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: pwd = '%s', Kab = '%s'", m_ownPassword.c_str(), strKab.c_str());
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: HMAC(Ra,Rb,A,B,Kab) = '%s'", strHMAC.c_str());
+		Log(LOG_STATUS, "HMAC Ra digits received: '%s'", strRcvSrv.c_str());
+		Log(LOG_STATUS, "Ra = '%s'", strRa.c_str());
+		Log(LOG_STATUS, "Rb = '%s'", strRb.c_str());
+		Log(LOG_STATUS, "A = '%s', B = '%s'", strA.c_str(), strB.c_str());
+		Log(LOG_STATUS, "pwd = '%s', Kab = '%s'", m_ownPassword.c_str(), strKab.c_str());
+		Log(LOG_STATUS, "HMAC(Ra,Rb,A,B,Kab) = '%s'", strHMAC.c_str());
 #endif
 		// Write HMAC
 		const std::string strSend = "*#" + hexToDecStrConvert(strRb) + "*" + hexToDecStrConvert(strHMAC) + "##";
@@ -442,26 +440,23 @@ bool COpenWebNetTCP::hmacAuthentication(csocket *connectionSocket, int auth_type
 			const std::string strRcvSrv2 = decToHexStrConvert(responseSrv2.Extract_who());
 			const std::string strHMAC2 = shaCalc(strRa + strRb + strKab, auth_type);
 
-			if (strHMAC2.compare(strRcvSrv2) == 0)
+			if (strHMAC2 == strRcvSrv2)
 			{
 				ownWrite(connectionSocket, OPENWEBNET_MSG_OPEN_OK, strlen(OPENWEBNET_MSG_OPEN_OK)); // Write ACK
 				return (true); // HMAC authentication OK
 			}
-			else
-			{
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC(Ra,Rb,Kab) received: '%s'", strRcvSrv2.c_str());
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: not match with: '%s'", strHMAC2.c_str());
-			}
+			Log(LOG_ERROR, "HMAC(Ra,Rb,Kab) received: '%s'", strRcvSrv2.c_str());
+			Log(LOG_ERROR, "not match with: '%s'", strHMAC2.c_str());
 		}
 	}
-	_log.Log(LOG_ERROR, "COpenWebNetTCP: HMAC authentication ERROR!");
+	Log(LOG_ERROR, "HMAC authentication ERROR!");
 	return false; // error!
 }
 
 /**
 	Perform nonce-hash authentication
 **/
-bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket, std::string nonce)
+bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket, const std::string &nonce)
 {
 	std::stringstream frame;
 	/** calculate nonce-hash **/
@@ -478,7 +473,7 @@ bool COpenWebNetTCP::nonceHashAuthentication(csocket *connectionSocket, std::str
 
 	if (responseNonce2.IsOKFrame()) return true; // hash authentication OK
 
-	_log.Log(LOG_ERROR, "COpenWebNetTCP: hash authentication ERROR!");
+	Log(LOG_ERROR, "hash authentication ERROR!");
 	return false;
 }
 
@@ -492,53 +487,50 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 	int read = ownRead(connectionSocket, databuffer, sizeof(databuffer));
 	bt_openwebnet responseNonce(std::string(databuffer, read));
 
-	//_log.Log(LOG_STATUS, "COpenWebNetTCP: authentication rcv: '%s'", responseNonce.Extract_frame().c_str());
+	//Log(LOG_STATUS, "authentication rcv: '%s'", responseNonce.Extract_frame().c_str());
 
 	if (responseNonce.IsPwdFrame())
 	{
 		if (!m_ownPassword.length())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: no password set for a unofficial bticino gateway");
+			Log(LOG_ERROR, "no password set for a unofficial bticino gateway");
 			return false;
 		}
 
 		// Hash authentication for unofficial gateway
 		return(nonceHashAuthentication(connectionSocket, responseNonce.Extract_who()));
 	}
-	else if (responseNonce.IsNormalFrame())
+	if (responseNonce.IsNormalFrame())
 	{
 		if (!m_ownPassword.length())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: bticino gateway requires the password");
+			Log(LOG_ERROR, "bticino gateway requires the password");
 			return false;
 		}
 
 		// TODO: only alphanumeric password....
 
 		const std::string strFrame = responseNonce.Extract_frame();
-		if (strFrame.compare(OPENWEBNET_AUTH_REQ_SHA1) == 0) 	// *98*1##
+		if (strFrame == OPENWEBNET_AUTH_REQ_SHA1) // *98*1##
 		{
 			// HMAC authentication with SHA-1
 			return (hmacAuthentication(connectionSocket, 0));
 		}
-		else if	(strFrame.compare(OPENWEBNET_AUTH_REQ_SHA2) == 0)		// *98*2##
+		if (strFrame == OPENWEBNET_AUTH_REQ_SHA2) // *98*2##
 		{
 			// HMAC authentication with SHA-256
 			return (hmacAuthentication(connectionSocket, 1));
 		}
-		else
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: frame request error:'%s'", strFrame.c_str());
-			return false;
-		}
+		Log(LOG_ERROR, "frame request error:'%s'", strFrame.c_str());
+		return false;
 	}
-	else if (responseNonce.IsOKFrame())
+	if (responseNonce.IsOKFrame())
 	{
 		// no authentication required..ok!
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: authentication OK, no password!");
+		//Log(LOG_STATUS, "authentication OK, no password!");
 		return true;
 	}
-	_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR_FRAME? %d", responseNonce.m_frameType);
+	Log(LOG_ERROR, "ERROR_FRAME? %d", responseNonce.m_frameType);
 	return false;
 }
 
@@ -547,10 +539,10 @@ bool COpenWebNetTCP::ownAuthentication(csocket *connectionSocket)
 **/
 csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 {
-	if (m_szIPAddress.size() == 0 || m_usIPPort == 0 || m_usIPPort > 65535)
+	if (m_szIPAddress.empty() || m_usIPPort == 0 || m_usIPPort > 65535)
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: Cannot connect to gateway, empty  IP Address or Port");
-		return NULL;
+		Log(LOG_ERROR, "Cannot connect to gateway, empty  IP Address or Port");
+		return nullptr;
 	}
 
 	/* new socket for command and session connection */
@@ -559,9 +551,9 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 	connectionSocket->connect(m_szIPAddress.c_str(), m_usIPPort);
 	if (connectionSocket->getState() != csocket::CONNECTED)
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: Cannot connect to gateway, Unable to connect to specified IP Address on specified Port");
+		Log(LOG_ERROR, "Cannot connect to gateway, Unable to connect to specified IP Address on specified Port");
 		disconnect();  // disconnet socket if present
-		return NULL;
+		return nullptr;
 	}
 
 	char databuffer[OPENWEBNET_BUFFER_SIZE];
@@ -569,14 +561,15 @@ csocket* COpenWebNetTCP::connectGwOwn(const char *connectionMode)
 	bt_openwebnet responseSession(std::string(databuffer, read));
 	if (!responseSession.IsOKFrame())
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: failed to begin session, (%s:%d)-> '%s'", m_szIPAddress.c_str(), m_usIPPort, databuffer);
+		Log(LOG_ERROR, "failed to begin session, (%s:%d)-> '%s'", m_szIPAddress.c_str(), m_usIPPort, databuffer);
 		disconnect();  // disconnet socket if present
-		return NULL;
+		return nullptr;
 	}
 
 	ownWrite(connectionSocket, connectionMode, strlen(connectionMode));
 
-	if (!ownAuthentication(connectionSocket)) return NULL;
+	if (!ownAuthentication(connectionSocket))
+		return nullptr;
 
 	return connectionSocket;
 }
@@ -591,18 +584,18 @@ void COpenWebNetTCP::MonitorFrames()
 		if (!isStatusSocketConnected())
 		{
 			disconnect();  // disconnet socket if present
-			time_t atime = time(NULL);
+			time_t atime = time(nullptr);
 			if ((atime%OPENWEBNET_RETRY_DELAY) == 0)
 			{
 				if ((m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION)))
 				{
 					// Monitor session correctly open
-					_log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+					Log(LOG_STATUS, "Monitor session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 					sOnConnected(this);
 				}
 				else
 				{
-					_log.Log(LOG_STATUS, "COpenWebNetTCP: TCP/IP monitor not connected, retrying in %d seconds...", OPENWEBNET_RETRY_DELAY);
+					Log(LOG_STATUS, "TCP/IP monitor not connected, retrying in %d seconds...", OPENWEBNET_RETRY_DELAY);
 					sleep_seconds(1);
 				}
 			}
@@ -611,7 +604,7 @@ void COpenWebNetTCP::MonitorFrames()
 		{
 			// Connected
 			bool bIsDataReadable = true;
-			m_pStatusSocket->canRead(&bIsDataReadable, 3.0f);
+			m_pStatusSocket->canRead(&bIsDataReadable, 3.0F);
 			if (bIsDataReadable)
 			{
 				char data[OPENWEBNET_BUFFER_SIZE];
@@ -621,7 +614,7 @@ void COpenWebNetTCP::MonitorFrames()
 					break;
 
 				if ((bread == 0) || (bread < 0)) {
-					_log.Log(LOG_ERROR, "COpenWebNetTCP: TCP/IP monitor connection closed!");
+					Log(LOG_ERROR, "TCP/IP monitor connection closed!");
 					disconnect();  // disconnet socket if present
 				}
 				else
@@ -633,11 +626,11 @@ void COpenWebNetTCP::MonitorFrames()
 					for (std::vector<bt_openwebnet>::iterator iter = responses.begin(); iter != responses.end(); iter++) {
 						if (iter->IsNormalFrame() || iter->IsMeasureFrame())
 						{
-							_log.Log(LOG_STATUS, "COpenWebNetTCP: received=%s", bt_openwebnet::frameToString(*iter).c_str());
+							Log(LOG_STATUS, "received=%s", bt_openwebnet::frameToString(*iter).c_str());
 							UpdateDeviceValue(iter);
 						}
 						//else
-						//    _log.Log(LOG_ERROR, "COpenWebNetTCP: SKIPPED FRAME=%s", frameToString(*iter).c_str());
+						//    Log(LOG_ERROR, "SKIPPED FRAME=%s", frameToString(*iter).c_str());
 					}
 				}
 			}
@@ -656,7 +649,7 @@ void COpenWebNetTCP::MonitorFrames()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: TCP/IP monitor worker stopped...");
+	Log(LOG_STATUS, "TCP/IP monitor worker stopped...");
 }
 
 /**
@@ -701,9 +694,9 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
-	if (result.size() >= 1)
+	if (!result.empty())
 	{
-		std::string sup, sValue = result[0][0].c_str();
+		std::string sup, sValue = result[0][0];
 
 		if (usage)
 			*usage = (float)atof(sValue.c_str());
@@ -735,7 +728,7 @@ void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, co
 	double energy = 0.;
 
 	int NodeId = (iInterface << 8) | who;
-	GetValueMeter(NodeId, where, NULL, &energy);
+	GetValueMeter(NodeId, where, nullptr, &energy);
 	SendKwhMeter(NodeId, where, BatteryLevel, fval, (energy / 1000.), devname);
 }
 
@@ -752,7 +745,7 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 
 	double usage = 0.;
 	int NodeId = (iInterface << 8) | who;
-	GetValueMeter(NodeId, where, &usage, NULL);
+	GetValueMeter(NodeId, where, &usage, nullptr);
 	SendKwhMeter(NodeId, where, BatteryLevel, usage, fval, devname);
 }
 
@@ -805,7 +798,7 @@ void COpenWebNetTCP::SendGeneralSwitch(const int NodeID, const uint8_t ChildID, 
 	gSwitch.cmnd = cmd;
 	gSwitch.level = level;
 	gSwitch.rssi = (uint8_t)RssiLevel;
-	sDecodeRXMessage(this, (const unsigned char*)& gSwitch, defaultname.c_str(), BatteryLevel);
+	sDecodeRXMessage(this, (const unsigned char*)& gSwitch, defaultname.c_str(), BatteryLevel, m_Name.c_str());
 }
 
 /**
@@ -856,12 +849,10 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		cmd = gswitch_sOn;
 		break;
 	default:
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: Command %d invalid!", Command);
+		Log(LOG_ERROR, "Command %d invalid!", Command);
 		return;
 	}
 	
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: A-Command %d, cmd:%d", Command, cmd);
-
 	// if (iLevel < 0)  is a Normal Frame and device is standard
 	// if (iLevel >= 0) is a Meseaure Frame (percentual) and device is Advanced
 	int level = (iLevel < 0) ? 0 : iLevel;
@@ -883,7 +874,6 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		cmd = (iLevel == 0) ? gswitch_sOff : gswitch_sSetLevel;
 	}
 
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: B-Command %d, cmd:%d", Command, cmd);
 	SendGeneralSwitch(NodeID, iInterface, BatteryLevel, cmd, level, devname);
 }
 
@@ -999,6 +989,87 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 }
 
 /**
+	Decode where and get tipe of command with details..
+**/
+void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where, std::vector<std::string> whereParam, std::string *devname, int *iWhere)
+{
+	int wlen = where.length();	
+	int iArea = -1;
+	*iWhere = -1;
+
+	if (wlen == 0)
+	{
+		/* GROUP light device */
+		if (!whereParam.empty())
+		{
+			*iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
+			*devname += " GROUP " + whereParam[0];
+		}
+	}
+	else if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION))
+	{
+		/*
+			Decode where...
+				A = 00;			PL [01 - 15];
+				A [1 -9];		PL [1 - 9];
+				A = 10;			PL [01 - 15];
+				A [01 - 09];	PL [10 - 15];
+		*/
+		if (wlen == 1)
+		{
+			// General o Area 1-9 command
+			int tmp = atoi(where.c_str());
+			if (tmp > 0) iArea = tmp;
+		}
+		else if ((wlen == 2) && (where == "00"))	// Area 0 (00) command
+		{
+			iArea = 0;
+		}
+		else if ((wlen == 3) && (where == "100"))	// area 10 (100) command
+		{
+			iArea = 10;
+		}
+		else									// generic Area+PL command
+		{
+			*iWhere = atoi(where.c_str());
+			*devname += " " + where;
+			if (wlen == 4)	// device with 4 chars command
+				*iWhere += OPENWEBNET_4CHARS;
+			else if ((wlen == 2) && (*iWhere < 10))
+				*iWhere += OPENWEBNET_2CHARS;
+		}
+
+		/*
+			General o area command:
+
+			iWhere = -1, iArea = -1		-> General command
+			iWhere = -1, iArea = 0-10	-> Area command
+			iWhere = xxxx iArea = -1	-> A-PL command
+		*/
+		if (*iWhere < 0)
+		{
+			if (iArea < 0)	// General command
+			{
+				*devname += " GEN " + where;
+				*iWhere = 0;
+			}
+			else			// Area command
+			{
+				mask_request_status |= (0x1 << (iArea + 1)); // Gen or area, need a refresh devices status
+				*devname += " AREA " + where;
+				*iWhere = OPENWEBNET_AREA_ID + iArea;
+			}
+		}
+	}
+	else
+	{
+		// others who..
+		*iWhere = atoi(where.c_str());
+		*devname += " " + where;
+	}
+}
+
+/**
 	Insert/Update device
 **/
 void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter)
@@ -1010,52 +1081,55 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	std::vector<std::string> whatParam = iter->Extract_whatParameters();
 	std::string dimension = iter->Extract_dimension();
 	std::string value = iter->Extract_value(0);
+	std::vector<std::string> valueParam = iter->Extract_values();
 	std::string sInterface = iter->Extract_interface();
 	std::string devname, sCommand;
 	int iAppValue, iWhere, iLevel;
 
 	switch (atoi(who.c_str())) {
-	case WHO_LIGHTING:									// 1
+	case WHO_LIGHTING:	// 1
+
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
-			return;
-		}
-
-		iAppValue = atoi(what.c_str());
-		if (iAppValue == 1000) // What = 1000 (Command translation)
-			iAppValue = atoi(whatParam[0].c_str());
-
-		iWhere = atoi(where.c_str());
-
-		devname = OPENWEBNET_LIGHT;
-		if ((!whereParam.empty()) && (iWhere == 0))
-		{
-			/* GROUP light device */
-			iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
-			devname += " GROUP " + whereParam[0];
-		}
-		else if (iWhere < MAX_WHERE_AREA)
-		{
-			/* AREA light device */
-			mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-			if (iWhere == 0)
-				devname += " GEN " + where;
+			if (iter->IsMeasureFrame())
+			{
+				switch (atoi(value.c_str()))
+				{
+				case LIGHTING_DIMENSION_SET_UP_LEVEL_WITH_GIVEN_SPEED:				// 1
+				case LIGHTING_DIMENSION_TEMPORISATION:								// 2
+				case LIGHTING_DIMENSION_REQUIRED_ONLY_ON_LIGHT:						// 3
+				case LIGHTING_DIMENSION_STATUS_DIMMER_100_LEVELS_WITH_GIVEN_SPEED:	// 4
+				case LIGHTING_DIMENSION_WORKING_TIME_LAMP:							// 8
+				case LIGHTING_DIMENSION_MAX_WORKING_TIME_LAMP:						// 9
+					// TODO: manage lighting parameter..
+					return;
+				default:
+					Log(LOG_ERROR, "Who=%s measure error -> param=%u", who.c_str(), atoi(value.c_str()));
+					return;
+				}
+			}
 			else
-				devname += " AREA " + where;
+			{
+				Log(LOG_ERROR, "Who=%s error frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
+				return;
+			}
 		}
 		else
 		{
-			/* Normal light device */
-			devname += " " + where;
-		}
+			// NORMALE FRAME..
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
+		}		
 
+		devname = OPENWEBNET_LIGHT;
+		decodeWhereAndFill(WHO_LIGHTING, where, whereParam, &devname, &iWhere);
 		UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
 		break;
 	case WHO_AUTOMATION:								// 2
 		if (!iter->IsNormalFrame() && !iter->IsMeasureFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+			Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
 			return;
 		}
 		if (iter->IsMeasureFrame()) // Advanced motor actuator (percentual) *#2*19*10*10*65*000*0##
@@ -1067,29 +1141,8 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			if (iAppValue == 1000) // What = 1000 (Command translation)
 				iAppValue = atoi(whatParam[0].c_str());
 
-			iWhere = atoi(where.c_str());
-
 			devname = OPENWEBNET_AUTOMATION;
-			if ((!whereParam.empty()) && (iWhere == 0))
-			{
-				/* GROUP automation device */
-				iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
-				devname += " GROUP " + whereParam[0];
-			}
-			else if (iWhere < MAX_WHERE_AREA)
-			{
-				/* AREA automation device */
-				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-				if (iWhere == 0)
-					devname += " GEN " + where;
-				else
-					devname += " AREA " + where;
-			}
-			else
-			{
-				/* Normal automation device */
-				devname += " " + where;
-			}
+			decodeWhereAndFill(WHO_AUTOMATION, where, whereParam, &devname, &iWhere);
 			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), iLevel, 255, devname.c_str());
 		}
 		if (iter->IsNormalFrame())
@@ -1098,30 +1151,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			if (iAppValue == 1000) // What = 1000 (Command translation)
 				iAppValue = atoi(whatParam[0].c_str());
 
-			iWhere = atoi(where.c_str());
-
-			devname = OPENWEBNET_AUTOMATION;
-			if ((!whereParam.empty()) && (iWhere == 0))
-			{
-				/* GROUP automation device */
-				iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
-				devname += " GROUP " + whereParam[0];
-			}
-			else if (iWhere < MAX_WHERE_AREA)
-			{
-				/* AREA automation device */
-				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-				if (iWhere == 0)
-					devname += " GEN " + where;
-				else
-					devname += " AREA " + where;
-			}
-			else
-			{
-				/* Normal automation device */
-				devname += " " + where;
-			}
-
+			decodeWhereAndFill(WHO_AUTOMATION, where, whereParam, &devname, &iWhere);
 			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), -1, 255, devname.c_str());
 		}
 		break;
@@ -1129,9 +1159,9 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		if (!iter->IsMeasureFrame())
 		{
 			if (iter->IsNormalFrame())
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
+				Log(LOG_STATUS, "who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
 			else
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
 			return;
 		}
 		// 4: this is a openwebnet termoregulation update/poll messagge, setup devname
@@ -1155,7 +1185,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), devname.c_str());
 			break;
 		default:
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+			Log(LOG_STATUS, "who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
 			break;
 		}
 		break;
@@ -1163,27 +1193,27 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_BURGLAR_ALARM:                         // 5
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
+			Log(LOG_ERROR, "Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
 			return;
 		}
 		
 		switch (atoi(what.c_str())) {
 		case 0:         //maintenace
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm in Maintenance");
+			//Log(LOG_STATUS, "Alarm in Maintenance");
 			iWhere = ID_DEV_BURGLAR_SYS_STATUS; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Maintenance";
 			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 2, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		case 1:         //active
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Active");
+			//Log(LOG_STATUS, "Alarm Active");
 			iWhere = ID_DEV_BURGLAR_SYS_STATUS; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Active";
 			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		case 2:         //disabled
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Inactive");
+			//Log(LOG_STATUS, "Alarm Inactive");
 			iWhere = ID_DEV_BURGLAR_SYS_STATUS; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
 			sCommand = "Inactive";
@@ -1191,7 +1221,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 4:         //battery fault
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Fault");
+			//Log(LOG_STATUS, "Alarm Battery Fault");
 			iWhere = ID_DEV_BURGLAR_BATTERY; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
 			sCommand = "Battery Fault";
@@ -1199,7 +1229,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 5:         //battery ok
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery OK");
+			//Log(LOG_STATUS, "Alarm Battery OK");
 			iWhere = ID_DEV_BURGLAR_BATTERY; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
 			sCommand = "Battery Ok";
@@ -1207,7 +1237,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 6:			//no network
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm no network");
+			//Log(LOG_STATUS, "Alarm no network");
 			iWhere = ID_DEV_BURGLAR_NETWORK; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_NETWORK;
 			sCommand = "No network";
@@ -1215,7 +1245,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 7:			//network ok
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm network ok");
+			//Log(LOG_STATUS, "Alarm network ok");
 			iWhere = ID_DEV_BURGLAR_NETWORK; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_NETWORK;
 			sCommand = "Network OK";
@@ -1223,7 +1253,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 8: 	//engaged
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Engaged");
+			//Log(LOG_STATUS, "Alarm Engaged");
 			iWhere = ID_DEV_BURGLAR_SYS_ENGAGEMENT; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT;
 			sCommand = "Engaged";
@@ -1231,7 +1261,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 9:         //disengaged
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Disengaged");
+			//Log(LOG_STATUS, "Alarm Disengaged");
 			iWhere = ID_DEV_BURGLAR_SYS_ENGAGEMENT; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT;
 			sCommand = "DisEngaged";
@@ -1239,7 +1269,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		case 10:         //battery Unloads
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Unloads");
+			//Log(LOG_STATUS, "Alarm Battery Unloads");
 			iWhere = ID_DEV_BURGLAR_BATTERY; // force where because not exist
 			devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
 			sCommand = "Battery Unloads";
@@ -1248,7 +1278,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 		case 11:         // zone N Active
 			iWhere = atoi(whereParam[0].c_str());
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",iWhere);
+			//Log(LOG_STATUS, "Alarm Zone %d Active",iWhere);
 			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
 			devname += " " + whereParam[0];
 			sCommand = "Active";
@@ -1257,7 +1287,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 		case 15:         //zone N INTRUSION ALARM
 			iWhere = atoi(whereParam[0].c_str());
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d INTRUSION ALARM", iWhere);
+			//Log(LOG_STATUS, "Alarm Zone %d INTRUSION ALARM", iWhere);
 			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
 			devname += " " + whereParam[0];
 			sCommand = "Intrusion";
@@ -1266,7 +1296,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 
 		case 18:         // zone N Not Active
 			iWhere = atoi(whereParam[0].c_str());
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Not active", iWhere);
+			//Log(LOG_STATUS, "Alarm Zone %d Not active", iWhere);
 			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
 			devname += " " + whereParam[0];
 			sCommand = "Inactive";
@@ -1274,7 +1304,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 
 		default:
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+			Log(LOG_STATUS, "who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
 			break;
 		}
 		break;
@@ -1290,7 +1320,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		**/
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+			Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
 			return;
 		}
 
@@ -1302,7 +1332,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:              // 25
 		if (!iter->IsNormalFrame())
 		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
+			Log(LOG_ERROR, "Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->m_frameType);
 			return;
 		}
 
@@ -1312,27 +1342,27 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		case 21:         //Short pressure
 			iWhere = atoi(where.c_str());
 			iAppValue = atoi(whatParam[0].c_str());
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Short pressure %d Button %d", iWhere, iAppValue);
+			Log(LOG_STATUS, "CEN PLUS Short pressure %d Button %d", iWhere, iAppValue);
 			devname = OPENWEBNET_CENPLUS;
-			devname += " " + where + " Short Press Button " + whatParam[0].c_str();
+			devname += " " + where + " Short Press Button " + whatParam[0];
 			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 
 		case 22:         //Start of extended pressure
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN Start of extended pressure");
+			Log(LOG_STATUS, "CEN Start of extended pressure");
 			break;
 
 		case 23:         //Extended pressure
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN Extended pressure");
+			Log(LOG_STATUS, "CEN Extended pressure");
 			break;
 
 		case 24:         //End of Extended pressure
 			iWhere = atoi(where.c_str());
 			iAppValue = atoi(whatParam[0].c_str());
 
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Long pressure %d Button %d", iWhere, iAppValue);
+			Log(LOG_STATUS, "CEN PLUS Long pressure %d Button %d", iWhere, iAppValue);
 			devname = OPENWEBNET_CENPLUS;
-			devname += " " + where + " Long Press Button " + whatParam[0].c_str();
+			devname += " " + where + " Long Press Button " + whatParam[0];
 			UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 
@@ -1340,7 +1370,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		case 32:
 			if (where.substr(0, 1) != "3")
 			{
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str(), who.c_str());
+				Log(LOG_ERROR, "Where=%s is not correct for who=%s", where.c_str(), who.c_str());
 				return;
 			}
 
@@ -1357,7 +1387,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			UpdateSwitch(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		default:
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: What=%s is not correct for who=%s", what.c_str(), who.c_str());
+			Log(LOG_ERROR, "What=%s is not correct for who=%s", what.c_str(), who.c_str());
 			return;
 		}
 		break;
@@ -1365,9 +1395,9 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		if (!iter->IsMeasureFrame())
 		{
 			if (iter->IsNormalFrame())
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
+				Log(LOG_STATUS, "who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
 			else
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
 			return;
 		}
 		devname = OPENWEBNET_ENERGY_MANAGEMENT;
@@ -1382,12 +1412,174 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE:			
 			if (atoi(value.c_str()))
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: Start sending instantaneous consumption %s for %s minutes", where.c_str(), value.c_str());
+				Log(LOG_STATUS, "Start sending instantaneous consumption %s for %s minutes", where.c_str(), value.c_str());
 			else
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: Stop sending instantaneous consumption %s", where.c_str());
+				Log(LOG_STATUS, "Stop sending instantaneous consumption %s", where.c_str());
 			break;
 		default:
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+			Log(LOG_STATUS, "who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+			break;
+		}
+		break;
+
+	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
+		int timezone, model;
+		switch (atoi(dimension.c_str()))
+		{
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME:					// 0,		/* Read/Write */
+			if (valueParam.size() >= 4)
+			{
+				timezone = atoi(valueParam[3].c_str());
+				Log(LOG_STATUS, "Gateway Time %s:%s:%s GMT%c%u", valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str(), 
+																					  (timezone > 99) ? '-' : '+', (timezone % 100));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE:					// 1,		/* Read/Write */
+			if (valueParam.size() >= 4)
+			{
+				Log(LOG_STATUS, "Gateway Date %s %s/%s/%s", valueParam[0].c_str(), valueParam[1].c_str(), 
+																				 valueParam[2].c_str(), valueParam[3].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS:			// 10,		/* Read		  */
+			if (valueParam.size() >= 4)
+			{
+				Log(LOG_STATUS, "Gateway IP Address %u.%u.%u.%u", atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()),
+																					   atoi(valueParam[2].c_str()), atoi(valueParam[3].c_str()));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK:				// 11,		/* Read		  */
+			if (valueParam.size() >= 4)
+			{
+				Log(LOG_STATUS, "Gateway Net Mask %u.%u.%u.%u", atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()),
+																					 atoi(valueParam[2].c_str()), atoi(valueParam[3].c_str()));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS:			// 12,		/* Read		  */
+			if (valueParam.size() >= 6)
+			{
+				Log(LOG_STATUS, "Gateway MAC Address %02X:%02X:%02X:%02X:%02X:%02X",
+														atoi(valueParam[0].c_str()), atoi(valueParam[1].c_str()), atoi(valueParam[2].c_str()),
+														atoi(valueParam[3].c_str()), atoi(valueParam[4].c_str()), atoi(valueParam[5].c_str()));
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE:			// 15,		/* Read		  */
+			if (!valueParam.empty())
+			{
+				model = atoi(valueParam[0].c_str());
+				switch (model)
+				{
+				case GATEWAY_MODEL_MHSERVER:	// 2
+					Log(LOG_STATUS, "COpenWebNetTCP:Model #%u MHServer", model);
+					break;
+				case GATEWAY_MODEL_MH200:		// 4
+					Log(LOG_STATUS, "Model #%u MH200", model);
+					break;
+				case GATEWAY_MODEL_F452:		// 6
+					Log(LOG_STATUS, "Model #%u F452", model);
+					break;
+				case GATEWAY_MODEL_F452V:		// 7
+					Log(LOG_STATUS, "Model #%u F452V", model);
+					break;
+				case GATEWAY_MODEL_MHSERVER2:	// 11
+					Log(LOG_STATUS, "Model #%u MHServer2", model);
+					break;
+				case GATEWAY_MODEL_H4684:		// 13
+					Log(LOG_STATUS, "Model #%u H4684", model);
+					break;
+				default:
+					Log(LOG_STATUS, "Model #%u", model);
+					break;
+				}
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_FIRMWARE_VERSION:		// 16,		/* Read		  */
+			if (valueParam.size() >= 3)
+			{
+				Log(LOG_STATUS, "Gateway Firmware Version %s.%s.%s",
+														valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_UPTIME:				// 19,		/* Read		  */
+			if (valueParam.size() >= 4)
+			{
+				Log(LOG_STATUS, "Gateway UpTime %sdays %sh %sm %ss",
+														valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str(), valueParam[3].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME:			// 22,		/* Read/Write */
+			if (valueParam.size() >= 8)
+			{
+				time_t now, rcv_tm;
+				int delta;
+				struct tm ltime, lnowtime;
+
+				timezone = atoi(valueParam[3].c_str());
+				timezone = ((timezone > 99) ? -(timezone % 100) : (timezone % 100)); // 
+
+				memset(&ltime, 0, sizeof(ltime));
+				ltime.tm_hour = atoi(valueParam[0].c_str());  // hours since midnight - [0, 23]
+				ltime.tm_min = atoi(valueParam[1].c_str());   // minutes after the hour - [0, 59]
+				ltime.tm_sec = atoi(valueParam[2].c_str());   // seconds after the minute - [0, 60] including leap second
+				ltime.tm_wday = atoi(valueParam[4].c_str());  // days since Sunday - [0, 6]
+				ltime.tm_mday = atoi(valueParam[5].c_str());  // day of the month - [1, 31]
+				ltime.tm_mon = atoi(valueParam[6].c_str());   // months since January - [0, 11]
+				ltime.tm_year = atoi(valueParam[7].c_str());  // years since 1900	
+
+				Log(LOG_STATUS, "Gateway DateTime %02u/%02u/%04u - %02u:%02u:%02u GMT%c%u",
+														ltime.tm_mday, ltime.tm_mon, ltime.tm_year,
+														ltime.tm_hour, ltime.tm_min, ltime.tm_sec, (timezone > 0) ? '+' : ' ', timezone);
+
+				if (m_ownSynch)
+				{
+					now = mytime(nullptr);
+					localtime_r(&now, &lnowtime);
+
+					ltime.tm_mon -= 1;		// months since January - [0, 11]
+					ltime.tm_year -= 1900;  // years since 1900	
+					ltime.tm_isdst = lnowtime.tm_isdst;
+					rcv_tm = mktime(&ltime);
+
+					delta = static_cast<int>(now - rcv_tm);
+
+					if ((delta < -60) || (delta > 60))	// delta +-1min
+					{
+						setDateTime(valueParam[3]);	// SET DATE TIME						
+						Log(LOG_STATUS, "Date/Time Change - now:%ld, rcv:%ld, delta: %d", now, rcv_tm, delta);
+
+						/************* notification ************/
+						std::stringstream body;
+						char frame_dt[50];
+						strftime(frame_dt, sizeof(frame_dt) - 1, "%d/%m/%Y %H:%M:%S", &ltime); //set date time 
+						body << frame_dt;
+						body << " - Delta:";
+						body << delta;
+						m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string("OWN Date/Time Change"), body.str(), std::string(""), 0, std::string(""), true);
+						/************* notification ************/						
+					}
+					else
+					{
+						Log(LOG_STATUS, "Date/Time is OK - now:%ld, rcv:%ld, delta: %d", now, rcv_tm, delta);
+					}
+				}
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_KERNEL_VERSION:		// 23,		/* Read		  */
+			if (valueParam.size() >= 3)
+			{
+				Log(LOG_STATUS, "Gateway Kernel Version %s.%s.%s",
+											valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str());
+			}
+			break;
+		case GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION:	// 24		/* Read		  */
+			if (valueParam.size() >= 3)
+			{
+				Log(LOG_STATUS, "Gateway Distribution Version %s.%s.%s",
+											valueParam[0].c_str(), valueParam[1].c_str(), valueParam[2].c_str());
+			}
+			break;
+		default:
+			Log(LOG_STATUS, "who=%s, dimension=%s", who.c_str(), dimension.c_str());
 			break;
 		}
 		break;
@@ -1404,7 +1596,6 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_LOAD_CONTROL:                          // 3
 	case WHO_DOOR_ENTRY_SYSTEM:                     // 6
 	case WHO_MULTIMEDIA:                            // 7
-	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
 	case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
 	case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
 	case WHO_AUDIO:                                 // 16
@@ -1415,14 +1606,55 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 	case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
 	case WHO_DEVICE_DIAGNOSTIC:                     // 1013
 	case WHO_ENERGY_MANAGEMENT_DIAGNOSTIC:			// 1018
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not yet supported!", who.c_str());
+		Log(LOG_ERROR, "Who=%s not yet supported!", who.c_str());
 		return;
 	default:
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR Who=%s not exist!", who.c_str());
+		Log(LOG_ERROR, "ERROR Who=%s not exist!", who.c_str());
 		return;
 	}
 }
 
+/**
+   Convert device id into correct where
+**/
+std::string COpenWebNetTCP::getWhereForWrite(int where)
+{
+	std::stringstream whereStr;
+	uint32_t iArea;
+
+	switch (where & OPENWEBNET_MASK_WHERE_FUNCT)
+	{
+	case OPENWEBNET_GROUP_ID:
+		whereStr << "#";
+		whereStr << (where - OPENWEBNET_GROUP_ID);
+		break;
+	case OPENWEBNET_AREA_ID:
+		iArea = where - OPENWEBNET_AREA_ID;
+		if (iArea == 0)
+			whereStr << "00";	// Area 0
+		else if (iArea == 10)
+			whereStr << "100";	// Area 10
+		else
+			whereStr << iArea;	// Area 1-9
+		break;
+	case OPENWEBNET_2CHARS:
+		where -= OPENWEBNET_2CHARS;
+		if (where < 10)  whereStr << "0";
+		whereStr << where;
+		break;
+	case OPENWEBNET_4CHARS:
+		where -= OPENWEBNET_4CHARS;
+		if (where < 100) whereStr << "00";						// APL Command : A[00]; PL[01 - 15]
+		if ((where > 99) && (where < 1000)) whereStr << "0";	// APL Command : A[01 - 09]; PL[10 - 15]
+		whereStr << where;
+		break;
+	default:
+		whereStr << where;
+		break;
+	}
+			
+	return whereStr.str();
+}
 
 /**
    Convert domoticz command in a OpenWebNet command, then send it to device
@@ -1542,7 +1774,7 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			if (!result.empty())
 			{
 				// Custom command fount, send it!
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: send custom command: '%s'", result[0][0].c_str());
+				Log(LOG_STATUS, "send custom command: '%s'", result[0][0].c_str());
 				std::vector<bt_openwebnet> responses;
 				bt_openwebnet request(result[0][0]);
 				if (sendCommand(request, responses))
@@ -1551,14 +1783,14 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 					return true; // if send ok, return always ok without check the response..
 				}
 			}
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: custom command error: '%s'", result[0][0].c_str());
+			Log(LOG_ERROR, "custom command error: '%s'", result[0][0].c_str());
 			return false; // error
 		default:
 			break;
 		}
 		break;
 	default:
-		_log.Log(LOG_STATUS, "COpenWebNetTCP unknown command: packettype=%d subtype=%d", packettype, subtype);
+		Log(LOG_STATUS, "COpenWebNetTCP unknown command: packettype=%d subtype=%d", packettype, subtype);
 		return false;
 	}
 
@@ -1576,9 +1808,7 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			whoStr << who;
 			std::string sWho = whoStr.str();
 
-			std::stringstream whereStr;
-			whereStr << where;
-			std::string sWhere = whereStr.str();
+			std::string sWhere = getWhereForWrite(where);
 
 			std::stringstream levelStr;
 			levelStr << Level;
@@ -1587,18 +1817,32 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 			value.clear();
 			value.push_back("001");
 			value.push_back(levelStr.str());
-			request.CreateWrDimensionMsgOpen2(whoStr.str(), whereStr.str(), dimensionStr.str(), value);
+			request.CreateWrDimensionMsgOpen2(sWho, sWhere, sDimension, value);
 			if (sendCommand(request, responses))
 			{
-				if (responses.size() > 0) return responses.at(0).IsOKFrame();
+				if (!responses.empty())
+					return responses.at(0).IsOKFrame();
 			}
 		}
 		else {
 			std::vector<bt_openwebnet> responses;
-			bt_openwebnet request(who, what, (where & ~OPENWEBNET_GROUP_ID), (where & OPENWEBNET_GROUP_ID));
+			
+			std::stringstream whoStr;
+			whoStr << who;
+			std::string sWho = whoStr.str();
+
+			std::stringstream whatStr;
+			whatStr << what;
+			std::string sWhat = whatStr.str();
+			
+			std::string sWhere = getWhereForWrite(where);
+
+			std::string when;
+			bt_openwebnet request(sWho, sWhat, sWhere, when);
 			if (sendCommand(request, responses))
 			{
-				if (responses.size() > 0) return responses.at(0).IsOKFrame();
+				if (!responses.empty())
+					return responses.at(0).IsOKFrame();
 			}
 		}
 	}
@@ -1615,23 +1859,19 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		whatStr << what;
 		std::string sWhat = whatStr.str();
 
-		std::stringstream whereStr;
-		whereStr << (where & ~OPENWEBNET_GROUP_ID);
-		std::string sWhere = "";
-		if ((where & OPENWEBNET_GROUP_ID))
-			sWhere += "#";
-		sWhere += whereStr.str();
+		std::string sWhere = getWhereForWrite(where);
 
 		std::stringstream interfaceStr;
 		interfaceStr << iInterface;
 		std::string sInterface = interfaceStr.str();
 
-		std::string lev = "";
-		std::string when = "";
+		std::string lev;
+		std::string when;
 		request.CreateMsgOpen(sWho, sWhat, sWhere, lev, sInterface, when);
 		if (sendCommand(request, responses))
 		{
-			if (responses.size() > 0) return responses.at(0).IsOKFrame();
+			if (!responses.empty())
+				return responses.at(0).IsOKFrame();
 		}
 	}
 
@@ -1653,11 +1893,8 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 	whoStr << WHO_TEMPERATURE_CONTROL;
 	std::string sWho = whoStr.str();
 
-	std::stringstream whereStr;
-	whereStr << (where & ~OPENWEBNET_GROUP_ID);
-	std::string sWhere = "";
 	// add # to set value permanent
-	sWhere += "#" + whereStr.str();
+	std::string sWhere = "#" + getWhereForWrite(where);	
 
 	std::stringstream dimensionStr;
 	dimensionStr << TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE;
@@ -1678,11 +1915,12 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 		interfaceStr << iInterface;
 		std::string sInterface = interfaceStr.str();
 
-		std::string sLev = "";
+		std::string sLev;
 		request.CreateWrDimensionMsgOpen(sWho, sWhere, sLev, sInterface, sDimension, sValue);
 		if (sendCommand(request, responses))
 		{
-			if (responses.size() > 0) return responses.at(0).IsOKFrame();
+			if (!responses.empty())
+				return responses.at(0).IsOKFrame();
 		}
 	}
 	else
@@ -1691,7 +1929,7 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 		request.CreateWrDimensionMsgOpen(sWho, sWhere, sDimension, sValue); // (const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
 		if (sendCommand(request, responses, 1, false))
 		{
-			if (responses.size() > 0)
+			if (!responses.empty())
 			{
 				return responses.at(0).IsOKFrame();
 			}
@@ -1712,14 +1950,16 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	bool ret;
 	if (!(commandSocket = connectGwOwn(OPENWEBNET_COMMAND_SESSION)))
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: Command session ERROR");
+		Log(LOG_ERROR, "Command session ERROR");
 		return false;
 	}
 	// Command session correctly open
-	//_log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	//Log(LOG_STATUS, "Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	// Command session correctly open -> write command
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: Command %s", command.m_frameOpen.c_str());
+	if (!silent) {
+		Log(LOG_STATUS, "Command %s", command.m_frameOpen.c_str());
+	}
 	ownWrite(commandSocket, command.m_frameOpen.c_str(), command.m_frameOpen.length());
 
 	if (waitForResponse > 0) {
@@ -1728,7 +1968,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		char responseBuffer[OPENWEBNET_BUFFER_SIZE];
 		int read = ownRead(commandSocket, responseBuffer, OPENWEBNET_BUFFER_SIZE);
 		if (!silent) {
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.m_frameOpen.c_str(), responseBuffer);
+			Log(LOG_STATUS, "sent=%s received=%s", command.m_frameOpen.c_str(), responseBuffer);
 		}
 
 		std::lock_guard<std::mutex> l(readQueueMutex);
@@ -1752,7 +1992,12 @@ void COpenWebNetTCP::scan_automation_lighting(const int cen_area)
 	std::stringstream whoStr;
 	std::stringstream whereStr;
 	whoStr << WHO_LIGHTING;
-	whereStr << cen_area;
+	if (cen_area < 0)
+		whereStr << "0";		// general scan
+	else if (cen_area == 0)
+		whereStr << "00";		// area 0 scan
+	else
+		whereStr << cen_area;	// area 1-9 scan
 	request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
 	sendCommand(request, responses, 0, false);
 }
@@ -1873,24 +2118,61 @@ void COpenWebNetTCP::requestAutomaticUpdatePower(int time)
 }
 
 /**
-	Request time to gateway
+	Request dimensions to gateway
 **/
-void COpenWebNetTCP::requestTime()
+void COpenWebNetTCP::requestGatewayInfo()
 {
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: request time...");
+	Log(LOG_STATUS, "request gateway information...");
 	bt_openwebnet request;
 	std::vector<bt_openwebnet> responses;
-	request.CreateTimeReqMsgOpen();
+
+	for (int idim = GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME; idim <= GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION; idim++)
+	{
+		std::stringstream dimensionStr;
+
+		switch (idim)
+		{
+		//case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_TIME:					// 0,			/* Read/Write */
+		//case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE:					// 1,			/* Read/Write */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_IP_ADDRESS:				// 10,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_NET_MASK:				// 11,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_MAC_ADDRESS:			// 12,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DEVICE_TYPE:			// 15,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_FIRMWARE_VERSION:		// 16,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_UPTIME:					// 19,			/* Read		  */
+		//case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DATE_AND_TIME:			// 22,			/* Read/Write */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_KERNEL_VERSION:			// 23,			/* Read		  */
+		case	GATEWAY_INTERFACES_MANAGEMENT_DIMENSION_DISTRIBUTION_VERSION:	// 24			/* Read		  */
+			dimensionStr << idim;
+			request.CreateGatewayReqMsgOpen(dimensionStr.str());
+			sendCommand(request, responses, 0, true);
+			sleep_milliseconds(200);
+			break;
+		default:
+			break; // skip
+		}
+	}
+}
+
+/**
+	Request time to gateway
+**/
+void COpenWebNetTCP::requestDateTime()
+{
+	Log(LOG_STATUS, "request DateTime...");
+	bt_openwebnet request;
+	std::vector<bt_openwebnet> responses;
+	request.CreateDateTimeReqMsgOpen();
 	sendCommand(request, responses, 0, true);
 }
 
-void COpenWebNetTCP::setTime()
+void COpenWebNetTCP::setDateTime(const std::string &tzString)
 {
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: set DateTime...");
+	Log(LOG_STATUS, "set DateTime...");
 	bt_openwebnet request;
 	std::vector<bt_openwebnet> responses;
-	request.CreateSetTimeMsgOpen();
-	sendCommand(request, responses, 0, true);
+	request.CreateSetDateTimeMsgOpen(tzString);
+	sendCommand(request, responses, 0, false);
 }
 
 /**
@@ -1900,44 +2182,41 @@ void COpenWebNetTCP::scan_device()
 {
 	int iWhere;
 
-	/* uncomment the line below to enable the time request to the gateway.
-	Note that this is only for debugging, the answer to who = 13 is not yet supported */
-	//requestTime();
-
-	/* uncomment the line below to enable the set time commenad to the gateway.*/
-	//setTime();
-
 	if (mask_request_status & 0x1)
 	{
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning automation/lighting...");
+		
+		requestGatewayInfo();
+		sleep_seconds(5L);
+
+		Log(LOG_STATUS, "scanning automation/lighting...");
 		// Scan of all devices
 		scan_automation_lighting(WHERE_CEN_0);
 
 		requestDryContactIRDetectionStatus();
 
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: request burglar alarm status...");
+		Log(LOG_STATUS, "request burglar alarm status...");
 		requestBurglarAlarmStatus();
 
 		/** Scanning of temperature sensor is not necessary simply wait an update **/
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning temperature control...");
+		//Log(LOG_STATUS, "scanning temperature control...");
 		//scan_temperature_control();
 
 		// Scan of sound diffusion device 
 		//scan_sound_diffusion();
 
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan device complete, wait all the update data..");
+		Log(LOG_STATUS, "scan device complete, wait all the update data..");
 
 		/* Update complete scan time*/
-		LastScanTime = mytime(NULL);
+		LastScanTime = mytime(nullptr);
 	}
 	else
 	{
 		// Scan only the set areas
-		for (iWhere = WHERE_AREA_1; iWhere < MAX_WHERE_AREA; iWhere++)
+		for (iWhere = WHERE_AREA_0; iWhere < MAX_WHERE_AREA; iWhere++)
 		{
-			if (mask_request_status & (0x1 << iWhere))
+			if (mask_request_status & ((0x1 << (iWhere + 1))))
 			{
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning AREA %u...", iWhere);
+				Log(LOG_STATUS, "scanning AREA %u...", iWhere);
 				scan_automation_lighting(iWhere);
 			}
 		}
@@ -1967,16 +2246,17 @@ void COpenWebNetTCP::Do_Work()
 	{
 		if (isStatusSocketConnected())
 		{
-			if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
+			time_t tnow = mytime(nullptr);
+			if ((tnow - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
 			{
 				requestAutomaticUpdatePower(255); // automatic update for 255 minutes
-				LastScanTimeEnergy = mytime(NULL);
+				LastScanTimeEnergy = tnow;
 			}
 
-			if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
+			if ((tnow - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
 			{
 				requestEnergyTotalizer();
-				LastScanTimeEnergyTot = mytime(NULL);
+				LastScanTimeEnergyTot = tnow;
 			}
 
 			if (mask_request_status)
@@ -1984,17 +2264,24 @@ void COpenWebNetTCP::Do_Work()
 				scan_device();
 				mask_request_status = 0x0; // scan devices complete
 			}
+
+			if (m_ownSynch && ((tnow - LastScanSync) >= m_ownSynch))
+			{
+				/* request date/time to check synchronization */
+				requestDateTime();				
+				LastScanSync = tnow;
+			}
 		}
 
 		// every 5 minuts force scan ALL devices for refresh status
-		if (m_ownScanTime && ((mytime(NULL) - LastScanTime) > m_ownScanTime))
+		if (m_ownScanTime && ((mytime(nullptr) - LastScanTime) > m_ownScanTime))
 		{
 			if ((mask_request_status & 0x1) == 0)
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
+				Log(LOG_STATUS, "HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
 		}
 
-		m_LastHeartbeat = mytime(NULL);
+		m_LastHeartbeat = mytime(nullptr);
 	}
-	_log.Log(LOG_STATUS, "COpenWebNetTCP: Heartbeat worker stopped...");
+	Log(LOG_STATUS, "Heartbeat worker stopped...");
 }

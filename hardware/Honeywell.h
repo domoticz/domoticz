@@ -6,25 +6,28 @@
 namespace Json
 {
 	class Value;
-};
+} // namespace Json
 
 class CHoneywell : public CDomoticzHardwareBase
 {
-public:
-	CHoneywell(const int ID, const std::string &Username, const std::string &Password, const std::string &Extra);
-	~CHoneywell(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-private:
-	void SetSetpoint(const int idx, const float temp, const int nodeid);
-	void SetPauseStatus(const int idx, bool bHeating, const int nodeid);
-	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+      public:
+	CHoneywell(int ID, const std::string &Username, const std::string &Password, const std::string &Extra);
+	~CHoneywell() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
+      private:
+	void SetSetpoint(int idx, float temp, int nodeid);
+	void SetPauseStatus(int idx, bool bHeating, int nodeid);
+	void SendSetPointSensor(unsigned char Idx, float Temp, const std::string &defaultname);
 	bool refreshToken();
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetThermostatData();
-private:
+	bool GetSwitchValue(int NodeID);
+
+      private:
 	std::string mApiKey;
 	std::string mApiSecret;
 	std::string mAccessToken;

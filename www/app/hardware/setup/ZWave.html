@@ -4,6 +4,93 @@
 }
 </style>
 <div id="hardwarecontent" class="container"></div>
+
+<div class="modal hide fade" id="ZWaveHasNodeFailedDialog" tabindex="-1" role="dialog" aria-labelledby="ZWaveHasNodeFailedDialog" aria-hidden="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 class="modal-title" id="izwd_title">Has Node Failed</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" name="modalForm">
+					<div class="control-group">
+						<center>
+							<div id="hzwd_waiting" style="display:none;">
+								<span data-i18n="Command executed, waiting for response..."></span><br>
+								<br>
+								<div class="sk-fading-circle" style="width: 48px; height: 48px;">
+									<div class="sk-circle1 sk-circle"></div>
+									<div class="sk-circle2 sk-circle"></div>
+									<div class="sk-circle3 sk-circle"></div>
+									<div class="sk-circle4 sk-circle"></div>
+									<div class="sk-circle5 sk-circle"></div>
+									<div class="sk-circle6 sk-circle"></div>
+									<div class="sk-circle7 sk-circle"></div>
+									<div class="sk-circle8 sk-circle"></div>
+									<div class="sk-circle9 sk-circle"></div>
+									<div class="sk-circle10 sk-circle"></div>
+									<div class="sk-circle11 sk-circle"></div>
+									<div class="sk-circle12 sk-circle"></div>
+								</div>
+								<br>
+								<button type="button" onclick="OnZWaveAbortHasNodeFailed()" id="hzwd_abort" class="btn btn-info">Abort</button><br>
+							</div>
+							<div id="hzwd_result" style="display:none2;">
+								Result: <b>{{hnf_result_text}}</b><br>
+								<br>
+								<button type="button" onclick="OnZWaveCloseHasNodeFailed()" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</center>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal hide fade" id="ReplaceZWaveDialog" tabindex="-1" role="dialog" aria-labelledby="ReplaceZWaveNodeDialog" aria-hidden="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 class="modal-title" id="izwd_title">Replacing Failed ZWave Node</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" name="modalForm">
+					<div class="control-group">
+						<center>
+							<div id="rzwd_waiting" style="display:none;">
+								<span data-i18n="Press the include button on your new device..."></span><br>
+								<br>
+								<div class="sk-fading-circle" style="width: 48px; height: 48px;">
+									<div class="sk-circle1 sk-circle"></div>
+									<div class="sk-circle2 sk-circle"></div>
+									<div class="sk-circle3 sk-circle"></div>
+									<div class="sk-circle4 sk-circle"></div>
+									<div class="sk-circle5 sk-circle"></div>
+									<div class="sk-circle6 sk-circle"></div>
+									<div class="sk-circle7 sk-circle"></div>
+									<div class="sk-circle8 sk-circle"></div>
+									<div class="sk-circle9 sk-circle"></div>
+									<div class="sk-circle10 sk-circle"></div>
+									<div class="sk-circle11 sk-circle"></div>
+									<div class="sk-circle12 sk-circle"></div>
+								</div>
+								<br>
+								<button type="button" onclick="OnZWaveAbortReplace()" id="rzwd_abort" class="btn btn-info">Abort</button><br>
+							</div>
+							<div id="rzwd_result" style="display:none2;">
+								Replaced NodeID: <b>{{ozw_node_id}}</b><br>
+								<br>
+								<button type="button" onclick="OnZWaveCloseReplace()" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</center>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="modal hide fade" id="IncludeZWaveDialog" tabindex="-1" role="dialog" aria-labelledby="IncludeZWaveNodeDialog" aria-hidden="false">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -158,6 +245,8 @@
 									</td>
 									<td>
 										<a class="btnstyle3-dis" id="noderefresh" data-i18n="Refresh Node Info">Refresh Node Info</a>
+										<a class="btnstyle3-dis" id="hasnodefailed" data-i18n="Has Node Failed">Has Node Failed</a>
+										<a class="btnstyle3-dis" id="replacefailednode" data-i18n="Replace Failed Node">Replace Failed Node</a>
 									</td>
 									<td align="right">
 										<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshOpenZWaveNodeTable();">Refresh</a>
@@ -169,11 +258,11 @@
 							<table class="display" id="nodeparamstable" border="0" cellpadding="0" cellspacing="20">
 								<tr>
 									<td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
-									<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 								</tr>
 								<tr id="trEnablePolling">
 									<td align="right" style="width:80px"><span data-i18n="EnablePolling"></span>:</td>
-									<td><input type="checkbox" id="EnablePolling"><label for="EnablePolling" /></td>
+									<td><input type="checkbox" id="EnablePolling"><label for="EnablePolling"></label></td>
 								</tr>
 							</table>
 							<br>
@@ -192,7 +281,7 @@
 					</div>
 					<div class="row-fluid">
 						<div class="span12">
-							<table class="display" id="grouptable" />
+							<table class="display" id="grouptable"></table>
 							<table id="updelclrgroup" border="0" cellpadding="0" cellspacing="0" width="100%">
 								<tr>
 									<td align="right">
@@ -211,8 +300,18 @@
 						<h1 data-i18n="Neighbours">Neighbours</h1>
 					</div>
 					<div class="row-fluid">
-						<div class="span12">
-							<div align="center" id="networkchart"></div>
+						<div class="span5">
+							<table class="display" id="legendtable"></table>
+							<table id="updelclrgroup" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td align="right">
+										<a class="btnstyle3" id="grouprefresh" data-i18n="Refresh" onclick="RefreshGroupTable();">Refresh</a>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<div class="span7">
+							<div style="height: 590px" align="center" id="networkchart"></div>
 						</div>
 					</div>
 				</section>
@@ -241,9 +340,9 @@
 			</td>
 		</tr>
 	</table>
-	<br />
-	Please note, removing a code can take a while on battery operated devices.<br />
-	To quickly force the hardware to remove the code (after pressing the remove button)<br />
+	<br>
+	Please note, removing a code can take a while on battery operated devices.<br>
+	To quickly force the hardware to remove the code (after pressing the remove button)<br>
 	use the tamper switch on the back to wake up the device.
 	<input type="hidden" id="idx" name="nodeidx" value="-1">
 </div>

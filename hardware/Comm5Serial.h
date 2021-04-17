@@ -5,12 +5,14 @@
 
 class Comm5Serial : public CDomoticzHardwareBase, AsyncSerial
 {
-	enum RequestState {
+	enum RequestState
+	{
 		Idle,
 		QueryRelayState,
 		QuerySensorState
 	} reqState;
-	enum {
+	enum
+	{
 		STSTART_OCTET1,
 		STSTART_OCTET2,
 		STFRAME_SIZE,
@@ -19,32 +21,35 @@ class Comm5Serial : public CDomoticzHardwareBase, AsyncSerial
 		STFRAME_CRC1,
 		STFRAME_CRC2
 	} currentState;
-public:
-	Comm5Serial(const int ID, const std::string& devname, unsigned int baudRate = 115200);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
-	boost::signals2::signal<void()>	sDisconnected;
-private:
+
+      public:
+	Comm5Serial(int ID, const std::string &devname, unsigned int baudRate = 115200);
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	boost::signals2::signal<void()> sDisconnected;
+
+      private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool Connect();
-	void requestDigitalInputResponseHandler(const std::string& mframe);
-	void requestDigitalOutputResponseHandler(const std::string& mframe);
-	void enableNotificationResponseHandler(const std::string& mframe);
-	void readCallBack(const char* data, size_t len);
-	uint16_t crc16_update(uint16_t crc, const uint8_t data);
-protected:
-	void OnError(const std::exception e);
+	void requestDigitalInputResponseHandler(const std::string &mframe);
+	void requestDigitalOutputResponseHandler(const std::string &mframe);
+	void enableNotificationResponseHandler(const std::string &mframe);
+	void readCallBack(const char *data, size_t len);
+	uint16_t crc16_update(uint16_t crc, uint8_t data);
+
+      protected:
+	void OnError(const std::exception &e);
 
 	void Do_Work();
-	void ParseData(const unsigned char *data, const size_t len);
-	void parseFrame(const std::string& mframe);
-	bool writeFrame(const std::string&);
-
+	void ParseData(const unsigned char *data, size_t len);
+	void parseFrame(const std::string &mframe);
+	bool writeFrame(const std::string &);
 
 	void queryRelayState();
 	void querySensorState();
 	void enableNotifications();
-private:
+
+      private:
 	std::string m_szSerialPort;
 	const unsigned int m_baudRate;
 
@@ -62,4 +67,3 @@ private:
 
 	std::shared_ptr<std::thread> m_thread;
 };
-

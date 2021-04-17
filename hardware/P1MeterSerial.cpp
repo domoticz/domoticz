@@ -14,8 +14,6 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include <boost/bind.hpp>
-
 #include <ctime>
 
 #ifdef _DEBUG
@@ -52,13 +50,19 @@ const char *szP1Test=R"p1_test(/FLU5\253770234_A
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit):
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit, const std::string& DecryptionKey):
 m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
+
+	if (!DecryptionKey.empty())
+	{
+		m_bIsEncrypted = true;
+		m_szHexKey = HexToBytes(DecryptionKey);
+	}
 }
 
 P1MeterSerial::P1MeterSerial(const std::string& devname,
@@ -70,11 +74,6 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
         :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop),
 		m_iBaudRate(baud_rate)
 {
-}
-
-P1MeterSerial::~P1MeterSerial()
-{
-
 }
 
 #ifdef _DEBUG
@@ -96,7 +95,7 @@ bool P1MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"P1 Smart Meter: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS,"Using serial port: %s", m_szSerialPort.c_str());
 		if (m_iBaudRate==9600)
 		{
 			open(
@@ -118,15 +117,15 @@ bool P1MeterSerial::StartHardware()
 				boost::asio::serial_port_base::character_size(8)
 				);
 			if (m_bDisableCRC) {
-				_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
+				Log(LOG_STATUS,"CRC validation disabled through hardware control");
 			}
 		}
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"P1 Smart Meter: Error opening serial port!");
+		Log(LOG_ERROR,"Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -134,7 +133,7 @@ bool P1MeterSerial::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"P1 Smart Meter: Error opening serial port!!!");
+		Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 
@@ -142,10 +141,10 @@ bool P1MeterSerial::StartHardware()
 
 	m_bIsStarted=true;
 
-	m_thread = std::make_shared<std::thread>(&P1MeterSerial::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
-	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
+	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
 	sOnConnected(this);
 
 #ifdef DEBUG_P1_R
@@ -184,7 +183,7 @@ void P1MeterSerial::Do_Work()
 {
 	int sec_counter = 0;
 	int msec_counter = 0;
-	_log.Log(LOG_STATUS, "P1 Smart Meter: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(200))
 	{
 		msec_counter++;
@@ -194,12 +193,12 @@ void P1MeterSerial::Do_Work()
 
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat=mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 		}
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "P1 Smart Meter: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 
 }

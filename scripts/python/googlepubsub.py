@@ -50,8 +50,7 @@ def publish_message(client,topicname,message):
 
 def main(argv):
         client = create_pubsub_client()
-        publish_message(client,PUBSUB_TOPICNAME,data)
+        publish_message(client,PUBSUB_TOPICNAME,data)  # noqa: F821
 
 if __name__ == '__main__':
         main(sys.argv)
-

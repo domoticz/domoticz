@@ -20,10 +20,6 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CYouLess::~CYouLess(void)
-{
-}
-
 void CYouLess::Init()
 {
 	m_meter.len=sizeof(YouLessMeter)-1;
@@ -49,7 +45,7 @@ void CYouLess::Init()
 	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
 	m_lastgasusage = 0;
-	m_lastSharedSendGas = mytime(NULL);
+	m_lastSharedSendGas = mytime(nullptr);
 }
 
 bool CYouLess::StartHardware()
@@ -58,7 +54,7 @@ bool CYouLess::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CYouLess::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -81,20 +77,20 @@ void CYouLess::Do_Work()
 {
 	int sec_counter = YOULESS_POLL_INTERVAL - 2;
 
-	_log.Log(LOG_STATUS, "YouLess: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 		if (sec_counter % YOULESS_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"YouLess: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
@@ -115,7 +111,7 @@ bool CYouLess::GetP1Details()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "YouLess: Error getting meter details from %s !", m_szIPAddress.c_str() );
+		Log(LOG_ERROR, "Error getting meter details from %s !", m_szIPAddress.c_str() );
 		return false;
 	}
 	Json::Value root;
@@ -125,7 +121,7 @@ bool CYouLess::GetP1Details()
 	{
 		return false;
 	}
-	if (root.size() < 1)
+	if (root.empty())
 		return false;
 	root = root[0];
 
@@ -149,10 +145,10 @@ bool CYouLess::GetP1Details()
 			m_p1power.delivcurrent = -Pwr;
 			m_p1power.usagecurrent = 0;
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255, nullptr);
 
 		m_p1gas.gasusage = (unsigned long)(root["gas"].asDouble() * 1000);
-		time_t atime = mytime(NULL);
+		time_t atime = mytime(nullptr);
 		if (
 			(m_p1gas.gasusage != m_lastgasusage) ||
 			(difftime(atime, m_lastSharedSendGas) >= 300)
@@ -160,7 +156,7 @@ bool CYouLess::GetP1Details()
 		{
 			m_lastgasusage = m_p1gas.gasusage;
 			m_lastSharedSendGas = atime;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255, nullptr);
 		}
 		m_bHaveP1OrS0 = true;
 	}
@@ -196,7 +192,7 @@ void CYouLess::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
@@ -204,18 +200,18 @@ void CYouLess::GetMeterDetails()
 	StringSplit(sResult, "\n", results);
 	if (results.size()<2)
 	{
-		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	int fpos;
 	std::string pusage=stdstring_trim(results[0]);
-	fpos=pusage.find_first_of(" ");
+	fpos = pusage.find_first_of(' ');
 	if (fpos!=std::string::npos)
 		pusage=pusage.substr(0,fpos);
 	stdreplace(pusage,",","");
 
 	std::string pcurrent=stdstring_trim(results[1]);
-	fpos=pcurrent.find_first_of(" ");
+	fpos = pcurrent.find_first_of(' ');
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
@@ -226,6 +222,6 @@ void CYouLess::GetMeterDetails()
 	{
 		m_meter.powerusage = lpusage;
 		m_meter.usagecurrent = lpcurrent;
-		sDecodeRXMessage(this, (const unsigned char*)&m_meter, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_meter, nullptr, 255, nullptr);
 	}
 }

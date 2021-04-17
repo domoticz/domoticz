@@ -93,7 +93,7 @@
 		__sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
 
 double get_utc_offset() {
-	time_t gmt, rawtime = time(NULL);
+	time_t gmt, rawtime = time(nullptr);
 	struct tm* ptm;
 
 #if !defined(WIN32)

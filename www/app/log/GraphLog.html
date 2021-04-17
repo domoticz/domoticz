@@ -1,20 +1,13 @@
-<h2>{{ ::'Day' | translate }}</h2>
-<device-log-chart
+<device-short-chart
         class="device-log-chart"
-        device="::$ctrl.device"
-        range="day"
-/>
+        device="::$ctrl.device"></device-short-chart>
 
-<h2>{{ ::'Month' | translate }}</h2>
-<device-log-chart
+<device-long-chart
         class="device-log-chart"
         device="::$ctrl.device"
-        range="month"
-/>
+        range="month"></device-long-chart>
 
-<h2>{{ ::'Year' | translate }}</h2>
-<device-log-chart
+<device-long-chart
         class="device-log-chart"
         device="::$ctrl.device"
-        range="year"
-/>
+        range="year"></device-long-chart>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <boost/thread/shared_mutex.hpp>
+#include <mutex>
 
 #include "concurrent_queue.h"
 #include "NotificationObserver.h"
@@ -10,17 +10,16 @@
 class CNotificationSystem: public StoppableTask
 {
 public:
-
-	CNotificationSystem(void);
-	~CNotificationSystem(void);
-	void Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata = "");
-	bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string& eventdata = "");
-	bool Register(CNotificationObserver* pNotifier);
-	bool Unregister(CNotificationObserver* pNotifier);
-	std::string const GetTypeString(const int type);
-	std::string const GetStatusString(const int status);
-	void Start();
-	void Stop();
+  CNotificationSystem() = default;
+  ~CNotificationSystem();
+  void Notify(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata = "");
+  bool NotifyWait(const Notification::_eType type, const Notification::_eStatus status, const std::string &eventdata = "");
+  bool Register(CNotificationObserver *pNotifier);
+  bool Unregister(CNotificationObserver *pNotifier);
+  std::string GetTypeString(const int type);
+  std::string GetStatusString(const int status);
+  void Start();
+  void Stop();
 
 private:
 	struct _tNotificationQueue
@@ -45,7 +44,7 @@ private:
 	void UnlockNotificationQueueThread();
 
 	volatile bool m_stoprequested;
-	boost::shared_mutex m_mutex;
+	std::mutex m_mutex;
 	std::vector<CNotificationObserver*> m_notifiers;
 	concurrent_queue<_tNotificationQueue> m_notificationqueue;
 	std::shared_ptr<std::thread> m_pQueueThread;

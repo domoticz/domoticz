@@ -8,7 +8,7 @@
 #include <algorithm>
 
 // HEX Values array
-char hexVals[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+constexpr auto hexVals = std::array<char, 16>{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 // UNSAFE String
 std::string CURLEncode::csUnsafeString= "\"<>%\\^[]`+$,@:;/!#?=&";
 
@@ -38,7 +38,7 @@ std::string CURLEncode::decToHex(char num, int radix)
 	while (num_char >= radix)
 	{
 		int temp = num_char % radix;
-		num_char = (int)floor((float)num_char / radix);
+		num_char = (int)std::floor((float)num_char / radix);
 		csTmp = hexVals[temp];
 	}
 	csTmp += hexVals[num_char%16];
@@ -76,17 +76,8 @@ bool CURLEncode::isUnsafe(char compareChar)
 	//char_ascii_value = __toascii(compareChar);
 	char_ascii_value = (int) compareChar;
 
-	if(bcharfound == false &&  char_ascii_value > 32 && char_ascii_value < 123)
-	{
-		return false;
-	}
-	// found no unsafe chars, return false		
-	else
-	{
-		return true;
-	}
-
-	return true;
+	// found no unsafe chars, return false
+	return !(bcharfound == false && char_ascii_value > 32 && char_ascii_value < 123);
 }
 // PURPOSE OF THIS FUNCTION IS TO CONVERT A STRING 
 // TO URL ENCODE FORM.

@@ -72,6 +72,26 @@ enum _eDenkoviIOType
 	DIOType_TXT			//8
 };
 
+namespace
+{
+	constexpr std::array<const char *, 14> szDenkoviHardwareNames{
+		"DAEnetIP4",					    //
+		"smartDEN IP-16R",				    //
+		"smartDEN IP-32IN",				    //
+		"smartDEN IP-Maxi",				    //
+		"smartDEN IP-Watchdog",				    //
+		"smartDEN Logger",				    //
+		"smartDEN Notifier",				    //
+		"DAEnetIP3",					    //
+		"DAEnetIP2 (DAEnetIP2 v2)",			    //
+		"DAEnetIP2 (DAEnetIP2 v2) 8 Relay Module - LM35DZ", //
+		"smartDEN Opener",				    //
+		"smartDEN IP-PLC",				    //
+		"smartDEN IP-16R-MT",				    //
+		"smartDEN IP-16R-MQ",				    //
+	};
+} // namespace
+
 CDenkoviDevices::CDenkoviDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password, const int pollInterval, const int model) :
 	m_szIPAddress(IPAddress),
 	m_Password(CURLEncode::URLEncode(password)),
@@ -88,11 +108,6 @@ CDenkoviDevices::CDenkoviDevices(const int ID, const std::string &IPAddress, con
 	Init();
 }
 
-
-CDenkoviDevices::~CDenkoviDevices()
-{
-}
-
 void CDenkoviDevices::Init()
 {
 }
@@ -103,55 +118,18 @@ bool CDenkoviDevices::StartHardware()
 
 	Init();
 
-	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CDenkoviDevices::Do_Work, this);
+	// Start worker thread
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
-	switch (m_iModel) {
-	case DDEV_DAEnet_IP4:
-		_log.Log(LOG_STATUS, "DAEnetIP4: Started");
-		break;
-	case DDEV_SmartDEN_IP_16_Relays:
-		_log.Log(LOG_STATUS, "SmartDEN IP-16R: Started");
-		break;
-	case DDEV_SmartDEN_IP_32_In:
-		_log.Log(LOG_STATUS, "SmartDEN IP-32IN: Started");
-		break;
-	case DDEV_SmartDEN_IP_Maxi:
-		_log.Log(LOG_STATUS, "SmartDEN IP-Maxi: Started");
-		break;
-	case DDEV_SmartDEN_IP_Watchdog:
-		_log.Log(LOG_STATUS, "SmartDEN IP-Watchdog: Started");
-		break;
-	case DDEV_SmartDEN_Logger:
-		_log.Log(LOG_STATUS, "SmartDEN Logger: Started");
-		break;
-	case DDEV_SmartDEN_Notifier:
-		_log.Log(LOG_STATUS, "SmartDEN Notifier: Started");
-		break;
-	case DDEV_DAEnet_IP3:
-		_log.Log(LOG_STATUS, "DAEnetIP3: Started");
-		break;
-	case DDEV_DAEnet_IP2:
-		_log.Log(LOG_STATUS, "DAEnetIP2: Started");
-		break;
-	case DDEV_DAEnet_IP2_8_RELAYS:
-		_log.Log(LOG_STATUS, "DAEnetIP2 8 Relay Module - LM35DZ: Started");
-		break;
-	case DDEV_SmartDEN_Opener:
-		_log.Log(LOG_STATUS, "SmartDEN Opener: Started");
-		break;
-	case DDEV_SmartDEN_PLC:
-		_log.Log(LOG_STATUS, "SmartDEN PLC: Started");
-		break;
-	}
-	return (m_thread != NULL);
+	Log(LOG_STATUS, "%s: Started.",szDenkoviHardwareNames[m_iModel]);
+	return (m_thread != nullptr);
 }
 
 bool CDenkoviDevices::StopHardware()
 {
-	if (m_thread != NULL)
+	if (m_thread != nullptr)
 	{
 		RequestStop();
 		m_thread->join();
@@ -171,7 +149,7 @@ void CDenkoviDevices::Do_Work()
 		poll_counter++;
 
 		if (poll_counter % 12 * 10 == 0) { //10 steps = 1 second (10 * 100)
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (poll_counter % poll_interval == 0)
@@ -179,44 +157,7 @@ void CDenkoviDevices::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	switch (m_iModel) {
-	case DDEV_DAEnet_IP4:
-		_log.Log(LOG_STATUS, "DAEnetIP4: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_IP_16_Relays:
-		_log.Log(LOG_STATUS, "SmartDEN IP-16R: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_IP_32_In:
-		_log.Log(LOG_STATUS, "SmartDEN IP-32IN: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_IP_Maxi:
-		_log.Log(LOG_STATUS, "SmartDEN IP-Maxi: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_IP_Watchdog:
-		_log.Log(LOG_STATUS, "SmartDEN IP-Watchdog: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_Logger:
-		_log.Log(LOG_STATUS, "SmartDEN Logger: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_Notifier:
-		_log.Log(LOG_STATUS, "SmartDEN Notifier: Worker stopped...");
-		break;
-	case DDEV_DAEnet_IP3:
-		_log.Log(LOG_STATUS, "DAEnetIP3: Worker stopped...");
-		break;
-	case DDEV_DAEnet_IP2:
-		_log.Log(LOG_STATUS, "DAEnetIP2: Worker stopped...");
-		break;
-	case DDEV_DAEnet_IP2_8_RELAYS:
-		_log.Log(LOG_STATUS, "DAEnetIP2 8 Relay Module - LM35DZ: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_Opener:
-		_log.Log(LOG_STATUS, "SmartDEN Opener: Worker stopped...");
-		break;
-	case DDEV_SmartDEN_PLC:
-		_log.Log(LOG_STATUS, "SmartDEN PLC: Worker stopped...");
-		break;
-	}
+	Log(LOG_STATUS, "%s: Stopped.",szDenkoviHardwareNames[m_iModel]);	 
 }
 
 bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -249,44 +190,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 
 	if (m_Password.empty())
 	{
-		switch (m_iModel) {
-		case DDEV_DAEnet_IP4:
-			_log.Log(LOG_ERROR, "DAEnetIP4: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_16_Relays:
-			_log.Log(LOG_ERROR, "SmartDEN IP-16R: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_32_In:
-			_log.Log(LOG_ERROR, "SmartDEN IP-32IN: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_Maxi:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_Watchdog:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_Logger:
-			_log.Log(LOG_ERROR, "SmartDEN Logger: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_Notifier:
-			_log.Log(LOG_ERROR, "SmartDEN Notifier: Please enter a password.");
-			break;
-		case DDEV_DAEnet_IP3:
-			_log.Log(LOG_ERROR, "DAEnetIP3: Please enter a password.");
-			break;
-		case DDEV_DAEnet_IP2:
-			_log.Log(LOG_ERROR, "DAEnetIP2: Please enter a password.");
-			break;
-		case DDEV_DAEnet_IP2_8_RELAYS:
-			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_Opener:
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_PLC:
-			_log.Log(LOG_ERROR, "SmartDEN PLC: Please enter a password.");
-			break;
-		}
+		Log(LOG_STATUS, "%s: Please enter a password!",szDenkoviHardwareNames[m_iModel]); 
 		return false;
 	}
 
@@ -295,7 +199,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		
 		if ((ioType != DIOType_MCD) && (ioType != DIOType_Relay))
 		{
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Not a valid Relay or Main Controlled Device!");
+			Log(LOG_ERROR, "%s: Not a valid Relay or Main Controlled Device!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		//int io = pSen->unitcode;//Relay1, Relay2 and MCD
@@ -321,7 +225,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			else if (command== light2_sOn)
 				szURL << "1";
 			else {
-				_log.Log(LOG_ERROR, "SmartDEN Opener: Not a valid command for Relay!");
+				Log(LOG_ERROR, "%s: Not a valid command for Relay!",szDenkoviHardwareNames[m_iModel]);
 				return false;
 			}
 		}
@@ -333,18 +237,18 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			else if (command== 0x11) //stop button
 				szURL << "2";
 			else {
-				_log.Log(LOG_ERROR, "SmartDEN Opener: Not a valid command for MCD!");
+				Log(LOG_ERROR, "%s: Not a valid command for MCD!",szDenkoviHardwareNames[m_iModel]);
 				return false;
 			}
 		}
 
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		if (sResult.find("Message") != std::string::npos) {
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
@@ -355,7 +259,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		//int ioType = pSen->id;
 		if (ioType != DIOType_DIO && ioType != DIOType_Relay)
 		{
-			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Not a valid Digital Input/Output or Relay! ");
+			Log(LOG_ERROR, "%s: Not a valid Digital Input/Output or Relay!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		//int io = pSen->unitcode;//DIO1 to DIO16
@@ -367,7 +271,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 
 		szURL << "http://" << sPass << "@" << m_szIPAddress << ":" << m_usIPPort << "/ioreg.js";
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s", m_szIPAddress.c_str(),szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		uint8_t port3 = DAEnetIP2GetIoPort(sResult, DAENETIP2_PORT_3_VAL);
@@ -378,7 +282,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			else if (command== light2_sOn)
 				port3 = port3 | (0x01 << (io - 1));
 			else {
-				_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Not a valid command. Digital Input/Output could be On or Off.");
+				Log(LOG_ERROR, "%s: Not a valid command. Digital Input/Output could be On or Off!",szDenkoviHardwareNames[m_iModel]);
 				return false;
 			}
 		}
@@ -388,7 +292,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			else if (command== light2_sOn)
 				port5 = port5 | (0x01 << (io - 8 - 1));
 			else {
-				_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Not a valid command. Digital Input/Output could be On or Off.");
+				Log(LOG_ERROR, "%s: Not a valid command. Digital Input/Output could be On or Off!",szDenkoviHardwareNames[m_iModel]);
 				return false;
 			}
 		}
@@ -398,7 +302,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		sprintf(port5Val, "%02X", port5);
 		szURL << "http://" << sPass << "@" << m_szIPAddress << ":" << m_usIPPort << "/iochange.cgi?ref=re-io&01=" << port3Val << "&02=" << port5Val;
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}		
 		return true;
@@ -409,7 +313,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		//int ioType = pSen->id;
 		if (ioType != DIOType_DIO)
 		{
-			_log.Log(LOG_ERROR, "DAEnetIP2: Not a valid Digital Input/Output! ");
+			Log(LOG_ERROR, "%s: Not a valid Digital Input/Output!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		//int io = pSen->unitcode;//DIO1 to DIO16
@@ -421,7 +325,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 
 		szURL << "http://" << sPass << "@" << m_szIPAddress << ":" << m_usIPPort << "/ioreg.js";
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "DAEnetIP2: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		uint8_t port3 = DAEnetIP2GetIoPort(sResult, DAENETIP2_PORT_3_VAL);
@@ -432,7 +336,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			else if (command== light2_sOn)
 				port3 = port3 | (0x01 << (io - 1));
 			else {
-				_log.Log(LOG_ERROR, "DAEnetIP2: Not a valid command. Digital Input/Output could be On or Off.");
+				Log(LOG_ERROR, "%s: Not a valid command. Digital Input/Output must be On or Off!",szDenkoviHardwareNames[m_iModel]);
 				return false;
 			}
 		}
@@ -442,7 +346,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			else if (command== light2_sOn)
 				port5 = port5 | (0x01 << (io - 8 - 1));
 			else {
-				_log.Log(LOG_ERROR, "DAEnetIP2: Not a valid command. Digital Input/Output could be On or Off.");
+				Log(LOG_ERROR, "%s: Not a valid command. Digital Input/Output must be On or Off!",szDenkoviHardwareNames[m_iModel]);
 				return false;
 			}
 		}
@@ -452,7 +356,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		sprintf(port5Val, "%02X", port5);
 		szURL << "http://" << sPass << "@" << m_szIPAddress << ":" << m_usIPPort << "/iochange.cgi?ref=re-io&01=" << port3Val << "&02=" << port5Val;
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "DAEnetIP2: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}		
 		return true;
@@ -461,7 +365,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		//int ioType = pSen->id;
 		if (ioType != DIOType_DO)
 		{
-			_log.Log(LOG_ERROR, "DAEnetIP3: Not a valid Digital Output! ");
+			Log(LOG_ERROR, "%s: Not a valid Digital Output!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		//int io = pSen->unitcode;//DO1 to DO16
@@ -483,33 +387,27 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			szURL << "1&";
 		}
 		else {
-			_log.Log(LOG_ERROR, "DAEnetIP3: Not a valid command. Digital Output could be On or Off.");
+			Log(LOG_ERROR, "%s: Not a valid command. Digital Output could be On or Off!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "DAEnetIP3: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		szURL.str("");
 		szURL << DAENETIP3_PORTA_SDO_DEF << std::uppercase << std::hex << io - 1;
 		if (sResult.find(szURL.str()) == std::string::npos) {
-			_log.Log(LOG_ERROR, "DAEnetIP3: Error setting Digital Output %u", io);
+			Log(LOG_ERROR, "%s: Error setting Digital Output %u!",szDenkoviHardwareNames[m_iModel], io);
 			return false;
 		}
 		return true;
 
 	}
-	case DDEV_SmartDEN_Notifier: {
-		_log.Log(LOG_ERROR, "SmartDEN Notifier: This board does not have outputs! ");
-		return false;
-	}
-	case DDEV_SmartDEN_Logger: {
-		_log.Log(LOG_ERROR, "SmartDEN Logger: This board does not have outputs! ");
-		return false;
-	}
+	case DDEV_SmartDEN_Notifier:
+	case DDEV_SmartDEN_Logger:	 
 	case DDEV_SmartDEN_IP_32_In: {
-		_log.Log(LOG_ERROR, "SmartDEN IP-32IN: This board does not have outputs! ");
+		Log(LOG_ERROR, "%s: This module does not have outputs!",szDenkoviHardwareNames[m_iModel]);
 		return false;
 	}
 	case DDEV_SmartDEN_PLC:
@@ -517,11 +415,11 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		//int ioType = pSen1->LIGHTING2.unitcode;//pSen->id;
 		if ((ioType != DIOType_AO) && (ioType != DIOType_Relay))
 		{
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Not a valid Relay or Analog Output!");
+			Log(LOG_ERROR, "%s: Not a valid Relay or Analog Output!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		//int io = pSen1->LIGHTING2.id4;//Relay1 to Relay8 and AO1 to AO2
-		if (io > 8)
+		if (io > 8) 
 			return false;
 
 		std::stringstream szURL;
@@ -548,11 +446,11 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			szURL << "1";
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s Error sending command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		if (sResult.find("CurrentState") == std::string::npos) {
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
@@ -561,7 +459,7 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 		//int ioType = pSen->id;
 		if ((ioType != DIOType_DO) && (ioType != DIOType_PWM))
 		{
-			_log.Log(LOG_ERROR, "DAEnetIP4: Not a valid Digital or PWM output");
+			Log(LOG_ERROR, "%s: Not a valid Digital or PWM output!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		//int io = pSen->unitcode;//Output1 to Output16 and PWM1 to PWM2
@@ -589,24 +487,23 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			szURL << "1";
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult)) {
-			_log.Log(LOG_ERROR, "DAEnetIP4: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		if (sResult.find("CurrentState") == std::string::npos) {
-			_log.Log(LOG_ERROR, "DAEnetIP4: Error sending command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		return true;  
 	}
+	case DDEV_SmartDEN_IP_16_R_MQ:
+	case DDEV_SmartDEN_IP_16_R_MT:	
 	case DDEV_SmartDEN_IP_Watchdog:
 	case DDEV_SmartDEN_IP_16_Relays: {
-		//int ioType = pSen->id;
+  
 		if (ioType != DIOType_Relay)
 		{
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Not a valid Relay switch.");
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Not a valid Relay switch.");
+			Log(LOG_ERROR, "%s: Not a valid Relay switch!",szDenkoviHardwareNames[m_iModel]);			 
 			return false;
 		}
 		//int Relay = pSen->unitcode;
@@ -627,33 +524,24 @@ bool CDenkoviDevices::WriteToHardware(const char *pdata, const unsigned char /*l
 			szURL << "1";
 		}
 		else {
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Not a valid command. Relay could be On or Off.");
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Not a valid command. Relay could be On or Off.");
+			Log(LOG_ERROR, "%s: Not a valid command. Relay must be On or Off!",szDenkoviHardwareNames[m_iModel]);
 			return false;
 		}
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error sending relay command to: %s", m_szIPAddress.c_str());
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending relay command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());			 
 			return false;
 		}
 		if (sResult.find("CurrentState") == std::string::npos)
 		{
-			if (m_iModel == DDEV_SmartDEN_IP_Watchdog)
-				_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error sending relay command to: %s", m_szIPAddress.c_str());
-			else
-				_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "%s: Error sending relay command to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
 	}
 	}
-	_log.Log(LOG_ERROR, "Denkovi: Unknown Device!");
+	Log(LOG_ERROR, "Unknown Device!");
 	return false;
 }
 
@@ -664,7 +552,7 @@ int CDenkoviDevices::DenkoviCheckForIO(std::string tmpstr, const std::string &tm
 	if (pos1 != std::string::npos)
 	{
 		tmpstr = tmpstr.substr(pos1 + strlen(ioType.c_str()));
-		pos1 = tmpstr.find(">");
+		pos1 = tmpstr.find('>');
 		if (pos1 != std::string::npos)
 			Idx = atoi(tmpstr.substr(0, pos1).c_str());
 	}
@@ -686,7 +574,7 @@ int CDenkoviDevices::DenkoviGetIntParameter(std::string tmpstr, const std::strin
 }
 
 std::string CDenkoviDevices::DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter) {
-	std::string sMeasure = "";
+	std::string sMeasure;
 	std::string parameter = "<" + tmpParameter + ">";
 
 	size_t pos1 = tmpstr.find(parameter);
@@ -715,43 +603,48 @@ float CDenkoviDevices::DenkoviGetFloatParameter(std::string tmpstr, const std::s
 	return value;
 }
 
-std::string CDenkoviDevices::DAEnetIP3GetIo(std::string tmpstr, const std::string &tmpParameter) {
+std::string CDenkoviDevices::DAEnetIP3GetIo(const std::string &tmpstr, const std::string &tmpParameter)
+{
 	std::string parameter = tmpParameter + "=";
 	size_t pos1 = tmpstr.find(parameter);
-	size_t pos2 = tmpstr.find(";", pos1);
-	return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
+	size_t pos2 = tmpstr.find(';', pos1);
+	return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str())));
 }
 
-std::string CDenkoviDevices::DAEnetIP3GetAi(std::string tmpstr, const std::string &tmpParameter, const int &ciType) {
+std::string CDenkoviDevices::DAEnetIP3GetAi(const std::string &tmpstr, const std::string &tmpParameter, const int &ciType)
+{
 	std::string parameter = tmpParameter + "=";
 	size_t pos1 = tmpstr.find(parameter);
 	size_t pos2;
 	if (ciType == DAENETIP3_AI_VALUE) {
-		pos2 = tmpstr.find("[", pos1);
-		return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
+		pos2 = tmpstr.find('[', pos1);
+		return tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str())));
 	}
-	else if (ciType == DAENETIP3_AI_DIMENSION) {
-		pos1 = tmpstr.find("[", pos1);
-		pos2 = tmpstr.find("]", pos1);
-		return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1)).c_str();
+	if (ciType == DAENETIP3_AI_DIMENSION)
+	{
+		pos1 = tmpstr.find('[', pos1);
+		pos2 = tmpstr.find(']', pos1);
+		return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1));
 	}
 	return "";// tmpstr.substr(pos1 + strlen(parameter.c_str()), pos2 - (pos1 + strlen(parameter.c_str()))).c_str();
 }
 
-uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port) {
+uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(const std::string &tmpstr, const int &port)
+{
 	std::stringstream ss;
 	size_t pos1, pos2;
 	int b;
 	if (port == DAENETIP2_PORT_3_VAL) {
 		pos1 = tmpstr.find("(0x");
-		pos2 = tmpstr.find(",", pos1);
+		pos2 = tmpstr.find(',', pos1);
 		ss << std::hex << tmpstr.substr(pos1 + 3, pos2 - (pos1 + 3)).c_str();
 		ss >> b;
 		return (uint8_t)b;
 	}
-	else if (port == DAENETIP2_PORT_5_VAL) {
+	if (port == DAENETIP2_PORT_5_VAL)
+	{
 		pos1 = tmpstr.find(",0x");
-		pos2 = tmpstr.find(",", pos1 + 3);
+		pos2 = tmpstr.find(',', pos1 + 3);
 		ss << std::hex << tmpstr.substr(pos1 + 3, pos2 - (pos1 + 3)).c_str();
 		ss >> b;
 		return (uint8_t)b;
@@ -759,44 +652,48 @@ uint8_t CDenkoviDevices::DAEnetIP2GetIoPort(std::string tmpstr, const int &port)
 	return 0;
 }
 
-std::string CDenkoviDevices::DAEnetIP2GetName(std::string tmpstr, const int &nmr) {//nmr should be from 1 to 24
+std::string CDenkoviDevices::DAEnetIP2GetName(const std::string &tmpstr, const int &nmr)
+{ // nmr should be from 1 to 24
 	size_t pos1 = 0, pos2 = 0;
-	for (uint8_t ii = 0; ii < (((nmr - 1) * 2) + 1); ii++) {
-		pos1 = tmpstr.find("\"", pos1 + 1);
+	for (int ii = 0; ii < (((nmr - 1) * 2) + 1); ii++)
+	{
+		pos1 = tmpstr.find('"', pos1 + 1);
 	}
-	pos2 = tmpstr.find("\"", pos1 + 1);
-	return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1)).c_str();
+	pos2 = tmpstr.find('"', pos1 + 1);
+	return tmpstr.substr(pos1 + 1, pos2 - (pos1 + 1));
 }
 
-uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(std::string tmpstr, const int &aiNmr) {
+uint16_t CDenkoviDevices::DAEnetIP2GetAiValue(const std::string &tmpstr, const int &aiNmr)
+{
 	size_t pos1 = 0, pos2 = 0;
 	std::stringstream ss;
 	int b = 0;
 	for (uint8_t ii = 0; ii < aiNmr + 3; ii++) {
 		pos1 = tmpstr.find("0x", pos1 + 2);
 	}
-	pos2 = tmpstr.find(",", pos1 + 2);
+	pos2 = tmpstr.find(',', pos1 + 2);
 	ss << std::hex << tmpstr.substr(pos1 + 2, pos2 - (pos1 + 2)).c_str();
 	ss >> b;
-	return (uint8_t)b;
+	return (uint16_t)b;
 }
 
 float CDenkoviDevices::DAEnetIP2CalculateAi(int adc, const int &valType) {
 	if (valType == DAENETIP2_AI_TEMPERATURE) {
 		return static_cast<float>(10000 * ((1.2*204.8)*adc / (120 * 1024) + 0) / 100);
 	}
-	else if (valType == DAENETIP2_AI_VOLTAGE) {
+	if (valType == DAENETIP2_AI_VOLTAGE)
+	{
 		return static_cast<float>(10000 * ((1.2*0.377)*adc / (4.7 * 1024) + 0) / 100);
 	}
-	return 0.0f;
+	return 0.0F;
 }
 
 void CDenkoviDevices::SendDenkoviTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname)
 {
 	//check if we have a change, if not do not update it
 	bool bExists;
-	std::string oldvalue = GetTextSensorText(NodeID, ChildID, bExists); 	
-	if (oldvalue.compare(textMessage)!=0)
+	std::string oldvalue = GetTextSensorText(NodeID, ChildID, bExists);
+	if (oldvalue != textMessage)
 		SendTextSensor(NodeID, ChildID, BatteryLevel, textMessage, defaultname);
 }
 
@@ -809,44 +706,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 	if (m_Password.empty())
 	{
-		switch (m_iModel) {
-		case DDEV_DAEnet_IP4:
-			_log.Log(LOG_ERROR, "DAEnetIP4: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_16_Relays:
-			_log.Log(LOG_ERROR, "SmartDEN IP-16R: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_32_In:
-			_log.Log(LOG_ERROR, "SmartDEN IP-32IN: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_Maxi:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_IP_Watchdog:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_Logger:
-			_log.Log(LOG_ERROR, "SmartDEN Logger: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_Notifier:
-			_log.Log(LOG_ERROR, "SmartDEN Notifier: Please enter a password.");
-			break;
-		case DDEV_DAEnet_IP3:
-			_log.Log(LOG_ERROR, "DAEnetIP3: Please enter a password.");
-			break;
-		case DDEV_DAEnet_IP2:
-			_log.Log(LOG_ERROR, "DAEnetIP2: Please enter a password.");
-			break;
-		case DDEV_DAEnet_IP2_8_RELAYS:
-			_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_Opener:
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Please enter a password.");
-			break;
-		case DDEV_SmartDEN_PLC:
-			_log.Log(LOG_ERROR, "SmartDEN PLC: Please enter a password.");
-			break;
-		}
+		Log(LOG_STATUS, "%s: Please enter a password!",szDenkoviHardwareNames[m_iModel]);		 
 		return;
 	}
 
@@ -854,9 +714,9 @@ void CDenkoviDevices::GetMeterDetails()
 		std::string sPass = m_Password;
 		if (sPass.find("%3A") == std::string::npos) {
 			if (m_iModel == DDEV_DAEnet_IP2)
-				_log.Log(LOG_ERROR, "DAEnetIP2: Please enter username and password in format username:password. Example admin:admin.");
+				Log(LOG_ERROR, "%s: Please enter username and password in format username:password. Example admin:admin!",szDenkoviHardwareNames[m_iModel]);
 			else if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS)
-				_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Please enter username and password in format username:password. Example admin:admin.");
+				Log(LOG_ERROR, "%s: Please enter username and password in format username:password. Example admin:admin!",szDenkoviHardwareNames[m_iModel]);
 			return;
 		}
 		sPass.replace(sPass.find("%3A"), 3, ":");
@@ -880,41 +740,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(), sResult) || (m_iModel == DDEV_DAEnet_IP3 && !HTTPClient::GET(szURL2.str(), sResult2)))
 	{
-		switch (m_iModel) {
-		case DDEV_DAEnet_IP4:
-			_log.Log(LOG_ERROR, "DAEnetIP4: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_16_Relays:
-			_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_32_In:
-			_log.Log(LOG_ERROR, "SmartDEN IP-32IN: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_Maxi:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_Watchdog:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_Logger:
-			_log.Log(LOG_ERROR, "SmartDEN Logger: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_Notifier:
-			_log.Log(LOG_ERROR, "SmartDEN Notifier: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_DAEnet_IP3:
-			_log.Log(LOG_ERROR, "DAEnetIP3: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_DAEnet_IP2:
-			_log.Log(LOG_ERROR, "DAEnetIP2: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_Opener:
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_PLC:
-			_log.Log(LOG_ERROR, "SmartDEN PLC: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		}
+		Log(LOG_ERROR, "%s: Error connecting to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
 	std::vector<std::string> results;
@@ -925,83 +751,33 @@ void CDenkoviDevices::GetMeterDetails()
 	//int z = strlen(sResult.c_str());
 	if (m_iModel != DDEV_DAEnet_IP3 && m_iModel != DDEV_DAEnet_IP2 && m_iModel != DDEV_DAEnet_IP2_8_RELAYS && results.size() < 8)
 	{
-		switch (m_iModel) {
-		case DDEV_DAEnet_IP4:
-			_log.Log(LOG_ERROR, "DAEnetIP4: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_16_Relays:
-			_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_32_In:
-			_log.Log(LOG_ERROR, "SmartDEN IP-32IN: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_Maxi:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_IP_Watchdog:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_Logger:
-			_log.Log(LOG_ERROR, "SmartDEN Logger: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_Notifier:
-			_log.Log(LOG_ERROR, "SmartDEN Notifier: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_Opener:
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		case DDEV_SmartDEN_PLC:
-			_log.Log(LOG_ERROR, "SmartDEN PLC: Error connecting to: %s", m_szIPAddress.c_str());
-			break;
-		}
+		Log(LOG_ERROR, "%s: Error connecting to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 		 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP3 && (strlen(sResult.c_str()) < MIN_DAENETIP3_RESPOND_LENGTH)) {
-		_log.Log(LOG_ERROR, "DAEnetIP3: Error connecting to: %s", m_szIPAddress.c_str());
+	if (m_iModel == DDEV_DAEnet_IP3 && (strlen(sResult.c_str()) < MIN_DAENETIP3_RESPOND_LENGTH))
+	{
+		Log(LOG_ERROR, "%s: Error connecting to: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP2 && sResult.find("var IO=new Array") == std::string::npos) {
-		_log.Log(LOG_ERROR, "DAEnetIP2: Error getting status from: %s", m_szIPAddress.c_str());
+	if (m_iModel == DDEV_DAEnet_IP2 && sResult.find("var IO=new Array") == std::string::npos)
+	{
+		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS && sResult.find("var IO=new Array") == std::string::npos) {
-		_log.Log(LOG_ERROR, "DAEnetIP2 8 Relay Module - LM35DZ: Error getting status from: %s", m_szIPAddress.c_str());
+	if (m_iModel == DDEV_DAEnet_IP2_8_RELAYS && sResult.find("var IO=new Array") == std::string::npos)
+	{
+		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
 
 	if (m_iModel != DDEV_DAEnet_IP3 && m_iModel != DDEV_DAEnet_IP2 && m_iModel != DDEV_DAEnet_IP2_8_RELAYS && results[0] != "<CurrentState>")
 	{
-		switch (m_iModel) {
-		case DDEV_DAEnet_IP4:
-			_log.Log(LOG_ERROR, "DAEnetIP4: Error getting status");
-			break;
-		case DDEV_SmartDEN_IP_16_Relays:
-			_log.Log(LOG_ERROR, "SmartDEN IP-16R: Error getting status");
-			break;
-		case DDEV_SmartDEN_IP_32_In:
-			_log.Log(LOG_ERROR, "SmartDEN IP-32IN: Error getting status");
-		case DDEV_SmartDEN_IP_Maxi:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Maxi: Error getting status");
-			break;
-		case DDEV_SmartDEN_IP_Watchdog:
-			_log.Log(LOG_ERROR, "SmartDEN IP-Watchdog: Error getting status");
-		case DDEV_SmartDEN_Logger:
-			_log.Log(LOG_ERROR, "SmartDEN Logger: Error getting status");
-			break;
-		case DDEV_SmartDEN_Notifier:
-			_log.Log(LOG_ERROR, "SmartDEN Notifier: Error getting status");
-			break;
-		case DDEV_SmartDEN_Opener:
-			_log.Log(LOG_ERROR, "SmartDEN Opener: Error getting status");
-			break;
-		case DDEV_SmartDEN_PLC:
-			_log.Log(LOG_ERROR, "SmartDEN PLC: Error getting status");
-			break;
-		}
+		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
-	else if (m_iModel == DDEV_DAEnet_IP3 && ((sResult.find(DAENETIP3_PORTA_MDO_DEF) == std::string::npos) || (sResult2.find(DAENETIP3_PORTB_SNAME_DEF) == std::string::npos))) {
-		_log.Log(LOG_ERROR, "DAEnetIP3: Error getting status");
+	if (m_iModel == DDEV_DAEnet_IP3 && ((sResult.find(DAENETIP3_PORTA_MDO_DEF) == std::string::npos) || (sResult2.find(DAENETIP3_PORTB_SNAME_DEF) == std::string::npos)))
+	{
+		Log(LOG_ERROR, "%s: Error getting status from: %s!",szDenkoviHardwareNames[m_iModel], m_szIPAddress.c_str()); 
 		return;
 	}
 
@@ -1061,7 +837,8 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1069,13 +846,13 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_STATE_DEF)) != -1))
 			{
 				name = "Digital Input " + std::to_string(Idx) + " (" + name + ")"; 
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name);
+				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveDigitalInput = false;
 				continue;
 			}
 
-			if (bHaveAnalogInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_SCAL_VALUE_DEF)) != ""))
+			if (bHaveAnalogInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_SCAL_VALUE_DEF)).empty()))
 			{
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure); 
@@ -1094,13 +871,13 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if (bHaveTemperatureInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)) != ""))
+			if (bHaveTemperatureInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)).empty()))
 			{
 				name = "Temperature Input (" + name + ")";
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure);
 				tmpTiValue = static_cast<float>(atof(tmpMeasure.c_str()));
-				if (tmpMeasure.find("F") != std::string::npos)
+				if (tmpMeasure.find('F') != std::string::npos)
 					tmpTiValue = (float)ConvertToCelsius((double)tmpTiValue);
 				SendTempSensor(Idx, 255, tmpTiValue, name);
 
@@ -1112,7 +889,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveRelay && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_STATE_DEF)) != -1))
 			{
 				name = "Relay " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name);
+				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveRelay = false;
 				continue;
@@ -1120,7 +897,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 			if (bHaveMCD && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_STATE_DEF)) != -1))
 			{
-				std::string tmpN = "";
+				std::string tmpN;
 				tmpN = "MCD (" + name + ")";
 				if (tmpValue == 1 || tmpValue == 3)
 					tmpValue = blinds_sOpen;
@@ -1128,7 +905,7 @@ void CDenkoviDevices::GetMeterDetails()
 					tmpValue = blinds_sClose;
 				else
 					tmpValue = 0x11;
-				SendSwitch(DIOType_MCD, (uint8_t)Idx, 255, tmpValue, 0, tmpN);
+				SendSwitch(DIOType_MCD, (uint8_t)Idx, 255, tmpValue, 0, tmpN, m_Name);
 				ii = ii + 4;
 				tmpstr = stdstring_trim(results[ii]);
 				tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_LASTO_DEF);
@@ -1151,13 +928,13 @@ void CDenkoviDevices::GetMeterDetails()
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 1);
 			name = "Digital IO " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DIO, (uint8_t)(ii + 1), 255, ((port3&(0x01 << ii)) != 0) ? true : false, 0, name);
+			SendSwitch(DIOType_DIO, (uint8_t)(ii + 1), 255, ((port3 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 digital inputs/outputs from port5
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 8 + 1);
 			name = "Relay " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_Relay, (uint8_t)(ii + 8 + 1), 255, ((port5&(0x01 << ii)) != 0) ? true : false, 0, name);
+			SendSwitch(DIOType_Relay, (uint8_t)(ii + 8 + 1), 255, ((port5 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
@@ -1181,13 +958,13 @@ void CDenkoviDevices::GetMeterDetails()
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 1);
 			name = "Digital IO " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DIO, (uint8_t)(ii + 1), 255, ((port3&(0x01 << ii)) != 0) ? true : false, 0, name);
+			SendSwitch(DIOType_DIO, (uint8_t)(ii + 1), 255, ((port3 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 digital inputs/outputs from port5
 		{
 			tmpName = DAEnetIP2GetName(sResult, ii + 8 + 1);
 			name = "Digital IO " + std::to_string(ii + 8 + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DIO, (uint8_t)(ii + 8 + 1), 255, ((port5&(0x01 << ii)) != 0) ? true : false, 0, name);
+			SendSwitch(DIOType_DIO, (uint8_t)(ii + 8 + 1), 255, ((port5 & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
@@ -1206,7 +983,7 @@ void CDenkoviDevices::GetMeterDetails()
 			io << std::uppercase << std::hex << ii;
 			tmpName = DAEnetIP3GetIo(sResult, DAENETIP3_PORTA_SNAME_DEF + io.str());
 			name = "Digital Output " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DO, (uint8_t)(ii + 1), 255, ((pins&(0x0001 << ii)) != 0) ? true : false, 0, name);
+			SendSwitch(DIOType_DO, (uint8_t)(ii + 1), 255, ((pins & (0x0001 << ii)) != 0) ? true : false, 0, name, m_Name);
 		}
 
 		pins = std::stoul(DAEnetIP3GetIo(sResult, DAENETIP3_PORTB_MDI_DEF), nullptr, 16);
@@ -1216,8 +993,8 @@ void CDenkoviDevices::GetMeterDetails()
 			io << std::uppercase << std::hex << ii;
 			tmpName = DAEnetIP3GetIo(sResult2, DAENETIP3_PORTB_SNAME_DEF + io.str());
 			name = "Digital Input " + std::to_string(ii + 1) + " (" + tmpName + ")";
-			SendSwitch(DIOType_DI, (uint8_t)(ii + 1), 255, ((pins&(0x01 << ii)) != 0) ? true : false, 0, name);
-		}
+			SendSwitch(DIOType_DI, (uint8_t)(ii + 1), 255, ((pins & (0x01 << ii)) != 0) ? true : false, 0, name, m_Name);
+		} 
 
 		for (ii = 0; ii < 8; ii++)//8 analog inputs
 		{
@@ -1227,6 +1004,8 @@ void CDenkoviDevices::GetMeterDetails()
 			SendCustomSensor(DIOType_AI, (uint8_t)(ii + 1), 255, static_cast<float>(atoi(tmpMeasure.c_str())), "Analog Input Scaled " + std::to_string(ii + 1) + " (" + tmpName + ")", tmpstr);
 		}
 	}
+	case DDEV_SmartDEN_IP_16_R_MT://has only relays
+	case DDEV_SmartDEN_IP_16_R_MQ:  
 	case DDEV_SmartDEN_IP_16_Relays: {//has only relays
 		bool bHaveRelays = false;
 		for (ii = 1; ii < (int)results.size(); ii++)
@@ -1239,7 +1018,8 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1248,7 +1028,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				std::stringstream sstr;
 				sstr << "Relay " << Idx << " (" << name << ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpState == 1) ? true : false, 0, sstr.str());
+				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpState == 1) ? true : false, 0, sstr.str(), m_Name);
 				Idx = -1;
 				bHaveRelays = false;
 				continue;
@@ -1268,7 +1048,8 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1276,14 +1057,14 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveRelays && (Idx != -1) && ((tmpState = DenkoviGetIntParameter(tmpstr, DAE_RSTATE_DEF)) != -1))
 			{
 				name = "Relay " + std::to_string(Idx) + "(" + name + ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpState == 1) ? true : false, 0, name);
+				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpState == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveRelays = false;
 				continue;
 			}
 		}
 		break;
-	}
+	}	 
 	case DDEV_SmartDEN_Notifier:
 	case DDEV_SmartDEN_Logger: {
 		bool bHaveDigitalInput = false;
@@ -1313,14 +1094,15 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{ 
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")");
+				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
 
 				//Check if there is counter
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1339,7 +1121,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
-				if ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != "")
+				if (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty())
 				{
 					std::vector<std::string> vMeasure;
 					StringSplit(tmpMeasure, " ", vMeasure);
@@ -1353,7 +1135,7 @@ void CDenkoviDevices::GetMeterDetails()
 				continue;
 			}
 
-			if (bHaveTemperatureInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)) != ""))
+			if (bHaveTemperatureInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)).empty()))
 			{ 
 				name = "Temperature Input " + std::to_string(Idx) + " (" + name + ")";				 
 				std::vector<std::string> vMeasure;
@@ -1405,14 +1187,15 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")");
+				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
 
 				//Check if there is counter
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1431,7 +1214,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
-				if ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != "")
+				if (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty())
 				{
 					std::vector<std::string> vMeasure;
 					StringSplit(tmpMeasure, " ", vMeasure);
@@ -1444,7 +1227,7 @@ void CDenkoviDevices::GetMeterDetails()
 				bHaveAnalogInput = false;
 				continue;
 			}
-			if (bHaveTemperatureInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)) != ""))
+			if (bHaveTemperatureInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_VALUE_DEF)).empty()))
 			{
 				name = "Temperature Input " + std::to_string(Idx) + " (" + name + ")";
 				std::vector<std::string> vMeasure;
@@ -1504,7 +1287,8 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
@@ -1512,7 +1296,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{	//Value
 				name = "Digital Input " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name);
+				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				//Counter
 				tmp_counter = stdstring_trim(results[ii+1]);
 				SendDenkoviTextSensor(DIOType_TXT, Idx + 8, 255, DenkoviGetStrParameter(tmp_counter, DAE_COUNT_DEF), name + " Counter");
@@ -1520,9 +1304,8 @@ void CDenkoviDevices::GetMeterDetails()
 				bHaveDigitalInput = false;
 				continue;
 			}
- 
-			
-			if (bHaveAnalogInput && (Idx != -1) && ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != ""))
+
+			if (bHaveAnalogInput && (Idx != -1) && (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty()))
 			{
 				std::vector<std::string> vMeasure;
 				StringSplit(tmpMeasure, " ", vMeasure);
@@ -1554,7 +1337,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveRelay && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "Relay " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name);
+				SendSwitch(DIOType_Relay, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveRelay = false;
 				continue;
@@ -1564,7 +1347,7 @@ void CDenkoviDevices::GetMeterDetails()
 			{
 				name = "Analog Output " + std::to_string(Idx) + " (" + name + ")";
 				double val = (100 * tmpValue) / 1023;
-				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)val, name);
+				SendGeneralSwitch(DIOType_AO, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)val, name, m_Name);
 				Idx = -1;
 				bHaveAnalogOutput = false;
 				continue;
@@ -1607,15 +1390,15 @@ void CDenkoviDevices::GetMeterDetails()
 				}
 			}
 
-			if ((tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)) != "") {
+			if (!(tmpName = DenkoviGetStrParameter(tmpstr, DAE_NAME_DEF)).empty())
+			{
 				name = tmpName;
 				continue;
 			}
 
-			 
 			if (bHaveDigitalInput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
-				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")");
+				SendSwitch(DIOType_DI, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, "Digital Input " + std::to_string(Idx) + " (" + name + ")", m_Name);
 
 				//Check if there is counter
 				tmpstr = stdstring_trim(results[ii + 1]);
@@ -1634,7 +1417,7 @@ void CDenkoviDevices::GetMeterDetails()
 
 				//Check if there is sclaed value
 				tmpstr = stdstring_trim(results[ii + 1]);
-				if ((tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)) != "")
+				if (!(tmpMeasure = DenkoviGetStrParameter(tmpstr, DAE_MEASURE_DEF)).empty())
 				{
 					std::vector<std::string> vMeasure;
 					StringSplit(tmpMeasure, " ", vMeasure);
@@ -1651,7 +1434,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHaveDigitalOutput && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "Digital Output " + std::to_string(Idx) + " (" + name + ")";
-				SendSwitch(DIOType_DO, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name);
+				SendSwitch(DIOType_DO, (uint8_t)Idx, 255, (tmpValue == 1) ? true : false, 0, name, m_Name);
 				Idx = -1;
 				bHaveDigitalOutput = false;
 				continue;
@@ -1660,7 +1443,7 @@ void CDenkoviDevices::GetMeterDetails()
 			if (bHavePWM && (Idx != -1) && ((tmpValue = DenkoviGetIntParameter(tmpstr, DAE_VALUE_DEF)) != -1))
 			{
 				name = "PWM " + std::to_string(Idx) + " (" + name + ")";
-				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)tmpValue, name);
+				SendGeneralSwitch(DIOType_PWM, Idx, 255, (tmpValue > 0) ? true : false, (uint8_t)tmpValue, name, m_Name);
 				Idx = -1;
 				bHavePWM = false;
 				continue;

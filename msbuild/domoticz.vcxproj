@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -100,7 +100,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;JSON_DLL;WITH_TLS;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -128,7 +128,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;JSON_DLL;_CONSOLE;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/OpenZwave/Include;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/OpenZwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -158,7 +158,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;JSON_DLL;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/include;../msbuild/Windows Libraries/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/include;../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -168,7 +168,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>./Windows Libraries/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;./Windows Libraries/openzwave/OpenZWave.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;fmt.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;./Windows Libraries/openzwave/OpenZWave.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -186,7 +186,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NOMINMAX;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;HAVE_SNPRINTF;WITH_TLS;JSON_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/OpenZwave/Include;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../msbuild/Windows Libraries/OpenZwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -547,6 +547,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\hardware\AccuWeather.h" />
+    <ClInclude Include="..\hardware\AirconWithMe.h" />
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
@@ -593,6 +594,8 @@
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\eVehicles\eVehicle.h" />
     <ClInclude Include="..\hardware\eVehicles\TeslaApi.h" />
+    <ClInclude Include="..\hardware\eVehicles\MercApi.h" />
+    <ClInclude Include="..\hardware\eVehicles\TestcarApi.h" />
     <ClInclude Include="..\hardware\eVehicles\VehicleApi.h" />
     <ClInclude Include="..\hardware\EvohomeBase.h" />
     <ClInclude Include="..\hardware\EvohomeRadio.h" />
@@ -606,9 +609,11 @@
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HardwareCereal.h" />
     <ClInclude Include="..\hardware\Honeywell.h" />
+    <ClInclude Include="..\hardware\Meteorologisk.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
+    <ClInclude Include="..\hardware\serial\impl\win.h" />
     <ClInclude Include="..\hardware\SysfsGpio.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
     <ClInclude Include="..\hardware\HEOS.h" />
@@ -681,6 +686,7 @@
     <ClInclude Include="..\hardware\TE923Tool.h" />
     <ClInclude Include="..\hardware\TeleinfoBase.h" />
     <ClInclude Include="..\hardware\TeleinfoSerial.h" />
+    <ClInclude Include="..\hardware\TeleinfoTCP.h" />
     <ClInclude Include="..\hardware\TelldusFunctions.h" />
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
@@ -830,6 +836,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\hardware\AccuWeather.cpp" />
+    <ClCompile Include="..\hardware\AirconWithMe.cpp" />
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
     <ClCompile Include="..\hardware\Arilux.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
@@ -889,6 +896,8 @@
     <ClCompile Include="..\hardware\ETH8020.cpp" />
     <ClCompile Include="..\hardware\eVehicles\eVehicle.cpp" />
     <ClCompile Include="..\hardware\eVehicles\TeslaApi.cpp" />
+    <ClCompile Include="..\hardware\eVehicles\MercApi.cpp" />
+    <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp" />
     <ClCompile Include="..\hardware\EvohomeBase.cpp" />
     <ClCompile Include="..\hardware\EvohomeRadio.cpp" />
     <ClCompile Include="..\hardware\EvohomeScript.cpp" />
@@ -900,6 +909,7 @@
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\Honeywell.cpp" />
+    <ClCompile Include="..\hardware\Meteorologisk.cpp" />
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp" />
     <ClCompile Include="..\hardware\Rtl433.cpp" />
@@ -981,6 +991,7 @@
     <ClCompile Include="..\hardware\TE923Tool.cpp" />
     <ClCompile Include="..\hardware\TeleinfoBase.cpp" />
     <ClCompile Include="..\hardware\TeleinfoSerial.cpp" />
+    <ClCompile Include="..\hardware\TeleinfoTCP.cpp" />
     <ClCompile Include="..\hardware\Tellstick.cpp" />
     <ClCompile Include="..\hardware\TellstickFactory.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
@@ -1152,322 +1163,6 @@
     <Image Include="..\www\css\ui-darkness\images\ui-icons_cccccc_256x240.png" />
     <Image Include="..\www\css\ui-darkness\images\ui-icons_ffffff_256x240.png" />
     <Image Include="..\www\favicon.ico" />
-    <Image Include="..\www\images\about.png" />
-    <Image Include="..\www\images\add.png" />
-    <Image Include="..\www\images\adjust48.png" />
-    <Image Include="..\www\images\air.png" />
-    <Image Include="..\www\images\air48.png" />
-    <Image Include="..\www\images\air_signal.png" />
-    <Image Include="..\www\images\Alarm.png" />
-    <Image Include="..\www\images\Alarm48_Off.png" />
-    <Image Include="..\www\images\Alarm48_On.png" />
-    <Image Include="..\www\images\Alert.png" />
-    <Image Include="..\www\images\Alert48_0.png" />
-    <Image Include="..\www\images\Alert48_1.png" />
-    <Image Include="..\www\images\Alert48_2.png" />
-    <Image Include="..\www\images\Alert48_3.png" />
-    <Image Include="..\www\images\Alert48_4.png" />
-    <Image Include="..\www\images\Amplifier.png" />
-    <Image Include="..\www\images\Amplifier48_Off.png" />
-    <Image Include="..\www\images\Amplifier48_On.png" />
-    <Image Include="..\www\images\background.png" />
-    <Image Include="..\www\images\back_disabled.png" />
-    <Image Include="..\www\images\back_enabled.png" />
-    <Image Include="..\www\images\back_enabled_hover.png" />
-    <Image Include="..\www\images\baro48.png" />
-    <Image Include="..\www\images\battery-low.png" />
-    <Image Include="..\www\images\battery-ok.png" />
-    <Image Include="..\www\images\battery.png" />
-    <Image Include="..\www\images\bbq.png" />
-    <Image Include="..\www\images\blinds.png" />
-    <Image Include="..\www\images\blinds48.png" />
-    <Image Include="..\www\images\blinds48sel.png" />
-    <Image Include="..\www\images\blindsopen48.png" />
-    <Image Include="..\www\images\blindsopen48sel.png" />
-    <Image Include="..\www\images\blindsstop.png" />
-    <Image Include="..\www\images\button.png" />
-    <Image Include="..\www\images\camera-web.png" />
-    <Image Include="..\www\images\camera_default.png" />
-    <Image Include="..\www\images\capture.png" />
-    <Image Include="..\www\images\ChristmasTree.png" />
-    <Image Include="..\www\images\ChristmasTree48_Off.png" />
-    <Image Include="..\www\images\ChristmasTree48_On.png" />
-    <Image Include="..\www\images\clock.png" />
-    <Image Include="..\www\images\clock48.png" />
-    <Image Include="..\www\images\collection.png" />
-    <Image Include="..\www\images\collection_hover.png" />
-    <Image Include="..\www\images\Computer.png" />
-    <Image Include="..\www\images\Computer48_Off.png" />
-    <Image Include="..\www\images\Computer48_On.png" />
-    <Image Include="..\www\images\ComputerPC.png" />
-    <Image Include="..\www\images\ComputerPC48_Off.png" />
-    <Image Include="..\www\images\ComputerPC48_On.png" />
-    <Image Include="..\www\images\contact.png" />
-    <Image Include="..\www\images\contact48.png" />
-    <Image Include="..\www\images\contact48_open.png" />
-    <Image Include="..\www\images\contact_open.png" />
-    <Image Include="..\www\images\Cooling.png" />
-    <Image Include="..\www\images\Cooling48_Off.png" />
-    <Image Include="..\www\images\Cooling48_On.png" />
-    <Image Include="..\www\images\copy.png" />
-    <Image Include="..\www\images\copy_hover.png" />
-    <Image Include="..\www\images\counter.png" />
-    <Image Include="..\www\images\Counter48.png" />
-    <Image Include="..\www\images\csv.png" />
-    <Image Include="..\www\images\csv_hover.png" />
-    <Image Include="..\www\images\current.png" />
-    <Image Include="..\www\images\current48.png" />
-    <Image Include="..\www\images\customicons.png" />
-    <Image Include="..\www\images\delete.png" />
-    <Image Include="..\www\images\demand.png" />
-    <Image Include="..\www\images\demand_mini.png" />
-    <Image Include="..\www\images\desktop.png" />
-    <Image Include="..\www\images\details.png" />
-    <Image Include="..\www\images\devices.png" />
-    <Image Include="..\www\images\Dimmer48_Off.png" />
-    <Image Include="..\www\images\Dimmer48_On.png" />
-    <Image Include="..\www\images\door.png" />
-    <Image Include="..\www\images\door48.png" />
-    <Image Include="..\www\images\door48open.png" />
-    <Image Include="..\www\images\doorbell.png" />
-    <Image Include="..\www\images\doorbell48.png" />
-    <Image Include="..\www\images\down.png" />
-    <Image Include="..\www\images\Down48.png" />
-    <Image Include="..\www\images\Down48_2.png" />
-    <Image Include="..\www\images\edit.png" />
-    <Image Include="..\www\images\empty16.png" />
-    <Image Include="..\www\images\equal.png" />
-    <Image Include="..\www\images\events.png" />
-    <Image Include="..\www\images\evohome\Auto.png" />
-    <Image Include="..\www\images\evohome\AutoWithEco.png" />
-    <Image Include="..\www\images\evohome\AutoWithEcoInv.png" />
-    <Image Include="..\www\images\evohome\Away.png" />
-    <Image Include="..\www\images\evohome\AwayInv.png" />
-    <Image Include="..\www\images\evohome\Custom.png" />
-    <Image Include="..\www\images\evohome\CustomInv.png" />
-    <Image Include="..\www\images\evohome\DayOff.png" />
-    <Image Include="..\www\images\evohome\DayOffInv.png" />
-    <Image Include="..\www\images\evohome\HeatingOff.png" />
-    <Image Include="..\www\images\evohome\HeatingOffInv.png" />
-    <Image Include="..\www\images\evohome\Off.png" />
-    <Image Include="..\www\images\evohome\On.png" />
-    <Image Include="..\www\images\evohome\OpenWindow.png" />
-    <Image Include="..\www\images\evohome\PermanentOverride.png" />
-    <Image Include="..\www\images\evohome\PermanentOverrideInv.png" />
-    <Image Include="..\www\images\evohome\RemoteOverride.png" />
-    <Image Include="..\www\images\evohome\RemoteOverrideInv.png" />
-    <Image Include="..\www\images\evohome\TemporaryOverride.png" />
-    <Image Include="..\www\images\evohome\TemporaryOverrideInv.png" />
-    <Image Include="..\www\images\expand16.png" />
-    <Image Include="..\www\images\failed.png" />
-    <Image Include="..\www\images\Fan.png" />
-    <Image Include="..\www\images\Fan48_Off.png" />
-    <Image Include="..\www\images\Fan48_On.png" />
-    <Image Include="..\www\images\favorite.png" />
-    <Image Include="..\www\images\Fireplace.png" />
-    <Image Include="..\www\images\Fireplace48_Off.png" />
-    <Image Include="..\www\images\Fireplace48_On.png" />
-    <Image Include="..\www\images\floorplans\example.jpg" />
-    <Image Include="..\www\images\forward_disabled.png" />
-    <Image Include="..\www\images\forward_enabled.png" />
-    <Image Include="..\www\images\forward_enabled_hover.png" />
-    <Image Include="..\www\images\Gas48.png" />
-    <Image Include="..\www\images\gauge.png" />
-    <Image Include="..\www\images\gauge48.png" />
-    <Image Include="..\www\images\Generic.png" />
-    <Image Include="..\www\images\Generic48_Off.png" />
-    <Image Include="..\www\images\Generic48_On.png" />
-    <Image Include="..\www\images\glyphicons-halflings-white.png" />
-    <Image Include="..\www\images\glyphicons-halflings.png" />
-    <Image Include="..\www\images\handle.png" />
-    <Image Include="..\www\images\Harddisk.png" />
-    <Image Include="..\www\images\Harddisk48_Off.png" />
-    <Image Include="..\www\images\Harddisk48_On.png" />
-    <Image Include="..\www\images\hardware.png" />
-    <Image Include="..\www\images\heal.png" />
-    <Image Include="..\www\images\Heating.png" />
-    <Image Include="..\www\images\Heating48_Off.png" />
-    <Image Include="..\www\images\Heating48_On.png" />
-    <Image Include="..\www\images\hold.png" />
-    <Image Include="..\www\images\hold_mini.png" />
-    <Image Include="..\www\images\house.png" />
-    <Image Include="..\www\images\ice.png" />
-    <Image Include="..\www\images\insert.png" />
-    <Image Include="..\www\images\iphone-icon.png" />
-    <Image Include="..\www\images\leaf.png" />
-    <Image Include="..\www\images\leaf48.png" />
-    <Image Include="..\www\images\Light48_Off.png" />
-    <Image Include="..\www\images\Light48_On.png" />
-    <Image Include="..\www\images\lightbulb.png" />
-    <Image Include="..\www\images\lightbulboff.png" />
-    <Image Include="..\www\images\lock_closed.png" />
-    <Image Include="..\www\images\lock_open.png" />
-    <Image Include="..\www\images\log.png" />
-    <Image Include="..\www\images\login-sprite.png" />
-    <Image Include="..\www\images\LogitechMediaServer.png" />
-    <Image Include="..\www\images\LogitechMediaServer48_Off.png" />
-    <Image Include="..\www\images\LogitechMediaServer48_On.png" />
-    <Image Include="..\www\images\logo.png" />
-    <Image Include="..\www\images\logo192.png" />
-    <Image Include="..\www\images\logout.png" />
-    <Image Include="..\www\images\logo\114.png" />
-    <Image Include="..\www\images\logo\144.png" />
-    <Image Include="..\www\images\logo\152.png" />
-    <Image Include="..\www\images\logo\180.png" />
-    <Image Include="..\www\images\logo\57.png" />
-    <Image Include="..\www\images\logo\72.png" />
-    <Image Include="..\www\images\logo\76.png" />
-    <Image Include="..\www\images\lux.png" />
-    <Image Include="..\www\images\lux48.png" />
-    <Image Include="..\www\images\Media.png" />
-    <Image Include="..\www\images\Media48_Off.png" />
-    <Image Include="..\www\images\Media48_On.png" />
-    <Image Include="..\www\images\mode.png" />
-    <Image Include="..\www\images\mode48.png" />
-    <Image Include="..\www\images\moisture.png" />
-    <Image Include="..\www\images\moisture48.png" />
-    <Image Include="..\www\images\motion.png" />
-    <Image Include="..\www\images\motion48-off.png" />
-    <Image Include="..\www\images\motion48-on.png" />
-    <Image Include="..\www\images\motionoff.png" />
-    <Image Include="..\www\images\nebula.jpg" />
-    <Image Include="..\www\images\next.png" />
-    <Image Include="..\www\images\nodemand.png" />
-    <Image Include="..\www\images\nodemand_mini.png" />
-    <Image Include="..\www\images\nofavorite.png" />
-    <Image Include="..\www\images\notification.png" />
-    <Image Include="..\www\images\off.png" />
-    <Image Include="..\www\images\ok.png" />
-    <Image Include="..\www\images\on.png" />
-    <Image Include="..\www\images\onoff48.png" />
-    <Image Include="..\www\images\override.png" />
-    <Image Include="..\www\images\override_mini.png" />
-    <Image Include="..\www\images\overrule.png" />
-    <Image Include="..\www\images\overrule_mini.png" />
-    <Image Include="..\www\images\pdf.png" />
-    <Image Include="..\www\images\pdf_hover.png" />
-    <Image Include="..\www\images\Percentage48.png" />
-    <Image Include="..\www\images\Phone.png" />
-    <Image Include="..\www\images\Phone48_Off.png" />
-    <Image Include="..\www\images\Phone48_On.png" />
-    <Image Include="..\www\images\print.png" />
-    <Image Include="..\www\images\Printer.png" />
-    <Image Include="..\www\images\Printer48_Off.png" />
-    <Image Include="..\www\images\Printer48_On.png" />
-    <Image Include="..\www\images\print_hover.png" />
-    <Image Include="..\www\images\program.png" />
-    <Image Include="..\www\images\program_mini.png" />
-    <Image Include="..\www\images\proxy.png" />
-    <Image Include="..\www\images\push.png" />
-    <Image Include="..\www\images\push48.png" />
-    <Image Include="..\www\images\pushoff.png" />
-    <Image Include="..\www\images\pushoff48.png" />
-    <Image Include="..\www\images\pushon.png" />
-    <Image Include="..\www\images\pushon48.png" />
-    <Image Include="..\www\images\PV48.png" />
-    <Image Include="..\www\images\radiation.png" />
-    <Image Include="..\www\images\radiation48.png" />
-    <Image Include="..\www\images\rain.png" />
-    <Image Include="..\www\images\rain48.png" />
-    <Image Include="..\www\images\rainraining.png" />
-    <Image Include="..\www\images\remote.png" />
-    <Image Include="..\www\images\remote48.png" />
-    <Image Include="..\www\images\remove.png" />
-    <Image Include="..\www\images\rename.png" />
-    <Image Include="..\www\images\restart.png" />
-    <Image Include="..\www\images\RGB.png" />
-    <Image Include="..\www\images\RGB48_Off.png" />
-    <Image Include="..\www\images\RGB48_On.png" />
-    <Image Include="..\www\images\scale.png" />
-    <Image Include="..\www\images\scale48.png" />
-    <Image Include="..\www\images\scenes.png" />
-    <Image Include="..\www\images\security.png" />
-    <Image Include="..\www\images\security48.png" />
-    <Image Include="..\www\images\setup.png" />
-    <Image Include="..\www\images\shutdown.png" />
-    <Image Include="..\www\images\siren-off.png" />
-    <Image Include="..\www\images\siren-on.png" />
-    <Image Include="..\www\images\siren.png" />
-    <Image Include="..\www\images\sleep.png" />
-    <Image Include="..\www\images\smoke.png" />
-    <Image Include="..\www\images\smoke48off.png" />
-    <Image Include="..\www\images\smoke48on.png" />
-    <Image Include="..\www\images\smokeoff.png" />
-    <Image Include="..\www\images\sort_asc.png" />
-    <Image Include="..\www\images\sort_asc_disabled.png" />
-    <Image Include="..\www\images\sort_both.png" />
-    <Image Include="..\www\images\sort_desc.png" />
-    <Image Include="..\www\images\sort_desc_disabled.png" />
-    <Image Include="..\www\images\Speaker.png" />
-    <Image Include="..\www\images\Speaker48_Off.png" />
-    <Image Include="..\www\images\Speaker48_On.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-1024x748.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-1242x2148.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-1536x2008.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-2048x1496.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-2208x1182.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-320x460.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-640x1096.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-640x920.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-750x1294.png" />
-    <Image Include="..\www\images\startup\apple-touch-startup-image-768x1004.png" />
-    <Image Include="..\www\images\Stop48.png" />
-    <Image Include="..\www\images\switch.png" />
-    <Image Include="..\www\images\temp-0-5.png" />
-    <Image Include="..\www\images\temp-10-15.png" />
-    <Image Include="..\www\images\temp-15-20.png" />
-    <Image Include="..\www\images\temp-20-25.png" />
-    <Image Include="..\www\images\temp-25-30.png" />
-    <Image Include="..\www\images\temp-5-10.png" />
-    <Image Include="..\www\images\temp-gt-30.png" />
-    <Image Include="..\www\images\temp48.png" />
-    <Image Include="..\www\images\temperature.png" />
-    <Image Include="..\www\images\text.png" />
-    <Image Include="..\www\images\text48.png" />
-    <Image Include="..\www\images\TV.png" />
-    <Image Include="..\www\images\TV48_Off.png" />
-    <Image Include="..\www\images\TV48_On.png" />
-    <Image Include="..\www\images\unknown.png" />
-    <Image Include="..\www\images\up.png" />
-    <Image Include="..\www\images\Up48.png" />
-    <Image Include="..\www\images\Up48_2.png" />
-    <Image Include="..\www\images\users.png" />
-    <Image Include="..\www\images\utility.png" />
-    <Image Include="..\www\images\uv.png" />
-    <Image Include="..\www\images\uv48.png" />
-    <Image Include="..\www\images\uvdark.png" />
-    <Image Include="..\www\images\uvsunny.png" />
-    <Image Include="..\www\images\variables.png" />
-    <Image Include="..\www\images\visibility.png" />
-    <Image Include="..\www\images\visibility48.png" />
-    <Image Include="..\www\images\WallSocket.png" />
-    <Image Include="..\www\images\WallSocket48_Off.png" />
-    <Image Include="..\www\images\WallSocket48_On.png" />
-    <Image Include="..\www\images\Water.png" />
-    <Image Include="..\www\images\Water48_Off.png" />
-    <Image Include="..\www\images\Water48_On.png" />
-    <Image Include="..\www\images\webcam.png" />
-    <Image Include="..\www\images\wind.png" />
-    <Image Include="..\www\images\Wind0.png" />
-    <Image Include="..\www\images\wind48.png" />
-    <Image Include="..\www\images\WindE.png" />
-    <Image Include="..\www\images\WindENE.png" />
-    <Image Include="..\www\images\WindESE.png" />
-    <Image Include="..\www\images\WindN.png" />
-    <Image Include="..\www\images\WindNE.png" />
-    <Image Include="..\www\images\WindNNE.png" />
-    <Image Include="..\www\images\WindNNW.png" />
-    <Image Include="..\www\images\WindNW.png" />
-    <Image Include="..\www\images\WindS.png" />
-    <Image Include="..\www\images\WindSE.png" />
-    <Image Include="..\www\images\WindSSE.png" />
-    <Image Include="..\www\images\WindSSW.png" />
-    <Image Include="..\www\images\WindSW.png" />
-    <Image Include="..\www\images\WindW.png" />
-    <Image Include="..\www\images\WindWNW.png" />
-    <Image Include="..\www\images\WindWSW.png" />
-    <Image Include="..\www\images\xls.png" />
-    <Image Include="..\www\images\xls_hover.png" />
     <Image Include="..\www\media\1x1.gif" />
     <Image Include="..\www\media\quote0.png" />
     <Image Include="..\www\media\quote1.png" />

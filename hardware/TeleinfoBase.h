@@ -23,10 +23,11 @@ History :
 
 class CTeleinfoBase : public CDomoticzHardwareBase
 {
-public:
+      public:
 	CTeleinfoBase();
-	~CTeleinfoBase();
-protected:
+	~CTeleinfoBase() override = default;
+
+      protected:
 	typedef struct _tTeleinfo
 	{
 		std::string ADCO;
@@ -65,10 +66,10 @@ protected:
 		std::string rate;
 		std::string tariff;
 		std::string color;
-		time_t  last;
-		bool    triphase;
-		bool    withPAPP; 	//For meters with no PAPP
-		int     CRCmode1;	// really a bool, but with a special "un-initialized state"
+		time_t last;
+		bool triphase;
+		bool withPAPP; // For meters with no PAPP
+		int CRCmode1;  // really a bool, but with a special "un-initialized state"
 		_tTeleinfo()
 		{
 			ISOUSC = 0;
@@ -103,7 +104,7 @@ protected:
 			last = 0;
 			triphase = false;
 			withPAPP = false;
-			CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
+			CRCmode1 = 255; // means "bool not initialized yet", will be when running CRC Check for the first time
 		}
 	} Teleinfo;
 	void ProcessTeleinfo(Teleinfo &teleinfo);
@@ -113,13 +114,15 @@ protected:
 	void InitTeleinfo();
 	void ParseTeleinfoData(const char *pData, int Len);
 	void MatchLine();
-protected:
+
+      protected:
 	int m_iRateLimit;
 	int m_iDataTimeout;
 	unsigned int m_iBaudRate;
 	bool m_bDisableCRC;
-private:
-	int AlertLevel(int Iinst, int Isousc, char* text);
+
+      private:
+	int AlertLevel(int Iinst, int Isousc, char *text);
 	P1Power m_p1power, m_p2power, m_p3power;
 	Teleinfo m_teleinfo;
 	char m_buffer[1024];

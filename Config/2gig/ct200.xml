@@ -1,0 +1,123 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Vivint Element</MetaDataItem>
+    <MetaDataItem name="Description">The Vivint Element Smart Thermostat has an elegantly simple design making it easy for anyone to use. It's hidden display comes to life when you need it, providing clear information and simple controls. This simplicity purposefully masks Element's true intelligence. Element works in concert with the Vivint SkyControl system, leveraging an unmatched understanding of home routines and activity levels. Element automatically and dynamically adjusts to match home activities and ensure a personalized balance of comfort and energy savings. </MetaDataItem>    
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0098:0022:c801</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/2gig/ct200.png</MetaDataItem>
+    <MetaDataItem id="0022" name="ZWProductPage" type="c801">https://products.z-wavealliance.org/products/1678</MetaDataItem>
+    <MetaDataItem id="0022" name="FrequencyName" type="c801">U.S. / Canada / Mexico </MetaDataItem>    
+    <MetaDataItem id="0022" name="Identifier" type="c801">CT200</MetaDataItem>
+    <ChangeLog>
+      <Entry author="srirams" date="11 Nov 2020" revision="1">Initial</Entry>
+    </ChangeLog>
+    <MetaDataItem id="0022" name="ZWProductPage" type="c801">https://products.z-wavealliance.org/products/1678/</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold the side button until you reach settings. Navigate to Installer / Reset.  Use this procedure only in the event that the network primary controller is missing or otherwise inoperable.</MetaDataItem>
+    <MetaDataItem id="0022" name="Identifier" type="c801">CT200</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Same process as inclusion.</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/1678/CT200_UserGuide_20160308.pdf</MetaDataItem>
+    <MetaDataItem id="0022" name="FrequencyName" type="c801">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem name="WakeupDescription">When included into a Z-Wave network on battery power, this device is a FLiRS device.  The Thermostat will wake up for communication when it receives a valid Z-Wave beam.  </MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Hold the side button until you reach settings. Navigate to Installer / Network</MetaDataItem>
+  </MetaData>
+  <!--
+	Radio Thermostat Company of America CT200 Thermostat manual available at:
+	https://products.z-wavealliance.org/ProductManual/File?folder=&filename=MarketCertificationFiles/1678/CT200_UserGuide_20160308.pdf
+	Additional information:
+	https://products.z-wavealliance.org/products/1678
+	-->
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="1" value="2" label="Temperature Reporting Threshold (8-bit)" units="" size="1" min="0" max="4" type="list">
+      <Help>This value determines the reporting threshold</Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Also Disabled"/>
+      <Item value="2" label="0.5 degrees F"/>
+      <Item value="3" label="1.0 degrees F"/>
+      <Item value="4" label="1.5 degrees F"/>
+    </Value>
+    <Value genre="config" instance="1" index="2" value="0" label="HVAC Settings" units="" size="4" min="0" max="0" type="int">
+      <Help>Retrieves the HVAC Settings</Help>
+    </Value>
+    <Value genre="config" instance="1" index="3" value="0" label="Utility Lock" units="" size="1" min="0" max="255" type="byte">
+      <Help>Enable or Disable the Utility Lock</Help>
+    </Value>
+    <Value genre="config" instance="1" index="4" value="0" label="C-Wire/Battery Status" units="" size="1" min="0" max="0" type="list">
+      <Help>Query power which source is in use</Help>
+      <Item value="1" label="Powered by C-Wire"/>
+      <Item value="2" label="Powered by battery"/>
+    </Value>
+    <Value genre="config" instance="1" index="5" value="2" label="Humidity Reporting Threshold" units="" size="1" min="0" max="3" type="byte">
+      <Help>This value determines the reporting threshold</Help>
+    </Value>
+    <Value genre="config" instance="1" index="6" value="0" label="Auxiliary/Emergency" units="" size="1" min="0" max="1" type="byte">
+      <Help>Auxiliary / Emergency Heat Pump Mode</Help>
+    </Value>
+    <Value genre="config" instance="1" index="7" value="2" label="Thermostat Swing Temp" units="degrees Fahrenheit" size="1" min="1" max="8" type="list">
+      <Help>Temperature spread between the on and off temperatures</Help>
+      <Item value="1" label="0.5 degrees Fahrenheit"/>
+      <Item value="2" label="1.0 degrees Fahrenheit"/>
+      <Item value="3" label="1.5 degrees Fahrenheit"/>
+      <Item value="4" label="2.0 degrees Fahrenheit"/>
+      <Item value="5" label="2.5 degrees Fahrenheit"/>
+      <Item value="6" label="3.0 degrees Fahrenheit"/>
+      <Item value="7" label="3.5 degrees Fahrenheit"/>
+      <Item value="8" label="4.0 degrees Fahrenheit"/>
+    </Value>
+    <Value genre="config" instance="1" index="8" value="4" label="Thermostat Diff Temp" units="" size="1" min="4" max="12" type="list">
+      <Help>How far off from target temp before turning on unit</Help>
+      <Item value="4" label="2.0 degrees Fahrenheit"/>
+      <Item value="6" label="3.0 degrees Fahrenheit"/>
+      <Item value="8" label="4.0 degrees Fahrenheit"/>
+      <Item value="10" label="5.0 degrees Fahrenheit"/>
+      <Item value="12" label="6.0 degrees Fahrenheit"/>
+    </Value>
+    <Value genre="config" instance="1" index="9" value="2" label="Thermostat Recovery Mode" units="" size="1" min="1" max="2" type="list">
+      <Help>Bring a space back to a normal occupied temp</Help>
+      <Item value="1" label="Fast Recovery Mode"/>
+      <Item value="2" label="Economy Recovery Mode"/>
+    </Value>
+    <Value genre="config" instance="1" index="11" value="1" label="Simple UI Mode" units="" size="1" min="0" max="1" type="list">
+      <Help>Toggle Simple UI Mode</Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Enabled"/>
+    </Value>
+    <Value genre="config" instance="1" index="12" value="0" label="Multicast" units="" size="1" min="0" max="1" type="list">
+      <Help>Toggle Multicast Mode</Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Enabled"/>
+    </Value>
+    <Value genre="config" instance="1" index="13" value="1" label="Main Display Selection" units="" size="1" min="1" max="2" type="list">
+      <Help>Control which info is displayed in the main display area</Help>
+      <Item value="1" label="Show Temperature"/>
+      <Item value="2" label="Show (unknown)"/>
+    </Value>
+    <Value genre="config" instance="1" index="14" value="2" label="Save Energy Mode Type" units="" size="1" min="1" max="255" type="byte">
+      <Help>Save Energy Mode behavior</Help>
+    </Value>
+    <Value genre="config" instance="1" index="15" value="0" label="Fan Timer" units="" size="1" min="0" max="60" type="byte">
+      <Help>Activate Fan w/ auto shutoff timer</Help>
+    </Value>
+    <Value genre="config" instance="1" index="17" value="0" label="Temperature Calibration" units="" size="1" min="-6" max="6" type="byte">
+      <Help>Temperature Calibration / Offset</Help>
+    </Value>
+    <Value genre="config" instance="1" index="18" value="0" label="Display Units" units="" size="1" min="0" max="1" type="list">
+      <Help>Celsius or Fahrenheit</Help>
+      <Item value="0" label="Fahrenheit"/>
+      <Item value="1" label="Celcius"/>
+    </Value>    
+  </CommandClass>
+  
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67">
+    <Compatibility>
+      <Base>0</Base>
+      <AltTypeInterpretation>true</AltTypeInterpretation>
+    </Compatibility>
+  </CommandClass>  
+
+  <CommandClass id="96">
+    <Compatibility>
+      <MapRootToEndpoint>true</MapRootToEndpoint>
+    </Compatibility>
+  </CommandClass>  
+
+</Product>

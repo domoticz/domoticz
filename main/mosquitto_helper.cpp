@@ -395,4 +395,4 @@ int mosquittodz::tls_psk_set(const char *psk, const char *identity, const char *
 	return mosquitto_tls_psk_set(m_mosq, psk, identity, ciphers);
 }
 
-}
+} // namespace mosqdz

@@ -271,7 +271,9 @@ define(['app', 'livesocket'], function (app) {
 				strstatus = "Economy";
 			else if (strstatus == "DayOff")//FIXME better way to convert?
 				strstatus = "Day Off";
-			else if (strstatus == "HeatingOff")//FIXME better way to convert?
+			else if (strstatus == "DayOffWithEco")//FIXME better way to convert?
+				strstatus = "Day Off With Eco";
+ 			else if (strstatus == "HeatingOff")//FIXME better way to convert?
 				strstatus = "Heating Off";
 			return strstatus;
 		}
@@ -297,7 +299,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EvohomePopupMenu = function (item) {
 			var htm = '\t      <td id="img"><a href="#evohome" id="evohome_' + item.idx + '">' + EvohomeImg(item) + '</a></td>\n<div id="evopop_' + item.idx + '" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
-			$.each([{ "name": "Normal", "data": "Auto" }, { "name": "Economy", "data": "AutoWithEco" }, { "name": "Away", "data": "Away" }, { "name": "Day Off", "data": "DayOff" }, { "name": "Custom", "data": "Custom" }, { "name": "Heating Off", "data": "HeatingOff" }], function (idx, obj) { htm += '<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-' + obj.data + '" onclick="SwitchModal(\'' + item.idx + '\',\'' + obj.name + '\',\'' + obj.data + '\');deselect($(this),\'#evopop_' + item.idx + '\');return false;">' + obj.name + '</a></li>'; });
+			$.each([{ "name": "Normal", "data": "Auto" }, { "name": "Economy", "data": "AutoWithEco" }, { "name": "Away", "data": "Away" }, { "name": "Day Off", "data": "DayOff" },  { "name": "Day Off With Eco", "data": "DayOffWithEco" }, { "name": "Custom", "data": "Custom" }, { "name": "Heating Off", "data": "HeatingOff" }], function (idx, obj) { htm += '<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-' + obj.data + '" onclick="SwitchModal(\'' + item.idx + '\',\'' + obj.name + '\',\'' + obj.data + '\');deselect($(this),\'#evopop_' + item.idx + '\');return false;">' + obj.name + '</a></li>'; });
 			htm += '</ul></div>';
 			return htm;
 		}
@@ -554,7 +556,12 @@ define(['app', 'livesocket'], function (app) {
 					(item.Status.indexOf('Set ') == 0)
 				) {
 					if (isLED(item.SubType)) {
-						img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48">';
+						if (item.Image == "Dimmer") {
+							img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48">';
+						}
+						else {
+							img = '<img src="images/' + item.Image + '48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48">';
+						}
 					}
 					else {
 						img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
@@ -562,7 +569,12 @@ define(['app', 'livesocket'], function (app) {
 				}
 				else {
 					if (isLED(item.SubType)) {
-						img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48">';
+						if (item.Image == "Dimmer") {
+							img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48">';
+						}
+						else {
+							img = '<img src="images/' + item.Image + '48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48">';
+						}
 					}
 					else {
 						img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
@@ -665,7 +677,7 @@ define(['app', 'livesocket'], function (app) {
 			}
 
 			var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-			$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+			$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery').removeClass('statusDisabled');
 			$(id).addClass(backgroundClass);
 
 			if ($(id + " #img").html() != img) {
@@ -1157,7 +1169,12 @@ define(['app', 'livesocket'], function (app) {
 									(item.Status.indexOf('Disco ') == 0)
 								) {
 									if (isLED(item.SubType)) {
-										xhtm += '\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48"></td>\n';
+										if (item.Image == "Dimmer") {
+											xhtm += '\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48"></td>\n';
+										}
+										else {
+											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48"></td>\n';
+										}
 									}
 									else {
 										xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
@@ -1165,7 +1182,12 @@ define(['app', 'livesocket'], function (app) {
 								}
 								else {
 									if (isLED(item.SubType)) {
-										xhtm += '\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48"></td>\n';
+										if (item.Image == "Dimmer") {
+											xhtm += '\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48"></td>\n';
+										}
+										else {
+											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="48" width="48"></td>\n';
+										}
 									}
 									else {
 										xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
@@ -1799,15 +1821,8 @@ define(['app', 'livesocket'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #homeconfortparams").show();
 			}
-			else if (lighttype == 304) {
+			else if ((lighttype >= 304) && (lighttype <= 313)) {
 				//Fan (Itho)
-				$("#dialog-addmanuallightdevice #lighting1params").hide();
-				$("#dialog-addmanuallightdevice #lighting2params").hide();
-				$("#dialog-addmanuallightdevice #lighting3params").hide();
-				$("#dialog-addmanuallightdevice #fanparams").show();
-			}
-			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
-				//Fan (Lucci Air/Westinghouse)
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
@@ -2030,16 +2045,8 @@ define(['app', 'livesocket'], function (app) {
 				mParams += "&housecode=" + $("#dialog-addmanuallightdevice #homeconfortparams #combohousecode option:selected").val();
 				mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #homeconfortparams #combounitcode option:selected").val();
 			}
-			else if (lighttype == 304) {
-				//Fan (Itho)
-				ID =
-					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
-					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +
-					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
-				mParams += "&id=" + ID;
-			}
-			else if ((lighttype == 305)||(lighttype == 306)||(lighttype == 307)) {
-				//Fan (Lucci Air/Westinghouse)
+			else if ((lighttype >= 304)&&(lighttype <= 313)) {
+				//Fan
 				ID =
 					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text() +
 					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text() +

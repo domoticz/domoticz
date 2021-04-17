@@ -1,5 +1,5 @@
 <!-- Aeotec Recessed Door Sensor 7-->
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0371:00bb:0002</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw187.png</MetaDataItem>
@@ -24,11 +24,10 @@ It can be included and operated in any Z-Wave network with other Z-Wave certifie
 </MetaDataItem>
     <ChangeLog>
       <Entry author="Jean-Francois Auger - nechry@gmail.com" date="05 nov 2019" revision="1">Initial version</Entry>
+      <Entry author="Justin Hammond" date="08 Jun 2020" revision="2">Notification Class is supported by device</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration -->
-    <!-- Alarm CC isn't supported on this device -->
-  <CommandClass action="remove" id="113"/>
   <CommandClass id="112">
     <Value genre="config" index="1" instance="1" label="Sensor Binary Report" max="1" min="0" size="1" type="list" value="0">
       <Help>Enable/Disable Binary Sensor Report. Allow for backward compatibility to report Binary if Notification Report cannot be used for status changes.</Help>

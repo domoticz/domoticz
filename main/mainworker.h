@@ -33,10 +33,10 @@ public:
 	void RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware);
 	void RemoveDomoticzHardware(int HwdId);
 	int FindDomoticzHardware(int HwdId);
-	int FindDomoticzHardwareByType(const _eHardwareTypes HWType);
+	int FindDomoticzHardwareByType(_eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardware(int HwdId);
-	CDomoticzHardwareBase* GetHardwareByIDType(const std::string &HwdId, const _eHardwareTypes HWType);
-	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
+	CDomoticzHardwareBase *GetHardwareByIDType(const std::string &HwdId, _eHardwareTypes HWType);
+	CDomoticzHardwareBase *GetHardwareByType(_eHardwareTypes HWType);
 
 	void HeartbeatUpdate(const std::string &component, bool critical = true);
 	void HeartbeatRemove(const std::string &component);
@@ -49,30 +49,30 @@ public:
 	void SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings);
 	std::string GetSecureWebserverPort();
 #endif
-	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel, const char *userName);
+	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel, const char *userName);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay, const std::string& User);
-	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const _tColor color, const bool ooc, const int ExtraDelay, const std::string& User);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, const _tColor color, const bool IsTesting, const std::string &User);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &ooc, int ExtraDelay, const std::string &User);
+	bool SwitchLight(uint64_t idx, const std::string &switchcmd, int level, _tColor color, bool ooc, int ExtraDelay, const std::string &User);
+	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, bool IsTesting, const std::string &User);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd, const std::string& User);
-	bool SwitchScene(const uint64_t idx, std::string switchcmd, const std::string& User);
-	void CheckSceneCode(const uint64_t DevRowIdx, const uint8_t dType, const uint8_t dSubType, const int nValue, const char* sValue, const std::string& User);
-	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
+	bool SwitchScene(uint64_t idx, std::string switchcmd, const std::string &User);
+	void CheckSceneCode(uint64_t DevRowIdx, uint8_t dType, uint8_t dSubType, int nValue, const char *sValue, const std::string &User);
+	bool DoesDeviceActiveAScene(uint64_t DevRowIdx, int Cmnd);
 
-	bool SetSetPoint(const std::string &idx, const float TempValue);
-	bool SetSetPoint(const std::string &idx, const float TempValue, const std::string &newMode, const std::string &until);
-	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
-	bool SetThermostatState(const std::string &idx, const int newState);
+	bool SetSetPoint(const std::string &idx, float TempValue);
+	bool SetSetPoint(const std::string &idx, float TempValue, const std::string &newMode, const std::string &until);
+	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue);
+	bool SetThermostatState(const std::string &idx, int newState);
 	bool SetClock(const std::string &idx, const std::string &clockstr);
 	bool SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr);
-	bool SetZWaveThermostatMode(const std::string &idx, const int tMode);
-	bool SetZWaveThermostatFanMode(const std::string &idx, const int fMode);
-	bool SetZWaveThermostatModeInt(const std::vector<std::string> &sd, const int tMode);
-	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode);
+	bool SetZWaveThermostatMode(const std::string &idx, int tMode);
+	bool SetZWaveThermostatFanMode(const std::string &idx, int fMode);
+	bool SetZWaveThermostatModeInt(const std::vector<std::string> &sd, int tMode);
+	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, int fMode);
 
-	bool SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
+	bool SwitchEvoModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
 	bool GetSunSettings();
 	void LoadSharedUsers();
@@ -81,32 +81,21 @@ public:
 
 	bool RestartHardware(const std::string &idx);
 
-	bool AddHardwareFromParams(
-		const int ID,
-		const std::string &Name,
-		const bool Enabled,
-		const _eHardwareTypes Type,
-		const std::string &Address, const uint16_t Port, const std::string &SerialPort,
-		const std::string &Username, const std::string &Password,
-		const std::string &Extra,
-		const int Mode1,
-		const int Mode2,
-		const int Mode3,
-		const int Mode4,
-		const int Mode5,
-		const int Mode6,
-		const int DataTimeout,
-		const bool bDoStart
-	);
+	bool AddHardwareFromParams(int ID, const std::string &Name, bool Enabled, _eHardwareTypes Type, const uint32_t LogLevelEnabled, const std::string &Address, uint16_t Port, const std::string &SerialPort,
+				   const std::string &Username, const std::string &Password, const std::string &Extra, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6,
+				   int DataTimeout, bool bDoStart);
 
-	void UpdateDomoticzSecurityStatus(const int iSecStatus);
+	void UpdateDomoticzSecurityStatus(int iSecStatus);
 	void SetInternalSecStatus();
-	bool GetSensorData(const uint64_t idx, int &nValue, std::string &sValue);
+	bool GetSensorData(uint64_t idx, int &nValue, std::string &sValue);
 
-	bool UpdateDevice(const int DevIdx, int nValue, std::string& sValue, const int signallevel = 12, const int batterylevel = 255, const bool parseTrigger = true);
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, int nValue, std::string &sValue, const int signallevel = 12, const int batterylevel = 255, const bool parseTrigger = true);
+	bool UpdateDevice(const int DevIdx, const int nValue, const std::string &sValue, const std::string &userName, const int signallevel = 12, const int batterylevel = 255,
+			  const bool parseTrigger = true);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, std::string sValue,
+			  const std::string &userName, const int signallevel = 12, const int batterylevel = 255, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const uint8_t *pRXCommand)> sOnDeviceReceived;
+	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx)> sOnDeviceUpdate;
 	boost::signals2::signal<void(const uint64_t SceneIdx, const std::string &SceneName)> sOnSwitchScene;
 
 	CScheduler m_scheduler;
@@ -123,7 +112,7 @@ public:
 	std::string m_szSystemName;
 	std::string m_szDomoticzUpdateURL;
 
-	bool IsUpdateAvailable(const bool bIsForced = false);
+	bool IsUpdateAvailable(bool bIsForced = false);
 	bool StartDownloadUpdate();
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
@@ -185,7 +174,7 @@ private:
 	void Do_Work();
 	void Heartbeat();
 	void ParseRFXLogFile();
-	bool WriteToHardware(const int HwdID, const char *pdata, const uint8_t length);
+	bool WriteToHardware(int HwdID, const char *pdata, uint8_t length);
 
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
@@ -196,7 +185,7 @@ private:
 
 	//message decoders
 	void decode_BateryLevel(bool bIsInPercentage, uint8_t level);
-	uint8_t get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, uint8_t level);
+	uint8_t get_BateryLevel(_eHardwareTypes HwdType, bool bIsInPercentage, uint8_t level);
 
 	// RxMessage queue resources
 	volatile unsigned long m_rxMessageIdx;
@@ -211,12 +200,14 @@ private:
 		std::vector<uint8_t> vrxCommand;
 		boost::uint16_t crc;
 		queue_element_trigger* trigger;
+		std::string UserName;
 	};
 	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
 	void UnlockRxMessageQueue();
-	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
-	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
+	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel, const char *userName);
+	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel, const char *userName, bool wait);
+	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const uint8_t *pRXCommand, const char *defaultName, int BatteryLevel,
+			      const char *userName); // battery level: 0-100, 255=no battery, -1 = don't set
 
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;
@@ -276,7 +267,7 @@ private:
 	void decode_Rego6XXValue(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Usage(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Lux(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-	void decode_General(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult, const uint8_t SignalLevel = 12, const uint8_t BatteryLevel = 255);
+	void decode_General(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

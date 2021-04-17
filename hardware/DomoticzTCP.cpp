@@ -11,8 +11,10 @@
 
 extern http::server::CWebServerHelper m_webservers;
 
-DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
-	m_username(username), m_password(password), m_szIPAddress(IPAddress)
+DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password)
+	: m_szIPAddress(IPAddress)
+	, m_username(username)
+	, m_password(password)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -23,18 +25,16 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 #endif
 }
 
-DomoticzTCP::~DomoticzTCP(void)
-{
-}
-
 #ifndef NOCLOUD
 bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 {
-	if (IPAddress.find(".") != std::string::npos) {
+	if (IPAddress.find('.') != std::string::npos)
+	{
 		// we assume an IPv4 address or host name
 		return false;
 	}
-	if (IPAddress.find(":") != std::string::npos) {
+	if (IPAddress.find(':') != std::string::npos)
+	{
 		// we assume an IPv6 address
 		return false;
 	}
@@ -54,7 +54,7 @@ bool DomoticzTCP::StartHardware()
 	}
 #endif
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&DomoticzTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -83,9 +83,8 @@ void DomoticzTCP::OnConnect()
 	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	if (!m_username.empty())
 	{
-		char szAuth[300];
-		snprintf(szAuth, sizeof(szAuth), "AUTH;%s;%s", m_username.c_str(), m_password.c_str());
-		WriteToHardware((const char*)&szAuth, (const unsigned char)strlen(szAuth));
+		std::string sAuth = fmt::format("AUTH;{};{}", m_username.c_str(), m_password.c_str());
+		WriteToHardware(sAuth.c_str(), (unsigned char)sAuth.size());
 	}
 	sOnConnected(this);
 }
@@ -97,7 +96,7 @@ void DomoticzTCP::OnDisconnect()
 
 void DomoticzTCP::OnData(const unsigned char *pData, size_t length)
 {
-	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != 0)
+	if (length == 6 && strstr(reinterpret_cast<const char *>(pData), "NOAUTH") != nullptr)
 	{
 		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 		return;
@@ -171,11 +170,8 @@ bool DomoticzTCP::isConnected()
 #ifndef NOCLOUD
 	if (b_useProxy)
 		return isConnectedProxy();
-	else
-		return ASyncTCP::isConnected();
-#else
-	return ASyncTCP::isConnected();
 #endif
+	return ASyncTCP::isConnected();
 }
 
 #ifndef NOCLOUD

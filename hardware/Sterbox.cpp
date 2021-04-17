@@ -24,10 +24,6 @@ m_Password(password)
 	Init();
 }
 
-CSterbox::~CSterbox(void)
-{
-}
-
 void CSterbox::Init()
 {
 }
@@ -38,11 +34,11 @@ bool CSterbox::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CSterbox::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	_log.Log(LOG_STATUS, "Sterbox: Started");
+	Log(LOG_STATUS, "Started");
 	return (m_thread != nullptr);
 }
 
@@ -67,7 +63,7 @@ void CSterbox::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % STERBOX_POLL_INTERVAL == 0)
@@ -75,7 +71,7 @@ void CSterbox::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"Sterbox: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CSterbox::WriteToHardware(const char *pdata, const unsigned char length)
@@ -97,7 +93,7 @@ bool CSterbox::WriteToHardware(const char *pdata, const unsigned char length)
 		//std::stringstream szhex;
 		//szhex << std::hex << Relay;
 		//std::string strhex = szhex.str();
-		//_log.Log(LOG_ERROR, "Sterbox: Size od szhex: %s", strhex.c_str());
+		//Log(LOG_ERROR, "Size od szhex: %s", strhex.c_str());
 
 
 		//if (m_Password.empty())
@@ -122,11 +118,11 @@ bool CSterbox::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
-			_log.Log(LOG_ERROR, "Sterbox: Protocol Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Protocol Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
 		std::string strhex = szURL.str();
-		_log.Log(LOG_STATUS, "Sterbox: sending relay command to: %s", strhex.c_str());
+		Log(LOG_STATUS, "sending relay command to: %s", strhex.c_str());
 
 		return true;
 	}
@@ -179,7 +175,7 @@ void CSterbox::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void CSterbox::GetMeterDetails()
@@ -200,7 +196,7 @@ void CSterbox::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(),sResult))
 	{
-		_log.Log(LOG_ERROR,"Sterbox: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	std::vector<std::string> results;
@@ -210,7 +206,7 @@ void CSterbox::GetMeterDetails()
 	StringSplit(sResult, "<br>", results);
 	if (results.size()<8)
 	{
-		_log.Log(LOG_ERROR,"Sterbox: Result 8 Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Result 8 Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	//if (results[0] != "<body>")
@@ -229,7 +225,7 @@ void CSterbox::GetMeterDetails()
 	else
 	{
 		StringSplit(m_Username, ",", inputs);
-		//_log.Log(LOG_ERROR,"Sterbox: Username : %s , IP: %s", m_Username.c_str(), m_szIPAddress.c_str());
+		//Log(LOG_ERROR,"Username : %s , IP: %s", m_Username.c_str(), m_szIPAddress.c_str());
 	}
 
 	for (ii = 1; ii < results.size(); ii++)
@@ -238,24 +234,24 @@ void CSterbox::GetMeterDetails()
 		if (tmpstr.find("OU") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("OU"));
-			pos1 = tmpstr.find("=");
+			pos1 = tmpstr.find('=');
 			if (pos1 != std::string::npos)
 			{
 				tmpstr = tmpstr.substr(pos1+1);
-				//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr.c_str());
+				//Log(LOG_ERROR,"OU Status: %s", tmpstr.c_str());
 				StringSplit(tmpstr, ",", outputs);
 				for (jj = 0; jj < inputs.size(); jj++)
 				{
 					tmpinp = inputs[jj];
 					//if (( jj < 4 || jj > 7  ))
-					pos1 = tmpinp.find("o");
+					pos1 = tmpinp.find('o');
 					if (pos1 != std::string::npos)
 					{
 					int lValue = 0;
 					//tmpstr = tmpstr.substr(pos1+1);
 					tmpstr2 = outputs[jj];
-					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
-					pos1 = tmpstr2.find("s");
+					//Log(LOG_ERROR,"OU Status: %s", tmpstr2.c_str());
+					pos1 = tmpstr2.find('s');
 					if (pos1 != std::string::npos)
 					{
 						lValue = 1;
@@ -274,24 +270,24 @@ void CSterbox::GetMeterDetails()
 		else if (tmpstr.find("IN") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("IN"));
-			pos1 = tmpstr.find("=");
+			pos1 = tmpstr.find('=');
 			if (pos1 != std::string::npos)
 			{
 				tmpstr = tmpstr.substr(pos1+1);
-				//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr.c_str());
+				//Log(LOG_ERROR,"OU Status: %s", tmpstr.c_str());
 				StringSplit(tmpstr, ",", outputs);
 				for (jj = 0; jj < inputs.size(); jj++)
 				{
 					tmpinp = inputs[jj];
 					//if (( jj > 3 && jj < 8  ))
-					pos1 = tmpinp.find("i");
+					pos1 = tmpinp.find('i');
 					if (pos1 != std::string::npos)
 					{
 					int lValue = 0;
 					//tmpstr = tmpstr.substr(pos1+1);
 					tmpstr2 = outputs[jj];
-					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
-					pos1 = tmpstr2.find("S");
+					//Log(LOG_ERROR,"OU Status: %s", tmpstr2.c_str());
+					pos1 = tmpstr2.find('S');
 					if (pos1 != std::string::npos)
 					{
 						lValue = 1;
@@ -310,7 +306,7 @@ void CSterbox::GetMeterDetails()
 		else if (tmpstr.find("AN") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("AN"));
-			pos1 = tmpstr.find("=");
+			pos1 = tmpstr.find('=');
 			if (pos1 != std::string::npos)
 			{
 				tmpstr = tmpstr.substr(pos1+1);
@@ -323,7 +319,7 @@ void CSterbox::GetMeterDetails()
 				{
 					//StringSplit("t,t,t", ",", inputs);
 					StringSplit(m_Password, ",", analog);
-				//_log.Log(LOG_ERROR,"Sterbox: Pass : %s", m_Password.c_str());
+				//Log(LOG_ERROR,"Pass : %s", m_Password.c_str());
 
 				}
 				for (jj = 0; jj < 3; jj++)
@@ -335,29 +331,29 @@ void CSterbox::GetMeterDetails()
 					float lValue = (float)atof(tmpstr2.c_str());
 					std::stringstream sstr;
 					sstr << "Analog " << jj;
-					pos1 = tmpinp.find("t");
+					pos1 = tmpinp.find('t');
 					if (pos1 != std::string::npos)
 					{
 						SendTempSensor(jj,255,lValue, sstr.str());
 					}
-					pos1 = tmpinp.find("v");
+					pos1 = tmpinp.find('v');
 					if (pos1 != std::string::npos)
 					{
 						SendVoltageSensor(0, (uint8_t)jj, 255, lValue, sstr.str());
 					}
-					pos1 = tmpinp.find("l");
+					pos1 = tmpinp.find('l');
 					if (pos1 != std::string::npos)
 					{
 						SendLuxSensor(0, (uint8_t)jj, 255,lValue, sstr.str());
 					}
-					pos1 = tmpinp.find("h");
+					pos1 = tmpinp.find('h');
 					if (pos1 != std::string::npos)
 					{
 						SendHumiditySensor(jj,255,int(lValue), sstr.str());
 					}
 
 					//SendTempSensor(jj,255,lValue, sstr.str());
-					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
+					//Log(LOG_ERROR,"OU Status: %s", tmpstr2.c_str());
 
 				}
 				//int Idx = atoi(tmpstr.substr(0, pos1).c_str());

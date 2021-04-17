@@ -5,7 +5,7 @@ define(function () {
 
         function DeviceIcon(device) {
             this.isConfigurable = function() {
-                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Lighting 6','Color Switch','Home Confort'].includes(device.Type) &&
+                return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5','Lighting 6','Color Switch','Home Confort','Thermostat 3'].includes(device.Type) &&
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
@@ -26,7 +26,10 @@ define(function () {
                 } else if (device.Type === 'Scene' || device.Type === 'Group') {
                     image = device.isActive() ? 'push.png' : 'pushoff.png'
                 } else {
-                    image = device.TypeImg + '.png'
+                    if(device.CustomImage == 0)
+                        image = device.TypeImg + '.png'
+                    else
+                        image = device.Image + '48_On.png';
                 }
 
                 return 'images/' + image;
@@ -62,6 +65,7 @@ define(function () {
                 } else if (
                     (['Light/Switch', 'Lighting 2'].includes(this.Type) && [0, 7, 9, 10].includes(this.SwitchTypeVal))
                     || this.Type === 'Color Switch'
+                    || this.Type === 'Chime'
                 ) {
                     return this.isActive()
                         ? deviceLightApi.switchOff(this.idx)
@@ -158,7 +162,7 @@ define(function () {
                 } else if (this.SubType === 'Percentage') {
                     return '%';
                 } else if (this.Type === 'Weight') {
-					return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
+                    return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
                 } else {
                     return '?';
                 }
@@ -168,12 +172,12 @@ define(function () {
                 var deviceType = this.Type;
                 var logLink = '#/Devices/' + this.idx + '/Log';
 
-                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy'];
+                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating'];
                 var deviceSubTypes = [
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert'
+                    'Text', 'Alert', 'Temperature'
                 ];
 
                 if (deviceTypes.some(function(item) {
@@ -195,6 +199,19 @@ define(function () {
                 }
             };
 
+            this.isCustomLog = function () {
+				var deviceTypes = ['Air Quality','UV','Rain','Current'];
+				var deviceSubTypes = ['Barometer'];
+
+				if (deviceTypes.includes(this.Type)) {
+					return true;
+				}
+				if (deviceSubTypes.includes(this.SubType)) {
+					return true;
+				}
+				return false;
+            };
+
             this.openCustomLog = function (container, backFn) {
                 GlobalBackFn = backFn;
 
@@ -212,7 +229,6 @@ define(function () {
                     ShowBaroLog(container, 'GlobalBackFn', this.idx, this.Name);
                 }
             };
-
 
         }
     };

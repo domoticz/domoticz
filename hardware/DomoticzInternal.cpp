@@ -13,8 +13,3 @@ DomoticzInternal::DomoticzInternal(const int ID) {
 	m_bSkipReceiveCheck = true;
 	m_bIsStarted = false;
 }
-
-DomoticzInternal::~DomoticzInternal() {
-
-}
-

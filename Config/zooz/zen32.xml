@@ -1,0 +1,172 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Zooz ZEN32 Scene Controller</MetaDataItem>
+    <MetaDataItem name="Description"></MetaDataItem>
+	<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:a008:7000</MetaDataItem>
+    <MetaDataItem name="ProductPage"></MetaDataItem>
+    <MetaDataItem name="ProductSupport"></MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen32.png</MetaDataItem>
+    <MetaDataItem name="ProductManual"></MetaDataItem>
+    <MetaDataItem name="WakeupDescription"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Click the large button 3 times quickly.</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Click the large button 3 times quickly.</MetaDataItem>
+    <MetaDataItem name="ResetDescription"></MetaDataItem>
+    <MetaDataItem id="a008" name="ZWProductPage" type="7000"><!-- url to https://products.z-wavealliance.org/products/XXXX/ page for this specific version of the device --></MetaDataItem>
+	  <!--product page not available as of March. 1, 2021 -->
+    <MetaDataItem id="a008" name="FrequencyName" type="7000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="a008" name="Identifier" type="7000">ZEN32</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="1 March 2021" revision="1">Initial configuration from Zooz</Entry>
+    </ChangeLog>
+  </MetaData>
+
+    <!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" index="1" label="LED indicator mode for relay" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="LED on when relay off, LED off when relay on" value="0"/>
+			<Item label="LED on when relay on, LED off when relay off" value="1"/>
+			<Item label="LED always off" value="2"/>
+			<Item label="LED always on" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="2" label="LED indicator mode for Button 1" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="LED on when dimmer off, LED off when dimmer on" value="0"/>
+			<Item label="LED on when dimmer on, LED off when dimmer off" value="1"/>
+			<Item label="LED always off" value="2"/>
+			<Item label="LED always on" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="3" label="LED indicator mode for Button 2" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="LED on when dimmer off, LED off when dimmer on" value="0"/>
+			<Item label="LED on when dimmer on, LED off when dimmer off" value="1"/>
+			<Item label="LED always off" value="2"/>
+			<Item label="LED always on" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="4" label="LED indicator mode for Button 3" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="LED on when dimmer off, LED off when dimmer on" value="0"/>
+			<Item label="LED on when dimmer on, LED off when dimmer off" value="1"/>
+			<Item label="LED always off" value="2"/>
+			<Item label="LED always on" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="5" label="LED indicator mode for Button 4" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="LED on when dimmer off, LED off when dimmer on" value="0"/>
+			<Item label="LED on when dimmer on, LED off when dimmer off" value="1"/>
+			<Item label="LED always off" value="2"/>
+			<Item label="LED always on" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="6" label="LED indicator color for relay" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="white" value="0"/>
+			<Item label="blue" value="1"/>
+			<Item label="green" value="2"/>
+			<Item label="red" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="7" label="LED indicator color for Button 1" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="white" value="0"/>
+			<Item label="blue" value="1"/>
+			<Item label="green" value="2"/>
+			<Item label="red" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="8" label="LED indicator color for Button 2" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="white" value="0"/>
+			<Item label="blue" value="1"/>
+			<Item label="green" value="2"/>
+			<Item label="red" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="9" label="LED indicator color for Button 3" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="white" value="0"/>
+			<Item label="blue" value="1"/>
+			<Item label="green" value="2"/>
+			<Item label="red" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="10" label="LED indicator color for Button 4" size="1" min="0" max="3" value="0">
+			<Help></Help>
+			<Item label="white" value="0"/>
+			<Item label="blue" value="1"/>
+			<Item label="green" value="2"/>
+			<Item label="red" value="3"/>
+		</Value>
+		<Value type="list" genre="config" index="11" label="LED indicator brightness for relay" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="bright (100%)" value="0"/>
+			<Item label="medium (60%)" value="1"/>
+			<Item label="low (30%)" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="12" label="LED indicator brightness for Button 1" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="bright (100%)" value="0"/>
+			<Item label="medium (60%)" value="1"/>
+			<Item label="low (30%)" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="13" label="LED indicator brightness for Button 2" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="bright (100%)" value="0"/>
+			<Item label="medium (60%)" value="1"/>
+			<Item label="low (30%)" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="14" label="LED indicator brightness for Button 3" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="bright (100%)" value="0"/>
+			<Item label="medium (60%)" value="1"/>
+			<Item label="low (30%)" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="15" label="LED indicator brightness for Button 4" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="bright (100%)" value="0"/>
+			<Item label="medium (60%)" value="1"/>
+			<Item label="low (30%)" value="2"/>
+		</Value>
+		<Value type="int" genre="config" index="16" label="Auto turn-off timer for relay" size="4" min="0" max="65535" value="0" units="minutes">
+			<Help>Set the time (in minutes) after which you want the switch to automatically turn off once it has been turned on.</Help>
+		</Value>
+		<Value type="int" genre="config" index="17" label="Auto turn-on timer for relay" size="4" min="0" max="65535" value="0" units="minutes">
+			<Help>Set the time (in minutes) after which you want the switch to automatically turn on once it has been turned off.</Help>
+		</Value>
+		<Value type="list" genre="config" index="18" label="State after power failure" size="1" min="0" max="2" value="0">
+			<Help></Help>
+			<Item label="Relay and buttons remember and restore last state" value="0"/>
+			<Item label="Relay and buttons forced to off after power failure" value="1"/>
+			<Item label="Relay and buttons forced to on after power failure" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="19" label="Disable / enable control on the relay" size="1" min="0" max="2" value="1">
+			<Help></Help>
+			<Item label="Disable local / physical control (from the button), enable Z-Wave control" value="0"/>
+			<Item label="Enable local / physical control (from the button), enable Z-Wave control" value="1"/>
+			<Item label="Disable local / physical control (from the button), disable Z-Wave control" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="20" label="Relay behavior with disabled local / Z-Wave control" size="1" min="0" max="1" value="1">
+			<Help></Help>
+			<Item label="report on/off status when button is pressed and change LED indicator status if Parameter 19 is set to value 0 or 2" value="0"/>
+			<Item label="DON’T report on/off status when button is pressed and DON’T change LED indicator status if Parameter 19 is set to value 0 or 2 (but the relay will always send central scene command)" value="1"/>
+		</Value>
+		<Value type="list" genre="config" index="21" label="3-way switch type" size="1" min="0" max="1" value="0">
+			<Help>Choose the type of 3-way switch you want to use with this switch in a 3-way set-up.</Help>
+			<Item label="regular mechanical 3-way on/off switch, use the connected 3-way switch to turn the light on or off (default)" value="0"/>
+			<Item label="momentary switch, click once to change status (light on or off)" value="1"/>
+		</Value>
+	</CommandClass>
+	
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="11">
+        <Group index="1" label="Group 1: Main button binary switch (Z-Wave) / basic set (button) lifeline to hub" max_associations="1"/>
+        <Group index="2" label="Group 2: Main button basic set (pressed only, doesn’t send anything when switch turned on via hub)" max_associations="5"/>
+	    <Group index="3" label="Group 3: Main button multilevel (held)" max_associations="5"/>
+		<Group index="4" label="Group 4: Small button #1 basic set (pressed)" max_associations="5"/>
+		<Group index="5" label="Group 5: Small button #1 multilevel (held) > in sequence > held = increase brightness, release = stop level, held = decrease brightness, release = stop level" max_associations="5"/>
+		<Group index="6" label="Group 6: Small button #2 basic set (pressed)" max_associations="5"/>
+		<Group index="7" label="Group 7: Small button #2 multilevel (held) > in sequence > held = increase brightness, release = stop level, held = decrease brightness, release = stop level" max_associations="5"/>
+		<Group index="8" label="Group 8: Small button #3 basic set (pressed)" max_associations="5"/>
+		<Group index="9" label="Group 9: Small button #3 multilevel (held) > in sequence > held = increase brightness, release = stop level, held = decrease brightness, release = stop level" max_associations="5"/>
+		<Group index="10" label="Group 10: Small button #4 basic set (pressed)" max_associations="5"/>
+		<Group index="11" label="Group 11: Small button #4 multilevel (held) > in sequence > held = increase brightness, release = stop level, held = decrease brightness, release = stop level" max_associations="5"/>
+      </Associations>
+    </CommandClass>
+	
+</Product>

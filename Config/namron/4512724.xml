@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='https://github.com/OpenZWave/open-zwave' Revision="1">
+  <MetaData>
+    <MetaDataItem name="Name">Namron Z-Wave Dimmer 2 400W</MetaDataItem>
+    <MetaDataItem id="1000" name="ZWProductPage" type="0102">https://products.z-wavealliance.org/products/3912</MetaDataItem>
+    <MetaDataItem name="Description">
+      The micro smart dimmer is a Z-Wave device designed to work with various types of light sources. It may be
+      connected to two-wire or three-wire configuration so it can operate with or without neutral lead. The dimmer can
+      switch or dim connected light source either through Z-Wave devices or through the wall switch connected
+      directly to it. The smart dimmer is equipped with an algorithm of smart light source detection which makes
+      configuration easier and ensures high compatibility of the device. It may be used as a switch with nondimmable
+      light sources (in 3-wire connection).
+
+      The dimmer can be included and operated in any Z-Wave network with other Z-Wave certified devices from
+      other manufacturers and/or other applications. All non- battery operated nodes within the network will act as
+      repeaters regardless of vendor to increase reliability of the network.
+
+      The encryption mode that the dimmer supports is S2 Unauthenticated. When the dimmer is being included into
+      a Z-Wave network, you can use your primary controller/gateway to enable encryption mode or disable
+      encryption. (The primary controller/gateway shall support encryption mode configuration). The dimmer
+      supports OTA and can update firmware wirelessly.
+    </MetaDataItem>
+    <MetaDataItem name="ProductPic">images/namron/4512724.png</MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Triple click on the reset button or repower the device</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Triple click on the reset button</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Press and hold reset button for 10 seconds</MetaDataItem>
+    <MetaDataItem id="d00c" name="Identifier" type="0200">4512724</MetaDataItem>
+     <ChangeLog>
+      <Entry author="Nikhil André Luthra - nikhil.a.luthra@gmail.com" date="01 Nov 2020" revision="1">Handcrafted based on namron/1402756.xml and Vendors product manual</Entry>
+    </ChangeLog>
+  </MetaData>
+
+  <!-- Configuration -->
+  <CommandClass id="112"> 	
+    <Value type="list" genre="config" instance="1" index="2" label="Saving load state before power failure" size="1" value="2">
+        <Help>
+          Saving state before power failure.
+        </Help>
+      <Item label="Shutoff load" value="0"/>
+      <Item label="Turn on load" value="1"/>
+      <Item label="Save load state before power failure" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="3" label="Send Basic report" size="1" value="1">
+        <Help> 
+          Enable/disable to send the basic report to the Lifeline when the load state changed（When value set as 1, repower on the dimmer, it will send Basic report automatically）
+        </Help>
+      <Item label="Disable to send Basic report" value="0"/>
+      <Item label="Enable to send Basic report" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="4" label="Fade time" min="0" max="127" value="1">
+        <Help>
+          Default fade time (unit is second, this value has the same function as Duration of Multilevel).
+          Valid value: 0~127
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="5" label="Minimum brightness" size="1" value="15">
+        <Help>
+          Setting minimum brightness value. 
+          Valid value: 0~50, the bigger the value is, the higher the load’s minimum brightness is.
+        </Help>
+   </Value>
+   <Value type="byte" genre="config" instance="1" index="6" label="Maximum brightness" size="1" value="100">
+        <Help>
+          Setting maximum brightness value.
+          Valid value: 0~100
+        </Help>
+  </Value>
+    <Value type="list" genre="config" instance="1" index="7" label="MOSFET driving type" size="1" value="0">
+        <Help>
+          Choose MOSFET driving type.
+        </Help>
+        <Item label="Trailing edge" value="0"/>
+        <Item label="Leading edge" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="8" label="External switch type" value="0" size="1">
+        <Help>
+           External switch type
+        </Help>
+        <Item label="Push button switch" value="0"/>
+        <Item label="Normal on/off switch" value="1"/>
+        <Item label="3-way switch" value="2"/>
+     </Value>
+     <Value type="list" genre="config" instance="1" index="9" label="Add/remove through external switch" size="1" value="1">
+        <Help>
+          Added to and removed from a network through external
+          switch (when enables this function, triple press the external
+          switch within 1.5 seconds to be added to or removed from a
+          network)
+        </Help>
+        <Item label="Disable" value="0"/>
+        <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="11" label="Wiring type (read only)" read_only="true" size="1" value="0">
+        <Help>
+          Wiring type (Read only)
+        </Help>
+        <Item label="Unknown" value="0"/>
+        <Item label="2 wire with no neutral" value="1"/>
+        <Item label="3 wire with neutral" value="2"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="12" label="Load type (read only)" read_only="true" size="1" value="0">
+        <Help>
+          Wiring type (Read only)
+        </Help>
+        <Item label="Unknown" value="0"/>
+        <Item label="resistive" value="1"/>
+        <Item label="inductive" value="2"/>
+        <Item label="capacitive" value="3"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="13" label="Over current protection" size="1" value="1">
+        <Help>
+          Enable/disable over current protection (over 2.1A for 20 seconds continuously)
+        </Help>
+        <Item label="Disable" value="0"/>
+        <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="14" label="Power automatic report absolute threshold" value="10">
+        <Help>
+          Power automatic report absolute threshold, unit is W.
+          When power changes above the absolute threshold, immediately report current power value
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="15" label="Power automatic report percentage threshold" size="1" value="20">
+        <Help>
+          Power automatic report percentage threshold, unit is %.
+          When power changes above the percentage threshold, immediately report current power value
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="21" label="Power metering automatic report time cycle" value="600">
+        <Help>
+          Power metering automatic report time cycle, unit is second.
+          Valid time cycle value: 5~2678400, when set as 0, report function disabled
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="22" label="Energy metering automatic report time cycle" value="1800">
+        <Help>
+          Energy metering automatic report time cycle, unit is second
+          Valid time cycle value: 5~2678400, when set as 0, report function disabled
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="23" label="Voltage metering automatic report time cycle" value="3600">
+        <Help>
+          Voltage metering automatic report time cycle, unit is second
+          Valid time cycle value: 5~2678400, when set as 0, report function disabled
+        </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="24" label="Current metering automatic report time cycle, unit is second" value="3600">
+        <Help>
+          Current metering automatic report time cycle, unit is second
+          Valid time cycle value: 5~2678400, when set as 0, report function disabled
+        </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="31" label="Dimming curve" size="1" value="0">
+        <Help>
+          Setting dimming curve
+        </Help>
+        <Item label="linear dimming" value="0"/>
+        <Item label="logarithmic dimming" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="32" label="Startup brightness of load" size="1" value="0">
+        <Help>
+          Setting startup brightness of the load
+          Valid value: 0~99
+          Note: every time when turn on the load from OFF status, if the
+          target brightness is lower than the startup brightness, the
+          brightness will first go to the startup brightness value then
+          fall down to the target brightness
+        </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Lifeline"/>
+    </Associations>
+  </CommandClass>
+</Product>

@@ -44,10 +44,6 @@ FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsig
 	m_bufferpos = 0;
 }
 
-FritzboxTCP::~FritzboxTCP(void)
-{
-}
-
 bool FritzboxTCP::StartHardware()
 {
 	RequestStart();
@@ -57,7 +53,7 @@ bool FritzboxTCP::StartHardware()
 	m_bIsStarted=true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&FritzboxTCP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
 }
@@ -76,7 +72,7 @@ bool FritzboxTCP::StopHardware()
 
 void FritzboxTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"Fritzbox: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS,"connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted=true;
 	m_bufferpos=0;
 
@@ -85,7 +81,7 @@ void FritzboxTCP::OnConnect()
 
 void FritzboxTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS,"Fritzbox: disconnected");
+	Log(LOG_STATUS,"disconnected");
 }
 
 void FritzboxTCP::Do_Work()
@@ -97,12 +93,12 @@ void FritzboxTCP::Do_Work()
 		sec_counter++;
 
 		if (sec_counter  % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"Fritzbox: TCP/IP Worker stopped...");
+	Log(LOG_STATUS,"TCP/IP Worker stopped...");
 }
 
 void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
@@ -120,17 +116,17 @@ void FritzboxTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Fritzbox: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
 		(error == boost::asio::error::connection_reset)
 		)
 	{
-		_log.Log(LOG_STATUS, "Fritzbox: Connection reset!");
+		Log(LOG_STATUS, "Connection reset!");
 	}
 	else
-		_log.Log(LOG_ERROR, "Fritzbox: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
 bool FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)
@@ -226,7 +222,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, c
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void FritzboxTCP::ParseLine()
@@ -235,7 +231,7 @@ void FritzboxTCP::ParseLine()
 		return;
 	std::string sLine((char*)&m_buffer);
 
-	//_log.Log(LOG_STATUS, sLine.c_str());
+	//Log(LOG_STATUS, sLine.c_str());
 
 	std::vector<std::string> results;
 	StringSplit(sLine, ";", results);

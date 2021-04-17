@@ -2,8 +2,8 @@
 #include "localtime_r.h"
 
 #include <string.h>
+#include "../main/Helper.h"
 
-time_t m_lasttime=time(NULL);
 std::mutex& TimeMutex_() {
 	static std::mutex lTimeMutex_;
 	return lTimeMutex_;
@@ -35,6 +35,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 
 time_t mytime(time_t * _Time)
 {
+	time_t m_lasttime = time(nullptr);
 	time_t acttime=time(_Time);
 	if (acttime<m_lasttime)
 		return m_lasttime;
@@ -57,11 +58,32 @@ time_t mytime(time_t * _Time)
  * Returns false if no time can be created
  */
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return ParseSQLdatetime(time, result, szSQLdate, ltime.tm_isdst);
+}
+
+/*
+ * Same as ParseSQLdatetime but takes an ISO format (YYYY-MM-DDTHH:mm:ddZ) instead.
+ */
+bool ParseISOdatetime(time_t &time, struct tm &result, const std::string &sISOdate) {
+	if (sISOdate.length() < 20)
+	{
+		return false;
+	}
+
+	std::string sDateWithoutZ = sISOdate.substr(0, 19);
+	std::vector<std::string> splittedDate;
+	StringSplit(sDateWithoutZ, "T", splittedDate);
+
+	if(splittedDate.size() <2)
+	{
+		return false;
+	}
+
+	return ParseSQLdatetime(time, result, splittedDate[0] + " " + splittedDate[1]);
 }
 
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate, int isdst) {
@@ -105,9 +127,9 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLd
  */
 
 bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return constructTime(time, result, year, month, day, hour, minute, second, ltime.tm_isdst);
 }
@@ -147,9 +169,9 @@ bool constructTime(time_t &time, struct tm &result, const int year, const int mo
  */
 
 bool getMidnight(time_t &time, struct tm &result) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 0, 0, 0, ltime.tm_isdst);
 }
@@ -166,9 +188,9 @@ bool getMidnight(time_t &time, struct tm &result, int year, int month, int day) 
  * if you are only interested in the (corrected) date.
  */
 bool getNoon(time_t &time, struct tm &result) {
-	time_t now = mytime(NULL);
+	time_t now = mytime(nullptr);
 	struct tm ltime;
-	if (localtime_r(&now, &ltime) == NULL)
+	if (localtime_r(&now, &ltime) == nullptr)
 		return false;
 	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 12, 0, 0, ltime.tm_isdst);
 }

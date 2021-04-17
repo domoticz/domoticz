@@ -39,9 +39,10 @@ define(['angular'], function () {
                         //icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
                         body: body,
                     });
+                    var href = $window.location.href;
 
                     notification.onclick = function () {
-                        window.open("http://stackoverflow.com/a/13328397/1269037");
+                        window.open(href);
                     };
                 }
             },

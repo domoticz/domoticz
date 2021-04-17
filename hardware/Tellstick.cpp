@@ -31,7 +31,7 @@ void CTellstick::SetSettings(int repeats, int repeatInterval)
 bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
 {
     const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-    _log.Log(LOG_NORM, "Tellstick: WriteToHardware %d id: %d cmd: %d", pSwitch->type, pSwitch->id, pSwitch->cmnd);
+    Log(LOG_NORM, "WriteToHardware %d id: %d cmd: %d", pSwitch->type, pSwitch->id, pSwitch->cmnd);
 
     if (pSwitch->type != pTypeGeneralSwitch)
         return false; //only allowed to control switches
@@ -52,7 +52,7 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
                               m_HwdID, sid, pTypeGeneralSwitch, sSwitchTypeAC);
 	if (result.empty())
     {
-        _log.Log(LOG_NORM, "Tellstick: device %d %s: %s", id, sid ,devname);
+        Log(LOG_NORM, "device %d %s: %s", id, sid ,devname);
 		m_sql.InsertDevice(m_HwdID, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, 0, " ", devname);
 
         return true;
@@ -62,7 +62,7 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
 
 void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *model, int dataType, const char *value)
 {
-    _log.Log(LOG_NORM, "Tellstick: sensorEvent %d,%s,%s,%d,%s", deviceId, protocol, model, dataType, value);
+    Log(LOG_NORM, "sensorEvent %d,%s,%s,%d,%s", deviceId, protocol, model, dataType, value);
     switch (dataType)
     {
     case TELLSTICK_TEMPERATURE:
@@ -84,7 +84,7 @@ void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *mod
 
 void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 {
-    _log.Log(LOG_NORM, "Tellstick: deviceEvent %d %d: %s", deviceId, method, data);
+    Log(LOG_NORM, "deviceEvent %d %d: %s", deviceId, method, data);
 
     char sid[16];
     sprintf(sid, "%08d", deviceId);
@@ -97,26 +97,26 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
     {
     case TELLSTICK_TURNON:
         gswitch.cmnd = gswitch_sOn;
-        sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, 255);
-        break;
+	    sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, 255, m_Name.c_str());
+	break;
     case TELLSTICK_TURNOFF:
         gswitch.cmnd = gswitch_sOff;
-        sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, 255);
-        break;
+	    sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, 255, m_Name.c_str());
+	break;
     case TELLSTICK_DIM:
         gswitch.cmnd = gswitch_sSetLevel;
         gswitch.level = atoi(data)*99/255;
-        sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, 255);
-        break;
+	    sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, 255, m_Name.c_str());
+	break;
     default:
-        _log.Log(LOG_NORM, "Unknown event from device %i\n", deviceId);
+        Log(LOG_NORM, "Unknown event from device %i\n", deviceId);
         break;
     }
 }
 
 void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 {
-    _log.Log(LOG_NORM, "Tellstick: rawDeviceEvent %d: %s", controllerId, data);
+    Log(LOG_NORM, "rawDeviceEvent %d: %s", controllerId, data);
 
     if (!data)
         return;
@@ -128,25 +128,33 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 
     size_t prevPos = 0;
     std::string message = data;
-    size_t pos = message.find(";");
+    size_t pos = message.find(';');
 
     while(pos != std::string::npos) {
         std::string param = message.substr(prevPos, pos-prevPos);
         prevPos = pos+1;
-        size_t delim = param.find(":");
-        if (delim == std::string::npos) {
-            break;
-        }
-        if (param.substr(0, delim).compare("id") == 0) {
-            deviceId = param.substr(delim+1, param.length()-delim);
-        } else if (param.substr(0, delim).compare("winddirection") == 0) {
-            winddirection = param.substr(delim+1, param.length()-delim);
-        } else if (param.substr(0, delim).compare("windaverage") == 0) {
-            windaverage = param.substr(delim+1, param.length()-delim);
-        } else if (param.substr(0, delim).compare("windgust") == 0) {
-            windgust = param.substr(delim+1, param.length()-delim);
-        }
-        pos = message.find(";", pos+1);
+	size_t delim = param.find(':');
+	if (delim == std::string::npos)
+	{
+		break;
+	}
+	if (param.substr(0, delim) == "id")
+	{
+		deviceId = param.substr(delim + 1, param.length() - delim);
+	}
+	else if (param.substr(0, delim) == "winddirection")
+	{
+		winddirection = param.substr(delim + 1, param.length() - delim);
+	}
+	else if (param.substr(0, delim) == "windaverage")
+	{
+		windaverage = param.substr(delim + 1, param.length() - delim);
+	}
+	else if (param.substr(0, delim) == "windgust")
+	{
+		windgust = param.substr(delim + 1, param.length() - delim);
+	}
+	pos = message.find(';', pos + 1);
     }
     if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
         SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), static_cast<float>(atof(windaverage.c_str())), static_cast<float>(atof(windgust.c_str())), 0, 0, false, false, "Wind");
@@ -196,16 +204,16 @@ void CTellstick::sensorEventCallback(const char *protocol, const char *model, in
 void CTellstick::Init()
 {
     m_td.Init();
-    m_deviceEventId = m_td.RegisterDeviceEvent(reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
-    m_rawDeviceEventId = m_td.RegisterRawDeviceEvent(reinterpret_cast<TDRawDeviceEvent>(&CTellstick::rawDeviceEventCallback), this);
-    m_sensorEventId = m_td.RegisterSensorEvent(reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
+    m_deviceEventId = m_td.RegisterDeviceEvent(TDDeviceEvent(&CTellstick::deviceEventCallback), this);
+    m_rawDeviceEventId = m_td.RegisterRawDeviceEvent(TDRawDeviceEvent(&CTellstick::rawDeviceEventCallback), this);
+    m_sensorEventId = m_td.RegisterSensorEvent(TDSensorEvent(&CTellstick::sensorEventCallback), this);
 
     const int numDevices = m_td.GetNumberOfDevices();
     for (int i = 0; i < numDevices; i++)
     {
         int id = m_td.GetDeviceId(i);
         char *name = m_td.GetName(id);
-        _log.Log(LOG_NORM, "Tellstick: %s method %d", name, m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
+        Log(LOG_NORM, "%s method %d", name, m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
         bool isDimmer = m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM;
         AddSwitchIfNotExits(id, name, isDimmer);
         m_td.ReleaseString(name);
@@ -219,11 +227,11 @@ bool CTellstick::StartHardware()
     Init();
     m_bIsStarted=true;
     sOnConnected(this);
-    _log.Log(LOG_NORM, "Tellstick: StartHardware");
+    Log(LOG_NORM, "StartHardware");
     //Start worker thread
-	m_thread = std::make_shared<std::thread>(&CTellstick::ThreadSendCommands, this);
-	SetThreadNameInt(m_thread->native_handle());
-	return true;
+    m_thread = std::make_shared<std::thread>([this] { ThreadSendCommands(); });
+    SetThreadNameInt(m_thread->native_handle());
+    return true;
 }
 
 bool CTellstick::StopHardware()
@@ -250,20 +258,20 @@ bool CTellstick::StopHardware()
 
 void CTellstick::SendCommand(int devID, const _tGeneralSwitch &genSwitch)
 {
-    _log.Log(LOG_NORM, "Tellstick: SendCommand %d id: %d cmd: %d",
+    Log(LOG_NORM, "SendCommand %d id: %d cmd: %d",
              genSwitch.type, genSwitch.id, genSwitch.cmnd);
     switch (genSwitch.cmnd)
     {
     case gswitch_sOn:
-        _log.Log(LOG_NORM, "Tellstick: Switch ON");
+        Log(LOG_NORM, "Switch ON");
         m_td.TurnOn(genSwitch.id);
         break;
     case gswitch_sOff:
-        _log.Log(LOG_NORM, "Tellstick: Switch OFF");
+        Log(LOG_NORM, "Switch OFF");
         m_td.TurnOff(genSwitch.id);
         break;
     case gswitch_sSetLevel:
-        _log.Log(LOG_NORM, "Tellstick: Dim level %d %d",
+        Log(LOG_NORM, "Dim level %d %d",
                  genSwitch.level, genSwitch.level * 255 / 99);
         m_td.Dim(genSwitch.id, genSwitch.level * 255 / 99);
         break;
@@ -291,7 +299,7 @@ void CTellstick::ThreadSendCommands()
             SendCommand(it->first, it->second.genSwitch);
             ++it->second.repeat;
             if (it->second.repeat > m_numRepeats)
-                m_commands.erase(it++);
+                it = m_commands.erase(it);
             else
             {
                 it->second.repeatTimePoint += m_repeatInterval;
@@ -334,12 +342,12 @@ namespace http {
                              repeats, repeatInterval, hwID);
 
             CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
-            if (pBaseHardware == NULL)
-                return;
-            if (pBaseHardware->HwdType != HTYPE_Tellstick)
-                return;
-            CTellstick *pTellstick = reinterpret_cast<CTellstick*>(pBaseHardware);
-            pTellstick->SetSettings(repeats, repeatInterval);
-        }
-    }
-}
+	    if (pBaseHardware == nullptr)
+		    return;
+	    if (pBaseHardware->HwdType != HTYPE_Tellstick)
+		    return;
+	    CTellstick *pTellstick = reinterpret_cast<CTellstick *>(pBaseHardware);
+	    pTellstick->SetSettings(repeats, repeatInterval);
+	}
+    } // namespace server
+} // namespace http

@@ -1,6 +1,16 @@
 local jsonParser = require('JSON')
 local _ = require('lodash')
 
+local self = {
+	LOG_ERROR = 1,
+	LOG_FORCE = 0.5,
+	LOG_MODULE_EXEC_INFO = 2,
+	LOG_INFO = 3,
+	LOG_WARNING = 3,
+	LOG_DEBUG = 4,
+	DZVERSION = '3.1.7',
+}
+
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
 	if type(value_of_unsupported_type) == 'function' then
 		return '"Function"'
@@ -9,18 +19,83 @@ function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
 	end
 end
 
-local self = {
-	LOG_ERROR = 1,
-	LOG_FORCE = 0.5,
-	LOG_MODULE_EXEC_INFO = 2,
-	LOG_INFO = 3,
-	LOG_DEBUG = 4,
-	DZVERSION = '3.0.2',
-}
-
 function math.pow(x, y)
 	self.log('Function math.pow(x, y) has been deprecated in Lua 5.3. Please consider changing code to x^y', self.LOG_FORCE)
 	return x^y
+end
+
+function self.cloneTable(original)
+	local copy = {}
+	for k, v in pairs(original) do
+		if type(v) == 'table' then
+			v = self.cloneTable(v)
+		end
+		copy[k] = v
+	end
+	return copy
+end
+
+-- Cast anything but functions to string
+self.toStr = function (value)
+	local dblQuote = function (v)
+		return '"'..v..'"'
+	end
+
+	local str = ''
+	if _.isString(value) then
+		str = value
+	elseif _.isBoolean(value) then
+		str = value and 'true' or 'false'
+	elseif _.isNil(value) then
+		str = 'nil'
+	elseif _.isNumber(value) then
+		str = value .. ''
+	elseif _.isFunction(value) then
+		str = 'function'
+	elseif _.isTable(value) then
+		str = '{'
+		for k, v in pairs(value) do
+			v = ( _.isString(v) and dblQuote(v) ) or self.toStr(v)
+			if _.isNumber(k) then
+				str = str .. v .. ', '
+			else
+				str = str .. '[' .. dblQuote(k) .. ']=' .. v .. ', '
+			end
+		end
+		str = str:sub(0, ( #str - 2 ) ) .. '}'
+	end
+	return str
+end
+
+self.fuzzyLookup = function (search, target) -- search must be string/number, target must be string/number or array of string/numbers
+	if type(target) == 'table' then
+		local lowestFuzzyValue = math.maxinteger
+		local lowestFuzzyKey = ''
+		for _, targetString in ipairs(target) do
+			local fuzzyValue =  self.fuzzyLookup(search, targetString)
+			if  fuzzyValue < lowestFuzzyValue then
+				lowestFuzzyKey = targetString
+				lowestFuzzyValue = fuzzyValue
+			end
+		end
+		return lowestFuzzyKey
+	else
+		local search, target = (tostring(search)):lower(), (tostring(target)):lower()
+		local searchLength, targetLength, res = #search, #target, {}
+		for i = 0, searchLength do res[i] = { [0] = i } end
+		for j = 1, targetLength do res[0][j] = j end
+		for k = 1, searchLength do
+			for l = 1, targetLength do
+				local cost = search:sub(k,k) == target:sub(l,l) and 0 or 1
+				res[k][l] = math.min(res[k-1][l]+1, res[k][l-1]+1, res[k-1][l-1]+cost)
+			end
+		end
+		return res[searchLength][targetLength]
+	end
+end
+
+function self.containsWord(input, word)
+	return input:find("%f[%w_%-]" .. (word or ''):gsub('-','%%-') .. "%f[%W_]")
 end
 
 function self.setLogMarker(logMarker)
@@ -58,12 +133,15 @@ function self.fileExists(name)
 	return code ~= 2
 end
 
-function self.stringSplit(text, sep)
+function self.stringSplit(text, sep, convertNumber, convertNil)
 	if not(text) then return {} end
 	local sep = sep or '%s'
+	local include = '+'
+	if convertNil then include = '*' end
 	local t = {}
-	for str in string.gmatch(text, "([^"..sep.."]+)") do
-		table.insert(t, str)
+	for str in string.gmatch(text, "([^" ..sep.. "]" .. include .. ")" ) do
+		if convertNil and str == '' then str = convertNil end
+		table.insert(t, ( convertNumber and tonumber(str) ) or str)
 	end
 	return t
 end
@@ -89,12 +167,16 @@ function self.stringToSeconds(str)
 
 		local delta
 		local deltaT = timeDelta(str)
-		for _, day in ipairs(num2Days) do
-			if str:lower():find(day) then
-				local newDelta = ( days2Num[day] - now.wday + 7 ) % 7 * daySeconds + deltaT
-				if newDelta < 0 then newDelta = newDelta + weekSeconds end
-				if delta == nil or newDelta < delta then delta = newDelta end
+		if str:match(' on ') then
+			for _, day in ipairs(num2Days) do
+				if str:lower():find(day) then
+					local newDelta = ( days2Num[day] - now.wday + 7 ) % 7 * daySeconds + deltaT
+					if newDelta < 0 then newDelta = newDelta + weekSeconds end
+					if delta == nil or newDelta < delta then delta = newDelta end
+				end
 			end
+		else
+			if deltaT < 0 then deltaT = deltaT + daySeconds end
 		end
 
 		if delta == nil and deltaT < 0 then deltaT = deltaT + weekSeconds end
@@ -115,16 +197,21 @@ function self.inTable(searchTable, element)
 	return false
 end
 
-function self.round(x, n)
-	-- n = math.pow(10, n or 0)
-	n = 10^(n or 0)
-	x = x * n
-	if x >= 0 then
-		x = math.floor(x + 0.5)
+function self.round(value, decimals)
+	local nVal = tonumber(value)
+	local nDec = ( decimals == nil and 0 ) or tonumber(decimals)
+	if nVal == nil then
+		self.log(self.toStr(value) .. ' is not a number!', self.LOG_ERROR)
+		return
+	elseif nVal >= 0 and nDec > 0 then
+		return math.floor( (nVal * 10 ^ nDec) + 0.5) / (10 ^ nDec)
+	elseif nVal >=0 then
+		return math.floor(nVal + 0.5)
+	elseif nDec and nDec > 0 then
+		return math.ceil ( (nVal * 10 ^ nDec) - 0.5) / (10 ^ nDec)
 	else
-		x = math.ceil(x - 0.5)
+		return math.ceil(nVal - 0.5)
 	end
-	return x / n
 end
 
 function string.sMatch(text, match) -- add sanitized match function to string "library"
@@ -137,6 +224,13 @@ function self.toCelsius(f, relative)
 		return f*(1/1.8)
 	end
 	return ((f-32) / 1.8)
+end
+
+function self.osCommand(cmd)
+	local file = assert ( io.popen(cmd) )
+	local output = assert ( file:read('*all') )
+	local rc = { file:close() }
+	return output, rc[3]
 end
 
 function self.osExecute(cmd)
@@ -184,32 +278,57 @@ function self.urlDecode(str, strSub)
 	return str:gsub("%%(%x%x)", hex2Char)
 end
 
-function self.fromJSON(json, fallback)
+function self.isJSON(str, content)
 
-	local parse = function(j)
-		return jsonParser:decode(j)
+	local str = str or ''
+	local content = content or ''
+	local jsonPatternOK = '^%s*%[*%s*{.+}%s*%]*%s*$'
+	local jsonPatternOK2 = '^%s*%[.+%]*%s*$'
+	local ret = ( str:match(jsonPatternOK) == str ) or ( str:match(jsonPatternOK2) == str ) or content:find('application/json')
+	return ret ~= nil
+end
+
+function self.fromJSON(json, fallback, deSerialize)
+
+	local deSerializeJSON  = function(j)
+		return j:gsub('\\"','"'):gsub('"{','{'):gsub('"%["','["'):gsub('"%]"','"]'):gsub('}"','}'):gsub('"%[{"','[{"'):gsub('"}%]"','"}]'):gsub('%]"}',']}')
 	end
 
-	if json == nil then
+	if type(json) ~= 'string' or json == '' then
 		return fallback
 	end
 
-	--if (jsonParser == nil) then
-	--	jsonParser = require('JSON')
-	--end
-
-	ok, results = pcall(parse, json)
-
-	if (ok) then
-		return results
+	if json:find("'") then
+		local _, singleQuotes = json:gsub("'","'")
+		local _, doubleQuotes = json:gsub('"','"')
+		if singleQuotes > doubleQuotes then
+			json = json:gsub("'",'"')
+		end
 	end
 
-	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
+	if self.isJSON(json) then
+
+		if deSerialize then json = deSerializeJSON(json) end
+
+		local parse = function(j)
+			return jsonParser:decode(j)
+		end
+
+		ok, results = pcall(parse, json)
+
+		if (ok) then
+			return results
+		end
+		self.log('Error parsing json to LUA table: ' .. self.toStr(results) , self.LOG_ERROR)
+	else
+		self.log('Error parsing json to LUA table: (invalid json string) ' .. self.toStr(json) , self.LOG_ERROR)
+	end
+
 	return fallback
 
 end
 
-function self.fromBase64(codedString)  -- from http://lua-users.org/wiki/BaseSixtyFour
+function self.fromBase64(codedString) -- from http://lua-users.org/wiki/BaseSixtyFour
 	if type(codedString) ~= 'string' then
 		self.log('fromBase64: parm should be a string; you supplied a ' .. type(codedString), self.LOG_ERROR)
 		return nil
@@ -251,38 +370,62 @@ function self.toBase64(s) -- from http://lua-users.org/wiki/BaseSixtyFour
 	return s:sub(1, #s-pad) .. rep('=', pad)
 end
 
+function self.hasLines(str, eol)
+	local eol = eol or '\n'
+	return str:find(eol)
+end
+
+function self.fromLines(str, eol)
+	local eol = eol or '\n'
+	return self.stringSplit(str, eol)
+end
+
+function self.isXML(str, content)
+
+	local str = str or ''
+	local content = content or ''
+	local xmlPattern = '^%s*%<.+%>%s*$'
+	local ret = ( str:match(xmlPattern) == str or content:find('application/xml') or content:find('text/xml')) and not(str:sub(1,30):find('DOCTYPE html') )
+	return ret
+
+end
+
 function self.fromXML(xml, fallback)
 
-	local parseXML = function(x)
-		local xmlParser = xml2Lua.parser(xmlHandler)
-		xmlParser:parse(x)
-		return xmlHandler.root
+	if xml and self.isXML(xml) then
+		local parseXML = function(x)
+			local xmlParser = xml2Lua.parser(xmlHandler)
+			xmlParser:parse(x)
+			return xmlHandler.root
+		end
+
+		if xml == nil then
+			return fallback
+		end
+
+		if xml2Lua == nil then
+			xml2Lua = require('xml2lua')
+		end
+
+		if xmlHandler == nil then
+			xmlHandler = require("xmlhandler.tree")
+		end
+
+		ok, results = pcall(parseXML, xml)
+
+		if (ok) then
+			return results
+		end
+		-- self.log('Error parsing xml to Lua table: ' .. self.toStr(results), self.LOG_ERROR)
+	else
+		self.log('Error parsing xml to LUA table: (invalid xml string) ' .. self.toStr(xml) , self.LOG_ERROR)
 	end
-
-	if xml == nil then
-		return fallback
-	end
-
-	if xml2Lua == nil then
-		xml2Lua = require('xml2lua')
-	end
-
-	if xmlHandler == nil then
-		xmlHandler = require("xmlhandler.tree")
-	end
-
-	ok, results = pcall(parseXML, xml)
-
-	if (ok) then
-		return results
-	end
-
-	self.log('Error parsing XML to LUA table: ' .. results, self.LOG_ERROR)
 	return fallback
 
 end
 
 function self.toXML(luaTable, header)
+
 	if header == nil then header = 'LuaTable' end
 
 	local toXML = function(luaTable, header)
@@ -299,7 +442,7 @@ function self.toXML(luaTable, header)
 		return results
 	end
 
-	self.log('Error converting LUA table to XML: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to XML: ' .. self.toStr(results), self.LOG_ERROR)
 	return nil
 
 end
@@ -310,17 +453,13 @@ function self.toJSON(luaTable)
 		return jsonParser:encode(j)
 	end
 
-	--if (jsonParser == nil) then
-	--	jsonParser = require('JSON')
-	--end
-
 	ok, results = pcall(toJSON, luaTable)
 
 	if (ok) then
 		return results
 	end
 
-	self.log('Error converting LUA table to json: ' .. results, self.LOG_ERROR)
+	self.log('Error converting LUA table to json: ' .. self.toStr(results), self.LOG_ERROR)
 	return nil
 
 end
@@ -352,7 +491,11 @@ function self.log(msg, level)
 	end
 
 	if (level <= lLevel) then
-		self.print(tostring(marker) .. _.str(msg))
+		local maxLength = 6000 -- limit 3 * 2048 hardCoded in main/Logger.cpp
+		msg = self.toStr(msg)
+		for i = 1, #msg, maxLength do
+			self.print( marker .. msg:sub(i, i + maxLength - 1 ) )
+		end
 	end
 end
 
@@ -371,7 +514,7 @@ function self.rgbToHSB(r, g, b)
 		if (r == max) then
 			hsb.h = (g - b) / delta
 		elseif (g == max) then
-			 hsb.h = 2 + (b - r) / delta
+			hsb.h = 2 + (b - r) / delta
 		else
 			hsb.h = 4 + (r - g) / delta
 		end
@@ -392,10 +535,16 @@ function self.rgbToHSB(r, g, b)
 end
 
 local function loopGlobal(parm, baseType)
+	if parm == nil then return false end
 	local res = 'id'
-	if type(parm) == 'number' then res = 'name' end
+	local search = parm
+	if type(parm) == 'table' then
+		search = search.id
+	elseif type(parm) == 'number' then
+		res = 'name'
+	end
 	for i, item in ipairs(_G.domoticzData) do
-		if item.baseType == baseType and ( item.id == parm or item.name == parm ) then return item[res] end
+		if item.baseType == baseType and ( item.id == search or item.name == search ) then return item[res] end
 	end
 	return false
 end
@@ -412,6 +561,10 @@ function self.groupExists(parm)
 	return loopGlobal(parm, 'group')
 end
 
+function self.hardwareExists(parm)
+	return loopGlobal(parm, 'hardware')
+end
+
 function self.variableExists(parm)
 	return loopGlobal(parm, 'uservariable')
 end
@@ -420,18 +573,54 @@ function self.cameraExists(parm)
 	return loopGlobal(parm, 'camera')
 end
 
-function self.dumpTable(t, level, filename)
+function self.dumpTable(t, level, filename, done)
 	local level = level or "> "
+	local done = done or {}
 	for attr, value in pairs(t or {}) do
-		if (type(value) ~= 'function') then
-			if (type(value) == 'table') then
+		if type(value) ~= 'function' then
+			if type(value) == 'table' and not(done[value]) then
+				done[value] = true
 				self.print(level .. attr .. ':', filename)
-				self.dumpTable(value, level .. '	', filename)
+				self.dumpTable(value, level .. '	', filename, done)
 			else
 				self.print(level .. attr .. ': ' .. tostring(value), filename)
 			end
 		else
 			self.print(level .. attr .. '()', filename)
+		end
+	end
+end
+
+function self.dumpSelection(object, selection)
+	self.print ('dump ' .. selection .. ' of ' .. object.baseType .. ' ' .. object.name)
+	if selection == 'attributes' then
+		for attr, value in pairs(object) do
+			if type(value) ~= 'function' and type(value) ~= 'table' then
+				self.print('> ' .. attr .. ': ' .. tostring(value))
+			end
+		end
+		if object.baseType ~= 'hardware' then
+			self.print('')
+			self.print('> lastUpdate: ' .. (object.lastUpdate.raw or '') )
+		end
+		if object.baseType ~= 'variable' and object.baseType ~= 'hardware' then
+			self.print('> adapters: ' .. table.concat(object._adapters or {},', ') )
+		end
+		if object.baseType == 'device' then
+			self.print('> levelNames: ' .. table.concat(object.levelNames or {},', ') )
+			self.print('> rawData: ' .. table.concat(object.rawData or {},', ') )
+		end
+	elseif selection == 'tables' then
+		for attr, value in pairs(object) do
+			if type(value) == 'table' then
+				self.print('> ' .. attr .. ': ' )
+			end
+		end
+	elseif selection == 'functions' then
+		for attr, value in pairs(object) do
+			if type(value) == 'function' then
+				self.print('> ' .. attr .. '()')
+			end
 		end
 	end
 end
@@ -467,6 +656,20 @@ function self.hsbToRGB(h, s, v)
 	b = (b1+m) * 255
 	return r, g, b
 
+end
+
+function self.humidityStatus (temperature, humidity)
+	local constants = domoticz or require('constants')
+	local temperature = tonumber(temperature)
+	local humidity = tonumber(humidity)
+
+	if humidity <= 30 then return constants.HUM_DRY
+	elseif humidity >= 70 then return constants.HUM_WET
+	elseif  humidity >= 35 and
+			humidity <= 65 and
+			temperature >= 22 and
+			temperature <= 26 then return constants.HUM_COMFORTABLE
+	else return constants.HUM_NORMAL end
 end
 
 return self

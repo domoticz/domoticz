@@ -66,16 +66,12 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigne
 	m_HwdID = ID;
 }
 
-EnphaseAPI::~EnphaseAPI(void)
-{
-}
-
 bool EnphaseAPI::StartHardware()
 {
 	RequestStart();
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&EnphaseAPI::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -96,7 +92,7 @@ bool EnphaseAPI::StopHardware()
 
 void EnphaseAPI::Do_Work()
 {
-	_log.Log(LOG_STATUS, "EnphaseAPI Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	int sec_counter = Enphase_request_INTERVAL - 5;
 
 	while (!IsStopRequested(1000))
@@ -104,7 +100,7 @@ void EnphaseAPI::Do_Work()
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % Enphase_request_INTERVAL == 0)
@@ -118,7 +114,7 @@ void EnphaseAPI::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS, "EnphaseAPI Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool EnphaseAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -146,9 +142,8 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 		if (bGetSunRise) {
 			return sunRiseInMinutes;
 		}
-		else {
-			return sunSetInMinutes;
-		}
+
+		return sunSetInMinutes;
 	}
 	return 0;
 }
@@ -165,7 +160,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
+		Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
 		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
@@ -176,7 +171,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
 		return false;
 	}
 	if (
@@ -184,7 +179,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 		&& (result["production"].empty())
 		)
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid (no) data received");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid (no) data received");
 		return false;
 	}
 	return true;
@@ -192,7 +187,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
 {
-	time_t atime = mytime(NULL);
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -203,9 +198,10 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	if (sunRise != 0 && sunSet != 0)
 	{
-		//We only poll one hour before sunrise till one hour after sunset
+		//We only process one hour before sunrise till one hour after sunset
 
 		//GizMoCuz: why is this as the production.json is retreived anyway ?
+			//Tuurtje: production.json also contains data from the CT's. Consumption and NetConsumption produce data all day.
 
 		if (ActHourMin + 60 < sunRise)
 			return;
@@ -228,8 +224,8 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	m_p1power.powerusage1 = mtotal;
 	m_p1power.powerusage2 = 0;
-	m_p1power.usagecurrent = musage;
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Enphase Production kWh Total", 255);
+	m_p1power.usagecurrent = std::max(musage,0);
+	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Enphase Production kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -240,7 +236,7 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][0].empty())
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
 	}
 
@@ -253,8 +249,8 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 
 	m_c1power.powerusage1 = mtotal;
 	m_c1power.powerusage2 = 0;
-	m_c1power.usagecurrent = musage;
-	sDecodeRXMessage(this, (const unsigned char *)&m_c1power, "Enphase Consumption kWh Total", 255);
+	m_c1power.usagecurrent = std::max(musage,0);
+	sDecodeRXMessage(this, (const unsigned char *)&m_c1power, "Enphase Consumption kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseNetConsumption(const Json::Value& root)
@@ -265,7 +261,7 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][1].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
 	}
 
@@ -278,6 +274,6 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 
 	m_c2power.powerusage1 = mtotal;
 	m_c2power.powerusage2 = 0;
-	m_c2power.usagecurrent = musage;
-	sDecodeRXMessage(this, (const unsigned char *)&m_c2power, "Enphase Net Consumption kWh Total", 255);
+	m_c2power.usagecurrent = std::max(musage,0);
+	sDecodeRXMessage(this, (const unsigned char *)&m_c2power, "Enphase Net Consumption kWh Total", 255, nullptr);
 }

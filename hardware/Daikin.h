@@ -5,10 +5,11 @@
 class CDaikin : public CDomoticzHardwareBase
 {
 public:
-	CDaikin(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
-	~CDaikin(void);
+	CDaikin(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &username, const std::string &password);
+	~CDaikin() override = default;
 
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
+
 private:
 	void Init();
 	bool StartHardware() override;
@@ -18,16 +19,18 @@ private:
 	void GetControlInfo();
 	void GetSensorInfo();
 	void GetBasicInfo();
-	void UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
-	void InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIsOn, const int level, const std::string &defaultname);
-	bool SetSetpoint(const int idx, const float temp);
-	bool SetGroupOnOFF(const bool OnOFF);
-	bool SetLedOnOFF(const bool OnOFF);
-	bool SetModeLevel(const int NewLevel);
-	bool SetF_RateLevel(const int NewLevel);
-	bool SetF_DirLevel(const int NewLevel);
-        void AggregateSetControlInfo(const char *Temp, const char *OnOFF, const char *ModeLevel, const char *FRateLevel, const char *FDirLevel, const char *Hum);
+	void GetYearPower();
+	void UpdateSwitchNew(unsigned char Idx, int SubUnit, bool bOn, double Level, const std::string &defaultname);
+	void InsertUpdateSwitchSelector(uint32_t Idx, bool bIsOn, int level, const std::string &defaultname);
+	bool SetSetpoint(int idx, float temp);
+	bool SetGroupOnOFF(bool OnOFF);
+	bool SetLedOnOFF(bool OnOFF);
+	bool SetModeLevel(int NewLevel);
+	bool SetF_RateLevel(int NewLevel);
+	bool SetF_DirLevel(int NewLevel);
+	void AggregateSetControlInfo(const char *Temp, const char *OnOFF, const char *ModeLevel, const char *FRateLevel, const char *FDirLevel, const char *Hum);
 	void HTTPSetControlInfo();
+
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
@@ -42,9 +45,9 @@ private:
 	std::string m_shum;
 	std::string m_led;
 	std::shared_ptr<std::thread> m_thread;
-	int m_sec_counter;            
-	std::string m_dt[8];     // Memorized Temp target for each mode. 
-        std::string m_dh[8];     // Memorized Humidity target for each mode. 
+	int m_sec_counter;
+	std::string m_dt[8]; // Memorized Temp target for each mode.
+	std::string m_dh[8]; // Memorized Humidity target for each mode.
 	std::string m_sci_Temp;
 	std::string m_sci_OnOFF;
 	std::string m_sci_ModeLevel;

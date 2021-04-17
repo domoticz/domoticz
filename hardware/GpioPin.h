@@ -30,10 +30,10 @@ Source: http://wiringpi.com
 
 class CGpioPin
 {
-public:
-	//CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported);
-	CGpioPin(const int pin_number, const std::string &label, const int value, const bool direction, const int edge, const int active_low, const int read_value_fd, const bool db_state);
-	~CGpioPin();
+      public:
+	// CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported);
+	CGpioPin(int pin_number, const std::string &label, int value, bool direction, int edge, int active_low, int read_value_fd, bool db_state);
+	~CGpioPin() = default;
 
 	int GetPin();
 	std::string GetLabel();
@@ -45,16 +45,19 @@ public:
 	int SetReadValueFd(int value);
 	void SetDBState(int db_state);
 	std::string ToString();
-	bool operator<(const CGpioPin& pin) const { return m_pin_number < pin.m_pin_number; };
+	bool operator<(const CGpioPin &pin) const
+	{
+		return m_pin_number < pin.m_pin_number;
+	};
 
-private:
+      private:
 	std::string m_label;
 	bool m_isExported;
-	int m_pin_number;		// GPIO Pin number
-	int m_value;			// GPIO pin Value
-	int m_direction;		// GPIO IN or OUT
+	int m_pin_number; // GPIO Pin number
+	int m_value;	  // GPIO pin Value
+	int m_direction;  // GPIO IN or OUT
 	int m_edge;
-	int m_active_low;		// GPIO ActiveLow
-	int m_read_value_fd;	// Fast read fd
-	bool m_db_state;		// Database Value
+	int m_active_low;    // GPIO ActiveLow
+	int m_read_value_fd; // Fast read fd
+	bool m_db_state;     // Database Value
 };

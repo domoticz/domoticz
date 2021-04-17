@@ -18,9 +18,9 @@ CDummy::CDummy(const int ID)
 	m_bSkipReceiveCheck = true;
 }
 
-CDummy::~CDummy(void)
+CDummy::~CDummy()
 {
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 }
 
 void CDummy::Init()
@@ -62,60 +62,62 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-
-		struct _mappedsensorname {
-			const int mappedvalue;
-			const int type;
-			const int subtype;
-		};
-
-		static const _mappedsensorname mappedsensorname[] =
+		using _mappedsensorname = struct
 		{
-			{ 249, pTypeAirQuality, sTypeVoltcraft }, //Air Quality
-			{ 7,   pTypeGeneral, sTypeAlert }, //Alert
-			{ 9,   pTypeCURRENT, sTypeELEC1 }, //Ampere (3 Phase)
-			{ 19,  pTypeGeneral, sTypeCurrent }, //Ampere (1 Phase)
-			{ 11,  pTypeGeneral, sTypeBaro }, //Barometer
-			{ 113, pTypeRFXMeter, sTypeRFXMeterCount }, //Counter
-			{ 14,  pTypeGeneral, sTypeCounterIncremental }, //Counter Incremental
-			{ 1004,pTypeGeneral, sTypeCustom }, //Custom Sensor
-			{ 13,  pTypeGeneral, sTypeDistance }, //Distance
-			{ 18,  pTypeGeneral, sTypeKwh }, //Electric (Instant+Counter)
-			{ 3,   pTypeP1Gas, sTypeP1Gas }, //Gas
-			{ 81,  pTypeHUM, sTypeHUM1 }, //Humidity
-			{ 16,  pTypeGeneral, sTypeLeafWetness }, //Leaf Wetness
-			{ 246, pTypeLux, sTypeLux }, //Lux
-			{ 250, pTypeP1Power, sTypeP1Power}, //P1 Smart Meter (Electric)
-			{ 1005,pTypeGeneral, sTypeManagedCounter }, //Managed Counter
-			{ 2,   pTypeGeneral, sTypePercentage }, //Percentage
-			{ 1,   pTypeGeneral, sTypePressure }, //Pressure (Bar)
-			{ 85,  pTypeRAIN, sTypeRAIN3 }, //Rain
-			{ 241, pTypeColorSwitch, sTypeColor_RGB }, //RGB Switch
-			{ 1003,pTypeColorSwitch, sTypeColor_RGB_W }, //RGBW Switch
-			{ 93,  pTypeWEIGHT, sTypeWEIGHT1 }, //Scale
-			{ 1002,pTypeGeneralSwitch, sSwitchTypeSelector }, //Selector Switch
-			{ 15,  pTypeGeneral, sTypeSoilMoisture }, //Soil Moisture
-			{ 20,  pTypeGeneral, sTypeSolarRadiation }, //Solar Radiation
-			{ 10,  pTypeGeneral, sTypeSoundLevel }, //Sound Level
-			{ 6,   pTypeGeneralSwitch, sSwitchGeneralSwitch }, //Switch
-			{ 80,  pTypeTEMP, sTypeTEMP5 }, //Temperature
-			{ 82,  pTypeTEMP_HUM, sTypeTH1 }, //Temp+Hum
-			{ 84,  pTypeTEMP_HUM_BARO, sTypeTHB1 }, //Temp+Hum+Baro
-			{ 247, pTypeTEMP_BARO, sTypeBMP085 }, //Temp+Baro
-			{ 5,   pTypeGeneral, sTypeTextStatus }, //Text
-			{ 8,   pTypeThermostat, sTypeThermSetpoint }, //Thermostat Setpoint
-			{ 248, pTypeUsage, sTypeElectric }, //Usage (Electric)
-			{ 87,  pTypeUV, sTypeUV1 }, //UV
-			{ 12,  pTypeGeneral, sTypeVisibility }, //Visibility
-			{ 4,   pTypeGeneral, sTypeVoltage }, //Voltage
-			{ 1000,pTypeGeneral, sTypeWaterflow }, //Waterflow
-			{ 86,  pTypeWIND, sTypeWIND1 }, //Wind
-			{ 1001,pTypeWIND, sTypeWIND4 } //Wind+Temp+Chill
+			int mappedvalue;
+			int type;
+			int subtype;
 		};
+
+		constexpr std::array<_mappedsensorname, 40> mappedsensorname{ {
+			{ 249, pTypeAirQuality, sTypeVoltcraft },	   // Air Quality
+			{ 7, pTypeGeneral, sTypeAlert },		   // Alert
+			{ 9, pTypeCURRENT, sTypeELEC1 },		   // Ampere (3 Phase)
+			{ 19, pTypeGeneral, sTypeCurrent },		   // Ampere (1 Phase)
+			{ 11, pTypeGeneral, sTypeBaro },		   // Barometer
+			{ 113, pTypeRFXMeter, sTypeRFXMeterCount },	   // Counter
+			{ 14, pTypeGeneral, sTypeCounterIncremental },	   // Counter Incremental
+			{ 1004, pTypeGeneral, sTypeCustom },		   // Custom Sensor
+			{ 13, pTypeGeneral, sTypeDistance },		   // Distance
+			{ 18, pTypeGeneral, sTypeKwh },			   // Electric (Instant+Counter)
+			{ 3, pTypeP1Gas, sTypeP1Gas },			   // Gas
+			{ 81, pTypeHUM, sTypeHUM1 },			   // Humidity
+			{ 16, pTypeGeneral, sTypeLeafWetness },		   // Leaf Wetness
+			{ 246, pTypeLux, sTypeLux },			   // Lux
+			{ 250, pTypeP1Power, sTypeP1Power },		   // P1 Smart Meter (Electric)
+			{ 1005, pTypeGeneral, sTypeManagedCounter },	   // Managed Counter
+			{ 2, pTypeGeneral, sTypePercentage },		   // Percentage
+			{ 1, pTypeGeneral, sTypePressure },		   // Pressure (Bar)
+			{ 85, pTypeRAIN, sTypeRAIN3 },			   // Rain
+			{ 241, pTypeColorSwitch, sTypeColor_RGB },	   // RGB Switch
+			{ 1003, pTypeColorSwitch, sTypeColor_RGB_W },	   // RGBW Switch
+			{ 93, pTypeWEIGHT, sTypeWEIGHT1 },		   // Scale
+			{ 1002, pTypeGeneralSwitch, sSwitchTypeSelector }, // Selector Switch
+			{ 15, pTypeGeneral, sTypeSoilMoisture },	   // Soil Moisture
+			{ 20, pTypeGeneral, sTypeSolarRadiation },	   // Solar Radiation
+			{ 10, pTypeGeneral, sTypeSoundLevel },		   // Sound Level
+			{ 6, pTypeGeneralSwitch, sSwitchGeneralSwitch },   // Switch
+			{ 80, pTypeTEMP, sTypeTEMP5 },			   // Temperature
+			{ 82, pTypeTEMP_HUM, sTypeTH1 },		   // Temp+Hum
+			{ 84, pTypeTEMP_HUM_BARO, sTypeTHB1 },		   // Temp+Hum+Baro
+			{ 247, pTypeTEMP_BARO, sTypeBMP085 },		   // Temp+Baro
+			{ 5, pTypeGeneral, sTypeTextStatus },		   // Text
+			{ 8, pTypeThermostat, sTypeThermSetpoint },	   // Thermostat Setpoint
+			{ 248, pTypeUsage, sTypeElectric },		   // Usage (Electric)
+			{ 87, pTypeUV, sTypeUV1 },			   // UV
+			{ 12, pTypeGeneral, sTypeVisibility },		   // Visibility
+			{ 4, pTypeGeneral, sTypeVoltage },		   // Voltage
+			{ 1000, pTypeGeneral, sTypeWaterflow },		   // Waterflow
+			{ 86, pTypeWIND, sTypeWIND1 },			   // Wind
+			{ 1001, pTypeWIND, sTypeWIND4 }			   // Wind+Temp+Chill
+		} };
 
 		//TODO: Is this function called from anywhere, or can it be removed?
 		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{ // deprecated (for dzVents). Use RType_CreateDevice
+			std::string Username = "Admin";
+			if (!session.username.empty())
+				Username = session.username;
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -127,7 +129,7 @@ namespace http {
 			std::string ssensortype = request::findValue(&req, "sensortype");
 			std::string soptions = request::findValue(&req, "sensoroptions");
 
-			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
+			if ((idx.empty()) || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
 			int sensortype = atoi(ssensortype.c_str());
@@ -135,12 +137,12 @@ namespace http {
 			unsigned int subType = 0;
 			uint64_t DeviceRowIdx = (uint64_t )-1;
 
-			for (size_t i = 0; i < sizeof(mappedsensorname) / sizeof(mappedsensorname[0]); i++)
+			for (const auto &sensor : mappedsensorname)
 			{
-				if (mappedsensorname[i].mappedvalue == sensortype)
+				if (sensor.mappedvalue == sensortype)
 				{
-					type = mappedsensorname[i].type;
-					subType = mappedsensorname[i].subtype;
+					type = sensor.type;
+					subType = sensor.subtype;
 
 					int HwdID = atoi(idx.c_str());
 
@@ -160,7 +162,8 @@ namespace http {
 					bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 
-					DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions);
+					std::string szCreateUser = Username + " (IP: " + session.remote_host + ")";
+					DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions, szCreateUser);
 
 					m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
@@ -177,6 +180,9 @@ namespace http {
 
 		void CWebServer::RType_CreateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			std::string Username = "Admin";
+			if (!session.username.empty())
+				Username = session.username;
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
@@ -192,7 +198,7 @@ namespace http {
 			std::string devicetype = request::findValue(&req, "devicetype");
 			std::string devicesubtype = request::findValue(&req, "devicesubtype");
 
-			if ((idx == "") || (ssensorname.empty()))
+			if ((idx.empty()) || (ssensorname.empty()))
 				return;
 
 			unsigned int type;
@@ -235,7 +241,8 @@ namespace http {
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions);
+			std::string szCreateUser = Username + " (IP: " + session.remote_host + ")";
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions, szCreateUser);
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
@@ -247,6 +254,5 @@ namespace http {
 			}
 		}
 
-	}
-}
-
+	} // namespace server
+} // namespace http

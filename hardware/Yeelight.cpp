@@ -58,10 +58,6 @@ Yeelight::Yeelight(const int ID)
 	m_bDoRestart = false;
 }
 
-Yeelight::~Yeelight(void)
-{
-}
-
 bool Yeelight::StartHardware()
 {
 	RequestStart();
@@ -72,7 +68,7 @@ bool Yeelight::StartHardware()
 	m_bIsStarted = true;
 
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&Yeelight::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 
 	return (m_thread != nullptr);
@@ -94,7 +90,7 @@ bool Yeelight::StopHardware()
 
 void Yeelight::Do_Work()
 {
-	_log.Log(LOG_STATUS, "YeeLight Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	try
 	{
@@ -105,7 +101,7 @@ void Yeelight::Do_Work()
 		{
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
+				m_LastHeartbeat = mytime(nullptr);
 			}
 			if (sec_counter % 60 == 0) //poll YeeLights every minute
 			{
@@ -116,10 +112,10 @@ void Yeelight::Do_Work()
 	}
 	catch (const std::exception &e)
 	{
-		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
+		Log(LOG_ERROR, "Exception: %s", e.what());
 	}
 
-	_log.Log(LOG_STATUS, "YeeLight stopped");
+	Log(LOG_STATUS, "stopped");
 }
 
 
@@ -130,7 +126,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	StringSplit(Location, ".", ipaddress);
 	if (ipaddress.size() != 4)
 	{
-		_log.Log(LOG_STATUS, "YeeLight: Invalid location received! (No IP Address)");
+		Log(LOG_STATUS, "Invalid location received! (No IP Address)");
 		return;
 	}
 	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
@@ -144,11 +140,11 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	result = m_sql.safe_query("SELECT nValue, LastLevel, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d)", m_HwdID, szDeviceID, pTypeColorSwitch);
 	int yeelightColorMode = atoi(syeelightColorMode.c_str());
 	if (yeelightColorMode > 0) {
-		_log.Debug(DEBUG_HARDWARE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
+		Debug(DEBUG_HARDWARE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
 	}
 	if (result.empty())
 	{
-		_log.Log(LOG_STATUS, "YeeLight: New Light Found (%s/%s)", Location.c_str(), lightName.c_str());
+		Log(LOG_STATUS, "New Light Found (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(yeelightBright.c_str());
 		int cmd = Color_LedOn;
 		int level = 100;
@@ -163,7 +159,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		ycmd.value = value;
 		ycmd.command = cmd;
 		// TODO: Update color
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
@@ -172,7 +168,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		std::string sIdx = result[0][3];
 		if (sTypeOld != YeeType)
 		{
-			_log.Log(LOG_STATUS, "YeeLight: Updating SubType of light (%s/%s) from %u to %u", Location.c_str(), lightName.c_str(), sTypeOld, YeeType);
+			Log(LOG_STATUS, "Updating SubType of light (%s/%s) from %u to %u", Location.c_str(), lightName.c_str(), sTypeOld, YeeType);
 			m_sql.UpdateDeviceValue("SubType", (int)YeeType, sIdx);
 		}
 
@@ -196,7 +192,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			ycmd.value = value;
 			ycmd.command = cmd;
 			// TODO: Update color
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
 		}
 	}
 }
@@ -204,7 +200,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	//_log.Log(LOG_STATUS, "YeeLight: WriteToHardware...............................");
+	//Log(LOG_STATUS, "WriteToHardware...............................");
 	const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pdata);
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
@@ -239,8 +235,8 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 		boost::asio::connect(sendSocket, iterator);
 
-		std::string message = "";
-		std::string message2 = "";
+		std::string message;
+		std::string message2;
 		char request[1024];
 		size_t request_length;
 		std::stringstream ss;
@@ -287,7 +283,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Color_SetBrightnessLevel:
 			sendOnFirst = true;
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
+			ss << R"({"id":1,"method":"set_bright","params":[)" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
 			message = ss.str();
 			break;
 		case Color_SetColor: {
@@ -297,7 +293,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 				if (pLed->subtype == sTypeColor_RGB || pLed->subtype == sTypeColor_RGB_W || pLed->subtype == sTypeColor_RGB_CW_WW) {
 					int w = 255; // Full white, scaled by separate brightness command
 					int rgb = (w << 16) + (w << 8) + pLed->color.b;
-					ss << "{\"id\":1,\"method\":\"set_rgb\",\"params\":[" << rgb << ", \"smooth\", 500]}\r\n";
+					ss << R"({"id":1,"method":"set_rgb","params":[)" << rgb << ", \"smooth\", 500]}\r\n";
 					message = ss.str();
 				}
 				// For other bulb type, just send brightness
@@ -305,23 +301,23 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->color.mode == ColorModeTemp)
 			{
 				// Convert temperature to Kelvin 1700..6500
-				int kelvin = (int(float((255 - pLed->color.t))*(6500.0f - 1700.0f) / 255.0f)) + 1700;
-				ss << "{\"id\":1,\"method\":\"set_ct_abx\",\"params\":[" << kelvin << ", \"smooth\", 2000]}\r\n";
+				int kelvin = (int(float((255 - pLed->color.t)) * (6500.0F - 1700.0F) / 255.0F)) + 1700;
+				ss << R"({"id":1,"method":"set_ct_abx","params":[)" << kelvin << ", \"smooth\", 2000]}\r\n";
 				message = ss.str();
 			}
 			else if (pLed->color.mode == ColorModeRGB)
 			{
 				int rgb = ((pLed->color.r) << 16) + ((pLed->color.g) << 8) + pLed->color.b;
-				ss << "{\"id\":1,\"method\":\"set_rgb\",\"params\":[" << rgb << ", \"smooth\", 2000]}\r\n";
+				ss << R"({"id":1,"method":"set_rgb","params":[)" << rgb << ", \"smooth\", 2000]}\r\n";
 				message = ss.str();
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "YeeLight: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", pLed->color.mode, szTmp);
+				Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", pLed->color.mode, szTmp);
 			}
 			// Send brigthness command
 			ss.str("");
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << pLed->value << ", \"smooth\", 500]}\r\n";
+			ss << R"({"id":1,"method":"set_bright","params":[)" << pLed->value << ", \"smooth\", 500]}\r\n";
 			message2 = ss.str();
 		}
 							 break;
@@ -356,16 +352,16 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		case Color_DiscoMode:
 			sendOnFirst = true;
 			// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms
-			_log.Log(LOG_STATUS, "Yeelight: Disco Mode - simulate strobe effect, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
-			message = "{\"id\":1,\"method\":\"start_cf\",\"params\":[ 50, 0, \"";
+			Log(LOG_STATUS, "Disco Mode - simulate strobe effect, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
+			message = R"({"id":1,"method":"start_cf","params":[ 50, 0, ")";
 			message += "50, 2, 5000, 100, ";
 			message += "50, 2, 5000, 1\"]}\r\n";
 			break;
 		case Color_DiscoSpeedFasterLong:
-			_log.Log(LOG_STATUS, "Yeelight: Exclude Lamp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
+			Log(LOG_STATUS, "Exclude Lamp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", szTmp);
 			break;
 		default:
-			_log.Log(LOG_STATUS, "YeeLight: Unhandled WriteToHardware command: %d - if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", command, szTmp);
+			Log(LOG_STATUS, "Unhandled WriteToHardware command: %d - if you have a suggestion for what it should do, please post on the Domoticz forum (IP: %s)", command, szTmp);
 			break;
 		}
 
@@ -376,14 +372,14 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		if (sendOnFirst) {
 			strcpy(request, "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n");
 			request_length = strlen(request);
-			_log.Debug(DEBUG_HARDWARE, "Yeelight: sending request '%s'", request);
+			Debug(DEBUG_HARDWARE, "sending request '%s'", request);
 			boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 			sleep_milliseconds(50);
 		}
 
 		strcpy(request, message.c_str());
 		request_length = strlen(request);
-		_log.Debug(DEBUG_HARDWARE, "Yeelight: sending request '%s'", request);
+		Debug(DEBUG_HARDWARE, "sending request '%s'", request);
 		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 		sleep_milliseconds(50);
 
@@ -391,7 +387,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			strcpy(request, message2.c_str());
 			request_length = strlen(request);
-			_log.Debug(DEBUG_HARDWARE, "Yeelight: sending request '%s'", request);
+			Debug(DEBUG_HARDWARE, "sending request '%s'", request);
 			boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 			sleep_milliseconds(50);
 		}
@@ -399,15 +395,14 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	catch (const std::exception &e)
 	{
-		_log.Log(LOG_ERROR, "YeeLight: Exception: %s (IP: %s)", e.what(), szTmp);
+		Log(LOG_ERROR, "Exception: %s (IP: %s)", e.what(), szTmp);
 		return false;
 	}
 
 	return true;
 }
 
-
-boost::array<char, 1024> recv_buffer_;
+std::array<char, 1024> recv_buffer_;
 int hardwareId;
 
 Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdID)
@@ -424,7 +419,7 @@ void Yeelight::udp_server::start_send()
 	try
 	{
 		std::string testMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
-		//_log.Log(LOG_STATUS, "start_send..................");
+		//Log(LOG_STATUS, "start_send..................");
 		std::shared_ptr<std::string> message(
 			new std::string(testMessage));
 		remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("239.255.255.250"), 1982);
@@ -434,7 +429,7 @@ void Yeelight::udp_server::start_send()
 	}
 	catch (const std::exception &e)
 	{
-		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
+		_log.Log(LOG_ERROR, "Yeelight: Exception: %s", e.what());
 	}
 }
 
@@ -457,7 +452,7 @@ void Yeelight::udp_server::start_receive()
 	}
 	catch (const std::exception &e)
 	{
-		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
+		_log.Log(LOG_ERROR, "Yeelight: Exception: %s", e.what());
 	}
 }
 
@@ -477,8 +472,8 @@ bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std:
 
 bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector<std::string> &receivedip)
 {
-	std::string receivedString(szData);
-	//_log.Log(LOG_STATUS, receivedString.c_str());
+	const std::string &receivedString(szData);
+	//Log(LOG_STATUS, receivedString.c_str());
 #ifdef DEBUG_YeeLightW
 	SaveString2Disk(receivedString, "E:\\YeeLight_receive.txt");
 #endif
@@ -494,17 +489,18 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 	std::size_t pos1 = receivedString.substr(pos).find(endString);
 	std::string dataString = receivedString.substr(pos, pos1);
 
-	std::string yeelightLocation = dataString.c_str();
+	const std::string &yeelightLocation = dataString;
 	// check if we have received this ip already
-	size_t i;
-	for (i = 0; i < receivedip.size(); i++) {
-		if (std::strcmp(receivedip[i].c_str(), yeelightLocation.c_str()) == 0) {
-			//_log.Log(LOG_STATUS, "Already received: %s", yeelightLocation.c_str());
+	for (const auto &ip : receivedip)
+	{
+		if (std::strcmp(ip.c_str(), yeelightLocation.c_str()) == 0)
+		{
+			//Log(LOG_STATUS, "Already received: %s", yeelightLocation.c_str());
 			return false;
 		}
 	}
 	receivedip.push_back(yeelightLocation);
-	//_log.Log(LOG_STATUS, "Location: %s", yeelightLocation.c_str());
+	//Log(LOG_STATUS, "Location: %s", yeelightLocation.c_str());
 	std::string yeelightId;
 	if (!YeeLightGetTag(szData, "id: ", yeelightId))
 		return false;
@@ -515,7 +511,7 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 	if (!YeeLightGetTag(szData, "model: ", yeelightModel))
 		return false;
 
-	std::string yeelightSupport = "";
+	std::string yeelightSupport;
 	if (!YeeLightGetTag(szData, "support: ", yeelightSupport))
 		return false;
 
@@ -572,21 +568,21 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 		sType = sTypeColor_RGB_CW_WW;
 	}
 
-	std::string yeelightName = "";
+	std::string yeelightName;
 	if (yeelightModel == "mono") {
-		yeelightName = "YeeLight LED (Mono)";
+		yeelightName = "LED (Mono)";
 	}
 	else if (yeelightModel == "color") {
-		yeelightName = "YeeLight LED (Color)";
+		yeelightName = "LED (Color)";
 	}
 	else if (yeelightModel == "stripe") {
-		yeelightName = "YeeLight LED (Stripe)";
+		yeelightName = "LED (Stripe)";
 	}
 	else if (yeelightModel == "ceiling") {
-		yeelightName = "YeeLight LED (Ceiling)";
+		yeelightName = "LED (Ceiling)";
 	}
 	else if (yeelightModel == "bslamp") {
-		yeelightName = "YeeLight LED (BSLamp)";
+		yeelightName = "LED (BSLamp)";
 	}
 	Yeelight yeelight(hardwareId);
 
@@ -620,5 +616,5 @@ namespace http {
 			//TODO: Add support for other bulb types to WebUI (WW, RGB, RGBWW)
 			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeColor_White : sTypeColor_RGB_W, sipaddress, false, "0", "0", "", "", "", "");
 		}
-	}
-}
+	} // namespace server
+} // namespace http

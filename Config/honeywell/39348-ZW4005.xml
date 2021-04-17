@@ -1,8 +1,8 @@
 <!-- Honeywell(Jasco) 39348 / ZW4005 In-Wall Smart Switch-->
-<Product Revision="1" 
+<Product Revision="2" 
   xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
-    <MetaDataItem name="ProductPic">images/honeywell/39348-ZW4005.jpg</MetaDataItem>
+    <MetaDataItem name="ProductPic">images/honeywell/39348-ZW4005.png</MetaDataItem>
     <MetaDataItem id="3036" name="ZWProductPage" type="4952">https://products.z-wavealliance.org/products/2689/</MetaDataItem>
     <MetaDataItem id="3036" name="Identifier" type="4952">39348 / ZW4005</MetaDataItem>
     <MetaDataItem name="InclusionDescription">1. Follow the instructions for your Z-Wave certified controller to include a device to the Z-Wave network.
@@ -18,6 +18,7 @@ Note: Please use this reset procedure only when the primary controller is missin
     <MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/2689/39348-HQSG_v1.pdf</MetaDataItem>
     <ChangeLog>
       <Entry author="Dinko Bajric - dbajric@gmail.com" date="22 March 2020" revision="1">Initial Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/2689/XML</Entry>
+      <Entry author="Justin Hammond" date="24 June 2020" revision="2">Correct Product Pic Entry</Entry>
     </ChangeLog>
   </MetaData>
   <!-- Configuration Parameters - per https://products.z-wavealliance.org/Products/2689 -->

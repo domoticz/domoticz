@@ -709,6 +709,28 @@ function GetUTCFromString(s) {
 	);
 }
 
+function GetLocalDateTimeFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10),
+		parseInt(s.substring(11, 13), 10),
+		parseInt(s.substring(14, 16), 10),
+		19 <= s.length ? parseInt(s.substring(17, 19), 10) : 0
+	).getTime();
+}
+
+function GetLocalTimestampFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10),
+		parseInt(s.substring(11, 13), 10),
+		parseInt(s.substring(14, 16), 10),
+		parseInt(s.substring(17, 19), 10)
+	).getTime();
+}
+
 function GetUTCFromStringSec(s) {
 	return Date.UTC(
 		parseInt(s.substring(0, 4), 10),
@@ -718,6 +740,13 @@ function GetUTCFromStringSec(s) {
 		parseInt(s.substring(14, 16), 10),
 		parseInt(s.substring(17, 19), 10)
 	);
+}
+
+function GetLocalDateFromString(s, yearOffset=0) {
+	return new Date(
+		parseInt(s.substring(0, 4), 10) + yearOffset,
+		parseInt(s.substring(5, 7), 10) - 1,
+		parseInt(s.substring(8, 10), 10)).getTime();
 }
 
 function GetDateFromString(s) {
@@ -1250,371 +1279,6 @@ function TranslateStatusShort(status) {
 	}
 }
 
-function AddDataToTempChart(data, chart, isday, isthermostat) {
-	var datatablete = [];
-	var datatabletm = [];
-	var datatableta = [];
-	var datatabletrange = [];
-
-	var datatablehu = [];
-	var datatablech = [];
-	var datatablecm = [];
-	var datatabledp = [];
-	var datatableba = [];
-
-	var datatablese = [];
-	var datatablesm = [];
-	var datatablesx = [];
-	var datatablesrange = [];
-
-	var datatablete_prev = [];
-	var datatabletm_prev = [];
-	var datatableta_prev = [];
-	var datatabletrange_prev = [];
-
-	var datatablehu_prev = [];
-	var datatablech_prev = [];
-	var datatablecm_prev = [];
-	var datatabledp_prev = [];
-	var datatableba_prev = [];
-
-	var datatablese_prev = [];
-	var datatablesm_prev = [];
-	var datatablesx_prev = [];
-	var datatablesrange_prev = [];
-
-	var bHavePrev = (typeof data.resultprev != 'undefined');
-	if (bHavePrev) {
-		$.each(data.resultprev, function (i, item) {
-			if (typeof item.te != 'undefined') {
-				datatablete_prev.push([GetPrevDateFromString(item.d), parseFloat(item.te)]);
-				datatabletm_prev.push([GetPrevDateFromString(item.d), parseFloat(item.tm)]);
-				datatabletrange_prev.push([GetPrevDateFromString(item.d), parseFloat(item.tm), parseFloat(item.te)]);
-				if (typeof item.ta != 'undefined') {
-					datatableta_prev.push([GetPrevDateFromString(item.d), parseFloat(item.ta)]);
-				}
-			}
-			if (typeof item.hu != 'undefined') {
-				datatablehu_prev.push([GetPrevDateFromString(item.d), parseFloat(item.hu)]);
-			}
-			if (typeof item.ch != 'undefined') {
-				datatablech_prev.push([GetPrevDateFromString(item.d), parseFloat(item.ch)]);
-				datatablecm_prev.push([GetPrevDateFromString(item.d), parseFloat(item.cm)]);
-			}
-			if (typeof item.dp != 'undefined') {
-				datatabledp_prev.push([GetPrevDateFromString(item.d), parseFloat(item.dp)]);
-			}
-			if (typeof item.ba != 'undefined') {
-				datatableba_prev.push([GetPrevDateFromString(item.d), parseFloat(item.ba)]);
-			}
-			if (typeof item.se != 'undefined') {
-				datatablese_prev.push([GetPrevDateFromString(item.d), parseFloat(item.se)]);
-			}
-			if (typeof item.sm != 'undefined' && typeof item.sx != 'undefined') {
-				datatablesm_prev.push([GetPrevDateFromString(item.d), parseFloat(item.sm)]);
-				datatablesx_prev.push([GetPrevDateFromString(item.d), parseFloat(item.sx)]);
-				datatablesrange_prev.push([GetPrevDateFromString(item.d), parseFloat(item.sm), parseFloat(item.sx)]);
-			}
-		});
-	}
-
-	$.each(data.result, function (i, item) {
-		if (isday == 1) {
-			if (typeof item.te != 'undefined') {
-				datatablete.push([GetUTCFromString(item.d), parseFloat(item.te)]);
-			}
-			if (typeof item.hu != 'undefined') {
-				datatablehu.push([GetUTCFromString(item.d), parseFloat(item.hu)]);
-			}
-			if (typeof item.ch != 'undefined') {
-				datatablech.push([GetUTCFromString(item.d), parseFloat(item.ch)]);
-			}
-			if (typeof item.dp != 'undefined') {
-				datatabledp.push([GetUTCFromString(item.d), parseFloat(item.dp)]);
-			}
-			if (typeof item.ba != 'undefined') {
-				datatableba.push([GetUTCFromString(item.d), parseFloat(item.ba)]);
-			}
-			if (typeof item.se != 'undefined') {
-				datatablese.push([GetUTCFromString(item.d), parseFloat(item.se)]);
-			}
-		} else {
-			if (typeof item.te != 'undefined') {
-				datatablete.push([GetDateFromString(item.d), parseFloat(item.te)]);
-				datatabletm.push([GetDateFromString(item.d), parseFloat(item.tm)]);
-				datatabletrange.push([GetDateFromString(item.d), parseFloat(item.tm), parseFloat(item.te)]);
-				if (typeof item.ta != 'undefined') {
-					datatableta.push([GetDateFromString(item.d), parseFloat(item.ta)]);
-				}
-			}
-			if (typeof item.hu != 'undefined') {
-				datatablehu.push([GetDateFromString(item.d), parseFloat(item.hu)]);
-			}
-			if (typeof item.ch != 'undefined') {
-				datatablech.push([GetDateFromString(item.d), parseFloat(item.ch)]);
-				datatablecm.push([GetDateFromString(item.d), parseFloat(item.cm)]);
-			}
-			if (typeof item.dp != 'undefined') {
-				datatabledp.push([GetDateFromString(item.d), parseFloat(item.dp)]);
-			}
-			if (typeof item.ba != 'undefined') {
-				datatableba.push([GetDateFromString(item.d), parseFloat(item.ba)]);
-			}
-			if (typeof item.se != 'undefined') {
-				datatablese.push([GetDateFromString(item.d), parseFloat(item.se)]);//avergae
-				datatablesm.push([GetDateFromString(item.d), parseFloat(item.sm)]);//min
-				datatablesx.push([GetDateFromString(item.d), parseFloat(item.sx)]);//max
-				datatablesrange.push([GetDateFromString(item.d), parseFloat(item.sm), parseFloat(item.sx)]);
-			}
-		}
-	});
-	var series;
-	if (datatablehu.length != 0) {
-		chart.addSeries({
-			id: 'humidity',
-			name: $.t('Humidity'),
-			color: 'limegreen',
-			yAxis: 1,
-			tooltip: {
-				valueSuffix: ' %',
-				valueDecimals: 0
-			}
-		}, false);
-		series = chart.get('humidity');
-		series.setData(datatablehu, false);
-	}
-
-	if (datatablech.length != 0) {
-		chart.addSeries({
-			id: 'chill',
-			name: $.t('Chill'),
-			color: 'red',
-			zIndex: 1,
-			tooltip: {
-				valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-				valueDecimals: 1
-			},
-			yAxis: 0
-		}, false);
-		series = chart.get('chill');
-		series.setData(datatablech, false);
-
-		if (isday == 0) {
-			chart.addSeries({
-				id: 'chillmin',
-				name: $.t('Chill') + '_min',
-				color: 'rgba(255,127,39,0.8)',
-				linkedTo: ':previous',
-				zIndex: 1,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				yAxis: 0
-			}, false);
-			series = chart.get('chillmin');
-			series.setData(datatablecm, false);
-		}
-	}
-
-	if (datatablese.length != 0) {
-		if (isday == 1) {
-			chart.addSeries({
-				id: 'setpoint',
-				name: $.t('Set Point'),
-				color: 'blue',
-				zIndex: 1,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				yAxis: 0
-			}, false);
-			series = chart.get('setpoint');
-			series.setData(datatablese, false);
-		} else {
-			chart.addSeries({
-				id: 'setpointavg',
-				name: $.t('Set Point') + '_avg',
-				color: 'blue',
-				fillOpacity: 0.7,
-				zIndex: 2,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				yAxis: 0
-			}, false);
-			series = chart.get('setpointavg');
-			series.setData(datatablese, false);
-			/*
-						chart.addSeries({
-							id: 'setpointmin',
-							name: $.t('Set Point') + '_min',
-							color: 'rgba(39,127,255,0.8)',
-							linkedTo: ':previous',
-							zIndex: 1,
-							tooltip: {
-								valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-								valueDecimals: 1
-							},
-							yAxis: 0
-						}, false);
-						series = chart.get('setpointmin');
-						series.setData(datatablesm, false);
-
-						chart.addSeries( {
-							id: 'setpointmax',
-							name: $.t('Set Point') + '_max',
-							color: 'rgba(127,39,255,0.8)',
-							linkedTo: ':previous',
-							zIndex: 1,
-							tooltip: {
-								valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-								valueDecimals: 1
-							},
-							yAxis: 0
-						}, false);
-						series = chart.get('setpointmax');
-						series.setData(datatablesx, false);
-			*/
-
-			if (datatablesrange.length != 0) {
-				chart.addSeries({
-					id: 'setpointrange',
-					name: $.t('Set Point') + '_range',
-					color: 'rgba(164,75,148,1.0)',
-					type: 'areasplinerange',
-					linkedTo: ':previous',
-					zIndex: 1,
-					lineWidth: 0,
-					fillOpacity: 0.5,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					}
-				}, false);
-				series = chart.get('setpointrange');
-				series.setData(datatablesrange, false);
-			}
-			if (datatablese_prev.length != 0) {
-				chart.addSeries({
-					id: 'prev_setpoint',
-					name: $.t('Past') + ' ' + $.t('Set Point'),
-					color: 'rgba(223,212,246,0.8)',
-					zIndex: 3,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					},
-					visible: false
-				}, false);
-				series = chart.get('prev_setpoint');
-				series.setData(datatablese_prev, false);
-			}
-		}
-	}
-
-	if (datatablete.length != 0) {
-		//Add Temperature series
-		if (isday == 1) {
-			chart.addSeries({
-				id: 'temperature',
-				name: $.t('Temperature'),
-				color: 'yellow',
-				yAxis: 0,
-				step: (isthermostat) ? 'left' : null,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				}
-			}, false);
-			series = chart.get('temperature');
-			series.setData(datatablete, false);
-		} else {
-			//Min/Max range
-			if (datatableta.length != 0) {
-				chart.addSeries({
-					id: 'temperature_avg',
-					name: $.t('Temperature'),
-					color: 'yellow',
-					fillOpacity: 0.7,
-					yAxis: 0,
-					zIndex: 2,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					}
-				}, false);
-				series = chart.get('temperature_avg');
-				series.setData(datatableta, false);
-				var trandLine = CalculateTrendLine(datatableta);
-				if (typeof trandLine != 'undefined') {
-					var datatableTrendline = [];
-					datatableTrendline.push([trandLine.x0, trandLine.y0]);
-					datatableTrendline.push([trandLine.x1, trandLine.y1]);
-				}
-			}
-			if (datatabletrange.length != 0) {
-				chart.addSeries({
-					id: 'temperature',
-					name: $.t('Temperature') + '_range',
-					color: 'rgba(3,190,252,1.0)',
-					type: 'areasplinerange',
-					linkedTo: ':previous',
-					zIndex: 0,
-					lineWidth: 0,
-					fillOpacity: 0.5,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					}
-				}, false);
-				series = chart.get('temperature');
-				series.setData(datatabletrange, false);
-			}
-			if (datatableta_prev.length != 0) {
-				chart.addSeries({
-					id: 'prev_temperature',
-					name: $.t('Past') + ' ' + $.t('Temperature'),
-					color: 'rgba(224,224,230,0.8)',
-					zIndex: 3,
-					yAxis: 0,
-					tooltip: {
-						valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-						valueDecimals: 1
-					},
-					visible: false
-				}, false);
-				series = chart.get('prev_temperature');
-				series.setData(datatableta_prev, false);
-			}
-		}
-	}
-	if (typeof datatableTrendline != 'undefined') {
-		if (datatableTrendline.length > 0) {
-			chart.addSeries({
-				id: 'temp_trendline',
-				name: $.t('Trendline') + ' ' + $.t('Temperature'),
-				zIndex: 1,
-				tooltip: {
-					valueSuffix: ' \u00B0' + $.myglobals.tempsign,
-					valueDecimals: 1
-				},
-				color: 'rgba(255,3,3,0.8)',
-				dashStyle: 'LongDash',
-				yAxis: 0,
-				visible: false
-			}, false);
-			series = chart.get('temp_trendline');
-			series.setData(datatableTrendline, false);
-		}
-	}
-}
-
 function load_cam_video() {
 	if ((typeof $.camfeed == 'undefined') || ($.camfeed == ""))
 		return;
@@ -1760,11 +1424,11 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 	var vBox = $(svgId).prop("viewBox").baseVal;
 	var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
 	var dheight = $(window).height() * 0.85;
-	var dwidth = dheight * svgRatio;
+	var dwidth = dheight * svgRatio ;
 	// for v2.0, if screen is wide enough add room to show media at the side of the remote
 	$(divId).dialog({
 		resizable: false,
-		show: "blind",
+		//show: "blind", // effects are causing issue with changing the height during the animation
 		hide: "blind",
 		width: dwidth,
 		height: dheight,
@@ -1777,6 +1441,79 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 			$(divId).attr("HardwareType", HWType);
 			$(svgId).css("-ms-overflow-style", "none");
 			$(divId).bind('touchstart', function () { });
+			if ( HWType.indexOf('Panasonic') >= 0) {
+				// Here is a little painful because we need to get hardware id  first...
+				$.ajax({
+					url: "json.htm?type=devices&rid=" + devIdx,
+					async: true,
+					dataType: 'json',
+					success: function (data) { 
+						hwId = data.result[0].HardwareID;
+						$.ajax({
+							url: "json.htm?type=hardware",
+							async: true,
+							dataType: 'json',
+							success: function (data) { 
+								// Need to iterate over all hardware to find the good one
+								for(var i in data.result) {
+									var hw = data.result[i];
+									if (hw.idx == hwId) {
+										if (hw.Extra !== null && hw.Extra !== '') {
+											// We finally have the custombuttons string, process!
+											var bspacing = 20;
+											var bvspacing = 20;
+											var bheight = 100;
+											var bindex = 0;
+											// Reset buttons
+											$("#MediaRemote-custom-buttons").html('');
+											$(svgId).prop("viewBox").baseVal.height = 1875;
+											// Loop lines
+											hw.Extra.split(';').forEach(function (line) {
+												// Add line
+												var vBox = $(svgId).prop("viewBox").baseVal;
+												var bvline = vBox.y + vBox.height +  bvspacing;
+												$(svgId).prop("viewBox").baseVal.height = vBox.height + bheight + bvspacing;
+												var buttons = line.split(',');
+												var bwidth = (vBox.width + bspacing) / buttons.length - bspacing; 
+												// Loop buttons
+												buttons.forEach(function (val, index) {
+													var tokens = val.split(':');
+													var btitle = tokens[0];
+													var bcommand = tokens[1];
+													var buttonSVG = "";
+													bindex++;
+													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth+bspacing);
+													// Button shadow
+													buttonSVG += '<rect id="toto" class="remoteshadow" x="'+bx+'" y="'+(bvline+10)+'" width="'+bwidth+'" height="'+bheight+'" rx="50" ry="50"></rect>';
+													// Button 
+													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="'+bx+'" y="'+(bvline)+'" width="'+bwidth+'" height="'+bheight+'"  rx="50" ry="50" ';
+													buttonSVG += 'onclick="javascript: click_media_remote(\'' + bcommand + '\');" ';
+													buttonSVG += '><title id="dialog-media-remote-opt1-title">' + btitle + '</title></rect>';
+													// Button text
+													buttonSVG += '<text text-anchor="middle" x="'+(bx+bwidth/2)+'" y="'+(bvline+bheight*0.55)+'" class="remotetext" ';
+													buttonSVG += 'fill="black"  style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
+													// Add button
+													$("#MediaRemote-custom-buttons").append(buttonSVG);
+												});
+											});
+
+											// Refresh SVG
+											$(svgId).parent().html($(svgId).parent().html());
+											// Ajust dialog width
+											var vBox = $(svgId).prop("viewBox").baseVal;
+											var svgRatio = (vBox.width - vBox.x) / (vBox.height - vBox.y);
+											var dheight = $(window).height() * 0.85;
+											var dwidth = dheight * svgRatio;
+											$(divId).dialog( "option", "width", dwidth);
+											$(divId).dialog( "option", "height", dheight);
+										}
+									}
+								}
+							}
+						});
+					}
+				});
+			}
 		},
 		close: function () {
 			if (typeof $.myglobals.refreshTimer != 'undefined') {
@@ -5749,7 +5486,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						pointRange: 3600 * 1000, // 1 hour in ms
 						zIndex: 5,
 						animation: false,
-						name: (switchtype == 0) ? $.t('Energy Usage') : $.t('Energy Generated'),
+						name: switchtype == 0 ? $.t('Energy Usage') : $.t('Energy Generated'),
 						tooltip: {
 							valueSuffix: (chart == $.WeekChart) ? ' kWh' : ' Wh',
 							valueDecimals: totDecimals
@@ -5801,7 +5538,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						// counter type (no power)
 						chart.highcharts().addSeries({
 							id: 'usage1',
-							name: (switchtype == 0) ? $.t('Energy Usage') : $.t('Energy Generated'),
+							name: switchtype == 0 ? $.t('Energy Usage') : $.t('Energy Generated'),
 							tooltip: {
 								valueSuffix: (chart == $.DayChart) ? ' Wh' : ' kWh',
 								valueDecimals: totDecimals
@@ -5814,7 +5551,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						// instant + counter type
 						chart.highcharts().addSeries({
 							id: 'usage1',
-							name: (switchtype == 0) ? $.t('Power Usage') : $.t('Power Generated'),
+							name: switchtype == 0 ? $.t('Power Usage') : $.t('Power Generated'),
 							zIndex: 10,
 							type: (chart == $.DayChart) ? 'spline' : 'column', // power vs energy
 							tooltip: {
@@ -6085,8 +5822,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 			id: 'counter',
 			name: valueQuantity,
 			tooltip: {
-				valueSuffix: ' ' + valueUnits,
-				valueDecimals: 0
+				valueSuffix: ' ' + valueUnits
 			},
 			color: 'rgba(3,190,252,0.8)',
 			yAxis: 0
@@ -6128,337 +5864,6 @@ function GetGraphUnit(uname) {
 		return 'kWh';
 
 	return '?';
-}
-
-function ShowSmartLog(contentdiv, backfunction, id, name, switchtype) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$('#modal').show();
-	$.content = contentdiv;
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	$.devSwitchType = switchtype;
-
-	var htmlcontent = $('#dayweekmonthyearlog').html();
-
-	$.costsT1 = 0.2389;
-	$.costsT2 = 0.2389;
-	$.costsR1 = 0.08;
-	$.costsR2 = 0.08;
-	$.costsGas = 0.6218;
-	$.costsWater = 1.6473;
-
-	$.ajax({
-		url: "json.htm?type=command&param=getcosts&idx=" + $.devIdx,
-		async: false,
-		dataType: 'json',
-		success: function (data) {
-			$.costsT1 = parseFloat(data.CostEnergy) / 10000;
-			$.costsT2 = parseFloat(data.CostEnergyT2) / 10000;
-			$.costsR1 = parseFloat(data.CostEnergyR1) / 10000;
-			$.costsR2 = parseFloat(data.CostEnergyR2) / 10000;
-			$.costsGas = parseFloat(data.CostGas) / 10000;
-			$.costsWater = parseFloat(data.CostWater) / 10000;
-			$.CounterT1 = parseFloat(data.CounterT1);
-			$.CounterT2 = parseFloat(data.CounterT2);
-			$.CounterR1 = parseFloat(data.CounterR1);
-			$.CounterR2 = parseFloat(data.CounterR2);
-		}
-	});
-
-	$.monthNames = ["January", "February", "March", "April", "May", "June",
-		"July", "August", "September", "October", "November", "December"];
-
-	var d = new Date();
-	var actMonth = d.getMonth() + 1;
-	var actYear = d.getYear() + 1900;
-
-	$($.content).html(htmlcontent);
-	$($.content).i18n();
-
-	$.DayChart = $($.content + ' #daygraph');
-	$.DayChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=day",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.DayChart, switchtype);
-								$.DayChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: Get5MinuteHistoryDaysGraphTitle()
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: [{
-			title: {
-				text: $.t('Energy') + ' (Wh)'
-			},
-			min: 0
-		},
-		{
-			title: {
-				text: $.t('Power') + ' (Watt)'
-			},
-			min: 0,
-			opposite: true
-		}],
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, true, ShowSmartLog);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.WeekChart = $($.content + ' #weekgraph');
-	$.WeekChart.highcharts({
-		chart: {
-			type: 'column',
-			marginRight: 10,
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=week",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.WeekChart, switchtype);
-								$.WeekChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Week')
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: {
-				day: '%a'
-			},
-			tickInterval: 24 * 3600 * 1000
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			},
-			min: 0
-		},
-		tooltip: {
-			formatter: function () {
-				var unit = GetGraphUnit(this.series.name);
-				return $.t(Highcharts.dateFormat('%A', this.x)) + ' ' + Highcharts.dateFormat('%Y-%m-%d', this.x) + '<br/>' + $.t(this.series.name) + ': ' + this.y + ' ' + unit + '<br/>Total: ' + this.point.stackTotal + ' ' + unit;
-			}
-		},
-		plotOptions: {
-			column: {
-				stacking: 'normal',
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.MonthChart = $($.content + ' #monthgraph');
-	$.MonthChart.highcharts({
-		chart: {
-			type: 'spline',
-			marginRight: 10,
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.MonthChart, switchtype);
-								$.MonthChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			},
-			min: 0
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, false, ShowSmartLog);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.YearChart = $($.content + ' #yeargraph');
-	$.YearChart.highcharts({
-		chart: {
-			type: 'spline',
-			marginRight: 10,
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.YearChart, switchtype);
-								$.YearChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			},
-			min: 0
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, false, ShowSmartLog);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
 }
 
 function addLeadingZeros(n, length) {
@@ -6725,355 +6130,6 @@ function ShowCounterLog(contentdiv, backfunction, id, name, switchtype) {
 					events: {
 						click: function (event) {
 							chartPointClickNewEx(event, false, ShowCounterLog);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-}
-
-function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$('#modal').show();
-
-	$.content = contentdiv;
-	$.backfunction = backfunction;
-	$.devIdx = id;
-	$.devName = name;
-	if (typeof switchtype != 'undefined') {
-		$.devSwitchType = switchtype;
-	}
-	else {
-		switchtype = $.devSwitchType;
-	}
-
-    var htmlcontent = $('#dayweekmonthyearlog').html();
-	$($.content).html(htmlcontent);
-
-	var graph_title = (switchtype == 4) ? $.t('Generated') : $.t('Usage');
-	graph_title += ' ' + Get5MinuteHistoryDaysGraphTitle();
-
-	$.DayChart = $($.content + ' #daygraph');
-	$.DayChart.highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			alignTicks: false, // necessary for y-axis extremes matching
-			events: {
-				load: function () {
-					$.getJSON("json.htm?type=graph&sensor=counter&method=1&idx=" + id + "&range=day",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.DayChart, switchtype);
-								$.DayChart.highcharts().redraw();
-							}
-						});
-				},
-				redraw: function () {
-					var me = this, iMin = 0, iMax = 0, bRedraw = false;
-					me.redrawCnt = me.redrawCnt || 0; // failsafe
-					me.redrawCnt++;
-					$.each(me.series, function (iIndex_, oSerie_) {
-						var iAxisMin = me.yAxis[oSerie_.options.yAxis].min;
-						if (iAxisMin < iMin) {
-							bRedraw = bRedraw || (0 != iMin);
-							iMin = iAxisMin;
-						}
-						var iAxisMax = me.yAxis[oSerie_.options.yAxis].max;
-						if (iAxisMax > iMax) {
-							bRedraw = bRedraw || (0 != iMax);
-							iMax = iAxisMax;
-						}
-					});
-					if (bRedraw && me.redrawCnt == 1) {
-						$.each($.DayChart.highcharts().yAxis, function (iIndex_, oAxis_) {
-							oAxis_.setExtremes((iMin != 0) ? iMin : null, (iMax != 0) ? iMax : null, false);
-						});
-						me.redraw();
-					} else {
-						$.each($.DayChart.highcharts().yAxis, function (iIndex_, oAxis_) {
-							oAxis_.setExtremes(null, null, false); // next time rescale yaxis if necessary
-						});
-						me.redrawCnt = 0;
-					}
-				}
-			}
-		},
-		title: {
-			text: graph_title
-		},
-		xAxis: {
-			type: 'datetime',
-		},
-		yAxis: [{
-			title: {
-				text: $.t('Energy') + ' (Wh)'
-			}
-		}, {
-			title: {
-				text: $.t('Power') + ' (Watt)'
-			},
-			opposite: true
-		}],
-		tooltip: {
-			crosshairs: true,
-			shared: false
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNew(event, true, ShowCounterLogSpline);
-						}
-					}
-				},
-				matchExtremes: true
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			},
-			areaspline: {
-				lineWidth: 3,
-				marker: {
-					enabled: false
-				},
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				}
-			},
-			column: {
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0,
-				dataLabels: {
-					enabled: false,
-					color: 'white'
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-	$.WeekChart = $($.content + ' #weekgraph');
-	$.WeekChart.highcharts({
-		chart: {
-			type: 'column',
-			marginRight: 10,
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=week",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.WeekChart, switchtype);
-								$.WeekChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Week')
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: {
-				day: '%a'
-			},
-			tickInterval: 24 * 3600 * 1000
-		},
-		yAxis: {
-			maxPadding: 0.2,
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			}
-		},
-		plotOptions: {
-			column: {
-				minPointLength: 4,
-				pointPadding: 0.1,
-				groupPadding: 0,
-				dataLabels: {
-					enabled: true,
-					color: 'white'
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.MonthChart = $($.content + ' #monthgraph');
-	$.MonthChart.highcharts({
-		chart: {
-			type: 'spline',
-			marginRight: 10,
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=month",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.MonthChart, switchtype);
-								$.MonthChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Month')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			}
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, false, ShowCounterLogSpline);
-						}
-					}
-				}
-			},
-			spline: {
-				lineWidth: 3,
-				states: {
-					hover: {
-						lineWidth: 3
-					}
-				},
-				marker: {
-					enabled: false,
-					states: {
-						hover: {
-							enabled: true,
-							symbol: 'circle',
-							radius: 5,
-							lineWidth: 1
-						}
-					}
-				}
-			}
-		},
-		legend: {
-			enabled: true
-		}
-	});
-
-	$.YearChart = $($.content + ' #yeargraph');
-	$.YearChart.highcharts({
-		chart: {
-			type: 'spline',
-			marginRight: 10,
-			zoomType: 'x',
-			resetZoomButton: {
-				position: {
-					x: -30,
-					y: -36
-				}
-			},
-			events: {
-				load: function () {
-
-					$.getJSON("json.htm?type=graph&sensor=counter&idx=" + id + "&range=year",
-						function (data) {
-							if (typeof data.result != 'undefined') {
-								AddDataToUtilityChart(data, $.YearChart, switchtype);
-								$.YearChart.highcharts().redraw();
-							}
-						});
-				}
-			}
-		},
-		title: {
-			text: $.t('Last Year')
-		},
-		xAxis: {
-			type: 'datetime'
-		},
-		yAxis: {
-			title: {
-				text: $.t('Energy') + ' (kWh)'
-			}
-		},
-		tooltip: {
-			crosshairs: true,
-			shared: true
-		},
-		plotOptions: {
-			series: {
-				point: {
-					events: {
-						click: function (event) {
-							chartPointClickNewEx(event, false, ShowCounterLogSpline);
 						}
 					}
 				}

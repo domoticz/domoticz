@@ -96,8 +96,7 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
             renameDevice: renameDevice,
             removeDevice: removeDevice,
             removeScene: removeScene,
-            includeDevice: includeDevice,
-            excludeDevice: excludeDevice,
+            setDeviceUsed: setDeviceUsed,
             makeFavorite: makeFavorite,
         };
 
@@ -146,19 +145,12 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
             }).then(domoticzApi.errorHandler);
         }
 
-        function includeDevice(deviceIdx, name, mainDeviceIdx) {
-            return domoticzApi.sendRequest({
+        function setDeviceUsed(deviceIdx, bUsed, name, mainDeviceIdx) {
+            return domoticzApi.sendCommand('setdevused', {
                 idx: deviceIdx,
-                type: 'setused',
-                name: name,
-                used: true,
+                used: bUsed,
+                name: name || '',
                 maindeviceidx: mainDeviceIdx || ''
-            }).then(domoticzApi.errorHandler);
-        }
-
-        function excludeDevice(deviceIdx) {
-            return domoticzApi.sendCommand('setunused', {
-                idx: deviceIdx,
             });
         }
 

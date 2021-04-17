@@ -13,6 +13,7 @@ Supported Layer :
 History :
 - 2017-10-01 : Creation by X.PONCET
 
+- 2021-04-03 : Increse m_USBtinBuffer size from 15 frames to 128 frames to avoid frame loss of Can frames
 */
 
 #pragma once
@@ -20,21 +21,22 @@ History :
 #include "USBtin_MultiblocV8.h"
 #include "DomoticzHardware.h"
 
-class USBtin : public USBtin_MultiblocV8,AsyncSerial
+class USBtin : public USBtin_MultiblocV8, AsyncSerial
 {
 public:
-	USBtin(const int ID, const std::string& devname,unsigned int BusCanType,unsigned int DebugMode/*,unsigned int baud_rate = USBTIN_BAUD_RATE*/);
-	~USBtin();
+	USBtin(int ID, const std::string &devname, unsigned int BusCanType, unsigned int DebugMode /*,unsigned int baud_rate = USBTIN_BAUD_RATE*/);
+	~USBtin() override;
 	std::string m_szSerialPort;
 	unsigned int Bus_CANType;
 	unsigned long switch_id_base;
+
 private:
 	unsigned int m_EtapeInitCan;
 	int m_USBtinRetrycntr;
 	int m_USBtinBelErrorCount;
-	char m_USBtinBuffer[390]; //buffer capable de stocker 15 trames en 1 fois
+	char m_USBtinBuffer[3328]; // buffer capable de stocker 128 trames en 1 fois
 	int m_USBtinBufferpos;
-	bool m_BOOL_USBtinDebug; //1 = activ
+	bool m_BOOL_USBtinDebug; // 1 = activ
 
 	boost::asio::serial_port_base::parity m_iOptParity;
 	boost::asio::serial_port_base::character_size m_iOptCsize;
@@ -50,12 +52,11 @@ private:
 	void readCallback(const char *data, size_t len);
 	void ParseData(const char *pData, int Len);
 	void Init();
-	bool writeFrame(const std::string&) override;
+	bool writeFrame(const std::string &) override;
 	void GetHWVersion();
 	void GetFWVersion();
 	void GetSerialNumber();
 	void SetBaudRate250Kbd();
 	void OpenCanPort();
 	void CloseCanPort();
-
 };

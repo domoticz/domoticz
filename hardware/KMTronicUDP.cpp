@@ -17,10 +17,6 @@ m_szIPAddress(IPAddress)
 	m_usIPPort=usIPPort;
 }
 
-KMTronicUDP::~KMTronicUDP(void)
-{
-}
-
 void KMTronicUDP::Init()
 {
 }
@@ -31,7 +27,7 @@ bool KMTronicUDP::StartHardware()
 
 	Init();
  	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&KMTronicUDP::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -54,14 +50,14 @@ void KMTronicUDP::Do_Work()
 {
 	int sec_counter = KMTRONIC_POLL_INTERVAL - 2;
 
-	_log.Log(LOG_STATUS, "KMTronic: UDP Worker started...");
+	Log(LOG_STATUS, "UDP Worker started...");
 
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 
 		if (sec_counter % KMTRONIC_POLL_INTERVAL == 0)
@@ -69,7 +65,7 @@ void KMTronicUDP::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS, "KMTronic: UDP Worker stopped...");
+	Log(LOG_STATUS, "UDP Worker stopped...");
 }
 
 bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -92,12 +88,13 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			return false;
 
         	struct hostent *he;
-	        if ((he=gethostbyname(m_szIPAddress.c_str())) == NULL) {  // get the host info
-        	        _log.Log(LOG_ERROR,"KMTronic: Error with IP address!...");
-        	        return false;
-        	}
+		if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr)
+		{ // get the host info
+			Log(LOG_ERROR, "Error with IP address!...");
+			return false;
+		}
 
-	        udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
+		udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
 
 		memset(&udpClient,0,sizeof(udpClient));
 	        udpClient.sin_family = AF_INET;
@@ -116,7 +113,7 @@ bool KMTronicUDP::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	        n=sendto(udpSocket, buf, 6, 0, (struct sockaddr*)&udpClient, sizeof(udpClient));
 		closesocket(udpSocket);
     		if (n < 0) {
-			_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
@@ -139,10 +136,11 @@ void KMTronicUDP::GetMeterDetails()
 	socklen_t serverlen;
 
         struct hostent *he;
-	if ((he=gethostbyname(m_szIPAddress.c_str())) == NULL) {  // get the host info
-        	_log.Log(LOG_ERROR,"KMTronic: Error with IP address!...");
-        	return;
-        }
+	if ((he = gethostbyname(m_szIPAddress.c_str())) == nullptr)
+	{ // get the host info
+		Log(LOG_ERROR, "Error with IP address!...");
+		return;
+	}
 
 	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -167,7 +165,7 @@ void KMTronicUDP::GetMeterDetails()
 	n=sendto(udpSocket, "FF0000", 6, 0, (struct sockaddr*)&udpClient, serverlen);
     	if (n < 0) {
 		closesocket(udpSocket);
-		_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 		return;
 	}
 
@@ -175,11 +173,11 @@ void KMTronicUDP::GetMeterDetails()
 	n = recvfrom(udpSocket, buf, 8, 0, (struct sockaddr*)&udpClient, &serverlen);
 	closesocket(udpSocket);
     	if (n < 0) {
-		_log.Log(LOG_ERROR, "KMTronic: Error reading relay status from: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR, "Error reading relay status from: %s", m_szIPAddress.c_str());
 		return;
 	}
 
-//	_log.Debug(DEBUG_HARDWARE, "KMTronic: response %s",buf);
+//	Debug(DEBUG_HARDWARE, "response %s",buf);
 
 	m_TotRelais=n;
 	int jj;
@@ -190,7 +188,6 @@ void KMTronicUDP::GetMeterDetails()
                 std::stringstream sstr;
                 int iRelay = (jj + 1);
                 sstr << "Relay " << iRelay;
-                SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
+		SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
         }
-	return;
 }

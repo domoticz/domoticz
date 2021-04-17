@@ -1,0 +1,8 @@
+<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="ProductPic">images/zwave.me/razberry.png</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Daniel Brunt - daniel@brunt.ca" date="30 Jul 2020" revision="1">Initial metadata to add pic</Entry>
+    </ChangeLog>
+  </MetaData>
+</Product>

@@ -32,14 +32,14 @@ class CTCPServerIntBase
 {
 public:
 	explicit CTCPServerIntBase(CTCPServer *pRoot);
-	~CTCPServerIntBase(void);
+	~CTCPServerIntBase() = default;
 
 	virtual void start() = 0;
 	virtual void stop() = 0;
 	virtual void stopClient(CTCPClient_ptr c) = 0;
 	virtual void stopAllClients();
 
-	void SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(int HardwareID, uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase *pClient2Ignore);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
@@ -53,7 +53,7 @@ protected:
 
 	_tRemoteShareUser* FindUser(const std::string &username);
 
-	bool HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password);
+	bool HandleAuthentication(const CTCPClient_ptr &c, const std::string &username, const std::string &password);
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
 
 	std::vector<_tRemoteShareUser> m_users;
@@ -69,13 +69,13 @@ protected:
 class CTCPServerInt : public CTCPServerIntBase {
 public:
 	CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot);
-	~CTCPServerInt(void);
-	virtual void start() override;
-	virtual void stop() override;
+	~CTCPServerInt() = default;
+	void start() override;
+	void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c) override;
-private:
+	void stopClient(CTCPClient_ptr c) override;
 
+      private:
 	void handleAccept(const boost::system::error_code& error);
 
 	/// Handle a request to stop the server.
@@ -96,11 +96,11 @@ private:
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
 	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
-	~CTCPServerProxied(void);
-	virtual void start() override;
-	virtual void stop() override;
+	~CTCPServerProxied() = default;
+	void start() override;
+	void stop() override;
 	/// Stop the specified connection.
-	virtual void stopClient(CTCPClient_ptr c) override;
+	void stopClient(CTCPClient_ptr c) override;
 
 	bool OnNewConnection(const std::string &token, const std::string &username, const std::string &password);
 	bool OnDisconnect(const std::string &token);
@@ -115,20 +115,23 @@ class CTCPServer : public CDomoticzHardwareBase
 {
 public:
 	CTCPServer();
-	explicit CTCPServer(const int ID);
-	~CTCPServer(void);
+	explicit CTCPServer(int ID);
+	~CTCPServer() override;
 
 	bool StartServer(const std::string &address, const std::string &port);
 #ifndef NOCLOUD
 	bool StartServer(http::server::CProxyClient *proxy);
 #endif
 	void StopServer();
-	void SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(int HardwareID, uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase *pClient2Ignore);
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
-	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
-	bool WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/) { return true; };
+	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const char *userName)> sDecodeRXMessage;
+	bool WriteToHardware(const char * /*pdata*/, const unsigned char /*length*/) override
+	{
+		return true;
+	};
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
 #ifndef NOCLOUD
 	CTCPServerProxied *GetProxiedServer();
@@ -141,8 +144,14 @@ private:
 #endif
 
 	std::shared_ptr<std::thread> m_thread;
-	bool StartHardware() { return false; };
-	bool StopHardware() { return false; };
+	bool StartHardware() override
+	{
+		return false;
+	};
+	bool StopHardware() override
+	{
+		return false;
+	};
 
 	void Do_Work();
 };

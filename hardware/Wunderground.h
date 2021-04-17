@@ -4,23 +4,24 @@
 
 class CWunderground : public CDomoticzHardwareBase
 {
-public:
-	CWunderground(const int ID, const std::string &APIKey, const std::string &Location);
-	~CWunderground(void);
-	bool WriteToHardware(const char *pdata, const unsigned char length) override;
+      public:
+	CWunderground(int ID, const std::string &APIKey, const std::string &Location);
+	~CWunderground() override = default;
+	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
-private:
+
+      private:
 	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
 	std::string GetWeatherStationFromGeo();
-private:
+
+      private:
 	bool m_bForceSingleStation;
 	bool m_bFirstTime;
 	std::string m_APIKey;
 	std::string m_Location;
 	std::shared_ptr<std::thread> m_thread;
 };
-

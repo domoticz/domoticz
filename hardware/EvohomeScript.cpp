@@ -39,12 +39,10 @@ CEvohomeScript::CEvohomeScript(const int ID)
 	m_bSkipReceiveCheck = true;
 }
 
-
-CEvohomeScript::~CEvohomeScript(void)
+CEvohomeScript::~CEvohomeScript()
 {
 	m_bIsStarted = false;
 }
-
 
 void CEvohomeScript::Init()
 {
@@ -133,7 +131,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			boost::replace_all(OnAction, "{mode}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
-			s_strid << tsen->temperature / 100.0f;
+			s_strid << tsen->temperature / 100.0F;
 			boost::replace_all(OnAction, "{setpoint}", s_strid.str());
 			s_strid.clear();
 			s_strid.str("");
@@ -143,10 +141,10 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 			//Execute possible script
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
-			if (scriptname.find("/") != 0)
+			if (scriptname.find('/') != 0)
 				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
-			std::string scriptparams = "";
+			std::string scriptparams;
 			//Add parameters
 			int pindex = scriptname.find(' ');
 			if (pindex != std::string::npos)
@@ -157,7 +155,7 @@ void CEvohomeScript::RunScript(const char* pdata, const unsigned char /*length*/
 
 			if (file_exist(scriptname.c_str()))
 			{
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
 			}
 			else
 				_log.Log(LOG_ERROR, "evohome: Error script not found '%s'", scriptname.c_str());

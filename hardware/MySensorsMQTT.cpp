@@ -11,22 +11,11 @@
 #define TOPIC_IN		"domoticz/in/"
 #define TOPIC_OUT		"domoticz/out/"
 
-extern const char* szTLSVersions[3];
-
-MySensorsMQTT::MySensorsMQTT(
-	const int ID,
-	const std::string &Name,
-	const std::string &IPAddress, const unsigned short usIPPort,
-	const std::string &Username, const std::string &Password, const std::string &CAfilename, const int TLS_Version,
-	const int Topics,
-	const bool PreventLoop) :
-	MQTT(
-		ID,
-		IPAddress, usIPPort,
-		Username, Password, CAfilename, TLS_Version,
-		(int)MQTT::PT_out, (std::string("Domoticz-MySensors") +  std::string(GenerateUUID())).c_str(), PreventLoop),
-	MyTopicIn(TOPIC_IN),
-	MyTopicOut(TOPIC_OUT)
+MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password,
+			     const std::string &CAfilenameExtra, const int TLS_Version, const int PublishScheme, const bool PreventLoop)
+	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTT::PT_out, std::string("Domoticz-MySensors") + std::string(GenerateUUID()), PreventLoop)
+	, MyTopicIn(TOPIC_IN)
+	, MyTopicOut(TOPIC_OUT)
 {
 
 	/**
@@ -37,8 +26,8 @@ MySensorsMQTT::MySensorsMQTT(
 	 **/
 
 	size_t nextPiece = std::string::npos;
-	std::string CustomTopicIn = "";
-	std::string CustomTopicOut = "";
+	std::string CustomTopicIn;
+	std::string CustomTopicOut;
 
 	do {
 		// Locate the last delimiter in the CAfilename string.
@@ -59,7 +48,7 @@ MySensorsMQTT::MySensorsMQTT(
 		if (std::string::npos == nextPiece)
 		{
 			// No second to last delimiter? Shouldn't happen.
-			_log.Log(LOG_ERROR, "MySensorsMQTT: Truncating CAfilename; Stray topic was present.");
+			Log(LOG_ERROR, "Truncating CAfilename; Stray topic was present.");
 			break;
 		}
 
@@ -68,9 +57,9 @@ MySensorsMQTT::MySensorsMQTT(
 		// And remove it from the CAfilename string.
 		m_CAFilename.erase(nextPiece, m_CAFilename.length());
 
-	} while (0);
+	} while (false);
 
-	switch (Topics) {
+	switch (PublishScheme) {
 		case 2:
 			MyTopicIn = CustomTopicIn;
 			MyTopicOut = CustomTopicOut;
@@ -89,10 +78,6 @@ MySensorsMQTT::MySensorsMQTT(
 	m_TopicIn = m_TopicInWithoutHash + "/#";
 	m_TopicOut = MyTopicOut;
 
-}
-
-MySensorsMQTT::~MySensorsMQTT(void)
-{
 }
 
 bool MySensorsMQTT::StartHardware()
@@ -120,7 +105,7 @@ void MySensorsMQTT::on_message(const struct mosquitto_message *message)
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
-	_log.Log(LOG_NORM, "MySensorsMQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+	Log(LOG_NORM, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 
 	if (topic.empty() && qMessage.empty())
 		return;
@@ -148,7 +133,7 @@ void MySensorsMQTT::on_connect(int rc)
 
 	if (m_IsConnected)
 	{
-		_log.Log(LOG_STATUS, "MySensorsMQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 		//Request gateway version
 		std::string sRequest = "0;0;3;0;2;";
@@ -185,11 +170,11 @@ void MySensorsMQTT::ConvertMySensorsLineToMessage(const std::string &sLine, std:
 		return;
 	}
 
-	sTopic = std::string(sLine.substr(0, indexLastSeperator).c_str());
+	sTopic = std::string(sLine.substr(0, indexLastSeperator));
 	boost::replace_all(sTopic, ";", "/");
 	sTopic.insert(0, m_TopicOut + "/");
 
-	sPayload = std::string(sLine.substr(indexLastSeperator + 1).c_str());
+	sPayload = std::string(sLine.substr(indexLastSeperator + 1));
 	if (!sPayload.empty() &&
 		sPayload[sPayload.length() - 1] == '\n')
 	{

@@ -84,16 +84,14 @@ m_szHarmonyAddress(IPAddress)
 	Init();
 }
 
-
-CHarmonyHub::~CHarmonyHub(void)
+CHarmonyHub::~CHarmonyHub()
 {
 	StopHardware();
 }
 
-
 void CHarmonyHub::Init()
 {
-	m_connection=NULL;
+	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 	m_bNeedMoreData = false;
 	m_bWantAnswer = false;
@@ -142,7 +140,7 @@ bool CHarmonyHub::StartHardware()
 
 	Init();
 	//Start worker thread
-	m_thread = std::make_shared<std::thread>(&CHarmonyHub::Do_Work, this);
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -171,7 +169,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 	if (this->m_bIsChangingActivity)
 	{
-		_log.Log(LOG_ERROR, "Harmony Hub: Command cannot be sent. Hub is changing activity");
+		Log(LOG_ERROR, "Command cannot be sent. Hub is changing activity");
 		return false;
 	}
 
@@ -185,12 +183,12 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 		{
 			// "secret" undefined state request to silence connection error reporting
 			if (this->m_bShowConnectError)
-				_log.Log(LOG_STATUS, "Harmony Hub: disable connection error logging");
+				Log(LOG_STATUS, "disable connection error logging");
 			this->m_bShowConnectError = false;
 			return false;
 		}
 
-		_log.Log(LOG_STATUS, "Harmony Hub: Received a switch command but we are not connected - attempting connect now");
+		Log(LOG_STATUS, "Received a switch command but we are not connected - attempting connect now");
 		this->m_bLoginNow = true;
 		int retrycount = 0;
 		while ( (retrycount < 10) && (!IsStopRequested(500)) )
@@ -205,7 +203,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 		if (this->m_connectionstatus == DISCONNECTED)
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Connect failed: cannot send the switch command");
+			Log(LOG_ERROR, "Connect failed: cannot send the switch command");
 			return false;
 		}
 	}
@@ -230,13 +228,13 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			}
 			if (SubmitCommand(START_ACTIVITY_COMMAND, "-1") <= 0)
 			{
-				_log.Log(LOG_ERROR, "Harmony Hub: Error sending the power-off command");
+				Log(LOG_ERROR, "Error sending the power-off command");
 				return false;
 			}
 		}
 		else if (SubmitCommand(START_ACTIVITY_COMMAND, realID) <= 0)
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Error sending the switch command");
+			Log(LOG_ERROR, "Error sending the switch command");
 			return false;
 		}
 	}
@@ -246,7 +244,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 void CHarmonyHub::Do_Work()
 {
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started...");
+	Log(LOG_STATUS,"Worker thread started...");
 
 	unsigned int pcounter = 0;		// ping interval counter
 	unsigned int tcounter = 0;		// 1/25 seconds
@@ -283,7 +281,7 @@ void CHarmonyHub::Do_Work()
 					else if (m_szCurActivityID.empty())
 					{
 						fcounter = 0;
-						_log.Log(LOG_STATUS, "Harmony Hub: Connected to Hub.");
+						Log(LOG_STATUS, "Connected to Hub.");
 						SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND);
 					}
 				}
@@ -300,7 +298,7 @@ void CHarmonyHub::Do_Work()
 					if (m_bNeedEcho || SendPing() < 0)
 					{
 						// Hub dropped our connection
-						_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
+						Log(LOG_ERROR, "Error pinging server.. Resetting connection.");
 						ResetCommunicationSocket();
 						pcounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
 					}
@@ -315,7 +313,7 @@ void CHarmonyHub::Do_Work()
 					if (SendPing() < 0)
 					{
 						// Hub dropped our connection
-						_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
+						Log(LOG_ERROR, "Error pinging server.. Resetting connection.");
 						ResetCommunicationSocket();
 						pcounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
 					}
@@ -335,7 +333,7 @@ void CHarmonyHub::Do_Work()
 						{
 							m_bLoginNow = true;
 							if (fcounter > 0)
-								_log.Log(LOG_NORM, "Harmony Hub: Reattempt login.");
+								Log(LOG_NORM, "Reattempt login.");
 						}
 					}
 				}
@@ -368,7 +366,7 @@ void CHarmonyHub::Do_Work()
 				if ((pcounter % HARMONY_RETRY_LOGIN_SECONDS) > 1)
 				{
 					// timeout
-					_log.Log(LOG_ERROR, "Harmony Hub: setup command socket timed out");
+					Log(LOG_ERROR, "setup command socket timed out");
 					ResetCommunicationSocket();
 				}
 			}
@@ -415,12 +413,12 @@ void CHarmonyHub::Do_Work()
 		{
 			// update heartbeat
 			hcounter = HEARTBEAT_SECONDS;
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	Logout();
 
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 
@@ -492,7 +490,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char /*idx*/, const char *realID, const 
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 
@@ -522,7 +520,7 @@ bool CHarmonyHub::SetupCommunicationSocket()
 	if(!ConnectToHarmony(m_szHarmonyAddress, m_usHarmonyPort, m_connection))
 	{
 		if (m_bShowConnectError)
-			_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
+			Log(LOG_ERROR,"Cannot connect to Harmony Hub. Check IP/Port.");
 		return false;
 	}
 	m_connectionstatus = CONNECTED;
@@ -533,9 +531,8 @@ bool CHarmonyHub::SetupCommunicationSocket()
 
 void CHarmonyHub::ResetCommunicationSocket()
 {
-	if (m_connection)
-		delete m_connection;
-	m_connection = NULL;
+	delete m_connection;
+	m_connection = nullptr;
 	m_connectionstatus = DISCONNECTED;
 
 	m_bIsChangingActivity = false;
@@ -559,7 +556,7 @@ std::string CHarmonyHub::ReadFromSocket(csocket *connection)
 }
 std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 	{
 		return "</stream:stream>";
 	}
@@ -588,7 +585,7 @@ std::string CHarmonyHub::ReadFromSocket(csocket *connection, float waitTime)
 ************************************************************************/
 int CHarmonyHub::StartStream(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	return WriteToSocket(&szReq);
@@ -597,9 +594,9 @@ int CHarmonyHub::StartStream(csocket *connection)
 
 int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, const std::string &szPassword)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
-	std::string szAuth = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
+	std::string szAuth = R"(<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" mechanism="PLAIN">)";
 	std::string szCred = "\0";
 	szCred.append(szUserName);
 	szCred.append("\0");
@@ -612,11 +609,11 @@ int CHarmonyHub::SendAuth(csocket *connection, const std::string &szUserName, co
 
 int CHarmonyHub::SendPairRequest(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">method=pair");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.connect/vnd.logitech.pair">method=pair)");
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 	return WriteToSocket(&szReq);
 }
@@ -624,7 +621,7 @@ int CHarmonyHub::SendPairRequest(csocket *connection)
 
 int CHarmonyHub::CloseStream(csocket *connection)
 {
-	if (connection == NULL)
+	if (connection == nullptr)
 		return -1;
 	std::string szReq = "</stream:stream>";
 	return WriteToSocket(&szReq);
@@ -638,13 +635,13 @@ int CHarmonyHub::CloseStream(csocket *connection)
 ************************************************************************/
 int CHarmonyHub::SendPing()
 {
-	if (m_connection == NULL || m_szAuthorizationToken.length() == 0)
+	if (m_connection == nullptr || m_szAuthorizationToken.length() == 0)
 		return -1;
 
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
-	szReq.append(m_szAuthorizationToken.c_str());
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.connect/vnd.logitech.ping">token=)");
+	szReq.append(m_szAuthorizationToken);
 	szReq.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 
 	m_bNeedEcho = true;
@@ -663,16 +660,15 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand)
 }
 int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &szActivityId)
 {
-	if (m_connection == NULL || m_szAuthorizationToken.empty())
+	if (m_connection == nullptr || m_szAuthorizationToken.empty())
 	{
-		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
+		// errorString = "SubmitCommand : nullptr csocket or empty authorization token provided";
 		return false;
-
 	}
 
-	std::string szReq = "<iq type=\"get\" id=\"";
+	std::string szReq = R"(<iq type="get" id=")";
 	szReq.append(CONNECTION_ID);
-	szReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.harmony/vnd.logitech.harmony.engine?");
+	szReq.append(R"("><oa xmlns="connect.logitech.com" mime="vnd.logitech.harmony/vnd.logitech.harmony.engine?)");
 
 	// Issue the provided command
 	if (szCommand == GET_CONFIG_COMMAND)
@@ -682,7 +678,7 @@ int CHarmonyHub::SubmitCommand(const std::string &szCommand, const std::string &
 	else if (szCommand == START_ACTIVITY_COMMAND)
 	{
 		szReq.append("startactivity\">activityId=");
-		szReq.append(szActivityId.c_str());
+		szReq.append(szActivityId);
 		szReq.append(":timestamp=0</oa></iq>");
 	}
 	else
@@ -725,7 +721,7 @@ bool CHarmonyHub::CheckForHarmonyData()
 			ParseHarmonyTransmission(&m_szHarmonyData);
 	}
 
-	else if (m_szHarmonyData.compare("<iq/>") == 0)
+	else if (m_szHarmonyData == "<iq/>")
 	{
 		// Hub just acknowledges receiving our query
 #ifdef _DEBUG
@@ -839,7 +835,7 @@ void CHarmonyHub::ProcessHarmonyConnect(std::string *szHarmonyData)
 	if (sendStatus < 0)
 	{
 		// error while sending commands to hub
-		_log.Log(LOG_ERROR, "Harmony Hub: Cannot setup command socket to Harmony Hub");
+		Log(LOG_ERROR, "Cannot setup command socket to Harmony Hub");
 		ResetCommunicationSocket();
 	}
 }
@@ -907,7 +903,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 				std::string szCurrentActivity = szJsonString.substr(0, pos);
 				if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 				{
-					_log.Debug(DEBUG_HARDWARE, "Harmony Hub: Current activity ID = %d (%s)", atoi(szCurrentActivity.c_str()), m_mapActivities[szCurrentActivity].c_str());
+					Debug(DEBUG_HARDWARE, "Current activity ID = %d (%s)", atoi(szCurrentActivity.c_str()), m_mapActivities[szCurrentActivity].c_str());
 				}
 
 				if (m_szCurActivityID.empty()) // initialize all switches
@@ -966,16 +962,16 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 		std::string szJsonString = szQueryResponse->substr(pos + 8);
 		Json::Value j_result;
 
-		bool ret = ParseJSon(szJsonString.c_str(), j_result);
+		bool ret = ParseJSon(szJsonString, j_result);
 		if ((!ret) || (!j_result.isObject()))
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
+			Log(LOG_ERROR, "Invalid data received! (Update Activities)");
 			return;
 		}
 
 		if (j_result["activity"].empty())
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
+			Log(LOG_ERROR, "Invalid data received! (Update Activities)");
 			return;
 		}
 
@@ -991,12 +987,12 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 		}
 		catch (...)
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities, JSon activity)");
+			Log(LOG_ERROR, "Invalid data received! (Update Activities, JSon activity)");
 		}
 
 		if (_log.IsDebugLevelEnabled(DEBUG_HARDWARE))
 		{
-			std::string resultString = "Harmony Hub: Activity list: {";
+			std::string resultString = "Activity list: {";
 
 			std::map<std::string, std::string>::iterator it = m_mapActivities.begin();
 			std::map<std::string, std::string>::iterator ite = m_mapActivities.end();
@@ -1011,7 +1007,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			resultString=resultString.substr(0, resultString.size()-1);
 			resultString.append("}");
 
-			_log.Debug(DEBUG_HARDWARE, resultString);
+			Debug(DEBUG_HARDWARE, resultString);
 		}
 	}
 
@@ -1027,7 +1023,7 @@ void CHarmonyHub::ProcessQueryResponse(std::string *szQueryResponse)
 			return;
 		}
 		m_szAuthorizationToken = szQueryResponse->substr(pos + 9);
-		pos = m_szAuthorizationToken.find(":");
+		pos = m_szAuthorizationToken.find(':');
 		if (pos == std::string::npos)
 		{
 #ifdef _DEBUG
@@ -1063,7 +1059,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		return;
 	}
 	pos += 16;
-	size_t valueEnd = szMessageBlock->find("\"", pos);
+	size_t valueEnd = szMessageBlock->find('"', pos);
 	int msglen = atoi(szMessageBlock->substr(pos, valueEnd - pos).c_str());
 	msgStart = valueEnd + 4;
 	if (szMessageBlock->compare(msgStart, 8, "<message") != 0)
@@ -1099,9 +1095,9 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			{
 				m_bIsChangingActivity = bIsChanging;
 				if (m_bIsChangingActivity)
-					_log.Log(LOG_STATUS, "Harmony Hub: Changing activity");
+					Log(LOG_STATUS, "Changing activity");
 				else
-					_log.Log(LOG_STATUS, "Harmony Hub: Finished changing activity");
+					Log(LOG_STATUS, "Finished changing activity");
 			}
 		}
 
@@ -1111,11 +1107,11 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				m_szHubSwVersion = szMessage.substr(jpos+15, 16); // limit string length for end delimiter search
-				jpos = m_szHubSwVersion.find("\"");
+				jpos = m_szHubSwVersion.find('"');
 				if (jpos != std::string::npos)
 				{
 					if (m_szHubSwVersion.empty())
-						_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_szHubSwVersion.c_str());
+						Log(LOG_STATUS, "Software version: %s", m_szHubSwVersion.c_str());
 					m_szHubSwVersion = m_szHubSwVersion.substr(0, jpos);
 				}
 			}
@@ -1128,7 +1124,7 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				activityId = szMessage.substr(jpos+22, 16); // limit string length for end delimiter search
-				jpos = activityId.find("\"");
+				jpos = activityId.find('"');
 				if (jpos != std::string::npos)
 					activityId = activityId.substr(0, jpos);
 			}
@@ -1141,14 +1137,14 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 			if (jpos != std::string::npos)
 			{
 				stateVersion = szMessage.substr(jpos+14, 16); // limit string length for end delimiter search
-				jpos = stateVersion.find(",");
+				jpos = stateVersion.find(',');
 				if (jpos != std::string::npos)
 					stateVersion = stateVersion.substr(0, jpos);
 			}
 			if ((jpos == std::string::npos) || stateVersion.empty())
 				stateVersion = "NaN";
 
-			_log.Debug(DEBUG_HARDWARE, "Harmony Hub: Event state notification: stateVersion = %s, hubSwVersion = %s, activityStatus = %c, activityId = %s", stateVersion.c_str(), m_szHubSwVersion.c_str(), cActivityStatus, activityId.c_str() );
+			Debug(DEBUG_HARDWARE, "Event state notification: stateVersion = %s, hubSwVersion = %s, activityStatus = %c, activityId = %s", stateVersion.c_str(), m_szHubSwVersion.c_str(), cActivityStatus, activityId.c_str() );
 		}
 	}
 
@@ -1163,9 +1159,9 @@ void CHarmonyHub::ProcessHarmonyMessage(std::string *szMessageBlock)
 		if (jpos != std::string::npos)
 		{
 			szActivityId = szMessage.substr(jpos+11, 16); // limit string length for end delimiter search
-			jpos = szActivityId.find(":");
+			jpos = szActivityId.find(':');
 			if (jpos == std::string::npos)
-				jpos = szActivityId.find("]");
+				jpos = szActivityId.find(']');
 			if (jpos != std::string::npos)
 				szActivityId = szActivityId.substr(0, jpos);
 		}

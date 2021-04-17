@@ -45,15 +45,9 @@ return {
 			end
 
 		elseif device.deviceSubType == "Relay" then
-
-			if device._state == "On" then
-				device.state = "On"
-				device.active = true
-			else
-				device.state = "Off"
-				device.active = false
-			end
-
+			device.state = device._state == 'Off' and 'Off' or 'On'
+			device.level = device._state:match('%d+') or 0
+			device.active = device.state ~= 'Off'
 		else
 			if device.hardwareTypeValue == 75 and device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
 				device.mode = device._state
@@ -65,11 +59,15 @@ return {
 			device.untilDate = tostring(device.rawData[4] or "n/a")
 
 			function device.updateSetPoint(setPoint, mode, untilDate)
-				return TimedCommand(domoticz,
-					'SetSetPoint:' .. tostring(device.id),
-					tostring(setPoint) .. '#' ..
-					tostring(mode) .. '#' ..
-					tostring(untilDate) , 'setpoint')
+				if mode == domoticz.EVOHOME_MODE_TEMPORARY_OVERRIDE and not(untilDate) then 
+					return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint) .. '#' .. mode, 'setpoint' )
+				else
+					return TimedCommand(domoticz,
+						'SetSetPoint:' .. tostring(device.id),
+						tostring(setPoint) .. '#' ..
+						tostring(mode) .. '#' ..
+						tostring(untilDate) , 'setpoint')
+				end
 			end
 
 			function device.setMode(mode, dParm, action, ooc)
