@@ -33,7 +33,7 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 			if (!ParseJsonLine(line))
 			{
 				// this is also logged when parsed data is invalid
-				_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", line.c_str());
+				Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", line.c_str());
 			}
 		#endif
 	*/
@@ -418,9 +418,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	}
 	if (haveEnergy && havePower)
 	{
-		//can remove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 haveSequence(%d) sensoridx(%d) havePower(%d) haveEnergy(%d))", haveSequence, sensoridx, havePower, haveEnergy);
+		//can remove this comment : Log(LOG_STATUS, ": CM180 haveSequence(%d) sensoridx(%d) havePower(%d) haveEnergy(%d))", haveSequence, sensoridx, havePower, haveEnergy);
 		sensoridx = sensoridx + 1;
-		//can rmeove this comment : _log.Log(LOG_STATUS, "Rtl433: : CM180 sensoridx(%d) unit(%d) batterylevel(%d) power(%f) energy(%f) model(%s)", sensoridx, unit, batterylevel, power, energy, model.c_str());
+		//can rmeove this comment : Log(LOG_STATUS, ": CM180 sensoridx(%d) unit(%d) batterylevel(%d) power(%f) energy(%f) model(%s)", sensoridx, unit, batterylevel, power, energy, model.c_str());
 		SendKwhMeter(sensoridx, unit, batterylevel, power, energy, model, snr);
 		bHandled = true;
 	}
@@ -557,9 +557,9 @@ void CRtl433::Do_Work()
 {
 	sleep_milliseconds(1000);
 	if (!m_cmdline.empty())
-		_log.Log(LOG_STATUS, "Rtl433: Worker started... (Extra Arguments: %s)", m_cmdline.c_str());
+		Log(LOG_STATUS, "Worker started... (Extra Arguments: %s)", m_cmdline.c_str());
 	else
-		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
+		Log(LOG_STATUS, "Worker started...");
 
 	std::string szLastLine;
 	FILE* _hPipe = nullptr;
@@ -580,9 +580,9 @@ void CRtl433::Do_Work()
 			{
 				// sleep 30 seconds before retrying
 #ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
+				Log(LOG_STATUS, "rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
 #else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
+				Log(LOG_STATUS, "rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
 #endif
 				for (int i = 0; i < 30; i++)
 				{
@@ -620,7 +620,7 @@ void CRtl433::Do_Work()
 					if (!ParseJsonLine(sLine))
 					{
 						// this is also logged when parsed data is invalid
-						_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", sLine.c_str());
+						Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", sLine.c_str());
 					}
 				}
 			}
@@ -652,7 +652,7 @@ void CRtl433::Do_Work()
 					if (!ParseJsonLine(sLine))
 					{
 						// this is also logged when parsed data is invalid
-						_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor reading, please report: (%s)", sLine.c_str());
+						Log(LOG_STATUS, "Unhandled sensor reading, please report: (%s)", sLine.c_str());
 					}
 				}
 				line_offset = 0;
@@ -679,7 +679,7 @@ void CRtl433::Do_Work()
 				break;
 		}
 	} // while !IsStopRequested()
-	_log.Log(LOG_STATUS, "Rtl433: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CRtl433::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)

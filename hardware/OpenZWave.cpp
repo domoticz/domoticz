@@ -1509,7 +1509,7 @@ bool COpenZWave::SwitchColor(const uint8_t nodeID, const uint8_t instanceID, con
 							OutColorStr = sstr.str();
 							// TODO: remove this print once Zipato Bulb 2 workaround has been verified
 							// Gizmocuz: This has been in for quite some while, is it verified ?
-							//_log.Debug(DEBUG_NORM, "OpenZWave::SwitchColor Workaround for Zipato Bulb 2 ColorStr: '%s', OutColorStr: '%s'",
+							//Debug(DEBUG_NORM, "OpenZWave::SwitchColor Workaround for Zipato Bulb 2 ColorStr: '%s', OutColorStr: '%s'",
 							  //       ColorStr.c_str(), OutColorStr.c_str());
 						}
 					}
@@ -1648,7 +1648,7 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 #ifdef _DEBUG
 		Log(LOG_STATUS, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vOrgInstance, vOrgIndex, vID.GetId());
 #else
-		_log.Debug(DEBUG_HARDWARE, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
+		Debug(DEBUG_HARDWARE, "OpenZWave: Value_Added: Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d, Id: 0x%llX", static_cast<int>(NodeID), static_cast<int>(NodeID), cclassStr(commandclass), vLabel.c_str(), vInstance, vIndex, vID.GetId());
 #endif
 		return;
 	}
@@ -2658,7 +2658,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		else
 		{
 			//normal
-			_log.Debug(DEBUG_HARDWARE, "OpenZWave: Value_Changed: (Not handling non-user genre: %d!) Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vGenre, NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
+			Debug(DEBUG_HARDWARE, "OpenZWave: Value_Changed: (Not handling non-user genre: %d!) Node: %d (0x%02x), CommandClass: %s, Label: %s, Instance: %d, Index: %d", vGenre, NodeID, NodeID, cclassStr(commandclass), vLabel.c_str(), vID.GetInstance(), vID.GetIndex());
 		}
 		return;
 	}

@@ -70,7 +70,7 @@ bool Meteostick::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Meteostick: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -80,9 +80,9 @@ bool Meteostick::OpenSerialDevice()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "Meteostick:Error opening serial port!");
+		Log(LOG_ERROR, "Meteostick:Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -90,7 +90,7 @@ bool Meteostick::OpenSerialDevice()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "Meteostick:Error opening serial port!!!");
+		Log(LOG_ERROR, "Meteostick:Error opening serial port!!!");
 		return false;
 	}
 	m_state = MSTATE_INIT;
@@ -125,7 +125,7 @@ void Meteostick::Do_Work()
 		{
 			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS, "Meteostick: serial setup retry in %d seconds...", RETRY_DELAY);
+				Log(LOG_STATUS, "serial setup retry in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
@@ -137,7 +137,7 @@ void Meteostick::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "Meteostick: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 
@@ -288,7 +288,7 @@ void Meteostick::ParseLine()
 	{
 	case MSTATE_INIT:
 		if (sLine.find("# MeteoStick Version") == 0) {
-			_log.Log(LOG_STATUS, sLine);
+			Log(LOG_STATUS, sLine);
 			return;
 		}
 		if (results[0] == "?")
@@ -326,7 +326,7 @@ void Meteostick::ParseLine()
 		return;
 
 //#ifdef _DEBUG
-	_log.Log(LOG_NORM, sLine);
+	Log(LOG_NORM, sLine);
 //#endif
 
 	switch (rCode)
@@ -466,7 +466,7 @@ void Meteostick::ParseLine()
 		}
 		break;
 	default:
-		_log.Log(LOG_STATUS, "Unknown Type: %c", rCode);
+		Log(LOG_STATUS, "Unknown Type: %c", rCode);
 		break;
 	}
 

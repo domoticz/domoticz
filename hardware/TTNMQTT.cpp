@@ -579,8 +579,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 #endif
 
 #ifdef DEBUG_TTN_R
-	_log.Log(LOG_NORM, "TTN_MQTT: Topic: %s", topic.c_str());
-	_log.Log(LOG_NORM, "TTN_MQTT: qmsg: %s", qMessage.c_str());
+	Log(LOG_NORM, "Topic: %s", topic.c_str());
+	Log(LOG_NORM, "qmsg: %s", qMessage.c_str());
 #endif
 
 	if (qMessage.empty())

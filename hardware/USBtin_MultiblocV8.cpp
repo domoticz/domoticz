@@ -512,7 +512,7 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const cha
 				m_BlocList_CAN[IndexBLoc].CongifurationCrc = (bufferdata[3] << 8) + bufferdata[4];
 				m_BlocList_CAN[IndexBLoc].Status = BLOC_ALIVE;
 				m_BlocList_CAN[IndexBLoc].NbAliveFrameReceived = 1;
-				Log(LOG_NORM, "MultiblocV8: new bloc detected: %s# Coding: %d network: %d", NomRefBloc[RefBloc], Codage, Ssreseau);
+				Log(LOG_NORM, "MultiblocV8: new bloc detected: %s Coding: %d network: %d", NomRefBloc[RefBloc], Codage, Ssreseau);
 
 				// first, when first is detected we creates a general reset switch:
 				unsigned long generalID = type_COMMANDE_ETAT_BLOC << SHIFT_TYPE_TRAME; // creates a unique Reset Switch to restart all presents blocks
@@ -1023,7 +1023,7 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 		case BLOC_9:
 			if (m_BOOL_DebugInMultiblocV8 == true)
 			{
-				Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) %s: D0: %d D1: %d# ", NomRefBloc[RefBloc], bufferdata[0], bufferdata[1]);
+				Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) %s: D0: %d D1: %d#", NomRefBloc[RefBloc], bufferdata[0], bufferdata[1]);
 			}
 			int VoltageLevel = bufferdata[0];
 			VoltageLevel <<= 8;
@@ -1115,7 +1115,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 				szTrameToSend += "4";
 				szTrameToSend += DataToSend;
 				if (m_BOOL_DebugInMultiblocV8 == true)
-					Log(LOG_NORM, "MultiblocV8: Sending Frame: %s ", szTrameToSend.c_str());
+					Log(LOG_NORM, "MultiblocV8: Sending Frame: %s", szTrameToSend.c_str());
 				writeFrame(szTrameToSend);
 				return true;
 			}
@@ -1207,7 +1207,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSen
 	szTrameToSend += "00000001"; // always set to 1 because it's an internal switch (from domoticz)
 	szTrameToSend += DataToSend; // contain data code + send On information
 	// if( m_BOOL_DebugInMultiblocV8 == true )
-	Log(LOG_NORM, "MultiblocV8: Sending Frame: %s ", szTrameToSend.c_str());
+	Log(LOG_NORM, "MultiblocV8: Sending Frame: %s", szTrameToSend.c_str());
 
 	writeFrame(szTrameToSend);
 }
@@ -1225,7 +1225,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID
 	szTrameToSend += "1";	     // DLC always to 5 for SFSP_SWITCH Frame
 	szTrameToSend += DataToSend; // contain data code + send On information
 	// if( m_BOOL_DebugInMultiblocV8 == true )
-	Log(LOG_NORM, "MultiblocV8: Sending BlocState command: %s ", szTrameToSend.c_str());
+	Log(LOG_NORM, "MultiblocV8: Sending BlocState command: %s", szTrameToSend.c_str());
 	writeFrame(szTrameToSend);
 }
 
@@ -1243,7 +1243,7 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	szTrameToSend += "1";	     // DLC always to 1 for this frame
 	szTrameToSend += DataToSend; // contain data code for the bloc state to change
 	// if( m_BOOL_DebugInMultiblocV8 == true )
-	Log(LOG_NORM, "MultiblocV8: Sending SFSP learn command: %s ", szTrameToSend.c_str());
+	Log(LOG_NORM, "MultiblocV8: Sending SFSP learn command: %s", szTrameToSend.c_str());
 	writeFrame(szTrameToSend);
 	/*
 	char RefBloc = (baseID_ToSend & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE; //retreive the refblock

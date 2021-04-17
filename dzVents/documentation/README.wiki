@@ -1609,7 +1609,6 @@ local someTime = domoticz.time.makeTime() -- someTime = new domoticz time object
         domoticz.time.dateToTimestamp('2020-12-31 23:59:03','(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)%D+(%d+)' ))  -- > 1609455543
         domoticz.time.dateToTimestamp('20201231235904','(%d%d%d%d)(%d%d)(%d%d)(%d%d)(%d%d)(%d%d)'))             -- > 1609455544</source>
 * '''day''': ''Number''
-* '''day''': ''Number''
 * '''dayAbbrOfWeek''': ''String''. sun,mon,tue,wed,thu,fri or sat
 * '''daysAgo''': ''Number''
 * '''dayName''': ''String''. complete name Sunday, Monday, etc
@@ -2414,7 +2413,7 @@ Of course you can combine the script that issues the request and handles the res
                 callback = scriptVar,
                 timeout = timeoutinseconds,
             })
-        elseif item.isShellCommandResponse and then
+        elseif item.isShellCommandResponse then
             if item.statusCode == 0 then
                 ... -- process result (in item.json, -item.xml, -item.lines or item.data)
             end

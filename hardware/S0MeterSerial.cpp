@@ -13,23 +13,19 @@
 #include <string>
 
 #ifdef _DEBUG
-	//#define DEBUG_S0
-	#define TOT_DEBUG_LINES 6
-	const char *szDebugDataP2[TOT_DEBUG_LINES] = {
-		"/27243:S0 Pulse Counter V0.1\n",
-		"ID:27243:I:10:M1:264:264:M2:0:0\n",
-		"ID:27243:I:10:M1:983:1247:M2:518:518\n",
-		"ID:27243:I:10:M1:1121:2368:M2:0:518\n",
-		"ID:27243:I:10:M1:0:2368:M2:1126:1644\n",
-		"ID:27243:I:10:M1:921:3289:M2:0:1644\n",
-	};
+//#define DEBUG_S0
+#define TOT_DEBUG_LINES 6
+const char *szDebugDataP2[TOT_DEBUG_LINES] = {
+	"/27243:S0 Pulse Counter V0.1\n",	 "ID:27243:I:10:M1:264:264:M2:0:0\n",	   "ID:27243:I:10:M1:983:1247:M2:518:518\n",
+	"ID:27243:I:10:M1:1121:2368:M2:0:518\n", "ID:27243:I:10:M1:0:2368:M2:1126:1644\n", "ID:27243:I:10:M1:921:3289:M2:0:1644\n",
+};
 #endif
 
-S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate)
+S0MeterSerial::S0MeterSerial(const int ID, const std::string &devname, const unsigned int baud_rate)
 {
-	m_HwdID=ID;
-	m_szSerialPort=devname;
-	m_iBaudRate=baud_rate;
+	m_HwdID = ID;
+	m_szSerialPort = devname;
+	m_iBaudRate = baud_rate;
 	InitBase();
 }
 
@@ -37,43 +33,33 @@ bool S0MeterSerial::StartHardware()
 {
 	RequestStart();
 
-	//Try to open the Serial Port
+	// Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"S0 Meter: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
-		openOnlyBaud(
-			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
-			boost::asio::serial_port_base::character_size(7)
-			);
+		openOnlyBaud(m_szSerialPort, m_iBaudRate, boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even), boost::asio::serial_port_base::character_size(7));
 #else
-		open(
-			m_szSerialPort,
-			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
-			boost::asio::serial_port_base::character_size(7)
-			);
+		open(m_szSerialPort, m_iBaudRate, boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even), boost::asio::serial_port_base::character_size(7));
 #endif
 	}
-	catch (boost::exception & e)
+	catch (boost::exception &e)
 	{
-		_log.Log(LOG_ERROR,"S0 Meter: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
 		return false;
 	}
-	catch ( ... )
+	catch (...)
 	{
-		_log.Log(LOG_ERROR,"S0 Meter: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
-	m_bIsStarted=true;
-	m_bufferpos=0;
+	m_bIsStarted = true;
+	m_bufferpos = 0;
 	ReloadLastTotals();
 	/*
 	std::stringstream sstr;
@@ -93,13 +79,13 @@ bool S0MeterSerial::StartHardware()
 	for (ii = 0; ii < TOT_DEBUG_LINES; ii++)
 	{
 		std::string dline = szDebugDataP2[ii];
-		ParseData((const unsigned char*)dline.c_str(), dline.size());
+		ParseData((const unsigned char *)dline.c_str(), dline.size());
 	}
 #endif
 
 	StartHeartbeatThread();
 
-	_log.Log(LOG_STATUS, "S0 Meter: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	return true;
 }
@@ -107,12 +93,11 @@ bool S0MeterSerial::StartHardware()
 bool S0MeterSerial::StopHardware()
 {
 	terminate();
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	StopHeartbeatThread();
-	_log.Log(LOG_STATUS, "S0 Meter: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 	return true;
 }
-
 
 void S0MeterSerial::readCallback(const char *data, size_t len)
 {
@@ -120,13 +105,12 @@ void S0MeterSerial::readCallback(const char *data, size_t len)
 		return;
 
 	if (!m_bEnableReceive)
-		return; //receiving not enabled
+		return; // receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData((const unsigned char *)data, static_cast<int>(len));
 }
 
 bool S0MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
-

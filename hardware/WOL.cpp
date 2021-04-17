@@ -41,7 +41,7 @@ bool CWOL::StartHardware()
 	sOnConnected(this);
 
 	StartHeartbeatThread();
-	_log.Log(LOG_STATUS, "WOL: Started");
+	Log(LOG_STATUS, "Started");
 
 	return true;
 }
@@ -151,17 +151,17 @@ bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string mac_address = result[0][0];
 	if (!GenerateWOLPacket(tosend, mac_address))
 	{
-		_log.Log(LOG_ERROR, "WOL: Error creating magic packet");
+		Log(LOG_ERROR, "Error creating magic packet");
 		return false;
 	}
 
 	if (SendWOLPacket(tosend))
 	{
-		_log.Log(LOG_STATUS, "WOL: Wake-up send to: %s", mac_address.c_str());
+		Log(LOG_STATUS, "Wake-up send to: %s", mac_address.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "WOL: Error sending notification to: %s", mac_address.c_str());
+		Log(LOG_ERROR, "Error sending notification to: %s", mac_address.c_str());
 		return false;
 	}
 	return true;

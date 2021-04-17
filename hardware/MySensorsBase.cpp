@@ -353,7 +353,7 @@ void MySensorsBase::UpdateNode(const int nodeID, const std::string &name)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MySensors: Update command received for unknown node_id: %d", nodeID);
+		Log(LOG_ERROR, "Update command received for unknown node_id: %d", nodeID);
 	}
 }
 
@@ -382,7 +382,7 @@ void MySensorsBase::UpdateChild(const int nodeID, const int childID, const bool 
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MySensors: Update command received for unknown node_id: %d, child_id: %d", nodeID, childID);
+		Log(LOG_ERROR, "Update command received for unknown node_id: %d, child_id: %d", nodeID, childID);
 	}
 }
 
@@ -1269,7 +1269,7 @@ bool MySensorsBase::SendNodeSetCommandImpl(const int NodeID, const int ChildID, 
 	while ((!m_bAckReceived) && (repeat < repeats))
 	{
 		if (repeat != 0)
-			_log.Log(LOG_ERROR, "MySensors: Repeating previous command (%d/%d)", repeat + 1, repeats);
+			Log(LOG_ERROR, "Repeating previous command (%d/%d)", repeat + 1, repeats);
 		SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
 		if (!bUseAck)
 			return true;
@@ -1287,7 +1287,7 @@ bool MySensorsBase::SendNodeSetCommandImpl(const int NodeID, const int ChildID, 
 	}
 	if (m_bAckReceived)
 		return true;
-	_log.Log(LOG_ERROR, "MySensors: Command not received by Node !! (node_id: %d, child_id: %d)", NodeID, ChildID);
+	Log(LOG_ERROR, "Command not received by Node !! (node_id: %d, child_id: %d)", NodeID, ChildID);
 	return m_bAckReceived;
 }
 
@@ -1323,7 +1323,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
 			if (!pChild)
 			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				Log(LOG_ERROR, "Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
 				return false;
 			}
 
@@ -1363,7 +1363,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			}
 		}
 		else {
-			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+			Log(LOG_ERROR, "Light command received for unknown node_id: %d", node_id);
 			return false;
 		}
 	}
@@ -1381,7 +1381,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
 				if (!pChild)
 				{
-					_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+					Log(LOG_ERROR, "Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
 					return false;
 				}
 
@@ -1424,7 +1424,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				}
 			}
 			else {
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+				Log(LOG_ERROR, "Light command received for unknown node_id: %d", node_id);
 				return false;
 			}
 		}
@@ -1443,7 +1443,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 				}
 			}
 			else {
-				_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
+				Log(LOG_ERROR, "Blinds/Window command received for unknown node_id: %d", node_id);
 				return false;
 			}
 		}
@@ -1465,7 +1465,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
 			if (!pChild)
 			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				Log(LOG_ERROR, "Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
 				return false;
 			}
 
@@ -1498,7 +1498,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << b;
 				}
 				else {
-					_log.Log(LOG_STATUS, "MySensors: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+					Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 					return false;
 				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
@@ -1535,7 +1535,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			}
 		}
 		else {
-			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+			Log(LOG_ERROR, "Light command received for unknown node_id: %d", node_id);
 			return false;
 		}
 	}
@@ -1550,7 +1550,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
 			if (!pChild)
 			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				Log(LOG_ERROR, "Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
 				return false;
 			}
 
@@ -1568,7 +1568,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			}
 		}
 		else {
-			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
+			Log(LOG_ERROR, "Blinds/Window command received for unknown node_id: %d", node_id);
 			return false;
 		}
 	}
@@ -1586,7 +1586,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
 			if (!pChild)
 			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				Log(LOG_ERROR, "Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
 				return false;
 			}
 
@@ -1594,12 +1594,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char /*len
 			sprintf(szTmp, "%.1f", pMeter->temp);
 			return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp, pChild->useAck, pChild->ackTimeout);
 		}
-		_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
+		Log(LOG_ERROR, "Blinds/Window command received for unknown node_id: %d", node_id);
 		return false;
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MySensors: Unknown action received");
+		Log(LOG_ERROR, "Unknown action received");
 		return false;
 	}
 	return true;
@@ -1669,7 +1669,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 	if (sLine.size() < 2)
 		return;
 
-	//_log.Log(LOG_STATUS, sLine.c_str());
+	//Log(LOG_STATUS, sLine.c_str());
 
 	std::vector<std::string> results;
 	StringSplit(sLine, ";", results);
@@ -1690,7 +1690,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 		}
 	}
 #ifdef _DEBUG
-	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s", node_id, child_sensor_id, message_type, ack, sub_type, payload.c_str());
+	Log(LOG_NORM, "NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s", node_id, child_sensor_id, message_type, ack, sub_type, payload.c_str());
 #endif
 
 	if (message_type == MT_Internal)
@@ -1703,10 +1703,10 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			{
 				//Store gateway version
 				m_GatewayVersion = payload;
-				_log.Log(LOG_NORM, "MySensors: Gateway Version: %s", payload.c_str());
+				Log(LOG_NORM, "Gateway Version: %s", payload.c_str());
 			}
 			else {
-				_log.Log(LOG_NORM, "MySensors: VERSION from NodeID: %d, ChildID: %d, Payload: %s", node_id, child_sensor_id, payload.c_str());
+				Log(LOG_NORM, "VERSION from NodeID: %d, ChildID: %d, Payload: %s", node_id, child_sensor_id, payload.c_str());
 			}
 		}
 		break;
@@ -1724,7 +1724,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			SendNodeCommand(node_id, child_sensor_id, message_type, I_CONFIG, "M");
 			break;
 		case I_SKETCH_NAME:
-			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Name: %s", node_id, payload.c_str());
+			Log(LOG_STATUS, "Node: %d, Sketch Name: %s", node_id, payload.c_str());
 			if (_tMySensorNode *pNode = FindNode(node_id))
 			{
 				DatabaseUpdateSketchName(node_id, payload);
@@ -1737,7 +1737,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			}
 			break;
 		case I_SKETCH_VERSION:
-			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Version: %s", node_id, payload.c_str());
+			Log(LOG_STATUS, "Node: %d, Sketch Version: %s", node_id, payload.c_str());
 			if (_tMySensorNode *pNode = FindNode(node_id))
 			{
 				DatabaseUpdateSketchVersion(node_id, payload);
@@ -1753,10 +1753,10 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			UpdateNodeBatteryLevel(node_id, atoi(payload.c_str()));
 			break;
 		case I_LOG_MESSAGE:
-			//_log.Log(LOG_NORM, "MySensors: 'Log': %s", payload.c_str());
+			//Log(LOG_NORM, "'Log': %s", payload.c_str());
 			break;
 		case I_GATEWAY_READY:
-			_log.Log(LOG_NORM, "MySensors: Gateway Ready...");
+			Log(LOG_NORM, "Gateway Ready...");
 			//Request Gateway Version
 			SendCommandInt(0, 0, MT_Internal, false, I_VERSION, "Get Version");
 			break;
@@ -1798,7 +1798,7 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			while (1 == 0);
 			break;
 		case I_INCLUSION_MODE:
-			_log.Log(LOG_NORM, "MySensors: Inclusion mode=%s", payload.c_str());
+			Log(LOG_NORM, "Inclusion mode=%s", payload.c_str());
 			m_sql.m_bAcceptNewHardware = atoi(payload.c_str()) ? true : false;
 			break;
 		case I_PRE_SLEEP_NOTIFICATION:
@@ -2093,11 +2093,11 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 		default:
 			if (sub_type > V_CURRENT)
 			{
-				_log.Log(LOG_ERROR, "MySensors: Unknown/Invalid sensor type (%d)", sub_type);
+				Log(LOG_ERROR, "Unknown/Invalid sensor type (%d)", sub_type);
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "MySensors: Unhandled sensor (sub-type=%d), please report with log!", sub_type);
+				Log(LOG_ERROR, "Unhandled sensor (sub-type=%d), please report with log!", sub_type);
 			}
 			break;
 		}
@@ -2303,12 +2303,12 @@ void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, con
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "MySensors: Text update received for unknown node_id: %d, child_id: %d", nodeID, childID);
+			Log(LOG_ERROR, "Text update received for unknown node_id: %d, child_id: %d", nodeID, childID);
 		}
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "MySensors: Text update received for unknown node_id: %d, child_id: %d", nodeID, childID);
+		Log(LOG_ERROR, "Text update received for unknown node_id: %d, child_id: %d", nodeID, childID);
 	}
 
 }
@@ -2348,7 +2348,7 @@ void MySensorsBase::Do_Work()
 			return;
 		}
 #ifdef _DEBUG
-		_log.Log(LOG_STATUS, "MySensors: going to send: %s", toSend.c_str());
+		Log(LOG_STATUS, "going to send: %s", toSend.c_str());
 #endif
 		WriteInt(toSend);
 	}
