@@ -624,7 +624,7 @@ local function Time(sDate, isUTC, _testMS)
 
 		local astronomicalString = rule:match('at%s+(%a+)') or ''
 		if type(gTimes[astronomicalString]) == 'boolean' then
-			return gTimes[astronomicalString] or nil
+			return gTimes[astronomicalString]
 		end
 	end
 
