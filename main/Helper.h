@@ -107,3 +107,5 @@ bool IsDebuggerPresent();
 
 std::string GenerateUUID();
 double round_digits(double dIn, int totDigits);
+
+const std::string std_format(const char *szFormat, ...);
