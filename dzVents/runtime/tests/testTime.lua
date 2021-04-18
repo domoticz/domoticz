@@ -768,7 +768,7 @@ describe('Time', function()
 				it('should return true if it is civil day time', function()
 					_G.timeofday = { ['Civildaytime'] = true }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_true(t.matchesRule('at civildaytime'))
+					assert.is_true(t.matchesRule('every minute at civildaytime'))
 				end)
 
 				it('should return false if it is not civil day time', function()
@@ -1013,7 +1013,7 @@ describe('Time', function()
 				it('should return false if it is not day time', function()
 					_G.timeofday = { ['Daytime'] = false }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_false(t.matchesRule('at daytime'))
+					assert.is_false(t.matchesRule('every minute at daytime'))
 				end)
 
 				it('should detect the rule within a random string', function()
@@ -1134,12 +1134,11 @@ describe('Time', function()
 					assert.is_true(t.matchesRule('2 minutes after sunset'))
 				end)
 
-                it('should return true if it is xx minutes after sunset (crossing dates', function()
+				it('should return true if it is xx minutes after sunset (crossing dates', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:02:00')
 					assert.is_true(t.matchesRule('1438 minutes after sunset'))
 				end)
-
 
 				it('should return if it is more less 2 minutes after sunset', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
@@ -1865,7 +1864,7 @@ describe('Time', function()
 				assert.is_true(t.matchesRule('on Thursday at 19:01 on 30/*,31/*,1/*,2/*,3/*,4/*,5/*'))
 				assert.is_false(t.matchesRule('on thu at 19:02' ))
 				assert.is_false(t.matchesRule('on thursdays at 19:01' ))
-                assert.is_false(t.matchesRule('on sat at 19:01'))
+				assert.is_false(t.matchesRule('on sat at 19:01'))
 				assert.is_false(t.matchesRule('on thu at 19:01 on 30/*,31/*,1/*,2/*,3/*,4/*' ) )
 			end)
 

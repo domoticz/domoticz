@@ -58,7 +58,6 @@ typedef unsigned char       BYTE;
 // third-party
 #include <json/json.h>
 #include "RFXtrx.h"
-#include <fmt/core.h>
 
 // rarely changing project-specific
 #include "concurrent_queue.h"

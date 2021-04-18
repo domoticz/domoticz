@@ -783,7 +783,7 @@ bool CDaikin::SetSetpoint(const int /*idx*/, const float temp)
 	Debug(DEBUG_HARDWARE, "Set Point...");
 
 	// cible température
-	std::string sTmp = fmt::format("{:.1f}", temp);
+	std::string sTmp = std_format("%.1f", temp);
 	AggregateSetControlInfo(sTmp.c_str(), nullptr, nullptr, nullptr, nullptr, nullptr);
 
 	SendSetPointSensor(20, 1, 1, temp, "Target Temperature"); // Suppose request succeed to keep reactive web interface

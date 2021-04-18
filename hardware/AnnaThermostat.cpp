@@ -211,7 +211,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 
 	sPostData << "<thermostat>";
 	sPostData << "<setpoint>";
-	sPostData << fmt::format("{:.1f}", temp);
+	sPostData << std_format("%.1f", temp);
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
 

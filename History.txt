@@ -1,4 +1,6 @@
-Version 2021.xxxxx (xxxxx)
+Version 2021.xxxxx (xxxx)
+
+Version 2021.1 (April 17 2021)
 - Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: AirconWithMe wifi module
