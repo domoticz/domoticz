@@ -22,6 +22,7 @@
 #include <chrono>
 #include <limits.h>
 #include <cstring>
+#include <stdarg.h>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
