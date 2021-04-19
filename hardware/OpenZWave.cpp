@@ -1936,6 +1936,11 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 			_device.devType = ZDTYPE_SENSOR_WATER;
 			_device.scaleMultiply = 0.00378541f; //(divide the volume value by 264, 172)
 		}
+		else if (vOrgIndex == ValueID_Index_Meter::Electric_Pulse)
+		{
+			_device.custom_label = _device.label;
+			_device.devType = ZDTYPE_SENSOR_CUSTOM;
+		}
 		else
 		{
 			Log(LOG_ERROR, "OpenZWave: Unhandled Meter type: %s, class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", vLabel.c_str(), commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
