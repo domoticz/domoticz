@@ -1,6 +1,6 @@
 local utils = require('Utils')
 local _MS -- kind of a cache so we don't have to extract ms every time
-local gTimes --
+local gTimes
 local ruleWords = {}
 
 local isEmpty = function(v)
@@ -14,7 +14,7 @@ end
 
 local function getSMs(s)
 	local ms = 0
-	local parts = utils.stringSplit(s, '.') -- do string splitting instead of math stuff.. can't seem to get the floating points right
+	local parts = utils.stringSplit(s, '.') -- do string split instead of math stuff.
 	s = tonumber(parts[1])
 	if (parts[2] ~= nil) then
 		-- should always be three digits!!
@@ -842,6 +842,7 @@ local function Time(sDate, isUTC, _testMS)
 			local rule = rule:lower()
 			local validPositiveRules = true
 			local negativeKeyword = 'except'
+			local orKeyword = '%s+or%s+'
 
 			local function ruleSplit(rawRule)
 				local ruleKeywords = 'on, between, every, in'
@@ -861,8 +862,11 @@ local function Time(sDate, isUTC, _testMS)
 
 			local positiveRules, negativeRules
 			local exceptPosition = rule:find(negativeKeyword)
+			local orPosition = rule:find(orKeyword)
 
-			if exceptPosition then
+			if orPosition then
+				return ( self.matchesRule( rule:match('(.*)' .. orKeyword ) ) or self.matchesRule( rule:match(orKeyword .. '(.*)' ) ) )
+			elseif exceptPosition then
 				positiveRules = ruleSplit(rule:sub(1, exceptPosition - 1))
 				negativeRules = ruleSplit(rule:sub(exceptPosition + #negativeKeyword, #rule))
 			else
