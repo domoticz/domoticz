@@ -1,4 +1,7 @@
 Version 2021.xxxxx (xxxx)
+- Updated: dzVents; version 3.1.8 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: OpenZWave; Added Electric pulse sensor
+- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
 
 Version 2021.1 (April 17 2021)
 - Implemented: Added option to set loglevel per hardware device
