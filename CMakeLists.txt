@@ -23,7 +23,7 @@ SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
-option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO)
 
 # Optional dependencies
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
