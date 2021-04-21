@@ -20,6 +20,8 @@ echo "Stopping Domoticz..."
 sudo service domoticz.sh stop
 if [ "$1" != "-nobackup" ]; then
     echo "Making backup of current installation..."
+    # first remove oldest files (we keep 5 backups)
+    ls -t backups/domoticz_backup_* | tail -n +5 | xargs --no-run-if-empty -I {} rm -- {}
     # create backup in parent folder (mostly home)
     timestamp=$(date +%Y%m%d_%H%M%S)
     echo "Output file: backups/domoticz_backup_$timestamp.tar.gz"
