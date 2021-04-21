@@ -3,8 +3,6 @@
 # This script can be used to upgrade to the latest beta version
 # To skip making a backup, use -nobackup as commandline argument
 
-set -e
-
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
 }
