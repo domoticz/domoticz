@@ -3,6 +3,7 @@ __NOTOC__
 
 * Add option to deserialize serialized JSON strings
 * Add keyword or in time rules
+* Add utils.splitLine
 
 == [3.1.7] ==
 

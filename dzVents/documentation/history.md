@@ -4,6 +4,7 @@ __NOTOC__
 ## [3.1.8] ##
 - Add option to deserialize serialized JSON strings
 - Add keyword or in time rules
+- Add utils.splitLine
 
 ## [3.1.7] ##
 - Fix for race condition at midnight when internal scripts are refreshed

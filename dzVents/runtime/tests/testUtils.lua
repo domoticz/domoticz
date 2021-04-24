@@ -405,6 +405,11 @@ describe('event helpers', function()
 			assert.is_same(utils.stringSplit("I forgot to include this in Domoticz.lua")[7],"Domoticz.lua")
 		end)
 
+		it('should split a line', function()
+			assert.is_same(utils.splitLine("segment one or segment two or segment 3", "or")[2],"segment two")
+			assert.is_same(utils.splitLine("segment one or segment two or segment 3", "or")[3],"segment 3")
+		end)
+
 		it('should fuzzy match  a string ', function()
 			assert.is_same(utils.fuzzyLookup('HtpRepsonse','httpResponse'),3)
 			assert.is_same(utils.fuzzyLookup('httpResponse','httpResponse'),0)
