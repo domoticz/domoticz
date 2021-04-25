@@ -1889,7 +1889,7 @@ namespace http {
 			WebEmStoredSession storedSession = sstore->GetSession(session.id);
 			if (storedSession.id.empty())
 			{
-				_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : session id not found", session.id.c_str(), session.auth_token.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CheckAuthToken(%s_%s) : session id not found", session.id.c_str(), session.auth_token.c_str());
 				return false;
 			}
 			if (storedSession.auth_token != GenerateMD5Hash(session.auth_token))
