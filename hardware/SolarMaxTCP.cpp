@@ -111,7 +111,7 @@ bool SolarMaxTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		_log.Log(LOG_ERROR, "SolarMax: TCP could not create a TCP/IP socket!");
+		Log(LOG_ERROR, "TCP could not create a TCP/IP socket!");
 		return false;
 	}
 	/*
@@ -132,11 +132,11 @@ bool SolarMaxTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
-		_log.Log(LOG_ERROR, "SolarMax: TCP could not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "TCP could not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "SolarMax: TCP connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "TCP connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	sOnConnected(this);
 	return true;
@@ -172,7 +172,7 @@ void SolarMaxTCP::Do_Work()
 				m_retrycntr = 0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_STATUS, "SolarMax: retrying in %d seconds...", RETRY_DELAY);
+					Log(LOG_STATUS, "retrying in %d seconds...", RETRY_DELAY);
 				}
 			}
 		}
@@ -193,7 +193,7 @@ void SolarMaxTCP::Do_Work()
 				if (IsStopRequested(0))
 					break;
 				if (bread <= 0) {
-					_log.Log(LOG_ERROR, "SolarMax: TCP/IP connection closed! retrying in %d seconds...", RETRY_DELAY);
+					Log(LOG_ERROR, "TCP/IP connection closed! retrying in %d seconds...", RETRY_DELAY);
 					disconnect();
 					m_retrycntr = 0;
 					continue;
@@ -205,7 +205,7 @@ void SolarMaxTCP::Do_Work()
 	}
 	disconnect();
 
-	_log.Log(LOG_STATUS, "SolarMax: TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
 void SolarMaxTCP::write(const char *data, size_t size)
@@ -269,14 +269,14 @@ void SolarMaxTCP::ParseLine()
 	size_t npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
 	InputStr = InputStr.substr(npos + 4);
 	npos = InputStr.find('|');
 	if (npos == std::string::npos)
 	{
-		_log.Log(LOG_ERROR, "SolarMax: Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
 	InputStr = InputStr.substr(0,npos);

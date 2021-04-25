@@ -107,7 +107,7 @@ void ZWaveBase::Do_Work()
 				double tdiff = difftime(atime, m_ControllerCommandStartTime);
 				if (tdiff >= CONTROLLER_COMMAND_TIMEOUT)
 				{
-					_log.Log(LOG_STATUS, "ZWave: Stopping Controller command (Timeout!)");
+					Log(LOG_STATUS, "ZWave: Stopping Controller command (Timeout!)");
 					CancelControllerCommand();
 				}
 			}
@@ -131,11 +131,11 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 	bool bNewDevice = (m_devices.find(device.string_id) == m_devices.end());
 	if (bNewDevice)
 	{
-		_log.Log(LOG_NORM, "New device: %s", device.string_id.c_str());
+		Log(LOG_NORM, "New device: %s", device.string_id.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_NORM, "Update device: %s", device.string_id.c_str());
+		Log(LOG_NORM, "Update device: %s", device.string_id.c_str());
 	}
 #endif
 	//insert or update device in internal record
@@ -238,7 +238,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice* pDevice)
 		}
 		if (itt != m_devices.end())
 		{
-			_log.Log(
+			Log(
 				LOG_STATUS,
 				"SendSwitchIfNotExists: Device '%s' (%s) with DeviceID '%s' matches '%s' (%s). Domoticz will use the Dimmer (and hide the Switch).",
 				pDevice->string_id.c_str(), pDevice->label.c_str(), szID, itt->second.string_id.c_str(), itt->second.label.c_str());
@@ -467,7 +467,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 				{
 					// Seems wrong, counters should change by a limited amount.
 					// If it persists, we will accept it after an hour.
-					_log.Log(LOG_STATUS,
+					Log(LOG_STATUS,
 						 "OpenZwave: temporarily ignoring %s power meter counter (NodeID: %d, 0x%02x)",
 						 floatChange < 0 ? "possibly wrapped" : "unreasonably high",
 						 pDevice->nodeID, pDevice->nodeID);
@@ -524,6 +524,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
 	{
+		lID = (lID & 0xFFFFFF00) | pDevice->orgInstanceID;
 		SendVoltageSensor(0, lID, BatLevel, pDevice->floatValue, "Voltage");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_PERCENTAGE)
@@ -896,7 +897,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 				svalue = 255;
 			return SwitchLight(pDevice, instanceID, svalue);
 		}
-		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
 	if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
@@ -914,7 +915,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 			SetThermostatSetPoint(nodeID, instanceID, pDevice->commandClassID, pMeter->temp);
 			return true;
 		}
-		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
 	if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveClock))
@@ -940,7 +941,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 			SetClock(nodeID, instanceID, pDevice->commandClassID, day, hour, minute);
 			return true;
 		}
-		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
 	if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatMode))
@@ -962,7 +963,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 			SetThermostatMode(nodeID, instanceID, pDevice->commandClassID, tMode);
 			return true;
 		}
-		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
 	if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatFanMode))
@@ -984,7 +985,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 			SetThermostatFanMode(nodeID, instanceID, pDevice->commandClassID, tMode);
 			return true;
 		}
-		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
 	if (packettype == pTypeColorSwitch)
@@ -1069,7 +1070,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 					instanceID = 5;//blue
 					if (!SwitchLight(pDevice, instanceID, pLed->color.b))
 						return false;
-					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", pLed->color.r, pLed->color.g, pLed->color.b);
+					Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", pLed->color.r, pLed->color.g, pLed->color.b);
 				}
 				else if (pLed->color.mode == ColorModeCustom)
 				{
@@ -1085,11 +1086,11 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 					instanceID = 6;//white
 					if (!SwitchLight(pDevice, instanceID, pLed->color.ww))
 						return false;
-					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", pLed->color.r, pLed->color.g, pLed->color.b);
+					Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", pLed->color.r, pLed->color.g, pLed->color.b);
 				}
 				else
 				{
-					_log.Log(LOG_STATUS, "ZWave: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+					Log(LOG_STATUS, "ZWave: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 					return false;
 				}
 				instanceID = 2;//brightness
@@ -1169,7 +1170,7 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 					}
 					else
 					{
-						_log.Log(LOG_STATUS, "ZWave: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+						Log(LOG_STATUS, "ZWave: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 						return false;
 					}
 
@@ -1186,13 +1187,13 @@ bool ZWaveBase::WriteToHardware(const char* pdata, const unsigned char length)
 					if (!SwitchColor(nodeID, instanceID, sColor))
 						return false;
 
-					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d, wWhite:%03d, cWhite:%03d", red, green, blue, wWhite, cWhite);
+					Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d, wWhite:%03d, cWhite:%03d", red, green, blue, wWhite, cWhite);
 					return true;
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+				Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 				return false;
 			}
 		}

@@ -47,7 +47,7 @@ void CSBFSpot::Init()
 	infile.open(m_SBFConfigFile.c_str());
 	if (!infile.is_open())
 	{
-		_log.Log(LOG_ERROR,"SBFSpot: Could not open configuration file!");
+		Log(LOG_ERROR,"Could not open configuration file!");
 		return;
 	}
 	while (!infile.eof())
@@ -90,7 +90,7 @@ void CSBFSpot::Init()
 	infile.close();
 	if ((m_SBFDataPath.empty()) || (m_SBFDateFormat.empty()) || (m_SBFTimeFormat.empty()))
 	{
-		_log.Log(LOG_ERROR,"SBFSpot: Could not find OutputPath in configuration file!");
+		Log(LOG_ERROR,"Could not find OutputPath in configuration file!");
 	}
 }
 
@@ -125,7 +125,7 @@ void CSBFSpot::Do_Work()
 {
 	int LastMinute=-1;
 
-	_log.Log(LOG_STATUS,"SBFSpot: Worker started...");
+	Log(LOG_STATUS,"Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		time_t atime = mytime(nullptr);
@@ -140,7 +140,7 @@ void CSBFSpot::Do_Work()
 			mytime(&m_LastHeartbeat);
 		}
 	}
-	_log.Log(LOG_STATUS,"SBFSpot: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CSBFSpot::WriteToHardware(const char *pdata, const unsigned char length)
@@ -218,7 +218,7 @@ bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 
 void CSBFSpot::ImportOldMonthData()
 {
-	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Start");
+	Log(LOG_STATUS, "SBFSpot Import Old Month Data: Start");
 	//check if this device exists in the database, if not exit
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
@@ -232,7 +232,7 @@ void CSBFSpot::ImportOldMonthData()
 			m_HwdID, "00000001", int(pTypeGeneral), int(sTypeKwh));
 		if (result.empty())
 		{
-			_log.Log(LOG_ERROR, "SBFSpot Import Old Month Data: FAILED - Cannot find sensor in database");
+			Log(LOG_ERROR, "SBFSpot Import Old Month Data: FAILED - Cannot find sensor in database");
 			return;
 		}
 	}
@@ -253,7 +253,7 @@ void CSBFSpot::ImportOldMonthData()
 			ImportOldMonthData(ulID,iYear, iMonth);
 		}
 	}
-	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Complete");
+	Log(LOG_STATUS, "SBFSpot Import Old Month Data: Complete");
 }
 
 void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const int Month)
@@ -323,7 +323,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				{
 					//Insert value into our database
 					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')", DevID, ulCounter, szDate);
-					_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
+					Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
 				}
 
 			}
@@ -391,7 +391,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 							//Insert value into our database
 							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')",
 								DevID, ulCounter, szDate);
-							_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s", szDate);
+							Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s", szDate);
 						}
 					}
 				}
@@ -437,12 +437,12 @@ void CSBFSpot::GetMeterDetails()
 {
 	if (m_SBFDataPath.empty())
 	{
-		_log.Log(LOG_ERROR, "SBFSpot: Data path empty!");
+		Log(LOG_ERROR, "Data path empty!");
 		return;
 	}
 	if (m_SBFPlantName.empty())
 	{
-		_log.Log(LOG_ERROR, "SBFSpot: Plant name empty!");
+		Log(LOG_ERROR, "Plant name empty!");
 		return;
 	}
 
@@ -479,7 +479,7 @@ void CSBFSpot::GetMeterDetails()
 	{
 		if ((ActHourMin > sunRise) && (ActHourMin < sunSet))
 		{
-			_log.Log(LOG_ERROR, "SBFSpot: Could not open spot file: %s", szLogFile);
+			Log(LOG_ERROR, "Could not open spot file: %s", szLogFile);
 		}
 		return;
 	}
@@ -532,7 +532,7 @@ void CSBFSpot::GetMeterDetails()
 
 	if (szLastLines.empty())
 	{
-		_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");
+		Log(LOG_ERROR, "No data record found in spot file!");
 		return;
 	}
 
@@ -552,12 +552,12 @@ void CSBFSpot::GetMeterDetails()
 
 		if (results[1].empty())
 		{
-			_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");
+			Log(LOG_ERROR, "No data record found in spot file!");
 			return;
 		}
 		if ((results[28] != "OK") && (results[28] != "Ok"))
 		{
-			_log.Log(LOG_ERROR, "SBFSpot: Invalid field [28] should be OK!");
+			Log(LOG_ERROR, "Invalid field [28] should be OK!");
 			return;
 		}
 
@@ -618,7 +618,7 @@ void CSBFSpot::GetMeterDetails()
 		{
 			if (kWhCounter < (int)(LastTotal * 100) / 100)
 			{
-				_log.Log(LOG_ERROR, "SBFSpot: Actual KwH counter (%f) less then last Counter (%f)!", kWhCounter, LastTotal);
+				Log(LOG_ERROR, "Actual KwH counter (%f) less then last Counter (%f)!", kWhCounter, LastTotal);
 				return;
 			}
 		}

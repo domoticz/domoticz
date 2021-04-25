@@ -36,8 +36,8 @@ namespace Plugins {
 	private:
 		int				m_iPollInterval;
 
-		void*			m_PyInterpreter;
-		void*			m_PyModule;
+		PyThreadState*	m_PyInterpreter;
+		PyObject*		m_PyModule;
 
 		std::string		m_Version;
 		std::string		m_Author;
@@ -46,13 +46,15 @@ namespace Plugins {
 
 		std::mutex	m_TransportsMutex;
 		std::vector<CPluginTransport*>	m_Transports;
+		std::mutex m_QueueMutex; // controls access to the message queue
+		std::deque<CPluginMessageBase *> m_MessageQueue;
 
 		std::shared_ptr<std::thread> m_thread;
 
-		bool StartHardware() override;
+		bool m_bIsStarting;
+		bool m_bIsStopped;
+
 		void Do_Work();
-		bool StopHardware() override;
-		void ClearMessageQueue();
 
 		void LogPythonException();
 		void LogPythonException(const std::string &);
@@ -61,11 +63,11 @@ namespace Plugins {
 	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
 	  ~CPlugin() override;
 
+	  bool StartHardware() override;
+	  bool StopHardware() override;
+
 	  int PollInterval(int Interval = -1);
-	  void *PythonModule()
-	  {
-		  return m_PyModule;
-	  };
+	  PyObject*	PythonModule() { return m_PyModule; };
 	  void Notifier(const std::string &Notifier = "");
 	  void AddConnection(CPluginTransport *);
 	  void RemoveConnection(CPluginTransport *);
@@ -80,7 +82,7 @@ namespace Plugins {
 	  void ConnectionWrite(CDirectiveBase *);
 	  void ConnectionDisconnect(CDirectiveBase *);
 	  void DisconnectEvent(CEventBase *);
-	  void Callback(const std::string &sHandler, void *pParams);
+	  void Callback(PyObject* pTarget, const std::string &sHandler, PyObject *pParams);
 	  void RestoreThread();
 	  void ReleaseThread();
 	  void Stop();
@@ -102,12 +104,11 @@ namespace Plugins {
 	  bool HasNodeFailed(int Unit);
 
 	  std::string m_PluginKey;
-	  void *m_DeviceDict;
-	  void *m_ImageDict;
-	  void *m_SettingsDict;
+	  PyDictObject*	m_DeviceDict;
+	  PyDictObject* m_ImageDict;
+	  PyDictObject* m_SettingsDict;
 	  std::string m_HomeFolder;
 	  PluginDebugMask m_bDebug;
-	  bool m_bIsStarting;
 	  bool m_bTracing;
 	};
 
@@ -166,6 +167,10 @@ namespace Plugins {
 		{
 			return (m_pObject != NULL);
 		}
+		operator CDevice *() const
+		{
+			return (CDevice *)m_pObject;
+		}
 		PyObject **operator&()
 		{
 			return &m_pObject;
@@ -177,6 +182,20 @@ namespace Plugins {
 		void operator=(PyObject *pObject)
 		{
 			m_pObject = pObject;
+		}
+		void operator++()
+		{
+			if (m_pObject)
+			{
+				Py_INCREF(m_pObject);
+			}
+		}
+		void operator--()
+		{
+			if (m_pObject)
+			{
+				Py_DECREF(m_pObject);
+			}
 		}
 		~PyBorrowedRef()
 		{
@@ -198,6 +217,18 @@ namespace Plugins {
 				Py_XDECREF(m_pObject);
 			}
 			m_pObject = pObject;
+		}
+		void operator+=(PyObject *pObject)
+		{
+			if (m_pObject)
+			{
+				Py_XDECREF(m_pObject);
+			}
+			m_pObject = pObject;
+			if (m_pObject)
+			{
+				Py_INCREF(m_pObject);
+			}
 		}
 		~PyNewRef()
 		{

@@ -99,7 +99,10 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject *, _PyObject_New, PyTypeObject *);
+		DECLARE_PYTHON_SYMBOL(int, PyObject_IsInstance, PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyObject_IsSubclass, PyObject *COMMA PyObject *);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_Dir, PyObject *);
 #ifdef _DEBUG
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2TraceRefs, struct PyModuleDef* COMMA int);
 #else
@@ -237,6 +240,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyGILState_Check);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
+					RESOLVE_PYTHON_SYMBOL(PyObject_IsInstance);
+					RESOLVE_PYTHON_SYMBOL(PyObject_IsSubclass);
+					RESOLVE_PYTHON_SYMBOL(PyObject_Dir);
 #ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2TraceRefs);
 #else
@@ -451,6 +457,9 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyGILState_Check		pythonLib->PyGILState_Check
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
+#define PyObject_IsInstance		pythonLib->PyObject_IsInstance
+#define PyObject_IsSubclass		pythonLib->PyObject_IsSubclass
+#define PyObject_Dir			pythonLib->PyObject_Dir
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
@@ -495,7 +504,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define _Py_DEC_REFTOTAL _Py_RefTotal--
 #else
 #define _Py_DEC_REFTOTAL
-//#    define _Py_Dealloc
+#define _Py_Dealloc
 #endif
 #endif
 

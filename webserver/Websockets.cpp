@@ -158,7 +158,7 @@ namespace http {
 			return opcode;
 		};
 
-		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite)
+		CWebsocket::CWebsocket(std::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, std::function<void(const std::string &packet_data)> _WSWrite)
 			: OUR_PING_ID("fd")
 			, handler(_webEm, std::move(_WSWrite))
 		{

@@ -48,22 +48,85 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+#define Meteorologisk_URL "https://api.met.no/weatherapi/locationforecast/2.0/complete.json"
+#define Meteorologisk_forecast_URL "https://darksky.net/#/f/"
+
 CMeteorologisk::CMeteorologisk(const int ID, const std::string &Location) :
 	m_Location(Location)
 {
 	m_HwdID=ID;
-	Init();
 }
 
 void CMeteorologisk::Init()
 {
+	std::stringstream sURL;
+	m_Lat = 1;
+	m_Lon = 1;
+
+	// Try the hardware location first, then fallback on the global settings
+	if(!m_Location.empty())
+	{
+		std::vector<std::string> strarray;
+		if(m_Location != "0")
+		{
+			StringSplit(m_Location, ",", strarray);
+			if(strarray.size() == 2)
+			{
+				m_Lat = strtod(strarray[0].c_str(),nullptr);
+				m_Lon = strtod(strarray[1].c_str(),nullptr);
+			}
+			else
+			{
+				StringSplit(m_Location, ";", strarray);
+				if(strarray.size() == 2)
+				{
+					m_Lat = strtod(strarray[0].c_str(),nullptr);
+					m_Lon = strtod(strarray[1].c_str(),nullptr);
+					Log(LOG_STATUS, "Found Location with semicolon as seperator instead of expected comma.");
+				}
+			}
+		}
+		else
+		{
+			int nValue;
+			std::string sValue;
+			if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
+			{
+				Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
+			}
+			else
+			{
+				StringSplit(sValue, ";", strarray);
+				if(strarray.size() == 2)
+				{
+					m_Lat = strtod(strarray[0].c_str(),nullptr);
+					m_Lon = strtod(strarray[1].c_str(),nullptr);
+					Log(LOG_STATUS, "Using Domoticz default location from Settings as Location.");
+				}
+			}
+		}
+	}
+
+	if(!(m_Lat == 1 || m_Lon == 1))
+	{
+		sURL << Meteorologisk_URL << "?lat=" << m_Lat << "&lon=" << m_Lon;
+		m_URL = sURL.str();
+	}
+
+	std::string szLoc = CURLEncode::URLEncode(m_Location);
+	sURL.str(std::string());
+	sURL.clear();
+	sURL << Meteorologisk_forecast_URL << szLoc;
+	m_ForecastURL = sURL.str();
+	Debug(DEBUG_HARDWARE, "Meteorologisk: Set Forecast URL to: %s", m_ForecastURL.c_str());
 }
 
 bool CMeteorologisk::StartHardware()
 {
+	Init();
+
 	RequestStart();
 
-	Init();
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
@@ -84,20 +147,37 @@ bool CMeteorologisk::StopHardware()
 	return true;
 }
 
+#define Meteorologisk_Poll_Interval 300
+
 void CMeteorologisk::Do_Work()
 {
 	Log(LOG_STATUS, "Started...");
+	Debug(DEBUG_NORM, "Metereologisk module started with Location parameters Latitude %f, Longitude %f!", m_Lat, m_Lon);
 
-	int sec_counter = 290;
+	int sec_counter = Meteorologisk_Poll_Interval - 5;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
-		if (sec_counter % 300 == 0)
+		if (sec_counter % Meteorologisk_Poll_Interval == 0)
 		{
-			GetMeterDetails();
+			if(!m_URL.empty())
+			{
+				try
+				{
+					GetMeterDetails();
+				}
+				catch (...)
+				{
+					Log(LOG_ERROR, "Unhandled failure getting/parsing data!");
+				}
+			}
+			else
+			{
+				Log(LOG_STATUS, "Unable to properly run due to missing or incorrect Location parameters (Latitude, Longitude)!");
+			}
 		}
 	}
 	Log(LOG_STATUS,"Worker stopped...");
@@ -110,10 +190,7 @@ bool CMeteorologisk::WriteToHardware(const char* /*pdata*/, const unsigned char 
 
 std::string CMeteorologisk::GetForecastURL()
 {
-	std::stringstream sURL;
-	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://darksky.net/#/f/" << szLoc;
-	return sURL.str();
+	return m_ForecastURL;
 }
 
 void CMeteorologisk::GetMeterDetails()
@@ -122,71 +199,18 @@ void CMeteorologisk::GetMeterDetails()
 #ifdef DEBUG_MeteorologiskR
 	sResult=ReadFile("/tmp/Meteorologisk.json");
 #else
-	std::stringstream sURL;
-	std::string szLoc = m_Location;
-	std::string Latitude = "1";
-	std::string Longitude = "1";
-
-	// Try the hardware location first, then fallback on the global settings.s
-	if(!szLoc.empty())
-	{
-		std::vector<std::string> strarray;
-		StringSplit(szLoc, ";", strarray);
-
-		Latitude = strarray[0];
-		Longitude = strarray[1];
-	}
-
-	if(Latitude == "1" || Longitude == "1")
-	{
-		if(szLoc.empty()){
-			Log(LOG_ERROR, "No location fount for this hardware. Falling back to global domoticz location settings.");
-		} else {
-			Log(LOG_ERROR, "Hardware location not correct. Should be of the form 'Latitude;Longitude'. Falling back to global domoticz location settings.");
-		}
-
-		int nValue;
-		std::string sValue;
-		if (!m_sql.GetPreferencesVar("Location", nValue, sValue))
-		{
-			Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-			return;
-		}
-
-		std::vector<std::string> strarray;
-		StringSplit(sValue, ";", strarray);
-
-		if (strarray.size() != 2)
-			return;
-
-		Latitude = strarray[0];
-		Longitude = strarray[1];
-
-		if ((Latitude == "1") && (Longitude == "1"))
-		{
-			Log(LOG_ERROR, "Invalid Location found in Settings! (Check your Latitude/Longitude!)");
-			return;
-		}
-
-		Log(LOG_STATUS, "using Domoticz location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
-	} else
-	{
-		Log(LOG_STATUS, "using hardware location settings (%s,%s)", Latitude.c_str(), Longitude.c_str());
-	}
-
-	sURL << "https://api.met.no/weatherapi/locationforecast/2.0/.json?lat=" << Latitude << "&lon=" << Longitude;
-
 	try
 	{
-		if (!HTTPClient::GET(sURL.str(), sResult))
+		if (!HTTPClient::GET(m_URL, sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!.");
+			Debug(DEBUG_RECEIVED, "Meteorologisk: Received .%s.",sResult.c_str());
 			return;
 		}
 	}
 	catch (...)
 	{
-		Log(LOG_ERROR, "Error getting http data!");
+		Log(LOG_ERROR, "Recovered from crash during attempt to get http data!");
 		return;
 	}
 #ifdef DEBUG_MeteorologiskW
@@ -199,12 +223,14 @@ void CMeteorologisk::GetMeterDetails()
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		Log(LOG_ERROR,"Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
+		Log(LOG_ERROR,"Invalid data received! Check Location, use Latitude, Longitude Coordinates (xx.yyyy,xx.yyyyy)!");
+		Debug(DEBUG_NORM, "Meteorologisk: Received invalid JSON data .%s.",sResult.c_str());
 		return;
 	}
+	Debug(DEBUG_RECEIVED, "Meteorologisk: Received JSON data .%s.",root.toStyledString().c_str());
 	if (root["properties"].empty()==true || root["properties"]["timeseries"].empty()==true)
 	{
-		Log(LOG_ERROR,"Invalid data received, or unknown location!");
+		Log(LOG_ERROR,"Unexpected data structure received!");
 		return;
 	}
 

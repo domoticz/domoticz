@@ -14,30 +14,30 @@
 
 #define VolcraftCO20_POLL_INTERVAL 30
 
-#define DRIVER_NAME_LEN	1024
-#define USB_BUF_LEN	1024
+#define DRIVER_NAME_LEN 1024
+#define USB_BUF_LEN 1024
 
-#define USB_VENDOR_CO2_STICK	0x03eb
-#define USB_PRODUCT_CO2_STICK	0x2013
+#define USB_VENDOR_CO2_STICK 0x03eb
+#define USB_PRODUCT_CO2_STICK 0x2013
 
-#define round(a) ( int ) ( a + .5 )
+#define round(a) (int)(a + .5)
 
-//code taken and modified form https://github.com/bwildenhain/air-quality-sensor/blob/master/src/air01.c
-//at this moment it does not work under windows... no idea why... help appreciated!
+// code taken and modified form https://github.com/bwildenhain/air-quality-sensor/blob/master/src/air01.c
+// at this moment it does not work under windows... no idea why... help appreciated!
 
 CVolcraftCO20::CVolcraftCO20(const int ID)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 }
 
 bool CVolcraftCO20::StartHardware()
 {
 	RequestStart();
 
-	//Start worker thread
+	// Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 
 	return (m_thread != nullptr);
@@ -51,27 +51,27 @@ bool CVolcraftCO20::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
-    return true;
+	m_bIsStarted = false;
+	return true;
 }
 
 void CVolcraftCO20::Do_Work()
 {
-	int sec_counter=VolcraftCO20_POLL_INTERVAL-5;
+	int sec_counter = VolcraftCO20_POLL_INTERVAL - 5;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
-		if (sec_counter%12==0)
+		if (sec_counter % 12 == 0)
 		{
 			m_LastHeartbeat = mytime(nullptr);
 		}
 
-		if (sec_counter%VolcraftCO20_POLL_INTERVAL==0)
+		if (sec_counter % VolcraftCO20_POLL_INTERVAL == 0)
 		{
 			GetSensorDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"Voltcraft CO-20: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CVolcraftCO20::WriteToHardware(const char *pdata, const unsigned char length)
@@ -79,33 +79,35 @@ bool CVolcraftCO20::WriteToHardware(const char *pdata, const unsigned char lengt
 	return false;
 }
 
-static int read_one_sensor (struct usb_device *dev, uint16_t &value)
+static int read_one_sensor(struct usb_device *dev, uint16_t &value)
 {
 	int ret;
 	struct usb_dev_handle *devh;
 	char driver_name[DRIVER_NAME_LEN] = "";
-	char usb_io_buf[USB_BUF_LEN] =
-		"\x40\x68\x2a\x54"
-		"\x52\x0a\x40\x40"
-		"\x40\x40\x40\x40"
-		"\x40\x40\x40\x40";
+	char usb_io_buf[USB_BUF_LEN] = "\x40\x68\x2a\x54"
+				       "\x52\x0a\x40\x40"
+				       "\x40\x40\x40\x40"
+				       "\x40\x40\x40\x40";
 
 	/* Open USB device.  */
-	devh = usb_open (dev);
-	if (! dev) {
-		fprintf (stderr, "Failed to usb_open(%p)\n", (void *) dev);
+	devh = usb_open(dev);
+	if (!dev)
+	{
+		fprintf(stderr, "Failed to usb_open(%p)\n", (void *)dev);
 		ret = -1;
 		goto out;
 	}
 
 #ifndef __NetBSD__
 	/* Ensure that the device isn't claimed.  */
-	ret = usb_get_driver_np (devh, 0/*intrf*/, driver_name, sizeof (driver_name));
-	if (! ret) {
-		_log.Log(LOG_ERROR,"Voltcraft CO-20: Warning: device is claimed by driver %s, trying to unbind it.", driver_name);
-		ret = usb_detach_kernel_driver_np (devh, 0/*intrf*/);
-		if (ret) {
-			_log.Log(LOG_ERROR,"Voltcraft CO-20: Warning: Failed to detatch kernel driver.");
+	ret = usb_get_driver_np(devh, 0 /*intrf*/, driver_name, sizeof(driver_name));
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Warning: device is claimed by driver %s, trying to unbind it.", driver_name);
+		ret = usb_detach_kernel_driver_np(devh, 0 /*intrf*/);
+		if (ret)
+		{
+			_log.Log(LOG_ERROR, "Warning: Failed to detatch kernel driver.");
 			ret = -2;
 			goto out;
 		}
@@ -113,63 +115,64 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 #endif
 
 	/* Claim device.  */
-	ret = usb_claim_interface (devh, 0/*intrf*/);
-	if (ret) {
-		_log.Log(LOG_ERROR,"Voltcraft CO-20: usb_claim_interface() failed with error %d=%s",	ret, strerror (-ret));
+	ret = usb_claim_interface(devh, 0 /*intrf*/);
+	if (ret)
+	{
+		_log.Log(LOG_ERROR, "usb_claim_interface() failed with error %d=%s", ret, strerror(-ret));
 		ret = -3;
 		goto out;
 	}
 
 	/* Send query command.  */
-	ret = usb_interrupt_write(devh, 0x0002/*endpoint*/,
-		usb_io_buf, 0x10/*len*/, 1000/*msec*/);
-	if (ret < 0) {
-		_log.Log(LOG_ERROR,"Voltcraft CO-20:  Failed to usb_interrupt_write() the initial buffer, ret = %d", ret);
+	ret = usb_interrupt_write(devh, 0x0002 /*endpoint*/, usb_io_buf, 0x10 /*len*/, 1000 /*msec*/);
+	if (ret < 0)
+	{
+		_log.Log(LOG_ERROR, " Failed to usb_interrupt_write() the initial buffer, ret = %d", ret);
 		ret = -4;
 		goto out_unlock;
 	}
 
 	/* Read answer.  */
-	ret = usb_interrupt_read(devh, 0x0081/*endpoint*/,
-		usb_io_buf, 0x10/*len*/, 1000/*msec*/);
-	if (ret < 0) {
-		_log.Log(LOG_ERROR,"Voltcraft CO-20: Failed to usb_interrupt_read() #1");
+	ret = usb_interrupt_read(devh, 0x0081 /*endpoint*/, usb_io_buf, 0x10 /*len*/, 1000 /*msec*/);
+	if (ret < 0)
+	{
+		_log.Log(LOG_ERROR, "Failed to usb_interrupt_read() #1");
 		ret = -5;
 		goto out_unlock;
 	}
 
 	/* On empty read, read again.  */
-	if (ret == 0) {
-		ret = usb_interrupt_read(devh, 0x0081/*endpoint*/,
-			usb_io_buf, 0x10/*len*/, 1000/*msec*/);
-		if (ret == 0) {
-			//give up!
+	if (ret == 0)
+	{
+		ret = usb_interrupt_read(devh, 0x0081 /*endpoint*/, usb_io_buf, 0x10 /*len*/, 1000 /*msec*/);
+		if (ret == 0)
+		{
+			// give up!
 			goto out_unlock;
 		}
 	}
 
 	/* Prepare value from first read.  */
-	value = ((unsigned char *)usb_io_buf)[3] << 8
-		| ((unsigned char *)usb_io_buf)[2] << 0;
+	value = ((unsigned char *)usb_io_buf)[3] << 8 | ((unsigned char *)usb_io_buf)[2] << 0;
 
 	/* Dummy read.  */
-	usb_interrupt_read(devh, 0x0081/*endpoint*/,
-		usb_io_buf, 0x10/*len*/, 1000/*msec*/);
+	usb_interrupt_read(devh, 0x0081 /*endpoint*/, usb_io_buf, 0x10 /*len*/, 1000 /*msec*/);
 out_unlock:
-	ret = usb_release_interface(devh, 0/*intrf*/);
-	if (ret) {
+	ret = usb_release_interface(devh, 0 /*intrf*/);
+	if (ret)
+	{
 		fprintf(stderr, "Failed to usb_release_interface()\n");
 		ret = -5;
 	}
 out:
 	if (devh)
-		usb_close (devh);
+		usb_close(devh);
 	return ret;
 }
 
-static int get_voc_value(int vendor, int product, uint16_t &voc)
+int get_voc_value(int vendor, int product, uint16_t &voc)
 {
-	voc=0;
+	voc = 0;
 	struct usb_bus *bus;
 	struct usb_device *dev;
 	int ret = 0;
@@ -180,7 +183,7 @@ static int get_voc_value(int vendor, int product, uint16_t &voc)
 		{
 			if (dev->descriptor.idVendor == vendor && dev->descriptor.idProduct == product)
 			{
-				ret |= read_one_sensor(dev,voc);
+				ret |= read_one_sensor(dev, voc);
 			}
 		}
 	}
@@ -193,17 +196,17 @@ void CVolcraftCO20::GetSensorDetails()
 	{
 		uint16_t voc;
 
-		usb_init ();
-		usb_set_debug (0);
-		usb_find_busses ();
-		usb_find_devices ();
+		usb_init();
+		usb_set_debug(0);
+		usb_find_busses();
+		usb_find_devices();
 
-		get_voc_value(USB_VENDOR_CO2_STICK,USB_PRODUCT_CO2_STICK,voc);
-		if (voc!=0)
+		get_voc_value(USB_VENDOR_CO2_STICK, USB_PRODUCT_CO2_STICK, voc);
+		if (voc != 0)
 		{
-			if (voc==3000)
+			if (voc == 3000)
 			{
-				_log.Log(LOG_ERROR, "Voltcraft CO-20: Sensor data out of range!!");
+				Log(LOG_ERROR, "Sensor data out of range!!");
 				return;
 			}
 			SendAirQualitySensor(1, 1, 255, voc, "Air Quality");
@@ -211,9 +214,8 @@ void CVolcraftCO20::GetSensorDetails()
 	}
 	catch (...)
 	{
-
 	}
 }
 
-#endif //WITH_LIBUSB
-#endif //WIN32
+#endif // WITH_LIBUSB
+#endif // WIN32

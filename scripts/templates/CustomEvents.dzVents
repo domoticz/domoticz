@@ -11,7 +11,7 @@ return {
 	logging = {},
 	execute = function(domoticz, triggeredItem)
 		if (triggeredItem.isCustomEvent) then
-			domoticz.utils._.print(triggeredItem.data)
+			domoticz.log(triggeredItem.data)
 		else
 			-- second parameter can be anything, number, string, boolean or table
 			domoticz.emitEvent('MyEvent', 'Some data')

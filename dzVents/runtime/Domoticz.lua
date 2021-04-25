@@ -230,10 +230,10 @@ local function Domoticz(settings)
 				path = path
 			}
 
-			utils.log('ExecuteShellCommand: command = ' .. _.str(request.command), utils.LOG_DEBUG)
-			utils.log('ExecuteShellCommand: callback = ' .. _.str(request.callback), utils.LOG_DEBUG)
-			utils.log('ExecuteShellCommand: timeout = ' .. _.str(request.timeout), utils.LOG_DEBUG)
-			utils.log('ExecuteShellcommand: path = ' .. _.str(request.path),utils.LOG_DEBUG)
+			utils.log('ExecuteShellCommand: command = ' .. utils.toStr(request.command), utils.LOG_DEBUG)
+			utils.log('ExecuteShellCommand: callback = ' .. utils.toStr(request.callback), utils.LOG_DEBUG)
+			utils.log('ExecuteShellCommand: timeout = ' .. utils.toStr(request.timeout), utils.LOG_DEBUG)
+			utils.log('ExecuteShellcommand: path = ' .. utils.toStr(request.path),utils.LOG_DEBUG)
 			return TimedCommand(self, 'ExecuteShellCommand', request, 'updatedevice')
 		else
 			utils.log('executeShellCommand: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)
@@ -293,11 +293,11 @@ local function Domoticz(settings)
 				_trigger = callback,
 			}
 
-			utils.log('OpenURL: url = ' .. _.str(request.URL), utils.LOG_DEBUG)
-			utils.log('OpenURL: method = ' .. _.str(request.method), utils.LOG_DEBUG)
-			utils.log('OpenURL: post data = ' .. _.str(request.postdata), utils.LOG_DEBUG)
-			utils.log('OpenURL: headers = ' .. _.str(request.headers), utils.LOG_DEBUG)
-			utils.log('OpenURL: callback = ' .. _.str(request._trigger), utils.LOG_DEBUG)
+			utils.log('OpenURL: url = ' .. utils.toStr(request.URL), utils.LOG_DEBUG)
+			utils.log('OpenURL: method = ' .. utils.toStr(request.method), utils.LOG_DEBUG)
+			utils.log('OpenURL: post data = ' .. utils.toStr(request.postdata), utils.LOG_DEBUG)
+			utils.log('OpenURL: headers = ' .. utils.toStr(request.headers), utils.LOG_DEBUG)
+			utils.log('OpenURL: callback = ' .. utils.toStr(request._trigger), utils.LOG_DEBUG)
 
 			return TimedCommand(self, 'OpenURL', request, 'updatedevice')
 

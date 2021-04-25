@@ -59,7 +59,7 @@ class CEvohomeRadio : public CEvohomeBase
 	void UpdateSwitch(unsigned char Idx, bool bOn, const std::string &defaultname);
 
       private:
-	typedef boost::function<bool(CEvohomeMsg &msg)> fnc_evohome_decode;
+	typedef std::function<bool(CEvohomeMsg &msg)> fnc_evohome_decode;
 	void Send();
 	void RequestCurrentState();
 	void RequestZoneState();
@@ -163,7 +163,7 @@ class CEvohomeRadio : public CEvohomeBase
 	typedef tmap_relay_check::iterator tmap_relay_check_it;
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 
-	bool m_bStartup[2];
+	std::array<bool, 2> m_bStartup;
 
 	int16_t m_DHWSetpoint = 6000;
 };

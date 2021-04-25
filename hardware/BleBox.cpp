@@ -264,29 +264,20 @@ void BleBox::GetDevicesState()
 
 std::string BleBox::GetDeviceIP(const tRBUF * id)
 {
-	char ip[20];
-
-	sprintf(ip, "%d.%d.%d.%d", id->LIGHTING2.id1, id->LIGHTING2.id2, id->LIGHTING2.id3, id->LIGHTING2.id4);
-	return ip;
+	return std_format("%d.%d.%d.%d", id->LIGHTING2.id1, id->LIGHTING2.id2, id->LIGHTING2.id3, id->LIGHTING2.id4);
 }
 
 std::string BleBox::GetDeviceRevertIP(const tRBUF * id)
 {
-	char ip[20];
-
-	sprintf(ip, "%d.%d.%d.%d", id->LIGHTING2.id4, id->LIGHTING2.id3, id->LIGHTING2.id2, id->LIGHTING2.id1);
-	return ip;
+	return std_format("%d.%d.%d.%d", id->LIGHTING2.id4, id->LIGHTING2.id3, id->LIGHTING2.id2, id->LIGHTING2.id1);
 }
 
 std::string BleBox::GetDeviceIP(const std::string & id)
 {
 	BYTE id1, id2, id3, id4;
-	char ip[20];
-
 	sscanf(id.c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
-	sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
 
-	return ip;
+	return std_format("%d.%d.%d.%d", id1, id2, id3, id4);
 }
 
 int BleBox::GetDeviceTypeByApiName(const std::string & apiName)
@@ -306,18 +297,14 @@ std::string BleBox::IPToHex(const std::string & IPAddress, const int type)
 	if (strarray.size() != 4)
 		return "";
 
-	char szIdx[10];
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeColorSwitch)
 	{
-		uint32_t sID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
-		sprintf(szIdx, "%08X", (unsigned int)sID);
+		uint32_t uID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
+		return std_format("%08X", uID);
 	}
-	else
-	{
-		sprintf(szIdx, "%X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
-	}
-	return szIdx;
+
+	return std_format("%X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
 }
 
 bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
@@ -383,10 +370,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 					else
 					{
 						uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
-
-						char value[4];
-						sprintf(value, "%x", percentage);
-						level = value;
+						level = std_format("%x", percentage);
 					}
 
 				Json::Value root = SendCommand(IPAddress, "/s/" + level);
@@ -420,10 +404,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 					else
 					{
 						uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
-
-						char value[4];
-						sprintf(value, "%x", percentage);
-						level = value;
+						level = std_format("%x", percentage);
 					}
 
 				Json::Value root = SendCommand(IPAddress, "/s/" + level);
@@ -630,9 +611,7 @@ bool BleBox::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 		if (!setColor)
 			return false;
 
-		char level[10];
-		sprintf(level, "%02x%02x%02x%02x", red, green, blue, white);
-		std::string state(level);
+		std::string state = std_format("%02x%02x%02x%02x", red, green, blue, white);
 
 		Json::Value root = SendCommand(IPAddress, "/s/" + state);
 		if (root.empty())
@@ -694,11 +673,10 @@ void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int Batte
 	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
-	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	std::string szIdx = std_format("%X%02X%02X%02X");
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx.c_str(),
+				  ChildID, int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
@@ -770,9 +748,8 @@ namespace http {
 				for (const auto &sd : result)
 				{
 					BYTE id1, id2, id3, id4;
-					char ip[20];
 					sscanf(sd[2].c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
-					sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+					std::string ip = std_format("%d.%d.%d.%d", id1, id2, id3, id4);
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
@@ -1061,10 +1038,7 @@ std::string BleBox::GetUptime(const std::string & IPAddress)
 	int hours = static_cast<int>(total_minutes / 60 - days * 24);
 	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
 
-	char timestring[32];
-	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
-
-	return timestring;
+	return std_format("%d:%02d:%02d", days, hours, mins);
 }
 
 int BleBox::GetDeviceType(const std::string & IPAddress)

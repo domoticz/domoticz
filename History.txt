@@ -1,4 +1,9 @@
-Version 2020.xxxx (xxxx)
+Version 2021.xxxxx (xxxx)
+- Updated: dzVents; version 3.1.8 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: OpenZWave; Added Electric pulse sensor
+- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
+
+Version 2021.1 (April 17 2021)
 - Implemented: Added option to set loglevel per hardware device
 - Implemented: Added optional parameter 'level' to addlogmessage JSON
 - Implemented: AirconWithMe wifi module
@@ -9,6 +14,7 @@ Version 2020.xxxx (xxxx)
 - Implemented: Build system for docker
 - Implemented: Counter meter type now supports a divider
 - Implemented: Custom icons for RGB/W
+- Implemented: GUI; Auto refresh feature for graphical logs
 - Implemented: Hardware Monitor, Add clock speeds for Raspberry Pi
 - Implemented: Honeywell, Add cooling control and Fahrenheit support
 - Implemented: Internal light commands for Fan types Casafan, FT1211R, Falmec, LucciAirDCII, IthoECO and Novy
@@ -18,34 +24,39 @@ Version 2020.xxxx (xxxx)
 - Implemented: Meteorologisk (Meteorologisk institutt Norway) hardware support
 - Implemented: P1 Meter, added support for Encryption
 - Implemented: RFXCom Byron BY doorbell
+- Implemented: RSSI support for Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
 - Implemented: RTL433, Added RF Signal Strength in device tab based on reported SNR
 - Implemented: RTL433, Added Pressure (PSI) type
 - Implemented: RTL433, Added UV type
 - Implemented: RTL433, Added X-10 Security support
 - Implemented: RTL433, Switched to Json input
-- Implemented: Autorefresh feature for graphical logs
-- Implemented: The following sensor types now support RSSI: Distance Sensor, Moisture Sensor, Watt Meter, kWh Meter
+- Implemented: Teleinfo over TCP
 - Implemented: Websocket notification for secondary/sub devices
-- Implemented: ZWave, Legend and tooltips in Neighbor�s overview
-- Updated: Blebox; use of the latest SwitchBox API
-- Updated: dzVents; version 3.1.5 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Implemented: ZWave, Legend and tooltips in Neighbors overview
+- Updated: API/JSON: added API to delete daterange in history logs for one ID
+- Updated: Blebox; use of the latest SwitchBox APIthe latest SwitchBox API
+- Updated: dzVents; version 3.1.7 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: eVehicles; added ODO meter, unlock/open alert, max charge level to Tesla module
 - Updated: eVehicles; added option to manual set API key
 - Updated: EvoHome; decode, display and store hotwater setpoint
-- Updated: Lay-out of notifications tab
+- Updated: GUI; Lay-out of notifications tab
 - Updated: MQTT; added option to choose notification subsystem
 - Updated: MQTT; added publish schemes: device index, device name and implemented custom topics for in- and outbound messages
 - Updated: OpenZWave; configuration files
-- Updated: Openweathermap; use latest API and overal improvements
+- Updated: OpenZWave; Added Volatile Organic Compound sensor
+- Updated: Openweathermap; use latest API and overall improvements
 - Updated: OTGW; ready for firmware 5.0 and added domestic hot water flow rate
+- Updated: Plugin manager: ready for Python 3.9+
 - Updated: Plugwise; update of scene selector and added a migration process
-- Updated: SolarEdge; add support for 3 Phase inverter
+- Updated: SolarEdge; add support for 3 Phase inverters
 - Updated: Tado; add support for per-zone Open Window Detection
 - Updated: TTNMQTT; Better GPS/Locations handling, distance calculation (Geofencing)
 - Updated: TTNMQTT; Improved calculation and storage of signal-levels
-- Updated: Xiaomi; added new devicetypes
-- Changed: During a database backup we now 'sleep' when the status != OK
+- Updated: USBTin; Added support for Bloc 9
+- Updated: Xiaomi; added new device types
+- Changed: Devices, ZWave, each node as separate hardware for easy selection
 - Changed: Differentiate kWh, kVah, kVar and kVarh
+- Changed: During a database backup we now 'sleep' when the status != OK
 - Changed: Energy devices allow negative values
 - Changed: Use of Clang-Tidy rules to force ++ coding consistency
 - Fixed: Annatherm Presets usage in Events. Please use the following percentages: 10% for Home, 20% for Away, 30% Night 40% for Vacation
@@ -54,7 +65,7 @@ Version 2020.xxxx (xxxx)
 - Fixed: Control for thermostat setpoints on floorplan
 - Fixed: Compiling on systems with recent Python versions
 - Fixed: Distance sensor was converting to miles instead of inches
-- Fixed: Icon uploading from linux clients/browsers
+- Fixed: Icon uploading from Linux clients/browsers
 - Fixed: Floorplan uploading
 - Fixed: Font in events editor on MacOS
 - Fixed: Motherboard Sensors for big partitions

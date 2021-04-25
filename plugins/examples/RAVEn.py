@@ -20,6 +20,7 @@
 </plugin>
 """
 import Domoticz
+from Domoticz import Devices, Parameters
 import xml.etree.ElementTree as ET
 
 SerialConn = None

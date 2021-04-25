@@ -13,14 +13,14 @@
 
 #define TE923_POLL_INTERVAL 30
 
-#define round(a) ( int ) ( a + .5 )
+#define round(a) (int)(a + .5)
 
-//at this moment it does not work under windows... no idea why... help appriciated!
-//for this we fake the data previously read by a station on unix (weatherdata.bin)
+// at this moment it does not work under windows... no idea why... help appriciated!
+// for this we fake the data previously read by a station on unix (weatherdata.bin)
 
 CTE923::CTE923(const int ID)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	Init();
 }
 
@@ -33,10 +33,10 @@ bool CTE923::StartHardware()
 	RequestStart();
 
 	Init();
-	//Start worker thread
+	// Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 
 	return (m_thread != nullptr);
@@ -50,18 +50,19 @@ bool CTE923::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
-    return true;
+	m_bIsStarted = false;
+	return true;
 }
 
 void CTE923::Do_Work()
 {
-	int sec_counter=TE923_POLL_INTERVAL-4;
+	int sec_counter = TE923_POLL_INTERVAL - 4;
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
-		if (sec_counter % 12 == 0) {
+		if (sec_counter % 12 == 0)
+		{
 			mytime(&m_LastHeartbeat);
 		}
 
@@ -70,7 +71,7 @@ void CTE923::Do_Work()
 			GetSensorDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"TE923: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool CTE923::WriteToHardware(const char *pdata, const unsigned char length)
@@ -88,9 +89,9 @@ void CTE923::GetSensorDetails()
 	{
 		return;
 	}
-	if (!_te923tool.GetData(&data,&dev))
+	if (!_te923tool.GetData(&data, &dev))
 	{
-		//give it one more change!
+		// give it one more change!
 		_te923tool.CloseDevice();
 		sleep_milliseconds(500);
 
@@ -99,9 +100,9 @@ void CTE923::GetSensorDetails()
 		{
 			return;
 		}
-		if (!_te923tool2.GetData(&data,&dev))
+		if (!_te923tool2.GetData(&data, &dev))
 		{
-			_log.Log(LOG_ERROR, "TE923: Could not read weather data!");
+			Log(LOG_ERROR, "Could not read weather data!");
 			return;
 		}
 		_te923tool2.CloseDevice();
@@ -109,37 +110,37 @@ void CTE923::GetSensorDetails()
 	else
 		_te923tool.CloseDevice();
 #else
-	FILE *fIn=fopen("weatherdata.bin","rb+");
-	fread(&data,1,sizeof(Te923DataSet_t),fIn);
+	FILE *fIn = fopen("weatherdata.bin", "rb+");
+	fread(&data, 1, sizeof(Te923DataSet_t), fIn);
 	fclose(fIn);
 #endif
 
-	if (data._press != 0 )
+	if (data._press != 0)
 	{
-		_log.Log(LOG_ERROR, "TE923: No Barometric pressure in weather station, reading skipped!");
+		Log(LOG_ERROR, "No Barometric pressure in weather station, reading skipped!");
 		return;
 	}
-	if ((data.press<800)||(data.press>1200))
+	if ((data.press < 800) || (data.press > 1200))
 	{
-		_log.Log(LOG_ERROR, "TE923: Invalid weather station data received (baro)!");
+		Log(LOG_ERROR, "Invalid weather station data received (baro)!");
 		return;
 	}
 
 	int ii;
-	for (ii=0; ii<6; ii++)
+	for (ii = 0; ii < 6; ii++)
 	{
-		if (data._t[ii]==0)
+		if (data._t[ii] == 0)
 		{
-			if ((data.t[ii]<-60)||(data.t[ii]>60))
+			if ((data.t[ii] < -60) || (data.t[ii] > 60))
 			{
-				_log.Log(LOG_ERROR, "TE923: Invalid weather station data received (temp)!");
+				Log(LOG_ERROR, "Invalid weather station data received (temp)!");
 				return;
 			}
 		}
 	}
 
-	//Add temp sensors
-	for (ii=0; ii<6; ii++)
+	// Add temp sensors
+	for (ii = 0; ii < 6; ii++)
 	{
 		int BatLevel = 100;
 		if (ii > 0)
@@ -150,11 +151,11 @@ void CTE923::GetSensorDetails()
 				BatLevel = 0;
 		}
 
-		if ((data._t[ii]==0)&&(data._h[ii]==0))
+		if ((data._t[ii] == 0) && (data._h[ii] == 0))
 		{
-			//Temp+Hum
-			//special case if baro is present for first sensor
-			if ((ii==0)&&(data._press == 0 ))
+			// Temp+Hum
+			// special case if baro is present for first sensor
+			if ((ii == 0) && (data._press == 0))
 			{
 				SendTempHumBaroSensorFloat(ii, BatLevel, data.t[ii], data.h[ii], data.press, data.forecast, "THB");
 			}
@@ -163,82 +164,82 @@ void CTE923::GetSensorDetails()
 				SendTempHumSensor(ii, BatLevel, data.t[ii], data.h[ii], "TempHum");
 			}
 		}
-		else if (data._t[ii]==0)
+		else if (data._t[ii] == 0)
 		{
-			//Temp
+			// Temp
 			SendTempSensor(ii, BatLevel, data.t[ii], "Temperature");
 		}
-		else if (data._h[ii]==0)
+		else if (data._h[ii] == 0)
 		{
-			//Hum
+			// Hum
 			SendHumiditySensor(ii, BatLevel, data.h[ii], "Humidity");
 		}
 	}
 
-	//Wind
-	if (data._wDir==0)
+	// Wind
+	if (data._wDir == 0)
 	{
 		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.WIND.packetlength=sizeof(tsen.WIND)-1;
-		tsen.WIND.packettype=pTypeWIND;
-		tsen.WIND.subtype=sTypeWINDNoTemp;
+		memset(&tsen, 0, sizeof(RBUF));
+		tsen.WIND.packetlength = sizeof(tsen.WIND) - 1;
+		tsen.WIND.packettype = pTypeWIND;
+		tsen.WIND.subtype = sTypeWINDNoTemp;
 		dev.batteryWind = true;
 		if (dev.batteryWind)
-			tsen.WIND.battery_level=9;
+			tsen.WIND.battery_level = 9;
 		else
-			tsen.WIND.battery_level=0;
-		tsen.WIND.rssi=12;
-		tsen.WIND.id1=0;
-		tsen.WIND.id2=1;
+			tsen.WIND.battery_level = 0;
+		tsen.WIND.rssi = 12;
+		tsen.WIND.id1 = 0;
+		tsen.WIND.id2 = 1;
 
 		float winddir = float(data.wDir) * 22.5F;
-		int aw=round(winddir);
-		tsen.WIND.directionh=(BYTE)(aw/256);
-		aw-=(tsen.WIND.directionh*256);
-		tsen.WIND.directionl=(BYTE)(aw);
+		int aw = round(winddir);
+		tsen.WIND.directionh = (BYTE)(aw / 256);
+		aw -= (tsen.WIND.directionh * 256);
+		tsen.WIND.directionl = (BYTE)(aw);
 
-		tsen.WIND.av_speedh=0;
-		tsen.WIND.av_speedl=0;
-		if (data._wSpeed==0)
+		tsen.WIND.av_speedh = 0;
+		tsen.WIND.av_speedl = 0;
+		if (data._wSpeed == 0)
 		{
 			int sw = round(data.wSpeed * 10.0F);
-			tsen.WIND.av_speedh=(BYTE)(sw/256);
-			sw-=(tsen.WIND.av_speedh*256);
-			tsen.WIND.av_speedl=(BYTE)(sw);
+			tsen.WIND.av_speedh = (BYTE)(sw / 256);
+			sw -= (tsen.WIND.av_speedh * 256);
+			tsen.WIND.av_speedl = (BYTE)(sw);
 		}
-		tsen.WIND.gusth=0;
-		tsen.WIND.gustl=0;
-		if (data._wGust==0)
+		tsen.WIND.gusth = 0;
+		tsen.WIND.gustl = 0;
+		if (data._wGust == 0)
 		{
 			int gw = round(data.wGust * 10.0F);
-			tsen.WIND.gusth=(BYTE)(gw/256);
-			gw-=(tsen.WIND.gusth*256);
-			tsen.WIND.gustl=(BYTE)(gw);
+			tsen.WIND.gusth = (BYTE)(gw / 256);
+			gw -= (tsen.WIND.gusth * 256);
+			tsen.WIND.gustl = (BYTE)(gw);
 		}
 
-		//this is not correct, why no wind temperature? and only chill?
-		tsen.WIND.chillh=0;
-		tsen.WIND.chilll=0;
-		tsen.WIND.temperatureh=0;
-		tsen.WIND.temperaturel=0;
-		if (data._wChill==0)
+		// this is not correct, why no wind temperature? and only chill?
+		tsen.WIND.chillh = 0;
+		tsen.WIND.chilll = 0;
+		tsen.WIND.temperatureh = 0;
+		tsen.WIND.temperaturel = 0;
+		if (data._wChill == 0)
 		{
-			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
-			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
+			tsen.WIND.tempsign = (data.wChill >= 0) ? 0 : 1;
+			tsen.WIND.chillsign = (data.wChill >= 0) ? 0 : 1;
 			int at10 = round(std::abs(data.wChill * 10.0F));
-			tsen.WIND.temperatureh=(BYTE)(at10/256);
-			tsen.WIND.chillh=(BYTE)(at10/256);
-			at10-=(tsen.WIND.chillh*256);
-			tsen.WIND.temperaturel=(BYTE)(at10);
-			tsen.WIND.chilll=(BYTE)(at10);
+			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
+			tsen.WIND.chillh = (BYTE)(at10 / 256);
+			at10 -= (tsen.WIND.chillh * 256);
+			tsen.WIND.temperaturel = (BYTE)(at10);
+			tsen.WIND.chilll = (BYTE)(at10);
 		}
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, nullptr, -1, nullptr);
 	}
 
-	//Rain
-	if (data._RainCount==0)
+	// Rain
+	if (data._RainCount == 0)
 	{
 		int BatLevel = (dev.batteryRain) ? 100 : 0;
 		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7F, "Rain");
@@ -268,11 +269,11 @@ void CTE923::GetSensorDetails()
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, nullptr, -1, nullptr);
 		*/
 	}
-	//UV
-	if (data._uv==0)
+	// UV
+	if (data._uv == 0)
 	{
 		SendUVSensor(0, 1, 255, data.uv, "UV");
 	}
 }
-#endif //WITH_LIBUSB
-#endif //WIN32
+#endif // WITH_LIBUSB
+#endif // WIN32

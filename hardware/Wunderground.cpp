@@ -96,7 +96,7 @@ void CWunderground::Do_Work()
 	GetMeterDetails();
 #endif
 	int sec_counter = 590;
-	_log.Log(LOG_STATUS, "Wunderground: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(1000))
 	{
@@ -113,7 +113,7 @@ void CWunderground::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"Wunderground: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CWunderground::WriteToHardware(const char *pdata, const unsigned char length)
@@ -152,7 +152,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 			sURL << "https://api.weather.com/v3/location/near?geocode=" << Latitude << "," << Longitude << "&product=pws&format=json&apiKey=" << m_APIKey;
 			if (!HTTPClient::GET(sURL.str(), sResult))
 			{
-				_log.Log(LOG_ERROR, "Wunderground: Error getting location/near result! (Check API key!)");
+				Log(LOG_ERROR, "Error getting location/near result! (Check API key!)");
 				return "";
 			}
 #ifdef DEBUG_WUNDERGROUNDW
@@ -164,7 +164,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 			bool ret = ParseJSon(sResult, root);
 			if ((!ret) || (!root.isObject()))
 			{
-				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. Invalid data received! (Check Station ID!)");
+				Log(LOG_ERROR, "Problem getting location/near result. Invalid data received! (Check Station ID!)");
 				return "";
 			}
 
@@ -179,7 +179,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 			}
 			if (!bValid)
 			{
-				_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result.Invalid data received, or no data returned!");
+				Log(LOG_ERROR, "Problem getting location/near result.Invalid data received, or no data returned!");
 				return "";
 			}
 			if (!root["location"]["stationId"].empty())
@@ -187,7 +187,7 @@ std::string CWunderground::GetWeatherStationFromGeo()
 				std::string szFirstStation = root["location"]["stationId"][0].asString();
 				return szFirstStation;
 			}
-			_log.Log(LOG_ERROR, "WUnderground: Problem getting location/near result. No stations returned!");
+			Log(LOG_ERROR, "Problem getting location/near result. No stations returned!");
 		}
 	}
 	return "";
@@ -214,7 +214,7 @@ void CWunderground::GetMeterDetails()
 	sURL << "https://api.weather.com/v2/pws/observations/current?stationId=" << szLoc << "&format=json&units=s&numericPrecision=decimal&apiKey=" << m_APIKey;
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR,"Wunderground: Error getting http data! (Check API key!)");
+		Log(LOG_ERROR,"Error getting http data! (Check API key!)");
 		return;
 	}
 #ifdef DEBUG_WUNDERGROUNDW
@@ -226,7 +226,7 @@ void CWunderground::GetMeterDetails()
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR,"WUnderground: Invalid data received! (Check Station ID!)");
+		Log(LOG_ERROR,"Invalid data received! (Check Station ID!)");
 		return;
 	}
 
@@ -245,7 +245,7 @@ void CWunderground::GetMeterDetails()
 	}
 	if (!bValid)
 	{
-		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
+		Log(LOG_ERROR, "Invalid data received, or no data returned!");
 		return;
 	}
 
@@ -258,7 +258,7 @@ void CWunderground::GetMeterDetails()
 		if (difftime(tlocal, tobserver) >= 1800)
 		{
 			//When we don't get any valid data in 30 minutes, we also stop using the values
-			_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
+			Log(LOG_ERROR, "Receiving old data from WU! (No new data return for more than 30 minutes)");
 			return;
 		}
 	}

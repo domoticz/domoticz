@@ -65,7 +65,7 @@ void COpenWebNetUSB::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "COpenWebNetUSB: Heartbeat worker stopped...");
+	Log(LOG_STATUS, "Heartbeat worker stopped...");
 }
 
 /**
@@ -100,7 +100,7 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 			whereStr << pCmd->id * 100 + pCmd->unitcode << ZIGBEE_SUFFIX;
 			break;
 		default:
-			_log.Log(LOG_STATUS, "COpenWebNetUSB unknown command: packettype=%d subtype=%d", packettype, subtype);
+			Log(LOG_STATUS, "COpenWebNetUSB unknown command: packettype=%d subtype=%d", packettype, subtype);
 			return false;
 	}
 
@@ -197,13 +197,13 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 			break;
 
 		default:
-			_log.Log(LOG_STATUS, "COpenWebNetUSB unknown command: packettype=%d subtype=%d", packettype, subtype);
+			Log(LOG_STATUS, "COpenWebNetUSB unknown command: packettype=%d subtype=%d", packettype, subtype);
 			return false;
 	}
 
 	int used = 1;
 	if (!FindDevice(pCmd->id, pCmd->unitcode, subtype, &used)) {
-		_log.Log(LOG_ERROR, "COpenWebNetUSB: command received for unknown device : %d/%s", who, whereStr.str().c_str());
+		Log(LOG_ERROR, "command received for unknown device : %d/%s", who, whereStr.str().c_str());
 		return false;
 	}
 
@@ -271,7 +271,7 @@ bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bo
 
 	if (!isOpen()) {
 		if (!silent) {
-			_log.Log(LOG_ERROR, "COpenWebNet writeRead error : connection not opened");
+			Log(LOG_ERROR, "COpenWebNet writeRead error : connection not opened");
 		}
 		return false;
 	}
@@ -290,7 +290,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "COpenWebNetUSB: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
 		openOnlyBaud(
 			m_szSerialPort,
@@ -309,9 +309,9 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetUSB: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -320,7 +320,7 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "COpenWebNetUSB: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		m_bWriting = false;
 		return false;
 	}
@@ -337,12 +337,12 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 
 	std::string responseStr((const char*)m_readBuffer, m_readBufferSize);
 	bt_openwebnet responseSession(responseStr);
-	_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", OPENWEBNET_COMMAND_SESSION, responseStr.c_str());
+	Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", OPENWEBNET_COMMAND_SESSION, responseStr.c_str());
 
 	bool bCheckPassword = false;
 	if (!responseSession.IsOKFrame()) {
 		if (!silent) {
-			_log.Log(LOG_STATUS, "COpenWebNet : failed to begin session, no ACK received (%s)", responseStr.c_str());
+			Log(LOG_STATUS, "COpenWebNet : failed to begin session, no ACK received (%s)", responseStr.c_str());
 		}
 		m_bWriting = false;
 		return false;
@@ -353,19 +353,19 @@ bool COpenWebNetUSB::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		return false;
 	}
 	if (!silent) {
-		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frameOpen.c_str(), m_readBuffer);
+		Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frameOpen.c_str(), m_readBuffer);
 	}
 
 	if (!ParseData((char*)m_readBuffer, m_readBufferSize, response)) {
 		if (!silent) {
-			_log.Log(LOG_ERROR, "COpenWebNet : Cannot parse answer : %s", m_readBuffer);
+			Log(LOG_ERROR, "COpenWebNet : Cannot parse answer : %s", m_readBuffer);
 		}
 		m_bWriting = false;
 		return false;
 	}
 
 	if (!response.empty() && response[0].IsPwdFrame()) {
-		_log.Log(LOG_STATUS, "COpenWebNet : password required, you have to configure your gateway security settings to allow Domoticz");
+		Log(LOG_STATUS, "COpenWebNet : password required, you have to configure your gateway security settings to allow Domoticz");
 	}
 
 	m_bWriting = false;

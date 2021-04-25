@@ -1,8 +1,12 @@
 return {
 	on = {
 		variables = {
-			'myUserVariable'
-		}
+			'myUserVariable',
+		},
+	},
+	logging = {
+		level = domoticz.LOG_INFO,
+		marker = 'template',
 	},
 	execute = function(domoticz, variable)
 		domoticz.log('Variable ' .. variable.name .. ' was changed', domoticz.LOG_INFO)

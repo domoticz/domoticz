@@ -231,7 +231,7 @@ namespace Plugins {
 				{
 					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
-					PyObject*	pKey = PyLong_FromLong(self->ImageID);
+					PyNewRef	pKey = PyLong_FromLong(self->ImageID);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_ImageDict, pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete image '%d' from images dictionary.", self->pPlugin->m_Name.c_str(), self->ImageID);
@@ -698,17 +698,13 @@ namespace Plugins {
 							Py_END_ALLOW_THREADS
 							for (const auto &opt : mpOptions)
 							{
-								PyObject *pKeyDict = PyUnicode_FromString(opt.first.c_str());
-								PyObject *pValueDict = PyUnicode_FromString(opt.second.c_str());
+								PyNewRef	pKeyDict = PyUnicode_FromString(opt.first.c_str());
+								PyNewRef	pValueDict = PyUnicode_FromString(opt.second.c_str());
 								if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
 								{
 									_log.Log(LOG_ERROR, "(%s) Failed to refresh Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);
-									Py_DECREF(pKeyDict);
-									Py_DECREF(pValueDict);
 									break;
 								}
-								Py_DECREF(pKeyDict);
-								Py_DECREF(pValueDict);
 							}
 						}
 					}
@@ -758,9 +754,9 @@ namespace Plugins {
 						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
 						{
-							PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
+							PyBorrowedRef	pValueDict = PyDict_GetItemString(self->Options, "Custom");
 							std::string sOptionValue;
-							if (pValueDict == nullptr)
+							if (!pValueDict)
 								sOptionValue = "";
 							else
 								sOptionValue = PyUnicode_AsUTF8(pValueDict);
@@ -783,7 +779,7 @@ namespace Plugins {
 						{
 							self->ID = atoi(result[0][0].c_str());
 
-							PyObject*	pKey = PyLong_FromLong(self->Unit);
+							PyNewRef	pKey = PyLong_FromLong(self->Unit);
 							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
 							{
 								_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
@@ -799,9 +795,8 @@ namespace Plugins {
 								std::map<std::string, std::string> mpOptions;
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
 									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-									PyObject* pStr = PyObject_Str(pValueDict);
+									PyNewRef pStr = PyObject_Str(pValueDict);
 									std::string sOptionValue = PyUnicode_AsUTF8(pStr);
-									Py_XDECREF(pStr);
 									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -970,9 +965,8 @@ namespace Plugins {
 					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
 					{
 						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-						PyObject* pStr = PyObject_Str(pValueDict);
+						PyNewRef pStr = PyObject_Str(pValueDict);
 						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
-						Py_XDECREF(pStr);
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
 					Py_BEGIN_ALLOW_THREADS
@@ -982,7 +976,7 @@ namespace Plugins {
 				else
 				{
 					std::string sOptionValue;
-					PyObject *pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+					PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
 					if (pValue)
 					{
 						sOptionValue = PyUnicode_AsUTF8(pValue);
@@ -1087,7 +1081,7 @@ namespace Plugins {
 				{
 					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 
-					PyObject*	pKey = PyLong_FromLong(self->Unit);
+					PyNewRef	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete unit '%d' from device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
@@ -1145,6 +1139,7 @@ namespace Plugins {
 			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
+		Py_XDECREF(self->Target);
 		Py_XDECREF(self->Address);
 		Py_XDECREF(self->Port);
 		Py_XDECREF(self->LastSeen);
@@ -1193,6 +1188,7 @@ namespace Plugins {
 					Py_DECREF(self);
 					return nullptr;
 				}
+				self->Target = NULL;
 				self->Address = PyUnicode_FromString("");
 				if (self->Address == nullptr)
 				{
@@ -1354,10 +1350,16 @@ namespace Plugins {
 			return Py_None;
 		}
 
+		PyObject *pTarget = NULL;
 		int iTimeout = 0;
-		static char *kwlist[] = { "Timeout", NULL };
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "|I", kwlist, &iTimeout))
+		static char *kwlist[] = { "Target", "Timeout", NULL };
+		if (PyArg_ParseTupleAndKeywords(args, kwds, "|OI", kwlist, &pTarget, &iTimeout))
 		{
+			if (pTarget)
+			{
+				Py_INCREF(pTarget);
+				self->Target = pTarget;
+			}
 			if (!iTimeout || (iTimeout > 199))
 			{
 				self->Timeout = iTimeout;
@@ -1372,7 +1374,7 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	PyObject * CConnection_listen(CConnection * self)
+	PyObject *CConnection_listen(CConnection *self, PyObject *args, PyObject *kwds)
 	{
 		Py_INCREF(Py_None);
 
@@ -1399,6 +1401,17 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
+		}
+
+		PyObject *pTarget = NULL;
+		static char *kwlist[] = { "Target", NULL };
+		if (PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+		{
+			if (pTarget)
+			{
+				Py_INCREF(pTarget);
+				self->Target = pTarget;
+			}
 		}
 
 		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, self));

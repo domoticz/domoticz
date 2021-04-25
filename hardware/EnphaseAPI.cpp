@@ -92,7 +92,7 @@ bool EnphaseAPI::StopHardware()
 
 void EnphaseAPI::Do_Work()
 {
-	_log.Log(LOG_STATUS, "EnphaseAPI Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 	int sec_counter = Enphase_request_INTERVAL - 5;
 
 	while (!IsStopRequested(1000))
@@ -114,7 +114,7 @@ void EnphaseAPI::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS, "EnphaseAPI Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool EnphaseAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
@@ -160,7 +160,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
+		Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
 		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
@@ -171,7 +171,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
 		return false;
 	}
 	if (
@@ -179,7 +179,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 		&& (result["production"].empty())
 		)
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid (no) data received");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid (no) data received");
 		return false;
 	}
 	return true;
@@ -236,7 +236,7 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][0].empty())
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
 	}
 
@@ -261,7 +261,7 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][1].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
 	}
 

@@ -120,7 +120,7 @@ void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
 
 int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_type& thread)
 {
-	return SetThreadName(thread, m_ShortName.c_str());
+	return SetThreadName(thread, m_Name.c_str());
 }
 
 //Log Helper functions
@@ -130,7 +130,7 @@ void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogl
 	if (!(m_LogLevelEnabled & (uint32_t)level))
 		return; //this type of log is disabled
 
-	_log.Log(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+	_log.Log(level, "%s: %s", m_Name.c_str(), sLogline.c_str());
 }
 
 void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
@@ -143,12 +143,12 @@ void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
-	_log.Log(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+	_log.Log(level, "%s: %s", m_Name.c_str(), cbuffer);
 }
 
 void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const std::string& sLogline)
 {
-	_log.Debug(level, "%s: %s", m_ShortName.c_str(), sLogline.c_str());
+	_log.Debug(level, "%s: %s", m_Name.c_str(), sLogline.c_str());
 }
 
 void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline, ...)
@@ -158,7 +158,7 @@ void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline,
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
-	_log.Debug(level, "%s: %s", m_ShortName.c_str(), cbuffer);
+	_log.Debug(level, "%s: %s", m_Name.c_str(), cbuffer);
 }
 
 //Sensor Helpers
@@ -353,15 +353,13 @@ void CDomoticzHardwareBase::SendTextSensor(const int NodeID, const int ChildID, 
 std::string CDomoticzHardwareBase::GetTextSensorText(const int NodeID, const int ChildID, bool& bExists)
 {
 	bExists = false;
+	std::string sTmp = std_format("%08X", (NodeID << 8) | ChildID);
+
 	std::string ret;
+	std::vector<std::vector<std::string>> result;
 
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (NodeID << 8) | ChildID);
-
-	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeTextStatus));
+	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral),
+				  int(sTypeTextStatus));
 	if (!result.empty())
 	{
 		bExists = true;
@@ -453,12 +451,11 @@ void CDomoticzHardwareBase::SendRainRateSensor(const int NodeID, const int Batte
 
 float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool& bExists)
 {
-	char szIdx[10];
-	sprintf(szIdx, "%d", NodeID & 0xFFFF);
+	std::string sIdx = std_format("%d", NodeID & 0xFFFF);
 	int Unit = 0;
 
 	std::vector<std::vector<std::string> > results;
-	results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
+	results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), Unit, int(pTypeRAIN), int(sTypeRAIN3));
 	if (results.empty())
 	{
 		bExists = false;
@@ -477,15 +474,16 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool& bExists)
 
 bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, float& WindSpeed, float& WindGust, float& WindTemp, float& WindChill, bool bHaveWindTemp, bool& bExists)
 {
-	char szIdx[10];
-	sprintf(szIdx, "%d", NodeID & 0xFFFF);
+	std::string sIdx = std_format("%d", NodeID & 0xFFFF);
 	int Unit = 0;
 
 	std::vector<std::vector<std::string> > results;
 	if (!bHaveWindTemp)
-		results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeWIND), int(sTypeWINDNoTemp));
+		results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), Unit,
+					   int(pTypeWIND), int(sTypeWINDNoTemp));
 	else
-		results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeWIND), int(sTypeWIND4));
+		results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), Unit,
+					   int(pTypeWIND), int(sTypeWIND4));
 	if (results.empty())
 	{
 		bExists = false;
@@ -555,12 +553,10 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool& bExists)
 {
 	int dID = (NodeID << 8) | ChildID;
-	char szTmp[30];
-	sprintf(szTmp, "%08X", dID);
+	std::string sTmp = std_format("%08X", dID);
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeKwh));
 	if (result.empty())
 	{
 		bExists = false;
@@ -629,11 +625,11 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const uint8_
 	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
-	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	std::string sIdx = std_format("%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), ChildID,
+				  int(pTypeLighting2), int(sTypeAC));
 	if (result.empty())
 	{
 		SendSwitch(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname, userName);
@@ -693,11 +689,10 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
-	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	std::string sIdx = std_format("%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), ChildID,
+				  int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
@@ -807,11 +802,11 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const uint8_t
 
 bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const int /*ChildID*/)
 {
-	std::vector<std::vector<std::string> > result;
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)NodeID);
+	std::string sTmp = std_format("%08X", NodeID);
+
+	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
+		m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypePercentage));
 	return (!result.empty());
 }
 
@@ -846,11 +841,10 @@ void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t Chi
 	gDevice.intval1 = (NodeID << 8) | ChildID;
 	gDevice.floatval1 = CustomValue;
 
-	char szTmp[9];
-	sprintf(szTmp, "%08X", gDevice.intval1);
+	std::string sTmp = std_format("%08X", gDevice.intval1);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCustom));
+		m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeCustom));
 	bool bDoesExists = !result.empty();
 
 	if (bDoesExists)
@@ -861,7 +855,7 @@ void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t Chi
 		//Set the Label
 		std::string soptions = "1;" + defaultLabel;
 		m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			soptions.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCustom));
+			soptions.c_str(), m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeCustom));
 	}
 }
 

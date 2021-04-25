@@ -77,14 +77,14 @@ Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort,
 	{
 		size_t aFind = sResult.find("401 Authorization Required");
 		if ((aFind > 0) && (aFind != std::string::npos))
-			_log.Log(LOG_ERROR, "Logitech Media Server: Username and/or password are incorrect. Check Logitech Media Server settings.");
+			Log(LOG_ERROR, "Username and/or password are incorrect. Check Logitech Media Server settings.");
 		else
-			_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
+			Log(LOG_ERROR, "PARSE ERROR: %s", sResult.c_str());
 		return root;
 	}
 	if (root["method"].empty())
 	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: '%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
+		Log(LOG_ERROR, "'%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
 		return root;
 	}
 	return root["result"];
@@ -163,9 +163,9 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			{
 				// 1:	Update the DeviceStatus
 				if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
-					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
+					Log(LOG_NORM, "(%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
-					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
+					Log(LOG_NORM, "(%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
@@ -311,7 +311,7 @@ void CLogitechMediaServer::Do_Work()
 	int scounter = 0;
 	bool bFirstTime = true;
 
-	_log.Log(LOG_STATUS, "Logitech Media Server: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	ReloadNodes();
 	ReloadPlaylists();
@@ -356,7 +356,7 @@ void CLogitechMediaServer::Do_Work()
 		sleep_milliseconds(150);
 	}
 
-	_log.Log(LOG_STATUS, "Logitech Media Server: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 void CLogitechMediaServer::GetPlayerInfo()
@@ -369,7 +369,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 		if (root.isNull()) {
 			m_iMissedQueries++;
 			if (m_iMissedQueries % 3 == 0) {
-				_log.Log(LOG_ERROR, "Logitech Media Server: No response from server %s:%i", m_IP.c_str(), m_Port);
+				Log(LOG_ERROR, "No response from server %s:%i", m_IP.c_str(), m_Port);
 			}
 		}
 		else {
@@ -379,7 +379,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 			int totPlayers = root["player count"].asInt();
 			if (totPlayers > 0) {
 				if (!m_bShowedStartupMessage)
-					_log.Log(LOG_STATUS, "Logitech Media Server: %i connected player(s) found.", totPlayers);
+					Log(LOG_STATUS, "%i connected player(s) found.", totPlayers);
 				for (int ii = 0; ii < totPlayers; ii++)
 				{
 					if (root["players_loop"][ii]["name"].empty())
@@ -421,13 +421,13 @@ void CLogitechMediaServer::GetPlayerInfo()
 					}
 					else {
 						if (!m_bShowedStartupMessage)
-							_log.Log(LOG_ERROR, "Logitech Media Server: model '%s' not supported.", model.c_str());
+							Log(LOG_ERROR, "model '%s' not supported.", model.c_str());
 					}
 				}
 			}
 			else {
 				if (!m_bShowedStartupMessage)
-					_log.Log(LOG_ERROR, "Logitech Media Server: No connected players found.");
+					Log(LOG_ERROR, "No connected players found.");
 			}
 			m_bShowedStartupMessage = true;
 		}
@@ -448,7 +448,7 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 		if (result[0][0] != Name)
 		{ // Update Name in case it has been changed
 			m_sql.safe_query("UPDATE WOLNodes SET Name='%q', Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), m_HwdID, MacAddress.c_str());
-			_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' renamed to '%s'", result[0][0].c_str(), Name.c_str());
+			Log(LOG_STATUS, "Player '%s' renamed to '%s'", result[0][0].c_str(), Name.c_str());
 		}
 		else { //Mark device as 'Active'
 			m_sql.safe_query("UPDATE WOLNodes SET Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, MacAddress.c_str());
@@ -460,7 +460,7 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (!result.empty()) {
 		m_sql.safe_query("UPDATE WOLNodes SET MacAddress='%q', Timeout=0 WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", MacAddress.c_str(), m_HwdID, Name.c_str(), IPAddress.c_str());
-		_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' IP changed to MacAddress", Name.c_str());
+		Log(LOG_STATUS, "Player '%s' IP changed to MacAddress", Name.c_str());
 		return;
 	}
 
@@ -468,7 +468,7 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q')", m_HwdID, Name.c_str());
 	if (!result.empty()) {
 		m_sql.safe_query("UPDATE WOLNodes SET MacAddress='%q', Timeout=0 WHERE (HardwareID==%d) AND (Name=='%q')", MacAddress.c_str(), m_HwdID, Name.c_str());
-		_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' IP changed to MacAddress", Name.c_str());
+		Log(LOG_STATUS, "Player '%s' IP changed to MacAddress", Name.c_str());
 		return;
 	}
 
@@ -476,13 +476,13 @@ void CLogitechMediaServer::UpsertPlayer(const std::string &Name, const std::stri
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, IPAddress.c_str());
 	if (!result.empty()) {
 		m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), MacAddress.c_str(), m_HwdID, IPAddress.c_str());
-		_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' IP changed to MacAddress", Name.c_str());
+		Log(LOG_STATUS, "Player '%s' IP changed to MacAddress", Name.c_str());
 		return;
 	}
 
 	//Player not found, add it...
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', 0)", m_HwdID, Name.c_str(), MacAddress.c_str());
-	_log.Log(LOG_STATUS, "Logitech Media Server: New Player '%s' added", Name.c_str());
+	Log(LOG_STATUS, "New Player '%s' added", Name.c_str());
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress='%q')", m_HwdID, MacAddress.c_str());
 	if (result.empty())
@@ -563,7 +563,7 @@ void CLogitechMediaServer::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (!result.empty())
 	{
-		_log.Log(LOG_STATUS, "Logitech Media Server: %d player-switch(es) found.", (int)result.size());
+		Log(LOG_STATUS, "%d player-switch(es) found.", (int)result.size());
 		for (const auto &sd : result)
 		{
 			LogitechMediaServerNode pnode;
@@ -589,7 +589,7 @@ void CLogitechMediaServer::ReloadNodes()
 		}
 	}
 	else
-		_log.Log(LOG_ERROR, "Logitech Media Server: No player-switches found.");
+		Log(LOG_ERROR, "No player-switches found.");
 }
 
 void CLogitechMediaServer::ReloadPlaylists()
@@ -600,12 +600,12 @@ void CLogitechMediaServer::ReloadPlaylists()
 	Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 	if (root.isNull()) {
-		_log.Log(LOG_ERROR, "Logitech Media Server: No response from server %s:%i", m_IP.c_str(), m_Port);
+		Log(LOG_ERROR, "No response from server %s:%i", m_IP.c_str(), m_Port);
 	}
 	else {
 		int totPlaylists = root["count"].asInt();
 		if (totPlaylists > 0) {
-			_log.Log(LOG_STATUS, "Logitech Media Server: %i playlist(s) found.", totPlaylists);
+			Log(LOG_STATUS, "%i playlist(s) found.", totPlaylists);
 			for (int ii = 0; ii < totPlaylists; ii++)
 			{
 				LMSPlaylistNode pnode;
@@ -618,7 +618,7 @@ void CLogitechMediaServer::ReloadPlaylists()
 			}
 		}
 		else
-			_log.Log(LOG_STATUS, "Logitech Media Server: No playlists found.");
+			Log(LOG_STATUS, "No playlists found.");
 	}
 }
 
@@ -628,7 +628,7 @@ std::string CLogitechMediaServer::GetPlaylistByRefID(const int ID)
 		if (playlist.refID == ID)
 			return playlist.Name;
 
-	_log.Log(LOG_ERROR, "Logitech Media Server: Playlist ID %d not found.", ID);
+	Log(LOG_ERROR, "Playlist ID %d not found.", ID);
 	return "";
 }
 
@@ -752,10 +752,10 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			}
 			return false;
 		}
-		_log.Log(LOG_ERROR, "Logitech Media Server: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
+		Log(LOG_ERROR, "(%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
 		return false;
 	}
-	_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+	Log(LOG_ERROR, "(%d) Command: '%s'. Device not found.", ID, command.c_str());
 	return false;
 }
 
@@ -785,7 +785,7 @@ int CLogitechMediaServer::GetPlaylistRefID(const std::string &name)
 		if (playlist.Name == name)
 			return playlist.refID;
 
-	_log.Log(LOG_ERROR, "Logitech Media Server: Playlist '%s' not found.", name.c_str());
+	Log(LOG_ERROR, "Playlist '%s' not found.", name.c_str());
 	return 0;
 }
 

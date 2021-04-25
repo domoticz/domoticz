@@ -60,22 +60,22 @@ void CRFLinkSerial::Do_Work()
 				{
 				time_t atime = mytime(nullptr);
 				//Send ping (keep alive)
-				_log.Log(LOG_STATUS, "RFLink: t1=%d t2=%d t3=%d", m_LastHeartbeat, m_LastHeartbeatReceive,
+				Log(LOG_STATUS, "t1=%d t2=%d t3=%d", m_LastHeartbeat, m_LastHeartbeatReceive,
 				m_LastReceivedTime);
 
 				if (atime - m_LastReceivedTime > 25) {
-				//_log.Log(LOG_STATUS, "RFLink: ping...");
+				//Log(LOG_STATUS, "ping...");
 				write("10;PING;\n");
 				} else
 				if (atime - m_LastReceivedTime > 50) {
 				//Timeout
-				_log.Log(LOG_ERROR, "RFLink: Nothing received for more than 50 seconds, restarting...");
+				Log(LOG_ERROR, "Nothing received for more than 50 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				terminate();
 				} else {
 				if (atime - m_LastReceivedTime > 25) {
-				//_log.Log(LOG_STATUS, "RFLink: ping...");
+				//Log(LOG_STATUS, "ping...");
 				write("10;PING;\n");
 				}
 				}
@@ -86,20 +86,20 @@ void CRFLinkSerial::Do_Work()
 				{
 					time_t atime = mytime(nullptr);
 					//Send ping (keep alive)
-					//_log.Log(LOG_STATUS, "RFLink: t1=%d t3=%d", atime, m_LastReceivedTime);
+					//Log(LOG_STATUS, "t1=%d t3=%d", atime, m_LastReceivedTime);
 					if (difftime(atime,m_LastReceivedTime) > 50) {
 						//Receive Timeout
-						//_log.Log(LOG_STATUS, "RFLink: ping50...");
+						//Log(LOG_STATUS, "ping50...");
 						write("10;PING;\n");
 						m_retrycntr = 0;
 						m_LastReceivedTime = atime;
 					} else {
 						if (difftime(atime,m_LastReceivedTime) > 25) {
-						   //_log.Log(LOG_STATUS, "RFLink: ping25...");
+						   //Log(LOG_STATUS, "ping25...");
 						   write("10;PING;\n");
 						}
 						//else {
-							//_log.Log(LOG_STATUS, "RFLink: ping0...");
+							//Log(LOG_STATUS, "ping0...");
 						//}
 					}
 				}
@@ -110,7 +110,7 @@ void CRFLinkSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_STATUS,"RFLink: serial retrying in %d seconds...", RFLINK_RETRY_DELAY);
+				Log(LOG_STATUS,"serial retrying in %d seconds...", RFLINK_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr/5>=RFLINK_RETRY_DELAY)
@@ -137,7 +137,7 @@ void CRFLinkSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"RFLink: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 /*
@@ -156,13 +156,13 @@ bool CRFLinkSerial::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 57600);
-		_log.Log(LOG_STATUS,"RFLink: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS,"Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"RFLink: Error opening serial port!");
+		Log(LOG_ERROR,"Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -170,7 +170,7 @@ bool CRFLinkSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"RFLink: Error opening serial port!!!");
+		Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;

@@ -49,7 +49,9 @@ When remote devices are found a matching Domoticz device is created in the Devic
 </plugin>
 """
 import Domoticz
+from Domoticz import Devices, Parameters
 from datetime import datetime
+
 
 class IcmpDevice:
     Address = ""
@@ -84,7 +86,7 @@ class BasePlugin:
     icmpConn = None
     icmpList = []
     nextDev = 0
- 
+
     def onStart(self):
         if Parameters["Mode6"] != "0":
             DumpConfigToLog()
@@ -101,14 +103,14 @@ class BasePlugin:
             if (deviceFound == False):
                 Domoticz.Device(Name=destination, Unit=len(Devices)+1, Type=243, Subtype=31, Image=17, Options={"Custom":"1;ms"}).Create()
                 Domoticz.Device(Name=destination, Unit=len(Devices)+1, Type=17, Subtype=0, Image=17, Options={"Name":destination,"Related":str(len(Devices))}).Create()
-              
+
         # Mark all devices as connection lost if requested
         deviceLost = 0
         if Parameters["Mode5"] == "True":
             deviceLost = 1
         for Device in Devices:
             UpdateDevice(Device, Devices[Device].nValue, Devices[Device].sValue, deviceLost)
-                
+ 
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Log("Successful connect to: "+Connection.Address+" which is surprising because ICMP is connectionless.")
@@ -158,14 +160,14 @@ class BasePlugin:
                     UpdateDevice(Device, 0, "Off", TimedOut)
                     break
             self.icmpConn = None
-    
+
         Domoticz.Debug("Heartbeating '"+self.icmpList[self.nextDev]+"'")
         self.icmpConn = IcmpDevice(self.icmpList[self.nextDev])
         self.nextDev += 1
         if (self.nextDev >= len(self.icmpList)):
             self.nextDev = 0
- 
- 
+
+
 global _plugin
 _plugin = BasePlugin()
 
@@ -218,4 +220,4 @@ def DumpICMPResponseToLog(icmpList):
             else:
                 Domoticz.Log("--->'" + x + "':'" + str(icmpList[x]) + "'")
     else:
-        Domoticz.Log(Data.decode("utf-8", "ignore"))
+        Domoticz.Log(Data.decode("utf-8", "ignore"))  # noqa: F821

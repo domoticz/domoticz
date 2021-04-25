@@ -81,7 +81,7 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string& IPAddress, con
 
 void CAnnaThermostat::OnError(const std::exception &e)
 {
-	_log.Log(LOG_ERROR, "AnnaTherm: Error: %s", e.what());
+	Log(LOG_ERROR, "Error: %s", e.what());
 }
 void CAnnaThermostat::CAnnaThermostat::Init()
 {
@@ -209,12 +209,9 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-	char szTemp[10];
-	sprintf(szTemp, "%.1f", temp);
-
 	sPostData << "<thermostat>";
 	sPostData << "<setpoint>";
-	sPostData << szTemp;
+	sPostData << std_format("%.1f", temp);
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
 

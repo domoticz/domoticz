@@ -2649,10 +2649,9 @@ bool CSQLHelper::OpenDatabase()
 					PushType = pushtype;
 				}
 			};
-			std::vector<_tPushHelper> dbToMigrate;
-			dbToMigrate.push_back(_tPushHelper("HttpLink", CBasePush::PushType::PUSHTYPE_HTTP));
-			dbToMigrate.push_back(_tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB));
-			dbToMigrate.push_back(_tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO));
+			std::vector<_tPushHelper> dbToMigrate{ _tPushHelper("HttpLink", CBasePush::PushType::PUSHTYPE_HTTP),
+							       _tPushHelper("GooglePubSubLink", CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB),
+							       _tPushHelper("FibaroLink", CBasePush::PushType::PUSHTYPE_FIBARO) };
 
 			for (const auto &sd : dbToMigrate)
 			{
@@ -4752,12 +4751,19 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
 			interval = difftime(now, lutime);
-			StringSplit(result[0][5], ";", parts);
-			nEnergy = static_cast<float>(strtof(parts[0].c_str(), nullptr) * interval / 3600
-							 + strtof(parts[1].c_str(), nullptr)); // Rob: whats happening here... strtof ?
-			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
-			sValue = sCompValue;
+			StringSplit(old_sValue, ";", parts);
+			if (parts.size() == 2)
+			{
+				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
+				nEnergy = static_cast<float>(atof(parts[0].c_str()) * interval / 3600 + atof(parts[1].c_str()));
+				StringSplit(sValue, ";", parts);
+				if (!parts.empty())
+				{
+					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
+					old_sValue = sCompValue;
+				}
+			}
+			sValue = old_sValue.c_str();
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
@@ -5269,7 +5275,7 @@ void CSQLHelper::UpdatePreferencesVar(const std::string& Key, const std::string&
 }
 void CSQLHelper::UpdatePreferencesVar(const std::string& Key, const double Value)
 {
-	std::string sValue = boost::to_string(Value);
+	std::string sValue = std::to_string(Value);
 	UpdatePreferencesVar(Key, 0, sValue);
 }
 
@@ -7755,17 +7761,31 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 	}
 }
 
-void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
+void CSQLHelper::DeleteDateRange(const char *ID, const std::string &fromDate, const std::string &toDate)
 {
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string>> result;
 	result = safe_query("SELECT Type,SubType FROM DeviceStatus WHERE (ID==%q)", ID);
 	if (result.empty())
 		return;
 
+	const std::vector<std::string> historyTables{
+		"Rain",		 "Wind",	  "UV",		 "Temperature",		 "Meter",	   "MultiMeter",	  "Percentage",		 "Fan",
+		"Rain_Calendar", "Wind_Calendar", "UV_Calendar", "Temperature_Calendar", "Meter_Calendar", "MultiMeter_Calendar", "Percentage_Calendar", "Fan_Calendar"
+	};
+
+	for (const auto &historyTable : historyTables)
+	{
+		safe_query("DELETE FROM %q WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", historyTable.c_str(), ID, fromDate.c_str(), toDate.c_str() );
+		_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDateRange; delete from %s with idx: %s and Date >= %s and date <= %s " , historyTable.c_str(), std::string(ID).c_str(), fromDate.c_str(), toDate.c_str() );
+	}
+}
+
+void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
+{
+
+	char szDateEnd[100];
 	if (Date.find(':') != std::string::npos)
 	{
-		char szDateEnd[100];
-
 		time_t now = mytime(nullptr);
 		struct tm tLastUpdate;
 		localtime_r(&now, &tLastUpdate);
@@ -7775,28 +7795,10 @@ void CSQLHelper::DeleteDataPoint(const char* ID, const std::string& Date)
 		tLastUpdate.tm_min += 2;
 		sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
 
-		//Short log
-		safe_query("DELETE FROM Rain WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM Wind WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM UV WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM Temperature WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM Meter WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM MultiMeter WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM Percentage WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
-		safe_query("DELETE FROM Fan WHERE (DeviceRowID=='%q') AND (Date>='%q') AND (Date<='%q')", ID, Date.c_str(), szDateEnd);
+		DeleteDateRange(ID, Date.c_str(), szDateEnd);
 	}
 	else
-	{
-		//Day/Month/Year
-		safe_query("DELETE FROM Rain_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM Wind_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM UV_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM Temperature_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM Percentage_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-		safe_query("DELETE FROM Fan_Calendar WHERE (DeviceRowID=='%q') AND (Date=='%q')", ID, Date.c_str());
-	}
+		DeleteDateRange(ID, Date.c_str(), Date.c_str() );
 }
 
 void CSQLHelper::AddTaskItem(const _tTaskItem& tItem, const bool cancelItem)

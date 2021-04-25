@@ -28,5 +28,5 @@ class KMTronicBase : public CDomoticzHardwareBase
 	int m_bufferpos;
 	bool m_bDoInitialQuery;
 	int m_TotRelais;
-	bool m_bRelaisStatus[Max_KMTronic_Relais];
+	std::array<bool, Max_KMTronic_Relais> m_bRelaisStatus;
 };

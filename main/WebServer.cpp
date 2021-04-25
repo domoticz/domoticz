@@ -493,7 +493,8 @@ namespace http {
 			RegisterCommandCode("downloadupdate", [this](auto &&session, auto &&req, auto &&root) { Cmd_DownloadUpdate(session, req, root); });
 			RegisterCommandCode("downloadready", [this](auto &&session, auto &&req, auto &&root) { Cmd_DownloadReady(session, req, root); });
 			RegisterCommandCode("update_application", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateApplication(session, req, root); });
-			RegisterCommandCode("deletedatapoint", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDatePoint(session, req, root); });
+			RegisterCommandCode("deletedatapoint", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDataPoint(session, req, root); });
+			RegisterCommandCode("deletedaterange", [this](auto &&session, auto &&req, auto &&root) { Cmd_DeleteDateRange(session, req, root); });
 			RegisterCommandCode("customevent", [this](auto &&session, auto &&req, auto &&root) { Cmd_CustomEvent(session, req, root); });
 
 			RegisterCommandCode("setactivetimerplan", [this](auto &&session, auto &&req, auto &&root) { Cmd_SetActiveTimerPlan(session, req, root); });
@@ -1115,9 +1116,9 @@ namespace http {
 					}
 				}
 
-				if (htype == HTYPE_ECODEVICES) {
-					// EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
-					// Domoticz instance are very low as both are national standards (NL and FR)
+				if (htype == HTYPE_ECODEVICES || htype == HTYPE_TeleinfoMeterTCP) {
+					// EcoDevices and Teleinfo always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo
+					//  device on the same Domoticz instance are very low as both are national standards (NL and FR)
 					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
 				}
 			}
@@ -1522,7 +1523,7 @@ namespace http {
 				|| (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP)
 				|| (htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN))
 				|| (htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviHTTPDevices) || (htype == HTYPE_DenkoviTCPDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
-				|| (htype == HTYPE_OctoPrint)
+				|| (htype == HTYPE_OctoPrint) || (htype == HTYPE_TeleinfoMeterTCP)
 				) {
 				//Lan
 				if (address.empty())
@@ -2937,17 +2938,16 @@ namespace http {
 				sValue.clear();
 			}
 
-			root["Forecasthardware"] = "0";
-			if (m_sql.GetUserVariable("forecasthardware", USERVARTYPE_INTEGER, sValue))
+			root["Forecasthardware"] = 0;
+			int iValue = 0;
+			if (m_sql.GetPreferencesVar("ForecastHardwareID", iValue))
 			{
-				root["Forecasthardware"] = sValue;
-				sValue = "";
-				sValue.clear();
+				root["Forecasthardware"] = iValue;
 			}
 
-			if (root["Forecasthardware"] != "0")
+			if (root["Forecasthardware"] > 0)
 			{
-				int iHardwareID = atoi(root["Forecasthardware"].asString().c_str());
+				int iHardwareID = root["Forecasthardware"].asInt();
 				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(iHardwareID);
 				if (pHardware != nullptr)
 				{
@@ -2979,17 +2979,17 @@ namespace http {
 					}
 					else
 					{
-						root["Forecasthardware"] = "0";	// reset to 0
+						root["Forecasthardware"] = 0;	// reset to 0
 					}
 				}
 				else
 				{
 					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
-					root["Forecasthardware"] = "0";	// reset to 0
+					root["Forecasthardware"] = 0;	// reset to 0
 				}
 			}
 
-			if (root["Forecasthardware"] == "0" && iSucces == 1)
+			if (root["Forecasthardware"] == 0 && iSucces == 1)
 			{
 				// No forecast device, but we have geo coords, so enough for fallback
 				iSucces++;
@@ -3478,15 +3478,36 @@ namespace http {
 			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
 		}
 
-		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteDateRange(WebEmSession &session, const request &req, Json::Value &root)
 		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string fromDate = request::findValue(&req, "fromdate");
+			const std::string toDate = request::findValue(&req, "todate");
+			if ( ( idx.empty()) || (fromDate.empty() || toDate.empty() ))
+				return;
+			root["status"] = "OK";
+			root["title"] = "deletedaterange";
+			m_sql.DeleteDateRange(idx.c_str(), fromDate, toDate);
+		}
+
+		void CWebServer::Cmd_DeleteDataPoint(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			const std::string idx = request::findValue(&req, "idx");
 			const std::string Date = request::findValue(&req, "date");
-			if (
-				(idx.empty()) ||
-				(Date.empty())
-				)
+
+			if ( (idx.empty()) || (Date.empty()) )
 				return;
+
 			root["status"] = "OK";
 			root["title"] = "deletedatapoint";
 			m_sql.DeleteDataPoint(idx.c_str(), Date);
@@ -10978,10 +10999,10 @@ namespace http {
 								sprintf(szTmp, "%d kWh", 0);
 								root["result"][ii]["CounterToday"] = szTmp;
 							}
-							root["result"][ii]["TypeImg"] = "current";
-							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
-							root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"];  //for alternate Energy Reading
 						}
+						root["result"][ii]["TypeImg"] = "current";
+						root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
+						root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
 					}
 					else if (dType == pTypeAirQuality)
 					{
@@ -13334,7 +13355,7 @@ namespace http {
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
 				options["EnergyMeterMode"] = EnergyMeterMode;
-				uint64_t ullidx = std::strtoull(idx.c_str(), nullptr, 10);
+				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, options);
 			}
 
@@ -15150,7 +15171,7 @@ namespace http {
 					if (!result.empty())
 					{
 						std::map<int, int> _directions;
-						int wdirtabletemp[17][8];
+						std::array<std::array<int, 8>, 17> wdirtabletemp = {};
 						std::string szLegendLabels[7];
 						int ii = 0;
 
@@ -15159,8 +15180,6 @@ namespace http {
 						int idir;
 						for (idir = 0; idir < 360 + 1; idir++)
 							_directions[idir] = 0;
-						for (ii = 0; ii < 17; ii++)
-							std::fill(std::begin(wdirtabletemp[ii]), std::end(wdirtabletemp[ii]), 0);
 
 						if (m_sql.m_windunit == WINDUNIT_MS)
 						{

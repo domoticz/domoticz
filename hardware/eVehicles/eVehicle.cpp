@@ -72,6 +72,7 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 		m_api = nullptr;
 		break;
 	}
+	m_api->m_pBase = this;
 	if ((defaultinterval > 0) && (checkedVehicleType != Testcar))
 	{
 		m_defaultinterval = defaultinterval*60;
@@ -858,7 +859,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 
 				iter = data.customdata[cnt];
 
-				//_log.Debug(DEBUG_NORM, "Starting to process custom data %d - %s", cnt, iter.asString().c_str());
+				//Debug(DEBUG_NORM, "Starting to process custom data %d - %s", cnt, iter.asString().c_str());
 
 				if (!(iter["id"].empty() || iter["value"].empty() || iter["label"].empty()))
 				{
@@ -882,7 +883,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 							bValue = (sBoolValue == "true");
 						}
 
-						_log.Debug(DEBUG_NORM, "Processing custom data %d - %s - %s (%s)", iChildID, sValue.c_str(), sLabel.c_str(), (isBool ? "Boolean" : (is_number(sValue) ? "Number": "Text" )));
+						Debug(DEBUG_NORM, "Processing custom data %d - %s - %s (%s)", iChildID, sValue.c_str(), sLabel.c_str(), (isBool ? "Boolean" : (is_number(sValue) ? "Number": "Text" )));
 
 						if (is_number(sValue))
 						{
@@ -904,7 +905,7 @@ void CeVehicle::UpdateCustomVehicleData(CVehicleApi::tCustomData& data)
 		}
 		catch(const std::exception& e)
 		{
-			_log.Debug(DEBUG_NORM, "Crashed processing custom data %s!", e.what());
+			Debug(DEBUG_NORM, "Crashed processing custom data %s!", e.what());
 			data.customdata.clear();
 		}
 	}

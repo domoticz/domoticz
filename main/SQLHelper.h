@@ -362,6 +362,7 @@ class CSQLHelper : public StoppableTask
 
 	void GetMeterType(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int &meterType);
 
+	void DeleteDateRange(const char *ID, const std::string &fromDate, const std::string &toDate);
 	void DeleteDataPoint(const char *ID, const std::string &Date);
 
 	void UpdateRFXCOMHardwareDetails(int HardwareID, int msg1, int msg2, int msg3, int msg4, int msg5, int msg6);

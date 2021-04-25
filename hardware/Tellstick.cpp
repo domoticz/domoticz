@@ -31,7 +31,7 @@ void CTellstick::SetSettings(int repeats, int repeatInterval)
 bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
 {
     const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-    _log.Log(LOG_NORM, "Tellstick: WriteToHardware %d id: %d cmd: %d", pSwitch->type, pSwitch->id, pSwitch->cmnd);
+    Log(LOG_NORM, "WriteToHardware %d id: %d cmd: %d", pSwitch->type, pSwitch->id, pSwitch->cmnd);
 
     if (pSwitch->type != pTypeGeneralSwitch)
         return false; //only allowed to control switches
@@ -52,7 +52,7 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
                               m_HwdID, sid, pTypeGeneralSwitch, sSwitchTypeAC);
 	if (result.empty())
     {
-        _log.Log(LOG_NORM, "Tellstick: device %d %s: %s", id, sid ,devname);
+        Log(LOG_NORM, "device %d %s: %s", id, sid ,devname);
 		m_sql.InsertDevice(m_HwdID, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, 0, " ", devname);
 
         return true;
@@ -62,7 +62,7 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
 
 void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *model, int dataType, const char *value)
 {
-    _log.Log(LOG_NORM, "Tellstick: sensorEvent %d,%s,%s,%d,%s", deviceId, protocol, model, dataType, value);
+    Log(LOG_NORM, "sensorEvent %d,%s,%s,%d,%s", deviceId, protocol, model, dataType, value);
     switch (dataType)
     {
     case TELLSTICK_TEMPERATURE:
@@ -84,7 +84,7 @@ void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *mod
 
 void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 {
-    _log.Log(LOG_NORM, "Tellstick: deviceEvent %d %d: %s", deviceId, method, data);
+    Log(LOG_NORM, "deviceEvent %d %d: %s", deviceId, method, data);
 
     char sid[16];
     sprintf(sid, "%08d", deviceId);
@@ -109,14 +109,14 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 	    sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, 255, m_Name.c_str());
 	break;
     default:
-        _log.Log(LOG_NORM, "Unknown event from device %i\n", deviceId);
+        Log(LOG_NORM, "Unknown event from device %i\n", deviceId);
         break;
     }
 }
 
 void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 {
-    _log.Log(LOG_NORM, "Tellstick: rawDeviceEvent %d: %s", controllerId, data);
+    Log(LOG_NORM, "rawDeviceEvent %d: %s", controllerId, data);
 
     if (!data)
         return;
@@ -213,7 +213,7 @@ void CTellstick::Init()
     {
         int id = m_td.GetDeviceId(i);
         char *name = m_td.GetName(id);
-        _log.Log(LOG_NORM, "Tellstick: %s method %d", name, m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
+        Log(LOG_NORM, "%s method %d", name, m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM);
         bool isDimmer = m_td.Methods(id, TELLSTICK_TURNON | TELLSTICK_TURNOFF | TELLSTICK_DIM) & TELLSTICK_DIM;
         AddSwitchIfNotExits(id, name, isDimmer);
         m_td.ReleaseString(name);
@@ -227,7 +227,7 @@ bool CTellstick::StartHardware()
     Init();
     m_bIsStarted=true;
     sOnConnected(this);
-    _log.Log(LOG_NORM, "Tellstick: StartHardware");
+    Log(LOG_NORM, "StartHardware");
     //Start worker thread
     m_thread = std::make_shared<std::thread>([this] { ThreadSendCommands(); });
     SetThreadNameInt(m_thread->native_handle());
@@ -258,20 +258,20 @@ bool CTellstick::StopHardware()
 
 void CTellstick::SendCommand(int devID, const _tGeneralSwitch &genSwitch)
 {
-    _log.Log(LOG_NORM, "Tellstick: SendCommand %d id: %d cmd: %d",
+    Log(LOG_NORM, "SendCommand %d id: %d cmd: %d",
              genSwitch.type, genSwitch.id, genSwitch.cmnd);
     switch (genSwitch.cmnd)
     {
     case gswitch_sOn:
-        _log.Log(LOG_NORM, "Tellstick: Switch ON");
+        Log(LOG_NORM, "Switch ON");
         m_td.TurnOn(genSwitch.id);
         break;
     case gswitch_sOff:
-        _log.Log(LOG_NORM, "Tellstick: Switch OFF");
+        Log(LOG_NORM, "Switch OFF");
         m_td.TurnOff(genSwitch.id);
         break;
     case gswitch_sSetLevel:
-        _log.Log(LOG_NORM, "Tellstick: Dim level %d %d",
+        Log(LOG_NORM, "Dim level %d %d",
                  genSwitch.level, genSwitch.level * 255 / 99);
         m_td.Dim(genSwitch.id, genSwitch.level * 255 / 99);
         break;

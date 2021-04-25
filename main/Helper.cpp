@@ -22,6 +22,7 @@
 #include <chrono>
 #include <limits.h>
 #include <cstring>
+#include <stdarg.h>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -1390,4 +1391,20 @@ double round_digits(double dIn, const int totDigits)
 	std::stringstream sstr;
 	sstr << std::setprecision(totDigits) << std::fixed << dIn;
 	return std::stod(sstr.str());
+}
+
+const std::string std_format(const char* szFormat, ...)
+{
+	va_list vaArgs;
+	va_start(vaArgs, szFormat);
+
+	va_list vaCopy;
+	va_copy(vaCopy, vaArgs);
+	const int iLength = std::vsnprintf(NULL, 0, szFormat, vaCopy);
+	va_end(vaCopy);
+
+	std::vector<char> zc(iLength + 1, 0);
+	std::vsnprintf(zc.data(), zc.size(), szFormat, vaArgs);
+	va_end(vaArgs);
+	return std::string(zc.data(), zc.size() - 1);
 }
