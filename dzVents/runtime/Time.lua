@@ -832,17 +832,16 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.time matches the rule
 	function self.matchesRule(rule, processed)
-
-		if type(rule) == 'string' and ( string.len(rule == nil and "" or rule) == 0) then
+		if type(rule) ~= 'string' or rule == '' then
+			utils.log('Time rule is not a string.',utils.LOG_ERROR)
 			return false
 
 		-- split into atomic time rules to simplify and speedup processing
-		elseif type(rule) == 'string' and not(processed) then
+		elseif not(processed) then
 			populateAstrotimes()
 			local rule = rule:lower()
 			local validPositiveRules = true
 			local negativeKeyword = 'except'
-			local orKeyword = '%s+or%s+'
 
 			local function ruleSplit(rawRule)
 				local ruleKeywords = 'on, between, every, in'
@@ -862,10 +861,13 @@ local function Time(sDate, isUTC, _testMS)
 
 			local positiveRules, negativeRules
 			local exceptPosition = rule:find(negativeKeyword)
-			local orPosition = rule:find(orKeyword)
 
-			if orPosition then
-				return ( self.matchesRule( rule:match('(.*)' .. orKeyword ) ) or self.matchesRule( rule:match(orKeyword .. '(.*)' ) ) )
+			if rule:find('%s+or%s+') then
+				local subRules = utils.splitLine(rule, 'or')
+				for _, subRule in ipairs(subRules) do
+					if self.matchesRule( subRule ) then return true end
+				end
+				return false
 			elseif exceptPosition then
 				positiveRules = ruleSplit(rule:sub(1, exceptPosition - 1))
 				negativeRules = ruleSplit(rule:sub(exceptPosition + #negativeKeyword, #rule))

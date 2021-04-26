@@ -146,6 +146,19 @@ function self.stringSplit(text, sep, convertNumber, convertNil)
 	return t
 end
 
+function self.splitLine (line, word)
+	local start = 1
+	local first, last = 0
+	local t = {}
+	while true do
+		first, last = line:find('%s+'.. word .. '%s+', start)
+		table.insert(t,line:sub(start, ( ( first and first - 1) or #line)))
+		if not first then break end
+		start = last + 1
+	end
+	return t
+end
+
 function self.stringToSeconds(str)
 
 	local now = os.date('*t')

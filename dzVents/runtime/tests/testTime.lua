@@ -1379,9 +1379,11 @@ describe('Time', function()
 				assert.is_true(t.matchesRule('at midnight or at 00:24'))
 				assert.is_true(t.matchesRule('at midnight or at 00:00-00:30'))
 				assert.is_false(t.matchesRule('at midnight or at 00:00-00:03'))
+				assert.is_true(t.matchesRule('at midnight or at 00:00-00:03 or 336 minutes before sunrise'))
 
 				t = Time('2021-04-19 00:00:00')
 				assert.is_true(t.matchesRule('at midnight or at sunrise'))
+				assert.is_true(t.matchesRule('at sunrise or at midnight'))
 
 				t = Time('2021-04-19 00:24:00')
 				assert.is_false(t.matchesRule('at 7:30-00:00 on mon and at 00:00-00:30 on tue'))
