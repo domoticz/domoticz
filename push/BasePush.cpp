@@ -948,7 +948,9 @@ namespace http {
 					int dType = atoi(sd[2].c_str());
 					int dSubType = atoi(sd[3].c_str());
 					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-					if (sOptions == "Status")
+					std::vector<std::string> tmpV;
+					StringSplit(sOptions, ",", tmpV);
+					if (!tmpV.empty() && tmpV[0] == "Status")
 					{
 						root["result"][ii]["name"] = sd[1];
 						root["result"][ii]["value"] = sd[0];
