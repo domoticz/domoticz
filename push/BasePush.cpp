@@ -950,7 +950,7 @@ namespace http {
 					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
 					std::vector<std::string> tmpV;
 					StringSplit(sOptions, ",", tmpV);
-					if (tmpV.size() > 0 && tmpV[0] == "Status")
+					if (!tmpV.empty() && tmpV[0] == "Status")
 					{
 						root["result"][ii]["name"] = sd[1];
 						root["result"][ii]["value"] = sd[0];
