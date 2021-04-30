@@ -407,11 +407,109 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 }
             });
             self.chart.container.addEventListener('click', function (e) {
-                self.consoledebug('Click at ' + ' (' + e.clientX + ',' + e.clientY + ')' + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey);
+                const event = self.chart.pointer.normalize(e);
+                const plotX = event.chartX - self.chart.plotLeft;
+                const plotY = event.chartY - self.chart.plotTop;
+                self.consoledebug('Click at '
+                    + ' (' + e.clientX + ',' + e.clientY + ') -> (' + plotX + ',' + plotY + ')'
+                    + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey + ' alt:' + e.altKey);
+                self.chart.yAxis.forEach(function (x) {
+                    self.consoledebug('yAxis => index:' + x.userOptions.index + ', title:' + x.userOptions.title.text + ', opposite:' + x.userOptions.opposite + ', left:' + x.left + ', right:' + x.right + ', offset:' + x.offset + ', labelOffset:' + x.labelOffset + ', dataMin:' + x.dataMin + ', dataMax:' + x.dataMax + ', dzZoom:' + x.dzZoom);
+                });
+                const axes = axesOrdered(self.chart.yAxis, plotX, self.chart.plotWidth);
+                const nextZoomValue = nextZoom(axes[0].dzZoom, e);
+                axes.splice(0, e.altKey ? axes.length : 1).forEach(function (axis) {
+                    yAxisZoom(axis, nextZoomValue);
+                });
+                synchronizeYaxes(true);
+                // self.chart.redraw();
+
+                function axesOrdered(axes, plotX, plotWidth) {
+                    const x = plotX < 0 ? -plotX : plotX - plotWidth;
+                    const xSide = plotX < 0 ? -1 : 1;
+                    return axes
+                        .map(function (axis) {
+                            const axisOffset = Math.abs(axis.offset);
+                            const axisSide = axis.userOptions.opposite ? 1 : -1;
+                            return {axis: axis, ordinal: (axisOffset < x ? axisOffset - x : 1000) + (axisSide === xSide ? 0 : 1000)};
+                        }).sort(function (l, r) {
+                            return l.ordinal - r.ordinal;
+                        }).map(function (axisHolder) {
+                            return axisHolder.axis;
+                        });
+                }
+
+                function nextZoom(zoom, e) {
+                    const c = e.ctrlKey;
+                    const s = e.shiftKey;
+                    const def = !c && !s;
+                    const low = c && !s;
+                    const high = !c && s;
+                    const full = c && s;
+                    if (zoom === undefined && (def || low) || zoom === 'high' && low || zoom === 'full' && low) {
+                        return 'low';
+                    } else if (zoom === 'low' && (def || high) || zoom === undefined && high || zoom === 'full' && high) {
+                        return 'high';
+                    } else if (zoom === 'high' && (def || full) || zoom === undefined && full || zoom === 'low' && full) {
+                        return 'full';
+                    } else if (zoom === 'full' && (def || full) || zoom === 'low' && low || zoom === 'high' && high) {
+                        return 'default';
+                    }
+                    return 'default';
+                }
+
+                function yAxisZoom(yAxis, zoom) {
+                    const axisTitle = yAxis.userOptions.title.text;
+                    const axisTitle0To100 = axisTitle.includes('%') || axisTitle.includes('°C');
+                    const axisMin = axisTitle0To100 ? 0 : yAxis.dataMin;
+                    const axisMax = axisTitle0To100 ? 100 : yAxis.dataMax;
+                    if (zoom === 'low') {
+                        self.consoledebug('yAxis.setExtremes(axisMin ['+axisMin+'],null)');
+                        yAxis.setExtremes(axisMin, null);
+                        axisSetTitle(yAxis, bottom);
+                        yAxis.dzZoom = 'low';
+                    } else if (zoom === 'high') {
+                        self.consoledebug('yAxis.setExtremes(null,axisMax ['+axisMax+'])');
+                        yAxis.setExtremes(null, axisMax);
+                        axisSetTitle(yAxis, top);
+                        yAxis.dzZoom = 'high';
+                    } else if (zoom === 'full') {
+                        self.consoledebug('yAxis.setExtremes(axisMin ['+axisMin+'],axisMax ['+axisMax+'])');
+                        yAxis.setExtremes(axisMin, axisMax);
+                        axisSetTitle(yAxis, topbottom);
+                        yAxis.dzZoom = 'full';
+                    } else {
+                        self.consoledebug('yAxis.setExtremes(null,null)');
+                        yAxis.setExtremes(null, null);
+                        axisSetTitle(yAxis, none);
+                        yAxis.dzZoom = undefined;
+                    }
+
+                    function axisSetTitle(axis, newTitle) {
+                        const title = axis.userOptions.title.text.replace(/^\[\u2004/, '').replace(/\u2004\]$/, '');
+                        axis.setTitle({text: newTitle(axis, title)}, true);
+                    }
+
+                    function none(axis, title) {
+                        return title;
+                    }
+
+                    function top(axis, title) {
+                        return axis.userOptions.opposite ? '[\u2004' + title : title + '\u2004]';
+                    }
+
+                    function topbottom(axis, title) {
+                        return '[\u2004' + title + '\u2004]';
+                    }
+
+                    function bottom(axis, title) {
+                        return axis.userOptions.opposite ? title + '\u2004]' : '[\u2004' + title;
+                    }
+                }
             });
 
             function debugMouseAction(action, e) {
-                self.consoledebug(action + (e.ctrlKey ? ' +ctrl' : '') + (e.shiftKey ? ' +shift' : '') + ' at (' + e.clientX + ',' + e.clientY + ') on ' + Math.round(e.timeStamp));
+                self.consoledebug(action + (e.ctrlKey ? ' +ctrl' : '') + (e.shiftKey ? ' +shift' : '') + (e.altKey ? ' +alt' : '') + ' at (' + e.clientX + ',' + e.clientY + ') on ' + Math.round(e.timeStamp));
             }
 
             self.$scope.zoomed = false;
