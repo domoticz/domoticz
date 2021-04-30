@@ -1950,11 +1950,11 @@ namespace Plugins
 						if (pDevice->ob_refcnt > 1)
 						{
 							std::string sName = PyUnicode_AsUTF8(((CDevice*)pDevice)->Name);
-							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), pDevice->ob_refcnt);
+							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), (int)pDevice->ob_refcnt);
 						}
 						else if (pDevice->ob_refcnt < 1)
 						{
-							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, pDevice->ob_refcnt);
+							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, (int)pDevice->ob_refcnt);
 						}
 					}
 				}
