@@ -292,7 +292,7 @@ namespace Plugins {
 
 		if (m_pPlugins.size())
 		{
-			_log.Log(LOG_STATUS, "PluginSystem: %d plugins started.", m_pPlugins.size());
+			_log.Log(LOG_STATUS, "PluginSystem: %d plugins started.", (int)m_pPlugins.size());
 		}
 
 		// Create initial IO Service thread

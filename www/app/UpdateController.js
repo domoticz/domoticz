@@ -93,7 +93,7 @@ define(['app'], function (app) {
 					if (data.status == "OK") {
 						$scope.mytimer = $interval(function () {
 							$scope.progressupdatesystem();
-						}, 600);
+						}, 1000);
 						$scope.mytimer2 = $interval(function () {
 							$scope.CheckUpdateReader();
 						}, 1000);
