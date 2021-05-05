@@ -6,14 +6,6 @@
 #include "bt_openwebnet.h"
 #include "../../main/localtime_r.h"
 
-#include "stdafx.h"
-#include "Logger.h"
-#include <iostream>
-#include <stdarg.h>
-#include <algorithm>
-#include "../../main/Helper.h"
-#include "../../main/mainworker.h"
-
 // private methods ......
 
 std::string bt_openwebnet::FirstToken(const std::string& myText, const std::string& delimiters)
