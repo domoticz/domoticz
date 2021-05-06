@@ -68,6 +68,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	void UpdateAlarm(int who, int where, int Command, const char *sCommand, int iInterface, int BatteryLevel, const char *devname);
 	void UpdateCenPlus(int who, int where, int Command, int iAppValue, int what, int iInterface, int BatteryLevel, const char *devname);
 	void UpdateTemp(int who, int where, float fval, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateTempProbe(const int who, const int where, const int child, const int idx_str, std::string sStatus, const int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateSetPoint(int who, int where, float fval, int iInterface, const char *devname);
 	void UpdatePower(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
 	void UpdateEnergy(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
