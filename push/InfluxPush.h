@@ -29,6 +29,7 @@ class CInfluxPush : public CBasePush
 	std::string m_szURL;
 	std::string m_InfluxIP;
 	int m_InfluxPort{ 8086 };
+	bool m_bInfluxVersion2 = false;
 	std::string m_InfluxPath;
 	std::string m_InfluxDatabase;
 	std::string m_InfluxUsername;
