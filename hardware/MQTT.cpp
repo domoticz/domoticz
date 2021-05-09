@@ -775,7 +775,15 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		    (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) ||
 		    (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) || (dType == pTypeP1Power) || (dType == pTypeP1Gas))
 		{
-			root["id"] = std_format("%04X", std::stoi(did));
+			try
+			{
+				root["id"] = std_format("%04X", std::stoi(did));
+			}
+			catch (const std::exception &)
+			{
+				//illegal ID here !? probably caused by a plugin/script that does not use numbers as 'ID' (which it should!)
+				root["id"] = did;
+			}
 		}
 		else
 		{
