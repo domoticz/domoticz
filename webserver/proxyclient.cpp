@@ -439,7 +439,6 @@ namespace http {
 									// pdu enum not found
 									break;
 							}
-							readbuf.clear();
 						}
 #undef PDUSTRING
 #undef PDULONG
