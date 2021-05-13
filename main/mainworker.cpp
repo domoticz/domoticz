@@ -3043,7 +3043,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 	int Rainrate = 0;
 	float TotalRain = 0;
 	if (subType == sTypeRAIN9) {
-		TotalRain = float((pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) * 0.254F;
+		TotalRain = roundf(float((pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) * 2.54F) / 10.0F;
 	}
 	else {
 		Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
