@@ -16,10 +16,13 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
-#include <jwt-cpp/jwt.h>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+
+//#define JWT_DISABLE_PICOJSON
+//#include "../jwt-cpp/jsoncpp_traits.h"
+#include "../jwt-cpp/jwt.h"
 
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
