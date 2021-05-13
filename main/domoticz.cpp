@@ -153,6 +153,7 @@ std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime = time(nullptr);
 std::string szRandomUUID = "???";
+std::string journalMode;
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -575,6 +576,9 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		else if (szFlag == "dbase_file") {
 			dbasefile = sLine;
 		}
+		else if (szFlag == "journal_mode") {
+			journalMode = sLine;
+		}
 		else if (szFlag == "startup_delay") {
 			int DelaySeconds = atoi(sLine.c_str());
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
@@ -988,6 +992,20 @@ int main(int argc, char**argv)
 		}
 	}
 	m_sql.SetDatabaseName(dbasefile);
+
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-journal_mode"))
+		{
+			if (cmdLine.GetArgumentCount("-journal_mode") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a journal_mode (DELETE, TRUNCATE, PERSIST,  MEMORY, OFF or WAL (=default)");
+				return 1;
+			}
+		_log.Log(LOG_ERROR, "Arguments: %d", cmdLine.GetArgumentCount("-journal_mode") );
+		}
+		journalMode = cmdLine.GetSafeArgument("-journal_mode", 0, "WAL");
+	}
+	m_sql.SetJournalMode(journalMode);
 
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-webroot"))
