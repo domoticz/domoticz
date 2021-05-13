@@ -82,6 +82,7 @@ namespace
 		"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 		"\t-noupdates do not use the internal update functionality\n"
+		"\t-journal_mode mode (supported modes: DELETE and WAL, default = WAL)\n"
 #if defined WIN32
 		"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
@@ -998,10 +999,9 @@ int main(int argc, char**argv)
 		{
 			if (cmdLine.GetArgumentCount("-journal_mode") != 1)
 			{
-				_log.Log(LOG_ERROR, "Please specify a journal_mode (DELETE, TRUNCATE, PERSIST,  MEMORY, OFF or WAL (=default)");
+				_log.Log(LOG_ERROR, "Please specify journal_mode DELETE or WAL");
 				return 1;
 			}
-		_log.Log(LOG_ERROR, "Arguments: %d", cmdLine.GetArgumentCount("-journal_mode") );
 		}
 		journalMode = cmdLine.GetSafeArgument("-journal_mode", 0, "WAL");
 	}
