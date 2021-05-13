@@ -10254,7 +10254,7 @@ namespace http {
 
 							if (!result2.empty())
 							{
-								double total_real = 0;
+								float total_real = 0;
 								float rate = 0;
 								std::vector<std::string> sd2 = result2[0];
 
@@ -10264,8 +10264,8 @@ namespace http {
 								}
 								else
 								{
-									double total_min = atof(sd2[0].c_str());
-									double total_max = atof(strarray[1].c_str());
+									float total_min = atof(sd2[0].c_str());
+									float total_max = atof(strarray[1].c_str());
 									total_real = total_max - total_min;
 								}
 
@@ -15401,7 +15401,7 @@ namespace http {
 						for (const auto &sd : result)
 						{
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
-							double mmval = atof(sd[0].c_str());
+							float mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
 							sprintf(szTmp, "%.1f", mmval);
 							root["result"][ii]["mm"] = szTmp;
@@ -15429,7 +15429,7 @@ namespace http {
 						float total_max = static_cast<float>(atof(sd[1].c_str()));
 						//int rate = atoi(sd[2].c_str());
 
-						double total_real = 0;
+						float total_real = 0;
 						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
 							total_real = total_max;
@@ -16094,7 +16094,7 @@ namespace http {
 						for (const auto &sd : result)
 						{
 							root["result"][ii]["d"] = sd[2].substr(0, 16);
-							double mmval = atof(sd[0].c_str());
+							float mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
 							sprintf(szTmp, "%.1f", mmval);
 							root["result"][ii]["mm"] = szTmp;
@@ -16122,7 +16122,7 @@ namespace http {
 						float total_max = static_cast<float>(atof(sd[1].c_str()));
 						//int rate = atoi(sd[2].c_str());
 
-						double total_real = 0;
+						float total_real = 0;
 						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
 							total_real = total_max;
@@ -16146,7 +16146,7 @@ namespace http {
 						for (const auto &sd : result)
 						{
 							root["resultprev"][iPrev]["d"] = sd[2].substr(0, 16);
-							double mmval = atof(sd[0].c_str());
+							float mmval = atof(sd[0].c_str());
 							mmval *= AddjMulti;
 							sprintf(szTmp, "%.1f", mmval);
 							root["resultprev"][iPrev]["mm"] = szTmp;
