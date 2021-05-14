@@ -82,7 +82,7 @@ namespace
 		"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 		"\t-noupdates do not use the internal update functionality\n"
-		"\t-journal_mode mode (supported modes: DELETE and WAL, default = WAL)\n"
+		"\t-dbase_disable_wal_mode\n"
 #if defined WIN32
 		"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
@@ -154,7 +154,7 @@ std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime = time(nullptr);
 std::string szRandomUUID = "???";
-std::string journalMode;
+std::string journalMode="WAL";
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -577,9 +577,10 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		else if (szFlag == "dbase_file") {
 			dbasefile = sLine;
 		}
-		else if (szFlag == "journal_mode") {
-			journalMode = sLine;
+		else if ( (szFlag == "dbase_disable_wal_mode") && (GetConfigBool(sLine) ) )  {
+			journalMode = "DELETE";
 		}
+
 		else if (szFlag == "startup_delay") {
 			int DelaySeconds = atoi(sLine.c_str());
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
@@ -995,15 +996,10 @@ int main(int argc, char**argv)
 	m_sql.SetDatabaseName(dbasefile);
 
 	if (!bUseConfigFile) {
-		if (cmdLine.HasSwitch("-journal_mode"))
+		if (cmdLine.HasSwitch("-dbase_disable_wal_mode"))
 		{
-			if (cmdLine.GetArgumentCount("-journal_mode") != 1)
-			{
-				_log.Log(LOG_ERROR, "Please specify journal_mode DELETE or WAL");
-				return 1;
-			}
+			journalMode = "DELETE";
 		}
-		journalMode = cmdLine.GetSafeArgument("-journal_mode", 0, "WAL");
 	}
 	m_sql.SetJournalMode(journalMode);
 
