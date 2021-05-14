@@ -20,8 +20,6 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-//#define JWT_DISABLE_PICOJSON
-//#include "../jwt-cpp/jsoncpp_traits.h"
 #include "../jwt-cpp/jwt.h"
 
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
