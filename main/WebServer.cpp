@@ -10281,7 +10281,7 @@ namespace http {
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
-								sprintf(szTmp, "%.1f", rate);
+								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
 								root["result"][ii]["Data"] = sValue;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
