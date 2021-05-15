@@ -20,102 +20,83 @@ namespace server {
 
 namespace status_strings {
 
-const std::string switching_protocols =
-	"HTTP/1.1 101 Switching Protocols\r\n";
-const std::string download_file =
-	"HTTP/1.1 102 Download File\r\n";
-const std::string ok =
-	"HTTP/1.1 200 OK\r\n";
-const std::string created =
-  "HTTP/1.1 201 Created\r\n";
-const std::string accepted =
-  "HTTP/1.1 202 Accepted\r\n";
-const std::string no_content =
-  "HTTP/1.1 204 No Content\r\n";
-const std::string multiple_choices =
-  "HTTP/1.1 300 Multiple Choices\r\n";
-const std::string moved_permanently =
-  "HTTP/1.1 301 Moved Permanently\r\n";
-const std::string moved_temporarily =
-  "HTTP/1.1 302 Moved Temporarily\r\n";
-const std::string not_modified =
-  "HTTP/1.1 304 Not Modified\r\n";
-const std::string bad_request =
-  "HTTP/1.1 400 Bad Request\r\n";
-const std::string unauthorized =
-  "HTTP/1.1 401 Unauthorized\r\n";
-const std::string forbidden =
-  "HTTP/1.1 403 Forbidden\r\n";
-const std::string not_found =
-  "HTTP/1.1 404 Not Found\r\n";
-const std::string internal_server_error =
-  "HTTP/1.1 500 Internal Server Error\r\n";
-const std::string not_implemented =
-  "HTTP/1.1 501 Not Implemented\r\n";
-const std::string bad_gateway =
-  "HTTP/1.1 502 Bad Gateway\r\n";
-const std::string service_unavailable =
-  "HTTP/1.1 503 Service Unavailable\r\n";
+	constexpr auto switching_protocols = "HTTP/1.1 101 Switching Protocols\r\n";
+	constexpr auto download_file = "HTTP/1.1 102 Download File\r\n";
+	constexpr auto ok = "HTTP/1.1 200 OK\r\n";
+	constexpr auto created = "HTTP/1.1 201 Created\r\n";
+	constexpr auto accepted = "HTTP/1.1 202 Accepted\r\n";
+	constexpr auto no_content = "HTTP/1.1 204 No Content\r\n";
+	constexpr auto multiple_choices = "HTTP/1.1 300 Multiple Choices\r\n";
+	constexpr auto moved_permanently = "HTTP/1.1 301 Moved Permanently\r\n";
+	constexpr auto moved_temporarily = "HTTP/1.1 302 Moved Temporarily\r\n";
+	constexpr auto not_modified = "HTTP/1.1 304 Not Modified\r\n";
+	constexpr auto bad_request = "HTTP/1.1 400 Bad Request\r\n";
+	constexpr auto unauthorized = "HTTP/1.1 401 Unauthorized\r\n";
+	constexpr auto forbidden = "HTTP/1.1 403 Forbidden\r\n";
+	constexpr auto not_found = "HTTP/1.1 404 Not Found\r\n";
+	constexpr auto internal_server_error = "HTTP/1.1 500 Internal Server Error\r\n";
+	constexpr auto not_implemented = "HTTP/1.1 501 Not Implemented\r\n";
+	constexpr auto bad_gateway = "HTTP/1.1 502 Bad Gateway\r\n";
+	constexpr auto service_unavailable = "HTTP/1.1 503 Service Unavailable\r\n";
 
-std::string to_string(reply::status_type status)
-{
-	switch (status)
+	std::string to_string(const reply::status_type &status)
 	{
-	case reply::switching_protocols:
-		return switching_protocols;
-	case reply::download_file:
-		return download_file;
-
-	case reply::ok:
-		return ok;
-	case reply::created:
-		return created;
-	case reply::accepted:
-		return accepted;
-	case reply::no_content:
-		return no_content;
-	case reply::multiple_choices:
-		return multiple_choices;
-	case reply::moved_permanently:
-		return moved_permanently;
-	case reply::moved_temporarily:
-		return moved_temporarily;
-	case reply::not_modified:
-		return not_modified;
-	case reply::bad_request:
-		return bad_request;
-	case reply::unauthorized:
-		return unauthorized;
-	case reply::forbidden:
-		return forbidden;
-	case reply::not_found:
-		return not_found;
-	case reply::internal_server_error:
-		return internal_server_error;
-	case reply::not_implemented:
-		return not_implemented;
-	case reply::bad_gateway:
-		return bad_gateway;
-	case reply::service_unavailable:
-		return service_unavailable;
-	default:
-		return internal_server_error;
-	}
+		switch (status)
+		{
+			case reply::switching_protocols:
+				return switching_protocols;
+			case reply::download_file:
+				return download_file;
+			case reply::ok:
+				return ok;
+			case reply::created:
+				return created;
+			case reply::accepted:
+				return accepted;
+			case reply::no_content:
+				return no_content;
+			case reply::multiple_choices:
+				return multiple_choices;
+			case reply::moved_permanently:
+				return moved_permanently;
+			case reply::moved_temporarily:
+				return moved_temporarily;
+			case reply::not_modified:
+				return not_modified;
+			case reply::bad_request:
+				return bad_request;
+			case reply::unauthorized:
+				return unauthorized;
+			case reply::forbidden:
+				return forbidden;
+			case reply::not_found:
+				return not_found;
+			case reply::internal_server_error:
+				return internal_server_error;
+			case reply::not_implemented:
+				return not_implemented;
+			case reply::bad_gateway:
+				return bad_gateway;
+			case reply::service_unavailable:
+				return service_unavailable;
+			default:
+				return internal_server_error;
+		}
 }
 
 } // namespace status_strings
 
 namespace misc_strings {
 
-const char name_value_separator[] = { ':', ' ', 0 };
-const char crlf[] = { '\r', '\n', 0 };
+	constexpr char name_value_separator[] = { ':', ' ', 0 };
+	constexpr char crlf[] = { '\r', '\n', 0 };
 
 } // namespace misc_strings
 
 std::string reply::header_to_string()
 {
 	std::string buffers = status_strings::to_string(status);
-	for (auto &h : headers)
+	for (const auto &h : headers)
 		buffers += h.name + misc_strings::name_value_separator + h.value + misc_strings::crlf;
 
 	buffers += misc_strings::crlf;
@@ -140,124 +121,108 @@ void reply::reset()
 
 namespace stock_replies {
 
-const char switching_protocols[] = "";
-const char download_file[] = "";
-const char ok[] = "";
-const char created[] =
-  "<html>"
-  "<head><title>Created</title></head>"
-  "<body><h1>201 Created</h1></body>"
-  "</html>";
-const char accepted[] =
-  "<html>"
-  "<head><title>Accepted</title></head>"
-  "<body><h1>202 Accepted</h1></body>"
-  "</html>";
-const char no_content[] =
-  ""; // The 204 response MUST NOT contain a message-body
-const char multiple_choices[] =
-  "<html>"
-  "<head><title>Multiple Choices</title></head>"
-  "<body><h1>300 Multiple Choices</h1></body>"
-  "</html>";
-const char moved_permanently[] =
-  "<html>"
-  "<head><title>Moved Permanently</title></head>"
-  "<body><h1>301 Moved Permanently</h1></body>"
-  "</html>";
-const char moved_temporarily[] =
-  "<html>"
-  "<head><title>Moved Temporarily</title></head>"
-  "<body><h1>302 Moved Temporarily</h1></body>"
-  "</html>";
-const char not_modified[] =
-  ""; // The 304 response MUST NOT contain a message-body
-const char bad_request[] =
-  "<html>"
-  "<head><title>Bad Request</title></head>"
-  "<body><h1>400 Bad Request</h1></body>"
-  "</html>";
-const char unauthorized[] =
-  "<html>"
-  "<head><title>Unauthorized</title></head>"
-  "<body><h1>401 Unauthorized</h1></body>"
-  "</html>";
-const char forbidden[] =
-  "<html>"
-  "<head><title>Forbidden</title></head>"
-  "<body><h1>403 Forbidden</h1></body>"
-  "</html>";
-const char not_found[] =
-  "<html>"
-  "<head><title>Not Found</title></head>"
-  "<body><h1>404 Not Found</h1></body>"
-  "</html>";
-const char internal_server_error[] =
-  "<html>"
-  "<head><title>Internal Server Error</title></head>"
-  "<body><h1>500 Internal Server Error</h1></body>"
-  "</html>";
-const char not_implemented[] =
-  "<html>"
-  "<head><title>Not Implemented</title></head>"
-  "<body><h1>501 Not Implemented</h1></body>"
-  "</html>";
-const char bad_gateway[] =
-  "<html>"
-  "<head><title>Bad Gateway</title></head>"
-  "<body><h1>502 Bad Gateway</h1></body>"
-  "</html>";
-const char service_unavailable[] =
-  "<html>"
-  "<head><title>Service Unavailable</title></head>"
-  "<body><h1>503 Service Unavailable</h1></body>"
-  "</html>";
+	constexpr auto switching_protocols = "";
+	constexpr auto download_file = "";
+	constexpr auto ok = "";
+	constexpr auto created = "<html>"
+				 "<head><title>Created</title></head>"
+				 "<body><h1>201 Created</h1></body>"
+				 "</html>";
+	constexpr auto accepted = "<html>"
+				  "<head><title>Accepted</title></head>"
+				  "<body><h1>202 Accepted</h1></body>"
+				  "</html>";
+	constexpr auto no_content = ""; // The 204 response MUST NOT contain a message-body
+	constexpr auto multiple_choices = "<html>"
+					  "<head><title>Multiple Choices</title></head>"
+					  "<body><h1>300 Multiple Choices</h1></body>"
+					  "</html>";
+	constexpr auto moved_permanently = "<html>"
+					   "<head><title>Moved Permanently</title></head>"
+					   "<body><h1>301 Moved Permanently</h1></body>"
+					   "</html>";
+	constexpr auto moved_temporarily = "<html>"
+					   "<head><title>Moved Temporarily</title></head>"
+					   "<body><h1>302 Moved Temporarily</h1></body>"
+					   "</html>";
+	constexpr auto not_modified = ""; // The 304 response MUST NOT contain a message-body
+	constexpr auto bad_request = "<html>"
+				     "<head><title>Bad Request</title></head>"
+				     "<body><h1>400 Bad Request</h1></body>"
+				     "</html>";
+	constexpr auto unauthorized = "<html>"
+				      "<head><title>Unauthorized</title></head>"
+				      "<body><h1>401 Unauthorized</h1></body>"
+				      "</html>";
+	constexpr auto forbidden = "<html>"
+				   "<head><title>Forbidden</title></head>"
+				   "<body><h1>403 Forbidden</h1></body>"
+				   "</html>";
+	constexpr auto not_found = "<html>"
+				   "<head><title>Not Found</title></head>"
+				   "<body><h1>404 Not Found</h1></body>"
+				   "</html>";
+	constexpr auto internal_server_error = "<html>"
+					       "<head><title>Internal Server Error</title></head>"
+					       "<body><h1>500 Internal Server Error</h1></body>"
+					       "</html>";
+	constexpr auto not_implemented = "<html>"
+					 "<head><title>Not Implemented</title></head>"
+					 "<body><h1>501 Not Implemented</h1></body>"
+					 "</html>";
+	constexpr auto bad_gateway = "<html>"
+				     "<head><title>Bad Gateway</title></head>"
+				     "<body><h1>502 Bad Gateway</h1></body>"
+				     "</html>";
+	constexpr auto service_unavailable = "<html>"
+					     "<head><title>Service Unavailable</title></head>"
+					     "<body><h1>503 Service Unavailable</h1></body>"
+					     "</html>";
 
-std::string to_string(reply::status_type status)
-{
-  switch (status)
-  {
-  case reply::switching_protocols:
-    return switching_protocols;
-  case reply::download_file:
-	  return download_file;
-
-  case reply::ok:
-    return ok;
-  case reply::created:
-    return created;
-  case reply::accepted:
-    return accepted;
-  case reply::no_content:
-    return no_content;
-  case reply::multiple_choices:
-    return multiple_choices;
-  case reply::moved_permanently:
-    return moved_permanently;
-  case reply::moved_temporarily:
-    return moved_temporarily;
-  case reply::not_modified:
-    return not_modified;
-  case reply::bad_request:
-    return bad_request;
-  case reply::unauthorized:
-    return unauthorized;
-  case reply::forbidden:
-    return forbidden;
-  case reply::not_found:
-    return not_found;
-  case reply::internal_server_error:
-    return internal_server_error;
-  case reply::not_implemented:
-    return not_implemented;
-  case reply::bad_gateway:
-    return bad_gateway;
-  case reply::service_unavailable:
-    return service_unavailable;
-  default:
-    return internal_server_error;
-  }
-}
+	std::string to_string(const reply::status_type &status)
+	{
+		switch (status)
+		{
+			case reply::switching_protocols:
+				return switching_protocols;
+			case reply::download_file:
+				return download_file;
+			case reply::ok:
+				return ok;
+			case reply::created:
+				return created;
+			case reply::accepted:
+				return accepted;
+			case reply::no_content:
+				return no_content;
+			case reply::multiple_choices:
+				return multiple_choices;
+			case reply::moved_permanently:
+				return moved_permanently;
+			case reply::moved_temporarily:
+				return moved_temporarily;
+			case reply::not_modified:
+				return not_modified;
+			case reply::bad_request:
+				return bad_request;
+			case reply::unauthorized:
+				return unauthorized;
+			case reply::forbidden:
+				return forbidden;
+			case reply::not_found:
+				return not_found;
+			case reply::internal_server_error:
+				return internal_server_error;
+			case reply::not_implemented:
+				return not_implemented;
+			case reply::bad_gateway:
+				return bad_gateway;
+			case reply::service_unavailable:
+				return service_unavailable;
+			default:
+				return internal_server_error;
+		}
+	}
 
 } // namespace stock_replies
 
@@ -280,9 +245,11 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 {
 	size_t num = rep->headers.size();
 	if (replace) {
-		for (size_t h = 0; h < num; h++) {
-			if (boost::iequals(rep->headers[h].name, name)) {
-				rep->headers[h].value = value;
+		for (auto &h : rep->headers)
+		{
+			if (boost::iequals(h.name, name))
+			{
+				h.value = value;
 				return;
 			}
 		}
@@ -292,10 +259,12 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 	rep->headers[num].value = value;
 }
 
-void reply::add_header_if_absent(reply *rep, const std::string &name, const std::string &value) {
-	size_t num = rep->headers.size();
-	for (size_t h = 0; h < num; h++) {
-		if (boost::iequals(rep->headers[h].name, name)) {
+void reply::add_header_if_absent(reply *rep, const std::string &name, const std::string &value)
+{
+	for (const auto &h : rep->headers)
+	{
+		if (boost::iequals(h.name, name))
+		{
 			// is present
 			return;
 		}
@@ -303,16 +272,19 @@ void reply::add_header_if_absent(reply *rep, const std::string &name, const std:
 	add_header(rep, name, value, false);
 }
 
-void reply::set_content(reply *rep, const std::string & content) {
+void reply::set_content(reply *rep, const std::string &content)
+{
 	rep->content.assign(content);
 }
 
-void reply::set_content(reply *rep, const std::wstring & content_w) {
+void reply::set_content(reply *rep, const std::wstring &content_w)
+{
 	cUTF utf( content_w.c_str() );
 	rep->content.assign(utf.get8(), strlen(utf.get8()));
 }
 
-bool reply::set_content_from_file(reply *rep, const std::string & file_path) {
+bool reply::set_content_from_file(reply *rep, const std::string &file_path)
+{
 	std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
 		return false;
@@ -327,7 +299,8 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path) {
 	return true;
 }
 
-bool reply::set_content_from_file(reply *rep, const std::string & file_path, const std::string & attachment, bool set_content_type) {
+bool reply::set_content_from_file(reply *rep, const std::string &file_path, const std::string &attachment, bool set_content_type)
+{
 	if (!reply::set_content_from_file(rep, file_path))
 		return false;
 	reply::add_header_attachment(rep, attachment);
@@ -359,7 +332,8 @@ bool reply::set_download_file(reply* rep, const std::string& file_path, const st
 	return true;
 }
 
-void reply::add_header_attachment(reply *rep, const std::string & attachment) {
+void reply::add_header_attachment(reply *rep, const std::string &attachment)
+{
 	reply::add_header(rep, "Content-Disposition", "attachment; filename=" + attachment);
 }
 

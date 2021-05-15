@@ -14,3 +14,7 @@
 	path = extern/minizip
 	url = https://github.com/domoticz/minizip.git
 	ignore = dirty
+[submodule "extern/fmtlib"]
+	path = extern/fmtlib
+	url = https://github.com/fmtlib/fmt.git
+	ignore = dirty

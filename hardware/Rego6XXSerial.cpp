@@ -168,7 +168,7 @@ void CRego6XXSerial::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				_log.Log(LOG_STATUS,"Rego6XX: serial retrying in %d seconds...", Rego6XX_RETRY_DELAY);
+				Log(LOG_STATUS,"serial retrying in %d seconds...", Rego6XX_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=Rego6XX_RETRY_DELAY)
@@ -186,7 +186,7 @@ void CRego6XXSerial::Do_Work()
 			// Reopen the port and clear the error counter.
 			terminate();
 
-			_log.Log(LOG_ERROR, "Rego6XX: Reopening serial port");
+			Log(LOG_ERROR, "Reopening serial port");
 			sleep_seconds(2);
 
 			m_retrycntr=0;
@@ -236,7 +236,7 @@ void CRego6XXSerial::Do_Work()
 							cmd.data.regNum[2] = g_allRegisters[m_pollcntr].regNum_type3 & 0x007F;
 							break;
 						default:
-							_log.Log(LOG_ERROR, "Rego6XX: Unknown type!");
+							Log(LOG_ERROR, "Unknown type!");
 							break;
 					}
 					cmd.data.value[0] = 0;
@@ -273,7 +273,7 @@ void CRego6XXSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"Rego6XX: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 
@@ -283,13 +283,13 @@ bool CRego6XXSerial::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 19200);
-		_log.Log(LOG_STATUS,"Rego6XX: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS,"Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"Rego6XX: Error opening serial port!");
+		Log(LOG_ERROR,"Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -297,7 +297,7 @@ bool CRego6XXSerial::OpenSerialDevice()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"Rego6XX: Error opening serial port!!!");
+		Log(LOG_ERROR,"Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted=true;

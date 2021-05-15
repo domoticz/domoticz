@@ -75,26 +75,26 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", m_Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
+		Log(LOG_STATUS, "Teleinfo device uses serial port: %s at %i bauds", m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort, m_iBaudRate, m_iOptParity, m_iOptCsize);
 	}
 	catch (boost::exception & e)
 	{
-		_log.Debug(DEBUG_HARDWARE, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
-		_log.Log(LOG_STATUS, "Teleinfo: Serial port open failed, let's retry with CharSize:8 ...");
+		Debug(DEBUG_HARDWARE, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_STATUS, "Teleinfo: Serial port open failed, let's retry with CharSize:8 ...");
 
 		try {
 			open(m_szSerialPort, m_iBaudRate, m_iOptParity, boost::asio::serial_port_base::character_size(8));
-			_log.Log(LOG_STATUS, "Teleinfo: Serial port open successfully with CharSize:8 ...");
+			Log(LOG_STATUS, "Teleinfo: Serial port open successfully with CharSize:8 ...");
 		}
 		catch (...) {
-			_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port, even with CharSize:8 !");
+			Log(LOG_ERROR, "Teleinfo: Error opening serial port, even with CharSize:8 !");
 			return false;
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!!!");
+		Log(LOG_ERROR, "Teleinfo: Error opening serial port!!!");
 		return false;
 	}
 	StartHeartbeatThread();
@@ -104,9 +104,9 @@ bool CTeleinfoSerial::StartHardware()
 	sOnConnected(this);
 
 	if (m_bDisableCRC)
-		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", m_Name.c_str());
+		Log(LOG_STATUS, "CRC checks on incoming data are disabled");
 	else
-		_log.Log(LOG_STATUS, "(%s) CRC checks will be performed on incoming data", m_Name.c_str());
+		Log(LOG_STATUS, "CRC checks will be performed on incoming data");
 
 	return true;
 }
@@ -131,7 +131,7 @@ void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	if (!m_bEnableReceive)
 	{
-		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", m_Name.c_str());
+		Log(LOG_ERROR, "Receiving is not enabled");
 		return;
 	}
 	ParseTeleinfoData(data, static_cast<int>(len));

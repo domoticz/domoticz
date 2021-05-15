@@ -7,10 +7,6 @@ language: cpp
 cache:
   - apt
 
-#update-alternatives:
-#  - install /usr/bin/gcc gcc /usr/bin/gcc-6 50
-#  - install /usr/bin/g++ g++ /usr/bin/g++-6 50
-
 sources:
   - focal
 
@@ -39,15 +35,15 @@ matrix:
     compiler: gcc
     env:
           - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     addons:
       apt:
         sources:
 #          - george-edison55-bionic-backports  # cmake
           - ubuntu-toolchain-r-test
         packages:
-          - gcc-9
-          - g++-9
+          - gcc-8
+          - g++-8
           - curl
           - libcurl4-gnutls-dev
           - libusb-dev
@@ -61,12 +57,12 @@ matrix:
           - libcereal-dev
           - uthash-dev
     script:
-      - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
+      - curl -sSL https://github.com/Kitware/CMake/releases/download/v3.19.0/cmake-3.19.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
       - sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
       - export PATH=/usr/local/bin:$PATH;
-      - wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz >> /dev/null 2>&1
-      - tar xfz boost_1_74_0.tar.gz
-      - cd boost_1_74_0/
+      - wget https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz >> /dev/null 2>&1
+      - tar xfz boost_1_75_0.tar.gz
+      - cd boost_1_75_0/
       - ./bootstrap.sh
       - ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
       - sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1

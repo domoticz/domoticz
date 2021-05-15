@@ -12,6 +12,7 @@ License: Public domain
 
 ************************************************************************/
 #include "stdafx.h"
+#include "eVehicle.h"
 #include "TeslaApi.h"
 #include "VehicleApi.h"
 #include "../../main/Logger.h"
@@ -79,17 +80,17 @@ CTeslaApi::CTeslaApi(const std::string &username, const std::string &password, c
 
 bool CTeslaApi::Login()
 {
-	_log.Log(LOG_NORM, "TeslaApi: Attempting login.");
+	m_pBase->Log(LOG_NORM, "Attempting login.");
 	if (GetAuthToken(m_username, m_password, false))
 	{
 		if(FindCarInAccount())
 		{
-			_log.Log(LOG_NORM, "TeslaApi: Login successful.");
+			m_pBase->Log(LOG_NORM, "Login successful.");
 			return true;
 		}
 	}
 
-	_log.Log(LOG_NORM, "TeslaApi: Failed to login.");
+	m_pBase->Log(LOG_NORM, "Failed to login.");
 	m_authtoken = "";
 	m_refreshtoken = "";
 	return false;
@@ -97,14 +98,14 @@ bool CTeslaApi::Login()
 
 bool CTeslaApi::RefreshLogin()
 {
-	_log.Log(LOG_NORM, "TeslaApi: Refreshing login credentials.");
+	m_pBase->Log(LOG_NORM, "Refreshing login credentials.");
 	if (GetAuthToken(m_username, m_password, true))
 	{	
-		_log.Log(LOG_NORM, "TeslaApi: Refresh successful.");
+		m_pBase->Log(LOG_NORM, "Refresh successful.");
 		return true;
 	}
 
-	_log.Log(LOG_ERROR, "TeslaApi: Failed to refresh login credentials.");
+	m_pBase->Log(LOG_ERROR, "Failed to refresh login credentials.");
 	m_authtoken = "";
 	m_refreshtoken = "";
 	return false;
@@ -279,7 +280,7 @@ void CTeslaApi::GetUnitData(Json::Value& jsondata, tConfigData &config)
 	else
 		config.distance_unit = "km";
 
-	_log.Debug(DEBUG_NORM, "TeslaApi: unit found %s, report in miles = %s.", sUnit.c_str(), config.unit_miles ? "true":"false");
+	m_pBase->Debug(DEBUG_NORM, "unit found %s, report in miles = %s.", sUnit.c_str(), config.unit_miles ? "true":"false");
 }
 
 bool CTeslaApi::GetData(const std::string &datatype, Json::Value &reply)
@@ -294,12 +295,12 @@ bool CTeslaApi::GetData(const std::string &datatype, Json::Value &reply)
 
 	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), reply, true))
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: Failed to get data %s.", datatype.c_str());
+		m_pBase->Log(LOG_ERROR, "Failed to get data %s.", datatype.c_str());
 		return false;
 	}
 
-	//_log.Log(LOG_NORM, "TeslaApi: Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
-	_log.Debug(DEBUG_NORM, "TeslaApi: Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
+	//m_pBase->Log(LOG_NORM, "Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Get data %s received reply: %s", datatype.c_str(), _sResponse.c_str());
 
 	return true;
 }
@@ -315,11 +316,11 @@ bool CTeslaApi::FindCarInAccount()
 
 	if (!SendToApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot, true))
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: Failed to get car from account.");
+		m_pBase->Log(LOG_ERROR, "Failed to get car from account.");
 		return false;
 	}
 
-	_log.Debug(DEBUG_NORM, "TeslaApi: Received %d vehicles from API: %s", _jsRoot["count"].asInt(), _sResponse.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Received %d vehicles from API: %s", _jsRoot["count"].asInt(), _sResponse.c_str());
 	for (int i = 0; i < _jsRoot["count"].asInt(); i++)
 	{
 		if (_jsRoot["response"][i]["vin"].asString() == m_VIN)
@@ -327,12 +328,12 @@ bool CTeslaApi::FindCarInAccount()
 			m_carid = _jsRoot["response"][i]["id"].asInt64();
 			m_config.car_name = _jsRoot["response"][i]["display_name"].asString();
 			car_found = true;
-			_log.Log(LOG_NORM, "TeslaApi: Car found in account: VIN %s NAME %s", m_VIN.c_str(), m_config.car_name.c_str());
+			m_pBase->Log(LOG_NORM, "Car found in account: VIN %s NAME %s", m_VIN.c_str(), m_config.car_name.c_str());
 			return true;
 		}
 	}
 
-	_log.Log(LOG_ERROR, "TeslaApi: Car with VIN number %s NOT found in account.", m_VIN.c_str());
+	m_pBase->Log(LOG_ERROR, "Car with VIN number %s NOT found in account.", m_VIN.c_str());
 	return car_found;
 }
 
@@ -351,12 +352,12 @@ bool CTeslaApi::IsAwake()
 		nr_retry++;
 		if (nr_retry == 4)
 		{
-			_log.Log(LOG_ERROR, "TeslaApi: Failed to get awake state.");
+			m_pBase->Log(LOG_ERROR, "Failed to get awake state.");
 			return false;
 		}
 	}
 
-	_log.Debug(DEBUG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
+	m_pBase->Debug(DEBUG_NORM, "Awake state: %s", _jsRoot["response"]["state"].asString().c_str());
 	is_awake = (_jsRoot["response"]["state"] == "online");
 	return(is_awake);
 }
@@ -439,12 +440,12 @@ bool CTeslaApi::SendCommand(const std::string &command, Json::Value &reply, cons
 
 	if (!SendToApi(Post, _sUrl, sPostData, _sResponse, *(new std::vector<std::string>()), reply, true))
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: Failed to send command %s.", command.c_str());
+		m_pBase->Log(LOG_ERROR, "Failed to send command %s.", command.c_str());
 		return false;
 	}
 
-	//_log.Log(LOG_NORM, "TeslaApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
-	_log.Debug(DEBUG_NORM, "TeslaApi: Command %s received reply: %s", command.c_str(), _sResponse.c_str());
+	//m_pBase->Log(LOG_NORM, "Command %s received reply: %s", command.c_str(), _sResponse.c_str());
+	m_pBase->Debug(DEBUG_NORM, "Command %s received reply: %s", command.c_str(), _sResponse.c_str());
 
 	return true;
 }
@@ -454,12 +455,12 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 {
 	if (username.empty())
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: No username specified.");
+		m_pBase->Log(LOG_ERROR, "No username specified.");
 		return false;
 	}
 	if (username.empty())
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: No password specified.");
+		m_pBase->Log(LOG_ERROR, "No password specified.");
 		return false;
 	}
 
@@ -493,7 +494,7 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 
 	if (!SendToApi(Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, false))
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: Failed to get token.");
+		m_pBase->Log(LOG_ERROR, "Failed to get token.");
 		return false;
 	}
 
@@ -502,10 +503,10 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 	{
 		if (m_apikey.empty())
 		{
-			_log.Log(LOG_ERROR, "TeslaApi: Received token is zero length.");
+			m_pBase->Log(LOG_ERROR, "Received token is zero length.");
 			return false;
 		}
-		_log.Log(LOG_STATUS, "TeslaApi: Cannot retrieve token from account. Using manual API key");
+		m_pBase->Log(LOG_STATUS, "Cannot retrieve token from account. Using manual API key");
 		m_authtoken = m_apikey;
 		return true;
 	}
@@ -513,11 +514,11 @@ bool CTeslaApi::GetAuthToken(const std::string &username, const std::string &pas
 	m_refreshtoken = _jsRoot["refresh_token"].asString();
 	if (m_refreshtoken.empty())
 	{
-		_log.Log(LOG_ERROR, "TeslaApi: Received refresh token is zero length.");
+		m_pBase->Log(LOG_ERROR, "Received refresh token is zero length.");
 		return false;
 	}
 
-	_log.Debug(DEBUG_NORM, "TeslaApi: Received access token from API.");
+	m_pBase->Debug(DEBUG_NORM, "Received access token from API.");
 
 	return true;
 }
@@ -532,7 +533,7 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 		// decide not to do authentication.
 		if (m_authtoken.empty() && bSendAuthHeaders)
 		{
-			_log.Log(LOG_ERROR, "TeslaApi: No access token available.");
+			m_pBase->Log(LOG_ERROR, "No access token available.");
 			return false;
 		}
 
@@ -572,12 +573,12 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 				{
 					if ((_vResponseHeader.find("HTTP") != std::string::npos) && (_vResponseHeader.find("401") != std::string::npos))
 					{
-						_log.Log(LOG_ERROR, "TeslaApi: Access token no longer valid. Clearing token.");
+						m_pBase->Log(LOG_ERROR, "Access token no longer valid. Clearing token.");
 						m_authtoken = "";
 					}
 					_ssResponseHeaderString << _vResponseHeader;
 				}
-				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform POST request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+				m_pBase->Debug(DEBUG_NORM, "Failed to perform POST request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 				return false;
 			}
 			break;
@@ -589,12 +590,12 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 				{
 					if ((_vResponseHeader.find("HTTP") != std::string::npos) && (_vResponseHeader.find("401") != std::string::npos))
 					{
-						_log.Log(LOG_ERROR, "TeslaApi: Access token no longer valid. Clearing token.");
+						m_pBase->Log(LOG_ERROR, "Access token no longer valid. Clearing token.");
 						m_authtoken = "";
 					}
 					_ssResponseHeaderString << _vResponseHeader;
 				}
-				_log.Debug(DEBUG_NORM, "TeslaApi: Failed to perform GET request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
+				m_pBase->Debug(DEBUG_NORM, "Failed to perform GET request to Api: %s; Response headers: %s", sResponse.c_str(), _ssResponseHeaderString.str().c_str());
 
 				return false;
 			}
@@ -602,27 +603,27 @@ bool CTeslaApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, con
 
 		default:
 		{
-			_log.Log(LOG_ERROR, "TeslaApi: Unknown method specified.");
+			m_pBase->Log(LOG_ERROR, "Unknown method specified.");
 			return false;
 		}
 		}
 
 		if (sResponse.empty())
 		{
-			_log.Log(LOG_ERROR, "TeslaApi: Received an empty response from Api.");
+			m_pBase->Log(LOG_ERROR, "Received an empty response from Api.");
 			return false;
 		}
 
 		if (!ParseJSon(sResponse, jsDecodedResponse))
 		{
-			_log.Log(LOG_ERROR, "TeslaApi: Failed to decode Json response from Api.");
+			m_pBase->Log(LOG_ERROR, "Failed to decode Json response from Api.");
 			return false;
 		}
 	}
 	catch (std::exception & e)
 	{
 		std::string what = e.what();
-		_log.Log(LOG_ERROR, "TeslaApi: Error sending information to Api: %s", what.c_str());
+		m_pBase->Log(LOG_ERROR, "Error sending information to Api: %s", what.c_str());
 		return false;
 	}
 	return true;

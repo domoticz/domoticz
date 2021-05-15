@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <boost/thread/shared_mutex.hpp>
+#include <mutex>
 
 #include "concurrent_queue.h"
 #include "NotificationObserver.h"
@@ -44,7 +44,7 @@ private:
 	void UnlockNotificationQueueThread();
 
 	volatile bool m_stoprequested;
-	boost::shared_mutex m_mutex;
+	std::mutex m_mutex;
 	std::vector<CNotificationObserver*> m_notifiers;
 	concurrent_queue<_tNotificationQueue> m_notificationqueue;
 	std::shared_ptr<std::thread> m_pQueueThread;

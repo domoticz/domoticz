@@ -69,8 +69,9 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	m_HwdID = ID;
 	m_nDevID = 0;
 	m_nMyID = 0;
+	m_nOtbID = 0;
 	m_nBindID = 0;
-	std::fill(std::begin(m_bStartup), std::end(m_bStartup), true);
+	m_bStartup.fill(true);
 	m_nBufPtr = 0;
 	m_nSendFail = 0;
 	m_nZoneCount = 0;
@@ -90,6 +91,7 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	RegisterDecoder(cmdSetpointOverride, [this](auto &&msg) { return DecodeSetpointOverride(msg); });
 	RegisterDecoder(cmdDHWState, [this](auto &&msg) { return DecodeDHWState(msg); });
 	RegisterDecoder(cmdDHWTemp, [this](auto &&msg) { return DecodeDHWTemp(msg); });
+	RegisterDecoder(cmdDHWSettings, [this](auto &&msg) { return DecodeDHWSettings(msg); });
 	RegisterDecoder(cmdControllerMode, [this](auto &&msg) { return DecodeControllerMode(msg); });
 	RegisterDecoder(cmdSysInfo, [this](auto &&msg) { return DecodeSysInfo(msg); });
 	RegisterDecoder(cmdZoneName, [this](auto &&msg) { return DecodeZoneName(msg); });
@@ -410,6 +412,24 @@ void CEvohomeRadio::RequestDeviceInfo(uint8_t nAddr)
 }
 
 
+void CEvohomeRadio::RequestOpenThermBridge()
+{
+	// Manual requests since the Controller no longer requests this information from the OT Bridge
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdActuatorState).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermSetpoint).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x00)).Add(uint8_t(0)).Add(uint8_t(0)));
+ 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x05)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x11)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x12)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x13)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x19)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x1a)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x1b)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x1c)).Add(uint8_t(0)).Add(uint8_t(0)));
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq, GetOpenThermBridgeID(), cmdOpenThermBridge).Add(uint8_t(0)).Add(uint8_t(0)).Add(uint8_t(0x73)).Add(uint8_t(0)).Add(uint8_t(0))); 
+}
+
+
 void CEvohomeRadio::SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, GetGatewayID(), cmdControllerHeatDemand).Add(nDevNo).Add(nDemand));
@@ -703,6 +723,14 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 					}
 				}
 			}
+		}
+		if (msg.id[0].GetIDType() == CEvohomeID::devBridge) //if we get a message from the OT Bridge capture it's ID
+		{
+                        if (!m_nOtbID)
+                        {
+                                m_nOtbID = msg.GetID(0);
+                                _log.Log(LOG_STATUS, "evohome: opentherm bridge detected, ID:0x%x", m_nOtbID);
+                         }		
 		}
 		if (msg.id[0].GetIDType() == CEvohomeID::devGateway) //if we just got an echo of a sent packet we don't need to process it
 		{
@@ -1611,8 +1639,8 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 {
 	char tag[] = "OPENTHERM_BRIDGE";
 
-	// Only look for responses from the OT Bridge and Filter out messages from other controllers 
-	if (msg.GetID(1) != GetControllerID())
+	// Only look for responses from the OT Bridge 
+	if (msg.GetID(0) != GetOpenThermBridgeID())
 		return true;
 
 	// All OT messages should have a payload size of 5	
@@ -1622,15 +1650,52 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 	}
 	// The OT command response is in byte 4 and 5
 	int nOTResponse = msg.payload[3] << 8 | msg.payload[4];
+	// Check if f8.8 field is negative. Bit 15 will be 1 if negative
+	if (nOTResponse & (1 << 15)) {
+		nOTResponse = - (0x10000 - nOTResponse);
+	}
 	float fOTResponse = static_cast<float>(nOTResponse) / 256.0F;
 
 	// The OT commands are as per the OT Specification
+        // 00 (ID.00) = Status
+        if (msg.payload[2] == 0x00) {
+		// Record all status flags in the same way that the OTGW hardware device currently does
+		// However Evohome seems not to use all of them
+		bool bCH_enabled=(nOTResponse & (1 << 8));
+			UpdateSwitch(101,bCH_enabled,"CH_enabled");
+		bool bDHW_enabled=(nOTResponse & (1 << 9));
+			UpdateSwitch(102,bDHW_enabled,"DHW_enabled");
+		bool bCooling_enable=(nOTResponse & (1 << 10));
+			UpdateSwitch(103,bCooling_enable,"Cooling_enable");
+		bool bOTC_active=(nOTResponse & (1 << 11));
+			UpdateSwitch(104,bOTC_active,"OTC_active");
+		bool bCH2_enabled=(nOTResponse & (1 << 12));
+			UpdateSwitch(105,bCH2_enabled,"CH2_enabled");
+
+		bool bFault_indication=(nOTResponse & (1 << 0));
+			UpdateSwitch(110,bFault_indication,"Fault_indication");
+		bool bCH_active=(nOTResponse & (1 << 1));
+			UpdateSwitch(111,bCH_active,"CH_active");
+		bool bDHW_active=(nOTResponse & (1 << 2));
+			UpdateSwitch(112,bDHW_active,"DHW_active");
+		bool bFlameOn=(nOTResponse & (1 << 3));
+			UpdateSwitch(113,bFlameOn,"FlameOn");
+		bool bCooling_Mode_Active=(nOTResponse & (1 << 4));
+			UpdateSwitch(114,bCooling_Mode_Active,"Cooling_Mode_Active");
+		bool bCH2_Active=(nOTResponse & (1 << 5));
+			UpdateSwitch(115,bCH2_Active,"CH2_Active");
+		bool bDiagnosticEvent=(nOTResponse & (1 << 6));
+			UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
+
+                Log(true, LOG_STATUS, "evohome: %s: Master Status %02X Slave Status %02X", tag, msg.payload[3], msg.payload[4]);
+                return true;
+        }
 	// 05 (ID.05) = Fault Code
 	if (msg.payload[2] == 0x05) {
 		SendCustomSensor(0, 5, 255, static_cast<float>(msg.payload[3]), "Application fault flags", "");
 		SendCustomSensor(1, 5, 255, static_cast<float>(msg.payload[4]), "OEM fault code", "");
 
-		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags %02X OEM fault code %d", tag, msg.payload[3], msg.payload[4]);
+		Log(true, LOG_STATUS, "evohome: %s: Application-specific flags %02X OEM fault code %02X", tag, msg.payload[3], msg.payload[4]);
 		return true;
 	}
 	// 11 (ID.17) = Relative modulation level
@@ -1671,6 +1736,13 @@ bool CEvohomeRadio::DecodeOpenThermBridge(CEvohomeMsg& msg)
 		Log(true, LOG_STATUS, "evohome: %s: DHW Temperature = %.2f C", tag, fOTResponse);
 		return true;
 	}
+        // 1B (ID.27) = Outside Temperature
+        if (msg.payload[2] == 0x1b) {
+                SendTempSensor(27, 255, fOTResponse, "Outside Temperature");
+
+                Log(true, LOG_STATUS, "evohome: %s: Outside Temperature = %.2f C %02X %02X", tag, fOTResponse, msg.payload[3], msg.payload[4]);
+                return true;
+        }
 	// 1C (ID.28) = Return Water Temperature
 	if (msg.payload[2] == 0x1c) {
 		SendTempSensor(28, 255, fOTResponse, "Return Water Temperature");
@@ -1692,9 +1764,9 @@ bool CEvohomeRadio::DecodeOpenThermSetpoint(CEvohomeMsg& msg)
 {
 	char tag[] = "OPENTHERM_SETPOINT";
 
-	// Only look for responses from the OT Bridge and Filter out messages from other controllers
-	if (msg.GetID(1) != GetControllerID())
-		return true;
+        // Only look for responses from the OT Bridge
+        if (msg.GetID(0) != GetOpenThermBridgeID())
+                return true;
 
 	// All OT messages should have a payload size of 3
 	if (msg.payloadsize != 3) {
@@ -2023,6 +2095,7 @@ void CEvohomeRadio::Idle_Work()
 					RequestZoneTemp(i);
 				RequestDHWTemp();  // Request DHW temp from controller as workaround for being unable to identify DeviceID
  			        RequestDHWSettings();
+				RequestOpenThermBridge();  //Request OpenTherm information as the controller no longer requests it
  			}
 			if (AllSensors == false) // Check whether individual zone sensors has been activated
 			{

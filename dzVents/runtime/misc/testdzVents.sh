@@ -148,8 +148,8 @@ function fillNumberOfTests
 		Lodash_ExpectedTests=100
 		ScriptdzVentsDispatching_ExpectedTests=2
 		TimedCommand_ExpectedTests=46
-		Time_ExpectedTests=369
-		Utils_ExpectedTests=36
+		Time_ExpectedTests=371
+		Utils_ExpectedTests=39
 		Variable_ExpectedTests=15
 		ContactDoorLockInvertedSwitch_ExpectedTests=2
 		DelayedVariableScene_ExpectedTests=2
@@ -251,8 +251,8 @@ if [[ $? -eq 0 ]];then
 	grep "Results stage 1: SUCCEEDED" domoticz.log$$ 2>&1 >/dev/null
 	if [[ $? -eq 0 ]];then
 		#echo Stage 1 and stage 2 of integration test Succeeded
-		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | wc -l)
-		errorLine=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | head -7 | tail -1 | grep -v Segmentation | wc -l)
+		errorCount=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | grep -v latitude | wc -l)
+		errorLine=$(grep "Error" domoticz.log$$ | grep -v CheckAuthToken | grep -v errorText | grep -v latitude | head -7 | tail -1 | grep -v Segmentation | wc -l)
 		if [ $errorCount -le $expectedErrorCount ] || [ $errorLine -eq 0 ] ;then
 			#echo Errors are to be expected
 			echo -n

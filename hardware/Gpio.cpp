@@ -122,7 +122,7 @@ void CGpio::InterruptHandler()
 		{
 			if ((fd = pin.GetReadValueFd()) == -1)
 			{
-				_log.Log(LOG_STATUS, "GPIO: Could not open file descriptor for GPIO %d", pinPass);
+				Log(LOG_STATUS, "Could not open file descriptor for GPIO %d", pinPass);
 				pinPass = -1;
 				return;
 			}
@@ -136,14 +136,14 @@ void CGpio::InterruptHandler()
 		for (int i = 0; i < count; i++) // Clear any initial pending interrupt
 			bRead = read(fd, &c, 1); // Catch value to suppress compiler unused warning
 
-	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d started (TID: %d)", pin, (pid_t)syscall(SYS_gettid));
+	Log(LOG_STATUS, "Interrupt handler for GPIO %d started (TID: %d)", pin, (pid_t)syscall(SYS_gettid));
 	while (!IsStopRequested(0))
 	{
 		if (waitForInterrupt(fd, 2000) > 0)
 		{
 			if (counter > 100)
 			{
-				_log.Log(LOG_STATUS, "GPIO: Suppressing interruptstorm on GPIO %d, sleeping for 2 seconds..", pin);
+				Log(LOG_STATUS, "Suppressing interruptstorm on GPIO %d, sleeping for 2 seconds..", pin);
 				counter = -1;
 				sleep_milliseconds(2000);
 			}
@@ -159,15 +159,15 @@ void CGpio::InterruptHandler()
 			}
 			if (diff > m_period * 1000 && counter != -1)
 			{
-				_log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", pin);
+				Log(LOG_NORM, "Processing interrupt for GPIO %d...", pin);
 				if (m_debounce > 0)
 					sleep_milliseconds(m_debounce); // Debounce reading
 				UpdateSwitch(pin, GPIOReadFd(fd));
-				_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d.", pin);
+				Log(LOG_NORM, "Done processing interrupt for GPIO %d.", pin);
 
 				if (counter > 0)
 				{
-					//_log.Log(LOG_STATUS, "GPIO: Suppressed %d interrupts on previous call for GPIO %d.", counter, pin);
+					//Log(LOG_STATUS, "Suppressed %d interrupts on previous call for GPIO %d.", counter, pin);
 					counter = 0;
 				}
 			}
@@ -178,7 +178,7 @@ void CGpio::InterruptHandler()
 			if (fd != -1)
 				close(fd);
 	}
-	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d stopped. TID: %d", pin, (pid_t)syscall(SYS_gettid));
+	Log(LOG_STATUS, "Interrupt handler for GPIO %d stopped. TID: %d", pin, (pid_t)syscall(SYS_gettid));
 }
 
 int CGpio::waitForInterrupt(int fd, const int mS)
@@ -236,16 +236,16 @@ bool CGpio::StartHardware()
 {
 	RequestStart();
 
-	//	_log.Log(LOG_NORM,"GPIO: Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
+	//	Log(LOG_NORM,"Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
 
-	_log.Log(LOG_STATUS, "GPIO: This hardware is deprecated. Please transfer to the new SysFS hardware type!");
+	Log(LOG_STATUS, "This hardware is deprecated. Please transfer to the new SysFS hardware type!");
 
 	if (InitPins())
 	{
 		/* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.
 		 if (!CreateDomoticzDevices())
 		 {
-			_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
+			Log(LOG_NORM, "Error creating pins in DB, aborting...");
 			RequestStop();
 		 }*/
 		m_thread_updatestartup = std::make_shared<std::thread>([this] { UpdateStartup(); });
@@ -259,7 +259,7 @@ bool CGpio::StartHardware()
 	}
 	else
 	{
-		_log.Log(LOG_NORM, "GPIO: No exported pins found, aborting...");
+		Log(LOG_NORM, "No exported pins found, aborting...");
 		RequestStop();
 	}
 	m_bIsStarted = true;
@@ -313,7 +313,7 @@ bool CGpio::StopHardware()
 	pins.clear();
 	m_bIsStarted = false;
 	StopHeartbeatThread();
-	_log.Log(LOG_NORM, "GPIO: Hardware stopped");
+	Log(LOG_NORM, "Hardware stopped");
 	return true;
 }
 
@@ -350,7 +350,7 @@ void CGpio::UpdateStartup()
 			if (IsStopRequested(1000))
 				return;
 		}
-		_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
+		Log(LOG_NORM, "Optional connected Master Domoticz now updates its status");
 		UpdateDeviceStates(true);
 	}
 	else
@@ -366,14 +366,14 @@ void CGpio::Poller()
 	//
 	int sec_counter = 0;
 
-	_log.Log(LOG_STATUS, "GPIO: Poller started (interval: %d sec, TID: %d)", m_pollinterval, (pid_t)syscall(SYS_gettid));
+	Log(LOG_STATUS, "Poller started (interval: %d sec, TID: %d)", m_pollinterval, (pid_t)syscall(SYS_gettid));
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		if (sec_counter % m_pollinterval == 0)
 			UpdateDeviceStates(false);
 	}
-	_log.Log(LOG_STATUS, "GPIO: Poller stopped. TID: %d", (pid_t)syscall(SYS_gettid));
+	Log(LOG_STATUS, "Poller stopped. TID: %d", (pid_t)syscall(SYS_gettid));
 }
 
 /* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.
@@ -504,7 +504,7 @@ bool CGpio::InitPins()
 
 			snprintf(label, sizeof(label), "GPIO pin %d", gpio_pin);
 			pins.push_back(CGpioPin(gpio_pin, label, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"), GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), -1, db_state));
-			//_log.Log(LOG_NORM, "GPIO: Pin %d added (value: %d, direction: %d, edge: %d, active_low: %d, db_state: %d)",
+			//Log(LOG_NORM, "Pin %d added (value: %d, direction: %d, edge: %d, active_low: %d, db_state: %d)",
 			//	gpio_pin, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"), GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), db_state);
 			close(fd);
 

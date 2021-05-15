@@ -35,6 +35,32 @@ import reloader
 import datetime
 import re
 
+# Enable plugins to do:
+# from Domoticz import Devices, Images, Parameters, Settings
+try:
+    Devices
+except NameError:
+    Devices = {}
+    domoticz_.Log(1, "Devices was not created by Domoticz C++ code")
+
+try:
+    Images
+except NameError:
+    Images = {}
+    domoticz_.Log(1, "Images was not created by Domoticz C++ code")
+
+try:
+    Parameters
+except NameError:
+    Parameters = {}
+    domoticz_.Log(1, "Parameters was not created by Domoticz C++ code")
+
+try:
+    Settings
+except NameError:
+    Settings = {}
+    domoticz_.Log(1, "Settings was not created by Domoticz C++ code")
+
 #def _log(type, text): # 'virtual' function, will be modified to call
 #	pass
 

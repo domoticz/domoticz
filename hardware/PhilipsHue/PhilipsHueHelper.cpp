@@ -16,29 +16,19 @@ namespace
 	{
 		double x;
 		double y;
-		point()
-		{
-			x = 0.0;
-			y = 0.0;
-		}
-		point(double x, double y)
-		{
-			this->x = x;
-			this->y = y;
-		}
 	};
 
-	const point colorPointsGamut_A[3] = { point(0.703, 0.296), point(0.214, 0.709), point(0.139, 0.081) };
-	const point colorPointsGamut_B[3] = { point(0.674, 0.322), point(0.408, 0.517), point(0.168, 0.041) };
-	const point colorPointsGamut_C[3] = { point(0.692, 0.308), point(0.17, 0.7), point(0.153, 0.048) };
-	const point colorPointsGamut_Default[3] = { point(1.0, 0.0), point(0.0, 1.0), point(0.0, 0.0) };
+	constexpr std::array<point, 3> colorPointsGamut_A{ point{ 0.703, 0.296 }, point{ 0.214, 0.709 }, point{ 0.139, 0.081 } };
+	constexpr std::array<point, 3> colorPointsGamut_B{ point{ 0.674, 0.322 }, point{ 0.408, 0.517 }, point{ 0.168, 0.041 } };
+	constexpr std::array<point, 3> colorPointsGamut_C{ point{ 0.692, 0.308 }, point{ 0.17, 0.7 }, point{ 0.153, 0.048 } };
+	constexpr std::array<point, 3> colorPointsGamut_Default{ point{ 1.0, 0.0 }, point{ 0.0, 1.0 }, point{ 0.0, 0.0 } };
 
 	constexpr std::array<const char *, 10> GAMUT_A_BULBS_LIST{ "LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001" };
 	constexpr std::array<const char *, 8> GAMUT_B_BULBS_LIST{ "LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007" };
 	constexpr std::array<const char *, 10> GAMUT_C_BULBS_LIST{ "LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002" };
 	constexpr std::array<const char *, 7> MULTI_SOURCE_LUMINAIRES{ "HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002" };
 
-	const point *get_light_gamut(const std::string &modelid)
+	auto get_light_gamut(const std::string &modelid)
 	{
 		if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
 			return colorPointsGamut_A;
@@ -51,7 +41,7 @@ namespace
 		return colorPointsGamut_Default;
 	}
 
-	double cross_product(point p1, point p2)
+	constexpr double cross_product(point p1, point p2)
 	{
 		// Returns the cross product of two points
 		// (This is really the determinant, not the cross product)
@@ -60,27 +50,27 @@ namespace
 
 	bool check_point_in_lamps_reach(point p, const std::string &modelid)
 	{
-		const point *gamut = get_light_gamut(modelid);
-		point Red = gamut[0];
-		point Lime = gamut[1];
-		point Blue = gamut[2];
+		const auto gamut = get_light_gamut(modelid);
+		const auto Red = gamut[0];
+		const auto Lime = gamut[1];
+		const auto Blue = gamut[2];
 
 		// Check if the provided XYPoint can be recreated by a Hue lamp
-		point v1 = point(Lime.x - Red.x, Lime.y - Red.y);
-		point v2 = point(Blue.x - Red.x, Blue.y - Red.y);
+		const auto v1 = point{ Lime.x - Red.x, Lime.y - Red.y };
+		const auto v2 = point{ Blue.x - Red.x, Blue.y - Red.y };
 
-		point q = point(p.x - Red.x, p.y - Red.y);
+		const auto q = point{ p.x - Red.x, p.y - Red.y };
 		double s = cross_product(q, v2) / cross_product(v1, v2);
 		double t = cross_product(v1, q) / cross_product(v1, v2);
 
 		return (s >= 0.0) && (t >= 0.0) && (s + t <= 1.0);
 	}
 
-	point get_closest_point_to_line(point A, point B, point P)
+	constexpr point get_closest_point_to_line(point A, point B, point P)
 	{
 		// Find the closest point on a line. This point will be reproducible by a Hue lamp.
-		point AP = point(P.x - A.x, P.y - A.y);
-		point AB = point(B.x - A.x, B.y - A.y);
+		auto AP = point{ P.x - A.x, P.y - A.y };
+		auto AB = point{ B.x - A.x, B.y - A.y };
 		double ab2 = AB.x * AB.x + AB.y * AB.y;
 		double ap_ab = AP.x * AB.x + AP.y * AB.y;
 		double t = ap_ab / ab2;
@@ -103,7 +93,7 @@ namespace
 
 	point get_closest_point_to_point(point xy_point, const std::string &modelid)
 	{
-		const point *gamut = get_light_gamut(modelid);
+		const auto gamut = get_light_gamut(modelid);
 		point Red = gamut[0];
 		point Lime = gamut[1];
 		point Blue = gamut[2];
@@ -150,7 +140,7 @@ void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, co
 	   If not continue with step 2, otherwise step 3.
 	   We do this to calculate the most accurate color the given light can actually do.*/
 
-	point xy_point = point(x, y);
+	point xy_point = point{ x, y };
 
 	// TODO: Maybe thsi can be skipped when converting xy-point reported to a light to rgb - why would a light report an unreachable point?
 	if (!check_point_in_lamps_reach(xy_point, modelid)) {

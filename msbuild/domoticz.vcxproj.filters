@@ -2213,6 +2213,9 @@
     <ClInclude Include="..\hardware\eVehicles\TestcarApi.h">
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoTCP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2958,6 +2961,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp">
       <Filter>Devices\eVehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoTCP.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

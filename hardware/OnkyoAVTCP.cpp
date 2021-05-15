@@ -136,11 +136,11 @@ namespace
 #define IS_END_CHAR(x) ((x) == 0x1a)
 }; // namespace
 
-OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress)
+OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+	: m_szIPAddress(IPAddress)
 {
-	m_HwdID=ID;
-	m_usIPPort=usIPPort;
+	m_HwdID = ID;
+	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_pPartialPkt = nullptr;
 	m_PPktLen = 0;
@@ -148,8 +148,8 @@ OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigne
 	// Ooops, changing Device ID was a mistake. Fix up migration for Main/Z2 power switches from
 	// the 3.8153 release. Don't change IDs again!
 	for (int i = ID_PWR; i < ID_PW3; i++)
-		m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%08X' WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (SwitchType==%d) AND (SubType==%d)",
-				 i, m_HwdID, i - 2, switch_types[i].switchType, switch_types[i].subtype);
+		m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%08X' WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (SwitchType==%d) AND (SubType==%d)", i, m_HwdID, i - 2,
+				 switch_types[i].switchType, switch_types[i].subtype);
 }
 
 OnkyoAVTCP::~OnkyoAVTCP()
@@ -161,11 +161,11 @@ bool OnkyoAVTCP::StartHardware()
 {
 	RequestStart();
 
-	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
-	m_bIsStarted=true;
+	// force connect the next first time
+	m_retrycntr = RETRY_DELAY;
+	m_bIsStarted = true;
 
-	//Start worker thread
+	// Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	return (m_thread != nullptr);
@@ -179,14 +179,14 @@ bool OnkyoAVTCP::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
 void OnkyoAVTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"OnkyoAVTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bIsStarted=true;
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	m_bIsStarted = true;
 
 	SendPacket("NRIQSTN");
 	sOnConnected(this);
@@ -194,7 +194,7 @@ void OnkyoAVTCP::OnConnect()
 
 void OnkyoAVTCP::OnDisconnect()
 {
-	_log.Log(LOG_STATUS,"OnkyoAVTCP: disconnected");
+	Log(LOG_STATUS, "disconnected");
 }
 
 void OnkyoAVTCP::Do_Work()
@@ -205,41 +205,34 @@ void OnkyoAVTCP::Do_Work()
 	{
 		sec_counter++;
 
-		if (sec_counter  % 12 == 0) {
+		if (sec_counter % 12 == 0)
+		{
 			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS,"OnkyoAVTCP: TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
 void OnkyoAVTCP::OnData(const unsigned char *pData, size_t length)
 {
-	ParseData(pData,length);
+	ParseData(pData, length);
 }
 
-void OnkyoAVTCP::OnError(const boost::system::error_code& error)
+void OnkyoAVTCP::OnError(const boost::system::error_code &error)
 {
-	if (
-		(error == boost::asio::error::address_in_use) ||
-		(error == boost::asio::error::connection_refused) ||
-		(error == boost::asio::error::access_denied) ||
-		(error == boost::asio::error::host_unreachable) ||
-		(error == boost::asio::error::timed_out)
-		)
+	if ((error == boost::asio::error::address_in_use) || (error == boost::asio::error::connection_refused) || (error == boost::asio::error::access_denied) ||
+	    (error == boost::asio::error::host_unreachable) || (error == boost::asio::error::timed_out))
 	{
-		_log.Log(LOG_ERROR, "OnkyoAVTCP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+		Log(LOG_ERROR, "Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
-	else if (
-		(error == boost::asio::error::eof) ||
-		(error == boost::asio::error::connection_reset)
-		)
+	else if ((error == boost::asio::error::eof) || (error == boost::asio::error::connection_reset))
 	{
-		_log.Log(LOG_STATUS, "OnkyoAVTCP: Connection reset!");
+		Log(LOG_STATUS, "Connection reset!");
 	}
 	else
-		_log.Log(LOG_ERROR, "OnkyoAVTCP: %s", error.message().c_str());
+		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
 bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -252,49 +245,56 @@ bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char /*length
 	unsigned char packettype = pCmd->ICMND.packettype;
 	std::string message;
 
-	if (packettype == pTypeGeneralSwitch) {
-		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	if (packettype == pTypeGeneralSwitch)
+	{
+		const _tGeneralSwitch *xcmd = reinterpret_cast<const _tGeneralSwitch *>(pdata);
 		int ID = xcmd->id;
 		int level = xcmd->level;
 		char buf[9];
 		if (ID >= int(switch_types.size()))
 			return false;
-		switch(xcmd->cmnd) {
-		case gswitch_sSetLevel:
-			if (switch_types[ID].subtype == sSwitchTypeSelector) {
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, ID);
-				if (result.empty()) {
-					_log.Log(LOG_ERROR, "OnkyoAVTCP: No device with ID %08X", ID);
-					return false;
+		switch (xcmd->cmnd)
+		{
+			case gswitch_sSetLevel:
+				if (switch_types[ID].subtype == sSwitchTypeSelector)
+				{
+					std::vector<std::vector<std::string>> result;
+					result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, ID);
+					if (result.empty())
+					{
+						Log(LOG_ERROR, "No device with ID %08X", ID);
+						return false;
+					}
+					std::string val = GetSelectorSwitchLevelAction(m_sql.BuildDeviceOptions(result[0][0]), level);
+					if (val.empty())
+						snprintf(buf, 6, "%s%02X", switch_types[ID].iscpCmd, level / 10);
+					else
+					{
+						// Seriously. They *send* us the ID with lower case, and then refuse to accept it like that.
+						boost::to_upper(val);
+						snprintf(buf, 6, "%s%s", switch_types[ID].iscpCmd, val.c_str());
+					}
 				}
-				std::string val = GetSelectorSwitchLevelAction(m_sql.BuildDeviceOptions(result[0][0]), level);
-				if (val.empty())
-					snprintf(buf, 6, "%s%02X", switch_types[ID].iscpCmd, level / 10);
-				else {
-					// Seriously. They *send* us the ID with lower case, and then refuse to accept it like that.
-					boost::to_upper(val);
-					snprintf(buf, 6, "%s%s", switch_types[ID].iscpCmd, val.c_str());
+				else
+				{
+					snprintf(buf, 6, "%s%02X", switch_types[ID].iscpCmd, level);
 				}
-			} else {
-				snprintf(buf, 6, "%s%02X", switch_types[ID].iscpCmd, level);
-			}
-			SendPacket(buf);
-			break;
-		case gswitch_sOn:
-			if (switch_types[ID].iscpMute)
-				sprintf(buf, "%s00", switch_types[ID].iscpMute);
-			else
-				sprintf(buf, "%s01", switch_types[ID].iscpCmd);
-			SendPacket(buf);
-			break;
-		case gswitch_sOff:
-			if (switch_types[ID].iscpMute)
-				sprintf(buf, "%s01", switch_types[ID].iscpMute);
-			else
-				sprintf(buf, "%s00", switch_types[ID].iscpCmd);
-			SendPacket(buf);
-			break;
+				SendPacket(buf);
+				break;
+			case gswitch_sOn:
+				if (switch_types[ID].iscpMute)
+					sprintf(buf, "%s00", switch_types[ID].iscpMute);
+				else
+					sprintf(buf, "%s01", switch_types[ID].iscpCmd);
+				SendPacket(buf);
+				break;
+			case gswitch_sOff:
+				if (switch_types[ID].iscpMute)
+					sprintf(buf, "%s01", switch_types[ID].iscpMute);
+				else
+					sprintf(buf, "%s00", switch_types[ID].iscpCmd);
+				SendPacket(buf);
+				break;
 		}
 	}
 	return true;
@@ -307,7 +307,7 @@ bool OnkyoAVTCP::SendPacket(const char *pdata)
 		return false;
 	}
 
-	_log.Log(LOG_NORM, "OnkyoAVTCP: Send %s", pdata);
+	Log(LOG_NORM, "Send %s", pdata);
 	size_t length = strlen(pdata);
 
 	struct eiscp_packet *pPkt = (struct eiscp_packet *)malloc(sizeof(*pPkt) + length);
@@ -354,19 +354,18 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	else if (switch_types[ID].switchType == STYPE_OnOff)
 		action = level ? gswitch_sOn : gswitch_sOff;
 
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue,Options,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == %d)",
-				  m_HwdID, ID, 0);
-	if (result.empty()) {
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue,Options,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == %d)", m_HwdID, ID, 0);
+	if (result.empty())
+	{
 		EnsureSwitchDevice(ID, nullptr);
-		result = m_sql.safe_query("SELECT Name,nValue,sValue,Options,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == %d)",
-					  m_HwdID, ID, 0);
+		result = m_sql.safe_query("SELECT Name,nValue,sValue,Options,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == %d)", m_HwdID, ID, 0);
 		if (result.empty())
 			return;
 	}
 
-	if (switch_types[ID].subtype == sSwitchTypeSelector) {
+	if (switch_types[ID].subtype == sSwitchTypeSelector)
+	{
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
 		std::map<std::string, std::string>::const_iterator itt = options.find("LevelActions");
 		if (itt == options.end())
@@ -376,18 +375,22 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt2;
 		int i = 0;
-		for (itt2 = strarray.begin(); itt2 != strarray.end(); ++itt2) {
+		for (itt2 = strarray.begin(); itt2 != strarray.end(); ++itt2)
+		{
 			if (strtoul(itt2->c_str(), nullptr, 16) == (unsigned long)level)
 				break;
 			i += 10;
 		}
-		if (itt2 == strarray.end()) {
+		if (itt2 == strarray.end())
+		{
 			// Add previously unknown value to a selector
-			std::string str(reinterpret_cast<const char*>(pData + 3), Len - 4);
+			std::string str(reinterpret_cast<const char *>(pData + 3), Len - 4);
 			std::string level_name = str;
 			const struct selector_name *n = switch_types[ID].default_names;
-			while (n && n->name) {
-				if (n->val == level) {
+			while (n && n->name)
+			{
+				if (n->val == level)
+				{
 					level_name = n->name;
 					break;
 				}
@@ -399,13 +402,15 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 		}
 		level = i;
 	}
-	if (!result.empty() && action == gswitch_sSetLevel) {
-		//check if we have a change, if not do not update it
+	if (!result.empty() && action == gswitch_sSetLevel)
+	{
+		// check if we have a change, if not do not update it
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!level) && (nvalue == gswitch_sOff))
 			return;
-		if ((level && (nvalue != gswitch_sOff))) {
-			//Check Level
+		if ((level && (nvalue != gswitch_sOff)))
+		{
+			// Check Level
 			int slevel = atoi(result[0][2].c_str());
 			if (slevel == level)
 				return;
@@ -427,25 +432,25 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 
 void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
 {
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string>> result;
 	std::string options_str;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, ID);
-	if (result.empty()) {
-		if (!options && switch_types[ID].options) {
+	if (result.empty())
+	{
+		if (!options && switch_types[ID].options)
+		{
 			options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions(switch_types[ID].options, false));
 			options = options_str.c_str();
-			_log.Log(LOG_ERROR, "Options from '%s': '%s'\n", switch_types[ID].options, options);
+			Log(LOG_ERROR, "Options from '%s': '%s'\n", switch_types[ID].options, options);
 		}
-		m_sql.safe_query(
-				 "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
 				 "VALUES (%d, '%08X', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
-				 m_HwdID, ID, 0, pTypeGeneralSwitch, switch_types[ID].subtype, switch_types[ID].switchType, 1, switch_types[ID].name, "", switch_types[ID].customImage, options?options:"");
-
+				 m_HwdID, ID, 0, pTypeGeneralSwitch, switch_types[ID].subtype, switch_types[ID].switchType, 1, switch_types[ID].name, "", switch_types[ID].customImage,
+				 options ? options : "");
 	}
 }
 
-
-std::string OnkyoAVTCP::BuildSelectorOptions(const std::string & names, const std::string & ids)
+std::string OnkyoAVTCP::BuildSelectorOptions(const std::string &names, const std::string &ids)
 {
 	std::map<std::string, std::string> optionsMap;
 	optionsMap.insert(std::pair<std::string, std::string>("LevelOffHidden", "true"));
@@ -463,39 +468,42 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 	pData += 3;
 
 	doc.Parse(pData);
-	if (doc.Error()) {
-		_log.Log(LOG_ERROR, "OnkyoAVTCP: Failed to parse NRIQSTN result: %s", doc.ErrorDesc());
+	if (doc.Error())
+	{
+		Log(LOG_ERROR, "Failed to parse NRIQSTN result: %s", doc.ErrorDesc());
 		// XX: Fallback, add defaults anyway? */
 		return false;
 	}
 	TiXmlElement *pResponseNode = doc.FirstChildElement("response");
-	if (!pResponseNode) {
-		_log.Log(LOG_ERROR, "No <response> element in NRIQSTN result");
+	if (!pResponseNode)
+	{
+		Log(LOG_ERROR, "No <response> element in NRIQSTN result");
 		return false;
 	}
 	TiXmlElement *pDeviceNode = pResponseNode->FirstChildElement("device");
-	if (!pDeviceNode) {
-		_log.Log(LOG_ERROR, "No <device> element in NRIQSTN result");
+	if (!pDeviceNode)
+	{
+		Log(LOG_ERROR, "No <device> element in NRIQSTN result");
 		return false;
 	}
 	std::string InputNames[4], InputIDs[4];
 	TiXmlElement *pSelectorlistNode = pDeviceNode->FirstChildElement("selectorlist");
-	if (pSelectorlistNode) {
+	if (pSelectorlistNode)
+	{
 		TiXmlElement *pSelector;
-		for ( pSelector = pSelectorlistNode->FirstChildElement(); pSelector;
-		      pSelector = pSelector->NextSiblingElement() ) {
+		for (pSelector = pSelectorlistNode->FirstChildElement(); pSelector; pSelector = pSelector->NextSiblingElement())
+		{
 			const char *id = pSelector->Attribute("id");
 			const char *name = pSelector->Attribute("name");
 			const char *zone = pSelector->Attribute("zone");
 			int value;
-			if (!id || !name || !zone ||
-			    pSelector->QueryIntAttribute("value", &value) != TIXML_SUCCESS ||
-			    !value)
+			if (!id || !name || !zone || pSelector->QueryIntAttribute("value", &value) != TIXML_SUCCESS || !value)
 				continue;
 
 			char *escaped_name = strdup(name);
 			int nlen = strlen(name);
-			while (nlen) {
+			while (nlen)
+			{
 				if (escaped_name[nlen - 1] == ' ' && escaped_name[nlen] == 0)
 					escaped_name[nlen - 1] = 0;
 				else if (escaped_name[nlen - 1] == '|')
@@ -505,9 +513,11 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 			if (!escaped_name[0])
 				continue;
 
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 3; i++)
+			{
 				int zone_nr = strtoul(zone, nullptr, 16);
-				if (zone_nr & (1 << i)) {
+				if (zone_nr & (1 << i))
+				{
 					if (InputNames[i].empty())
 						InputNames[i] = "Off";
 					InputNames[i] += '|';
@@ -522,20 +532,19 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 		}
 	}
 	TiXmlElement *pZonelistNode = pDeviceNode->FirstChildElement("zonelist");
-	if (pZonelistNode) {
+	if (pZonelistNode)
+	{
 		TiXmlElement *pZone;
-		for ( pZone = pZonelistNode->FirstChildElement(); pZone;
-		      pZone = pZone->NextSiblingElement() ) {
+		for (pZone = pZonelistNode->FirstChildElement(); pZone; pZone = pZone->NextSiblingElement())
+		{
 			int id, value, volmax, volstep;
 			const char *name = pZone->Attribute("name");
 
 			if (!name)
 				continue;
 
-			if (pZone->QueryIntAttribute("value", &value) != TIXML_SUCCESS ||
-			    pZone->QueryIntAttribute("id", &id) != TIXML_SUCCESS ||
-			    pZone->QueryIntAttribute("volmax", &volmax) != TIXML_SUCCESS ||
-			    pZone->QueryIntAttribute("volstep", &volstep) != TIXML_SUCCESS)
+			if (pZone->QueryIntAttribute("value", &value) != TIXML_SUCCESS || pZone->QueryIntAttribute("id", &id) != TIXML_SUCCESS ||
+			    pZone->QueryIntAttribute("volmax", &volmax) != TIXML_SUCCESS || pZone->QueryIntAttribute("volstep", &volstep) != TIXML_SUCCESS)
 				continue;
 
 			if (!value)
@@ -545,7 +554,8 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 				continue;
 
 			// Create the input selector immediately, with the known options.
-			std::string options = BuildSelectorOptions(InputNames[id - 1], InputIDs[id - 1]);;
+			std::string options = BuildSelectorOptions(InputNames[id - 1], InputIDs[id - 1]);
+			;
 			EnsureSwitchDevice(ID_SLI + id - 1, options.c_str());
 
 			// Send queries for it, and the power and volume for this zone.
@@ -564,22 +574,23 @@ void OnkyoAVTCP::ReceiveMessage(const char *pData, int Len)
 	while (Len && (pData[Len - 1] == '\r' || pData[Len - 1] == '\n'))
 		Len--;
 
-	if (Len < 4 || !IS_END_CHAR(pData[Len-1]))
+	if (Len < 4 || !IS_END_CHAR(pData[Len - 1]))
 		return;
 
 	// Special-case the startup XML data
-	if (!memcmp(pData, "NRI", 3)) {
+	if (!memcmp(pData, "NRI", 3))
+	{
 		ReceiveXML(pData, Len);
 		return;
 	}
-	_log.Log(LOG_NORM, "OnkyoAVTCP: Packet received: %d %.*s", Len, Len-1, pData);
+	Log(LOG_NORM, "Packet received: %d %.*s", Len, Len - 1, pData);
 
 	int i = 0;
 	for (const auto &text : text_types)
 	{
 		if (!memcmp(pData, text.first, 3))
 		{
-			std::string str(reinterpret_cast<const char*>(pData + 3), Len - 4);
+			std::string str(reinterpret_cast<const char *>(pData + 3), Len - 4);
 			SendTextSensor(1, i, 255, str, text.second);
 			return;
 		}
@@ -605,25 +616,31 @@ void OnkyoAVTCP::ReceiveMessage(const char *pData, int Len)
 
 void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 {
-	if (m_pPartialPkt) {
+	if (m_pPartialPkt)
+	{
 		unsigned char *new_data = (unsigned char *)realloc(m_pPartialPkt, m_PPktLen + Len);
-		if (!new_data) {
+		if (!new_data)
+		{
 			free(m_pPartialPkt);
 			m_pPartialPkt = nullptr;
 			m_PPktLen = 0;
-			_log.Log(LOG_ERROR, "OnkyoAVTCP: Failed to prepend previous data");
+			Log(LOG_ERROR, "Failed to prepend previous data");
 			// We'll attempt to resync
-		} else {
+		}
+		else
+		{
 			memcpy(new_data + m_PPktLen, pData, Len);
 			m_pPartialPkt = new_data;
 			Len += m_PPktLen;
 			pData = new_data;
 		}
 	}
-	while (Len >= 18) {
+	while (Len >= 18)
+	{
 		const struct eiscp_packet *pkt = (const struct eiscp_packet *)pData;
 		if (pkt->magic != htonl(0x49534350) || // "ISCP"
-		    pkt->hdr_size != htonl(16) || pkt->version != 1) {
+		    pkt->hdr_size != htonl(16) || pkt->version != 1)
+		{
 			Len--;
 			pData++;
 			continue;
@@ -637,15 +654,18 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 		pData += 16 + data_size;
 	}
 	unsigned char *new_partial = nullptr;
-	if (Len) {
-		if (pData == m_pPartialPkt) {
+	if (Len)
+	{
+		if (pData == m_pPartialPkt)
+		{
 			m_PPktLen = Len;
 			return;
 		}
 		new_partial = (unsigned char *)malloc(Len);
 		if (new_partial)
 			memcpy(new_partial, pData, Len);
-		else Len = 0;
+		else
+			Len = 0;
 	}
 	free(m_pPartialPkt);
 	m_PPktLen = Len;
@@ -657,43 +677,46 @@ bool OnkyoAVTCP::CustomCommand(const uint64_t /*idx*/, const std::string &sComma
 	return SendPacket(sCommand.c_str());
 }
 
-//Webserver helpers
-namespace http {
-	namespace server {
-		void CWebServer::Cmd_OnkyoEiscpCommand(WebEmSession & session, const request& req, Json::Value &root)
+// Webserver helpers
+namespace http
+{
+	namespace server
+	{
+		void CWebServer::Cmd_OnkyoEiscpCommand(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				return; // Only admin user allowed
 			}
 
 			std::string sIdx = request::findValue(&req, "idx");
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
-			//int idx = atoi(sIdx.c_str());
+			// int idx = atoi(sIdx.c_str());
 
-			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT DS.SwitchType, DS.DeviceID, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 
 			root["status"] = "ERR";
 			if (result.size() == 1)
 			{
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
-				switch (hType) {
-				// We allow raw EISCP commands to be sent on *any* of the logical devices
-				// associated with the hardware.
-				case HTYPE_OnkyoAVTCP:
-					CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_OnkyoAVTCP);
-					if (pBaseHardware == nullptr)
-						return;
-					OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP*>(pBaseHardware);
+				_eHardwareTypes hType = (_eHardwareTypes)atoi(result[0][2].c_str());
+				switch (hType)
+				{
+					// We allow raw EISCP commands to be sent on *any* of the logical devices
+					// associated with the hardware.
+					case HTYPE_OnkyoAVTCP:
+						CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_OnkyoAVTCP);
+						if (pBaseHardware == nullptr)
+							return;
+						OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP *>(pBaseHardware);
 
-					pOnkyoAVTCP->SendPacket(sAction.c_str());
-					root["status"] = "OK";
-					root["title"] = "OnkyoEiscpCommand";
-					break;
+						pOnkyoAVTCP->SendPacket(sAction.c_str());
+						root["status"] = "OK";
+						root["title"] = "OnkyoEiscpCommand";
+						break;
 				}
 			}
 		}

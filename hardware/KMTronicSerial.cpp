@@ -59,7 +59,7 @@ void KMTronicSerial::Do_Work()
 {
 	int sec_counter = 0;
 
-	_log.Log(LOG_STATUS, "KMTronic: Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(1000))
 	{
@@ -72,7 +72,7 @@ void KMTronicSerial::Do_Work()
 		{
 			if (m_retrycntr == 0)
 			{
-				_log.Log(LOG_STATUS, "KMTronic: retrying in %d seconds...", RETRY_DELAY);
+				Log(LOG_STATUS, "retrying in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
@@ -87,7 +87,7 @@ void KMTronicSerial::Do_Work()
 	}
 	terminate();
 
-	_log.Log(LOG_STATUS, "KMTronic: Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
 bool KMTronicSerial::OpenSerialDevice()
@@ -95,7 +95,7 @@ bool KMTronicSerial::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "KMTronic: Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
 		openOnlyBaud(
 			m_szSerialPort,
@@ -114,9 +114,9 @@ bool KMTronicSerial::OpenSerialDevice()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "KMTronic: Error opening serial port!");
+		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -124,7 +124,7 @@ bool KMTronicSerial::OpenSerialDevice()
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "KMTronic: Error opening serial port!!!");
+		Log(LOG_ERROR, "Error opening serial port!!!");
 		return false;
 	}
 	m_bIsStarted = true;
@@ -199,7 +199,7 @@ void KMTronicSerial::GetRelayStates()
 					int iRelay = (iBoard * 8) + ii + 1;
 					sstr << "Board" << int(iBoard + 1) << " - " << int(ii + 1);
 					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
-					_log.Debug(DEBUG_HARDWARE, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+					Debug(DEBUG_HARDWARE, "%s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;
 				}
@@ -235,7 +235,7 @@ void KMTronicSerial::GetRelayStates()
 			int iRelay = (ii + 1);
 			sstr << "Relay " << iRelay;
 			SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
-			_log.Debug(DEBUG_HARDWARE, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+			Debug(DEBUG_HARDWARE, "%s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 			if (iRelay > m_TotRelais)
 				m_TotRelais = iRelay;
 		}
@@ -263,14 +263,14 @@ void KMTronicSerial::GetRelayStates()
 					int iRelay = ii + 1;
 					sstr << "Relay " << iRelay;
 					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str(), m_Name);
-					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+					Log(LOG_STATUS, "%s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "KMTronic: Invalid data received!");
+				Log(LOG_ERROR, "Invalid data received!");
 			}
 		}
 	}

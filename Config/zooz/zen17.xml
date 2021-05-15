@@ -1,0 +1,132 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+  <MetaData>
+    <MetaDataItem name="Name">Zooz ZEN17 Universal Relay</MetaDataItem>
+    <MetaDataItem name="Description"></MetaDataItem>
+    <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/027a:a00a:7000</MetaDataItem>
+    <MetaDataItem name="ProductPage"></MetaDataItem>
+    <MetaDataItem name="ProductSupport"></MetaDataItem>
+    <MetaDataItem name="ProductPic">images/zooz/zen17.png</MetaDataItem>
+    <MetaDataItem name="ProductManual"></MetaDataItem>
+    <MetaDataItem name="WakeupDescription"></MetaDataItem>
+    <MetaDataItem name="InclusionDescription">Click the button on top of the device 3x quickly</MetaDataItem>
+    <MetaDataItem name="ExclusionDescription">Click the button on top of the device 3x quickly</MetaDataItem>
+    <MetaDataItem name="ResetDescription">Click the button on top of the device 4x quickly, the LED indicator will light up, then quickly click the button 4x again. The LED indicator will flash 3x to confirm successful reset and will then turn off.</MetaDataItem>
+    <MetaDataItem id="a00a" name="ZWProductPage" type="7000"><!-- url to https://products.z-wavealliance.org/products/XXXX/ page for this specific version of the device --></MetaDataItem>
+	  <!--product page not available as of March 2, 2021 -->
+    <MetaDataItem id="a00a" name="FrequencyName" type="7000">U.S. / Canada / Mexico</MetaDataItem>
+    <MetaDataItem id="a00a" name="Identifier" type="7000">ZEN17</MetaDataItem>
+    <ChangeLog>
+      <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="2 March 2021" revision="1">Initial configuration from Zooz</Entry>
+	  <Entry author="Jean-Francois Auger - nechry@gmail.com" date="4 feb 2021" revision="2">fix param size error</Entry>
+    </ChangeLog>
+  </MetaData>
+  
+    <!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" index="1" label="On Off status after power failure" size="1" min="0" max="4" value="1">
+			<Help>Set the on off status for the relays after power failure</Help>
+			<Item label="All relays forced to off" value="0"/>
+			<Item label="All relays remember and restore on/off status after power failure" value="1"/>
+			<Item label="All relays forced to on" value="2"/>
+			<Item label="Relay 1 remembers and restores on/off status after power failure, Relay 2 forced to on" value="3"/>
+			<Item label="Relay 2 remembers and restores on/off status after power failure, Relay 1 forced to on" value="4"/>
+		</Value>
+		<Value type="list" genre="config" index="2" label="Input type for relay 1" size="1" min="0" max="10" value="2">
+			<Help>Choose the wall switch or input type you want to connect to the S1 C terminals. Important: If you set this parameter to value 4-10, you'll need to exclude and re-include the device (without changing any settings) so that a child device is created for the input of your choice)</Help>
+			<Item label="momentary for lights only" value="0"/>
+			<Item label="toggle switch (light on when the switch is toggled up, light off when the switch is toggled down)" value="1"/>
+			<Item label="toggle switch (state changes whenever the switch is toggled)" value="2"/>
+			<Item label="garage door (momentary mode for Z-Wave control)" value="3"/>
+			<Item label="leak alarm (water sensor)" value="4"/>
+			<Item label="heat alarm" value="5"/>
+			<Item label="motion alert" value="6"/>
+			<Item label="open/close alert (door sensor)" value="7"/>
+			<Item label="CO alarm" value="8"/>
+			<Item label="CO2 alarm" value="9"/>
+			<Item label="on/off report (dry contact sensor/switch)" value="10"/>
+		</Value>
+		<Value type="list" genre="config" index="3" label="Input type for relay 2" size="1" min="0" max="10" value="2">
+			<Help>Choose the wall switch or input type you want to connect to the S1 C terminals. Important: If you set this parameter to value 4-10, you'll need to exclude and re-include the device (without changing any settings) so that a child device is created for the input of your choice)</Help>
+			<Item label="momentary for lights only" value="0"/>
+			<Item label="toggle switch (light on when the switch is toggled up, light off when the switch is toggled down)" value="1"/>
+			<Item label="toggle switch (state changes whenever the switch is toggled)" value="2"/>
+			<Item label="garage door (momentary mode for Z-Wave control)" value="3"/>
+			<Item label="leak alarm (water sensor)" value="4"/>
+			<Item label="heat alarm" value="5"/>
+			<Item label="motion alert" value="6"/>
+			<Item label="open/close alert (door sensor)" value="7"/>
+			<Item label="CO alarm" value="8"/>
+			<Item label="CO2 alarm" value="9"/>
+			<Item label="on/off report (dry contact sensor/switch)" value="10"/>
+		</Value>
+		<Value type="list" genre="config" index="5" label="LED indicator control" size="1" min="0" max="3" value="0">
+			<Help>Choose if you want the LED indicator to turn on when any of the relays are on or if all of them are off, or if you want it to remain on or off at all times.</Help>
+			<Item label="LED on when all relays off, LED off when any relay is on" value="0"/>
+			<Item label="LED off when all relays on, LED off when all relays are off" value="1"/>
+			<Item label="LED always off" value="2"/>
+			<Item label="LED always on" value="3"/>
+		</Value>
+		<Value type="int" genre="config" index="6" label="Auto turn-off timer for relay 1" size="4" min="0" max="65535" value="0" units="">
+			<Help>Use this parameter to set the time after which you want the device connected to relay 1 to automatically turn off once it has been turned on. The number entered as value corresponds to the unit type set by parameter 15 (minutes, seconds or hours)</Help>
+		</Value>
+		<Value type="int" genre="config" index="7" label="Auto turn-on timer for relay 1" size="4" min="0" max="65535" value="0" units="">
+			<Help>Use this parameter to set the time after which you want the device connected to relay 1 to automatically turn on once it has been turned off. The number entered as value corresponds to the unit type set by parameter 16 (minutes, seconds or hours)</Help>
+		</Value>
+		<Value type="int" genre="config" index="8" label="Auto turn-off timer for relay 2" size="4" min="0" max="65535" value="0" units="">
+			<Help>Use this parameter to set the time after which you want the device connected to relay 2 to automatically turn off once it has been turned on. The number entered as value corresponds to the unit type set by parameter 17 (minutes, seconds or hours)</Help>
+		</Value>
+		<Value type="int" genre="config" index="9" label="Auto turn-on timer for relay 2" size="4" min="0" max="65535" value="0" units="">
+			<Help>Use this parameter to set the time after which you want the device connected to relay 2 to automatically turn on once it has been turned off. The number entered as value corresponds to the unit type set by parameter 18 (minutes, seconds or hours)</Help>
+		</Value>
+		<Value type="list" genre="config" index="10" label="Input trigger for relay 1" size="1" min="0" max="1" value="1">
+			<Help>Choose if you'd like the connected input(switch) on S1 C / VC C to trigger the load connected to R1 or if you want to use the input reports for monitoring only and separate the output from the input.</Help>
+			<Item label="input trigger disabled" value="0"/>
+			<Item label="input trigger enabled" value="1"/>
+		</Value>
+		<Value type="list" genre="config" index="11" label="Input trigger for relay 2" size="1" min="0" max="1" value="1">
+			<Help>Choose if you'd like the connected input(switch) on S2 C / VC C to trigger the load connected to R2 or if you want to use the input reports for monitoring only and separate the output from the input.</Help>
+			<Item label="input trigger disabled" value="0"/>
+			<Item label="input trigger enabled" value="1"/>
+		</Value>
+		<Value type="list" genre="config" index="15" label="Auto turn-off timer unit for relay 1" size="1" min="0" max="2" value="0">
+			<Help>Choose between seconds, minutes and hours as the unit for the auto turn-off timer for relay 1 (parameter 6)</Help>
+			<Item label="minutes" value="0"/>
+			<Item label="seconds" value="1"/>
+			<Item label="hours" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="16" label="Auto turn-on timer unit for relay 1" size="1" min="0" max="2" value="0">
+			<Help>Choose between seconds, minutes and hours as the unit for the auto turn-on timer for relay 1 (parameter 7)</Help>
+			<Item label="minutes" value="0"/>
+			<Item label="seconds" value="1"/>
+			<Item label="hours" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="17" label="Auto turn-off timer unit for relay 2" size="1" min="0" max="2" value="0">
+			<Help>Choose between seconds, minutes and hours as the unit for the auto turn-off timer for relay 2 (parameter 8)</Help>
+			<Item label="minutes" value="0"/>
+			<Item label="seconds" value="1"/>
+			<Item label="hours" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="18" label="Auto turn-on timer unit for relay 2" size="1" min="0" max="2" value="0">
+			<Help>Choose between seconds, minutes and hours as the unit for the auto turn-on timer for relay 2 (parameter 9)</Help>
+			<Item label="minutes" value="0"/>
+			<Item label="seconds" value="1"/>
+			<Item label="hours" value="2"/>
+		</Value>
+		<Value type="list" genre="config" index="24" label="DC motor mode" size="1" min="0" max="1" value="0">
+			<Help>Sync R1 and R2 together to prevent them from being activated at the same time.</Help>
+			<Item label="DC motor mode disabled" value="0"/>
+			<Item label="DC motor mode enabled (relay will check the status of the other relay after being triggered and will shut the other relay off before activating so that only one of the relays is on at the same time)" value="1"/>
+			<Item label="hours" value="2"/>
+		</Value>
+	</CommandClass>
+	
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="3">
+        <Group index="1" label="Lifeline" max_associations="1"/>
+        <Group index="2" label="Group 2" max_associations="5"/>
+	    <Group index="3" label="Group 3" max_associations="5"/>
+      </Associations>
+    </CommandClass>
+	
+</Product>

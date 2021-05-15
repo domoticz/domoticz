@@ -8,8 +8,6 @@
 #include <boost/asio/ip/tcp.hpp>	 // for tcp, tcp::endpoint, tcp::s...
 #include <boost/asio/ssl.hpp>		 // for secure sockets
 #include <boost/asio/ssl/stream.hpp>	 // for secure sockets
-#include <boost/function.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp> // for shared_ptr
 #include <exception>			  // for exception
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
@@ -98,7 +96,7 @@ class ASyncTCP
 #ifdef WWW_ENABLE_SSL
 	const bool mSecure;
 	boost::asio::ssl::context mContext{ boost::asio::ssl::context::sslv23 };
-	boost::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> mSslSocket; // the ssl socket
+	std::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> mSslSocket; // the ssl socket
 #endif
 	boost::asio::ip::tcp::socket mSocket{ mIos };
 	boost::asio::ip::tcp::endpoint mEndPoint;

@@ -52,8 +52,7 @@ int CLuaHandler::l_domoticz_updateDevice(lua_State* lua_state)
 			{
 				batterylevel = (int)lua_tointeger(lua_state, 5);
 			}
-			_log.Log(LOG_NORM, "CLuaHandler (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", ideviceId, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
-
+			_log.Debug(DEBUG_EVENTSYSTEM, "CLuaHandler (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", ideviceId, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
 			m_mainworker.UpdateDevice(ideviceId, invalue, svalue, "EventSystem", signallevel, batterylevel);
 		}
 		else

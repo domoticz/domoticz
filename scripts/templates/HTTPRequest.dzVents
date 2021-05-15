@@ -7,6 +7,10 @@ return {
 			'trigger' -- must match with the callback passed to the openURL command
 		}
 	},
+	logging = {
+		level = domoticz.LOG_INFO,
+		marker = 'template',
+	},
 	execute = function(domoticz, item)
 
 		if (item.isTimer) then

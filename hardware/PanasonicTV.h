@@ -5,7 +5,6 @@
 #include "../main/localtime_r.h"
 #include <string>
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
 
 class CPanasonicNode;
 

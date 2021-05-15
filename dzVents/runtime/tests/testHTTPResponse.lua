@@ -112,16 +112,16 @@ describe('HTTPResponse', function()
 
 	end)
 
-	it('should recognize other content (~= JSON)', function()
+	it('should recognize empty or nil data in JSON', function()
 
 		local r = HTTPResponse({
 			BASETYPE_HTTP_RESPONSE = 'httpResponse'
 		}, {
-			headers = {['content-type'] = 'application/xml' },
+			headers = {['content-type'] = 'application/json' },
 			statusText = 'OK' ,
 			protocol = 'HTTP/1.4' ,
 			statusCode  = 200 ,
-			data  = "<note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me this weekend!</body></note>",
+			data  = nil,
 			callback = 'trigger1',
 
 		},"testHTTPResponse")
@@ -131,7 +131,26 @@ describe('HTTPResponse', function()
 		assert.is.same('OK',r.statusText)
 		assert.is_false(r.isJSON)
 		assert.is_nil(r.json)
-		assert.is_same('application/xml',r._contentType)
+		assert.is_same('application/json',r._contentType)
+
+		local r = HTTPResponse({
+			BASETYPE_HTTP_RESPONSE = 'httpResponse'
+		}, {
+			headers = {['content-type'] = 'application/json' },
+			statusText = 'OK' ,
+			protocol = 'HTTP/1.4' ,
+			statusCode  = 200 ,
+			data = '',
+			callback = 'trigger1',
+
+		},"testHTTPResponse")
+		assert.is_same('HTTP/1.4', r.protocol)
+		assert.is_same(200, r.statusCode)
+		assert.is_true(r.ok)
+		assert.is.same('OK',r.statusText)
+		assert.is_false(r.isJSON)
+		assert.is_nil(r.json)
+		assert.is_same('application/json',r._contentType)
 
 	end)
 

@@ -75,7 +75,7 @@ bool KMTronicTCP::StopHardware()
 void KMTronicTCP::Do_Work()
 {
 	int sec_counter = KMTRONIC_POLL_INTERVAL - 2;
-	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker started...");
+	Log(LOG_STATUS, "TCP/IP Worker started...");
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -93,7 +93,7 @@ void KMTronicTCP::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "TCP/IP Worker stopped...");
 }
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -137,7 +137,7 @@ bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char /*lengt
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult,true))
 		{
-			_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
 		return true;
@@ -191,7 +191,7 @@ void KMTronicTCP::GetMeterDetails()
 		}
 		if (sResult.empty())
 		{
-			_log.Log(LOG_ERROR, "KMTronic: Error connecting to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
 			return;
 		}
 	}
@@ -211,7 +211,7 @@ void KMTronicTCP::ParseRelays(const std::string &sResult)
 	StringSplit(sResult, "\r\n", results);
 	if (results.size() < 8)
 	{
-		_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 	size_t ii, jj;
@@ -236,7 +236,7 @@ void KMTronicTCP::ParseRelays(const std::string &sResult)
 			return;
 		}
 	}
-	_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+	Log(LOG_ERROR, "Invalid data received");
 }
 
 void KMTronicTCP::ParseTemps(const std::string &sResult)
@@ -245,7 +245,7 @@ void KMTronicTCP::ParseTemps(const std::string &sResult)
 	StringSplit(sResult, "\r\n", results);
 	if (results.size() < 8)
 	{
-		_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 	size_t ii;

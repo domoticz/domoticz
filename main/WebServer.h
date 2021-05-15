@@ -19,8 +19,9 @@ namespace http {
 		struct _tWebUserPassword;
 class CWebServer : public session_store, public std::enable_shared_from_this<CWebServer>
 {
-	typedef boost::function< void(WebEmSession & session, const request& req, Json::Value &root) > webserver_response_function;
-public:
+	typedef std::function<void(WebEmSession &session, const request &req, Json::Value &root)> webserver_response_function;
+
+      public:
 	struct _tCustomIcon
 	{
 		int idx;
@@ -103,7 +104,7 @@ private:
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
-        void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root);
@@ -193,7 +194,8 @@ private:
 	void Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteDataPoint(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteDateRange(WebEmSession &session, const request &req, Json::Value &root);
 	void Cmd_SetActiveTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimer(WebEmSession & session, const request& req, Json::Value &root);

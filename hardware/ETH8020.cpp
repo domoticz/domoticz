@@ -36,7 +36,7 @@ bool CETH8020::StartHardware()
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted=true;
 	sOnConnected(this);
-	_log.Log(LOG_STATUS, "ETH8020: Started");
+	Log(LOG_STATUS, "Started");
 	return (m_thread != nullptr);
 }
 
@@ -69,7 +69,7 @@ void CETH8020::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"ETH8020: Worker stopped...");
+	Log(LOG_STATUS,"Worker stopped...");
 }
 
 bool CETH8020::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -109,13 +109,13 @@ bool CETH8020::WriteToHardware(const char *pdata, const unsigned char /*length*/
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
-			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
 /*
 		if (sResult.find("Success") == std::string::npos)
 		{
-			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
+			Log(LOG_ERROR, "Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
 */
@@ -191,19 +191,19 @@ void CETH8020::GetMeterDetails()
 
 	if (!HTTPClient::GET(szURL.str(),sResult))
 	{
-		_log.Log(LOG_ERROR,"ETH8020: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	std::vector<std::string> results;
 	StringSplit(sResult, "\r\n", results);
 	if (results.size()<8)
 	{
-		_log.Log(LOG_ERROR,"ETH8020: Error connecting to: %s", m_szIPAddress.c_str());
+		Log(LOG_ERROR,"Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
 	if (results[0] != "<response>")
 	{
-		_log.Log(LOG_ERROR, "ETH8020: Error getting status");
+		Log(LOG_ERROR, "Error getting status");
 		return;
 	}
 	size_t ii;

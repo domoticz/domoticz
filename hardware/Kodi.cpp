@@ -631,7 +631,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 	if (!e)
 	{
 		//do something with the data
-		std::string sData(m_Buffer.begin(), bytes_transferred);
+		std::string sData(m_Buffer.data(), bytes_transferred);
 		sData = m_RetainedData + sData;  // if there was some data left over from last time add it back in
 		int iPos = 1;
 		while (iPos) {

@@ -6,11 +6,13 @@ return {
 			'manualBackupFinished',
             'dailyBackupFinished',
             'hourlyBackupFinished',
-            'monthlyBackupFinished'
-		}
+            'monthlyBackupFinished',
+		},
 	},
-	data = {},
-	logger = {},
+	logging = {
+		level = domoticz.LOG_INFO,
+		marker = 'template',
+	},
 	execute = function(domoticz, triggeredItem)
 		domoticz.log('Domoticz has started')
 	end

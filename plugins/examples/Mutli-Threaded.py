@@ -26,9 +26,13 @@
 </plugin>
 """
 import Domoticz
-import sys,os
-import threading
+from Domoticz import Devices, Parameters
+import os
 import queue
+import sys
+import time
+import threading
+
 
 class BasePlugin:
     

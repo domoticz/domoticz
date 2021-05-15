@@ -62,7 +62,7 @@ class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-	unsigned char m_buffer[1028];
+	unsigned char m_buffer[16384];
 	int m_bufferpos;
 	std::shared_ptr<std::thread> m_thread;
 };

@@ -362,6 +362,7 @@ class CSQLHelper : public StoppableTask
 
 	void GetMeterType(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int &meterType);
 
+	void DeleteDateRange(const char *ID, const std::string &fromDate, const std::string &toDate);
 	void DeleteDataPoint(const char *ID, const std::string &Date);
 
 	void UpdateRFXCOMHardwareDetails(int HardwareID, int msg1, int msg2, int msg3, int msg4, int msg5, int msg6);
@@ -497,7 +498,7 @@ class CSQLHelper : public StoppableTask
 #ifndef WIN32
 	void ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif
-	void PerformThreadedAction(const _tTaskItem &itt);
+	void PerformThreadedAction(const _tTaskItem tItem);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
 	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color, const std::string &User);
 

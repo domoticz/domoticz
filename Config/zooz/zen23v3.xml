@@ -1,4 +1,4 @@
-<Product Revision="1" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="Name">ZEN23 Toggle Switch V3</MetaDataItem>
     <MetaDataItem name="Description">Product features:
@@ -50,6 +50,7 @@ tap-tap-tap-and-hold: factory reset</MetaDataItem>
     <MetaDataItem id="251c" name="Identifier" type="b111">ZEN23v3</MetaDataItem>
     <ChangeLog>
       <Entry author="Matthew Grimes - https://github.com/cybergrimes" date="14 June 2020" revision="1">Initial configuration from Zooz product help pages</Entry>
+      <Entry author="FuzzyMistborn - https://github.com/FuzzyMistborn" date="09 February 2021" revision="2">Correct typo of Parameter 19 to Parameter 12</Entry>
     </ChangeLog>
   </MetaData>
  
@@ -118,7 +119,7 @@ tap-tap-tap-and-hold: factory reset</MetaDataItem>
 	  <Item label="Switch reports on/off status and changes LED indicator state even if physical and Z-Wave control is disabled (default)" value="0" />
 	  <Item label="Switch doesn't report on/off status or change LED indicator state when physical (and Z-Wave) control is disabled" value="1" />
 	</Value>
-	<Value type="list" genre="config" instance="1" index="19" label="3-Way Switch Type" units="" min="0" max="1" value="0" size="1">
+	<Value type="list" genre="config" instance="1" index="12" label="3-Way Switch Type" units="" min="0" max="1" value="0" size="1">
 	  <Help>Choose the type of 3-way switch you want to use in a 3-way set-up.</Help>
 	  <Item label="Regular mechanical 3-way on/off switch, use the connected 3-way switch to turn the light on or off (default)" value="0" />
 	  <Item label="Momentary switch, click once to change status (light on or off)." value="1" />
