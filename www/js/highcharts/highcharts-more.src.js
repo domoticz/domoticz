@@ -1,7 +1,7 @@
 /**
- * @license Highcharts JS v9.0.0 (2021-02-02)
+ * @license Highcharts JS v9.1.0 (2021-05-03)
  *
- * (c) 2009-2018 Torstein Honsi
+ * (c) 2009-2021 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
@@ -49,7 +49,7 @@
         /**
          * The Pane object allows options that are common to a set of X and Y axes.
          *
-         * In the future, this can be extended to basic Highcharts and Highstock.
+         * In the future, this can be extended to basic Highcharts and Highcharts Stock.
          *
          * @private
          * @class
@@ -672,7 +672,7 @@
                         this.pane.updateCenter(this);
                         // In case when the innerSize is set in a polar chart, the axis'
                         // center cannot be a reference to pane's center
-                        center = this.center = extend([], this.pane.center);
+                        center = this.center = this.pane.center.slice();
                         // The sector is used in Axis.translate to compute the
                         // translation of reversed axis points (#2570)
                         if (this.isCircular) {
@@ -1078,6 +1078,7 @@
                         // Apply the stack labels for yAxis in case of inverted chart
                         if (inverted && coll === 'yAxis') {
                             axis.defaultPolarOptions.stackLabels = AxisClass.defaultYAxisOptions.stackLabels;
+                            axis.defaultPolarOptions.reversedStacks = true;
                         }
                     }
                     // Disable certain features on angular and polar axes
@@ -1167,7 +1168,7 @@
                         align = labelOptions.align, angle = ((axis.translate(this.pos) + axis.startAngleRad +
                             Math.PI / 2) / Math.PI * 180) % 360, correctAngle = Math.round(angle), labelDir = 'end', // Direction of the label 'start' or 'end'
                         reducedAngle1 = correctAngle < 0 ?
-                            correctAngle + 360 : correctAngle, reducedAngle2 = reducedAngle1, translateY = 0, translateX = 0, labelYPosCorrection = labelOptions.y === null ? -labelBBox.height * 0.3 : 0;
+                            correctAngle + 360 : correctAngle, reducedAngle2 = reducedAngle1, translateY = 0, translateX = 0, labelYPosCorrection = !defined(optionsY) ? -labelBBox.height * 0.3 : 0;
                     if (axis.isRadial) { // Both X and Y axes in a polar chart
                         ret = axis.getPosition(this.pos, (axis.center[2] / 2) +
                             relativeLength(pick(labelOptions.distance, -25), axis.center[2] / 2, -axis.center[2] / 2));
@@ -1178,13 +1179,13 @@
                             });
                             // Vertically centered
                         }
-                        else if (optionsY === null) {
+                        else if (!defined(optionsY)) {
                             optionsY = (axis.chart.renderer
                                 .fontMetrics(label.styles && label.styles.fontSize).b -
                                 labelBBox.height / 2);
                         }
                         // Automatic alignment
-                        if (align === null) {
+                        if (!defined(align)) {
                             if (axis.isCircular) { // Y axis
                                 if (labelBBox.width >
                                     axis.len * axis.tickInterval / (axis.max - axis.min)) { // #3506
@@ -1273,8 +1274,8 @@
                             label.attr({ align: align });
                             label.translate(translateX, translateY + labelYPosCorrection);
                         }
-                        e.pos.x = ret.x + labelOptions.x;
-                        e.pos.y = ret.y + optionsY;
+                        e.pos.x = ret.x + (labelOptions.x || 0);
+                        e.pos.y = ret.y + (optionsY || 0);
                     }
                 });
                 // Wrap the getMarkPath function to return the path of the radial marker
@@ -1312,10 +1313,10 @@
             RadialAxis.defaultCircularOptions = {
                 gridLineWidth: 1,
                 labels: {
-                    align: null,
+                    align: void 0,
                     distance: 15,
                     x: 0,
-                    y: null,
+                    y: void 0,
                     style: {
                         textOverflow: 'none' // wrap lines by default (#7248)
                     }
@@ -1333,7 +1334,7 @@
                 labels: {
                     align: 'center',
                     x: 0,
-                    y: null // auto
+                    y: void 0 // auto
                 },
                 minorGridLineWidth: 0,
                 minorTickInterval: 'auto',
@@ -1615,7 +1616,6 @@
                 _this.points = void 0;
                 _this.lowerStateMarkerGraphic = void 0;
                 _this.xAxis = void 0;
-                _this.setStackedPoints = noop;
                 return _this;
                 /* eslint-enable valid-jsdoc */
             }
@@ -1638,7 +1638,7 @@
             AreaRangeSeries.prototype.highToXY = function (point) {
                 // Find the polar plotX and plotY
                 var chart = this.chart,
-                    xy = this.xAxis.postTranslate(point.rectPlotX,
+                    xy = this.xAxis.postTranslate(point.rectPlotX || 0,
                     this.yAxis.len - point.plotHigh);
                 point.plotHighX = xy.x - chart.plotLeft;
                 point.plotHigh = xy.y - chart.plotTop;
@@ -1791,129 +1791,131 @@
                     inverted = this.chart.inverted,
                     upperDataLabelOptions,
                     lowerDataLabelOptions;
-                // Split into upper and lower options. If data labels is an array, the
-                // first element is the upper label, the second is the lower.
-                //
-                // TODO: We want to change this and allow multiple labels for both upper
-                // and lower values in the future - introducing some options for which
-                // point value to use as Y for the dataLabel, so that this could be
-                // handled in Series.drawDataLabels. This would also improve performance
-                // since we now have to loop over all the points multiple times to work
-                // around the data label logic.
-                if (isArray(dataLabelOptions)) {
-                    upperDataLabelOptions = dataLabelOptions[0] || { enabled: false };
-                    lowerDataLabelOptions = dataLabelOptions[1] || { enabled: false };
-                }
-                else {
-                    // Make copies
-                    upperDataLabelOptions = extend({}, dataLabelOptions);
-                    upperDataLabelOptions.x = dataLabelOptions.xHigh;
-                    upperDataLabelOptions.y = dataLabelOptions.yHigh;
-                    lowerDataLabelOptions = extend({}, dataLabelOptions);
-                    lowerDataLabelOptions.x = dataLabelOptions.xLow;
-                    lowerDataLabelOptions.y = dataLabelOptions.yLow;
-                }
-                // Draw upper labels
-                if (upperDataLabelOptions.enabled || this._hasPointLabels) {
-                    // Set preliminary values for plotY and dataLabel
-                    // and draw the upper labels
-                    i = length;
-                    while (i--) {
-                        point = data[i];
-                        if (point) {
-                            up = upperDataLabelOptions.inside ?
-                                point.plotHigh < point.plotLow :
-                                point.plotHigh > point.plotLow;
-                            point.y = point.high;
-                            point._plotY = point.plotY;
-                            point.plotY = point.plotHigh;
-                            // Store original data labels and set preliminary label
-                            // objects to be picked up in the uber method
-                            originalDataLabels[i] = point.dataLabel;
-                            point.dataLabel = point.dataLabelUpper;
-                            // Set the default offset
-                            point.below = up;
-                            if (inverted) {
-                                if (!upperDataLabelOptions.align) {
-                                    upperDataLabelOptions.align = up ? 'right' : 'left';
-                                }
-                            }
-                            else {
-                                if (!upperDataLabelOptions.verticalAlign) {
-                                    upperDataLabelOptions.verticalAlign = up ?
-                                        'top' :
-                                        'bottom';
-                                }
-                            }
-                        }
+                if (dataLabelOptions) {
+                    // Split into upper and lower options. If data labels is an array,
+                    // the first element is the upper label, the second is the lower.
+                    //
+                    // TODO: We want to change this and allow multiple labels for both
+                    // upper and lower values in the future - introducing some options
+                    // for which point value to use as Y for the dataLabel, so that
+                    // this could be handled in Series.drawDataLabels. This would also
+                    // improve performance since we now have to loop over all the
+                    // points multiple times to work around the data label logic.
+                    if (isArray(dataLabelOptions)) {
+                        upperDataLabelOptions = dataLabelOptions[0] || { enabled: false };
+                        lowerDataLabelOptions = dataLabelOptions[1] || { enabled: false };
                     }
-                    this.options.dataLabels = upperDataLabelOptions;
-                    if (seriesProto.drawDataLabels) {
-                        // #1209:
-                        seriesProto.drawDataLabels.apply(this, arguments);
+                    else {
+                        // Make copies
+                        upperDataLabelOptions = extend({}, dataLabelOptions);
+                        upperDataLabelOptions.x = dataLabelOptions.xHigh;
+                        upperDataLabelOptions.y = dataLabelOptions.yHigh;
+                        lowerDataLabelOptions = extend({}, dataLabelOptions);
+                        lowerDataLabelOptions.x = dataLabelOptions.xLow;
+                        lowerDataLabelOptions.y = dataLabelOptions.yLow;
                     }
-                    // Reset state after the upper labels were created. Move
-                    // it to point.dataLabelUpper and reassign the originals.
-                    // We do this here to support not drawing a lower label.
-                    i = length;
-                    while (i--) {
-                        point = data[i];
-                        if (point) {
-                            point.dataLabelUpper = point.dataLabel;
-                            point.dataLabel = originalDataLabels[i];
-                            delete point.dataLabels;
-                            point.y = point.low;
-                            point.plotY = point._plotY;
-                        }
-                    }
-                }
-                // Draw lower labels
-                if (lowerDataLabelOptions.enabled || this._hasPointLabels) {
-                    i = length;
-                    while (i--) {
-                        point = data[i];
-                        if (point) {
-                            up = lowerDataLabelOptions.inside ?
-                                point.plotHigh < point.plotLow :
-                                point.plotHigh > point.plotLow;
-                            // Set the default offset
-                            point.below = !up;
-                            if (inverted) {
-                                if (!lowerDataLabelOptions.align) {
-                                    lowerDataLabelOptions.align = up ? 'left' : 'right';
+                    // Draw upper labels
+                    if (upperDataLabelOptions.enabled || this._hasPointLabels) {
+                        // Set preliminary values for plotY and dataLabel
+                        // and draw the upper labels
+                        i = length;
+                        while (i--) {
+                            point = data[i];
+                            if (point) {
+                                up = upperDataLabelOptions.inside ?
+                                    point.plotHigh < point.plotLow :
+                                    point.plotHigh > point.plotLow;
+                                point.y = point.high;
+                                point._plotY = point.plotY;
+                                point.plotY = point.plotHigh;
+                                // Store original data labels and set preliminary label
+                                // objects to be picked up in the uber method
+                                originalDataLabels[i] = point.dataLabel;
+                                point.dataLabel = point.dataLabelUpper;
+                                // Set the default offset
+                                point.below = up;
+                                if (inverted) {
+                                    if (!upperDataLabelOptions.align) {
+                                        upperDataLabelOptions.align = up ? 'right' : 'left';
+                                    }
                                 }
-                            }
-                            else {
-                                if (!lowerDataLabelOptions.verticalAlign) {
-                                    lowerDataLabelOptions.verticalAlign = up ?
-                                        'bottom' :
-                                        'top';
+                                else {
+                                    if (!upperDataLabelOptions.verticalAlign) {
+                                        upperDataLabelOptions.verticalAlign = up ?
+                                            'top' :
+                                            'bottom';
+                                    }
                                 }
                             }
                         }
-                    }
-                    this.options.dataLabels = lowerDataLabelOptions;
-                    if (seriesProto.drawDataLabels) {
-                        seriesProto.drawDataLabels.apply(this, arguments);
-                    }
-                }
-                // Merge upper and lower into point.dataLabels for later destroying
-                if (upperDataLabelOptions.enabled) {
-                    i = length;
-                    while (i--) {
-                        point = data[i];
-                        if (point) {
-                            point.dataLabels = [
-                                point.dataLabelUpper,
-                                point.dataLabel
-                            ].filter(function (label) {
-                                return !!label;
-                            });
+                        this.options.dataLabels = upperDataLabelOptions;
+                        if (seriesProto.drawDataLabels) {
+                            // #1209:
+                            seriesProto.drawDataLabels.apply(this, arguments);
+                        }
+                        // Reset state after the upper labels were created. Move
+                        // it to point.dataLabelUpper and reassign the originals.
+                        // We do this here to support not drawing a lower label.
+                        i = length;
+                        while (i--) {
+                            point = data[i];
+                            if (point) {
+                                point.dataLabelUpper = point.dataLabel;
+                                point.dataLabel = originalDataLabels[i];
+                                delete point.dataLabels;
+                                point.y = point.low;
+                                point.plotY = point._plotY;
+                            }
                         }
                     }
+                    // Draw lower labels
+                    if (lowerDataLabelOptions.enabled || this._hasPointLabels) {
+                        i = length;
+                        while (i--) {
+                            point = data[i];
+                            if (point) {
+                                up = lowerDataLabelOptions.inside ?
+                                    point.plotHigh < point.plotLow :
+                                    point.plotHigh > point.plotLow;
+                                // Set the default offset
+                                point.below = !up;
+                                if (inverted) {
+                                    if (!lowerDataLabelOptions.align) {
+                                        lowerDataLabelOptions.align = up ? 'left' : 'right';
+                                    }
+                                }
+                                else {
+                                    if (!lowerDataLabelOptions.verticalAlign) {
+                                        lowerDataLabelOptions.verticalAlign = up ?
+                                            'bottom' :
+                                            'top';
+                                    }
+                                }
+                            }
+                        }
+                        this.options.dataLabels = lowerDataLabelOptions;
+                        if (seriesProto.drawDataLabels) {
+                            seriesProto.drawDataLabels.apply(this, arguments);
+                        }
+                    }
+                    // Merge upper and lower into point.dataLabels for later destroying
+                    if (upperDataLabelOptions.enabled) {
+                        i = length;
+                        while (i--) {
+                            point = data[i];
+                            if (point) {
+                                point.dataLabels = [
+                                    point.dataLabelUpper,
+                                    point.dataLabel
+                                ].filter(function (label) {
+                                    return !!label;
+                                });
+                            }
+                        }
+                    }
+                    // Reset options
+                    this.options.dataLabels = dataLabelOptions;
                 }
-                // Reset options
-                this.options.dataLabels = dataLabelOptions;
             };
             AreaRangeSeries.prototype.alignDataLabel = function () {
                 columnProto.alignDataLabel.apply(this, arguments);
@@ -1924,8 +1926,7 @@
                     point,
                     i;
                 // Draw bottom points
-                seriesProto.drawPoints
-                    .apply(series, arguments);
+                seriesProto.drawPoints.apply(series, arguments);
                 // Prepare drawing top points
                 i = 0;
                 while (i < pointLength) {
@@ -1946,9 +1947,11 @@
                     if (defined(point.plotHighX)) {
                         point.plotX = point.plotHighX;
                     }
-                    point.y = point.high;
-                    point.negative = point.high < (series.options.threshold || 0);
-                    point.zone = (series.zones.length && point.getZone());
+                    point.y = pick(point.high, point.origProps.y); // #15523
+                    point.negative = point.y < (series.options.threshold || 0);
+                    if (series.zones.length) {
+                        point.zone = point.getZone();
+                    }
                     if (!series.chart.polar) {
                         point.isInside = point.isTopInside = (typeof point.plotY !== 'undefined' &&
                             point.plotY >= 0 &&
@@ -1966,8 +1969,10 @@
                     point = series.points[i];
                     point.upperGraphic = point.graphic;
                     point.graphic = point.lowerGraphic;
-                    extend(point, point.origProps);
-                    delete point.origProps;
+                    if (point.origProps) {
+                        extend(point, point.origProps);
+                        delete point.origProps;
+                    }
                     i++;
                 }
             };
@@ -2097,7 +2102,8 @@
             pointArrayMap: ['low', 'high'],
             pointValKey: 'low',
             deferTranslatePolar: true,
-            pointClass: AreaRangePoint
+            pointClass: AreaRangePoint,
+            setStackedPoints: noop
         });
         SeriesRegistry.registerSeriesType('arearange', AreaRangeSeries);
         /* *
@@ -2446,7 +2452,8 @@
         var _a = SeriesRegistry.seriesTypes,
             ColumnPoint = _a.column.prototype.pointClass,
             AreaRangePoint = _a.arearange.prototype.pointClass;
-        var extend = U.extend;
+        var extend = U.extend,
+            isNumber = U.isNumber;
         /* *
          *
          *  Class
@@ -2461,10 +2468,12 @@
                 _this.options = void 0;
                 _this.barX = void 0;
                 _this.pointWidth = void 0;
-                _this.shapeArgs = void 0;
                 _this.shapeType = void 0;
                 return _this;
             }
+            ColumnRangePoint.prototype.isValid = function () {
+                return isNumber(this.low);
+            };
             return ColumnRangePoint;
         }(AreaRangePoint));
         /* *
@@ -2629,7 +2638,7 @@
                 columnProto.translate.apply(series);
                 // Set plotLow and plotHigh
                 series.points.forEach(function (point) {
-                    var shapeArgs = point.shapeArgs,
+                    var shapeArgs = point.shapeArgs || {},
                         minPointLength = series.options.minPointLength,
                         heightDifference,
                         height,
@@ -2658,16 +2667,20 @@
                     else {
                         shapeArgs.height = height;
                         shapeArgs.y = y;
+                        var _a = shapeArgs.x,
+                            x = _a === void 0 ? 0 : _a,
+                            _b = shapeArgs.width,
+                            width = _b === void 0 ? 0 : _b;
                         point.tooltipPos = chart.inverted ?
                             [
                                 yAxis.len + yAxis.pos - chart.plotLeft - y -
                                     height / 2,
                                 xAxis.len + xAxis.pos - chart.plotTop -
-                                    shapeArgs.x - shapeArgs.width / 2,
+                                    x - width / 2,
                                 height
                             ] : [
-                            xAxis.left - chart.plotLeft + shapeArgs.x +
-                                shapeArgs.width / 2,
+                            xAxis.left - chart.plotLeft + x +
+                                width / 2,
                             yAxis.pos - chart.plotTop + y + height / 2,
                             height
                         ]; // don't inherit from column tooltip position - #3372
@@ -5438,8 +5451,14 @@
                         path.length &&
                         ((!stacking && prevPoint.y < 0 && !reversedYAxis) ||
                             (prevPoint.y > 0 && reversedYAxis))) {
-                        path[path.length - 2][2] += prevArgs.height;
-                        path[path.length - 1][2] += prevArgs.height;
+                        var nextLast = path[path.length - 2];
+                        if (nextLast && typeof nextLast[2] === 'number') {
+                            nextLast[2] += prevArgs.height || 0;
+                        }
+                        var last = path[path.length - 1];
+                        if (last && typeof last[2] === 'number') {
+                            last[2] += prevArgs.height || 0;
+                        }
                     }
                 }
                 return path;
@@ -6101,7 +6120,7 @@
 
         return BubblePoint;
     });
-    _registerModule(_modules, 'Series/Bubble/BubbleLegend.js', [_modules['Core/Chart/Chart.js'], _modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Legend.js'], _modules['Core/Color/Palette.js'], _modules['Core/Series/Series.js'], _modules['Core/Utilities.js']], function (Chart, Color, H, Legend, palette, Series, U) {
+    _registerModule(_modules, 'Series/Bubble/BubbleLegend.js', [_modules['Core/Chart/Chart.js'], _modules['Core/Color/Color.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Legend.js'], _modules['Core/Options.js'], _modules['Core/Color/Palette.js'], _modules['Core/Series/Series.js'], _modules['Core/Utilities.js']], function (Chart, Color, F, H, Legend, O, palette, Series, U) {
         /* *
          *
          *  (c) 2010-2021 Highsoft AS
@@ -6115,6 +6134,7 @@
          * */
         var color = Color.parse;
         var noop = H.noop;
+        var setOptions = O.setOptions;
         var addEvent = U.addEvent,
             arrayMax = U.arrayMax,
             arrayMin = U.arrayMin,
@@ -6122,7 +6142,6 @@
             merge = U.merge,
             objectEach = U.objectEach,
             pick = U.pick,
-            setOptions = U.setOptions,
             stableSort = U.stableSort,
             wrap = U.wrap;
         /**
@@ -6291,9 +6310,9 @@
                          */
                         style: {
                             /** @ignore-option */
-                            fontSize: 10,
+                            fontSize: '10px',
                             /** @ignore-option */
-                            color: void 0
+                            color: palette.neutralColor100
                         },
                         /**
                          * The x position offset of the label relative to the
@@ -6470,7 +6489,7 @@
                     maxLabel,
                     connectorDistance = options.connectorDistance;
                 // Predict label dimensions
-                this.fontMetrics = chart.renderer.fontMetrics(options.labels.style.fontSize.toString() + 'px');
+                this.fontMetrics = chart.renderer.fontMetrics(options.labels.style.fontSize);
                 // Do not create bubbleLegend now if ranges or ranges valeus are not
                 // specified or if are empty array.
                 if (!ranges || !ranges.length || !isNumber(ranges[0].value)) {
@@ -6510,26 +6529,30 @@
                     options = this.options,
                     series = this.chart.series[options.seriesIndex],
                     baseline = this.legend.baseline,
-                    bubbleStyle = {
-                        'z-index': options.zIndex,
+                    bubbleAttribs = {
+                        zIndex: options.zIndex,
                         'stroke-width': options.borderWidth
                     },
-                    connectorStyle = {
-                        'z-index': options.zIndex,
+                    connectorAttribs = {
+                        zIndex: options.zIndex,
                         'stroke-width': options.connectorWidth
                     },
-                    labelStyle = this.getLabelStyles(),
+                    labelAttribs = {
+                        align: (this.legend.options.rtl ||
+                            options.labels.align === 'left') ? 'right' : 'left',
+                        zIndex: options.zIndex
+                    },
                     fillOpacity = series.options.marker.fillOpacity,
                     styledMode = this.chart.styledMode;
                 // Allow to parts of styles be used individually for range
                 ranges.forEach(function (range, i) {
                     if (!styledMode) {
-                        bubbleStyle.stroke = pick(range.borderColor, options.borderColor, series.color);
-                        bubbleStyle.fill = pick(range.color, options.color, fillOpacity !== 1 ?
+                        bubbleAttribs.stroke = pick(range.borderColor, options.borderColor, series.color);
+                        bubbleAttribs.fill = pick(range.color, options.color, fillOpacity !== 1 ?
                             color(series.color).setOpacity(fillOpacity)
                                 .get('rgba') :
                             series.color);
-                        connectorStyle.stroke = pick(range.connectorColor, options.connectorColor, series.color);
+                        connectorAttribs.stroke = pick(range.connectorColor, options.connectorColor, series.color);
                     }
                     // Set options needed for rendering each range
                     ranges[i].radius = this.getRangeRadius(range.value);
@@ -6539,39 +6562,12 @@
                     });
                     if (!styledMode) {
                         merge(true, ranges[i], {
-                            bubbleStyle: merge(false, bubbleStyle),
-                            connectorStyle: merge(false, connectorStyle),
-                            labelStyle: labelStyle
+                            bubbleAttribs: merge(bubbleAttribs),
+                            connectorAttribs: merge(connectorAttribs),
+                            labelAttribs: labelAttribs
                         });
                     }
                 }, this);
-            };
-            /**
-             * Merge options for bubbleLegend labels.
-             *
-             * @private
-             * @function Highcharts.BubbleLegend#getLabelStyles
-             * @return {Highcharts.CSSObject}
-             */
-            BubbleLegend.prototype.getLabelStyles = function () {
-                var options = this.options,
-                    additionalLabelsStyle = {},
-                    labelsOnLeft = options.labels.align === 'left',
-                    rtl = this.legend.options.rtl;
-                // To separate additional style options
-                objectEach(options.labels.style, function (value, key) {
-                    if (key !== 'color' &&
-                        key !== 'fontSize' &&
-                        key !== 'z-index') {
-                        additionalLabelsStyle[key] = value;
-                    }
-                });
-                return merge(false, additionalLabelsStyle, {
-                    'font-size': options.labels.style.fontSize,
-                    fill: pick(options.labels.style.color, palette.neutralColor100),
-                    'z-index': options.zIndex,
-                    align: rtl || labelsOnLeft ? 'right' : 'left'
-                });
             };
             /**
              * Calculate radius for each bubble range,
@@ -6642,6 +6638,7 @@
                     options = this.options,
                     labelsOptions = options.labels,
                     chart = this.chart,
+                    bubbleSeries = chart.series[options.seriesIndex],
                     renderer = chart.renderer,
                     symbols = this.symbols,
                     labels = symbols.labels,
@@ -6651,7 +6648,6 @@
                     connectorDistance = options.connectorDistance || 0,
                     labelsAlign = labelsOptions.align,
                     rtl = legend.options.rtl,
-                    fontSize = labelsOptions.style.fontSize,
                     connectorLength = rtl || labelsAlign === 'left' ?
                         -connectorDistance : connectorDistance,
                     borderWidth = options.borderWidth,
@@ -6662,7 +6658,8 @@
                     labelY,
                     labelX,
                     fontMetrics = this.fontMetrics,
-                    labelMovement = fontSize / 2 - (fontMetrics.h - fontSize) / 2,
+                    labelMovement = fontMetrics.f / 2 -
+                        (fontMetrics.h - fontMetrics.f) / 2,
                     crispMovement = (posY % 1 ? 1 : 0.5) -
                         (connectorWidth % 2 ? 0 : 0.5),
                     styledMode = renderer.styledMode;
@@ -6670,17 +6667,17 @@
                 if (labelsAlign === 'center') {
                     connectorLength = 0; // do not use connector
                     options.connectorDistance = 0;
-                    range.labelStyle.align = 'center';
+                    range.labelAttribs.align = 'center';
                 }
                 labelY = posY + options.labels.y;
                 labelX = posX + connectorLength + options.labels.x;
                 // Render bubble symbol
                 symbols.bubbleItems.push(renderer
                     .circle(posX, elementCenter + crispMovement, absoluteRadius)
-                    .attr(styledMode ? {} : range.bubbleStyle)
+                    .attr(styledMode ? {} : range.bubbleAttribs)
                     .addClass((styledMode ?
                     'highcharts-color-' +
-                        this.options.seriesIndex + ' ' :
+                        bubbleSeries.colorIndex + ' ' :
                     '') +
                     'highcharts-bubble-legend-symbol ' +
                     (options.className || '')).add(this.legendSymbol));
@@ -6690,7 +6687,7 @@
                     ['M', posX, posY],
                     ['L', posX + connectorLength, posY]
                 ], options.connectorWidth))
-                    .attr(styledMode ? {} : range.connectorStyle)
+                    .attr((styledMode ? {} : range.connectorAttribs))
                     .addClass((styledMode ?
                     'highcharts-color-' +
                         this.options.seriesIndex + ' ' : '') +
@@ -6699,7 +6696,8 @@
                 // Render label
                 label = renderer
                     .text(this.formatLabel(range), labelX, labelY + labelMovement)
-                    .attr(styledMode ? {} : range.labelStyle)
+                    .attr((styledMode ? {} : range.labelAttribs))
+                    .css(styledMode ? {} : labelsOptions.style)
                     .addClass('highcharts-bubble-legend-labels ' +
                     (options.labels.className || '')).add(this.legendSymbol);
                 labels.push(label);
@@ -6748,7 +6746,7 @@
                     formatter = options.labels.formatter,
                     format = options.labels.format;
                 var numberFormatter = this.chart.numberFormatter;
-                return format ? U.format(format, range) :
+                return format ? F.format(format, range) :
                     formatter ? formatter.call(range) :
                         numberFormatter(range.value, 1);
             };
@@ -6824,7 +6822,7 @@
                 // Merge ranges values with user options
                 ranges.forEach(function (range, i) {
                     if (rangesOptions && rangesOptions[i]) {
-                        ranges[i] = merge(false, rangesOptions[i], range);
+                        ranges[i] = merge(rangesOptions[i], range);
                     }
                 });
                 return ranges;
@@ -7946,8 +7944,8 @@
                         normalizedEvent = chart.pointer.normalize(event),
                         diffX = point.fixedPosition.chartX - normalizedEvent.chartX,
                         diffY = point.fixedPosition.chartY - normalizedEvent.chartY,
-                        newPlotX,
-                        newPlotY,
+                        newPlotX = void 0,
+                        newPlotY = void 0,
                         graphLayoutsLookup = chart.graphLayoutsLookup;
                     // At least 5px to apply change (avoids simple click):
                     if (Math.abs(diffX) > 5 || Math.abs(diffY) > 5) {
@@ -9251,7 +9249,7 @@
                 */
                 // Exponential:
                 /*
-                var alpha = 0.1;
+                let alpha = 0.1;
                 layout.temperature = Math.sqrt(layout.nodes.length) *
                     Math.pow(alpha, layout.diffTemperature);
                 */
@@ -9451,6 +9449,15 @@
                         }
                     });
                 }
+            },
+            isStable: function () {
+                var tempDiff = Math.abs(this.prevSystemTemperature -
+                        this.systemTemperature);
+                var upScaledTemperature = 10 * this.systemTemperature /
+                        Math.sqrt(this.nodes.length);
+                return Math.abs(upScaledTemperature) < 1 &&
+                    tempDiff < 0.00001 ||
+                    this.temperature <= 0;
             },
             setCircularPositions: function () {
                 var layout = this,
@@ -9911,11 +9918,10 @@
                         opacity: nodeMarker.fillOpacity,
                         stroke: nodeMarker.lineColor || series.color,
                         'stroke-width': nodeMarker.lineWidth
-                    },
-                    visibility = series.visible ? 'inherit' : 'hidden';
+                    };
                 // create the group for parent Nodes if doesn't exist
                 if (!this.parentNodesGroup) {
-                    series.parentNodesGroup = series.plotGroup('parentNodesGroup', 'parentNode', visibility, 0.1, chart.seriesGroup);
+                    series.parentNodesGroup = series.plotGroup('parentNodesGroup', 'parentNode', series.visible ? 'inherit' : 'hidden', 0.1, chart.seriesGroup);
                     series.group.attr({
                         zIndex: 2
                     });
@@ -10038,24 +10044,24 @@
              */
             PackedBubbleSeries.prototype.onMouseUp = function (point) {
                 if (point.fixedPosition && !point.removed) {
-                    var distanceXY,
-                        distanceR,
-                        layout = this.layout,
+                    var distanceXY_1,
+                        distanceR_1,
+                        layout_1 = this.layout,
                         parentNodeLayout = this.parentNodeLayout;
-                    if (parentNodeLayout && layout.options.dragBetweenSeries) {
+                    if (parentNodeLayout && layout_1.options.dragBetweenSeries) {
                         parentNodeLayout.nodes.forEach(function (node) {
                             if (point && point.marker &&
                                 node !== point.series.parentNode) {
-                                distanceXY = layout.getDistXY(point, node);
-                                distanceR = (layout.vectorLength(distanceXY) -
+                                distanceXY_1 = layout_1.getDistXY(point, node);
+                                distanceR_1 = (layout_1.vectorLength(distanceXY_1) -
                                     node.marker.radius -
                                     point.marker.radius);
-                                if (distanceR < 0) {
+                                if (distanceR_1 < 0) {
                                     node.series.addPoint(merge(point.options, {
                                         plotX: point.plotX,
                                         plotY: point.plotY
                                     }), false);
-                                    layout.removeElementFromCollection(point, layout.nodes);
+                                    layout_1.removeElementFromCollection(point, layout_1.nodes);
                                     point.remove();
                                 }
                             }
@@ -10409,19 +10415,21 @@
                         // update the series points with the val from positions
                         // array
                         point = data[positions[i][4]];
-                        radius = positions[i][2];
+                        radius = pick(positions[i][2], void 0);
                         if (!useSimulation) {
                             point.plotX = (positions[i][0] - chart.plotLeft +
                                 chart.diffX);
                             point.plotY = (positions[i][1] - chart.plotTop +
                                 chart.diffY);
                         }
-                        point.marker = extend(point.marker, {
-                            radius: radius,
-                            width: 2 * radius,
-                            height: 2 * radius
-                        });
-                        point.radius = radius;
+                        if (isNumber(radius)) {
+                            point.marker = extend(point.marker, {
+                                radius: radius,
+                                width: 2 * radius,
+                                height: 2 * radius
+                            });
+                            point.radius = radius;
+                        }
                     }
                 }
                 if (useSimulation) {
@@ -11031,8 +11039,7 @@
          * @private
          */
         seriesProto.toXY = function (point) {
-            var xy,
-                chart = this.chart,
+            var chart = this.chart,
                 xAxis = this.xAxis,
                 yAxis = this.yAxis,
                 plotX = point.plotX,
@@ -11053,11 +11060,16 @@
             if (yAxis.center) {
                 radius += yAxis.center[3] / 2;
             }
-            // Find the polar plotX and plotY
-            xy = inverted ? yAxis.postTranslate(plotY, radius) :
-                xAxis.postTranslate(plotX, radius);
-            point.plotX = point.polarPlotX = xy.x - chart.plotLeft;
-            point.plotY = point.polarPlotY = xy.y - chart.plotTop;
+            // Find the polar plotX and plotY. Avoid setting plotX and plotY to NaN when
+            // plotY is undefined (#15438)
+            if (isNumber(plotY)) {
+                var xy = inverted ? yAxis.postTranslate(plotY,
+                    radius) :
+                        xAxis.postTranslate(plotX,
+                    radius);
+                point.plotX = point.polarPlotX = xy.x - chart.plotLeft;
+                point.plotY = point.polarPlotY = xy.y - chart.plotTop;
+            }
             // If shared tooltip, record the angle in degrees in order to align X
             // points. Otherwise, use a standard k-d tree to get the nearest point
             // in two dimensions.
@@ -11088,12 +11100,18 @@
                     }
                     else { // curve from last point to this
                         connectors = this.getConnectors(segment, i, true, this.connectEnds);
+                        var rightContX = connectors.prevPointCont && connectors.prevPointCont.rightContX;
+                        var rightContY = connectors.prevPointCont && connectors.prevPointCont.rightContY;
                         ret = [
                             'C',
-                            connectors.prevPointCont.rightContX,
-                            connectors.prevPointCont.rightContY,
-                            connectors.leftContX,
-                            connectors.leftContY,
+                            isNumber(rightContX) ? rightContX : connectors.plotX,
+                            isNumber(rightContY) ? rightContY : connectors.plotY,
+                            isNumber(connectors.leftContX) ?
+                                connectors.leftContX :
+                                connectors.plotX,
+                            isNumber(connectors.leftContY) ?
+                                connectors.leftContY :
+                                connectors.plotY,
                             connectors.plotX,
                             connectors.plotY
                         ];
@@ -11590,7 +11608,7 @@
                     else { // Required corrections for data labels of inverted bars
                         // The plotX and plotY are correctly set therefore they
                         // don't need to be swapped (inverted argument is false)
-                        this.forceDL = chart.isInsidePlot(point.plotX, Math.round(point.plotY), false);
+                        this.forceDL = chart.isInsidePlot(point.plotX, Math.round(point.plotY));
                         // Checks if labels should be positioned inside
                         if (inside && point.shapeArgs) {
                             shapeArgs = point.shapeArgs;
@@ -11599,7 +11617,7 @@
                             labelPos =
                                 this.yAxis.postTranslate(
                                 // angle
-                                (shapeArgs.start + shapeArgs.end) / 2 -
+                                ((shapeArgs.start || 0) + (shapeArgs.end || 0)) / 2 -
                                     this
                                         .xAxis.startAngleRad, 
                                 // radius
