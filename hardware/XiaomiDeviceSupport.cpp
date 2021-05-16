@@ -2,7 +2,24 @@
 
 #include "XiaomiDeviceSupport.h"
 
-int32_t XiaomiDeviceSupportHardcoded::GetXiaomiUnitCodeByID()
+int32_t XiaomiDeviceSupportHardcoded::GetXiaomiUnitCodeByID(std::string sid)
 {
-	return 0;
+	int32_t unitcodefound = 0;
+
+	if (sid == "")
+	{
+		unitcodefound = 11;
+	}
+
+	return unitcodefound;
+}
+
+std::string GetXiaomiDeviceNameByID(std::string sid)
+{
+	return "";
+}
+
+std::string GetXiaomiDeviceModelByID(std::string sid)
+{
+	return "";
 }

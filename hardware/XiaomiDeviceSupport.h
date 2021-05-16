@@ -5,14 +5,15 @@
 class XiaomiDeviceSupport
 {
       public:
-	virtual int32_t GetXiaomiUnitCodeByID();
-	virtual std::string GetXiaomiDeviceNameByID();
-	virtual std::string GetXiaomiDeviceModelByID();
+	virtual int32_t GetXiaomiUnitCodeByID(std::string sid);
+	virtual std::string GetXiaomiDeviceNameByID(std::string sid);
+	virtual std::string GetXiaomiDeviceModelByID(std::string sid);
 };
 
 class XiaomiDeviceSupportHardcoded : public XiaomiDeviceSupport
 {
-	int32_t GetXiaomiUnitCodeByID();
-	std::string GetXiaomiDeviceNameByID();
-	std::string GetXiaomiDeviceModelByID();
+      public:
+	int32_t GetXiaomiUnitCodeByID(std::string sid);
+	std::string GetXiaomiDeviceNameByID(std::string sid);
+	std::string GetXiaomiDeviceModelByID(std::string sid);
 };

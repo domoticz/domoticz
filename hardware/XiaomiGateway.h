@@ -4,6 +4,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <list>
 #include <mutex>
+#include "XiaomiDeviceSupport.h"
 
 #define MAX_LOG_LINE_LENGTH (2048 * 3)
 
@@ -81,6 +82,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 	std::string m_GatewayMusicId;
 	std::string m_GatewayVolume;
 	std::mutex m_mutex;
+	XiaomiDeviceSupport m_DeviceSupport;
 
 	XiaomiGateway *GatewayByIp(const std::string &ip);
 	void AddGatewayToList();

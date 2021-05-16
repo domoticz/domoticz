@@ -11,6 +11,7 @@
 #include "XiaomiGateway.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
+#include "XiaomiDeviceSupport.h"
 
 #ifndef WIN32
 #include <ifaddrs.h>
@@ -326,6 +327,7 @@ XiaomiGateway::XiaomiGateway(const int ID)
 	m_HwdID = ID;
 	m_bDoRestart = false;
 	m_ListenPort9898 = false;
+	m_DeviceSupport = new XiaomiDeviceSupportHardcoded();
 }
 
 bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char length)
@@ -361,6 +363,10 @@ bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char lengt
 		cmdchannel = DetermineChannel(xcmd->unitcode);
 		cmddevice = DetermineDevice(xcmd->unitcode);
 		cmdcommand = DetermineCommand(xcmd->cmnd);
+
+		// If unitcode unkown, check DeviceSupport for ID
+		Log(LOG_STATUS, "Xiaomi WriteToHardware, xcmd->unitcode '%d', cmddevice: '%s'", xcmd->unitcode, cmddevice);
+		xcmd->unitcode = m_DeviceSupport.GetXiaomiUnitCodeByID(sid);
 
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 ||
 		    xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)))
@@ -1226,6 +1232,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		std::string sid = root["sid"].asString();
 		std::string data = root["data"].asString();
 		int unitcode = 1;
+
+		if (model.empty())
+		{
+			XiaomiDeviceSupportHardcoded devicesupport();
+			model = devicesupport->GetXiaomiDeviceModelByID(sid);
+			_log.Log(LOG_ERROR, "XiaomiDeviceSupport: model empty, DeviceSupport overrides with: '%s'", model);
+		}
+
 		if ((cmd == COMMAND_REPORT) || (cmd == COMMAND_READ_ACK) || (cmd == COMMAND_HEARTBEAT))
 		{
 			Json::Value root2;
@@ -1469,8 +1483,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					{
 						if (model == MODEL_ACT_ONOFF_PLUG || model == MODEL_ACT_ONOFF_PLUG_WALL_1 || model == MODEL_ACT_ONOFF_PLUG_WALL_2)
 						{
-							sleep_milliseconds(100); // Need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so
-										 // that the event is not triggered twice
+							sleep_milliseconds(100); // Need to sleep here as the gateway will send 2 update messages, and need time for the database to update the
+										 // state so that the event is not triggered twice
 							TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, load_power, power_consumed, battery);
 						}
 						else if ((model == MODEL_ACT_BLINDS_CURTAIN) && (!curtain.empty()))
