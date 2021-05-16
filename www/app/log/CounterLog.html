@@ -14,7 +14,7 @@
         class="device-log-chart"
         device="::$ctrl.device"></counter-year-chart>
 
-<counter-year-compare-chart
-        ng-if="::$ctrl.subtype=='gas' || $ctrl.subtype=='water'"
+<counter-compare-chart
+        ng-if="::$ctrl.subtype=='gas' || $ctrl.subtype=='water' || $ctrl.subtype=='counter' || $ctrl.subtype=='p1Energy'"
         class="device-log-chart"
-        device="::$ctrl.device"></counter-year-compare-chart>
+        device="::$ctrl.device"></counter-compare-chart>

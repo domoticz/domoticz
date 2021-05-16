@@ -1,6 +1,6 @@
 define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCounterSeriesSuppliers', 'log/CounterLogEnergySeriesSuppliers', 'log/CounterLogSeriesSupplier'], function (app, _) {
 
-    app.directive('registerCounter', function (chart, counterLogSubtypeRegistry, counterLogCounterSeriesSuppliers, counterLogSeriesSupplier) {
+    app.directive('registerCounter', function (chart, counterLogSubtypeRegistry, counterLogParams, counterLogCounterSeriesSuppliers, counterLogSeriesSupplier) {
         counterLogSubtypeRegistry.register('gas', {
             chartParamsDayTemplate: {
 
@@ -19,17 +19,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             chartParamsMonthYearTemplate: {
 
             },
-            chartParamsCompareTemplate: {
-                highchartTemplate: {
-                    chart: {
-                        type: 'column'
-                    },
-                    plotOptions: {
-                        column: {
-                            stacking: 'normal'
-                        }
-                    }
-                }
+            chartParamsCompareTemplate: function (ctrl) {
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.gas(chart.valueMultipliers.m1));
             },
             yAxesDay: function (deviceTypeIndex) {
                 return [
@@ -81,8 +72,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex));
             },
-            compareSeriesSuppliers: function (deviceTypeIndex) {
-                return counterLogSeriesSupplier.counterCompareYearSeriesSuppliers(deviceTypeIndex);
+            compareSeriesSuppliers: function (ctrl) {
+                return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
         });
 
@@ -108,17 +99,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             chartParamsMonthYearTemplate: {
 
             },
-            chartParamsCompareTemplate: {
-                highchartTemplate: {
-                    chart: {
-                        type: 'column'
-                    },
-                    plotOptions: {
-                        column: {
-                            stacking: 'normal'
-                        }
-                    }
-                }
+            chartParamsCompareTemplate: function (ctrl) {
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.water(chart.valueMultipliers.m1));
             },
             yAxesDay: function (deviceTypeIndex) {
                 return [
@@ -170,8 +152,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, times1000, 0))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, times1000, 0));
             },
-            compareSeriesSuppliers: function (deviceTypeIndex) {
-                return counterLogSeriesSupplier.counterCompareYearSeriesSuppliers(deviceTypeIndex);
+            compareSeriesSuppliers: function (ctrl) {
+                return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
         });
 
@@ -197,17 +179,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             chartParamsMonthYearTemplate: {
 
             },
-            chartParamsCompareTemplate: {
-                highchartTemplate: {
-                    chart: {
-                        type: 'column'
-                    },
-                    plotOptions: {
-                        column: {
-                            stacking: 'normal'
-                        }
-                    }
-                }
+            chartParamsCompareTemplate: function (ctrl) {
+                return counterLogParams.chartParamsCompareTemplate(ctrl);
             },
             yAxesDay: function (deviceTypeIndex) {
                 return [
@@ -259,8 +232,8 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, undefined, undefined))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, undefined, undefined));
             },
-            compareSeriesSuppliers: function (deviceTypeIndex) {
-                return counterLogSeriesSupplier.counterCompareYearSeriesSuppliers(deviceTypeIndex);
+            compareSeriesSuppliers: function (ctrl) {
+                return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
         });
         return {

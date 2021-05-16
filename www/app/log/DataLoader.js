@@ -36,6 +36,12 @@ define(function () {
                                     return dataItem[dataItemKey] !== undefined;
                                 });
                             },
+                        initialiseDatapoints: function () {
+                            this.datapoints = [];
+                        },
+                        acceptDatapointFromDataItem: function (dataItem, datapoint) {
+                            this.datapoints.push(datapoint);
+                        },
                         datapointFromDataItem:
                             function (dataItem) {
                                 const datapoint = [this.timestampFromDataItem(dataItem)];
@@ -110,11 +116,11 @@ define(function () {
                 }),
                 function (seriesSupplier, dataItem) {
                     if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(dataItem)) {
-                        seriesSupplier.datapoints.push(seriesSupplier.datapointFromDataItem(dataItem));
+                        seriesSupplier.acceptDatapointFromDataItem(dataItem, seriesSupplier.datapointFromDataItem(dataItem));
                     }
                 },
                 function (seriesSupplier) {
-                    seriesSupplier.datapoints = [];
+                    seriesSupplier.initialiseDatapoints();
                 },
                 function (seriesSupplier) {
                     if (seriesSupplier.postprocessDatapoints !== undefined) {

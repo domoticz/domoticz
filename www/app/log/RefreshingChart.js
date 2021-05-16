@@ -3,7 +3,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
             dataLoader = new DataLoader(),
-            chartLoader = new ChartLoader({ extendSeriesNameWithLabel: angularParams.location.search().serieslabels === 'true' }),
+            chartLoader = new ChartLoader(angularParams.location),
             chartZoomer = new ChartZoomer()) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
@@ -14,6 +14,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             + ', subtype:' + params.device.SubType
             + ', sensorType:' + params.sensorType);
         self.sensorType = params.sensorType;
+        self.ctrl = params.ctrl;
         self.range = params.range;
         self.chartName = params.chartName;
         self.device = params.device;
@@ -272,11 +273,13 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     }
 
                     function loadDataInChart(data) {
-                        const chartAnalysis = chartZoomer.analyseChart(self);
+                        const chartAnalysis = chartZoomer ? chartZoomer.analyseChart(self) : null;
                         dataLoader.prepareData(data, self);
                         dataLoader.loadData(data, self);
                         chartLoader.loadChart(self);
-                        chartZoomer.zoomChart(self, chartAnalysis);
+                        if (chartZoomer) {
+                            chartZoomer.zoomChart(self, chartAnalysis);
+                        }
                     }
 
                     function redrawChart() {
@@ -586,6 +589,37 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 zoom(xAxis.dataMin, xAxis.dataMax);
             }
 
+            self.$scope.groupByLabel = function (label) {
+                const matcher = label.match(/^(?<letter>[yq])$/);
+                if (matcher !== null) {
+                    const letter = matcher.groups.letter;
+                    const groupingBy =
+                        letter === 'y' ? 'Year' :
+                            letter === 'q' ? 'Quarter' :
+                                letter === 'm' ? 'Month' : '';
+                    return $.t(groupingBy).substring(0, 1).toLowerCase();
+                }
+                return $.t(label).toLowerCase();
+            }
+
+            self.$scope.groupBy = function (groupingBy) {
+                self.ctrl.groupingBy = groupingBy;
+                refreshChartData(
+                    /*
+                    function () {
+                    // self.chart.options.plotOptions.column.stacking = groupingBy === 'year' ? 'normal' : undefined;
+                    // self.chart.options.plotOptions.series.stacking = groupingBy === 'year' ? 'normal' : undefined;
+                    self.chart.series.forEach(function (s) {
+                        s.options.stack = groupingBy === 'year' ? 0 : 1;
+                        s.hide();
+                        s.show();
+                    });
+                    // self.chart.redraw();
+                }
+                */
+                );
+            };
+
             self.$element.find('.chartcontainer').on('refreshChartData', function (e) {
                 refreshChartData();
             });
@@ -668,7 +702,8 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function chartTitle() {
             if (self.chartName !== undefined) {
-                return self.chartName + ' ' + chartTitlePeriod();
+                const periodInTitle = chartTitlePeriod();
+                return self.chartName + (periodInTitle ? ' ' + periodInTitle : '');
             } else {
                 return chartTitlePeriod();
             }

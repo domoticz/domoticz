@@ -155,5 +155,4 @@ define(['app', 'log/Chart'], function (app) {
             ];
         }
     });
-
 });

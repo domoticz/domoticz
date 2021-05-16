@@ -1,6 +1,6 @@
-define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], function (app) {
+define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], function (app) {
 
-    app.directive('registerP1Energy', function (counterLogSubtypeRegistry, counterLogEnergySeriesSuppliers) {
+    app.directive('registerP1Energy', function (chart, counterLogSubtypeRegistry, counterLogParams, counterLogEnergySeriesSuppliers, counterLogSeriesSupplier) {
         counterLogSubtypeRegistry.register('p1Energy', {
             chartParamsDayTemplate: {
                 highchartTemplate: {
@@ -37,17 +37,20 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                     }
                 }
             },
+            chartParamsCompareTemplate: function (ctrl) {
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1000));
+            },
             yAxesDay: function (deviceType) {
                 return [
                     {
                         title: {
-                            text: $.t('Energy') + ' (Wh)'
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
                         },
                         min: 0
                     },
                     {
                         title: {
-                            text: $.t('Power') + ' (Watt)'
+                            text: $.t('Power') + ' (' + chart.valueUnits.power(chart.valueMultipliers.m1) + ')'
                         },
                         min: 0,
                         opposite: true
@@ -59,7 +62,7 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                     {
                         maxPadding: 0.2,
                         title: {
-                            text: $.t('Energy') + ' (kWh)'
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
                         min: 0
                     }
@@ -69,9 +72,18 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                 return [
                     {
                         title: {
-                            text: $.t('Energy') + ' (kWh)'
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
                         },
                         min: 0
+                    }
+                ];
+            },
+            yAxesCompare: function (deviceTypeIndex) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
+                        }
                     }
                 ];
             },
@@ -89,6 +101,9 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
                 return []
                     .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.powerReturnedMonthYearSeriesSuppliers(deviceType));
+            },
+            compareSeriesSuppliers: function (ctrl) {
+                return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
         });
         return {

@@ -1,7 +1,7 @@
 define(['lodash'], function (_) {
-    function ChartLoader(params) {
+    function ChartLoader($location) {
         const self = this;
-        self.extendSeriesNameWithLabel = params.extendSeriesNameWithLabel;
+        self.extendSeriesNameWithLabel = $location.search().serieslabels === 'true';
     }
 
     ChartLoader.prototype.loadChart = function (receiver) {
@@ -40,7 +40,7 @@ define(['lodash'], function (_) {
                         seriesSupplier.xAxis = chartSeriesCreated.xAxis;
                         seriesSupplier.yAxis = chartSeriesCreated.yAxis;
                     } else {
-                        chartSeries.setData(seriesSupplier.datapoints, false);
+                        chartSeries.setData(seriesSupplier.datapoints, false, true, false);
                         seriesSupplier.xAxis = chartSeries.xAxis;
                         seriesSupplier.yAxis = chartSeries.yAxis;
                     }

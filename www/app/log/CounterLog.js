@@ -1,5 +1,5 @@
-define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams'],
-    function (app, _, RefreshingChart) {
+define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'ChartZoomer', 'log/Chart', 'log/CounterLogParams'],
+    function (app, _, RefreshingChart, DataLoader, ChartLoader, ChartZoomer) {
 
         app.component('deviceCounterLog', {
             bindings: {
@@ -163,18 +163,18 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
             }
         });
 
-        app.component('counterYearCompareChart', {
+        app.component('counterCompareChart', {
             require: {
                 logCtrl: '^deviceCounterLog'
             },
             bindings: {
                 device: '<'
             },
-            templateUrl: 'app/log/chart-year-compare.html',
+            templateUrl: 'app/log/chart-compare.html',
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
                 const self = this;
-                self.range = 'year';
+                self.groupingBy = 'year';
 
                 self.$onInit = function () {
                     const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
@@ -183,12 +183,12 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                         chart.angularParams($location, $route, $scope, $timeout, $element),
                         chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
                         counterLogParams.chartParamsCompare(domoticzGlobals, self,
-                            subtype.chartParamsCompareTemplate,
+                            subtype.chartParamsCompareTemplate(self),
                             {
                                 isShortLogChart: false,
                                 yAxes: subtype.yAxesCompare(self.device.SwitchTypeVal),
                                 extendDataRequest: function (dataRequest) {
-                                    dataRequest['granularity'] = 'year';
+                                    dataRequest['groupby'] = self.groupingBy;
                                     return dataRequest;
                                 },
                                 preprocessData: function (data) {
@@ -196,11 +196,37 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                                         subtype.preprocessData.call(this, data);
                                     }
                                     this.firstYear = data.firstYear;
+                                    this.categories = categoriesFromGroupingBy(self.groupingBy, this);
+                                    if (self.chart.chart.xAxis[0].categories === true) {
+                                        self.chart.chart.xAxis[0].categories = [];
+                                    } else {
+                                        self.chart.chart.xAxis[0].categories.length = 0;
+                                    }
+                                    this.categories.forEach(function (c) {
+                                        self.chart.chart.xAxis[0].categories.push(c); });
+
+                                    function categoriesFromGroupingBy(groupingBy, dataSupplier) {
+                                        if (groupingBy === 'year') {
+                                            return _.range(dataSupplier.firstYear, new Date().getFullYear() + 1).map(year => year.toString());
+                                        } else if (groupingBy === 'quarter') {
+                                            return ['Q1', 'Q2', 'Q3', 'Q4'];
+                                        } else if (groupingBy === 'month') {
+                                            return _.range(1, 13).map(month => pad2(month));
+                                        }
+
+                                        function pad2(i) {
+                                            return (i < 10 ? '0' : '') + i.toString();
+                                        }
+                                    }
                                 },
-                                preprocessDataItems: subtype.preprocessDataItems
+                                preprocessDataItems: function (dataItems) {
+                                }
                             },
-                            subtype.compareSeriesSuppliers(self.device.SwitchTypeVal)
-                        )
+                            subtype.compareSeriesSuppliers(self)
+                        ),
+                        new DataLoader(),
+                        new ChartLoader($location),
+                        null
                     );
                 }
             }

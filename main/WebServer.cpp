@@ -14018,9 +14018,9 @@ namespace http {
 			if (sensor.empty())
 				return;
 			std::string srange = request::findValue(&req, "range");
-			if (srange.empty())
-				return;
-            std::string sgranularity = request::findValue(&req, "granularity");
+            std::string sgroupby = request::findValue(&req, "groupby");
+            if (srange.empty() && sgroupby.empty())
+                return;
 
 			time_t now = mytime(nullptr);
 			struct tm tm1;
@@ -14034,6 +14034,7 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
+            _log.Debug(DEBUG_WEBSERVER, "dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if (
 				(dType == pTypeP1Power) ||
 				(dType == pTypeENERGY) ||
@@ -15657,7 +15658,7 @@ namespace http {
 					}
 				}
 			}//week
-			else if ((srange == "month") || (srange == "year"))
+			else if (srange == "month" || srange == "year" || !sgroupby.empty())
 			{
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -16159,7 +16160,7 @@ namespace http {
 				}
 				else if (sensor == "counter") {
 					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
+					root["title"] = sgroupby.empty() ? "Graph " + sensor + " " + srange : "Comparing " + sensor;
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
@@ -16179,127 +16180,180 @@ namespace http {
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
-						//Actual Year
-						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value5,Value6, Date,"
-							" Counter1, Counter2, Counter3, Counter4 "
-							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-							" AND Date<='%q') ORDER BY Date ASC",
-							dbasetable.c_str(), idx, szDateStart, szDateEnd);
-						if (!result.empty())
-						{
-							bool bHaveDeliverd = false;
-							for (const auto &sd : result)
-							{
-								root["result"][ii]["d"] = sd[4].substr(0, 16);
+                        if (!sgroupby.empty()) {
+                            std::string query = "";
+                            query.append(" select");
+                            query.append("  strftime('%%Y',Date) as Year,");
+                            query.append("  sum(Difference) as Sum");
+                            if (sgroupby == "quarter") {
+                                query.append(",case");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                                query.append("                                                              else 'Q4'");
+                                query.append("   end as Quarter");
+                            } else if (sgroupby == "month") {
+                                query.append(",strftime('%%m',Date) as Month");
+                            }
+                            query.append(" from (");
+                            query.append(" 	select mc0.DeviceRowID, date(mc0.Date) as Date, case when (mc1.Counter1+mc1.Counter3) <= (mc0.Counter1+mc0.Counter3) then (mc0.Counter1+mc0.Counter3) - (mc1.Counter1+mc1.Counter3) else (mc0.Value1+mc0.Value3) end as Difference");
+                            query.append(" 	from %s mc0");
+                            query.append(" 	inner join %s mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %s mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (mcm.Counter1+mcm.Counter3) <> 0)");
+                            query.append(" 	where mc0.DeviceRowID = %" PRIu64 " and (mc0.Counter1+mc0.Counter3) <> 0 and (select min(Date) from %s where DeviceRowID = %" PRIu64 " and (Counter1+Counter3) <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %s where DeviceRowID = %" PRIu64 " and (Counter1+Counter3) <> 0)");
+                            query.append(" )");
+                            query.append(" group by strftime('%%Y',Date)");
+                            if (sgroupby == "quarter") {
+                                query.append(",case");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                                query.append("                                                              else 'Q4'");
+                                query.append("   end");
+                            } else if (sgroupby == "month") {
+                                query.append(",strftime('%%m',Date)");
+                            }
+                            query.append(" order by 1 asc");
+                            if (sgroupby == "quarter" || sgroupby == "month") {
+                                query.append(", 3 asc");
+                            }
+                            _log.Debug(DEBUG_WEBSERVER, "query:%s", query.c_str());
+                            result = m_sql.safe_query(query.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), idx, dbasetable.c_str(), idx, dbasetable.c_str(), idx);
+                            if (!result.empty()) {
+                                int firstYearCounting = 0;
+                                for (const auto &sd : result) {
+                                    const int year = atoi(sd[0].c_str());
+                                    if (firstYearCounting == 0 || year < firstYearCounting) {
+                                        firstYearCounting = year;
+                                    }
+                                    root["result"][ii]["y"] = sd[0];
 
-								double counter_1 = std::stod(sd[5]);
-								double counter_2 = std::stod(sd[6]);
-								double counter_3 = std::stod(sd[7]);
-								double counter_4 = std::stod(sd[8]);
+                                    double fsum = std::stod(sd[1].c_str());
+                                    if (fsum != 0)
+                                        sprintf(szTmp, "%.3f", fsum / divider);
+                                    else
+                                        strcpy(szTmp, "0");
+                                    root["result"][ii]["s"] = szTmp;
 
-								float fUsage_1 = std::stof(sd[0]);
-								float fUsage_2 = std::stof(sd[2]);
-								float fDeliv_1 = std::stof(sd[1]);
-								float fDeliv_2 = std::stof(sd[3]);
+                                    if (sgroupby == "year") {
+                                        root["result"][ii]["c"] = sd[0];
+                                    } else {
+                                        root["result"][ii]["c"] = sd[2];
+                                    }
+                                    ii++;
+                                }
+                                root["firstYear"] = firstYearCounting;
+                            }
+                        } else {
+                            //Actual Year
+                            result = m_sql.safe_query(
+                                    "SELECT Value1,Value2,Value5,Value6, Date,"
+                                    " Counter1, Counter2, Counter3, Counter4 "
+                                    "FROM %s WHERE (DeviceRowID==%"
+                            PRIu64
+                            " AND Date>='%q'"
+                            " AND Date<='%q') ORDER BY Date ASC",
+                                    dbasetable.c_str(), idx, szDateStart, szDateEnd);
+                            if (!result.empty()) {
+                                bool bHaveDeliverd = false;
+                                for (const auto &sd : result) {
+                                    root["result"][ii]["d"] = sd[4].substr(0, 16);
 
-								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
-								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
+                                    double counter_1 = std::stod(sd[5]);
+                                    double counter_2 = std::stod(sd[6]);
+                                    double counter_3 = std::stod(sd[7]);
+                                    double counter_4 = std::stod(sd[8]);
 
-								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
-									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / divider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / divider);
-								root["result"][ii]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
-								root["result"][ii]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
-								root["result"][ii]["r2"] = szTmp;
+                                    float fUsage_1 = std::stof(sd[0]);
+                                    float fUsage_2 = std::stof(sd[2]);
+                                    float fDeliv_1 = std::stof(sd[1]);
+                                    float fDeliv_2 = std::stof(sd[3]);
 
-								if (counter_1 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c1"] = szTmp;
+                                    fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
+                                    fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
 
-								if (counter_2 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c2"] = szTmp;
+                                    if ((fDeliv_1 != 0) || (fDeliv_2 != 0)) {
+                                        bHaveDeliverd = true;
+                                    }
+                                    sprintf(szTmp, "%.3f", fUsage_1 / divider);
+                                    root["result"][ii]["v"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fUsage_2 / divider);
+                                    root["result"][ii]["v2"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_1 / divider);
+                                    root["result"][ii]["r1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_2 / divider);
+                                    root["result"][ii]["r2"] = szTmp;
 
-								if (counter_3 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c3"] = szTmp;
+                                    if (counter_1 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c1"] = szTmp;
 
-								if (counter_4 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c4"] = szTmp;
+                                    if (counter_2 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c2"] = szTmp;
 
-								ii++;
-							}
-							if (bHaveDeliverd)
-							{
-								root["delivered"] = true;
-							}
-						}
-						//Previous Year
-						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value5,Value6, Date "
-							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
-							dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
-						if (!result.empty())
-						{
-							bool bHaveDeliverd = false;
-							iPrev = 0;
-							for (const auto &sd : result)
-							{
-								root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
+                                    if (counter_3 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c3"] = szTmp;
 
-								float fUsage_1 = std::stof(sd[0]);
-								float fUsage_2 = std::stof(sd[2]);
-								float fDeliv_1 = std::stof(sd[1]);
-								float fDeliv_2 = std::stof(sd[3]);
+                                    if (counter_4 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c4"] = szTmp;
 
-								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
-									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / divider);
-								root["resultprev"][iPrev]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / divider);
-								root["resultprev"][iPrev]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
-								root["resultprev"][iPrev]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
-								root["resultprev"][iPrev]["r2"] = szTmp;
-								iPrev++;
-							}
-							if (bHaveDeliverd)
-							{
-								root["delivered"] = true;
-							}
-						}
-					}
+                                    ii++;
+                                }
+                                if (bHaveDeliverd) {
+                                    root["delivered"] = true;
+                                }
+                            }
+                            //Previous Year
+                            result = m_sql.safe_query(
+                                    "SELECT Value1,Value2,Value5,Value6, Date "
+                                    "FROM %s WHERE (DeviceRowID==%"
+                            PRIu64
+                            " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+                                    dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+                            if (!result.empty()) {
+                                bool bHaveDeliverd = false;
+                                iPrev = 0;
+                                for (const auto &sd : result) {
+                                    root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
+
+                                    float fUsage_1 = std::stof(sd[0]);
+                                    float fUsage_2 = std::stof(sd[2]);
+                                    float fDeliv_1 = std::stof(sd[1]);
+                                    float fDeliv_2 = std::stof(sd[3]);
+
+                                    if ((fDeliv_1 != 0) || (fDeliv_2 != 0)) {
+                                        bHaveDeliverd = true;
+                                    }
+                                    sprintf(szTmp, "%.3f", fUsage_1 / divider);
+                                    root["resultprev"][iPrev]["v"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fUsage_2 / divider);
+                                    root["resultprev"][iPrev]["v2"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_1 / divider);
+                                    root["resultprev"][iPrev]["r1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_2 / divider);
+                                    root["resultprev"][iPrev]["r2"] = szTmp;
+                                    iPrev++;
+                                }
+                                if (bHaveDeliverd) {
+                                    root["delivered"] = true;
+                                }
+                            }
+                        }
+                    }
 					else if (dType == pTypeAirQuality)
 					{//month/year
 						root["status"] = "OK";
@@ -16738,21 +16792,45 @@ namespace http {
                         {
                             root["counter"] = "0";
                         }
-                        if (sgranularity == "year") {
-                            std::string query = "select";
-                            query.append("    strftime('%%Y',mc0.Date) as year,");
-                            query.append("    (select mc2.Counter from %s mc2 where mc2.DeviceRowID=mc0.DeviceRowID and mc2.Date = (select max(mc1.Date) from %s mc1 where mc1.DeviceRowID=mc0.DeviceRowID and cast(strftime('%%Y',mc1.Date) as integer)=cast(strftime('%%Y',mc0.Date) as integer)-1)) as pl,");
-                            query.append("    (select mc2.Counter from %s mc2 where mc2.DeviceRowID=mc0.DeviceRowID and mc2.Date = (select min(mc1.Date) from %s mc1 where mc1.DeviceRowID=mc0.DeviceRowID and cast(strftime('%%Y',mc1.Date) as integer)=cast(strftime('%%Y',mc0.Date) as integer)  )) as cf,");
-                            query.append("    (select mc2.Counter from %s mc2 where mc2.DeviceRowID=mc0.DeviceRowID and mc2.Date = (select max(mc1.Date) from %s mc1 where mc1.DeviceRowID=mc0.DeviceRowID and cast(strftime('%%Y',mc1.Date) as integer)=cast(strftime('%%Y',mc0.Date) as integer)  )) as cl");
-                            query.append(" from %s mc0");
-                            query.append(" where mc0.DeviceRowID=%" PRIu64 " and mc0.Counter <> 0");
-                            query.append(" group by strftime('%%Y',mc0.Date)");
+                        if (!sgroupby.empty()) {
+                            std::string query = "";
+                            query.append(" select");
+                            query.append("  strftime('%%Y',Date) as Year,");
+                            query.append("  sum(Difference) as Sum");
+                            if (sgroupby == "quarter") {
+                                query.append(",case");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                                query.append("                                                              else 'Q4'");
+                                query.append("   end as Quarter");
+                            } else if (sgroupby == "month") {
+                                query.append(",strftime('%%m',Date) as Month");
+                            }
+                            query.append(" from (");
+                            query.append(" 	select mc0.DeviceRowID, date(mc0.Date) as Date, case when mc1.Counter <= mc0.Counter then mc0.Counter - mc1.Counter else mc0.Value end as Difference");
+                            query.append(" 	from %s mc0");
+                            query.append(" 	inner join %s mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %s mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and mcm.Counter <> 0)");
+                            query.append(" 	where mc0.DeviceRowID = %" PRIu64 " and mc0.Counter <> 0 and (select min(Date) from %s where DeviceRowID = %" PRIu64 " and Counter <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %s where DeviceRowID = %" PRIu64 " and Counter <> 0)");
+                            query.append(" )");
+                            query.append(" group by strftime('%%Y',Date)");
+                            if (sgroupby == "quarter") {
+                                query.append(",case");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                                query.append("                                                              else 'Q4'");
+                                query.append("   end");
+                            } else if (sgroupby == "month") {
+                                query.append(",strftime('%%m',Date)");
+                            }
                             query.append(" order by 1 asc");
-                            result = m_sql.safe_query(query.c_str(),
-                                    dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(),
-                                    idx);
+                            if (sgroupby == "quarter" || sgroupby == "month") {
+                                query.append(", 3 asc");
+                            }
+                            _log.Debug(DEBUG_WEBSERVER, "query:%s", query.c_str());
+                            result = m_sql.safe_query(query.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), idx, dbasetable.c_str(), idx, dbasetable.c_str(), idx);
                             if (!result.empty()) {
-                                int ii = 0;
                                 int firstYearCounting = 0;
                                 for (const auto &sd : result) {
                                     const int year = atoi(sd[0].c_str());
@@ -16760,9 +16838,43 @@ namespace http {
                                         firstYearCounting = year;
                                     }
                                     root["result"][ii]["y"] = sd[0];
-                                    root["result"][ii]["pl"] = sd[1];
-                                    root["result"][ii]["cf"] = sd[2];
-                                    root["result"][ii]["cl"] = sd[3];
+
+                                    double fsum = atof(sd[1].c_str());
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                            if (fsum != 0)
+                                                sprintf(szTmp, "%.3f", AddjValue + fsum / divider);
+                                            else
+                                                strcpy(szTmp, "0");
+                                            break;
+                                        case MTYPE_GAS:
+                                            if (fsum != 0)
+                                                sprintf(szTmp, "%.2f", AddjValue + fsum / divider);
+                                            else
+                                                strcpy(szTmp, "0");
+                                            break;
+                                        case MTYPE_WATER:
+                                            if (fsum != 0)
+                                                sprintf(szTmp, "%.3f", AddjValue + fsum / divider);
+                                            else
+                                                strcpy(szTmp, "0");
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            if (fsum != 0)
+                                                sprintf(szTmp, "%g", AddjValue + fsum / divider);
+                                            else
+                                                strcpy(szTmp, "0");
+                                            break;
+                                    }
+                                    root["result"][ii]["s"] = szTmp;
+
+                                    if (sgroupby == "year") {
+                                        root["result"][ii]["c"] = sd[0];
+                                    } else {
+                                        root["result"][ii]["c"] = sd[2];
+                                    }
                                     ii++;
                                 }
                                 root["firstYear"] = firstYearCounting;
@@ -16886,74 +16998,107 @@ namespace http {
 
                     if (dType == pTypeP1Power)
                     {
-                        result = m_sql.safe_query(
-                                "SELECT MIN(Value1), MAX(Value1), MIN(Value2),"
-                                " MAX(Value2), MIN(Value5), MAX(Value5),"
-                                " MIN(Value6), MAX(Value6) "
-                                "FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 ""
-                                                                              " AND Date>='%q')",
-                                idx, szDateEnd);
-                        bool bHaveDeliverd = false;
-                        if (!result.empty())
-                        {
-                            std::vector<std::string> sd = result[0];
-                            unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-                            unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-                            unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-                            unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-                            unsigned long long total_real_usage_1, total_real_usage_2;
-                            unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-                            unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-                            unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-                            unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-                            unsigned long long total_real_deliv_1, total_real_deliv_2;
+                            result = m_sql.safe_query(
+                                    "SELECT MIN(Value1) as levering_laag_min, MAX(Value1) as levering_laag_max, MIN(Value2) as teruglevering_laag_min,"
+                                    " MAX(Value2) as teruglevering_laag_max, MIN(Value5) as levering_normaal_min, MAX(Value5) as levering_normaal_max,"
+                                    " MIN(Value6) as teruglevering_normaal_min, MAX(Value6) as teruglevering_normaal_max"
+                                    " FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 ""
+                                                                                  " AND Date>='%q')",
+                                    idx, szDateEnd);
+                            _log.Debug(DEBUG_WEBSERVER, "Extra value after %s:%s", szDateEnd, (result.empty() ? "false" : "true"));
+                            bool bHaveDeliverd = false;
+                            if (!result.empty()) {
+                                std::vector <std::string> sd = result[0];
+                                unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
+                                unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
+                                unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
+                                unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
+                                unsigned long long total_real_usage_1, total_real_usage_2;
+                                unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
+                                unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
+                                unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
+                                unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
+                                unsigned long long total_real_deliv_1, total_real_deliv_2;
 
-                            total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
-                            total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
+                                total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
+                                total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
 
-                            total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
-                            total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
+                                total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
+                                total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
 
-                            if ((total_real_deliv_1 != 0) || (total_real_deliv_2 != 0))
-                                bHaveDeliverd = true;
+                                if ((total_real_deliv_1 != 0) || (total_real_deliv_2 != 0))
+                                    bHaveDeliverd = true;
 
-                            root["result"][ii]["d"] = szDateEnd;
+                                if (!sgroupby.empty()) {
+                                    int iii = ii-1;
+                                    std::string dataYear = std::string(szDateEnd).substr(0, 4);
+                                    std::string lastYear = root["result"][iii]["y"].asString();
+                                    _log.Debug(DEBUG_WEBSERVER, "dataYear:%s ? lastYear:%s", dataYear.c_str(), lastYear.c_str());
+                                    bool categoryMatch = true;
+                                    if (sgroupby == "quarter") {
+                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
+                                        std::string dataQuarter;
+                                        if (dataMonth == "01" || dataMonth == "02" || dataMonth == "03") {
+                                            dataQuarter = "Q1";
+                                        } else if (dataMonth == "04" || dataMonth == "05" || dataMonth == "06") {
+                                            dataQuarter = "Q2";
+                                        } else if (dataMonth == "07" || dataMonth == "08" || dataMonth == "09") {
+                                            dataQuarter = "Q3";
+                                        } else {
+                                            dataQuarter = "Q4";
+                                        }
+                                        std::string lastQuarter = root["result"][iii]["c"].asString();
+                                        _log.Debug(DEBUG_WEBSERVER, "dataQuarter:%s ? lastQuarter:%s", dataQuarter.c_str(), lastQuarter.c_str());
+                                        categoryMatch = dataQuarter == lastQuarter;
+                                    } else if (sgroupby == "month") {
+                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
+                                        std::string lastMonth = root["result"][iii]["c"].asString();
+                                        _log.Debug(DEBUG_WEBSERVER, "dataMonth:%s ? lastMonth:%s", dataMonth.c_str(), lastMonth.c_str());
+                                        categoryMatch = dataMonth == lastMonth;
+                                    }
+                                    if (lastYear == dataYear && categoryMatch) {
+                                        float extraValue = (total_real_usage_1 + total_real_usage_2) / divider;
+                                        float newValue = atof(root["result"][iii]["s"].asString().c_str()) + extraValue;
+                                        _log.Debug(DEBUG_WEBSERVER, "extraValue:%.3f newValue:%.3f", extraValue, newValue);
+                                        sprintf(szTmp, "%.3f", newValue);
+                                        root["result"][iii]["s"] = szTmp;
+                                    }
+                                } else {
+                                    root["result"][ii]["d"] = szDateEnd;
 
-                            sprintf(szTmp, "%.3f", (float)(total_real_usage_1 / divider));
-                            root["result"][ii]["v"] = szTmp;
-                            sprintf(szTmp, "%.3f", (float)(total_real_usage_2 / divider));
-                            root["result"][ii]["v2"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_real_usage_1 / divider));
+                                    root["result"][ii]["v"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_real_usage_2 / divider));
+                                    root["result"][ii]["v2"] = szTmp;
 
-                            sprintf(szTmp, "%.3f", (float)(total_real_deliv_1 / divider));
-                            root["result"][ii]["r1"] = szTmp;
-                            sprintf(szTmp, "%.3f", (float)(total_real_deliv_2 / divider));
-                            root["result"][ii]["r2"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_real_deliv_1 / divider));
+                                    root["result"][ii]["r1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_real_deliv_2 / divider));
+                                    root["result"][ii]["r2"] = szTmp;
 
-                            sprintf(szTmp, "%.3f", (float)(total_min_usage_1 / divider));
-                            root["result"][ii]["c1"] = szTmp;
-                            sprintf(szTmp, "%.3f", (float)(total_min_usage_2 / divider));
-                            root["result"][ii]["c3"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_min_usage_1 / divider));
+                                    root["result"][ii]["c1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_min_usage_2 / divider));
+                                    root["result"][ii]["c3"] = szTmp;
 
-                            if (total_max_deliv_2 != 0)
-                            {
-                                sprintf(szTmp, "%.3f", (float)(total_min_deliv_1 / divider));
-                                root["result"][ii]["c2"] = szTmp;
-                                sprintf(szTmp, "%.3f", (float)(total_min_deliv_2 / divider));
-                                root["result"][ii]["c4"] = szTmp;
+                                    if (total_max_deliv_2 != 0) {
+                                        sprintf(szTmp, "%.3f", (float) (total_min_deliv_1 / divider));
+                                        root["result"][ii]["c2"] = szTmp;
+                                        sprintf(szTmp, "%.3f", (float) (total_min_deliv_2 / divider));
+                                        root["result"][ii]["c4"] = szTmp;
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                        root["result"][ii]["c2"] = szTmp;
+                                        root["result"][ii]["c4"] = szTmp;
+                                    }
+
+                                    ii++;
+                                }
                             }
-                            else
+                            if (bHaveDeliverd)
                             {
-                                strcpy(szTmp, "0");
-                                root["result"][ii]["c2"] = szTmp;
-                                root["result"][ii]["c4"] = szTmp;
+                                root["delivered"] = true;
                             }
-
-                            ii++;
-                        }
-                        if (bHaveDeliverd)
-                        {
-                            root["delivered"] = true;
-                        }
                     }
                     else if (dType == pTypeAirQuality)
                     {
@@ -17089,73 +17234,132 @@ namespace http {
                     }
                     else if (!bIsManagedCounter)
                     {
-                        // get the first value
-                        result = m_sql.safe_query(
-                                //"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-                                "SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
-                                idx, szDateEnd);
-                        if (!result.empty())
-                        {
-                            std::vector<std::string> sd = result[0];
-                            unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-                            unsigned long long total_max = total_min;
-                            unsigned long long total_real;
+                        /*if (sgroupby == "year") {
 
-                            // Get the last value
-                            result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+                        } else*/ {
+                            // get the first value
+                            result = m_sql.safe_query(
+                                    //"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                    "SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
                                     idx, szDateEnd);
-                            if (!result.empty()) {
-                                std::vector<std::string> sd = result[0];
-                                total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
-                            }
-
-                            total_real = total_max - total_min;
-                            sprintf(szTmp, "%lld", total_real);
-
-                            root["result"][ii]["d"] = szDateEnd;
-
-                            std::string szValue = szTmp;
-                            switch (metertype)
+                            _log.Debug(DEBUG_WEBSERVER, "First extra value after %s:%s", szDateEnd, (result.empty() ? "false" : "true"));
+                            if (!result.empty())
                             {
-                                case MTYPE_ENERGY:
-                                case MTYPE_ENERGY_GENERATED:
-                                {
-                                    sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-                                    root["result"][ii]["v"] = szTmp;
+                                std::vector<std::string> sd = result[0];
+                                unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
+                                unsigned long long total_max = total_min;
+                                unsigned long long total_real;
 
-                                    std::vector<std::string> mresults;
-                                    StringSplit(sValue, ";", mresults);
-                                    if (mresults.size() == 2)
-                                    {
-                                        sValue = mresults[1];
-                                    }
-                                    if (dType == pTypeENERGY)
-                                        sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
-                                    else
-                                        sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-                                    root["result"][ii]["c"] = szTmp;
+                                // Get the last value
+                                result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+                                        idx, szDateEnd);
+                                _log.Debug(DEBUG_WEBSERVER, "Last extra value after %s:%s", szDateEnd, (result.empty() ? "false" : "true"));
+                                if (!result.empty()) {
+                                    std::vector<std::string> sd = result[0];
+                                    total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
                                 }
-                                    break;
-                                case MTYPE_GAS:
-                                    sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
-                                    root["result"][ii]["v"] = szTmp;
-                                    sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-                                    root["result"][ii]["c"] = szTmp;
-                                    break;
-                                case MTYPE_WATER:
-                                    sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-                                    root["result"][ii]["v"] = szTmp;
-                                    sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-                                    root["result"][ii]["c"] = szTmp;
-                                    break;
-                                case MTYPE_COUNTER:
-                                    sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
-                                    root["result"][ii]["v"] = szTmp;
-                                    sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-                                    root["result"][ii]["c"] = szTmp;
-                                    break;
+
+                                total_real = total_max - total_min;
+                                sprintf(szTmp, "%lld", total_real);
+                                std::string szValue = szTmp;
+
+                                if (!sgroupby.empty()) {
+                                    int iii = ii-1;
+                                    std::string dataYear = std::string(szDateEnd).substr(0, 4);
+                                    std::string lastYear = root["result"][iii]["y"].asString();
+                                    _log.Debug(DEBUG_WEBSERVER, "dataYear:%s ? lastYear:%s", dataYear.c_str(), lastYear.c_str());
+                                    bool categoryMatch = true;
+                                    if (sgroupby == "quarter") {
+                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
+                                        std::string dataQuarter;
+                                        if (dataMonth == "01" || dataMonth == "02" || dataMonth == "03") {
+                                            dataQuarter = "Q1";
+                                        } else if (dataMonth == "04" || dataMonth == "05" || dataMonth == "06") {
+                                            dataQuarter = "Q2";
+                                        } else if (dataMonth == "07" || dataMonth == "08" || dataMonth == "09") {
+                                            dataQuarter = "Q3";
+                                        } else {
+                                            dataQuarter = "Q4";
+                                        }
+                                        std::string lastQuarter = root["result"][iii]["c"].asString();
+                                        _log.Debug(DEBUG_WEBSERVER, "dataQuarter:%s ? lastQuarter:%s", dataQuarter.c_str(), lastQuarter.c_str());
+                                        categoryMatch = dataQuarter == lastQuarter;
+                                    } else if (sgroupby == "month") {
+                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
+                                        std::string lastMonth = root["result"][iii]["c"].asString();
+                                        _log.Debug(DEBUG_WEBSERVER, "dataMonth:%s ? lastMonth:%s", dataMonth.c_str(), lastMonth.c_str());
+                                        categoryMatch = dataMonth == lastMonth;
+                                    }
+                                    if (lastYear == dataYear && categoryMatch) {
+                                        float extraValue = (atof(sValue.c_str()) - total_real) / divider;
+                                        float newValue = atof(root["result"][iii]["s"].asString().c_str()) + extraValue;
+                                        _log.Debug(DEBUG_WEBSERVER, "extraValue:%.3f newValue:%.3f", extraValue, newValue);
+                                        switch (metertype)
+                                        {
+                                            case MTYPE_ENERGY:
+                                            case MTYPE_ENERGY_GENERATED:
+                                                sprintf(szTmp, "%.3f", newValue);
+                                                root["result"][iii]["s"] = szTmp;
+                                                break;
+                                            case MTYPE_GAS:
+                                                sprintf(szTmp, "%.2f", newValue);
+                                                root["result"][iii]["s"] = szTmp;
+                                                break;
+                                            case MTYPE_WATER:
+                                                sprintf(szTmp, "%.3f", newValue);
+                                                root["result"][iii]["s"] = szTmp;
+                                                break;
+                                            case MTYPE_COUNTER:
+                                                sprintf(szTmp, "%g", newValue);
+                                                root["result"][iii]["s"] = szTmp;
+                                                break;
+                                        }
+                                    }
+                                } else {
+                                    root["result"][ii]["d"] = szDateEnd;
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                        {
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+
+                                            std::vector<std::string> mresults;
+                                            StringSplit(sValue, ";", mresults);
+                                            if (mresults.size() == 2)
+                                            {
+                                                sValue = mresults[1];
+                                            }
+                                            if (dType == pTypeENERGY)
+                                                sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
+                                            else
+                                                sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                        }
+                                            break;
+                                        case MTYPE_GAS:
+                                            sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_WATER:
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                    }
+                                    ii++;
+                                }
                             }
-                            ii++;
                         }
                     }
                 }

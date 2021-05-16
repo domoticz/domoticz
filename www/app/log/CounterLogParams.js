@@ -17,7 +17,8 @@ define(['app', 'log/Chart'], function (app) {
             chartParamsDay: chartParamsDay,
             chartParamsWeek: chartParamsWeek,
             chartParamsMonthYear: chartParamsMonthYear,
-            chartParamsCompare: chartParamsCompare
+            chartParamsCompare: chartParamsCompare,
+            chartParamsCompareTemplate: chartParamsCompareTemplate
         }
 
         function chartParamsDay(domoticzGlobals, ctrl, chartParamsTemplate, dataSupplierTemplate, seriesSuppliers) {
@@ -133,10 +134,11 @@ define(['app', 'log/Chart'], function (app) {
                         plotOptions: {
                             column: {
                                 pointPlacement: 0,
-                                stacking: 'normal'
+                                stacking: undefined
                             },
                             series: {
-                                colorByPoint: true
+                                // colorByPoint: true
+                                stacking: undefined
                             }
                         },
                         chart: {
@@ -146,6 +148,7 @@ define(['app', 'log/Chart'], function (app) {
                             crosshairs: false
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
@@ -163,6 +166,64 @@ define(['app', 'log/Chart'], function (app) {
                 },
                 chartParamsTemplate
             );
+        }
+
+        function chartParamsCompareTemplate(ctrl, deviceUnit) {
+            return {
+                chartName: $.t('Comparing'),
+                highchartTemplate: {
+                    chart: {
+                        type: 'column'
+                    },
+                    plotOptions: {
+                        column: {
+                            stacking: undefined //$scope.groupingBy === 'year' ? 'normal' : undefined
+                        }
+                    },
+                    xAxis: {
+                        labels: {
+                            formatter: function () {
+                                return categoryKeyToString(this.value);
+                            }
+                        }
+                    },
+                    tooltip: {
+                        useHTML: true,
+                        formatter: function () {
+                            return ''
+                                + '<table>'
+                                + '<tr><td colspan="2"><b>' + categoryKeyToString(this.x) + '</b></td></tr>'
+                                + this.points.reduce(
+                                    function (s, point) {
+                                        return s + '<tr><td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td><td><b>' + point.y + '</b></td><td><b>' + (deviceUnit ? ' ' + deviceUnit : '') + '</b></td></tr>';
+                                    }, '')
+                                + '</table>';
+                        }
+                    }
+                }
+            };
+
+            function categoryKeyToString(categoryKey) {
+                return ctrl.groupingBy === 'month' ? monthToString(categoryKey) : categoryKey;
+            }
+
+            function monthToString(month) {
+                const months = {
+                    '01': $.t('Jan'),
+                    '02': $.t('Feb'),
+                    '03': $.t('Mar'),
+                    '04': $.t('Apr'),
+                    '05': $.t('May'),
+                    '06': $.t('Jun'),
+                    '07': $.t('Jul'),
+                    '08': $.t('Aug'),
+                    '09': $.t('Sep'),
+                    '10': $.t('Oct'),
+                    '11': $.t('Nov'),
+                    '12': $.t('Dec'),
+                };
+                return months[month];
+            }
         }
     });
 });
