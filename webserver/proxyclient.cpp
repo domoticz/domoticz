@@ -110,7 +110,7 @@ namespace http {
 			// generate random websocket key
 			unsigned char random[16];
 			std::generate(std::begin(random), std::end(random), rand);
-			websocket_key = base64_encode(random, sizeof(random));
+			websocket_key = base64_encode_buf(random, sizeof(random));
 			std::string request = "GET /proxycereal HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
 			write(request);
 		}
@@ -377,13 +377,13 @@ namespace http {
 		std::string CProxyClient::compute_accept_header(const std::string &websocket_key)
 		{
 			// the length of an sha1 hash
-			const int sha1len = 20;
+			#define SHA1_LENGTH 20
 			// the GUID as specified in RFC 6455
 			const char *GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 			std::string combined = websocket_key + GUID;
-			unsigned char sha1result[sha1len];
+			unsigned char sha1result[SHA1_LENGTH];
 			sha1::calc((void *)combined.c_str(), combined.length(), sha1result);
-			std::string accept = base64_encode(sha1result, sha1len);
+			std::string accept = base64_encode_buf(sha1result, SHA1_LENGTH);
 			return accept;
 		}
 
