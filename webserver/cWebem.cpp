@@ -20,6 +20,7 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
+#define JWT_DISABLE_BASE64
 #include "../jwt-cpp/jwt.h"
 
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
@@ -1267,19 +1268,19 @@ namespace http {
 			// Bearer Auth header
 			if (boost::icontains(auth_header, "Bearer "))
 			{
-				std::string decoded = auth_header + 7;
+				std::string sToken = auth_header + 7;
 
 				// Might be a JWT token, find the first dot
-				size_t npos = decoded.find('.');
+				size_t npos = sToken.find('.');
 				if (npos != std::string::npos)
 				{
 					// Base64decode the first piece to check
-					std::string tokentype = base64_decode(decoded.substr(0,npos));
+					std::string tokentype = base64_decode(sToken.substr(0, npos));
 					if(tokentype.find("JWT") != std::string::npos)
 					{
 						// We found the text JWT, now let's really check if it as a valid JWT Token
 						// Step 1: Check if tje JWT has an algorithm in the header AND an issuer (iss) claim in the payload
-						auto decodedJWT = jwt::decode(decoded);
+						auto decodedJWT = jwt::decode(sToken, &base64_decode);
 						if(!decodedJWT.has_algorithm())
 						{
 							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an algorithm!");
@@ -1371,8 +1372,8 @@ namespace http {
 				// No dot found and/or not a JWT, so assume non-JWT type of Bearer token
 				ah->method = "Bearer";
 				ah->user = "";				// No clue how to deduce the user from the Bearer token provided
-				ah->response = decoded;		// Let's provide the found token as the 'password'
-				_log.Debug(DEBUG_AUTH, "Found a Bearer Token (%s)", decoded.c_str());
+				ah->response = sToken; // Let's provide the found token as the 'password'
+				_log.Debug(DEBUG_AUTH, "Found a Bearer Token (%s)", sToken.c_str());
 				return 1;
 			}
 			return 0;
@@ -1468,7 +1469,7 @@ namespace http {
 								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
 								.set_audience(clientid)
 								.set_subject(user)
-								.sign(jwt::algorithm::hs256{my.Password});
+								.sign(jwt::algorithm::hs256{my.Password}, &base64_decode);
 
 							jwttoken = JWT;
 							bOk = true;
@@ -1703,13 +1704,13 @@ namespace http {
 		std::string cWebemRequestHandler::compute_accept_header(const std::string &websocket_key)
 		{
 			// the length of an sha1 hash
-			const int sha1len = 20;
+			#define SHA1_LENGTH 20
 			// the GUID as specified in RFC 6455
 			const char *GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 			std::string combined = websocket_key + GUID;
-			unsigned char sha1result[sha1len];
+			unsigned char sha1result[SHA1_LENGTH];
 			sha1::calc((void *)combined.c_str(), combined.length(), sha1result);
-			std::string accept = base64_encode(sha1result, sha1len);
+			std::string accept = base64_encode_buf(sha1result, SHA1_LENGTH);
 			return accept;
 		}
 
