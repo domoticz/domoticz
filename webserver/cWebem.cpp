@@ -1361,6 +1361,7 @@ namespace http {
 									ah->method = "JWT";
 									ah->user = JWTsubject;
 									ah->response = my.Password;
+									ah->qop = std::to_string(my.userrights);		// Not really intended in original structure but works for passing the userrights
 									return 1;
 								}
 							}
@@ -1469,8 +1470,7 @@ namespace http {
 								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
 								.set_audience(clientid)
 								.set_subject(user)
-								.sign(jwt::algorithm::hs256{my.Password}, &base64_decode);
-
+								.sign(jwt::algorithm::hs256{my.Password}, &base64_encode);
 							jwttoken = JWT;
 							bOk = true;
 						}
@@ -1873,12 +1873,12 @@ namespace http {
 			{
 				if (_ah.method == "JWT")
 				{
-					_log.Debug(DEBUG_WEBSERVER, "Found JWT Authorization token (%s): Method %s, Userdata %s", _ah.response.c_str(), _ah.method.c_str(), _ah.user.c_str());
-					session.rights = 2;
+					_log.Debug(DEBUG_AUTH, "Found JWT Authorization token (%s): Method %s, Userdata %s, rights %s", _ah.response.c_str(), _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
 					session.auth_token = _ah.nc;
+					session.rights = std::atoi(_ah.qop.c_str());
 					return true;
 				}
 			}
