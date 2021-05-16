@@ -1262,6 +1262,7 @@ namespace http {
 						_log.Debug(DEBUG_AUTH,"JWT Token audience : %s", clientid.c_str());
 
 						std::string clientsecret;
+						std::string client_key_id;
 						// Check if the audience has been registered as a User (type CLIENTID)
 						for (const auto &my : myWebem->m_userpasswords)
 						{
@@ -1270,7 +1271,8 @@ namespace http {
 								if (my.userrights == URIGHTS_CLIENTID)
 								{
 									clientsecret = my.Password;
-									//_log.Debug(DEBUG_AUTH, "Found pwd (%s)", clientsecret.c_str());
+									client_key_id = std::to_string(my.ID);
+									//_log.Debug(DEBUG_AUTH, "Found pwd (%s) and key (%s)", clientsecret.c_str(), client_key_id.c_str());
 								}
 							}
 						}
@@ -1310,12 +1312,13 @@ namespace http {
 							return 0;
 						}
 						// Step 4: Now also check if other mandatory claims (nbf, exp, sub) have been provided
-						if(!(decodedJWT.has_expires_at() && decodedJWT.has_not_before() && decodedJWT.has_issued_at() && decodedJWT.has_subject()))
+						if(!(decodedJWT.has_expires_at() && decodedJWT.has_not_before() && decodedJWT.has_issued_at() && decodedJWT.has_subject() && decodedJWT.has_key_id()))
 						{
-							_log.Debug(DEBUG_AUTH, "JWT mandatory claims NBF, EXP, IAT, SUB are missing!");
+							_log.Debug(DEBUG_AUTH, "JWT mandatory claims KID, NBF, EXP, IAT, SUB are missing!");
 							return 0;
 						}
 						// Step 5: See of the subject (intended user) is available and exists in the User table
+						std::string key_id = decodedJWT.get_key_id();
 						std::string JWTsubject = decodedJWT.get_subject();
 						for (const auto &my : myWebem->m_userpasswords)
 						{
@@ -1323,12 +1326,20 @@ namespace http {
 							{
 								if (my.userrights != URIGHTS_CLIENTID)
 								{
-									_log.Debug(DEBUG_AUTH,"Decoded valid JWT (%s)", JWTsubject.c_str());
-									ah->method = "JWT";
-									ah->user = JWTsubject;
-									ah->response = my.Password;
-									ah->qop = std::to_string(my.userrights);		// Not really intended in original structure but works for passing the userrights
-									return 1;
+									if (key_id.compare(client_key_id) == 0)
+									{
+										_log.Debug(DEBUG_AUTH,"Decoded valid JWT (%s)", JWTsubject.c_str());
+										ah->method = "JWT";
+										ah->user = JWTsubject;
+										ah->response = my.Password;
+										ah->qop = std::to_string(my.userrights);		// Not really intended in original structure but works for passing the userrights
+										return 1;
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "JWT KID does not match (%s)!", client_key_id.c_str());
+										return 0;
+									}
 								}
 							}
 						}
@@ -1430,6 +1441,7 @@ namespace http {
 						{
 							auto JWT = jwt::create()
 								.set_type("JWT")
+								.set_key_id(std::to_string(my.ID))
 								.set_issuer(m_DigistRealm)
 								.set_issued_at(std::chrono::system_clock::now())
 								.set_not_before(std::chrono::system_clock::now())
