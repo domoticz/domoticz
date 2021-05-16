@@ -261,9 +261,11 @@ namespace http {
 					exception = true;
 					switch (tries) {
 					case 0:
+                        _log.Log(LOG_STATUS, "WebServer(%s) startup failed on address %s with port: %s: %s, trying ::", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str(), e.what());
 						settings.listening_address = "::";
 						break;
 					case 1:
+                        _log.Log(LOG_STATUS, "WebServer(%s) startup failed on address %s with port: %s: %s, trying 0.0.0.0", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str(), e.what());
 						settings.listening_address = "0.0.0.0";
 						break;
 					case 2:
