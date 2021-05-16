@@ -129,6 +129,7 @@ define(['app', 'log/Chart'], function (app) {
             return [
                 {
                     id: 'counterPrevious',
+                    dataItemKeys: ['v'],
                     useDataItemsFromPrevious: true,
                     postprocessDataItemValue: postprocessDataItemValue,
                     label: 'D',
