@@ -82,6 +82,7 @@ namespace
 		"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 		"\t-noupdates do not use the internal update functionality\n"
+		"\t-dbase_disable_wal_mode\n"
 #if defined WIN32
 		"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
@@ -153,6 +154,7 @@ std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime = time(nullptr);
 std::string szRandomUUID = "???";
+std::string journalMode="WAL";
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -575,6 +577,10 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		else if (szFlag == "dbase_file") {
 			dbasefile = sLine;
 		}
+		else if ( (szFlag == "dbase_disable_wal_mode") && (GetConfigBool(sLine) ) )  {
+			journalMode = "DELETE";
+		}
+
 		else if (szFlag == "startup_delay") {
 			int DelaySeconds = atoi(sLine.c_str());
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
@@ -988,6 +994,14 @@ int main(int argc, char**argv)
 		}
 	}
 	m_sql.SetDatabaseName(dbasefile);
+
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-dbase_disable_wal_mode"))
+		{
+			journalMode = "DELETE";
+		}
+	}
+	m_sql.SetJournalMode(journalMode);
 
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-webroot"))
