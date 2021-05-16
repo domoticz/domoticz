@@ -412,17 +412,20 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 const plotY = event.chartY - self.chart.plotTop;
                 self.consoledebug('Click at '
                     + ' (' + e.clientX + ',' + e.clientY + ') -> (' + plotX + ',' + plotY + ')'
-                    + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey + ' alt:' + e.altKey);
+                    + ' ctrl:' + e.ctrlKey + ' shift:' + e.shiftKey + ' alt:' + e.altKey
+                    + ' type:' + self.device.Type + ', subtype:' + self.device.SubType);
                 self.chart.yAxis.forEach(function (x) {
                     self.consoledebug('yAxis => index:' + x.userOptions.index + ', title:' + x.userOptions.title.text + ', opposite:' + x.userOptions.opposite + ', left:' + x.left + ', right:' + x.right + ', offset:' + x.offset + ', labelOffset:' + x.labelOffset + ', dataMin:' + x.dataMin + ', dataMax:' + x.dataMax + ', dzZoom:' + x.dzZoom);
                 });
-                const axes = axesOrdered(self.chart.yAxis, plotX, self.chart.plotWidth);
-                const nextZoomValue = nextZoom(axes[0].dzZoom, e);
-                axes.splice(0, e.altKey ? axes.length : 1).forEach(function (axis) {
-                    yAxisZoom(axis, nextZoomValue);
-                });
-                synchronizeYaxes(true);
-                // self.chart.redraw();
+                if (plotX < 0 || self.chart.plotWidth < plotX && self.chart.yAxis.some(function (axis) { return axis.userOptions.opposite; })) {
+                    const axes = axesOrdered(self.chart.yAxis, plotX, self.chart.plotWidth);
+                    const nextZoomValue = nextZoom(axes[0].dzZoom, e);
+                    axes.splice(0, e.altKey ? axes.length : 1).forEach(function (axis) {
+                        yAxisZoom(axis, nextZoomValue);
+                    });
+                    synchronizeYaxes(true);
+                    // self.chart.redraw();
+                }
 
                 function axesOrdered(axes, plotX, plotWidth) {
                     const x = plotX < 0 ? -plotX : plotX - plotWidth;
@@ -448,37 +451,55 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     const full = c && s;
                     if (zoom === undefined && (def || low) || zoom === 'high' && low || zoom === 'full' && low) {
                         return 'low';
-                    } else if (zoom === 'low' && (def || high) || zoom === undefined && high || zoom === 'full' && high) {
-                        return 'high';
-                    } else if (zoom === 'high' && (def || full) || zoom === undefined && full || zoom === 'low' && full) {
+                    } else if (zoom === 'low' && (def || full) || zoom === undefined && full || zoom === 'high' && full) {
                         return 'full';
-                    } else if (zoom === 'full' && (def || full) || zoom === 'low' && low || zoom === 'high' && high) {
+                    } else if (zoom === 'full' && (def || high) || zoom === undefined && high || zoom === 'low' && high) {
+                        return 'high';
+                    } else if (zoom === 'high' && (def || high) || zoom === 'low' && low || zoom === 'full' && full) {
                         return 'default';
                     }
                     return 'default';
                 }
 
                 function yAxisZoom(yAxis, zoom) {
-                    const axisTitle = yAxis.userOptions.title.text;
-                    const axisTitle0To100 = axisTitle.includes('%') || axisTitle.includes('°C');
-                    const axisMin = axisTitle0To100 ? 0 : yAxis.dataMin;
-                    const axisMax = axisTitle0To100 ? 100 : yAxis.dataMax;
+                    let axisMin, axisMax;
+                    const t = self.device.Type;
+                    const s = self.device.SubType;
+                    if (['Percentage'].includes(s) || ['Temp', 'Thermostat', 'Humidity', 'Heating'].includes(t)) {
+                        axisMin = 0;
+                        axisMax = 100;
+                    } else if (['Visibility'].includes(s)) {
+                        axisMin = 0;
+                        axisMax = 10;
+                    } else if (['Lux'].includes(s)) {
+                        axisMin = 0;
+                        axisMax = 10000;
+                    } else if (['Usage', 'Temp + Humidity + Baro'].includes(t)) {
+                        axisMin = 0;
+                        axisMax = yAxis.dataMax;
+                    }
                     if (zoom === 'low') {
-                        self.consoledebug('yAxis.setExtremes(axisMin ['+axisMin+'],null)');
-                        yAxis.setExtremes(axisMin, null);
+                        if (axisMin !== undefined) {
+                            self.consoledebug('yAxis.setExtremes(axisMin [' + axisMin + '],null)');
+                            yAxis.setExtremes(axisMin, null);
+                        }
                         axisSetTitle(yAxis, bottom);
                         yAxis.dzZoom = 'low';
                     } else if (zoom === 'high') {
-                        self.consoledebug('yAxis.setExtremes(null,axisMax ['+axisMax+'])');
-                        yAxis.setExtremes(null, axisMax);
+                        if (axisMax !== undefined) {
+                            self.consoledebug('yAxis.setExtremes(null,axisMax [' + axisMax + '])');
+                            yAxis.setExtremes(null, axisMax);
+                        }
                         axisSetTitle(yAxis, top);
                         yAxis.dzZoom = 'high';
                     } else if (zoom === 'full') {
-                        self.consoledebug('yAxis.setExtremes(axisMin ['+axisMin+'],axisMax ['+axisMax+'])');
-                        yAxis.setExtremes(axisMin, axisMax);
+                        if (axisMin !== undefined && axisMax !== undefined) {
+                            self.consoledebug('yAxis.setExtremes(axisMin [' + axisMin + '],axisMax [' + axisMax + '])');
+                            yAxis.setExtremes(axisMin, axisMax);
+                        }
                         axisSetTitle(yAxis, topbottom);
                         yAxis.dzZoom = 'full';
-                    } else {
+                    } else if (zoom === 'default') {
                         self.consoledebug('yAxis.setExtremes(null,null)');
                         yAxis.setExtremes(null, null);
                         axisSetTitle(yAxis, none);
