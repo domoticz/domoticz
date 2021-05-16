@@ -1241,12 +1241,12 @@ namespace http {
 				if (npos != std::string::npos)
 				{
 					// Base64decode the first piece to check
-					std::string tokentype = base64_decode(sToken.substr(0, npos));
+					std::string tokentype = base64url_decode(sToken.substr(0, npos));
 					if(tokentype.find("JWT") != std::string::npos)
 					{
 						// We found the text JWT, now let's really check if it as a valid JWT Token
 						// Step 1: Check if tje JWT has an algorithm in the header AND an issuer (iss) claim in the payload
-						auto decodedJWT = jwt::decode(sToken, &base64_decode);
+						auto decodedJWT = jwt::decode(sToken, &base64url_decode);
 						if(!decodedJWT.has_algorithm())
 						{
 							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an algorithm!");
@@ -1436,7 +1436,7 @@ namespace http {
 								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
 								.set_audience(clientid)
 								.set_subject(user)
-								.sign(jwt::algorithm::hs256{my.Password}, &base64_encode);
+								.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
 							jwttoken = JWT;
 							bOk = true;
 						}
