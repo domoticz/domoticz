@@ -200,7 +200,7 @@ define(['app'], function (app) {
 								rightstr = $.t("Admin");
 							}
 							else if (item.Rights == 255) {
-								rightstr = $.t("ClientID");
+								rightstr = $.t("Application");
 							}
 							else {
 								rightstr = $.t("-Unknown-");
