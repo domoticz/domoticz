@@ -1,7 +1,7 @@
 /* 
    base64.cpp and base64.h
 
-   Copyright (C) 2004-2008 Ren� Nyffenegger
+   Copyright (C) 2004-2008 René Nyffenegger
 
    This source code is provided 'as-is', without any express or implied
    warranty. In no event will the author be held liable for any damages
@@ -21,7 +21,7 @@
 
    3. This notice may not be removed or altered from any source distribution.
 
-   Ren� Nyffenegger rene.nyffenegger@adp-gmbh.ch
+   René Nyffenegger rene.nyffenegger@adp-gmbh.ch
    Extended by GizMoCuz
    Extended by KidDigital
 
@@ -30,7 +30,7 @@
 	   #include <iostream>
 
 	   int main() {
-	   const std::string s = "ADP GmbH\nAnalyse Design & Programmierung\nGesellschaft mit beschr�nkter Haftung" ;
+	   const std::string s = "ADP GmbH\nAnalyse Design & Programmierung\nGesellschaft mit beschränkter Haftung" ;
 
 	   std::string encoded = base64_encode(s);
 	   std::string decoded = base64_decode(encoded);
