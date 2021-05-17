@@ -1245,7 +1245,7 @@ namespace http {
 					if(tokentype.find("JWT") != std::string::npos)
 					{
 						// We found the text JWT, now let's really check if it as a valid JWT Token
-						// Step 1: Check if tje JWT has an algorithm in the header AND an issuer (iss) claim in the payload
+						// Step 1: Check if the JWT has an algorithm in the header AND an issuer (iss) claim in the payload
 						auto decodedJWT = jwt::decode(sToken, &base64url_decode);
 						if(!decodedJWT.has_algorithm())
 						{
