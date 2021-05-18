@@ -12,7 +12,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 {
       public:
 	explicit XiaomiGateway(int ID);
-	~XiaomiGateway() override = default;
+	~XiaomiGateway();
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
 	int GetGatewayHardwareID()
@@ -82,7 +82,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 	std::string m_GatewayMusicId;
 	std::string m_GatewayVolume;
 	std::mutex m_mutex;
-	XiaomiDeviceSupport m_DeviceSupport;
+	XiaomiDeviceSupport *m_DeviceSupport;
 
 	XiaomiGateway *GatewayByIp(const std::string &ip);
 	void AddGatewayToList();

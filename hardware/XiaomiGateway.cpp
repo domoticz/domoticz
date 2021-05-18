@@ -330,6 +330,11 @@ XiaomiGateway::XiaomiGateway(const int ID)
 	m_DeviceSupport = new XiaomiDeviceSupportHardcoded();
 }
 
+XiaomiGateway::~XiaomiGateway()
+{
+	delete m_DeviceSupport;
+}
+
 bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -365,8 +370,12 @@ bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char lengt
 		cmdcommand = DetermineCommand(xcmd->cmnd);
 
 		// If unitcode unkown, check DeviceSupport for ID
-		Log(LOG_STATUS, "Xiaomi WriteToHardware, xcmd->unitcode '%d', cmddevice: '%s'", xcmd->unitcode, cmddevice);
-		xcmd->unitcode = m_DeviceSupport.GetXiaomiUnitCodeByID(sid);
+		Log(LOG_STATUS, "Xiaomi WriteToHardware, xcmd->unitcode '%d', cmddevice: '%s'", xcmd->unitcode, cmddevice.c_str());
+		if (xcmd->unitcode == 0)
+		{
+			xcmd->unitcode = m_DeviceSupport->GetXiaomiUnitCodeByID(sid);
+			Log(LOG_STATUS, "Xiaomi WriteToHardware, DeviceSupport found xcmd->unitcode '%d', cmddevice: '%s'", xcmd->unitcode, cmddevice);
+		}
 
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 ||
 		    xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)))
@@ -1235,9 +1244,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 		if (model.empty())
 		{
-			XiaomiDeviceSupportHardcoded devicesupport();
-			model = devicesupport->GetXiaomiDeviceModelByID(sid);
-			_log.Log(LOG_ERROR, "XiaomiDeviceSupport: model empty, DeviceSupport overrides with: '%s'", model);
+			XiaomiDeviceSupportHardcoded devicesupport;
+			_log.Log(LOG_STATUS, "XiaomiGateway: model empty for '%s', accessing DeviceSupport.", sid.c_str());
+			model = devicesupport.GetXiaomiDeviceModelByID(sid);
+			_log.Log(LOG_STATUS, "XiaomiGateway: model empty but DeviceSupport found: '%s'", model.c_str());
 		}
 
 		if ((cmd == COMMAND_REPORT) || (cmd == COMMAND_READ_ACK) || (cmd == COMMAND_HEARTBEAT))
@@ -1355,6 +1365,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				{
 					type = STYPE_BlindsPercentage;
 					name = NAME_ACT_BLINDS_CURTAIN;
+				}
+				else if (model == MODEL_ACT_RELAIS)
+				{
+					type = STYPE_OnOff;
+					name = NAME_ACT_RELAIS;
+				}
+				else if (model == MODEL_ACT_LIGHT)
+				{
+					type = STYPE_Dimmer;
 				}
 
 				std::string voltage = root2["voltage"].asString();
