@@ -474,15 +474,15 @@ local function Domoticz(settings)
 		utils.log(noObjectMessage, utils.LOG_ERROR)
 	end
 
-	function self._setIterators(collection, initial, baseType, filterForChanged, initalCollection)
+	function self._setIterators(collection, initial, baseType, filterForChanged, initialCollection)
 
 		local _collection
 
 		if (initial) then
-			if (initalCollection == nil) then
+			if (initialCollection == nil) then
 				_collection = _G.domoticzData
 			else
-				_collection = initalCollection
+				_collection = initialCollection
 			end
 		else
 			_collection = collection
