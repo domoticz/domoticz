@@ -97,6 +97,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);
+    void AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 

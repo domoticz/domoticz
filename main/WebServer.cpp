@@ -17030,39 +17030,8 @@ namespace http {
                                     bHaveDeliverd = true;
 
                                 if (!sgroupby.empty()) {
-                                    int iii = ii-1;
-                                    std::string dataYear = std::string(szDateEnd).substr(0, 4);
-                                    std::string lastYear = root["result"][iii]["y"].asString();
-                                    _log.Debug(DEBUG_WEBSERVER, "dataYear:%s ? lastYear:%s", dataYear.c_str(), lastYear.c_str());
-                                    bool categoryMatch = true;
-                                    if (sgroupby == "quarter") {
-                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
-                                        std::string dataQuarter;
-                                        if (dataMonth == "01" || dataMonth == "02" || dataMonth == "03") {
-                                            dataQuarter = "Q1";
-                                        } else if (dataMonth == "04" || dataMonth == "05" || dataMonth == "06") {
-                                            dataQuarter = "Q2";
-                                        } else if (dataMonth == "07" || dataMonth == "08" || dataMonth == "09") {
-                                            dataQuarter = "Q3";
-                                        } else {
-                                            dataQuarter = "Q4";
-                                        }
-                                        std::string lastQuarter = root["result"][iii]["c"].asString();
-                                        _log.Debug(DEBUG_WEBSERVER, "dataQuarter:%s ? lastQuarter:%s", dataQuarter.c_str(), lastQuarter.c_str());
-                                        categoryMatch = dataQuarter == lastQuarter;
-                                    } else if (sgroupby == "month") {
-                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
-                                        std::string lastMonth = root["result"][iii]["c"].asString();
-                                        _log.Debug(DEBUG_WEBSERVER, "dataMonth:%s ? lastMonth:%s", dataMonth.c_str(), lastMonth.c_str());
-                                        categoryMatch = dataMonth == lastMonth;
-                                    }
-                                    if (lastYear == dataYear && categoryMatch) {
-                                        float extraValue = (total_real_usage_1 + total_real_usage_2) / divider;
-                                        float newValue = atof(root["result"][iii]["s"].asString().c_str()) + extraValue;
-                                        _log.Debug(DEBUG_WEBSERVER, "extraValue:%.3f newValue:%.3f", extraValue, newValue);
-                                        sprintf(szTmp, "%.3f", newValue);
-                                        root["result"][iii]["s"] = szTmp;
-                                    }
+                                    const float todayValue = (total_real_usage_1 + total_real_usage_2) / divider;
+                                    AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, "%.3f");
                                 } else {
                                     root["result"][ii]["d"] = szDateEnd;
 
@@ -17264,57 +17233,25 @@ namespace http {
                                 std::string szValue = szTmp;
 
                                 if (!sgroupby.empty()) {
-                                    int iii = ii-1;
-                                    std::string dataYear = std::string(szDateEnd).substr(0, 4);
-                                    std::string lastYear = root["result"][iii]["y"].asString();
-                                    _log.Debug(DEBUG_WEBSERVER, "dataYear:%s ? lastYear:%s", dataYear.c_str(), lastYear.c_str());
-                                    bool categoryMatch = true;
-                                    if (sgroupby == "quarter") {
-                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
-                                        std::string dataQuarter;
-                                        if (dataMonth == "01" || dataMonth == "02" || dataMonth == "03") {
-                                            dataQuarter = "Q1";
-                                        } else if (dataMonth == "04" || dataMonth == "05" || dataMonth == "06") {
-                                            dataQuarter = "Q2";
-                                        } else if (dataMonth == "07" || dataMonth == "08" || dataMonth == "09") {
-                                            dataQuarter = "Q3";
-                                        } else {
-                                            dataQuarter = "Q4";
-                                        }
-                                        std::string lastQuarter = root["result"][iii]["c"].asString();
-                                        _log.Debug(DEBUG_WEBSERVER, "dataQuarter:%s ? lastQuarter:%s", dataQuarter.c_str(), lastQuarter.c_str());
-                                        categoryMatch = dataQuarter == lastQuarter;
-                                    } else if (sgroupby == "month") {
-                                        std::string dataMonth = std::string(szDateEnd).substr(5, 2);
-                                        std::string lastMonth = root["result"][iii]["c"].asString();
-                                        _log.Debug(DEBUG_WEBSERVER, "dataMonth:%s ? lastMonth:%s", dataMonth.c_str(), lastMonth.c_str());
-                                        categoryMatch = dataMonth == lastMonth;
+                                    float todayValue = total_real / divider;
+                                    std::string formatString;
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                            formatString = "%.3f";
+                                            break;
+                                        case MTYPE_GAS:
+                                            formatString = "%.2f";
+                                            break;
+                                        case MTYPE_WATER:
+                                            formatString = "%.3f";
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            formatString = "%g";
+                                            break;
                                     }
-                                    if (lastYear == dataYear && categoryMatch) {
-                                        float extraValue = total_real / divider;
-                                        float newValue = atof(root["result"][iii]["s"].asString().c_str()) + extraValue;
-                                        _log.Debug(DEBUG_WEBSERVER, "extraValue:%.3f newValue:%.3f", extraValue, newValue);
-                                        switch (metertype)
-                                        {
-                                            case MTYPE_ENERGY:
-                                            case MTYPE_ENERGY_GENERATED:
-                                                sprintf(szTmp, "%.3f", newValue);
-                                                root["result"][iii]["s"] = szTmp;
-                                                break;
-                                            case MTYPE_GAS:
-                                                sprintf(szTmp, "%.2f", newValue);
-                                                root["result"][iii]["s"] = szTmp;
-                                                break;
-                                            case MTYPE_WATER:
-                                                sprintf(szTmp, "%.3f", newValue);
-                                                root["result"][iii]["s"] = szTmp;
-                                                break;
-                                            case MTYPE_COUNTER:
-                                                sprintf(szTmp, "%g", newValue);
-                                                root["result"][iii]["s"] = szTmp;
-                                                break;
-                                        }
-                                    }
+                                    AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, formatString);
                                 } else {
                                     root["result"][ii]["d"] = szDateEnd;
                                     switch (metertype)
@@ -18131,6 +18068,53 @@ namespace http {
             }
 
             return session;
+        }
+
+        void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString) {
+            _log.Debug(DEBUG_WEBSERVER, ("todayValue:" + formatString).c_str(), todayValue);
+            std::string todayYear = today.substr(0, 4);
+            std::string todayCategory;
+            if (sgroupby == "quarter") {
+                std::string todayMonth = today.substr(5, 2);
+                if (todayMonth == "01" || todayMonth == "02" || todayMonth == "03") {
+                    todayCategory = "Q1";
+                } else if (todayMonth == "04" || todayMonth == "05" || todayMonth == "06") {
+                    todayCategory = "Q2";
+                } else if (todayMonth == "07" || todayMonth == "08" || todayMonth == "09") {
+                    todayCategory = "Q3";
+                } else {
+                    todayCategory = "Q4";
+                }
+            } else if (sgroupby == "month") {
+                todayCategory = today.substr(5, 2);
+            } else {
+                todayCategory = todayYear;
+            }
+            int todayResultIndex = -1;
+            for (int resultIndex = 0; resultIndex < root["result"].size() && todayResultIndex == -1; resultIndex++) {
+                std::string resultYear = root["result"][resultIndex]["y"].asString();
+                std::string resultCategory = root["result"][resultIndex]["c"].asString();
+                _log.Debug(DEBUG_WEBSERVER, "todayYear:%s ? resultYear:%s  todayCategory:%s ? resultCategory:%s",
+                    todayYear.c_str(), resultYear.c_str(), todayCategory.c_str(), resultCategory.c_str());
+                if (resultYear == todayYear && todayCategory == resultCategory) {
+                    todayResultIndex = resultIndex;
+                }
+            }
+            float resultPlusTodayValue;
+            if (todayResultIndex == -1) {
+                todayResultIndex = root["result"].size();
+                resultPlusTodayValue = todayValue;
+                root["result"][todayResultIndex]["y"] = todayYear.c_str();
+                root["result"][todayResultIndex]["c"] = todayCategory.c_str();
+                _log.Debug(DEBUG_WEBSERVER, ("new  resultPlusTodayValue:" + formatString + "  year:%s  category:%s").c_str(),
+                        resultPlusTodayValue, todayYear.c_str(), todayCategory.c_str());
+            } else {
+                resultPlusTodayValue = atof(root["result"][todayResultIndex]["s"].asString().c_str()) + todayValue;
+                _log.Debug(DEBUG_WEBSERVER, ("add  todayValue:" + formatString + " resultPlusTodayValue:" + formatString).c_str(), todayValue, resultPlusTodayValue);
+            }
+            char szTmp[30];
+            sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
+            root["result"][todayResultIndex]["s"] = szTmp;
         }
 
         /**
