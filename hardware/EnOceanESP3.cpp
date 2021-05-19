@@ -2075,10 +2075,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 		case RORG_VLD:
 			{
-//				unsigned char DATA_BYTE3=m_buffer[1];
-//				unsigned char func = (m_buffer[1] >> 2) & 0x3F;
-//				unsigned char type = ((m_buffer[2] >> 3) & 0x1F) | ((m_buffer[1] & 0x03) << 5);
-
 				uint8_t ID_BYTE3 = m_buffer[m_DataSize - 5];
 				uint8_t ID_BYTE2 = m_buffer[m_DataSize - 4];
 				uint8_t ID_BYTE1 = m_buffer[m_DataSize - 3];
@@ -2151,6 +2147,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				}
 				Log(LOG_NORM, "EnOcean: Node %s, Unhandled EEP (%02X-%02X-%02X)", szDeviceID, RORG_VLD, func, type);
 			}
+			break;
 		default:
 			Log(LOG_NORM, "Unhandled RORG (%02x)", m_buffer[0]);
 			break;
