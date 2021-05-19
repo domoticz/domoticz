@@ -195,7 +195,7 @@ define(['app', 'log/Chart'], function (app) {
                                 + '<tr><td colspan="2"><b>' + categoryKeyToString(this.x) + '</b></td></tr>'
                                 + this.points.reduce(
                                     function (s, point) {
-                                        return s + '<tr><td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td><td><b>' + point.y + '</b></td><td><b>' + (deviceUnit ? ' ' + deviceUnit : '') + '</b></td></tr>';
+                                        return s + '<tr><td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td><td><b>' + Highcharts.numberFormat(point.y) + '</b></td><td><b>' + (deviceUnit ? ' ' + deviceUnit : '') + '</b></td></tr>';
                                     }, '')
                                 + '</table>';
                         }

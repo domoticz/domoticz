@@ -25,8 +25,8 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         }
                     },
                     tooltip: {
-                        pointFormat: '{series.name}: <b>{point.y}</b> ( {point.percentage:.0f}% )<br>',
-                        footerFormat: 'Total: {point.total} {series.tooltipOptions.valueSuffix}'
+                        pointFormat: '{series.name}: <b>{point.y:,.f}</b> ( {point.percentage:.0f}% )<br>',
+                        footerFormat: 'Total: {point.total:,.f} {series.tooltipOptions.valueSuffix}'
                     }
                 }
             },

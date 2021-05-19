@@ -21,7 +21,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.dataSupplier = params.dataSupplier;
         self.extendDataRequest = params.dataSupplier.extendDataRequest || function (dataRequest) { return dataRequest; };
         self.synchronizeYaxes = params.synchronizeYaxes;
-        self.chart = self.$element.find('.chartcontainer').highcharts(createChartDefinition(params.highchartTemplate)).highcharts();
+        const chartDefinition = createChartDefinition(params.highchartTemplate);
+        chartDefinition.range = params.range;
+        self.chart = self.$element.find('.chartcontainer').highcharts(chartDefinition).highcharts();
         // Disable the Highcharts Reset Zoom button
         self.chart.showResetZoom = function () {};
         self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
