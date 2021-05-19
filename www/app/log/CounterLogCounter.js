@@ -100,7 +100,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
 
             },
             chartParamsCompareTemplate: function (ctrl) {
-                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.water(chart.valueMultipliers.m1));
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.water(chart.valueMultipliers.m1000));
             },
             yAxesDay: function (deviceTypeIndex) {
                 return [
@@ -133,7 +133,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                 return [
                     {
                         title: {
-                            text: $.t('Water') + ' (' + chart.valueUnits.water(chart.valueMultipliers.m1) + ')'
+                            text: $.t('Water') + ' (' + chart.valueUnits.water(chart.valueMultipliers.m1000) + ')'
                         }
                     }
                 ];

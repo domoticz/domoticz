@@ -81,6 +81,9 @@ define(['app'], function (app) {
             if (multiplier === valueMultipliers.m1) {
                 return valueUnits.liter;
             }
+            if (multiplier === valueMultipliers.m1000) {
+                return valueUnits.m3;
+            }
             return '';
         }
     }

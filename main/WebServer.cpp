@@ -17291,7 +17291,7 @@ namespace http {
                                         categoryMatch = dataMonth == lastMonth;
                                     }
                                     if (lastYear == dataYear && categoryMatch) {
-                                        float extraValue = (atof(sValue.c_str()) - total_real) / divider;
+                                        float extraValue = total_real / divider;
                                         float newValue = atof(root["result"][iii]["s"].asString().c_str()) + extraValue;
                                         _log.Debug(DEBUG_WEBSERVER, "extraValue:%.3f newValue:%.3f", extraValue, newValue);
                                         switch (metertype)
