@@ -2075,67 +2075,38 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 		case RORG_VLD:
 			{
-				unsigned char DATA_BYTE3=m_buffer[1];
-				unsigned char func = (m_buffer[1] >> 2) & 0x3F;
-				unsigned char type = ((m_buffer[2] >> 3) & 0x1F) | ((m_buffer[1] & 0x03) << 5);
+//				unsigned char DATA_BYTE3=m_buffer[1];
+//				unsigned char func = (m_buffer[1] >> 2) & 0x3F;
+//				unsigned char type = ((m_buffer[2] >> 3) & 0x1F) | ((m_buffer[1] & 0x03) << 5);
 
-				if (m_DataSize > 7)
+				uint8_t ID_BYTE3 = m_buffer[m_DataSize - 5];
+				uint8_t ID_BYTE2 = m_buffer[m_DataSize - 4];
+				uint8_t ID_BYTE1 = m_buffer[m_DataSize - 3];
+				uint8_t ID_BYTE0 = m_buffer[m_DataSize - 2];
+				uint32_t id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+
+				char szDeviceID[20];
+				std::vector<std::vector<std::string> > result;
+				sprintf(szDeviceID, "%08X", (unsigned int)id);
+
+				// report status only if it is a known device else we may have an incorrect profile
+				auto itt = m_VLDNodes.find(id);
+				if (itt == m_VLDNodes.end())
 				{
-					unsigned char ID_BYTE3 = m_buffer[m_DataSize - 5];
-					unsigned char ID_BYTE2 = m_buffer[m_DataSize - 4];
-					unsigned char ID_BYTE1 = m_buffer[m_DataSize - 3];
-					unsigned char ID_BYTE0 = m_buffer[m_DataSize - 2];
-					unsigned long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
-
-					auto itt = m_VLDNodes.find(id);
-					if (itt != m_VLDNodes.end())
-					{
-						uint8_t Profile = itt->second.profile;
-						uint8_t iType = itt->second.type;
-
-						// D2-03-0A Push Button – Single Button
-						Log(LOG_NORM, "EnOcean message VLD: Profile: %02X Type: %02X", Profile, iType);
-
-						switch (Profile)
-						{
-						case 0x03:
-							//Light, Switching + Blind Control
-							if (iType == 0x0A)
-							{
-								int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
-								unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
-								SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name, 12);
-								return;
-							}
-							break;
-						}
-					}
+					Log(LOG_NORM, "Need Teach-In for %s", szDeviceID);
+					return;
 				}
-				Log(LOG_NORM, "EnOcean message VLD: func: %02X Type: %02X", func, type);
+				uint8_t func = itt->second.profile;
+				uint8_t type = itt->second.type;
+
+				Log(LOG_NORM, "EnOcean message VLD: from Node %s EEP: %02X-%02X-%02X", szDeviceID, RORG_VLD, func, type);
+
 				if (func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
-					unsigned char ID_BYTE3 = m_buffer[4];
-					unsigned char ID_BYTE2 = m_buffer[5];
-					unsigned char ID_BYTE1 = m_buffer[6];
-					unsigned char ID_BYTE0 = m_buffer[7];
-					long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
-
-					// report status only if it is a known device else we may have an incorrect profile
-					char szDeviceID[20];
-					std::vector<std::vector<std::string> > result;
-					sprintf(szDeviceID, "%08X", (unsigned int)id);
-
-					result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-					if (result.empty())
-					{
-						Log(LOG_NORM, "Need Teach-In for %s", szDeviceID);
-						return;
-					}
-
 					uint8_t CMD = m_buffer[1] & 0x0F;			// Command ID
 					if (CMD != 0x04)
 					{
-						Log(LOG_NORM, "EnOcean: VLD msg: Node %s Unhandled CMD (%02X)", szDeviceID, CMD);
+						Log(LOG_NORM, "EnOcean: VLD msg: Node %s, Unhandled CMD (%02X)", szDeviceID, CMD);
 						return;
 					}
 					// CMD 0x4 - Actuator Status Response
@@ -2171,25 +2142,14 @@ void CEnOceanESP3::ParseRadioDatagram()
 					// Ex: nodon inwall 2 channels will show 3 entries. Unit 0 is the local switch, 1 is the first channel, 2 is the second channel.
 					return;
 				}
-				else if (func == 0x02)
-				{
-					// D2-02 Temp. Sensor, Light, Occupancy, SmokeType
+				if (func == 0x03 && type == 0x0A)
+				{ // D2-03-0A Push Button – Single Button
+					int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
+					unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
+					SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name, 12);
+					return;
 				}
-				else if (func == 0x03)
-				{
-					// D2-03
-					switch (type)
-					{
-					case 0x00:	// D2-03-00 Light, Switching and Blind Control Type
-						break;
-					case 0x0A:	// D2-03-0A Push Button – Single Button
-						break;
-					case 0x10:	// D2-03-10 Mechanical Handle
-						break;
-					case 0x20:	// D2-03-20 Beacon with Vibration Detection
-						break;
-					}
-				}
+				Log(LOG_NORM, "EnOcean: Node %s, Unhandled EEP (%02X-%02X-%02X)", szDeviceID, RORG_VLD, func, type);
 			}
 		default:
 			Log(LOG_NORM, "Unhandled RORG (%02x)", m_buffer[0]);
