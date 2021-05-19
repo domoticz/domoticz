@@ -344,6 +344,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         function configureZoomingAndPanning() {
             const interTouchEndTouchStartPeriod = intParam('endDelay', 500);
             const touchStartPanningDelay = intParam('startPanningDelay', 400);
+            const touchDeletePointDelay = intParam('deletePointDelay', 800);
 
             self.isMouseDown = false;
 
@@ -379,7 +380,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         self.consoledebug('End following tooltip');
                     }
                 } else {
-                    if (self.touchStartTimestamp + touchStartPanningDelay < e.timeStamp) {
+                    if (self.touchStartTimestamp + touchDeletePointDelay < e.timeStamp) {
                         if (self.chartPoint !== undefined && self.chartPointPosition === self.touchStartPosition) {
                             self.consoledebug('Delete point ' + self.chartPoint + ' at ' + self.chartPointPosition);
                             self.domoticzDatapointApi
