@@ -42,7 +42,10 @@ typedef enum
 	GATEWAY_SOUND_VOLUME_CONTROL,	    //  7, Xiaomi Gateway Volume
 	SELECTOR_WIRED_WALL_SINGLE,	    //  8, Xiaomi Wired Single Wall Switch
 	SELECTOR_WIRED_WALL_DUAL_CHANNEL_0, //  9, Xiaomi Wired Dual Wall Switch Channel 0
-	SELECTOR_WIRED_WALL_DUAL_CHANNEL_1  // 10, Xiaomi Wired Dual Wall Switch Channel 1
+	SELECTOR_WIRED_WALL_DUAL_CHANNEL_1, // 10, Xiaomi Wired Dual Wall Switch Channel 1
+	ACT_RELAIS_CHANNEL_0,		    // 11, Xiaomi Relais Channel 0
+	ACT_RELAIS_CHANNEL_1,		    // 12, Xiaomi Relais Channel 1
+	ACT_LIGHT			    // 13, Xiaomi Light bulb
 } XiaomiUnitCode;
 
 /****************************************************************************
@@ -160,9 +163,11 @@ typedef enum
 #define MODEL_ACT_LIGHT "light.aqcb02"
 #define NAME_ACT_LIGHT "Light bulb"
 
-// [NEW] Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM // TODO: not implemented yet
+// [NEW] Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM
 #define MODEL_ACT_RELAIS "relay.c2acn01"
-#define NAME_ACT_RELAIS "Aqara Wireless Relay Controller"
+//#define NAME_ACT_RELAIS "Aqara Wireless Relay Controller"
+#define NAME_ACT_RELAIS_CHANNEL_0 "Aqara Wireless Relay Controller - Channel 1"
+#define NAME_ACT_RELAIS_CHANNEL_1 "Aqara Wireless Relay Controller - Channel 2"
 
 /****************************************************************************
  ********************************* GATEWAY **********************************
@@ -369,16 +374,9 @@ bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char lengt
 		cmddevice = DetermineDevice(xcmd->unitcode);
 		cmdcommand = DetermineCommand(xcmd->cmnd);
 
-		// If unitcode unkown, check DeviceSupport for ID
-		Log(LOG_STATUS, "Xiaomi WriteToHardware, xcmd->unitcode '%d', cmddevice: '%s'", xcmd->unitcode, cmddevice.c_str());
-		if (xcmd->unitcode == 0)
-		{
-			xcmd->unitcode = m_DeviceSupport->GetXiaomiUnitCodeByID(sid);
-			Log(LOG_STATUS, "Xiaomi WriteToHardware, DeviceSupport found xcmd->unitcode '%d', cmddevice: '%s'", xcmd->unitcode, cmddevice);
-		}
-
 		if (xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 ||
-		    xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)))
+		    xcmd->unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || ((xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)) ||
+		    xcmd->unitcode == XiaomiUnitCode::ACT_RELAIS_CHANNEL_0 || xcmd->unitcode == XiaomiUnitCode::ACT_RELAIS_CHANNEL_1 || xcmd->unitcode == XiaomiUnitCode::ACT_LIGHT)
 		{
 			message = R"({"cmd":"write","model":")" + cmddevice + R"(","sid":"158d00)" + sid + R"(","short_id":0,"data":"{\")" + cmdchannel + R"(\":\")" + cmdcommand +
 				  R"(\",\"key\":\"@gatewaykey\"}" })";
@@ -454,6 +452,11 @@ bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			message = R"({"cmd":"write","model":"curtain","sid":"158d00)" + sid + R"(","short_id":9844,"data":"{\"curtain_level\":\")" + std::to_string(level) +
 				  R"(\",\"key\":\"@gatewaykey\"}" })";
+		}
+		else
+		{
+			// TODO: remove this block
+			Log(LOG_STATUS, "Unknown unitcode: '%d'", xcmd->unitcode);
 		}
 	}
 	else if (packettype == pTypeColorSwitch)
@@ -548,7 +551,7 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage)
 	boost::asio::ip::udp::endpoint remote_endpoint_;
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
 	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
-	sleep_milliseconds(150);
+	sleep_milliseconds(150); // TODO: reduce or remove sleep
 	std::array<char, 512> recv_buffer_;
 	memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
 #ifdef _DEBUG
@@ -1220,7 +1223,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 		if (!TrueGateway)
 		{
-			_log.Log(LOG_ERROR, "XiaomiGateway: received data from  unregisted gateway!");
+			_log.Log(LOG_ERROR, "XiaomiGateway: received data from unregisted gateway!");
 			start_receive();
 			return;
 		}
@@ -1245,9 +1248,13 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		if (model.empty())
 		{
 			XiaomiDeviceSupportHardcoded devicesupport;
-			_log.Log(LOG_STATUS, "XiaomiGateway: model empty for '%s', accessing DeviceSupport.", sid.c_str());
+			_log.Log(LOG_DEBUG_INT, "XiaomiGateway: model empty for '%s', trying DeviceSupport.", sid.c_str());
 			model = devicesupport.GetXiaomiDeviceModelByID(sid);
-			_log.Log(LOG_STATUS, "XiaomiGateway: model empty but DeviceSupport found: '%s'", model.c_str());
+			if (model.empty())
+			{
+				_log.Log(LOG_STATUS, "XiaomiGateway: model empty for '%s', and no match found by DeviceSupport. Add your device to the list.", sid.c_str());
+			}
+			_log.Log(LOG_DEBUG_INT, "XiaomiGateway: model lookup for '%s' found: '%s'", sid.c_str(), model.c_str());
 		}
 
 		if ((cmd == COMMAND_REPORT) || (cmd == COMMAND_READ_ACK) || (cmd == COMMAND_HEARTBEAT))
@@ -1292,6 +1299,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				{
 					type = STYPE_OnOff;
 					name = NAME_ACT_ONOFF_PLUG;
+				}
+				else if (model == MODEL_ACT_RELAIS)
+				{
+					type = STYPE_OnOff;
+					name = NAME_ACT_RELAIS_CHANNEL_0;
 				}
 				else if (model == MODEL_ACT_ONOFF_PLUG_WALL_1 || model == MODEL_ACT_ONOFF_PLUG_WALL_2)
 				{
@@ -1366,11 +1378,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					type = STYPE_BlindsPercentage;
 					name = NAME_ACT_BLINDS_CURTAIN;
 				}
-				else if (model == MODEL_ACT_RELAIS)
-				{
-					type = STYPE_OnOff;
-					name = NAME_ACT_RELAIS;
-				}
 				else if (model == MODEL_ACT_LIGHT)
 				{
 					type = STYPE_Dimmer;
@@ -1388,7 +1395,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					std::string no_close = root2["no_close"].asString();
 					std::string no_motion = root2["no_motion"].asString();
 					// Aqara's Wireless switch reports per channel
-					std::string aqara_wireless1 = root2[NAME_CHANNEL_0].asString();
+					std::string aqara_wireless1 = root2[NAME_CHANNEL_0].asString(); // TODO: rename var as it's not always a wireless switch
 					std::string aqara_wireless2 = root2[NAME_CHANNEL_1].asString();
 					std::string aqara_wireless3 = root2["dual_channel"].asString();
 					// Smart plug usage
@@ -1502,8 +1509,31 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					{
 						if (model == MODEL_ACT_ONOFF_PLUG || model == MODEL_ACT_ONOFF_PLUG_WALL_1 || model == MODEL_ACT_ONOFF_PLUG_WALL_2)
 						{
-							sleep_milliseconds(100); // Need to sleep here as the gateway will send 2 update messages, and need time for the database to update the
-										 // state so that the event is not triggered twice
+							// Need to sleep here as the gateway will send 2 update messages, and need time for the database to update the
+							// state so that the event is not triggered twice
+							sleep_milliseconds(100); // TODO: try to reduce or remove this sleep
+							TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, load_power, power_consumed, battery);
+						}
+						else if (model == MODEL_ACT_RELAIS)
+						{
+							unitcode = XiaomiUnitCode::ACT_RELAIS_CHANNEL_0;
+							name = NAME_ACT_RELAIS_CHANNEL_0;
+							if (!aqara_wireless1.empty())
+							{
+								if (aqara_wireless1 == STATE_ON)
+								{
+									on = true;
+								}
+							}
+							else if (!aqara_wireless2.empty())
+							{
+								unitcode = XiaomiUnitCode::ACT_RELAIS_CHANNEL_1;
+								name = NAME_ACT_RELAIS_CHANNEL_1;
+								if (aqara_wireless2 == STATE_ON)
+								{
+									on = true;
+								}
+							}
 							TrueGateway->InsertUpdateSwitch(sid, name, on, type, unitcode, level, cmd, load_power, power_consumed, battery);
 						}
 						else if ((model == MODEL_ACT_BLINDS_CURTAIN) && (!curtain.empty()))
@@ -1767,11 +1797,12 @@ std::string XiaomiGateway::XiaomiGatewayTokenManager::GetSID(const std::string &
 std::string XiaomiGateway::DetermineChannel(int32_t unitcode)
 {
 	std::string cmdchannel;
-	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG || unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0)
+	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE || unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG || unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 ||
+	    unitcode == XiaomiUnitCode::ACT_RELAIS_CHANNEL_0)
 	{
 		cmdchannel = NAME_CHANNEL_0;
 	}
-	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1)
+	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1 || unitcode == XiaomiUnitCode::ACT_RELAIS_CHANNEL_1)
 	{
 		cmdchannel = NAME_CHANNEL_1;
 	}
@@ -1783,15 +1814,23 @@ std::string XiaomiGateway::DetermineDevice(int32_t unitcode)
 	std::string cmddevice;
 	if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_SINGLE)
 	{
-		cmddevice = "ctrl_neutral1";
+		cmddevice = MODEL_SELECTOR_WIRED_WALL_SINGLE_1;
 	}
 	else if (unitcode == XiaomiUnitCode::ACT_ONOFF_PLUG)
 	{
-		cmddevice = "plug";
+		cmddevice = MODEL_ACT_ONOFF_PLUG;
 	}
 	else if (unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_0 || unitcode == XiaomiUnitCode::SELECTOR_WIRED_WALL_DUAL_CHANNEL_1)
 	{
-		cmddevice = "ctrl_neutral2";
+		cmddevice = MODEL_SELECTOR_WIRED_WALL_DUAL_1;
+	}
+	else if (unitcode == XiaomiUnitCode::ACT_RELAIS_CHANNEL_0 || unitcode == XiaomiUnitCode::ACT_RELAIS_CHANNEL_1)
+	{
+		cmddevice = MODEL_ACT_RELAIS;
+	}
+	else if (unitcode == XiaomiUnitCode::ACT_LIGHT)
+	{
+		cmddevice = MODEL_ACT_LIGHT;
 	}
 	return cmddevice;
 }
