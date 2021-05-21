@@ -979,6 +979,13 @@ bool XiaomiGateway::StartHardware()
 	{
 		m_IncludeVoltage = true;
 	}
+	// Check for relay devices to override
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiDeviceSupportRelaisIDs')");
+	if (!result.empty())
+	{
+		Log(LOG_STATUS, "XiaomiGateway: Found XiaomiDeviceSupportRelaisIDs, adding relais for: '%s'", result)[0][0]);
+	}
+
 	Log(LOG_STATUS, "XiaomiGateway (ID=%d): Delaying worker startup...", m_HwdID);
 	sleep_seconds(5);
 
