@@ -982,7 +982,9 @@ bool XiaomiGateway::StartHardware()
 	XiaomiDeviceSupportUserVariable deviceSupport = new XiaomiDeviceSupportUserVariable(m_sql, _log, "relay.c2acn01");
 	if (deviceSupport.LoadSIDs())
 	{
+		delete m_DeviceSupport;
 		m_DeviceSupport = deviceSupport;
+		Log(LOG_STATUS, "XiaomiGateway, found DeviceSupport user variable for relay.");
 	}
 
 	Log(LOG_STATUS, "XiaomiGateway (ID=%d): Delaying worker startup...", m_HwdID);
