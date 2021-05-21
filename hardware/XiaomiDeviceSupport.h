@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "../main/SQLHelper.h"
 
 class XiaomiDeviceSupport
 {
@@ -19,11 +20,15 @@ class XiaomiDeviceSupportHardcoded : public XiaomiDeviceSupport
 class XiaomiDeviceSupportUserVariable : public XiaomiDeviceSupport
 {
       private:
-	std::vector<std::string> m_SIDs;
-	CSQLHelper m_sql;
+	std::vector<std::string> *m_SIDs;
+	CSQLHelper &m_SQL;
+	std::string m_Model;
+	std::string m_UserVarName;
+	CLogger &m_Log;
 
       public:
-	XiaomiDeviceSupportInjected(std::string devicesCommaSeparated);
-	~XiaomiDeviceSupportInjected(){};
+	XiaomiDeviceSupportUserVariable(CSQLHelper &sql, CLogger &log, std::string model);
+	~XiaomiDeviceSupportUserVariable(){};
 	std::string GetXiaomiDeviceModelByID(std::string sid);
+	bool LoadSIDsOk();
 };
