@@ -607,20 +607,15 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
             self.$scope.groupBy = function (groupingBy) {
                 self.ctrl.groupingBy = groupingBy;
-                refreshChartData(
-                    /*
-                    function () {
-                    // self.chart.options.plotOptions.column.stacking = groupingBy === 'year' ? 'normal' : undefined;
-                    // self.chart.options.plotOptions.series.stacking = groupingBy === 'year' ? 'normal' : undefined;
-                    self.chart.series.forEach(function (s) {
-                        s.options.stack = groupingBy === 'year' ? 0 : 1;
-                        s.hide();
-                        s.show();
-                    });
-                    // self.chart.redraw();
-                }
-                */
-                );
+                self.chart.update(
+                    {
+                        plotOptions: {
+                            column: {
+                                stacking: self.ctrl.groupingBy === 'year' ? 'normal' : undefined
+                            }
+                        }
+                    }, false);
+                refreshChartData();
             };
 
             self.$element.find('.chartcontainer').on('refreshChartData', function (e) {

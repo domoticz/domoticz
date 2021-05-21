@@ -177,7 +177,7 @@ define(['app', 'log/Chart'], function (app) {
                     },
                     plotOptions: {
                         column: {
-                            stacking: undefined //$scope.groupingBy === 'year' ? 'normal' : undefined
+                            stacking: ctrl.groupingBy === 'year' ? 'normal' : undefined
                         }
                     },
                     xAxis: {
