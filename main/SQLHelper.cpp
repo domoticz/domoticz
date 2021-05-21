@@ -630,14 +630,12 @@ bool CSQLHelper::OpenDatabase()
 		sqlite3_close(m_dbase);
 		return false;
 	}
-#ifndef WIN32
-	//test, this could improve performance
+	std::string pragma_journal_mode = "PRAGMA journal_mode = " + m_journal_mode;
+	sqlite3_exec(m_dbase, pragma_journal_mode.c_str(), nullptr, nullptr, nullptr);
 	sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", nullptr, nullptr, nullptr);
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", nullptr, nullptr, nullptr);
-#else
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
-#endif
-	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA busy_timeout = 1000", nullptr, nullptr, nullptr);
+
 	std::vector<std::vector<std::string> > result = query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bool bNewInstall = (result.empty());
 	int dbversion = 0;
@@ -3924,6 +3922,11 @@ void CSQLHelper::Do_Work()
 void CSQLHelper::SetDatabaseName(const std::string& DBName)
 {
 	m_dbase_name = DBName;
+}
+
+void CSQLHelper::SetJournalMode(const std::string& mode)
+{
+	m_journal_mode = mode;
 }
 
 bool CSQLHelper::DoesColumnExistsInTable(const std::string& columnname, const std::string& tablename)

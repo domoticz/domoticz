@@ -1222,6 +1222,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelActions**: *String*. |-separated list of url actions for selector switches.
  - **levelName**: *String*. Current level name for selector switches.
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
+ - **levelVal**: *Number*. Specific for selector switches.
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOn()**: *Function*. Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
