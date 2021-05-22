@@ -618,6 +618,16 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 refreshChartData();
             };
 
+            self.$element.find('.chart-title-container').on('click', function (e) {
+                debugMouseAction('Click on title', e);
+                if (self.ctrl.toggleTitleState !== undefined) {
+                    const newTitle = self.ctrl.toggleTitleState();
+                    if (newTitle) {
+                        self.$scope.chartTitle = newTitle;
+                        refreshChartData();
+                    }
+                }
+            });
             self.$element.find('.chartcontainer').on('refreshChartData', function (e) {
                 refreshChartData();
             });

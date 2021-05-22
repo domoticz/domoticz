@@ -72,6 +72,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex));
             },
+            extendDataRequestCompare: function (dataRequest) {
+                return dataRequest;
+            },
             compareSeriesSuppliers: function (ctrl) {
                 return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
@@ -152,15 +155,23 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, times1000, 0))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, times1000, 0));
             },
+            extendDataRequestCompare: function (dataRequest) {
+                return dataRequest;
+            },
             compareSeriesSuppliers: function (ctrl) {
                 return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
         });
 
         counterLogSubtypeRegistry.register('counter', {
-            preprocessData: function (data) {
-                this.deviceCounterName = data.ValueQuantity ? data.ValueQuantity : undefined;
-                this.deviceValueUnit = data.ValueUnits ? data.ValueUnits : undefined;
+            preprocessDayData: function (data) {
+                preprocessData.call(this, data);
+            },
+            preprocessWeekData: function (data) {
+                preprocessData.call(this, data);
+            },
+            preprocessMonthYearData: function (data) {
+                preprocessData.call(this, data);
             },
             chartParamsDayTemplate: {
 
@@ -232,6 +243,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, undefined, undefined))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, undefined, undefined));
             },
+            extendDataRequestCompare: function (dataRequest) {
+                return dataRequest;
+            },
             compareSeriesSuppliers: function (ctrl) {
                 return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
@@ -239,6 +253,11 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
         return {
             template: ''
         };
+
+        function preprocessData(data) {
+            this.deviceCounterName = data.ValueQuantity ? data.ValueQuantity : undefined;
+            this.deviceValueUnit = data.ValueUnits ? data.ValueUnits : undefined;
+        }
     });
 
 });

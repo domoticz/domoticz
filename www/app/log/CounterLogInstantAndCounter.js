@@ -88,6 +88,9 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 return []
                     .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType));
             },
+            extendDataRequestCompare: function (dataRequest) {
+                return dataRequest;
+            },
             compareSeriesSuppliers: function (ctrl) {
                 return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }

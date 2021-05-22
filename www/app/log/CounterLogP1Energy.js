@@ -102,6 +102,24 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.powerReturnedMonthYearSeriesSuppliers(deviceType));
             },
+            preprocessCompareData: function (data) {
+                this.dataContainsDelivery = data.delivered ? true : false;
+                this.sensorarea = this.sensorarea || 'usage';
+                this.toggleTitleState = function () {
+                    if (this.sensorarea === 'usage' && this.dataContainsDelivery) {
+                        this.sensorarea = 'delivery';
+                        return $.t('Compare') + ' ' + $.t('Return');
+                    } else if (this.sensorarea === 'delivery') {
+                        this.sensorarea = 'usage';
+                        return $.t('Compare') + ' ' + $.t('Usage');
+                    }
+                    return null;
+                };
+            },
+            extendDataRequestCompare: function (dataRequest) {
+                dataRequest['sensorarea'] = this.sensorarea || 'usage';
+                return dataRequest;
+            },
             compareSeriesSuppliers: function (ctrl) {
                 return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }

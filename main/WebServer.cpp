@@ -14018,6 +14018,7 @@ namespace http {
 			std::string sensor = request::findValue(&req, "sensor");
 			if (sensor.empty())
 				return;
+            std::string sensorarea = request::findValue(&req, "sensorarea");
 			std::string srange = request::findValue(&req, "range");
             std::string sgroupby = request::findValue(&req, "groupby");
             if (srange.empty() && sgroupby.empty())
@@ -16186,11 +16187,20 @@ namespace http {
 					if (dType == pTypeP1Power)
 					{
                         if (!sgroupby.empty()) {
-                            std::function<std::string (std::string)> counterExpr = [] (std::string expr) {
-                                return boost::str(boost::format(expr) % "1" % "3");
+                            std::function<std::string (std::string, std::string, std::string, std::string, std::string)> sensorareaExpr = [sensorarea] (std::string expr, std::string usageNormal, std::string usageLow, std::string deliveryNormal, std::string deliveryLow) {
+                                if (sensorarea == "usage") {
+                                    return boost::str(boost::format(expr) % usageNormal % usageLow);
+                                }
+                                if (sensorarea == "delivery") {
+                                    return boost::str(boost::format(expr) % deliveryNormal % deliveryLow);
+                                }
+                                return expr;
                             };
-                            std::function<std::string (std::string)> valueExpr = [] (std::string expr) {
-                                return boost::str(boost::format(expr) % "1" % "5");
+                            std::function<std::string (std::string)> counterExpr = [sensorareaExpr] (std::string expr) {
+                                return sensorareaExpr(expr, "1", "3", "2", "4");
+                            };
+                            std::function<std::string (std::string)> valueExpr = [sensorareaExpr] (std::string expr) {
+                                return sensorareaExpr(expr, "1", "5", "2", "6");
                             };
                             GroupBy(
                                 root,
@@ -16927,7 +16937,7 @@ namespace http {
                                     bHaveDeliverd = true;
 
                                 if (!sgroupby.empty()) {
-                                    const float todayValue = (total_real_usage_1 + total_real_usage_2) / divider;
+                                    const float todayValue = (sensorarea == "usage" ? (total_real_usage_1 + total_real_usage_2) : sensorarea == "delivery" ? (total_real_deliv_1 + total_real_deliv_2) : 0) / divider;
                                     AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, "%.3f");
                                 } else {
                                     root["result"][ii]["d"] = szDateEnd;

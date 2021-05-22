@@ -42,8 +42,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                                 },
                                 extendDataRequest: subtype.extendDataRequestDay,
-                                preprocessData: subtype.preprocessData,
-                                preprocessDataItems: subtype.preprocessDataItems
+                                preprocessData: subtype.preprocessDayData,
+                                preprocessDataItems: subtype.preprocessDayDataItems
                             },
                             subtype.daySeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -79,8 +79,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                preprocessData: subtype.preprocessData,
-                                preprocessDataItems: subtype.preprocessDataItems
+                                preprocessData: subtype.preprocesWeeksData,
+                                preprocessDataItems: subtype.preprocessWeekDataItems
                             },
                             subtype.weekSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -116,8 +116,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                preprocessData: subtype.preprocessData,
-                                preprocessDataItems: subtype.preprocessDataItems
+                                preprocessData: subtype.preprocessMonthYearData,
+                                preprocessDataItems: subtype.preprocessMonthYearDataItems
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -153,8 +153,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                preprocessData: subtype.preprocessData,
-                                preprocessDataItems: subtype.preprocessDataItems
+                                preprocessData: subtype.preprocessMonthYearData,
+                                preprocessDataItems: subtype.preprocessMonthYearDataItems
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -174,7 +174,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             controllerAs: 'vm',
             controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
                 const self = this;
-                self.groupingBy = 'year';
+                self.groupingBy = 'month';
 
                 self.$onInit = function () {
                     const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
@@ -189,14 +189,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 yAxes: subtype.yAxesCompare(self.device.SwitchTypeVal),
                                 extendDataRequest: function (dataRequest) {
                                     dataRequest['groupby'] = self.groupingBy;
-                                    return dataRequest;
+                                    return subtype.extendDataRequestCompare.call(self, dataRequest);
                                 },
                                 preprocessData: function (data) {
-                                    if (subtype.preprocessData !== undefined) {
-                                        subtype.preprocessData.call(this, data);
+                                    if (subtype.preprocessCompareData !== undefined) {
+                                        subtype.preprocessCompareData.call(self, data);
                                     }
                                     this.firstYear = data.firstYear;
-                                    this.categories = categoriesFromGroupingBy(self.groupingBy, this);
+                                    this.categories = categoriesFromGroupingBy.call(this, self.groupingBy);
                                     if (self.chart.chart.xAxis[0].categories === true) {
                                         self.chart.chart.xAxis[0].categories = [];
                                     } else {
@@ -205,9 +205,9 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     this.categories.forEach(function (c) {
                                         self.chart.chart.xAxis[0].categories.push(c); });
 
-                                    function categoriesFromGroupingBy(groupingBy, dataSupplier) {
+                                    function categoriesFromGroupingBy(groupingBy) {
                                         if (groupingBy === 'year') {
-                                            return _.range(dataSupplier.firstYear, new Date().getFullYear() + 1).map(year => year.toString());
+                                            return _.range(this.firstYear, new Date().getFullYear() + 1).map(year => year.toString());
                                         } else if (groupingBy === 'quarter') {
                                             return ['Q1', 'Q2', 'Q3', 'Q4'];
                                         } else if (groupingBy === 'month') {
@@ -219,8 +219,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                         }
                                     }
                                 },
-                                preprocessDataItems: function (dataItems) {
-                                }
+                                preprocessDataItems: subtype.preprocessCompareDataItems
                             },
                             subtype.compareSeriesSuppliers(self)
                         ),
