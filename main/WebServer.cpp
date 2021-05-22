@@ -3,6 +3,7 @@
 #include "WebServerHelper.h"
 #include <iostream>
 #include <fstream>
+#include <boost/format.hpp>
 #include "mainworker.h"
 #include "Helper.h"
 #include "localtime_r.h"
@@ -16176,72 +16177,32 @@ namespace http {
 						sValue = sd[1];
 					}
 
-					int ii = 0;
+                    std::function<std::string (std::string, std::string)> tableColumn = [] (std::string table, std::string expr) {
+                        return (table.empty() ? "" : table + ".") + expr;
+                    };
+
+                    int ii = 0;
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
                         if (!sgroupby.empty()) {
-                            std::string query = "";
-                            query.append(" select");
-                            query.append("  strftime('%%Y',Date) as Year,");
-                            query.append("  sum(Difference) as Sum");
-                            if (sgroupby == "quarter") {
-                                query.append(",case");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
-                                query.append("                                                              else 'Q4'");
-                                query.append("   end as Quarter");
-                            } else if (sgroupby == "month") {
-                                query.append(",strftime('%%m',Date) as Month");
-                            }
-                            query.append(" from (");
-                            query.append(" 	select mc0.DeviceRowID, date(mc0.Date) as Date, case when (mc1.Counter1+mc1.Counter3) <= (mc0.Counter1+mc0.Counter3) then (mc0.Counter1+mc0.Counter3) - (mc1.Counter1+mc1.Counter3) else (mc0.Value1+mc0.Value3) end as Difference");
-                            query.append(" 	from %s mc0");
-                            query.append(" 	inner join %s mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %s mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (mcm.Counter1+mcm.Counter3) <> 0)");
-                            query.append(" 	where mc0.DeviceRowID = %" PRIu64 " and (mc0.Counter1+mc0.Counter3) <> 0 and (select min(Date) from %s where DeviceRowID = %" PRIu64 " and (Counter1+Counter3) <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %s where DeviceRowID = %" PRIu64 " and (Counter1+Counter3) <> 0)");
-                            query.append(" )");
-                            query.append(" group by strftime('%%Y',Date)");
-                            if (sgroupby == "quarter") {
-                                query.append(",case");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
-                                query.append("                                                              else 'Q4'");
-                                query.append("   end");
-                            } else if (sgroupby == "month") {
-                                query.append(",strftime('%%m',Date)");
-                            }
-                            query.append(" order by 1 asc");
-                            if (sgroupby == "quarter" || sgroupby == "month") {
-                                query.append(", 3 asc");
-                            }
-                            result = m_sql.safe_query(query.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), idx, dbasetable.c_str(), idx, dbasetable.c_str(), idx);
-                            if (!result.empty()) {
-                                int firstYearCounting = 0;
-                                for (const auto &sd : result) {
-                                    const int year = atoi(sd[0].c_str());
-                                    if (firstYearCounting == 0 || year < firstYearCounting) {
-                                        firstYearCounting = year;
-                                    }
-                                    root["result"][ii]["y"] = sd[0];
-
-                                    double fsum = std::stod(sd[1].c_str());
-                                    if (fsum != 0)
-                                        sprintf(szTmp, "%.3f", fsum / divider);
-                                    else
-                                        strcpy(szTmp, "0");
-                                    root["result"][ii]["s"] = szTmp;
-
-                                    if (sgroupby == "year") {
-                                        root["result"][ii]["c"] = sd[0];
-                                    } else {
-                                        root["result"][ii]["c"] = sd[2];
-                                    }
-                                    ii++;
-                                }
-                                root["firstYear"] = firstYearCounting;
-                            }
+                            std::function<std::string (std::string)> counterExpr = [] (std::string expr) {
+                                return boost::str(boost::format(expr) % "1" % "3");
+                            };
+                            std::function<std::string (std::string)> valueExpr = [] (std::string expr) {
+                                return boost::str(boost::format(expr) % "1" % "5");
+                            };
+                            GroupBy(
+                                root,
+                                dbasetable,
+                                idx,
+                                sgroupby,
+                                [counterExpr, tableColumn] (std::string table) { return counterExpr(tableColumn(table, "Counter%1%") + "+" + tableColumn(table, "Counter%2%")); },
+                                [valueExpr, tableColumn] (std::string table) { return valueExpr(tableColumn(table, "Value%1%") + "+" + tableColumn(table, "Value%2%")); },
+                                [divider] (double sum) {
+                                    return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (sum / divider));
+                                });
+                            ii = root["result"].size();
                         } else {
                             //Actual Year
                             result = m_sql.safe_query(
@@ -16792,92 +16753,29 @@ namespace http {
                             root["counter"] = "0";
                         }
                         if (!sgroupby.empty()) {
-                            std::string query = "";
-                            query.append(" select");
-                            query.append("  strftime('%%Y',Date) as Year,");
-                            query.append("  sum(Difference) as Sum");
-                            if (sgroupby == "quarter") {
-                                query.append(",case");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
-                                query.append("                                                              else 'Q4'");
-                                query.append("   end as Quarter");
-                            } else if (sgroupby == "month") {
-                                query.append(",strftime('%%m',Date) as Month");
-                            }
-                            query.append(" from (");
-                            query.append(" 	select mc0.DeviceRowID, date(mc0.Date) as Date, case when mc1.Counter <= mc0.Counter then mc0.Counter - mc1.Counter else mc0.Value end as Difference");
-                            query.append(" 	from %s mc0");
-                            query.append(" 	inner join %s mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %s mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and mcm.Counter <> 0)");
-                            query.append(" 	where mc0.DeviceRowID = %" PRIu64 " and mc0.Counter <> 0 and (select min(Date) from %s where DeviceRowID = %" PRIu64 " and Counter <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %s where DeviceRowID = %" PRIu64 " and Counter <> 0)");
-                            query.append(" )");
-                            query.append(" group by strftime('%%Y',Date)");
-                            if (sgroupby == "quarter") {
-                                query.append(",case");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
-                                query.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
-                                query.append("                                                              else 'Q4'");
-                                query.append("   end");
-                            } else if (sgroupby == "month") {
-                                query.append(",strftime('%%m',Date)");
-                            }
-                            query.append(" order by 1 asc");
-                            if (sgroupby == "quarter" || sgroupby == "month") {
-                                query.append(", 3 asc");
-                            }
-                            _log.Debug(DEBUG_WEBSERVER, "query:%s", query.c_str());
-                            result = m_sql.safe_query(query.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), idx, dbasetable.c_str(), idx, dbasetable.c_str(), idx);
-                            if (!result.empty()) {
-                                int firstYearCounting = 0;
-                                for (const auto &sd : result) {
-                                    const int year = atoi(sd[0].c_str());
-                                    if (firstYearCounting == 0 || year < firstYearCounting) {
-                                        firstYearCounting = year;
-                                    }
-                                    root["result"][ii]["y"] = sd[0];
-
-                                    double fsum = atof(sd[1].c_str());
+                            GroupBy(
+                                root,
+                                dbasetable,
+                                idx,
+                                sgroupby,
+                                [tableColumn] (std::string table) { return tableColumn(table, "Counter"); },
+                                [tableColumn] (std::string table) { return tableColumn(table, "Value"); },
+                                [metertype, AddjValue, divider] (double sum) {
                                     switch (metertype)
                                     {
                                         case MTYPE_ENERGY:
                                         case MTYPE_ENERGY_GENERATED:
-                                            if (fsum != 0)
-                                                sprintf(szTmp, "%.3f", AddjValue + fsum / divider);
-                                            else
-                                                strcpy(szTmp, "0");
-                                            break;
+                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (AddjValue + sum / divider));
                                         case MTYPE_GAS:
-                                            if (fsum != 0)
-                                                sprintf(szTmp, "%.2f", AddjValue + fsum / divider);
-                                            else
-                                                strcpy(szTmp, "0");
-                                            break;
+                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (AddjValue + sum / divider));
                                         case MTYPE_WATER:
-                                            if (fsum != 0)
-                                                sprintf(szTmp, "%.3f", AddjValue + fsum / divider);
-                                            else
-                                                strcpy(szTmp, "0");
-                                            break;
+                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (AddjValue + sum / divider));
                                         case MTYPE_COUNTER:
-                                            if (fsum != 0)
-                                                sprintf(szTmp, "%g", AddjValue + fsum / divider);
-                                            else
-                                                strcpy(szTmp, "0");
-                                            break;
+                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%g") % (AddjValue + sum / divider));
                                     }
-                                    root["result"][ii]["s"] = szTmp;
-
-                                    if (sgroupby == "year") {
-                                        root["result"][ii]["c"] = sd[0];
-                                    } else {
-                                        root["result"][ii]["c"] = sd[2];
-                                    }
-                                    ii++;
-                                }
-                                root["firstYear"] = firstYearCounting;
-                            }
+                                    return std::string("");
+                                });
+                            ii = root["result"].size();
                         } else {
                             //Actual Year
                             result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -18067,6 +17965,79 @@ namespace http {
             }
 
             return session;
+        }
+
+        void CWebServer::GroupBy(
+                Json::Value &root,
+                std::string dbasetable,
+                uint64_t idx,
+                std::string sgroupby,
+                std::function<std::string (std::string)> counterExpr,
+                std::function<std::string (std::string)> valueExpr,
+                std::function<std::string (double)> sumToResult
+        ) {
+            std::string query = boost::str(boost::format(std::string("")
+                + " select"
+                + "  strftime('%%%%Y',Date) as Year,"
+                + "  sum(Difference) as Sum"
+                + (sgroupby == "quarter" ? std::string("")
+                    + ",case"
+                    + "   when cast(strftime('%%%%m',Date) as integer) between 1 and 3 then 'Q1'"
+                    + "   when cast(strftime('%%%%m',Date) as integer) between 4 and 6 then 'Q2'"
+                    + "   when cast(strftime('%%%%m',Date) as integer) between 7 and 9 then 'Q3'"
+                    + "                                                                else 'Q4'"
+                    + "   end as Quarter" :
+                        sgroupby == "month" ?
+                            ",strftime('%%%%m',Date) as Month" :
+                                "")
+                + " from ("
+                + " 	select mc0.DeviceRowID, date(mc0.Date) as Date, case when (%4%) <= (%3%) then (%3%) - (%4%) else (%6%) end as Difference"
+                + " 	from %1% mc0"
+                + " 	inner join %1% mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %1% mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (%2%) <> 0)"
+                + " 	where mc0.DeviceRowID = %%" PRIu64 " and (%3%) <> 0 and (select min(Date) from %1% where DeviceRowID = %%" PRIu64 " and (%5%) <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %1% where DeviceRowID = %%" PRIu64 " and (%5%) <> 0)"
+                + " )"
+                + " group by strftime('%%%%Y',Date)"
+                + (sgroupby == "quarter" ? std::string("")
+                    + ",case"
+                    + "   when cast(strftime('%%%%m',Date) as integer) between 1 and 3 then 'Q1'"
+                    + "   when cast(strftime('%%%%m',Date) as integer) between 4 and 6 then 'Q2'"
+                    + "   when cast(strftime('%%%%m',Date) as integer) between 7 and 9 then 'Q3'"
+                    + "                                                                else 'Q4'"
+                    + "   end" :
+                    sgroupby == "month" ?
+                            ",strftime('%%%%m',Date)" :
+                                "")
+                + " order by 1 asc"
+                + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""))
+                    % dbasetable            // 1
+                    % counterExpr("mcm")    // 2
+                    % counterExpr("mc0")    // 3
+                    % counterExpr("mc1")    // 4
+                    % counterExpr("")       // 5
+                    % valueExpr("mc0"));    // 6
+            std::vector<std::vector<std::string>> result = m_sql.safe_query(query.c_str(), idx, idx, idx);
+            if (!result.empty()) {
+                int firstYearCounting = 0;
+                for (const auto &sd : result) {
+                    const int year = atoi(sd[0].c_str());
+                    if (firstYearCounting == 0 || year < firstYearCounting) {
+                        firstYearCounting = year;
+                    }
+                    int ii = root["result"].size();
+                    root["result"][ii]["y"] = sd[0];
+
+                    double fsum = atof(sd[1].c_str());
+                    root["result"][ii]["s"] = sumToResult(fsum);
+
+                    if (sgroupby == "year") {
+                        root["result"][ii]["c"] = sd[0];
+                    } else {
+                        root["result"][ii]["c"] = sd[2];
+                    }
+                    ii++;
+                }
+                root["firstYear"] = firstYearCounting;
+            }
         }
 
         void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString) {
