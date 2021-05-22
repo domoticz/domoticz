@@ -1,5 +1,5 @@
-define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'ChartZoomer', 'log/Chart', 'log/CounterLogParams'],
-    function (app, _, RefreshingChart, DataLoader, ChartLoader, ChartZoomer) {
+define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log/CounterLogParams'],
+    function (app, _, RefreshingChart, DataLoader, ChartLoader) {
 
         app.component('deviceCounterLog', {
             bindings: {
