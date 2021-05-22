@@ -452,16 +452,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     const c = e.ctrlKey;
                     const s = e.shiftKey;
                     const def = !c && !s;
-                    const low = c && !s;
-                    const high = !c && s;
                     const full = c && s;
-                    if (zoom === undefined && (def || low) || zoom === 'high' && low || zoom === 'full' && low) {
-                        return 'low';
-                    } else if (zoom === 'low' && (def || full) || zoom === undefined && full || zoom === 'high' && full) {
+                    if (zoom === undefined && (def || full)) {
                         return 'full';
-                    } else if (zoom === 'full' && (def || high) || zoom === undefined && high || zoom === 'low' && high) {
-                        return 'high';
-                    } else if (zoom === 'high' && (def || high) || zoom === 'low' && low || zoom === 'full' && full) {
+                    } else if (zoom === 'full' && (def || full)) {
                         return 'default';
                     }
                     return 'default';
