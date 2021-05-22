@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "../main/SQLHelper.h"
+#include "../main/Logger.h"
 
 class XiaomiDeviceSupport
 {

@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <algorithm>
 #include "XiaomiDeviceSupport.h"
 #include "../main/SQLHelper.h"
 #include "../main/Logger.h"
@@ -30,7 +31,8 @@ XiaomiDeviceSupportUserVariable::XiaomiDeviceSupportUserVariable(CSQLHelper &sql
 {
 	m_SIDs = NULL;
 	m_Model = model;
-	if (model == "relay.c2acn0")
+	_log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable, initializing for model: '%s'", model.c_str());
+	if (model == "relay.c2acn01")
 	{
 		m_UserVarName = "XiaomiDeviceSupportRelais";
 	}
@@ -42,19 +44,23 @@ XiaomiDeviceSupportUserVariable::XiaomiDeviceSupportUserVariable(CSQLHelper &sql
 	{
 		m_UserVarName = "XiaomiDeviceSupport";
 	}
+	_log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable, looking for '%s'", m_UserVarName.c_str());
 }
 
 std::string XiaomiDeviceSupportUserVariable::GetXiaomiDeviceModelByID(std::string sid)
 {
+	// Make sure SIDs are loaded
 	if (LoadSIDsOk())
 	{
+		// Check if requested sid is in loaded SIDs
 		if (std::find(m_SIDs->begin(), m_SIDs->end(), sid) != m_SIDs->end())
 		{
-			_log.Log(LOG_DEBUG_INT, "Found m_model for: '%s'", sid);
+			_log.Log(LOG_DEBUG_INT, "Found m_model for: '%s'", sid.c_str());
 			return m_Model;
 		}
 	}
-	return "";
+	// Return empty model string
+	return std::string("");
 }
 
 bool XiaomiDeviceSupportUserVariable::LoadSIDsOk()
@@ -64,12 +70,13 @@ bool XiaomiDeviceSupportUserVariable::LoadSIDsOk()
 		std::vector<std::vector<std::string>> result;
 		m_SIDs = new std::vector<std::string>();
 
-		// Check for relay devices to override
-		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == '%s')", m_UserVarName);
+		// Check for relay devices to override from a user variable
+		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == '%s')", m_UserVarName.c_str());
 		if (!result.empty())
 		{
 			std::stringstream ss(result[0][0]);
-
+			m_Log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable parsing: '%s'", result[0][0].c_str());
+			// Add all SIDs between comma's
 			while (ss.good())
 			{
 				std::string substr;

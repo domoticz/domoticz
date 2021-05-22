@@ -42,6 +42,10 @@ class XiaomiGateway : public CDomoticzHardwareBase
 	{
 		m_ListenPort9898 = false;
 	};
+	XiaomiDeviceSupport *GetDeviceSupport()
+	{
+		return m_DeviceSupport;
+	};
 
       private:
 	bool StartHardware() override;

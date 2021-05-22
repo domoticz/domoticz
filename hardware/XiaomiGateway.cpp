@@ -979,10 +979,12 @@ bool XiaomiGateway::StartHardware()
 	{
 		m_IncludeVoltage = true;
 	}
-	XiaomiDeviceSupportUserVariable deviceSupport = new XiaomiDeviceSupportUserVariable(m_sql, _log, "relay.c2acn01");
-	if (deviceSupport.LoadSIDs())
+	XiaomiDeviceSupportUserVariable *deviceSupport = new XiaomiDeviceSupportUserVariable(m_sql, _log, "relay.c2acn01");
+	if (deviceSupport->LoadSIDsOk())
 	{
+		delete m_DeviceSupport;
 		m_DeviceSupport = deviceSupport;
+		Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable loaded OK");
 	}
 
 	Log(LOG_STATUS, "XiaomiGateway (ID=%d): Delaying worker startup...", m_HwdID);
@@ -1229,7 +1231,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 		if (!TrueGateway)
 		{
-			_log.Log(LOG_ERROR, "XiaomiGateway: received data from unregisted gateway!");
+			_log.Log(LOG_ERROR, "XiaomiGateway: received data from unregistered gateway!");
 			start_receive();
 			return;
 		}
@@ -1253,12 +1255,12 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 		if (model.empty())
 		{
-			XiaomiDeviceSupportHardcoded devicesupport;
+			XiaomiDeviceSupport *devicesupport = m_XiaomiGateway->GetDeviceSupport();
 			_log.Log(LOG_DEBUG_INT, "XiaomiGateway: model empty for '%s', trying DeviceSupport.", sid.c_str());
-			model = devicesupport.GetXiaomiDeviceModelByID(sid);
+			model = devicesupport->GetXiaomiDeviceModelByID(sid);
 			if (model.empty())
 			{
-				_log.Log(LOG_STATUS, "XiaomiGateway: model empty for '%s', and no match found by DeviceSupport. Add your device to the list.", sid.c_str());
+				_log.Log(LOG_STATUS, "XiaomiGateway: model empty for '%s', and no match found by DeviceSupport. Add your device to the list in case it's supported.", sid.c_str());
 			}
 			_log.Log(LOG_DEBUG_INT, "XiaomiGateway: model lookup for '%s' found: '%s'", sid.c_str(), model.c_str());
 		}
