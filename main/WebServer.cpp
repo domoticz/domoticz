@@ -16216,7 +16216,6 @@ namespace http {
                             if (sgroupby == "quarter" || sgroupby == "month") {
                                 query.append(", 3 asc");
                             }
-                            _log.Debug(DEBUG_WEBSERVER, "query:%s", query.c_str());
                             result = m_sql.safe_query(query.c_str(), dbasetable.c_str(), dbasetable.c_str(), dbasetable.c_str(), idx, dbasetable.c_str(), idx, dbasetable.c_str(), idx);
                             if (!result.empty()) {
                                 int firstYearCounting = 0;
