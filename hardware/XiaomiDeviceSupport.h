@@ -19,12 +19,12 @@ class XiaomiDeviceSupport
 	 * Method to get 'model' corresponding to the ID of the device in case the Gateway API didn't provide it.
 	 *
 	 * @param sid is the id as a string of the device
-	 * @return model as string
+	 * @return model as string or an empty string if the ID string was not found
 	 */
 	virtual std::string GetXiaomiDeviceModelByID(std::string sid) = 0;
 };
 
-// XiaomiDeviceSupport hardcoded for testing purposes only
+/** XiaomiDeviceSupport hardcoded for testing purposes only */
 class XiaomiDeviceSupportHardcoded : public XiaomiDeviceSupport
 {
       public:
@@ -32,7 +32,7 @@ class XiaomiDeviceSupportHardcoded : public XiaomiDeviceSupport
 	std::string GetXiaomiDeviceModelByID(std::string sid);
 };
 
-// XiaomiDeviceSupport that uses a user variable to get the SID's to map to a model (device type)
+/** XiaomiDeviceSupport that uses a user variable from the database to get the SID's to map to a model (device type) */
 class XiaomiDeviceSupportUserVariable : public XiaomiDeviceSupport
 {
       private:
@@ -46,5 +46,8 @@ class XiaomiDeviceSupportUserVariable : public XiaomiDeviceSupport
 	XiaomiDeviceSupportUserVariable(CSQLHelper &sql, CLogger &log, std::string model);
 	~XiaomiDeviceSupportUserVariable(){};
 	std::string GetXiaomiDeviceModelByID(std::string sid);
+	/** Method to load SIDs from the database user variable
+	 * @return true if it succesfully loaded one or more ID strings
+	 */
 	bool LoadSIDsOk();
 };

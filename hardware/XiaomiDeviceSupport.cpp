@@ -59,7 +59,7 @@ std::string XiaomiDeviceSupportUserVariable::GetXiaomiDeviceModelByID(std::strin
 			return m_Model;
 		}
 	}
-	// Return empty model string
+	// Return empty model string in case the ID string was not found
 	return std::string("");
 }
 
@@ -75,24 +75,17 @@ bool XiaomiDeviceSupportUserVariable::LoadSIDsOk()
 		if (!result.empty())
 		{
 			std::stringstream ss(result[0][0]);
-			m_Log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable parsing: '%s'", result[0][0].c_str());
+			m_Log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable, parsing: '%s'", result[0][0].c_str());
 			// Add all SIDs between comma's
 			while (ss.good())
 			{
 				std::string substr;
 				getline(ss, substr, ',');
 				m_SIDs->push_back(substr);
-				m_Log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable found: '%s'", substr.c_str());
+				m_Log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable, found: '%s'", substr.c_str());
 			}
 		}
 	}
-	if (m_SIDs->empty())
-	{
-		m_Log.Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable SIDs empty");
-		return false;
-	}
-	else
-	{
-		return true;
-	}
+	// Return false in case no SIDs were found
+	return m_SIDs->empty() ? false : true;
 }

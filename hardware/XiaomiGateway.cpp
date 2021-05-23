@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "../hardware/hardwaretypes.h"
+#include "../main/stdafx.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
@@ -8,6 +7,7 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../main/json_helper.h"
+#include "hardwaretypes.h"
 #include "XiaomiGateway.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
@@ -163,7 +163,7 @@ typedef enum
 #define MODEL_ACT_LIGHT "light.aqcb02"
 #define NAME_ACT_LIGHT "Light bulb"
 
-// [NEW] Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM
+// Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM
 #define MODEL_ACT_RELAIS "relay.c2acn01"
 //#define NAME_ACT_RELAIS "Aqara Wireless Relay Controller"
 #define NAME_ACT_RELAIS_CHANNEL_0 "Aqara Wireless Relay Controller - Channel 1"
@@ -452,11 +452,6 @@ bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			message = R"({"cmd":"write","model":"curtain","sid":"158d00)" + sid + R"(","short_id":9844,"data":"{\"curtain_level\":\")" + std::to_string(level) +
 				  R"(\",\"key\":\"@gatewaykey\"}" })";
-		}
-		else
-		{
-			// TODO: remove this block
-			Log(LOG_STATUS, "Unknown unitcode: '%d'", xcmd->unitcode);
 		}
 	}
 	else if (packettype == pTypeColorSwitch)
