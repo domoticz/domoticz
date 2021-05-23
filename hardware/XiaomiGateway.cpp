@@ -163,7 +163,7 @@ typedef enum
 #define MODEL_ACT_LIGHT "light.aqcb02"
 #define NAME_ACT_LIGHT "Light bulb"
 
-// Aqara Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM
+// Xiaomi Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM
 #define MODEL_ACT_RELAIS "relay.c2acn01"
 //#define NAME_ACT_RELAIS "Aqara Wireless Relay Controller"
 #define NAME_ACT_RELAIS_CHANNEL_0 "Aqara Wireless Relay Controller - Channel 1"
