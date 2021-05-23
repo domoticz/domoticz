@@ -17,6 +17,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.ctrl = params.ctrl;
         self.range = params.range;
         self.chartName = params.chartName;
+        self.chartNameIsToggling = params.chartNameIsToggling;
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
         self.extendDataRequest = params.dataSupplier.extendDataRequest || function (dataRequest) { return dataRequest; };
@@ -35,6 +36,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         refreshChartData(function () {
             self.$scope.chartTitle = chartTitle();
+            self.$scope.chartTitleToggling = chartTitleIsToggling();
             initialZoom();
         });
         configureZoomingAndPanning();
@@ -618,6 +620,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     if (self.ctrl.toggleTitleState()) {
                         refreshChartData(function () {
                             self.$scope.chartTitle = chartTitle();
+                            self.$scope.chartTitleToggling = chartTitleIsToggling();
                         });
                     }
                 }
@@ -722,6 +725,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             : self.range === 'year' ? $.t('Last Year')
                                 : '';
             }
+        }
+
+        function chartTitleIsToggling() {
+            return typeof self.chartNameIsToggling === 'function' && self.chartNameIsToggling();
         }
 
         function yAxisToString(yAxis) {
