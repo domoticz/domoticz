@@ -1872,11 +1872,13 @@ namespace http {
 			if (myWebem->m_userpasswords.empty())
 			{
 				session.rights = 2;
+				_log.Debug(DEBUG_AUTH, "No userpasswords set, so set rights = 2!");
 			}
 
 			if (AreWeInLocalNetwork(session.remote_host, req))
 			{
 				session.rights = 2;
+				_log.Debug(DEBUG_AUTH, "Local network detected, so set rights = 2!");
 			}
 
 			//Check for valid JWT token
@@ -2226,8 +2228,11 @@ namespace http {
 
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
+			bool isAuthenticated = CheckAuthentication(session, req, rep);
+			_log.Debug(DEBUG_AUTH,"Request: page %d action %d upgrade %d authorization %d", isPage, isAction, isUpgradeRequest, isAuthenticated);
+
 			// Check user authentication on each page or action, if it exists.
-			if ((isPage || isAction || isUpgradeRequest) && !CheckAuthentication(session, req, rep))
+			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "Web: Did not find suitable Authorization!");
 				send_authorization_request(rep);
