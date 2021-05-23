@@ -33,10 +33,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.isZoomRightSticky = false;
         self.isZoomed = false;
 
-        self.$scope.chartTitle = chartTitle();
-
-        refreshChartData(initialZoom);
-        self.refreshTimestamp = new Date().getTime();
+        refreshChartData(function () {
+            self.$scope.chartTitle = chartTitle();
+            initialZoom();
+        });
         configureZoomingAndPanning();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
@@ -614,11 +614,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
             self.$element.find('.chart-title-container').on('click', function (e) {
                 debugMouseAction('Click on title', e);
-                if (self.ctrl.toggleTitleState !== undefined) {
-                    const newTitle = self.ctrl.toggleTitleState();
-                    if (newTitle) {
-                        self.$scope.chartTitle = newTitle;
-                        refreshChartData();
+                if (self.ctrl !== undefined && self.ctrl.toggleTitleState !== undefined) {
+                    if (self.ctrl.toggleTitleState()) {
+                        refreshChartData(function () {
+                            self.$scope.chartTitle = chartTitle();
+                        });
                     }
                 }
             });
@@ -704,8 +704,13 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function chartTitle() {
             if (self.chartName !== undefined) {
+                let chartName;
+                if (typeof self.chartName === 'function')
+                    chartName = self.chartName();
+                else
+                    chartName = self.chartName;
                 const periodInTitle = chartTitlePeriod();
-                return self.chartName + (periodInTitle ? ' ' + periodInTitle : '');
+                return chartName + (periodInTitle ? ' ' + periodInTitle : '');
             } else {
                 return chartTitlePeriod();
             }

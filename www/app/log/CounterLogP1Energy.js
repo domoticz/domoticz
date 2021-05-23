@@ -38,7 +38,25 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                 }
             },
             chartParamsCompareTemplate: function (ctrl) {
-                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1000));
+                ctrl.toggleTitleState = function () {
+                    const sensorareaPrevious = this.sensorarea;
+                    if (this.sensorarea === 'usage' && this.dataContainsDelivery) {
+                        this.sensorarea = 'delivery';
+                    } else /* if (this.sensorarea === 'delivery') */ {
+                        this.sensorarea = 'usage';
+                    }
+                    return this.sensorarea !== sensorareaPrevious;
+                };
+                return _.merge(
+                    counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1000)),
+                    {
+                        chartName: function () {
+                            return $.t('Comparing')
+                                + ' <span class="' + ((ctrl.sensorarea || 'usage') === 'usage' ? 'chart-title-active' : 'chart-title-inactive') + '">' + $.t('Usage') + '</span>'
+                                + (ctrl.dataContainsDelivery ? ' / <span class="' + (ctrl.sensorarea === 'delivery' ? 'chart-title-active' : 'chart-title-inactive') + '">' + $.t('Return') + '</span>' : '');
+                        }
+                    }
+                );
             },
             yAxesDay: function (deviceType) {
                 return [
@@ -105,16 +123,6 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
             preprocessCompareData: function (data) {
                 this.dataContainsDelivery = data.delivered ? true : false;
                 this.sensorarea = this.sensorarea || 'usage';
-                this.toggleTitleState = function () {
-                    if (this.sensorarea === 'usage' && this.dataContainsDelivery) {
-                        this.sensorarea = 'delivery';
-                        return $.t('Compare') + ' ' + $.t('Return');
-                    } else if (this.sensorarea === 'delivery') {
-                        this.sensorarea = 'usage';
-                        return $.t('Compare') + ' ' + $.t('Usage');
-                    }
-                    return null;
-                };
             },
             extendDataRequestCompare: function (dataRequest) {
                 dataRequest['sensorarea'] = this.sensorarea || 'usage';
