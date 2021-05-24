@@ -31,6 +31,7 @@ namespace http {
 			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
+			void LoadUsers();
 			void ClearUserPasswords();
 			// called from OTGWBase()
 			void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,

@@ -8272,17 +8272,18 @@ namespace http {
 			// Invalid sessions of WebUser when the username or password has been changed
 			if (bHaveAdminUserPasswordChange)
 			{
-				RemoveUsersSessions(sOldWebLogin, session);
+				if (!sOldWebLogin.empty())
+					RemoveUsersSessions(sOldWebLogin, session);
 				m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
 				m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
 			}
+			m_webservers.LoadUsers();
 
 			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
-			LoadUsers();
 			m_pWebEm->ClearLocalNetworks();
 			std::vector<std::string> strarray;
 			StringSplit(WebLocalNetworks, ";", strarray);
