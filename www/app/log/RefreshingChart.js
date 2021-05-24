@@ -39,6 +39,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.chartTitleToggling = chartTitleIsToggling();
             initialZoom();
         });
+        self.refreshTimestamp = new Date().getTime();
         configureZoomingAndPanning();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {

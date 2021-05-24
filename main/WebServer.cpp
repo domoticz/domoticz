@@ -16218,7 +16218,8 @@ namespace http {
                                         return std::string("0");
                                     }
                                     return StdFormat("%.3f", sum / divider);
-                                });
+                                }
+                            );
                             ii = root["result"].size();
                         } else {
                             //Actual Year
@@ -16916,9 +16917,15 @@ namespace http {
                     if (dType == pTypeP1Power)
                     {
                             result = m_sql.safe_query(
-                                    "SELECT MIN(Value1) as levering_laag_min, MAX(Value1) as levering_laag_max, MIN(Value2) as teruglevering_laag_min,"
-                                    " MAX(Value2) as teruglevering_laag_max, MIN(Value5) as levering_normaal_min, MAX(Value5) as levering_normaal_max,"
-                                    " MIN(Value6) as teruglevering_normaal_min, MAX(Value6) as teruglevering_normaal_max"
+                                    "SELECT "
+                                        " MIN(Value1) as levering_laag_min,"
+                                        " MAX(Value1) as levering_laag_max,"
+                                        " MIN(Value2) as teruglevering_laag_min,"
+                                        " MAX(Value2) as teruglevering_laag_max,"
+                                        " MIN(Value5) as levering_normaal_min,"
+                                        " MAX(Value5) as levering_normaal_max,"
+                                        " MIN(Value6) as teruglevering_normaal_min,"
+                                        " MAX(Value6) as teruglevering_normaal_max"
                                     " FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 ""
                                                                                   " AND Date>='%q')",
                                     idx, szDateEnd);
@@ -16943,7 +16950,7 @@ namespace http {
                                 total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
                                 total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
 
-                                if ((total_real_deliv_1 != 0) || (total_real_deliv_2 != 0))
+                                if (total_max_deliv_1 != 0 || total_max_deliv_2 != 0)
                                     bHaveDeliverd = true;
 
                                 if (!sgroupby.empty()) {
