@@ -1,4 +1,4 @@
-#include "../main/stdafx.h"
+#include "stdafx.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
