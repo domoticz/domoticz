@@ -3,7 +3,7 @@
 #include "WebServerHelper.h"
 #include <iostream>
 #include <fstream>
-#include <boost/format.hpp>
+#include <stdarg.h>
 #include "mainworker.h"
 #include "Helper.h"
 #include "localtime_r.h"
@@ -16191,12 +16191,12 @@ namespace http {
 					if (dType == pTypeP1Power)
 					{
                         if (!sgroupby.empty()) {
-                            std::function<std::string (std::string, std::string, std::string, std::string, std::string)> sensorareaExpr = [sensorarea] (std::string expr, std::string usageNormal, std::string usageLow, std::string deliveryNormal, std::string deliveryLow) {
+                            std::function<std::string (std::string, std::string, std::string, std::string, std::string)> sensorareaExpr = [sensorarea, this] (std::string expr, std::string usageLow, std::string usageNormal, std::string deliveryLow, std::string deliveryNormal) {
                                 if (sensorarea == "usage") {
-                                    return boost::str(boost::format(expr) % usageNormal % usageLow);
+                                    return ReplacePlaceholders(expr, 2, usageLow, usageNormal);
                                 }
                                 if (sensorarea == "delivery") {
-                                    return boost::str(boost::format(expr) % deliveryNormal % deliveryLow);
+                                    return ReplacePlaceholders(expr, 2, deliveryLow, deliveryNormal);
                                 }
                                 return expr;
                             };
@@ -16213,8 +16213,11 @@ namespace http {
                                 sgroupby,
                                 [counterExpr, tableColumn] (std::string table) { return counterExpr(tableColumn(table, "Counter%1%") + "+" + tableColumn(table, "Counter%2%")); },
                                 [valueExpr, tableColumn] (std::string table) { return valueExpr(tableColumn(table, "Value%1%") + "+" + tableColumn(table, "Value%2%")); },
-                                [divider] (double sum) {
-                                    return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (sum / divider));
+                                [divider, this] (double sum) {
+                                    if (sum == 0) {
+                                        return std::string("0");
+                                    }
+                                    return StdFormat("%.3f", sum / divider);
                                 });
                             ii = root["result"].size();
                         } else {
@@ -16774,18 +16777,21 @@ namespace http {
                                 sgroupby,
                                 [tableColumn] (std::string table) { return tableColumn(table, "Counter"); },
                                 [tableColumn] (std::string table) { return tableColumn(table, "Value"); },
-                                [metertype, AddjValue, divider] (double sum) {
+                                [metertype, AddjValue, divider, this] (double sum) {
+                                    if (sum == 0) {
+                                        return std::string("0");
+                                    }
                                     switch (metertype)
                                     {
                                         case MTYPE_ENERGY:
                                         case MTYPE_ENERGY_GENERATED:
-                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (AddjValue + sum / divider));
+                                            return StdFormat("%.3f", AddjValue + sum / divider);
                                         case MTYPE_GAS:
-                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (AddjValue + sum / divider));
+                                            return StdFormat("%.2f", AddjValue + sum / divider);
                                         case MTYPE_WATER:
-                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%.3f") % (AddjValue + sum / divider));
+                                            return StdFormat("%.3f", AddjValue + sum / divider);
                                         case MTYPE_COUNTER:
-                                            return sum == 0 ? std::string("0") : boost::str(boost::format("%g") % (AddjValue + sum / divider));
+                                            return StdFormat("%g", AddjValue + sum / divider);
                                     }
                                     return std::string("");
                                 });
@@ -17981,6 +17987,10 @@ namespace http {
             return session;
         }
 
+        /*
+         * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
+         * for each combination year/category.
+         */
         void CWebServer::GroupBy(
                 Json::Value &root,
                 std::string dbasetable,
@@ -17990,45 +18000,61 @@ namespace http {
                 std::function<std::string (std::string)> valueExpr,
                 std::function<std::string (double)> sumToResult
         ) {
-            std::string query = boost::str(boost::format(std::string("")
+            /*
+             * This query selects all records (in mc0) that belong to DeviceRowID, each with the record before it (in mc1), and calculates for each record
+             * the "usage" by subtracting the previous counter from its counter.
+             * - It does not take into account records that have a 0-valued counter.
+             * - When the previous counter is greater than its counter, assumed is that a meter change has taken place; the previous counter is ignored
+             *   and the value of the record is taken as the "usage" (hoping for the best as the value is not always reliable.)
+             * - The reason why not simply the record values are summed, but instead the differences between all the individual counters are summed, is that
+             *   records for some days are not recorded or sometimes disappear, hence values would be missing and that would result in an incomplete total.
+             *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
+             */
+            std::string query = ReplacePlaceholders(
+                std::string("")
                 + " select"
-                + "  strftime('%%%%Y',Date) as Year,"
+                + "  strftime('%%Y',Date) as Year,"
                 + "  sum(Difference) as Sum"
                 + (sgroupby == "quarter" ? std::string("")
                     + ",case"
-                    + "   when cast(strftime('%%%%m',Date) as integer) between 1 and 3 then 'Q1'"
-                    + "   when cast(strftime('%%%%m',Date) as integer) between 4 and 6 then 'Q2'"
-                    + "   when cast(strftime('%%%%m',Date) as integer) between 7 and 9 then 'Q3'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'"
                     + "                                                                else 'Q4'"
                     + "   end as Quarter" :
                         sgroupby == "month" ?
-                            ",strftime('%%%%m',Date) as Month" :
+                            ",strftime('%%m',Date) as Month" :
                                 "")
                 + " from ("
-                + " 	select mc0.DeviceRowID, date(mc0.Date) as Date, case when (%4%) <= (%3%) then (%3%) - (%4%) else (%6%) end as Difference"
+                + " 	select "
+                          "mc0.DeviceRowID,"
+                          "date(mc0.Date) as Date,"
+                          "case when (%4%) <= (%3%) then (%3%) - (%4%) else (%6%) end as Difference"
                 + " 	from %1% mc0"
                 + " 	inner join %1% mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %1% mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (%2%) <> 0)"
-                + " 	where mc0.DeviceRowID = %%" PRIu64 " and (%3%) <> 0 and (select min(Date) from %1% where DeviceRowID = %%" PRIu64 " and (%5%) <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %1% where DeviceRowID = %%" PRIu64 " and (%5%) <> 0)"
+                + " 	where mc0.DeviceRowID = %" PRIu64 " and (%3%) <> 0 and (select min(Date) from %1% where DeviceRowID = %" PRIu64 " and (%5%) <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %1% where DeviceRowID = %" PRIu64 " and (%5%) <> 0)"
                 + " )"
-                + " group by strftime('%%%%Y',Date)"
+                + " group by strftime('%%Y',Date)"
                 + (sgroupby == "quarter" ? std::string("")
                     + ",case"
-                    + "   when cast(strftime('%%%%m',Date) as integer) between 1 and 3 then 'Q1'"
-                    + "   when cast(strftime('%%%%m',Date) as integer) between 4 and 6 then 'Q2'"
-                    + "   when cast(strftime('%%%%m',Date) as integer) between 7 and 9 then 'Q3'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'"
                     + "                                                                else 'Q4'"
                     + "   end" :
                     sgroupby == "month" ?
-                            ",strftime('%%%%m',Date)" :
+                            ",strftime('%%m',Date)" :
                                 "")
                 + " order by 1 asc"
-                + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""))
-                    % dbasetable            // 1
-                    % counterExpr("mcm")    // 2
-                    % counterExpr("mc0")    // 3
-                    % counterExpr("mc1")    // 4
-                    % counterExpr("")       // 5
-                    % valueExpr("mc0"));    // 6
+                + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""),
+                6,
+                dbasetable,            // 1
+                counterExpr("mcm"),    // 2
+                counterExpr("mc0"),    // 3
+                counterExpr("mc1"),    // 4
+                counterExpr("") ,      // 5
+                valueExpr("mc0")       // 6
+            );
             std::vector<std::vector<std::string>> result = m_sql.safe_query(query.c_str(), idx, idx, idx);
             if (!result.empty()) {
                 int firstYearCounting = 0;
@@ -18054,6 +18080,10 @@ namespace http {
             }
         }
 
+        /*
+         * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
+         * respective category with todayValue.
+         */
         void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString) {
             _log.Debug(DEBUG_WEBSERVER, ("todayValue:" + formatString).c_str(), todayValue);
             std::string todayYear = today.substr(0, 4);
@@ -18100,6 +18130,39 @@ namespace http {
             sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
             root["result"][todayResultIndex]["s"] = szTmp;
         }
+
+        /*
+         * Replace max. count placeholders (%1%, %2%, %3%, ...) with the respective argument. All arguments must be of type std:string.
+         */
+        std::string CWebServer::ReplacePlaceholders(std::string expr, int count, ...) {
+            va_list args;
+            va_start(args, count);
+            for (int i = 1; i <= count; i++) {
+                char placeholder[5];
+                sprintf(placeholder, "%%%d%%", i);
+                std::string argument = va_arg(args, std::string);
+                std::string::size_type n = 0;
+                while ((n = expr.find(placeholder, n)) != std::string::npos) {
+                    expr.replace(n, 3, argument);
+                    n+=argument.length();
+                }
+            }
+            va_end(args);
+            return expr;
+        };
+
+        /*
+         * Uses sprintf(buffer, format, ...) and returns the buffer as a std::string.
+         * The buffer is sized at 1024 bytes.
+         */
+        std::string CWebServer::StdFormat(char* format, ...) {
+            char buffer1024[1024];
+            va_list args;
+            va_start(args, format);
+            vsprintf(buffer1024, format, args);
+            va_end(args);
+            return std::string(buffer1024);
+        };
 
         /**
          * Save user session.
