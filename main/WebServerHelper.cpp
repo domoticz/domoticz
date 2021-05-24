@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
 #include "../main/Logger.h"
-#include "../main/SQLHelper.h"
 
 namespace http {
 	namespace server {
@@ -134,6 +133,14 @@ namespace http {
 			proxymanager.SetWebRoot(webRoot);
 		}
 
+		void CWebServerHelper::LoadUsers()
+		{
+			for (auto &it : serverCollection)
+			{
+				it->LoadUsers();
+			}
+		}
+		
 		void CWebServerHelper::ClearUserPasswords()
 		{
 			for (auto &it : serverCollection)
