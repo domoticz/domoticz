@@ -16217,7 +16217,7 @@ namespace http {
                                     if (sum == 0) {
                                         return std::string("0");
                                     }
-                                    return StdFormat("%.3f", sum / divider);
+                                    return std_format("%.3f", sum / divider);
                                 }
                             );
                             ii = root["result"].size();
@@ -16786,13 +16786,13 @@ namespace http {
                                     {
                                         case MTYPE_ENERGY:
                                         case MTYPE_ENERGY_GENERATED:
-                                            return StdFormat("%.3f", AddjValue + sum / divider);
+                                            return std_format("%.3f", AddjValue + sum / divider);
                                         case MTYPE_GAS:
-                                            return StdFormat("%.2f", AddjValue + sum / divider);
+                                            return std_format("%.2f", AddjValue + sum / divider);
                                         case MTYPE_WATER:
-                                            return StdFormat("%.3f", AddjValue + sum / divider);
+                                            return std_format("%.3f", AddjValue + sum / divider);
                                         case MTYPE_COUNTER:
-                                            return StdFormat("%g", AddjValue + sum / divider);
+                                            return std_format("%g", AddjValue + sum / divider);
                                     }
                                     return std::string("");
                                 });
@@ -18156,19 +18156,6 @@ namespace http {
             }
             va_end(args);
             return expr;
-        };
-
-        /*
-         * Uses sprintf(buffer, format, ...) and returns the buffer as a std::string.
-         * The buffer is sized at 1024 bytes.
-         */
-        std::string CWebServer::StdFormat(char* format, ...) {
-            char buffer1024[1024];
-            va_list args;
-            va_start(args, format);
-            vsprintf(buffer1024, format, args);
-            va_end(args);
-            return std::string(buffer1024);
         };
 
         /**
