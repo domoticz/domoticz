@@ -323,6 +323,7 @@ hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/XiaomiGateway.cpp
+hardware/XiaomiDeviceSupport.cpp
 hardware/Yeelight.cpp
 hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp

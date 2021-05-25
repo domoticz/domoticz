@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
 #include "../main/Logger.h"
+#include "../main/SQLHelper.h"
 
 namespace http {
 	namespace server {
@@ -146,6 +147,31 @@ namespace http {
 			for (auto &it : serverCollection)
 			{
 				it->ClearUserPasswords();
+			}
+		}
+
+		void CWebServerHelper::ReloadLocalNetworksAndProxyIPs()
+		{
+			std::string WebLocalNetworks, WebRemoteProxyIPs;
+			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			m_sql.GetPreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
+
+			for (auto &it : serverCollection)
+			{
+				it->m_pWebEm->ClearLocalNetworks();
+
+				std::vector<std::string> strarray;
+				StringSplit(WebLocalNetworks, ";", strarray);
+				for (const auto &str : strarray)
+					it->m_pWebEm->AddLocalNetworks(str);
+				// add local hostname
+				it->m_pWebEm->AddLocalNetworks("");
+
+				it->m_pWebEm->ClearRemoteProxyIPs();
+				strarray.clear();
+				StringSplit(WebRemoteProxyIPs, ";", strarray);
+				for (const auto &str : strarray)
+					it->m_pWebEm->AddRemoteProxyIPs(str);
 			}
 		}
 

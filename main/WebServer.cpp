@@ -289,6 +289,7 @@ namespace http {
 			if (!bIgnoreUsernamePassword)
 			{
 				LoadUsers();
+
 				std::string WebLocalNetworks;
 				int nValue;
 				if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
@@ -8287,19 +8288,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
-			m_pWebEm->ClearLocalNetworks();
-			std::vector<std::string> strarray;
-			StringSplit(WebLocalNetworks, ";", strarray);
-			for (const auto &str : strarray)
-				m_pWebEm->AddLocalNetworks(str);
-			//add local hostname
-			m_pWebEm->AddLocalNetworks("");
-
-			m_pWebEm->ClearRemoteProxyIPs();
-			strarray.clear();
-			StringSplit(WebRemoteProxyIPs, ";", strarray);
-			for (const auto &str : strarray)
-				m_pWebEm->AddRemoteProxyIPs(str);
+			m_webservers.ReloadLocalNetworksAndProxyIPs();
 
 			if (session.username.empty())
 			{

@@ -809,6 +809,7 @@
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
     <ClInclude Include="..\hardware\XiaomiGateway.h" />
+    <ClInclude Include="..\hardware\XiaomiDeviceSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\hardware\1Wire.cpp">
@@ -1118,6 +1119,7 @@
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
     <ClCompile Include="..\hardware\XiaomiGateway.cpp" />
+    <ClCompile Include="..\hardware\XiaomiDeviceSupport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc" />
