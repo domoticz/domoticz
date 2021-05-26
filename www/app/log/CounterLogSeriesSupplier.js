@@ -99,7 +99,7 @@ define(['app', 'log/Chart'], function (app) {
                                 template: {
                                     name: year.toString(),
                                     color: chart.yearColor(year),
-                                    legendIndex: year - data.firstYear + 1
+                                    index: year - data.firstYear + 1
                                     /*
                                     ,stack: ctrl.groupingBy === 'year' ? 0 : 1
                                      */
