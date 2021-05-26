@@ -99,8 +99,6 @@ private:
 	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);
     void GroupBy(Json::Value &root, std::string dbasetable, uint64_t idx, std::string sgroupby, std::function<std::string (std::string)> counterExpr, std::function<std::string (std::string)> valueExpr, std::function<std::string (double)> sumToResult);
     void AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString);
-    std::string ReplacePlaceholders(std::string expr, int count, ...);
-    std::string StdFormat(char* format, ...);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 

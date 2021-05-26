@@ -16180,28 +16180,28 @@ namespace http {
 					if (dType == pTypeP1Power)
 					{
                         if (!sgroupby.empty()) {
-                            std::function<std::string (std::string, std::string, std::string, std::string, std::string)> sensorareaExpr = [sensorarea, this] (std::string expr, std::string usageLow, std::string usageNormal, std::string deliveryLow, std::string deliveryNormal) {
+                            std::function<std::string (const char*, char*, char*, char*, char*)> sensorareaExpr = [sensorarea, this] (const char* expr, char* usageLow, char* usageNormal, char* deliveryLow, char* deliveryNormal) {
                                 if (sensorarea == "usage") {
-                                    return ReplacePlaceholders(expr, 2, usageLow, usageNormal);
+                                    return std_format(expr, usageLow, usageNormal);
                                 }
                                 if (sensorarea == "delivery") {
-                                    return ReplacePlaceholders(expr, 2, deliveryLow, deliveryNormal);
+                                    return std_format(expr, deliveryLow, deliveryNormal);
                                 }
-                                return expr;
+                                return std::string(expr);
                             };
                             std::function<std::string (std::string)> counterExpr = [sensorareaExpr] (std::string expr) {
-                                return sensorareaExpr(expr, "1", "3", "2", "4");
+                                return sensorareaExpr(expr.c_str(), "1", "3", "2", "4");
                             };
                             std::function<std::string (std::string)> valueExpr = [sensorareaExpr] (std::string expr) {
-                                return sensorareaExpr(expr, "1", "5", "2", "6");
+                                return sensorareaExpr(expr.c_str(), "1", "5", "2", "6");
                             };
                             GroupBy(
                                 root,
                                 dbasetable,
                                 idx,
                                 sgroupby,
-                                [counterExpr, tableColumn] (std::string table) { return counterExpr(tableColumn(table, "Counter%1%") + "+" + tableColumn(table, "Counter%2%")); },
-                                [valueExpr, tableColumn] (std::string table) { return valueExpr(tableColumn(table, "Value%1%") + "+" + tableColumn(table, "Value%2%")); },
+                                [counterExpr, tableColumn] (std::string table) { return counterExpr(tableColumn(table, "Counter%s") + "+" + tableColumn(table, "Counter%s")); },
+                                [valueExpr, tableColumn] (std::string table) { return valueExpr(tableColumn(table, "Value%s") + "+" + tableColumn(table, "Value%s")); },
                                 [divider, this] (double sum) {
                                     if (sum == 0) {
                                         return std::string("0");
@@ -17992,8 +17992,8 @@ namespace http {
                 std::string dbasetable,
                 uint64_t idx,
                 std::string sgroupby,
-                std::function<std::string (std::string)> counterExpr,
-                std::function<std::string (std::string)> valueExpr,
+                std::function<std::string (std::string)> counter,
+                std::function<std::string (std::string)> value,
                 std::function<std::string (double)> sumToResult
         ) {
             /*
@@ -18006,8 +18006,8 @@ namespace http {
              *   records for some days are not recorded or sometimes disappear, hence values would be missing and that would result in an incomplete total.
              *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
              */
-            std::string query = ReplacePlaceholders(
-                std::string("")
+            std::vector<std::vector<std::string>> result = m_sql.safe_query(
+                (std::string("")
                 + " select"
                 + "  strftime('%%Y',Date) as Year,"
                 + "  sum(Difference) as Sum"
@@ -18016,19 +18016,24 @@ namespace http {
                     + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'"
                     + "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'"
                     + "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'"
-                    + "                                                                else 'Q4'"
+                    + "                                                              else 'Q4'"
                     + "   end as Quarter" :
-                        sgroupby == "month" ?
-                            ",strftime('%%m',Date) as Month" :
-                                "")
+                    sgroupby == "month" ?
+                        ",strftime('%%m',Date) as Month" :
+                            "")
                 + " from ("
-                + " 	select "
-                          "mc0.DeviceRowID,"
-                          "date(mc0.Date) as Date,"
-                          "case when (%4%) <= (%3%) then (%3%) - (%4%) else (%6%) end as Difference"
-                + " 	from %1% mc0"
-                + " 	inner join %1% mc1 on mc1.DeviceRowID = mc0.DeviceRowID and mc1.Date = (select max(mcm.Date) from %1% mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (%2%) <> 0)"
-                + " 	where mc0.DeviceRowID = %" PRIu64 " and (%3%) <> 0 and (select min(Date) from %1% where DeviceRowID = %" PRIu64 " and (%5%) <> 0) <= mc1.Date and mc0.Date <= (select max(Date) from %1% where DeviceRowID = %" PRIu64 " and (%5%) <> 0)"
+                + " 	select"
+                + "         mc0.DeviceRowID,"
+                + "         date(mc0.Date) as Date,"
+                + "         case when ("+counter("mc1")+") <= ("+counter("mc0")+") then ("+counter("mc0")+") - ("+counter("mc1")+") else ("+value("mc0")+") end as Difference"
+                + " 	from "+dbasetable+" mc0"
+                + " 	inner join "+dbasetable+" mc1 on mc1.DeviceRowID = mc0.DeviceRowID"
+                + "         and mc1.Date = (select max(mcm.Date) from "+dbasetable+" mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and ("+counter("mcm")+") <> 0)"
+                + " 	where"
+                + "         mc0.DeviceRowID = %" PRIu64 ""
+                + "         and ("+counter("mc0")+") <> 0"
+                + "         and (select min(Date) from "+dbasetable+" where DeviceRowID = %" PRIu64 " and ("+counter("")+") <> 0) <= mc1.Date"
+                + "         and mc0.Date <= (select max(Date) from "+dbasetable+" where DeviceRowID = %" PRIu64 " and ("+counter("")+") <> 0)"
                 + " )"
                 + " group by strftime('%%Y',Date)"
                 + (sgroupby == "quarter" ? std::string("")
@@ -18036,22 +18041,17 @@ namespace http {
                     + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'"
                     + "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'"
                     + "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'"
-                    + "                                                                else 'Q4'"
+                    + "                                                              else 'Q4'"
                     + "   end" :
                     sgroupby == "month" ?
-                            ",strftime('%%m',Date)" :
-                                "")
+                        ",strftime('%%m',Date)" :
+                            "")
                 + " order by 1 asc"
-                + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""),
-                6,
-                dbasetable,            // 1
-                counterExpr("mcm"),    // 2
-                counterExpr("mc0"),    // 3
-                counterExpr("mc1"),    // 4
-                counterExpr("") ,      // 5
-                valueExpr("mc0")       // 6
+                + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : "")).c_str(),
+                idx,
+                idx,
+                idx
             );
-            std::vector<std::vector<std::string>> result = m_sql.safe_query(query.c_str(), idx, idx, idx);
             if (!result.empty()) {
                 int firstYearCounting = 0;
                 for (const auto &sd : result) {
@@ -18059,18 +18059,11 @@ namespace http {
                     if (firstYearCounting == 0 || year < firstYearCounting) {
                         firstYearCounting = year;
                     }
-                    int ii = root["result"].size();
-                    root["result"][ii]["y"] = sd[0];
-
                     double fsum = atof(sd[1].c_str());
+                    const int ii = root["result"].size();
+                    root["result"][ii]["y"] = sd[0];
+                    root["result"][ii]["c"] = sgroupby == "year" ? sd[0] : sd[2];
                     root["result"][ii]["s"] = sumToResult(fsum);
-
-                    if (sgroupby == "year") {
-                        root["result"][ii]["c"] = sd[0];
-                    } else {
-                        root["result"][ii]["c"] = sd[2];
-                    }
-                    ii++;
                 }
                 root["firstYear"] = firstYearCounting;
             }
@@ -18126,26 +18119,6 @@ namespace http {
             sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
             root["result"][todayResultIndex]["s"] = szTmp;
         }
-
-        /*
-         * Replace max. count placeholders (%1%, %2%, %3%, ...) with the respective argument. All arguments must be of type std:string.
-         */
-        std::string CWebServer::ReplacePlaceholders(std::string expr, int count, ...) {
-            va_list args;
-            va_start(args, count);
-            for (int i = 1; i <= count; i++) {
-                char placeholder[5];
-                sprintf(placeholder, "%%%d%%", i);
-                std::string argument = va_arg(args, std::string);
-                std::string::size_type n = 0;
-                while ((n = expr.find(placeholder, n)) != std::string::npos) {
-                    expr.replace(n, 3, argument);
-                    n+=argument.length();
-                }
-            }
-            va_end(args);
-            return expr;
-        };
 
         /**
          * Save user session.
