@@ -1,6 +1,6 @@
-define(['app'], function (app) {
+define(['app', 'log/Chart'], function (app) {
 
-    app.factory('counterLogSeriesSupplier', function () {
+    app.factory('counterLogSeriesSupplier', function (chart) {
         return {
             dataItemsKeysPredicatedSeriesSupplier: dataItemsKeysPredicatedSeriesSupplier,
             summingSeriesSupplier: summingSeriesSupplier,
@@ -98,7 +98,8 @@ define(['app'], function (app) {
                                 year: year,
                                 template: {
                                     name: year.toString(),
-                                    color: yearColor(year)
+                                    color: chart.yearColor(year),
+                                    legendIndex: year - data.firstYear + 1
                                     /*
                                     ,stack: ctrl.groupingBy === 'year' ? 0 : 1
                                      */
@@ -141,94 +142,6 @@ define(['app'], function (app) {
                                     return [this.valueFromDataItem(dataItem["s"])];
                                 }
                             });
-
-                            function yearColor(year) {
-                                const s1 = .6;
-                                const s2 = .8;
-                                const s3 = 1;
-                                const v1 = 1;
-                                let h = 0;
-                                const h1 = 20;
-                                const yearColorsPerDecade = {
-                                    '2010': toColor(hsv2rgb(hl(h =h1*0,s1,v1))),
-                                    '2011': toColor(hsv2rgb(hl(h+=h1*1,s1,v1))),
-                                    '2012': toColor(hsv2rgb(hl(h+=h1*1,s1,v1))),
-                                    '2013': toColor(hsv2rgb(hl(h+=h1*1,s1,v1))),
-                                    '2014': toColor(hsv2rgb(hl(h+=h1*3,s1,v1))),
-                                    '2015': toColor(hsv2rgb(hl(h+=h1*3,s1,v1))),
-                                    '2016': toColor(hsv2rgb(hl(h+=h1*1,s1,v1))),
-                                    '2017': toColor(hsv2rgb(hl(h+=h1*2,s1,v1))),
-                                    '2018': toColor(hsv2rgb(hl(h+=h1*2,s1,v1))),
-                                    '2019': toColor(hsv2rgb(hl(h+=h1*3,s1,v1))),
-                                    '2020': toColor(hsv2rgb(hl(h =h1*0,s2,v1))),
-                                    '2021': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2022': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2023': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2024': toColor(hsv2rgb(hl(h+=h1*3,s2,v1))),
-                                    '2025': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2026': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2027': toColor(hsv2rgb(hl(h+=h1*2,s2,v1))),
-                                    '2028': toColor(hsv2rgb(hl(h+=h1*2,s2,v1))),
-                                    '2029': toColor(hsv2rgb(hl(h+=h1*3,s2,v1))),
-                                    '2030': toColor(hsv2rgb(hl(h =h1*0,s3,v1))),
-                                    '2031': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2032': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2033': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2034': toColor(hsv2rgb(hl(h+=h1*3,s3,v1))),
-                                    '2035': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2036': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2037': toColor(hsv2rgb(hl(h+=h1*2,s3,v1))),
-                                    '2038': toColor(hsv2rgb(hl(h+=h1*2,s3,v1))),
-                                    '2039': toColor(hsv2rgb(hl(h+=h1*3,s3,v1))),
-                                }
-                                const yearColorsPantone = {
-                                    '2010': toColor(hsv2rgb(hl(174,.61,.70))),
-                                    '2011': toColor(hsv2rgb(hl(345,.63,.85))),
-                                    '2012': toColor(hsv2rgb(hl(  9,.83,.86))),
-                                    '2013': toColor(hsv2rgb(hl(166,1,   .58))),
-                                    '2014': toColor(hsv2rgb(hl(310,.44,.69))),
-                                    '2015': toColor(hsv2rgb(hl(  0,.45,.58))),
-                                    '2016': toColor(hsv2rgb(hl(  1,.18,.96))),
-                                    '2017': toColor(hsv2rgb(hl( 83,.57,.69))),
-                                    '2018': toColor(hsv2rgb(hl(258,.46,.54))),
-                                    '2019': toColor(hsv2rgb(hl(  5,.61,1  ))),
-                                    '2020': toColor(hsv2rgb(hl(207,.88,.50))),
-                                    '2021': toColor(hsv2rgb(hl( 52,.68,.96))),
-                                    '2022': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2023': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2024': toColor(hsv2rgb(hl(h+=h1*3,s2,v1))),
-                                    '2025': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2026': toColor(hsv2rgb(hl(h+=h1*1,s2,v1))),
-                                    '2027': toColor(hsv2rgb(hl(h+=h1*2,s2,v1))),
-                                    '2028': toColor(hsv2rgb(hl(h+=h1*2,s2,v1))),
-                                    '2029': toColor(hsv2rgb(hl(h+=h1*3,s2,v1))),
-                                    '2030': toColor(hsv2rgb(hl(h =h1*0,s3,v1))),
-                                    '2031': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2032': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2033': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2034': toColor(hsv2rgb(hl(h+=h1*3,s3,v1))),
-                                    '2035': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2036': toColor(hsv2rgb(hl(h+=h1*1,s3,v1))),
-                                    '2037': toColor(hsv2rgb(hl(h+=h1*2,s3,v1))),
-                                    '2038': toColor(hsv2rgb(hl(h+=h1*2,s3,v1))),
-                                    '2039': toColor(hsv2rgb(hl(h+=h1*3,s3,v1))),
-                                }
-                                return yearColorsPantone[year.toString()];
-
-                                // input: h in [0,360] and s,v in [0,1] - output: r,g,b in [0,1]
-                                function hsv2rgb(hsv) {
-                                    let f= (n,k=(n+hsv['h']/60)%6) => hsv['v'] - hsv['v']*hsv['s']*Math.max( Math.min(k,4-k,1), 0);
-                                    return {'r':f(5),'g':f(3),'b':f(1)};
-                                }
-
-                                function hl(h, s, v) {
-                                    return {'h':h, 's':s+.02, 'v':v+.02};
-                                }
-
-                                function toColor(rgb) {
-                                    return 'rgba(' + Math.round(rgb['r']*255) + ',' + Math.round(rgb['g']*255) + ',' + Math.round(rgb['b']*255) + ',.8)';
-                                }
-                            }
                         },
                         []
                     );
