@@ -20,6 +20,7 @@ define(['lodash'], function (_) {
         });
 
         function loadDataInChart() {
+            const seriesShown = {};
             seriesSuppliers.forEach(function (seriesSupplier) {
                 const chartSeries = chart.get(seriesSupplier.id);
                 if (seriesSupplier.datapoints !== undefined && seriesSupplier.datapoints.length !== 0) {
@@ -44,6 +45,7 @@ define(['lodash'], function (_) {
                         seriesSupplier.xAxis = chartSeries.xAxis;
                         seriesSupplier.yAxis = chartSeries.yAxis;
                     }
+                    seriesShown[seriesSupplier.id] = true;
                 } else {
                     if (chartSeries !== undefined) {
                         chartSeries.setData(seriesSupplier.datapoints, false);
@@ -51,6 +53,15 @@ define(['lodash'], function (_) {
                         seriesSupplier.yAxis = chartSeries.yAxis;
                     }
                 }
+            });
+            const seriesRemove = [];
+            chart.series.forEach(function (series) {
+                if (!seriesShown[series.userOptions.id]) {
+                    seriesRemove.push(series);
+                }
+            });
+            seriesRemove.forEach(function (series) {
+                series.remove();
             });
         }
     };
