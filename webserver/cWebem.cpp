@@ -967,6 +967,8 @@ namespace http {
 				network = szLocalHostname;
 			}
 
+			_log.Log(LOG_STATUS, "Adding IPv%s network (%s) to list of local networks.", (ipnetwork.bIsIPv6 ? "6" : "4"),network.c_str());
+
 			if (network.find('*') != std::string::npos)
 			{
 				std::vector<std::string> results;
@@ -1494,35 +1496,48 @@ namespace http {
 			return bOk;
 		}
 
-		bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork)
+		bool cWebemRequestHandler::IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6)
 		{
-			bool bIsIPv6 = (ip.find(':') != std::string::npos);
+			//_log.Debug(DEBUG_WEBSERVER,"Check if IP (%s) is within Localnetwork range.", ip.c_str());
 			if (ipnetwork.bIsIPv6 != bIsIPv6)
-				return false;
+				return false;	// No need to check the IP address and the network are not both IPv4 or IPv6
 
 			uint8_t IP[16] = { 0 };
-			if (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, ip.c_str(), &IP) != 1)
-				return true;
+			inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, ip.c_str(), &IP);
 
+			// Determine if the IP address is within the localnetwork range
 			int iASize = (!bIsIPv6) ? 4 : 16;
 			for (int ii = 0; ii < iASize; ii++)
 				if (ipnetwork.Network[ii] != (IP[ii] & ipnetwork.Mask[ii]))
 					return false;
 
+			// As all segments of the given IP fit within the given network range, otherwise we wouldn't be here
+			_log.Debug(DEBUG_WEBSERVER,"IP (%s) is within Localnetwork range!",ip.c_str());
 			return true;
 		}
 
 		//Returns true is the connected host is in the local network
-		bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const request& req)
+		bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost)
 		{
-			//check if in local network(s)
+			//Are there any local networks to check against?
+			//NOTE: the check below will never be empty (at the moment) as by default the IP address of the hostname is added to the localnetworks list
+			//      see WebServer.cpp at StartServer where it adds an empty network ("") which gets replaced by the local hostname and then the local IP address for that hostname
 			if (myWebem->m_localnetworks.empty())
 				return false;
+
+			//Is the given host a valid IP address?
 			if (sHost.size() < 3)
 				return false;
+			bool bIsIPv6 = (sHost.find(':') != std::string::npos);
+			uint8_t IP[16] = { 0 };
+			if (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1)
+			{
+				_log.Log(LOG_STATUS,"Webserver: Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in LocalNetwork!",sHost.c_str());
+				return false;	// The IP address is not a valid IPv4 or IPv6 address
+			}
 
 			return std::any_of(myWebem->m_localnetworks.begin(), myWebem->m_localnetworks.end(),
-					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my); });
+					   [&](const _tIPNetwork &my) { return IsIPInRange(sHost, my, bIsIPv6); });
 		}
 
 		constexpr std::array<const char *, 12> months{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
@@ -1872,13 +1887,13 @@ namespace http {
 			if (myWebem->m_userpasswords.empty())
 			{
 				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "No userpasswords set, so set rights = 2!");
+				_log.Debug(DEBUG_AUTH, "No userpasswords set, so set rights = 2 (Admin)!");
 			}
 
-			if (AreWeInLocalNetwork(session.remote_host, req))
+			if (AreWeInLocalNetwork(session.remote_host))
 			{
 				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "Local network detected, so set rights = 2!");
+				_log.Debug(DEBUG_AUTH, "Local network detected, so set rights = 2 (Admin)!");
 			}
 
 			//Check for valid JWT token

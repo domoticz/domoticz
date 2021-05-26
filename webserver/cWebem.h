@@ -137,7 +137,8 @@ namespace http
 				std::string generateSessionID();
 				void send_cookie(reply &rep, const WebEmSession &session);
 				bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
-				bool AreWeInLocalNetwork(const std::string &sHost, const request &req);
+				bool AreWeInLocalNetwork(const std::string &sHost);
+				bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
 				int authorize(WebEmSession &session, const request &req, reply &rep);
 				void Logout();
 				int parse_auth_header(const request &req, struct ah *ah);
