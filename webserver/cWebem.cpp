@@ -952,20 +952,17 @@ namespace http {
 
 		void cWebem::AddLocalNetworks(std::string network)
 		{
+			if (network.empty())
+			{
+				_log.Log(LOG_ERROR, "Empty network string provided! Skipping...");
+				return;
+			}
+
 			_tIPNetwork ipnetwork;
 			ipnetwork.bIsIPv6 = (network.find(':') != std::string::npos);
 
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
-
-			if (network.empty())
-			{
-				//add local host
-				char szLocalHostname[256];
-				if (gethostname(szLocalHostname, sizeof(szLocalHostname)) == SOCKET_ERROR)
-					return; //Could not retreive hostname
-				network = szLocalHostname;
-			}
 
 			_log.Log(LOG_STATUS, "Adding IPv%s network (%s) to list of local networks.", (ipnetwork.bIsIPv6 ? "6" : "4"),network.c_str());
 

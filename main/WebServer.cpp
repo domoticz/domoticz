@@ -314,8 +314,6 @@ namespace http
 					StringSplit(WebLocalNetworks, ";", strarray);
 					for (const auto &str : strarray)
 						m_pWebEm->AddLocalNetworks(str);
-					// add local hostname
-					m_pWebEm->AddLocalNetworks("");
 				}
 			}
 
