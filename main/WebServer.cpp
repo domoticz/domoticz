@@ -16918,7 +16918,6 @@ namespace http {
                                     " FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 ""
                                                                                   " AND Date>='%q')",
                                     idx, szDateEnd);
-                            _log.Debug(DEBUG_WEBSERVER, "Extra value after %s:%s", szDateEnd, (result.empty() ? "false" : "true"));
                             bool bHaveDeliverd = false;
                             if (!result.empty()) {
                                 std::vector <std::string> sd = result[0];
@@ -17124,7 +17123,6 @@ namespace http {
                                     //"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
                                     "SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
                                     idx, szDateEnd);
-                            _log.Debug(DEBUG_WEBSERVER, "First extra value after %s:%s", szDateEnd, (result.empty() ? "false" : "true"));
                             if (!result.empty())
                             {
                                 std::vector<std::string> sd = result[0];
@@ -17135,7 +17133,6 @@ namespace http {
                                 // Get the last value
                                 result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
                                         idx, szDateEnd);
-                                _log.Debug(DEBUG_WEBSERVER, "Last extra value after %s:%s", szDateEnd, (result.empty() ? "false" : "true"));
                                 if (!result.empty()) {
                                     std::vector<std::string> sd = result[0];
                                     total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
@@ -18074,7 +18071,6 @@ namespace http {
          * respective category with todayValue.
          */
         void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString) {
-            _log.Debug(DEBUG_WEBSERVER, ("todayValue:" + formatString).c_str(), todayValue);
             std::string todayYear = today.substr(0, 4);
             std::string todayCategory;
             if (sgroupby == "quarter") {
@@ -18097,8 +18093,6 @@ namespace http {
             for (int resultIndex = 0; resultIndex < root["result"].size() && todayResultIndex == -1; resultIndex++) {
                 std::string resultYear = root["result"][resultIndex]["y"].asString();
                 std::string resultCategory = root["result"][resultIndex]["c"].asString();
-                _log.Debug(DEBUG_WEBSERVER, "todayYear:%s ? resultYear:%s  todayCategory:%s ? resultCategory:%s",
-                    todayYear.c_str(), resultYear.c_str(), todayCategory.c_str(), resultCategory.c_str());
                 if (resultYear == todayYear && todayCategory == resultCategory) {
                     todayResultIndex = resultIndex;
                 }
@@ -18109,11 +18103,8 @@ namespace http {
                 resultPlusTodayValue = todayValue;
                 root["result"][todayResultIndex]["y"] = todayYear.c_str();
                 root["result"][todayResultIndex]["c"] = todayCategory.c_str();
-                _log.Debug(DEBUG_WEBSERVER, ("new  resultPlusTodayValue:" + formatString + "  year:%s  category:%s").c_str(),
-                        resultPlusTodayValue, todayYear.c_str(), todayCategory.c_str());
             } else {
                 resultPlusTodayValue = atof(root["result"][todayResultIndex]["s"].asString().c_str()) + todayValue;
-                _log.Debug(DEBUG_WEBSERVER, ("add  todayValue:" + formatString + " resultPlusTodayValue:" + formatString).c_str(), todayValue, resultPlusTodayValue);
             }
             char szTmp[30];
             sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
