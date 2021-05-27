@@ -3038,15 +3038,16 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 	uint8_t Unit = 0;
 	uint8_t cmnd = 0;
 	uint8_t SignalLevel = pResponse->RAIN.rssi;
-	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, pResponse->RAIN.subtype == sTypeRAIN1 || pResponse->RAIN.subtype == sTypeRAIN9, pResponse->RAIN.battery_level & 0x0F);
+	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, subType == sTypeRAIN1 || subType == sTypeRAIN9, pResponse->RAIN.battery_level & 0x0F);
 
-	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
-
+	int Rainrate = 0;
 	float TotalRain = 0;
 	if (subType == sTypeRAIN9) {
-		TotalRain = float((pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) * 0.254F;
+		uint16_t rainCount = (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3 + 10;
+		TotalRain = roundf(float(rainCount * 2.54F)) / 10.0F;
 	}
 	else {
+		Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
 		TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0F;
 	}
 
@@ -3174,7 +3175,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			WriteMessage("subtype       = DarkSky for example (Only rate, no total, no counter) rate in mm/hour x 10000, so all decimals will fit");
 			break;
 		default:
-			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, subType);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -3185,12 +3186,12 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		sprintf(szTmp, "ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
 
-		if (pResponse->RAIN.subtype == sTypeRAIN1)
+		if (subType == sTypeRAIN1)
 		{
 			sprintf(szTmp, "Rain rate     = %d mm/h", Rainrate);
 			WriteMessage(szTmp);
 		}
-		else if (pResponse->RAIN.subtype == sTypeRAIN2)
+		else if (subType == sTypeRAIN2)
 		{
 			sprintf(szTmp, "Rain rate     = %d mm/h", Rainrate);
 			WriteMessage(szTmp);
@@ -3201,7 +3202,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		sprintf(szTmp, "Signal level  = %d", pResponse->RAIN.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(pResponse->RAIN.subtype == sTypeRAIN1 || (pResponse->RAIN.subtype == sTypeRAIN9), pResponse->RAIN.battery_level & 0x0F);
+		decode_BateryLevel(subType == sTypeRAIN1 || (subType == sTypeRAIN9), pResponse->RAIN.battery_level & 0x0F);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;

@@ -286,6 +286,7 @@ namespace http {
 			if (!bIgnoreUsernamePassword)
 			{
 				LoadUsers();
+
 				std::string WebLocalNetworks;
 				int nValue;
 				if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
@@ -8272,30 +8273,19 @@ namespace http {
 			// Invalid sessions of WebUser when the username or password has been changed
 			if (bHaveAdminUserPasswordChange)
 			{
-				RemoveUsersSessions(sOldWebLogin, session);
+				if (!sOldWebLogin.empty())
+					RemoveUsersSessions(sOldWebLogin, session);
 				m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
 				m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
 			}
+			m_webservers.LoadUsers();
 
 			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
-			LoadUsers();
-			m_pWebEm->ClearLocalNetworks();
-			std::vector<std::string> strarray;
-			StringSplit(WebLocalNetworks, ";", strarray);
-			for (const auto &str : strarray)
-				m_pWebEm->AddLocalNetworks(str);
-			//add local hostname
-			m_pWebEm->AddLocalNetworks("");
-
-			m_pWebEm->ClearRemoteProxyIPs();
-			strarray.clear();
-			StringSplit(WebRemoteProxyIPs, ";", strarray);
-			for (const auto &str : strarray)
-				m_pWebEm->AddRemoteProxyIPs(str);
+			m_webservers.ReloadLocalNetworksAndProxyIPs();
 
 			if (session.username.empty())
 			{
@@ -13075,14 +13065,17 @@ namespace http {
 			std::vector<std::string> strarray;
 			StringSplit(userdevices, ";", strarray);
 
-			//First delete all devices for this user, then add the (new) onces
-			m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+			//First make a backup of the favorite devices before deleting the devices for this user, then add the (new) onces and restore favorites
+			m_sql.safe_query("UPDATE SharedDevices SET SharedUserID = 0 WHERE SharedUserID == '%q' and Favorite == 1", idx.c_str());
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 
 			int nDevices = static_cast<int>(strarray.size());
 			for (int ii = 0; ii < nDevices; ii++)
 			{
 				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
+				m_sql.safe_query("UPDATE SharedDevices SET Favorite = 1 WHERE SharedUserid == '%q' AND DeviceRowID IN (SELECT DeviceRowID FROM SharedDevices WHERE SharedUserID == 0)", idx.c_str());
 			}
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
 			LoadUsers();
 		}
 
