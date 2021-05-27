@@ -1287,7 +1287,7 @@ namespace http {
 						}
 						if(!(decodedJWT.has_audience() && decodedJWT.has_issuer()))
 						{
-							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an intended audience and/or issues!");
+							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an intended audience and/or issuer!");
 							return 0;
 						}
 						// Step 2: Find the audience = our ClientID (~ the Username of the Domoticz User where the userright = ClientID)
@@ -1305,7 +1305,6 @@ namespace http {
 								{
 									clientsecret = my.Password;
 									client_key_id = std::to_string(my.ID);
-									//_log.Debug(DEBUG_AUTH, "Found pwd (%s) and key (%s)", clientsecret.c_str(), client_key_id.c_str());
 								}
 							}
 						}
@@ -1495,12 +1494,11 @@ namespace http {
 
 		bool cWebemRequestHandler::IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6)
 		{
-			//_log.Debug(DEBUG_WEBSERVER,"Check if IP (%s) is within Localnetwork range.", ip.c_str());
 			if (ipnetwork.bIsIPv6 != bIsIPv6)
 				return false;	// No need to check the IP address and the network are not both IPv4 or IPv6
 
 			uint8_t IP[16] = { 0 };
-			inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, ip.c_str(), &IP);
+			inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, ip.c_str(), &IP);	// We already checked if this works in the caller routine
 
 			// Determine if the IP address is within the localnetwork range
 			int iASize = (!bIsIPv6) ? 4 : 16;
@@ -1509,7 +1507,7 @@ namespace http {
 					return false;
 
 			// As all segments of the given IP fit within the given network range, otherwise we wouldn't be here
-			_log.Debug(DEBUG_WEBSERVER,"IP (%s) is within Localnetwork range!",ip.c_str());
+			_log.Debug(DEBUG_WEBSERVER,"web: IP (%s) is within Localnetwork range!",ip.c_str());
 			return true;
 		}
 
@@ -1517,19 +1515,15 @@ namespace http {
 		bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost)
 		{
 			//Are there any local networks to check against?
-			//NOTE: the check below will never be empty (at the moment) as by default the IP address of the hostname is added to the localnetworks list
-			//      see WebServer.cpp at StartServer where it adds an empty network ("") which gets replaced by the local hostname and then the local IP address for that hostname
 			if (myWebem->m_localnetworks.empty())
 				return false;
 
-			//Is the given host a valid IP address?
-			if (sHost.size() < 3)
-				return false;
+			//Is the given 'host' a valid IP address?
 			bool bIsIPv6 = (sHost.find(':') != std::string::npos);
 			uint8_t IP[16] = { 0 };
-			if (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1)
+			if ( (sHost.size() < 3) || (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1) )
 			{
-				_log.Log(LOG_STATUS,"Webserver: Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in LocalNetwork!",sHost.c_str());
+				_log.Log(LOG_STATUS,"Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in LocalNetwork!",sHost.c_str());
 				return false;	// The IP address is not a valid IPv4 or IPv6 address
 			}
 
@@ -2049,7 +2043,6 @@ namespace http {
 						return true;
 			}
 
-			send_authorization_request(rep);
 			return false;
 		}
 
@@ -2310,7 +2303,7 @@ namespace http {
 						rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
 						return;
 					}
-					if (rep.status != reply::ok) // bad request
+					if (rep.status != reply::ok) // even before handling the page, somehow/something above did set the expected reply status to NOT OK
 					{
 						return;
 					}
