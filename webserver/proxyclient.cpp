@@ -440,10 +440,6 @@ namespace http {
 									break;
 							}
 						}
-#undef PDUSTRING
-#undef PDULONG
-#undef PDULONGLONG
-#undef PROXYPDU
 						break;
 					}
 				}

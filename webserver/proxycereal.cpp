@@ -22,9 +22,5 @@ std::shared_ptr<CProxyPduBase> CProxyPduBase::FromString(const std::string &str)
 	}
 	return base;
 };
-#undef PDUSTRING
-#undef PDULONG
-#undef PDULONGLONG
-#undef PROXYPDU
 
 #endif
