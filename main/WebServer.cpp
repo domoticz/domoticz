@@ -18051,16 +18051,20 @@ namespace http {
             );
             if (!result.empty()) {
                 int firstYearCounting = 0;
+                double fsumPrevious;
                 for (const auto &sd : result) {
                     const int year = atoi(sd[0].c_str());
+                    const double fsum = atof(sd[1].c_str());
+                    const char *trend = firstYearCounting == 0 ? "" : fsumPrevious < fsum ? "up" : fsumPrevious > fsum ? "down" : "equal";
+                    const int ii = root["result"].size();
                     if (firstYearCounting == 0 || year < firstYearCounting) {
                         firstYearCounting = year;
                     }
-                    double fsum = atof(sd[1].c_str());
-                    const int ii = root["result"].size();
                     root["result"][ii]["y"] = sd[0];
                     root["result"][ii]["c"] = sgroupby == "year" ? sd[0] : sd[2];
                     root["result"][ii]["s"] = sumToResult(fsum);
+                    root["result"][ii]["t"] = trend;
+                    fsumPrevious = fsum;
                 }
                 root["firstYear"] = firstYearCounting;
             }

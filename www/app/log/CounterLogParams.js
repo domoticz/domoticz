@@ -196,7 +196,14 @@ define(['app', 'log/Chart'], function (app) {
                                 + '<tr><td colspan="2"><b>' + categoryKeyToString(this.x) + '</b></td></tr>'
                                 + this.points.reduce(
                                     function (s, point) {
-                                        return s + '<tr><td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td><td><b>' + Highcharts.numberFormat(point.y) + '</b></td><td><b>' + (deviceUnit ? ' ' + deviceUnit : '') + '</b></td></tr>';
+                                        return s
+                                            + '<tr>'
+                                            + '<td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td>'
+                                            + '<td><b>' + Highcharts.numberFormat(point.y) + '</b></td>'
+                                            + '<td><b>' + (deviceUnit ? '&nbsp;' + deviceUnit : '') + '</b></td>'
+                                            + '<td>' + (point.point.options.trend ?
+                                                '<img src="/images/' + point.point.options.trend + '.png" alt="' + point.point.options.trend + '">' : '') + '</td>'
+                                            + '</tr>';
                                     }, '')
                                 + '</table>';
                         }

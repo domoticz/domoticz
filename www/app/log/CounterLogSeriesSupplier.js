@@ -132,14 +132,10 @@ define(['app', 'log/Chart'], function (app) {
                                     return this.year === parseInt(dataItem["y"]);
                                 },
                                 datapointFromDataItem: function (dataItem) {
-                                    const datapoint = [];
-                                    this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
-                                        datapoint.push(valueFromDataItem);
-                                    });
-                                    return datapoint;
-                                },
-                                valuesFromDataItem: function (dataItem) {
-                                    return [this.valueFromDataItem(dataItem["s"])];
+                                    return {
+                                        y: this.valueFromDataItem(dataItem["s"]),
+                                        trend: dataItem["t"]
+                                    };
                                 }
                             });
                         },
