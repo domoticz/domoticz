@@ -3033,7 +3033,12 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 	uint8_t devType = pTypeRAIN;
 	uint8_t subType = pResponse->RAIN.subtype;
 	std::string ID;
-	sprintf(szTmp, "%d", (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
+	if (subType == sTypeRAIN3) {
+		sprintf(szTmp, "%d", (pResponse->RAIN.id0 * 65536) + (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
+	}
+	else {
+		sprintf(szTmp, "%d", (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
+	}
 	ID = szTmp;
 	uint8_t Unit = 0;
 	uint8_t cmnd = 0;
@@ -3202,7 +3207,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		sprintf(szTmp, "Signal level  = %d", pResponse->RAIN.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(subType == sTypeRAIN1 || (subType == sTypeRAIN9), pResponse->RAIN.battery_level & 0x0F);
+		decode_BateryLevel(subType == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;

@@ -377,6 +377,7 @@ void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLe
 	tsen.RAIN.subtype = sTypeRAIN3;
 	tsen.RAIN.battery_level = BatteryLevel;
 	tsen.RAIN.rssi = RssiLevel;
+	tsen.RAIN.id0 = (NodeID & 0xFF0000) >> 16;
 	tsen.RAIN.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.RAIN.id2 = NodeID & 0xFF;
 
