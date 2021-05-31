@@ -2235,7 +2235,6 @@ typedef union tRBUF {
 		BYTE	raintotal1;
 		BYTE	raintotal2;
 		BYTE	raintotal3;
-		BYTE	id0;
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
@@ -2243,6 +2242,7 @@ typedef union tRBUF {
 		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 #endif
+		BYTE	id0;
 	} RAIN;
 
 	struct {
