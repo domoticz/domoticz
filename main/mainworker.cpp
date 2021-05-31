@@ -651,7 +651,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx868:
 		pHardware = new RFXComSerial(ID, SerialPort, 38400, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
 		break;
-	case HTYPE_RFXLAN:f
+	case HTYPE_RFXLAN:
 		pHardware = new RFXComTCP(ID, Address, Port, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
 		break;
 	case HTYPE_P1SmartMeter:
