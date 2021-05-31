@@ -2228,7 +2228,6 @@ typedef union tRBUF {
 		BYTE	packettype;
 		BYTE	subtype;
 		BYTE	seqnbr;
-		BYTE	id0;
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	rainrateh;
@@ -2236,6 +2235,7 @@ typedef union tRBUF {
 		BYTE	raintotal1;
 		BYTE	raintotal2;
 		BYTE	raintotal3;
+		BYTE	id0;
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
 		BYTE	battery_level : 4;
