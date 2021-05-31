@@ -651,7 +651,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx868:
 		pHardware = new RFXComSerial(ID, SerialPort, 38400, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
 		break;
-	case HTYPE_RFXLAN:
+	case HTYPE_RFXLAN:f
 		pHardware = new RFXComTCP(ID, Address, Port, (CRFXBase::_eRFXAsyncType)atoi(Extra.c_str()));
 		break;
 	case HTYPE_P1SmartMeter:
@@ -3033,7 +3033,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 	uint8_t devType = pTypeRAIN;
 	uint8_t subType = pResponse->RAIN.subtype;
 	std::string ID;
-	sprintf(szTmp, "%d", (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
+	sprintf(szTmp, "%d", (pResponse->RAIN.id0 * 65536) + (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
 	ID = szTmp;
 	uint8_t Unit = 0;
 	uint8_t cmnd = 0;
