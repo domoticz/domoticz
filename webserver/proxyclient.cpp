@@ -423,20 +423,23 @@ namespace http {
 					case opcodes::opcode_binary:
 					case opcodes::opcode_text:
 						std::shared_ptr<CProxyPduBase> pdu = CProxyPduBase::FromString(frame.Payload());
-						switch (pdu->pdu_type()) {
+						if (pdu)
+						{
+							switch (pdu->pdu_type())
+							{
 #define PDUSTRING(name)
 #define PDULONG(name)
 #define PDULONGLONG(name)
-#define PROXYPDU(name, members) case ePDU_##name: OnPduReceived(std::dynamic_pointer_cast<ProxyPdu_##name>(pdu)); break;
+#define PROXYPDU(name, members)                                                                                                                                                                        \
+	case ePDU_##name:                                                                                                                                                                              \
+		OnPduReceived(std::dynamic_pointer_cast<ProxyPdu_##name>(pdu));                                                                                                                        \
+		break;
 #include "proxydef.def"
-						default:
-							// pdu enum not found
-							break;
+								default:
+									// pdu enum not found
+									break;
+							}
 						}
-#undef PDUSTRING
-#undef PDULONG
-#undef PDULONGLONG
-#undef PROXYPDU
 						break;
 					}
 				}
