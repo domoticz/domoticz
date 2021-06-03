@@ -24,10 +24,6 @@ typedef enum enum_pdu {
 #include "proxydef.def"
 	ePDU_END
 } pdu_enum;
-#undef PDUSTRING
-#undef PDULONG
-#undef PDULONGLONG
-#undef PROXYPDU
 
 /* base pdu class */
 class CProxyPduBase {
@@ -46,10 +42,6 @@ public:
 #define PDULONGLONG(name) uint64_t m_##name = 0;
 #define PROXYPDU(name, members) class ProxyPdu_##name##_onlymembers : public CProxyPduBase { public: members };
 #include "proxydef.def"
-#undef PDUSTRING
-#undef PDULONG
-#undef PDULONGLONG
-#undef PROXYPDU
 
 /* ProxuPdu_* classes */
 #define PDUSTRING(name) ar & CEREAL_NVP(m_##name);
@@ -78,9 +70,5 @@ public:
 	}; \
 };
 #include "proxydef.def"
-#undef PDUSTRING
-#undef PDULONG
-#undef PDULONGLONG
-#undef PROXYPDU
 
 #endif
