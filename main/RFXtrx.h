@@ -2242,7 +2242,6 @@ typedef union tRBUF {
 		BYTE	battery_level : 4;
 		BYTE	rssi : 4;
 #endif
-		BYTE	id0;
 	} RAIN;
 
 	struct {
