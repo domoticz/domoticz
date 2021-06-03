@@ -121,6 +121,8 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 			iFlags |= DEBUG_PYTHON;
 		else if (wflag == "thread_id")
 			iFlags |= DEBUG_THREADIDS;
+		else if (wflag == "sql")
+			iFlags |= DEBUG_SQL;
 		else
 			return false; // invalid flag
 	}

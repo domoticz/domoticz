@@ -34,7 +34,8 @@ define(['app', 'lodash', 'RefreshingChart'],
                         chartParams(
                             domoticzGlobals,
                             self,
-                            true, function (dataItem, yearOffset = 0) {
+                            true,
+                            function (dataItem, yearOffset = 0) {
                                 return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
                             [

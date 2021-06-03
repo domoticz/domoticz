@@ -13,3 +13,8 @@
 <counter-year-chart
         class="device-log-chart"
         device="::$ctrl.device"></counter-year-chart>
+
+<counter-compare-chart
+        ng-if="::$ctrl.subtype=='gas' || $ctrl.subtype=='water' || $ctrl.subtype=='counter' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='instantAndCounter'"
+        class="device-log-chart"
+        device="::$ctrl.device"></counter-compare-chart>
