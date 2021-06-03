@@ -91,7 +91,7 @@
 		<link rel="stylesheet" href="acttheme/custom.css">
 
 		<script src="js/babel-polyfill-6.26.0.js"></script>
-		<script src="js/jquery-3.5.1.min.js"></script>
+		<script src="js/jquery-3.6.0.min.js"></script>
 		<script src="js/i18next-1.8.0.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
@@ -110,7 +110,7 @@
 		<script charset="utf-8" src="js/ZeroClipboard.js"></script>
 		<script charset="utf-8" src="js/date.format.js"></script>
 		<!-- Temporary fix for highcharts/highcharts#9612 -->
-		<script charset="utf-8" src="js/highcharts/highcharts-8.2.2-patch.9612.src.js"></script>
+		<script charset="utf-8" src="js/highcharts/highcharts-9.1.0-patch.9612.src.js"></script>
 		<script charset="utf-8" src="js/highcharts/highcharts-more.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/sankey.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/dependency-wheel.js"></script>
@@ -461,6 +461,9 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+    <div id="debugconsole" style="display: none; position: absolute; top: 52px; z-index: 1;">
+		debug console
+	</div>
 	<script type="text/ng-template" id="timesuntemplate">
 		<div id="timesun" ng-show="::$ctrl.data.serverTime">
 			<span ng-hide="::$ctrl.isMobile">{{ $ctrl.data.serverTime }}</span>

@@ -8,8 +8,8 @@
         <div class="zoom-buttons-container">
             <button class="zoom-button" ng-click="zoomDays(1*7)" ng-bind="zoomLabel('1w')"></button>
             <button class="zoom-button" ng-click="zoomDays(2*7)" ng-bind="zoomLabel('2w')"></button>
-            <button class="zoom-button" ng-click="zoomDays(1*30)" ng-bind="zoomLabel('1M')"></button>
-            <button class="zoom-button" ng-click="zoomDays(3*30)" ng-bind="zoomLabel('3M')"></button>
+            <button class="zoom-button" ng-click="zoomMonths(1)" ng-bind="zoomLabel('1M')"></button>
+            <button class="zoom-button" ng-click="zoomMonths(3)" ng-bind="zoomLabel('3M')"></button>
             <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
         </div>
         <div class="chartcontainer"></div>

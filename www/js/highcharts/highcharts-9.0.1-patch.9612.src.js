@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v9.1.0 (2021-05-03)
+ * @license Highcharts JS v9.0.1 (2021-02-15)
  *
  * (c) 2009-2021 Torstein Honsi
  *
@@ -39,106 +39,101 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        /* *
-         *
-         *  Constants
-         *
-         * */
+        /* globals Image, window */
         /**
-         * @private
-         * @deprecated
-         * @todo Rename UMD argument `win` to `window`; move code to `Globals.win`
+         * Reference to the global SVGElement class as a workaround for a name conflict
+         * in the Highcharts namespace.
+         *
+         * @global
+         * @typedef {global.SVGElement} GlobalSVGElement
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGElement
          */
-        var w = (typeof win !== 'undefined' ?
+        // glob is a temporary fix to allow our es-modules to work.
+        var glob = ( // @todo UMD variable named `window`, and glob named `win`
+            typeof win !== 'undefined' ?
                 win :
                 typeof window !== 'undefined' ?
                     window :
-                    {}
-            // eslint-disable-next-line node/no-unsupported-features/es-builtins
-            );
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        /**
-         * Shared Highcharts properties.
-         */
-        var Globals;
-        (function (Globals) {
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '9.1.0', Globals.win = w, Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
-                Globals.doc.createElementNS &&
-                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
-                parseInt(Globals.userAgent.split('Firefox/')[1], 10) < 4 // issue #38
-            ), Globals.hasTouch = !!Globals.win.TouchEvent, Globals.marginNames = [
-                'plotTop',
-                'marginRight',
-                'marginBottom',
-                'plotLeft'
-            ], Globals.noop = function () { }, Globals.supportsPassiveEvents = (function () {
-                // Checks whether the browser supports passive events, (#11353).
+                    {}), doc = glob.document, SVG_NS = 'http://www.w3.org/2000/svg', userAgent = (glob.navigator && glob.navigator.userAgent) || '', svg = (doc &&
+                doc.createElementNS &&
+                !!doc.createElementNS(SVG_NS, 'svg').createSVGRect), isMS = /(edge|msie|trident)/i.test(userAgent) && !glob.opera, isFirefox = userAgent.indexOf('Firefox') !== -1, isChrome = userAgent.indexOf('Chrome') !== -1, hasBidiBug = (isFirefox &&
+                parseInt(userAgent.split('Firefox/')[1], 10) < 4 // issue #38
+            ), noop = function () { }, 
+            // Checks whether the browser supports passive events, (#11353).
+            checkPassiveEvents = function () {
                 var supportsPassive = false;
-                // Object.defineProperty doesn't work on IE as well as passive
-                // events - instead of using polyfill, we can exclude IE totally.
-                if (!Globals.isMS) {
-                    var opts = Object.defineProperty({}, 'passive', {
-                            get: function () {
-                                supportsPassive = true;
-                        }
-                    });
-                    if (Globals.win.addEventListener && Globals.win.removeEventListener) {
-                        Globals.win.addEventListener('testPassive', Globals.noop, opts);
-                        Globals.win.removeEventListener('testPassive', Globals.noop, opts);
+            // Object.defineProperty doesn't work on IE as well as passive events -
+            // instead of using polyfill, we can exclude IE totally.
+            if (!isMS) {
+                var opts = Object.defineProperty({}, 'passive', {
+                        get: function () {
+                            supportsPassive = true;
                     }
+                });
+                if (glob.addEventListener && glob.removeEventListener) {
+                    glob.addEventListener('testPassive', noop, opts);
+                    glob.removeEventListener('testPassive', noop, opts);
                 }
-                return supportsPassive;
-            }());
-            /**
-             * An array containing the current chart objects in the page. A chart's
-             * position in the array is preserved throughout the page's lifetime. When
-             * a chart is destroyed, the array item becomes `undefined`.
-             *
-             * @name Highcharts.charts
-             * @type {Array<Highcharts.Chart|undefined>}
-             */
-            Globals.charts = [];
-            /**
-             * A hook for defining additional date format specifiers. New
-             * specifiers are defined as key-value pairs by using the
-             * specifier as key, and a function which takes the timestamp as
-             * value. This function returns the formatted portion of the
-             * date.
-             *
-             * @sample highcharts/global/dateformats/
-             *         Adding support for week number
-             *
-             * @name Highcharts.dateFormats
-             * @type {Record<string, Highcharts.TimeFormatCallbackFunction>}
-             */
-            Globals.dateFormats = {};
-            /**
-             * @private
-             * @deprecated
-             * @todo Use only `Core/Series/SeriesRegistry.seriesTypes`
-             */
-            Globals.seriesTypes = {};
-            /**
-             * @private
-             */
-            Globals.symbolSizes = {};
-        })(Globals || (Globals = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
+            }
+            return supportsPassive;
+        };
+        var H = {
+                product: 'Highcharts',
+                version: '9.0.1',
+                deg2rad: Math.PI * 2 / 360,
+                doc: doc,
+                hasBidiBug: hasBidiBug,
+                hasTouch: !!glob.TouchEvent,
+                isMS: isMS,
+                isWebKit: userAgent.indexOf('AppleWebKit') !== -1,
+                isFirefox: isFirefox,
+                isChrome: isChrome,
+                isSafari: !isChrome && userAgent.indexOf('Safari') !== -1,
+                isTouchDevice: /(Mobile|Android|Windows Phone)/.test(userAgent),
+                SVG_NS: SVG_NS,
+                chartCount: 0,
+                seriesTypes: {},
+                supportsPassiveEvents: checkPassiveEvents(),
+                symbolSizes: {},
+                svg: svg,
+                win: glob,
+                marginNames: ['plotTop', 'marginRight', 'marginBottom', 'plotLeft'],
+                noop: noop,
+                /**
+                 * Theme options that should get applied to the chart. In module mode it
+                 * might not be possible to change this property because of read-only
+                 * restrictions, instead use {@link Highcharts.setOptions}.
+                 *
+                 * @name Highcharts.theme
+                 * @type {Highcharts.Options}
+                 */
+                /**
+                 * An array containing the current chart objects in the page. A chart's
+                 * position in the array is preserved throughout the page's lifetime. When
+                 * a chart is destroyed, the array item becomes `undefined`.
+                 *
+                 * @name Highcharts.charts
+                 * @type {Array<Highcharts.Chart|undefined>}
+                 */
+                charts: [],
+                /**
+                 * A hook for defining additional date format specifiers. New
+                 * specifiers are defined as key-value pairs by using the
+                 * specifier as key, and a function which takes the timestamp as
+                 * value. This function returns the formatted portion of the
+                 * date.
+                 *
+                 * @sample highcharts/global/dateformats/
+                 *         Adding support for week number
+                 *
+                 * @name Highcharts.dateFormats
+                 * @type {Highcharts.Dictionary<Highcharts.TimeFormatCallbackFunction>}
+                 */
+                dateFormats: {}
+            };
 
-        return Globals;
+        return H;
     });
     _registerModule(_modules, 'Core/Utilities.js', [_modules['Core/Globals.js']], function (H) {
         /* *
@@ -329,7 +324,7 @@
          */
         /**
          * Generic dictionary in TypeScript notation.
-         * Use the native `AnyRecord` instead.
+         * Use the native `Record<string, any>` instead.
          *
          * @deprecated
          * @interface Highcharts.Dictionary<T>
@@ -469,7 +464,7 @@
          * chart constructor.
          *
          * @example
-         * let chart = Highcharts.chart('container', { ... });
+         * var chart = Highcharts.chart('container', { ... });
          *
          * @namespace Highcharts
          */
@@ -496,8 +491,7 @@
          *        Reference to the chart that causes the error. Used in 'debugger'
          *        module to display errors directly on the chart.
          *        Important note: This argument is undefined for errors that lack
-         *        access to the Chart instance. In such case, the error will be
-         *        displayed on the last created chart.
+         *        access to the Chart instance.
          *
          * @param {Highcharts.Dictionary<string>} [params]
          *        Additional parameters for the generated message.
@@ -509,11 +503,11 @@
             if (code === 32) {
                 code = severity + ": Deprecated member";
             }
-            var isCode = isNumber(code);
-            var message = isCode ?
+            var isCode = isNumber(code),
+                message = isCode ?
                     severity + " #" + code + ": www.highcharts.com/errors/" + code + "/" :
-                    code.toString();
-            var defaultHandler = function () {
+                    code.toString(),
+                defaultHandler = function () {
                     if (stop) {
                         throw new Error(message);
                 }
@@ -537,7 +531,12 @@
                 });
                 message += additionalMessages_1;
             }
-            fireEvent(Highcharts, 'displayError', { chart: chart, code: code, message: message, params: params }, defaultHandler);
+            if (chart) {
+                fireEvent(chart, 'displayError', { code: code, message: message, params: params }, defaultHandler);
+            }
+            else {
+                defaultHandler();
+            }
             error.messages.push(message);
         }
         (function (error) {
@@ -588,8 +587,9 @@
             /* eslint-enable valid-jsdoc */
             var i,
                 args = arguments,
-                ret = {};
-            var doCopy = function (copy,
+                len,
+                ret = {},
+                doCopy = function (copy,
                 original) {
                     // An object is replacing a primitive
                     if (typeof copy !== 'object') {
@@ -620,7 +620,7 @@
                 args = Array.prototype.slice.call(args, 2);
             }
             // For each argument, extend the return
-            var len = args.length;
+            len = args.length;
             for (i = 0; i < len; i++) {
                 ret = doCopy(ret, args[i]);
             }
@@ -923,7 +923,7 @@
          * @param {T|undefined} a
          *        The object to be extended.
          *
-         * @param {Partial<T>} b
+         * @param {object} b
          *        The object to add to the first one.
          *
          * @return {T}
@@ -1114,16 +1114,90 @@
             obj[method] = function () {
                 var args = Array.prototype.slice.call(arguments),
                     outerArgs = arguments,
-                    ctx = this;
+                    ctx = this,
+                    ret;
                 ctx.proceed = function () {
                     proceed.apply(ctx, arguments.length ? arguments : outerArgs);
                 };
                 args.unshift(proceed);
-                var ret = func.apply(this,
-                    args);
+                ret = func.apply(this, args);
                 ctx.proceed = null;
                 return ret;
             };
+        }
+        /**
+         * Format a string according to a subset of the rules of Python's String.format
+         * method.
+         *
+         * @example
+         * var s = Highcharts.format(
+         *     'The {color} fox was {len:.2f} feet long',
+         *     { color: 'red', len: Math.PI }
+         * );
+         * // => The red fox was 3.14 feet long
+         *
+         * @function Highcharts.format
+         *
+         * @param {string} str
+         *        The string to format.
+         *
+         * @param {Record<string, *>} ctx
+         *        The context, a collection of key-value pairs where each key is
+         *        replaced by its value.
+         *
+         * @param {Highcharts.Chart} [chart]
+         *        A `Chart` instance used to get numberFormatter and time.
+         *
+         * @return {string}
+         *         The formatted string.
+         */
+        function format(str, ctx, chart) {
+            var splitter = '{',
+                isInside = false,
+                segment,
+                valueAndFormat,
+                ret = [],
+                val,
+                index;
+            var floatRegex = /f$/;
+            var decRegex = /\.([0-9])/;
+            var lang = H.defaultOptions.lang;
+            var time = chart && chart.time || H.time;
+            var numberFormatter = chart && chart.numberFormatter || numberFormat;
+            while (str) {
+                index = str.indexOf(splitter);
+                if (index === -1) {
+                    break;
+                }
+                segment = str.slice(0, index);
+                if (isInside) { // we're on the closing bracket looking back
+                    valueAndFormat = segment.split(':');
+                    val = getNestedProperty(valueAndFormat.shift() || '', ctx);
+                    // Format the replacement
+                    if (valueAndFormat.length && typeof val === 'number') {
+                        segment = valueAndFormat.join(':');
+                        if (floatRegex.test(segment)) { // float
+                            var decimals = parseInt((segment.match(decRegex) || ['', '-1'])[1], 10);
+                            if (val !== null) {
+                                val = numberFormatter(val, decimals, lang.decimalPoint, segment.indexOf(',') > -1 ? lang.thousandsSep : '');
+                            }
+                        }
+                        else {
+                            val = time.dateFormat(segment, val);
+                        }
+                    }
+                    // Push the result and advance the cursor
+                    ret.push(val);
+                }
+                else {
+                    ret.push(segment);
+                }
+                str = str.slice(index + 1); // the rest
+                isInside = !isInside; // toggle
+                splitter = isInside ? '}' : '{'; // now look for next matching bracket
+            }
+            ret.push(str);
+            return ret.join('');
         }
         /**
          * Get the magnitude of a number.
@@ -1169,11 +1243,12 @@
          * reasons.
          */
         function normalizeTickInterval(interval, multiples, magnitude, allowDecimals, hasTickAmount) {
-            var i,
+            var normalized,
+                i,
                 retInterval = interval;
             // round to a tenfold of 1, 2, 2.5 or 5
             magnitude = pick(magnitude, 1);
-            var normalized = interval / magnitude;
+            normalized = interval / magnitude;
             // multiples for a linear scale
             if (!multiples) {
                 multiples = hasTickAmount ?
@@ -1230,8 +1305,8 @@
             // @todo It seems like Chrome since v70 sorts in a stable way internally,
             // plus all other browsers do it, so over time we may be able to remove this
             // function
-            var length = arr.length;
-            var sortValue,
+            var length = arr.length,
+                sortValue,
                 i;
             // Add index to each item
             for (i = 0; i < length; i++) {
@@ -1369,6 +1444,102 @@
                 year: 364 * 24 * 3600000
             };
         /**
+         * Format a number and return a string based on input settings.
+         *
+         * @sample highcharts/members/highcharts-numberformat/
+         *         Custom number format
+         *
+         * @function Highcharts.numberFormat
+         *
+         * @param {number} number
+         *        The input number to format.
+         *
+         * @param {number} decimals
+         *        The amount of decimals. A value of -1 preserves the amount in the
+         *        input number.
+         *
+         * @param {string} [decimalPoint]
+         *        The decimal point, defaults to the one given in the lang options, or
+         *        a dot.
+         *
+         * @param {string} [thousandsSep]
+         *        The thousands separator, defaults to the one given in the lang
+         *        options, or a space character.
+         *
+         * @return {string}
+         *         The formatted number.
+         */
+        function numberFormat(number, decimals, decimalPoint, thousandsSep) {
+            number = +number || 0;
+            decimals = +decimals;
+            var lang = H.defaultOptions.lang, origDec = (number.toString().split('.')[1] || '').split('e')[0].length, strinteger, thousands, ret, roundedNumber, exponent = number.toString().split('e'), fractionDigits, firstDecimals = decimals;
+            if (decimals === -1) {
+                // Preserve decimals. Not huge numbers (#3793).
+                decimals = Math.min(origDec, 20);
+            }
+            else if (!isNumber(decimals)) {
+                decimals = 2;
+            }
+            else if (decimals && exponent[1] && exponent[1] < 0) {
+                // Expose decimals from exponential notation (#7042)
+                fractionDigits = decimals + +exponent[1];
+                if (fractionDigits >= 0) {
+                    // remove too small part of the number while keeping the notation
+                    exponent[0] = (+exponent[0]).toExponential(fractionDigits)
+                        .split('e')[0];
+                    decimals = fractionDigits;
+                }
+                else {
+                    // fractionDigits < 0
+                    exponent[0] = exponent[0].split('.')[0] || 0;
+                    if (decimals < 20) {
+                        // use number instead of exponential notation (#7405)
+                        number = (exponent[0] * Math.pow(10, exponent[1]))
+                            .toFixed(decimals);
+                    }
+                    else {
+                        // or zero
+                        number = 0;
+                    }
+                    exponent[1] = 0;
+                }
+            }
+            // Add another decimal to avoid rounding errors of float numbers. (#4573)
+            // Then use toFixed to handle rounding.
+            roundedNumber = (Math.abs(exponent[1] ? exponent[0] : number) +
+                Math.pow(10, -Math.max(decimals, origDec) - 1)).toFixed(decimals);
+            // A string containing the positive integer component of the number
+            strinteger = String(pInt(roundedNumber));
+            // Leftover after grouping into thousands. Can be 0, 1 or 2.
+            thousands = strinteger.length > 3 ? strinteger.length % 3 : 0;
+            // Language
+            decimalPoint = pick(decimalPoint, lang.decimalPoint);
+            thousandsSep = pick(thousandsSep, lang.thousandsSep);
+            // Start building the return
+            ret = number < 0 ? '-' : '';
+            // Add the leftover after grouping into thousands. For example, in the
+            // number 42 000 000, this line adds 42.
+            ret += thousands ? strinteger.substr(0, thousands) + thousandsSep : '';
+            if (+exponent[1] < 0 && !firstDecimals) {
+                ret = '0';
+            }
+            else {
+                // Add the remaining thousands groups, joined by the thousands separator
+                ret += strinteger
+                    .substr(thousands)
+                    .replace(/(\d{3})(?=\d)/g, '$1' + thousandsSep);
+            }
+            // Add the decimal point and the decimal component
+            if (decimals) {
+                // Get the decimal component
+                ret += decimalPoint + roundedNumber.slice(-decimals);
+            }
+            if (exponent[1] && +ret !== 0) {
+                ret += 'e' + exponent[1];
+            }
+            return ret;
+        }
+        /**
          * Easing definition
          *
          * @private
@@ -1398,27 +1569,23 @@
          * @return {unknown}
          * The unknown property value.
          */
-        function getNestedProperty(path, parent) {
-            var pathElements = path.split('.');
-            while (pathElements.length && defined(parent)) {
-                var pathElement = pathElements.shift();
-                // Filter on the key
-                if (typeof pathElement === 'undefined' ||
-                    pathElement === '__proto__') {
-                    return; // undefined
-                }
-                var child = parent[pathElement];
-                // Filter on the child
-                if (!defined(child) ||
-                    typeof child === 'function' ||
-                    typeof child.nodeType === 'number' ||
-                    child === win) {
-                    return; // undefined
-                }
-                // Else, proceed
-                parent = child;
+        function getNestedProperty(path, obj) {
+            if (!path) {
+                return obj;
             }
-            return parent;
+            var pathElements = path.split('.').reverse();
+            var subProperty = obj;
+            if (pathElements.length === 1) {
+                return subProperty[path];
+            }
+            var pathElement = pathElements.pop();
+            while (typeof pathElement !== 'undefined' &&
+                typeof subProperty !== 'undefined' &&
+                subProperty !== null) {
+                subProperty = subProperty[pathElement];
+                pathElement = pathElements.pop();
+            }
+            return subProperty;
         }
         /**
          * Get the computed CSS value for given element and property, only for numerical
@@ -1428,20 +1595,18 @@
          * @function Highcharts.getStyle
          *
          * @param {Highcharts.HTMLDOMElement} el
-         * An HTML element.
+         *        An HTML element.
          *
          * @param {string} prop
-         * The property name.
+         *        The property name.
          *
          * @param {boolean} [toInt=true]
-         * Parse to integer.
+         *        Parse to integer.
          *
-         * @return {number|string|undefined}
-         * The style value.
+         * @return {number|string}
+         *         The numeric value.
          */
         function getStyle(el, prop, toInt) {
-            var customGetStyle = (H.getStyle || // oldie getStyle
-                    getStyle);
             var style;
             // For width and height, return the actual inner pixel size (#4913)
             if (prop === 'width') {
@@ -1460,24 +1625,23 @@
                 }
                 return Math.max(0, // #8377
                 (offsetWidth -
-                    (customGetStyle(el, 'padding-left', true) || 0) -
-                    (customGetStyle(el, 'padding-right', true) || 0)));
+                    H.getStyle(el, 'padding-left') -
+                    H.getStyle(el, 'padding-right')));
             }
             if (prop === 'height') {
                 return Math.max(0, // #8377
-                (Math.min(el.offsetHeight, el.scrollHeight) -
-                    (customGetStyle(el, 'padding-top', true) || 0) -
-                    (customGetStyle(el, 'padding-bottom', true) || 0)));
+                Math.min(el.offsetHeight, el.scrollHeight) -
+                    H.getStyle(el, 'padding-top') -
+                    H.getStyle(el, 'padding-bottom'));
             }
             if (!win.getComputedStyle) {
                 // SVG not supported, forgot to load oldie.js?
                 error(27, true);
             }
             // Otherwise, get the computed style
-            var css = win.getComputedStyle(el,
-                undefined); // eslint-disable-line no-undefined
-                if (css) {
-                    style = css.getPropertyValue(prop);
+            style = win.getComputedStyle(el, undefined); // eslint-disable-line no-undefined
+            if (style) {
+                style = style.getPropertyValue(prop);
                 if (pick(toInt, prop !== 'opacity')) {
                     style = pInt(style);
                 }
@@ -1532,8 +1696,8 @@
             } :
             // Legacy implementation. PhantomJS, IE <= 11 etc. #7223.
             function (arr, callback) {
-                var i;
-                var length = arr.length;
+                var i,
+                    length = arr.length;
                 for (i = 0; i < length; i++) {
                     if (callback(arr[i], i)) { // eslint-disable-line callback-return
                         return arr[i];
@@ -1895,18 +2059,15 @@
                 i;
             eventArguments = eventArguments || {};
             if (doc.createEvent &&
-                (el.dispatchEvent ||
-                    (el.fireEvent &&
-                        // Enable firing events on Highcharts instance.
-                        el !== H))) {
+                (el.dispatchEvent || el.fireEvent)) {
                 e = doc.createEvent('Events');
                 e.initEvent(type, true, true);
-                eventArguments = extend(e, eventArguments);
+                extend(e, eventArguments);
                 if (el.dispatchEvent) {
-                    el.dispatchEvent(eventArguments);
+                    el.dispatchEvent(e);
                 }
                 else {
-                    el.fireEvent(type, eventArguments);
+                    el.fireEvent(type, e);
                 }
             }
             else if (el.hcEvents) {
@@ -1971,7 +2132,7 @@
          * counter.
          *
          * @example
-         * let id = uniqueKey(); // => 'highcharts-x45f6hp-0'
+         * var id = uniqueKey(); // => 'highcharts-x45f6hp-0'
          *
          * @function Highcharts.uniqueKey
          *
@@ -2015,6 +2176,44 @@
         function isFunction(obj) {
             return typeof obj === 'function';
         }
+        /**
+         * Get the updated default options. Until 3.0.7, merely exposing defaultOptions
+         * for outside modules wasn't enough because the setOptions method created a new
+         * object.
+         *
+         * @function Highcharts.getOptions
+         *
+         * @return {Highcharts.Options}
+         */
+        var getOptions = H.getOptions = function () {
+                return H.defaultOptions;
+        };
+        /**
+         * Merge the default options with custom options and return the new options
+         * structure. Commonly used for defining reusable templates.
+         *
+         * @sample highcharts/global/useutc-false Setting a global option
+         * @sample highcharts/members/setoptions Applying a global theme
+         *
+         * @function Highcharts.setOptions
+         *
+         * @param {Highcharts.Options} options
+         *        The new custom chart options.
+         *
+         * @return {Highcharts.Options}
+         *         Updated options.
+         */
+        var setOptions = H.setOptions = function (options) {
+                // Copy in the default options
+                H.defaultOptions = merge(true,
+            H.defaultOptions,
+            options);
+            // Update the time object
+            if (options.time || options.global) {
+                H.time.update(merge(H.defaultOptions.global, H.defaultOptions.time, options.global, options.time));
+            }
+            return H.defaultOptions;
+        };
         // Register Highcharts as a plugin in jQuery
         if (win.jQuery) {
             /**
@@ -2088,8 +2287,10 @@
                 extendClass: extendClass,
                 find: find,
                 fireEvent: fireEvent,
+                format: format,
                 getMagnitude: getMagnitude,
                 getNestedProperty: getNestedProperty,
+                getOptions: getOptions,
                 getStyle: getStyle,
                 inArray: inArray,
                 isArray: isArray,
@@ -2102,6 +2303,7 @@
                 keys: keys,
                 merge: merge,
                 normalizeTickInterval: normalizeTickInterval,
+                numberFormat: numberFormat,
                 objectEach: objectEach,
                 offset: offset,
                 pad: pad,
@@ -2109,6 +2311,7 @@
                 pInt: pInt,
                 relativeLength: relativeLength,
                 removeEvent: removeEvent,
+                setOptions: setOptions,
                 splat: splat,
                 stableSort: stableSort,
                 syncTimeout: syncTimeout,
@@ -2119,6 +2322,430 @@
             };
 
         return utilitiesModule;
+    });
+    _registerModule(_modules, 'Core/Renderer/HTML/AST.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
+        /* *
+         *
+         *  (c) 2010-2020 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var SVG_NS = H.SVG_NS;
+        var attr = U.attr,
+            createElement = U.createElement,
+            discardElement = U.discardElement,
+            error = U.error,
+            isString = U.isString,
+            objectEach = U.objectEach,
+            splat = U.splat;
+        /**
+         * Serialized form of an SVG/HTML definition, including children.
+         *
+         * @interface Highcharts.ASTNode
+         */ /**
+        * @name Highcharts.ASTNode#attributes
+        * @type {Highcharts.SVGAttributes|undefined}
+        */ /**
+        * @name Highcharts.ASTNode#children
+        * @type {Array<Highcharts.ASTNode>|undefined}
+        */ /**
+        * @name Highcharts.ASTNode#tagName
+        * @type {string|undefined}
+        */ /**
+        * @name Highcharts.ASTNode#textContent
+        * @type {string|undefined}
+        */
+        ''; // detach doclets above
+        // In IE8, DOMParser is undefined. IE9 and PhantomJS are only able to parse XML.
+        var hasValidDOMParser = false;
+        try {
+            hasValidDOMParser = Boolean(new DOMParser().parseFromString('', 'text/html'));
+        }
+        catch (e) { } // eslint-disable-line no-empty
+        /**
+         * The AST class represents an abstract syntax tree of HTML or SVG content. It
+         * can take HTML as an argument, parse it, optionally transform it to SVG, then
+         * perform sanitation before inserting it into the DOM.
+         *
+         * @class
+         * @name Highcharts.AST
+         * @param {string|Highcharts.ASTNode[]} source
+         *                                      Either an HTML string or an ASTNode list
+         *                                      to populate the tree
+         */
+        var AST = /** @class */ (function () {
+                // Construct an AST from HTML markup, or wrap an array of existing AST nodes
+                function AST(source) {
+                    this.nodes = typeof source === 'string' ?
+                        this.parseMarkup(source) : source;
+            }
+            /**
+             * Filter an object of SVG or HTML attributes against the allow list.
+             *
+             * @static
+             *
+             * @function Highcharts.AST#filterUserAttributes
+             *
+             * @param {Highcharts.SVGAttributes} attributes The attributes to filter
+             *
+             * @return {Highcharts.SVGAttributes}
+             * The filtered attributes
+             */
+            AST.filterUserAttributes = function (attributes) {
+                objectEach(attributes, function (val, key) {
+                    var valid = true;
+                    if (AST.allowedAttributes.indexOf(key) === -1) {
+                        valid = false;
+                    }
+                    if (['background', 'dynsrc', 'href', 'lowsrc', 'src']
+                        .indexOf(key) !== -1) {
+                        valid = isString(val) && AST.allowedReferences.some(function (ref) { return val.indexOf(ref) === 0; });
+                    }
+                    if (!valid) {
+                        error("Highcharts warning: Invalid attribute '" + key + "' in config");
+                        delete attributes[key];
+                    }
+                });
+                return attributes;
+            };
+            /**
+             * Utility function to set html content for an element by passing in a
+             * markup string. The markup is safely parsed by the AST class to avoid
+             * XSS vulnerabilities. This function should be used instead of setting
+             * `innerHTML` in all cases where the content is not fully trusted.
+             *
+             * @static
+             *
+             * @function Highcharts.AST#setElementHTML
+             *
+             * @param {SVGDOMElement|HTMLDOMElement} el The node to set content of
+             * @param {string} html The markup string
+             */
+            AST.setElementHTML = function (el, html) {
+                el.innerHTML = ''; // Clear previous
+                if (html) {
+                    var ast = new AST(html);
+                    ast.addToDOM(el);
+                }
+            };
+            /**
+             * Add the tree defined as a hierarchical JS structure to the DOM
+             *
+             * @function Highcharts.AST#addToDOM
+             *
+             * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} parent
+             * The node where it should be added
+             *
+             * @return {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement}
+             * The inserted node.
+             */
+            AST.prototype.addToDOM = function (parent) {
+                /**
+                 * @private
+                 * @param {Highcharts.ASTNode} subtree - HTML/SVG definition
+                 * @param {Element} [subParent] - parent node
+                 * @return {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement} The inserted node.
+                 */
+                function recurse(subtree, subParent) {
+                    var ret;
+                    splat(subtree).forEach(function (item) {
+                        var tagName = item.tagName;
+                        var textNode = item.textContent ?
+                                H.doc.createTextNode(item.textContent) :
+                                void 0;
+                        var node;
+                        if (tagName) {
+                            if (tagName === '#text') {
+                                node = textNode;
+                            }
+                            else if (AST.allowedTags.indexOf(tagName) !== -1) {
+                                var NS = tagName === 'svg' ?
+                                        SVG_NS :
+                                        (subParent.namespaceURI || SVG_NS);
+                                var element = H.doc.createElementNS(NS,
+                                    tagName);
+                                var attributes_1 = item.attributes || {};
+                                // Apply attributes from root of AST node, legacy from
+                                // from before TextBuilder
+                                objectEach(item, function (val, key) {
+                                    if (key !== 'tagName' &&
+                                        key !== 'attributes' &&
+                                        key !== 'children' &&
+                                        key !== 'textContent') {
+                                        attributes_1[key] = val;
+                                    }
+                                });
+                                attr(element, AST.filterUserAttributes(attributes_1));
+                                // Add text content
+                                if (textNode) {
+                                    element.appendChild(textNode);
+                                }
+                                // Recurse
+                                recurse(item.children || [], element);
+                                node = element;
+                            }
+                            else {
+                                error("Highcharts warning: Invalid tagName '" + tagName + "' in config");
+                            }
+                        }
+                        // Add to the tree
+                        if (node) {
+                            subParent.appendChild(node);
+                        }
+                        ret = node;
+                    });
+                    // Return last node added (on top level it's the only one)
+                    return ret;
+                }
+                return recurse(this.nodes, parent);
+            };
+            /**
+             * Parse HTML/SVG markup into AST Node objects. Used internally from the
+             * constructor.
+             *
+             * @private
+             *
+             * @function Highcharts.AST#getNodesFromMarkup
+             *
+             * @param {string} markup The markup string.
+             *
+             * @return {Array<Highcharts.ASTNode>} The parsed nodes.
+             */
+            AST.prototype.parseMarkup = function (markup) {
+                var nodes = [];
+                var doc;
+                var body;
+                if (hasValidDOMParser) {
+                    doc = new DOMParser().parseFromString(markup, 'text/html');
+                }
+                else {
+                    body = createElement('div');
+                    body.innerHTML = markup;
+                    doc = { body: body };
+                }
+                var appendChildNodes = function (node,
+                    addTo) {
+                        var tagName = node.nodeName.toLowerCase();
+                    // Add allowed tags
+                    var astNode = {
+                            tagName: tagName
+                        };
+                    if (tagName === '#text') {
+                        var textContent = node.textContent || '';
+                        // Whitespace text node, don't append it to the AST
+                        if (/^[\s]*$/.test(textContent)) {
+                            return;
+                        }
+                        astNode.textContent = textContent;
+                    }
+                    var parsedAttributes = node.attributes;
+                    // Add attributes
+                    if (parsedAttributes) {
+                        var attributes_2 = {};
+                        [].forEach.call(parsedAttributes, function (attrib) {
+                            attributes_2[attrib.name] = attrib.value;
+                        });
+                        astNode.attributes = attributes_2;
+                    }
+                    // Handle children
+                    if (node.childNodes.length) {
+                        var children_1 = [];
+                        [].forEach.call(node.childNodes, function (childNode) {
+                            appendChildNodes(childNode, children_1);
+                        });
+                        if (children_1.length) {
+                            astNode.children = children_1;
+                        }
+                    }
+                    addTo.push(astNode);
+                };
+                [].forEach.call(doc.body.childNodes, function (childNode) { return appendChildNodes(childNode, nodes); });
+                if (body) {
+                    discardElement(body);
+                }
+                return nodes;
+            };
+            /**
+             * The list of allowed SVG or HTML tags, used for sanitizing potentially
+             * harmful content from the chart configuration before adding to the DOM.
+             *
+             * @example
+             * // Allow a custom, trusted tag
+             * Highcharts.AST.allowedTags.push('blink'); // ;)
+             *
+             * @name Highcharts.AST.allowedTags
+             * @static
+             */
+            AST.allowedTags = [
+                'a',
+                'b',
+                'br',
+                'button',
+                'caption',
+                'circle',
+                'clipPath',
+                'code',
+                'dd',
+                'defs',
+                'div',
+                'dl',
+                'dt',
+                'em',
+                'feComponentTransfer',
+                'feFuncA',
+                'feFuncB',
+                'feFuncG',
+                'feFuncR',
+                'feGaussianBlur',
+                'feOffset',
+                'feMerge',
+                'feMergeNode',
+                'filter',
+                'h1',
+                'h2',
+                'h3',
+                'h4',
+                'h5',
+                'h6',
+                'hr',
+                'i',
+                'img',
+                'li',
+                'linearGradient',
+                'marker',
+                'ol',
+                'p',
+                'path',
+                'pattern',
+                'pre',
+                'rect',
+                'small',
+                'span',
+                'stop',
+                'strong',
+                'style',
+                'sub',
+                'sup',
+                'svg',
+                'table',
+                'text',
+                'thead',
+                'tbody',
+                'tspan',
+                'td',
+                'th',
+                'tr',
+                'ul',
+                '#text'
+            ];
+            /**
+             * The list of allowed SVG or HTML attributes, used for sanitizing
+             * potentially harmful content from the chart configuration before adding to
+             * the DOM.
+             *
+             * @example
+             * // Allow a custom, trusted attribute
+             * Highcharts.AST.allowedAttributes.push('data-value');
+             *
+             * @name Highcharts.AST.allowedTags
+             * @static
+             */
+            AST.allowedAttributes = [
+                'aria-controls',
+                'aria-describedby',
+                'aria-expanded',
+                'aria-haspopup',
+                'aria-hidden',
+                'aria-label',
+                'aria-labelledby',
+                'aria-live',
+                'aria-pressed',
+                'aria-readonly',
+                'aria-roledescription',
+                'aria-selected',
+                'class',
+                'clip-path',
+                'color',
+                'colspan',
+                'cx',
+                'cy',
+                'd',
+                'dx',
+                'dy',
+                'disabled',
+                'fill',
+                'height',
+                'href',
+                'id',
+                'in',
+                'markerHeight',
+                'markerWidth',
+                'offset',
+                'opacity',
+                'orient',
+                'padding',
+                'paddingLeft',
+                'patternUnits',
+                'r',
+                'refX',
+                'refY',
+                'role',
+                'scope',
+                'slope',
+                'src',
+                'startOffset',
+                'stdDeviation',
+                'stroke',
+                'stroke-linecap',
+                'stroke-width',
+                'style',
+                'result',
+                'rowspan',
+                'summary',
+                'target',
+                'tabindex',
+                'text-align',
+                'textAnchor',
+                'textLength',
+                'type',
+                'valign',
+                'width',
+                'x',
+                'x1',
+                'xy',
+                'y',
+                'y1',
+                'y2',
+                'zIndex'
+            ];
+            /**
+             * The list of allowed references for referring attributes like `href` and
+             * `src`. Attribute values will only be allowed if they start with one of
+             * these strings.
+             *
+             * @example
+             * // Allow tel:
+             * Highcharts.AST.allowedReferences.push('tel:');
+             *
+             * @name Highcharts.AST.allowedReferences
+             * @static
+             */
+            AST.allowedReferences = [
+                'https://',
+                'http://',
+                'mailto:',
+                '/',
+                '../',
+                './',
+                '#'
+            ];
+            return AST;
+        }());
+
+        return AST;
     });
     _registerModule(_modules, 'Core/Color/Color.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
@@ -2642,14 +3269,6412 @@
                 /**
                  * Positive indicator color
                  */
-                positiveColor: '#06b535',
+                indicatorPositiveLine: '#06b535',
                 /**
                  * Negative indicator color
                  */
-                negativeColor: '#f21313'
+                indicatorNegativeLine: '#f21313'
             };
 
         return palette;
+    });
+    _registerModule(_modules, 'Core/Animation/Fx.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var win = H.win;
+        var isNumber = U.isNumber,
+            objectEach = U.objectEach;
+        /* eslint-disable no-invalid-this, valid-jsdoc */
+        /**
+         * An animator object used internally. One instance applies to one property
+         * (attribute or style prop) on one element. Animation is always initiated
+         * through {@link SVGElement#animate}.
+         *
+         * @example
+         * var rect = renderer.rect(0, 0, 10, 10).add();
+         * rect.animate({ width: 100 });
+         *
+         * @private
+         * @class
+         * @name Highcharts.Fx
+         */
+        var Fx = /** @class */ (function () {
+                /* *
+                 *
+                 *  Constructors
+                 *
+                 * */
+                /**
+                 *
+                 * @param {Highcharts.HTMLDOMElement|Highcharts.SVGElement} elem
+                 *        The element to animate.
+                 *
+                 * @param {Partial<Highcharts.AnimationOptionsObject>} options
+                 *        Animation options.
+                 *
+                 * @param {string} prop
+                 *        The single attribute or CSS property to animate.
+                 */
+                function Fx(elem, options, prop) {
+                    this.pos = NaN;
+                this.options = options;
+                this.elem = elem;
+                this.prop = prop;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Set the current step of a path definition on SVGElement.
+             *
+             * @function Highcharts.Fx#dSetter
+             *
+             * @return {void}
+             */
+            Fx.prototype.dSetter = function () {
+                var paths = this.paths,
+                    start = paths && paths[0],
+                    end = paths && paths[1],
+                    path = [],
+                    now = this.now || 0;
+                // Land on the final path without adjustment points appended in the ends
+                if (now === 1 || !start || !end) {
+                    path = this.toD || [];
+                }
+                else if (start.length === end.length && now < 1) {
+                    for (var i = 0; i < end.length; i++) {
+                        // Tween between the start segment and the end segment. Start
+                        // with a copy of the end segment and tween the appropriate
+                        // numerics
+                        var startSeg = start[i];
+                        var endSeg = end[i];
+                        var tweenSeg = [];
+                        for (var j = 0; j < endSeg.length; j++) {
+                            var startItem = startSeg[j];
+                            var endItem = endSeg[j];
+                            // Tween numbers
+                            if (isNumber(startItem) &&
+                                isNumber(endItem) &&
+                                // Arc boolean flags
+                                !(endSeg[0] === 'A' && (j === 4 || j === 5))) {
+                                tweenSeg[j] = startItem + now * (endItem - startItem);
+                                // Strings, take directly from the end segment
+                            }
+                            else {
+                                tweenSeg[j] = endItem;
+                            }
+                        }
+                        path.push(tweenSeg);
+                    }
+                    // If animation is finished or length not matching, land on right value
+                }
+                else {
+                    path = end;
+                }
+                this.elem.attr('d', path, void 0, true);
+            };
+            /**
+             * Update the element with the current animation step.
+             *
+             * @function Highcharts.Fx#update
+             *
+             * @return {void}
+             */
+            Fx.prototype.update = function () {
+                var elem = this.elem,
+                    prop = this.prop, // if destroyed, it is null
+                    now = this.now,
+                    step = this.options.step;
+                // Animation setter defined from outside
+                if (this[prop + 'Setter']) {
+                    this[prop + 'Setter']();
+                    // Other animations on SVGElement
+                }
+                else if (elem.attr) {
+                    if (elem.element) {
+                        elem.attr(prop, now, null, true);
+                    }
+                    // HTML styles, raw HTML content like container size
+                }
+                else {
+                    elem.style[prop] = now + this.unit;
+                }
+                if (step) {
+                    step.call(elem, now, this);
+                }
+            };
+            /**
+             * Run an animation.
+             *
+             * @function Highcharts.Fx#run
+             *
+             * @param {number} from
+             *        The current value, value to start from.
+             *
+             * @param {number} to
+             *        The end value, value to land on.
+             *
+             * @param {string} unit
+             *        The property unit, for example `px`.
+             *
+             * @return {void}
+             */
+            Fx.prototype.run = function (from, to, unit) {
+                var self = this,
+                    options = self.options,
+                    timer = function (gotoEnd) {
+                        return timer.stopped ? false : self.step(gotoEnd);
+                }, requestAnimationFrame = win.requestAnimationFrame ||
+                    function (step) {
+                        setTimeout(step, 13);
+                    }, step = function () {
+                    for (var i = 0; i < Fx.timers.length; i++) {
+                        if (!Fx.timers[i]()) {
+                            Fx.timers.splice(i--, 1);
+                        }
+                    }
+                    if (Fx.timers.length) {
+                        requestAnimationFrame(step);
+                    }
+                };
+                if (from === to && !this.elem['forceAnimate:' + this.prop]) {
+                    delete options.curAnim[this.prop];
+                    if (options.complete && Object.keys(options.curAnim).length === 0) {
+                        options.complete.call(this.elem);
+                    }
+                }
+                else { // #7166
+                    this.startTime = +new Date();
+                    this.start = from;
+                    this.end = to;
+                    this.unit = unit;
+                    this.now = this.start;
+                    this.pos = 0;
+                    timer.elem = this.elem;
+                    timer.prop = this.prop;
+                    if (timer() && Fx.timers.push(timer) === 1) {
+                        requestAnimationFrame(step);
+                    }
+                }
+            };
+            /**
+             * Run a single step in the animation.
+             *
+             * @function Highcharts.Fx#step
+             *
+             * @param {boolean} [gotoEnd]
+             *        Whether to go to the endpoint of the animation after abort.
+             *
+             * @return {boolean}
+             *         Returns `true` if animation continues.
+             */
+            Fx.prototype.step = function (gotoEnd) {
+                var t = +new Date(),
+                    ret,
+                    done,
+                    options = this.options,
+                    elem = this.elem,
+                    complete = options.complete,
+                    duration = options.duration,
+                    curAnim = options.curAnim;
+                if (elem.attr && !elem.element) { // #2616, element is destroyed
+                    ret = false;
+                }
+                else if (gotoEnd || t >= duration + this.startTime) {
+                    this.now = this.end;
+                    this.pos = 1;
+                    this.update();
+                    curAnim[this.prop] = true;
+                    done = true;
+                    objectEach(curAnim, function (val) {
+                        if (val !== true) {
+                            done = false;
+                        }
+                    });
+                    if (done && complete) {
+                        complete.call(elem);
+                    }
+                    ret = false;
+                }
+                else {
+                    this.pos = options.easing((t - this.startTime) / duration);
+                    this.now = this.start + ((this.end - this.start) * this.pos);
+                    this.update();
+                    ret = true;
+                }
+                return ret;
+            };
+            /**
+             * Prepare start and end values so that the path can be animated one to one.
+             *
+             * @function Highcharts.Fx#initPath
+             *
+             * @param {Highcharts.SVGElement} elem
+             *        The SVGElement item.
+             *
+             * @param {Highcharts.SVGPathArray|undefined} fromD
+             *        Starting path definition.
+             *
+             * @param {Highcharts.SVGPathArray} toD
+             *        Ending path definition.
+             *
+             * @return {Array<Highcharts.SVGPathArray,Highcharts.SVGPathArray>}
+             *         An array containing start and end paths in array form so that
+             *         they can be animated in parallel.
+             */
+            Fx.prototype.initPath = function (elem, fromD, toD) {
+                var shift,
+                    startX = elem.startX,
+                    endX = elem.endX,
+                    fullLength,
+                    i,
+                    start = fromD && fromD.slice(), // copy
+                    end = toD.slice(), // copy
+                    isArea = elem.isArea,
+                    positionFactor = isArea ? 2 : 1,
+                    reverse;
+                if (!start) {
+                    return [end, end];
+                }
+                /**
+                 * If shifting points, prepend a dummy point to the end path.
+                 * @private
+                 * @param {Highcharts.SVGPathArray} arr - array
+                 * @param {Highcharts.SVGPathArray} other - array
+                 * @return {void}
+                 */
+                function prepend(arr, other) {
+                    while (arr.length < fullLength) {
+                        // Move to, line to or curve to?
+                        var moveSegment = arr[0],
+                            otherSegment = other[fullLength - arr.length];
+                        if (otherSegment && moveSegment[0] === 'M') {
+                            if (otherSegment[0] === 'C') {
+                                arr[0] = [
+                                    'C',
+                                    moveSegment[1],
+                                    moveSegment[2],
+                                    moveSegment[1],
+                                    moveSegment[2],
+                                    moveSegment[1],
+                                    moveSegment[2]
+                                ];
+                            }
+                            else {
+                                arr[0] = ['L', moveSegment[1], moveSegment[2]];
+                            }
+                        }
+                        // Prepend a copy of the first point
+                        arr.unshift(moveSegment);
+                        // For areas, the bottom path goes back again to the left, so we
+                        // need to append a copy of the last point.
+                        if (isArea) {
+                            arr.push(arr[arr.length - 1]);
+                        }
+                    }
+                }
+                /**
+                 * Copy and append last point until the length matches the end length.
+                 * @private
+                 * @param {Highcharts.SVGPathArray} arr - array
+                 * @param {Highcharts.SVGPathArray} other - array
+                 * @return {void}
+                 */
+                function append(arr, other) {
+                    while (arr.length < fullLength) {
+                        // Pull out the slice that is going to be appended or inserted.
+                        // In a line graph, the positionFactor is 1, and the last point
+                        // is sliced out. In an area graph, the positionFactor is 2,
+                        // causing the middle two points to be sliced out, since an area
+                        // path starts at left, follows the upper path then turns and
+                        // follows the bottom back.
+                        var segmentToAdd = arr[arr.length / positionFactor - 1].slice();
+                        // Disable the first control point of curve segments
+                        if (segmentToAdd[0] === 'C') {
+                            segmentToAdd[1] = segmentToAdd[5];
+                            segmentToAdd[2] = segmentToAdd[6];
+                        }
+                        if (!isArea) {
+                            arr.push(segmentToAdd);
+                        }
+                        else {
+                            var lowerSegmentToAdd = arr[arr.length / positionFactor].slice();
+                            arr.splice(arr.length / 2, 0, segmentToAdd, lowerSegmentToAdd);
+                        }
+                    }
+                }
+                // For sideways animation, find out how much we need to shift to get the
+                // start path Xs to match the end path Xs.
+                if (startX && endX) {
+                    for (i = 0; i < startX.length; i++) {
+                        // Moving left, new points coming in on right
+                        if (startX[i] === endX[0]) {
+                            shift = i;
+                            break;
+                            // Moving right
+                        }
+                        else if (startX[0] ===
+                            endX[endX.length - startX.length + i]) {
+                            shift = i;
+                            reverse = true;
+                            break;
+                            // Fixed from the right side, "scaling" left
+                        }
+                        else if (startX[startX.length - 1] ===
+                            endX[endX.length - startX.length + i]) {
+                            shift = startX.length - i;
+                            break;
+                        }
+                    }
+                    if (typeof shift === 'undefined') {
+                        start = [];
+                    }
+                }
+                if (start.length && isNumber(shift)) {
+                    // The common target length for the start and end array, where both
+                    // arrays are padded in opposite ends
+                    fullLength = end.length + shift * positionFactor;
+                    if (!reverse) {
+                        prepend(end, start);
+                        append(start, end);
+                    }
+                    else {
+                        prepend(start, end);
+                        append(end, start);
+                    }
+                }
+                return [start, end];
+            };
+            /**
+             * Handle animation of the color attributes directly.
+             *
+             * @function Highcharts.Fx#fillSetter
+             *
+             * @return {void}
+             */
+            Fx.prototype.fillSetter = function () {
+                Fx.prototype.strokeSetter.apply(this, arguments);
+            };
+            /**
+             * Handle animation of the color attributes directly.
+             *
+             * @function Highcharts.Fx#strokeSetter
+             *
+             * @return {void}
+             */
+            Fx.prototype.strokeSetter = function () {
+                this.elem.attr(this.prop, H.color(this.start).tweenTo(H.color(this.end), this.pos), null, true);
+            };
+            /* *
+             *
+             * Static properties
+             *
+             * */
+            Fx.timers = [];
+            return Fx;
+        }());
+        /* *
+         *
+         *  Compatibility
+         *
+         * */
+        H.Fx = Fx;
+        H.timers = Fx.timers;
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Fx;
+    });
+    _registerModule(_modules, 'Core/Animation/AnimationUtilities.js', [_modules['Core/Animation/Fx.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (Fx, H, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var defined = U.defined,
+            getStyle = U.getStyle,
+            isArray = U.isArray,
+            isNumber = U.isNumber,
+            isObject = U.isObject,
+            merge = U.merge,
+            objectEach = U.objectEach,
+            pick = U.pick;
+        /**
+         * Set the global animation to either a given value, or fall back to the given
+         * chart's animation option.
+         *
+         * @function Highcharts.setAnimation
+         *
+         * @param {boolean|Partial<Highcharts.AnimationOptionsObject>|undefined} animation
+         *        The animation object.
+         *
+         * @param {Highcharts.Chart} chart
+         *        The chart instance.
+         *
+         * @todo
+         * This function always relates to a chart, and sets a property on the renderer,
+         * so it should be moved to the SVGRenderer.
+         */
+        var setAnimation = H.setAnimation = function setAnimation(animation,
+            chart) {
+                chart.renderer.globalAnimation = pick(animation,
+            chart.options.chart.animation,
+            true);
+        };
+        /**
+         * Get the animation in object form, where a disabled animation is always
+         * returned as `{ duration: 0 }`.
+         *
+         * @function Highcharts.animObject
+         *
+         * @param {boolean|Highcharts.AnimationOptionsObject} [animation=0]
+         *        An animation setting. Can be an object with duration, complete and
+         *        easing properties, or a boolean to enable or disable.
+         *
+         * @return {Highcharts.AnimationOptionsObject}
+         *         An object with at least a duration property.
+         */
+        var animObject = H.animObject = function animObject(animation) {
+                return isObject(animation) ?
+                    merge({ duration: 500,
+            defer: 0 },
+            animation) :
+                    { duration: animation ? 500 : 0,
+            defer: 0 };
+        };
+        /**
+         * Get the defer as a number value from series animation options.
+         *
+         * @function Highcharts.getDeferredAnimation
+         *
+         * @param {Highcharts.Chart} chart
+         *        The chart instance.
+         *
+         * @param {boolean|Highcharts.AnimationOptionsObject} animation
+         *        An animation setting. Can be an object with duration, complete and
+         *        easing properties, or a boolean to enable or disable.
+         *
+         * @param {Highcharts.Series} [series]
+         *        Series to defer animation.
+         *
+         * @return {number}
+         *        The numeric value.
+         */
+        var getDeferredAnimation = H.getDeferredAnimation = function (chart,
+            animation,
+            series) {
+                var labelAnimation = animObject(animation);
+            var s = series ? [series] : chart.series;
+            var defer = 0;
+            var duration = 0;
+            s.forEach(function (series) {
+                var seriesAnim = animObject(series.options.animation);
+                defer = animation && defined(animation.defer) ?
+                    labelAnimation.defer :
+                    Math.max(defer, seriesAnim.duration + seriesAnim.defer);
+                duration = Math.min(labelAnimation.duration, seriesAnim.duration);
+            });
+            // Disable defer for exporting
+            if (chart.renderer.forExport) {
+                defer = 0;
+            }
+            var anim = {
+                    defer: Math.max(0,
+                defer - duration),
+                    duration: Math.min(defer,
+                duration)
+                };
+            return anim;
+        };
+        /**
+         * The global animate method, which uses Fx to create individual animators.
+         *
+         * @function Highcharts.animate
+         *
+         * @param {Highcharts.HTMLDOMElement|Highcharts.SVGElement} el
+         *        The element to animate.
+         *
+         * @param {Highcharts.CSSObject|Highcharts.SVGAttributes} params
+         *        An object containing key-value pairs of the properties to animate.
+         *        Supports numeric as pixel-based CSS properties for HTML objects and
+         *        attributes for SVGElements.
+         *
+         * @param {Partial<Highcharts.AnimationOptionsObject>} [opt]
+         *        Animation options.
+         *
+         * @return {void}
+         */
+        var animate = function (el,
+            params,
+            opt) {
+                var start,
+            unit = '',
+            end,
+            fx,
+            args;
+            if (!isObject(opt)) { // Number or undefined/null
+                args = arguments;
+                opt = {
+                    duration: args[2],
+                    easing: args[3],
+                    complete: args[4]
+                };
+            }
+            if (!isNumber(opt.duration)) {
+                opt.duration = 400;
+            }
+            opt.easing = typeof opt.easing === 'function' ?
+                opt.easing :
+                (Math[opt.easing] || Math.easeInOutSine);
+            opt.curAnim = merge(params);
+            objectEach(params, function (val, prop) {
+                // Stop current running animation of this property
+                stop(el, prop);
+                fx = new Fx(el, opt, prop);
+                end = null;
+                if (prop === 'd' && isArray(params.d)) {
+                    fx.paths = fx.initPath(el, el.pathArray, params.d);
+                    fx.toD = params.d;
+                    start = 0;
+                    end = 1;
+                }
+                else if (el.attr) {
+                    start = el.attr(prop);
+                }
+                else {
+                    start = parseFloat(getStyle(el, prop)) || 0;
+                    if (prop !== 'opacity') {
+                        unit = 'px';
+                    }
+                }
+                if (!end) {
+                    end = val;
+                }
+                if (end && end.match && end.match('px')) {
+                    end = end.replace(/px/g, ''); // #4351
+                }
+                fx.run(start, end, unit);
+            });
+        };
+        /**
+         * Stop running animation.
+         *
+         * @function Highcharts.stop
+         *
+         * @param {Highcharts.SVGElement} el
+         *        The SVGElement to stop animation on.
+         *
+         * @param {string} [prop]
+         *        The property to stop animating. If given, the stop method will stop a
+         *        single property from animating, while others continue.
+         *
+         * @return {void}
+         *
+         * @todo
+         * A possible extension to this would be to stop a single property, when
+         * we want to continue animating others. Then assign the prop to the timer
+         * in the Fx.run method, and check for the prop here. This would be an
+         * improvement in all cases where we stop the animation from .attr. Instead of
+         * stopping everything, we can just stop the actual attributes we're setting.
+         */
+        var stop = H.stop = function (el,
+            prop) {
+                var i = Fx.timers.length;
+            // Remove timers related to this element (#4519)
+            while (i--) {
+                if (Fx.timers[i].elem === el && (!prop || prop === Fx.timers[i].prop)) {
+                    Fx.timers[i].stopped = true; // #4667
+                }
+            }
+        };
+        var animationExports = {
+                animate: animate,
+                animObject: animObject,
+                getDeferredAnimation: getDeferredAnimation,
+                setAnimation: setAnimation,
+                stop: stop
+            };
+
+        return animationExports;
+    });
+    _registerModule(_modules, 'Core/Renderer/SVG/SVGElement.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Utilities.js']], function (A, AST, Color, H, palette, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var animate = A.animate,
+            animObject = A.animObject,
+            stop = A.stop;
+        var deg2rad = H.deg2rad,
+            doc = H.doc,
+            hasTouch = H.hasTouch,
+            noop = H.noop,
+            svg = H.svg,
+            SVG_NS = H.SVG_NS,
+            win = H.win;
+        var attr = U.attr,
+            createElement = U.createElement,
+            css = U.css,
+            defined = U.defined,
+            erase = U.erase,
+            extend = U.extend,
+            fireEvent = U.fireEvent,
+            isArray = U.isArray,
+            isFunction = U.isFunction,
+            isNumber = U.isNumber,
+            isString = U.isString,
+            merge = U.merge,
+            objectEach = U.objectEach,
+            pick = U.pick,
+            pInt = U.pInt,
+            syncTimeout = U.syncTimeout,
+            uniqueKey = U.uniqueKey;
+        /**
+         * The horizontal alignment of an element.
+         *
+         * @typedef {"center"|"left"|"right"} Highcharts.AlignValue
+         */
+        /**
+         * Options to align the element relative to the chart or another box.
+         *
+         * @interface Highcharts.AlignObject
+         */ /**
+        * Horizontal alignment. Can be one of `left`, `center` and `right`.
+        *
+        * @name Highcharts.AlignObject#align
+        * @type {Highcharts.AlignValue|undefined}
+        *
+        * @default left
+        */ /**
+        * Vertical alignment. Can be one of `top`, `middle` and `bottom`.
+        *
+        * @name Highcharts.AlignObject#verticalAlign
+        * @type {Highcharts.VerticalAlignValue|undefined}
+        *
+        * @default top
+        */ /**
+        * Horizontal pixel offset from alignment.
+        *
+        * @name Highcharts.AlignObject#x
+        * @type {number|undefined}
+        *
+        * @default 0
+        */ /**
+        * Vertical pixel offset from alignment.
+        *
+        * @name Highcharts.AlignObject#y
+        * @type {number|undefined}
+        *
+        * @default 0
+        */ /**
+        * Use the `transform` attribute with translateX and translateY custom
+        * attributes to align this elements rather than `x` and `y` attributes.
+        *
+        * @name Highcharts.AlignObject#alignByTranslate
+        * @type {boolean|undefined}
+        *
+        * @default false
+        */
+        /**
+         * Bounding box of an element.
+         *
+         * @interface Highcharts.BBoxObject
+         * @extends Highcharts.PositionObject
+         */ /**
+        * Height of the bounding box.
+        *
+        * @name Highcharts.BBoxObject#height
+        * @type {number}
+        */ /**
+        * Width of the bounding box.
+        *
+        * @name Highcharts.BBoxObject#width
+        * @type {number}
+        */ /**
+        * Horizontal position of the bounding box.
+        *
+        * @name Highcharts.BBoxObject#x
+        * @type {number}
+        */ /**
+        * Vertical position of the bounding box.
+        *
+        * @name Highcharts.BBoxObject#y
+        * @type {number}
+        */
+        /**
+         * An object of key-value pairs for SVG attributes. Attributes in Highcharts
+         * elements for the most parts correspond to SVG, but some are specific to
+         * Highcharts, like `zIndex`, `rotation`, `rotationOriginX`,
+         * `rotationOriginY`, `translateX`, `translateY`, `scaleX` and `scaleY`. SVG
+         * attributes containing a hyphen are _not_ camel-cased, they should be
+         * quoted to preserve the hyphen.
+         *
+         * @example
+         * {
+         *     'stroke': '#ff0000', // basic
+         *     'stroke-width': 2, // hyphenated
+         *     'rotation': 45 // custom
+         *     'd': ['M', 10, 10, 'L', 30, 30, 'z'] // path definition, note format
+         * }
+         *
+         * @interface Highcharts.SVGAttributes
+         */ /**
+        * @name Highcharts.SVGAttributes#[key:string]
+        * @type {*}
+        */ /**
+        * @name Highcharts.SVGAttributes#d
+        * @type {string|Highcharts.SVGPathArray|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#fill
+        * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#inverted
+        * @type {boolean|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#matrix
+        * @type {Array<number>|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#rotation
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#rotationOriginX
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#rotationOriginY
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#scaleX
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#scaleY
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#stroke
+        * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#style
+        * @type {string|Highcharts.CSSObject|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#translateX
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#translateY
+        * @type {number|undefined}
+        */ /**
+        * @name Highcharts.SVGAttributes#zIndex
+        * @type {number|undefined}
+        */
+        /**
+         * An SVG DOM element. The type is a reference to the regular SVGElement in the
+         * global scope.
+         *
+         * @typedef {globals.GlobalSVGElement} Highcharts.SVGDOMElement
+         *
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGElement
+         */
+        /**
+         * The vertical alignment of an element.
+         *
+         * @typedef {"bottom"|"middle"|"top"} Highcharts.VerticalAlignValue
+         */
+        ''; // detach doclets above
+        /* eslint-disable no-invalid-this, valid-jsdoc */
+        /**
+         * The SVGElement prototype is a JavaScript wrapper for SVG elements used in the
+         * rendering layer of Highcharts. Combined with the
+         * {@link Highcharts.SVGRenderer}
+         * object, these prototypes allow freeform annotation in the charts or even in
+         * HTML pages without instanciating a chart. The SVGElement can also wrap HTML
+         * labels, when `text` or `label` elements are created with the `useHTML`
+         * parameter.
+         *
+         * The SVGElement instances are created through factory functions on the
+         * {@link Highcharts.SVGRenderer}
+         * object, like
+         * {@link Highcharts.SVGRenderer#rect|rect},
+         * {@link Highcharts.SVGRenderer#path|path},
+         * {@link Highcharts.SVGRenderer#text|text},
+         * {@link Highcharts.SVGRenderer#label|label},
+         * {@link Highcharts.SVGRenderer#g|g}
+         * and more.
+         *
+         * @class
+         * @name Highcharts.SVGElement
+         */
+        var SVGElement = /** @class */ (function () {
+                function SVGElement() {
+                    /* *
+                     *
+                     *  Properties
+                     *
+                     * */
+                    this.element = void 0;
+                this.height = void 0;
+                this.opacity = 1; // Default base for animation
+                this.renderer = void 0;
+                this.SVG_NS = SVG_NS;
+                // Custom attributes used for symbols, these should be filtered out when
+                // setting SVGElement attributes (#9375).
+                this.symbolCustomAttribs = [
+                    'x',
+                    'y',
+                    'width',
+                    'height',
+                    'r',
+                    'start',
+                    'end',
+                    'innerR',
+                    'anchorX',
+                    'anchorY',
+                    'rounded'
+                ];
+                this.width = void 0;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Get the current value of an attribute or pseudo attribute,
+             * used mainly for animation. Called internally from
+             * the {@link Highcharts.SVGRenderer#attr} function.
+             *
+             * @private
+             * @function Highcharts.SVGElement#_defaultGetter
+             *
+             * @param {string} key
+             *        Property key.
+             *
+             * @return {number|string}
+             *         Property value.
+             */
+            SVGElement.prototype._defaultGetter = function (key) {
+                var ret = pick(this[key + 'Value'], // align getter
+                    this[key],
+                    this.element ? this.element.getAttribute(key) : null, 0);
+                if (/^[\-0-9\.]+$/.test(ret)) { // is numerical
+                    ret = parseFloat(ret);
+                }
+                return ret;
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#_defaultSetter
+             *
+             * @param {string} value
+             *
+             * @param {string} key
+             *
+             * @param {Highcharts.SVGDOMElement} element
+             *
+             * @return {void}
+             */
+            SVGElement.prototype._defaultSetter = function (value, key, element) {
+                element.setAttribute(key, value);
+            };
+            /**
+             * Add the element to the DOM. All elements must be added this way.
+             *
+             * @sample highcharts/members/renderer-g
+             *         Elements added to a group
+             *
+             * @function Highcharts.SVGElement#add
+             *
+             * @param {Highcharts.SVGElement} [parent]
+             *        The parent item to add it to. If undefined, the element is added
+             *        to the {@link Highcharts.SVGRenderer.box}.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.add = function (parent) {
+                var renderer = this.renderer,
+                    element = this.element,
+                    inserted;
+                if (parent) {
+                    this.parentGroup = parent;
+                }
+                // Mark as inverted
+                this.parentInverted = parent && parent.inverted;
+                // Build formatted text
+                if (typeof this.textStr !== 'undefined' &&
+                    this.element.nodeName === 'text' // Not for SVGLabel instances
+                ) {
+                    renderer.buildText(this);
+                }
+                // Mark as added
+                this.added = true;
+                // If we're adding to renderer root, or other elements in the group
+                // have a z index, we need to handle it
+                if (!parent || parent.handleZ || this.zIndex) {
+                    inserted = this.zIndexSetter();
+                }
+                // If zIndex is not handled, append at the end
+                if (!inserted) {
+                    (parent ?
+                        parent.element :
+                        renderer.box).appendChild(element);
+                }
+                // fire an event for internal hooks
+                if (this.onAdd) {
+                    this.onAdd();
+                }
+                return this;
+            };
+            /**
+             * Add a class name to an element.
+             *
+             * @function Highcharts.SVGElement#addClass
+             *
+             * @param {string} className
+             * The new class name to add.
+             *
+             * @param {boolean} [replace=false]
+             * When true, the existing class name(s) will be overwritten with the new
+             * one. When false, the new one is added.
+             *
+             * @return {Highcharts.SVGElement}
+             * Return the SVG element for chainability.
+             */
+            SVGElement.prototype.addClass = function (className, replace) {
+                var currentClassName = replace ? '' : (this.attr('class') || '');
+                // Trim the string and remove duplicates
+                className = (className || '')
+                    .split(/ /g)
+                    .reduce(function (newClassName, name) {
+                    if (currentClassName.indexOf(name) === -1) {
+                        newClassName.push(name);
+                    }
+                    return newClassName;
+                }, (currentClassName ?
+                    [currentClassName] :
+                    []))
+                    .join(' ');
+                if (className !== currentClassName) {
+                    this.attr('class', className);
+                }
+                return this;
+            };
+            /**
+             * This method is executed in the end of `attr()`, after setting all
+             * attributes in the hash. In can be used to efficiently consolidate
+             * multiple attributes in one SVG property -- e.g., translate, rotate and
+             * scale are merged in one "transform" attribute in the SVG node.
+             *
+             * @private
+             * @function Highcharts.SVGElement#afterSetters
+             */
+            SVGElement.prototype.afterSetters = function () {
+                // Update transform. Do this outside the loop to prevent redundant
+                // updating for batch setting of attributes.
+                if (this.doTransform) {
+                    this.updateTransform();
+                    this.doTransform = false;
+                }
+            };
+            /**
+             * Align the element relative to the chart or another box.
+             *
+             * @function Highcharts.SVGElement#align
+             *
+             * @param {Highcharts.AlignObject} [alignOptions]
+             *        The alignment options. The function can be called without this
+             *        parameter in order to re-align an element after the box has been
+             *        updated.
+             *
+             * @param {boolean} [alignByTranslate]
+             *        Align element by translation.
+             *
+             * @param {string|Highcharts.BBoxObject} [box]
+             *        The box to align to, needs a width and height. When the box is a
+             *        string, it refers to an object in the Renderer. For example, when
+             *        box is `spacingBox`, it refers to `Renderer.spacingBox` which
+             *        holds `width`, `height`, `x` and `y` properties.
+             *
+             * @return {Highcharts.SVGElement} Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.align = function (alignOptions, alignByTranslate, box) {
+                var align,
+                    vAlign,
+                    x,
+                    y,
+                    attribs = {},
+                    alignTo,
+                    renderer = this.renderer,
+                    alignedObjects = renderer.alignedObjects,
+                    alignFactor,
+                    vAlignFactor;
+                // First call on instanciate
+                if (alignOptions) {
+                    this.alignOptions = alignOptions;
+                    this.alignByTranslate = alignByTranslate;
+                    if (!box || isString(box)) {
+                        this.alignTo = alignTo = box || 'renderer';
+                        // prevent duplicates, like legendGroup after resize
+                        erase(alignedObjects, this);
+                        alignedObjects.push(this);
+                        box = void 0; // reassign it below
+                    }
+                    // When called on resize, no arguments are supplied
+                }
+                else {
+                    alignOptions = this.alignOptions;
+                    alignByTranslate = this.alignByTranslate;
+                    alignTo = this.alignTo;
+                }
+                box = pick(box, renderer[alignTo], renderer);
+                // Assign variables
+                align = alignOptions.align;
+                vAlign = alignOptions.verticalAlign;
+                // default: left align
+                x = (box.x || 0) + (alignOptions.x || 0);
+                // default: top align
+                y = (box.y || 0) + (alignOptions.y || 0);
+                // Align
+                if (align === 'right') {
+                    alignFactor = 1;
+                }
+                else if (align === 'center') {
+                    alignFactor = 2;
+                }
+                if (alignFactor) {
+                    x += (box.width - (alignOptions.width || 0)) /
+                        alignFactor;
+                }
+                attribs[alignByTranslate ? 'translateX' : 'x'] = Math.round(x);
+                // Vertical align
+                if (vAlign === 'bottom') {
+                    vAlignFactor = 1;
+                }
+                else if (vAlign === 'middle') {
+                    vAlignFactor = 2;
+                }
+                if (vAlignFactor) {
+                    y += (box.height - (alignOptions.height || 0)) /
+                        vAlignFactor;
+                }
+                attribs[alignByTranslate ? 'translateY' : 'y'] = Math.round(y);
+                // Animate only if already placed
+                this[this.placed ? 'animate' : 'attr'](attribs);
+                this.placed = true;
+                this.alignAttr = attribs;
+                return this;
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#alignSetter
+             * @param {"left"|"center"|"right"} value
+             */
+            SVGElement.prototype.alignSetter = function (value) {
+                var convert = {
+                        left: 'start',
+                        center: 'middle',
+                        right: 'end'
+                    };
+                if (convert[value]) {
+                    this.alignValue = value;
+                    this.element.setAttribute('text-anchor', convert[value]);
+                }
+            };
+            /**
+             * Animate to given attributes or CSS properties.
+             *
+             * @sample highcharts/members/element-on/
+             *         Setting some attributes by animation
+             *
+             * @function Highcharts.SVGElement#animate
+             *
+             * @param {Highcharts.SVGAttributes} params
+             *        SVG attributes or CSS to animate.
+             *
+             * @param {boolean|Partial<Highcharts.AnimationOptionsObject>} [options]
+             *        Animation options.
+             *
+             * @param {Function} [complete]
+             *        Function to perform at the end of animation.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.animate = function (params, options, complete) {
+                var _this = this;
+                var animOptions = animObject(pick(options,
+                    this.renderer.globalAnimation,
+                    true)),
+                    deferTime = animOptions.defer;
+                // When the page is hidden save resources in the background by not
+                // running animation at all (#9749).
+                if (pick(doc.hidden, doc.msHidden, doc.webkitHidden, false)) {
+                    animOptions.duration = 0;
+                }
+                if (animOptions.duration !== 0) {
+                    // allows using a callback with the global animation without
+                    // overwriting it
+                    if (complete) {
+                        animOptions.complete = complete;
+                    }
+                    // If defer option is defined delay the animation #12901
+                    syncTimeout(function () {
+                        if (_this.element) {
+                            animate(_this, params, animOptions);
+                        }
+                    }, deferTime);
+                }
+                else {
+                    this.attr(params, void 0, complete);
+                    // Call the end step synchronously
+                    objectEach(params, function (val, prop) {
+                        if (animOptions.step) {
+                            animOptions.step.call(this, val, { prop: prop, pos: 1, elem: this });
+                        }
+                    }, this);
+                }
+                return this;
+            };
+            /**
+             * Apply a text outline through a custom CSS property, by copying the text
+             * element and apply stroke to the copy. Used internally. Contrast checks at
+             * [example](https://jsfiddle.net/highcharts/43soe9m1/2/).
+             *
+             * @example
+             * // Specific color
+             * text.css({
+             *    textOutline: '1px black'
+             * });
+             * // Automatic contrast
+             * text.css({
+             *    color: '#000000', // black text
+             *    textOutline: '1px contrast' // => white outline
+             * });
+             *
+             * @private
+             * @function Highcharts.SVGElement#applyTextOutline
+             *
+             * @param {string} textOutline
+             *        A custom CSS `text-outline` setting, defined by `width color`.
+             */
+            SVGElement.prototype.applyTextOutline = function (textOutline) {
+                var elem = this.element,
+                    hasContrast = textOutline.indexOf('contrast') !== -1,
+                    styles = {};
+                // When the text shadow is set to contrast, use dark stroke for light
+                // text and vice versa.
+                if (hasContrast) {
+                    styles.textOutline = textOutline = textOutline.replace(/contrast/g, this.renderer.getContrast(elem.style.fill));
+                }
+                // Extract the stroke width and color
+                var parts = textOutline.split(' ');
+                var color = parts[parts.length - 1];
+                var strokeWidth = parts[0];
+                if (strokeWidth && strokeWidth !== 'none' && H.svg) {
+                    this.fakeTS = true; // Fake text shadow
+                    // In order to get the right y position of the clone,
+                    // copy over the y setter
+                    this.ySetter = this.xSetter;
+                    // Since the stroke is applied on center of the actual outline, we
+                    // need to double it to get the correct stroke-width outside the
+                    // glyphs.
+                    strokeWidth = strokeWidth.replace(/(^[\d\.]+)(.*?)$/g, function (match, digit, unit) {
+                        return (2 * Number(digit)) + unit;
+                    });
+                    // Remove shadows from previous runs.
+                    this.removeTextOutline();
+                    var outline_1 = doc.createElementNS(SVG_NS, 'tspan');
+                    attr(outline_1, {
+                        'class': 'highcharts-text-outline',
+                        fill: color,
+                        stroke: color,
+                        'stroke-width': strokeWidth,
+                        'stroke-linejoin': 'round'
+                    });
+                    // For each of the tspans and text nodes, create a copy in the
+                    // outline.
+                    [].forEach.call(elem.childNodes, function (childNode) {
+                        var clone = childNode.cloneNode(true);
+                        if (clone.removeAttribute) {
+                            ['fill', 'stroke', 'stroke-width', 'stroke'].forEach(function (prop) { return clone.removeAttribute(prop); });
+                        }
+                        outline_1.appendChild(clone);
+                    });
+                    // Insert an absolutely positioned break before the original text
+                    // to keep it in place
+                    var br = doc.createElementNS(SVG_NS, 'tspan');
+                    br.textContent = '\u200B';
+                    attr(br, {
+                        x: elem.getAttribute('x'),
+                        y: elem.getAttribute('y')
+                    });
+                    // Insert the outline
+                    outline_1.appendChild(br);
+                    elem.insertBefore(outline_1, elem.firstChild);
+                }
+            };
+            /**
+             * @function Highcharts.SVGElement#attr
+             * @param {string} key
+             * @return {number|string}
+             */ /**
+            * Apply native and custom attributes to the SVG elements.
+            *
+            * In order to set the rotation center for rotation, set x and y to 0 and
+            * use `translateX` and `translateY` attributes to position the element
+            * instead.
+            *
+            * Attributes frequently used in Highcharts are `fill`, `stroke`,
+            * `stroke-width`.
+            *
+            * @sample highcharts/members/renderer-rect/
+            *         Setting some attributes
+            *
+            * @example
+            * // Set multiple attributes
+            * element.attr({
+            *     stroke: 'red',
+            *     fill: 'blue',
+            *     x: 10,
+            *     y: 10
+            * });
+            *
+            * // Set a single attribute
+            * element.attr('stroke', 'red');
+            *
+            * // Get an attribute
+            * element.attr('stroke'); // => 'red'
+            *
+            * @function Highcharts.SVGElement#attr
+            *
+            * @param {string|Highcharts.SVGAttributes} [hash]
+            *        The native and custom SVG attributes.
+            *
+            * @param {number|string|Highcharts.SVGPathArray} [val]
+            *        If the type of the first argument is `string`, the second can be a
+            *        value, which will serve as a single attribute setter. If the first
+            *        argument is a string and the second is undefined, the function
+            *        serves as a getter and the current value of the property is
+            *        returned.
+            *
+            * @param {Function} [complete]
+            *        A callback function to execute after setting the attributes. This
+            *        makes the function compliant and interchangeable with the
+            *        {@link SVGElement#animate} function.
+            *
+            * @param {boolean} [continueAnimation=true]
+            *        Used internally when `.attr` is called as part of an animation
+            *        step. Otherwise, calling `.attr` for an attribute will stop
+            *        animation for that attribute.
+            *
+            * @return {Highcharts.SVGElement}
+            *         If used as a setter, it returns the current
+            *         {@link Highcharts.SVGElement} so the calls can be chained. If
+            *         used as a getter, the current value of the attribute is returned.
+            */
+            SVGElement.prototype.attr = function (hash, val, complete, continueAnimation) {
+                var key,
+                    element = this.element,
+                    hasSetSymbolSize,
+                    ret = this,
+                    skipAttr,
+                    setter,
+                    symbolCustomAttribs = this.symbolCustomAttribs;
+                // single key-value pair
+                if (typeof hash === 'string' && typeof val !== 'undefined') {
+                    key = hash;
+                    hash = {};
+                    hash[key] = val;
+                }
+                // used as a getter: first argument is a string, second is undefined
+                if (typeof hash === 'string') {
+                    ret = (this[hash + 'Getter'] ||
+                        this._defaultGetter).call(this, hash, element);
+                    // setter
+                }
+                else {
+                    objectEach(hash, function eachAttribute(val, key) {
+                        skipAttr = false;
+                        // Unless .attr is from the animator update, stop current
+                        // running animation of this property
+                        if (!continueAnimation) {
+                            stop(this, key);
+                        }
+                        // Special handling of symbol attributes
+                        if (this.symbolName &&
+                            symbolCustomAttribs.indexOf(key) !== -1) {
+                            if (!hasSetSymbolSize) {
+                                this.symbolAttr(hash);
+                                hasSetSymbolSize = true;
+                            }
+                            skipAttr = true;
+                        }
+                        if (this.rotation && (key === 'x' || key === 'y')) {
+                            this.doTransform = true;
+                        }
+                        if (!skipAttr) {
+                            setter = (this[key + 'Setter'] ||
+                                this._defaultSetter);
+                            setter.call(this, val, key, element);
+                            // Let the shadow follow the main element
+                            if (!this.styledMode &&
+                                this.shadows &&
+                                /^(width|height|visibility|x|y|d|transform|cx|cy|r)$/.test(key)) {
+                                this.updateShadows(key, val, setter);
+                            }
+                        }
+                    }, this);
+                    this.afterSetters();
+                }
+                // In accordance with animate, run a complete callback
+                if (complete) {
+                    complete.call(this);
+                }
+                return ret;
+            };
+            /**
+             * Apply a clipping rectangle to this element.
+             *
+             * @function Highcharts.SVGElement#clip
+             *
+             * @param {Highcharts.ClipRectElement} [clipRect]
+             *        The clipping rectangle. If skipped, the current clip is removed.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Returns the SVG element to allow chaining.
+             */
+            SVGElement.prototype.clip = function (clipRect) {
+                return this.attr('clip-path', clipRect ?
+                    'url(' + this.renderer.url + '#' + clipRect.id + ')' :
+                    'none');
+            };
+            /**
+             * Calculate the coordinates needed for drawing a rectangle crisply and
+             * return the calculated attributes.
+             *
+             * @function Highcharts.SVGElement#crisp
+             *
+             * @param {Highcharts.RectangleObject} rect
+             * Rectangle to crisp.
+             *
+             * @param {number} [strokeWidth]
+             * The stroke width to consider when computing crisp positioning. It can
+             * also be set directly on the rect parameter.
+             *
+             * @return {Highcharts.RectangleObject}
+             * The modified rectangle arguments.
+             */
+            SVGElement.prototype.crisp = function (rect, strokeWidth) {
+                var wrapper = this,
+                    normalizer;
+                strokeWidth = strokeWidth || rect.strokeWidth || 0;
+                // Math.round because strokeWidth can sometimes have roundoff errors
+                normalizer = Math.round(strokeWidth) % 2 / 2;
+                // normalize for crisp edges
+                rect.x = Math.floor(rect.x || wrapper.x || 0) + normalizer;
+                rect.y = Math.floor(rect.y || wrapper.y || 0) + normalizer;
+                rect.width = Math.floor((rect.width || wrapper.width || 0) - 2 * normalizer);
+                rect.height = Math.floor((rect.height || wrapper.height || 0) - 2 * normalizer);
+                if (defined(rect.strokeWidth)) {
+                    rect.strokeWidth = strokeWidth;
+                }
+                return rect;
+            };
+            /**
+             * Build and apply an SVG gradient out of a common JavaScript configuration
+             * object. This function is called from the attribute setters. An event
+             * hook is added for supporting other complex color types.
+             *
+             * @private
+             * @function Highcharts.SVGElement#complexColor
+             *
+             * @param {Highcharts.GradientColorObject|Highcharts.PatternObject} colorOptions
+             * The gradient or pattern options structure.
+             *
+             * @param {string} prop
+             * The property to apply, can either be `fill` or `stroke`.
+             *
+             * @param {Highcharts.SVGDOMElement} elem
+             * SVG element to apply the gradient on.
+             */
+            SVGElement.prototype.complexColor = function (colorOptions, prop, elem) {
+                var renderer = this.renderer,
+                    colorObject,
+                    gradName,
+                    gradAttr,
+                    radAttr,
+                    gradients,
+                    stops,
+                    stopColor,
+                    stopOpacity,
+                    radialReference,
+                    id,
+                    key = [],
+                    value;
+                fireEvent(this.renderer, 'complexColor', {
+                    args: arguments
+                }, function () {
+                    // Apply linear or radial gradients
+                    if (colorOptions.radialGradient) {
+                        gradName = 'radialGradient';
+                    }
+                    else if (colorOptions.linearGradient) {
+                        gradName = 'linearGradient';
+                    }
+                    if (gradName) {
+                        gradAttr = colorOptions[gradName];
+                        gradients = renderer.gradients;
+                        stops = colorOptions.stops;
+                        radialReference = elem.radialReference;
+                        // Keep < 2.2 kompatibility
+                        if (isArray(gradAttr)) {
+                            colorOptions[gradName] = gradAttr = {
+                                x1: gradAttr[0],
+                                y1: gradAttr[1],
+                                x2: gradAttr[2],
+                                y2: gradAttr[3],
+                                gradientUnits: 'userSpaceOnUse'
+                            };
+                        }
+                        // Correct the radial gradient for the radial reference system
+                        if (gradName === 'radialGradient' &&
+                            radialReference &&
+                            !defined(gradAttr.gradientUnits)) {
+                            // Save the radial attributes for updating
+                            radAttr = gradAttr;
+                            gradAttr = merge(gradAttr, renderer.getRadialAttr(radialReference, radAttr), { gradientUnits: 'userSpaceOnUse' });
+                        }
+                        // Build the unique key to detect whether we need to create a
+                        // new element (#1282)
+                        objectEach(gradAttr, function (val, n) {
+                            if (n !== 'id') {
+                                key.push(n, val);
+                            }
+                        });
+                        objectEach(stops, function (val) {
+                            key.push(val);
+                        });
+                        key = key.join(',');
+                        // Check if a gradient object with the same config object is
+                        // created within this renderer
+                        if (gradients[key]) {
+                            id = gradients[key].attr('id');
+                        }
+                        else {
+                            // Set the id and create the element
+                            gradAttr.id = id = uniqueKey();
+                            var gradientObject_1 = gradients[key] =
+                                    renderer.createElement(gradName)
+                                        .attr(gradAttr)
+                                        .add(renderer.defs);
+                            gradientObject_1.radAttr = radAttr;
+                            // The gradient needs to keep a list of stops to be able to
+                            // destroy them
+                            gradientObject_1.stops = [];
+                            stops.forEach(function (stop) {
+                                var stopObject;
+                                if (stop[1].indexOf('rgba') === 0) {
+                                    colorObject = Color.parse(stop[1]);
+                                    stopColor = colorObject.get('rgb');
+                                    stopOpacity = colorObject.get('a');
+                                }
+                                else {
+                                    stopColor = stop[1];
+                                    stopOpacity = 1;
+                                }
+                                stopObject = renderer.createElement('stop').attr({
+                                    offset: stop[0],
+                                    'stop-color': stopColor,
+                                    'stop-opacity': stopOpacity
+                                }).add(gradientObject_1);
+                                // Add the stop element to the gradient
+                                gradientObject_1.stops.push(stopObject);
+                            });
+                        }
+                        // Set the reference to the gradient object
+                        value = 'url(' + renderer.url + '#' + id + ')';
+                        elem.setAttribute(prop, value);
+                        elem.gradient = key;
+                        // Allow the color to be concatenated into tooltips formatters
+                        // etc. (#2995)
+                        colorOptions.toString = function () {
+                            return value;
+                        };
+                    }
+                });
+            };
+            /**
+             * Set styles for the element. In addition to CSS styles supported by
+             * native SVG and HTML elements, there are also some custom made for
+             * Highcharts, like `width`, `ellipsis` and `textOverflow` for SVG text
+             * elements.
+             *
+             * @sample highcharts/members/renderer-text-on-chart/
+             *         Styled text
+             *
+             * @function Highcharts.SVGElement#css
+             *
+             * @param {Highcharts.CSSObject} styles
+             *        The new CSS styles.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Return the SVG element for chaining.
+             */
+            SVGElement.prototype.css = function (styles) {
+                var oldStyles = this.styles, newStyles = {}, elem = this.element, textWidth, serializedCss = '', hyphenate, hasNew = !oldStyles, 
+                    // These CSS properties are interpreted internally by the SVG
+                    // renderer, but are not supported by SVG and should not be added to
+                    // the DOM. In styled mode, no CSS should find its way to the DOM
+                    // whatsoever (#6173, #6474).
+                    svgPseudoProps = ['textOutline', 'textOverflow', 'width'];
+                // convert legacy
+                if (styles && styles.color) {
+                    styles.fill = styles.color;
+                }
+                // Filter out existing styles to increase performance (#2640)
+                if (oldStyles) {
+                    objectEach(styles, function (style, n) {
+                        if (oldStyles && oldStyles[n] !== style) {
+                            newStyles[n] = style;
+                            hasNew = true;
+                        }
+                    });
+                }
+                if (hasNew) {
+                    // Merge the new styles with the old ones
+                    if (oldStyles) {
+                        styles = extend(oldStyles, newStyles);
+                    }
+                    // Get the text width from style
+                    if (styles) {
+                        // Previously set, unset it (#8234)
+                        if (styles.width === null || styles.width === 'auto') {
+                            delete this.textWidth;
+                            // Apply new
+                        }
+                        else if (elem.nodeName.toLowerCase() === 'text' &&
+                            styles.width) {
+                            textWidth = this.textWidth = pInt(styles.width);
+                        }
+                    }
+                    // store object
+                    this.styles = styles;
+                    if (textWidth && (!svg && this.renderer.forExport)) {
+                        delete styles.width;
+                    }
+                    // Serialize and set style attribute
+                    if (elem.namespaceURI === this.SVG_NS) { // #7633
+                        hyphenate = function (a, b) {
+                            return '-' + b.toLowerCase();
+                        };
+                        objectEach(styles, function (style, n) {
+                            if (svgPseudoProps.indexOf(n) === -1) {
+                                serializedCss +=
+                                    n.replace(/([A-Z])/g, hyphenate) + ':' +
+                                        style + ';';
+                            }
+                        });
+                        if (serializedCss) {
+                            attr(elem, 'style', serializedCss); // #1881
+                        }
+                    }
+                    else {
+                        css(elem, styles);
+                    }
+                    if (this.added) {
+                        // Rebuild text after added. Cache mechanisms in the buildText
+                        // will prevent building if there are no significant changes.
+                        if (this.element.nodeName === 'text') {
+                            this.renderer.buildText(this);
+                        }
+                        // Apply text outline after added
+                        if (styles && styles.textOutline) {
+                            this.applyTextOutline(styles.textOutline);
+                        }
+                    }
+                }
+                return this;
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#dashstyleSetter
+             * @param {string} value
+             */
+            SVGElement.prototype.dashstyleSetter = function (value) {
+                var i,
+                    strokeWidth = this['stroke-width'];
+                // If "inherit", like maps in IE, assume 1 (#4981). With HC5 and the new
+                // strokeWidth function, we should be able to use that instead.
+                if (strokeWidth === 'inherit') {
+                    strokeWidth = 1;
+                }
+                value = value && value.toLowerCase();
+                if (value) {
+                    var v = value
+                            .replace('shortdashdotdot', '3,1,1,1,1,1,')
+                            .replace('shortdashdot', '3,1,1,1')
+                            .replace('shortdot', '1,1,')
+                            .replace('shortdash', '3,1,')
+                            .replace('longdash', '8,3,')
+                            .replace(/dot/g, '1,3,')
+                            .replace('dash', '4,3,')
+                            .replace(/,$/, '')
+                            .split(','); // ending comma
+                        i = v.length;
+                    while (i--) {
+                        v[i] = '' + (pInt(v[i]) * pick(strokeWidth, NaN));
+                    }
+                    value = v.join(',').replace(/NaN/g, 'none'); // #3226
+                    this.element.setAttribute('stroke-dasharray', value);
+                }
+            };
+            /**
+             * Destroy the element and element wrapper and clear up the DOM and event
+             * hooks.
+             *
+             * @function Highcharts.SVGElement#destroy
+             */
+            SVGElement.prototype.destroy = function () {
+                var wrapper = this,
+                    element = wrapper.element || {},
+                    renderer = wrapper.renderer,
+                    parentToClean = (renderer.isSVG &&
+                        element.nodeName === 'SPAN' &&
+                        wrapper.parentGroup ||
+                        void 0),
+                    grandParent,
+                    ownerSVGElement = element.ownerSVGElement,
+                    i;
+                // remove events
+                element.onclick = element.onmouseout = element.onmouseover =
+                    element.onmousemove = element.point = null;
+                stop(wrapper); // stop running animations
+                if (wrapper.clipPath && ownerSVGElement) {
+                    var clipPath_1 = wrapper.clipPath;
+                    // Look for existing references to this clipPath and remove them
+                    // before destroying the element (#6196).
+                    // The upper case version is for Edge
+                    [].forEach.call(ownerSVGElement.querySelectorAll('[clip-path],[CLIP-PATH]'), function (el) {
+                        var clipPathAttr = el.getAttribute('clip-path');
+                        if (clipPathAttr.indexOf(clipPath_1.element.id) > -1) {
+                            el.removeAttribute('clip-path');
+                        }
+                    });
+                    wrapper.clipPath = clipPath_1.destroy();
+                }
+                // Destroy stops in case this is a gradient object @todo old code?
+                if (wrapper.stops) {
+                    for (i = 0; i < wrapper.stops.length; i++) {
+                        wrapper.stops[i].destroy();
+                    }
+                    wrapper.stops.length = 0;
+                    wrapper.stops = void 0;
+                }
+                // remove element
+                wrapper.safeRemoveChild(element);
+                if (!renderer.styledMode) {
+                    wrapper.destroyShadows();
+                }
+                // In case of useHTML, clean up empty containers emulating SVG groups
+                // (#1960, #2393, #2697).
+                while (parentToClean &&
+                    parentToClean.div &&
+                    parentToClean.div.childNodes.length === 0) {
+                    grandParent = parentToClean.parentGroup;
+                    wrapper.safeRemoveChild(parentToClean.div);
+                    delete parentToClean.div;
+                    parentToClean = grandParent;
+                }
+                // remove from alignObjects
+                if (wrapper.alignTo) {
+                    erase(renderer.alignedObjects, wrapper);
+                }
+                objectEach(wrapper, function (val, key) {
+                    // Destroy child elements of a group
+                    if (wrapper[key] &&
+                        wrapper[key].parentGroup === wrapper &&
+                        wrapper[key].destroy) {
+                        wrapper[key].destroy();
+                    }
+                    // Delete all properties
+                    delete wrapper[key];
+                });
+                return;
+            };
+            /**
+             * Destroy shadows on the element.
+             *
+             * @private
+             * @function Highcharts.SVGElement#destroyShadows
+             *
+             * @return {void}
+             */
+            SVGElement.prototype.destroyShadows = function () {
+                (this.shadows || []).forEach(function (shadow) {
+                    this.safeRemoveChild(shadow);
+                }, this);
+                this.shadows = void 0;
+            };
+            /**
+             * @private
+             */
+            SVGElement.prototype.destroyTextPath = function (elem, path) {
+                var textElement = elem.getElementsByTagName('text')[0];
+                var childNodes;
+                if (textElement) {
+                    // Remove textPath attributes
+                    textElement.removeAttribute('dx');
+                    textElement.removeAttribute('dy');
+                    // Remove ID's:
+                    path.element.setAttribute('id', '');
+                    // Check if textElement includes textPath,
+                    if (this.textPathWrapper &&
+                        textElement.getElementsByTagName('textPath').length) {
+                        // Move nodes to <text>
+                        childNodes = this.textPathWrapper.element.childNodes;
+                        // Now move all <tspan>'s and text nodes to the <textPath> node
+                        while (childNodes.length) {
+                            textElement.appendChild(childNodes[0]);
+                        }
+                        // Remove <textPath> from the DOM
+                        textElement.removeChild(this.textPathWrapper.element);
+                    }
+                }
+                else if (elem.getAttribute('dx') || elem.getAttribute('dy')) {
+                    // Remove textPath attributes from elem
+                    // to get correct text-outline position
+                    elem.removeAttribute('dx');
+                    elem.removeAttribute('dy');
+                }
+                if (this.textPathWrapper) {
+                    // Set textPathWrapper to undefined and destroy it
+                    this.textPathWrapper = this.textPathWrapper.destroy();
+                }
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#dSettter
+             * @param {number|string|Highcharts.SVGPathArray} value
+             * @param {string} key
+             * @param {Highcharts.SVGDOMElement} element
+             */
+            SVGElement.prototype.dSetter = function (value, key, element) {
+                if (isArray(value)) {
+                    // Backwards compatibility, convert one-dimensional array into an
+                    // array of segments
+                    if (typeof value[0] === 'string') {
+                        value = this.renderer.pathToSegments(value);
+                    }
+                    this.pathArray = value;
+                    value = value.reduce(function (acc, seg, i) {
+                        if (!seg || !seg.join) {
+                            return (seg || '').toString();
+                        }
+                        return (i ? acc + ' ' : '') + seg.join(' ');
+                    }, '');
+                }
+                if (/(NaN| {2}|^$)/.test(value)) {
+                    value = 'M 0 0';
+                }
+                // Check for cache before resetting. Resetting causes disturbance in the
+                // DOM, causing flickering in some cases in Edge/IE (#6747). Also
+                // possible performance gain.
+                if (this[key] !== value) {
+                    element.setAttribute(key, value);
+                    this[key] = value;
+                }
+            };
+            /**
+             * Fade out an element by animating its opacity down to 0, and hide it on
+             * complete. Used internally for the tooltip.
+             *
+             * @function Highcharts.SVGElement#fadeOut
+             *
+             * @param {number} [duration=150]
+             * The fade duration in milliseconds.
+             */
+            SVGElement.prototype.fadeOut = function (duration) {
+                var elemWrapper = this;
+                elemWrapper.animate({
+                    opacity: 0
+                }, {
+                    duration: pick(duration, 150),
+                    complete: function () {
+                        // #3088, assuming we're only using this for tooltips
+                        elemWrapper.attr({ y: -9999 }).hide();
+                    }
+                });
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#fillSetter
+             * @param {Highcharts.ColorType} value
+             * @param {string} key
+             * @param {Highcharts.SVGDOMElement} element
+             */
+            SVGElement.prototype.fillSetter = function (value, key, element) {
+                if (typeof value === 'string') {
+                    element.setAttribute(key, value);
+                }
+                else if (value) {
+                    this.complexColor(value, key, element);
+                }
+            };
+            /**
+             * Get the bounding box (width, height, x and y) for the element. Generally
+             * used to get rendered text size. Since this is called a lot in charts,
+             * the results are cached based on text properties, in order to save DOM
+             * traffic. The returned bounding box includes the rotation, so for example
+             * a single text line of rotation 90 will report a greater height, and a
+             * width corresponding to the line-height.
+             *
+             * @sample highcharts/members/renderer-on-chart/
+             *         Draw a rectangle based on a text's bounding box
+             *
+             * @function Highcharts.SVGElement#getBBox
+             *
+             * @param {boolean} [reload]
+             *        Skip the cache and get the updated DOM bouding box.
+             *
+             * @param {number} [rot]
+             *        Override the element's rotation. This is internally used on axis
+             *        labels with a value of 0 to find out what the bounding box would
+             *        be have been if it were not rotated.
+             *
+             * @return {Highcharts.BBoxObject}
+             *         The bounding box with `x`, `y`, `width` and `height` properties.
+             */
+            SVGElement.prototype.getBBox = function (reload, rot) {
+                var wrapper = this,
+                    bBox, // = wrapper.bBox,
+                    renderer = wrapper.renderer,
+                    width,
+                    height,
+                    element = wrapper.element,
+                    styles = wrapper.styles,
+                    fontSize,
+                    textStr = wrapper.textStr,
+                    toggleTextShadowShim,
+                    cache = renderer.cache,
+                    cacheKeys = renderer.cacheKeys,
+                    isSVG = element.namespaceURI === wrapper.SVG_NS,
+                    cacheKey;
+                var rotation = pick(rot,
+                    wrapper.rotation, 0);
+                fontSize = renderer.styledMode ? (element &&
+                    SVGElement.prototype.getStyle.call(element, 'font-size')) : (styles && styles.fontSize);
+                // Avoid undefined and null (#7316)
+                if (defined(textStr)) {
+                    cacheKey = textStr.toString();
+                    // Since numbers are monospaced, and numerical labels appear a lot
+                    // in a chart, we assume that a label of n characters has the same
+                    // bounding box as others of the same length. Unless there is inner
+                    // HTML in the label. In that case, leave the numbers as is (#5899).
+                    if (cacheKey.indexOf('<') === -1) {
+                        cacheKey = cacheKey.replace(/[0-9]/g, '0');
+                    }
+                    // Properties that affect bounding box
+                    cacheKey += [
+                        '',
+                        rotation,
+                        fontSize,
+                        wrapper.textWidth,
+                        styles && styles.textOverflow,
+                        styles && styles.fontWeight // #12163
+                    ].join(',');
+                }
+                if (cacheKey && !reload) {
+                    bBox = cache[cacheKey];
+                }
+                // No cache found
+                if (!bBox) {
+                    // SVG elements
+                    if (isSVG || renderer.forExport) {
+                        try { // Fails in Firefox if the container has display: none.
+                            // When the text shadow shim is used, we need to hide the
+                            // fake shadows to get the correct bounding box (#3872)
+                            toggleTextShadowShim = this.fakeTS && function (display) {
+                                var outline = element.querySelector('.highcharts-text-outline');
+                                if (outline) {
+                                    css(outline, { display: display });
+                                }
+                            };
+                            // Workaround for #3842, Firefox reporting wrong bounding
+                            // box for shadows
+                            if (isFunction(toggleTextShadowShim)) {
+                                toggleTextShadowShim('none');
+                            }
+                            bBox = element.getBBox ?
+                                // SVG: use extend because IE9 is not allowed to change
+                                // width and height in case of rotation (below)
+                                extend({}, element.getBBox()) : {
+                                // Legacy IE in export mode
+                                width: element.offsetWidth,
+                                height: element.offsetHeight
+                            };
+                            // #3842
+                            if (isFunction(toggleTextShadowShim)) {
+                                toggleTextShadowShim('');
+                            }
+                        }
+                        catch (e) {
+                            '';
+                        }
+                        // If the bBox is not set, the try-catch block above failed. The
+                        // other condition is for Opera that returns a width of
+                        // -Infinity on hidden elements.
+                        if (!bBox || bBox.width < 0) {
+                            bBox = { width: 0, height: 0 };
+                        }
+                        // VML Renderer or useHTML within SVG
+                    }
+                    else {
+                        bBox = wrapper.htmlGetBBox();
+                    }
+                    // True SVG elements as well as HTML elements in modern browsers
+                    // using the .useHTML option need to compensated for rotation
+                    if (renderer.isSVG) {
+                        width = bBox.width;
+                        height = bBox.height;
+                        // Workaround for wrong bounding box in IE, Edge and Chrome on
+                        // Windows. With Highcharts' default font, IE and Edge report
+                        // a box height of 16.899 and Chrome rounds it to 17. If this
+                        // stands uncorrected, it results in more padding added below
+                        // the text than above when adding a label border or background.
+                        // Also vertical positioning is affected.
+                        // https://jsfiddle.net/highcharts/em37nvuj/
+                        // (#1101, #1505, #1669, #2568, #6213).
+                        if (isSVG) {
+                            bBox.height = height = ({
+                                '11px,17': 14,
+                                '13px,20': 16
+                            }[styles &&
+                                styles.fontSize + ',' + Math.round(height)] ||
+                                height);
+                        }
+                        // Adjust for rotated text
+                        if (rotation) {
+                            var rad = rotation * deg2rad;
+                            bBox.width = Math.abs(height * Math.sin(rad)) +
+                                Math.abs(width * Math.cos(rad));
+                            bBox.height = Math.abs(height * Math.cos(rad)) +
+                                Math.abs(width * Math.sin(rad));
+                        }
+                    }
+                    // Cache it. When loading a chart in a hidden iframe in Firefox and
+                    // IE/Edge, the bounding box height is 0, so don't cache it (#5620).
+                    if (cacheKey && bBox.height > 0) {
+                        // Rotate (#4681)
+                        while (cacheKeys.length > 250) {
+                            delete cache[cacheKeys.shift()];
+                        }
+                        if (!cache[cacheKey]) {
+                            cacheKeys.push(cacheKey);
+                        }
+                        cache[cacheKey] = bBox;
+                    }
+                }
+                return bBox;
+            };
+            /**
+             * Get the computed style. Only in styled mode.
+             *
+             * @example
+             * chart.series[0].points[0].graphic.getStyle('stroke-width'); // => '1px'
+             *
+             * @function Highcharts.SVGElement#getStyle
+             *
+             * @param {string} prop
+             *        The property name to check for.
+             *
+             * @return {string}
+             *         The current computed value.
+             */
+            SVGElement.prototype.getStyle = function (prop) {
+                return win
+                    .getComputedStyle(this.element || this, '')
+                    .getPropertyValue(prop);
+            };
+            /**
+             * Check if an element has the given class name.
+             *
+             * @function Highcharts.SVGElement#hasClass
+             *
+             * @param {string} className
+             * The class name to check for.
+             *
+             * @return {boolean}
+             * Whether the class name is found.
+             */
+            SVGElement.prototype.hasClass = function (className) {
+                return ('' + this.attr('class'))
+                    .split(' ')
+                    .indexOf(className) !== -1;
+            };
+            /**
+             * Hide the element, similar to setting the `visibility` attribute to
+             * `hidden`.
+             *
+             * @function Highcharts.SVGElement#hide
+             *
+             * @param {boolean} [hideByTranslation=false]
+             *        The flag to determine if element should be hidden by moving out
+             *        of the viewport. Used for example for dataLabels.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.hide = function (hideByTranslation) {
+                if (hideByTranslation) {
+                    this.attr({ y: -9999 });
+                }
+                else {
+                    this.attr({ visibility: 'hidden' });
+                }
+                return this;
+            };
+            /**
+             * @private
+             */
+            SVGElement.prototype.htmlGetBBox = function () {
+                return { height: 0, width: 0, x: 0, y: 0 };
+            };
+            /**
+             * Initialize the SVG element. This function only exists to make the
+             * initialization process overridable. It should not be called directly.
+             *
+             * @function Highcharts.SVGElement#init
+             *
+             * @param {Highcharts.SVGRenderer} renderer
+             * The SVGRenderer instance to initialize to.
+             *
+             * @param {string} nodeName
+             * The SVG node name.
+             */
+            SVGElement.prototype.init = function (renderer, nodeName) {
+                /**
+                 * The primary DOM node. Each `SVGElement` instance wraps a main DOM
+                 * node, but may also represent more nodes.
+                 *
+                 * @name Highcharts.SVGElement#element
+                 * @type {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement}
+                 */
+                this.element = nodeName === 'span' ?
+                    createElement(nodeName) :
+                    doc.createElementNS(this.SVG_NS, nodeName);
+                /**
+                 * The renderer that the SVGElement belongs to.
+                 *
+                 * @name Highcharts.SVGElement#renderer
+                 * @type {Highcharts.SVGRenderer}
+                 */
+                this.renderer = renderer;
+                fireEvent(this, 'afterInit');
+            };
+            /**
+             * Invert a group, rotate and flip. This is used internally on inverted
+             * charts, where the points and graphs are drawn as if not inverted, then
+             * the series group elements are inverted.
+             *
+             * @function Highcharts.SVGElement#invert
+             *
+             * @param {boolean} inverted
+             *        Whether to invert or not. An inverted shape can be un-inverted by
+             *        setting it to false.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Return the SVGElement for chaining.
+             */
+            SVGElement.prototype.invert = function (inverted) {
+                var wrapper = this;
+                wrapper.inverted = inverted;
+                wrapper.updateTransform();
+                return wrapper;
+            };
+            /**
+             * Add an event listener. This is a simple setter that replaces all other
+             * events of the same type, opposed to the {@link Highcharts#addEvent}
+             * function.
+             *
+             * @sample highcharts/members/element-on/
+             *         A clickable rectangle
+             *
+             * @function Highcharts.SVGElement#on
+             *
+             * @param {string} eventType
+             * The event type. If the type is `click`, Highcharts will internally
+             * translate it to a `touchstart` event on touch devices, to prevent the
+             * browser from waiting for a click event from firing.
+             *
+             * @param {Function} handler
+             * The handler callback.
+             *
+             * @return {Highcharts.SVGElement}
+             * The SVGElement for chaining.
+             */
+            SVGElement.prototype.on = function (eventType, handler) {
+                var svgElement = this,
+                    element = svgElement.element,
+                    touchStartPos,
+                    touchEventFired;
+                // touch
+                if (hasTouch && eventType === 'click') {
+                    element.ontouchstart = function (e) {
+                        // save touch position for later calculation
+                        touchStartPos = {
+                            clientX: e.touches[0].clientX,
+                            clientY: e.touches[0].clientY
+                        };
+                    };
+                    // Instead of ontouchstart, event handlers should be called
+                    // on touchend - similar to how current mouseup events are called
+                    element.ontouchend = function (e) {
+                        // hasMoved is a boolean variable containing logic if page
+                        // was scrolled, so if touch position changed more than
+                        // ~4px (value borrowed from general touch handler)
+                        var hasMoved = touchStartPos.clientX ? Math.sqrt(Math.pow(touchStartPos.clientX - e.changedTouches[0].clientX, 2) +
+                                Math.pow(touchStartPos.clientY - e.changedTouches[0].clientY, 2)) >= 4 : false;
+                        if (!hasMoved) { // only call handlers if page was not scrolled
+                            handler.call(element, e);
+                        }
+                        touchEventFired = true;
+                        if (e.cancelable !== false) {
+                            // prevent other events from being fired. #9682
+                            e.preventDefault();
+                        }
+                    };
+                    element.onclick = function (e) {
+                        // Do not call onclick handler if touch event was fired already.
+                        if (!touchEventFired) {
+                            handler.call(element, e);
+                        }
+                    };
+                }
+                else {
+                    // simplest possible event model for internal use
+                    element['on' + eventType] = handler;
+                }
+                return this;
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#opacitySetter
+             * @param {string} value
+             * @param {string} key
+             * @param {Highcharts.SVGDOMElement} element
+             */
+            SVGElement.prototype.opacitySetter = function (value, key, element) {
+                // Round off to avoid float errors, like tests where opacity lands on
+                // 9.86957e-06 instead of 0
+                var opacity = Number(Number(value).toFixed(3));
+                this.opacity = opacity;
+                element.setAttribute(key, opacity);
+            };
+            /**
+             * Remove a class name from the element.
+             *
+             * @function Highcharts.SVGElement#removeClass
+             *
+             * @param {string|RegExp} className
+             *        The class name to remove.
+             *
+             * @return {Highcharts.SVGElement} Returns the SVG element for chainability.
+             */
+            SVGElement.prototype.removeClass = function (className) {
+                return this.attr('class', ('' + this.attr('class'))
+                    .replace(isString(className) ?
+                    new RegExp("(^| )" + className + "( |$)") : // #12064, #13590
+                    className, ' ')
+                    .replace(/ +/g, ' ')
+                    .trim());
+            };
+            /**
+             *
+             * @private
+             */
+            SVGElement.prototype.removeTextOutline = function () {
+                var outline = this.element
+                        .querySelector('tspan.highcharts-text-outline');
+                if (outline) {
+                    this.safeRemoveChild(outline);
+                }
+            };
+            /**
+             * Removes an element from the DOM.
+             *
+             * @private
+             * @function Highcharts.SVGElement#safeRemoveChild
+             *
+             * @param {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement} element
+             * The DOM node to remove.
+             */
+            SVGElement.prototype.safeRemoveChild = function (element) {
+                var parentNode = element.parentNode;
+                if (parentNode) {
+                    parentNode.removeChild(element);
+                }
+            };
+            /**
+             * Set the coordinates needed to draw a consistent radial gradient across
+             * a shape regardless of positioning inside the chart. Used on pie slices
+             * to make all the slices have the same radial reference point.
+             *
+             * @function Highcharts.SVGElement#setRadialReference
+             *
+             * @param {Array<number>} coordinates
+             * The center reference. The format is `[centerX, centerY, diameter]` in
+             * pixels.
+             *
+             * @return {Highcharts.SVGElement}
+             * Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.setRadialReference = function (coordinates) {
+                var existingGradient = (this.element.gradient &&
+                        this.renderer.gradients[this.element.gradient]);
+                this.element.radialReference = coordinates;
+                // On redrawing objects with an existing gradient, the gradient needs
+                // to be repositioned (#3801)
+                if (existingGradient && existingGradient.radAttr) {
+                    existingGradient.animate(this.renderer.getRadialAttr(coordinates, existingGradient.radAttr));
+                }
+                return this;
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#setTextPath
+             * @param {Highcharts.SVGElement} path
+             * Path to follow.
+             * @param {Highcharts.DataLabelsTextPathOptionsObject} textPathOptions
+             * Options.
+             * @return {Highcharts.SVGElement}
+             * Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.setTextPath = function (path, textPathOptions) {
+                var elem = this.element,
+                    textNode = this.text ? this.text.element : elem,
+                    attribsMap = {
+                        textAnchor: 'text-anchor'
+                    },
+                    attrs,
+                    adder = false,
+                    textPathElement,
+                    textPathId,
+                    textPathWrapper = this.textPathWrapper,
+                    firstTime = !textPathWrapper;
+                // Defaults
+                textPathOptions = merge(true, {
+                    enabled: true,
+                    attributes: {
+                        dy: -5,
+                        startOffset: '50%',
+                        textAnchor: 'middle'
+                    }
+                }, textPathOptions);
+                attrs = AST.filterUserAttributes(textPathOptions.attributes);
+                if (path && textPathOptions && textPathOptions.enabled) {
+                    // In case of fixed width for a text, string is rebuilt
+                    // (e.g. ellipsis is applied), so we need to rebuild textPath too
+                    if (textPathWrapper &&
+                        textPathWrapper.element.parentNode === null) {
+                        // When buildText functionality was triggered again
+                        // and deletes textPathWrapper parentNode
+                        firstTime = true;
+                        textPathWrapper = textPathWrapper.destroy();
+                    }
+                    else if (textPathWrapper) {
+                        // Case after drillup when spans were added into
+                        // the DOM outside the textPathWrapper parentGroup
+                        this.removeTextOutline.call(textPathWrapper.parentGroup);
+                    }
+                    // label() has padding, text() doesn't
+                    if (this.options && this.options.padding) {
+                        attrs.dx = -this.options.padding;
+                    }
+                    if (!textPathWrapper) {
+                        // Create <textPath>, defer the DOM adder
+                        this.textPathWrapper = textPathWrapper =
+                            this.renderer.createElement('textPath');
+                        adder = true;
+                    }
+                    textPathElement = textPathWrapper.element;
+                    // Set ID for the path
+                    textPathId = path.element.getAttribute('id');
+                    if (!textPathId) {
+                        path.element.setAttribute('id', textPathId = uniqueKey());
+                    }
+                    // Change DOM structure, by placing <textPath> tag in <text>
+                    if (firstTime) {
+                        // Adjust the position
+                        textNode.setAttribute('y', 0); // Firefox
+                        if (isNumber(attrs.dx)) {
+                            textNode.setAttribute('x', -attrs.dx);
+                        }
+                        // Move all <tspan>'s and text nodes to the <textPath> node. Do
+                        // not move other elements like <title> or <path>
+                        var childNodes = [].slice.call(textNode.childNodes);
+                        for (var i = 0; i < childNodes.length; i++) {
+                            var childNode = childNodes[i];
+                            if (childNode.nodeType === Node.TEXT_NODE ||
+                                childNode.nodeName === 'tspan') {
+                                textPathElement.appendChild(childNode);
+                            }
+                        }
+                    }
+                    // Add <textPath> to the DOM
+                    if (adder && textPathWrapper) {
+                        textPathWrapper.add({ element: textNode });
+                    }
+                    // Set basic options:
+                    // Use `setAttributeNS` because Safari needs this..
+                    textPathElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', this.renderer.url + '#' + textPathId);
+                    // Presentation attributes:
+                    // dx/dy options must by set on <text> (parent),
+                    // the rest should be set on <textPath>
+                    if (defined(attrs.dy)) {
+                        textPathElement.parentNode
+                            .setAttribute('dy', attrs.dy);
+                        delete attrs.dy;
+                    }
+                    if (defined(attrs.dx)) {
+                        textPathElement.parentNode
+                            .setAttribute('dx', attrs.dx);
+                        delete attrs.dx;
+                    }
+                    // Additional attributes
+                    objectEach(attrs, function (val, key) {
+                        textPathElement.setAttribute(attribsMap[key] || key, val);
+                    });
+                    // Remove translation, text that follows path does not need that
+                    elem.removeAttribute('transform');
+                    // Remove shadows and text outlines
+                    this.removeTextOutline.call(textPathWrapper);
+                    // Remove background and border for label(), see #10545
+                    // Alternatively, we can disable setting background rects in
+                    // series.drawDataLabels()
+                    if (this.text && !this.renderer.styledMode) {
+                        this.attr({
+                            fill: 'none',
+                            'stroke-width': 0
+                        });
+                    }
+                    // Disable some functions
+                    this.updateTransform = noop;
+                    this.applyTextOutline = noop;
+                }
+                else if (textPathWrapper) {
+                    // Reset to prototype
+                    delete this.updateTransform;
+                    delete this.applyTextOutline;
+                    // Restore DOM structure:
+                    this.destroyTextPath(elem, path);
+                    // Bring attributes back
+                    this.updateTransform();
+                    // Set textOutline back for text()
+                    if (this.options && this.options.rotation) {
+                        this.applyTextOutline(this.options.style.textOutline);
+                    }
+                }
+                return this;
+            };
+            /**
+             * Add a shadow to the element. Must be called after the element is added to
+             * the DOM. In styled mode, this method is not used, instead use `defs` and
+             * filters.
+             *
+             * @example
+             * renderer.rect(10, 100, 100, 100)
+             *     .attr({ fill: 'red' })
+             *     .shadow(true);
+             *
+             * @function Highcharts.SVGElement#shadow
+             *
+             * @param {boolean|Highcharts.ShadowOptionsObject} [shadowOptions]
+             *        The shadow options. If `true`, the default options are applied. If
+             *        `false`, the current shadow will be removed.
+             *
+             * @param {Highcharts.SVGElement} [group]
+             *        The SVG group element where the shadows will be applied. The
+             *        default is to add it to the same parent as the current element.
+             *        Internally, this is ised for pie slices, where all the shadows are
+             *        added to an element behind all the slices.
+             *
+             * @param {boolean} [cutOff]
+             *        Used internally for column shadows.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.shadow = function (shadowOptions, group, cutOff) {
+                var shadows = [],
+                    i,
+                    shadow,
+                    element = this.element,
+                    strokeWidth,
+                    shadowElementOpacity,
+                    update = false,
+                    oldShadowOptions = this.oldShadowOptions, 
+                    // compensate for inverted plot area
+                    transform;
+                var defaultShadowOptions = {
+                        color: palette.neutralColor100,
+                        offsetX: 1,
+                        offsetY: 1,
+                        opacity: 0.15,
+                        width: 3
+                    };
+                var options;
+                if (shadowOptions === true) {
+                    options = defaultShadowOptions;
+                }
+                else if (typeof shadowOptions === 'object') {
+                    options = extend(defaultShadowOptions, shadowOptions);
+                }
+                // Update shadow when options change (#12091).
+                if (options) {
+                    // Go over each key to look for change
+                    if (options && oldShadowOptions) {
+                        objectEach(options, function (value, key) {
+                            if (value !== oldShadowOptions[key]) {
+                                update = true;
+                            }
+                        });
+                    }
+                    if (update) {
+                        this.destroyShadows();
+                    }
+                    this.oldShadowOptions = options;
+                }
+                if (!options) {
+                    this.destroyShadows();
+                }
+                else if (!this.shadows) {
+                    shadowElementOpacity = options.opacity / options.width;
+                    transform = this.parentInverted ?
+                        'translate(-1,-1)' :
+                        "translate(" + options.offsetX + ", " + options.offsetY + ")";
+                    for (i = 1; i <= options.width; i++) {
+                        shadow = element.cloneNode(false);
+                        strokeWidth = (options.width * 2) + 1 - (2 * i);
+                        attr(shadow, {
+                            stroke: (shadowOptions.color ||
+                                palette.neutralColor100),
+                            'stroke-opacity': shadowElementOpacity * i,
+                            'stroke-width': strokeWidth,
+                            transform: transform,
+                            fill: 'none'
+                        });
+                        shadow.setAttribute('class', (shadow.getAttribute('class') || '') + ' highcharts-shadow');
+                        if (cutOff) {
+                            attr(shadow, 'height', Math.max(attr(shadow, 'height') - strokeWidth, 0));
+                            shadow.cutHeight = strokeWidth;
+                        }
+                        if (group) {
+                            group.element.appendChild(shadow);
+                        }
+                        else if (element.parentNode) {
+                            element.parentNode.insertBefore(shadow, element);
+                        }
+                        shadows.push(shadow);
+                    }
+                    this.shadows = shadows;
+                }
+                return this;
+            };
+            /**
+             * Show the element after it has been hidden.
+             *
+             * @function Highcharts.SVGElement#show
+             *
+             * @param {boolean} [inherit=false]
+             *        Set the visibility attribute to `inherit` rather than `visible`.
+             *        The difference is that an element with `visibility="visible"`
+             *        will be visible even if the parent is hidden.
+             *
+             * @return {Highcharts.SVGElement}
+             *         Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.show = function (inherit) {
+                return this.attr({ visibility: inherit ? 'inherit' : 'visible' });
+            };
+            /**
+             * WebKit and Batik have problems with a stroke-width of zero, so in this
+             * case we remove the stroke attribute altogether. #1270, #1369, #3065,
+             * #3072.
+             *
+             * @private
+             * @function Highcharts.SVGElement#strokeSetter
+             * @param {number|string} value
+             * @param {string} key
+             * @param {Highcharts.SVGDOMElement} element
+             */
+            SVGElement.prototype.strokeSetter = function (value, key, element) {
+                this[key] = value;
+                // Only apply the stroke attribute if the stroke width is defined and
+                // larger than 0
+                if (this.stroke && this['stroke-width']) {
+                    // Use prototype as instance may be overridden
+                    SVGElement.prototype.fillSetter.call(this, this.stroke, 'stroke', element);
+                    element.setAttribute('stroke-width', this['stroke-width']);
+                    this.hasStroke = true;
+                }
+                else if (key === 'stroke-width' && value === 0 && this.hasStroke) {
+                    element.removeAttribute('stroke');
+                    this.hasStroke = false;
+                }
+                else if (this.renderer.styledMode && this['stroke-width']) {
+                    element.setAttribute('stroke-width', this['stroke-width']);
+                    this.hasStroke = true;
+                }
+            };
+            /**
+             * Get the computed stroke width in pixel values. This is used extensively
+             * when drawing shapes to ensure the shapes are rendered crisp and
+             * positioned correctly relative to each other. Using
+             * `shape-rendering: crispEdges` leaves us less control over positioning,
+             * for example when we want to stack columns next to each other, or position
+             * things pixel-perfectly within the plot box.
+             *
+             * The common pattern when placing a shape is:
+             * - Create the SVGElement and add it to the DOM. In styled mode, it will
+             *   now receive a stroke width from the style sheet. In classic mode we
+             *   will add the `stroke-width` attribute.
+             * - Read the computed `elem.strokeWidth()`.
+             * - Place it based on the stroke width.
+             *
+             * @function Highcharts.SVGElement#strokeWidth
+             *
+             * @return {number}
+             * The stroke width in pixels. Even if the given stroke widtch (in CSS or by
+             * attributes) is based on `em` or other units, the pixel size is returned.
+             */
+            SVGElement.prototype.strokeWidth = function () {
+                // In non-styled mode, read the stroke width as set by .attr
+                if (!this.renderer.styledMode) {
+                    return this['stroke-width'] || 0;
+                }
+                // In styled mode, read computed stroke width
+                var val = this.getStyle('stroke-width'),
+                    ret = 0,
+                    dummy;
+                // Read pixel values directly
+                if (val.indexOf('px') === val.length - 2) {
+                    ret = pInt(val);
+                    // Other values like em, pt etc need to be measured
+                }
+                else if (val !== '') {
+                    dummy = doc.createElementNS(SVG_NS, 'rect');
+                    attr(dummy, {
+                        width: val,
+                        'stroke-width': 0
+                    });
+                    this.element.parentNode.appendChild(dummy);
+                    ret = dummy.getBBox().width;
+                    dummy.parentNode.removeChild(dummy);
+                }
+                return ret;
+            };
+            /**
+             * If one of the symbol size affecting parameters are changed,
+             * check all the others only once for each call to an element's
+             * .attr() method
+             *
+             * @private
+             * @function Highcharts.SVGElement#symbolAttr
+             *
+             * @param {Highcharts.SVGAttributes} hash
+             * The attributes to set.
+             */
+            SVGElement.prototype.symbolAttr = function (hash) {
+                var wrapper = this;
+                [
+                    'x',
+                    'y',
+                    'r',
+                    'start',
+                    'end',
+                    'width',
+                    'height',
+                    'innerR',
+                    'anchorX',
+                    'anchorY',
+                    'clockwise'
+                ].forEach(function (key) {
+                    wrapper[key] = pick(hash[key], wrapper[key]);
+                });
+                wrapper.attr({
+                    d: wrapper.renderer.symbols[wrapper.symbolName](wrapper.x, wrapper.y, wrapper.width, wrapper.height, wrapper)
+                });
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#textSetter
+             * @param {string} value
+             */
+            SVGElement.prototype.textSetter = function (value) {
+                if (value !== this.textStr) {
+                    // Delete size caches when the text changes
+                    // delete this.bBox; // old code in series-label
+                    delete this.textPxLength;
+                    this.textStr = value;
+                    if (this.added) {
+                        this.renderer.buildText(this);
+                    }
+                }
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#titleSetter
+             * @param {string} value
+             */
+            SVGElement.prototype.titleSetter = function (value) {
+                var el = this.element;
+                var titleNode = el.getElementsByTagName('title')[0] ||
+                        doc.createElementNS(this.SVG_NS, 'title');
+                // Move to first child
+                if (el.insertBefore) {
+                    el.insertBefore(titleNode, el.firstChild);
+                }
+                else {
+                    el.appendChild(titleNode);
+                }
+                // Replace text content and escape markup
+                titleNode.textContent =
+                    // #3276, #3895
+                    String(pick(value, ''))
+                        .replace(/<[^>]*>/g, '')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>');
+            };
+            /**
+             * Bring the element to the front. Alternatively, a new zIndex can be set.
+             *
+             * @sample highcharts/members/element-tofront/
+             *         Click an element to bring it to front
+             *
+             * @function Highcharts.SVGElement#toFront
+             *
+             * @return {Highcharts.SVGElement}
+             * Returns the SVGElement for chaining.
+             */
+            SVGElement.prototype.toFront = function () {
+                var element = this.element;
+                element.parentNode.appendChild(element);
+                return this;
+            };
+            /**
+             * Move an object and its children by x and y values.
+             *
+             * @function Highcharts.SVGElement#translate
+             *
+             * @param {number} x
+             *        The x value.
+             *
+             * @param {number} y
+             *        The y value.
+             *
+             * @return {Highcharts.SVGElement}
+             */
+            SVGElement.prototype.translate = function (x, y) {
+                return this.attr({
+                    translateX: x,
+                    translateY: y
+                });
+            };
+            /**
+             * Update the shadow elements with new attributes.
+             *
+             * @private
+             * @function Highcharts.SVGElement#updateShadows
+             *
+             * @param {string} key
+             * The attribute name.
+             *
+             * @param {number} value
+             * The value of the attribute.
+             *
+             * @param {Function} setter
+             * The setter function, inherited from the parent wrapper.
+             */
+            SVGElement.prototype.updateShadows = function (key, value, setter) {
+                var shadows = this.shadows;
+                if (shadows) {
+                    var i = shadows.length;
+                    while (i--) {
+                        setter.call(shadows[i], key === 'height' ?
+                            Math.max(value - (shadows[i].cutHeight || 0), 0) :
+                            key === 'd' ? this.d : value, key, shadows[i]);
+                    }
+                }
+            };
+            /**
+             * Update the transform attribute based on internal properties. Deals with
+             * the custom `translateX`, `translateY`, `rotation`, `scaleX` and `scaleY`
+             * attributes and updates the SVG `transform` attribute.
+             *
+             * @private
+             * @function Highcharts.SVGElement#updateTransform
+             */
+            SVGElement.prototype.updateTransform = function () {
+                var wrapper = this,
+                    translateX = wrapper.translateX || 0,
+                    translateY = wrapper.translateY || 0,
+                    scaleX = wrapper.scaleX,
+                    scaleY = wrapper.scaleY,
+                    inverted = wrapper.inverted,
+                    rotation = wrapper.rotation,
+                    matrix = wrapper.matrix,
+                    element = wrapper.element,
+                    transform;
+                // Flipping affects translate as adjustment for flipping around the
+                // group's axis
+                if (inverted) {
+                    translateX += wrapper.width;
+                    translateY += wrapper.height;
+                }
+                // Apply translate. Nearly all transformed elements have translation,
+                // so instead of checking for translate = 0, do it always (#1767,
+                // #1846).
+                transform = ['translate(' + translateX + ',' + translateY + ')'];
+                // apply matrix
+                if (defined(matrix)) {
+                    transform.push('matrix(' + matrix.join(',') + ')');
+                }
+                // apply rotation
+                if (inverted) {
+                    transform.push('rotate(90) scale(-1,1)');
+                }
+                else if (rotation) { // text rotation
+                    transform.push('rotate(' + rotation + ' ' +
+                        pick(this.rotationOriginX, element.getAttribute('x'), 0) +
+                        ' ' +
+                        pick(this.rotationOriginY, element.getAttribute('y') || 0) + ')');
+                }
+                // apply scale
+                if (defined(scaleX) || defined(scaleY)) {
+                    transform.push('scale(' + pick(scaleX, 1) + ' ' + pick(scaleY, 1) + ')');
+                }
+                if (transform.length) {
+                    element.setAttribute('transform', transform.join(' '));
+                }
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#visibilitySetter
+             *
+             * @param {string} value
+             *
+             * @param {string} key
+             *
+             * @param {Highcharts.SVGDOMElement} element
+             *
+             * @return {void}
+             */
+            SVGElement.prototype.visibilitySetter = function (value, key, element) {
+                // IE9-11 doesn't handle visibilty:inherit well, so we remove the
+                // attribute instead (#2881, #3909)
+                if (value === 'inherit') {
+                    element.removeAttribute(key);
+                }
+                else if (this[key] !== value) { // #6747
+                    element.setAttribute(key, value);
+                }
+                this[key] = value;
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#xGetter
+             *
+             * @param {string} key
+             *
+             * @return {number|string|null}
+             */
+            SVGElement.prototype.xGetter = function (key) {
+                if (this.element.nodeName === 'circle') {
+                    if (key === 'x') {
+                        key = 'cx';
+                    }
+                    else if (key === 'y') {
+                        key = 'cy';
+                    }
+                }
+                return this._defaultGetter(key);
+            };
+            /**
+             * @private
+             * @function Highcharts.SVGElement#zIndexSetter
+             * @param {number} [value]
+             * @param {string} [key]
+             * @return {boolean}
+             */
+            SVGElement.prototype.zIndexSetter = function (value, key) {
+                var renderer = this.renderer,
+                    parentGroup = this.parentGroup,
+                    parentWrapper = parentGroup || renderer,
+                    parentNode = parentWrapper.element || renderer.box,
+                    childNodes,
+                    otherElement,
+                    otherZIndex,
+                    element = this.element,
+                    inserted = false,
+                    undefinedOtherZIndex,
+                    svgParent = parentNode === renderer.box,
+                    run = this.added,
+                    i;
+                if (defined(value)) {
+                    // So we can read it for other elements in the group
+                    element.setAttribute('data-z-index', value);
+                    value = +value;
+                    if (this[key] === value) {
+                        // Only update when needed (#3865)
+                        run = false;
+                    }
+                }
+                else if (defined(this[key])) {
+                    element.removeAttribute('data-z-index');
+                }
+                this[key] = value;
+                // Insert according to this and other elements' zIndex. Before .add() is
+                // called, nothing is done. Then on add, or by later calls to
+                // zIndexSetter, the node is placed on the right place in the DOM.
+                if (run) {
+                    value = this.zIndex;
+                    if (value && parentGroup) {
+                        parentGroup.handleZ = true;
+                    }
+                    childNodes = parentNode.childNodes;
+                    for (i = childNodes.length - 1; i >= 0 && !inserted; i--) {
+                        otherElement = childNodes[i];
+                        otherZIndex = otherElement.getAttribute('data-z-index');
+                        undefinedOtherZIndex = !defined(otherZIndex);
+                        if (otherElement !== element) {
+                            if (
+                            // Negative zIndex versus no zIndex:
+                            // On all levels except the highest. If the parent is
+                            // <svg>, then we don't want to put items before <desc>
+                            // or <defs>
+                            value < 0 &&
+                                undefinedOtherZIndex &&
+                                !svgParent &&
+                                !i) {
+                                parentNode.insertBefore(element, childNodes[i]);
+                                inserted = true;
+                            }
+                            else if (
+                            // Insert after the first element with a lower zIndex
+                            pInt(otherZIndex) <= value ||
+                                // If negative zIndex, add this before first undefined
+                                // zIndex element
+                                (undefinedOtherZIndex &&
+                                    (!defined(value) || value >= 0))) {
+                                parentNode.insertBefore(element, childNodes[i + 1] || null // null for oldIE export
+                                );
+                                inserted = true;
+                            }
+                        }
+                    }
+                    if (!inserted) {
+                        parentNode.insertBefore(element, childNodes[svgParent ? 3 : 0] || null // null for oldIE
+                        );
+                        inserted = true;
+                    }
+                }
+                return inserted;
+            };
+            return SVGElement;
+        }());
+        // Some shared setters and getters
+        SVGElement.prototype['stroke-widthSetter'] = SVGElement.prototype.strokeSetter;
+        SVGElement.prototype.yGetter = SVGElement.prototype.xGetter;
+        SVGElement.prototype.matrixSetter =
+            SVGElement.prototype.rotationOriginXSetter =
+                SVGElement.prototype.rotationOriginYSetter =
+                    SVGElement.prototype.rotationSetter =
+                        SVGElement.prototype.scaleXSetter =
+                            SVGElement.prototype.scaleYSetter =
+                                SVGElement.prototype.translateXSetter =
+                                    SVGElement.prototype.translateYSetter =
+                                        SVGElement.prototype.verticalAlignSetter = function (value, key) {
+                                            this[key] = value;
+                                            this.doTransform = true;
+                                        };
+        H.SVGElement = SVGElement;
+
+        return H.SVGElement;
+    });
+    _registerModule(_modules, 'Core/Renderer/SVG/SVGLabel.js', [_modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Utilities.js']], function (SVGElement, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var __extends = (this && this.__extends) || (function () {
+                var extendStatics = function (d,
+            b) {
+                    extendStatics = Object.setPrototypeOf ||
+                        ({ __proto__: [] } instanceof Array && function (d,
+            b) { d.__proto__ = b; }) ||
+                        function (d,
+            b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+                return extendStatics(d, b);
+            };
+            return function (d, b) {
+                extendStatics(d, b);
+                function __() { this.constructor = d; }
+                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+            };
+        })();
+        var defined = U.defined,
+            extend = U.extend,
+            isNumber = U.isNumber,
+            merge = U.merge,
+            pick = U.pick,
+            removeEvent = U.removeEvent;
+        /* eslint require-jsdoc: 0, no-invalid-this: 0 */
+        function paddingSetter(value, key) {
+            if (!isNumber(value)) {
+                this[key] = void 0;
+            }
+            else if (value !== this[key]) {
+                this[key] = value;
+                this.updateTextPadding();
+            }
+        }
+        /**
+         * SVG label to render text.
+         * @private
+         * @class
+         * @name Highcharts.SVGLabel
+         * @augments Highcharts.SVGElement
+         */
+        var SVGLabel = /** @class */ (function (_super) {
+                __extends(SVGLabel, _super);
+            /* *
+             *
+             *  Constructors
+             *
+             * */
+            function SVGLabel(renderer, str, x, y, shape, anchorX, anchorY, useHTML, baseline, className) {
+                var _this = _super.call(this) || this;
+                _this.paddingSetter = paddingSetter;
+                _this.paddingLeftSetter = paddingSetter;
+                _this.paddingRightSetter = paddingSetter;
+                _this.init(renderer, 'g');
+                _this.textStr = str;
+                _this.x = x;
+                _this.y = y;
+                _this.anchorX = anchorX;
+                _this.anchorY = anchorY;
+                _this.baseline = baseline;
+                _this.className = className;
+                if (className !== 'button') {
+                    _this.addClass('highcharts-label');
+                }
+                if (className) {
+                    _this.addClass('highcharts-' + className);
+                }
+                _this.text = renderer.text('', 0, 0, useHTML)
+                    .attr({
+                    zIndex: 1
+                });
+                // Validate the shape argument
+                var hasBGImage;
+                if (typeof shape === 'string') {
+                    hasBGImage = /^url\((.*?)\)$/.test(shape);
+                    if (_this.renderer.symbols[shape] || hasBGImage) {
+                        _this.symbolKey = shape;
+                    }
+                }
+                _this.bBox = SVGLabel.emptyBBox;
+                _this.padding = 3;
+                _this.baselineOffset = 0;
+                _this.needsBox = renderer.styledMode || hasBGImage;
+                _this.deferredAttr = {};
+                _this.alignFactor = 0;
+                return _this;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            SVGLabel.prototype.alignSetter = function (value) {
+                var alignFactor = {
+                        left: 0,
+                        center: 0.5,
+                        right: 1
+                    }[value];
+                if (alignFactor !== this.alignFactor) {
+                    this.alignFactor = alignFactor;
+                    // Bounding box exists, means we're dynamically changing
+                    if (this.bBox && isNumber(this.xSetting)) {
+                        this.attr({ x: this.xSetting }); // #5134
+                    }
+                }
+            };
+            SVGLabel.prototype.anchorXSetter = function (value, key) {
+                this.anchorX = value;
+                this.boxAttr(key, Math.round(value) - this.getCrispAdjust() - this.xSetting);
+            };
+            SVGLabel.prototype.anchorYSetter = function (value, key) {
+                this.anchorY = value;
+                this.boxAttr(key, value - this.ySetting);
+            };
+            /*
+             * Set a box attribute, or defer it if the box is not yet created
+             */
+            SVGLabel.prototype.boxAttr = function (key, value) {
+                if (this.box) {
+                    this.box.attr(key, value);
+                }
+                else {
+                    this.deferredAttr[key] = value;
+                }
+            };
+            /*
+             * Pick up some properties and apply them to the text instead of the
+             * wrapper.
+             */
+            SVGLabel.prototype.css = function (styles) {
+                if (styles) {
+                    var textStyles = {},
+                        isWidth,
+                        isFontStyle;
+                    // Create a copy to avoid altering the original object
+                    // (#537)
+                    styles = merge(styles);
+                    SVGLabel.textProps.forEach(function (prop) {
+                        if (typeof styles[prop] !== 'undefined') {
+                            textStyles[prop] = styles[prop];
+                            delete styles[prop];
+                        }
+                    });
+                    this.text.css(textStyles);
+                    isWidth = 'width' in textStyles;
+                    isFontStyle = 'fontSize' in textStyles ||
+                        'fontWeight' in textStyles;
+                    // Update existing text, box (#9400, #12163)
+                    if (isFontStyle) {
+                        this.updateTextPadding();
+                    }
+                    else if (isWidth) {
+                        this.updateBoxSize();
+                    }
+                }
+                return SVGElement.prototype.css.call(this, styles);
+            };
+            /*
+             * Destroy and release memory.
+             */
+            SVGLabel.prototype.destroy = function () {
+                // Added by button implementation
+                removeEvent(this.element, 'mouseenter');
+                removeEvent(this.element, 'mouseleave');
+                if (this.text) {
+                    this.text.destroy();
+                }
+                if (this.box) {
+                    this.box = this.box.destroy();
+                }
+                // Call base implementation to destroy the rest
+                SVGElement.prototype.destroy.call(this);
+                return void 0;
+            };
+            SVGLabel.prototype.fillSetter = function (value, key) {
+                if (value) {
+                    this.needsBox = true;
+                }
+                // for animation getter (#6776)
+                this.fill = value;
+                this.boxAttr(key, value);
+            };
+            /*
+             * Return the bounding box of the box, not the group.
+             */
+            SVGLabel.prototype.getBBox = function () {
+                var bBox = this.bBox;
+                var padding = this.padding;
+                var paddingLeft = pick(this.paddingLeft,
+                    padding);
+                return {
+                    width: this.width,
+                    height: this.height,
+                    x: bBox.x - paddingLeft,
+                    y: bBox.y - padding
+                };
+            };
+            SVGLabel.prototype.getCrispAdjust = function () {
+                return this.renderer.styledMode && this.box ?
+                    this.box.strokeWidth() % 2 / 2 :
+                    (this['stroke-width'] ? parseInt(this['stroke-width'], 10) : 0) % 2 / 2;
+            };
+            SVGLabel.prototype.heightSetter = function (value) {
+                this.heightSetting = value;
+            };
+            // Event handling. In case of useHTML, we need to make sure that events
+            // are captured on the span as well, and that mouseenter/mouseleave
+            // between the SVG group and the HTML span are not treated as real
+            // enter/leave events. #13310.
+            SVGLabel.prototype.on = function (eventType, handler) {
+                var label = this;
+                var text = label.text;
+                var span = text && text.element.tagName === 'SPAN' ? text : void 0;
+                var selectiveHandler;
+                if (span) {
+                    selectiveHandler = function (e) {
+                        if ((eventType === 'mouseenter' ||
+                            eventType === 'mouseleave') &&
+                            e.relatedTarget instanceof Element &&
+                            (
+                            // #14110
+                            label.element.compareDocumentPosition(e.relatedTarget) & Node.DOCUMENT_POSITION_CONTAINED_BY ||
+                                span.element.compareDocumentPosition(e.relatedTarget) & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                            return;
+                        }
+                        handler.call(label.element, e);
+                    };
+                    span.on(eventType, selectiveHandler);
+                }
+                SVGElement.prototype.on.call(label, eventType, selectiveHandler || handler);
+                return label;
+            };
+            /*
+             * After the text element is added, get the desired size of the border
+             * box and add it before the text in the DOM.
+             */
+            SVGLabel.prototype.onAdd = function () {
+                var str = this.textStr;
+                this.text.add(this);
+                this.attr({
+                    // Alignment is available now  (#3295, 0 not rendered if given
+                    // as a value)
+                    text: (defined(str) ? str : ''),
+                    x: this.x,
+                    y: this.y
+                });
+                if (this.box && defined(this.anchorX)) {
+                    this.attr({
+                        anchorX: this.anchorX,
+                        anchorY: this.anchorY
+                    });
+                }
+            };
+            SVGLabel.prototype.rSetter = function (value, key) {
+                this.boxAttr(key, value);
+            };
+            SVGLabel.prototype.shadow = function (b) {
+                if (b && !this.renderer.styledMode) {
+                    this.updateBoxSize();
+                    if (this.box) {
+                        this.box.shadow(b);
+                    }
+                }
+                return this;
+            };
+            SVGLabel.prototype.strokeSetter = function (value, key) {
+                // for animation getter (#6776)
+                this.stroke = value;
+                this.boxAttr(key, value);
+            };
+            SVGLabel.prototype['stroke-widthSetter'] = function (value, key) {
+                if (value) {
+                    this.needsBox = true;
+                }
+                this['stroke-width'] = value;
+                this.boxAttr(key, value);
+            };
+            SVGLabel.prototype['text-alignSetter'] = function (value) {
+                this.textAlign = value;
+            };
+            SVGLabel.prototype.textSetter = function (text) {
+                if (typeof text !== 'undefined') {
+                    // Must use .attr to ensure transforms are done (#10009)
+                    this.text.attr({ text: text });
+                }
+                this.updateTextPadding();
+            };
+            /*
+             * This function runs after the label is added to the DOM (when the bounding
+             * box is available), and after the text of the label is updated to detect
+             * the new bounding box and reflect it in the border box.
+             */
+            SVGLabel.prototype.updateBoxSize = function () {
+                var style = this.text.element.style,
+                    crispAdjust,
+                    attribs = {};
+                var padding = this.padding;
+                // #12165 error when width is null (auto)
+                // #12163 when fontweight: bold, recalculate bBox withot cache
+                // #3295 && 3514 box failure when string equals 0
+                var bBox = this.bBox = ((!isNumber(this.widthSetting) || !isNumber(this.heightSetting) || this.textAlign) &&
+                        defined(this.text.textStr)) ?
+                        this.text.getBBox() : SVGLabel.emptyBBox;
+                this.width = this.getPaddedWidth();
+                this.height = (this.heightSetting || bBox.height || 0) + 2 * padding;
+                // Update the label-scoped y offset. Math.min because of inline
+                // style (#9400)
+                this.baselineOffset = padding + Math.min(this.renderer.fontMetrics(style && style.fontSize, this.text).b, 
+                // When the height is 0, there is no bBox, so go with the font
+                // metrics. Highmaps CSS demos.
+                bBox.height || Infinity);
+                if (this.needsBox) {
+                    // Create the border box if it is not already present
+                    if (!this.box) {
+                        // Symbol definition exists (#5324)
+                        var box = this.box = this.symbolKey ?
+                                this.renderer.symbol(this.symbolKey) :
+                                this.renderer.rect();
+                        box.addClass(// Don't use label className for buttons
+                        (this.className === 'button' ? '' : 'highcharts-label-box') +
+                            (this.className ? ' highcharts-' + this.className + '-box' : ''));
+                        box.add(this);
+                    }
+                    crispAdjust = this.getCrispAdjust();
+                    attribs.x = crispAdjust;
+                    attribs.y = (this.baseline ? -this.baselineOffset : 0) + crispAdjust;
+                    // Apply the box attributes
+                    attribs.width = Math.round(this.width);
+                    attribs.height = Math.round(this.height);
+                    this.box.attr(extend(attribs, this.deferredAttr));
+                    this.deferredAttr = {};
+                }
+            };
+            /*
+             * This function runs after setting text or padding, but only if padding
+             * is changed.
+             */
+            SVGLabel.prototype.updateTextPadding = function () {
+                var text = this.text;
+                this.updateBoxSize();
+                // Determine y based on the baseline
+                var textY = this.baseline ? 0 : this.baselineOffset;
+                var textX = pick(this.paddingLeft,
+                    this.padding);
+                // compensate for alignment
+                if (defined(this.widthSetting) &&
+                    this.bBox &&
+                    (this.textAlign === 'center' || this.textAlign === 'right')) {
+                    textX += { center: 0.5, right: 1 }[this.textAlign] *
+                        (this.widthSetting - this.bBox.width);
+                }
+                // update if anything changed
+                if (textX !== text.x || textY !== text.y) {
+                    text.attr('x', textX);
+                    // #8159 - prevent misplaced data labels in treemap
+                    // (useHTML: true)
+                    if (text.hasBoxWidthChanged) {
+                        this.bBox = text.getBBox(true);
+                    }
+                    if (typeof textY !== 'undefined') {
+                        text.attr('y', textY);
+                    }
+                }
+                // record current values
+                text.x = textX;
+                text.y = textY;
+            };
+            SVGLabel.prototype.widthSetter = function (value) {
+                // width:auto => null
+                this.widthSetting = isNumber(value) ? value : void 0;
+            };
+            SVGLabel.prototype.getPaddedWidth = function () {
+                var padding = this.padding;
+                var paddingLeft = pick(this.paddingLeft,
+                    padding);
+                var paddingRight = pick(this.paddingRight,
+                    padding);
+                return (this.widthSetting || this.bBox.width || 0) + paddingLeft + paddingRight;
+            };
+            SVGLabel.prototype.xSetter = function (value) {
+                this.x = value; // for animation getter
+                if (this.alignFactor) {
+                    value -= this.alignFactor * this.getPaddedWidth();
+                    // Force animation even when setting to the same value (#7898)
+                    this['forceAnimate:x'] = true;
+                }
+                this.xSetting = Math.round(value);
+                this.attr('translateX', this.xSetting);
+            };
+            SVGLabel.prototype.ySetter = function (value) {
+                this.ySetting = this.y = Math.round(value);
+                this.attr('translateY', this.ySetting);
+            };
+            /* *
+             *
+             *  Static Properties
+             *
+             * */
+            SVGLabel.emptyBBox = { width: 0, height: 0, x: 0, y: 0 };
+            /* *
+             *
+             *  Properties
+             *
+             * */
+            /**
+             * For labels, these CSS properties are applied to the `text` node directly.
+             *
+             * @private
+             * @name Highcharts.SVGLabel#textProps
+             * @type {Array<string>}
+             */
+            SVGLabel.textProps = [
+                'color', 'direction', 'fontFamily', 'fontSize', 'fontStyle',
+                'fontWeight', 'lineHeight', 'textAlign', 'textDecoration',
+                'textOutline', 'textOverflow', 'width'
+            ];
+            return SVGLabel;
+        }(SVGElement));
+
+        return SVGLabel;
+    });
+    _registerModule(_modules, 'Core/Renderer/SVG/TextBuilder.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js'], _modules['Core/Renderer/HTML/AST.js']], function (H, U, AST) {
+        /* *
+         *
+         *  (c) 2010-2020 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var doc = H.doc,
+            SVG_NS = H.SVG_NS;
+        var attr = U.attr,
+            erase = U.erase,
+            isString = U.isString,
+            objectEach = U.objectEach,
+            pick = U.pick;
+        /**
+         * SVG Text Builder
+         * @private
+         * @class
+         * @name Highcharts.TextBuilder
+         */
+        var TextBuilder = /** @class */ (function () {
+                function TextBuilder(svgElement) {
+                    var textStyles = svgElement.styles;
+                this.renderer = svgElement.renderer;
+                this.svgElement = svgElement;
+                this.width = svgElement.textWidth;
+                this.textLineHeight = textStyles && textStyles.lineHeight;
+                this.textOutline = textStyles && textStyles.textOutline;
+                this.ellipsis = Boolean(textStyles && textStyles.textOverflow === 'ellipsis');
+                this.noWrap = Boolean(textStyles && textStyles.whiteSpace === 'nowrap');
+                this.fontSize = textStyles && textStyles.fontSize;
+            }
+            /**
+             * Build an SVG representation of the pseudo HTML given in the object's
+             * svgElement.
+             *
+             * @private
+             *
+             * @return {void}.
+             */
+            TextBuilder.prototype.buildSVG = function () {
+                var wrapper = this.svgElement;
+                var textNode = wrapper.element, renderer = wrapper.renderer, textStr = pick(wrapper.textStr, '').toString(), hasMarkup = textStr.indexOf('<') !== -1, childNodes = textNode.childNodes, textCache, i = childNodes.length, tempParent = this.width && !wrapper.added && renderer.box;
+                var regexMatchBreaks = /<br.*?>/g;
+                // The buildText code is quite heavy, so if we're not changing something
+                // that affects the text, skip it (#6113).
+                textCache = [
+                    textStr,
+                    this.ellipsis,
+                    this.noWrap,
+                    this.textLineHeight,
+                    this.textOutline,
+                    this.fontSize,
+                    this.width
+                ].join(',');
+                if (textCache === wrapper.textCache) {
+                    return;
+                }
+                wrapper.textCache = textCache;
+                delete wrapper.actualWidth;
+                // Remove old text
+                while (i--) {
+                    textNode.removeChild(childNodes[i]);
+                }
+                // Simple strings, add text directly and return
+                if (!hasMarkup &&
+                    !this.ellipsis &&
+                    !this.width &&
+                    (textStr.indexOf(' ') === -1 ||
+                        (this.noWrap && !regexMatchBreaks.test(textStr)))) {
+                    textNode.appendChild(doc.createTextNode(this.unescapeEntities(textStr)));
+                    // Complex strings, add more logic
+                }
+                else if (textStr !== '') {
+                    if (tempParent) {
+                        // attach it to the DOM to read offset width
+                        tempParent.appendChild(textNode);
+                    }
+                    // Step 1. Parse the markup safely and directly into a tree
+                    // structure.
+                    var ast = new AST(textStr);
+                    // Step 2. Do as many as we can of the modifications to the tree
+                    // structure before it is added to the DOM
+                    this.modifyTree(ast.nodes);
+                    ast.addToDOM(wrapper.element);
+                    // Step 3. Some modifications can't be done until the structure is
+                    // in the DOM, because we need to read computed metrics.
+                    this.modifyDOM();
+                    // Add title if an ellipsis was added
+                    if (this.ellipsis &&
+                        (textNode.textContent || '').indexOf('\u2026') !== -1) {
+                        wrapper.attr('title', this.unescapeEntities(wrapper.textStr || '', ['&lt;', '&gt;']) // #7179
+                        );
+                    }
+                    if (tempParent) {
+                        tempParent.removeChild(textNode);
+                    }
+                }
+                // Apply the text outline
+                if (isString(this.textOutline) && wrapper.applyTextOutline) {
+                    wrapper.applyTextOutline(this.textOutline);
+                }
+            };
+            /**
+             * Modify the DOM of the generated SVG structure. This function only does
+             * operations that cannot be done until the elements are attached to the
+             * DOM, like doing layout based on rendered metrics of the added elements.
+             *
+             * @private
+             *
+             * @return {void}
+             */
+            TextBuilder.prototype.modifyDOM = function () {
+                var _this = this;
+                var wrapper = this.svgElement;
+                var x = attr(wrapper.element, 'x');
+                // Modify hard line breaks by applying the rendered line height
+                [].forEach.call(wrapper.element.querySelectorAll('tspan.highcharts-br'), function (br) {
+                    if (br.nextSibling && br.previousSibling) { // #5261
+                        attr(br, {
+                            // Since the break is inserted in front of the next
+                            // line, we need to use the next sibling for the line
+                            // height
+                            dy: _this.getLineHeight(br.nextSibling),
+                            x: x
+                        });
+                    }
+                });
+                // Constrain the line width, either by ellipsis or wrapping
+                var width = this.width || 0;
+                if (!width) {
+                    return;
+                }
+                // Insert soft line breaks into each text node
+                var modifyTextNode = function (textNode,
+                    parentElement) {
+                        var text = textNode.textContent || '';
+                    var words = text
+                            .replace(/([^\^])-/g, '$1- ') // Split on hyphens
+                            // .trim()
+                            .split(' '); // #1273
+                        var hasWhiteSpace = !_this.noWrap && (words.length > 1 || wrapper.element.childNodes.length > 1);
+                    var dy = _this.getLineHeight(parentElement);
+                    var lineNo = 0;
+                    var startAt = wrapper.actualWidth;
+                    if (_this.ellipsis) {
+                        if (text) {
+                            _this.truncate(textNode, text, void 0, 0, 
+                            // Target width
+                            Math.max(0, 
+                            // Substract the font face to make room for the
+                            // ellipsis itself
+                            width - parseInt(_this.fontSize || 12, 10)), 
+                            // Build the text to test for
+                            function (text, currentIndex) {
+                                return text.substring(0, currentIndex) + '\u2026';
+                            });
+                        }
+                    }
+                    else if (hasWhiteSpace) {
+                        var lines = [];
+                        // Remove preceding siblings in order to make the text length
+                        // calculation correct in the truncate function
+                        var precedingSiblings = [];
+                        while (parentElement.firstChild &&
+                            parentElement.firstChild !== textNode) {
+                            precedingSiblings.push(parentElement.firstChild);
+                            parentElement.removeChild(parentElement.firstChild);
+                        }
+                        while (words.length) {
+                            // Apply the previous line
+                            if (words.length && !_this.noWrap && lineNo > 0) {
+                                lines.push(textNode.textContent || '');
+                                textNode.textContent = words.join(' ')
+                                    .replace(/- /g, '-');
+                            }
+                            // For each line, truncate the remaining
+                            // words into the line length.
+                            _this.truncate(textNode, void 0, words, lineNo === 0 ? (startAt || 0) : 0, width, 
+                            // Build the text to test for
+                            function (t, currentIndex) {
+                                return words
+                                    .slice(0, currentIndex)
+                                    .join(' ')
+                                    .replace(/- /g, '-');
+                            });
+                            startAt = wrapper.actualWidth;
+                            lineNo++;
+                        }
+                        // Reinsert the preceding child nodes
+                        precedingSiblings.forEach(function (childNode) {
+                            parentElement.insertBefore(childNode, textNode);
+                        });
+                        // Insert the previous lines before the original text node
+                        lines.forEach(function (line) {
+                            // Insert the line
+                            parentElement.insertBefore(doc.createTextNode(line), textNode);
+                            // Insert a break
+                            var br = doc.createElementNS(SVG_NS, 'tspan');
+                            br.textContent = '\u200B'; // zero-width space
+                            attr(br, { dy: dy, x: x });
+                            parentElement.insertBefore(br, textNode);
+                        });
+                    }
+                };
+                // Recurse down the DOM tree and handle line breaks for each text node
+                var modifyChildren = (function (node) {
+                        var childNodes = [].slice.call(node.childNodes);
+                    childNodes.forEach(function (childNode) {
+                        if (childNode.nodeType === Node.TEXT_NODE) {
+                            modifyTextNode(childNode, node);
+                        }
+                        else {
+                            // Reset word-wrap width readings after hard breaks
+                            if (childNode.className.baseVal
+                                .indexOf('highcharts-br') !== -1) {
+                                wrapper.actualWidth = 0;
+                            }
+                            // Recurse down to child node
+                            modifyChildren(childNode);
+                        }
+                    });
+                });
+                modifyChildren(wrapper.element);
+            };
+            /**
+             * Get the rendered line height of a <text>, <tspan> or pure text node.
+             *
+             * @param {DOMElementType|Text} node The node to check for
+             *
+             * @return {number} The rendered line height
+             */
+            TextBuilder.prototype.getLineHeight = function (node) {
+                var fontSizeStyle;
+                // If the node is a text node, use its parent
+                var element = node.nodeType === Node.TEXT_NODE ?
+                        node.parentElement :
+                        node;
+                if (!this.renderer.styledMode) {
+                    fontSizeStyle =
+                        element && /(px|em)$/.test(element.style.fontSize) ?
+                            element.style.fontSize :
+                            (this.fontSize || this.renderer.style.fontSize || 12);
+                }
+                return this.textLineHeight ?
+                    parseInt(this.textLineHeight.toString(), 10) :
+                    this.renderer.fontMetrics(fontSizeStyle, element || this.svgElement.element).h;
+            };
+            /**
+             * Transform a pseudo HTML AST node tree into an SVG structure. We do as
+             * much heavy lifting as we can here, before doing the final processing in
+             * the modifyDOM function. The original data is mutated.
+             *
+             * @private
+             *
+             * @param {ASTNode[]} nodes The AST nodes
+             *
+             * @return {void}
+             */
+            TextBuilder.prototype.modifyTree = function (nodes) {
+                var _this = this;
+                var modifyChild = function (node,
+                    i) {
+                        var tagName = node.tagName;
+                    var styledMode = _this.renderer.styledMode;
+                    var attributes = node.attributes || {};
+                    // Apply styling to text tags
+                    if (tagName === 'b' || tagName === 'strong') {
+                        if (styledMode) {
+                            attributes['class'] = 'highcharts-strong'; // eslint-disable-line dot-notation
+                        }
+                        else {
+                            attributes.style = 'font-weight:bold;' + (attributes.style || '');
+                        }
+                    }
+                    else if (tagName === 'i' || tagName === 'em') {
+                        if (styledMode) {
+                            attributes['class'] = 'highcharts-emphasized'; // eslint-disable-line dot-notation
+                        }
+                        else {
+                            attributes.style = 'font-style:italic;' + (attributes.style || '');
+                        }
+                    }
+                    // Modify attributes
+                    if (isString(attributes.style)) {
+                        attributes.style = attributes.style.replace(/(;| |^)color([ :])/, '$1fill$2');
+                    }
+                    if (tagName === 'br') {
+                        attributes['class'] = 'highcharts-br'; // eslint-disable-line dot-notation
+                        node.textContent = '\u200B'; // zero-width space
+                        // Trim whitespace off the beginning of new lines
+                        var nextNode = nodes[i + 1];
+                        if (nextNode && nextNode.textContent) {
+                            nextNode.textContent =
+                                nextNode.textContent.replace(/^ +/gm, '');
+                        }
+                    }
+                    if (tagName !== '#text' && tagName !== 'a') {
+                        node.tagName = 'tspan';
+                    }
+                    node.attributes = attributes;
+                    // Recurse
+                    if (node.children) {
+                        node.children
+                            .filter(function (c) { return c.tagName !== '#text'; })
+                            .forEach(modifyChild);
+                    }
+                };
+                nodes.forEach(modifyChild);
+                // Remove empty spans from the beginning because SVG's getBBox doesn't
+                // count empty lines. The use case is tooltip where the header is empty.
+                while (nodes[0]) {
+                    if (nodes[0].tagName === 'tspan' && !nodes[0].children) {
+                        nodes.splice(0, 1);
+                    }
+                    else {
+                        break;
+                    }
+                }
+            };
+            /*
+             * Truncate the text node contents to a given length. Used when the css
+             * width is set. If the `textOverflow` is `ellipsis`, the text is truncated
+             * character by character to the given length. If not, the text is
+             * word-wrapped line by line.
+             */
+            TextBuilder.prototype.truncate = function (textNode, text, words, startAt, width, getString) {
+                var svgElement = this.svgElement;
+                var renderer = svgElement.renderer,
+                    rotation = svgElement.rotation;
+                // Cache the lengths to avoid checking the same twice
+                var lengths = [];
+                // Word wrap can not be truncated to shorter than one word, ellipsis
+                // text can be completely blank.
+                var minIndex = words ? 1 : 0;
+                var maxIndex = (text || words || '').length;
+                var currentIndex = maxIndex;
+                var str;
+                var actualWidth;
+                var getSubStringLength = function (charEnd,
+                    concatenatedEnd) {
+                        // charEnd is used when finding the character-by-character
+                        // break for ellipsis, concatenatedEnd is used for word-by-word
+                        // break for word wrapping.
+                        var end = concatenatedEnd || charEnd;
+                    var parentNode = textNode.parentNode;
+                    if (parentNode && typeof lengths[end] === 'undefined') {
+                        // Modern browsers
+                        if (parentNode.getSubStringLength) {
+                            // Fails with DOM exception on unit-tests/legend/members
+                            // of unknown reason. Desired width is 0, text content
+                            // is "5" and end is 1.
+                            try {
+                                lengths[end] = startAt +
+                                    parentNode.getSubStringLength(0, words ? end + 1 : end);
+                            }
+                            catch (e) {
+                                '';
+                            }
+                            // Legacy
+                        }
+                        else if (renderer.getSpanWidth) { // #9058 jsdom
+                            textNode.textContent = getString(text || words, charEnd);
+                            lengths[end] = startAt +
+                                renderer.getSpanWidth(svgElement, textNode);
+                        }
+                    }
+                    return lengths[end];
+                };
+                svgElement.rotation = 0; // discard rotation when computing box
+                actualWidth = getSubStringLength(textNode.textContent.length);
+                if (startAt + actualWidth > width) {
+                    // Do a binary search for the index where to truncate the text
+                    while (minIndex <= maxIndex) {
+                        currentIndex = Math.ceil((minIndex + maxIndex) / 2);
+                        // When checking words for word-wrap, we need to build the
+                        // string and measure the subStringLength at the concatenated
+                        // word length.
+                        if (words) {
+                            str = getString(words, currentIndex);
+                        }
+                        actualWidth = getSubStringLength(currentIndex, str && str.length - 1);
+                        if (minIndex === maxIndex) {
+                            // Complete
+                            minIndex = maxIndex + 1;
+                        }
+                        else if (actualWidth > width) {
+                            // Too large. Set max index to current.
+                            maxIndex = currentIndex - 1;
+                        }
+                        else {
+                            // Within width. Set min index to current.
+                            minIndex = currentIndex;
+                        }
+                    }
+                    // If max index was 0 it means the shortest possible text was also
+                    // too large. For ellipsis that means only the ellipsis, while for
+                    // word wrap it means the whole first word.
+                    if (maxIndex === 0) {
+                        // Remove ellipsis
+                        textNode.textContent = '';
+                        // If the new text length is one less than the original, we don't
+                        // need the ellipsis
+                    }
+                    else if (!(text && maxIndex === text.length - 1)) {
+                        textNode.textContent = str || getString(text || words, currentIndex);
+                    }
+                }
+                // When doing line wrapping, prepare for the next line by removing the
+                // items from this line.
+                if (words) {
+                    words.splice(0, currentIndex);
+                }
+                svgElement.actualWidth = actualWidth;
+                svgElement.rotation = rotation; // Apply rotation again.
+            };
+            /*
+             * Un-escape HTML entities based on the public `renderer.escapes` list
+             *
+             * @private
+             *
+             * @param {string} inputStr The string to unescape
+             * @param {Array<string>} [except] Exceptions
+             *
+             * @return {string} The processed string
+             */
+            TextBuilder.prototype.unescapeEntities = function (inputStr, except) {
+                objectEach(this.renderer.escapes, function (value, key) {
+                    if (!except || except.indexOf(value) === -1) {
+                        inputStr = inputStr.toString().replace(new RegExp(value, 'g'), key);
+                    }
+                });
+                return inputStr;
+            };
+            return TextBuilder;
+        }());
+
+        return TextBuilder;
+    });
+    _registerModule(_modules, 'Core/Renderer/SVG/SVGRenderer.js', [_modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Renderer/SVG/SVGLabel.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/Renderer/SVG/TextBuilder.js'], _modules['Core/Utilities.js']], function (Color, H, palette, SVGElement, SVGLabel, AST, TextBuilder, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var addEvent = U.addEvent,
+            attr = U.attr,
+            createElement = U.createElement,
+            css = U.css,
+            defined = U.defined,
+            destroyObjectProperties = U.destroyObjectProperties,
+            extend = U.extend,
+            isArray = U.isArray,
+            isNumber = U.isNumber,
+            isObject = U.isObject,
+            isString = U.isString,
+            merge = U.merge,
+            pick = U.pick,
+            pInt = U.pInt,
+            uniqueKey = U.uniqueKey;
+        /**
+         * A clipping rectangle that can be applied to one or more {@link SVGElement}
+         * instances. It is instanciated with the {@link SVGRenderer#clipRect} function
+         * and applied with the {@link SVGElement#clip} function.
+         *
+         * @example
+         * var circle = renderer.circle(100, 100, 100)
+         *     .attr({ fill: 'red' })
+         *     .add();
+         * var clipRect = renderer.clipRect(100, 100, 100, 100);
+         *
+         * // Leave only the lower right quarter visible
+         * circle.clip(clipRect);
+         *
+         * @typedef {Highcharts.SVGElement} Highcharts.ClipRectElement
+         */
+        /**
+         * The font metrics.
+         *
+         * @interface Highcharts.FontMetricsObject
+         */ /**
+        * The baseline relative to the top of the box.
+        *
+        * @name Highcharts.FontMetricsObject#b
+        * @type {number}
+        */ /**
+        * The font size.
+        *
+        * @name Highcharts.FontMetricsObject#f
+        * @type {number}
+        */ /**
+        * The line height.
+        *
+        * @name Highcharts.FontMetricsObject#h
+        * @type {number}
+        */
+        /**
+         * An object containing `x` and `y` properties for the position of an element.
+         *
+         * @interface Highcharts.PositionObject
+         */ /**
+        * X position of the element.
+        * @name Highcharts.PositionObject#x
+        * @type {number}
+        */ /**
+        * Y position of the element.
+        * @name Highcharts.PositionObject#y
+        * @type {number}
+        */
+        /**
+         * A rectangle.
+         *
+         * @interface Highcharts.RectangleObject
+         */ /**
+        * Height of the rectangle.
+        * @name Highcharts.RectangleObject#height
+        * @type {number}
+        */ /**
+        * Width of the rectangle.
+        * @name Highcharts.RectangleObject#width
+        * @type {number}
+        */ /**
+        * Horizontal position of the rectangle.
+        * @name Highcharts.RectangleObject#x
+        * @type {number}
+        */ /**
+        * Vertical position of the rectangle.
+        * @name Highcharts.RectangleObject#y
+        * @type {number}
+        */
+        /**
+         * The shadow options.
+         *
+         * @interface Highcharts.ShadowOptionsObject
+         */ /**
+        * The shadow color.
+        * @name    Highcharts.ShadowOptionsObject#color
+        * @type    {Highcharts.ColorString|undefined}
+        * @default ${palette.neutralColor100}
+        */ /**
+        * The horizontal offset from the element.
+        *
+        * @name    Highcharts.ShadowOptionsObject#offsetX
+        * @type    {number|undefined}
+        * @default 1
+        */ /**
+        * The vertical offset from the element.
+        * @name    Highcharts.ShadowOptionsObject#offsetY
+        * @type    {number|undefined}
+        * @default 1
+        */ /**
+        * The shadow opacity.
+        *
+        * @name    Highcharts.ShadowOptionsObject#opacity
+        * @type    {number|undefined}
+        * @default 0.15
+        */ /**
+        * The shadow width or distance from the element.
+        * @name    Highcharts.ShadowOptionsObject#width
+        * @type    {number|undefined}
+        * @default 3
+        */
+        /**
+         * @interface Highcharts.SizeObject
+         */ /**
+        * @name Highcharts.SizeObject#height
+        * @type {number}
+        */ /**
+        * @name Highcharts.SizeObject#width
+        * @type {number}
+        */
+        /**
+         * Array of path commands, that will go into the `d` attribute of an SVG
+         * element.
+         *
+         * @typedef {Array<(Array<Highcharts.SVGPathCommand>|Array<Highcharts.SVGPathCommand,number>|Array<Highcharts.SVGPathCommand,number,number>|Array<Highcharts.SVGPathCommand,number,number,number,number>|Array<Highcharts.SVGPathCommand,number,number,number,number,number,number>|Array<Highcharts.SVGPathCommand,number,number,number,number,number,number,number>)>} Highcharts.SVGPathArray
+         */
+        /**
+         * Possible path commands in an SVG path array. Valid values are `A`, `C`, `H`,
+         * `L`, `M`, `Q`, `S`, `T`, `V`, `Z`.
+         *
+         * @typedef {string} Highcharts.SVGPathCommand
+         * @validvalue ["a","c","h","l","m","q","s","t","v","z","A","C","H","L","M","Q","S","T","V","Z"]
+         */
+        /**
+         * An extendable collection of functions for defining symbol paths. Symbols are
+         * used internally for point markers, button and label borders and backgrounds,
+         * or custom shapes. Extendable by adding to {@link SVGRenderer#symbols}.
+         *
+         * @interface Highcharts.SymbolDictionary
+         */ /**
+        * @name Highcharts.SymbolDictionary#[key:string]
+        * @type {Function|undefined}
+        */ /**
+        * @name Highcharts.SymbolDictionary#arc
+        * @type {Function|undefined}
+        */ /**
+        * @name Highcharts.SymbolDictionary#callout
+        * @type {Function|undefined}
+        */ /**
+        * @name Highcharts.SymbolDictionary#circle
+        * @type {Function|undefined}
+        */ /**
+        * @name Highcharts.SymbolDictionary#diamond
+        * @type {Function|undefined}
+        */ /**
+        * @name Highcharts.SymbolDictionary#square
+        * @type {Function|undefined}
+        */ /**
+        * @name Highcharts.SymbolDictionary#triangle
+        * @type {Function|undefined}
+        */
+        /**
+         * Can be one of `arc`, `callout`, `circle`, `diamond`, `square`, `triangle`,
+         * and `triangle-down`. Symbols are used internally for point markers, button
+         * and label borders and backgrounds, or custom shapes. Extendable by adding to
+         * {@link SVGRenderer#symbols}.
+         *
+         * @typedef {"arc"|"callout"|"circle"|"diamond"|"square"|"triangle"|"triangle-down"} Highcharts.SymbolKeyValue
+         */
+        /**
+         * Additional options, depending on the actual symbol drawn.
+         *
+         * @interface Highcharts.SymbolOptionsObject
+         */ /**
+        * The anchor X position for the `callout` symbol. This is where the chevron
+        * points to.
+        *
+        * @name Highcharts.SymbolOptionsObject#anchorX
+        * @type {number|undefined}
+        */ /**
+        * The anchor Y position for the `callout` symbol. This is where the chevron
+        * points to.
+        *
+        * @name Highcharts.SymbolOptionsObject#anchorY
+        * @type {number|undefined}
+        */ /**
+        * The end angle of an `arc` symbol.
+        *
+        * @name Highcharts.SymbolOptionsObject#end
+        * @type {number|undefined}
+        */ /**
+        * Whether to draw `arc` symbol open or closed.
+        *
+        * @name Highcharts.SymbolOptionsObject#open
+        * @type {boolean|undefined}
+        */ /**
+        * The radius of an `arc` symbol, or the border radius for the `callout` symbol.
+        *
+        * @name Highcharts.SymbolOptionsObject#r
+        * @type {number|undefined}
+        */ /**
+        * The start angle of an `arc` symbol.
+        *
+        * @name Highcharts.SymbolOptionsObject#start
+        * @type {number|undefined}
+        */
+        /* eslint-disable no-invalid-this, valid-jsdoc */
+        var charts = H.charts,
+            deg2rad = H.deg2rad,
+            doc = H.doc,
+            isFirefox = H.isFirefox,
+            isMS = H.isMS,
+            isWebKit = H.isWebKit,
+            noop = H.noop,
+            SVG_NS = H.SVG_NS,
+            symbolSizes = H.symbolSizes,
+            win = H.win,
+            hasInternalReferenceBug;
+        /**
+         * Allows direct access to the Highcharts rendering layer in order to draw
+         * primitive shapes like circles, rectangles, paths or text directly on a chart,
+         * or independent from any chart. The SVGRenderer represents a wrapper object
+         * for SVG in modern browsers. Through the VMLRenderer, part of the `oldie.js`
+         * module, it also brings vector graphics to IE <= 8.
+         *
+         * An existing chart's renderer can be accessed through {@link Chart.renderer}.
+         * The renderer can also be used completely decoupled from a chart.
+         *
+         * @sample highcharts/members/renderer-on-chart
+         *         Annotating a chart programmatically.
+         * @sample highcharts/members/renderer-basic
+         *         Independent SVG drawing.
+         *
+         * @example
+         * // Use directly without a chart object.
+         * var renderer = new Highcharts.Renderer(parentNode, 600, 400);
+         *
+         * @class
+         * @name Highcharts.SVGRenderer
+         *
+         * @param {Highcharts.HTMLDOMElement} container
+         *        Where to put the SVG in the web page.
+         *
+         * @param {number} width
+         *        The width of the SVG.
+         *
+         * @param {number} height
+         *        The height of the SVG.
+         *
+         * @param {Highcharts.CSSObject} [style]
+         *        The box style, if not in styleMode
+         *
+         * @param {boolean} [forExport=false]
+         *        Whether the rendered content is intended for export.
+         *
+         * @param {boolean} [allowHTML=true]
+         *        Whether the renderer is allowed to include HTML text, which will be
+         *        projected on top of the SVG.
+         *
+         * @param {boolean} [styledMode=false]
+         *        Whether the renderer belongs to a chart that is in styled mode.
+         *        If it does, it will avoid setting presentational attributes in
+         *        some cases, but not when set explicitly through `.attr` and `.css`
+         *        etc.
+         */
+        var SVGRenderer = /** @class */ (function () {
+                /* *
+                 *
+                 *  Constructors
+                 *
+                 * */
+                function SVGRenderer(container, width, height, style, forExport, allowHTML, styledMode) {
+                    /* *
+                     *
+                     *  Properties
+                     *
+                     * */
+                    this.alignedObjects = void 0;
+                /**
+                 * The root `svg` node of the renderer.
+                 *
+                 * @name Highcharts.SVGRenderer#box
+                 * @type {Highcharts.SVGDOMElement}
+                 */
+                this.box = void 0;
+                /**
+                 * The wrapper for the root `svg` node of the renderer.
+                 *
+                 * @name Highcharts.SVGRenderer#boxWrapper
+                 * @type {Highcharts.SVGElement}
+                 */
+                this.boxWrapper = void 0;
+                this.cache = void 0;
+                this.cacheKeys = void 0;
+                this.chartIndex = void 0;
+                /**
+                 * A pointer to the `defs` node of the root SVG.
+                 *
+                 * @name Highcharts.SVGRenderer#defs
+                 * @type {Highcharts.SVGElement}
+                 */
+                this.defs = void 0;
+                this.globalAnimation = void 0;
+                this.gradients = void 0;
+                this.height = void 0;
+                this.imgCount = void 0;
+                this.isSVG = void 0;
+                this.style = void 0;
+                /**
+                 * Page url used for internal references.
+                 *
+                 * @private
+                 * @name Highcharts.SVGRenderer#url
+                 * @type {string}
+                 */
+                this.url = void 0;
+                this.width = void 0;
+                this.init(container, width, height, style, forExport, allowHTML, styledMode);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Initialize the SVGRenderer. Overridable initializer function that takes
+             * the same parameters as the constructor.
+             *
+             * @function Highcharts.SVGRenderer#init
+             *
+             * @param {Highcharts.HTMLDOMElement} container
+             * Where to put the SVG in the web page.
+             *
+             * @param {number} width
+             * The width of the SVG.
+             *
+             * @param {number} height
+             * The height of the SVG.
+             *
+             * @param {Highcharts.CSSObject} [style]
+             * The box style, if not in styleMode
+             *
+             * @param {boolean} [forExport=false]
+             * Whether the rendered content is intended for export.
+             *
+             * @param {boolean} [allowHTML=true]
+             * Whether the renderer is allowed to include HTML text, which will be
+             * projected on top of the SVG.
+             *
+             * @param {boolean} [styledMode=false]
+             * Whether the renderer belongs to a chart that is in styled mode. If it
+             * does, it will avoid setting presentational attributes in some cases, but
+             * not when set explicitly through `.attr` and `.css` etc.
+             */
+            SVGRenderer.prototype.init = function (container, width, height, style, forExport, allowHTML, styledMode) {
+                var renderer = this,
+                    boxWrapper,
+                    element,
+                    desc;
+                boxWrapper = renderer.createElement('svg')
+                    .attr({
+                    version: '1.1',
+                    'class': 'highcharts-root'
+                });
+                if (!styledMode) {
+                    boxWrapper.css(this.getStyle(style));
+                }
+                element = boxWrapper.element;
+                container.appendChild(element);
+                // Always use ltr on the container, otherwise text-anchor will be
+                // flipped and text appear outside labels, buttons, tooltip etc (#3482)
+                attr(container, 'dir', 'ltr');
+                // For browsers other than IE, add the namespace attribute (#1978)
+                if (container.innerHTML.indexOf('xmlns') === -1) {
+                    attr(element, 'xmlns', this.SVG_NS);
+                }
+                // object properties
+                renderer.isSVG = true;
+                this.box = element;
+                this.boxWrapper = boxWrapper;
+                renderer.alignedObjects = [];
+                this.url = this.getReferenceURL();
+                // Add description
+                desc = this.createElement('desc').add();
+                desc.element.appendChild(doc.createTextNode('Created with Highcharts 9.0.1'));
+                renderer.defs = this.createElement('defs').add();
+                renderer.allowHTML = allowHTML;
+                renderer.forExport = forExport;
+                renderer.styledMode = styledMode;
+                renderer.gradients = {}; // Object where gradient SvgElements are stored
+                renderer.cache = {}; // Cache for numerical bounding boxes
+                renderer.cacheKeys = [];
+                renderer.imgCount = 0;
+                renderer.setSize(width, height, false);
+                // Issue 110 workaround:
+                // In Firefox, if a div is positioned by percentage, its pixel position
+                // may land between pixels. The container itself doesn't display this,
+                // but an SVG element inside this container will be drawn at subpixel
+                // precision. In order to draw sharp lines, this must be compensated
+                // for. This doesn't seem to work inside iframes though (like in
+                // jsFiddle).
+                var subPixelFix,
+                    rect;
+                if (isFirefox && container.getBoundingClientRect) {
+                    subPixelFix = function () {
+                        css(container, { left: 0, top: 0 });
+                        rect = container.getBoundingClientRect();
+                        css(container, {
+                            left: (Math.ceil(rect.left) - rect.left) + 'px',
+                            top: (Math.ceil(rect.top) - rect.top) + 'px'
+                        });
+                    };
+                    // run the fix now
+                    subPixelFix();
+                    // run it on resize
+                    renderer.unSubPixelFix = addEvent(win, 'resize', subPixelFix);
+                }
+            };
+            /**
+             * General method for adding a definition to the SVG `defs` tag. Can be used
+             * for gradients, fills, filters etc. Styled mode only. A hook for adding
+             * general definitions to the SVG's defs tag. Definitions can be referenced
+             * from the CSS by its `id`. Read more in
+             * [gradients, shadows and patterns](https://www.highcharts.com/docs/chart-design-and-style/gradients-shadows-and-patterns).
+             * Styled mode only.
+             *
+             * @function Highcharts.SVGRenderer#definition
+             *
+             * @param {Highcharts.ASTNode} def
+             * A serialized form of an SVG definition, including children.
+             *
+             * @return {Highcharts.SVGElement}
+             * The inserted node.
+             */
+            SVGRenderer.prototype.definition = function (def) {
+                var ast = new AST([def]);
+                return ast.addToDOM(this.defs.element);
+            };
+            /**
+             * Get the prefix needed for internal URL references to work in certain
+             * cases. Some older browser versions had a bug where internal url
+             * references in SVG attributes, on the form `url(#some-id)`, would fail if
+             * a base tag was present in the page. There were also issues with
+             * `history.pushState` related to this prefix.
+             *
+             * Related issues: #24, #672, #1070, #5244.
+             *
+             * The affected browsers are:
+             * - Chrome <= 53 (May 2018)
+             * - Firefox <= 51 (January 2017)
+             * - Safari/Mac <= 12.1 (2018 or 2019)
+             * - Safari/iOS <= 13
+             *
+             * @todo Remove this hack when time has passed. All the affected browsers
+             * are evergreens, so it is increasingly unlikely that users are affected by
+             * the bug.
+             *
+             * @return {string}
+             * The prefix to use. An empty string for modern browsers.
+             */
+            SVGRenderer.prototype.getReferenceURL = function () {
+                if ((isFirefox || isWebKit) &&
+                    doc.getElementsByTagName('base').length) {
+                    // Detect if a clip path is taking effect by performing a hit test
+                    // outside the clipped area. If the hit element is the rectangle
+                    // that was supposed to be clipped, the bug is present. This only
+                    // has to be performed once per page load, so we store the result
+                    // locally in the module.
+                    if (!defined(hasInternalReferenceBug)) {
+                        var id = uniqueKey();
+                        var ast = new AST([{
+                                    tagName: 'svg',
+                                    attributes: {
+                                        width: 8,
+                                        height: 8
+                                    },
+                                    children: [{
+                                            tagName: 'defs',
+                                            children: [{
+                                                    tagName: 'clipPath',
+                                                    attributes: {
+                                                        id: id
+                                                    },
+                                                    children: [{
+                                                            tagName: 'rect',
+                                                            attributes: {
+                                                                width: 4,
+                                                                height: 4
+                                                            }
+                                                        }]
+                                                }]
+                                        }, {
+                                            tagName: 'rect',
+                                            attributes: {
+                                                id: 'hitme',
+                                                width: 8,
+                                                height: 8,
+                                                'clip-path': "url(#" + id + ")",
+                                                fill: 'rgba(0,0,0,0.001)'
+                                            }
+                                        }]
+                                }]);
+                        var svg = ast.addToDOM(doc.body);
+                        css(svg, {
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            zIndex: 9e5
+                        });
+                        var hitElement = doc.elementFromPoint(6, 6);
+                        hasInternalReferenceBug =
+                            (hitElement && hitElement.id) === 'hitme';
+                        doc.body.removeChild(svg);
+                    }
+                    if (hasInternalReferenceBug) {
+                        return win.location.href
+                            .split('#')[0] // remove the hash
+                            .replace(/<[^>]*>/g, '') // wing cut HTML
+                            // escape parantheses and quotes
+                            .replace(/([\('\)])/g, '\\$1')
+                            // replace spaces (needed for Safari only)
+                            .replace(/ /g, '%20');
+                    }
+                }
+                return '';
+            };
+            /**
+             * Get the global style setting for the renderer.
+             *
+             * @private
+             * @function Highcharts.SVGRenderer#getStyle
+             *
+             * @param {Highcharts.CSSObject} style
+             * Style settings.
+             *
+             * @return {Highcharts.CSSObject}
+             * The style settings mixed with defaults.
+             */
+            SVGRenderer.prototype.getStyle = function (style) {
+                this.style = extend({
+                    fontFamily: '"Lucida Grande", "Lucida Sans Unicode", ' +
+                        'Arial, Helvetica, sans-serif',
+                    fontSize: '12px'
+                }, style);
+                return this.style;
+            };
+            /**
+             * Apply the global style on the renderer, mixed with the default styles.
+             *
+             * @function Highcharts.SVGRenderer#setStyle
+             *
+             * @param {Highcharts.CSSObject} style
+             * CSS to apply.
+             */
+            SVGRenderer.prototype.setStyle = function (style) {
+                this.boxWrapper.css(this.getStyle(style));
+            };
+            /**
+             * Detect whether the renderer is hidden. This happens when one of the
+             * parent elements has `display: none`. Used internally to detect when we
+             * needto render preliminarily in another div to get the text bounding boxes
+             * right.
+             *
+             * @function Highcharts.SVGRenderer#isHidden
+             *
+             * @return {boolean}
+             * True if it is hidden.
+             */
+            SVGRenderer.prototype.isHidden = function () {
+                return !this.boxWrapper.getBBox().width;
+            };
+            /**
+             * Destroys the renderer and its allocated members.
+             *
+             * @function Highcharts.SVGRenderer#destroy
+             *
+             * @return {null}
+             */
+            SVGRenderer.prototype.destroy = function () {
+                var renderer = this,
+                    rendererDefs = renderer.defs;
+                renderer.box = null;
+                renderer.boxWrapper = renderer.boxWrapper.destroy();
+                // Call destroy on all gradient elements
+                destroyObjectProperties(renderer.gradients || {});
+                renderer.gradients = null;
+                // Defs are null in VMLRenderer
+                // Otherwise, destroy them here.
+                if (rendererDefs) {
+                    renderer.defs = rendererDefs.destroy();
+                }
+                // Remove sub pixel fix handler (#982)
+                if (renderer.unSubPixelFix) {
+                    renderer.unSubPixelFix();
+                }
+                renderer.alignedObjects = null;
+                return null;
+            };
+            /**
+             * Create a wrapper for an SVG element. Serves as a factory for
+             * {@link SVGElement}, but this function is itself mostly called from
+             * primitive factories like {@link SVGRenderer#path}, {@link
+             * SVGRenderer#rect} or {@link SVGRenderer#text}.
+             *
+             * @function Highcharts.SVGRenderer#createElement
+             *
+             * @param {string} nodeName
+             * The node name, for example `rect`, `g` etc.
+             *
+             * @return {Highcharts.SVGElement}
+             * The generated SVGElement.
+             */
+            SVGRenderer.prototype.createElement = function (nodeName) {
+                var wrapper = new this.Element();
+                wrapper.init(this, nodeName);
+                return wrapper;
+            };
+            /**
+             * Get converted radial gradient attributes according to the radial
+             * reference. Used internally from the {@link SVGElement#colorGradient}
+             * function.
+             *
+             * @private
+             * @function Highcharts.SVGRenderer#getRadialAttr
+             */
+            SVGRenderer.prototype.getRadialAttr = function (radialReference, gradAttr) {
+                return {
+                    cx: (radialReference[0] - radialReference[2] / 2) +
+                        gradAttr.cx * radialReference[2],
+                    cy: (radialReference[1] - radialReference[2] / 2) +
+                        gradAttr.cy * radialReference[2],
+                    r: gradAttr.r * radialReference[2]
+                };
+            };
+            /**
+             * Parse a simple HTML string into SVG tspans. Called internally when text
+             * is set on an SVGElement. The function supports a subset of HTML tags, CSS
+             * text features like `width`, `text-overflow`, `white-space`, and also
+             * attributes like `href` and `style`.
+             *
+             * @private
+             * @function Highcharts.SVGRenderer#buildText
+             *
+             * @param {Highcharts.SVGElement} wrapper
+             * The parent SVGElement.
+             */
+            SVGRenderer.prototype.buildText = function (wrapper) {
+                new TextBuilder(wrapper).buildSVG();
+            };
+            /**
+             * Returns white for dark colors and black for bright colors.
+             *
+             * @function Highcharts.SVGRenderer#getContrast
+             *
+             * @param {Highcharts.ColorString} rgba
+             * The color to get the contrast for.
+             *
+             * @return {Highcharts.ColorString}
+             * The contrast color, either `#000000` or `#FFFFFF`.
+             */
+            SVGRenderer.prototype.getContrast = function (rgba) {
+                rgba = Color.parse(rgba).rgba;
+                // The threshold may be discussed. Here's a proposal for adding
+                // different weight to the color channels (#6216)
+                rgba[0] *= 1; // red
+                rgba[1] *= 1.2; // green
+                rgba[2] *= 0.5; // blue
+                return rgba[0] + rgba[1] + rgba[2] >
+                    1.8 * 255 ?
+                    '#000000' :
+                    '#FFFFFF';
+            };
+            /**
+             * Create a button with preset states.
+             *
+             * @function Highcharts.SVGRenderer#button
+             *
+             * @param {string} text
+             * The text or HTML to draw.
+             *
+             * @param {number} x
+             * The x position of the button's left side.
+             *
+             * @param {number} y
+             * The y position of the button's top side.
+             *
+             * @param {Highcharts.EventCallbackFunction<Highcharts.SVGElement>} callback
+             * The function to execute on button click or touch.
+             *
+             * @param {Highcharts.SVGAttributes} [theme]
+             * SVG attributes for the normal state.
+             *
+             * @param {Highcharts.SVGAttributes} [hoverState]
+             * SVG attributes for the hover state.
+             *
+             * @param {Highcharts.SVGAttributes} [pressedState]
+             * SVG attributes for the pressed state.
+             *
+             * @param {Highcharts.SVGAttributes} [disabledState]
+             * SVG attributes for the disabled state.
+             *
+             * @param {Highcharts.SymbolKeyValue} [shape=rect]
+             * The shape type.
+             *
+             * @param {boolean} [useHTML=false]
+             * Wether to use HTML to render the label.
+             *
+             * @return {Highcharts.SVGElement}
+             * The button element.
+             */
+            SVGRenderer.prototype.button = function (text, x, y, callback, theme, hoverState, pressedState, disabledState, shape, useHTML) {
+                var label = this.label(text,
+                    x,
+                    y,
+                    shape,
+                    void 0,
+                    void 0,
+                    useHTML,
+                    void 0, 'button'),
+                    curState = 0,
+                    styledMode = this.styledMode, 
+                    // Make a copy of normalState (#13798)
+                    // (reference to options.rangeSelector.buttonTheme)
+                    normalState = theme ? merge(theme) : {},
+                    userNormalStyle = normalState && normalState.style || {};
+                // Remove stylable attributes
+                normalState = AST.filterUserAttributes(normalState);
+                // Default, non-stylable attributes
+                label.attr(merge({ padding: 8, r: 2 }, normalState));
+                if (!styledMode) {
+                    // Presentational
+                    var normalStyle,
+                        hoverStyle,
+                        pressedStyle,
+                        disabledStyle;
+                    // Normal state - prepare the attributes
+                    normalState = merge({
+                        fill: palette.neutralColor3,
+                        stroke: palette.neutralColor20,
+                        'stroke-width': 1,
+                        style: {
+                            color: palette.neutralColor80,
+                            cursor: 'pointer',
+                            fontWeight: 'normal'
+                        }
+                    }, {
+                        style: userNormalStyle
+                    }, normalState);
+                    normalStyle = normalState.style;
+                    delete normalState.style;
+                    // Hover state
+                    hoverState = merge(normalState, {
+                        fill: palette.neutralColor10
+                    }, AST.filterUserAttributes(hoverState || {}));
+                    hoverStyle = hoverState.style;
+                    delete hoverState.style;
+                    // Pressed state
+                    pressedState = merge(normalState, {
+                        fill: palette.highlightColor10,
+                        style: {
+                            color: palette.neutralColor100,
+                            fontWeight: 'bold'
+                        }
+                    }, AST.filterUserAttributes(pressedState || {}));
+                    pressedStyle = pressedState.style;
+                    delete pressedState.style;
+                    // Disabled state
+                    disabledState = merge(normalState, {
+                        style: {
+                            color: palette.neutralColor20
+                        }
+                    }, AST.filterUserAttributes(disabledState || {}));
+                    disabledStyle = disabledState.style;
+                    delete disabledState.style;
+                }
+                // Add the events. IE9 and IE10 need mouseover and mouseout to funciton
+                // (#667).
+                addEvent(label.element, isMS ? 'mouseover' : 'mouseenter', function () {
+                    if (curState !== 3) {
+                        label.setState(1);
+                    }
+                });
+                addEvent(label.element, isMS ? 'mouseout' : 'mouseleave', function () {
+                    if (curState !== 3) {
+                        label.setState(curState);
+                    }
+                });
+                label.setState = function (state) {
+                    // Hover state is temporary, don't record it
+                    if (state !== 1) {
+                        label.state = curState = state;
+                    }
+                    // Update visuals
+                    label
+                        .removeClass(/highcharts-button-(normal|hover|pressed|disabled)/)
+                        .addClass('highcharts-button-' +
+                        ['normal', 'hover', 'pressed', 'disabled'][state || 0]);
+                    if (!styledMode) {
+                        label
+                            .attr([
+                            normalState,
+                            hoverState,
+                            pressedState,
+                            disabledState
+                        ][state || 0])
+                            .css([
+                            normalStyle,
+                            hoverStyle,
+                            pressedStyle,
+                            disabledStyle
+                        ][state || 0]);
+                    }
+                };
+                // Presentational attributes
+                if (!styledMode) {
+                    label
+                        .attr(normalState)
+                        .css(extend({ cursor: 'default' }, normalStyle));
+                }
+                return label
+                    .on('click', function (e) {
+                    if (curState !== 3) {
+                        callback.call(label, e);
+                    }
+                });
+            };
+            /**
+             * Make a straight line crisper by not spilling out to neighbour pixels.
+             *
+             * @function Highcharts.SVGRenderer#crispLine
+             *
+             * @param {Highcharts.SVGPathArray} points
+             *        The original points on the format `[['M', 0, 0], ['L', 100, 0]]`.
+             *
+             * @param {number} width
+             *        The width of the line.
+             *
+             * @param {string} roundingFunction
+             *        The rounding function name on the `Math` object, can be one of
+             *        `round`, `floor` or `ceil`.
+             *
+             * @return {Highcharts.SVGPathArray}
+             *         The original points array, but modified to render crisply.
+             */
+            SVGRenderer.prototype.crispLine = function (points, width, roundingFunction) {
+                if (roundingFunction === void 0) { roundingFunction = 'round'; }
+                var start = points[0];
+                var end = points[1];
+                // Normalize to a crisp line
+                if (start[1] === end[1]) {
+                    // Substract due to #1129. Now bottom and left axis gridlines behave
+                    // the same.
+                    start[1] = end[1] =
+                        Math[roundingFunction](start[1]) - (width % 2 / 2);
+                }
+                if (start[2] === end[2]) {
+                    start[2] = end[2] =
+                        Math[roundingFunction](start[2]) + (width % 2 / 2);
+                }
+                return points;
+            };
+            /**
+             * Draw a path, wraps the SVG `path` element.
+             *
+             * @sample highcharts/members/renderer-path-on-chart/
+             *         Draw a path in a chart
+             * @sample highcharts/members/renderer-path/
+             *         Draw a path independent from a chart
+             *
+             * @example
+             * var path = renderer.path(['M', 10, 10, 'L', 30, 30, 'z'])
+             *     .attr({ stroke: '#ff00ff' })
+             *     .add();
+             *
+             * @function Highcharts.SVGRenderer#path
+             *
+             * @param {Highcharts.SVGPathArray} [path]
+             * An SVG path definition in array form.
+             *
+             * @return {Highcharts.SVGElement}
+             * The generated wrapper element.
+             *
+             */ /**
+            * Draw a path, wraps the SVG `path` element.
+            *
+            * @function Highcharts.SVGRenderer#path
+            *
+            * @param {Highcharts.SVGAttributes} [attribs]
+            * The initial attributes.
+            *
+            * @return {Highcharts.SVGElement}
+            * The generated wrapper element.
+            */
+            SVGRenderer.prototype.path = function (path) {
+                var attribs = (this.styledMode ? {} : {
+                        fill: 'none'
+                    });
+                if (isArray(path)) {
+                    attribs.d = path;
+                }
+                else if (isObject(path)) { // attributes
+                    extend(attribs, path);
+                }
+                return this.createElement('path').attr(attribs);
+            };
+            /**
+             * Draw a circle, wraps the SVG `circle` element.
+             *
+             * @sample highcharts/members/renderer-circle/
+             *         Drawing a circle
+             *
+             * @function Highcharts.SVGRenderer#circle
+             *
+             * @param {number} [x]
+             * The center x position.
+             *
+             * @param {number} [y]
+             * The center y position.
+             *
+             * @param {number} [r]
+             * The radius.
+             *
+             * @return {Highcharts.SVGElement}
+             * The generated wrapper element.
+             */ /**
+            * Draw a circle, wraps the SVG `circle` element.
+            *
+            * @function Highcharts.SVGRenderer#circle
+            *
+            * @param {Highcharts.SVGAttributes} [attribs]
+            * The initial attributes.
+            *
+            * @return {Highcharts.SVGElement}
+            * The generated wrapper element.
+            */
+            SVGRenderer.prototype.circle = function (x, y, r) {
+                var attribs = (isObject(x) ?
+                        x :
+                        typeof x === 'undefined' ? {} : { x: x, y: y, r: r }), wrapper = this.createElement('circle');
+                // Setting x or y translates to cx and cy
+                wrapper.xSetter = wrapper.ySetter = function (value, key, element) {
+                    element.setAttribute('c' + key, value);
+                };
+                return wrapper.attr(attribs);
+            };
+            /**
+             * Draw and return an arc.
+             *
+             * @sample highcharts/members/renderer-arc/
+             *         Drawing an arc
+             *
+             * @function Highcharts.SVGRenderer#arc
+             *
+             * @param {number} [x=0]
+             * Center X position.
+             *
+             * @param {number} [y=0]
+             * Center Y position.
+             *
+             * @param {number} [r=0]
+             * The outer radius' of the arc.
+             *
+             * @param {number} [innerR=0]
+             * Inner radius like used in donut charts.
+             *
+             * @param {number} [start=0]
+             * The starting angle of the arc in radians, where 0 is to the right and
+             * `-Math.PI/2` is up.
+             *
+             * @param {number} [end=0]
+             * The ending angle of the arc in radians, where 0 is to the right and
+             * `-Math.PI/2` is up.
+             *
+             * @return {Highcharts.SVGElement}
+             * The generated wrapper element.
+             */ /**
+            * Draw and return an arc. Overloaded function that takes arguments object.
+            *
+            * @function Highcharts.SVGRenderer#arc
+            *
+            * @param {Highcharts.SVGAttributes} attribs
+            * Initial SVG attributes.
+            *
+            * @return {Highcharts.SVGElement}
+            * The generated wrapper element.
+            */
+            SVGRenderer.prototype.arc = function (x, y, r, innerR, start, end) {
+                var arc,
+                    options;
+                if (isObject(x)) {
+                    options = x;
+                    y = options.y;
+                    r = options.r;
+                    innerR = options.innerR;
+                    start = options.start;
+                    end = options.end;
+                    x = options.x;
+                }
+                else {
+                    options = {
+                        innerR: innerR,
+                        start: start,
+                        end: end
+                    };
+                }
+                // Arcs are defined as symbols for the ability to set
+                // attributes in attr and animate
+                arc = this.symbol('arc', x, y, r, r, options);
+                arc.r = r; // #959
+                return arc;
+            };
+            /**
+             * Draw and return a rectangle.
+             *
+             * @function Highcharts.SVGRenderer#rect
+             *
+             * @param {number} [x]
+             * Left position.
+             *
+             * @param {number} [y]
+             * Top position.
+             *
+             * @param {number} [width]
+             * Width of the rectangle.
+             *
+             * @param {number} [height]
+             * Height of the rectangle.
+             *
+             * @param {number} [r]
+             * Border corner radius.
+             *
+             * @param {number} [strokeWidth]
+             * A stroke width can be supplied to allow crisp drawing.
+             *
+             * @return {Highcharts.SVGElement}
+             * The generated wrapper element.
+             */ /**
+            * Draw and return a rectangle.
+            *
+            * @sample highcharts/members/renderer-rect-on-chart/
+            *         Draw a rectangle in a chart
+            * @sample highcharts/members/renderer-rect/
+            *         Draw a rectangle independent from a chart
+            *
+            * @function Highcharts.SVGRenderer#rect
+            *
+            * @param {Highcharts.SVGAttributes} [attributes]
+            * General SVG attributes for the rectangle.
+            *
+            * @return {Highcharts.SVGElement}
+            * The generated wrapper element.
+            */
+            SVGRenderer.prototype.rect = function (x, y, width, height, r, strokeWidth) {
+                r = isObject(x) ? x.r : r;
+                var wrapper = this.createElement('rect'),
+                    attribs = isObject(x) ?
+                        x :
+                        typeof x === 'undefined' ?
+                            {} :
+                            {
+                                x: x,
+                                y: y,
+                                width: Math.max(width, 0),
+                                height: Math.max(height, 0)
+                            };
+                if (!this.styledMode) {
+                    if (typeof strokeWidth !== 'undefined') {
+                        attribs.strokeWidth = strokeWidth;
+                        attribs = wrapper.crisp(attribs);
+                    }
+                    attribs.fill = 'none';
+                }
+                if (r) {
+                    attribs.r = r;
+                }
+                wrapper.rSetter = function (value, key, element) {
+                    wrapper.r = value;
+                    attr(element, {
+                        rx: value,
+                        ry: value
+                    });
+                };
+                wrapper.rGetter = function () {
+                    return wrapper.r;
+                };
+                return wrapper.attr(attribs);
+            };
+            /**
+             * Resize the {@link SVGRenderer#box} and re-align all aligned child
+             * elements.
+             *
+             * @sample highcharts/members/renderer-g/
+             *         Show and hide grouped objects
+             *
+             * @function Highcharts.SVGRenderer#setSize
+             *
+             * @param {number} width
+             * The new pixel width.
+             *
+             * @param {number} height
+             * The new pixel height.
+             *
+             * @param {boolean|Partial<Highcharts.AnimationOptionsObject>} [animate=true]
+             * Whether and how to animate.
+             */
+            SVGRenderer.prototype.setSize = function (width, height, animate) {
+                var renderer = this,
+                    alignedObjects = renderer.alignedObjects,
+                    i = alignedObjects.length;
+                renderer.width = width;
+                renderer.height = height;
+                renderer.boxWrapper.animate({
+                    width: width,
+                    height: height
+                }, {
+                    step: function () {
+                        this.attr({
+                            viewBox: '0 0 ' + this.attr('width') + ' ' +
+                                this.attr('height')
+                        });
+                    },
+                    duration: pick(animate, true) ? void 0 : 0
+                });
+                while (i--) {
+                    alignedObjects[i].align();
+                }
+            };
+            /**
+             * Create and return an svg group element. Child
+             * {@link Highcharts.SVGElement} objects are added to the group by using the
+             * group as the first parameter in {@link Highcharts.SVGElement#add|add()}.
+             *
+             * @function Highcharts.SVGRenderer#g
+             *
+             * @param {string} [name]
+             *        The group will be given a class name of `highcharts-{name}`. This
+             *        can be used for styling and scripting.
+             *
+             * @return {Highcharts.SVGElement}
+             *         The generated wrapper element.
+             */
+            SVGRenderer.prototype.g = function (name) {
+                var elem = this.createElement('g');
+                return name ?
+                    elem.attr({ 'class': 'highcharts-' + name }) :
+                    elem;
+            };
+            /**
+             * Display an image.
+             *
+             * @sample highcharts/members/renderer-image-on-chart/
+             *         Add an image in a chart
+             * @sample highcharts/members/renderer-image/
+             *         Add an image independent of a chart
+             *
+             * @function Highcharts.SVGRenderer#image
+             *
+             * @param {string} src
+             *        The image source.
+             *
+             * @param {number} [x]
+             *        The X position.
+             *
+             * @param {number} [y]
+             *        The Y position.
+             *
+             * @param {number} [width]
+             *        The image width. If omitted, it defaults to the image file width.
+             *
+             * @param {number} [height]
+             *        The image height. If omitted it defaults to the image file
+             *        height.
+             *
+             * @param {Function} [onload]
+             *        Event handler for image load.
+             *
+             * @return {Highcharts.SVGElement}
+             *         The generated wrapper element.
+             */
+            SVGRenderer.prototype.image = function (src, x, y, width, height, onload) {
+                var attribs = { preserveAspectRatio: 'none' }, elemWrapper, dummy, setSVGImageSource = function (el, src) {
+                        // Set the href in the xlink namespace
+                        if (el.setAttributeNS) {
+                            el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
+                    }
+                    else {
+                        // could be exporting in IE
+                        // using href throws "not supported" in ie7 and under,
+                        // requries regex shim to fix later
+                        el.setAttribute('hc-svg-href', src);
+                    }
+                }, onDummyLoad = function (e) {
+                    setSVGImageSource(elemWrapper.element, src);
+                    onload.call(elemWrapper, e);
+                };
+                // optional properties
+                if (arguments.length > 1) {
+                    extend(attribs, {
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height
+                    });
+                }
+                elemWrapper = this.createElement('image').attr(attribs);
+                // Add load event if supplied
+                if (onload) {
+                    // We have to use a dummy HTML image since IE support for SVG image
+                    // load events is very buggy. First set a transparent src, wait for
+                    // dummy to load, and then add the real src to the SVG image.
+                    setSVGImageSource(elemWrapper.element, 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' /* eslint-disable-line */);
+                    dummy = new win.Image();
+                    addEvent(dummy, 'load', onDummyLoad);
+                    dummy.src = src;
+                    if (dummy.complete) {
+                        onDummyLoad({});
+                    }
+                }
+                else {
+                    setSVGImageSource(elemWrapper.element, src);
+                }
+                return elemWrapper;
+            };
+            /**
+             * Draw a symbol out of pre-defined shape paths from
+             * {@link SVGRenderer#symbols}.
+             * It is used in Highcharts for point makers, which cake a `symbol` option,
+             * and label and button backgrounds like in the tooltip and stock flags.
+             *
+             * @function Highcharts.SVGRenderer#symbol
+             *
+             * @param {string} symbol
+             * The symbol name.
+             *
+             * @param {number} [x]
+             * The X coordinate for the top left position.
+             *
+             * @param {number} [y]
+             * The Y coordinate for the top left position.
+             *
+             * @param {number} [width]
+             * The pixel width.
+             *
+             * @param {number} [height]
+             * The pixel height.
+             *
+             * @param {Highcharts.SymbolOptionsObject} [options]
+             * Additional options, depending on the actual symbol drawn.
+             *
+             * @return {Highcharts.SVGElement}
+             */
+            SVGRenderer.prototype.symbol = function (symbol, x, y, width, height, options) {
+                var ren = this,
+                    obj,
+                    imageRegex = /^url\((.*?)\)$/,
+                    isImage = imageRegex.test(symbol),
+                    sym = (!isImage && (this.symbols[symbol] ? symbol : 'circle')), 
+                    // get the symbol definition function
+                    symbolFn = (sym && this.symbols[sym]),
+                    path,
+                    imageSrc,
+                    centerImage;
+                if (symbolFn) {
+                    // Check if there's a path defined for this symbol
+                    if (typeof x === 'number') {
+                        path = symbolFn.call(this.symbols, Math.round(x || 0), Math.round(y || 0), width || 0, height || 0, options);
+                    }
+                    obj = this.path(path);
+                    if (!ren.styledMode) {
+                        obj.attr('fill', 'none');
+                    }
+                    // expando properties for use in animate and attr
+                    extend(obj, {
+                        symbolName: sym,
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height
+                    });
+                    if (options) {
+                        extend(obj, options);
+                    }
+                    // Image symbols
+                }
+                else if (isImage) {
+                    imageSrc = symbol.match(imageRegex)[1];
+                    // Create the image synchronously, add attribs async
+                    obj = this.image(imageSrc);
+                    // The image width is not always the same as the symbol width. The
+                    // image may be centered within the symbol, as is the case when
+                    // image shapes are used as label backgrounds, for example in flags.
+                    obj.imgwidth = pick(symbolSizes[imageSrc] && symbolSizes[imageSrc].width, options && options.width);
+                    obj.imgheight = pick(symbolSizes[imageSrc] && symbolSizes[imageSrc].height, options && options.height);
+                    /**
+                     * Set the size and position
+                     */
+                    centerImage = function () {
+                        obj.attr({
+                            width: obj.width,
+                            height: obj.height
+                        });
+                    };
+                    /**
+                     * Width and height setters that take both the image's physical size
+                     * and the label size into consideration, and translates the image
+                     * to center within the label.
+                     */
+                    ['width', 'height'].forEach(function (key) {
+                        obj[key + 'Setter'] = function (value, key) {
+                            var attribs = {}, imgSize = this['img' + key], trans = key === 'width' ? 'translateX' : 'translateY';
+                            this[key] = value;
+                            if (defined(imgSize)) {
+                                // Scale and center the image within its container.
+                                // The name `backgroundSize` is taken from the CSS spec,
+                                // but the value `within` is made up. Other possible
+                                // values in the spec, `cover` and `contain`, can be
+                                // implemented if needed.
+                                if (options &&
+                                    options.backgroundSize === 'within' &&
+                                    this.width &&
+                                    this.height) {
+                                    imgSize = Math.round(imgSize * Math.min(this.width / this.imgwidth, this.height / this.imgheight));
+                                }
+                                if (this.element) {
+                                    this.element.setAttribute(key, imgSize);
+                                }
+                                if (!this.alignByTranslate) {
+                                    attribs[trans] = ((this[key] || 0) - imgSize) / 2;
+                                    this.attr(attribs);
+                                }
+                            }
+                        };
+                    });
+                    if (defined(x)) {
+                        obj.attr({
+                            x: x,
+                            y: y
+                        });
+                    }
+                    obj.isImg = true;
+                    if (defined(obj.imgwidth) && defined(obj.imgheight)) {
+                        centerImage();
+                    }
+                    else {
+                        // Initialize image to be 0 size so export will still function
+                        // if there's no cached sizes.
+                        obj.attr({ width: 0, height: 0 });
+                        // Create a dummy JavaScript image to get the width and height.
+                        createElement('img', {
+                            onload: function () {
+                                var chart = charts[ren.chartIndex];
+                                // Special case for SVGs on IE11, the width is not
+                                // accessible until the image is part of the DOM
+                                // (#2854).
+                                if (this.width === 0) {
+                                    css(this, {
+                                        position: 'absolute',
+                                        top: '-999em'
+                                    });
+                                    doc.body.appendChild(this);
+                                }
+                                // Center the image
+                                symbolSizes[imageSrc] = {
+                                    width: this.width,
+                                    height: this.height
+                                };
+                                obj.imgwidth = this.width;
+                                obj.imgheight = this.height;
+                                if (obj.element) {
+                                    centerImage();
+                                }
+                                // Clean up after #2854 workaround.
+                                if (this.parentNode) {
+                                    this.parentNode.removeChild(this);
+                                }
+                                // Fire the load event when all external images are
+                                // loaded
+                                ren.imgCount--;
+                                if (!ren.imgCount && chart && !chart.hasLoaded) {
+                                    chart.onload();
+                                }
+                            },
+                            src: imageSrc
+                        });
+                        this.imgCount++;
+                    }
+                }
+                return obj;
+            };
+            /**
+             * Define a clipping rectangle. The clipping rectangle is later applied
+             * to {@link SVGElement} objects through the {@link SVGElement#clip}
+             * function.
+             *
+             * @example
+             * var circle = renderer.circle(100, 100, 100)
+             *     .attr({ fill: 'red' })
+             *     .add();
+             * var clipRect = renderer.clipRect(100, 100, 100, 100);
+             *
+             * // Leave only the lower right quarter visible
+             * circle.clip(clipRect);
+             *
+             * @function Highcharts.SVGRenderer#clipRect
+             *
+             * @param {number} [x]
+             *
+             * @param {number} [y]
+             *
+             * @param {number} [width]
+             *
+             * @param {number} [height]
+             *
+             * @return {Highcharts.ClipRectElement}
+             *         A clipping rectangle.
+             */
+            SVGRenderer.prototype.clipRect = function (x, y, width, height) {
+                var wrapper, 
+                    // Add a hyphen at the end to avoid confusion in testing indexes
+                    // -1 and -10, -11 etc (#6550)
+                    id = uniqueKey() + '-', clipPath = this.createElement('clipPath').attr({
+                        id: id
+                    }).add(this.defs);
+                wrapper = this.rect(x, y, width, height, 0).add(clipPath);
+                wrapper.id = id;
+                wrapper.clipPath = clipPath;
+                wrapper.count = 0;
+                return wrapper;
+            };
+            /**
+             * Draw text. The text can contain a subset of HTML, like spans and anchors
+             * and some basic text styling of these. For more advanced features like
+             * border and background, use {@link Highcharts.SVGRenderer#label} instead.
+             * To update the text after render, run `text.attr({ text: 'New text' })`.
+             *
+             * @sample highcharts/members/renderer-text-on-chart/
+             *         Annotate the chart freely
+             * @sample highcharts/members/renderer-on-chart/
+             *         Annotate with a border and in response to the data
+             * @sample highcharts/members/renderer-text/
+             *         Formatted text
+             *
+             * @function Highcharts.SVGRenderer#text
+             *
+             * @param {string} [str]
+             * The text of (subset) HTML to draw.
+             *
+             * @param {number} [x]
+             * The x position of the text's lower left corner.
+             *
+             * @param {number} [y]
+             * The y position of the text's lower left corner.
+             *
+             * @param {boolean} [useHTML=false]
+             * Use HTML to render the text.
+             *
+             * @return {Highcharts.SVGElement}
+             * The text object.
+             */
+            SVGRenderer.prototype.text = function (str, x, y, useHTML) {
+                // declare variables
+                var renderer = this,
+                    wrapper,
+                    attribs = {};
+                if (useHTML && (renderer.allowHTML || !renderer.forExport)) {
+                    return renderer.html(str, x, y);
+                }
+                attribs.x = Math.round(x || 0); // X always needed for line-wrap logic
+                if (y) {
+                    attribs.y = Math.round(y);
+                }
+                if (defined(str)) {
+                    attribs.text = str;
+                }
+                wrapper = renderer.createElement('text')
+                    .attr(attribs);
+                if (!useHTML) {
+                    wrapper.xSetter = function (value, key, element) {
+                        var tspans = element.getElementsByTagName('tspan'),
+                            tspan,
+                            parentVal = element.getAttribute(key),
+                            i;
+                        for (i = 0; i < tspans.length; i++) {
+                            tspan = tspans[i];
+                            // If the x values are equal, the tspan represents a
+                            // linebreak
+                            if (tspan.getAttribute(key) === parentVal) {
+                                tspan.setAttribute(key, value);
+                            }
+                        }
+                        element.setAttribute(key, value);
+                    };
+                }
+                return wrapper;
+            };
+            /**
+             * Utility to return the baseline offset and total line height from the font
+             * size.
+             *
+             * @function Highcharts.SVGRenderer#fontMetrics
+             *
+             * @param {number|string} [fontSize]
+             *        The current font size to inspect. If not given, the font size
+             *        will be found from the DOM element.
+             *
+             * @param {Highcharts.SVGElement|Highcharts.SVGDOMElement} [elem]
+             *        The element to inspect for a current font size.
+             *
+             * @return {Highcharts.FontMetricsObject}
+             *         The font metrics.
+             */
+            SVGRenderer.prototype.fontMetrics = function (fontSize, elem) {
+                var lineHeight,
+                    baseline;
+                if ((this.styledMode || !/px/.test(fontSize)) &&
+                    win.getComputedStyle // old IE doesn't support it
+                ) {
+                    fontSize = elem && SVGElement.prototype.getStyle.call(elem, 'font-size');
+                }
+                else {
+                    fontSize = fontSize ||
+                        // When the elem is a DOM element (#5932)
+                        (elem && elem.style && elem.style.fontSize) ||
+                        // Fall back on the renderer style default
+                        (this.style && this.style.fontSize);
+                }
+                // Handle different units
+                if (/px/.test(fontSize)) {
+                    fontSize = pInt(fontSize);
+                }
+                else {
+                    fontSize = 12;
+                }
+                // Empirical values found by comparing font size and bounding box
+                // height. Applies to the default font family.
+                // https://jsfiddle.net/highcharts/7xvn7/
+                lineHeight = fontSize < 24 ? fontSize + 3 : Math.round(fontSize * 1.2);
+                baseline = Math.round(lineHeight * 0.8);
+                return {
+                    h: lineHeight,
+                    b: baseline,
+                    f: fontSize
+                };
+            };
+            /**
+             * Correct X and Y positioning of a label for rotation (#1764).
+             *
+             * @private
+             * @function Highcharts.SVGRenderer#rotCorr
+             *
+             * @param {number} baseline
+             *
+             * @param {number} rotation
+             *
+             * @param {boolean} [alterY]
+             *
+             * @param {Highcharts.PositionObject}
+             */
+            SVGRenderer.prototype.rotCorr = function (baseline, rotation, alterY) {
+                var y = baseline;
+                if (rotation && alterY) {
+                    y = Math.max(y * Math.cos(rotation * deg2rad), 4);
+                }
+                return {
+                    x: (-baseline / 3) * Math.sin(rotation * deg2rad),
+                    y: y
+                };
+            };
+            /**
+             * Compatibility function to convert the legacy one-dimensional path array
+             * into an array of segments.
+             *
+             * It is used in maps to parse the `path` option, and in SVGRenderer.dSetter
+             * to support legacy paths from demos.
+             *
+             * @private
+             * @function Highcharts.SVGRenderer#pathToSegments
+             */
+            SVGRenderer.prototype.pathToSegments = function (path) {
+                var ret = [];
+                var segment = [];
+                var commandLength = {
+                        A: 8,
+                        C: 7,
+                        H: 2,
+                        L: 3,
+                        M: 3,
+                        Q: 5,
+                        S: 5,
+                        T: 3,
+                        V: 2
+                    };
+                // Short, non-typesafe parsing of the one-dimensional array. It splits
+                // the path on any string. This is not type checked against the tuple
+                // types, but is shorter, and doesn't require specific checks for any
+                // command type in SVG.
+                for (var i = 0; i < path.length; i++) {
+                    // Command skipped, repeat previous or insert L/l for M/m
+                    if (isString(segment[0]) &&
+                        isNumber(path[i]) &&
+                        segment.length === commandLength[(segment[0].toUpperCase())]) {
+                        path.splice(i, 0, segment[0].replace('M', 'L').replace('m', 'l'));
+                    }
+                    // Split on string
+                    if (typeof path[i] === 'string') {
+                        if (segment.length) {
+                            ret.push(segment.slice(0));
+                        }
+                        segment.length = 0;
+                    }
+                    segment.push(path[i]);
+                }
+                ret.push(segment.slice(0));
+                return ret;
+                /*
+                // Fully type-safe version where each tuple type is checked. The
+                // downside is filesize and a lack of flexibility for unsupported
+                // commands
+                const ret: SVGPath = [],
+                    commands = {
+                        A: 7,
+                        C: 6,
+                        H: 1,
+                        L: 2,
+                        M: 2,
+                        Q: 4,
+                        S: 4,
+                        T: 2,
+                        V: 1,
+                        Z: 0
+                    };
+
+                let i = 0,
+                    lastI = 0,
+                    lastCommand;
+
+                while (i < path.length) {
+                    const item = path[i];
+
+                    let command;
+
+                    if (typeof item === 'string') {
+                        command = item;
+                        i += 1;
+                    } else {
+                        command = lastCommand || 'M';
+                    }
+
+                    // Upper case
+                    const commandUC = command.toUpperCase();
+
+                    if (commandUC in commands) {
+
+                        // No numeric parameters
+                        if (command === 'Z' || command === 'z') {
+                            ret.push([command]);
+
+                        // One numeric parameter
+                        } else {
+                            const val0 = path[i];
+                            if (typeof val0 === 'number') {
+
+                                // Horizontal line to
+                                if (command === 'H' || command === 'h') {
+                                    ret.push([command, val0]);
+                                    i += 1;
+
+                                // Vertical line to
+                                } else if (command === 'V' || command === 'v') {
+                                    ret.push([command, val0]);
+                                    i += 1;
+
+                                // Two numeric parameters
+                                } else {
+                                    const val1 = path[i + 1];
+                                    if (typeof val1 === 'number') {
+                                        // lineTo
+                                        if (command === 'L' || command === 'l') {
+                                            ret.push([command, val0, val1]);
+                                            i += 2;
+
+                                        // moveTo
+                                        } else if (command === 'M' || command === 'm') {
+                                            ret.push([command, val0, val1]);
+                                            i += 2;
+
+                                        // Smooth quadratic bezier
+                                        } else if (command === 'T' || command === 't') {
+                                            ret.push([command, val0, val1]);
+                                            i += 2;
+
+                                        // Four numeric parameters
+                                        } else {
+                                            const val2 = path[i + 2],
+                                                val3 = path[i + 3];
+                                            if (
+                                                typeof val2 === 'number' &&
+                                                typeof val3 === 'number'
+                                            ) {
+                                                // Quadratic bezier to
+                                                if (
+                                                    command === 'Q' ||
+                                                    command === 'q'
+                                                ) {
+                                                    ret.push([
+                                                        command,
+                                                        val0,
+                                                        val1,
+                                                        val2,
+                                                        val3
+                                                    ]);
+                                                    i += 4;
+
+                                                // Smooth cubic bezier to
+                                                } else if (
+                                                    command === 'S' ||
+                                                    command === 's'
+                                                ) {
+                                                    ret.push([
+                                                        command,
+                                                        val0,
+                                                        val1,
+                                                        val2,
+                                                        val3
+                                                    ]);
+                                                    i += 4;
+
+                                                // Six numeric parameters
+                                                } else {
+                                                    const val4 = path[i + 4],
+                                                        val5 = path[i + 5];
+
+                                                    if (
+                                                        typeof val4 === 'number' &&
+                                                        typeof val5 === 'number'
+                                                    ) {
+                                                        // Curve to
+                                                        if (
+                                                            command === 'C' ||
+                                                            command === 'c'
+                                                        ) {
+                                                            ret.push([
+                                                                command,
+                                                                val0,
+                                                                val1,
+                                                                val2,
+                                                                val3,
+                                                                val4,
+                                                                val5
+                                                            ]);
+                                                            i += 6;
+
+                                                        // Seven numeric parameters
+                                                        } else {
+                                                            const val6 = path[i + 6];
+
+                                                            // Arc to
+                                                            if (
+                                                                typeof val6 ===
+                                                                'number' &&
+                                                                (
+                                                                    command === 'A' ||
+                                                                    command === 'a'
+                                                                )
+                                                            ) {
+                                                                ret.push([
+                                                                    command,
+                                                                    val0,
+                                                                    val1,
+                                                                    val2,
+                                                                    val3,
+                                                                    val4,
+                                                                    val5,
+                                                                    val6
+                                                                ]);
+                                                                i += 7;
+
+                                                            }
+
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                    // An unmarked command following a moveTo is a lineTo
+                    lastCommand = command === 'M' ? 'L' : command;
+
+                    if (i === lastI) {
+                        break;
+                    }
+                    lastI = i;
+                }
+                return ret;
+                */
+            };
+            /**
+             * Draw a label, which is an extended text element with support for border
+             * and background. Highcharts creates a `g` element with a text and a `path`
+             * or `rect` inside, to make it behave somewhat like a HTML div. Border and
+             * background are set through `stroke`, `stroke-width` and `fill` attributes
+             * using the {@link Highcharts.SVGElement#attr|attr} method. To update the
+             * text after render, run `label.attr({ text: 'New text' })`.
+             *
+             * @sample highcharts/members/renderer-label-on-chart/
+             *         A label on the chart
+             *
+             * @function Highcharts.SVGRenderer#label
+             *
+             * @param {string} str
+             *        The initial text string or (subset) HTML to render.
+             *
+             * @param {number} x
+             *        The x position of the label's left side.
+             *
+             * @param {number} [y]
+             *        The y position of the label's top side or baseline, depending on
+             *        the `baseline` parameter.
+             *
+             * @param {string} [shape='rect']
+             *        The shape of the label's border/background, if any. Defaults to
+             *        `rect`. Other possible values are `callout` or other shapes
+             *        defined in {@link Highcharts.SVGRenderer#symbols}.
+             *
+             * @param {number} [anchorX]
+             *        In case the `shape` has a pointer, like a flag, this is the
+             *        coordinates it should be pinned to.
+             *
+             * @param {number} [anchorY]
+             *        In case the `shape` has a pointer, like a flag, this is the
+             *        coordinates it should be pinned to.
+             *
+             * @param {boolean} [useHTML=false]
+             *        Wether to use HTML to render the label.
+             *
+             * @param {boolean} [baseline=false]
+             *        Whether to position the label relative to the text baseline,
+             *        like {@link Highcharts.SVGRenderer#text|renderer.text}, or to the
+             *        upper border of the rectangle.
+             *
+             * @param {string} [className]
+             *        Class name for the group.
+             *
+             * @return {Highcharts.SVGElement}
+             *         The generated label.
+             */
+            SVGRenderer.prototype.label = function (str, x, y, shape, anchorX, anchorY, useHTML, baseline, className) {
+                return new SVGLabel(this, str, x, y, shape, anchorX, anchorY, useHTML, baseline, className);
+            };
+            return SVGRenderer;
+        }());
+        /**
+         * A pointer to the renderer's associated Element class. The VMLRenderer
+         * will have a pointer to VMLElement here.
+         *
+         * @name Highcharts.SVGRenderer#Element
+         * @type {Highcharts.SVGElement}
+         */
+        SVGRenderer.prototype.Element = SVGElement;
+        /**
+         * @private
+         */
+        SVGRenderer.prototype.SVG_NS = SVG_NS;
+        /**
+         * Dummy function for plugins, called every time the renderer is updated.
+         * Prior to Highcharts 5, this was used for the canvg renderer.
+         *
+         * @deprecated
+         * @function Highcharts.SVGRenderer#draw
+         */
+        SVGRenderer.prototype.draw = noop;
+        /**
+         * A collection of characters mapped to HTML entities. When `useHTML` on an
+         * element is true, these entities will be rendered correctly by HTML. In
+         * the SVG pseudo-HTML, they need to be unescaped back to simple characters,
+         * so for example `&lt;` will render as `<`.
+         *
+         * @example
+         * // Add support for unescaping quotes
+         * Highcharts.SVGRenderer.prototype.escapes['"'] = '&quot;';
+         *
+         * @name Highcharts.SVGRenderer#escapes
+         * @type {Highcharts.Dictionary<string>}
+         */
+        SVGRenderer.prototype.escapes = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        /**
+         * An extendable collection of functions for defining symbol paths.
+         *
+         * @name Highcharts.SVGRenderer#symbols
+         * @type {Highcharts.SymbolDictionary}
+         */
+        SVGRenderer.prototype.symbols = {
+            circle: function (x, y, w, h) {
+                // Return a full arc
+                return this.arc(x + w / 2, y + h / 2, w / 2, h / 2, {
+                    start: Math.PI * 0.5,
+                    end: Math.PI * 2.5,
+                    open: false
+                });
+            },
+            square: function (x, y, w, h) {
+                return [
+                    ['M', x, y],
+                    ['L', x + w, y],
+                    ['L', x + w, y + h],
+                    ['L', x, y + h],
+                    ['Z']
+                ];
+            },
+            triangle: function (x, y, w, h) {
+                return [
+                    ['M', x + w / 2, y],
+                    ['L', x + w, y + h],
+                    ['L', x, y + h],
+                    ['Z']
+                ];
+            },
+            'triangle-down': function (x, y, w, h) {
+                return [
+                    ['M', x, y],
+                    ['L', x + w, y],
+                    ['L', x + w / 2, y + h],
+                    ['Z']
+                ];
+            },
+            diamond: function (x, y, w, h) {
+                return [
+                    ['M', x + w / 2, y],
+                    ['L', x + w, y + h / 2],
+                    ['L', x + w / 2, y + h],
+                    ['L', x, y + h / 2],
+                    ['Z']
+                ];
+            },
+            arc: function (x, y, w, h, options) {
+                var arc = [];
+                if (options) {
+                    var start = options.start || 0,
+                        end = options.end || 0,
+                        rx = options.r || w,
+                        ry = options.r || h || w,
+                        proximity = 0.001,
+                        fullCircle = Math.abs(end - start - 2 * Math.PI) <
+                            proximity, 
+                        // Substract a small number to prevent cos and sin of start and
+                        // end from becoming equal on 360 arcs (related: #1561)
+                        end = end - proximity,
+                        innerRadius = options.innerR,
+                        open = pick(options.open,
+                        fullCircle),
+                        cosStart = Math.cos(start),
+                        sinStart = Math.sin(start),
+                        cosEnd = Math.cos(end),
+                        sinEnd = Math.sin(end), 
+                        // Proximity takes care of rounding errors around PI (#6971)
+                        longArc = pick(options.longArc,
+                        end - start - Math.PI < proximity ? 0 : 1);
+                    arc.push([
+                        'M',
+                        x + rx * cosStart,
+                        y + ry * sinStart
+                    ], [
+                        'A',
+                        rx,
+                        ry,
+                        0,
+                        longArc,
+                        pick(options.clockwise, 1),
+                        x + rx * cosEnd,
+                        y + ry * sinEnd
+                    ]);
+                    if (defined(innerRadius)) {
+                        arc.push(open ?
+                            [
+                                'M',
+                                x + innerRadius * cosEnd,
+                                y + innerRadius * sinEnd
+                            ] : [
+                            'L',
+                            x + innerRadius * cosEnd,
+                            y + innerRadius * sinEnd
+                        ], [
+                            'A',
+                            innerRadius,
+                            innerRadius,
+                            0,
+                            longArc,
+                            // Clockwise - opposite to the outer arc clockwise
+                            defined(options.clockwise) ? 1 - options.clockwise : 0,
+                            x + innerRadius * cosStart,
+                            y + innerRadius * sinStart
+                        ]);
+                    }
+                    if (!open) {
+                        arc.push(['Z']);
+                    }
+                }
+                return arc;
+            },
+            /**
+             * Callout shape used for default tooltips, also used for rounded
+             * rectangles in VML
+             */
+            callout: function (x, y, w, h, options) {
+                var arrowLength = 6,
+                    halfDistance = 6,
+                    r = Math.min((options && options.r) || 0,
+                    w,
+                    h),
+                    safeDistance = r + halfDistance,
+                    anchorX = options && options.anchorX,
+                    anchorY = options && options.anchorY || 0,
+                    path;
+                path = [
+                    ['M', x + r, y],
+                    ['L', x + w - r, y],
+                    ['C', x + w, y, x + w, y, x + w, y + r],
+                    ['L', x + w, y + h - r],
+                    ['C', x + w, y + h, x + w, y + h, x + w - r, y + h],
+                    ['L', x + r, y + h],
+                    ['C', x, y + h, x, y + h, x, y + h - r],
+                    ['L', x, y + r],
+                    ['C', x, y, x, y, x + r, y] // top-left corner
+                ];
+                if (!isNumber(anchorX)) {
+                    return path;
+                }
+                // Anchor on right side
+                if (x + anchorX >= w) {
+                    // Chevron
+                    if (anchorY > y + safeDistance &&
+                        anchorY < y + h - safeDistance) {
+                        path.splice(3, 1, ['L', x + w, anchorY - halfDistance], ['L', x + w + arrowLength, anchorY], ['L', x + w, anchorY + halfDistance], ['L', x + w, y + h - r]);
+                        // Simple connector
+                    }
+                    else {
+                        path.splice(3, 1, ['L', x + w, h / 2], ['L', anchorX, anchorY], ['L', x + w, h / 2], ['L', x + w, y + h - r]);
+                    }
+                    // Anchor on left side
+                }
+                else if (x + anchorX <= 0) {
+                    // Chevron
+                    if (anchorY > y + safeDistance &&
+                        anchorY < y + h - safeDistance) {
+                        path.splice(7, 1, ['L', x, anchorY + halfDistance], ['L', x - arrowLength, anchorY], ['L', x, anchorY - halfDistance], ['L', x, y + r]);
+                        // Simple connector
+                    }
+                    else {
+                        path.splice(7, 1, ['L', x, h / 2], ['L', anchorX, anchorY], ['L', x, h / 2], ['L', x, y + r]);
+                    }
+                }
+                else if ( // replace bottom
+                anchorY &&
+                    anchorY > h &&
+                    anchorX > x + safeDistance &&
+                    anchorX < x + w - safeDistance) {
+                    path.splice(5, 1, ['L', anchorX + halfDistance, y + h], ['L', anchorX, y + h + arrowLength], ['L', anchorX - halfDistance, y + h], ['L', x + r, y + h]);
+                }
+                else if ( // replace top
+                anchorY &&
+                    anchorY < 0 &&
+                    anchorX > x + safeDistance &&
+                    anchorX < x + w - safeDistance) {
+                    path.splice(1, 1, ['L', anchorX - halfDistance, y], ['L', anchorX, y - arrowLength], ['L', anchorX + halfDistance, y], ['L', w - r, y]);
+                }
+                return path;
+            }
+        };
+        H.SVGRenderer = SVGRenderer;
+        H.Renderer = H.SVGRenderer;
+
+        return H.Renderer;
+    });
+    _registerModule(_modules, 'Core/Renderer/HTML/HTMLElement.js', [_modules['Core/Globals.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Utilities.js']], function (H, SVGElement, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var css = U.css,
+            defined = U.defined,
+            extend = U.extend,
+            pick = U.pick,
+            pInt = U.pInt;
+        /**
+         * Element placebo
+         * @private
+         */
+        var HTMLElement = SVGElement;
+        var isFirefox = H.isFirefox;
+        /* eslint-disable valid-jsdoc */
+        // Extend SvgElement for useHTML option.
+        extend(HTMLElement.prototype, /** @lends SVGElement.prototype */ {
+            /**
+             * Apply CSS to HTML elements. This is used in text within SVG rendering and
+             * by the VML renderer
+             *
+             * @private
+             * @function Highcharts.SVGElement#htmlCss
+             *
+             * @param {Highcharts.CSSObject} styles
+             *
+             * @return {Highcharts.SVGElement}
+             */
+            htmlCss: function (styles) {
+                var wrapper = this,
+                    element = wrapper.element, 
+                    // When setting or unsetting the width style, we need to update
+                    // transform (#8809)
+                    isSettingWidth = (element.tagName === 'SPAN' &&
+                        styles &&
+                        'width' in styles),
+                    textWidth = pick(isSettingWidth && styles.width,
+                    void 0),
+                    doTransform;
+                if (isSettingWidth) {
+                    delete styles.width;
+                    wrapper.textWidth = textWidth;
+                    doTransform = true;
+                }
+                if (styles && styles.textOverflow === 'ellipsis') {
+                    styles.whiteSpace = 'nowrap';
+                    styles.overflow = 'hidden';
+                }
+                wrapper.styles = extend(wrapper.styles, styles);
+                css(wrapper.element, styles);
+                // Now that all styles are applied, to the transform
+                if (doTransform) {
+                    wrapper.htmlUpdateTransform();
+                }
+                return wrapper;
+            },
+            /**
+             * VML and useHTML method for calculating the bounding box based on offsets.
+             *
+             * @private
+             * @function Highcharts.SVGElement#htmlGetBBox
+             *
+             * @param {boolean} refresh
+             *        Whether to force a fresh value from the DOM or to use the cached
+             *        value.
+             *
+             * @return {Highcharts.BBoxObject}
+             *         A hash containing values for x, y, width and height.
+             */
+            htmlGetBBox: function () {
+                var wrapper = this,
+                    element = wrapper.element;
+                return {
+                    x: element.offsetLeft,
+                    y: element.offsetTop,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight
+                };
+            },
+            /**
+             * VML override private method to update elements based on internal
+             * properties based on SVG transform.
+             *
+             * @private
+             * @function Highcharts.SVGElement#htmlUpdateTransform
+             * @return {void}
+             */
+            htmlUpdateTransform: function () {
+                // aligning non added elements is expensive
+                if (!this.added) {
+                    this.alignOnAdd = true;
+                    return;
+                }
+                var wrapper = this,
+                    renderer = wrapper.renderer,
+                    elem = wrapper.element,
+                    translateX = wrapper.translateX || 0,
+                    translateY = wrapper.translateY || 0,
+                    x = wrapper.x || 0,
+                    y = wrapper.y || 0,
+                    align = wrapper.textAlign || 'left',
+                    alignCorrection = {
+                        left: 0,
+                    center: 0.5,
+                    right: 1
+                    }[align],
+                    styles = wrapper.styles,
+                    whiteSpace = styles && styles.whiteSpace;
+                /**
+                 * @private
+                 * @return {number}
+                 */
+                function getTextPxLength() {
+                    // Reset multiline/ellipsis in order to read width (#4928,
+                    // #5417)
+                    css(elem, {
+                        width: '',
+                        whiteSpace: whiteSpace || 'nowrap'
+                    });
+                    return elem.offsetWidth;
+                }
+                // apply translate
+                css(elem, {
+                    marginLeft: translateX,
+                    marginTop: translateY
+                });
+                if (!renderer.styledMode && wrapper.shadows) { // used in labels/tooltip
+                    wrapper.shadows.forEach(function (shadow) {
+                        css(shadow, {
+                            marginLeft: translateX + 1,
+                            marginTop: translateY + 1
+                        });
+                    });
+                }
+                // apply inversion
+                if (wrapper.inverted) { // wrapper is a group
+                    [].forEach.call(elem.childNodes, function (child) {
+                        renderer.invertChild(child, elem);
+                    });
+                }
+                if (elem.tagName === 'SPAN') {
+                    var rotation = wrapper.rotation, baseline, textWidth = wrapper.textWidth && pInt(wrapper.textWidth), currentTextTransform = [
+                            rotation,
+                            align,
+                            elem.innerHTML,
+                            wrapper.textWidth,
+                            wrapper.textAlign
+                        ].join(',');
+                    // Update textWidth. Use the memoized textPxLength if possible, to
+                    // avoid the getTextPxLength function using elem.offsetWidth.
+                    // Calling offsetWidth affects rendering time as it forces layout
+                    // (#7656).
+                    if (textWidth !== wrapper.oldTextWidth &&
+                        ((textWidth > wrapper.oldTextWidth) ||
+                            (wrapper.textPxLength || getTextPxLength()) > textWidth) && (
+                    // Only set the width if the text is able to word-wrap, or
+                    // text-overflow is ellipsis (#9537)
+                    /[ \-]/.test(elem.textContent || elem.innerText) ||
+                        elem.style.textOverflow === 'ellipsis')) { // #983, #1254
+                        css(elem, {
+                            width: textWidth + 'px',
+                            display: 'block',
+                            whiteSpace: whiteSpace || 'normal' // #3331
+                        });
+                        wrapper.oldTextWidth = textWidth;
+                        wrapper.hasBoxWidthChanged = true; // #8159
+                    }
+                    else {
+                        wrapper.hasBoxWidthChanged = false; // #8159
+                    }
+                    // Do the calculations and DOM access only if properties changed
+                    if (currentTextTransform !== wrapper.cTT) {
+                        baseline = renderer.fontMetrics(elem.style.fontSize, elem).b;
+                        // Renderer specific handling of span rotation, but only if we
+                        // have something to update.
+                        if (defined(rotation) &&
+                            ((rotation !== (wrapper.oldRotation || 0)) ||
+                                (align !== wrapper.oldAlign))) {
+                            wrapper.setSpanRotation(rotation, alignCorrection, baseline);
+                        }
+                        wrapper.getSpanCorrection(
+                        // Avoid elem.offsetWidth if we can, it affects rendering
+                        // time heavily (#7656)
+                        ((!defined(rotation) && wrapper.textPxLength) || // #7920
+                            elem.offsetWidth), baseline, alignCorrection, rotation, align);
+                    }
+                    // apply position with correction
+                    css(elem, {
+                        left: (x + (wrapper.xCorr || 0)) + 'px',
+                        top: (y + (wrapper.yCorr || 0)) + 'px'
+                    });
+                    // record current text transform
+                    wrapper.cTT = currentTextTransform;
+                    wrapper.oldRotation = rotation;
+                    wrapper.oldAlign = align;
+                }
+            },
+            /**
+             * Set the rotation of an individual HTML span.
+             *
+             * @private
+             * @function Highcharts.SVGElement#setSpanRotation
+             * @param {number} rotation
+             * @param {number} alignCorrection
+             * @param {number} baseline
+             * @return {void}
+             */
+            setSpanRotation: function (rotation, alignCorrection, baseline) {
+                var rotationStyle = {},
+                    cssTransformKey = this.renderer.getTransformKey();
+                rotationStyle[cssTransformKey] = rotationStyle.transform =
+                    'rotate(' + rotation + 'deg)';
+                rotationStyle[cssTransformKey + (isFirefox ? 'Origin' : '-origin')] =
+                    rotationStyle.transformOrigin =
+                        (alignCorrection * 100) + '% ' + baseline + 'px';
+                css(this.element, rotationStyle);
+            },
+            /**
+             * Get the correction in X and Y positioning as the element is rotated.
+             *
+             * @private
+             * @function Highcharts.SVGElement#getSpanCorrection
+             * @param {number} width
+             * @param {number} baseline
+             * @param {number} alignCorrection
+             * @return {void}
+             */
+            getSpanCorrection: function (width, baseline, alignCorrection) {
+                this.xCorr = -width * alignCorrection;
+                this.yCorr = -baseline;
+            }
+        });
+
+        return HTMLElement;
+    });
+    _registerModule(_modules, 'Core/Renderer/HTML/HTMLRenderer.js', [_modules['Core/Globals.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Renderer/SVG/SVGRenderer.js'], _modules['Core/Utilities.js']], function (H, AST, SVGElement, SVGRenderer, U) {
+        /* *
+         *
+         *  (c) 2010-2021 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        var isFirefox = H.isFirefox,
+            isMS = H.isMS,
+            isWebKit = H.isWebKit,
+            win = H.win;
+        var attr = U.attr,
+            createElement = U.createElement,
+            extend = U.extend,
+            pick = U.pick;
+        /**
+         * Renderer placebo
+         * @private
+         */
+        var HTMLRenderer = SVGRenderer;
+        /* eslint-disable valid-jsdoc */
+        // Extend SvgRenderer for useHTML option.
+        extend(SVGRenderer.prototype, /** @lends SVGRenderer.prototype */ {
+            /**
+             * @private
+             * @function Highcharts.SVGRenderer#getTransformKey
+             *
+             * @return {string}
+             */
+            getTransformKey: function () {
+                return isMS && !/Edge/.test(win.navigator.userAgent) ?
+                    '-ms-transform' :
+                    isWebKit ?
+                        '-webkit-transform' :
+                        isFirefox ?
+                            'MozTransform' :
+                            win.opera ?
+                                '-o-transform' :
+                                '';
+            },
+            /**
+             * Create HTML text node. This is used by the VML renderer as well as the
+             * SVG renderer through the useHTML option.
+             *
+             * @private
+             * @function Highcharts.SVGRenderer#html
+             *
+             * @param {string} str
+             *        The text of (subset) HTML to draw.
+             *
+             * @param {number} x
+             *        The x position of the text's lower left corner.
+             *
+             * @param {number} y
+             *        The y position of the text's lower left corner.
+             *
+             * @return {Highcharts.HTMLDOMElement}
+             */
+            html: function (str, x, y) {
+                var wrapper = this.createElement('span'), element = wrapper.element, renderer = wrapper.renderer, isSVG = renderer.isSVG, addSetters = function (gWrapper, style) {
+                        // These properties are set as attributes on the SVG group, and
+                        // as identical CSS properties on the div. (#3542)
+                        ['opacity', 'visibility'].forEach(function (prop) {
+                            gWrapper[prop + 'Setter'] = function (value, key, elem) {
+                                var styleObject = gWrapper.div ?
+                                    gWrapper.div.style :
+                                    style;
+                            SVGElement.prototype[prop + 'Setter']
+                                .call(this, value, key, elem);
+                            if (styleObject) {
+                                styleObject[key] = value;
+                            }
+                        };
+                    });
+                    gWrapper.addedSetters = true;
+                };
+                // Text setter
+                wrapper.textSetter = function (value) {
+                    if (value !== this.textStr) {
+                        delete this.bBox;
+                        delete this.oldTextWidth;
+                        AST.setElementHTML(this.element, pick(value, ''));
+                        this.textStr = value;
+                        wrapper.doTransform = true;
+                    }
+                };
+                // Add setters for the element itself (#4938)
+                if (isSVG) { // #4938, only for HTML within SVG
+                    addSetters(wrapper, wrapper.element.style);
+                }
+                // Various setters which rely on update transform
+                wrapper.xSetter =
+                    wrapper.ySetter =
+                        wrapper.alignSetter =
+                            wrapper.rotationSetter =
+                                function (value, key) {
+                                    if (key === 'align') {
+                                        // Do not overwrite the SVGElement.align method. Same as VML.
+                                        wrapper.alignValue = wrapper.textAlign = value;
+                                    }
+                                    else {
+                                        wrapper[key] = value;
+                                    }
+                                    wrapper.doTransform = true;
+                                };
+                // Runs at the end of .attr()
+                wrapper.afterSetters = function () {
+                    // Update transform. Do this outside the loop to prevent redundant
+                    // updating for batch setting of attributes.
+                    if (this.doTransform) {
+                        this.htmlUpdateTransform();
+                        this.doTransform = false;
+                    }
+                };
+                // Set the default attributes
+                wrapper
+                    .attr({
+                    text: str,
+                    x: Math.round(x),
+                    y: Math.round(y)
+                })
+                    .css({
+                    position: 'absolute'
+                });
+                if (!renderer.styledMode) {
+                    wrapper.css({
+                        fontFamily: this.style.fontFamily,
+                        fontSize: this.style.fontSize
+                    });
+                }
+                // Keep the whiteSpace style outside the wrapper.styles collection
+                element.style.whiteSpace = 'nowrap';
+                // Use the HTML specific .css method
+                wrapper.css = wrapper.htmlCss;
+                // This is specific for HTML within SVG
+                if (isSVG) {
+                    wrapper.add = function (svgGroupWrapper) {
+                        var htmlGroup,
+                            container = renderer.box.parentNode,
+                            parentGroup,
+                            parents = [];
+                        this.parentGroup = svgGroupWrapper;
+                        // Create a mock group to hold the HTML elements
+                        if (svgGroupWrapper) {
+                            htmlGroup = svgGroupWrapper.div;
+                            if (!htmlGroup) {
+                                // Read the parent chain into an array and read from top
+                                // down
+                                parentGroup = svgGroupWrapper;
+                                while (parentGroup) {
+                                    parents.push(parentGroup);
+                                    // Move up to the next parent group
+                                    parentGroup = parentGroup.parentGroup;
+                                }
+                                // Ensure dynamically updating position when any parent
+                                // is translated
+                                parents.reverse().forEach(function (parentGroup) {
+                                    var htmlGroupStyle,
+                                        cls = attr(parentGroup.element, 'class');
+                                    /**
+                                     * Common translate setter for X and Y on the HTML
+                                     * group. Reverted the fix for #6957 du to
+                                     * positioning problems and offline export (#7254,
+                                     * #7280, #7529)
+                                     * @private
+                                     * @param {*} value
+                                     * @param {string} key
+                                     * @return {void}
+                                     */
+                                    function translateSetter(value, key) {
+                                        parentGroup[key] = value;
+                                        if (key === 'translateX') {
+                                            htmlGroupStyle.left = value + 'px';
+                                        }
+                                        else {
+                                            htmlGroupStyle.top = value + 'px';
+                                        }
+                                        parentGroup.doTransform = true;
+                                    }
+                                    // Create a HTML div and append it to the parent div
+                                    // to emulate the SVG group structure
+                                    var parentGroupStyles = parentGroup.styles || {};
+                                    htmlGroup =
+                                        parentGroup.div =
+                                            parentGroup.div || createElement('div', cls ? { className: cls } : void 0, {
+                                                position: 'absolute',
+                                                left: (parentGroup.translateX || 0) + 'px',
+                                                top: (parentGroup.translateY || 0) + 'px',
+                                                display: parentGroup.display,
+                                                opacity: parentGroup.opacity,
+                                                cursor: parentGroupStyles.cursor,
+                                                pointerEvents: parentGroupStyles.pointerEvents // #5595
+                                                // the top group is appended to container
+                                            }, htmlGroup || container);
+                                    // Shortcut
+                                    htmlGroupStyle = htmlGroup.style;
+                                    // Set listeners to update the HTML div's position
+                                    // whenever the SVG group position is changed.
+                                    extend(parentGroup, {
+                                        // (#7287) Pass htmlGroup to use
+                                        // the related group
+                                        classSetter: (function (htmlGroup) {
+                                            return function (value) {
+                                                this.element.setAttribute('class', value);
+                                                htmlGroup.className = value;
+                                            };
+                                        }(htmlGroup)),
+                                        on: function () {
+                                            if (parents[0].div) { // #6418
+                                                wrapper.on.apply({ element: parents[0].div }, arguments);
+                                            }
+                                            return parentGroup;
+                                        },
+                                        translateXSetter: translateSetter,
+                                        translateYSetter: translateSetter
+                                    });
+                                    if (!parentGroup.addedSetters) {
+                                        addSetters(parentGroup);
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            htmlGroup = container;
+                        }
+                        htmlGroup.appendChild(element);
+                        // Shared with VML:
+                        wrapper.added = true;
+                        if (wrapper.alignOnAdd) {
+                            wrapper.htmlUpdateTransform();
+                        }
+                        return wrapper;
+                    };
+                }
+                return wrapper;
+            }
+        });
+
+        return HTMLRenderer;
     });
     _registerModule(_modules, 'Core/Time.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
@@ -2752,7 +9777,7 @@
          * });
          *
          * // Apply time settings by instance
-         * let chart = Highcharts.chart('container', {
+         * var chart = Highcharts.chart('container', {
          *     time: {
          *         timezone: 'America/New_York'
          *     },
@@ -3068,15 +10093,14 @@
              *         The formatted date.
              */
             Time.prototype.dateFormat = function (format, timestamp, capitalize) {
+                var _a;
                 if (!defined(timestamp) || isNaN(timestamp)) {
-                    return (H.defaultOptions.lang &&
-                        H.defaultOptions.lang.invalidDate ||
-                        '');
+                    return ((_a = H.defaultOptions.lang) === null || _a === void 0 ? void 0 : _a.invalidDate) || '';
                 }
                 format = pick(format, '%Y-%m-%d %H:%M:%S');
                 var time = this, date = new this.Date(timestamp), 
                     // get the basic time values
-                    hours = this.get('Hours', date), day = this.get('Day', date), dayOfMonth = this.get('Date', date), month = this.get('Month', date), fullYear = this.get('FullYear', date), lang = H.defaultOptions.lang, langWeekdays = (lang && lang.weekdays), shortWeekdays = (lang && lang.shortWeekdays), 
+                    hours = this.get('Hours', date), day = this.get('Day', date), dayOfMonth = this.get('Date', date), month = this.get('Month', date), fullYear = this.get('FullYear', date), lang = H.defaultOptions.lang, langWeekdays = lang === null || lang === void 0 ? void 0 : lang.weekdays, shortWeekdays = lang === null || lang === void 0 ? void 0 : lang.shortWeekdays, 
                     // List all format keys. Custom formats can be added from the
                     // outside.
                     replacements = extend({
@@ -3334,16 +10358,7 @@
         var isTouchDevice = H.isTouchDevice,
             svg = H.svg;
         var color = Color.parse;
-        var getNestedProperty = U.getNestedProperty,
-            isNumber = U.isNumber,
-            merge = U.merge,
-            pick = U.pick,
-            pInt = U.pInt;
-        /* *
-         *
-         *  API Declarations
-         *
-         * */
+        var merge = U.merge;
         /**
          * @typedef {"plotBox"|"spacingBox"} Highcharts.ButtonRelativeToValue
          */
@@ -3510,12 +10525,10 @@
         * @name Highcharts.ChartSelectionAxisContextObject#min
         * @type {number}
         */
-        (''); // detach doclets above
-        /* *
-         *
-         *  API Options
-         *
-         * */
+        ''; // detach doclets above
+        /* ************************************************************************** *
+         * Handle the options                                                         *
+         * ************************************************************************** */
         /**
          * Global default settings.
          *
@@ -3524,75 +10537,75 @@
          */ /**
         * @optionparent
         */
-        var defaultOptions = {
-                /**
-                 * An array containing the default colors for the chart's series. When
-                 * all colors are used, new colors are pulled from the start again.
-                 *
-                 * Default colors can also be set on a series or series.type basis,
-                 * see [column.colors](#plotOptions.column.colors),
-                 * [pie.colors](#plotOptions.pie.colors).
-                 *
-                 * In styled mode, the colors option doesn't exist. Instead, colors
-                 * are defined in CSS and applied either through series or point class
-                 * names, or through the [chart.colorCount](#chart.colorCount) option.
-                 *
-                 *
-                 * ### Legacy
-                 *
-                 * In Highcharts 3.x, the default colors were:
-                 * ```js
-                 * colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce',
-                 *         '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
-                 * ```
-                 *
-                 * In Highcharts 2.x, the default colors were:
-                 * ```js
-                 * colors: ['#4572A7', '#AA4643', '#89A54E', '#80699B', '#3D96AE',
-                 *         '#DB843D', '#92A8CD', '#A47D7C', '#B5CA92']
-                 * ```
-                 *
-                 * @sample {highcharts} highcharts/chart/colors/
-                 *         Assign a global color theme
-                 *
-                 * @type    {Array<Highcharts.ColorString>}
-                 * @default ["#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9",
-                 *          "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"]
-                 */
-                colors: palette.colors,
-                /**
-                 * Styled mode only. Configuration object for adding SVG definitions for
-                 * reusable elements. See [gradients, shadows and
-                 * patterns](https://www.highcharts.com/docs/chart-design-and-style/gradients-shadows-and-patterns)
-                 * for more information and code examples.
-                 *
-                 * @type      {*}
-                 * @since     5.0.0
-                 * @apioption defs
-                 */
-                /**
-                 * @ignore-option
-                 */
-                symbols: ['circle', 'diamond', 'square', 'triangle', 'triangle-down'],
-                /**
-                 * The language object is global and it can't be set on each chart
-                 * initialization. Instead, use `Highcharts.setOptions` to set it before any
-                 * chart is initialized.
-                 *
-                 * ```js
-                 * Highcharts.setOptions({
-                 *     lang: {
-                 *         months: [
-                 *             'Janvier', 'Février', 'Mars', 'Avril',
-                 *             'Mai', 'Juin', 'Juillet', 'Août',
-                 *             'Septembre', 'Octobre', 'Novembre', 'Décembre'
-                 *         ],
-                 *         weekdays: [
-                 *             'Dimanche', 'Lundi', 'Mardi', 'Mercredi',
-                 *             'Jeudi', 'Vendredi', 'Samedi'
-                 *         ]
-                 *     }
-                 * });
+        H.defaultOptions = {
+            /**
+             * An array containing the default colors for the chart's series. When
+             * all colors are used, new colors are pulled from the start again.
+             *
+             * Default colors can also be set on a series or series.type basis,
+             * see [column.colors](#plotOptions.column.colors),
+             * [pie.colors](#plotOptions.pie.colors).
+             *
+             * In styled mode, the colors option doesn't exist. Instead, colors
+             * are defined in CSS and applied either through series or point class
+             * names, or through the [chart.colorCount](#chart.colorCount) option.
+             *
+             *
+             * ### Legacy
+             *
+             * In Highcharts 3.x, the default colors were:
+             * ```js
+             * colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce',
+             *         '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
+             * ```
+             *
+             * In Highcharts 2.x, the default colors were:
+             * ```js
+             * colors: ['#4572A7', '#AA4643', '#89A54E', '#80699B', '#3D96AE',
+             *         '#DB843D', '#92A8CD', '#A47D7C', '#B5CA92']
+             * ```
+             *
+             * @sample {highcharts} highcharts/chart/colors/
+             *         Assign a global color theme
+             *
+             * @type    {Array<Highcharts.ColorString>}
+             * @default ["#7cb5ec", "#434348", "#90ed7d", "#f7a35c", "#8085e9",
+             *          "#f15c80", "#e4d354", "#2b908f", "#f45b5b", "#91e8e1"]
+             */
+            colors: palette.colors,
+            /**
+             * Styled mode only. Configuration object for adding SVG definitions for
+             * reusable elements. See [gradients, shadows and
+             * patterns](https://www.highcharts.com/docs/chart-design-and-style/gradients-shadows-and-patterns)
+             * for more information and code examples.
+             *
+             * @type      {*}
+             * @since     5.0.0
+             * @apioption defs
+             */
+            /**
+             * @ignore-option
+             */
+            symbols: ['circle', 'diamond', 'square', 'triangle', 'triangle-down'],
+            /**
+             * The language object is global and it can't be set on each chart
+             * initialization. Instead, use `Highcharts.setOptions` to set it before any
+             * chart is initialized.
+             *
+             * ```js
+             * Highcharts.setOptions({
+             *     lang: {
+             *         months: [
+             *             'Janvier', 'Février', 'Mars', 'Avril',
+             *             'Mai', 'Juin', 'Juillet', 'Août',
+             *             'Septembre', 'Octobre', 'Novembre', 'Décembre'
+             *         ],
+             *         weekdays: [
+             *             'Dimanche', 'Lundi', 'Mardi', 'Mercredi',
+             *             'Jeudi', 'Vendredi', 'Samedi'
+             *         ]
+             *     }
+             * });
              * ```
              */
             lang: {
@@ -3826,7 +10839,7 @@
              * settings affect how `datetime` axes are laid out, how tooltips are
              * formatted, how series
              * [pointIntervalUnit](#plotOptions.series.pointIntervalUnit) works and how
-             * the Highcharts Stock range selector handles time.
+             * the Highstock range selector handles time.
              *
              * The common use case is that all charts in the same Highcharts object
              * share the same time settings, in which case the global settings are set
@@ -3840,7 +10853,7 @@
              *     }
              * });
              * // Apply time settings by instance
-             * let chart = Highcharts.chart('container', {
+             * var chart = Highcharts.chart('container', {
              *     time: {
              *         timezone: 'America/New_York'
              *     },
@@ -4322,30 +11335,30 @@
                  *
                  * @sample  {highcharts} highcharts/chart/pankey/ Zooming and panning
                  * @sample  {highstock} stock/chart/panning/ Zooming and xy panning
+                 *
+                 * @product highcharts highstock gantt
+                 * @apioption chart.panning
                  */
-                panning: {
-                    /**
-                     * Enable or disable chart panning.
-                     *
-                     * @type      {boolean}
-                     * @default   {highcharts} false
-                     * @default   {highstock|highmaps} true
-                     */
-                    enabled: false,
-                    /**
-                     * Decides in what dimensions the user can pan the chart. Can be
-                     * one of `x`, `y`, or `xy`.
-                     *
-                     * @sample {highcharts} highcharts/chart/panning-type
-                     *         Zooming and xy panning
-                     *
-                     * @type       {string}
-                     * @validvalue ["x", "y", "xy"]
-                     * @default    {highcharts|highstock} x
-                     * @default    {highmaps} xy
-                     */
-                    type: 'x'
-                },
+                /**
+                 * Enable or disable chart panning.
+                 *
+                 * @type      {boolean}
+                 * @default   {highcharts} false
+                 * @default   {highstock} true
+                 * @apioption chart.panning.enabled
+                 */
+                /**
+                 * Decides in what dimensions the user can pan the chart. Can be
+                 * one of `x`, `y`, or `xy`.
+                 *
+                 * @sample {highcharts} highcharts/chart/panning-type
+                 *         Zooming and xy panning
+                 *
+                 * @type    {string}
+                 * @validvalue ["x", "y", "xy"]
+                 * @default x
+                 * @apioption chart.panning.type
+                 */
                 /**
                  * Equivalent to [zoomType](#chart.zoomType), but for multitouch
                  * gestures only. By default, the `pinchType` is the same as the
@@ -5823,7 +12836,7 @@
                  */
                 /**
                  * Whether to show the symbol on the right side of the text rather than
-                 * the left side. This is common in Arabic and Hebrew.
+                 * the left side. This is common in Arabic and Hebraic.
                  *
                  * @sample {highcharts} highcharts/legend/rtl/
                  *         Symbol to the right
@@ -6299,8 +13312,6 @@
                  * and wordcloud series by override in the `plotOptions`
                  * for those series types.
                  *
-                 * Does not apply if [split](#tooltip.split) is `true`.
-                 *
                  * For touch moves to behave the same way, [followTouchMove](
                  * #tooltip.followTouchMove) must be `true` also.
                  *
@@ -6478,7 +13489,7 @@
                  */
                 /**
                  * The name of a symbol to use for the border around the tooltip. Can
-                 * be one of: `"callout"`, `"circle"` or `"rect"`. When
+                 * be one of: `"callout"`, `"circle"`, or `"square"`. When
                  * [tooltip.split](#tooltip.split)
                  * option is enabled, shape is applied to all boxes except header, which
                  * is controlled by
@@ -6545,10 +13556,9 @@
                  * tooltips for charts with multiple line series, generally making them
                  * easier to read. This option takes precedence over `tooltip.shared`.
                  *
-                 * @productdesc {highstock} In Highcharts Stock, tooltips are split
-                 * by default since v6.0.0. Stock charts typically contain
-                 * multi-dimension points and multiple panes, making split tooltips
-                 * the preferred layout over
+                 * @productdesc {highstock} In Highstock, tooltips are split by default
+                 * since v6.0.0. Stock charts typically contain multi-dimension points
+                 * and multiple panes, making split tooltips the preferred layout over
                  * the previous `shared` tooltip.
                  *
                  * @sample highcharts/tooltip/split/
@@ -6687,7 +13697,7 @@
                  * header will by default be guessed based on the closest data points.
                  * This member gives the default string representations used for
                  * each unit. For an overview of the replacement codes, see
-                 * [dateFormat](/class-reference/Highcharts#.dateFormat).
+                 * [dateFormat](/class-reference/Highcharts#dateFormat).
                  *
                  * @see [xAxis.dateTimeLabelFormats](#xAxis.dateTimeLabelFormats)
                  *
@@ -6998,1136 +14008,18 @@
         };
         /* eslint-disable spaced-comment */
 
-        defaultOptions.chart.styledMode = false;
+        H.defaultOptions.chart.styledMode = false;
 
         '';
-        var defaultTime = new Time(merge(defaultOptions.global,
-            defaultOptions.time));
         /**
-         * Get the updated default options. Until 3.0.7, merely exposing defaultOptions
-         * for outside modules wasn't enough because the setOptions method created a new
-         * object.
+         * Global `Time` object with default options. Since v6.0.5, time settings can be
+         * applied individually for each chart. If no individual settings apply, this
+         * `Time` object is shared by all instances.
          *
-         * @function Highcharts.getOptions
-         *
-         * @return {Highcharts.Options}
+         * @name Highcharts.time
+         * @type {Highcharts.Time}
          */
-        function getOptions() {
-            return defaultOptions;
-        }
-        /**
-         * Merge the default options with custom options and return the new options
-         * structure. Commonly used for defining reusable templates.
-         *
-         * @sample highcharts/global/useutc-false Setting a global option
-         * @sample highcharts/members/setoptions Applying a global theme
-         *
-         * @function Highcharts.setOptions
-         *
-         * @param {Highcharts.Options} options
-         *        The new custom chart options.
-         *
-         * @return {Highcharts.Options}
-         *         Updated options.
-         */
-        function setOptions(options) {
-            // Copy in the default options
-            merge(true, defaultOptions, options);
-            // Update the time object
-            if (options.time || options.global) {
-                if (H.time) {
-                    H.time.update(merge(defaultOptions.global, defaultOptions.time, options.global, options.time));
-                }
-                else {
-                    /**
-                     * Global `Time` object with default options. Since v6.0.5, time
-                     * settings can be applied individually for each chart. If no
-                     * individual settings apply, this `Time` object is shared by all
-                     * instances.
-                     *
-                     * @name Highcharts.time
-                     * @type {Highcharts.Time}
-                     */
-                    H.time = defaultTime;
-                }
-            }
-            return defaultOptions;
-        }
-        var optionsModule = {
-                defaultOptions: defaultOptions,
-                defaultTime: defaultTime,
-                getOptions: getOptions,
-                setOptions: setOptions
-            };
-
-        return optionsModule;
-    });
-    _registerModule(_modules, 'Core/Animation/Fx.js', [_modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (Color, H, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var color = Color.parse;
-        var win = H.win;
-        var isNumber = U.isNumber,
-            objectEach = U.objectEach;
-        /* eslint-disable no-invalid-this, valid-jsdoc */
-        /**
-         * An animator object used internally. One instance applies to one property
-         * (attribute or style prop) on one element. Animation is always initiated
-         * through {@link SVGElement#animate}.
-         *
-         * @example
-         * let rect = renderer.rect(0, 0, 10, 10).add();
-         * rect.animate({ width: 100 });
-         *
-         * @private
-         * @class
-         * @name Highcharts.Fx
-         */
-        var Fx = /** @class */ (function () {
-                /* *
-                 *
-                 *  Constructors
-                 *
-                 * */
-                /**
-                 *
-                 * @param {Highcharts.HTMLDOMElement|Highcharts.SVGElement} elem
-                 *        The element to animate.
-                 *
-                 * @param {Partial<Highcharts.AnimationOptionsObject>} options
-                 *        Animation options.
-                 *
-                 * @param {string} prop
-                 *        The single attribute or CSS property to animate.
-                 */
-                function Fx(elem, options, prop) {
-                    this.pos = NaN;
-                this.options = options;
-                this.elem = elem;
-                this.prop = prop;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Set the current step of a path definition on SVGElement.
-             *
-             * @function Highcharts.Fx#dSetter
-             *
-             * @return {void}
-             */
-            Fx.prototype.dSetter = function () {
-                var paths = this.paths,
-                    start = paths && paths[0],
-                    end = paths && paths[1],
-                    now = this.now || 0;
-                var path = [];
-                // Land on the final path without adjustment points appended in the ends
-                if (now === 1 || !start || !end) {
-                    path = this.toD || [];
-                }
-                else if (start.length === end.length && now < 1) {
-                    for (var i = 0; i < end.length; i++) {
-                        // Tween between the start segment and the end segment. Start
-                        // with a copy of the end segment and tween the appropriate
-                        // numerics
-                        var startSeg = start[i];
-                        var endSeg = end[i];
-                        var tweenSeg = [];
-                        for (var j = 0; j < endSeg.length; j++) {
-                            var startItem = startSeg[j];
-                            var endItem = endSeg[j];
-                            // Tween numbers
-                            if (isNumber(startItem) &&
-                                isNumber(endItem) &&
-                                // Arc boolean flags
-                                !(endSeg[0] === 'A' && (j === 4 || j === 5))) {
-                                tweenSeg[j] = startItem + now * (endItem - startItem);
-                                // Strings, take directly from the end segment
-                            }
-                            else {
-                                tweenSeg[j] = endItem;
-                            }
-                        }
-                        path.push(tweenSeg);
-                    }
-                    // If animation is finished or length not matching, land on right value
-                }
-                else {
-                    path = end;
-                }
-                this.elem.attr('d', path, void 0, true);
-            };
-            /**
-             * Update the element with the current animation step.
-             *
-             * @function Highcharts.Fx#update
-             *
-             * @return {void}
-             */
-            Fx.prototype.update = function () {
-                var elem = this.elem,
-                    prop = this.prop, // if destroyed, it is null
-                    now = this.now,
-                    step = this.options.step;
-                // Animation setter defined from outside
-                if (this[prop + 'Setter']) {
-                    this[prop + 'Setter']();
-                    // Other animations on SVGElement
-                }
-                else if (elem.attr) {
-                    if (elem.element) {
-                        elem.attr(prop, now, null, true);
-                    }
-                    // HTML styles, raw HTML content like container size
-                }
-                else {
-                    elem.style[prop] = now + this.unit;
-                }
-                if (step) {
-                    step.call(elem, now, this);
-                }
-            };
-            /**
-             * Run an animation.
-             *
-             * @function Highcharts.Fx#run
-             *
-             * @param {number} from
-             *        The current value, value to start from.
-             *
-             * @param {number} to
-             *        The end value, value to land on.
-             *
-             * @param {string} unit
-             *        The property unit, for example `px`.
-             *
-             * @return {void}
-             */
-            Fx.prototype.run = function (from, to, unit) {
-                var self = this,
-                    options = self.options,
-                    timer = function (gotoEnd) {
-                        return timer.stopped ? false : self.step(gotoEnd);
-                }, requestAnimationFrame = win.requestAnimationFrame ||
-                    function (step) {
-                        setTimeout(step, 13);
-                    }, step = function () {
-                    for (var i = 0; i < Fx.timers.length; i++) {
-                        if (!Fx.timers[i]()) {
-                            Fx.timers.splice(i--, 1);
-                        }
-                    }
-                    if (Fx.timers.length) {
-                        requestAnimationFrame(step);
-                    }
-                };
-                if (from === to && !this.elem['forceAnimate:' + this.prop]) {
-                    delete options.curAnim[this.prop];
-                    if (options.complete && Object.keys(options.curAnim).length === 0) {
-                        options.complete.call(this.elem);
-                    }
-                }
-                else { // #7166
-                    this.startTime = +new Date();
-                    this.start = from;
-                    this.end = to;
-                    this.unit = unit;
-                    this.now = this.start;
-                    this.pos = 0;
-                    timer.elem = this.elem;
-                    timer.prop = this.prop;
-                    if (timer() && Fx.timers.push(timer) === 1) {
-                        requestAnimationFrame(step);
-                    }
-                }
-            };
-            /**
-             * Run a single step in the animation.
-             *
-             * @function Highcharts.Fx#step
-             *
-             * @param {boolean} [gotoEnd]
-             *        Whether to go to the endpoint of the animation after abort.
-             *
-             * @return {boolean}
-             *         Returns `true` if animation continues.
-             */
-            Fx.prototype.step = function (gotoEnd) {
-                var t = +new Date(),
-                    options = this.options,
-                    elem = this.elem,
-                    complete = options.complete,
-                    duration = options.duration,
-                    curAnim = options.curAnim;
-                var ret,
-                    done;
-                if (elem.attr && !elem.element) { // #2616, element is destroyed
-                    ret = false;
-                }
-                else if (gotoEnd || t >= duration + this.startTime) {
-                    this.now = this.end;
-                    this.pos = 1;
-                    this.update();
-                    curAnim[this.prop] = true;
-                    done = true;
-                    objectEach(curAnim, function (val) {
-                        if (val !== true) {
-                            done = false;
-                        }
-                    });
-                    if (done && complete) {
-                        complete.call(elem);
-                    }
-                    ret = false;
-                }
-                else {
-                    this.pos = options.easing((t - this.startTime) / duration);
-                    this.now = this.start + ((this.end - this.start) * this.pos);
-                    this.update();
-                    ret = true;
-                }
-                return ret;
-            };
-            /**
-             * Prepare start and end values so that the path can be animated one to one.
-             *
-             * @function Highcharts.Fx#initPath
-             *
-             * @param {Highcharts.SVGElement} elem
-             *        The SVGElement item.
-             *
-             * @param {Highcharts.SVGPathArray|undefined} fromD
-             *        Starting path definition.
-             *
-             * @param {Highcharts.SVGPathArray} toD
-             *        Ending path definition.
-             *
-             * @return {Array<Highcharts.SVGPathArray,Highcharts.SVGPathArray>}
-             *         An array containing start and end paths in array form so that
-             *         they can be animated in parallel.
-             */
-            Fx.prototype.initPath = function (elem, fromD, toD) {
-                var startX = elem.startX,
-                    endX = elem.endX,
-                    end = toD.slice(), // copy
-                    isArea = elem.isArea,
-                    positionFactor = isArea ? 2 : 1;
-                var shift,
-                    fullLength,
-                    i,
-                    reverse,
-                    start = fromD && fromD.slice(); // copy
-                    if (!start) {
-                        return [end,
-                    end];
-                }
-                /**
-                 * If shifting points, prepend a dummy point to the end path.
-                 * @private
-                 * @param {Highcharts.SVGPathArray} arr - array
-                 * @param {Highcharts.SVGPathArray} other - array
-                 * @return {void}
-                 */
-                function prepend(arr, other) {
-                    while (arr.length < fullLength) {
-                        // Move to, line to or curve to?
-                        var moveSegment = arr[0],
-                            otherSegment = other[fullLength - arr.length];
-                        if (otherSegment && moveSegment[0] === 'M') {
-                            if (otherSegment[0] === 'C') {
-                                arr[0] = [
-                                    'C',
-                                    moveSegment[1],
-                                    moveSegment[2],
-                                    moveSegment[1],
-                                    moveSegment[2],
-                                    moveSegment[1],
-                                    moveSegment[2]
-                                ];
-                            }
-                            else {
-                                arr[0] = ['L', moveSegment[1], moveSegment[2]];
-                            }
-                        }
-                        // Prepend a copy of the first point
-                        arr.unshift(moveSegment);
-                        // For areas, the bottom path goes back again to the left, so we
-                        // need to append a copy of the last point.
-                        if (isArea) {
-                            var z = arr.pop();
-                            arr.push(arr[arr.length - 1], z); // append point and the Z
-                        }
-                    }
-                }
-                /**
-                 * Copy and append last point until the length matches the end length.
-                 * @private
-                 * @param {Highcharts.SVGPathArray} arr - array
-                 * @param {Highcharts.SVGPathArray} other - array
-                 * @return {void}
-                 */
-                function append(arr, other) {
-                    while (arr.length < fullLength) {
-                        // Pull out the slice that is going to be appended or inserted.
-                        // In a line graph, the positionFactor is 1, and the last point
-                        // is sliced out. In an area graph, the positionFactor is 2,
-                        // causing the middle two points to be sliced out, since an area
-                        // path starts at left, follows the upper path then turns and
-                        // follows the bottom back.
-                        var segmentToAdd = arr[Math.floor(arr.length / positionFactor) - 1].slice();
-                        // Disable the first control point of curve segments
-                        if (segmentToAdd[0] === 'C') {
-                            segmentToAdd[1] = segmentToAdd[5];
-                            segmentToAdd[2] = segmentToAdd[6];
-                        }
-                        if (!isArea) {
-                            arr.push(segmentToAdd);
-                        }
-                        else {
-                            var lowerSegmentToAdd = arr[Math.floor(arr.length / positionFactor)].slice();
-                            arr.splice(arr.length / 2, 0, segmentToAdd, lowerSegmentToAdd);
-                        }
-                    }
-                }
-                // For sideways animation, find out how much we need to shift to get the
-                // start path Xs to match the end path Xs.
-                if (startX && endX && endX.length) {
-                    for (i = 0; i < startX.length; i++) {
-                        // Moving left, new points coming in on right
-                        if (startX[i] === endX[0]) {
-                            shift = i;
-                            break;
-                            // Moving right
-                        }
-                        else if (startX[0] ===
-                            endX[endX.length - startX.length + i]) {
-                            shift = i;
-                            reverse = true;
-                            break;
-                            // Fixed from the right side, "scaling" left
-                        }
-                        else if (startX[startX.length - 1] ===
-                            endX[endX.length - startX.length + i]) {
-                            shift = startX.length - i;
-                            break;
-                        }
-                    }
-                    if (typeof shift === 'undefined') {
-                        start = [];
-                    }
-                }
-                if (start.length && isNumber(shift)) {
-                    // The common target length for the start and end array, where both
-                    // arrays are padded in opposite ends
-                    fullLength = end.length + shift * positionFactor;
-                    if (!reverse) {
-                        prepend(end, start);
-                        append(start, end);
-                    }
-                    else {
-                        prepend(start, end);
-                        append(end, start);
-                    }
-                }
-                return [start, end];
-            };
-            /**
-             * Handle animation of the color attributes directly.
-             *
-             * @function Highcharts.Fx#fillSetter
-             *
-             * @return {void}
-             */
-            Fx.prototype.fillSetter = function () {
-                Fx.prototype.strokeSetter.apply(this, arguments);
-            };
-            /**
-             * Handle animation of the color attributes directly.
-             *
-             * @function Highcharts.Fx#strokeSetter
-             *
-             * @return {void}
-             */
-            Fx.prototype.strokeSetter = function () {
-                this.elem.attr(this.prop, color(this.start).tweenTo(color(this.end), this.pos), null, true);
-            };
-            /* *
-             *
-             * Static properties
-             *
-             * */
-            Fx.timers = [];
-            return Fx;
-        }());
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Fx;
-    });
-    _registerModule(_modules, 'Core/Animation/AnimationUtilities.js', [_modules['Core/Animation/Fx.js'], _modules['Core/Utilities.js']], function (Fx, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var defined = U.defined,
-            getStyle = U.getStyle,
-            isArray = U.isArray,
-            isNumber = U.isNumber,
-            isObject = U.isObject,
-            merge = U.merge,
-            objectEach = U.objectEach,
-            pick = U.pick;
-        /**
-         * Set the global animation to either a given value, or fall back to the given
-         * chart's animation option.
-         *
-         * @function Highcharts.setAnimation
-         *
-         * @param {boolean|Partial<Highcharts.AnimationOptionsObject>|undefined} animation
-         *        The animation object.
-         *
-         * @param {Highcharts.Chart} chart
-         *        The chart instance.
-         *
-         * @todo
-         * This function always relates to a chart, and sets a property on the renderer,
-         * so it should be moved to the SVGRenderer.
-         */
-        function setAnimation(animation, chart) {
-            chart.renderer.globalAnimation = pick(animation, chart.options.chart.animation, true);
-        }
-        /**
-         * Get the animation in object form, where a disabled animation is always
-         * returned as `{ duration: 0 }`.
-         *
-         * @function Highcharts.animObject
-         *
-         * @param {boolean|Highcharts.AnimationOptionsObject} [animation=0]
-         *        An animation setting. Can be an object with duration, complete and
-         *        easing properties, or a boolean to enable or disable.
-         *
-         * @return {Highcharts.AnimationOptionsObject}
-         *         An object with at least a duration property.
-         */
-        function animObject(animation) {
-            return isObject(animation) ?
-                merge({ duration: 500, defer: 0 }, animation) :
-                { duration: animation ? 500 : 0, defer: 0 };
-        }
-        /**
-         * Get the defer as a number value from series animation options.
-         *
-         * @function Highcharts.getDeferredAnimation
-         *
-         * @param {Highcharts.Chart} chart
-         *        The chart instance.
-         *
-         * @param {boolean|Highcharts.AnimationOptionsObject} animation
-         *        An animation setting. Can be an object with duration, complete and
-         *        easing properties, or a boolean to enable or disable.
-         *
-         * @param {Highcharts.Series} [series]
-         *        Series to defer animation.
-         *
-         * @return {number}
-         *        The numeric value.
-         */
-        function getDeferredAnimation(chart, animation, series) {
-            var labelAnimation = animObject(animation);
-            var s = series ? [series] : chart.series;
-            var defer = 0;
-            var duration = 0;
-            s.forEach(function (series) {
-                var seriesAnim = animObject(series.options.animation);
-                defer = animation && defined(animation.defer) ?
-                    labelAnimation.defer :
-                    Math.max(defer, seriesAnim.duration + seriesAnim.defer);
-                duration = Math.min(labelAnimation.duration, seriesAnim.duration);
-            });
-            // Disable defer for exporting
-            if (chart.renderer.forExport) {
-                defer = 0;
-            }
-            var anim = {
-                    defer: Math.max(0,
-                defer - duration),
-                    duration: Math.min(defer,
-                duration)
-                };
-            return anim;
-        }
-        /**
-         * The global animate method, which uses Fx to create individual animators.
-         *
-         * @function Highcharts.animate
-         *
-         * @param {Highcharts.HTMLDOMElement|Highcharts.SVGElement} el
-         *        The element to animate.
-         *
-         * @param {Highcharts.CSSObject|Highcharts.SVGAttributes} params
-         *        An object containing key-value pairs of the properties to animate.
-         *        Supports numeric as pixel-based CSS properties for HTML objects and
-         *        attributes for SVGElements.
-         *
-         * @param {Partial<Highcharts.AnimationOptionsObject>} [opt]
-         *        Animation options.
-         *
-         * @return {void}
-         */
-        function animate(el, params, opt) {
-            var start,
-                unit = '',
-                end,
-                fx,
-                args;
-            if (!isObject(opt)) { // Number or undefined/null
-                args = arguments;
-                opt = {
-                    duration: args[2],
-                    easing: args[3],
-                    complete: args[4]
-                };
-            }
-            if (!isNumber(opt.duration)) {
-                opt.duration = 400;
-            }
-            opt.easing = typeof opt.easing === 'function' ?
-                opt.easing :
-                (Math[opt.easing] || Math.easeInOutSine);
-            opt.curAnim = merge(params);
-            objectEach(params, function (val, prop) {
-                // Stop current running animation of this property
-                stop(el, prop);
-                fx = new Fx(el, opt, prop);
-                end = void 0;
-                if (prop === 'd' && isArray(params.d)) {
-                    fx.paths = fx.initPath(el, el.pathArray, params.d);
-                    fx.toD = params.d;
-                    start = 0;
-                    end = 1;
-                }
-                else if (el.attr) {
-                    start = el.attr(prop);
-                }
-                else {
-                    start = parseFloat(getStyle(el, prop)) || 0;
-                    if (prop !== 'opacity') {
-                        unit = 'px';
-                    }
-                }
-                if (!end) {
-                    end = val;
-                }
-                if (typeof end === 'string' && end.match('px')) {
-                    end = end.replace(/px/g, ''); // #4351
-                }
-                fx.run(start, end, unit);
-            });
-        }
-        /**
-         * Stop running animation.
-         *
-         * @function Highcharts.stop
-         *
-         * @param {Highcharts.SVGElement} el
-         *        The SVGElement to stop animation on.
-         *
-         * @param {string} [prop]
-         *        The property to stop animating. If given, the stop method will stop a
-         *        single property from animating, while others continue.
-         *
-         * @return {void}
-         *
-         * @todo
-         * A possible extension to this would be to stop a single property, when
-         * we want to continue animating others. Then assign the prop to the timer
-         * in the Fx.run method, and check for the prop here. This would be an
-         * improvement in all cases where we stop the animation from .attr. Instead of
-         * stopping everything, we can just stop the actual attributes we're setting.
-         */
-        function stop(el, prop) {
-            var i = Fx.timers.length;
-            // Remove timers related to this element (#4519)
-            while (i--) {
-                if (Fx.timers[i].elem === el && (!prop || prop === Fx.timers[i].prop)) {
-                    Fx.timers[i].stopped = true; // #4667
-                }
-            }
-        }
-        var animationExports = {
-                animate: animate,
-                animObject: animObject,
-                getDeferredAnimation: getDeferredAnimation,
-                setAnimation: setAnimation,
-                stop: stop
-            };
-
-        return animationExports;
-    });
-    _registerModule(_modules, 'Core/Renderer/HTML/AST.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
-        /* *
-         *
-         *  (c) 2010-2020 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var SVG_NS = H.SVG_NS;
-        var attr = U.attr,
-            createElement = U.createElement,
-            discardElement = U.discardElement,
-            error = U.error,
-            isString = U.isString,
-            objectEach = U.objectEach,
-            splat = U.splat;
-        /**
-         * Serialized form of an SVG/HTML definition, including children.
-         *
-         * @interface Highcharts.ASTNode
-         */ /**
-        * @name Highcharts.ASTNode#attributes
-        * @type {Highcharts.SVGAttributes|undefined}
-        */ /**
-        * @name Highcharts.ASTNode#children
-        * @type {Array<Highcharts.ASTNode>|undefined}
-        */ /**
-        * @name Highcharts.ASTNode#tagName
-        * @type {string|undefined}
-        */ /**
-        * @name Highcharts.ASTNode#textContent
-        * @type {string|undefined}
-        */
-        ''; // detach doclets above
-        // In IE8, DOMParser is undefined. IE9 and PhantomJS are only able to parse XML.
-        var hasValidDOMParser = false;
-        try {
-            hasValidDOMParser = Boolean(new DOMParser().parseFromString('', 'text/html'));
-        }
-        catch (e) { } // eslint-disable-line no-empty
-        /**
-         * The AST class represents an abstract syntax tree of HTML or SVG content. It
-         * can take HTML as an argument, parse it, optionally transform it to SVG, then
-         * perform sanitation before inserting it into the DOM.
-         *
-         * @class
-         * @name Highcharts.AST
-         * @param {string|Highcharts.ASTNode[]} source
-         *                                      Either an HTML string or an ASTNode list
-         *                                      to populate the tree
-         */
-        var AST = /** @class */ (function () {
-                // Construct an AST from HTML markup, or wrap an array of existing AST nodes
-                function AST(source) {
-                    this.nodes = typeof source === 'string' ?
-                        this.parseMarkup(source) : source;
-            }
-            /**
-             * Filter an object of SVG or HTML attributes against the allow list.
-             *
-             * @static
-             *
-             * @function Highcharts.AST#filterUserAttributes
-             *
-             * @param {Highcharts.SVGAttributes} attributes The attributes to filter
-             *
-             * @return {Highcharts.SVGAttributes}
-             * The filtered attributes
-             */
-            AST.filterUserAttributes = function (attributes) {
-                objectEach(attributes, function (val, key) {
-                    var valid = true;
-                    if (AST.allowedAttributes.indexOf(key) === -1) {
-                        valid = false;
-                    }
-                    if (['background', 'dynsrc', 'href', 'lowsrc', 'src']
-                        .indexOf(key) !== -1) {
-                        valid = isString(val) && AST.allowedReferences.some(function (ref) { return val.indexOf(ref) === 0; });
-                    }
-                    if (!valid) {
-                        error("Highcharts warning: Invalid attribute '" + key + "' in config");
-                        delete attributes[key];
-                    }
-                });
-                return attributes;
-            };
-            /**
-             * Utility function to set html content for an element by passing in a
-             * markup string. The markup is safely parsed by the AST class to avoid
-             * XSS vulnerabilities. This function should be used instead of setting
-             * `innerHTML` in all cases where the content is not fully trusted.
-             *
-             * @static
-             *
-             * @function Highcharts.AST#setElementHTML
-             *
-             * @param {SVGDOMElement|HTMLDOMElement} el The node to set content of
-             * @param {string} html The markup string
-             */
-            AST.setElementHTML = function (el, html) {
-                el.innerHTML = ''; // Clear previous
-                if (html) {
-                    var ast = new AST(html);
-                    ast.addToDOM(el);
-                }
-            };
-            /**
-             * Add the tree defined as a hierarchical JS structure to the DOM
-             *
-             * @function Highcharts.AST#addToDOM
-             *
-             * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} parent
-             * The node where it should be added
-             *
-             * @return {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement}
-             * The inserted node.
-             */
-            AST.prototype.addToDOM = function (parent) {
-                /**
-                 * @private
-                 * @param {Highcharts.ASTNode} subtree - HTML/SVG definition
-                 * @param {Element} [subParent] - parent node
-                 * @return {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement} The inserted node.
-                 */
-                function recurse(subtree, subParent) {
-                    var ret;
-                    splat(subtree).forEach(function (item) {
-                        var tagName = item.tagName;
-                        var textNode = item.textContent ?
-                                H.doc.createTextNode(item.textContent) :
-                                void 0;
-                        var node;
-                        if (tagName) {
-                            if (tagName === '#text') {
-                                node = textNode;
-                            }
-                            else if (AST.allowedTags.indexOf(tagName) !== -1) {
-                                var NS = tagName === 'svg' ?
-                                        SVG_NS :
-                                        (subParent.namespaceURI || SVG_NS);
-                                var element = H.doc.createElementNS(NS,
-                                    tagName);
-                                var attributes_1 = item.attributes || {};
-                                // Apply attributes from root of AST node, legacy from
-                                // from before TextBuilder
-                                objectEach(item, function (val, key) {
-                                    if (key !== 'tagName' &&
-                                        key !== 'attributes' &&
-                                        key !== 'children' &&
-                                        key !== 'textContent') {
-                                        attributes_1[key] = val;
-                                    }
-                                });
-                                attr(element, AST.filterUserAttributes(attributes_1));
-                                // Add text content
-                                if (textNode) {
-                                    element.appendChild(textNode);
-                                }
-                                // Recurse
-                                recurse(item.children || [], element);
-                                node = element;
-                            }
-                            else {
-                                error("Highcharts warning: Invalid tagName '" + tagName + "' in config");
-                            }
-                        }
-                        // Add to the tree
-                        if (node) {
-                            subParent.appendChild(node);
-                        }
-                        ret = node;
-                    });
-                    // Return last node added (on top level it's the only one)
-                    return ret;
-                }
-                return recurse(this.nodes, parent);
-            };
-            /**
-             * Parse HTML/SVG markup into AST Node objects. Used internally from the
-             * constructor.
-             *
-             * @private
-             *
-             * @function Highcharts.AST#getNodesFromMarkup
-             *
-             * @param {string} markup The markup string.
-             *
-             * @return {Array<Highcharts.ASTNode>} The parsed nodes.
-             */
-            AST.prototype.parseMarkup = function (markup) {
-                var nodes = [];
-                var doc;
-                var body;
-                if (hasValidDOMParser) {
-                    doc = new DOMParser().parseFromString(markup, 'text/html');
-                }
-                else {
-                    body = createElement('div');
-                    body.innerHTML = markup;
-                    doc = { body: body };
-                }
-                var appendChildNodes = function (node,
-                    addTo) {
-                        var tagName = node.nodeName.toLowerCase();
-                    // Add allowed tags
-                    var astNode = {
-                            tagName: tagName
-                        };
-                    if (tagName === '#text') {
-                        var textContent = node.textContent || '';
-                        // Whitespace text node, don't append it to the AST
-                        if (/^[\s]*$/.test(textContent)) {
-                            return;
-                        }
-                        astNode.textContent = textContent;
-                    }
-                    var parsedAttributes = node.attributes;
-                    // Add attributes
-                    if (parsedAttributes) {
-                        var attributes_2 = {};
-                        [].forEach.call(parsedAttributes, function (attrib) {
-                            attributes_2[attrib.name] = attrib.value;
-                        });
-                        astNode.attributes = attributes_2;
-                    }
-                    // Handle children
-                    if (node.childNodes.length) {
-                        var children_1 = [];
-                        [].forEach.call(node.childNodes, function (childNode) {
-                            appendChildNodes(childNode, children_1);
-                        });
-                        if (children_1.length) {
-                            astNode.children = children_1;
-                        }
-                    }
-                    addTo.push(astNode);
-                };
-                [].forEach.call(doc.body.childNodes, function (childNode) { return appendChildNodes(childNode, nodes); });
-                if (body) {
-                    discardElement(body);
-                }
-                return nodes;
-            };
-            /**
-             * The list of allowed SVG or HTML tags, used for sanitizing potentially
-             * harmful content from the chart configuration before adding to the DOM.
-             *
-             * @example
-             * // Allow a custom, trusted tag
-             * Highcharts.AST.allowedTags.push('blink'); // ;)
-             *
-             * @name Highcharts.AST.allowedTags
-             * @static
-             */
-            AST.allowedTags = [
-                'a',
-                'b',
-                'br',
-                'button',
-                'caption',
-                'circle',
-                'clipPath',
-                'code',
-                'dd',
-                'defs',
-                'div',
-                'dl',
-                'dt',
-                'em',
-                'feComponentTransfer',
-                'feFuncA',
-                'feFuncB',
-                'feFuncG',
-                'feFuncR',
-                'feGaussianBlur',
-                'feOffset',
-                'feMerge',
-                'feMergeNode',
-                'filter',
-                'h1',
-                'h2',
-                'h3',
-                'h4',
-                'h5',
-                'h6',
-                'hr',
-                'i',
-                'img',
-                'li',
-                'linearGradient',
-                'marker',
-                'ol',
-                'p',
-                'path',
-                'pattern',
-                'pre',
-                'rect',
-                'small',
-                'span',
-                'stop',
-                'strong',
-                'style',
-                'sub',
-                'sup',
-                'svg',
-                'table',
-                'text',
-                'thead',
-                'tbody',
-                'tspan',
-                'td',
-                'th',
-                'tr',
-                'u',
-                'ul',
-                '#text'
-            ];
-            /**
-             * The list of allowed SVG or HTML attributes, used for sanitizing
-             * potentially harmful content from the chart configuration before adding to
-             * the DOM.
-             *
-             * @example
-             * // Allow a custom, trusted attribute
-             * Highcharts.AST.allowedAttributes.push('data-value');
-             *
-             * @name Highcharts.AST.allowedAttributes
-             * @static
-             */
-            AST.allowedAttributes = [
-                'aria-controls',
-                'aria-describedby',
-                'aria-expanded',
-                'aria-haspopup',
-                'aria-hidden',
-                'aria-label',
-                'aria-labelledby',
-                'aria-live',
-                'aria-pressed',
-                'aria-readonly',
-                'aria-roledescription',
-                'aria-selected',
-                'class',
-                'clip-path',
-                'color',
-                'colspan',
-                'cx',
-                'cy',
-                'd',
-                'dx',
-                'dy',
-                'disabled',
-                'fill',
-                'height',
-                'href',
-                'id',
-                'in',
-                'markerHeight',
-                'markerWidth',
-                'offset',
-                'opacity',
-                'orient',
-                'padding',
-                'paddingLeft',
-                'patternUnits',
-                'r',
-                'refX',
-                'refY',
-                'role',
-                'scope',
-                'slope',
-                'src',
-                'startOffset',
-                'stdDeviation',
-                'stroke',
-                'stroke-linecap',
-                'stroke-width',
-                'style',
-                'result',
-                'rowspan',
-                'summary',
-                'target',
-                'tabindex',
-                'text-align',
-                'textAnchor',
-                'textLength',
-                'type',
-                'valign',
-                'width',
-                'x',
-                'x1',
-                'x2',
-                'y',
-                'y1',
-                'y2',
-                'zIndex'
-            ];
-            /**
-             * The list of allowed references for referring attributes like `href` and
-             * `src`. Attribute values will only be allowed if they start with one of
-             * these strings.
-             *
-             * @example
-             * // Allow tel:
-             * Highcharts.AST.allowedReferences.push('tel:');
-             *
-             * @name Highcharts.AST.allowedReferences
-             * @static
-             */
-            AST.allowedReferences = [
-                'https://',
-                'http://',
-                'mailto:',
-                '/',
-                '../',
-                './',
-                '#'
-            ];
-            return AST;
-        }());
-
-        return AST;
-    });
-    _registerModule(_modules, 'Core/FormatUtilities.js', [_modules['Core/Options.js'], _modules['Core/Utilities.js']], function (O, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var defaultOptions = O.defaultOptions,
-            defaultTime = O.defaultTime;
-        var getNestedProperty = U.getNestedProperty,
-            isNumber = U.isNumber,
-            pick = U.pick,
-            pInt = U.pInt;
-        /* *
-         *
-         *  Functions
-         *
-         * */
+        H.time = new Time(merge(H.defaultOptions.global, H.defaultOptions.time));
         /**
          * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970) into a
          * human readable date string. The format is a subset of the formats for PHP's
@@ -8175,5967 +14067,18 @@
          * @return {string}
          *         The formatted date.
          */
-        function dateFormat(format, timestamp, capitalize) {
-            return defaultTime.dateFormat(format, timestamp, capitalize);
-        }
-        /**
-         * Format a string according to a subset of the rules of Python's String.format
-         * method.
-         *
-         * @example
-         * let s = Highcharts.format(
-         *     'The {color} fox was {len:.2f} feet long',
-         *     { color: 'red', len: Math.PI }
-         * );
-         * // => The red fox was 3.14 feet long
-         *
-         * @function Highcharts.format
-         *
-         * @param {string} str
-         *        The string to format.
-         *
-         * @param {Record<string, *>} ctx
-         *        The context, a collection of key-value pairs where each key is
-         *        replaced by its value.
-         *
-         * @param {Highcharts.Chart} [chart]
-         *        A `Chart` instance used to get numberFormatter and time.
-         *
-         * @return {string}
-         *         The formatted string.
-         */
-        function format(str, ctx, chart) {
-            var splitter = '{',
-                isInside = false,
-                segment,
-                valueAndFormat,
-                val,
-                index;
-            var floatRegex = /f$/;
-            var decRegex = /\.([0-9])/;
-            var lang = defaultOptions.lang;
-            var time = chart && chart.time || defaultTime;
-            var numberFormatter = chart && chart.numberFormatter || numberFormat;
-            var ret = [];
-            while (str) {
-                index = str.indexOf(splitter);
-                if (index === -1) {
-                    break;
-                }
-                segment = str.slice(0, index);
-                if (isInside) { // we're on the closing bracket looking back
-                    valueAndFormat = segment.split(':');
-                    val = getNestedProperty(valueAndFormat.shift() || '', ctx);
-                    // Format the replacement
-                    if (valueAndFormat.length && typeof val === 'number') {
-                        segment = valueAndFormat.join(':');
-                        if (floatRegex.test(segment)) { // float
-                            var decimals = parseInt((segment.match(decRegex) || ['', '-1'])[1], 10);
-                            if (val !== null) {
-                                val = numberFormatter(val, decimals, lang.decimalPoint, segment.indexOf(',') > -1 ? lang.thousandsSep : '');
-                            }
-                        }
-                        else {
-                            val = time.dateFormat(segment, val);
-                        }
-                    }
-                    // Push the result and advance the cursor
-                    ret.push(val);
-                }
-                else {
-                    ret.push(segment);
-                }
-                str = str.slice(index + 1); // the rest
-                isInside = !isInside; // toggle
-                splitter = isInside ? '}' : '{'; // now look for next matching bracket
-            }
-            ret.push(str);
-            return ret.join('');
-        }
-        /**
-         * Format a number and return a string based on input settings.
-         *
-         * @sample highcharts/members/highcharts-numberformat/
-         *         Custom number format
-         *
-         * @function Highcharts.numberFormat
-         *
-         * @param {number} number
-         *        The input number to format.
-         *
-         * @param {number} decimals
-         *        The amount of decimals. A value of -1 preserves the amount in the
-         *        input number.
-         *
-         * @param {string} [decimalPoint]
-         *        The decimal point, defaults to the one given in the lang options, or
-         *        a dot.
-         *
-         * @param {string} [thousandsSep]
-         *        The thousands separator, defaults to the one given in the lang
-         *        options, or a space character.
-         *
-         * @return {string}
-         *         The formatted number.
-         */
-        function numberFormat(number, decimals, decimalPoint, thousandsSep) {
-            number = +number || 0;
-            decimals = +decimals;
-            var ret,
-                fractionDigits;
-            var lang = defaultOptions.lang, origDec = (number.toString().split('.')[1] || '').split('e')[0].length, exponent = number.toString().split('e'), firstDecimals = decimals;
-            if (decimals === -1) {
-                // Preserve decimals. Not huge numbers (#3793).
-                decimals = Math.min(origDec, 20);
-            }
-            else if (!isNumber(decimals)) {
-                decimals = 2;
-            }
-            else if (decimals && exponent[1] && exponent[1] < 0) {
-                // Expose decimals from exponential notation (#7042)
-                fractionDigits = decimals + +exponent[1];
-                if (fractionDigits >= 0) {
-                    // remove too small part of the number while keeping the notation
-                    exponent[0] = (+exponent[0]).toExponential(fractionDigits)
-                        .split('e')[0];
-                    decimals = fractionDigits;
-                }
-                else {
-                    // fractionDigits < 0
-                    exponent[0] = exponent[0].split('.')[0] || 0;
-                    if (decimals < 20) {
-                        // use number instead of exponential notation (#7405)
-                        number = (exponent[0] * Math.pow(10, exponent[1]))
-                            .toFixed(decimals);
-                    }
-                    else {
-                        // or zero
-                        number = 0;
-                    }
-                    exponent[1] = 0;
-                }
-            }
-            // Add another decimal to avoid rounding errors of float numbers. (#4573)
-            // Then use toFixed to handle rounding.
-            var roundedNumber = (Math.abs(exponent[1] ? exponent[0] : number) +
-                    Math.pow(10, -Math.max(decimals,
-                origDec) - 1)).toFixed(decimals);
-            // A string containing the positive integer component of the number
-            var strinteger = String(pInt(roundedNumber));
-            // Leftover after grouping into thousands. Can be 0, 1 or 2.
-            var thousands = strinteger.length > 3 ? strinteger.length % 3 : 0;
-            // Language
-            decimalPoint = pick(decimalPoint, lang.decimalPoint);
-            thousandsSep = pick(thousandsSep, lang.thousandsSep);
-            // Start building the return
-            ret = number < 0 ? '-' : '';
-            // Add the leftover after grouping into thousands. For example, in the
-            // number 42 000 000, this line adds 42.
-            ret += thousands ? strinteger.substr(0, thousands) + thousandsSep : '';
-            if (+exponent[1] < 0 && !firstDecimals) {
-                ret = '0';
-            }
-            else {
-                // Add the remaining thousands groups, joined by the thousands separator
-                ret += strinteger
-                    .substr(thousands)
-                    .replace(/(\d{3})(?=\d)/g, '$1' + thousandsSep);
-            }
-            // Add the decimal point and the decimal component
-            if (decimals) {
-                // Get the decimal component
-                ret += decimalPoint + roundedNumber.slice(-decimals);
-            }
-            if (exponent[1] && +ret !== 0) {
-                ret += 'e' + exponent[1];
-            }
-            return ret;
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-        var exports = {
-                dateFormat: dateFormat,
-                format: format,
-                numberFormat: numberFormat
-            };
-
-        return exports;
-    });
-    _registerModule(_modules, 'Core/Renderer/SVG/SVGElement.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Utilities.js']], function (A, AST, Color, H, palette, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var animate = A.animate,
-            animObject = A.animObject,
-            stop = A.stop;
-        var deg2rad = H.deg2rad,
-            doc = H.doc,
-            hasTouch = H.hasTouch,
-            noop = H.noop,
-            svg = H.svg,
-            SVG_NS = H.SVG_NS,
-            win = H.win;
-        var addEvent = U.addEvent,
-            attr = U.attr,
-            createElement = U.createElement,
-            css = U.css,
-            defined = U.defined,
-            erase = U.erase,
-            extend = U.extend,
-            fireEvent = U.fireEvent,
-            isArray = U.isArray,
-            isFunction = U.isFunction,
-            isNumber = U.isNumber,
-            isString = U.isString,
-            merge = U.merge,
-            objectEach = U.objectEach,
-            pick = U.pick,
-            pInt = U.pInt,
-            syncTimeout = U.syncTimeout,
-            uniqueKey = U.uniqueKey;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /* eslint-disable no-invalid-this, valid-jsdoc */
-        /**
-         * The SVGElement prototype is a JavaScript wrapper for SVG elements used in the
-         * rendering layer of Highcharts. Combined with the
-         * {@link Highcharts.SVGRenderer}
-         * object, these prototypes allow freeform annotation in the charts or even in
-         * HTML pages without instanciating a chart. The SVGElement can also wrap HTML
-         * labels, when `text` or `label` elements are created with the `useHTML`
-         * parameter.
-         *
-         * The SVGElement instances are created through factory functions on the
-         * {@link Highcharts.SVGRenderer}
-         * object, like
-         * {@link Highcharts.SVGRenderer#rect|rect},
-         * {@link Highcharts.SVGRenderer#path|path},
-         * {@link Highcharts.SVGRenderer#text|text},
-         * {@link Highcharts.SVGRenderer#label|label},
-         * {@link Highcharts.SVGRenderer#g|g}
-         * and more.
-         *
-         * @class
-         * @name Highcharts.SVGElement
-         */
-        var SVGElement = /** @class */ (function () {
-                function SVGElement() {
-                    /* *
-                     *
-                     *  Properties
-                     *
-                     * */
-                    this.element = void 0;
-                this.onEvents = {};
-                this.opacity = 1; // Default base for animation
-                this.renderer = void 0;
-                this.SVG_NS = SVG_NS;
-                // Custom attributes used for symbols, these should be filtered out when
-                // setting SVGElement attributes (#9375).
-                this.symbolCustomAttribs = [
-                    'x',
-                    'y',
-                    'width',
-                    'height',
-                    'r',
-                    'start',
-                    'end',
-                    'innerR',
-                    'anchorX',
-                    'anchorY',
-                    'rounded'
-                ];
-            }
-            // @todo public zIndex?: number;
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Get the current value of an attribute or pseudo attribute,
-             * used mainly for animation. Called internally from
-             * the {@link Highcharts.SVGRenderer#attr} function.
-             *
-             * @private
-             * @function Highcharts.SVGElement#_defaultGetter
-             *
-             * @param {string} key
-             *        Property key.
-             *
-             * @return {number|string}
-             *         Property value.
-             */
-            SVGElement.prototype._defaultGetter = function (key) {
-                var ret = pick(this[key + 'Value'], // align getter
-                    this[key],
-                    this.element ? this.element.getAttribute(key) : null, 0);
-                if (/^[\-0-9\.]+$/.test(ret)) { // is numerical
-                    ret = parseFloat(ret);
-                }
-                return ret;
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#_defaultSetter
-             *
-             * @param {string} value
-             *
-             * @param {string} key
-             *
-             * @param {Highcharts.SVGDOMElement} element
-             *
-             * @return {void}
-             */
-            SVGElement.prototype._defaultSetter = function (value, key, element) {
-                element.setAttribute(key, value);
-            };
-            /**
-             * Add the element to the DOM. All elements must be added this way.
-             *
-             * @sample highcharts/members/renderer-g
-             *         Elements added to a group
-             *
-             * @function Highcharts.SVGElement#add
-             *
-             * @param {Highcharts.SVGElement} [parent]
-             *        The parent item to add it to. If undefined, the element is added
-             *        to the {@link Highcharts.SVGRenderer.box}.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.add = function (parent) {
-                var renderer = this.renderer,
-                    element = this.element;
-                var inserted;
-                if (parent) {
-                    this.parentGroup = parent;
-                }
-                // Mark as inverted
-                this.parentInverted = parent && parent.inverted;
-                // Build formatted text
-                if (typeof this.textStr !== 'undefined' &&
-                    this.element.nodeName === 'text' // Not for SVGLabel instances
-                ) {
-                    renderer.buildText(this);
-                }
-                // Mark as added
-                this.added = true;
-                // If we're adding to renderer root, or other elements in the group
-                // have a z index, we need to handle it
-                if (!parent || parent.handleZ || this.zIndex) {
-                    inserted = this.zIndexSetter();
-                }
-                // If zIndex is not handled, append at the end
-                if (!inserted) {
-                    (parent ?
-                        parent.element :
-                        renderer.box).appendChild(element);
-                }
-                // fire an event for internal hooks
-                if (this.onAdd) {
-                    this.onAdd();
-                }
-                return this;
-            };
-            /**
-             * Add a class name to an element.
-             *
-             * @function Highcharts.SVGElement#addClass
-             *
-             * @param {string} className
-             * The new class name to add.
-             *
-             * @param {boolean} [replace=false]
-             * When true, the existing class name(s) will be overwritten with the new
-             * one. When false, the new one is added.
-             *
-             * @return {Highcharts.SVGElement}
-             * Return the SVG element for chainability.
-             */
-            SVGElement.prototype.addClass = function (className, replace) {
-                var currentClassName = replace ? '' : (this.attr('class') || '');
-                // Trim the string and remove duplicates
-                className = (className || '')
-                    .split(/ /g)
-                    .reduce(function (newClassName, name) {
-                    if (currentClassName.indexOf(name) === -1) {
-                        newClassName.push(name);
-                    }
-                    return newClassName;
-                }, (currentClassName ?
-                    [currentClassName] :
-                    []))
-                    .join(' ');
-                if (className !== currentClassName) {
-                    this.attr('class', className);
-                }
-                return this;
-            };
-            /**
-             * This method is executed in the end of `attr()`, after setting all
-             * attributes in the hash. In can be used to efficiently consolidate
-             * multiple attributes in one SVG property -- e.g., translate, rotate and
-             * scale are merged in one "transform" attribute in the SVG node.
-             *
-             * @private
-             * @function Highcharts.SVGElement#afterSetters
-             */
-            SVGElement.prototype.afterSetters = function () {
-                // Update transform. Do this outside the loop to prevent redundant
-                // updating for batch setting of attributes.
-                if (this.doTransform) {
-                    this.updateTransform();
-                    this.doTransform = false;
-                }
-            };
-            /**
-             * Align the element relative to the chart or another box.
-             *
-             * @function Highcharts.SVGElement#align
-             *
-             * @param {Highcharts.AlignObject} [alignOptions]
-             *        The alignment options. The function can be called without this
-             *        parameter in order to re-align an element after the box has been
-             *        updated.
-             *
-             * @param {boolean} [alignByTranslate]
-             *        Align element by translation.
-             *
-             * @param {string|Highcharts.BBoxObject} [box]
-             *        The box to align to, needs a width and height. When the box is a
-             *        string, it refers to an object in the Renderer. For example, when
-             *        box is `spacingBox`, it refers to `Renderer.spacingBox` which
-             *        holds `width`, `height`, `x` and `y` properties.
-             *
-             * @return {Highcharts.SVGElement} Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.align = function (alignOptions, alignByTranslate, box) {
-                var attribs = {},
-                    renderer = this.renderer,
-                    alignedObjects = renderer.alignedObjects;
-                var x,
-                    y,
-                    alignTo,
-                    alignFactor,
-                    vAlignFactor;
-                // First call on instanciate
-                if (alignOptions) {
-                    this.alignOptions = alignOptions;
-                    this.alignByTranslate = alignByTranslate;
-                    if (!box || isString(box)) {
-                        this.alignTo = alignTo = box || 'renderer';
-                        // prevent duplicates, like legendGroup after resize
-                        erase(alignedObjects, this);
-                        alignedObjects.push(this);
-                        box = void 0; // reassign it below
-                    }
-                    // When called on resize, no arguments are supplied
-                }
-                else {
-                    alignOptions = this.alignOptions;
-                    alignByTranslate = this.alignByTranslate;
-                    alignTo = this.alignTo;
-                }
-                box = pick(box, renderer[alignTo], alignTo === 'scrollablePlotBox' ? renderer.plotBox : void 0, renderer);
-                // Assign variables
-                var align = alignOptions.align,
-                    vAlign = alignOptions.verticalAlign;
-                // default: left align
-                x = (box.x || 0) + (alignOptions.x || 0);
-                // default: top align
-                y = (box.y || 0) + (alignOptions.y || 0);
-                // Align
-                if (align === 'right') {
-                    alignFactor = 1;
-                }
-                else if (align === 'center') {
-                    alignFactor = 2;
-                }
-                if (alignFactor) {
-                    x += (box.width - (alignOptions.width || 0)) /
-                        alignFactor;
-                }
-                attribs[alignByTranslate ? 'translateX' : 'x'] = Math.round(x);
-                // Vertical align
-                if (vAlign === 'bottom') {
-                    vAlignFactor = 1;
-                }
-                else if (vAlign === 'middle') {
-                    vAlignFactor = 2;
-                }
-                if (vAlignFactor) {
-                    y += (box.height - (alignOptions.height || 0)) /
-                        vAlignFactor;
-                }
-                attribs[alignByTranslate ? 'translateY' : 'y'] = Math.round(y);
-                // Animate only if already placed
-                this[this.placed ? 'animate' : 'attr'](attribs);
-                this.placed = true;
-                this.alignAttr = attribs;
-                return this;
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#alignSetter
-             * @param {"left"|"center"|"right"} value
-             */
-            SVGElement.prototype.alignSetter = function (value) {
-                var convert = {
-                        left: 'start',
-                        center: 'middle',
-                        right: 'end'
-                    };
-                if (convert[value]) {
-                    this.alignValue = value;
-                    this.element.setAttribute('text-anchor', convert[value]);
-                }
-            };
-            /**
-             * Animate to given attributes or CSS properties.
-             *
-             * @sample highcharts/members/element-on/
-             *         Setting some attributes by animation
-             *
-             * @function Highcharts.SVGElement#animate
-             *
-             * @param {Highcharts.SVGAttributes} params
-             *        SVG attributes or CSS to animate.
-             *
-             * @param {boolean|Partial<Highcharts.AnimationOptionsObject>} [options]
-             *        Animation options.
-             *
-             * @param {Function} [complete]
-             *        Function to perform at the end of animation.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.animate = function (params, options, complete) {
-                var _this = this;
-                var animOptions = animObject(pick(options,
-                    this.renderer.globalAnimation,
-                    true)),
-                    deferTime = animOptions.defer;
-                // When the page is hidden save resources in the background by not
-                // running animation at all (#9749).
-                if (pick(doc.hidden, doc.msHidden, doc.webkitHidden, false)) {
-                    animOptions.duration = 0;
-                }
-                if (animOptions.duration !== 0) {
-                    // allows using a callback with the global animation without
-                    // overwriting it
-                    if (complete) {
-                        animOptions.complete = complete;
-                    }
-                    // If defer option is defined delay the animation #12901
-                    syncTimeout(function () {
-                        if (_this.element) {
-                            animate(_this, params, animOptions);
-                        }
-                    }, deferTime);
-                }
-                else {
-                    this.attr(params, void 0, complete);
-                    // Call the end step synchronously
-                    objectEach(params, function (val, prop) {
-                        if (animOptions.step) {
-                            animOptions.step.call(this, val, { prop: prop, pos: 1, elem: this });
-                        }
-                    }, this);
-                }
-                return this;
-            };
-            /**
-             * Apply a text outline through a custom CSS property, by copying the text
-             * element and apply stroke to the copy. Used internally. Contrast checks at
-             * [example](https://jsfiddle.net/highcharts/43soe9m1/2/).
-             *
-             * @example
-             * // Specific color
-             * text.css({
-             *    textOutline: '1px black'
-             * });
-             * // Automatic contrast
-             * text.css({
-             *    color: '#000000', // black text
-             *    textOutline: '1px contrast' // => white outline
-             * });
-             *
-             * @private
-             * @function Highcharts.SVGElement#applyTextOutline
-             *
-             * @param {string} textOutline
-             *        A custom CSS `text-outline` setting, defined by `width color`.
-             */
-            SVGElement.prototype.applyTextOutline = function (textOutline) {
-                var elem = this.element,
-                    hasContrast = textOutline.indexOf('contrast') !== -1,
-                    styles = {};
-                // When the text shadow is set to contrast, use dark stroke for light
-                // text and vice versa.
-                if (hasContrast) {
-                    styles.textOutline = textOutline = textOutline.replace(/contrast/g, this.renderer.getContrast(elem.style.fill));
-                }
-                // Extract the stroke width and color
-                var parts = textOutline.split(' ');
-                var color = parts[parts.length - 1];
-                var strokeWidth = parts[0];
-                if (strokeWidth && strokeWidth !== 'none' && H.svg) {
-                    this.fakeTS = true; // Fake text shadow
-                    // In order to get the right y position of the clone,
-                    // copy over the y setter
-                    this.ySetter = this.xSetter;
-                    // Since the stroke is applied on center of the actual outline, we
-                    // need to double it to get the correct stroke-width outside the
-                    // glyphs.
-                    strokeWidth = strokeWidth.replace(/(^[\d\.]+)(.*?)$/g, function (match, digit, unit) {
-                        return (2 * Number(digit)) + unit;
-                    });
-                    // Remove shadows from previous runs.
-                    this.removeTextOutline();
-                    var outline_1 = doc.createElementNS(SVG_NS, 'tspan');
-                    attr(outline_1, {
-                        'class': 'highcharts-text-outline',
-                        fill: color,
-                        stroke: color,
-                        'stroke-width': strokeWidth,
-                        'stroke-linejoin': 'round'
-                    });
-                    // For each of the tspans and text nodes, create a copy in the
-                    // outline.
-                    [].forEach.call(elem.childNodes, function (childNode) {
-                        var clone = childNode.cloneNode(true);
-                        if (clone.removeAttribute) {
-                            ['fill', 'stroke', 'stroke-width', 'stroke'].forEach(function (prop) { return clone.removeAttribute(prop); });
-                        }
-                        outline_1.appendChild(clone);
-                    });
-                    // Insert an absolutely positioned break before the original text
-                    // to keep it in place
-                    var br_1 = doc.createElementNS(SVG_NS, 'tspan');
-                    br_1.textContent = '\u200B';
-                    // Copy x and y if not null
-                    ['x', 'y'].forEach(function (key) {
-                        var value = elem.getAttribute(key);
-                        if (value) {
-                            br_1.setAttribute(key, value);
-                        }
-                    });
-                    // Insert the outline
-                    outline_1.appendChild(br_1);
-                    elem.insertBefore(outline_1, elem.firstChild);
-                }
-            };
-            /**
-             * @function Highcharts.SVGElement#attr
-             * @param {string} key
-             * @return {number|string}
-             */ /**
-            * Apply native and custom attributes to the SVG elements.
-            *
-            * In order to set the rotation center for rotation, set x and y to 0 and
-            * use `translateX` and `translateY` attributes to position the element
-            * instead.
-            *
-            * Attributes frequently used in Highcharts are `fill`, `stroke`,
-            * `stroke-width`.
-            *
-            * @sample highcharts/members/renderer-rect/
-            *         Setting some attributes
-            *
-            * @example
-            * // Set multiple attributes
-            * element.attr({
-            *     stroke: 'red',
-            *     fill: 'blue',
-            *     x: 10,
-            *     y: 10
-            * });
-            *
-            * // Set a single attribute
-            * element.attr('stroke', 'red');
-            *
-            * // Get an attribute
-            * element.attr('stroke'); // => 'red'
-            *
-            * @function Highcharts.SVGElement#attr
-            *
-            * @param {string|Highcharts.SVGAttributes} [hash]
-            *        The native and custom SVG attributes.
-            *
-            * @param {number|string|Highcharts.SVGPathArray} [val]
-            *        If the type of the first argument is `string`, the second can be a
-            *        value, which will serve as a single attribute setter. If the first
-            *        argument is a string and the second is undefined, the function
-            *        serves as a getter and the current value of the property is
-            *        returned.
-            *
-            * @param {Function} [complete]
-            *        A callback function to execute after setting the attributes. This
-            *        makes the function compliant and interchangeable with the
-            *        {@link SVGElement#animate} function.
-            *
-            * @param {boolean} [continueAnimation=true]
-            *        Used internally when `.attr` is called as part of an animation
-            *        step. Otherwise, calling `.attr` for an attribute will stop
-            *        animation for that attribute.
-            *
-            * @return {Highcharts.SVGElement}
-            *         If used as a setter, it returns the current
-            *         {@link Highcharts.SVGElement} so the calls can be chained. If
-            *         used as a getter, the current value of the attribute is returned.
-            */
-            SVGElement.prototype.attr = function (hash, val, complete, continueAnimation) {
-                var element = this.element,
-                    symbolCustomAttribs = this.symbolCustomAttribs;
-                var key,
-                    hasSetSymbolSize,
-                    ret = this,
-                    skipAttr,
-                    setter;
-                // single key-value pair
-                if (typeof hash === 'string' && typeof val !== 'undefined') {
-                    key = hash;
-                    hash = {};
-                    hash[key] = val;
-                }
-                // used as a getter: first argument is a string, second is undefined
-                if (typeof hash === 'string') {
-                    ret = (this[hash + 'Getter'] ||
-                        this._defaultGetter).call(this, hash, element);
-                    // setter
-                }
-                else {
-                    objectEach(hash, function eachAttribute(val, key) {
-                        skipAttr = false;
-                        // Unless .attr is from the animator update, stop current
-                        // running animation of this property
-                        if (!continueAnimation) {
-                            stop(this, key);
-                        }
-                        // Special handling of symbol attributes
-                        if (this.symbolName &&
-                            symbolCustomAttribs.indexOf(key) !== -1) {
-                            if (!hasSetSymbolSize) {
-                                this.symbolAttr(hash);
-                                hasSetSymbolSize = true;
-                            }
-                            skipAttr = true;
-                        }
-                        if (this.rotation && (key === 'x' || key === 'y')) {
-                            this.doTransform = true;
-                        }
-                        if (!skipAttr) {
-                            setter = (this[key + 'Setter'] ||
-                                this._defaultSetter);
-                            setter.call(this, val, key, element);
-                            // Let the shadow follow the main element
-                            if (!this.styledMode &&
-                                this.shadows &&
-                                /^(width|height|visibility|x|y|d|transform|cx|cy|r)$/.test(key)) {
-                                this.updateShadows(key, val, setter);
-                            }
-                        }
-                    }, this);
-                    this.afterSetters();
-                }
-                // In accordance with animate, run a complete callback
-                if (complete) {
-                    complete.call(this);
-                }
-                return ret;
-            };
-            /**
-             * Apply a clipping rectangle to this element.
-             *
-             * @function Highcharts.SVGElement#clip
-             *
-             * @param {Highcharts.ClipRectElement} [clipRect]
-             *        The clipping rectangle. If skipped, the current clip is removed.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Returns the SVG element to allow chaining.
-             */
-            SVGElement.prototype.clip = function (clipRect) {
-                return this.attr('clip-path', clipRect ?
-                    'url(' + this.renderer.url + '#' + clipRect.id + ')' :
-                    'none');
-            };
-            /**
-             * Calculate the coordinates needed for drawing a rectangle crisply and
-             * return the calculated attributes.
-             *
-             * @function Highcharts.SVGElement#crisp
-             *
-             * @param {Highcharts.RectangleObject} rect
-             * Rectangle to crisp.
-             *
-             * @param {number} [strokeWidth]
-             * The stroke width to consider when computing crisp positioning. It can
-             * also be set directly on the rect parameter.
-             *
-             * @return {Highcharts.RectangleObject}
-             * The modified rectangle arguments.
-             */
-            SVGElement.prototype.crisp = function (rect, strokeWidth) {
-                var wrapper = this;
-                strokeWidth = strokeWidth || rect.strokeWidth || 0;
-                // Math.round because strokeWidth can sometimes have roundoff errors
-                var normalizer = Math.round(strokeWidth) % 2 / 2;
-                // normalize for crisp edges
-                rect.x = Math.floor(rect.x || wrapper.x || 0) + normalizer;
-                rect.y = Math.floor(rect.y || wrapper.y || 0) + normalizer;
-                rect.width = Math.floor((rect.width || wrapper.width || 0) - 2 * normalizer);
-                rect.height = Math.floor((rect.height || wrapper.height || 0) - 2 * normalizer);
-                if (defined(rect.strokeWidth)) {
-                    rect.strokeWidth = strokeWidth;
-                }
-                return rect;
-            };
-            /**
-             * Build and apply an SVG gradient out of a common JavaScript configuration
-             * object. This function is called from the attribute setters. An event
-             * hook is added for supporting other complex color types.
-             *
-             * @private
-             * @function Highcharts.SVGElement#complexColor
-             *
-             * @param {Highcharts.GradientColorObject|Highcharts.PatternObject} colorOptions
-             * The gradient or pattern options structure.
-             *
-             * @param {string} prop
-             * The property to apply, can either be `fill` or `stroke`.
-             *
-             * @param {Highcharts.SVGDOMElement} elem
-             * SVG element to apply the gradient on.
-             */
-            SVGElement.prototype.complexColor = function (colorOptions, prop, elem) {
-                var renderer = this.renderer;
-                var colorObject,
-                    gradName,
-                    gradAttr,
-                    radAttr,
-                    gradients,
-                    stops,
-                    stopColor,
-                    stopOpacity,
-                    radialReference,
-                    id,
-                    key = [],
-                    value;
-                fireEvent(this.renderer, 'complexColor', {
-                    args: arguments
-                }, function () {
-                    // Apply linear or radial gradients
-                    if (colorOptions.radialGradient) {
-                        gradName = 'radialGradient';
-                    }
-                    else if (colorOptions.linearGradient) {
-                        gradName = 'linearGradient';
-                    }
-                    if (gradName) {
-                        gradAttr = colorOptions[gradName];
-                        gradients = renderer.gradients;
-                        stops = colorOptions.stops;
-                        radialReference = elem.radialReference;
-                        // Keep < 2.2 kompatibility
-                        if (isArray(gradAttr)) {
-                            colorOptions[gradName] = gradAttr = {
-                                x1: gradAttr[0],
-                                y1: gradAttr[1],
-                                x2: gradAttr[2],
-                                y2: gradAttr[3],
-                                gradientUnits: 'userSpaceOnUse'
-                            };
-                        }
-                        // Correct the radial gradient for the radial reference system
-                        if (gradName === 'radialGradient' &&
-                            radialReference &&
-                            !defined(gradAttr.gradientUnits)) {
-                            // Save the radial attributes for updating
-                            radAttr = gradAttr;
-                            gradAttr = merge(gradAttr, renderer.getRadialAttr(radialReference, radAttr), { gradientUnits: 'userSpaceOnUse' });
-                        }
-                        // Build the unique key to detect whether we need to create a
-                        // new element (#1282)
-                        objectEach(gradAttr, function (value, n) {
-                            if (n !== 'id') {
-                                key.push(n, value);
-                            }
-                        });
-                        objectEach(stops, function (val) {
-                            key.push(val);
-                        });
-                        key = key.join(',');
-                        // Check if a gradient object with the same config object is
-                        // created within this renderer
-                        if (gradients[key]) {
-                            id = gradients[key].attr('id');
-                        }
-                        else {
-                            // Set the id and create the element
-                            gradAttr.id = id = uniqueKey();
-                            var gradientObject_1 = gradients[key] =
-                                    renderer.createElement(gradName)
-                                        .attr(gradAttr)
-                                        .add(renderer.defs);
-                            gradientObject_1.radAttr = radAttr;
-                            // The gradient needs to keep a list of stops to be able to
-                            // destroy them
-                            gradientObject_1.stops = [];
-                            stops.forEach(function (stop) {
-                                if (stop[1].indexOf('rgba') === 0) {
-                                    colorObject = Color.parse(stop[1]);
-                                    stopColor = colorObject.get('rgb');
-                                    stopOpacity = colorObject.get('a');
-                                }
-                                else {
-                                    stopColor = stop[1];
-                                    stopOpacity = 1;
-                                }
-                                var stopObject = renderer.createElement('stop').attr({
-                                        offset: stop[0],
-                                        'stop-color': stopColor,
-                                        'stop-opacity': stopOpacity
-                                    }).add(gradientObject_1);
-                                // Add the stop element to the gradient
-                                gradientObject_1.stops.push(stopObject);
-                            });
-                        }
-                        // Set the reference to the gradient object
-                        value = 'url(' + renderer.url + '#' + id + ')';
-                        elem.setAttribute(prop, value);
-                        elem.gradient = key;
-                        // Allow the color to be concatenated into tooltips formatters
-                        // etc. (#2995)
-                        colorOptions.toString = function () {
-                            return value;
-                        };
-                    }
-                });
-            };
-            /**
-             * Set styles for the element. In addition to CSS styles supported by
-             * native SVG and HTML elements, there are also some custom made for
-             * Highcharts, like `width`, `ellipsis` and `textOverflow` for SVG text
-             * elements.
-             *
-             * @sample highcharts/members/renderer-text-on-chart/
-             *         Styled text
-             *
-             * @function Highcharts.SVGElement#css
-             *
-             * @param {Highcharts.CSSObject} styles
-             *        The new CSS styles.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Return the SVG element for chaining.
-             */
-            SVGElement.prototype.css = function (styles) {
-                var oldStyles = this.styles, newStyles = {}, elem = this.element, 
-                    // These CSS properties are interpreted internally by the SVG
-                    // renderer, but are not supported by SVG and should not be added to
-                    // the DOM. In styled mode, no CSS should find its way to the DOM
-                    // whatsoever (#6173, #6474).
-                    svgPseudoProps = ['textOutline', 'textOverflow', 'width'];
-                var textWidth,
-                    serializedCss = '',
-                    hyphenate,
-                    hasNew = !oldStyles;
-                // convert legacy
-                if (styles && styles.color) {
-                    styles.fill = styles.color;
-                }
-                // Filter out existing styles to increase performance (#2640)
-                if (oldStyles) {
-                    objectEach(styles, function (style, n) {
-                        if (oldStyles && oldStyles[n] !== style) {
-                            newStyles[n] = style;
-                            hasNew = true;
-                        }
-                    });
-                }
-                if (hasNew) {
-                    // Merge the new styles with the old ones
-                    if (oldStyles) {
-                        styles = extend(oldStyles, newStyles);
-                    }
-                    // Get the text width from style
-                    if (styles) {
-                        // Previously set, unset it (#8234)
-                        if (styles.width === null || styles.width === 'auto') {
-                            delete this.textWidth;
-                            // Apply new
-                        }
-                        else if (elem.nodeName.toLowerCase() === 'text' &&
-                            styles.width) {
-                            textWidth = this.textWidth = pInt(styles.width);
-                        }
-                    }
-                    // store object
-                    this.styles = styles;
-                    if (textWidth && (!svg && this.renderer.forExport)) {
-                        delete styles.width;
-                    }
-                    // Serialize and set style attribute
-                    if (elem.namespaceURI === this.SVG_NS) { // #7633
-                        hyphenate = function (a, b) {
-                            return '-' + b.toLowerCase();
-                        };
-                        objectEach(styles, function (style, n) {
-                            if (svgPseudoProps.indexOf(n) === -1) {
-                                serializedCss +=
-                                    n.replace(/([A-Z])/g, hyphenate) + ':' +
-                                        style + ';';
-                            }
-                        });
-                        if (serializedCss) {
-                            attr(elem, 'style', serializedCss); // #1881
-                        }
-                    }
-                    else {
-                        css(elem, styles);
-                    }
-                    if (this.added) {
-                        // Rebuild text after added. Cache mechanisms in the buildText
-                        // will prevent building if there are no significant changes.
-                        if (this.element.nodeName === 'text') {
-                            this.renderer.buildText(this);
-                        }
-                        // Apply text outline after added
-                        if (styles && styles.textOutline) {
-                            this.applyTextOutline(styles.textOutline);
-                        }
-                    }
-                }
-                return this;
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#dashstyleSetter
-             * @param {string} value
-             */
-            SVGElement.prototype.dashstyleSetter = function (value) {
-                var i,
-                    strokeWidth = this['stroke-width'];
-                // If "inherit", like maps in IE, assume 1 (#4981). With HC5 and the new
-                // strokeWidth function, we should be able to use that instead.
-                if (strokeWidth === 'inherit') {
-                    strokeWidth = 1;
-                }
-                value = value && value.toLowerCase();
-                if (value) {
-                    var v = value
-                            .replace('shortdashdotdot', '3,1,1,1,1,1,')
-                            .replace('shortdashdot', '3,1,1,1')
-                            .replace('shortdot', '1,1,')
-                            .replace('shortdash', '3,1,')
-                            .replace('longdash', '8,3,')
-                            .replace(/dot/g, '1,3,')
-                            .replace('dash', '4,3,')
-                            .replace(/,$/, '')
-                            .split(','); // ending comma
-                        i = v.length;
-                    while (i--) {
-                        v[i] = '' + (pInt(v[i]) * pick(strokeWidth, NaN));
-                    }
-                    value = v.join(',').replace(/NaN/g, 'none'); // #3226
-                    this.element.setAttribute('stroke-dasharray', value);
-                }
-            };
-            /**
-             * Destroy the element and element wrapper and clear up the DOM and event
-             * hooks.
-             *
-             * @function Highcharts.SVGElement#destroy
-             */
-            SVGElement.prototype.destroy = function () {
-                var wrapper = this,
-                    element = wrapper.element || {},
-                    renderer = wrapper.renderer,
-                    ownerSVGElement = element.ownerSVGElement;
-                var parentToClean = (renderer.isSVG &&
-                        element.nodeName === 'SPAN' &&
-                        wrapper.parentGroup ||
-                        void 0),
-                    grandParent,
-                    i;
-                // remove events
-                element.onclick = element.onmouseout = element.onmouseover =
-                    element.onmousemove = element.point = null;
-                stop(wrapper); // stop running animations
-                if (wrapper.clipPath && ownerSVGElement) {
-                    var clipPath_1 = wrapper.clipPath;
-                    // Look for existing references to this clipPath and remove them
-                    // before destroying the element (#6196).
-                    // The upper case version is for Edge
-                    [].forEach.call(ownerSVGElement.querySelectorAll('[clip-path],[CLIP-PATH]'), function (el) {
-                        if (el.getAttribute('clip-path').indexOf(clipPath_1.element.id) > -1) {
-                            el.removeAttribute('clip-path');
-                        }
-                    });
-                    wrapper.clipPath = clipPath_1.destroy();
-                }
-                // Destroy stops in case this is a gradient object @todo old code?
-                if (wrapper.stops) {
-                    for (i = 0; i < wrapper.stops.length; i++) {
-                        wrapper.stops[i].destroy();
-                    }
-                    wrapper.stops.length = 0;
-                    wrapper.stops = void 0;
-                }
-                // remove element
-                wrapper.safeRemoveChild(element);
-                if (!renderer.styledMode) {
-                    wrapper.destroyShadows();
-                }
-                // In case of useHTML, clean up empty containers emulating SVG groups
-                // (#1960, #2393, #2697).
-                while (parentToClean &&
-                    parentToClean.div &&
-                    parentToClean.div.childNodes.length === 0) {
-                    grandParent = parentToClean.parentGroup;
-                    wrapper.safeRemoveChild(parentToClean.div);
-                    delete parentToClean.div;
-                    parentToClean = grandParent;
-                }
-                // remove from alignObjects
-                if (wrapper.alignTo) {
-                    erase(renderer.alignedObjects, wrapper);
-                }
-                objectEach(wrapper, function (val, key) {
-                    // Destroy child elements of a group
-                    if (wrapper[key] &&
-                        wrapper[key].parentGroup === wrapper &&
-                        wrapper[key].destroy) {
-                        wrapper[key].destroy();
-                    }
-                    // Delete all properties
-                    delete wrapper[key];
-                });
-                return;
-            };
-            /**
-             * Destroy shadows on the element.
-             *
-             * @private
-             * @function Highcharts.SVGElement#destroyShadows
-             *
-             * @return {void}
-             */
-            SVGElement.prototype.destroyShadows = function () {
-                (this.shadows || []).forEach(function (shadow) {
-                    this.safeRemoveChild(shadow);
-                }, this);
-                this.shadows = void 0;
-            };
-            /**
-             * @private
-             */
-            SVGElement.prototype.destroyTextPath = function (elem, path) {
-                var textElement = elem.getElementsByTagName('text')[0];
-                var childNodes;
-                if (textElement) {
-                    // Remove textPath attributes
-                    textElement.removeAttribute('dx');
-                    textElement.removeAttribute('dy');
-                    // Remove ID's:
-                    path.element.setAttribute('id', '');
-                    // Check if textElement includes textPath,
-                    if (this.textPathWrapper &&
-                        textElement.getElementsByTagName('textPath').length) {
-                        // Move nodes to <text>
-                        childNodes = this.textPathWrapper.element.childNodes;
-                        // Now move all <tspan>'s and text nodes to the <textPath> node
-                        while (childNodes.length) {
-                            textElement.appendChild(childNodes[0]);
-                        }
-                        // Remove <textPath> from the DOM
-                        textElement.removeChild(this.textPathWrapper.element);
-                    }
-                }
-                else if (elem.getAttribute('dx') || elem.getAttribute('dy')) {
-                    // Remove textPath attributes from elem
-                    // to get correct text-outline position
-                    elem.removeAttribute('dx');
-                    elem.removeAttribute('dy');
-                }
-                if (this.textPathWrapper) {
-                    // Set textPathWrapper to undefined and destroy it
-                    this.textPathWrapper = this.textPathWrapper.destroy();
-                }
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#dSettter
-             * @param {number|string|Highcharts.SVGPathArray} value
-             * @param {string} key
-             * @param {Highcharts.SVGDOMElement} element
-             */
-            SVGElement.prototype.dSetter = function (value, key, element) {
-                if (isArray(value)) {
-                    // Backwards compatibility, convert one-dimensional array into an
-                    // array of segments
-                    if (typeof value[0] === 'string') {
-                        value = this.renderer.pathToSegments(value);
-                    }
-                    this.pathArray = value;
-                    value = value.reduce(function (acc, seg, i) {
-                        if (!seg || !seg.join) {
-                            return (seg || '').toString();
-                        }
-                        return (i ? acc + ' ' : '') + seg.join(' ');
-                    }, '');
-                }
-                if (/(NaN| {2}|^$)/.test(value)) {
-                    value = 'M 0 0';
-                }
-                // Check for cache before resetting. Resetting causes disturbance in the
-                // DOM, causing flickering in some cases in Edge/IE (#6747). Also
-                // possible performance gain.
-                if (this[key] !== value) {
-                    element.setAttribute(key, value);
-                    this[key] = value;
-                }
-            };
-            /**
-             * Fade out an element by animating its opacity down to 0, and hide it on
-             * complete. Used internally for the tooltip.
-             *
-             * @function Highcharts.SVGElement#fadeOut
-             *
-             * @param {number} [duration=150]
-             * The fade duration in milliseconds.
-             */
-            SVGElement.prototype.fadeOut = function (duration) {
-                var elemWrapper = this;
-                elemWrapper.animate({
-                    opacity: 0
-                }, {
-                    duration: pick(duration, 150),
-                    complete: function () {
-                        // #3088, assuming we're only using this for tooltips
-                        elemWrapper.attr({ y: -9999 }).hide();
-                    }
-                });
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#fillSetter
-             * @param {Highcharts.ColorType} value
-             * @param {string} key
-             * @param {Highcharts.SVGDOMElement} element
-             */
-            SVGElement.prototype.fillSetter = function (value, key, element) {
-                if (typeof value === 'string') {
-                    element.setAttribute(key, value);
-                }
-                else if (value) {
-                    this.complexColor(value, key, element);
-                }
-            };
-            /**
-             * Get the bounding box (width, height, x and y) for the element. Generally
-             * used to get rendered text size. Since this is called a lot in charts,
-             * the results are cached based on text properties, in order to save DOM
-             * traffic. The returned bounding box includes the rotation, so for example
-             * a single text line of rotation 90 will report a greater height, and a
-             * width corresponding to the line-height.
-             *
-             * @sample highcharts/members/renderer-on-chart/
-             *         Draw a rectangle based on a text's bounding box
-             *
-             * @function Highcharts.SVGElement#getBBox
-             *
-             * @param {boolean} [reload]
-             *        Skip the cache and get the updated DOM bouding box.
-             *
-             * @param {number} [rot]
-             *        Override the element's rotation. This is internally used on axis
-             *        labels with a value of 0 to find out what the bounding box would
-             *        be have been if it were not rotated.
-             *
-             * @return {Highcharts.BBoxObject}
-             *         The bounding box with `x`, `y`, `width` and `height` properties.
-             */
-            SVGElement.prototype.getBBox = function (reload, rot) {
-                var wrapper = this,
-                    renderer = wrapper.renderer,
-                    element = wrapper.element,
-                    styles = wrapper.styles,
-                    textStr = wrapper.textStr,
-                    cache = renderer.cache,
-                    cacheKeys = renderer.cacheKeys,
-                    isSVG = element.namespaceURI === wrapper.SVG_NS,
-                    rotation = pick(rot,
-                    wrapper.rotation, 0),
-                    fontSize = renderer.styledMode ? (element &&
-                        SVGElement.prototype.getStyle.call(element, 'font-size')) : (styles && styles.fontSize);
-                var bBox, // = wrapper.bBox,
-                    width,
-                    height,
-                    toggleTextShadowShim,
-                    cacheKey;
-                // Avoid undefined and null (#7316)
-                if (defined(textStr)) {
-                    cacheKey = textStr.toString();
-                    // Since numbers are monospaced, and numerical labels appear a lot
-                    // in a chart, we assume that a label of n characters has the same
-                    // bounding box as others of the same length. Unless there is inner
-                    // HTML in the label. In that case, leave the numbers as is (#5899).
-                    if (cacheKey.indexOf('<') === -1) {
-                        cacheKey = cacheKey.replace(/[0-9]/g, '0');
-                    }
-                    // Properties that affect bounding box
-                    cacheKey += [
-                        '',
-                        rotation,
-                        fontSize,
-                        wrapper.textWidth,
-                        styles && styles.textOverflow,
-                        styles && styles.fontWeight // #12163
-                    ].join(',');
-                }
-                if (cacheKey && !reload) {
-                    bBox = cache[cacheKey];
-                }
-                // No cache found
-                if (!bBox) {
-                    // SVG elements
-                    if (isSVG || renderer.forExport) {
-                        try { // Fails in Firefox if the container has display: none.
-                            // When the text shadow shim is used, we need to hide the
-                            // fake shadows to get the correct bounding box (#3872)
-                            toggleTextShadowShim = this.fakeTS && function (display) {
-                                var outline = element.querySelector('.highcharts-text-outline');
-                                if (outline) {
-                                    css(outline, { display: display });
-                                }
-                            };
-                            // Workaround for #3842, Firefox reporting wrong bounding
-                            // box for shadows
-                            if (isFunction(toggleTextShadowShim)) {
-                                toggleTextShadowShim('none');
-                            }
-                            bBox = element.getBBox ?
-                                // SVG: use extend because IE9 is not allowed to change
-                                // width and height in case of rotation (below)
-                                extend({}, element.getBBox()) : {
-                                // Legacy IE in export mode
-                                width: element.offsetWidth,
-                                height: element.offsetHeight
-                            };
-                            // #3842
-                            if (isFunction(toggleTextShadowShim)) {
-                                toggleTextShadowShim('');
-                            }
-                        }
-                        catch (e) {
-                            '';
-                        }
-                        // If the bBox is not set, the try-catch block above failed. The
-                        // other condition is for Opera that returns a width of
-                        // -Infinity on hidden elements.
-                        if (!bBox || bBox.width < 0) {
-                            bBox = { width: 0, height: 0 };
-                        }
-                        // VML Renderer or useHTML within SVG
-                    }
-                    else {
-                        bBox = wrapper.htmlGetBBox();
-                    }
-                    // True SVG elements as well as HTML elements in modern browsers
-                    // using the .useHTML option need to compensated for rotation
-                    if (renderer.isSVG) {
-                        width = bBox.width;
-                        height = bBox.height;
-                        // Workaround for wrong bounding box in IE, Edge and Chrome on
-                        // Windows. With Highcharts' default font, IE and Edge report
-                        // a box height of 16.899 and Chrome rounds it to 17. If this
-                        // stands uncorrected, it results in more padding added below
-                        // the text than above when adding a label border or background.
-                        // Also vertical positioning is affected.
-                        // https://jsfiddle.net/highcharts/em37nvuj/
-                        // (#1101, #1505, #1669, #2568, #6213).
-                        if (isSVG) {
-                            bBox.height = height = ({
-                                '11px,17': 14,
-                                '13px,20': 16
-                            }[styles &&
-                                styles.fontSize + ',' + Math.round(height)] ||
-                                height);
-                        }
-                        // Adjust for rotated text
-                        if (rotation) {
-                            var rad = rotation * deg2rad;
-                            bBox.width = Math.abs(height * Math.sin(rad)) +
-                                Math.abs(width * Math.cos(rad));
-                            bBox.height = Math.abs(height * Math.cos(rad)) +
-                                Math.abs(width * Math.sin(rad));
-                        }
-                    }
-                    // Cache it. When loading a chart in a hidden iframe in Firefox and
-                    // IE/Edge, the bounding box height is 0, so don't cache it (#5620).
-                    if (cacheKey && bBox.height > 0) {
-                        // Rotate (#4681)
-                        while (cacheKeys.length > 250) {
-                            delete cache[cacheKeys.shift()];
-                        }
-                        if (!cache[cacheKey]) {
-                            cacheKeys.push(cacheKey);
-                        }
-                        cache[cacheKey] = bBox;
-                    }
-                }
-                return bBox;
-            };
-            /**
-             * Get the computed style. Only in styled mode.
-             *
-             * @example
-             * chart.series[0].points[0].graphic.getStyle('stroke-width'); // => '1px'
-             *
-             * @function Highcharts.SVGElement#getStyle
-             *
-             * @param {string} prop
-             *        The property name to check for.
-             *
-             * @return {string}
-             *         The current computed value.
-             */
-            SVGElement.prototype.getStyle = function (prop) {
-                return win
-                    .getComputedStyle(this.element || this, '')
-                    .getPropertyValue(prop);
-            };
-            /**
-             * Check if an element has the given class name.
-             *
-             * @function Highcharts.SVGElement#hasClass
-             *
-             * @param {string} className
-             * The class name to check for.
-             *
-             * @return {boolean}
-             * Whether the class name is found.
-             */
-            SVGElement.prototype.hasClass = function (className) {
-                return ('' + this.attr('class'))
-                    .split(' ')
-                    .indexOf(className) !== -1;
-            };
-            /**
-             * Hide the element, similar to setting the `visibility` attribute to
-             * `hidden`.
-             *
-             * @function Highcharts.SVGElement#hide
-             *
-             * @param {boolean} [hideByTranslation=false]
-             *        The flag to determine if element should be hidden by moving out
-             *        of the viewport. Used for example for dataLabels.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.hide = function (hideByTranslation) {
-                if (hideByTranslation) {
-                    this.attr({ y: -9999 });
-                }
-                else {
-                    this.attr({ visibility: 'hidden' });
-                }
-                return this;
-            };
-            /**
-             * @private
-             */
-            SVGElement.prototype.htmlGetBBox = function () {
-                return { height: 0, width: 0, x: 0, y: 0 };
-            };
-            /**
-             * Initialize the SVG element. This function only exists to make the
-             * initialization process overridable. It should not be called directly.
-             *
-             * @function Highcharts.SVGElement#init
-             *
-             * @param {Highcharts.SVGRenderer} renderer
-             * The SVGRenderer instance to initialize to.
-             *
-             * @param {string} nodeName
-             * The SVG node name.
-             */
-            SVGElement.prototype.init = function (renderer, nodeName) {
-                /**
-                 * The primary DOM node. Each `SVGElement` instance wraps a main DOM
-                 * node, but may also represent more nodes.
-                 *
-                 * @name Highcharts.SVGElement#element
-                 * @type {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement}
-                 */
-                this.element = nodeName === 'span' ?
-                    createElement(nodeName) :
-                    doc.createElementNS(this.SVG_NS, nodeName);
-                /**
-                 * The renderer that the SVGElement belongs to.
-                 *
-                 * @name Highcharts.SVGElement#renderer
-                 * @type {Highcharts.SVGRenderer}
-                 */
-                this.renderer = renderer;
-                fireEvent(this, 'afterInit');
-            };
-            /**
-             * Invert a group, rotate and flip. This is used internally on inverted
-             * charts, where the points and graphs are drawn as if not inverted, then
-             * the series group elements are inverted.
-             *
-             * @function Highcharts.SVGElement#invert
-             *
-             * @param {boolean} inverted
-             *        Whether to invert or not. An inverted shape can be un-inverted by
-             *        setting it to false.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Return the SVGElement for chaining.
-             */
-            SVGElement.prototype.invert = function (inverted) {
-                this.inverted = inverted;
-                this.updateTransform();
-                return this;
-            };
-            /**
-             * Add an event listener. This is a simple setter that replaces the
-             * previous event of the same type added by this function, as opposed to
-             * the {@link Highcharts#addEvent} function.
-             *
-             * @sample highcharts/members/element-on/
-             *         A clickable rectangle
-             *
-             * @function Highcharts.SVGElement#on
-             *
-             * @param {string} eventType
-             * The event type.
-             *
-             * @param {Function} handler
-             * The handler callback.
-             *
-             * @return {Highcharts.SVGElement}
-             * The SVGElement for chaining.
-             */
-            SVGElement.prototype.on = function (eventType, handler) {
-                var onEvents = this.onEvents;
-                if (onEvents[eventType]) {
-                    // Unbind existing event
-                    onEvents[eventType]();
-                }
-                onEvents[eventType] = addEvent(this.element, eventType, handler);
-                return this;
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#opacitySetter
-             * @param {string} value
-             * @param {string} key
-             * @param {Highcharts.SVGDOMElement} element
-             */
-            SVGElement.prototype.opacitySetter = function (value, key, element) {
-                // Round off to avoid float errors, like tests where opacity lands on
-                // 9.86957e-06 instead of 0
-                var opacity = Number(Number(value).toFixed(3));
-                this.opacity = opacity;
-                element.setAttribute(key, opacity);
-            };
-            /**
-             * Remove a class name from the element.
-             *
-             * @function Highcharts.SVGElement#removeClass
-             *
-             * @param {string|RegExp} className
-             *        The class name to remove.
-             *
-             * @return {Highcharts.SVGElement} Returns the SVG element for chainability.
-             */
-            SVGElement.prototype.removeClass = function (className) {
-                return this.attr('class', ('' + this.attr('class'))
-                    .replace(isString(className) ?
-                    new RegExp("(^| )" + className + "( |$)") : // #12064, #13590
-                    className, ' ')
-                    .replace(/ +/g, ' ')
-                    .trim());
-            };
-            /**
-             *
-             * @private
-             */
-            SVGElement.prototype.removeTextOutline = function () {
-                var outline = this.element
-                        .querySelector('tspan.highcharts-text-outline');
-                if (outline) {
-                    this.safeRemoveChild(outline);
-                }
-            };
-            /**
-             * Removes an element from the DOM.
-             *
-             * @private
-             * @function Highcharts.SVGElement#safeRemoveChild
-             *
-             * @param {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement} element
-             * The DOM node to remove.
-             */
-            SVGElement.prototype.safeRemoveChild = function (element) {
-                var parentNode = element.parentNode;
-                if (parentNode) {
-                    parentNode.removeChild(element);
-                }
-            };
-            /**
-             * Set the coordinates needed to draw a consistent radial gradient across
-             * a shape regardless of positioning inside the chart. Used on pie slices
-             * to make all the slices have the same radial reference point.
-             *
-             * @function Highcharts.SVGElement#setRadialReference
-             *
-             * @param {Array<number>} coordinates
-             * The center reference. The format is `[centerX, centerY, diameter]` in
-             * pixels.
-             *
-             * @return {Highcharts.SVGElement}
-             * Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.setRadialReference = function (coordinates) {
-                var existingGradient = (this.element.gradient &&
-                        this.renderer.gradients[this.element.gradient]);
-                this.element.radialReference = coordinates;
-                // On redrawing objects with an existing gradient, the gradient needs
-                // to be repositioned (#3801)
-                if (existingGradient && existingGradient.radAttr) {
-                    existingGradient.animate(this.renderer.getRadialAttr(coordinates, existingGradient.radAttr));
-                }
-                return this;
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#setTextPath
-             * @param {Highcharts.SVGElement} path
-             * Path to follow.
-             * @param {Highcharts.DataLabelsTextPathOptionsObject} textPathOptions
-             * Options.
-             * @return {Highcharts.SVGElement}
-             * Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.setTextPath = function (path, textPathOptions) {
-                var elem = this.element,
-                    textNode = this.text ? this.text.element : elem,
-                    attribsMap = {
-                        textAnchor: 'text-anchor'
-                    };
-                var adder = false,
-                    textPathElement,
-                    textPathId,
-                    textPathWrapper = this.textPathWrapper,
-                    firstTime = !textPathWrapper;
-                // Defaults
-                textPathOptions = merge(true, {
-                    enabled: true,
-                    attributes: {
-                        dy: -5,
-                        startOffset: '50%',
-                        textAnchor: 'middle'
-                    }
-                }, textPathOptions);
-                var attrs = AST.filterUserAttributes(textPathOptions.attributes);
-                if (path && textPathOptions && textPathOptions.enabled) {
-                    // In case of fixed width for a text, string is rebuilt
-                    // (e.g. ellipsis is applied), so we need to rebuild textPath too
-                    if (textPathWrapper &&
-                        textPathWrapper.element.parentNode === null) {
-                        // When buildText functionality was triggered again
-                        // and deletes textPathWrapper parentNode
-                        firstTime = true;
-                        textPathWrapper = textPathWrapper.destroy();
-                    }
-                    else if (textPathWrapper) {
-                        // Case after drillup when spans were added into
-                        // the DOM outside the textPathWrapper parentGroup
-                        this.removeTextOutline.call(textPathWrapper.parentGroup);
-                    }
-                    // label() has padding, text() doesn't
-                    if (this.options && this.options.padding) {
-                        attrs.dx = -this.options.padding;
-                    }
-                    if (!textPathWrapper) {
-                        // Create <textPath>, defer the DOM adder
-                        this.textPathWrapper = textPathWrapper =
-                            this.renderer.createElement('textPath');
-                        adder = true;
-                    }
-                    textPathElement = textPathWrapper.element;
-                    // Set ID for the path
-                    textPathId = path.element.getAttribute('id');
-                    if (!textPathId) {
-                        path.element.setAttribute('id', textPathId = uniqueKey());
-                    }
-                    // Change DOM structure, by placing <textPath> tag in <text>
-                    if (firstTime) {
-                        // Adjust the position
-                        textNode.setAttribute('y', 0); // Firefox
-                        if (isNumber(attrs.dx)) {
-                            textNode.setAttribute('x', -attrs.dx);
-                        }
-                        // Move all <tspan>'s and text nodes to the <textPath> node. Do
-                        // not move other elements like <title> or <path>
-                        var childNodes = [].slice.call(textNode.childNodes);
-                        for (var i = 0; i < childNodes.length; i++) {
-                            var childNode = childNodes[i];
-                            if (childNode.nodeType === Node.TEXT_NODE ||
-                                childNode.nodeName === 'tspan') {
-                                textPathElement.appendChild(childNode);
-                            }
-                        }
-                    }
-                    // Add <textPath> to the DOM
-                    if (adder && textPathWrapper) {
-                        textPathWrapper.add({ element: textNode });
-                    }
-                    // Set basic options:
-                    // Use `setAttributeNS` because Safari needs this..
-                    textPathElement.setAttributeNS('http://www.w3.org/1999/xlink', 'href', this.renderer.url + '#' + textPathId);
-                    // Presentation attributes:
-                    // dx/dy options must by set on <text> (parent),
-                    // the rest should be set on <textPath>
-                    if (defined(attrs.dy)) {
-                        textPathElement.parentNode
-                            .setAttribute('dy', attrs.dy);
-                        delete attrs.dy;
-                    }
-                    if (defined(attrs.dx)) {
-                        textPathElement.parentNode
-                            .setAttribute('dx', attrs.dx);
-                        delete attrs.dx;
-                    }
-                    // Additional attributes
-                    objectEach(attrs, function (val, key) {
-                        textPathElement.setAttribute(attribsMap[key] || key, val);
-                    });
-                    // Remove translation, text that follows path does not need that
-                    elem.removeAttribute('transform');
-                    // Remove shadows and text outlines
-                    this.removeTextOutline.call(textPathWrapper);
-                    // Remove background and border for label(), see #10545
-                    // Alternatively, we can disable setting background rects in
-                    // series.drawDataLabels()
-                    if (this.text && !this.renderer.styledMode) {
-                        this.attr({
-                            fill: 'none',
-                            'stroke-width': 0
-                        });
-                    }
-                    // Disable some functions
-                    this.updateTransform = noop;
-                    this.applyTextOutline = noop;
-                }
-                else if (textPathWrapper) {
-                    // Reset to prototype
-                    delete this.updateTransform;
-                    delete this.applyTextOutline;
-                    // Restore DOM structure:
-                    this.destroyTextPath(elem, path);
-                    // Bring attributes back
-                    this.updateTransform();
-                    // Set textOutline back for text()
-                    if (this.options && this.options.rotation) {
-                        this.applyTextOutline(this.options.style.textOutline);
-                    }
-                }
-                return this;
-            };
-            /**
-             * Add a shadow to the element. Must be called after the element is added to
-             * the DOM. In styled mode, this method is not used, instead use `defs` and
-             * filters.
-             *
-             * @example
-             * renderer.rect(10, 100, 100, 100)
-             *     .attr({ fill: 'red' })
-             *     .shadow(true);
-             *
-             * @function Highcharts.SVGElement#shadow
-             *
-             * @param {boolean|Highcharts.ShadowOptionsObject} [shadowOptions]
-             *        The shadow options. If `true`, the default options are applied. If
-             *        `false`, the current shadow will be removed.
-             *
-             * @param {Highcharts.SVGElement} [group]
-             *        The SVG group element where the shadows will be applied. The
-             *        default is to add it to the same parent as the current element.
-             *        Internally, this is ised for pie slices, where all the shadows are
-             *        added to an element behind all the slices.
-             *
-             * @param {boolean} [cutOff]
-             *        Used internally for column shadows.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.shadow = function (shadowOptions, group, cutOff) {
-                var shadows = [],
-                    element = this.element,
-                    oldShadowOptions = this.oldShadowOptions,
-                    defaultShadowOptions = {
-                        color: palette.neutralColor100,
-                        offsetX: 1,
-                        offsetY: 1,
-                        opacity: 0.15,
-                        width: 3
-                    };
-                var i,
-                    shadow,
-                    strokeWidth,
-                    shadowElementOpacity,
-                    update = false, 
-                    // compensate for inverted plot area
-                    transform,
-                    options;
-                if (shadowOptions === true) {
-                    options = defaultShadowOptions;
-                }
-                else if (typeof shadowOptions === 'object') {
-                    options = extend(defaultShadowOptions, shadowOptions);
-                }
-                // Update shadow when options change (#12091).
-                if (options) {
-                    // Go over each key to look for change
-                    if (options && oldShadowOptions) {
-                        objectEach(options, function (value, key) {
-                            if (value !== oldShadowOptions[key]) {
-                                update = true;
-                            }
-                        });
-                    }
-                    if (update) {
-                        this.destroyShadows();
-                    }
-                    this.oldShadowOptions = options;
-                }
-                if (!options) {
-                    this.destroyShadows();
-                }
-                else if (!this.shadows) {
-                    shadowElementOpacity = options.opacity / options.width;
-                    transform = this.parentInverted ?
-                        'translate(-1,-1)' :
-                        "translate(" + options.offsetX + ", " + options.offsetY + ")";
-                    for (i = 1; i <= options.width; i++) {
-                        shadow = element.cloneNode(false);
-                        strokeWidth = (options.width * 2) + 1 - (2 * i);
-                        attr(shadow, {
-                            stroke: (shadowOptions.color ||
-                                palette.neutralColor100),
-                            'stroke-opacity': shadowElementOpacity * i,
-                            'stroke-width': strokeWidth,
-                            transform: transform,
-                            fill: 'none'
-                        });
-                        shadow.setAttribute('class', (shadow.getAttribute('class') || '') + ' highcharts-shadow');
-                        if (cutOff) {
-                            attr(shadow, 'height', Math.max(attr(shadow, 'height') - strokeWidth, 0));
-                            shadow.cutHeight = strokeWidth;
-                        }
-                        if (group) {
-                            group.element.appendChild(shadow);
-                        }
-                        else if (element.parentNode) {
-                            element.parentNode.insertBefore(shadow, element);
-                        }
-                        shadows.push(shadow);
-                    }
-                    this.shadows = shadows;
-                }
-                return this;
-            };
-            /**
-             * Show the element after it has been hidden.
-             *
-             * @function Highcharts.SVGElement#show
-             *
-             * @param {boolean} [inherit=false]
-             *        Set the visibility attribute to `inherit` rather than `visible`.
-             *        The difference is that an element with `visibility="visible"`
-             *        will be visible even if the parent is hidden.
-             *
-             * @return {Highcharts.SVGElement}
-             *         Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.show = function (inherit) {
-                return this.attr({ visibility: inherit ? 'inherit' : 'visible' });
-            };
-            /**
-             * WebKit and Batik have problems with a stroke-width of zero, so in this
-             * case we remove the stroke attribute altogether. #1270, #1369, #3065,
-             * #3072.
-             *
-             * @private
-             * @function Highcharts.SVGElement#strokeSetter
-             * @param {number|string} value
-             * @param {string} key
-             * @param {Highcharts.SVGDOMElement} element
-             */
-            SVGElement.prototype.strokeSetter = function (value, key, element) {
-                this[key] = value;
-                // Only apply the stroke attribute if the stroke width is defined and
-                // larger than 0
-                if (this.stroke && this['stroke-width']) {
-                    // Use prototype as instance may be overridden
-                    SVGElement.prototype.fillSetter.call(this, this.stroke, 'stroke', element);
-                    element.setAttribute('stroke-width', this['stroke-width']);
-                    this.hasStroke = true;
-                }
-                else if (key === 'stroke-width' && value === 0 && this.hasStroke) {
-                    element.removeAttribute('stroke');
-                    this.hasStroke = false;
-                }
-                else if (this.renderer.styledMode && this['stroke-width']) {
-                    element.setAttribute('stroke-width', this['stroke-width']);
-                    this.hasStroke = true;
-                }
-            };
-            /**
-             * Get the computed stroke width in pixel values. This is used extensively
-             * when drawing shapes to ensure the shapes are rendered crisp and
-             * positioned correctly relative to each other. Using
-             * `shape-rendering: crispEdges` leaves us less control over positioning,
-             * for example when we want to stack columns next to each other, or position
-             * things pixel-perfectly within the plot box.
-             *
-             * The common pattern when placing a shape is:
-             * - Create the SVGElement and add it to the DOM. In styled mode, it will
-             *   now receive a stroke width from the style sheet. In classic mode we
-             *   will add the `stroke-width` attribute.
-             * - Read the computed `elem.strokeWidth()`.
-             * - Place it based on the stroke width.
-             *
-             * @function Highcharts.SVGElement#strokeWidth
-             *
-             * @return {number}
-             * The stroke width in pixels. Even if the given stroke widtch (in CSS or by
-             * attributes) is based on `em` or other units, the pixel size is returned.
-             */
-            SVGElement.prototype.strokeWidth = function () {
-                // In non-styled mode, read the stroke width as set by .attr
-                if (!this.renderer.styledMode) {
-                    return this['stroke-width'] || 0;
-                }
-                // In styled mode, read computed stroke width
-                var val = this.getStyle('stroke-width');
-                var ret = 0,
-                    dummy;
-                // Read pixel values directly
-                if (val.indexOf('px') === val.length - 2) {
-                    ret = pInt(val);
-                    // Other values like em, pt etc need to be measured
-                }
-                else if (val !== '') {
-                    dummy = doc.createElementNS(SVG_NS, 'rect');
-                    attr(dummy, {
-                        width: val,
-                        'stroke-width': 0
-                    });
-                    this.element.parentNode.appendChild(dummy);
-                    ret = dummy.getBBox().width;
-                    dummy.parentNode.removeChild(dummy);
-                }
-                return ret;
-            };
-            /**
-             * If one of the symbol size affecting parameters are changed,
-             * check all the others only once for each call to an element's
-             * .attr() method
-             *
-             * @private
-             * @function Highcharts.SVGElement#symbolAttr
-             *
-             * @param {Highcharts.SVGAttributes} hash
-             * The attributes to set.
-             */
-            SVGElement.prototype.symbolAttr = function (hash) {
-                var wrapper = this;
-                [
-                    'x',
-                    'y',
-                    'r',
-                    'start',
-                    'end',
-                    'width',
-                    'height',
-                    'innerR',
-                    'anchorX',
-                    'anchorY',
-                    'clockwise'
-                ].forEach(function (key) {
-                    wrapper[key] = pick(hash[key], wrapper[key]);
-                });
-                wrapper.attr({
-                    d: wrapper.renderer.symbols[wrapper.symbolName](wrapper.x, wrapper.y, wrapper.width, wrapper.height, wrapper)
-                });
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#textSetter
-             * @param {string} value
-             */
-            SVGElement.prototype.textSetter = function (value) {
-                if (value !== this.textStr) {
-                    // Delete size caches when the text changes
-                    // delete this.bBox; // old code in series-label
-                    delete this.textPxLength;
-                    this.textStr = value;
-                    if (this.added) {
-                        this.renderer.buildText(this);
-                    }
-                }
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#titleSetter
-             * @param {string} value
-             */
-            SVGElement.prototype.titleSetter = function (value) {
-                var el = this.element;
-                var titleNode = el.getElementsByTagName('title')[0] ||
-                        doc.createElementNS(this.SVG_NS, 'title');
-                // Move to first child
-                if (el.insertBefore) {
-                    el.insertBefore(titleNode, el.firstChild);
-                }
-                else {
-                    el.appendChild(titleNode);
-                }
-                // Replace text content and escape markup
-                titleNode.textContent =
-                    // #3276, #3895
-                    String(pick(value, ''))
-                        .replace(/<[^>]*>/g, '')
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>');
-            };
-            /**
-             * Bring the element to the front. Alternatively, a new zIndex can be set.
-             *
-             * @sample highcharts/members/element-tofront/
-             *         Click an element to bring it to front
-             *
-             * @function Highcharts.SVGElement#toFront
-             *
-             * @return {Highcharts.SVGElement}
-             * Returns the SVGElement for chaining.
-             */
-            SVGElement.prototype.toFront = function () {
-                var element = this.element;
-                element.parentNode.appendChild(element);
-                return this;
-            };
-            /**
-             * Move an object and its children by x and y values.
-             *
-             * @function Highcharts.SVGElement#translate
-             *
-             * @param {number} x
-             *        The x value.
-             *
-             * @param {number} y
-             *        The y value.
-             *
-             * @return {Highcharts.SVGElement}
-             */
-            SVGElement.prototype.translate = function (x, y) {
-                return this.attr({
-                    translateX: x,
-                    translateY: y
-                });
-            };
-            /**
-             * Update the shadow elements with new attributes.
-             *
-             * @private
-             * @function Highcharts.SVGElement#updateShadows
-             *
-             * @param {string} key
-             * The attribute name.
-             *
-             * @param {number} value
-             * The value of the attribute.
-             *
-             * @param {Function} setter
-             * The setter function, inherited from the parent wrapper.
-             */
-            SVGElement.prototype.updateShadows = function (key, value, setter) {
-                var shadows = this.shadows;
-                if (shadows) {
-                    var i = shadows.length;
-                    while (i--) {
-                        setter.call(shadows[i], key === 'height' ?
-                            Math.max(value - (shadows[i].cutHeight || 0), 0) :
-                            key === 'd' ? this.d : value, key, shadows[i]);
-                    }
-                }
-            };
-            /**
-             * Update the transform attribute based on internal properties. Deals with
-             * the custom `translateX`, `translateY`, `rotation`, `scaleX` and `scaleY`
-             * attributes and updates the SVG `transform` attribute.
-             *
-             * @private
-             * @function Highcharts.SVGElement#updateTransform
-             */
-            SVGElement.prototype.updateTransform = function () {
-                var wrapper = this,
-                    scaleX = wrapper.scaleX,
-                    scaleY = wrapper.scaleY,
-                    inverted = wrapper.inverted,
-                    rotation = wrapper.rotation,
-                    matrix = wrapper.matrix,
-                    element = wrapper.element;
-                var translateX = wrapper.translateX || 0,
-                    translateY = wrapper.translateY || 0;
-                // Flipping affects translate as adjustment for flipping around the
-                // group's axis
-                if (inverted) {
-                    translateX += wrapper.width;
-                    translateY += wrapper.height;
-                }
-                // Apply translate. Nearly all transformed elements have translation,
-                // so instead of checking for translate = 0, do it always (#1767,
-                // #1846).
-                var transform = ['translate(' + translateX + ',' + translateY + ')'];
-                // apply matrix
-                if (defined(matrix)) {
-                    transform.push('matrix(' + matrix.join(',') + ')');
-                }
-                // apply rotation
-                if (inverted) {
-                    transform.push('rotate(90) scale(-1,1)');
-                }
-                else if (rotation) { // text rotation
-                    transform.push('rotate(' + rotation + ' ' +
-                        pick(this.rotationOriginX, element.getAttribute('x'), 0) +
-                        ' ' +
-                        pick(this.rotationOriginY, element.getAttribute('y') || 0) + ')');
-                }
-                // apply scale
-                if (defined(scaleX) || defined(scaleY)) {
-                    transform.push('scale(' + pick(scaleX, 1) + ' ' + pick(scaleY, 1) + ')');
-                }
-                if (transform.length) {
-                    element.setAttribute('transform', transform.join(' '));
-                }
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#visibilitySetter
-             *
-             * @param {string} value
-             *
-             * @param {string} key
-             *
-             * @param {Highcharts.SVGDOMElement} element
-             *
-             * @return {void}
-             */
-            SVGElement.prototype.visibilitySetter = function (value, key, element) {
-                // IE9-11 doesn't handle visibilty:inherit well, so we remove the
-                // attribute instead (#2881, #3909)
-                if (value === 'inherit') {
-                    element.removeAttribute(key);
-                }
-                else if (this[key] !== value) { // #6747
-                    element.setAttribute(key, value);
-                }
-                this[key] = value;
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#xGetter
-             *
-             * @param {string} key
-             *
-             * @return {number|string|null}
-             */
-            SVGElement.prototype.xGetter = function (key) {
-                if (this.element.nodeName === 'circle') {
-                    if (key === 'x') {
-                        key = 'cx';
-                    }
-                    else if (key === 'y') {
-                        key = 'cy';
-                    }
-                }
-                return this._defaultGetter(key);
-            };
-            /**
-             * @private
-             * @function Highcharts.SVGElement#zIndexSetter
-             * @param {number} [value]
-             * @param {string} [key]
-             * @return {boolean}
-             */
-            SVGElement.prototype.zIndexSetter = function (value, key) {
-                var renderer = this.renderer,
-                    parentGroup = this.parentGroup,
-                    parentWrapper = parentGroup || renderer,
-                    parentNode = parentWrapper.element || renderer.box,
-                    element = this.element,
-                    svgParent = parentNode === renderer.box;
-                var childNodes,
-                    otherElement,
-                    otherZIndex,
-                    inserted = false,
-                    undefinedOtherZIndex,
-                    run = this.added,
-                    i;
-                if (defined(value)) {
-                    // So we can read it for other elements in the group
-                    element.setAttribute('data-z-index', value);
-                    value = +value;
-                    if (this[key] === value) {
-                        // Only update when needed (#3865)
-                        run = false;
-                    }
-                }
-                else if (defined(this[key])) {
-                    element.removeAttribute('data-z-index');
-                }
-                this[key] = value;
-                // Insert according to this and other elements' zIndex. Before .add() is
-                // called, nothing is done. Then on add, or by later calls to
-                // zIndexSetter, the node is placed on the right place in the DOM.
-                if (run) {
-                    value = this.zIndex;
-                    if (value && parentGroup) {
-                        parentGroup.handleZ = true;
-                    }
-                    childNodes = parentNode.childNodes;
-                    for (i = childNodes.length - 1; i >= 0 && !inserted; i--) {
-                        otherElement = childNodes[i];
-                        otherZIndex = otherElement.getAttribute('data-z-index');
-                        undefinedOtherZIndex = !defined(otherZIndex);
-                        if (otherElement !== element) {
-                            if (
-                            // Negative zIndex versus no zIndex:
-                            // On all levels except the highest. If the parent is
-                            // <svg>, then we don't want to put items before <desc>
-                            // or <defs>
-                            value < 0 &&
-                                undefinedOtherZIndex &&
-                                !svgParent &&
-                                !i) {
-                                parentNode.insertBefore(element, childNodes[i]);
-                                inserted = true;
-                            }
-                            else if (
-                            // Insert after the first element with a lower zIndex
-                            pInt(otherZIndex) <= value ||
-                                // If negative zIndex, add this before first undefined
-                                // zIndex element
-                                (undefinedOtherZIndex &&
-                                    (!defined(value) || value >= 0))) {
-                                parentNode.insertBefore(element, childNodes[i + 1] || null // null for oldIE export
-                                );
-                                inserted = true;
-                            }
-                        }
-                    }
-                    if (!inserted) {
-                        parentNode.insertBefore(element, childNodes[svgParent ? 3 : 0] || null // null for oldIE
-                        );
-                        inserted = true;
-                    }
-                }
-                return inserted;
-            };
-            return SVGElement;
-        }());
-        // Some shared setters and getters
-        SVGElement.prototype['stroke-widthSetter'] = SVGElement.prototype.strokeSetter;
-        SVGElement.prototype.yGetter = SVGElement.prototype.xGetter;
-        SVGElement.prototype.matrixSetter =
-            SVGElement.prototype.rotationOriginXSetter =
-                SVGElement.prototype.rotationOriginYSetter =
-                    SVGElement.prototype.rotationSetter =
-                        SVGElement.prototype.scaleXSetter =
-                            SVGElement.prototype.scaleYSetter =
-                                SVGElement.prototype.translateXSetter =
-                                    SVGElement.prototype.translateYSetter =
-                                        SVGElement.prototype.verticalAlignSetter = function (value, key) {
-                                            this[key] = value;
-                                            this.doTransform = true;
-                                        };
-        /* *
-         *
-         *  API Declarations
-         *
-         * */
-        /**
-         * Reference to the global SVGElement class as a workaround for a name conflict
-         * in the Highcharts namespace.
-         *
-         * @global
-         * @typedef {global.SVGElement} GlobalSVGElement
-         *
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGElement
-         */
-        /**
-         * The horizontal alignment of an element.
-         *
-         * @typedef {"center"|"left"|"right"} Highcharts.AlignValue
-         */
-        /**
-         * Options to align the element relative to the chart or another box.
-         *
-         * @interface Highcharts.AlignObject
-         */ /**
-        * Horizontal alignment. Can be one of `left`, `center` and `right`.
-        *
-        * @name Highcharts.AlignObject#align
-        * @type {Highcharts.AlignValue|undefined}
-        *
-        * @default left
-        */ /**
-        * Vertical alignment. Can be one of `top`, `middle` and `bottom`.
-        *
-        * @name Highcharts.AlignObject#verticalAlign
-        * @type {Highcharts.VerticalAlignValue|undefined}
-        *
-        * @default top
-        */ /**
-        * Horizontal pixel offset from alignment.
-        *
-        * @name Highcharts.AlignObject#x
-        * @type {number|undefined}
-        *
-        * @default 0
-        */ /**
-        * Vertical pixel offset from alignment.
-        *
-        * @name Highcharts.AlignObject#y
-        * @type {number|undefined}
-        *
-        * @default 0
-        */ /**
-        * Use the `transform` attribute with translateX and translateY custom
-        * attributes to align this elements rather than `x` and `y` attributes.
-        *
-        * @name Highcharts.AlignObject#alignByTranslate
-        * @type {boolean|undefined}
-        *
-        * @default false
-        */
-        /**
-         * Bounding box of an element.
-         *
-         * @interface Highcharts.BBoxObject
-         * @extends Highcharts.PositionObject
-         */ /**
-        * Height of the bounding box.
-        *
-        * @name Highcharts.BBoxObject#height
-        * @type {number}
-        */ /**
-        * Width of the bounding box.
-        *
-        * @name Highcharts.BBoxObject#width
-        * @type {number}
-        */ /**
-        * Horizontal position of the bounding box.
-        *
-        * @name Highcharts.BBoxObject#x
-        * @type {number}
-        */ /**
-        * Vertical position of the bounding box.
-        *
-        * @name Highcharts.BBoxObject#y
-        * @type {number}
-        */
-        /**
-         * An object of key-value pairs for SVG attributes. Attributes in Highcharts
-         * elements for the most parts correspond to SVG, but some are specific to
-         * Highcharts, like `zIndex`, `rotation`, `rotationOriginX`,
-         * `rotationOriginY`, `translateX`, `translateY`, `scaleX` and `scaleY`. SVG
-         * attributes containing a hyphen are _not_ camel-cased, they should be
-         * quoted to preserve the hyphen.
-         *
-         * @example
-         * {
-         *     'stroke': '#ff0000', // basic
-         *     'stroke-width': 2, // hyphenated
-         *     'rotation': 45 // custom
-         *     'd': ['M', 10, 10, 'L', 30, 30, 'z'] // path definition, note format
-         * }
-         *
-         * @interface Highcharts.SVGAttributes
-         */ /**
-        * @name Highcharts.SVGAttributes#[key:string]
-        * @type {*}
-        */ /**
-        * @name Highcharts.SVGAttributes#d
-        * @type {string|Highcharts.SVGPathArray|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#fill
-        * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#inverted
-        * @type {boolean|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#matrix
-        * @type {Array<number>|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#rotation
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#rotationOriginX
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#rotationOriginY
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#scaleX
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#scaleY
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#stroke
-        * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#style
-        * @type {string|Highcharts.CSSObject|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#translateX
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#translateY
-        * @type {number|undefined}
-        */ /**
-        * @name Highcharts.SVGAttributes#zIndex
-        * @type {number|undefined}
-        */
-        /**
-         * An SVG DOM element. The type is a reference to the regular SVGElement in the
-         * global scope.
-         *
-         * @typedef {globals.GlobalSVGElement} Highcharts.SVGDOMElement
-         *
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/SVGElement
-         */
-        /**
-         * The vertical alignment of an element.
-         *
-         * @typedef {"bottom"|"middle"|"top"} Highcharts.VerticalAlignValue
-         */
-        ''; // detach doclets above
-
-        return SVGElement;
-    });
-    _registerModule(_modules, 'Core/Renderer/SVG/SVGLabel.js', [_modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Utilities.js']], function (SVGElement, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var __extends = (this && this.__extends) || (function () {
-                var extendStatics = function (d,
-            b) {
-                    extendStatics = Object.setPrototypeOf ||
-                        ({ __proto__: [] } instanceof Array && function (d,
-            b) { d.__proto__ = b; }) ||
-                        function (d,
-            b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-                return extendStatics(d, b);
-            };
-            return function (d, b) {
-                extendStatics(d, b);
-                function __() { this.constructor = d; }
-                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-            };
-        })();
-        var defined = U.defined,
-            extend = U.extend,
-            isNumber = U.isNumber,
-            merge = U.merge,
-            pick = U.pick,
-            removeEvent = U.removeEvent;
-        /* eslint require-jsdoc: 0, no-invalid-this: 0 */
-        function paddingSetter(value, key) {
-            if (!isNumber(value)) {
-                this[key] = void 0;
-            }
-            else if (value !== this[key]) {
-                this[key] = value;
-                this.updateTextPadding();
-            }
-        }
-        /**
-         * SVG label to render text.
-         * @private
-         * @class
-         * @name Highcharts.SVGLabel
-         * @augments Highcharts.SVGElement
-         */
-        var SVGLabel = /** @class */ (function (_super) {
-                __extends(SVGLabel, _super);
-            /* *
-             *
-             *  Constructors
-             *
-             * */
-            function SVGLabel(renderer, str, x, y, shape, anchorX, anchorY, useHTML, baseline, className) {
-                var _this = _super.call(this) || this;
-                _this.paddingSetter = paddingSetter;
-                _this.paddingLeftSetter = paddingSetter;
-                _this.paddingRightSetter = paddingSetter;
-                _this.init(renderer, 'g');
-                _this.textStr = str;
-                _this.x = x;
-                _this.y = y;
-                _this.anchorX = anchorX;
-                _this.anchorY = anchorY;
-                _this.baseline = baseline;
-                _this.className = className;
-                if (className !== 'button') {
-                    _this.addClass('highcharts-label');
-                }
-                if (className) {
-                    _this.addClass('highcharts-' + className);
-                }
-                _this.text = renderer.text('', 0, 0, useHTML).attr({ zIndex: 1 });
-                // Validate the shape argument
-                var hasBGImage;
-                if (typeof shape === 'string') {
-                    hasBGImage = /^url\((.*?)\)$/.test(shape);
-                    if (_this.renderer.symbols[shape] || hasBGImage) {
-                        _this.symbolKey = shape;
-                    }
-                }
-                _this.bBox = SVGLabel.emptyBBox;
-                _this.padding = 3;
-                _this.baselineOffset = 0;
-                _this.needsBox = renderer.styledMode || hasBGImage;
-                _this.deferredAttr = {};
-                _this.alignFactor = 0;
-                return _this;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            SVGLabel.prototype.alignSetter = function (value) {
-                var alignFactor = ({
-                        left: 0,
-                        center: 0.5,
-                        right: 1
-                    })[value];
-                if (alignFactor !== this.alignFactor) {
-                    this.alignFactor = alignFactor;
-                    // Bounding box exists, means we're dynamically changing
-                    if (this.bBox && isNumber(this.xSetting)) {
-                        this.attr({ x: this.xSetting }); // #5134
-                    }
-                }
-            };
-            SVGLabel.prototype.anchorXSetter = function (value, key) {
-                this.anchorX = value;
-                this.boxAttr(key, Math.round(value) - this.getCrispAdjust() - this.xSetting);
-            };
-            SVGLabel.prototype.anchorYSetter = function (value, key) {
-                this.anchorY = value;
-                this.boxAttr(key, value - this.ySetting);
-            };
-            /*
-             * Set a box attribute, or defer it if the box is not yet created
-             */
-            SVGLabel.prototype.boxAttr = function (key, value) {
-                if (this.box) {
-                    this.box.attr(key, value);
-                }
-                else {
-                    this.deferredAttr[key] = value;
-                }
-            };
-            /*
-             * Pick up some properties and apply them to the text instead of the
-             * wrapper.
-             */
-            SVGLabel.prototype.css = function (styles) {
-                if (styles) {
-                    var textStyles_1 = {},
-                        isWidth = void 0,
-                        isFontStyle = void 0;
-                    // Create a copy to avoid altering the original object
-                    // (#537)
-                    styles = merge(styles);
-                    SVGLabel.textProps.forEach(function (prop) {
-                        if (typeof styles[prop] !== 'undefined') {
-                            textStyles_1[prop] = styles[prop];
-                            delete styles[prop];
-                        }
-                    });
-                    this.text.css(textStyles_1);
-                    isWidth = 'width' in textStyles_1;
-                    isFontStyle = 'fontSize' in textStyles_1 ||
-                        'fontWeight' in textStyles_1;
-                    // Update existing text, box (#9400, #12163)
-                    if (isFontStyle) {
-                        this.updateTextPadding();
-                    }
-                    else if (isWidth) {
-                        this.updateBoxSize();
-                    }
-                }
-                return SVGElement.prototype.css.call(this, styles);
-            };
-            /*
-             * Destroy and release memory.
-             */
-            SVGLabel.prototype.destroy = function () {
-                // Added by button implementation
-                removeEvent(this.element, 'mouseenter');
-                removeEvent(this.element, 'mouseleave');
-                if (this.text) {
-                    this.text.destroy();
-                }
-                if (this.box) {
-                    this.box = this.box.destroy();
-                }
-                // Call base implementation to destroy the rest
-                SVGElement.prototype.destroy.call(this);
-                return void 0;
-            };
-            SVGLabel.prototype.fillSetter = function (value, key) {
-                if (value) {
-                    this.needsBox = true;
-                }
-                // for animation getter (#6776)
-                this.fill = value;
-                this.boxAttr(key, value);
-            };
-            /*
-             * Return the bounding box of the box, not the group.
-             */
-            SVGLabel.prototype.getBBox = function () {
-                // If we have a text string and the DOM bBox was 0, it typically means
-                // that the label was first rendered hidden, so we need to update the
-                // bBox (#15246)
-                if (this.textStr && this.bBox.width === 0 && this.bBox.height === 0) {
-                    this.updateBoxSize();
-                }
-                var padding = this.padding;
-                var paddingLeft = pick(this.paddingLeft,
-                    padding);
-                return {
-                    width: this.width,
-                    height: this.height,
-                    x: this.bBox.x - paddingLeft,
-                    y: this.bBox.y - padding
-                };
-            };
-            SVGLabel.prototype.getCrispAdjust = function () {
-                return this.renderer.styledMode && this.box ?
-                    this.box.strokeWidth() % 2 / 2 :
-                    (this['stroke-width'] ? parseInt(this['stroke-width'], 10) : 0) % 2 / 2;
-            };
-            SVGLabel.prototype.heightSetter = function (value) {
-                this.heightSetting = value;
-            };
-            // Event handling. In case of useHTML, we need to make sure that events
-            // are captured on the span as well, and that mouseenter/mouseleave
-            // between the SVG group and the HTML span are not treated as real
-            // enter/leave events. #13310.
-            SVGLabel.prototype.on = function (eventType, handler) {
-                var label = this;
-                var text = label.text;
-                var span = text && text.element.tagName === 'SPAN' ? text : void 0;
-                var selectiveHandler;
-                if (span) {
-                    selectiveHandler = function (e) {
-                        if ((eventType === 'mouseenter' ||
-                            eventType === 'mouseleave') &&
-                            e.relatedTarget instanceof Element &&
-                            (
-                            // #14110
-                            label.element.compareDocumentPosition(e.relatedTarget) & Node.DOCUMENT_POSITION_CONTAINED_BY ||
-                                span.element.compareDocumentPosition(e.relatedTarget) & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
-                            return;
-                        }
-                        handler.call(label.element, e);
-                    };
-                    span.on(eventType, selectiveHandler);
-                }
-                SVGElement.prototype.on.call(label, eventType, selectiveHandler || handler);
-                return label;
-            };
-            /*
-             * After the text element is added, get the desired size of the border
-             * box and add it before the text in the DOM.
-             */
-            SVGLabel.prototype.onAdd = function () {
-                var str = this.textStr;
-                this.text.add(this);
-                this.attr({
-                    // Alignment is available now  (#3295, 0 not rendered if given
-                    // as a value)
-                    text: (defined(str) ? str : ''),
-                    x: this.x,
-                    y: this.y
-                });
-                if (this.box && defined(this.anchorX)) {
-                    this.attr({
-                        anchorX: this.anchorX,
-                        anchorY: this.anchorY
-                    });
-                }
-            };
-            SVGLabel.prototype.rSetter = function (value, key) {
-                this.boxAttr(key, value);
-            };
-            SVGLabel.prototype.shadow = function (b) {
-                if (b && !this.renderer.styledMode) {
-                    this.updateBoxSize();
-                    if (this.box) {
-                        this.box.shadow(b);
-                    }
-                }
-                return this;
-            };
-            SVGLabel.prototype.strokeSetter = function (value, key) {
-                // for animation getter (#6776)
-                this.stroke = value;
-                this.boxAttr(key, value);
-            };
-            SVGLabel.prototype['stroke-widthSetter'] = function (value, key) {
-                if (value) {
-                    this.needsBox = true;
-                }
-                this['stroke-width'] = value;
-                this.boxAttr(key, value);
-            };
-            SVGLabel.prototype['text-alignSetter'] = function (value) {
-                this.textAlign = value;
-            };
-            SVGLabel.prototype.textSetter = function (text) {
-                if (typeof text !== 'undefined') {
-                    // Must use .attr to ensure transforms are done (#10009)
-                    this.text.attr({ text: text });
-                }
-                this.updateTextPadding();
-            };
-            /*
-             * This function runs after the label is added to the DOM (when the bounding
-             * box is available), and after the text of the label is updated to detect
-             * the new bounding box and reflect it in the border box.
-             */
-            SVGLabel.prototype.updateBoxSize = function () {
-                var style = this.text.element.style,
-                    crispAdjust,
-                    attribs = {};
-                var padding = this.padding;
-                // #12165 error when width is null (auto)
-                // #12163 when fontweight: bold, recalculate bBox withot cache
-                // #3295 && 3514 box failure when string equals 0
-                var bBox = this.bBox = ((!isNumber(this.widthSetting) || !isNumber(this.heightSetting) || this.textAlign) &&
-                        defined(this.text.textStr)) ?
-                        this.text.getBBox() : SVGLabel.emptyBBox;
-                this.width = this.getPaddedWidth();
-                this.height = (this.heightSetting || bBox.height || 0) + 2 * padding;
-                // Update the label-scoped y offset. Math.min because of inline
-                // style (#9400)
-                this.baselineOffset = padding + Math.min(this.renderer.fontMetrics(style && style.fontSize, this.text).b, 
-                // When the height is 0, there is no bBox, so go with the font
-                // metrics. Highmaps CSS demos.
-                bBox.height || Infinity);
-                if (this.needsBox) {
-                    // Create the border box if it is not already present
-                    if (!this.box) {
-                        // Symbol definition exists (#5324)
-                        var box = this.box = this.symbolKey ?
-                                this.renderer.symbol(this.symbolKey) :
-                                this.renderer.rect();
-                        box.addClass(// Don't use label className for buttons
-                        (this.className === 'button' ? '' : 'highcharts-label-box') +
-                            (this.className ? ' highcharts-' + this.className + '-box' : ''));
-                        box.add(this);
-                    }
-                    crispAdjust = this.getCrispAdjust();
-                    attribs.x = crispAdjust;
-                    attribs.y = (this.baseline ? -this.baselineOffset : 0) + crispAdjust;
-                    // Apply the box attributes
-                    attribs.width = Math.round(this.width);
-                    attribs.height = Math.round(this.height);
-                    this.box.attr(extend(attribs, this.deferredAttr));
-                    this.deferredAttr = {};
-                }
-            };
-            /*
-             * This function runs after setting text or padding, but only if padding
-             * is changed.
-             */
-            SVGLabel.prototype.updateTextPadding = function () {
-                var text = this.text;
-                this.updateBoxSize();
-                // Determine y based on the baseline
-                var textY = this.baseline ? 0 : this.baselineOffset;
-                var textX = pick(this.paddingLeft,
-                    this.padding);
-                // compensate for alignment
-                if (defined(this.widthSetting) &&
-                    this.bBox &&
-                    (this.textAlign === 'center' || this.textAlign === 'right')) {
-                    textX += { center: 0.5, right: 1 }[this.textAlign] *
-                        (this.widthSetting - this.bBox.width);
-                }
-                // update if anything changed
-                if (textX !== text.x || textY !== text.y) {
-                    text.attr('x', textX);
-                    // #8159 - prevent misplaced data labels in treemap
-                    // (useHTML: true)
-                    if (text.hasBoxWidthChanged) {
-                        this.bBox = text.getBBox(true);
-                    }
-                    if (typeof textY !== 'undefined') {
-                        text.attr('y', textY);
-                    }
-                }
-                // record current values
-                text.x = textX;
-                text.y = textY;
-            };
-            SVGLabel.prototype.widthSetter = function (value) {
-                // width:auto => null
-                this.widthSetting = isNumber(value) ? value : void 0;
-            };
-            SVGLabel.prototype.getPaddedWidth = function () {
-                var padding = this.padding;
-                var paddingLeft = pick(this.paddingLeft,
-                    padding);
-                var paddingRight = pick(this.paddingRight,
-                    padding);
-                return (this.widthSetting || this.bBox.width || 0) + paddingLeft + paddingRight;
-            };
-            SVGLabel.prototype.xSetter = function (value) {
-                this.x = value; // for animation getter
-                if (this.alignFactor) {
-                    value -= this.alignFactor * this.getPaddedWidth();
-                    // Force animation even when setting to the same value (#7898)
-                    this['forceAnimate:x'] = true;
-                }
-                this.xSetting = Math.round(value);
-                this.attr('translateX', this.xSetting);
-            };
-            SVGLabel.prototype.ySetter = function (value) {
-                this.ySetting = this.y = Math.round(value);
-                this.attr('translateY', this.ySetting);
-            };
-            /* *
-             *
-             *  Static Properties
-             *
-             * */
-            SVGLabel.emptyBBox = { width: 0, height: 0, x: 0, y: 0 };
-            /**
-             * For labels, these CSS properties are applied to the `text` node directly.
-             *
-             * @private
-             * @name Highcharts.SVGLabel#textProps
-             * @type {Array<string>}
-             */
-            SVGLabel.textProps = [
-                'color', 'direction', 'fontFamily', 'fontSize', 'fontStyle',
-                'fontWeight', 'lineHeight', 'textAlign', 'textDecoration',
-                'textOutline', 'textOverflow', 'width'
-            ];
-            return SVGLabel;
-        }(SVGElement));
-
-        return SVGLabel;
-    });
-    _registerModule(_modules, 'Core/Renderer/SVG/TextBuilder.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js'], _modules['Core/Renderer/HTML/AST.js']], function (H, U, AST) {
-        /* *
-         *
-         *  (c) 2010-2020 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var doc = H.doc,
-            SVG_NS = H.SVG_NS;
-        var attr = U.attr,
-            erase = U.erase,
-            isString = U.isString,
-            objectEach = U.objectEach,
-            pick = U.pick;
-        /**
-         * SVG Text Builder
-         * @private
-         * @class
-         * @name Highcharts.TextBuilder
-         */
-        var TextBuilder = /** @class */ (function () {
-                function TextBuilder(svgElement) {
-                    var textStyles = svgElement.styles;
-                this.renderer = svgElement.renderer;
-                this.svgElement = svgElement;
-                this.width = svgElement.textWidth;
-                this.textLineHeight = textStyles && textStyles.lineHeight;
-                this.textOutline = textStyles && textStyles.textOutline;
-                this.ellipsis = Boolean(textStyles && textStyles.textOverflow === 'ellipsis');
-                this.noWrap = Boolean(textStyles && textStyles.whiteSpace === 'nowrap');
-                this.fontSize = textStyles && textStyles.fontSize;
-            }
-            /**
-             * Build an SVG representation of the pseudo HTML given in the object's
-             * svgElement.
-             *
-             * @private
-             *
-             * @return {void}.
-             */
-            TextBuilder.prototype.buildSVG = function () {
-                var wrapper = this.svgElement;
-                var textNode = wrapper.element, renderer = wrapper.renderer, textStr = pick(wrapper.textStr, '').toString(), hasMarkup = textStr.indexOf('<') !== -1, childNodes = textNode.childNodes, textCache, i = childNodes.length, tempParent = this.width && !wrapper.added && renderer.box;
-                var regexMatchBreaks = /<br.*?>/g;
-                // The buildText code is quite heavy, so if we're not changing something
-                // that affects the text, skip it (#6113).
-                textCache = [
-                    textStr,
-                    this.ellipsis,
-                    this.noWrap,
-                    this.textLineHeight,
-                    this.textOutline,
-                    this.fontSize,
-                    this.width
-                ].join(',');
-                if (textCache === wrapper.textCache) {
-                    return;
-                }
-                wrapper.textCache = textCache;
-                delete wrapper.actualWidth;
-                // Remove old text
-                while (i--) {
-                    textNode.removeChild(childNodes[i]);
-                }
-                // Simple strings, add text directly and return
-                if (!hasMarkup &&
-                    !this.ellipsis &&
-                    !this.width &&
-                    (textStr.indexOf(' ') === -1 ||
-                        (this.noWrap && !regexMatchBreaks.test(textStr)))) {
-                    textNode.appendChild(doc.createTextNode(this.unescapeEntities(textStr)));
-                    // Complex strings, add more logic
-                }
-                else if (textStr !== '') {
-                    if (tempParent) {
-                        // attach it to the DOM to read offset width
-                        tempParent.appendChild(textNode);
-                    }
-                    // Step 1. Parse the markup safely and directly into a tree
-                    // structure.
-                    var ast = new AST(textStr);
-                    // Step 2. Do as many as we can of the modifications to the tree
-                    // structure before it is added to the DOM
-                    this.modifyTree(ast.nodes);
-                    ast.addToDOM(wrapper.element);
-                    // Step 3. Some modifications can't be done until the structure is
-                    // in the DOM, because we need to read computed metrics.
-                    this.modifyDOM();
-                    // Add title if an ellipsis was added
-                    if (this.ellipsis &&
-                        (textNode.textContent || '').indexOf('\u2026') !== -1) {
-                        wrapper.attr('title', this.unescapeEntities(wrapper.textStr || '', ['&lt;', '&gt;']) // #7179
-                        );
-                    }
-                    if (tempParent) {
-                        tempParent.removeChild(textNode);
-                    }
-                }
-                // Apply the text outline
-                if (isString(this.textOutline) && wrapper.applyTextOutline) {
-                    wrapper.applyTextOutline(this.textOutline);
-                }
-            };
-            /**
-             * Modify the DOM of the generated SVG structure. This function only does
-             * operations that cannot be done until the elements are attached to the
-             * DOM, like doing layout based on rendered metrics of the added elements.
-             *
-             * @private
-             *
-             * @return {void}
-             */
-            TextBuilder.prototype.modifyDOM = function () {
-                var _this = this;
-                var wrapper = this.svgElement;
-                var x = attr(wrapper.element, 'x');
-                // Modify hard line breaks by applying the rendered line height
-                [].forEach.call(wrapper.element.querySelectorAll('tspan.highcharts-br'), function (br) {
-                    if (br.nextSibling && br.previousSibling) { // #5261
-                        attr(br, {
-                            // Since the break is inserted in front of the next
-                            // line, we need to use the next sibling for the line
-                            // height
-                            dy: _this.getLineHeight(br.nextSibling),
-                            x: x
-                        });
-                    }
-                });
-                // Constrain the line width, either by ellipsis or wrapping
-                var width = this.width || 0;
-                if (!width) {
-                    return;
-                }
-                // Insert soft line breaks into each text node
-                var modifyTextNode = function (textNode,
-                    parentElement) {
-                        var text = textNode.textContent || '';
-                    var words = text
-                            .replace(/([^\^])-/g, '$1- ') // Split on hyphens
-                            // .trim()
-                            .split(' '); // #1273
-                        var hasWhiteSpace = !_this.noWrap && (words.length > 1 || wrapper.element.childNodes.length > 1);
-                    var dy = _this.getLineHeight(parentElement);
-                    var lineNo = 0;
-                    var startAt = wrapper.actualWidth;
-                    if (_this.ellipsis) {
-                        if (text) {
-                            _this.truncate(textNode, text, void 0, 0, 
-                            // Target width
-                            Math.max(0, 
-                            // Substract the font face to make room for the
-                            // ellipsis itself
-                            width - parseInt(_this.fontSize || 12, 10)), 
-                            // Build the text to test for
-                            function (text, currentIndex) {
-                                return text.substring(0, currentIndex) + '\u2026';
-                            });
-                        }
-                    }
-                    else if (hasWhiteSpace) {
-                        var lines = [];
-                        // Remove preceding siblings in order to make the text length
-                        // calculation correct in the truncate function
-                        var precedingSiblings = [];
-                        while (parentElement.firstChild &&
-                            parentElement.firstChild !== textNode) {
-                            precedingSiblings.push(parentElement.firstChild);
-                            parentElement.removeChild(parentElement.firstChild);
-                        }
-                        while (words.length) {
-                            // Apply the previous line
-                            if (words.length && !_this.noWrap && lineNo > 0) {
-                                lines.push(textNode.textContent || '');
-                                textNode.textContent = words.join(' ')
-                                    .replace(/- /g, '-');
-                            }
-                            // For each line, truncate the remaining
-                            // words into the line length.
-                            _this.truncate(textNode, void 0, words, lineNo === 0 ? (startAt || 0) : 0, width, 
-                            // Build the text to test for
-                            function (t, currentIndex) {
-                                return words
-                                    .slice(0, currentIndex)
-                                    .join(' ')
-                                    .replace(/- /g, '-');
-                            });
-                            startAt = wrapper.actualWidth;
-                            lineNo++;
-                        }
-                        // Reinsert the preceding child nodes
-                        precedingSiblings.forEach(function (childNode) {
-                            parentElement.insertBefore(childNode, textNode);
-                        });
-                        // Insert the previous lines before the original text node
-                        lines.forEach(function (line) {
-                            // Insert the line
-                            parentElement.insertBefore(doc.createTextNode(line), textNode);
-                            // Insert a break
-                            var br = doc.createElementNS(SVG_NS, 'tspan');
-                            br.textContent = '\u200B'; // zero-width space
-                            attr(br, { dy: dy, x: x });
-                            parentElement.insertBefore(br, textNode);
-                        });
-                    }
-                };
-                // Recurse down the DOM tree and handle line breaks for each text node
-                var modifyChildren = (function (node) {
-                        var childNodes = [].slice.call(node.childNodes);
-                    childNodes.forEach(function (childNode) {
-                        if (childNode.nodeType === Node.TEXT_NODE) {
-                            modifyTextNode(childNode, node);
-                        }
-                        else {
-                            // Reset word-wrap width readings after hard breaks
-                            if (childNode.className.baseVal
-                                .indexOf('highcharts-br') !== -1) {
-                                wrapper.actualWidth = 0;
-                            }
-                            // Recurse down to child node
-                            modifyChildren(childNode);
-                        }
-                    });
-                });
-                modifyChildren(wrapper.element);
-            };
-            /**
-             * Get the rendered line height of a <text>, <tspan> or pure text node.
-             *
-             * @param {DOMElementType|Text} node The node to check for
-             *
-             * @return {number} The rendered line height
-             */
-            TextBuilder.prototype.getLineHeight = function (node) {
-                var fontSizeStyle;
-                // If the node is a text node, use its parent
-                var element = node.nodeType === Node.TEXT_NODE ?
-                        node.parentElement :
-                        node;
-                if (!this.renderer.styledMode) {
-                    fontSizeStyle =
-                        element && /(px|em)$/.test(element.style.fontSize) ?
-                            element.style.fontSize :
-                            (this.fontSize || this.renderer.style.fontSize || 12);
-                }
-                return this.textLineHeight ?
-                    parseInt(this.textLineHeight.toString(), 10) :
-                    this.renderer.fontMetrics(fontSizeStyle, element || this.svgElement.element).h;
-            };
-            /**
-             * Transform a pseudo HTML AST node tree into an SVG structure. We do as
-             * much heavy lifting as we can here, before doing the final processing in
-             * the modifyDOM function. The original data is mutated.
-             *
-             * @private
-             *
-             * @param {ASTNode[]} nodes The AST nodes
-             *
-             * @return {void}
-             */
-            TextBuilder.prototype.modifyTree = function (nodes) {
-                var _this = this;
-                var modifyChild = function (node,
-                    i) {
-                        var tagName = node.tagName;
-                    var styledMode = _this.renderer.styledMode;
-                    var attributes = node.attributes || {};
-                    // Apply styling to text tags
-                    if (tagName === 'b' || tagName === 'strong') {
-                        if (styledMode) {
-                            attributes['class'] = 'highcharts-strong'; // eslint-disable-line dot-notation
-                        }
-                        else {
-                            attributes.style = 'font-weight:bold;' + (attributes.style || '');
-                        }
-                    }
-                    else if (tagName === 'i' || tagName === 'em') {
-                        if (styledMode) {
-                            attributes['class'] = 'highcharts-emphasized'; // eslint-disable-line dot-notation
-                        }
-                        else {
-                            attributes.style = 'font-style:italic;' + (attributes.style || '');
-                        }
-                    }
-                    // Modify attributes
-                    if (isString(attributes.style)) {
-                        attributes.style = attributes.style.replace(/(;| |^)color([ :])/, '$1fill$2');
-                    }
-                    if (tagName === 'br') {
-                        attributes['class'] = 'highcharts-br'; // eslint-disable-line dot-notation
-                        node.textContent = '\u200B'; // zero-width space
-                        // Trim whitespace off the beginning of new lines
-                        var nextNode = nodes[i + 1];
-                        if (nextNode && nextNode.textContent) {
-                            nextNode.textContent =
-                                nextNode.textContent.replace(/^ +/gm, '');
-                        }
-                    }
-                    if (tagName !== '#text' && tagName !== 'a') {
-                        node.tagName = 'tspan';
-                    }
-                    node.attributes = attributes;
-                    // Recurse
-                    if (node.children) {
-                        node.children
-                            .filter(function (c) { return c.tagName !== '#text'; })
-                            .forEach(modifyChild);
-                    }
-                };
-                nodes.forEach(modifyChild);
-                // Remove empty spans from the beginning because SVG's getBBox doesn't
-                // count empty lines. The use case is tooltip where the header is empty.
-                while (nodes[0]) {
-                    if (nodes[0].tagName === 'tspan' && !nodes[0].children) {
-                        nodes.splice(0, 1);
-                    }
-                    else {
-                        break;
-                    }
-                }
-            };
-            /*
-             * Truncate the text node contents to a given length. Used when the css
-             * width is set. If the `textOverflow` is `ellipsis`, the text is truncated
-             * character by character to the given length. If not, the text is
-             * word-wrapped line by line.
-             */
-            TextBuilder.prototype.truncate = function (textNode, text, words, startAt, width, getString) {
-                var svgElement = this.svgElement;
-                var renderer = svgElement.renderer,
-                    rotation = svgElement.rotation;
-                // Cache the lengths to avoid checking the same twice
-                var lengths = [];
-                // Word wrap can not be truncated to shorter than one word, ellipsis
-                // text can be completely blank.
-                var minIndex = words ? 1 : 0;
-                var maxIndex = (text || words || '').length;
-                var currentIndex = maxIndex;
-                var str;
-                var actualWidth;
-                var getSubStringLength = function (charEnd,
-                    concatenatedEnd) {
-                        // charEnd is used when finding the character-by-character
-                        // break for ellipsis, concatenatedEnd is used for word-by-word
-                        // break for word wrapping.
-                        var end = concatenatedEnd || charEnd;
-                    var parentNode = textNode.parentNode;
-                    if (parentNode && typeof lengths[end] === 'undefined') {
-                        // Modern browsers
-                        if (parentNode.getSubStringLength) {
-                            // Fails with DOM exception on unit-tests/legend/members
-                            // of unknown reason. Desired width is 0, text content
-                            // is "5" and end is 1.
-                            try {
-                                lengths[end] = startAt +
-                                    parentNode.getSubStringLength(0, words ? end + 1 : end);
-                            }
-                            catch (e) {
-                                '';
-                            }
-                            // Legacy
-                        }
-                        else if (renderer.getSpanWidth) { // #9058 jsdom
-                            textNode.textContent = getString(text || words, charEnd);
-                            lengths[end] = startAt +
-                                renderer.getSpanWidth(svgElement, textNode);
-                        }
-                    }
-                    return lengths[end];
-                };
-                svgElement.rotation = 0; // discard rotation when computing box
-                actualWidth = getSubStringLength(textNode.textContent.length);
-                if (startAt + actualWidth > width) {
-                    // Do a binary search for the index where to truncate the text
-                    while (minIndex <= maxIndex) {
-                        currentIndex = Math.ceil((minIndex + maxIndex) / 2);
-                        // When checking words for word-wrap, we need to build the
-                        // string and measure the subStringLength at the concatenated
-                        // word length.
-                        if (words) {
-                            str = getString(words, currentIndex);
-                        }
-                        actualWidth = getSubStringLength(currentIndex, str && str.length - 1);
-                        if (minIndex === maxIndex) {
-                            // Complete
-                            minIndex = maxIndex + 1;
-                        }
-                        else if (actualWidth > width) {
-                            // Too large. Set max index to current.
-                            maxIndex = currentIndex - 1;
-                        }
-                        else {
-                            // Within width. Set min index to current.
-                            minIndex = currentIndex;
-                        }
-                    }
-                    // If max index was 0 it means the shortest possible text was also
-                    // too large. For ellipsis that means only the ellipsis, while for
-                    // word wrap it means the whole first word.
-                    if (maxIndex === 0) {
-                        // Remove ellipsis
-                        textNode.textContent = '';
-                        // If the new text length is one less than the original, we don't
-                        // need the ellipsis
-                    }
-                    else if (!(text && maxIndex === text.length - 1)) {
-                        textNode.textContent = str || getString(text || words, currentIndex);
-                    }
-                }
-                // When doing line wrapping, prepare for the next line by removing the
-                // items from this line.
-                if (words) {
-                    words.splice(0, currentIndex);
-                }
-                svgElement.actualWidth = actualWidth;
-                svgElement.rotation = rotation; // Apply rotation again.
-            };
-            /*
-             * Un-escape HTML entities based on the public `renderer.escapes` list
-             *
-             * @private
-             *
-             * @param {string} inputStr The string to unescape
-             * @param {Array<string>} [except] Exceptions
-             *
-             * @return {string} The processed string
-             */
-            TextBuilder.prototype.unescapeEntities = function (inputStr, except) {
-                objectEach(this.renderer.escapes, function (value, key) {
-                    if (!except || except.indexOf(value) === -1) {
-                        inputStr = inputStr.toString().replace(new RegExp(value, 'g'), key);
-                    }
-                });
-                return inputStr;
-            };
-            return TextBuilder;
-        }());
-
-        return TextBuilder;
-    });
-    _registerModule(_modules, 'Core/Renderer/SVG/SVGRenderer.js', [_modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Renderer/SVG/SVGLabel.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/Renderer/SVG/TextBuilder.js'], _modules['Core/Utilities.js']], function (Color, H, palette, SVGElement, SVGLabel, AST, TextBuilder, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var addEvent = U.addEvent,
-            attr = U.attr,
-            createElement = U.createElement,
-            css = U.css,
-            defined = U.defined,
-            destroyObjectProperties = U.destroyObjectProperties,
-            extend = U.extend,
-            isArray = U.isArray,
-            isNumber = U.isNumber,
-            isObject = U.isObject,
-            isString = U.isString,
-            merge = U.merge,
-            pick = U.pick,
-            pInt = U.pInt,
-            uniqueKey = U.uniqueKey;
-        /**
-         * A clipping rectangle that can be applied to one or more {@link SVGElement}
-         * instances. It is instanciated with the {@link SVGRenderer#clipRect} function
-         * and applied with the {@link SVGElement#clip} function.
-         *
-         * @example
-         * let circle = renderer.circle(100, 100, 100)
-         *     .attr({ fill: 'red' })
-         *     .add();
-         * let clipRect = renderer.clipRect(100, 100, 100, 100);
-         *
-         * // Leave only the lower right quarter visible
-         * circle.clip(clipRect);
-         *
-         * @typedef {Highcharts.SVGElement} Highcharts.ClipRectElement
-         */
-        /**
-         * The font metrics.
-         *
-         * @interface Highcharts.FontMetricsObject
-         */ /**
-        * The baseline relative to the top of the box.
-        *
-        * @name Highcharts.FontMetricsObject#b
-        * @type {number}
-        */ /**
-        * The font size.
-        *
-        * @name Highcharts.FontMetricsObject#f
-        * @type {number}
-        */ /**
-        * The line height.
-        *
-        * @name Highcharts.FontMetricsObject#h
-        * @type {number}
-        */
-        /**
-         * An object containing `x` and `y` properties for the position of an element.
-         *
-         * @interface Highcharts.PositionObject
-         */ /**
-        * X position of the element.
-        * @name Highcharts.PositionObject#x
-        * @type {number}
-        */ /**
-        * Y position of the element.
-        * @name Highcharts.PositionObject#y
-        * @type {number}
-        */
-        /**
-         * A rectangle.
-         *
-         * @interface Highcharts.RectangleObject
-         */ /**
-        * Height of the rectangle.
-        * @name Highcharts.RectangleObject#height
-        * @type {number}
-        */ /**
-        * Width of the rectangle.
-        * @name Highcharts.RectangleObject#width
-        * @type {number}
-        */ /**
-        * Horizontal position of the rectangle.
-        * @name Highcharts.RectangleObject#x
-        * @type {number}
-        */ /**
-        * Vertical position of the rectangle.
-        * @name Highcharts.RectangleObject#y
-        * @type {number}
-        */
-        /**
-         * The shadow options.
-         *
-         * @interface Highcharts.ShadowOptionsObject
-         */ /**
-        * The shadow color.
-        * @name    Highcharts.ShadowOptionsObject#color
-        * @type    {Highcharts.ColorString|undefined}
-        * @default ${palette.neutralColor100}
-        */ /**
-        * The horizontal offset from the element.
-        *
-        * @name    Highcharts.ShadowOptionsObject#offsetX
-        * @type    {number|undefined}
-        * @default 1
-        */ /**
-        * The vertical offset from the element.
-        * @name    Highcharts.ShadowOptionsObject#offsetY
-        * @type    {number|undefined}
-        * @default 1
-        */ /**
-        * The shadow opacity.
-        *
-        * @name    Highcharts.ShadowOptionsObject#opacity
-        * @type    {number|undefined}
-        * @default 0.15
-        */ /**
-        * The shadow width or distance from the element.
-        * @name    Highcharts.ShadowOptionsObject#width
-        * @type    {number|undefined}
-        * @default 3
-        */
-        /**
-         * @interface Highcharts.SizeObject
-         */ /**
-        * @name Highcharts.SizeObject#height
-        * @type {number}
-        */ /**
-        * @name Highcharts.SizeObject#width
-        * @type {number}
-        */
-        /**
-         * Array of path commands, that will go into the `d` attribute of an SVG
-         * element.
-         *
-         * @typedef {Array<(Array<Highcharts.SVGPathCommand>|Array<Highcharts.SVGPathCommand,number>|Array<Highcharts.SVGPathCommand,number,number>|Array<Highcharts.SVGPathCommand,number,number,number,number>|Array<Highcharts.SVGPathCommand,number,number,number,number,number,number>|Array<Highcharts.SVGPathCommand,number,number,number,number,number,number,number>)>} Highcharts.SVGPathArray
-         */
-        /**
-         * Possible path commands in an SVG path array. Valid values are `A`, `C`, `H`,
-         * `L`, `M`, `Q`, `S`, `T`, `V`, `Z`.
-         *
-         * @typedef {string} Highcharts.SVGPathCommand
-         * @validvalue ["a","c","h","l","m","q","s","t","v","z","A","C","H","L","M","Q","S","T","V","Z"]
-         */
-        /**
-         * An extendable collection of functions for defining symbol paths. Symbols are
-         * used internally for point markers, button and label borders and backgrounds,
-         * or custom shapes. Extendable by adding to {@link SVGRenderer#symbols}.
-         *
-         * @interface Highcharts.SymbolDictionary
-         */ /**
-        * @name Highcharts.SymbolDictionary#[key:string]
-        * @type {Function|undefined}
-        */ /**
-        * @name Highcharts.SymbolDictionary#arc
-        * @type {Function|undefined}
-        */ /**
-        * @name Highcharts.SymbolDictionary#callout
-        * @type {Function|undefined}
-        */ /**
-        * @name Highcharts.SymbolDictionary#circle
-        * @type {Function|undefined}
-        */ /**
-        * @name Highcharts.SymbolDictionary#diamond
-        * @type {Function|undefined}
-        */ /**
-        * @name Highcharts.SymbolDictionary#square
-        * @type {Function|undefined}
-        */ /**
-        * @name Highcharts.SymbolDictionary#triangle
-        * @type {Function|undefined}
-        */
-        /**
-         * Can be one of `arc`, `callout`, `circle`, `diamond`, `square`, `triangle`,
-         * and `triangle-down`. Symbols are used internally for point markers, button
-         * and label borders and backgrounds, or custom shapes. Extendable by adding to
-         * {@link SVGRenderer#symbols}.
-         *
-         * @typedef {"arc"|"callout"|"circle"|"diamond"|"square"|"triangle"|"triangle-down"} Highcharts.SymbolKeyValue
-         */
-        /**
-         * Additional options, depending on the actual symbol drawn.
-         *
-         * @interface Highcharts.SymbolOptionsObject
-         */ /**
-        * The anchor X position for the `callout` symbol. This is where the chevron
-        * points to.
-        *
-        * @name Highcharts.SymbolOptionsObject#anchorX
-        * @type {number|undefined}
-        */ /**
-        * The anchor Y position for the `callout` symbol. This is where the chevron
-        * points to.
-        *
-        * @name Highcharts.SymbolOptionsObject#anchorY
-        * @type {number|undefined}
-        */ /**
-        * The end angle of an `arc` symbol.
-        *
-        * @name Highcharts.SymbolOptionsObject#end
-        * @type {number|undefined}
-        */ /**
-        * Whether to draw `arc` symbol open or closed.
-        *
-        * @name Highcharts.SymbolOptionsObject#open
-        * @type {boolean|undefined}
-        */ /**
-        * The radius of an `arc` symbol, or the border radius for the `callout` symbol.
-        *
-        * @name Highcharts.SymbolOptionsObject#r
-        * @type {number|undefined}
-        */ /**
-        * The start angle of an `arc` symbol.
-        *
-        * @name Highcharts.SymbolOptionsObject#start
-        * @type {number|undefined}
-        */
-        /* eslint-disable no-invalid-this, valid-jsdoc */
-        var charts = H.charts,
-            deg2rad = H.deg2rad,
-            doc = H.doc,
-            isFirefox = H.isFirefox,
-            isMS = H.isMS,
-            isWebKit = H.isWebKit,
-            noop = H.noop,
-            SVG_NS = H.SVG_NS,
-            symbolSizes = H.symbolSizes,
-            win = H.win,
-            hasInternalReferenceBug;
-        /**
-         * Allows direct access to the Highcharts rendering layer in order to draw
-         * primitive shapes like circles, rectangles, paths or text directly on a chart,
-         * or independent from any chart. The SVGRenderer represents a wrapper object
-         * for SVG in modern browsers. Through the VMLRenderer, part of the `oldie.js`
-         * module, it also brings vector graphics to IE <= 8.
-         *
-         * An existing chart's renderer can be accessed through {@link Chart.renderer}.
-         * The renderer can also be used completely decoupled from a chart.
-         *
-         * @sample highcharts/members/renderer-on-chart
-         *         Annotating a chart programmatically.
-         * @sample highcharts/members/renderer-basic
-         *         Independent SVG drawing.
-         *
-         * @example
-         * // Use directly without a chart object.
-         * let renderer = new Highcharts.Renderer(parentNode, 600, 400);
-         *
-         * @class
-         * @name Highcharts.SVGRenderer
-         *
-         * @param {Highcharts.HTMLDOMElement} container
-         *        Where to put the SVG in the web page.
-         *
-         * @param {number} width
-         *        The width of the SVG.
-         *
-         * @param {number} height
-         *        The height of the SVG.
-         *
-         * @param {Highcharts.CSSObject} [style]
-         *        The box style, if not in styleMode
-         *
-         * @param {boolean} [forExport=false]
-         *        Whether the rendered content is intended for export.
-         *
-         * @param {boolean} [allowHTML=true]
-         *        Whether the renderer is allowed to include HTML text, which will be
-         *        projected on top of the SVG.
-         *
-         * @param {boolean} [styledMode=false]
-         *        Whether the renderer belongs to a chart that is in styled mode.
-         *        If it does, it will avoid setting presentational attributes in
-         *        some cases, but not when set explicitly through `.attr` and `.css`
-         *        etc.
-         */
-        var SVGRenderer = /** @class */ (function () {
-                /* *
-                 *
-                 *  Constructors
-                 *
-                 * */
-                function SVGRenderer(container, width, height, style, forExport, allowHTML, styledMode) {
-                    /* *
-                     *
-                     *  Properties
-                     *
-                     * */
-                    this.alignedObjects = void 0;
-                /**
-                 * The root `svg` node of the renderer.
-                 *
-                 * @name Highcharts.SVGRenderer#box
-                 * @type {Highcharts.SVGDOMElement}
-                 */
-                this.box = void 0;
-                /**
-                 * The wrapper for the root `svg` node of the renderer.
-                 *
-                 * @name Highcharts.SVGRenderer#boxWrapper
-                 * @type {Highcharts.SVGElement}
-                 */
-                this.boxWrapper = void 0;
-                this.cache = void 0;
-                this.cacheKeys = void 0;
-                this.chartIndex = void 0;
-                /**
-                 * A pointer to the `defs` node of the root SVG.
-                 *
-                 * @name Highcharts.SVGRenderer#defs
-                 * @type {Highcharts.SVGElement}
-                 */
-                this.defs = void 0;
-                this.globalAnimation = void 0;
-                this.gradients = void 0;
-                this.height = void 0;
-                this.imgCount = void 0;
-                this.isSVG = void 0;
-                this.style = void 0;
-                /**
-                 * Page url used for internal references.
-                 *
-                 * @private
-                 * @name Highcharts.SVGRenderer#url
-                 * @type {string}
-                 */
-                this.url = void 0;
-                this.width = void 0;
-                this.init(container, width, height, style, forExport, allowHTML, styledMode);
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Initialize the SVGRenderer. Overridable initializer function that takes
-             * the same parameters as the constructor.
-             *
-             * @function Highcharts.SVGRenderer#init
-             *
-             * @param {Highcharts.HTMLDOMElement} container
-             * Where to put the SVG in the web page.
-             *
-             * @param {number} width
-             * The width of the SVG.
-             *
-             * @param {number} height
-             * The height of the SVG.
-             *
-             * @param {Highcharts.CSSObject} [style]
-             * The box style, if not in styleMode
-             *
-             * @param {boolean} [forExport=false]
-             * Whether the rendered content is intended for export.
-             *
-             * @param {boolean} [allowHTML=true]
-             * Whether the renderer is allowed to include HTML text, which will be
-             * projected on top of the SVG.
-             *
-             * @param {boolean} [styledMode=false]
-             * Whether the renderer belongs to a chart that is in styled mode. If it
-             * does, it will avoid setting presentational attributes in some cases, but
-             * not when set explicitly through `.attr` and `.css` etc.
-             */
-            SVGRenderer.prototype.init = function (container, width, height, style, forExport, allowHTML, styledMode) {
-                var renderer = this,
-                    boxWrapper,
-                    element,
-                    desc;
-                boxWrapper = renderer.createElement('svg')
-                    .attr({
-                    version: '1.1',
-                    'class': 'highcharts-root'
-                });
-                if (!styledMode) {
-                    boxWrapper.css(this.getStyle(style));
-                }
-                element = boxWrapper.element;
-                container.appendChild(element);
-                // Always use ltr on the container, otherwise text-anchor will be
-                // flipped and text appear outside labels, buttons, tooltip etc (#3482)
-                attr(container, 'dir', 'ltr');
-                // For browsers other than IE, add the namespace attribute (#1978)
-                if (container.innerHTML.indexOf('xmlns') === -1) {
-                    attr(element, 'xmlns', this.SVG_NS);
-                }
-                // object properties
-                renderer.isSVG = true;
-                this.box = element;
-                this.boxWrapper = boxWrapper;
-                renderer.alignedObjects = [];
-                this.url = this.getReferenceURL();
-                // Add description
-                desc = this.createElement('desc').add();
-                desc.element.appendChild(doc.createTextNode('Created with Highcharts 9.1.0'));
-                renderer.defs = this.createElement('defs').add();
-                renderer.allowHTML = allowHTML;
-                renderer.forExport = forExport;
-                renderer.styledMode = styledMode;
-                renderer.gradients = {}; // Object where gradient SvgElements are stored
-                renderer.cache = {}; // Cache for numerical bounding boxes
-                renderer.cacheKeys = [];
-                renderer.imgCount = 0;
-                renderer.setSize(width, height, false);
-                // Issue 110 workaround:
-                // In Firefox, if a div is positioned by percentage, its pixel position
-                // may land between pixels. The container itself doesn't display this,
-                // but an SVG element inside this container will be drawn at subpixel
-                // precision. In order to draw sharp lines, this must be compensated
-                // for. This doesn't seem to work inside iframes though (like in
-                // jsFiddle).
-                var subPixelFix,
-                    rect;
-                if (isFirefox && container.getBoundingClientRect) {
-                    subPixelFix = function () {
-                        css(container, { left: 0, top: 0 });
-                        rect = container.getBoundingClientRect();
-                        css(container, {
-                            left: (Math.ceil(rect.left) - rect.left) + 'px',
-                            top: (Math.ceil(rect.top) - rect.top) + 'px'
-                        });
-                    };
-                    // run the fix now
-                    subPixelFix();
-                    // run it on resize
-                    renderer.unSubPixelFix = addEvent(win, 'resize', subPixelFix);
-                }
-            };
-            /**
-             * General method for adding a definition to the SVG `defs` tag. Can be used
-             * for gradients, fills, filters etc. Styled mode only. A hook for adding
-             * general definitions to the SVG's defs tag. Definitions can be referenced
-             * from the CSS by its `id`. Read more in
-             * [gradients, shadows and patterns](https://www.highcharts.com/docs/chart-design-and-style/gradients-shadows-and-patterns).
-             * Styled mode only.
-             *
-             * @function Highcharts.SVGRenderer#definition
-             *
-             * @param {Highcharts.ASTNode} def
-             * A serialized form of an SVG definition, including children.
-             *
-             * @return {Highcharts.SVGElement}
-             * The inserted node.
-             */
-            SVGRenderer.prototype.definition = function (def) {
-                var ast = new AST([def]);
-                return ast.addToDOM(this.defs.element);
-            };
-            /**
-             * Get the prefix needed for internal URL references to work in certain
-             * cases. Some older browser versions had a bug where internal url
-             * references in SVG attributes, on the form `url(#some-id)`, would fail if
-             * a base tag was present in the page. There were also issues with
-             * `history.pushState` related to this prefix.
-             *
-             * Related issues: #24, #672, #1070, #5244.
-             *
-             * The affected browsers are:
-             * - Chrome <= 53 (May 2018)
-             * - Firefox <= 51 (January 2017)
-             * - Safari/Mac <= 12.1 (2018 or 2019)
-             * - Safari/iOS <= 13
-             *
-             * @todo Remove this hack when time has passed. All the affected browsers
-             * are evergreens, so it is increasingly unlikely that users are affected by
-             * the bug.
-             *
-             * @return {string}
-             * The prefix to use. An empty string for modern browsers.
-             */
-            SVGRenderer.prototype.getReferenceURL = function () {
-                if ((isFirefox || isWebKit) &&
-                    doc.getElementsByTagName('base').length) {
-                    // Detect if a clip path is taking effect by performing a hit test
-                    // outside the clipped area. If the hit element is the rectangle
-                    // that was supposed to be clipped, the bug is present. This only
-                    // has to be performed once per page load, so we store the result
-                    // locally in the module.
-                    if (!defined(hasInternalReferenceBug)) {
-                        var id = uniqueKey();
-                        var ast = new AST([{
-                                    tagName: 'svg',
-                                    attributes: {
-                                        width: 8,
-                                        height: 8
-                                    },
-                                    children: [{
-                                            tagName: 'defs',
-                                            children: [{
-                                                    tagName: 'clipPath',
-                                                    attributes: {
-                                                        id: id
-                                                    },
-                                                    children: [{
-                                                            tagName: 'rect',
-                                                            attributes: {
-                                                                width: 4,
-                                                                height: 4
-                                                            }
-                                                        }]
-                                                }]
-                                        }, {
-                                            tagName: 'rect',
-                                            attributes: {
-                                                id: 'hitme',
-                                                width: 8,
-                                                height: 8,
-                                                'clip-path': "url(#" + id + ")",
-                                                fill: 'rgba(0,0,0,0.001)'
-                                            }
-                                        }]
-                                }]);
-                        var svg = ast.addToDOM(doc.body);
-                        css(svg, {
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            zIndex: 9e5
-                        });
-                        var hitElement = doc.elementFromPoint(6, 6);
-                        hasInternalReferenceBug =
-                            (hitElement && hitElement.id) === 'hitme';
-                        doc.body.removeChild(svg);
-                    }
-                    if (hasInternalReferenceBug) {
-                        return win.location.href
-                            .split('#')[0] // remove the hash
-                            .replace(/<[^>]*>/g, '') // wing cut HTML
-                            // escape parantheses and quotes
-                            .replace(/([\('\)])/g, '\\$1')
-                            // replace spaces (needed for Safari only)
-                            .replace(/ /g, '%20');
-                    }
-                }
-                return '';
-            };
-            /**
-             * Get the global style setting for the renderer.
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#getStyle
-             *
-             * @param {Highcharts.CSSObject} style
-             * Style settings.
-             *
-             * @return {Highcharts.CSSObject}
-             * The style settings mixed with defaults.
-             */
-            SVGRenderer.prototype.getStyle = function (style) {
-                this.style = extend({
-                    fontFamily: '"Lucida Grande", "Lucida Sans Unicode", ' +
-                        'Arial, Helvetica, sans-serif',
-                    fontSize: '12px'
-                }, style);
-                return this.style;
-            };
-            /**
-             * Apply the global style on the renderer, mixed with the default styles.
-             *
-             * @function Highcharts.SVGRenderer#setStyle
-             *
-             * @param {Highcharts.CSSObject} style
-             * CSS to apply.
-             */
-            SVGRenderer.prototype.setStyle = function (style) {
-                this.boxWrapper.css(this.getStyle(style));
-            };
-            /**
-             * Detect whether the renderer is hidden. This happens when one of the
-             * parent elements has `display: none`. Used internally to detect when we
-             * needto render preliminarily in another div to get the text bounding boxes
-             * right.
-             *
-             * @function Highcharts.SVGRenderer#isHidden
-             *
-             * @return {boolean}
-             * True if it is hidden.
-             */
-            SVGRenderer.prototype.isHidden = function () {
-                return !this.boxWrapper.getBBox().width;
-            };
-            /**
-             * Destroys the renderer and its allocated members.
-             *
-             * @function Highcharts.SVGRenderer#destroy
-             *
-             * @return {null}
-             */
-            SVGRenderer.prototype.destroy = function () {
-                var renderer = this,
-                    rendererDefs = renderer.defs;
-                renderer.box = null;
-                renderer.boxWrapper = renderer.boxWrapper.destroy();
-                // Call destroy on all gradient elements
-                destroyObjectProperties(renderer.gradients || {});
-                renderer.gradients = null;
-                // Defs are null in VMLRenderer
-                // Otherwise, destroy them here.
-                if (rendererDefs) {
-                    renderer.defs = rendererDefs.destroy();
-                }
-                // Remove sub pixel fix handler (#982)
-                if (renderer.unSubPixelFix) {
-                    renderer.unSubPixelFix();
-                }
-                renderer.alignedObjects = null;
-                return null;
-            };
-            /**
-             * Create a wrapper for an SVG element. Serves as a factory for
-             * {@link SVGElement}, but this function is itself mostly called from
-             * primitive factories like {@link SVGRenderer#path}, {@link
-             * SVGRenderer#rect} or {@link SVGRenderer#text}.
-             *
-             * @function Highcharts.SVGRenderer#createElement
-             *
-             * @param {string} nodeName
-             * The node name, for example `rect`, `g` etc.
-             *
-             * @return {Highcharts.SVGElement}
-             * The generated SVGElement.
-             */
-            SVGRenderer.prototype.createElement = function (nodeName) {
-                var wrapper = new this.Element();
-                wrapper.init(this, nodeName);
-                return wrapper;
-            };
-            /**
-             * Get converted radial gradient attributes according to the radial
-             * reference. Used internally from the {@link SVGElement#colorGradient}
-             * function.
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#getRadialAttr
-             */
-            SVGRenderer.prototype.getRadialAttr = function (radialReference, gradAttr) {
-                return {
-                    cx: (radialReference[0] - radialReference[2] / 2) +
-                        (gradAttr.cx || 0) * radialReference[2],
-                    cy: (radialReference[1] - radialReference[2] / 2) +
-                        (gradAttr.cy || 0) * radialReference[2],
-                    r: (gradAttr.r || 0) * radialReference[2]
-                };
-            };
-            /**
-             * Parse a simple HTML string into SVG tspans. Called internally when text
-             * is set on an SVGElement. The function supports a subset of HTML tags, CSS
-             * text features like `width`, `text-overflow`, `white-space`, and also
-             * attributes like `href` and `style`.
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#buildText
-             *
-             * @param {Highcharts.SVGElement} wrapper
-             * The parent SVGElement.
-             */
-            SVGRenderer.prototype.buildText = function (wrapper) {
-                new TextBuilder(wrapper).buildSVG();
-            };
-            /**
-             * Returns white for dark colors and black for bright colors.
-             *
-             * @function Highcharts.SVGRenderer#getContrast
-             *
-             * @param {Highcharts.ColorString} rgba
-             * The color to get the contrast for.
-             *
-             * @return {Highcharts.ColorString}
-             * The contrast color, either `#000000` or `#FFFFFF`.
-             */
-            SVGRenderer.prototype.getContrast = function (rgba) {
-                rgba = Color.parse(rgba).rgba;
-                // The threshold may be discussed. Here's a proposal for adding
-                // different weight to the color channels (#6216)
-                rgba[0] *= 1; // red
-                rgba[1] *= 1.2; // green
-                rgba[2] *= 0.5; // blue
-                return rgba[0] + rgba[1] + rgba[2] >
-                    1.8 * 255 ?
-                    '#000000' :
-                    '#FFFFFF';
-            };
-            /**
-             * Create a button with preset states.
-             *
-             * @function Highcharts.SVGRenderer#button
-             *
-             * @param {string} text
-             * The text or HTML to draw.
-             *
-             * @param {number} x
-             * The x position of the button's left side.
-             *
-             * @param {number} y
-             * The y position of the button's top side.
-             *
-             * @param {Highcharts.EventCallbackFunction<Highcharts.SVGElement>} callback
-             * The function to execute on button click or touch.
-             *
-             * @param {Highcharts.SVGAttributes} [theme]
-             * SVG attributes for the normal state.
-             *
-             * @param {Highcharts.SVGAttributes} [hoverState]
-             * SVG attributes for the hover state.
-             *
-             * @param {Highcharts.SVGAttributes} [pressedState]
-             * SVG attributes for the pressed state.
-             *
-             * @param {Highcharts.SVGAttributes} [disabledState]
-             * SVG attributes for the disabled state.
-             *
-             * @param {Highcharts.SymbolKeyValue} [shape=rect]
-             * The shape type.
-             *
-             * @param {boolean} [useHTML=false]
-             * Wether to use HTML to render the label.
-             *
-             * @return {Highcharts.SVGElement}
-             * The button element.
-             */
-            SVGRenderer.prototype.button = function (text, x, y, callback, theme, hoverState, pressedState, disabledState, shape, useHTML) {
-                var label = this.label(text,
-                    x,
-                    y,
-                    shape,
-                    void 0,
-                    void 0,
-                    useHTML,
-                    void 0, 'button'),
-                    curState = 0,
-                    styledMode = this.styledMode, 
-                    // Make a copy of normalState (#13798)
-                    // (reference to options.rangeSelector.buttonTheme)
-                    normalState = theme ? merge(theme) : {},
-                    userNormalStyle = normalState && normalState.style || {};
-                // Remove stylable attributes
-                normalState = AST.filterUserAttributes(normalState);
-                // Default, non-stylable attributes
-                label.attr(merge({ padding: 8, r: 2 }, normalState));
-                // Presentational
-                var normalStyle,
-                    hoverStyle,
-                    pressedStyle,
-                    disabledStyle;
-                if (!styledMode) {
-                    // Normal state - prepare the attributes
-                    normalState = merge({
-                        fill: palette.neutralColor3,
-                        stroke: palette.neutralColor20,
-                        'stroke-width': 1,
-                        style: {
-                            color: palette.neutralColor80,
-                            cursor: 'pointer',
-                            fontWeight: 'normal'
-                        }
-                    }, {
-                        style: userNormalStyle
-                    }, normalState);
-                    normalStyle = normalState.style;
-                    delete normalState.style;
-                    // Hover state
-                    hoverState = merge(normalState, {
-                        fill: palette.neutralColor10
-                    }, AST.filterUserAttributes(hoverState || {}));
-                    hoverStyle = hoverState.style;
-                    delete hoverState.style;
-                    // Pressed state
-                    pressedState = merge(normalState, {
-                        fill: palette.highlightColor10,
-                        style: {
-                            color: palette.neutralColor100,
-                            fontWeight: 'bold'
-                        }
-                    }, AST.filterUserAttributes(pressedState || {}));
-                    pressedStyle = pressedState.style;
-                    delete pressedState.style;
-                    // Disabled state
-                    disabledState = merge(normalState, {
-                        style: {
-                            color: palette.neutralColor20
-                        }
-                    }, AST.filterUserAttributes(disabledState || {}));
-                    disabledStyle = disabledState.style;
-                    delete disabledState.style;
-                }
-                // Add the events. IE9 and IE10 need mouseover and mouseout to funciton
-                // (#667).
-                addEvent(label.element, isMS ? 'mouseover' : 'mouseenter', function () {
-                    if (curState !== 3) {
-                        label.setState(1);
-                    }
-                });
-                addEvent(label.element, isMS ? 'mouseout' : 'mouseleave', function () {
-                    if (curState !== 3) {
-                        label.setState(curState);
-                    }
-                });
-                label.setState = function (state) {
-                    // Hover state is temporary, don't record it
-                    if (state !== 1) {
-                        label.state = curState = state;
-                    }
-                    // Update visuals
-                    label
-                        .removeClass(/highcharts-button-(normal|hover|pressed|disabled)/)
-                        .addClass('highcharts-button-' +
-                        ['normal', 'hover', 'pressed', 'disabled'][state || 0]);
-                    if (!styledMode) {
-                        label
-                            .attr([
-                            normalState,
-                            hoverState,
-                            pressedState,
-                            disabledState
-                        ][state || 0])
-                            .css([
-                            normalStyle,
-                            hoverStyle,
-                            pressedStyle,
-                            disabledStyle
-                        ][state || 0]);
-                    }
-                };
-                // Presentational attributes
-                if (!styledMode) {
-                    label
-                        .attr(normalState)
-                        .css(extend({ cursor: 'default' }, normalStyle));
-                }
-                return label
-                    .on('touchstart', function (e) { return e.stopPropagation(); })
-                    .on('click', function (e) {
-                    if (curState !== 3) {
-                        callback.call(label, e);
-                    }
-                });
-            };
-            /**
-             * Make a straight line crisper by not spilling out to neighbour pixels.
-             *
-             * @function Highcharts.SVGRenderer#crispLine
-             *
-             * @param {Highcharts.SVGPathArray} points
-             *        The original points on the format `[['M', 0, 0], ['L', 100, 0]]`.
-             *
-             * @param {number} width
-             *        The width of the line.
-             *
-             * @param {string} roundingFunction
-             *        The rounding function name on the `Math` object, can be one of
-             *        `round`, `floor` or `ceil`.
-             *
-             * @return {Highcharts.SVGPathArray}
-             *         The original points array, but modified to render crisply.
-             */
-            SVGRenderer.prototype.crispLine = function (points, width, roundingFunction) {
-                if (roundingFunction === void 0) { roundingFunction = 'round'; }
-                var start = points[0];
-                var end = points[1];
-                // Normalize to a crisp line
-                if (start[1] === end[1]) {
-                    // Substract due to #1129. Now bottom and left axis gridlines behave
-                    // the same.
-                    start[1] = end[1] =
-                        Math[roundingFunction](start[1]) - (width % 2 / 2);
-                }
-                if (start[2] === end[2]) {
-                    start[2] = end[2] =
-                        Math[roundingFunction](start[2]) + (width % 2 / 2);
-                }
-                return points;
-            };
-            /**
-             * Draw a path, wraps the SVG `path` element.
-             *
-             * @sample highcharts/members/renderer-path-on-chart/
-             *         Draw a path in a chart
-             * @sample highcharts/members/renderer-path/
-             *         Draw a path independent from a chart
-             *
-             * @example
-             * let path = renderer.path(['M', 10, 10, 'L', 30, 30, 'z'])
-             *     .attr({ stroke: '#ff00ff' })
-             *     .add();
-             *
-             * @function Highcharts.SVGRenderer#path
-             *
-             * @param {Highcharts.SVGPathArray} [path]
-             * An SVG path definition in array form.
-             *
-             * @return {Highcharts.SVGElement}
-             * The generated wrapper element.
-             *
-             */ /**
-            * Draw a path, wraps the SVG `path` element.
-            *
-            * @function Highcharts.SVGRenderer#path
-            *
-            * @param {Highcharts.SVGAttributes} [attribs]
-            * The initial attributes.
-            *
-            * @return {Highcharts.SVGElement}
-            * The generated wrapper element.
-            */
-            SVGRenderer.prototype.path = function (path) {
-                var attribs = (this.styledMode ? {} : {
-                        fill: 'none'
-                    });
-                if (isArray(path)) {
-                    attribs.d = path;
-                }
-                else if (isObject(path)) { // attributes
-                    extend(attribs, path);
-                }
-                return this.createElement('path').attr(attribs);
-            };
-            /**
-             * Draw a circle, wraps the SVG `circle` element.
-             *
-             * @sample highcharts/members/renderer-circle/
-             *         Drawing a circle
-             *
-             * @function Highcharts.SVGRenderer#circle
-             *
-             * @param {number} [x]
-             * The center x position.
-             *
-             * @param {number} [y]
-             * The center y position.
-             *
-             * @param {number} [r]
-             * The radius.
-             *
-             * @return {Highcharts.SVGElement}
-             * The generated wrapper element.
-             */ /**
-            * Draw a circle, wraps the SVG `circle` element.
-            *
-            * @function Highcharts.SVGRenderer#circle
-            *
-            * @param {Highcharts.SVGAttributes} [attribs]
-            * The initial attributes.
-            *
-            * @return {Highcharts.SVGElement}
-            * The generated wrapper element.
-            */
-            SVGRenderer.prototype.circle = function (x, y, r) {
-                var attribs = (isObject(x) ?
-                        x :
-                        typeof x === 'undefined' ? {} : { x: x, y: y, r: r }), wrapper = this.createElement('circle');
-                // Setting x or y translates to cx and cy
-                wrapper.xSetter = wrapper.ySetter = function (value, key, element) {
-                    element.setAttribute('c' + key, value);
-                };
-                return wrapper.attr(attribs);
-            };
-            /**
-             * Draw and return an arc.
-             *
-             * @sample highcharts/members/renderer-arc/
-             *         Drawing an arc
-             *
-             * @function Highcharts.SVGRenderer#arc
-             *
-             * @param {number} [x=0]
-             * Center X position.
-             *
-             * @param {number} [y=0]
-             * Center Y position.
-             *
-             * @param {number} [r=0]
-             * The outer radius' of the arc.
-             *
-             * @param {number} [innerR=0]
-             * Inner radius like used in donut charts.
-             *
-             * @param {number} [start=0]
-             * The starting angle of the arc in radians, where 0 is to the right and
-             * `-Math.PI/2` is up.
-             *
-             * @param {number} [end=0]
-             * The ending angle of the arc in radians, where 0 is to the right and
-             * `-Math.PI/2` is up.
-             *
-             * @return {Highcharts.SVGElement}
-             * The generated wrapper element.
-             */ /**
-            * Draw and return an arc. Overloaded function that takes arguments object.
-            *
-            * @function Highcharts.SVGRenderer#arc
-            *
-            * @param {Highcharts.SVGAttributes} attribs
-            * Initial SVG attributes.
-            *
-            * @return {Highcharts.SVGElement}
-            * The generated wrapper element.
-            */
-            SVGRenderer.prototype.arc = function (x, y, r, innerR, start, end) {
-                var arc,
-                    options;
-                if (isObject(x)) {
-                    options = x;
-                    y = options.y;
-                    r = options.r;
-                    innerR = options.innerR;
-                    start = options.start;
-                    end = options.end;
-                    x = options.x;
-                }
-                else {
-                    options = {
-                        innerR: innerR,
-                        start: start,
-                        end: end
-                    };
-                }
-                // Arcs are defined as symbols for the ability to set
-                // attributes in attr and animate
-                arc = this.symbol('arc', x, y, r, r, options);
-                arc.r = r; // #959
-                return arc;
-            };
-            /**
-             * Draw and return a rectangle.
-             *
-             * @function Highcharts.SVGRenderer#rect
-             *
-             * @param {number} [x]
-             * Left position.
-             *
-             * @param {number} [y]
-             * Top position.
-             *
-             * @param {number} [width]
-             * Width of the rectangle.
-             *
-             * @param {number} [height]
-             * Height of the rectangle.
-             *
-             * @param {number} [r]
-             * Border corner radius.
-             *
-             * @param {number} [strokeWidth]
-             * A stroke width can be supplied to allow crisp drawing.
-             *
-             * @return {Highcharts.SVGElement}
-             * The generated wrapper element.
-             */ /**
-            * Draw and return a rectangle.
-            *
-            * @sample highcharts/members/renderer-rect-on-chart/
-            *         Draw a rectangle in a chart
-            * @sample highcharts/members/renderer-rect/
-            *         Draw a rectangle independent from a chart
-            *
-            * @function Highcharts.SVGRenderer#rect
-            *
-            * @param {Highcharts.SVGAttributes} [attributes]
-            * General SVG attributes for the rectangle.
-            *
-            * @return {Highcharts.SVGElement}
-            * The generated wrapper element.
-            */
-            SVGRenderer.prototype.rect = function (x, y, width, height, r, strokeWidth) {
-                r = isObject(x) ? x.r : r;
-                var wrapper = this.createElement('rect'),
-                    attribs = isObject(x) ?
-                        x :
-                        typeof x === 'undefined' ?
-                            {} :
-                            {
-                                x: x,
-                                y: y,
-                                width: Math.max(width, 0),
-                                height: Math.max(height, 0)
-                            };
-                if (!this.styledMode) {
-                    if (typeof strokeWidth !== 'undefined') {
-                        attribs['stroke-width'] = strokeWidth;
-                        attribs = wrapper.crisp(attribs);
-                    }
-                    attribs.fill = 'none';
-                }
-                if (r) {
-                    attribs.r = r;
-                }
-                wrapper.rSetter = function (value, key, element) {
-                    wrapper.r = value;
-                    attr(element, {
-                        rx: value,
-                        ry: value
-                    });
-                };
-                wrapper.rGetter = function () {
-                    return wrapper.r || 0;
-                };
-                return wrapper.attr(attribs);
-            };
-            /**
-             * Resize the {@link SVGRenderer#box} and re-align all aligned child
-             * elements.
-             *
-             * @sample highcharts/members/renderer-g/
-             *         Show and hide grouped objects
-             *
-             * @function Highcharts.SVGRenderer#setSize
-             *
-             * @param {number} width
-             * The new pixel width.
-             *
-             * @param {number} height
-             * The new pixel height.
-             *
-             * @param {boolean|Partial<Highcharts.AnimationOptionsObject>} [animate=true]
-             * Whether and how to animate.
-             */
-            SVGRenderer.prototype.setSize = function (width, height, animate) {
-                var renderer = this;
-                renderer.width = width;
-                renderer.height = height;
-                renderer.boxWrapper.animate({
-                    width: width,
-                    height: height
-                }, {
-                    step: function () {
-                        this.attr({
-                            viewBox: '0 0 ' + this.attr('width') + ' ' +
-                                this.attr('height')
-                        });
-                    },
-                    duration: pick(animate, true) ? void 0 : 0
-                });
-                renderer.alignElements();
-            };
-            /**
-             * Create and return an svg group element. Child
-             * {@link Highcharts.SVGElement} objects are added to the group by using the
-             * group as the first parameter in {@link Highcharts.SVGElement#add|add()}.
-             *
-             * @function Highcharts.SVGRenderer#g
-             *
-             * @param {string} [name]
-             *        The group will be given a class name of `highcharts-{name}`. This
-             *        can be used for styling and scripting.
-             *
-             * @return {Highcharts.SVGElement}
-             *         The generated wrapper element.
-             */
-            SVGRenderer.prototype.g = function (name) {
-                var elem = this.createElement('g');
-                return name ?
-                    elem.attr({ 'class': 'highcharts-' + name }) :
-                    elem;
-            };
-            /**
-             * Display an image.
-             *
-             * @sample highcharts/members/renderer-image-on-chart/
-             *         Add an image in a chart
-             * @sample highcharts/members/renderer-image/
-             *         Add an image independent of a chart
-             *
-             * @function Highcharts.SVGRenderer#image
-             *
-             * @param {string} src
-             *        The image source.
-             *
-             * @param {number} [x]
-             *        The X position.
-             *
-             * @param {number} [y]
-             *        The Y position.
-             *
-             * @param {number} [width]
-             *        The image width. If omitted, it defaults to the image file width.
-             *
-             * @param {number} [height]
-             *        The image height. If omitted it defaults to the image file
-             *        height.
-             *
-             * @param {Function} [onload]
-             *        Event handler for image load.
-             *
-             * @return {Highcharts.SVGElement}
-             *         The generated wrapper element.
-             */
-            SVGRenderer.prototype.image = function (src, x, y, width, height, onload) {
-                var attribs = { preserveAspectRatio: 'none' }, elemWrapper, dummy, setSVGImageSource = function (el, src) {
-                        // Set the href in the xlink namespace
-                        if (el.setAttributeNS) {
-                            el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
-                    }
-                    else {
-                        // could be exporting in IE
-                        // using href throws "not supported" in ie7 and under,
-                        // requries regex shim to fix later
-                        el.setAttribute('hc-svg-href', src);
-                    }
-                }, onDummyLoad = function (e) {
-                    setSVGImageSource(elemWrapper.element, src);
-                    onload.call(elemWrapper, e);
-                };
-                // optional properties
-                if (arguments.length > 1) {
-                    extend(attribs, {
-                        x: x,
-                        y: y,
-                        width: width,
-                        height: height
-                    });
-                }
-                elemWrapper = this.createElement('image').attr(attribs);
-                // Add load event if supplied
-                if (onload) {
-                    // We have to use a dummy HTML image since IE support for SVG image
-                    // load events is very buggy. First set a transparent src, wait for
-                    // dummy to load, and then add the real src to the SVG image.
-                    setSVGImageSource(elemWrapper.element, 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==' /* eslint-disable-line */);
-                    dummy = new win.Image();
-                    addEvent(dummy, 'load', onDummyLoad);
-                    dummy.src = src;
-                    if (dummy.complete) {
-                        onDummyLoad({});
-                    }
-                }
-                else {
-                    setSVGImageSource(elemWrapper.element, src);
-                }
-                return elemWrapper;
-            };
-            /**
-             * Draw a symbol out of pre-defined shape paths from
-             * {@link SVGRenderer#symbols}.
-             * It is used in Highcharts for point makers, which cake a `symbol` option,
-             * and label and button backgrounds like in the tooltip and stock flags.
-             *
-             * @function Highcharts.SVGRenderer#symbol
-             *
-             * @param {string} symbol
-             * The symbol name.
-             *
-             * @param {number} [x]
-             * The X coordinate for the top left position.
-             *
-             * @param {number} [y]
-             * The Y coordinate for the top left position.
-             *
-             * @param {number} [width]
-             * The pixel width.
-             *
-             * @param {number} [height]
-             * The pixel height.
-             *
-             * @param {Highcharts.SymbolOptionsObject} [options]
-             * Additional options, depending on the actual symbol drawn.
-             *
-             * @return {Highcharts.SVGElement}
-             */
-            SVGRenderer.prototype.symbol = function (symbol, x, y, width, height, options) {
-                var ren = this,
-                    obj,
-                    imageRegex = /^url\((.*?)\)$/,
-                    isImage = imageRegex.test(symbol),
-                    sym = (!isImage && (this.symbols[symbol] ? symbol : 'circle')), 
-                    // get the symbol definition function
-                    symbolFn = (sym && this.symbols[sym]),
-                    path,
-                    imageSrc,
-                    centerImage;
-                if (symbolFn) {
-                    // Check if there's a path defined for this symbol
-                    if (typeof x === 'number') {
-                        path = symbolFn.call(this.symbols, Math.round(x || 0), Math.round(y || 0), width || 0, height || 0, options);
-                    }
-                    obj = this.path(path);
-                    if (!ren.styledMode) {
-                        obj.attr('fill', 'none');
-                    }
-                    // expando properties for use in animate and attr
-                    extend(obj, {
-                        symbolName: sym,
-                        x: x,
-                        y: y,
-                        width: width,
-                        height: height
-                    });
-                    if (options) {
-                        extend(obj, options);
-                    }
-                    // Image symbols
-                }
-                else if (isImage) {
-                    imageSrc = symbol.match(imageRegex)[1];
-                    // Create the image synchronously, add attribs async
-                    obj = this.image(imageSrc);
-                    // The image width is not always the same as the symbol width. The
-                    // image may be centered within the symbol, as is the case when
-                    // image shapes are used as label backgrounds, for example in flags.
-                    obj.imgwidth = pick(symbolSizes[imageSrc] && symbolSizes[imageSrc].width, options && options.width);
-                    obj.imgheight = pick(symbolSizes[imageSrc] && symbolSizes[imageSrc].height, options && options.height);
-                    /**
-                     * Set the size and position
-                     */
-                    centerImage = function () {
-                        obj.attr({
-                            width: obj.width,
-                            height: obj.height
-                        });
-                    };
-                    /**
-                     * Width and height setters that take both the image's physical size
-                     * and the label size into consideration, and translates the image
-                     * to center within the label.
-                     */
-                    ['width', 'height'].forEach(function (key) {
-                        obj[key + 'Setter'] = function (value, key) {
-                            var imgSize = this['img' + key];
-                            this[key] = value;
-                            if (defined(imgSize)) {
-                                // Scale and center the image within its container.
-                                // The name `backgroundSize` is taken from the CSS spec,
-                                // but the value `within` is made up. Other possible
-                                // values in the spec, `cover` and `contain`, can be
-                                // implemented if needed.
-                                if (options &&
-                                    options.backgroundSize === 'within' &&
-                                    this.width &&
-                                    this.height) {
-                                    imgSize = Math.round(imgSize * Math.min(this.width / this.imgwidth, this.height / this.imgheight));
-                                }
-                                if (this.element) {
-                                    this.element.setAttribute(key, imgSize);
-                                }
-                                if (!this.alignByTranslate) {
-                                    var translate = ((this[key] || 0) - imgSize) / 2;
-                                    var attribs = key === 'width' ?
-                                            { translateX: translate } :
-                                            { translateY: translate };
-                                    this.attr(attribs);
-                                }
-                            }
-                        };
-                    });
-                    if (defined(x)) {
-                        obj.attr({
-                            x: x,
-                            y: y
-                        });
-                    }
-                    obj.isImg = true;
-                    if (defined(obj.imgwidth) && defined(obj.imgheight)) {
-                        centerImage();
-                    }
-                    else {
-                        // Initialize image to be 0 size so export will still function
-                        // if there's no cached sizes.
-                        obj.attr({ width: 0, height: 0 });
-                        // Create a dummy JavaScript image to get the width and height.
-                        createElement('img', {
-                            onload: function () {
-                                var chart = charts[ren.chartIndex];
-                                // Special case for SVGs on IE11, the width is not
-                                // accessible until the image is part of the DOM
-                                // (#2854).
-                                if (this.width === 0) {
-                                    css(this, {
-                                        position: 'absolute',
-                                        top: '-999em'
-                                    });
-                                    doc.body.appendChild(this);
-                                }
-                                // Center the image
-                                symbolSizes[imageSrc] = {
-                                    width: this.width,
-                                    height: this.height
-                                };
-                                obj.imgwidth = this.width;
-                                obj.imgheight = this.height;
-                                if (obj.element) {
-                                    centerImage();
-                                }
-                                // Clean up after #2854 workaround.
-                                if (this.parentNode) {
-                                    this.parentNode.removeChild(this);
-                                }
-                                // Fire the load event when all external images are
-                                // loaded
-                                ren.imgCount--;
-                                if (!ren.imgCount && chart && !chart.hasLoaded) {
-                                    chart.onload();
-                                }
-                            },
-                            src: imageSrc
-                        });
-                        this.imgCount++;
-                    }
-                }
-                return obj;
-            };
-            /**
-             * Define a clipping rectangle. The clipping rectangle is later applied
-             * to {@link SVGElement} objects through the {@link SVGElement#clip}
-             * function.
-             *
-             * @example
-             * let circle = renderer.circle(100, 100, 100)
-             *     .attr({ fill: 'red' })
-             *     .add();
-             * let clipRect = renderer.clipRect(100, 100, 100, 100);
-             *
-             * // Leave only the lower right quarter visible
-             * circle.clip(clipRect);
-             *
-             * @function Highcharts.SVGRenderer#clipRect
-             *
-             * @param {number} [x]
-             *
-             * @param {number} [y]
-             *
-             * @param {number} [width]
-             *
-             * @param {number} [height]
-             *
-             * @return {Highcharts.ClipRectElement}
-             *         A clipping rectangle.
-             */
-            SVGRenderer.prototype.clipRect = function (x, y, width, height) {
-                var wrapper, 
-                    // Add a hyphen at the end to avoid confusion in testing indexes
-                    // -1 and -10, -11 etc (#6550)
-                    id = uniqueKey() + '-', clipPath = this.createElement('clipPath').attr({
-                        id: id
-                    }).add(this.defs);
-                wrapper = this.rect(x, y, width, height, 0).add(clipPath);
-                wrapper.id = id;
-                wrapper.clipPath = clipPath;
-                wrapper.count = 0;
-                return wrapper;
-            };
-            /**
-             * Draw text. The text can contain a subset of HTML, like spans and anchors
-             * and some basic text styling of these. For more advanced features like
-             * border and background, use {@link Highcharts.SVGRenderer#label} instead.
-             * To update the text after render, run `text.attr({ text: 'New text' })`.
-             *
-             * @sample highcharts/members/renderer-text-on-chart/
-             *         Annotate the chart freely
-             * @sample highcharts/members/renderer-on-chart/
-             *         Annotate with a border and in response to the data
-             * @sample highcharts/members/renderer-text/
-             *         Formatted text
-             *
-             * @function Highcharts.SVGRenderer#text
-             *
-             * @param {string} [str]
-             * The text of (subset) HTML to draw.
-             *
-             * @param {number} [x]
-             * The x position of the text's lower left corner.
-             *
-             * @param {number} [y]
-             * The y position of the text's lower left corner.
-             *
-             * @param {boolean} [useHTML=false]
-             * Use HTML to render the text.
-             *
-             * @return {Highcharts.SVGElement}
-             * The text object.
-             */
-            SVGRenderer.prototype.text = function (str, x, y, useHTML) {
-                // declare variables
-                var renderer = this,
-                    wrapper,
-                    attribs = {};
-                if (useHTML && (renderer.allowHTML || !renderer.forExport)) {
-                    return renderer.html(str, x, y);
-                }
-                attribs.x = Math.round(x || 0); // X always needed for line-wrap logic
-                if (y) {
-                    attribs.y = Math.round(y);
-                }
-                if (defined(str)) {
-                    attribs.text = str;
-                }
-                wrapper = renderer.createElement('text')
-                    .attr(attribs);
-                if (!useHTML) {
-                    wrapper.xSetter = function (value, key, element) {
-                        var tspans = element.getElementsByTagName('tspan'),
-                            tspan,
-                            parentVal = element.getAttribute(key),
-                            i;
-                        for (i = 0; i < tspans.length; i++) {
-                            tspan = tspans[i];
-                            // If the x values are equal, the tspan represents a
-                            // linebreak
-                            if (tspan.getAttribute(key) === parentVal) {
-                                tspan.setAttribute(key, value);
-                            }
-                        }
-                        element.setAttribute(key, value);
-                    };
-                }
-                return wrapper;
-            };
-            /**
-             * Utility to return the baseline offset and total line height from the font
-             * size.
-             *
-             * @function Highcharts.SVGRenderer#fontMetrics
-             *
-             * @param {number|string} [fontSize]
-             *        The current font size to inspect. If not given, the font size
-             *        will be found from the DOM element.
-             *
-             * @param {Highcharts.SVGElement|Highcharts.SVGDOMElement} [elem]
-             *        The element to inspect for a current font size.
-             *
-             * @return {Highcharts.FontMetricsObject}
-             *         The font metrics.
-             */
-            SVGRenderer.prototype.fontMetrics = function (fontSize, elem) {
-                var lineHeight,
-                    baseline;
-                if ((this.styledMode || !/px/.test(fontSize)) &&
-                    win.getComputedStyle // old IE doesn't support it
-                ) {
-                    fontSize = elem && SVGElement.prototype.getStyle.call(elem, 'font-size');
-                }
-                else {
-                    fontSize = fontSize ||
-                        // When the elem is a DOM element (#5932)
-                        (elem && elem.style && elem.style.fontSize) ||
-                        // Fall back on the renderer style default
-                        (this.style && this.style.fontSize);
-                }
-                // Handle different units
-                if (/px/.test(fontSize)) {
-                    fontSize = pInt(fontSize);
-                }
-                else {
-                    fontSize = 12;
-                }
-                // Empirical values found by comparing font size and bounding box
-                // height. Applies to the default font family.
-                // https://jsfiddle.net/highcharts/7xvn7/
-                lineHeight = fontSize < 24 ? fontSize + 3 : Math.round(fontSize * 1.2);
-                baseline = Math.round(lineHeight * 0.8);
-                return {
-                    h: lineHeight,
-                    b: baseline,
-                    f: fontSize
-                };
-            };
-            /**
-             * Correct X and Y positioning of a label for rotation (#1764).
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#rotCorr
-             *
-             * @param {number} baseline
-             *
-             * @param {number} rotation
-             *
-             * @param {boolean} [alterY]
-             *
-             * @param {Highcharts.PositionObject}
-             */
-            SVGRenderer.prototype.rotCorr = function (baseline, rotation, alterY) {
-                var y = baseline;
-                if (rotation && alterY) {
-                    y = Math.max(y * Math.cos(rotation * deg2rad), 4);
-                }
-                return {
-                    x: (-baseline / 3) * Math.sin(rotation * deg2rad),
-                    y: y
-                };
-            };
-            /**
-             * Compatibility function to convert the legacy one-dimensional path array
-             * into an array of segments.
-             *
-             * It is used in maps to parse the `path` option, and in SVGRenderer.dSetter
-             * to support legacy paths from demos.
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#pathToSegments
-             */
-            SVGRenderer.prototype.pathToSegments = function (path) {
-                var ret = [];
-                var segment = [];
-                var commandLength = {
-                        A: 8,
-                        C: 7,
-                        H: 2,
-                        L: 3,
-                        M: 3,
-                        Q: 5,
-                        S: 5,
-                        T: 3,
-                        V: 2
-                    };
-                // Short, non-typesafe parsing of the one-dimensional array. It splits
-                // the path on any string. This is not type checked against the tuple
-                // types, but is shorter, and doesn't require specific checks for any
-                // command type in SVG.
-                for (var i = 0; i < path.length; i++) {
-                    // Command skipped, repeat previous or insert L/l for M/m
-                    if (isString(segment[0]) &&
-                        isNumber(path[i]) &&
-                        segment.length === commandLength[(segment[0].toUpperCase())]) {
-                        path.splice(i, 0, segment[0].replace('M', 'L').replace('m', 'l'));
-                    }
-                    // Split on string
-                    if (typeof path[i] === 'string') {
-                        if (segment.length) {
-                            ret.push(segment.slice(0));
-                        }
-                        segment.length = 0;
-                    }
-                    segment.push(path[i]);
-                }
-                ret.push(segment.slice(0));
-                return ret;
-                /*
-                // Fully type-safe version where each tuple type is checked. The
-                // downside is filesize and a lack of flexibility for unsupported
-                // commands
-                const ret: SVGPath = [],
-                    commands = {
-                        A: 7,
-                        C: 6,
-                        H: 1,
-                        L: 2,
-                        M: 2,
-                        Q: 4,
-                        S: 4,
-                        T: 2,
-                        V: 1,
-                        Z: 0
-                    };
-
-                let i = 0,
-                    lastI = 0,
-                    lastCommand;
-
-                while (i < path.length) {
-                    const item = path[i];
-
-                    let command;
-
-                    if (typeof item === 'string') {
-                        command = item;
-                        i += 1;
-                    } else {
-                        command = lastCommand || 'M';
-                    }
-
-                    // Upper case
-                    const commandUC = command.toUpperCase();
-
-                    if (commandUC in commands) {
-
-                        // No numeric parameters
-                        if (command === 'Z' || command === 'z') {
-                            ret.push([command]);
-
-                        // One numeric parameter
-                        } else {
-                            const val0 = path[i];
-                            if (typeof val0 === 'number') {
-
-                                // Horizontal line to
-                                if (command === 'H' || command === 'h') {
-                                    ret.push([command, val0]);
-                                    i += 1;
-
-                                // Vertical line to
-                                } else if (command === 'V' || command === 'v') {
-                                    ret.push([command, val0]);
-                                    i += 1;
-
-                                // Two numeric parameters
-                                } else {
-                                    const val1 = path[i + 1];
-                                    if (typeof val1 === 'number') {
-                                        // lineTo
-                                        if (command === 'L' || command === 'l') {
-                                            ret.push([command, val0, val1]);
-                                            i += 2;
-
-                                        // moveTo
-                                        } else if (command === 'M' || command === 'm') {
-                                            ret.push([command, val0, val1]);
-                                            i += 2;
-
-                                        // Smooth quadratic bezier
-                                        } else if (command === 'T' || command === 't') {
-                                            ret.push([command, val0, val1]);
-                                            i += 2;
-
-                                        // Four numeric parameters
-                                        } else {
-                                            const val2 = path[i + 2],
-                                                val3 = path[i + 3];
-                                            if (
-                                                typeof val2 === 'number' &&
-                                                typeof val3 === 'number'
-                                            ) {
-                                                // Quadratic bezier to
-                                                if (
-                                                    command === 'Q' ||
-                                                    command === 'q'
-                                                ) {
-                                                    ret.push([
-                                                        command,
-                                                        val0,
-                                                        val1,
-                                                        val2,
-                                                        val3
-                                                    ]);
-                                                    i += 4;
-
-                                                // Smooth cubic bezier to
-                                                } else if (
-                                                    command === 'S' ||
-                                                    command === 's'
-                                                ) {
-                                                    ret.push([
-                                                        command,
-                                                        val0,
-                                                        val1,
-                                                        val2,
-                                                        val3
-                                                    ]);
-                                                    i += 4;
-
-                                                // Six numeric parameters
-                                                } else {
-                                                    const val4 = path[i + 4],
-                                                        val5 = path[i + 5];
-
-                                                    if (
-                                                        typeof val4 === 'number' &&
-                                                        typeof val5 === 'number'
-                                                    ) {
-                                                        // Curve to
-                                                        if (
-                                                            command === 'C' ||
-                                                            command === 'c'
-                                                        ) {
-                                                            ret.push([
-                                                                command,
-                                                                val0,
-                                                                val1,
-                                                                val2,
-                                                                val3,
-                                                                val4,
-                                                                val5
-                                                            ]);
-                                                            i += 6;
-
-                                                        // Seven numeric parameters
-                                                        } else {
-                                                            const val6 = path[i + 6];
-
-                                                            // Arc to
-                                                            if (
-                                                                typeof val6 ===
-                                                                'number' &&
-                                                                (
-                                                                    command === 'A' ||
-                                                                    command === 'a'
-                                                                )
-                                                            ) {
-                                                                ret.push([
-                                                                    command,
-                                                                    val0,
-                                                                    val1,
-                                                                    val2,
-                                                                    val3,
-                                                                    val4,
-                                                                    val5,
-                                                                    val6
-                                                                ]);
-                                                                i += 7;
-
-                                                            }
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-
-                    // An unmarked command following a moveTo is a lineTo
-                    lastCommand = command === 'M' ? 'L' : command;
-
-                    if (i === lastI) {
-                        break;
-                    }
-                    lastI = i;
-                }
-                return ret;
-                */
-            };
-            /**
-             * Draw a label, which is an extended text element with support for border
-             * and background. Highcharts creates a `g` element with a text and a `path`
-             * or `rect` inside, to make it behave somewhat like a HTML div. Border and
-             * background are set through `stroke`, `stroke-width` and `fill` attributes
-             * using the {@link Highcharts.SVGElement#attr|attr} method. To update the
-             * text after render, run `label.attr({ text: 'New text' })`.
-             *
-             * @sample highcharts/members/renderer-label-on-chart/
-             *         A label on the chart
-             *
-             * @function Highcharts.SVGRenderer#label
-             *
-             * @param {string} str
-             *        The initial text string or (subset) HTML to render.
-             *
-             * @param {number} x
-             *        The x position of the label's left side.
-             *
-             * @param {number} [y]
-             *        The y position of the label's top side or baseline, depending on
-             *        the `baseline` parameter.
-             *
-             * @param {string} [shape='rect']
-             *        The shape of the label's border/background, if any. Defaults to
-             *        `rect`. Other possible values are `callout` or other shapes
-             *        defined in {@link Highcharts.SVGRenderer#symbols}.
-             *
-             * @param {number} [anchorX]
-             *        In case the `shape` has a pointer, like a flag, this is the
-             *        coordinates it should be pinned to.
-             *
-             * @param {number} [anchorY]
-             *        In case the `shape` has a pointer, like a flag, this is the
-             *        coordinates it should be pinned to.
-             *
-             * @param {boolean} [useHTML=false]
-             *        Wether to use HTML to render the label.
-             *
-             * @param {boolean} [baseline=false]
-             *        Whether to position the label relative to the text baseline,
-             *        like {@link Highcharts.SVGRenderer#text|renderer.text}, or to the
-             *        upper border of the rectangle.
-             *
-             * @param {string} [className]
-             *        Class name for the group.
-             *
-             * @return {Highcharts.SVGElement}
-             *         The generated label.
-             */
-            SVGRenderer.prototype.label = function (str, x, y, shape, anchorX, anchorY, useHTML, baseline, className) {
-                return new SVGLabel(this, str, x, y, shape, anchorX, anchorY, useHTML, baseline, className);
-            };
-            /**
-             * Re-align all aligned elements.
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#alignElements
-             * @return {void}
-             */
-            SVGRenderer.prototype.alignElements = function () {
-                this.alignedObjects.forEach(function (el) { return el.align(); });
-            };
-            return SVGRenderer;
-        }());
-        /**
-         * A pointer to the renderer's associated Element class. The VMLRenderer
-         * will have a pointer to VMLElement here.
-         *
-         * @name Highcharts.SVGRenderer#Element
-         * @type {Highcharts.SVGElement}
-         */
-        SVGRenderer.prototype.Element = SVGElement;
-        /**
-         * @private
-         */
-        SVGRenderer.prototype.SVG_NS = SVG_NS;
-        /**
-         * Dummy function for plugins, called every time the renderer is updated.
-         * Prior to Highcharts 5, this was used for the canvg renderer.
-         *
-         * @deprecated
-         * @function Highcharts.SVGRenderer#draw
-         */
-        SVGRenderer.prototype.draw = noop;
-        /**
-         * A collection of characters mapped to HTML entities. When `useHTML` on an
-         * element is true, these entities will be rendered correctly by HTML. In
-         * the SVG pseudo-HTML, they need to be unescaped back to simple characters,
-         * so for example `&lt;` will render as `<`.
-         *
-         * @example
-         * // Add support for unescaping quotes
-         * Highcharts.SVGRenderer.prototype.escapes['"'] = '&quot;';
-         *
-         * @name Highcharts.SVGRenderer#escapes
-         * @type {Highcharts.Dictionary<string>}
-         */
-        SVGRenderer.prototype.escapes = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
+        H.dateFormat = function (format, timestamp, capitalize) {
+            return H.time.dateFormat(format, timestamp, capitalize);
         };
-        var roundedRect = function (x,
-            y,
-            w,
-            h,
-            options) {
-                var r = (options && options.r) || 0;
-            return [
-                ['M', x + r, y],
-                ['L', x + w - r, y],
-                ['C', x + w, y, x + w, y, x + w, y + r],
-                ['L', x + w, y + h - r],
-                ['C', x + w, y + h, x + w, y + h, x + w - r, y + h],
-                ['L', x + r, y + h],
-                ['C', x, y + h, x, y + h, x, y + h - r],
-                ['L', x, y + r],
-                ['C', x, y, x, y, x + r, y] // top-left corner
-            ];
-        };
-        // #15291
-        var rect = function (x,
-            y,
-            w,
-            h,
-            options) {
-                if (options && options.r) {
-                    return roundedRect(x,
-            y,
-            w,
-            h,
-            options);
-            }
-            return [
-                ['M', x, y],
-                ['L', x + w, y],
-                ['L', x + w, y + h],
-                ['L', x, y + h],
-                ['Z']
-            ];
-        };
-        /**
-         * An extendable collection of functions for defining symbol paths.
-         *
-         * @name Highcharts.SVGRenderer#symbols
-         * @type {Highcharts.SymbolDictionary}
-         */
-        SVGRenderer.prototype.symbols = {
-            circle: function (x, y, w, h) {
-                // Return a full arc
-                return this.arc(x + w / 2, y + h / 2, w / 2, h / 2, {
-                    start: Math.PI * 0.5,
-                    end: Math.PI * 2.5,
-                    open: false
-                });
-            },
-            rect: rect,
-            square: rect,
-            triangle: function (x, y, w, h) {
-                return [
-                    ['M', x + w / 2, y],
-                    ['L', x + w, y + h],
-                    ['L', x, y + h],
-                    ['Z']
-                ];
-            },
-            'triangle-down': function (x, y, w, h) {
-                return [
-                    ['M', x, y],
-                    ['L', x + w, y],
-                    ['L', x + w / 2, y + h],
-                    ['Z']
-                ];
-            },
-            diamond: function (x, y, w, h) {
-                return [
-                    ['M', x + w / 2, y],
-                    ['L', x + w, y + h / 2],
-                    ['L', x + w / 2, y + h],
-                    ['L', x, y + h / 2],
-                    ['Z']
-                ];
-            },
-            arc: function (x, y, w, h, options) {
-                var arc = [];
-                if (options) {
-                    var start = options.start || 0,
-                        rx = pick(options.r,
-                        w),
-                        ry = pick(options.r,
-                        h || w),
-                        proximity = 0.001,
-                        fullCircle = (Math.abs((options.end || 0) - start - 2 * Math.PI) <
-                            proximity), 
-                        // Substract a small number to prevent cos and sin of start and
-                        // end from becoming equal on 360 arcs (related: #1561)
-                        end = (options.end || 0) - proximity,
-                        innerRadius = options.innerR,
-                        open_1 = pick(options.open,
-                        fullCircle),
-                        cosStart = Math.cos(start),
-                        sinStart = Math.sin(start),
-                        cosEnd = Math.cos(end),
-                        sinEnd = Math.sin(end), 
-                        // Proximity takes care of rounding errors around PI (#6971)
-                        longArc = pick(options.longArc,
-                        end - start - Math.PI < proximity ? 0 : 1);
-                    arc.push([
-                        'M',
-                        x + rx * cosStart,
-                        y + ry * sinStart
-                    ], [
-                        'A',
-                        rx,
-                        ry,
-                        0,
-                        longArc,
-                        pick(options.clockwise, 1),
-                        x + rx * cosEnd,
-                        y + ry * sinEnd
-                    ]);
-                    if (defined(innerRadius)) {
-                        arc.push(open_1 ?
-                            [
-                                'M',
-                                x + innerRadius * cosEnd,
-                                y + innerRadius * sinEnd
-                            ] : [
-                            'L',
-                            x + innerRadius * cosEnd,
-                            y + innerRadius * sinEnd
-                        ], [
-                            'A',
-                            innerRadius,
-                            innerRadius,
-                            0,
-                            longArc,
-                            // Clockwise - opposite to the outer arc clockwise
-                            defined(options.clockwise) ? 1 - options.clockwise : 0,
-                            x + innerRadius * cosStart,
-                            y + innerRadius * sinStart
-                        ]);
-                    }
-                    if (!open_1) {
-                        arc.push(['Z']);
-                    }
-                }
-                return arc;
-            },
-            /**
-             * Callout shape used for default tooltips, also used for rounded
-             * rectangles in VML
-             */
-            callout: function (x, y, w, h, options) {
-                var arrowLength = 6,
-                    halfDistance = 6,
-                    r = Math.min((options && options.r) || 0,
-                    w,
-                    h),
-                    safeDistance = r + halfDistance,
-                    anchorX = options && options.anchorX,
-                    anchorY = options && options.anchorY || 0;
-                var path = roundedRect(x,
-                    y,
-                    w,
-                    h, { r: r });
-                if (!isNumber(anchorX)) {
-                    return path;
-                }
-                // Anchor on right side
-                if (x + anchorX >= w) {
-                    // Chevron
-                    if (anchorY > y + safeDistance &&
-                        anchorY < y + h - safeDistance) {
-                        path.splice(3, 1, ['L', x + w, anchorY - halfDistance], ['L', x + w + arrowLength, anchorY], ['L', x + w, anchorY + halfDistance], ['L', x + w, y + h - r]);
-                        // Simple connector
-                    }
-                    else {
-                        path.splice(3, 1, ['L', x + w, h / 2], ['L', anchorX, anchorY], ['L', x + w, h / 2], ['L', x + w, y + h - r]);
-                    }
-                    // Anchor on left side
-                }
-                else if (x + anchorX <= 0) {
-                    // Chevron
-                    if (anchorY > y + safeDistance &&
-                        anchorY < y + h - safeDistance) {
-                        path.splice(7, 1, ['L', x, anchorY + halfDistance], ['L', x - arrowLength, anchorY], ['L', x, anchorY - halfDistance], ['L', x, y + r]);
-                        // Simple connector
-                    }
-                    else {
-                        path.splice(7, 1, ['L', x, h / 2], ['L', anchorX, anchorY], ['L', x, h / 2], ['L', x, y + r]);
-                    }
-                }
-                else if ( // replace bottom
-                anchorY &&
-                    anchorY > h &&
-                    anchorX > x + safeDistance &&
-                    anchorX < x + w - safeDistance) {
-                    path.splice(5, 1, ['L', anchorX + halfDistance, y + h], ['L', anchorX, y + h + arrowLength], ['L', anchorX - halfDistance, y + h], ['L', x + r, y + h]);
-                }
-                else if ( // replace top
-                anchorY &&
-                    anchorY < 0 &&
-                    anchorX > x + safeDistance &&
-                    anchorX < x + w - safeDistance) {
-                    path.splice(1, 1, ['L', anchorX - halfDistance, y], ['L', anchorX, y - arrowLength], ['L', anchorX + halfDistance, y], ['L', w - r, y]);
-                }
-                return path;
-            }
-        };
-        H.SVGRenderer = SVGRenderer;
-        H.Renderer = H.SVGRenderer;
+        var optionsModule = {
+                dateFormat: H.dateFormat,
+                defaultOptions: H.defaultOptions,
+                time: H.time
+            };
 
-        return H.Renderer;
+        return optionsModule;
     });
-    _registerModule(_modules, 'Core/Renderer/HTML/HTMLElement.js', [_modules['Core/Globals.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Utilities.js']], function (H, SVGElement, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var isFirefox = H.isFirefox,
-            isMS = H.isMS,
-            isWebKit = H.isWebKit,
-            win = H.win;
-        var css = U.css,
-            defined = U.defined,
-            extend = U.extend,
-            pick = U.pick,
-            pInt = U.pInt;
-        /**
-         * Element placebo
-         * @private
-         */
-        var HTMLElement = SVGElement;
-        /* eslint-disable valid-jsdoc */
-        // Extend SvgElement for useHTML option.
-        extend(HTMLElement.prototype, /** @lends SVGElement.prototype */ {
-            /**
-             * Apply CSS to HTML elements. This is used in text within SVG rendering and
-             * by the VML renderer
-             *
-             * @private
-             * @function Highcharts.SVGElement#htmlCss
-             *
-             * @param {Highcharts.CSSObject} styles
-             *
-             * @return {Highcharts.SVGElement}
-             */
-            htmlCss: function (styles) {
-                var wrapper = this,
-                    element = wrapper.element, 
-                    // When setting or unsetting the width style, we need to update
-                    // transform (#8809)
-                    isSettingWidth = (element.tagName === 'SPAN' &&
-                        styles &&
-                        'width' in styles),
-                    textWidth = pick(isSettingWidth && styles.width,
-                    void 0),
-                    doTransform;
-                if (isSettingWidth) {
-                    delete styles.width;
-                    wrapper.textWidth = textWidth;
-                    doTransform = true;
-                }
-                if (styles && styles.textOverflow === 'ellipsis') {
-                    styles.whiteSpace = 'nowrap';
-                    styles.overflow = 'hidden';
-                }
-                wrapper.styles = extend(wrapper.styles, styles);
-                css(wrapper.element, styles);
-                // Now that all styles are applied, to the transform
-                if (doTransform) {
-                    wrapper.htmlUpdateTransform();
-                }
-                return wrapper;
-            },
-            /**
-             * VML and useHTML method for calculating the bounding box based on offsets.
-             *
-             * @private
-             * @function Highcharts.SVGElement#htmlGetBBox
-             *
-             * @param {boolean} refresh
-             *        Whether to force a fresh value from the DOM or to use the cached
-             *        value.
-             *
-             * @return {Highcharts.BBoxObject}
-             *         A hash containing values for x, y, width and height.
-             */
-            htmlGetBBox: function () {
-                var wrapper = this,
-                    element = wrapper.element;
-                return {
-                    x: element.offsetLeft,
-                    y: element.offsetTop,
-                    width: element.offsetWidth,
-                    height: element.offsetHeight
-                };
-            },
-            /**
-             * VML override private method to update elements based on internal
-             * properties based on SVG transform.
-             *
-             * @private
-             * @function Highcharts.SVGElement#htmlUpdateTransform
-             * @return {void}
-             */
-            htmlUpdateTransform: function () {
-                // aligning non added elements is expensive
-                if (!this.added) {
-                    this.alignOnAdd = true;
-                    return;
-                }
-                var wrapper = this,
-                    renderer = wrapper.renderer,
-                    elem = wrapper.element,
-                    translateX = wrapper.translateX || 0,
-                    translateY = wrapper.translateY || 0,
-                    x = wrapper.x || 0,
-                    y = wrapper.y || 0,
-                    align = wrapper.textAlign || 'left',
-                    alignCorrection = {
-                        left: 0,
-                    center: 0.5,
-                    right: 1
-                    }[align],
-                    styles = wrapper.styles,
-                    whiteSpace = styles && styles.whiteSpace;
-                /**
-                 * @private
-                 * @return {number}
-                 */
-                function getTextPxLength() {
-                    // Reset multiline/ellipsis in order to read width (#4928,
-                    // #5417)
-                    css(elem, {
-                        width: '',
-                        whiteSpace: whiteSpace || 'nowrap'
-                    });
-                    return elem.offsetWidth;
-                }
-                // apply translate
-                css(elem, {
-                    marginLeft: translateX,
-                    marginTop: translateY
-                });
-                if (!renderer.styledMode && wrapper.shadows) { // used in labels/tooltip
-                    wrapper.shadows.forEach(function (shadow) {
-                        css(shadow, {
-                            marginLeft: translateX + 1,
-                            marginTop: translateY + 1
-                        });
-                    });
-                }
-                // apply inversion
-                if (wrapper.inverted) { // wrapper is a group
-                    [].forEach.call(elem.childNodes, function (child) {
-                        renderer.invertChild(child, elem);
-                    });
-                }
-                if (elem.tagName === 'SPAN') {
-                    var rotation = wrapper.rotation, baseline = void 0, textWidth = wrapper.textWidth && pInt(wrapper.textWidth), currentTextTransform = [
-                            rotation,
-                            align,
-                            elem.innerHTML,
-                            wrapper.textWidth,
-                            wrapper.textAlign
-                        ].join(',');
-                    // Update textWidth. Use the memoized textPxLength if possible, to
-                    // avoid the getTextPxLength function using elem.offsetWidth.
-                    // Calling offsetWidth affects rendering time as it forces layout
-                    // (#7656).
-                    if (textWidth !== wrapper.oldTextWidth &&
-                        ((textWidth > wrapper.oldTextWidth) ||
-                            (wrapper.textPxLength || getTextPxLength()) > textWidth) && (
-                    // Only set the width if the text is able to word-wrap, or
-                    // text-overflow is ellipsis (#9537)
-                    /[ \-]/.test(elem.textContent || elem.innerText) ||
-                        elem.style.textOverflow === 'ellipsis')) { // #983, #1254
-                        css(elem, {
-                            width: textWidth + 'px',
-                            display: 'block',
-                            whiteSpace: whiteSpace || 'normal' // #3331
-                        });
-                        wrapper.oldTextWidth = textWidth;
-                        wrapper.hasBoxWidthChanged = true; // #8159
-                    }
-                    else {
-                        wrapper.hasBoxWidthChanged = false; // #8159
-                    }
-                    // Do the calculations and DOM access only if properties changed
-                    if (currentTextTransform !== wrapper.cTT) {
-                        baseline = renderer.fontMetrics(elem.style.fontSize, elem).b;
-                        // Renderer specific handling of span rotation, but only if we
-                        // have something to update.
-                        if (defined(rotation) &&
-                            ((rotation !== (wrapper.oldRotation || 0)) ||
-                                (align !== wrapper.oldAlign))) {
-                            wrapper.setSpanRotation(rotation, alignCorrection, baseline);
-                        }
-                        wrapper.getSpanCorrection(
-                        // Avoid elem.offsetWidth if we can, it affects rendering
-                        // time heavily (#7656)
-                        ((!defined(rotation) && wrapper.textPxLength) || // #7920
-                            elem.offsetWidth), baseline, alignCorrection, rotation, align);
-                    }
-                    // apply position with correction
-                    css(elem, {
-                        left: (x + (wrapper.xCorr || 0)) + 'px',
-                        top: (y + (wrapper.yCorr || 0)) + 'px'
-                    });
-                    // record current text transform
-                    wrapper.cTT = currentTextTransform;
-                    wrapper.oldRotation = rotation;
-                    wrapper.oldAlign = align;
-                }
-            },
-            /**
-             * Set the rotation of an individual HTML span.
-             *
-             * @private
-             * @function Highcharts.SVGElement#setSpanRotation
-             * @param {number} rotation
-             * @param {number} alignCorrection
-             * @param {number} baseline
-             * @return {void}
-             */
-            setSpanRotation: function (rotation, alignCorrection, baseline) {
-                var getTransformKey = function () { return (isMS &&
-                        !/Edge/.test(win.navigator.userAgent) ?
-                        '-ms-transform' :
-                        isWebKit ?
-                            '-webkit-transform' :
-                            isFirefox ?
-                                'MozTransform' :
-                                win.opera ?
-                                    '-o-transform' :
-                                    void 0); };
-                var rotationStyle = {},
-                    cssTransformKey = getTransformKey();
-                if (cssTransformKey) {
-                    rotationStyle[cssTransformKey] = rotationStyle.transform =
-                        'rotate(' + rotation + 'deg)';
-                    rotationStyle[cssTransformKey + (isFirefox ? 'Origin' : '-origin')] = rotationStyle.transformOrigin =
-                        (alignCorrection * 100) + '% ' + baseline + 'px';
-                    css(this.element, rotationStyle);
-                }
-            },
-            /**
-             * Get the correction in X and Y positioning as the element is rotated.
-             *
-             * @private
-             * @function Highcharts.SVGElement#getSpanCorrection
-             * @param {number} width
-             * @param {number} baseline
-             * @param {number} alignCorrection
-             * @return {void}
-             */
-            getSpanCorrection: function (width, baseline, alignCorrection) {
-                this.xCorr = -width * alignCorrection;
-                this.yCorr = -baseline;
-            }
-        });
-
-        return HTMLElement;
-    });
-    _registerModule(_modules, 'Core/Renderer/HTML/HTMLRenderer.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Renderer/SVG/SVGRenderer.js'], _modules['Core/Utilities.js']], function (AST, SVGElement, SVGRenderer, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        var attr = U.attr,
-            createElement = U.createElement,
-            extend = U.extend,
-            pick = U.pick;
-        /**
-         * Renderer placebo
-         * @private
-         */
-        var HTMLRenderer = SVGRenderer;
-        /* eslint-disable valid-jsdoc */
-        // Extend SvgRenderer for useHTML option.
-        extend(SVGRenderer.prototype, /** @lends SVGRenderer.prototype */ {
-            /**
-             * Create HTML text node. This is used by the VML renderer as well as the
-             * SVG renderer through the useHTML option.
-             *
-             * @private
-             * @function Highcharts.SVGRenderer#html
-             *
-             * @param {string} str
-             *        The text of (subset) HTML to draw.
-             *
-             * @param {number} x
-             *        The x position of the text's lower left corner.
-             *
-             * @param {number} y
-             *        The y position of the text's lower left corner.
-             *
-             * @return {Highcharts.HTMLDOMElement}
-             */
-            html: function (str, x, y) {
-                var wrapper = this.createElement('span'), element = wrapper.element, renderer = wrapper.renderer, isSVG = renderer.isSVG, addSetters = function (gWrapper, style) {
-                        // These properties are set as attributes on the SVG group, and
-                        // as identical CSS properties on the div. (#3542)
-                        ['opacity', 'visibility'].forEach(function (prop) {
-                            gWrapper[prop + 'Setter'] = function (value, key, elem) {
-                                var styleObject = gWrapper.div ?
-                                    gWrapper.div.style :
-                                    style;
-                            SVGElement.prototype[prop + 'Setter']
-                                .call(this, value, key, elem);
-                            if (styleObject) {
-                                styleObject[key] = value;
-                            }
-                        };
-                    });
-                    gWrapper.addedSetters = true;
-                };
-                // Text setter
-                wrapper.textSetter = function (value) {
-                    if (value !== this.textStr) {
-                        delete this.bBox;
-                        delete this.oldTextWidth;
-                        AST.setElementHTML(this.element, pick(value, ''));
-                        this.textStr = value;
-                        wrapper.doTransform = true;
-                    }
-                };
-                // Add setters for the element itself (#4938)
-                if (isSVG) { // #4938, only for HTML within SVG
-                    addSetters(wrapper, wrapper.element.style);
-                }
-                // Various setters which rely on update transform
-                wrapper.xSetter =
-                    wrapper.ySetter =
-                        wrapper.alignSetter =
-                            wrapper.rotationSetter =
-                                function (value, key) {
-                                    if (key === 'align') {
-                                        // Do not overwrite the SVGElement.align method. Same as VML.
-                                        wrapper.alignValue = wrapper.textAlign = value;
-                                    }
-                                    else {
-                                        wrapper[key] = value;
-                                    }
-                                    wrapper.doTransform = true;
-                                };
-                // Runs at the end of .attr()
-                wrapper.afterSetters = function () {
-                    // Update transform. Do this outside the loop to prevent redundant
-                    // updating for batch setting of attributes.
-                    if (this.doTransform) {
-                        this.htmlUpdateTransform();
-                        this.doTransform = false;
-                    }
-                };
-                // Set the default attributes
-                wrapper
-                    .attr({
-                    text: str,
-                    x: Math.round(x),
-                    y: Math.round(y)
-                })
-                    .css({
-                    position: 'absolute'
-                });
-                if (!renderer.styledMode) {
-                    wrapper.css({
-                        fontFamily: this.style.fontFamily,
-                        fontSize: this.style.fontSize
-                    });
-                }
-                // Keep the whiteSpace style outside the wrapper.styles collection
-                element.style.whiteSpace = 'nowrap';
-                // Use the HTML specific .css method
-                wrapper.css = wrapper.htmlCss;
-                // This is specific for HTML within SVG
-                if (isSVG) {
-                    wrapper.add = function (svgGroupWrapper) {
-                        var htmlGroup,
-                            container = renderer.box.parentNode,
-                            parentGroup,
-                            parents = [];
-                        this.parentGroup = svgGroupWrapper;
-                        // Create a mock group to hold the HTML elements
-                        if (svgGroupWrapper) {
-                            htmlGroup = svgGroupWrapper.div;
-                            if (!htmlGroup) {
-                                // Read the parent chain into an array and read from top
-                                // down
-                                parentGroup = svgGroupWrapper;
-                                while (parentGroup) {
-                                    parents.push(parentGroup);
-                                    // Move up to the next parent group
-                                    parentGroup = parentGroup.parentGroup;
-                                }
-                                // Ensure dynamically updating position when any parent
-                                // is translated
-                                parents.reverse().forEach(function (parentGroup) {
-                                    var htmlGroupStyle,
-                                        cls = attr(parentGroup.element, 'class');
-                                    /**
-                                     * Common translate setter for X and Y on the HTML
-                                     * group. Reverted the fix for #6957 du to
-                                     * positioning problems and offline export (#7254,
-                                     * #7280, #7529)
-                                     * @private
-                                     * @param {*} value
-                                     * @param {string} key
-                                     * @return {void}
-                                     */
-                                    function translateSetter(value, key) {
-                                        parentGroup[key] = value;
-                                        if (key === 'translateX') {
-                                            htmlGroupStyle.left = value + 'px';
-                                        }
-                                        else {
-                                            htmlGroupStyle.top = value + 'px';
-                                        }
-                                        parentGroup.doTransform = true;
-                                    }
-                                    // Create a HTML div and append it to the parent div
-                                    // to emulate the SVG group structure
-                                    var parentGroupStyles = parentGroup.styles || {};
-                                    htmlGroup =
-                                        parentGroup.div =
-                                            parentGroup.div || createElement('div', cls ? { className: cls } : void 0, {
-                                                position: 'absolute',
-                                                left: (parentGroup.translateX || 0) + 'px',
-                                                top: (parentGroup.translateY || 0) + 'px',
-                                                display: parentGroup.display,
-                                                opacity: parentGroup.opacity,
-                                                cursor: parentGroupStyles.cursor,
-                                                pointerEvents: parentGroupStyles.pointerEvents // #5595
-                                                // the top group is appended to container
-                                            }, htmlGroup || container);
-                                    // Shortcut
-                                    htmlGroupStyle = htmlGroup.style;
-                                    // Set listeners to update the HTML div's position
-                                    // whenever the SVG group position is changed.
-                                    extend(parentGroup, {
-                                        // (#7287) Pass htmlGroup to use
-                                        // the related group
-                                        classSetter: (function (htmlGroup) {
-                                            return function (value) {
-                                                this.element.setAttribute('class', value);
-                                                htmlGroup.className = value;
-                                            };
-                                        }(htmlGroup)),
-                                        on: function () {
-                                            if (parents[0].div) { // #6418
-                                                wrapper.on.apply({
-                                                    element: parents[0].div,
-                                                    onEvents: wrapper.onEvents
-                                                }, arguments);
-                                            }
-                                            return parentGroup;
-                                        },
-                                        translateXSetter: translateSetter,
-                                        translateYSetter: translateSetter
-                                    });
-                                    if (!parentGroup.addedSetters) {
-                                        addSetters(parentGroup);
-                                    }
-                                });
-                            }
-                        }
-                        else {
-                            htmlGroup = container;
-                        }
-                        htmlGroup.appendChild(element);
-                        // Shared with VML:
-                        wrapper.added = true;
-                        if (wrapper.alignOnAdd) {
-                            wrapper.htmlUpdateTransform();
-                        }
-                        return wrapper;
-                    };
-                }
-                return wrapper;
-            }
-        });
-
-        return HTMLRenderer;
-    });
-    _registerModule(_modules, 'Core/Axis/Tick.js', [_modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (F, H, U) {
+    _registerModule(_modules, 'Core/Axis/Tick.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -14275,6 +14218,11 @@
                     tickPositions = axis.tickPositions,
                     isFirst = pos === tickPositions[0],
                     isLast = pos === tickPositions[tickPositions.length - 1],
+                    value = this.parameters.category || (categories ?
+                        pick(categories[pos],
+                    names[pos],
+                    pos) :
+                        pos),
                     label = tick.label,
                     animateLabels = (!labelOptions.step || labelOptions.step === 1) &&
                         axis.tickInterval === 1,
@@ -14283,15 +14231,6 @@
                     dateTimeLabelFormats,
                     i,
                     list;
-                // The context value
-                var value = this.parameters.category || (categories ?
-                        pick(categories[pos],
-                    names[pos],
-                    pos) :
-                        pos);
-                if (log && isNumber(value)) {
-                    value = correctFloat(log.lin2log(value));
-                }
                 // Set the datetime label format. If a higher rank is set for this
                 // position, use that. If not, use the general format.
                 if (axis.dateTime && tickPositionInfo) {
@@ -14316,48 +14255,28 @@
                  */
                 tick.isLast = isLast;
                 // Get the string
-                var ctx = {
-                        axis: axis,
-                        chart: chart,
-                        dateTimeLabelFormat: dateTimeLabelFormat,
-                        isFirst: isFirst,
-                        isLast: isLast,
-                        pos: pos,
-                        tick: tick,
-                        tickPositionInfo: tickPositionInfo,
-                        value: value
-                    };
-                // Fire an event that allows modifying the context for use in
-                // `labels.format` and `labels.formatter`.
-                fireEvent(this, 'labelFormat', ctx);
-                // Label formatting. When `labels.format` is given, we first run the
-                // defaultFormatter and append the result to the context as `text`.
-                // Handy for adding prefix or suffix while keeping default number
-                // formatting.
-                var labelFormatter = function (ctx) {
-                        if (labelOptions.formatter) {
-                            return labelOptions.formatter.call(ctx,
-                    ctx);
-                    }
-                    if (labelOptions.format) {
-                        ctx.text = axis.defaultLabelFormatter.call(ctx);
-                        return F.format(labelOptions.format, ctx, chart);
-                    }
-                    return axis.defaultLabelFormatter.call(ctx, ctx);
+                tick.formatCtx = {
+                    axis: axis,
+                    chart: chart,
+                    isFirst: isFirst,
+                    isLast: isLast,
+                    dateTimeLabelFormat: dateTimeLabelFormat,
+                    tickPositionInfo: tickPositionInfo,
+                    value: log ? correctFloat(log.lin2log(value)) : value,
+                    pos: pos
                 };
-                str = labelFormatter.call(ctx, ctx);
+                str = axis.labelFormatter.call(tick.formatCtx, this.formatCtx);
                 // Set up conditional formatting based on the format list if existing.
                 list = dateTimeLabelFormats && dateTimeLabelFormats.list;
                 if (list) {
                     tick.shortenLabel = function () {
                         for (i = 0; i < list.length; i++) {
-                            extend(ctx, { dateTimeLabelFormat: list[i] });
                             label.attr({
-                                text: labelFormatter.call(ctx, ctx)
+                                text: axis.labelFormatter.call(extend(tick.formatCtx, { dateTimeLabelFormat: list[i] }))
                             });
                             if (label.getBBox().width <
                                 axis.getSlotWidth(tick) - 2 *
-                                    labelOptions.padding) {
+                                    pick(labelOptions.padding, 5)) {
                                 return;
                             }
                         }
@@ -14386,7 +14305,7 @@
                     // When resetting text, also reset the width if dynamically set
                     // (#8809)
                     if (label.textWidth &&
-                        !labelOptions.style.width &&
+                        !(labelOptions.style && labelOptions.style.width) &&
                         !label.styles.width) {
                         label.css({ width: null });
                     }
@@ -14616,7 +14535,8 @@
                     css = {};
                 // Check if the label overshoots the chart spacing box. If it does, move
                 // it. If it now overshoots the slotWidth, add ellipsis.
-                if (!rotation && labelOptions.overflow === 'justify') {
+                if (!rotation &&
+                    pick(labelOptions.overflow, 'justify') === 'justify') {
                     leftPos = pxPos - factor * labelWidth;
                     rightPos = pxPos + (1 - factor) * labelWidth;
                     if (leftPos < leftBound) {
@@ -14744,17 +14664,14 @@
                     y = xy.y,
                     reverseCrisp = ((horiz && x === axis.pos + axis.len) ||
                         (!horiz && y === axis.pos)) ? -1 : 1; // #1480, #1687
-                    var labelOpacity = pick(opacity,
-                    tick.label && tick.label.newOpacity, // #15528
-                    1);
-                opacity = pick(opacity, 1);
+                    opacity = pick(opacity, 1);
                 this.isActive = true;
                 // Create the grid line
                 this.renderGridLine(old, opacity, reverseCrisp);
                 // create the tick mark
                 this.renderMark(xy, opacity, reverseCrisp);
                 // the label is created on init - now move it into place
-                this.renderLabel(xy, old, labelOpacity, index);
+                this.renderLabel(xy, old, opacity, index);
                 tick.isNew = false;
                 fireEvent(this, 'afterRender');
             };
@@ -14768,30 +14685,14 @@
              * @return {void}
              */
             Tick.prototype.renderGridLine = function (old, opacity, reverseCrisp) {
-                var tick = this,
-                    axis = tick.axis,
-                    options = axis.options,
-                    gridLine = tick.gridLine,
-                    gridLinePath,
-                    attribs = {},
-                    pos = tick.pos,
-                    type = tick.type,
-                    tickmarkOffset = pick(tick.tickmarkOffset,
-                    axis.tickmarkOffset),
-                    renderer = axis.chart.renderer,
-                    gridLineWidth = options.gridLineWidth,
-                    gridLineColor = options.gridLineColor,
-                    dashStyle = options.gridLineDashStyle;
-                if (tick.type === 'minor') {
-                    gridLineWidth = options.minorGridLineWidth;
-                    gridLineColor = options.minorGridLineColor;
-                    dashStyle = options.minorGridLineDashStyle;
-                }
+                var tick = this, axis = tick.axis, options = axis.options, gridLine = tick.gridLine, gridLinePath, attribs = {}, pos = tick.pos, type = tick.type, tickmarkOffset = pick(tick.tickmarkOffset, axis.tickmarkOffset), renderer = axis.chart.renderer, gridPrefix = type ? type + 'Grid' : 'grid', gridLineWidth = options[gridPrefix + 'LineWidth'], gridLineColor = options[gridPrefix + 'LineColor'], dashStyle = options[gridPrefix + 'LineDashStyle'];
                 if (!gridLine) {
                     if (!axis.chart.styledMode) {
                         attribs.stroke = gridLineColor;
-                        attribs['stroke-width'] = gridLineWidth || 0;
-                        attribs.dashstyle = dashStyle;
+                        attribs['stroke-width'] = gridLineWidth;
+                        if (dashStyle) {
+                            attribs.dashstyle = dashStyle;
+                        }
                     }
                     if (!type) {
                         attribs.zIndex = 1;
@@ -14836,8 +14737,8 @@
              * @return {void}
              */
             Tick.prototype.renderMark = function (xy, opacity, reverseCrisp) {
-                var tick = this, axis = tick.axis, options = axis.options, renderer = axis.chart.renderer, type = tick.type, tickSize = axis.tickSize(type ? type + 'Tick' : 'tick'), mark = tick.mark, isNewMark = !mark, x = xy.x, y = xy.y, tickWidth = pick(options[type !== 'minor' ? 'tickWidth' : 'minorTickWidth'], !type && axis.isXAxis ? 1 : 0), // X axis defaults to 1
-                    tickColor = options[type !== 'minor' ? 'tickColor' : 'minorTickColor'];
+                var tick = this, axis = tick.axis, options = axis.options, renderer = axis.chart.renderer, type = tick.type, tickPrefix = type ? type + 'Tick' : 'tick', tickSize = axis.tickSize(tickPrefix), mark = tick.mark, isNewMark = !mark, x = xy.x, y = xy.y, tickWidth = pick(options[tickPrefix + 'Width'], !type && axis.isXAxis ? 1 : 0), // X axis defaults to 1
+                    tickColor = options[tickPrefix + 'Color'];
                 if (tickSize) {
                     // negate the length
                     if (axis.opposite) {
@@ -14898,10 +14799,10 @@
                     // label anyway (#2100).
                     if ((tick.isFirst &&
                         !tick.isLast &&
-                        !options.showFirstLabel) ||
+                        !pick(options.showFirstLabel, 1)) ||
                         (tick.isLast &&
                             !tick.isFirst &&
-                            !options.showLastLabel)) {
+                            !pick(options.showLastLabel, 1))) {
                         show = false;
                         // Handle label overflow and show or hide accordingly
                     }
@@ -14986,6 +14887,7 @@
             error = U.error,
             extend = U.extend,
             fireEvent = U.fireEvent,
+            format = U.format,
             getMagnitude = U.getMagnitude,
             isArray = U.isArray,
             isFunction = U.isFunction,
@@ -15017,8 +14919,7 @@
         * @name Highcharts.AxisPlotLinePathOptionsObject#force
         * @type {string|boolean|undefined}
         */ /**
-        * Used in Highcharts Stock. When `true`, plot paths
-        * (crosshair, plotLines, gridLines)
+        * Used in Highstock. When `true`, plot paths (crosshair, plotLines, gridLines)
         * will be rendered on all axes when defined on the first axis.
         * @name Highcharts.AxisPlotLinePathOptionsObject#acrossPanes
         * @type {boolean|undefined}
@@ -15055,50 +14956,33 @@
         /**
          * @callback Highcharts.AxisLabelsFormatterCallbackFunction
          *
-         * @param {Highcharts.AxisLabelsFormatterContextObject} this
+         * @param {Highcharts.AxisLabelsFormatterContextObject<number>} this
          *
-         * @param {Highcharts.AxisLabelsFormatterContextObject} ctx
+         * @param {Highcharts.AxisLabelsFormatterContextObject<string>} that
          *
          * @return {string}
          */
         /**
-         * @interface Highcharts.AxisLabelsFormatterContextObject
+         * @interface Highcharts.AxisLabelsFormatterContextObject<T>
          */ /**
-        * The axis item of the label
-        * @name Highcharts.AxisLabelsFormatterContextObject#axis
+        * @name Highcharts.AxisLabelsFormatterContextObject<T>#axis
         * @type {Highcharts.Axis}
         */ /**
-        * The chart instance.
-        * @name Highcharts.AxisLabelsFormatterContextObject#chart
+        * @name Highcharts.AxisLabelsFormatterContextObject<T>#chart
         * @type {Highcharts.Chart}
         */ /**
-        * Whether the label belongs to the first tick on the axis.
-        * @name Highcharts.AxisLabelsFormatterContextObject#isFirst
+        * @name Highcharts.AxisLabelsFormatterContextObject<T>#isFirst
         * @type {boolean}
         */ /**
-        * Whether the label belongs to the last tick on the axis.
-        * @name Highcharts.AxisLabelsFormatterContextObject#isLast
+        * @name Highcharts.AxisLabelsFormatterContextObject<T>#isLast
         * @type {boolean}
         */ /**
-        * The position on the axis in terms of axis values. For category axes, a
-        * zero-based index. For datetime axes, the JavaScript time in milliseconds
-        * since 1970.
-        * @name Highcharts.AxisLabelsFormatterContextObject#pos
+        * @name Highcharts.AxisLabelsFormatterContextObject<T>#pos
         * @type {number}
         */ /**
-        * The preformatted text as the result of the default formatting. For example
-        * dates will be formatted as strings, and numbers with language-specific comma
-        * separators, thousands separators and numeric symbols like `k` or `M`.
-        * @name Highcharts.AxisLabelsFormatterContextObject#text
-        * @type {string}
-        */ /**
-        * The Tick instance.
-        * @name Highcharts.AxisLabelsFormatterContextObject#tick
-        * @type {Highcharts.Tick}
-        */ /**
         * This can be either a numeric value or a category string.
-        * @name Highcharts.AxisLabelsFormatterContextObject#value
-        * @type {number|string}
+        * @name Highcharts.AxisLabelsFormatterContextObject<T>#value
+        * @type {T}
         */
         /**
          * Options for axes.
@@ -15389,8 +15273,10 @@
                  */
                 axis.setOptions(userOptions);
                 var options = this.options,
-                    labelsOptions = options.labels,
                     type = options.type;
+                axis.labelFormatter = (options.labels.formatter ||
+                    // can be overwritten by dynamic format
+                    axis.defaultLabelFormatter);
                 /**
                  * User's options for this axis without defaults.
                  *
@@ -15407,8 +15293,8 @@
                  * @type {boolean}
                  */
                 axis.reversed = pick(options.reversed, axis.reversed);
-                axis.visible = options.visible;
-                axis.zoomEnabled = options.zoomEnabled;
+                axis.visible = options.visible !== false;
+                axis.zoomEnabled = options.zoomEnabled !== false;
                 // Initial categories
                 axis.hasNames =
                     type === 'category' || options.categories === true;
@@ -15490,9 +15376,7 @@
                  * @name Highcharts.Axis#crosshair
                  * @type {boolean|Highcharts.AxisCrosshairOptions}
                  */
-                var crosshair = pick(options.crosshair,
-                    splat(chart.options.tooltip.crosshairs)[isXAxis ? 0 : 1]);
-                axis.crosshair = crosshair === true ? {} : crosshair;
+                axis.crosshair = pick(options.crosshair, splat(chart.options.tooltip.crosshairs)[isXAxis ? 0 : 1], false);
                 var events = axis.options.events;
                 // Register. Don't add it again on Axis.update().
                 if (chart.axes.indexOf(axis) === -1) { //
@@ -15518,9 +15402,7 @@
                     typeof axis.reversed === 'undefined') {
                     axis.reversed = true;
                 }
-                axis.labelRotation = isNumber(labelsOptions.rotation) ?
-                    labelsOptions.rotation :
-                    void 0;
+                axis.labelRotation = axis.options.labels.rotation;
                 // register event listeners
                 objectEach(events, function (event, eventType) {
                     if (isFunction(event)) {
@@ -15559,7 +15441,7 @@
              *
              * @function Highcharts.Axis#defaultLabelFormatter
              *
-             * @param {Highcharts.AxisLabelsFormatterContextObject} this
+             * @param {Highcharts.AxisLabelsFormatterContextObject<number>|Highcharts.AxisLabelsFormatterContextObject<string>} this
              * Formatter context of axis label.
              *
              * @return {string}
@@ -15576,7 +15458,8 @@
                     numSymMagnitude = lang.numericSymbolMagnitude || 1000,
                     i = numericSymbols && numericSymbols.length,
                     multi,
-                    ret, 
+                    ret,
+                    formatOption = axis.options.labels.format, 
                     // make sure the same symbol is added for all labels on a linear
                     // axis
                     numericSymbolDetector = axis.logarithmic ?
@@ -15584,7 +15467,10 @@
                         axis.tickInterval;
                 var chart = this.chart;
                 var numberFormatter = chart.numberFormatter;
-                if (categories) {
+                if (formatOption) {
+                    ret = format(formatOption, this, chart);
+                }
+                else if (categories) {
                     ret = "" + this.value;
                 }
                 else if (dateTimeLabelFormat) { // datetime axis
@@ -15648,10 +15534,10 @@
                         if (series.visible ||
                             !chart.options.chart.ignoreHiddenSeries) {
                             var seriesOptions = series.options,
-                                xData = void 0,
+                                xData,
                                 threshold = seriesOptions.threshold,
-                                seriesDataMin = void 0,
-                                seriesDataMax = void 0;
+                                seriesDataMin,
+                                seriesDataMax;
                             axis.hasVisibleSeries = true;
                             // Validate threshold in logarithmic axes
                             if (axis.positiveValuesOnly && threshold <= 0) {
@@ -15775,8 +15661,8 @@
                 }
                 // From pixels to value
                 if (backwards) { // reverse translation
-                    val = val * sign + cvsOffset;
-                    val -= minPixelPadding;
+                    /* Temporary fix for highcharts/highcharts#9612 */
+                    val = val * sign;
                     // from chart pixel to value:
                     returnValue = val / localA + localMin;
                     if (doPostTranslate) { // log and ordinal axes
@@ -16185,11 +16071,11 @@
                     x;
                 point.series.requireSorting = false;
                 if (!defined(nameX)) {
-                    nameX = this.options.uniqueNames ?
+                    nameX = this.options.uniqueNames === false ?
+                        point.series.autoIncrement() :
                         (explicitCategories ?
                             names.indexOf(point.name) :
-                            pick(names.keys[point.name], -1)) :
-                        point.series.autoIncrement();
+                            pick(names.keys[point.name], -1));
                 }
                 if (nameX === -1) { // Not found in currenct categories
                     if (!explicitCategories) {
@@ -16438,8 +16324,7 @@
                     axis.userMax = hardMax = axis.max;
                     axis.range = null; // don't use it when running setExtremes
                 }
-                // Hook for Highcharts Stock Scroller.
-                // Consider combining with beforePadding.
+                // Hook for Highstock Scroller. Consider combining with beforePadding.
                 fireEvent(axis, 'foundExtremes');
                 // Hook for adjusting this.min and this.max. Used by bubble series.
                 if (axis.beforePadding) {
@@ -16527,7 +16412,6 @@
                     axis.tickInterval = 1;
                 }
                 else if (isLinked &&
-                    axis.linkedParent &&
                     !tickIntervalOption &&
                     tickPixelIntervalOption ===
                         axis.linkedParent.options.tickPixelInterval) {
@@ -16553,8 +16437,9 @@
                 // axes.
                 if (isXAxis && !secondPass) {
                     axis.series.forEach(function (series) {
-                        series.processData(axis.min !== (axis.old && axis.old.min) ||
-                            axis.max !== (axis.old && axis.old.max));
+                        var _a,
+                            _b;
+                        series.processData(axis.min !== ((_a = axis.old) === null || _a === void 0 ? void 0 : _a.min) || axis.max !== ((_b = axis.old) === null || _b === void 0 ? void 0 : _b.max));
                     });
                 }
                 // set the translation factor used in translate function
@@ -16776,7 +16661,7 @@
                 if (
                 // Only if alignTicks is true
                 this.chart.options.chart.alignTicks !== false &&
-                    options.alignTicks &&
+                    options.alignTicks !== false &&
                     // Disabled when startOnTick or endOnTick are false (#7604)
                     options.startOnTick !== false &&
                     options.endOnTick !== false &&
@@ -16911,29 +16796,33 @@
              * @fires Highcharts.Axis#event:afterSetScale
              */
             Axis.prototype.setScale = function () {
+                var _a,
+                    _b,
+                    _c,
+                    _d,
+                    _e;
                 var axis = this,
                     isDirtyAxisLength,
                     isDirtyData = false,
                     isXAxisDirty = false;
                 axis.series.forEach(function (series) {
+                    var _a;
                     isDirtyData = isDirtyData || series.isDirtyData || series.isDirty;
                     // When x axis is dirty, we need new data extremes for y as
                     // well:
-                    isXAxisDirty = (isXAxisDirty ||
-                        (series.xAxis && series.xAxis.isDirty) ||
-                        false);
+                    isXAxisDirty = isXAxisDirty || ((_a = series.xAxis) === null || _a === void 0 ? void 0 : _a.isDirty) || false;
                 });
                 // set the new axisLength
                 axis.setAxisSize();
-                isDirtyAxisLength = axis.len !== (axis.old && axis.old.len);
+                isDirtyAxisLength = axis.len !== ((_a = axis.old) === null || _a === void 0 ? void 0 : _a.len);
                 // do we really need to go through all this?
                 if (isDirtyAxisLength ||
                     isDirtyData ||
                     isXAxisDirty ||
                     axis.isLinked ||
                     axis.forceRedraw ||
-                    axis.userMin !== (axis.old && axis.old.userMin) ||
-                    axis.userMax !== (axis.old && axis.old.userMax) ||
+                    axis.userMin !== ((_b = axis.old) === null || _b === void 0 ? void 0 : _b.userMin) ||
+                    axis.userMax !== ((_c = axis.old) === null || _c === void 0 ? void 0 : _c.userMax) ||
                     axis.alignToOthers()) {
                     if (axis.stacking) {
                         axis.stacking.resetStacks();
@@ -16948,8 +16837,8 @@
                     if (!axis.isDirty) {
                         axis.isDirty =
                             isDirtyAxisLength ||
-                                axis.min !== (axis.old && axis.old.min) ||
-                                axis.max !== (axis.old && axis.old.max);
+                                axis.min !== ((_d = axis.old) === null || _d === void 0 ? void 0 : _d.min) ||
+                                axis.max !== ((_e = axis.old) === null || _e === void 0 ? void 0 : _e.max);
                     }
                 }
                 else if (axis.stacking) {
@@ -16977,7 +16866,7 @@
              * @sample highcharts/members/axis-setextremes-off-ticks/
              *         Set extremes off ticks
              * @sample stock/members/axis-setextremes/
-             *         Set extremes in Highcharts Stock
+             *         Set extremes in Highstock
              * @sample maps/members/axis-setextremes/
              *         Set extremes in Highmaps
              *
@@ -17249,7 +17138,8 @@
              */
             Axis.prototype.labelMetrics = function () {
                 var index = this.tickPositions && this.tickPositions[0] || 0;
-                return this.chart.renderer.fontMetrics(this.options.labels.style.fontSize, this.ticks[index] && this.ticks[index].label);
+                return this.chart.renderer.fontMetrics(this.options.labels.style &&
+                    this.options.labels.style.fontSize, this.ticks[index] && this.ticks[index].label);
             };
             /**
              * Prevent the ticks from getting so close we can't draw the labels. On a
@@ -17292,14 +17182,12 @@
                     return correctFloat(step * tickInterval);
                 };
                 if (horiz) {
-                    if (!labelOptions.staggerLines && !labelOptions.step) {
-                        if (isNumber(rotationOption)) {
-                            autoRotation = [rotationOption];
-                        }
-                        else if (slotSize < labelOptions.autoRotationLimit) {
-                            autoRotation = labelOptions.autoRotation;
-                        }
-                    }
+                    autoRotation = !labelOptions.staggerLines &&
+                        !labelOptions.step &&
+                        ( // #3971
+                        defined(rotationOption) ?
+                            [rotationOption] :
+                            slotSize < pick(labelOptions.autoRotationLimit, 80) && labelOptions.autoRotation);
                     if (autoRotation) {
                         // Loop over the given autoRotation options, and determine
                         // which gives the best score. The best score is that with
@@ -17324,7 +17212,7 @@
                     newTickInterval = getStep(labelMetrics.h);
                 }
                 this.autoRotation = autoRotation;
-                this.labelRotation = pick(rotation, isNumber(rotationOption) ? rotationOption : 0);
+                this.labelRotation = pick(rotation, rotationOption);
                 return newTickInterval;
             };
             /**
@@ -17343,6 +17231,7 @@
              * The pixel width allocated to each axis label.
              */
             Axis.prototype.getSlotWidth = function (tick) {
+                var _a;
                 // #5086, #1580, #1931
                 var chart = this.chart,
                     horiz = this.horiz,
@@ -17353,7 +17242,9 @@
                 if (tick && isNumber(tick.slotWidth)) { // #13221, can be 0
                     return tick.slotWidth;
                 }
-                if (horiz && labelOptions.step < 2) {
+                if (horiz &&
+                    labelOptions &&
+                    (labelOptions.step || 0) < 2) {
                     if (labelOptions.rotation) { // #4415
                         return 0;
                     }
@@ -17361,9 +17252,9 @@
                 }
                 if (!horiz) {
                     // #7028
-                    var cssWidth = labelOptions.style.width;
+                    var cssWidth = (_a = labelOptions === null || labelOptions === void 0 ? void 0 : labelOptions.style) === null || _a === void 0 ? void 0 : _a.width;
                     if (cssWidth !== void 0) {
-                        return parseInt(String(cssWidth), 10);
+                        return parseInt(cssWidth, 10);
                     }
                     if (marginLeft) {
                         return marginLeft - chart.spacing[3];
@@ -17385,14 +17276,15 @@
                     tickPositions = this.tickPositions,
                     ticks = this.ticks,
                     labelOptions = this.options.labels,
-                    labelStyleOptions = labelOptions.style,
+                    labelStyleOptions = (labelOptions && labelOptions.style || {}),
                     horiz = this.horiz,
                     slotWidth = this.getSlotWidth(),
                     innerWidth = Math.max(1,
-                    Math.round(slotWidth - 2 * labelOptions.padding)),
+                    Math.round(slotWidth - 2 * (labelOptions.padding || 5))),
                     attr = {},
                     labelMetrics = this.labelMetrics(),
-                    textOverflowOption = labelStyleOptions.textOverflow,
+                    textOverflowOption = (labelOptions.style &&
+                        labelOptions.style.textOverflow),
                     commonWidth,
                     commonTextOverflow,
                     maxLabelLength = 0,
@@ -17401,12 +17293,12 @@
                     pos;
                 // Set rotation option unless it is "auto", like in gauges
                 if (!isString(labelOptions.rotation)) {
-                    // #4443
+                    // #4443:
                     attr.rotation = labelOptions.rotation || 0;
                 }
                 // Get the longest label length
-                tickPositions.forEach(function (tickPosition) {
-                    var tick = ticks[tickPosition];
+                tickPositions.forEach(function (tick) {
+                    tick = ticks[tick];
                     // Replace label - sorting animation
                     if (tick.movedLabel) {
                         tick.replaceMovedLabel();
@@ -17568,10 +17460,10 @@
                         })[axisTitleOptions.align];
                     }
                     axis.axisTitle = renderer
-                        .text(axisTitleOptions.text || '', 0, 0, axisTitleOptions.useHTML)
+                        .text(axisTitleOptions.text, 0, 0, axisTitleOptions.useHTML)
                         .attr({
                         zIndex: 7,
-                        rotation: axisTitleOptions.rotation,
+                        rotation: axisTitleOptions.rotation || 0,
                         align: textAlign
                     })
                         .addClass('highcharts-axis-title');
@@ -17653,9 +17545,9 @@
                     lineHeightCorrection;
                 // For reuse in Axis.render
                 hasData = axis.hasData();
-                axis.showAxis = showAxis = hasData || options.showEmpty;
+                axis.showAxis = showAxis = hasData || pick(options.showEmpty, true);
                 // Set/reset staggerLines
-                axis.staggerLines = (axis.horiz && labelOptions.staggerLines) || void 0;
+                axis.staggerLines = axis.horiz && labelOptions.staggerLines;
                 // Create the axisGroup and gridGroup elements on first iteration
                 if (!axis.axisGroup) {
                     var createGroup = function (name,
@@ -17666,9 +17558,9 @@
                             (_this.isRadial ? "highcharts-radial-axis" + suffix + " " : '') +
                             (className || ''))
                             .add(axisParent); };
-                    axis.gridGroup = createGroup('grid', '-grid', options.gridZIndex);
-                    axis.axisGroup = createGroup('axis', '', options.zIndex);
-                    axis.labelGroup = createGroup('axis-labels', '-labels', labelOptions.zIndex);
+                    axis.gridGroup = createGroup('grid', '-grid', options.gridZIndex || 1);
+                    axis.axisGroup = createGroup('axis', '', options.zIndex || 2);
+                    axis.labelGroup = createGroup('axis-labels', '-labels', labelOptions.zIndex || 7);
                 }
                 if (hasData || axis.isLinked) {
                     // Generate ticks
@@ -17741,7 +17633,7 @@
                 // Due to GridAxis.tickSize, tickSize should be calculated after ticks
                 // has rendered.
                 var tickSize = this.tickSize('tick');
-                axisOffset[side] = Math.max(axisOffset[side], (axis.axisTitleMargin || 0) + titleOffset +
+                axisOffset[side] = Math.max(axisOffset[side], axis.axisTitleMargin + titleOffset +
                     directionFactor * axis.offset, labelOffsetPadded, // #3027
                 tickPositions && tickPositions.length && tickSize ?
                     tickSize[0] + directionFactor * axis.offset :
@@ -17841,10 +17733,11 @@
                     margin = horiz ? axisLeft : axisTop,
                     opposite = this.opposite,
                     offset = this.offset,
-                    xOption = axisTitleOptions.x,
-                    yOption = axisTitleOptions.y,
+                    xOption = axisTitleOptions.x || 0,
+                    yOption = axisTitleOptions.y || 0,
                     axisTitle = this.axisTitle,
-                    fontMetrics = this.chart.renderer.fontMetrics(axisTitleOptions.style.fontSize,
+                    fontMetrics = this.chart.renderer.fontMetrics(axisTitleOptions.style &&
+                        axisTitleOptions.style.fontSize,
                     axisTitle), 
                     // The part of a multiline text that is below the baseline of the
                     // first line. Subtract 1 to preserve pixel-perfectness from the
@@ -17913,14 +17806,14 @@
              * The tick index.
              */
             Axis.prototype.renderTick = function (pos, i) {
+                var _a;
                 var axis = this;
                 var isLinked = axis.isLinked;
                 var ticks = axis.ticks;
                 var slideInTicks = axis.chart.hasRendered && axis.old;
                 // Linked axes need an extra check to find out if
                 if (!isLinked ||
-                    (pos >= axis.min && pos <= axis.max) ||
-                    (axis.grid && axis.grid.isColumn)) {
+                    (pos >= axis.min && pos <= axis.max) || ((_a = axis.grid) === null || _a === void 0 ? void 0 : _a.isColumn)) {
                     if (!ticks[pos]) {
                         ticks[pos] = new Tick(axis, pos);
                     }
@@ -18204,7 +18097,7 @@
             Axis.prototype.drawCrosshair = function (e, point) {
                 var path,
                     options = this.crosshair,
-                    snap = pick(options && options.snap,
+                    snap = pick(options.snap,
                     true),
                     pos,
                     categorized,
@@ -18219,7 +18112,7 @@
                 }
                 if (
                 // Disabled in options
-                !options ||
+                !this.crosshair ||
                     // Snap
                     ((defined(point) || !snap) === false)) {
                     this.hideCrosshair();
@@ -18272,7 +18165,7 @@
                             .path()
                             .addClass('highcharts-crosshair highcharts-crosshair-' +
                             (categorized ? 'category ' : 'thin ') +
-                            (options.className || ''))
+                            options.className)
                             .attr({
                             zIndex: pick(options.zIndex, 2)
                         })
@@ -18330,7 +18223,8 @@
             *
             */
             Axis.prototype.hasVerticalPanning = function () {
-                var panningOptions = this.chart.options.chart.panning;
+                var _a;
+                var panningOptions = (_a = this.chart.options.chart) === null || _a === void 0 ? void 0 : _a.panning;
                 return Boolean(panningOptions &&
                     panningOptions.enabled && // #14624
                     /y/.test(panningOptions.type));
@@ -18372,6 +18266,13 @@
                 var chart = this.chart,
                     newEvents = ((options && options.events) || {});
                 options = merge(this.userOptions, options);
+                // Color Axis is not an array,
+                // This change is applied in the ColorAxis wrapper
+                if (chart.options[this.coll].indexOf) {
+                    // Don't use this.options.index,
+                    // StockChart has Axes in navigator too
+                    chart.options[this.coll][chart.options[this.coll].indexOf(this.userOptions)] = options;
+                }
                 // Remove old events, if no new exist (#8161)
                 objectEach(chart.options[this.coll].events, function (fn, ev) {
                     if (typeof newEvents[ev] === 'undefined') {
@@ -18410,6 +18311,12 @@
                 // Remove the axis
                 erase(chart.axes, this);
                 erase(chart[key], this);
+                if (isArray(chart.options[key])) {
+                    chart.options[key].splice(this.options.index, 1);
+                }
+                else { // color axis, #6488
+                    delete chart.options[key];
+                }
                 chart[key].forEach(function (axis, i) {
                     // Re-index, #1706, #8075
                     axis.options.index = axis.userOptions.index = i;
@@ -18494,14 +18401,15 @@
                  *
                  * Disabled for logarithmic axes.
                  *
+                 * @type      {boolean}
+                 * @default   true
                  * @product   highcharts highstock gantt
+                 * @apioption xAxis.alignTicks
                  */
-                alignTicks: true,
                 /**
                  * Whether to allow decimals in this axis' ticks. When counting
                  * integers, like persons or hits on a web page, decimals should
-                 * be avoided in the labels. By default, decimals are allowed on small
-                 * scale axes.
+                 * be avoided in the labels.
                  *
                  * @see [minTickInterval](#xAxis.minTickInterval)
                  *
@@ -18510,11 +18418,11 @@
                  * @sample {highcharts|highstock} highcharts/yaxis/allowdecimals-false/
                  *         False
                  *
-                 * @type      {boolean|undefined}
-                 * @default   undefined
+                 * @type      {boolean}
+                 * @default   true
                  * @since     2.0
+                 * @apioption xAxis.allowDecimals
                  */
-                allowDecimals: void 0,
                 /**
                  * When using an alternate grid color, a band is painted across the
                  * plot area between every other grid line.
@@ -18638,8 +18546,8 @@
                  * `.highcharts-xaxis-category` classes.
                  *
                  * @productdesc {highstock}
-                 * In Highcharts stock, by default, the crosshair is enabled on the
-                 * X axis and disabled on the Y axis.
+                 * In Highstock, by default, the crosshair is enabled on the X axis and
+                 * disabled on the Y axis.
                  *
                  * @sample {highcharts} highcharts/xaxis/crosshair-both/
                  *         Crosshair on both axes
@@ -18846,17 +18754,17 @@
                  * @apioption xAxis.crosshair.zIndex
                  */
                 /**
-                 * The Z index for the axis group.
-                 */
-                zIndex: 2,
-                /**
                  * Whether to zoom axis. If `chart.zoomType` is set, the option allows
                  * to disable zooming on an individual axis.
                  *
                  * @sample {highcharts} highcharts/xaxis/zoomenabled/
                  *         Zoom enabled is false
+                 *
+                 *
+                 * @type      {boolean}
+                 * @default   enabled
+                 * @apioption xAxis.zoomEnabled
                  */
-                zoomEnabled: true,
                 /**
                  * For a datetime axis, the scale will automatically adjust to the
                  * appropriate unit. This member gives the default string
@@ -18866,7 +18774,7 @@
                  * same axis.
                  *
                  * For an overview of the replacement codes, see
-                 * [dateFormat](/class-reference/Highcharts#.dateFormat).
+                 * [dateFormat](/class-reference/Highcharts#dateFormat).
                  *
                  * Defaults to:
                  * ```js
@@ -18957,7 +18865,7 @@
                  * the `maxPadding` option to control the axis end.
                  *
                  * @productdesc {highstock}
-                 * In Highcharts Stock, `endOnTick` is always `false` when the navigator
+                 * In Highstock, `endOnTick` is always `false` when the navigator
                  * is enabled, to prevent jumpy scrolling.
                  *
                  * @sample {highcharts} highcharts/chart/reflow-true/
@@ -19077,18 +18985,21 @@
                  *         Long dashes
                  *
                  * @type      {Highcharts.DashStyleValue}
+                 * @default   Solid
                  * @since     1.2
+                 * @apioption xAxis.gridLineDashStyle
                  */
-                gridLineDashStyle: 'Solid',
                 /**
                  * The Z index of the grid lines.
                  *
                  * @sample {highcharts|highstock} highcharts/xaxis/gridzindex/
                  *         A Z index of 4 renders the grid above the graph
                  *
+                 * @type      {number}
+                 * @default   1
                  * @product   highcharts highstock gantt
+                 * @apioption xAxis.gridZIndex
                  */
-                gridZIndex: 1,
                 /**
                  * An id for the axis. This can be used after render time to get
                  * a pointer to the axis object through `chart.get()`.
@@ -19134,39 +19045,25 @@
                      * @apioption  xAxis.labels.align
                      */
                     /**
-                     * Whether to allow the axis labels to overlap.
-                     * When false, overlapping labels are hidden.
-                     *
-                     * @sample {highcharts} highcharts/xaxis/labels-allowoverlap-true/
-                     *         X axis labels overlap enabled
-                     *
-                     * @type {boolean}
-                     * @default false
-                     * @apioption xAxis.labels.allowOverlap
-                     *
-                     */
-                    /**
                      * For horizontal axes, the allowed degrees of label rotation
                      * to prevent overlapping labels. If there is enough space,
                      * labels are not rotated. As the chart gets narrower, it
                      * will start rotating the labels -45 degrees, then remove
                      * every second label and try again with rotations 0 and -45 etc.
-                     * Set it to `undefined` to disable rotation, which will
-                     * cause the labels to word-wrap if possible. Defaults to `[-45]``
-                     * on bottom and top axes, `undefined` on left and right axes.
+                     * Set it to `false` to disable rotation, which will
+                     * cause the labels to word-wrap if possible.
                      *
                      * @sample {highcharts|highstock} highcharts/xaxis/labels-autorotation-default/
                      *         Default auto rotation of 0 or -45
                      * @sample {highcharts|highstock} highcharts/xaxis/labels-autorotation-0-90/
                      *         Custom graded auto rotation
                      *
-                     * @type      {Array<number>}
-                     * @default   undefined
+                     * @type      {Array<number>|false}
+                     * @default   [-45]
                      * @since     4.1.0
                      * @product   highcharts highstock gantt
                      * @apioption xAxis.labels.autoRotation
                      */
-                    autoRotation: void 0,
                     /**
                      * When each category width is more than this many pixels, we don't
                      * apply auto rotation. Instead, we lay out the axis label with word
@@ -19177,19 +19074,21 @@
                      * @sample {highcharts} highcharts/xaxis/labels-autorotationlimit/
                      *         Lower limit
                      *
+                     * @type      {number}
+                     * @default   80
                      * @since     4.1.5
                      * @product   highcharts gantt
+                     * @apioption xAxis.labels.autoRotationLimit
                      */
-                    autoRotationLimit: 80,
                     /**
                      * Polar charts only. The label's pixel distance from the perimeter
                      * of the plot area.
                      *
                      * @type      {number}
-                     * @default   undefined
+                     * @default   15
                      * @product   highcharts gantt
+                     * @apioption xAxis.labels.distance
                      */
-                    distance: void 0,
                     /**
                      * Enable or disable the axis labels.
                      *
@@ -19203,27 +19102,15 @@
                      */
                     enabled: true,
                     /**
-                     * A format string for the axis label. The context is available as
-                     * format string variables. For example, you can use `{text}` to
-                     * insert the default formatted text. The recommended way of adding
-                     * units for the label is using `text`, for example `{text} km`.
-                     *
-                     * To add custom numeric or datetime formatting, use `{value}` with
-                     * formatting, for example `{value:.1f}` or `{value:%Y-%m-%d}`.
-                     *
-                     * See
+                     * A format string for the axis label. See
                      * [format string](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting)
-                     * for more examples of formatting.
+                     * for example usage.
                      *
-                     * The default value is not specified due to the dynamic
+                     * Note: The default value is not specified due to the dynamic
                      * nature of the default implementation.
                      *
                      * @sample {highcharts|highstock} highcharts/yaxis/labels-format/
                      *         Add units to Y axis label
-                     * @sample {highcharts} highcharts/xaxis/labels-format-linked/
-                     *         Linked category names
-                     * @sample {highcharts} highcharts/xaxis/labels-format-custom/
-                     *         Custom number format
                      *
                      * @type      {string}
                      * @since     3.0
@@ -19232,12 +19119,16 @@
                     /**
                      * Callback JavaScript function to format the label. The value
                      * is given by `this.value`. Additional properties for `this` are
-                     * `axis`, `chart`, `isFirst`, `isLast` and `text` which holds the
-                     * value of the default formatter.
+                     * `axis`, `chart`, `isFirst` and `isLast`. The value of the default
+                     * label formatter can be retrieved by calling
+                     * `this.axis.defaultLabelFormatter.call(this)` within the function.
                      *
-                     * Defaults to a built in function returning a formatted string
-                     * depending on whether the axis is `category`, `datetime`,
-                     * `numeric` or other.
+                     * Defaults to:
+                     * ```js
+                     * function() {
+                     *     return this.value;
+                     * }
+                     * ```
                      *
                      * @sample {highcharts} highcharts/xaxis/labels-formatter-linked/
                      *         Linked category names
@@ -19279,17 +19170,21 @@
                      * `"justify"` labels inside the chart area. If there is room to
                      * move it, it will be aligned to the edge, else it will be removed.
                      *
+                     * @type       {string}
+                     * @default    justify
                      * @since      2.2.5
                      * @validvalue ["allow", "justify"]
+                     * @apioption  xAxis.labels.overflow
                      */
-                    overflow: 'justify',
                     /**
                      * The pixel padding for axis labels, to ensure white space between
                      * them.
                      *
+                     * @type      {number}
+                     * @default   5
                      * @product   highcharts gantt
+                     * @apioption xAxis.labels.padding
                      */
-                    padding: 5,
                     /**
                      * Whether to reserve space for the labels. By default, space is
                      * reserved for the labels in these cases:
@@ -19314,10 +19209,8 @@
                      * @product   highcharts gantt
                      * @apioption xAxis.labels.reserveSpace
                      */
-                    reserveSpace: void 0,
                     /**
-                     * Rotation of the labels in degrees. When `undefined`, the
-                     * `autoRotation` option takes precedence.
+                     * Rotation of the labels in degrees.
                      *
                      * @sample {highcharts} highcharts/xaxis/labels-rotation/
                      *         X axis labels rotated 90°
@@ -19326,25 +19219,24 @@
                      * @default   0
                      * @apioption xAxis.labels.rotation
                      */
-                    rotation: void 0,
                     /**
                      * Horizontal axes only. The number of lines to spread the labels
-                     * over to make room or tighter labels. 0 disables staggering.
+                     * over to make room or tighter labels.
                      *
                      * @sample {highcharts} highcharts/xaxis/labels-staggerlines/
                      *         Show labels over two lines
                      * @sample {highstock} stock/xaxis/labels-staggerlines/
                      *         Show labels over two lines
                      *
+                     * @type      {number}
                      * @since     2.1
                      * @apioption xAxis.labels.staggerLines
                      */
-                    staggerLines: 0,
                     /**
                      * To show only every _n_'th label on the axis, set the step to _n_.
                      * Setting the step to 2 shows every other label.
                      *
-                     * By default, when 0, the step is calculated automatically to avoid
+                     * By default, the step is calculated automatically to avoid
                      * overlap. To prevent this, set it to 1\. This usually only
                      * happens on a category axis, and is often a sign that you have
                      * chosen the wrong axis type.
@@ -19359,14 +19251,18 @@
                      * @sample {highcharts} highcharts/xaxis/labels-step-auto/
                      *         Auto steps on a category axis
                      *
+                     * @type      {number}
                      * @since     2.1
+                     * @apioption xAxis.labels.step
                      */
-                    step: 0,
                     /**
                      * Whether to [use HTML](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting#html)
                      * to render the labels.
+                     *
+                     * @type      {boolean}
+                     * @default   false
+                     * @apioption xAxis.labels.useHTML
                      */
-                    useHTML: false,
                     /**
                      * The x position offset of all labels relative to the tick
                      * positions on the axis.
@@ -19388,8 +19284,11 @@
                      */
                     /**
                      * The Z index for the axis labels.
+                     *
+                     * @type      {number}
+                     * @default   7
+                     * @apioption xAxis.labels.zIndex
                      */
-                    zIndex: 7,
                     /**
                      * CSS styles for the label. Use `whiteSpace: 'nowrap'` to prevent
                      * wrapping of category labels. Use `textOverflow: 'none'` to
@@ -19538,9 +19437,10 @@
                  *         Long dashes on minor grid lines
                  *
                  * @type      {Highcharts.DashStyleValue}
+                 * @default   Solid
                  * @since     1.2
+                 * @apioption xAxis.minorGridLineDashStyle
                  */
-                minorGridLineDashStyle: 'Solid',
                 /**
                  * Specific tick interval in axis units for the minor ticks. On a linear
                  * axis, if `"auto"`, the minor tick interval is calculated as a fifth
@@ -19702,8 +19602,10 @@
                  * @sample {highstock} stock/xaxis/offset/
                  *         Y axis offset by 70 px
                  *
+                 * @type      {number}
+                 * @default   0
+                 * @apioption xAxis.offset
                  */
-                offset: void 0,
                 /**
                  * Whether to display the axis on the opposite side of the normal. The
                  * normal is on the left side for vertical axes and bottom for
@@ -19715,10 +19617,11 @@
                  * @sample {highstock} stock/xaxis/opposite/
                  *         Y axis on left side
                  *
+                 * @type      {boolean}
                  * @default   {highcharts|highstock|highmaps} false
                  * @default   {gantt} true
+                 * @apioption xAxis.opposite
                  */
-                opposite: false,
                 /**
                  * In an ordinal axis, the points are equally spaced in the chart
                  * regardless of the actual time or x distance between them. This means
@@ -19791,10 +19694,10 @@
                  *         Reversed Y axis
                  *
                  * @type      {boolean}
-                 * @default   undefined
+                 * @default   false
                  * @apioption xAxis.reversed
                  */
-                reversed: void 0,
+                // reversed: false,
                 /**
                  * This option determines how stacks should be ordered within a group.
                  * For example reversed xAxis also reverses stacks, so first series
@@ -19806,10 +19709,12 @@
                  * @sample {highstock} highcharts/xaxis/reversedstacks/
                  *         Reversed stacks comparison
                  *
+                 * @type      {boolean}
+                 * @default   false
                  * @since     6.1.1
                  * @product   highcharts highstock
+                 * @apioption xAxis.reversedStacks
                  */
-                reversedStacks: false,
                 /**
                  * An optional scrollbar to display on the X axis in response to
                  * limiting the minimum and maximum of the axis values.
@@ -19847,8 +19752,11 @@
                  *         Set to false on X axis
                  * @sample {highstock} stock/xaxis/showfirstlabel/
                  *         Labels below plot lines on Y axis
+                 *
+                 * @type      {boolean}
+                 * @default   true
+                 * @apioption xAxis.showFirstLabel
                  */
-                showFirstLabel: true,
                 /**
                  * Whether to show the last tick label. Defaults to `true` on cartesian
                  * charts, and `false` on polar charts.
@@ -19858,9 +19766,11 @@
                  * @sample {highstock} stock/xaxis/showfirstlabel/
                  *         Labels below plot lines on Y axis
                  *
+                 * @type      {boolean}
+                 * @default   true
                  * @product   highcharts highstock gantt
+                 * @apioption xAxis.showLastLabel
                  */
-                showLastLabel: true,
                 /**
                  * A soft maximum for the axis. If the series data maximum is less than
                  * this, the axis will stay at this maximum, but if the series data
@@ -19908,8 +19818,8 @@
                  * the `minPadding` option to control the axis start.
                  *
                  * @productdesc {highstock}
-                 * In Highcharts Stock, `startOnTick` is always `false` when
-                 * the navigator is enabled, to prevent jumpy scrolling.
+                 * In Highstock, `startOnTick` is always `false` when the navigator
+                 * is enabled, to prevent jumpy scrolling.
                  *
                  * @sample {highcharts} highcharts/xaxis/startontick-false/
                  *         False by default
@@ -20091,25 +20001,7 @@
                  */
                 title: {
                     /**
-                     * Alignment of the title relative to the axis values. Possible
-                     * values are "low", "middle" or "high".
-                     *
-                     * @sample {highcharts} highcharts/xaxis/title-align-low/
-                     *         "low"
-                     * @sample {highcharts} highcharts/xaxis/title-align-center/
-                     *         "middle" by default
-                     * @sample {highcharts} highcharts/xaxis/title-align-high/
-                     *         "high"
-                     * @sample {highcharts} highcharts/yaxis/title-offset/
-                     *         Place the Y axis title on top of the axis
-                     * @sample {highstock} stock/xaxis/title-align/
-                     *         Aligned to "high" value
-                     *
-                     * @type {Highcharts.AxisTitleAlignValue}
-                     */
-                    align: 'middle',
-                    /**
-                     * Deprecated. Set the `text` to `undefined` to disable the title.
+                     * Deprecated. Set the `text` to `null` to disable the title.
                      *
                      * @deprecated
                      * @type      {boolean}
@@ -20156,8 +20048,11 @@
                      *
                      * @sample {highcharts} highcharts/yaxis/title-offset/
                      *         Horizontal
+                     *
+                     * @type      {number}
+                     * @default   0
+                     * @apioption xAxis.title.rotation
                      */
-                    rotation: 0,
                     /**
                      * The actual text of the axis title. It can contain basic HTML tags
                      * like `b`, `i` and `span` with style.
@@ -20198,22 +20093,45 @@
                      * Whether to [use HTML](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting#html)
                      * to render the axis title.
                      *
+                     * @type      {boolean}
+                     * @default   false
                      * @product   highcharts highstock gantt
+                     * @apioption xAxis.title.useHTML
                      */
-                    useHTML: false,
                     /**
                      * Horizontal pixel offset of the title position.
                      *
+                     * @type      {number}
+                     * @default   0
                      * @since     4.1.6
                      * @product   highcharts highstock gantt
+                     * @apioption xAxis.title.x
                      */
-                    x: 0,
                     /**
                      * Vertical pixel offset of the title position.
                      *
+                     * @type      {number}
                      * @product   highcharts highstock gantt
+                     * @apioption xAxis.title.y
                      */
-                    y: 0,
+                    /**
+                     * Alignment of the title relative to the axis values. Possible
+                     * values are "low", "middle" or "high".
+                     *
+                     * @sample {highcharts} highcharts/xaxis/title-align-low/
+                     *         "low"
+                     * @sample {highcharts} highcharts/xaxis/title-align-center/
+                     *         "middle" by default
+                     * @sample {highcharts} highcharts/xaxis/title-align-high/
+                     *         "high"
+                     * @sample {highcharts} highcharts/yaxis/title-offset/
+                     *         Place the Y axis title on top of the axis
+                     * @sample {highstock} stock/xaxis/title-align/
+                     *         Aligned to "high" value
+                     *
+                     * @type {Highcharts.AxisTitleAlignValue}
+                     */
+                    align: 'middle',
                     /**
                      * CSS styles for the title. If the title text is longer than the
                      * axis length, it will wrap to multiple lines by default. This can
@@ -20282,10 +20200,12 @@
                  * @sample {highcharts} highcharts/xaxis/uniquenames-false/
                  *         False
                  *
+                 * @type      {boolean}
+                 * @default   true
                  * @since     4.2.7
                  * @product   highcharts gantt
+                 * @apioption xAxis.uniqueNames
                  */
-                uniqueNames: true,
                 /**
                  * Datetime axis only. An array determining what time intervals the
                  * ticks are allowed to fall on. Each array item is an array where the
@@ -20308,13 +20228,13 @@
                  *     [1, 2, 3, 4, 6, 8, 12]
                  * ], [
                  *     'day',
-                 *     [1, 2]
+                 *     [1]
                  * ], [
                  *     'week',
-                 *     [1, 2]
+                 *     [1]
                  * ], [
                  *     'month',
-                 *     [1, 2, 3, 4, 6]
+                 *     [1, 3, 6]
                  * ], [
                  *     'year',
                  *     null
@@ -20329,10 +20249,12 @@
                  * Whether axis, including axis title, line, ticks and labels, should
                  * be visible.
                  *
+                 * @type      {boolean}
+                 * @default   true
                  * @since     4.1.9
                  * @product   highcharts highstock gantt
+                 * @apioption xAxis.visible
                  */
-                visible: true,
                 /**
                  * Color of the minor, secondary grid lines.
                  *
@@ -20434,10 +20356,9 @@
                  * @default #e6e6e6
                  */
                 gridLineColor: palette.neutralColor10,
+                // gridLineDashStyle: 'solid',
                 /**
                  * The width of the grid lines extending the ticks across the plot area.
-                 * Defaults to 1 on the Y axis and 0 on the X axis, except for 3d
-                 * charts.
                  *
                  * In styled mode, the stroke width is given in the
                  * `.highcharts-grid-line` class.
@@ -20450,9 +20371,10 @@
                  *         2px lines
                  *
                  * @type      {number}
+                 * @default   0
                  * @apioption xAxis.gridLineWidth
                  */
-                gridLineWidth: void 0,
+                // gridLineWidth: 0,
                 /**
                  * The height as the vertical axis. If it's a number, it is
                  * interpreted as pixels.
@@ -20609,7 +20531,6 @@
                  * @product   highcharts highstock
                  * @apioption yAxis.reversedStacks
                  */
-                reversedStacks: true,
                 /**
                  * Solid gauge series only. Color stops for the solid gauge. Use this
                  * in cases where a linear gradient between a `minColor` and `maxColor`
@@ -20707,8 +20628,7 @@
                 minPadding: 0.05,
                 /**
                  * @productdesc {highstock}
-                 * In Highcharts Stock 1.x, the Y axis was placed
-                 * on the left side by default.
+                 * In Highstock 1.x, the Y axis was placed on the left side by default.
                  *
                  * @sample {highcharts} highcharts/yaxis/opposite/
                  *         Secondary Y axis opposite
@@ -21602,13 +21522,13 @@
                 }
                 else if (interval >= 0.08) {
                     var roundedMin = Math.floor(min),
-                        intermediate = void 0,
-                        i = void 0,
-                        j = void 0,
-                        len = void 0,
-                        pos = void 0,
-                        lastPos = void 0,
-                        break2 = void 0;
+                        intermediate,
+                        i,
+                        j,
+                        len,
+                        pos,
+                        lastPos,
+                        break2;
                     if (interval > 0.3) {
                         intermediate = [1, 2, 4];
                         // 0.2 equals five minor ticks per 1, 10, 100 etc
@@ -21755,7 +21675,6 @@
             erase = U.erase,
             extend = U.extend,
             fireEvent = U.fireEvent,
-            isNumber = U.isNumber,
             merge = U.merge,
             objectEach = U.objectEach,
             pick = U.pick;
@@ -22627,9 +22546,7 @@
                     horiz = this.horiz,
                     plus = 1,
                     isFlat,
-                    outside = !isNumber(this.min) ||
-                        !isNumber(this.max) ||
-                        (from < this.min && to < this.min) ||
+                    outside = (from < this.min && to < this.min) ||
                         (from > this.max && to > this.max);
                 if (path && toPath) {
                     // Flat paths don't need labels (#3836)
@@ -22637,7 +22554,7 @@
                         isFlat = path.toString() === toPath.toString();
                         plus = 0;
                     }
-                    // Go over each subpath - for panes in Highcharts Stock
+                    // Go over each subpath - for panes in Highstock
                     for (i = 0; i < path.length; i += 2) {
                         var pathStart = path[i],
                             pathEnd = path[i + 1],
@@ -22820,7 +22737,7 @@
 
         return H.PlotLineOrBand;
     });
-    _registerModule(_modules, 'Core/Tooltip.js', [_modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Utilities.js']], function (F, H, palette, U) {
+    _registerModule(_modules, 'Core/Tooltip.js', [_modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Utilities.js']], function (H, palette, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -22830,7 +22747,6 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        var format = F.format;
         var doc = H.doc;
         var clamp = U.clamp,
             css = U.css,
@@ -22838,7 +22754,7 @@
             discardElement = U.discardElement,
             extend = U.extend,
             fireEvent = U.fireEvent,
-            isArray = U.isArray,
+            format = U.format,
             isNumber = U.isNumber,
             isString = U.isString,
             merge = U.merge,
@@ -23267,6 +23183,9 @@
              * @return {Highcharts.SVGElement}
              */
             Tooltip.prototype.getLabel = function () {
+                var _a,
+                    _b,
+                    _c;
                 var tooltip = this,
                     renderer = this.chart.renderer,
                     styledMode = this.chart.styledMode,
@@ -23274,7 +23193,7 @@
                     className = ('tooltip' + (defined(options.className) ?
                         ' ' + options.className :
                         '')),
-                    pointerEvents = ((options.style && options.style.pointerEvents) ||
+                    pointerEvents = (((_a = options.style) === null || _a === void 0 ? void 0 : _a.pointerEvents) ||
                         (!this.followPointer && options.stickOnContact ? 'auto' : 'none')),
                     container,
                     onMouseEnter = function () {
@@ -23289,7 +23208,7 @@
                 };
                 if (!this.label) {
                     if (this.outside) {
-                        var chartStyle = this.chart.options.chart.style;
+                        var chartStyle = (_b = this.chart.options.chart) === null || _b === void 0 ? void 0 : _b.style;
                         /**
                          * Reference to the tooltip's container, when
                          * [Highcharts.Tooltip#outside] is set to true, otherwise
@@ -23304,7 +23223,7 @@
                             position: 'absolute',
                             top: '1px',
                             pointerEvents: pointerEvents,
-                            zIndex: Math.max((this.options.style && this.options.style.zIndex || 0), (chartStyle && chartStyle.zIndex || 0) + 3)
+                            zIndex: Math.max((((_c = this.options.style) === null || _c === void 0 ? void 0 : _c.zIndex) || 0), ((chartStyle === null || chartStyle === void 0 ? void 0 : chartStyle.zIndex) || 0) + 3)
                         });
                         H.doc.body.appendChild(container);
                         /**
@@ -23748,40 +23667,41 @@
                     options = tooltip.options,
                     x,
                     y,
-                    points = splat(pointOrPoints),
-                    point = points[0],
+                    point = pointOrPoints,
                     anchor,
                     textConfig = {},
                     text,
                     pointConfig = [],
                     formatter = options.formatter || tooltip.defaultFormatter,
                     shared = tooltip.shared,
+                    currentSeries,
                     styledMode = chart.styledMode;
                 if (!options.enabled) {
                     return;
                 }
                 U.clearTimeout(this.hideTimer);
                 // get the reference point coordinates (pie charts use tooltipPos)
-                tooltip.followPointer = !tooltip.split && point.series.tooltipOptions.followPointer;
-                anchor = tooltip.getAnchor(pointOrPoints, mouseEvent);
+                tooltip.followPointer = splat(point)[0].series.tooltipOptions
+                    .followPointer;
+                anchor = tooltip.getAnchor(point, mouseEvent);
                 x = anchor[0];
                 y = anchor[1];
                 // shared tooltip, array is sent over
                 if (shared &&
-                    !(!isArray(pointOrPoints) &&
-                        pointOrPoints.series &&
-                        pointOrPoints.series.noSharedTooltip)) {
-                    chart.pointer.applyInactiveState(points);
+                    !(point.series &&
+                        point.series.noSharedTooltip)) {
+                    chart.pointer.applyInactiveState(point);
                     // Now set hover state for the choosen ones:
-                    points.forEach(function (item) {
+                    point.forEach(function (item) {
                         item.setState('hover');
                         pointConfig.push(item.getLabelConfig());
                     });
                     textConfig = {
-                        x: point.category,
-                        y: point.y
+                        x: point[0].category,
+                        y: point[0].y
                     };
                     textConfig.points = pointConfig;
+                    point = point[0];
                     // single point tooltip
                 }
                 else {
@@ -23790,7 +23710,7 @@
                 this.len = pointConfig.length; // #6128
                 text = formatter.call(textConfig, tooltip);
                 // register the current series
-                var currentSeries = point.series;
+                currentSeries = point.series;
                 this.distance = pick(currentSeries.tooltipOptions.distance, 16);
                 // update the inner HTML
                 if (text === false) {
@@ -23799,56 +23719,40 @@
                 else {
                     // update text
                     if (tooltip.split) {
-                        this.renderSplit(text, points);
+                        this.renderSplit(text, splat(pointOrPoints));
                     }
                     else {
-                        var checkX = x;
-                        var checkY = y;
-                        if (mouseEvent && chart.pointer.isDirectTouch) {
-                            checkX = mouseEvent.chartX - chart.plotLeft;
-                            checkY = mouseEvent.chartY - chart.plotTop;
+                        var label = tooltip.getLabel();
+                        // Prevent the tooltip from flowing over the chart box (#6659)
+                        if (!options.style.width || styledMode) {
+                            label.css({
+                                width: this.chart.spacingBox.width + 'px'
+                            });
                         }
-                        // #11493, #13095
-                        if (chart.polar ||
-                            currentSeries.options.clip === false ||
-                            currentSeries.shouldShowTooltip(checkX, checkY)) {
-                            var label = tooltip.getLabel();
-                            // Prevent the tooltip from flowing over the chart box
-                            // (#6659)
-                            if (!options.style.width || styledMode) {
-                                label.css({
-                                    width: this.chart.spacingBox.width + 'px'
-                                });
-                            }
+                        label.attr({
+                            text: text && text.join ?
+                                text.join('') :
+                                text
+                        });
+                        // Set the stroke color of the box to reflect the point
+                        label.removeClass(/highcharts-color-[\d]+/g)
+                            .addClass('highcharts-color-' +
+                            pick(point.colorIndex, currentSeries.colorIndex));
+                        if (!styledMode) {
                             label.attr({
-                                text: text && text.join ?
-                                    text.join('') :
-                                    text
-                            });
-                            // Set the stroke color of the box to reflect the point
-                            label.removeClass(/highcharts-color-[\d]+/g)
-                                .addClass('highcharts-color-' +
-                                pick(point.colorIndex, currentSeries.colorIndex));
-                            if (!styledMode) {
-                                label.attr({
-                                    stroke: (options.borderColor ||
-                                        point.color ||
-                                        currentSeries.color ||
-                                        palette.neutralColor60)
-                                });
-                            }
-                            tooltip.updatePosition({
-                                plotX: x,
-                                plotY: y,
-                                negative: point.negative,
-                                ttBelow: point.ttBelow,
-                                h: anchor[2] || 0
+                                stroke: (options.borderColor ||
+                                    point.color ||
+                                    currentSeries.color ||
+                                    palette.neutralColor60)
                             });
                         }
-                        else {
-                            tooltip.hide();
-                            return;
-                        }
+                        tooltip.updatePosition({
+                            plotX: x,
+                            plotY: y,
+                            negative: point.negative,
+                            ttBelow: point.ttBelow,
+                            h: anchor[2] || 0
+                        });
                     }
                     // show it
                     if (tooltip.isHidden && tooltip.label) {
@@ -23882,9 +23786,9 @@
                     plotLeft = _a.plotLeft,
                     plotTop = _a.plotTop,
                     pointer = _a.pointer,
+                    ren = _a.renderer,
                     _b = _a.scrollablePixelsY,
                     scrollablePixelsY = _b === void 0 ? 0 : _b,
-                    scrollablePixelsX = _a.scrollablePixelsX,
                     _c = _a.scrollingContainer,
                     _d = _c === void 0 ? { scrollLeft: 0,
                     scrollTop: 0 } : _c,
@@ -23896,20 +23800,14 @@
                     positioner = tooltip.options.positioner;
                 // The area which the tooltip should be limited to. Limit to scrollable
                 // plot area if enabled, otherwise limit to the chart container.
-                // If outside is true it should be the whole viewport
-                var bounds = tooltip.outside && typeof scrollablePixelsX !== 'number' ?
-                        doc.documentElement.getBoundingClientRect() : {
+                var bounds = {
                         left: scrollLeft,
                         right: scrollLeft + chartWidth,
                         top: scrollTop,
                         bottom: scrollTop + chartHeight
                     };
                 var tooltipLabel = tooltip.getLabel();
-                var ren = this.renderer || chart.renderer;
                 var headerTop = Boolean(chart.xAxis[0] && chart.xAxis[0].opposite);
-                var _e = pointer.getChartPosition(),
-                    chartLeft = _e.left,
-                    chartTop = _e.top;
                 var distributionBoxTop = plotTop + scrollTop;
                 var headerHeight = 0;
                 var adjustedPlotHeight = plotHeight - scrollablePixelsY;
@@ -23941,9 +23839,8 @@
                         // Set anchorX to plotX. Limit to within xAxis.
                         anchorX = xAxis.pos + clamp(plotX, -distance, xAxis.len + distance);
                         // Set anchorY, limit to the scrollable plot area
-                        if (series.shouldShowTooltip(0, yAxis.pos - plotTop + plotY, {
-                            ignoreX: true
-                        })) {
+                        if (yAxis.pos + plotY >= scrollTop + plotTop &&
+                            yAxis.pos + plotY <= scrollTop + plotTop + plotHeight - scrollablePixelsY) {
                             anchorY = yAxis.pos + plotY;
                         }
                     }
@@ -23968,7 +23865,7 @@
                     var x;
                     if (isHeader) {
                         y = headerTop ? 0 : adjustedPlotHeight;
-                        x = clamp(anchorX - (boxWidth / 2), bounds.left, bounds.right - boxWidth - (tooltip.outside ? chartLeft : 0));
+                        x = clamp(anchorX - (boxWidth / 2), bounds.left, bounds.right - boxWidth);
                     }
                     else {
                         y = anchorY - distributionBoxTop;
@@ -24055,7 +23952,7 @@
                         var owner = isHeader ? tooltip : point.series;
                         var tt = owner.tt = updatePartialTooltip(owner.tt,
                             point,
-                            str.toString());
+                            str);
                         // Get X position now, so we can move all to the other side in
                         // case of overflow
                         var bBox = tt.getBBox();
@@ -24103,19 +24000,8 @@
                     }
                     return boxes;
                 }, []);
-                // Realign the tooltips towards the right if there is not enough
-                // space to the left and there is space to to the right
-                if (!positioner && boxes.some(function (box) {
-                    // Always realign if the beginning of a label is outside bounds
-                    var outside = tooltip.outside;
-                    var boxStart = (outside ? chartLeft : 0) + box.anchorX;
-                    if (boxStart < bounds.left && boxStart + box.boxWidth < bounds.right) {
-                        return true;
-                    }
-                    // Otherwise, check if there is more space available to the right
-                    return boxStart < (chartLeft - bounds.left) + box.boxWidth &&
-                        bounds.right - boxStart > boxStart;
-                })) {
+                // If overflow left then align all labels to the right
+                if (!positioner && boxes.some(function (box) { return box.x < bounds.left; })) {
                     boxes = boxes.map(function (box) {
                         var _a = defaultPositioner(box.anchorX,
                             box.anchorY,
@@ -24134,60 +24020,24 @@
                 tooltip.cleanSplit();
                 // Distribute and put in place
                 H.distribute(boxes, adjustedPlotHeight);
-                var boxExtremes = {
-                        left: chartLeft,
-                        right: chartLeft
-                    };
-                // Get the extremes from series tooltips
                 boxes.forEach(function (box) {
-                    var x = box.x,
-                        boxWidth = box.boxWidth,
-                        isHeader = box.isHeader;
-                    if (!isHeader) {
-                        if (tooltip.outside && chartLeft + x < boxExtremes.left) {
-                            boxExtremes.left = chartLeft + x;
-                        }
-                        if (!isHeader && tooltip.outside && boxExtremes.left + boxWidth > boxExtremes.right) {
-                            boxExtremes.right = chartLeft + x;
-                        }
-                    }
-                });
-                boxes.forEach(function (box) {
-                    var x = box.x,
-                        anchorX = box.anchorX,
+                    var anchorX = box.anchorX,
                         anchorY = box.anchorY,
                         pos = box.pos,
-                        isHeader = box.point.isHeader;
-                    var attributes = {
-                            visibility: typeof pos === 'undefined' ? 'hidden' : 'inherit',
-                            x: x,
-                            /* NOTE: y should equal pos to be consistent with !split
-                             * tooltip,
-                        but is currently relative to plotTop. Is left as is
-                             * to avoid breaking change. Remove distributionBoxTop to make
-                             * it consistent.
-                             */
-                            y: pos + distributionBoxTop,
-                            anchorX: anchorX,
-                            anchorY: anchorY
-                        };
-                    // Handle left-aligned tooltips overflowing the chart area
-                    if (tooltip.outside && x < anchorX) {
-                        var offset = chartLeft - boxExtremes.left;
-                        // Skip this if there is no overflow
-                        if (offset > 0) {
-                            if (!isHeader) {
-                                attributes.x = x + offset;
-                                attributes.anchorX = anchorX + offset;
-                            }
-                            if (isHeader) {
-                                attributes.x = (boxExtremes.right - boxExtremes.left) / 2;
-                                attributes.anchorX = anchorX + offset;
-                            }
-                        }
-                    }
+                        x = box.x;
                     // Put the label in place
-                    box.tt.attr(attributes);
+                    box.tt.attr({
+                        visibility: typeof pos === 'undefined' ? 'hidden' : 'inherit',
+                        x: x,
+                        /* NOTE: y should equal pos to be consistent with !split
+                         * tooltip, but is currently relative to plotTop. Is left as is
+                         * to avoid breaking change. Remove distributionBoxTop to make
+                         * it consistent.
+                         */
+                        y: pos + distributionBoxTop,
+                        anchorX: anchorX,
+                        anchorY: anchorY
+                    });
                 });
                 /* If we have a seperate tooltip container, then update the necessary
                  * container properties.
@@ -24198,16 +24048,17 @@
                     outside = tooltip.outside,
                     renderer = tooltip.renderer;
                 if (outside && container && renderer) {
-                    // Set container size to fit the bounds
-                    var _f = tooltipLabel.getBBox(),
-                        width = _f.width,
-                        height = _f.height,
-                        x = _f.x,
-                        y = _f.y;
+                    // Set container size to fit the tooltip
+                    var _e = tooltipLabel.getBBox(),
+                        width = _e.width,
+                        height = _e.height,
+                        x = _e.x,
+                        y = _e.y;
                     renderer.setSize(width + x, height + y, false);
                     // Position the tooltip container to the chart container
-                    container.style.left = boxExtremes.left + 'px';
-                    container.style.top = chartTop + 'px';
+                    var chartPosition = pointer.getChartPosition();
+                    container.style.left = chartPosition.left + 'px';
+                    container.style.top = chartPosition.top + 'px';
                 }
             };
             /**
@@ -24536,10 +24387,11 @@
                     this.lastValidTouch = {};
                 this.pinchDown = [];
                 this.runChartClick = false;
-                this.eventsToUnbind = [];
                 this.chart = chart;
                 this.hasDragged = false;
                 this.options = options;
+                this.unbindContainerMouseLeave = function () { };
+                this.unbindContainerMouseEnter = function () { };
                 this.init(chart, options);
             }
             /* *
@@ -24597,8 +24449,10 @@
              */
             Pointer.prototype.destroy = function () {
                 var pointer = this;
-                this.eventsToUnbind.forEach(function (unbind) { return unbind(); });
-                this.eventsToUnbind = [];
+                if (typeof pointer.unDocMouseMove !== 'undefined') {
+                    pointer.unDocMouseMove();
+                }
+                this.unbindContainerMouseLeave();
                 if (!H.chartCount) {
                     if (H.unbindDocumentMouseUp) {
                         H.unbindDocumentMouseUp = H.unbindDocumentMouseUp();
@@ -24664,9 +24518,7 @@
                 this.hasDragged = Math.sqrt(Math.pow(mouseDownX - chartX, 2) +
                     Math.pow(mouseDownY - chartY, 2));
                 if (this.hasDragged > 10) {
-                    clickedInside = chart.isInsidePlot(mouseDownX - plotLeft, mouseDownY - plotTop, {
-                        visiblePlotOnly: true
-                    });
+                    clickedInside = chart.isInsidePlot(mouseDownX - plotLeft, mouseDownY - plotTop);
                     // make a selection
                     if (chart.hasCartesianSeries &&
                         (this.zoomX || this.zoomY) &&
@@ -24740,25 +24592,25 @@
                     chart = this.chart,
                     hasPinched = this.hasPinched;
                 if (this.selectionMarker) {
-                    var selectionData_1 = {
+                    var selectionData = {
                             originalEvent: e,
                             xAxis: [],
                             yAxis: []
                         },
                         selectionBox = this.selectionMarker,
-                        selectionLeft_1 = selectionBox.attr ?
+                        selectionLeft = selectionBox.attr ?
                             selectionBox.attr('x') :
                             selectionBox.x,
-                        selectionTop_1 = selectionBox.attr ?
+                        selectionTop = selectionBox.attr ?
                             selectionBox.attr('y') :
                             selectionBox.y,
-                        selectionWidth_1 = selectionBox.attr ?
+                        selectionWidth = selectionBox.attr ?
                             selectionBox.attr('width') :
                             selectionBox.width,
-                        selectionHeight_1 = selectionBox.attr ?
+                        selectionHeight = selectionBox.attr ?
                             selectionBox.attr('height') :
                             selectionBox.height,
-                        runZoom_1;
+                        runZoom;
                     // a selection has been made
                     if (this.hasDragged || hasPinched) {
                         // record each axis' min and max
@@ -24770,28 +24622,28 @@
                                         xAxis: 'zoomX',
                                         yAxis: 'zoomY'
                                     }[axis.coll]]) &&
-                                isNumber(selectionLeft_1) &&
-                                isNumber(selectionTop_1)) { // #859, #3569
+                                isNumber(selectionLeft) &&
+                                isNumber(selectionTop)) { // #859, #3569
                                 var horiz = axis.horiz,
                                     minPixelPadding = e.type === 'touchend' ?
                                         axis.minPixelPadding :
                                         0, // #1207, #3075
-                                    selectionMin = axis.toValue((horiz ? selectionLeft_1 : selectionTop_1) +
+                                    selectionMin = axis.toValue((horiz ? selectionLeft : selectionTop) +
                                         minPixelPadding),
                                     selectionMax = axis.toValue((horiz ?
-                                        selectionLeft_1 + selectionWidth_1 :
-                                        selectionTop_1 + selectionHeight_1) - minPixelPadding);
-                                selectionData_1[axis.coll].push({
+                                        selectionLeft + selectionWidth :
+                                        selectionTop + selectionHeight) - minPixelPadding);
+                                selectionData[axis.coll].push({
                                     axis: axis,
                                     // Min/max for reversed axes
                                     min: Math.min(selectionMin, selectionMax),
                                     max: Math.max(selectionMin, selectionMax)
                                 });
-                                runZoom_1 = true;
+                                runZoom = true;
                             }
                         });
-                        if (runZoom_1) {
-                            fireEvent(chart, 'selection', selectionData_1, function (args) {
+                        if (runZoom) {
+                            fireEvent(chart, 'selection', selectionData, function (args) {
                                 chart.zoom(extend(args, hasPinched ?
                                     { animation: false } :
                                     null));
@@ -24900,24 +24752,16 @@
                 var series = point.series,
                     xAxis = series.xAxis,
                     yAxis = series.yAxis,
+                    plotX = pick(point.clientX,
+                    point.plotX),
                     shapeArgs = point.shapeArgs;
                 if (xAxis && yAxis) {
-                    var x = pick(point.clientX,
-                        point.plotX);
-                    var y = point.plotY || 0;
-                    if (point.isNode &&
-                        shapeArgs &&
-                        isNumber(shapeArgs.x) &&
-                        isNumber(shapeArgs.y)) {
-                        x = shapeArgs.x;
-                        y = shapeArgs.y;
-                    }
                     return inverted ? {
-                        chartX: yAxis.len + yAxis.pos - y,
-                        chartY: xAxis.len + xAxis.pos - x
+                        chartX: xAxis.len + xAxis.pos - plotX,
+                        chartY: yAxis.len + yAxis.pos - point.plotY
                     } : {
-                        chartX: x + xAxis.pos,
-                        chartY: y + yAxis.pos
+                        chartX: plotX + xAxis.pos,
+                        chartY: point.plotY + yAxis.pos
                     };
                 }
                 if (shapeArgs && shapeArgs.x && shapeArgs.y) {
@@ -25175,7 +25019,9 @@
                 this.options = options;
                 this.chart = chart;
                 // Do we need to handle click on a touch device?
-                this.runChartClick = Boolean(options.chart.events && options.chart.events.click);
+                this.runChartClick =
+                    options.chart.events &&
+                        !!options.chart.events.click;
                 this.pinchDown = [];
                 this.lastValidTouch = {};
                 if (Tooltip) {
@@ -25258,9 +25104,7 @@
                     else {
                         extend(pEvt, this.getCoordinates(pEvt));
                         // fire a click event in the chart
-                        if (chart.isInsidePlot(pEvt.chartX - plotLeft, pEvt.chartY - plotTop, {
-                            visiblePlotOnly: true
-                        })) {
+                        if (chart.isInsidePlot((pEvt.chartX - plotLeft), (pEvt.chartY - plotTop))) {
                             fireEvent(chart, 'click', pEvt);
                         }
                     }
@@ -25361,9 +25205,7 @@
                 // Show the tooltip and run mouse over events (#977)
                 if (!chart.openMenu &&
                     (this.inClass(pEvt.target, 'highcharts-tracker') ||
-                        chart.isInsidePlot(pEvt.chartX - chart.plotLeft, pEvt.chartY - chart.plotTop, {
-                            visiblePlotOnly: true
-                        }))) {
+                        chart.isInsidePlot((pEvt.chartX - chart.plotLeft), (pEvt.chartY - chart.plotTop)))) {
                     this.runPointActions(pEvt);
                 }
             };
@@ -25435,9 +25277,7 @@
                 if (chartPosition &&
                     (!tooltip ||
                         !tooltip.isStickyOnContact()) &&
-                    !chart.isInsidePlot(pEvt.chartX - chart.plotLeft, pEvt.chartY - chart.plotTop, {
-                        visiblePlotOnly: true
-                    }) &&
+                    !chart.isInsidePlot(pEvt.chartX - chart.plotLeft, pEvt.chartY - chart.plotTop) &&
                     !this.inClass(pEvt.target, 'highcharts-tracker')) {
                     this.reset();
                 }
@@ -25535,8 +25375,6 @@
                     // fires first
                     // Set the marker
                     if (!selectionMarker) {
-                        // @todo It's a mock object, so maybe we need a separate
-                        // interface
                         self.selectionMarker = selectionMarker = extend({
                             destroy: noop,
                             touch: true
@@ -25785,14 +25623,13 @@
                     e),
                     useSharedTooltip,
                     followPointer,
+                    anchor,
                     points;
                 // Update variables from hoverData.
                 hoverPoint = hoverData.hoverPoint;
                 points = hoverData.hoverPoints;
                 hoverSeries = hoverData.hoverSeries;
-                followPointer = hoverSeries &&
-                    hoverSeries.tooltipOptions.followPointer &&
-                    !hoverSeries.tooltipOptions.split;
+                followPointer = hoverSeries && hoverSeries.tooltipOptions.followPointer;
                 useSharedTooltip = (shared &&
                     hoverSeries &&
                     !hoverSeries.noSharedTooltip);
@@ -25853,13 +25690,8 @@
                     // Update positions (regardless of kdpoint or hoverPoint)
                 }
                 else if (followPointer && tooltip && !tooltip.isHidden) {
-                    var anchor = tooltip.getAnchor([{}],
-                        e);
-                    if (chart.isInsidePlot(anchor[0], anchor[1], {
-                        visiblePlotOnly: true
-                    })) {
-                        tooltip.updatePosition({ plotX: anchor[0], plotY: anchor[1] });
-                    }
+                    anchor = tooltip.getAnchor([{}], e);
+                    tooltip.updatePosition({ plotX: anchor[0], plotY: anchor[1] });
                 }
                 // Start the event listener to pick up the tooltip and crosshairs
                 if (!pointer.unDocMouseMove) {
@@ -25869,7 +25701,6 @@
                             chart.pointer.onDocumentMouseMove(e);
                         }
                     });
-                    pointer.eventsToUnbind.push(pointer.unDocMouseMove);
                 }
                 // Issues related to crosshair #4927, #5269 #5066, #5658
                 chart.axes.forEach(function drawAxisCrosshair(axis) {
@@ -25937,8 +25768,8 @@
                 container.onmousedown = this.onContainerMouseDown.bind(this);
                 container.onmousemove = this.onContainerMouseMove.bind(this);
                 container.onclick = this.onContainerClick.bind(this);
-                this.eventsToUnbind.push(addEvent(container, 'mouseenter', this.onContainerMouseEnter.bind(this)));
-                this.eventsToUnbind.push(addEvent(container, 'mouseleave', this.onContainerMouseLeave.bind(this)));
+                this.unbindContainerMouseEnter = addEvent(container, 'mouseenter', this.onContainerMouseEnter.bind(this));
+                this.unbindContainerMouseLeave = addEvent(container, 'mouseleave', this.onContainerMouseLeave.bind(this));
                 if (!H.unbindDocumentMouseUp) {
                     H.unbindDocumentMouseUp = addEvent(ownerDoc, 'mouseup', this.onDocumentMouseUp.bind(this));
                 }
@@ -25946,14 +25777,14 @@
                 // scrolling parent elements
                 var parent = this.chart.renderTo.parentElement;
                 while (parent && parent.tagName !== 'BODY') {
-                    this.eventsToUnbind.push(addEvent(parent, 'scroll', function () {
+                    addEvent(parent, 'scroll', function () {
                         delete _this.chartPosition;
-                    }));
+                    });
                     parent = parent.parentElement;
                 }
                 if (H.hasTouch) {
-                    this.eventsToUnbind.push(addEvent(container, 'touchstart', this.onContainerTouchStart.bind(this), { passive: false }));
-                    this.eventsToUnbind.push(addEvent(container, 'touchmove', this.onContainerTouchMove.bind(this), { passive: false }));
+                    addEvent(container, 'touchstart', this.onContainerTouchStart.bind(this), { passive: false });
+                    addEvent(container, 'touchmove', this.onContainerTouchMove.bind(this), { passive: false });
                     if (!H.unbindDocumentTouchEnd) {
                         H.unbindDocumentTouchEnd = addEvent(ownerDoc, 'touchend', this.onDocumentTouchEnd.bind(this), { passive: false });
                     }
@@ -25992,9 +25823,7 @@
                 this.setHoverChartIndex();
                 if (e.touches.length === 1) {
                     e = this.normalize(e);
-                    isInside = chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY - chart.plotTop, {
-                        visiblePlotOnly: true
-                    });
+                    isInside = chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY - chart.plotTop);
                     if (isInside && !chart.openMenu) {
                         // Run mouse events and display tooltip etc
                         if (start) {
@@ -26239,7 +26068,7 @@
 
         return MSPointer;
     });
-    _registerModule(_modules, 'Core/Series/Point.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Animation/AnimationUtilities.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Options.js'], _modules['Core/Utilities.js']], function (AST, A, F, H, O, U) {
+    _registerModule(_modules, 'Core/Series/Point.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Options.js'], _modules['Core/Utilities.js']], function (AST, A, H, O, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -26250,13 +26079,13 @@
          *
          * */
         var animObject = A.animObject;
-        var format = F.format;
         var defaultOptions = O.defaultOptions;
         var addEvent = U.addEvent,
             defined = U.defined,
             erase = U.erase,
             extend = U.extend,
             fireEvent = U.fireEvent,
+            format = U.format,
             getNestedProperty = U.getNestedProperty,
             isArray = U.isArray,
             isFunction = U.isFunction,
@@ -27043,14 +26872,22 @@
                     optionsChart = series.chart.options.chart,
                     colorCount = optionsChart.colorCount,
                     styledMode = series.chart.styledMode,
-                    colorIndex,
-                    color;
+                    colorIndex;
                 // remove points nonZonedColor for later recalculation
                 delete this.nonZonedColor;
+                /**
+                 * The point's current color.
+                 *
+                 * @name Highcharts.Point#color
+                 * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject|undefined}
+                 */
+                if (!styledMode && !this.options.color) {
+                    this.color = series.color; // #3445
+                }
                 if (series.options.colorByPoint) {
                     if (!styledMode) {
                         colors = series.options.colors || series.chart.options.colors;
-                        color = colors[series.colorCounter];
+                        this.color = this.color || colors[series.colorCounter];
                         colorCount = colors.length;
                     }
                     colorIndex = series.colorCounter;
@@ -27061,19 +26898,9 @@
                     }
                 }
                 else {
-                    if (!styledMode) {
-                        color = series.color;
-                    }
                     colorIndex = series.colorIndex;
                 }
                 this.colorIndex = pick(this.options.colorIndex, colorIndex);
-                /**
-                 * The point's current color.
-                 *
-                 * @name Highcharts.Point#color
-                 * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject|undefined}
-                 */
-                this.color = pick(this.options.color, color);
             };
             /**
              * Set a value in an object, on the property defined by key. The key
@@ -27383,14 +27210,14 @@
              */
             Point.prototype.importEvents = function () {
                 if (!this.hasImportedEvents) {
-                    var point_1 = this,
-                        options = merge(point_1.series.options.point,
-                        point_1.options),
+                    var point = this,
+                        options = merge(point.series.options.point,
+                        point.options),
                         events = options.events;
-                    point_1.events = events;
+                    point.events = events;
                     objectEach(events, function (event, eventType) {
                         if (isFunction(event)) {
-                            addEvent(point_1, eventType, event);
+                            addEvent(point, eventType, event);
                         }
                     });
                     this.hasImportedEvents = true;
@@ -27458,8 +27285,7 @@
                     markerAttribs = series.markerAttribs(point, state);
                 }
                 // Apply hover styles to the existing point
-                // Prevent from dummy null points (#14966)
-                if (point.graphic && !point.hasDummyGraphic) {
+                if (point.graphic) {
                     if (previousState) {
                         point.graphic.removeClass('highcharts-point-' + previousState);
                     }
@@ -27471,7 +27297,7 @@
                         pointAttribsAnimation = pick(chart.options.chart.animation, stateOptions.animation);
                         // Some inactive points (e.g. slices in pie) should apply
                         // oppacity also for it's labels
-                        if (series.options.inactiveOtherPoints && isNumber(pointAttribs.opacity)) {
+                        if (series.options.inactiveOtherPoints && pointAttribs.opacity) {
                             (point.dataLabels || []).forEach(function (label) {
                                 if (label) {
                                     label.animate({
@@ -27575,7 +27401,7 @@
                     // halo's context (#7681).
                     halo.hide);
                 }
-                fireEvent(point, 'afterSetState', { state: state });
+                fireEvent(point, 'afterSetState');
             };
             /**
              * Get the path definition for the halo, which is usually a shadow-like
@@ -27600,7 +27426,7 @@
 
         return Point;
     });
-    _registerModule(_modules, 'Core/Legend.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Series/Point.js'], _modules['Core/Utilities.js']], function (A, F, H, Point, U) {
+    _registerModule(_modules, 'Core/Legend.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Series/Point.js'], _modules['Core/Utilities.js']], function (A, H, Point, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -27612,7 +27438,6 @@
          * */
         var animObject = A.animObject,
             setAnimation = A.setAnimation;
-        var format = F.format;
         var isFirefox = H.isFirefox,
             marginNames = H.marginNames,
             win = H.win;
@@ -27623,6 +27448,7 @@
             discardElement = U.discardElement,
             find = U.find,
             fireEvent = U.fireEvent,
+            format = U.format,
             isNumber = U.isNumber,
             merge = U.merge,
             pick = U.pick,
@@ -28124,7 +27950,7 @@
                     options = legend.options,
                     horizontal = options.layout === 'horizontal',
                     symbolWidth = legend.symbolWidth,
-                    symbolPadding = options.symbolPadding || 0,
+                    symbolPadding = options.symbolPadding,
                     itemStyle = legend.itemStyle,
                     itemHiddenStyle = legend.itemHiddenStyle,
                     itemDistance = horizontal ? pick(options.itemDistance, 20) : 0,
@@ -28180,18 +28006,10 @@
                         legend.baseline =
                             legend.fontMetrics.f + 3 + legend.itemMarginTop;
                         li.attr('y', legend.baseline);
-                        legend.symbolHeight =
-                            options.symbolHeight || legend.fontMetrics.f;
-                        if (options.squareSymbol) {
-                            legend.symbolWidth = pick(options.symbolWidth, Math.max(legend.symbolHeight, 16));
-                            itemExtraWidth = legend.symbolWidth + symbolPadding +
-                                itemDistance + (showCheckbox ? 20 : 0);
-                            if (ltr) {
-                                li.attr('x', legend.symbolWidth + symbolPadding);
-                            }
-                        }
                     }
                     // Draw the legend symbol inside the group box
+                    legend.symbolHeight =
+                        options.symbolHeight || legend.fontMetrics.f;
                     series.drawLegendSymbol(legend, item);
                     if (legend.setItemEvents) {
                         legend.setItemEvents(item, li, useHTML);
@@ -28648,9 +28466,7 @@
                 }
                 // Reset the legend height and adjust the clipping rectangle
                 pages.length = 0;
-                if (legendHeight &&
-                    spaceHeight > 0 &&
-                    legendHeight > spaceHeight &&
+                if (legendHeight > spaceHeight &&
                     navOptions.enabled !== false) {
                     this.clipHeight = clipHeight =
                         Math.max(spaceHeight - 20 - this.titleHeight - padding, 0);
@@ -29001,11 +28817,7 @@
              *  Static Properties
              *
              * */
-            /**
-             * @internal
-             * @todo Move `Globals.seriesTypes` code to her.
-             */
-            SeriesRegistry.seriesTypes = H.seriesTypes;
+            SeriesRegistry.seriesTypes = {};
             /* *
              *
              *  Static Functions
@@ -29104,6 +28916,7 @@
          *
          * */
         H.seriesType = SeriesRegistry.seriesType;
+        H.seriesTypes = SeriesRegistry.seriesTypes;
         /* *
          *
          *  Export
@@ -29112,7 +28925,7 @@
 
         return SeriesRegistry;
     });
-    _registerModule(_modules, 'Core/Chart/Chart.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Axis/Axis.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Legend.js'], _modules['Core/MSPointer.js'], _modules['Core/Options.js'], _modules['Core/Color/Palette.js'], _modules['Core/Pointer.js'], _modules['Core/Series/SeriesRegistry.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js'], _modules['Core/Renderer/HTML/AST.js']], function (A, Axis, F, H, Legend, MSPointer, O, palette, Pointer, SeriesRegistry, Time, U, AST) {
+    _registerModule(_modules, 'Core/Chart/Chart.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Axis/Axis.js'], _modules['Core/Globals.js'], _modules['Core/Legend.js'], _modules['Core/MSPointer.js'], _modules['Core/Options.js'], _modules['Core/Color/Palette.js'], _modules['Core/Pointer.js'], _modules['Core/Series/SeriesRegistry.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js'], _modules['Core/Renderer/HTML/AST.js']], function (A, Axis, H, Legend, MSPointer, O, palette, Pointer, SeriesRegistry, Time, U, AST) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -29125,12 +28938,11 @@
         var animate = A.animate,
             animObject = A.animObject,
             setAnimation = A.setAnimation;
-        var numberFormat = F.numberFormat;
         var charts = H.charts,
             doc = H.doc,
             win = H.win;
         var defaultOptions = O.defaultOptions,
-            defaultTime = O.defaultTime;
+            time = O.time;
         var seriesTypes = SeriesRegistry.seriesTypes;
         var addEvent = U.addEvent,
             attr = U.attr,
@@ -29151,6 +28963,7 @@
             isObject = U.isObject,
             isString = U.isString,
             merge = U.merge,
+            numberFormat = U.numberFormat,
             objectEach = U.objectEach,
             pick = U.pick,
             pInt = U.pInt,
@@ -29165,7 +28978,7 @@
          * The Chart class. The recommended constructor is {@link Highcharts#chart}.
          *
          * @example
-         * let chart = Highcharts.chart('container', {
+         * var chart = Highcharts.chart('container', {
          *        title: {
          *               text: 'My chart'
          *        },
@@ -29216,7 +29029,6 @@
                 this.renderer = void 0;
                 this.renderTo = void 0;
                 this.series = void 0;
-                this.sharedClips = {};
                 this.spacing = void 0;
                 this.spacingBox = void 0;
                 this.symbolCounter = void 0;
@@ -29275,12 +29087,15 @@
              */
             Chart.prototype.init = function (userOptions, callback) {
                 // Handle regular options
-                var userPlotOptions = userOptions.plotOptions || {};
+                var options, 
+                    // skip merging data points to increase performance
+                    seriesOptions = userOptions.series,
+                    userPlotOptions = userOptions.plotOptions || {};
                 // Fire the event with a default function
                 fireEvent(this, 'init', { args: arguments }, function () {
-                    var options = merge(defaultOptions,
-                        userOptions); // do the merge
-                        var optionsChart = options.chart;
+                    userOptions.series = null;
+                    options = merge(defaultOptions, userOptions); // do the merge
+                    var optionsChart = options.chart || {};
                     // Override (by copy of user options) or clear tooltip options
                     // in chart.options.plotOptions (#6218)
                     objectEach(options.plotOptions, function (typeOptions, type) {
@@ -29294,6 +29109,8 @@
                     options.tooltip.userOptions = (userOptions.chart &&
                         userOptions.chart.forExport &&
                         userOptions.tooltip.userOptions) || userOptions.tooltip;
+                    // set back the series data
+                    options.series = userOptions.series = seriesOptions;
                     /**
                      * The original options given to the constructor or a chart factory
                      * like {@link Highcharts.chart} and {@link Highcharts.stockChart}.
@@ -29505,58 +29322,23 @@
              * @param {number} plotY
              * Pixel y relative to the plot area.
              *
-             * @param {Highcharts.ChartIsInsideOptionsObject} [options]
-             * Options object.
+             * @param {boolean} [inverted]
+             * Whether the chart is inverted.
              *
              * @return {boolean}
              * Returns true if the given point is inside the plot area.
              */
-            Chart.prototype.isInsidePlot = function (plotX, plotY, options) {
-                if (options === void 0) { options = {}; }
-                var _a = this,
-                    inverted = _a.inverted,
-                    plotBox = _a.plotBox,
-                    plotLeft = _a.plotLeft,
-                    plotTop = _a.plotTop,
-                    scrollablePlotBox = _a.scrollablePlotBox,
-                    _b = _a.scrollingContainer,
-                    _c = _b === void 0 ? {
-                        scrollLeft: 0,
-                        scrollTop: 0
-                    } : _b,
-                    scrollLeft = _c.scrollLeft,
-                    scrollTop = _c.scrollTop;
-                var series = options.series;
-                var box = (options.visiblePlotOnly && scrollablePlotBox) || plotBox;
-                var x = options.inverted ? plotY : plotX;
-                var y = options.inverted ? plotX : plotY;
-                var e = {
+            Chart.prototype.isInsidePlot = function (plotX, plotY, inverted) {
+                var x = inverted ? plotY : plotX,
+                    y = inverted ? plotX : plotY,
+                    e = {
                         x: x,
                         y: y,
-                        isInsidePlot: true
+                        isInsidePlot: x >= 0 &&
+                            x <= this.plotWidth &&
+                            y >= 0 &&
+                            y <= this.plotHeight
                     };
-                if (!options.ignoreX) {
-                    var xAxis = (series && (inverted ? series.yAxis : series.xAxis)) || {
-                            pos: plotLeft,
-                            len: Infinity
-                        };
-                    var chartX = options.paneCoordinates ? xAxis.pos + x : plotLeft + x;
-                    if (!(chartX >= Math.max(scrollLeft + plotLeft, xAxis.pos) &&
-                        chartX <= Math.min(scrollLeft + plotLeft + box.width, xAxis.pos + xAxis.len))) {
-                        e.isInsidePlot = false;
-                    }
-                }
-                if (!options.ignoreY && e.isInsidePlot) {
-                    var yAxis = (series && (inverted ? series.xAxis : series.yAxis)) || {
-                            pos: plotTop,
-                            len: Infinity
-                        };
-                    var chartY = options.paneCoordinates ? yAxis.pos + y : plotTop + y;
-                    if (!(chartY >= Math.max(scrollTop + plotTop, yAxis.pos) &&
-                        chartY <= Math.min(scrollTop + plotTop + box.height, yAxis.pos + yAxis.len))) {
-                        e.isInsidePlot = false;
-                    }
-                }
                 fireEvent(this, 'afterIsInsidePlot', e);
                 return e.isInsidePlot;
             };
@@ -30208,10 +29990,8 @@
                         lineHeight: 'normal',
                         zIndex: 0,
                         '-webkit-tap-highlight-color': 'rgba(0,0,0,0)',
-                        userSelect: 'none',
-                        'touch-action': 'manipulation',
-                        outline: 'none'
-                    }, optionsChart.style || {});
+                        userSelect: 'none' // #13503
+                    }, optionsChart.style);
                 }
                 /**
                  * The containing HTML element of the chart. The container is
@@ -30408,7 +30188,7 @@
              * @sample highcharts/members/chart-setsize-jquery-resizable/
              *         Add a jQuery UI resizable
              * @sample stock/members/chart-setsize/
-             *         Highcharts Stock with UI resizable
+             *         Highstock with UI resizable
              *
              * @function Highcharts.Chart#setSize
              *
@@ -30567,7 +30347,6 @@
                         axis.setAxisSize();
                         axis.setAxisTranslation();
                     });
-                    renderer.alignElements();
                 }
                 fireEvent(chart, 'afterSetChartSize', { skipAxes: skipAxes });
             };
@@ -31017,7 +30796,7 @@
              * @sample highcharts/members/chart-destroy/
              *         Destroy the chart from a button
              * @sample stock/members/chart-destroy/
-             *         Destroy with Highcharts Stock
+             *         Destroy with Highstock
              *
              * @function Highcharts.Chart#destroy
              *
@@ -31117,7 +30896,7 @@
                 // Run an event after axes and series are initialized, but before
                 // render. At this stage, the series data is indexed and cached in the
                 // xData and yData arrays, so we can access those before rendering. Used
-                // in Highcharts Stock.
+                // in Highstock.
                 fireEvent(chart, 'beforeRender');
                 // depends on inverted and on margins being set
                 if (Pointer) {
@@ -31183,7 +30962,7 @@
              * @sample highcharts/members/chart-addseries/
              *         Add a series from a button
              * @sample stock/members/chart-addseries/
-             *         Add a series in Highcharts Stock
+             *         Add a series in Highstock
              *
              * @function Highcharts.Chart#addSeries
              *
@@ -31313,6 +31092,9 @@
                 else {
                     axis = new Axis(this, userOptions);
                 }
+                // Push the new axis options to the chart options
+                chartOptions[type] = splat(chartOptions[type] || {});
+                chartOptions[type].push(userOptions);
                 if (isColorAxis) {
                     this.isDirtyLegend = true;
                     // Clear before 'bindAxes' (#11924)
@@ -31339,7 +31121,7 @@
              * @sample highcharts/members/chart-showloading/
              *         Apply different text labels
              * @sample stock/members/chart-show-hide-loading/
-             *         Toggle loading in Highcharts Stock
+             *         Toggle loading in Highstock
              *
              * @function Highcharts.Chart#showLoading
              *
@@ -31407,7 +31189,7 @@
              * @sample highcharts/members/chart-hideloading/
              *         Show and hide loading from a button
              * @sample stock/members/chart-show-hide-loading/
-             *         Toggle loading in Highcharts Stock
+             *         Toggle loading in Highstock
              *
              * @function Highcharts.Chart#hideLoading
              */
@@ -31565,7 +31347,7 @@
                     // first with global time, then updated with time options, we need
                     // to create a new Time instance to avoid mutating the global time
                     // (#10536).
-                    if (this.time === defaultTime) {
+                    if (this.time === time) {
                         this.time = new Time(options.time);
                     }
                     // If we're updating, the time class is different from other chart
@@ -31596,7 +31378,7 @@
                         // Else, just merge the options. For nodes like loading, noData,
                         // plotOptions
                     }
-                    else if (key !== 'colors' &&
+                    else if (key !== 'color' &&
                         chart.collectionsWithUpdate.indexOf(key) === -1) {
                         merge(true, chart.options[key], options[key]);
                     }
@@ -31616,13 +31398,15 @@
                     if (options[coll]) {
                         // In stock charts, the navigator series are also part of the
                         // chart.series array, but those series should not be handled
-                        // here (#8196) and neither should the navigator axis (#9671).
-                        indexMap = [];
-                        chart[coll].forEach(function (s, i) {
-                            if (!s.options.isInternal) {
-                                indexMap.push(pick(s.options.index, i));
-                            }
-                        });
+                        // here (#8196).
+                        if (coll === 'series') {
+                            indexMap = [];
+                            chart[coll].forEach(function (s, i) {
+                                if (!s.options.isInternal) {
+                                    indexMap.push(pick(s.options.index, i));
+                                }
+                            });
+                        }
                         splat(options[coll]).forEach(function (newOptions, i) {
                             var hasId = defined(newOptions.id);
                             var item;
@@ -31760,9 +31544,9 @@
                     theme = btnOptions.theme,
                     states = theme.states,
                     alignTo = (btnOptions.relativeTo === 'chart' ||
-                        btnOptions.relativeTo === 'spacingBox' ?
+                        btnOptions.relativeTo === 'spaceBox' ?
                         null :
-                        'scrollablePlotBox');
+                        this.scrollablePlotBox || 'plotBox');
                 /**
                  * @private
                  */
@@ -31901,12 +31685,28 @@
                         xy = [0];
                     }
                     xy.forEach(function (isX) {
-                        var axis = chart[isX ? 'xAxis' : 'yAxis'][0], horiz = axis.horiz, mousePos = e[horiz ? 'chartX' : 'chartY'], mouseDown = horiz ? 'mouseDownX' : 'mouseDownY', startPos = chart[mouseDown], halfPointRange = (axis.pointRange || 0) / 2, pointRangeDirection = (axis.reversed && !chart.inverted) ||
-                                (!axis.reversed && chart.inverted) ?
-                                -1 :
-                                1, extremes = axis.getExtremes(), panMin = axis.toValue(startPos - mousePos, true) +
-                                halfPointRange * pointRangeDirection, panMax = axis.toValue(startPos + axis.len - mousePos, true) -
-                                halfPointRange * pointRangeDirection, flipped = panMax < panMin, newMin = flipped ? panMax : panMin, newMax = flipped ? panMin : panMax, hasVerticalPanning = axis.hasVerticalPanning(), paddedMin, paddedMax, spill, panningState = axis.panningState;
+                        var axis = chart[isX ? 'xAxis' : 'yAxis'][0],
+                            horiz = axis.horiz,
+                            mousePos = e[horiz ? 'chartX' : 'chartY'],
+                            mouseDown = horiz ? 'mouseDownX' : 'mouseDownY',
+                            startPos = chart[mouseDown],
+                            pointPlacement = chart.options && chart.options.plotOptions && chart.options.plotOptions.column ? chart.options.plotOptions.column.pointPlacement : undefined,
+                            halfPointRange = (axis.pointRange || 0) / 2,
+                            pointRangeDirection = (axis.reversed && !chart.inverted) || (!axis.reversed && chart.inverted) ? -1 : 1,
+                            extremes = axis.getExtremes(),
+                            minValue = axis.toValue(startPos - mousePos, true),
+                            maxValue = axis.toValue(startPos - mousePos + axis.len, true),
+                            /* Temporary fix for highcharts/highcharts#9612 */
+                            panMin = minValue,
+                            panMax = maxValue - (pointPlacement !== 'on' ? 2 * halfPointRange * pointRangeDirection : 0),
+                            flipped = panMax < panMin,
+                            newMin = flipped ? panMax : panMin,
+                            newMax = flipped ? panMin : panMax,
+                            hasVerticalPanning = axis.hasVerticalPanning(),
+                            paddedMin,
+                            paddedMax,
+                            spill,
+                            panningState = axis.panningState;
                         // General calculations of panning state.
                         // This is related to using vertical panning. (#11315).
                         if (hasVerticalPanning &&
@@ -31928,11 +31728,11 @@
                                 }
                             });
                         }
-                        paddedMin = Math.min(pick(panningState && panningState.startMin, extremes.dataMin), halfPointRange ?
+                        paddedMin = Math.min(pick(panningState === null || panningState === void 0 ? void 0 : panningState.startMin, extremes.dataMin), halfPointRange ?
                             extremes.min :
                             axis.toValue(axis.toPixels(extremes.min) -
                                 axis.minPixelPadding));
-                        paddedMax = Math.max(pick(panningState && panningState.startMax, extremes.dataMax), halfPointRange ?
+                        paddedMax = Math.max(pick(panningState === null || panningState === void 0 ? void 0 : panningState.startMax, extremes.dataMax), halfPointRange ?
                             extremes.max :
                             axis.toValue(axis.toPixels(extremes.max) +
                                 axis.minPixelPadding));
@@ -32064,7 +31864,7 @@
          *
          * @example
          * // Render a chart in to div#container
-         * let chart = Highcharts.chart('container', {
+         * var chart = Highcharts.chart('container', {
          *     title: {
          *         text: 'My chart'
          *     },
@@ -32193,27 +31993,6 @@
         *        Whether to redraw the chart after the caption is altered. If doing
         *        more operations on the chart, it is a good idea to set redraw to false
         *        and call {@link Chart#redraw} after.
-        */
-        /**
-         * @interface Highcharts.ChartIsInsideOptionsObject
-         */ /**
-        * @name Highcharts.ChartIsInsideOptionsObject#ignoreX
-        * @type {boolean|undefined}
-        */ /**
-        * @name Highcharts.ChartIsInsideOptionsObject#ignoreY
-        * @type {boolean|undefined}
-        */ /**
-        * @name Highcharts.ChartIsInsideOptionsObject#inverted
-        * @type {boolean|undefined}
-        */ /**
-        * @name Highcharts.ChartIsInsideOptionsObject#paneCoordinates
-        * @type {boolean|undefined}
-        */ /**
-        * @name Highcharts.ChartIsInsideOptionsObject#series
-        * @type {Highcharts.Series|undefined}
-        */ /**
-        * @name Highcharts.ChartIsInsideOptionsObject#visiblePlotOnly
-        * @type {boolean|undefined}
         */
         ''; // include doclets above in transpilat
 
@@ -32459,8 +32238,8 @@
              *
              * */
             /* eslint-disable valid-jsdoc */
-            Series.prototype.init = function (chart, userOptions) {
-                fireEvent(this, 'init', { options: userOptions });
+            Series.prototype.init = function (chart, options) {
+                fireEvent(this, 'init', { options: options });
                 var series = this,
                     events,
                     chartSeries = chart.series,
@@ -32495,11 +32274,11 @@
                  * @name Highcharts.Series#options
                  * @type {Highcharts.SeriesOptionsType}
                  */
-                series.options = series.setOptions(userOptions);
-                var options = series.options;
+                series.options = options = series.setOptions(options);
                 series.linkedSeries = [];
                 // bind the axes
                 series.bindAxes();
+                // set some variables
                 extend(series, {
                     /**
                      * The series name as given in the options. Defaults to
@@ -32648,15 +32427,14 @@
                 fireEvent(this, 'bindAxes', null, function () {
                     // repeat for xAxis and yAxis
                     (series.axisTypes || []).forEach(function (AXIS) {
-                        var index = 0;
                         // loop through the chart's axis objects
                         chart[AXIS].forEach(function (axis) {
                             axisOptions = axis.options;
                             // apply if the series xAxis or yAxis option mathches
                             // the number of the axis, or if undefined, use the
                             // first axis
-                            if ((seriesOptions[AXIS] === index &&
-                                !axisOptions.isInternal) ||
+                            if (seriesOptions[AXIS] ===
+                                axisOptions.index ||
                                 (typeof seriesOptions[AXIS] !==
                                     'undefined' &&
                                     seriesOptions[AXIS] === axisOptions.id) ||
@@ -32683,9 +32461,6 @@
                                 series[AXIS] = axis;
                                 // mark dirty for redraw
                                 axis.isDirty = true;
-                            }
-                            if (!axisOptions.isInternal) {
-                                index++;
                             }
                         });
                         // The series needs an X and an Y axis
@@ -32953,7 +32728,9 @@
                     this.getCyclic('color');
                 }
                 else if (this.options.colorByPoint) {
-                    this.color = palette.neutralColor20;
+                    // #4359, selected slice got series.color even when colorByPoint
+                    // was set.
+                    this.options.color = null;
                 }
                 else {
                     this.getCyclic('color', this.options.color ||
@@ -33181,7 +32958,7 @@
              * @sample highcharts/members/series-setdata-pie/
              *         Set data in a pie
              * @sample stock/members/series-setdata/
-             *         Set new data in Highcharts Stock
+             *         Set new data in Highstock
              * @sample maps/members/series-setdata/
              *         Set new data in Highmaps
              *
@@ -33506,7 +33283,7 @@
             };
             /**
              * Internal function to apply processed data.
-             * In Highcharts Stock, this function is extended to provide data grouping.
+             * In Highstock, this function is extended to provide data grouping.
              *
              * @private
              * @function Highcharts.Series#processData
@@ -33602,11 +33379,7 @@
                     keys = options.keys,
                     point,
                     points = [],
-                    i,
-                    groupCropStartIndex = (options.dataGrouping &&
-                        options.dataGrouping.groupAll ?
-                        cropStart :
-                        0);
+                    i;
                 if (!data && !hasGroupedData) {
                     var arr = [];
                     arr.length = dataOptions.length;
@@ -33630,7 +33403,7 @@
                         // splat the y data in case of ohlc data array
                         point = (new PointClass()).init(series, [processedXData[i]].concat(splat(processedYData[i])));
                         /**
-                         * Highcharts Stock only. If a point object is created by data
+                         * Highstock only. If a point object is created by data
                          * grouping, it doesn't reflect actual points in the raw
                          * data. In this case, the `dataGroup` property holds
                          * information that points back to the raw data.
@@ -33646,7 +33419,7 @@
                          * @name Highcharts.Point#dataGroup
                          * @type {Highcharts.DataGroupingInfoObject|undefined}
                          */
-                        point.dataGroup = series.groupMap[groupCropStartIndex + i];
+                        point.dataGroup = series.groupMap[i];
                         if (point.dataGroup.options) {
                             point.options = point.dataGroup.options;
                             extend(point, point.dataGroup.options);
@@ -33662,8 +33435,7 @@
                          * @type {number}
                          * @readonly
                          */
-                        // For faster access in Point.update
-                        point.index = hasGroupedData ? (groupCropStartIndex + i) : cursor;
+                        point.index = cursor; // For faster access in Point.update
                         points[i] = point;
                     }
                 }
@@ -33920,8 +33692,8 @@
                                 (stackThreshold ? 0 : threshold) ?
                             '-' :
                             '') + series.stackKey],
-                        pointStack = void 0,
-                        stackValues = void 0;
+                        pointStack,
+                        stackValues;
                     if (yAxis.positiveValuesOnly && !yAxis.validatePositiveValue(yValue) ||
                         xAxis.positiveValuesOnly && !xAxis.validatePositiveValue(xValue)) {
                         point.isNull = true;
@@ -33974,7 +33746,7 @@
                     point.yBottom = defined(yBottom) ?
                         limitedRange(yAxis.translate(yBottom, 0, 1, 0, 1)) :
                         null;
-                    // general hook, used for Highcharts Stock compare mode
+                    // general hook, used for Highstock compare mode
                     if (hasModifyValue) {
                         yValue = series.modifyValue(yValue, point);
                     }
@@ -34044,7 +33816,7 @@
                 var chart = this.chart;
                 // #3916, #5029, #5085
                 return (points || this.points || []).filter(function (point) {
-                    if (insideOnly && !chart.isInsidePlot(point.plotX, point.plotY, { inverted: chart.inverted })) {
+                    if (insideOnly && !chart.isInsidePlot(point.plotX, point.plotY, chart.inverted)) {
                         return false;
                     }
                     return point.visible !== false &&
@@ -34106,29 +33878,6 @@
                 };
             };
             /**
-             * Get the shared clip key, creating it if it doesn't exist.
-             *
-             * @private
-             * @function Highcharts.Series#getSharedClipKey
-             */
-            Series.prototype.getSharedClipKey = function (animation) {
-                if (this.sharedClipKey) {
-                    return this.sharedClipKey;
-                }
-                var sharedClipKey = [
-                        animation && animation.duration,
-                        animation && animation.easing,
-                        animation && animation.defer,
-                        this.getClipBox(animation).height,
-                        this.options.xAxis,
-                        this.options.yAxis
-                    ].join(',');
-                if (this.options.clip !== false || animation) {
-                    this.sharedClipKey = sharedClipKey;
-                }
-                return sharedClipKey;
-            };
-            /**
              * Set the clipping for the series. For animated series it is called
              * twice, first to initiate animating the clip then the second time
              * without the animation to set the final clip.
@@ -34137,15 +33886,17 @@
              * @function Highcharts.Series#setClip
              */
             Series.prototype.setClip = function (animation) {
-                var chart = this.chart,
-                    options = this.options,
-                    renderer = chart.renderer,
-                    inverted = chart.inverted,
-                    seriesClipBox = this.clipBox,
-                    clipBox = this.getClipBox(animation),
-                    sharedClipKey = this.getSharedClipKey(animation), // #4526
-                    clipRect = chart.sharedClips[sharedClipKey],
-                    markerClipRect = chart.sharedClips[sharedClipKey + 'm'];
+                var chart = this.chart, options = this.options, renderer = chart.renderer, inverted = chart.inverted, seriesClipBox = this.clipBox, clipBox = this.getClipBox(animation), sharedClipKey = this.sharedClipKey ||
+                        [
+                            '_sharedClip',
+                            animation && animation.duration,
+                            animation && animation.easing,
+                            animation && animation.defer,
+                            clipBox.height,
+                            options.xAxis,
+                            options.yAxis
+                        ].join(','), // #4526
+                    clipRect = chart[sharedClipKey], markerClipRect = chart[sharedClipKey + 'm'];
                 if (animation) {
                     clipBox.width = 0;
                     if (inverted) {
@@ -34158,12 +33909,12 @@
                 if (!clipRect) {
                     // When animation is set, prepare the initial positions
                     if (animation) {
-                        chart.sharedClips[sharedClipKey + 'm'] = markerClipRect =
+                        chart[sharedClipKey + 'm'] = markerClipRect =
                             renderer.clipRect(
                             // include the width of the first marker
-                            inverted ? (chart.plotSizeX || 0) + 99 : -99, inverted ? -chart.plotLeft : -chart.plotTop, 99, inverted ? chart.chartWidth : chart.chartHeight);
+                            inverted ? chart.plotSizeX + 99 : -99, inverted ? -chart.plotLeft : -chart.plotTop, 99, inverted ? chart.chartWidth : chart.chartHeight);
                     }
-                    chart.sharedClips[sharedClipKey] = clipRect = renderer.clipRect(clipBox);
+                    chart[sharedClipKey] = clipRect = renderer.clipRect(clipBox);
                     // Create hashmap for series indexes
                     clipRect.count = { length: 0 };
                     // When the series is rendered again before starting animating, in
@@ -34181,6 +33932,7 @@
                 if (options.clip !== false || animation) {
                     this.group.clip(animation || seriesClipBox ? clipRect : chart.clipRect);
                     this.markerGroup.clip(markerClipRect);
+                    this.sharedClipKey = sharedClipKey;
                 }
                 // Remove the shared clipping rectangle when all series are shown
                 if (!animation) {
@@ -34188,12 +33940,16 @@
                         delete clipRect.count[this.index];
                         clipRect.count.length -= 1;
                     }
-                    if (clipRect.count.length === 0) {
+                    if (clipRect.count.length === 0 &&
+                        sharedClipKey &&
+                        chart[sharedClipKey]) {
                         if (!seriesClipBox) {
-                            chart.sharedClips[sharedClipKey] = clipRect.destroy();
+                            chart[sharedClipKey] =
+                                chart[sharedClipKey].destroy();
                         }
-                        if (markerClipRect) {
-                            chart.sharedClips[sharedClipKey + 'm'] = markerClipRect.destroy();
+                        if (chart[sharedClipKey + 'm']) {
+                            chart[sharedClipKey + 'm'] =
+                                chart[sharedClipKey + 'm'].destroy();
                         }
                     }
                 }
@@ -34214,22 +33970,23 @@
                 var series = this,
                     chart = series.chart,
                     animation = animObject(series.options.animation),
-                    sharedClipKey = this.sharedClipKey;
+                    clipRect,
+                    sharedClipKey,
+                    finalBox;
                 // Initialize the animation. Set up the clipping rectangle.
                 if (init) {
                     series.setClip(animation);
                     // Run the animation
                 }
-                else if (sharedClipKey) {
-                    var clipRect = chart.sharedClips[sharedClipKey];
-                    var markerClipRect = chart.sharedClips[sharedClipKey + 'm'];
-                    var finalBox = series.getClipBox(animation,
-                        true);
+                else {
+                    sharedClipKey = this.sharedClipKey;
+                    clipRect = chart[sharedClipKey];
+                    finalBox = series.getClipBox(animation, true);
                     if (clipRect) {
                         clipRect.animate(finalBox, animation);
                     }
-                    if (markerClipRect) {
-                        markerClipRect.animate({
+                    if (chart[sharedClipKey + 'm']) {
+                        chart[sharedClipKey + 'm'].animate({
                             width: finalBox.width + 99,
                             x: finalBox.x - (chart.inverted ? 0 : 99)
                         }, animation);
@@ -34297,7 +34054,7 @@
                             // Set starting position for point sliding animation.
                             if (series.enabledDataSorting) {
                                 point.startXPos = xAxis.reversed ?
-                                    -(markerAttribs.width || 0) :
+                                    -markerAttribs.width :
                                     xAxis.width;
                             }
                             var isInside = point.isInside !== false;
@@ -34308,7 +34065,7 @@
                                     .animate(markerAttribs);
                             }
                             else if (isInside &&
-                                ((markerAttribs.width || 0) > 0 || point.hasImage)) {
+                                (markerAttribs.width > 0 || point.hasImage)) {
                                 /**
                                  * The graphic representation of the point.
                                  * Typically this is a simple shape, like a `rect`
@@ -34400,7 +34157,7 @@
                 attribs = {
                     // Math.floor for #1843:
                     x: seriesOptions.crisp ?
-                        Math.floor(point.plotX - radius) :
+                        Math.floor(point.plotX) - radius :
                         point.plotX - radius,
                     y: point.plotY - radius
                 };
@@ -34516,9 +34273,7 @@
                         point.destroy();
                     }
                 }
-                if (series.clips) {
-                    series.clips.forEach(function (clip) { return clip.destroy(); });
-                }
+                series.points = null;
                 // Clear the animation timeout if we are destroying the series
                 // during initial animation
                 U.clearTimeout(series.animationTimeout);
@@ -34535,7 +34290,7 @@
                 });
                 // remove from hoverSeries
                 if (chart.hoverSeries === series) {
-                    chart.hoverSeries = void 0;
+                    chart.hoverSeries = null;
                 }
                 erase(chart.series, series);
                 chart.orderSeries();
@@ -34835,8 +34590,7 @@
                     animDuration = (!series.finishedAnimating &&
                         chart.renderer.isSVG &&
                         animOptions.duration),
-                    visibility = series.visible ?
-                        'inherit' : 'hidden', // #2597
+                    visibility = series.visible ? 'inherit' : 'hidden', // #2597
                     zIndex = options.zIndex,
                     hasRendered = series.hasRendered,
                     chartSeriesGroup = chart.seriesGroup,
@@ -35195,23 +34949,17 @@
                     // The tracker is added to the series group, which is clipped, but
                     // is covered by the marker group. So the marker group also needs to
                     // capture events.
-                    [
-                        series.tracker,
-                        series.markerGroup,
-                        series.dataLabelsGroup
-                    ].forEach(function (tracker) {
-                        if (tracker) {
-                            tracker.addClass('highcharts-tracker')
-                                .on('mouseover', onMouseOver)
-                                .on('mouseout', function (e) {
-                                pointer.onTrackerMouseOut(e);
-                            });
-                            if (options.cursor && !chart.styledMode) {
-                                tracker.css({ cursor: options.cursor });
-                            }
-                            if (hasTouch) {
-                                tracker.on('touchstart', onMouseOver);
-                            }
+                    [series.tracker, series.markerGroup].forEach(function (tracker) {
+                        tracker.addClass('highcharts-tracker')
+                            .on('mouseover', onMouseOver)
+                            .on('mouseout', function (e) {
+                            pointer.onTrackerMouseOut(e);
+                        });
+                        if (options.cursor && !chart.styledMode) {
+                            tracker.css({ cursor: options.cursor });
+                        }
+                        if (hasTouch) {
+                            tracker.on('touchstart', onMouseOver);
                         }
                     });
                 }
@@ -35231,9 +34979,9 @@
              * @sample highcharts/members/series-addpoint-pie/
              *         Append pie slice
              * @sample stock/members/series-addpoint/
-             *         Append 100 points in Highcharts Stock
+             *         Append 100 points in Highstock
              * @sample stock/members/series-addpoint-shift/
-             *         Append and shift in Highcharts Stock
+             *         Append and shift in Highstock
              * @sample maps/members/series-addpoint/
              *         Add a point in Highmaps
              *
@@ -35337,7 +35085,7 @@
              * Remove a point from the series. Unlike the
              * {@link Highcharts.Point#remove} method, this can also be done on a point
              * that is not instanciated because it is outside the view or subject to
-             * Highcharts Stock data grouping.
+             * Highstock data grouping.
              *
              * @sample highcharts/members/series-removepoint/
              *         Remove cropped point
@@ -35513,9 +35261,8 @@
                     // rules (#6912).
                     animation = series.finishedAnimating && { animation: false },
                     kinds = {};
-                newType = newType || initialType;
                 if (keepPoints) {
-                    preserve.push('data', 'isDirtyData', 'points', 'processedXData', 'processedYData', 'xIncrement', 'cropped', '_hasPointMarkers', '_hasPointLabels', 'clips', // #15420
+                    preserve.push('data', 'isDirtyData', 'points', 'processedXData', 'processedYData', 'xIncrement', 'cropped', '_hasPointMarkers', '_hasPointLabels', 
                     // Networkgraph (#14397)
                     'nodes', 'layout', 
                     // Map specific, consider moving it to series-specific preserve-
@@ -35559,18 +35306,15 @@
                     preserve[prop] = series[prop];
                     delete series[prop];
                 });
-                var casting = false;
-                if (seriesTypes[newType]) {
-                    casting = newType !== series.type;
+                if (seriesTypes[newType || initialType]) {
+                    var casting = newType !== series.type;
                     // Destroy the series and delete all properties, it will be
                     // reinserted within the `init` call below
                     series.remove(false, false, false, true);
                     if (casting) {
                         // Modern browsers including IE11
-                        // @todo slow, consider alternatives mentioned:
-                        // https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
                         if (Object.setPrototypeOf) {
-                            Object.setPrototypeOf(series, seriesTypes[newType].prototype);
+                            Object.setPrototypeOf(series, seriesTypes[newType || initialType].prototype);
                             // Legacy (IE < 11)
                         }
                         else {
@@ -35581,7 +35325,7 @@
                             }
                             // Reinsert all methods and properties from the new type
                             // prototype (#2270, #3719).
-                            extend(series, seriesTypes[newType].prototype);
+                            extend(series, seriesTypes[newType || initialType].prototype);
                             // The events are tied to the prototype chain, don't copy if
                             // they're not the series' own
                             if (ownEvents) {
@@ -35594,7 +35338,7 @@
                     }
                 }
                 else {
-                    error(17, true, chart, { missingModuleFor: newType });
+                    error(17, true, chart, { missingModuleFor: (newType || initialType) });
                 }
                 // Re-register groups (#3094) and other preserved properties
                 preserve.forEach(function (prop) {
@@ -35641,11 +35385,6 @@
                 }
                 series.initialType = initialType;
                 chart.linkSeries(); // Links are lost in series.remove (#3028)
-                // #15383: Fire updatedData if the type has changed to keep linked
-                // series such as indicators updated
-                if (casting && series.linkedSeries.length) {
-                    series.isDirtyData = true;
-                }
                 fireEvent(this, 'afterUpdate');
                 if (pick(redraw, true)) {
                     chart.redraw(keepPoints ? void 0 : false);
@@ -35980,21 +35719,6 @@
                     series.checkbox.checked = selected;
                 }
                 fireEvent(series, selected ? 'select' : 'unselect');
-            };
-            /**
-             * Checks if a tooltip should be shown for a given point.
-             *
-             * @private
-             * @param {number} plotX
-             * @param {number} plotY
-             * @param {Highcharts.ChartIsInsideOptionsObject} [options]
-             * @return {boolean}
-             */
-            Series.prototype.shouldShowTooltip = function (plotX, plotY, options) {
-                if (options === void 0) { options = {}; }
-                options.series = this;
-                options.visiblePlotOnly = true;
-                return this.chart.isInsidePlot(plotX, plotY, options);
             };
             /**
              * General options for all series types.
@@ -36943,8 +36667,6 @@
                      *         Bigger markers
                      *
                      * @default {highstock} 2
-                     * @default {highcharts} 4
-                     *
                      */
                     radius: 4,
                     /**
@@ -37447,13 +37169,11 @@
                      * series animation has finished. Setting to `false` renders the
                      * data label immediately. If set to `true` inherits the defer
                      * time set in [plotOptions.series.animation](#plotOptions.series.animation).
-                     * If set to a number, a defer time is specified in milliseconds.
                      *
                      * @sample highcharts/plotoptions/animation-defer
                      *         Set defer time
                      *
                      * @since     4.0.0
-                     * @type      {boolean|number}
                      * @product   highcharts highstock gantt
                      */
                     defer: true,
@@ -38267,7 +37987,7 @@
          * */
         /**
          * This is a placeholder type of the possible series options for
-         * [Highcharts](../highcharts/series), [Highcharts Stock](../highstock/series),
+         * [Highcharts](../highcharts/series), [Highstock](../highstock/series),
          * [Highmaps](../highmaps/series), and [Gantt](../gantt/series).
          *
          * In TypeScript is this dynamically generated to reference all possible types
@@ -38723,13 +38443,15 @@
                 if (scrollableMinWidth) {
                     this.scrollablePixelsX = scrollablePixelsX = Math.max(0, scrollableMinWidth - this.chartWidth);
                     if (scrollablePixelsX) {
-                        this.scrollablePlotBox = this.renderer.scrollablePlotBox = merge(this.plotBox);
-                        this.plotBox.width = this.plotWidth += scrollablePixelsX;
+                        this.scrollablePlotBox = merge(this.plotBox);
+                        this.plotWidth += scrollablePixelsX;
                         if (this.inverted) {
                             this.clipBox.height += scrollablePixelsX;
+                            this.plotBox.height += scrollablePixelsX;
                         }
                         else {
                             this.clipBox.width += scrollablePixelsX;
+                            this.plotBox.width += scrollablePixelsX;
                         }
                         corrections = {
                             // Corrections for right side
@@ -38741,13 +38463,15 @@
                 else if (scrollableMinHeight) {
                     this.scrollablePixelsY = scrollablePixelsY = Math.max(0, scrollableMinHeight - this.chartHeight);
                     if (scrollablePixelsY) {
-                        this.scrollablePlotBox = this.renderer.scrollablePlotBox = merge(this.plotBox);
-                        this.plotBox.height = this.plotHeight += scrollablePixelsY;
+                        this.scrollablePlotBox = merge(this.plotBox);
+                        this.plotHeight += scrollablePixelsY;
                         if (this.inverted) {
                             this.clipBox.width += scrollablePixelsY;
+                            this.plotBox.width += scrollablePixelsY;
                         }
                         else {
                             this.clipBox.height += scrollablePixelsY;
+                            this.plotBox.height += scrollablePixelsY;
                         }
                         corrections = {
                             2: { name: 'bottom', value: scrollablePixelsY }
@@ -38801,16 +38525,16 @@
          */
         Chart.prototype.setUpScrolling = function () {
             var _this = this;
-            var css = {
+            var attribs = {
                     WebkitOverflowScrolling: 'touch',
                     overflowX: 'hidden',
                     overflowY: 'hidden'
                 };
             if (this.scrollablePixelsX) {
-                css.overflowX = 'auto';
+                attribs.overflowX = 'auto';
             }
             if (this.scrollablePixelsY) {
-                css.overflowY = 'auto';
+                attribs.overflowY = 'auto';
             }
             // Insert a container with position relative
             // that scrolling and fixed container renders to (#10555)
@@ -38822,7 +38546,7 @@
             // Add the necessary divs to provide scrolling
             this.scrollingContainer = createElement('div', {
                 'className': 'highcharts-scrolling'
-            }, css, this.scrollingParent);
+            }, attribs, this.scrollingParent);
             // On scroll, reset the chart position because it applies to the scrolled
             // container
             addEvent(this.scrollingContainer, 'scroll', function () {
@@ -38856,7 +38580,6 @@
                     '.highcharts-navigator-yaxis',
                     '.highcharts-navigator',
                     '.highcharts-reset-zoom',
-                    '.highcharts-drillup-button',
                     '.highcharts-scrollbar',
                     '.highcharts-subtitle',
                     '.highcharts-title'
@@ -38892,6 +38615,10 @@
          * @return {void}
          */
         Chart.prototype.applyFixed = function () {
+            var _this = this;
+            var _a,
+                _b,
+                _c;
             var fixedRenderer,
                 scrollableWidth,
                 scrollableHeight,
@@ -38906,14 +38633,12 @@
                     position: 'absolute',
                     overflow: 'hidden',
                     pointerEvents: 'none',
-                    zIndex: (chartOptions.style && chartOptions.style.zIndex || 0) + 2,
+                    zIndex: (((_a = chartOptions.style) === null || _a === void 0 ? void 0 : _a.zIndex) || 0) + 2,
                     top: 0
                 }, null, true);
-                if (this.scrollingContainer) {
-                    this.scrollingContainer.parentNode.insertBefore(this.fixedDiv, this.scrollingContainer);
-                }
+                (_b = this.scrollingContainer) === null || _b === void 0 ? void 0 : _b.parentNode.insertBefore(this.fixedDiv, this.scrollingContainer);
                 this.renderTo.style.overflow = 'visible';
-                this.fixedRenderer = fixedRenderer = new H.Renderer(this.fixedDiv, this.chartWidth, this.chartHeight, this.options.chart.style);
+                this.fixedRenderer = fixedRenderer = new H.Renderer(this.fixedDiv, this.chartWidth, this.chartHeight, (_c = this.options.chart) === null || _c === void 0 ? void 0 : _c.style);
                 // Mask
                 this.scrollableMask = fixedRenderer
                     .path()
@@ -38925,8 +38650,13 @@
                     .addClass('highcharts-scrollable-mask')
                     .add();
                 addEvent(this, 'afterShowResetZoom', this.moveFixedElements);
-                addEvent(this, 'afterDrilldown', this.moveFixedElements);
                 addEvent(this, 'afterLayOutTitles', this.moveFixedElements);
+                addEvent(Axis, 'afterInit', function () {
+                    _this.scrollableDirty = true;
+                });
+                addEvent(Series, 'show', function () {
+                    _this.scrollableDirty = true;
+                });
             }
             else {
                 // Set the size of the fixed renderer to the visible width
@@ -39015,12 +38745,6 @@
                 this.scrollableMask.attr({ d: d });
             }
         };
-        addEvent(Axis, 'afterInit', function () {
-            this.chart.scrollableDirty = true;
-        });
-        addEvent(Series, 'show', function () {
-            this.chart.scrollableDirty = true;
-        });
 
     });
     _registerModule(_modules, 'Core/Axis/StackingAxis.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Utilities.js']], function (A, U) {
@@ -39037,7 +38761,6 @@
         var addEvent = U.addEvent,
             destroyObjectProperties = U.destroyObjectProperties,
             fireEvent = U.fireEvent,
-            isNumber = U.isNumber,
             objectEach = U.objectEach,
             pick = U.pick;
         /* eslint-disable valid-jsdoc */
@@ -39071,7 +38794,8 @@
                 var stacking = this;
                 var axis = stacking.axis;
                 var axisSeries = axis.series;
-                var reversedStacks = axis.options.reversedStacks;
+                var reversedStacks = pick(axis.options.reversedStacks,
+                    true);
                 var len = axisSeries.length;
                 var actualSeries,
                     i;
@@ -39114,18 +38838,16 @@
              * @private
              */
             StackingAxisAdditions.prototype.resetStacks = function () {
-                var _this = this;
-                var _a = this,
-                    axis = _a.axis,
-                    stacks = _a.stacks;
+                var stacking = this;
+                var axis = stacking.axis;
+                var stacks = stacking.stacks;
                 if (!axis.isXAxis) {
                     objectEach(stacks, function (type) {
-                        objectEach(type, function (stack, x) {
+                        objectEach(type, function (stack, key) {
                             // Clean up memory after point deletion (#1044, #4320)
-                            if (isNumber(stack.touched) &&
-                                stack.touched < _this.stacksTouched) {
+                            if (stack.touched < stacking.stacksTouched) {
                                 stack.destroy();
-                                delete type[x];
+                                delete type[key];
                                 // Reset stacks
                             }
                             else {
@@ -39145,9 +38867,9 @@
                 var chart = axis.chart;
                 var renderer = chart.renderer;
                 var stacks = stacking.stacks;
-                var stackLabelsAnim = axis.options.stackLabels && axis.options.stackLabels.animation;
+                var stackLabelsAnim = axis.options.stackLabels.animation;
                 var animationConfig = getDeferredAnimation(chart,
-                    stackLabelsAnim || false);
+                    stackLabelsAnim);
                 var stackTotalGroup = stacking.stackTotalGroup = (stacking.stackTotalGroup ||
                         renderer
                             .g('stack-labels')
@@ -39228,7 +38950,7 @@
 
         return StackingAxis;
     });
-    _registerModule(_modules, 'Extensions/Stacking.js', [_modules['Core/Axis/Axis.js'], _modules['Core/Chart/Chart.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Series/Series.js'], _modules['Core/Axis/StackingAxis.js'], _modules['Core/Utilities.js']], function (Axis, Chart, F, H, Series, StackingAxis, U) {
+    _registerModule(_modules, 'Extensions/Stacking.js', [_modules['Core/Axis/Axis.js'], _modules['Core/Chart/Chart.js'], _modules['Core/Globals.js'], _modules['Core/Series/Series.js'], _modules['Core/Axis/StackingAxis.js'], _modules['Core/Utilities.js']], function (Axis, Chart, H, Series, StackingAxis, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -39238,13 +38960,12 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        var format = F.format;
         var correctFloat = U.correctFloat,
             defined = U.defined,
             destroyObjectProperties = U.destroyObjectProperties,
+            format = U.format,
             isArray = U.isArray,
             isNumber = U.isNumber,
-            objectEach = U.objectEach,
             pick = U.pick;
         /**
          * Stack of data points
@@ -39433,8 +39154,8 @@
                 if (label && stackBox) {
                     var bBox = label.getBBox(),
                         padding = label.padding,
-                        boxOffsetX = void 0,
-                        boxOffsetY = void 0;
+                        boxOffsetX,
+                        boxOffsetY;
                     if (textAlign === 'left') {
                         boxOffsetX = chart.inverted ? -padding : padding;
                     }
@@ -39572,7 +39293,6 @@
          * @return {void}
          */
         Series.prototype.setGroupedPoints = function () {
-            var stacking = this.yAxis.stacking;
             if (this.options.centerInCategory &&
                 (this.is('column') || this.is('columnrange')) &&
                 // With stacking enabled, we already have stacks that we can compute
@@ -39581,16 +39301,6 @@
                 // With only one series, we don't need to consider centerInCategory
                 this.chart.series.length > 1) {
                 Series.prototype.setStackedPoints.call(this, 'group');
-                // After updating, if we now have proper stacks, we must delete the group
-                // pseudo stacks (#14986)
-            }
-            else if (stacking) {
-                objectEach(stacking.stacks, function (type, key) {
-                    if (key.slice(-5) === 'group') {
-                        objectEach(type, function (stack) { return stack.destroy(); });
-                        delete stacking.stacks[key];
-                    }
-                });
             }
         };
         /**
@@ -39601,8 +39311,9 @@
          */
         Series.prototype.setStackedPoints = function (stackingParam) {
             var stacking = stackingParam || this.options.stacking;
-            if (!stacking || (this.visible !== true &&
-                this.chart.options.chart.ignoreHiddenSeries !== false)) {
+            if (!stacking ||
+                (this.visible !== true &&
+                    this.chart.options.chart.ignoreHiddenSeries !== false)) {
                 return;
             }
             var series = this, xData = series.processedXData, yData = series.processedYData, stackedYData = [], yDataLength = yData.length, seriesOptions = series.options, threshold = seriesOptions.threshold, stackThreshold = pick(seriesOptions.startFromThreshold && threshold, 0), stackOption = seriesOptions.stack, stackKey = stackingParam ? series.type + "," + stacking : series.stackKey, negKey = '-' + stackKey, negStacks = series.negStacks, yAxis = series.yAxis, stacks = yAxis.stacking.stacks, oldStacks = yAxis.stacking.oldStacks, stackIndicator, isNegative, stack, other, key, pointKey, i, x, y;
@@ -40564,9 +40275,6 @@
                     bottomPath[0] = ['L', firstBottomPoint[1], firstBottomPoint[2]];
                 }
                 areaPath = topPath.concat(bottomPath);
-                if (areaPath.length) {
-                    areaPath.push(['Z']);
-                }
                 // TODO: don't set leftCliff and rightCliff when connectNulls?
                 graphPath = getGraphPath
                     .call(this, graphPoints, false, connectNulls);
@@ -40588,13 +40296,16 @@
                     yAxis = this.yAxis,
                     stack = yAxis.stacking.stacks[this.stackKey],
                     pointMap = {},
+                    seriesIndex = series.index,
                     yAxisSeries = yAxis.series,
                     seriesLength = yAxisSeries.length,
-                    upOrDown = yAxis.options.reversedStacks ? 1 : -1,
-                    seriesIndex = yAxisSeries.indexOf(series);
+                    visibleSeries,
+                    upOrDown = pick(yAxis.options.reversedStacks,
+                    true) ? 1 : -1,
+                    i;
                 points = points || this.points;
                 if (this.options.stacking) {
-                    for (var i = 0; i < points.length; i++) {
+                    for (i = 0; i < points.length; i++) {
                         // Reset after point update (#7326)
                         points[i].leftNull = points[i].rightNull = void 0;
                         // Create a map where we can quickly look up the points by
@@ -40612,7 +40323,9 @@
                     keys.sort(function (a, b) {
                         return a - b;
                     });
-                    var visibleSeries_1 = yAxisSeries.map(function (s) { return s.visible; });
+                    visibleSeries = yAxisSeries.map(function (s) {
+                        return s.visible;
+                    });
                     keys.forEach(function (x, idx) {
                         var y = 0,
                             stackPoint,
@@ -40633,19 +40346,19 @@
                                 // If there is a stack next to this one,
                                 // to the left or to the right...
                                 if (otherStack) {
-                                    var i = seriesIndex;
+                                    i = seriesIndex;
                                     // Can go either up or down,
                                     // depending on reversedStacks
                                     while (i >= 0 && i < seriesLength) {
-                                        var si = yAxisSeries[i].index;
-                                        stackPoint = otherStack.points[si];
+                                        stackPoint = otherStack.points[i];
                                         if (!stackPoint) {
                                             // If the next point in this series
                                             // is missing, mark the point
                                             // with point.leftNull or
                                             // point.rightNull = true.
-                                            if (si === series.index) {
-                                                pointMap[x][nullName] = true;
+                                            if (i === seriesIndex) {
+                                                pointMap[x][nullName] =
+                                                    true;
                                                 // If there are missing points in
                                                 // the next stack in any of the
                                                 // series below this one, we need
@@ -40653,11 +40366,13 @@
                                                 // and add a hiatus to the left or
                                                 // right.
                                             }
-                                            else if (visibleSeries_1[i]) {
+                                            else if (visibleSeries[i]) {
                                                 stackedValues =
-                                                    stack[x].points[si];
+                                                    stack[x].points[i];
                                                 if (stackedValues) {
-                                                    cliff -= stackedValues[1] - stackedValues[0];
+                                                    cliff -=
+                                                        stackedValues[1] -
+                                                            stackedValues[0];
                                                 }
                                             }
                                         }
@@ -40675,10 +40390,9 @@
                         else {
                             // Loop down the stack to find the series below this
                             // one that has a value (#1991)
-                            var i = seriesIndex;
+                            i = seriesIndex;
                             while (i >= 0 && i < seriesLength) {
-                                var si = yAxisSeries[i].index;
-                                stackPoint = stack[x].points[si];
+                                stackPoint = stack[x].points[i];
                                 if (stackPoint) {
                                     y = stackPoint[1];
                                     break;
@@ -40687,7 +40401,6 @@
                                 // down
                                 i += upOrDown;
                             }
-                            y = pick(y, 0);
                             y = yAxis.translate(// #6272
                             y, 0, 1, 0, 1);
                             segment.push({
@@ -41555,7 +41268,7 @@
                     else {
                         attr.translateY = translatedThreshold;
                     }
-                    // apply finnal clipping (used in Highcharts Stock) (#7083)
+                    // apply finnal clipping (used in Highstock) (#7083)
                     // animation is done by scaleY, so cliping is for panes
                     if (series.clipBox) {
                         series.setClip();
@@ -41563,7 +41276,7 @@
                     series.group.attr(attr);
                 }
                 else { // run the animation
-                    translateStart = Number(series.group.attr(translateProp));
+                    translateStart = series.group.attr(translateProp);
                     series.group.animate({ scaleY: 1 }, extend(animObject(series.options.animation), {
                         // Do the scale synchronously to ensure smooth
                         // updating (#5030, #7228)
@@ -41586,8 +41299,8 @@
              */
             ColumnSeries.prototype.init = function (chart, options) {
                 _super.prototype.init.apply(this, arguments);
-                var series = this;
-                chart = series.chart;
+                var series = this,
+                    chart = series.chart;
                 // if the series is added dynamically, force redraw of other
                 // series affected by a new column
                 if (chart.hasRendered) {
@@ -41632,7 +41345,8 @@
                             columnIndex;
                         if (otherSeries.type === series.type &&
                             (otherSeries.visible ||
-                                !series.chart.options.chart.ignoreHiddenSeries) &&
+                                !series.chart.options.chart
+                                    .ignoreHiddenSeries) &&
                             yAxis.len === otherYAxis.len &&
                             yAxis.pos === otherYAxis.pos) { // #642, #2086
                             if (otherOptions.stacking && otherOptions.stacking !== 'group') {
@@ -41894,7 +41608,7 @@
                     point.tooltipPos = chart.inverted ?
                         [
                             clamp(yAxis.len + yAxis.pos - chart.plotLeft - plotY, yAxis.pos - chart.plotLeft, yAxis.len + yAxis.pos - chart.plotLeft),
-                            xAxis.len + xAxis.pos - chart.plotTop - barX - barW / 2,
+                            xAxis.len + xAxis.pos - chart.plotTop - (plotX || 0) - seriesXOffset - barW / 2,
                             barH
                         ] :
                         [
@@ -41934,6 +41648,7 @@
                     // set to fill when borderColor null:
                     stroke = ((point && point[strokeOption]) ||
                         options[strokeOption] ||
+                        this.color ||
                         fill), strokeWidth = (point && point[strokeWidthOption]) ||
                         options[strokeWidthOption] ||
                         this[strokeWidthOption] || 0, dashstyle = (point && point.options.dashStyle) || options.dashStyle, opacity = pick(point && point.opacity, options.opacity, 1), zone, brightness;
@@ -42013,7 +41728,7 @@
                         // Set starting position for point sliding animation.
                         if (series.enabledDataSorting) {
                             point.startXPos = series.xAxis.reversed ?
-                                -(shapeArgs ? (shapeArgs.width || 0) : 0) :
+                                -(shapeArgs ? shapeArgs.width : 0) :
                                 series.xAxis.width;
                         }
                         if (!graphic) {
@@ -43740,7 +43455,8 @@
                         this.graph.attr({
                             'stroke-width': options.borderWidth,
                             fill: options.fillColor || 'none',
-                            stroke: options.color || palette.neutralColor20
+                            stroke: options.color ||
+                                palette.neutralColor20
                         });
                     }
                 }
@@ -43833,14 +43549,13 @@
                     var animateTo = {};
                     graphic = point.graphic;
                     if (!point.isNull && graphic) {
-                        var shadowGroup = void 0;
                         shapeArgs = point.shapeArgs;
                         // If the point is sliced, use special translation, else use
                         // plot area translation
                         groupTranslation = point.getTranslate();
                         if (!chart.styledMode) {
                             // Put the shadow behind all points
-                            shadowGroup = point.shadowGroup;
+                            var shadowGroup = point.shadowGroup;
                             if (shadow && !shadowGroup) {
                                 shadowGroup = point.shadowGroup = renderer
                                     .g('shadow')
@@ -43941,22 +43656,21 @@
                     }
                     end = startAngleRad + (cumulative * circ);
                     // set the shape
-                    var shapeArgs = {
-                            x: positions[0],
-                            y: positions[1],
-                            r: positions[2] / 2,
-                            innerR: positions[3] / 2,
-                            start: Math.round(start * precision) / precision,
-                            end: Math.round(end * precision) / precision
-                        };
                     point.shapeType = 'arc';
-                    point.shapeArgs = shapeArgs;
+                    point.shapeArgs = {
+                        x: positions[0],
+                        y: positions[1],
+                        r: positions[2] / 2,
+                        innerR: positions[3] / 2,
+                        start: Math.round(start * precision) / precision,
+                        end: Math.round(end * precision) / precision
+                    };
                     // Used for distance calculation for specific point.
                     point.labelDistance = pick((point.options.dataLabels &&
                         point.options.dataLabels.distance), labelDistance);
                     // Compute point.labelDistance if it's defined as percentage
                     // of slice radius (#8854)
-                    point.labelDistance = relativeLength(point.labelDistance, shapeArgs.r);
+                    point.labelDistance = relativeLength(point.labelDistance, point.shapeArgs.r);
                     // Saved for later dataLabels distance calculation.
                     series.maxLabelDistance = Math.max(series.maxLabelDistance || 0, point.labelDistance);
                     // The angle must stay within -90 and 270 (#2645)
@@ -44596,7 +44310,7 @@
         extend(PieSeries.prototype, {
             axisTypes: [],
             directTouch: true,
-            drawGraph: void 0,
+            drawGraph: null,
             drawLegendSymbol: LegendSymbolMixin.drawRectangle,
             drawTracker: ColumnSeries.prototype.drawTracker,
             getCenter: CenteredSeriesMixin.getCenter,
@@ -44711,7 +44425,7 @@
 
         return PieSeries;
     });
-    _registerModule(_modules, 'Core/Series/DataLabels.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Series/Series.js'], _modules['Core/Series/SeriesRegistry.js'], _modules['Core/Utilities.js']], function (A, F, H, palette, Series, SeriesRegistry, U) {
+    _registerModule(_modules, 'Core/Series/DataLabels.js', [_modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palette.js'], _modules['Core/Series/Series.js'], _modules['Core/Series/SeriesRegistry.js'], _modules['Core/Utilities.js']], function (A, H, palette, Series, SeriesRegistry, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -44722,7 +44436,6 @@
          *
          * */
         var getDeferredAnimation = A.getDeferredAnimation;
-        var format = F.format;
         var noop = H.noop;
         var seriesTypes = SeriesRegistry.seriesTypes;
         var arrayMax = U.arrayMax,
@@ -44730,6 +44443,7 @@
             defined = U.defined,
             extend = U.extend,
             fireEvent = U.fireEvent,
+            format = U.format,
             isArray = U.isArray,
             merge = U.merge,
             objectEach = U.objectEach,
@@ -45184,11 +44898,8 @@
                 align = options.align,
                 rotCorr, // rotation correction
                 isInsidePlot = chart.isInsidePlot(plotX,
-                Math.round(plotY), {
-                    inverted: inverted,
-                    paneCoordinates: true,
-                    series: series
-                }), 
+                Math.round(plotY),
+                inverted), 
                 // Math.round for rounding errors (#2683), alignTo to allow column
                 // labels (#2700)
                 alignAttr, // the final position;
@@ -45200,17 +44911,10 @@
                     (
                     // If the data label is inside the align box, it is enough
                     // that parts of the align box is inside the plot area
-                    // (#12370). When stacking, it is always inside regardless
-                    // of the option (#15148).
-                    pick(options.inside, !!this.options.stacking) &&
-                        alignTo &&
-                        chart.isInsidePlot(plotX, inverted ?
-                            alignTo.x + 1 :
-                            alignTo.y + alignTo.height - 1, {
-                            inverted: inverted,
-                            paneCoordinates: true,
-                            series: series
-                        }))), setStartPos = function (alignOptions) {
+                    // (#12370)
+                    options.inside && alignTo && chart.isInsidePlot(plotX, inverted ?
+                        alignTo.x + 1 :
+                        alignTo.y + alignTo.height - 1, inverted))), setStartPos = function (alignOptions) {
                 if (enabledDataSorting && series.xAxis && !justify) {
                     series.setDataLabelStartPos(point, dataLabel, isNew, isInsidePlot, alignOptions);
                 }
@@ -45268,7 +44972,7 @@
                 }
                 else {
                     setStartPos(alignTo); // data sorting
-                    dataLabel.align(options, void 0, alignTo);
+                    dataLabel.align(options, null, alignTo);
                     alignAttr = dataLabel.alignAttr;
                 }
                 // Handle justify or crop
@@ -45278,14 +44982,8 @@
                 }
                 else if (pick(options.crop, true)) {
                     visible =
-                        chart.isInsidePlot(alignAttr.x, alignAttr.y, {
-                            paneCoordinates: true,
-                            series: series
-                        }) &&
-                            chart.isInsidePlot(alignAttr.x + bBox.width, alignAttr.y + bBox.height, {
-                                paneCoordinates: true,
-                                series: series
-                            });
+                        chart.isInsidePlot(alignAttr.x, alignAttr.y) &&
+                            chart.isInsidePlot(alignAttr.x + bBox.width, alignAttr.y + bBox.height);
                 }
                 // When we're using a shape, make it possible with a connector or an
                 // arrow pointing to thie point
@@ -45392,7 +45090,7 @@
                 _b = options.y,
                 y = _b === void 0 ? 0 : _b;
             // Off left
-            off = (alignAttr.x || 0) + padding;
+            off = alignAttr.x + padding;
             if (off < 0) {
                 if (align === 'right' && x >= 0) {
                     options.align = 'left';
@@ -45404,7 +45102,7 @@
                 justified = true;
             }
             // Off right
-            off = (alignAttr.x || 0) + bBox.width - padding;
+            off = alignAttr.x + bBox.width - padding;
             if (off > chart.plotWidth) {
                 if (align === 'left' && x <= 0) {
                     options.align = 'right';
@@ -45428,7 +45126,7 @@
                 justified = true;
             }
             // Off bottom
-            off = (alignAttr.y || 0) + bBox.height - padding;
+            off = alignAttr.y + bBox.height - padding;
             if (off > chart.plotHeight) {
                 if (verticalAlign === 'top' && y <= 0) {
                     options.verticalAlign = 'bottom';
@@ -45738,7 +45436,7 @@
                             pick(pointDataLabelsOptions.connectorWidth, 1);
                         // Draw the connector
                         if (connectorWidth) {
-                            var isNew = void 0;
+                            var isNew;
                             connector = point.connector;
                             dataLabel = point.dataLabel;
                             if (dataLabel &&
@@ -45791,8 +45489,8 @@
             // TODO: depracated - remove it
             /*
             seriesTypes.pie.prototype.connectorPath = function (labelPos) {
-                let x = labelPos.x,
-                    y = labelPos.y;
+                var x = labelPos.x,
+                        y = labelPos.y;
                 return pick(this.options.dataLabels.softConnector, true) ? [
                     'M',
                     // end of the string at the label
@@ -46022,8 +45720,7 @@
         // to be considered because they are usually accompanied by data labels that lie
         // inside the columns.
         addEvent(Chart, 'render', function collectAndHide() {
-            var chart = this,
-                labels = [];
+            var labels = [];
             // Consider external label collectors
             (this.labelCollectors || []).forEach(function (collector) {
                 labels = labels.concat(collector());
@@ -46054,11 +45751,6 @@
                                     label.labelrank = pick(options.labelrank, point.labelrank, point.shapeArgs && point.shapeArgs.height); // #4118
                                     if (!options.allowOverlap) {
                                         labels.push(label);
-                                    }
-                                    else { // #13449
-                                        label.oldOpacity = label.opacity;
-                                        label.newOpacity = 1;
-                                        hideOrShow(label, chart);
                                     }
                                 });
                             }
@@ -46185,58 +45877,40 @@
             }
             // Hide or show
             labels.forEach(function (label) {
-                if (hideOrShow(label, chart)) {
-                    isLabelAffected = true;
+                var complete,
+                    newOpacity;
+                if (label) {
+                    newOpacity = label.newOpacity;
+                    if (label.oldOpacity !== newOpacity) {
+                        // Make sure the label is completely hidden to avoid catching
+                        // clicks (#4362)
+                        if (label.alignAttr && label.placed) { // data labels
+                            label[newOpacity ? 'removeClass' : 'addClass']('highcharts-data-label-hidden');
+                            complete = function () {
+                                if (!chart.styledMode) {
+                                    label.css({ pointerEvents: newOpacity ? 'auto' : 'none' });
+                                }
+                                label.visibility = newOpacity ? 'inherit' : 'hidden';
+                            };
+                            isLabelAffected = true;
+                            // Animate or set the opacity
+                            label.alignAttr.opacity = newOpacity;
+                            label[label.isOld ? 'animate' : 'attr'](label.alignAttr, null, complete);
+                            fireEvent(chart, 'afterHideOverlappingLabel');
+                        }
+                        else { // other labels, tick labels
+                            label.attr({
+                                opacity: newOpacity
+                            });
+                        }
+                    }
+                    label.isOld = true;
                 }
             });
             if (isLabelAffected) {
                 fireEvent(chart, 'afterHideAllOverlappingLabels');
             }
         };
-        /**
-         * Hide or show labels based on opacity.
-         *
-         * @private
-         * @function hideOrShow
-         * @param {Highcharts.SVGElement} label
-         *        The label.
-         * @param {Highcharts.Chart} chart
-         *        The chart that contains the label.
-         * @return {boolean}
-         */
-        function hideOrShow(label, chart) {
-            var complete,
-                newOpacity,
-                isLabelAffected = false;
-            if (label) {
-                newOpacity = label.newOpacity;
-                if (label.oldOpacity !== newOpacity) {
-                    // Make sure the label is completely hidden to avoid catching
-                    // clicks (#4362)
-                    if (label.alignAttr && label.placed) { // data labels
-                        label[newOpacity ? 'removeClass' : 'addClass']('highcharts-data-label-hidden');
-                        complete = function () {
-                            if (!chart.styledMode) {
-                                label.css({ pointerEvents: newOpacity ? 'auto' : 'none' });
-                            }
-                            label.visibility = newOpacity ? 'inherit' : 'hidden';
-                        };
-                        isLabelAffected = true;
-                        // Animate or set the opacity
-                        label.alignAttr.opacity = newOpacity;
-                        label[label.isOld ? 'animate' : 'attr'](label.alignAttr, null, complete);
-                        fireEvent(chart, 'afterHideOverlappingLabel');
-                    }
-                    else { // other labels, tick labels
-                        label.attr({
-                            opacity: newOpacity
-                        });
-                    }
-                }
-                label.isOld = true;
-            }
-            return isLabelAffected;
-        }
 
     });
     _registerModule(_modules, 'Core/Responsive.js', [_modules['Core/Chart/Chart.js'], _modules['Core/Utilities.js']], function (Chart, U) {
@@ -46525,77 +46199,63 @@
         };
 
     });
-    _registerModule(_modules, 'masters/highcharts.src.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js'], _modules['Core/Options.js'], _modules['Core/Animation/Fx.js'], _modules['Core/Animation/AnimationUtilities.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/FormatUtilities.js'], _modules['Core/Renderer/SVG/SVGElement.js'], _modules['Core/Series/Series.js']], function (Highcharts, Utilities, Options, Fx, Animation, AST, FormatUtilities, SVGElement, Series) {
+    _registerModule(_modules, 'masters/highcharts.src.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Core/Series/Series.js']], function (Highcharts, Utilities, AST, Series) {
 
-        var G = Highcharts;
-        // Animation
-        G.animate = Animation.animate;
-        G.animObject = Animation.animObject;
-        G.getDeferredAnimation = Animation.getDeferredAnimation;
-        G.setAnimation = Animation.setAnimation;
-        G.stop = Animation.stop;
-        G.timers = Fx.timers;
-        // Classes
-        G.AST = AST;
-        G.Fx = Fx;
-        G.Series = Series;
-        G.SVGElement = SVGElement;
-        // Format Utilities
-        G.dateFormat = FormatUtilities.dateFormat;
-        G.format = FormatUtilities.format;
-        G.numberFormat = FormatUtilities.numberFormat;
-        // Options
-        G.defaultOptions = Options.defaultOptions;
-        G.getOptions = Options.getOptions;
-        G.time = Options.defaultTime;
-        G.setOptions = Options.setOptions;
+
         // Utilities
-        G.addEvent = Utilities.addEvent;
-        G.arrayMax = Utilities.arrayMax;
-        G.arrayMin = Utilities.arrayMin;
-        G.attr = Utilities.attr;
-        G.clearTimeout = Utilities.clearTimeout;
-        G.correctFloat = Utilities.correctFloat;
-        G.createElement = Utilities.createElement;
-        G.css = Utilities.css;
-        G.defined = Utilities.defined;
-        G.destroyObjectProperties = Utilities.destroyObjectProperties;
-        G.discardElement = Utilities.discardElement;
-        G.erase = Utilities.erase;
-        G.error = Utilities.error;
-        G.extend = Utilities.extend;
-        G.extendClass = Utilities.extendClass;
-        G.find = Utilities.find;
-        G.fireEvent = Utilities.fireEvent;
-        G.getMagnitude = Utilities.getMagnitude;
-        G.getStyle = Utilities.getStyle;
-        G.inArray = Utilities.inArray;
-        G.isArray = Utilities.isArray;
-        G.isClass = Utilities.isClass;
-        G.isDOMElement = Utilities.isDOMElement;
-        G.isFunction = Utilities.isFunction;
-        G.isNumber = Utilities.isNumber;
-        G.isObject = Utilities.isObject;
-        G.isString = Utilities.isString;
-        G.keys = Utilities.keys;
-        G.merge = Utilities.merge;
-        G.normalizeTickInterval = Utilities.normalizeTickInterval;
-        G.objectEach = Utilities.objectEach;
-        G.offset = Utilities.offset;
-        G.pad = Utilities.pad;
-        G.pick = Utilities.pick;
-        G.pInt = Utilities.pInt;
-        G.relativeLength = Utilities.relativeLength;
-        G.removeEvent = Utilities.removeEvent;
-        G.splat = Utilities.splat;
-        G.stableSort = Utilities.stableSort;
-        G.syncTimeout = Utilities.syncTimeout;
-        G.timeUnits = Utilities.timeUnits;
-        G.uniqueKey = Utilities.uniqueKey;
-        G.useSerialIds = Utilities.useSerialIds;
-        G.wrap = Utilities.wrap;
+        Highcharts.addEvent = Utilities.addEvent;
+        Highcharts.arrayMax = Utilities.arrayMax;
+        Highcharts.arrayMin = Utilities.arrayMin;
+        Highcharts.attr = Utilities.attr;
+        Highcharts.clearTimeout = Utilities.clearTimeout;
+        Highcharts.correctFloat = Utilities.correctFloat;
+        Highcharts.createElement = Utilities.createElement;
+        Highcharts.css = Utilities.css;
+        Highcharts.defined = Utilities.defined;
+        Highcharts.destroyObjectProperties = Utilities.destroyObjectProperties;
+        Highcharts.discardElement = Utilities.discardElement;
+        Highcharts.erase = Utilities.erase;
+        Highcharts.error = Utilities.error;
+        Highcharts.extend = Utilities.extend;
+        Highcharts.extendClass = Utilities.extendClass;
+        Highcharts.find = Utilities.find;
+        Highcharts.fireEvent = Utilities.fireEvent;
+        Highcharts.format = Utilities.format;
+        Highcharts.getMagnitude = Utilities.getMagnitude;
+        Highcharts.getStyle = Utilities.getStyle;
+        Highcharts.inArray = Utilities.inArray;
+        Highcharts.isArray = Utilities.isArray;
+        Highcharts.isClass = Utilities.isClass;
+        Highcharts.isDOMElement = Utilities.isDOMElement;
+        Highcharts.isFunction = Utilities.isFunction;
+        Highcharts.isNumber = Utilities.isNumber;
+        Highcharts.isObject = Utilities.isObject;
+        Highcharts.isString = Utilities.isString;
+        Highcharts.keys = Utilities.keys;
+        Highcharts.merge = Utilities.merge;
+        Highcharts.normalizeTickInterval = Utilities.normalizeTickInterval;
+        Highcharts.numberFormat = Utilities.numberFormat;
+        Highcharts.objectEach = Utilities.objectEach;
+        Highcharts.offset = Utilities.offset;
+        Highcharts.pad = Utilities.pad;
+        Highcharts.pick = Utilities.pick;
+        Highcharts.pInt = Utilities.pInt;
+        Highcharts.relativeLength = Utilities.relativeLength;
+        Highcharts.removeEvent = Utilities.removeEvent;
+        Highcharts.splat = Utilities.splat;
+        Highcharts.stableSort = Utilities.stableSort;
+        Highcharts.syncTimeout = Utilities.syncTimeout;
+        Highcharts.timeUnits = Utilities.timeUnits;
+        Highcharts.uniqueKey = Utilities.uniqueKey;
+        Highcharts.useSerialIds = Utilities.useSerialIds;
+        Highcharts.wrap = Utilities.wrap;
 
-        return G;
+        // Classes
+        Highcharts.AST = AST;
+        Highcharts.Series = Series;
+
+
+        return Highcharts;
     });
     _modules['masters/highcharts.src.js']._modules = _modules;
     return _modules['masters/highcharts.src.js'];

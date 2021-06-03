@@ -1,5 +1,10 @@
 CACHE MANIFEST
 
+acttheme/custom.css
+acttheme/custom.js
+acttheme/images/imgbg.jpg
+
+
 # ref #BuildHash //forces a cache refresh on every new build
 
 CACHE:
@@ -9,12 +14,15 @@ css/bootstrap-responsive.css
 css/colpick.css
 css/jquery.dataTables.min.css
 css/demo_table_jui.css
+css/images/img03.jpg
+css/images/img03r.jpg
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
 css/legacy.css
 css/remote.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
+css/ui-grid.min.css
 css/wheelcolorpicker.css
 secpanel/css/style.css
 
@@ -219,6 +227,7 @@ images/lock_open.png
 images/log.png
 images/login-sprite.png
 images/logo.png
+images/logo/57.png
 images/logo192.png
 images/logout.png
 images/lux.png
@@ -548,6 +557,24 @@ app/log/TemperatureLog.js
 app/log/TextLog.html
 app/log/TextLog.js
 
+app/log/Chart.js
+app/log/chart-day.html
+app/log/ChartLoader.js
+app/log/chart-month.html
+app/log/chart-week.html
+app/log/chart-year.html
+app/log/ChartZoomer.js
+app/log/CounterLog.html
+app/log/CounterLog.js
+app/log/CounterLogCounter.js
+app/log/CounterLogCounterSeriesSuppliers.js
+app/log/CounterLogEnergySeriesSuppliers.js
+app/log/CounterLogInstantAndCounter.js
+app/log/CounterLogP1Energy.js
+app/log/CounterLogParams.js
+app/log/CounterLogSeriesSupplier.js
+app/log/DataLoader.js
+
 app/notifications/constants.js
 app/notifications/DeviceNotifications.js
 app/notifications/factories.js
@@ -621,19 +648,6 @@ js/blockly/blockly_compressed.js
 js/blockly/blocks_compressed.js
 js/blockly/msg/en.js
 
-js/data-tables/dataTables.select.min.js.gz
-js/data-tables/dataTables.tableTools.min.js.gz
-js/data-tables/jquery.dataTables.min.js.gz
-
-js/highcharts/highcharts-8.2.2-patch.9612.src.js
-js/highcharts/highcharts-more.js
-js/highcharts/modules/dependency-wheel.js
-js/highcharts/modules/exporting.js
-js/highcharts/modules/export-data.js
-js/highcharts/modules/sankey.js
-js/highcharts/modules/xrange.js
-js/highcharts/themes/dark-unica.js
-
 js/noty/noty.min.js
 js/noty/noty.css
 js/noty/relax.css
@@ -653,14 +667,25 @@ js/base64.min.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
+js/data-tables/dataTables.select.min.js
+js/data-tables/dataTables.tableTools.min.js
+js/data-tables/jquery.dataTables.min.js
 js/date.format.js
 js/domoticz.js
 js/domoticzdevices.js
 js/FileSaver.js
+js/highcharts/highcharts-9.1.0-patch.9612.src.js
+js/highcharts/highcharts-more.js
+js/highcharts/modules/dependency-wheel.js
+js/highcharts/modules/export-data.js
+js/highcharts/modules/exporting.js
+js/highcharts/modules/sankey.js
+js/highcharts/modules/xrange.js
+js/highcharts/themes/dark-unica.js
 js/highcharts-ng.min.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-3.5.1.min.js
+js/jquery-3.6.0.min.js
 js/jquery-ui.min.js
 js/jquery.ddslick.min.js
 js/jquery.isotope.min.js
@@ -669,7 +694,7 @@ js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
 js/jquery.wheelcolorpicker.js
-js/lodash-custom.merge.min.js
+js/lodash-custom.min.js
 js/luxon.min.js
 js/md5.js
 js/moment-with-locales.min.js
@@ -679,6 +704,7 @@ js/ngload.min.js
 js/require.min.js
 js/respond.min.js
 js/ui-bootstrap.min.js
+js/ui-grid.min.js
 js/wow.min.js
 js/ZeroClipboard.js
 ozwcp/cp.js

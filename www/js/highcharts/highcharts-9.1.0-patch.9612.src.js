@@ -15775,8 +15775,8 @@
                 }
                 // From pixels to value
                 if (backwards) { // reverse translation
-                    val = val * sign + cvsOffset;
-                    val -= minPixelPadding;
+                    /* Temporary fix for highcharts/highcharts#9612 */
+                    val = val * sign;
                     // from chart pixel to value:
                     returnValue = val / localA + localMin;
                     if (doPostTranslate) { // log and ordinal axes
@@ -31901,12 +31901,28 @@
                         xy = [0];
                     }
                     xy.forEach(function (isX) {
-                        var axis = chart[isX ? 'xAxis' : 'yAxis'][0], horiz = axis.horiz, mousePos = e[horiz ? 'chartX' : 'chartY'], mouseDown = horiz ? 'mouseDownX' : 'mouseDownY', startPos = chart[mouseDown], halfPointRange = (axis.pointRange || 0) / 2, pointRangeDirection = (axis.reversed && !chart.inverted) ||
-                                (!axis.reversed && chart.inverted) ?
-                                -1 :
-                                1, extremes = axis.getExtremes(), panMin = axis.toValue(startPos - mousePos, true) +
-                                halfPointRange * pointRangeDirection, panMax = axis.toValue(startPos + axis.len - mousePos, true) -
-                                halfPointRange * pointRangeDirection, flipped = panMax < panMin, newMin = flipped ? panMax : panMin, newMax = flipped ? panMin : panMax, hasVerticalPanning = axis.hasVerticalPanning(), paddedMin, paddedMax, spill, panningState = axis.panningState;
+                        var axis = chart[isX ? 'xAxis' : 'yAxis'][0],
+                            horiz = axis.horiz,
+                            mousePos = e[horiz ? 'chartX' : 'chartY'],
+                            mouseDown = horiz ? 'mouseDownX' : 'mouseDownY',
+                            startPos = chart[mouseDown],
+                            pointPlacement = chart.options && chart.options.plotOptions && chart.options.plotOptions.column ? chart.options.plotOptions.column.pointPlacement : undefined,
+                            halfPointRange = (axis.pointRange || 0) / 2,
+                            pointRangeDirection = (axis.reversed && !chart.inverted) || (!axis.reversed && chart.inverted) ? -1 : 1,
+                            extremes = axis.getExtremes(),
+                            minValue = axis.toValue(startPos - mousePos, true),
+                            maxValue = axis.toValue(startPos - mousePos + axis.len, true),
+                            /* Temporary fix for highcharts/highcharts#9612 */
+                            panMin = minValue,
+                            panMax = maxValue - (pointPlacement !== 'on' ? 2 * halfPointRange * pointRangeDirection : 0),
+                            flipped = panMax < panMin,
+                            newMin = flipped ? panMax : panMin,
+                            newMax = flipped ? panMin : panMax,
+                            hasVerticalPanning = axis.hasVerticalPanning(),
+                            paddedMin,
+                            paddedMax,
+                            spill,
+                            panningState = axis.panningState;
                         // General calculations of panning state.
                         // This is related to using vertical panning. (#11315).
                         if (hasVerticalPanning &&

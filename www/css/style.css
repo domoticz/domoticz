@@ -2197,13 +2197,21 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	text-align: center;
 	width: 100%;
 }
-@media (max-width: 860px) {
+@media (max-width: 767px) {
 	.chart-title-container {
 		position: relative;
 	}
 	.chart-title-center {
 		width: 70%;
 	}
+}
+.clickable {
+	cursor: pointer;
+}
+.chart-title-active {
+}
+.chart-title-inactive {
+	color: rgb(96, 96, 99)
 }
 .chartarea {
 	position: relative;

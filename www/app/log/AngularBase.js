@@ -1,7 +1,8 @@
 define(['Base'], function (Base) {
 
     function AngularBase(baseParams, params) {
-        baseParams.debugIsEnabled = function() { return 'true' === params.location.search().consoledebug; };
+        baseParams.consoledebugIsEnabled = function() { return 'true' === params.location.search().consoledebug; };
+        baseParams.windowdebugIsEnabled = function() { return 'true' === params.location.search().windowdebug; };
         Base.call(this, baseParams);
         this.$location = params.location;
         this.$route = params.route;
