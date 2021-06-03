@@ -2615,6 +2615,10 @@ void MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase* pHardware,
 					strcpy(szTmp, "Pro XL1");
 					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
 					break;
+				case FWtypeProXL2:
+					strcpy(szTmp, "Pro XL2");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
+					break;
 				default:
 					strcpy(szTmp, "?");
 					break;
@@ -2633,7 +2637,8 @@ void MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase* pHardware,
 					sprintf(szTmp, "Noise Level: %d", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
 				}
-				if (FWType == FWtypeProXL1)
+				if (
+					(FWType == FWtypeProXL1) || (FWType == FWtypeProXL2))
 				{
 					pMyHardware->SetAsyncType(pMyHardware->m_AsyncType);
 				}
@@ -12103,7 +12108,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			lcmd.CHIME.id2 = ID4;
 			lcmd.CHIME.sound = Unit;
 		}
-		lcmd.CHIME.filler = 0;
+		lcmd.CHIME.id4 = 0;
 		lcmd.CHIME.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
 			return false;
