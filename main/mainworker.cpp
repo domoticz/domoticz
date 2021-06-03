@@ -3033,12 +3033,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 	uint8_t devType = pTypeRAIN;
 	uint8_t subType = pResponse->RAIN.subtype;
 	std::string ID;
-	if (subType == sTypeRAIN3) {
-		sprintf(szTmp, "%d", (pResponse->RAIN.id0 * 65536) + (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
-	}
-	else {
-		sprintf(szTmp, "%d", (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
-	}
+	sprintf(szTmp, "%d", (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
 	ID = szTmp;
 	uint8_t Unit = 0;
 	uint8_t cmnd = 0;
