@@ -4024,7 +4024,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
-
+    _log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);

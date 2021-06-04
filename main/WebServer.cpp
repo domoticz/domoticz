@@ -3,6 +3,7 @@
 #include "WebServerHelper.h"
 #include <iostream>
 #include <fstream>
+#include <stdarg.h>
 #include "mainworker.h"
 #include "Helper.h"
 #include "localtime_r.h"
@@ -261,9 +262,11 @@ namespace http {
 					exception = true;
 					switch (tries) {
 					case 0:
+                        _log.Log(LOG_STATUS, "WebServer(%s) startup failed on address %s with port: %s: %s, trying ::", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str(), e.what());
 						settings.listening_address = "::";
 						break;
 					case 1:
+                        _log.Log(LOG_STATUS, "WebServer(%s) startup failed on address %s with port: %s: %s, trying 0.0.0.0", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str(), e.what());
 						settings.listening_address = "0.0.0.0";
 						break;
 					case 2:
@@ -286,6 +289,7 @@ namespace http {
 			if (!bIgnoreUsernamePassword)
 			{
 				LoadUsers();
+
 				std::string WebLocalNetworks;
 				int nValue;
 				if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
@@ -8272,30 +8276,19 @@ namespace http {
 			// Invalid sessions of WebUser when the username or password has been changed
 			if (bHaveAdminUserPasswordChange)
 			{
-				RemoveUsersSessions(sOldWebLogin, session);
+				if (!sOldWebLogin.empty())
+					RemoveUsersSessions(sOldWebLogin, session);
 				m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
 				m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
 			}
+			m_webservers.LoadUsers();
 
 			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
-			LoadUsers();
-			m_pWebEm->ClearLocalNetworks();
-			std::vector<std::string> strarray;
-			StringSplit(WebLocalNetworks, ";", strarray);
-			for (const auto &str : strarray)
-				m_pWebEm->AddLocalNetworks(str);
-			//add local hostname
-			m_pWebEm->AddLocalNetworks("");
-
-			m_pWebEm->ClearRemoteProxyIPs();
-			strarray.clear();
-			StringSplit(WebRemoteProxyIPs, ";", strarray);
-			for (const auto &str : strarray)
-				m_pWebEm->AddRemoteProxyIPs(str);
+			m_webservers.ReloadLocalNetworksAndProxyIPs();
 
 			if (session.username.empty())
 			{
@@ -13075,14 +13068,17 @@ namespace http {
 			std::vector<std::string> strarray;
 			StringSplit(userdevices, ";", strarray);
 
-			//First delete all devices for this user, then add the (new) onces
-			m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+			//First make a backup of the favorite devices before deleting the devices for this user, then add the (new) onces and restore favorites
+			m_sql.safe_query("UPDATE SharedDevices SET SharedUserID = 0 WHERE SharedUserID == '%q' and Favorite == 1", idx.c_str());
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 
 			int nDevices = static_cast<int>(strarray.size());
 			for (int ii = 0; ii < nDevices; ii++)
 			{
 				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
+				m_sql.safe_query("UPDATE SharedDevices SET Favorite = 1 WHERE SharedUserid == '%q' AND DeviceRowID IN (SELECT DeviceRowID FROM SharedDevices WHERE SharedUserID == 0)", idx.c_str());
 			}
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
 			LoadUsers();
 		}
 
@@ -14015,9 +14011,11 @@ namespace http {
 			std::string sensor = request::findValue(&req, "sensor");
 			if (sensor.empty())
 				return;
+            std::string sensorarea = request::findValue(&req, "sensorarea");
 			std::string srange = request::findValue(&req, "range");
-			if (srange.empty())
-				return;
+            std::string sgroupby = request::findValue(&req, "groupby");
+            if (srange.empty() && sgroupby.empty())
+                return;
 
 			time_t now = mytime(nullptr);
 			struct tm tm1;
@@ -14031,6 +14029,7 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
+            _log.Debug(DEBUG_WEBSERVER, "dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if (
 				(dType == pTypeP1Power) ||
 				(dType == pTypeENERGY) ||
@@ -15599,7 +15598,7 @@ namespace http {
 						}
 					}
 					else if (!bIsManagedCounter)
-					{	
+					{
 						// get the first value of the day
 						result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
 							idx, szDateEnd);
@@ -15654,7 +15653,7 @@ namespace http {
 					}
 				}
 			}//week
-			else if ((srange == "month") || (srange == "year"))
+			else if (srange == "month" || srange == "year" || !sgroupby.empty())
 			{
 				char szDateStart[40];
 				char szDateEnd[40];
@@ -16156,7 +16155,7 @@ namespace http {
 				}
 				else if (sensor == "counter") {
 					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
+					root["title"] = sgroupby.empty() ? "Graph " + sensor + " " + srange : "Comparing " + sensor;
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
 
@@ -16172,131 +16171,160 @@ namespace http {
 						sValue = sd[1];
 					}
 
-					int ii = 0;
+                    std::function<std::string (std::string, std::string)> tableColumn = [] (std::string table, std::string expr) {
+                        return (table.empty() ? "" : table + ".") + expr;
+                    };
+
+                    int ii = 0;
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
-						//Actual Year
-						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value5,Value6, Date,"
-							" Counter1, Counter2, Counter3, Counter4 "
-							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-							" AND Date<='%q') ORDER BY Date ASC",
-							dbasetable.c_str(), idx, szDateStart, szDateEnd);
-						if (!result.empty())
-						{
-							bool bHaveDeliverd = false;
-							for (const auto &sd : result)
-							{
-								root["result"][ii]["d"] = sd[4].substr(0, 16);
+					    if (sensorarea.empty()) {
+                            _log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby);
+                            return;
+                        }
+                        if (!sgroupby.empty()) {
+                            std::function<std::string (const char*, char*, char*, char*, char*)> sensorareaExpr = [sensorarea, this] (const char* expr, char* usageLow, char* usageNormal, char* deliveryLow, char* deliveryNormal) {
+                                if (sensorarea == "usage") {
+                                    return std_format(expr, usageLow, usageNormal);
+                                }
+                                if (sensorarea == "delivery") {
+                                    return std_format(expr, deliveryLow, deliveryNormal);
+                                }
+                                return std::string(expr);
+                            };
+                            std::function<std::string (std::string)> counterExpr = [sensorareaExpr] (std::string expr) {
+                                return sensorareaExpr(expr.c_str(), "1", "3", "2", "4");
+                            };
+                            std::function<std::string (std::string)> valueExpr = [sensorareaExpr] (std::string expr) {
+                                return sensorareaExpr(expr.c_str(), "1", "5", "2", "6");
+                            };
+                            GroupBy(
+                                root,
+                                dbasetable,
+                                idx,
+                                sgroupby,
+                                [counterExpr, tableColumn] (std::string table) { return counterExpr(tableColumn(table, "Counter%s") + "+" + tableColumn(table, "Counter%s")); },
+                                [valueExpr, tableColumn] (std::string table) { return valueExpr(tableColumn(table, "Value%s") + "+" + tableColumn(table, "Value%s")); },
+                                [divider, this] (double sum) {
+                                    if (sum == 0) {
+                                        return std::string("0");
+                                    }
+                                    return std_format("%.3f", sum / divider);
+                                }
+                            );
+                            ii = root["result"].size();
+                        } else {
+                            //Actual Year
+                            result = m_sql.safe_query(
+                                    "SELECT Value1,Value2,Value5,Value6, Date,"
+                                    " Counter1, Counter2, Counter3, Counter4 "
+                                    "FROM %s WHERE (DeviceRowID==%"
+                            PRIu64
+                            " AND Date>='%q'"
+                            " AND Date<='%q') ORDER BY Date ASC",
+                                    dbasetable.c_str(), idx, szDateStart, szDateEnd);
+                            if (!result.empty()) {
+                                bool bHaveDeliverd = false;
+                                for (const auto &sd : result) {
+                                    root["result"][ii]["d"] = sd[4].substr(0, 16);
 
-								double counter_1 = std::stod(sd[5]);
-								double counter_2 = std::stod(sd[6]);
-								double counter_3 = std::stod(sd[7]);
-								double counter_4 = std::stod(sd[8]);
+                                    double counter_1 = std::stod(sd[5]);
+                                    double counter_2 = std::stod(sd[6]);
+                                    double counter_3 = std::stod(sd[7]);
+                                    double counter_4 = std::stod(sd[8]);
 
-								float fUsage_1 = std::stof(sd[0]);
-								float fUsage_2 = std::stof(sd[2]);
-								float fDeliv_1 = std::stof(sd[1]);
-								float fDeliv_2 = std::stof(sd[3]);
+                                    float fUsage_1 = std::stof(sd[0]);
+                                    float fUsage_2 = std::stof(sd[2]);
+                                    float fDeliv_1 = std::stof(sd[1]);
+                                    float fDeliv_2 = std::stof(sd[3]);
 
-								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
-								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
+                                    fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
+                                    fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
 
-								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
-									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / divider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / divider);
-								root["result"][ii]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
-								root["result"][ii]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
-								root["result"][ii]["r2"] = szTmp;
+                                    if ((fDeliv_1 != 0) || (fDeliv_2 != 0)) {
+                                        bHaveDeliverd = true;
+                                    }
+                                    sprintf(szTmp, "%.3f", fUsage_1 / divider);
+                                    root["result"][ii]["v"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fUsage_2 / divider);
+                                    root["result"][ii]["v2"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_1 / divider);
+                                    root["result"][ii]["r1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_2 / divider);
+                                    root["result"][ii]["r2"] = szTmp;
 
-								if (counter_1 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c1"] = szTmp;
+                                    if (counter_1 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c1"] = szTmp;
 
-								if (counter_2 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c2"] = szTmp;
+                                    if (counter_2 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c2"] = szTmp;
 
-								if (counter_3 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c3"] = szTmp;
+                                    if (counter_3 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c3"] = szTmp;
 
-								if (counter_4 != 0)
-								{
-									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / divider);
-								}
-								else
-								{
-									strcpy(szTmp, "0");
-								}
-								root["result"][ii]["c4"] = szTmp;
+                                    if (counter_4 != 0) {
+                                        sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / divider);
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                    }
+                                    root["result"][ii]["c4"] = szTmp;
 
-								ii++;
-							}
-							if (bHaveDeliverd)
-							{
-								root["delivered"] = true;
-							}
-						}
-						//Previous Year
-						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value5,Value6, Date "
-							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
-							dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
-						if (!result.empty())
-						{
-							bool bHaveDeliverd = false;
-							iPrev = 0;
-							for (const auto &sd : result)
-							{
-								root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
+                                    ii++;
+                                }
+                                if (bHaveDeliverd) {
+                                    root["delivered"] = true;
+                                }
+                            }
+                            //Previous Year
+                            result = m_sql.safe_query(
+                                    "SELECT Value1,Value2,Value5,Value6, Date "
+                                    "FROM %s WHERE (DeviceRowID==%"
+                            PRIu64
+                            " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+                                    dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+                            if (!result.empty()) {
+                                bool bHaveDeliverd = false;
+                                iPrev = 0;
+                                for (const auto &sd : result) {
+                                    root["resultprev"][iPrev]["d"] = sd[4].substr(0, 16);
 
-								float fUsage_1 = std::stof(sd[0]);
-								float fUsage_2 = std::stof(sd[2]);
-								float fDeliv_1 = std::stof(sd[1]);
-								float fDeliv_2 = std::stof(sd[3]);
+                                    float fUsage_1 = std::stof(sd[0]);
+                                    float fUsage_2 = std::stof(sd[2]);
+                                    float fDeliv_1 = std::stof(sd[1]);
+                                    float fDeliv_2 = std::stof(sd[3]);
 
-								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
-									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage_1 / divider);
-								root["resultprev"][iPrev]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fUsage_2 / divider);
-								root["resultprev"][iPrev]["v2"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_1 / divider);
-								root["resultprev"][iPrev]["r1"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv_2 / divider);
-								root["resultprev"][iPrev]["r2"] = szTmp;
-								iPrev++;
-							}
-							if (bHaveDeliverd)
-							{
-								root["delivered"] = true;
-							}
-						}
-					}
+                                    if ((fDeliv_1 != 0) || (fDeliv_2 != 0)) {
+                                        bHaveDeliverd = true;
+                                    }
+                                    sprintf(szTmp, "%.3f", fUsage_1 / divider);
+                                    root["resultprev"][iPrev]["v"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fUsage_2 / divider);
+                                    root["resultprev"][iPrev]["v2"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_1 / divider);
+                                    root["resultprev"][iPrev]["r1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", fDeliv_2 / divider);
+                                    root["resultprev"][iPrev]["r2"] = szTmp;
+                                    iPrev++;
+                                }
+                                if (bHaveDeliverd) {
+                                    root["delivered"] = true;
+                                }
+                            }
+                        }
+                    }
 					else if (dType == pTypeAirQuality)
 					{//month/year
 						root["status"] = "OK";
@@ -16629,1342 +16657,1538 @@ namespace http {
 									root["result"][ii]["v6"] = szTmp;
 								}
 
-								ii++;
-							}
-							if (
-								(!bHaveL1) &&
-								(!bHaveL2) &&
-								(!bHaveL3)
-								) {
-								root["haveL1"] = true; //show at least something
-							}
-							else {
-								if (bHaveL1)
-									root["haveL1"] = true;
-								if (bHaveL2)
-									root["haveL2"] = true;
-								if (bHaveL3)
-									root["haveL3"] = true;
-							}
-						}
-					}
-					else
-					{
-						if (dType == pTypeP1Gas)
-						{
-							//Add last counter value
-							sprintf(szTmp, "%.3f", atof(sValue.c_str()) / 1000.0);
-							root["counter"] = szTmp;
-						}
-						else if (dType == pTypeENERGY)
-						{
-							size_t spos = sValue.find(';');
-							if (spos != std::string::npos)
-							{
-								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / (divider / 100.0F));
-								root["counter"] = szTmp;
-							}
-						}
-						else if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-						{
-							size_t spos = sValue.find(';');
-							if (spos != std::string::npos)
-							{
-								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / divider);
-								root["counter"] = szTmp;
-							}
-						}
-						else if (dType == pTypeRFXMeter)
-						{
-							//Add last counter value
-							float fvalue = static_cast<float>(atof(sValue.c_str()));
-							switch (metertype)
-							{
-							case MTYPE_ENERGY:
-							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
-								break;
-							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", AddjValue + (fvalue / divider));
-								break;
-							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
-								break;
-							default:
-								strcpy(szTmp, "");
-								break;
-							}
-							root["counter"] = szTmp;
-						}
-						else if (dType == pTypeYouLess)
-						{
-							std::vector<std::string> results;
-							StringSplit(sValue, ";", results);
-							if (results.size() == 2)
-							{
-								//Add last counter value
-								float fvalue = static_cast<float>(atof(results[0].c_str()));
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", fvalue / divider);
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", fvalue / divider);
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", fvalue / divider);
-									break;
-								default:
-									strcpy(szTmp, "");
-									break;
-								}
-								root["counter"] = szTmp;
-							}
-						}
-						else if (!bIsManagedCounter)
-						{
-							//Add last counter value
-							sprintf(szTmp, "%d", atoi(sValue.c_str()));
-							root["counter"] = szTmp;
-						}
-						else
-						{
-							root["counter"] = "0";
-						}
-						//Actual Year
-						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
-						if (!result.empty())
-						{
-							for (const auto &sd : result)
-							{
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
-
-								std::string szValue = sd[0];
-
-								double fcounter = atof(sd[2].c_str());
-
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-									root["result"][ii]["v"] = szTmp;
-									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
-									else
-										strcpy(szTmp, "0");
-									root["result"][ii]["c"] = szTmp;
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
-									root["result"][ii]["v"] = szTmp;
-									if (fcounter != 0)
-										sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
-									else
-										strcpy(szTmp, "0");
-									root["result"][ii]["c"] = szTmp;
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-									root["result"][ii]["v"] = szTmp;
-									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
-									else
-										strcpy(szTmp, "0");
-									root["result"][ii]["c"] = szTmp;
-									break;
-								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
-									root["result"][ii]["v"] = szTmp;
-									if (fcounter != 0)
-										sprintf(szTmp, "%g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
-									else
-										strcpy(szTmp, "0");
-									root["result"][ii]["c"] = szTmp;
-									break;
-								}
-								ii++;
-							}
-						}
-						//Past Year
-						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
-						if (!result.empty())
-						{
-							iPrev = 0;
-							for (const auto &sd : result)
-							{
-								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
-
-								std::string szValue = sd[0];
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-									root["resultprev"][iPrev]["v"] = szTmp;
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
-									root["resultprev"][iPrev]["v"] = szTmp;
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-									root["resultprev"][iPrev]["v"] = szTmp;
-									break;
-								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
-									root["resultprev"][iPrev]["v"] = szTmp;
-									break;
-								}
-								iPrev++;
-							}
-						}
-					}
-					//add today (have to calculate it)
-
-					if ((!sactmonth.empty()) || (!sactyear.empty()))
-					{
-						struct tm loctime;
-						time_t now = mytime(nullptr);
-						localtime_r(&now, &loctime);
-						if ((!sactmonth.empty()) && (!sactyear.empty()))
-						{
-							bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
-							if (bIsThisMonth)
-							{
-								sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
-							}
-						}
-						else if (!sactyear.empty())
-						{
-							bool bIsThisYear = (atoi(sactyear.c_str()) == loctime.tm_year + 1900);
-							if (bIsThisYear)
-							{
-								sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
-							}
-
-						}
-					}
-
-					if (dType == pTypeP1Power)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value1), MAX(Value1), MIN(Value2),"
-							" MAX(Value2), MIN(Value5), MAX(Value5),"
-							" MIN(Value6), MAX(Value6) "
-							"FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 ""
-							" AND Date>='%q')",
-							idx, szDateEnd);
-						bool bHaveDeliverd = false;
-						if (!result.empty())
-						{
-							std::vector<std::string> sd = result[0];
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage_1, total_real_usage_2;
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv_1, total_real_deliv_2;
-
-							total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
-							total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
-
-							total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
-							total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
-
-							if ((total_real_deliv_1 != 0) || (total_real_deliv_2 != 0))
-								bHaveDeliverd = true;
-
-							root["result"][ii]["d"] = szDateEnd;
-
-							sprintf(szTmp, "%.3f", (float)(total_real_usage_1 / divider));
-							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%.3f", (float)(total_real_usage_2 / divider));
-							root["result"][ii]["v2"] = szTmp;
-
-							sprintf(szTmp, "%.3f", (float)(total_real_deliv_1 / divider));
-							root["result"][ii]["r1"] = szTmp;
-							sprintf(szTmp, "%.3f", (float)(total_real_deliv_2 / divider));
-							root["result"][ii]["r2"] = szTmp;
-
-							sprintf(szTmp, "%.3f", (float)(total_min_usage_1 / divider));
-							root["result"][ii]["c1"] = szTmp;
-							sprintf(szTmp, "%.3f", (float)(total_min_usage_2 / divider));
-							root["result"][ii]["c3"] = szTmp;
-
-							if (total_max_deliv_2 != 0)
-							{
-								sprintf(szTmp, "%.3f", (float)(total_min_deliv_1 / divider));
-								root["result"][ii]["c2"] = szTmp;
-								sprintf(szTmp, "%.3f", (float)(total_min_deliv_2 / divider));
-								root["result"][ii]["c4"] = szTmp;
-							}
-							else
-							{
-								strcpy(szTmp, "0");
-								root["result"][ii]["c2"] = szTmp;
-								root["result"][ii]["c4"] = szTmp;
-							}
-
-							ii++;
-						}
-						if (bHaveDeliverd)
-						{
-							root["delivered"] = true;
-						}
-					}
-					else if (dType == pTypeAirQuality)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["co2_min"] = result[0][0];
-							root["result"][ii]["co2_max"] = result[0][1];
-							root["result"][ii]["co2_avg"] = result[0][2];
-							ii++;
-						}
-					}
-					else if (
-						((dType == pTypeGeneral) && ((dSubType == sTypeSoilMoisture) || (dSubType == sTypeLeafWetness))) ||
-						((dType == pTypeRFXSensor) && ((dSubType == sTypeRFXSensorAD) || (dSubType == sTypeRFXSensorVolt)))
-						)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["v_min"] = result[0][0];
-							root["result"][ii]["v_max"] = result[0][1];
-							ii++;
-						}
-					}
-					else if (
-						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
-						)
-					{
-						float vdiv = 10.0F;
-						if (
-							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
-							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-							)
-						{
-							vdiv = 1000.0F;
-						}
-
-						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							root["result"][ii]["d"] = szDateEnd;
-							float fValue1 = float(atof(result[0][0].c_str())) / vdiv;
-							float fValue2 = float(atof(result[0][1].c_str())) / vdiv;
-							if (metertype == 1)
-							{
-								if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
-								{
-									//Inches
-									fValue1 *= 0.3937007874015748F;
-									fValue2 *= 0.3937007874015748F;
-								}
-								else
-								{
-									//Miles
-									fValue1 *= 0.6214F;
-									fValue2 *= 0.6214F;
-								}
-							}
-
-							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
-								sprintf(szTmp, "%.3f", fValue1);
-							else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-								sprintf(szTmp, "%.3f", fValue1);
-							else
-								sprintf(szTmp, "%.1f", fValue1);
-							root["result"][ii]["v_min"] = szTmp;
-							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
-								sprintf(szTmp, "%.3f", fValue2);
-							else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-								sprintf(szTmp, "%.3f", fValue2);
-							else
-								sprintf(szTmp, "%.1f", fValue2);
-							root["result"][ii]["v_max"] = szTmp;
-							ii++;
-						}
-					}
-					else if (dType == pTypeLux)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["lux_min"] = result[0][0];
-							root["result"][ii]["lux_max"] = result[0][1];
-							root["result"][ii]["lux_avg"] = result[0][2];
-							ii++;
-						}
-					}
-					else if (dType == pTypeWEIGHT)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							root["result"][ii]["d"] = szDateEnd;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][0].c_str()) / 10.0F);
-							root["result"][ii]["v_min"] = szTmp;
-							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0F);
-							root["result"][ii]["v_max"] = szTmp;
-							ii++;
-						}
-					}
-					else if (dType == pTypeUsage)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0F;
-							root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0F;
-							ii++;
-						}
-					}
-					else if (!bIsManagedCounter)
-					{
-						// get the first value
-						result = m_sql.safe_query(
-							//"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
-							idx, szDateEnd);
-						if (!result.empty())
-						{
-							std::vector<std::string> sd = result[0];
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
-					
-							// Get the last value
-							result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
-									idx, szDateEnd);
-							if (!result.empty()) {
-							std::vector<std::string> sd = result[0];
-								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
-							}
-
-							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
-
-							root["result"][ii]["d"] = szDateEnd;
-
-							std::string szValue = szTmp;
-							switch (metertype)
-							{
-							case MTYPE_ENERGY:
-							case MTYPE_ENERGY_GENERATED:
-							{
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-								root["result"][ii]["v"] = szTmp;
-
-								std::vector<std::string> mresults;
-								StringSplit(sValue, ";", mresults);
-								if (mresults.size() == 2)
-								{
-									sValue = mresults[1];
-								}
-								if (dType == pTypeENERGY)
-									sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
-								else
-									sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-								root["result"][ii]["c"] = szTmp;
-							}
-							break;
-							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-								root["result"][ii]["c"] = szTmp;
-								break;
-							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-								root["result"][ii]["c"] = szTmp;
-								break;
-							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
-								root["result"][ii]["c"] = szTmp;
-								break;
-							}
-							ii++;
-						}
-					}
-				}
-				else if (sensor == "wind") {
-					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
-
-					int ii = 0;
-
-					result = m_sql.safe_query(
-						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
-						" Gust_Max, Date "
-						"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-						" AND Date<='%q') ORDER BY Date ASC",
-						dbasetable.c_str(), idx, szDateStart, szDateEnd);
-					if (!result.empty())
-					{
-						for (const auto &sd : result)
-						{
-							root["result"][ii]["d"] = sd[5].substr(0, 16);
-							root["result"][ii]["di"] = sd[0];
-
-							int intSpeed = atoi(sd[2].c_str());
-							int intGust = atoi(sd[4].c_str());
-							if (m_sql.m_windunit != WINDUNIT_Beaufort)
-							{
-								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-								root["result"][ii]["sp"] = szTmp;
-								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-								root["result"][ii]["gu"] = szTmp;
-							}
-							else
-							{
-								float windspeedms = float(intSpeed) * 0.1F;
-								float windgustms = float(intGust) * 0.1F;
-								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
-								root["result"][ii]["sp"] = szTmp;
-								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
-								root["result"][ii]["gu"] = szTmp;
-							}
-							ii++;
-						}
-					}
-					//add today (have to calculate it)
-					result = m_sql.safe_query(
-						"SELECT AVG(Direction), MIN(Speed), MAX(Speed),"
-						" MIN(Gust), MAX(Gust) "
-						"FROM Wind WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC",
-						idx, szDateEnd);
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-
-						root["result"][ii]["d"] = szDateEnd;
-						root["result"][ii]["di"] = sd[0];
-
-						int intSpeed = atoi(sd[2].c_str());
-						int intGust = atoi(sd[4].c_str());
-						if (m_sql.m_windunit != WINDUNIT_Beaufort)
-						{
-							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-							root["result"][ii]["sp"] = szTmp;
-							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-							root["result"][ii]["gu"] = szTmp;
-						}
-						else
-						{
-							float windspeedms = float(intSpeed) * 0.1F;
-							float windgustms = float(intGust) * 0.1F;
-							sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
-							root["result"][ii]["sp"] = szTmp;
-							sprintf(szTmp, "%d", MStoBeaufort(windgustms));
-							root["result"][ii]["gu"] = szTmp;
-						}
-						ii++;
-					}
-					//Previous Year
-					result = m_sql.safe_query(
-						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
-						" Gust_Max, Date "
-						"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-						" AND Date<='%q') ORDER BY Date ASC",
-						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
-					if (!result.empty())
-					{
-						iPrev = 0;
-						for (const auto &sd : result)
-						{
-							root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
-							root["resultprev"][iPrev]["di"] = sd[0];
-
-							int intSpeed = atoi(sd[2].c_str());
-							int intGust = atoi(sd[4].c_str());
-							if (m_sql.m_windunit != WINDUNIT_Beaufort)
-							{
-								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-								root["resultprev"][iPrev]["sp"] = szTmp;
-								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-								root["resultprev"][iPrev]["gu"] = szTmp;
-							}
-							else
-							{
-								float windspeedms = float(intSpeed) * 0.1F;
-								float windgustms = float(intGust) * 0.1F;
-								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
-								root["resultprev"][iPrev]["sp"] = szTmp;
-								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
-								root["resultprev"][iPrev]["gu"] = szTmp;
-							}
-							iPrev++;
-						}
-					}
-				}
-			}//month or year
-			else if ((srange.substr(0, 1) == "2") && (srange.substr(10, 1) == "T") && (srange.substr(11, 1) == "2")) // custom range 2013-01-01T2013-12-31
-			{
-				std::string szDateStart = srange.substr(0, 10);
-				std::string szDateEnd = srange.substr(11, 10);
-				std::string sgraphtype = request::findValue(&req, "graphtype");
-				std::string sgraphTemp = request::findValue(&req, "graphTemp");
-				std::string sgraphChill = request::findValue(&req, "graphChill");
-				std::string sgraphHum = request::findValue(&req, "graphHum");
-				std::string sgraphBaro = request::findValue(&req, "graphBaro");
-				std::string sgraphDew = request::findValue(&req, "graphDew");
-				std::string sgraphSet = request::findValue(&req, "graphSet");
-
-				if (sensor == "temp") {
-					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
-
-					bool sendTemp = false;
-					bool sendChill = false;
-					bool sendHum = false;
-					bool sendBaro = false;
-					bool sendDew = false;
-					bool sendSet = false;
-
-					if ((sgraphTemp == "true") &&
-						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
-						((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-							((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
-							((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
-							(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
-							)
-						)
-					{
-						sendTemp = true;
-					}
-					if ((sgraphSet == "true") &&
-						((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))) //FIXME cheat for water setpoint is just on or off
-					{
-						sendSet = true;
-					}
-					if ((sgraphChill == "true") &&
-						(((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
-						((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
-						)
-					{
-						sendChill = true;
-					}
-					if ((sgraphHum == "true") &&
-						((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
-						)
-					{
-						sendHum = true;
-					}
-					if ((sgraphBaro == "true") && (
-						(dType == pTypeTEMP_HUM_BARO) ||
-						(dType == pTypeTEMP_BARO) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeBaro))
-						))
-					{
-						sendBaro = true;
-					}
-					if ((sgraphDew == "true") && ((dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO)))
-					{
-						sendDew = true;
-					}
-
-					if (sgraphtype == "1")
-					{
-						// Need to get all values of the end date so 23:59:59 is appended to the date string
-						result = m_sql.safe_query(
-							"SELECT Temperature, Chill, Humidity, Barometer,"
-							" Date, DewPoint, SetPoint "
-							"FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
-							" AND Date>='%q' AND Date<='%q 23:59:59') ORDER BY Date ASC",
-							idx, szDateStart.c_str(), szDateEnd.c_str());
-						int ii = 0;
-						if (!result.empty())
-						{
-							for (const auto &sd : result)
-							{
-								root["result"][ii]["d"] = sd[4];//.substr(0,16);
-								if (sendTemp)
-								{
-									double te = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									root["result"][ii]["te"] = te;
-									root["result"][ii]["tm"] = tm;
-								}
-								if (sendChill)
-								{
-									double ch = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double cm = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									root["result"][ii]["ch"] = ch;
-									root["result"][ii]["cm"] = cm;
-								}
-								if (sendHum)
-								{
-									root["result"][ii]["hu"] = sd[2];
-								}
-								if (sendBaro)
-								{
-									if (dType == pTypeTEMP_HUM_BARO)
-									{
-										if (dSubType == sTypeTHBFloat)
-										{
-											sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
-											root["result"][ii]["ba"] = szTmp;
-										}
-										else
-											root["result"][ii]["ba"] = sd[3];
-									}
-									else if (dType == pTypeTEMP_BARO)
-									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
-										root["result"][ii]["ba"] = szTmp;
-									}
-									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
-									{
-										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
-										root["result"][ii]["ba"] = szTmp;
-									}
-								}
-								if (sendDew)
-								{
-									double dp = ConvertTemperature(atof(sd[5].c_str()), tempsign);
-									root["result"][ii]["dp"] = dp;
-								}
-								if (sendSet)
-								{
-									double se = ConvertTemperature(atof(sd[6].c_str()), tempsign);
-									root["result"][ii]["se"] = se;
-								}
-								ii++;
-							}
-						}
-					}
-					else
-					{
-						result = m_sql.safe_query(
-							"SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max,"
-							" Humidity, Barometer, Date, DewPoint, Temp_Avg,"
-							" SetPoint_Min, SetPoint_Max, SetPoint_Avg "
-							"FROM Temperature_Calendar "
-							"WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-							" AND Date<='%q') ORDER BY Date ASC",
-							idx, szDateStart.c_str(), szDateEnd.c_str());
-						int ii = 0;
-						if (!result.empty())
-						{
-							for (const auto &sd : result)
-							{
-								root["result"][ii]["d"] = sd[6].substr(0, 16);
-								if (sendTemp)
-								{
-									double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-									double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-									double ta = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-
-									root["result"][ii]["te"] = te;
-									root["result"][ii]["tm"] = tm;
-									root["result"][ii]["ta"] = ta;
-								}
-								if (sendChill)
-								{
-									double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-									double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
-
-									root["result"][ii]["ch"] = ch;
-									root["result"][ii]["cm"] = cm;
-								}
-								if (sendHum)
-								{
-									root["result"][ii]["hu"] = sd[4];
-								}
-								if (sendBaro)
-								{
-									if (dType == pTypeTEMP_HUM_BARO)
-									{
-										if (dSubType == sTypeTHBFloat)
-										{
-											sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
-											root["result"][ii]["ba"] = szTmp;
-										}
-										else
-											root["result"][ii]["ba"] = sd[5];
-									}
-									else if (dType == pTypeTEMP_BARO)
-									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
-										root["result"][ii]["ba"] = szTmp;
-									}
-									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
-									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
-										root["result"][ii]["ba"] = szTmp;
-									}
-								}
-								if (sendDew)
-								{
-									double dp = ConvertTemperature(atof(sd[7].c_str()), tempsign);
-									root["result"][ii]["dp"] = dp;
-								}
-								if (sendSet)
-								{
-									double sm = ConvertTemperature(atof(sd[9].c_str()), tempsign);
-									double sx = ConvertTemperature(atof(sd[10].c_str()), tempsign);
-									double se = ConvertTemperature(atof(sd[11].c_str()), tempsign);
-									root["result"][ii]["sm"] = sm;
-									root["result"][ii]["se"] = se;
-									root["result"][ii]["sx"] = sx;
-									char szTmp[1024];
-									sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
-									_log.Log(LOG_STATUS, "%s", szTmp);
-
-								}
-								ii++;
-							}
-						}
-
-						//add today (have to calculate it)
-						result = m_sql.safe_query(
-							"SELECT MIN(Temperature), MAX(Temperature),"
-							" MIN(Chill), MAX(Chill), AVG(Humidity),"
-							" AVG(Barometer), MIN(DewPoint), AVG(Temperature),"
-							" MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) "
-							"FROM Temperature WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd.c_str());
-						if (!result.empty())
-						{
-							std::vector<std::string> sd = result[0];
-
-							root["result"][ii]["d"] = szDateEnd;
-							if (sendTemp)
-							{
-								double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-								double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-								double ta = ConvertTemperature(atof(sd[7].c_str()), tempsign);
-
-								root["result"][ii]["te"] = te;
-								root["result"][ii]["tm"] = tm;
-								root["result"][ii]["ta"] = ta;
-							}
-							if (sendChill)
-							{
-								double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-								double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
-								root["result"][ii]["ch"] = ch;
-								root["result"][ii]["cm"] = cm;
-							}
-							if (sendHum)
-							{
-								root["result"][ii]["hu"] = sd[4];
-							}
-							if (sendBaro)
-							{
-								if (dType == pTypeTEMP_HUM_BARO)
-								{
-									if (dSubType == sTypeTHBFloat)
-									{
-										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
-										root["result"][ii]["ba"] = szTmp;
-									}
-									else
-										root["result"][ii]["ba"] = sd[5];
-								}
-								else if (dType == pTypeTEMP_BARO)
-								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
-									root["result"][ii]["ba"] = szTmp;
-								}
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
-								{
-									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
-									root["result"][ii]["ba"] = szTmp;
-								}
-							}
-							if (sendDew)
-							{
-								double dp = ConvertTemperature(atof(sd[6].c_str()), tempsign);
-								root["result"][ii]["dp"] = dp;
-							}
-							if (sendSet)
-							{
-								double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-								double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
-								double se = ConvertTemperature(atof(sd[10].c_str()), tempsign);
-
-								root["result"][ii]["sm"] = sm;
-								root["result"][ii]["se"] = se;
-								root["result"][ii]["sx"] = sx;
-							}
-							ii++;
-						}
-					}
-				}
-				else if (sensor == "uv") {
-					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
-
-					result = m_sql.safe_query(
-						"SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ""
-						" AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
-						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
-					int ii = 0;
-					if (!result.empty())
-					{
-						for (const auto &sd : result)
-						{
-							root["result"][ii]["d"] = sd[1].substr(0, 16);
-							root["result"][ii]["uvi"] = sd[0];
-							ii++;
-						}
-					}
-					//add today (have to calculate it)
-					result = m_sql.safe_query(
-						"SELECT MAX(Level) FROM UV WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-						idx, szDateEnd.c_str());
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-
-						root["result"][ii]["d"] = szDateEnd;
-						root["result"][ii]["uvi"] = sd[0];
-						ii++;
-					}
-				}
-				else if (sensor == "rain") {
-					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
-
-					result = m_sql.safe_query(
-						"SELECT Total, Rate, Date FROM %s "
-						"WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
-						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
-					int ii = 0;
-					if (!result.empty())
-					{
-						for (const auto &sd : result)
-						{
-							root["result"][ii]["d"] = sd[2].substr(0, 16);
-							root["result"][ii]["mm"] = sd[0];
-							ii++;
-						}
-					}
-					//add today (have to calculate it)
-					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
-					{
-						result = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-							idx, szDateEnd.c_str());
-					}
-					else
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd.c_str());
-					}
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-
-						float total_min = static_cast<float>(atof(sd[0].c_str()));
-						float total_max = static_cast<float>(atof(sd[1].c_str()));
-						//int rate = atoi(sd[2].c_str());
-
-						float total_real = 0;
-						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
-						{
-							total_real = total_max;
-						}
-						else
-						{
-							total_real = total_max - total_min;
-						}
-						sprintf(szTmp, "%.1f", total_real);
-						root["result"][ii]["d"] = szDateEnd;
-						root["result"][ii]["mm"] = szTmp;
-						ii++;
-					}
-				}
-				else if (sensor == "counter") {
-					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
-					root["ValueQuantity"] = options["ValueQuantity"];
-					root["ValueUnits"] = options["ValueUnits"];
-
-					int ii = 0;
-					if (dType == pTypeP1Power)
-					{
-						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value5,Value6, Date "
-							"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-							" AND Date<='%q') ORDER BY Date ASC",
-							dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
-						if (!result.empty())
-						{
-							bool bHaveDeliverd = false;
-							for (const auto &sd : result)
-							{
-								root["result"][ii]["d"] = sd[4].substr(0, 16);
-
-								std::string szUsage1 = sd[0];
-								std::string szDeliv1 = sd[1];
-								std::string szUsage2 = sd[2];
-								std::string szDeliv2 = sd[3];
-
-								float fUsage = (float)(atof(szUsage1.c_str()) + atof(szUsage2.c_str()));
-								float fDeliv = (float)(atof(szDeliv1.c_str()) + atof(szDeliv2.c_str()));
-
-								if (fDeliv != 0)
-									bHaveDeliverd = true;
-								sprintf(szTmp, "%.3f", fUsage / divider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", fDeliv / divider);
-								root["result"][ii]["v2"] = szTmp;
-								ii++;
-							}
-							if (bHaveDeliverd)
-							{
-								root["delivered"] = true;
-							}
-						}
-					}
-					else
-					{
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
-						if (!result.empty())
-						{
-							for (const auto &sd : result)
-							{
-								std::string szValue = sd[0];
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-									szValue = szTmp;
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
-									szValue = szTmp;
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-									szValue = szTmp;
-									break;
-								}
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								root["result"][ii]["v"] = szValue;
-								ii++;
-							}
-						}
-					}
-					//add today (have to calculate it)
-					if (dType == pTypeP1Power)
-					{
-						result = m_sql.safe_query(
-							"SELECT MIN(Value1), MAX(Value1), MIN(Value2),"
-							" MAX(Value2),MIN(Value5), MAX(Value5),"
-							" MIN(Value6), MAX(Value6) "
-							"FROM MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd.c_str());
-						bool bHaveDeliverd = false;
-						if (!result.empty())
-						{
-							std::vector<std::string> sd = result[0];
-
-							unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
-							unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
-							unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
-							unsigned long long total_real_usage;
-
-							unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
-							unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
-							unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
-							unsigned long long total_real_deliv;
-
-							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
-							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
-
-							if (total_real_deliv != 0)
-								bHaveDeliverd = true;
-
-							root["result"][ii]["d"] = szDateEnd;
-
-							sprintf(szTmp, "%lld", total_real_usage);
-							std::string szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-							root["result"][ii]["v"] = szTmp;
-							sprintf(szTmp, "%llu", total_real_deliv);
-							szValue = szTmp;
-							sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-							root["result"][ii]["v2"] = szTmp;
-							ii++;
-							if (bHaveDeliverd)
-							{
-								root["delivered"] = true;
-							}
-						}
-					}
-					else if (!bIsManagedCounter)
-					{	// get the first value of the day
-						result = m_sql.safe_query(
-							//"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
-							idx, szDateEnd.c_str());
-						if (!result.empty())
-						{
-							std::vector<std::string> sd = result[0];
-							unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
-							unsigned long long total_max = total_min;
-							unsigned long long total_real;
-
-							// get the last value of the day
-							result = m_sql.safe_query(
-								"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
-								idx, szDateEnd.c_str());
-							if (!result.empty())
-							{
-								std::vector<std::string> sd = result[0];
-								total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
-							}
-
-							total_real = total_max - total_min;
-							sprintf(szTmp, "%lld", total_real);
-
-							std::string szValue = szTmp;
-							switch (metertype)
-							{
-							case MTYPE_ENERGY:
-							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-								szValue = szTmp;
-								break;
-							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
-								szValue = szTmp;
-								break;
-							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
-								szValue = szTmp;
-								break;
-							}
-
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["v"] = szValue;
-							ii++;
-						}
-					}
-				}
-				else if (sensor == "wind") {
-					root["status"] = "OK";
-					root["title"] = "Graph " + sensor + " " + srange;
-
-					int ii = 0;
-
-					result = m_sql.safe_query(
-						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
-						" Gust_Max, Date "
-						"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
-						" AND Date<='%q') ORDER BY Date ASC",
-						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
-					if (!result.empty())
-					{
-						for (const auto &sd : result)
-						{
-							root["result"][ii]["d"] = sd[5].substr(0, 16);
-							root["result"][ii]["di"] = sd[0];
-
-							int intSpeed = atoi(sd[2].c_str());
-							int intGust = atoi(sd[4].c_str());
-							if (m_sql.m_windunit != WINDUNIT_Beaufort)
-							{
-								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-								root["result"][ii]["sp"] = szTmp;
-								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-								root["result"][ii]["gu"] = szTmp;
-							}
-							else
-							{
-								float windspeedms = float(intSpeed) * 0.1F;
-								float windgustms = float(intGust) * 0.1F;
-								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
-								root["result"][ii]["sp"] = szTmp;
-								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
-								root["result"][ii]["gu"] = szTmp;
-							}
-							ii++;
-						}
-					}
-					//add today (have to calculate it)
-					result = m_sql.safe_query(
-						"SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC",
-						idx, szDateEnd.c_str());
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-
-						root["result"][ii]["d"] = szDateEnd;
-						root["result"][ii]["di"] = sd[0];
-
-						int intSpeed = atoi(sd[2].c_str());
-						int intGust = atoi(sd[4].c_str());
-						if (m_sql.m_windunit != WINDUNIT_Beaufort)
-						{
-							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-							root["result"][ii]["sp"] = szTmp;
-							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-							root["result"][ii]["gu"] = szTmp;
-						}
-						else
-						{
-							float windspeedms = float(intSpeed) * 0.1F;
-							float windgustms = float(intGust) * 0.1F;
-							sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
-							root["result"][ii]["sp"] = szTmp;
-							sprintf(szTmp, "%d", MStoBeaufort(windgustms));
-							root["result"][ii]["gu"] = szTmp;
-						}
-						ii++;
-					}
-				}
-			}//custom range
-		}
-
-		/**
-		 * Retrieve user session from store, without remote host.
-		 */
-		WebEmStoredSession CWebServer::GetSession(const std::string &sessionId)
-		{
-			//_log.Log(LOG_STATUS, "SessionStore : get...");
-			WebEmStoredSession session;
-
-			if (sessionId.empty()) {
-				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
-			}
-			else {
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'",
-					sessionId.c_str());
-				if (!result.empty()) {
-					session.id = result[0][0];
-					session.username = base64_decode(result[0][1]);
-					session.auth_token = result[0][2];
-
-					std::string sExpirationDate = result[0][3];
-					//time_t now = mytime(NULL);
-					struct tm tExpirationDate;
-					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
-					// RemoteHost is not used to restore the session
-					// LastUpdate is not used to restore the session
-				}
-			}
-
-			return session;
-		}
-
-		/**
-		 * Save user session.
-		 */
-		void CWebServer::StoreSession(const WebEmStoredSession & session) {
-			//_log.Log(LOG_STATUS, "SessionStore : store...");
-			if (session.id.empty()) {
-				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
-				return;
-			}
-
-			char szExpires[30];
-			struct tm ltime;
-			localtime_r(&session.expires, &ltime);
-			strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
-
-			std::string remote_host = (session.remote_host.size() <= 50) ? // IPv4 : 15, IPv6 : (39|45)
-				session.remote_host : session.remote_host.substr(0, 50);
-
-			WebEmStoredSession storedSession = GetSession(session.id);
-			if (storedSession.id.empty()) {
-				m_sql.safe_query(
-					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate, RemoteHost) VALUES ('%q', '%q', '%q', '%q', '%q')",
-					session.id.c_str(),
-					base64_encode(session.username).c_str(),
-					session.auth_token.c_str(),
-					szExpires,
-					remote_host.c_str());
-			}
-			else {
-				m_sql.safe_query(
-					"UPDATE UserSessions set AuthToken = '%q', ExpirationDate = '%q', RemoteHost = '%q', LastUpdate = datetime('now', 'localtime') WHERE SessionID = '%q'",
-					session.auth_token.c_str(),
-					szExpires,
-					remote_host.c_str(),
-					session.id.c_str());
-			}
-		}
-
-		/**
-		 * Remove user session and expired sessions.
-		 */
-		void CWebServer::RemoveSession(const std::string & sessionId) {
-			//_log.Log(LOG_STATUS, "SessionStore : remove...");
-			if (sessionId.empty()) {
-				return;
-			}
-			m_sql.safe_query(
-				"DELETE FROM UserSessions WHERE SessionID = '%q'",
-				sessionId.c_str());
-		}
-
-		/**
-		 * Remove all expired user sessions.
-		 */
-		void CWebServer::CleanSessions() {
-			//_log.Log(LOG_STATUS, "SessionStore : clean...");
-			m_sql.safe_query(
-				"DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
-		}
-
-		/**
-		 * Delete all user's session, except the session used to modify the username or password.
-		 * username must have been hashed
-		 *
-		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
-		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
-		 */
-		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession) {
-			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
-		}
-
-	} // namespace server
+                                ii++;
+                            }
+                            if (
+                                    (!bHaveL1) &&
+                                    (!bHaveL2) &&
+                                    (!bHaveL3)
+                                    ) {
+                                root["haveL1"] = true; //show at least something
+                            }
+                            else {
+                                if (bHaveL1)
+                                    root["haveL1"] = true;
+                                if (bHaveL2)
+                                    root["haveL2"] = true;
+                                if (bHaveL3)
+                                    root["haveL3"] = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (dType == pTypeP1Gas)
+                        {
+                            //Add last counter value
+                            sprintf(szTmp, "%.3f", atof(sValue.c_str()) / 1000.0);
+                            root["counter"] = szTmp;
+                        }
+                        else if (dType == pTypeENERGY)
+                        {
+                            size_t spos = sValue.find(';');
+                            if (spos != std::string::npos)
+                            {
+                                float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+                                sprintf(szTmp, "%.3f", fvalue / (divider / 100.0F));
+                                root["counter"] = szTmp;
+                            }
+                        }
+                        else if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+                        {
+                            size_t spos = sValue.find(';');
+                            if (spos != std::string::npos)
+                            {
+                                float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+                                sprintf(szTmp, "%.3f", fvalue / divider);
+                                root["counter"] = szTmp;
+                            }
+                        }
+                        else if (dType == pTypeRFXMeter)
+                        {
+                            //Add last counter value
+                            float fvalue = static_cast<float>(atof(sValue.c_str()));
+                            switch (metertype)
+                            {
+                                case MTYPE_ENERGY:
+                                case MTYPE_ENERGY_GENERATED:
+                                    sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
+                                    break;
+                                case MTYPE_GAS:
+                                    sprintf(szTmp, "%.2f", AddjValue + (fvalue / divider));
+                                    break;
+                                case MTYPE_WATER:
+                                    sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
+                                    break;
+                                default:
+                                    strcpy(szTmp, "");
+                                    break;
+                            }
+                            root["counter"] = szTmp;
+                        }
+                        else if (dType == pTypeYouLess)
+                        {
+                            std::vector<std::string> results;
+                            StringSplit(sValue, ";", results);
+                            if (results.size() == 2)
+                            {
+                                //Add last counter value
+                                float fvalue = static_cast<float>(atof(results[0].c_str()));
+                                switch (metertype)
+                                {
+                                    case MTYPE_ENERGY:
+                                    case MTYPE_ENERGY_GENERATED:
+                                        sprintf(szTmp, "%.3f", fvalue / divider);
+                                        break;
+                                    case MTYPE_GAS:
+                                        sprintf(szTmp, "%.2f", fvalue / divider);
+                                        break;
+                                    case MTYPE_WATER:
+                                        sprintf(szTmp, "%.3f", fvalue / divider);
+                                        break;
+                                    default:
+                                        strcpy(szTmp, "");
+                                        break;
+                                }
+                                root["counter"] = szTmp;
+                            }
+                        }
+                        else if (!bIsManagedCounter)
+                        {
+                            //Add last counter value
+                            sprintf(szTmp, "%d", atoi(sValue.c_str()));
+                            root["counter"] = szTmp;
+                        }
+                        else
+                        {
+                            root["counter"] = "0";
+                        }
+                        if (!sgroupby.empty()) {
+                            GroupBy(
+                                root,
+                                dbasetable,
+                                idx,
+                                sgroupby,
+                                [tableColumn] (std::string table) { return tableColumn(table, "Counter"); },
+                                [tableColumn] (std::string table) { return tableColumn(table, "Value"); },
+                                [metertype, AddjValue, divider, this] (double sum) {
+                                    if (sum == 0) {
+                                        return std::string("0");
+                                    }
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                            return std_format("%.3f", AddjValue + sum / divider);
+                                        case MTYPE_GAS:
+                                            return std_format("%.2f", AddjValue + sum / divider);
+                                        case MTYPE_WATER:
+                                            return std_format("%.3f", AddjValue + sum / divider);
+                                        case MTYPE_COUNTER:
+                                            return std_format("%g", AddjValue + sum / divider);
+                                    }
+                                    return std::string("");
+                                });
+                            ii = root["result"].size();
+                        } else {
+                            //Actual Year
+                            result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+                            if (!result.empty())
+                            {
+                                for (const auto &sd : result)
+                                {
+                                    root["result"][ii]["d"] = sd[1].substr(0, 16);
+
+                                    std::string szValue = sd[0];
+
+                                    double fcounter = atof(sd[2].c_str());
+
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            if (fcounter != 0)
+                                                sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+                                            else
+                                                strcpy(szTmp, "0");
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_GAS:
+                                            sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            if (fcounter != 0)
+                                                sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+                                            else
+                                                strcpy(szTmp, "0");
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_WATER:
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            if (fcounter != 0)
+                                                sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+                                            else
+                                                strcpy(szTmp, "0");
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            if (fcounter != 0)
+                                                sprintf(szTmp, "%g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+                                            else
+                                                strcpy(szTmp, "0");
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                    }
+                                    ii++;
+                                }
+                            }
+                            //Past Year
+                            result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+                            if (!result.empty())
+                            {
+                                iPrev = 0;
+                                for (const auto &sd : result)
+                                {
+                                    root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
+
+                                    std::string szValue = sd[0];
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["resultprev"][iPrev]["v"] = szTmp;
+                                            break;
+                                        case MTYPE_GAS:
+                                            sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+                                            root["resultprev"][iPrev]["v"] = szTmp;
+                                            break;
+                                        case MTYPE_WATER:
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["resultprev"][iPrev]["v"] = szTmp;
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+                                            root["resultprev"][iPrev]["v"] = szTmp;
+                                            break;
+                                    }
+                                    iPrev++;
+                                }
+                            }
+                        }
+                    }
+                    //add today (have to calculate it)
+
+                    if ((!sactmonth.empty()) || (!sactyear.empty()))
+                    {
+                        struct tm loctime;
+                        time_t now = mytime(nullptr);
+                        localtime_r(&now, &loctime);
+                        if ((!sactmonth.empty()) && (!sactyear.empty()))
+                        {
+                            bool bIsThisMonth = (atoi(sactyear.c_str()) == loctime.tm_year + 1900) && (atoi(sactmonth.c_str()) == loctime.tm_mon + 1);
+                            if (bIsThisMonth)
+                            {
+                                sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
+                            }
+                        }
+                        else if (!sactyear.empty())
+                        {
+                            bool bIsThisYear = (atoi(sactyear.c_str()) == loctime.tm_year + 1900);
+                            if (bIsThisYear)
+                            {
+                                sprintf(szDateEnd, "%04d-%02d-%02d", loctime.tm_year + 1900, loctime.tm_mon + 1, loctime.tm_mday);
+                            }
+
+                        }
+                    }
+
+                    if (dType == pTypeP1Power)
+                    {
+                            result = m_sql.safe_query(
+                                    "SELECT "
+                                        " MIN(Value1) as levering_laag_min,"
+                                        " MAX(Value1) as levering_laag_max,"
+                                        " MIN(Value2) as teruglevering_laag_min,"
+                                        " MAX(Value2) as teruglevering_laag_max,"
+                                        " MIN(Value5) as levering_normaal_min,"
+                                        " MAX(Value5) as levering_normaal_max,"
+                                        " MIN(Value6) as teruglevering_normaal_min,"
+                                        " MAX(Value6) as teruglevering_normaal_max"
+                                    " FROM MultiMeter WHERE (DeviceRowID=%" PRIu64 ""
+                                                                                  " AND Date>='%q')",
+                                    idx, szDateEnd);
+                            bool bHaveDeliverd = false;
+                            if (!result.empty()) {
+                                std::vector <std::string> sd = result[0];
+                                unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
+                                unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
+                                unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
+                                unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
+                                unsigned long long total_real_usage_1, total_real_usage_2;
+                                unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
+                                unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
+                                unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
+                                unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
+                                unsigned long long total_real_deliv_1, total_real_deliv_2;
+
+                                total_real_usage_1 = total_max_usage_1 - total_min_usage_1;
+                                total_real_usage_2 = total_max_usage_2 - total_min_usage_2;
+
+                                total_real_deliv_1 = total_max_deliv_1 - total_min_deliv_1;
+                                total_real_deliv_2 = total_max_deliv_2 - total_min_deliv_2;
+
+                                if (total_max_deliv_1 != 0 || total_max_deliv_2 != 0)
+                                    bHaveDeliverd = true;
+
+                                if (!sgroupby.empty()) {
+                                    const float todayValue = (sensorarea == "usage" ? (total_real_usage_1 + total_real_usage_2) : sensorarea == "delivery" ? (total_real_deliv_1 + total_real_deliv_2) : 0) / divider;
+                                    AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, "%.3f");
+                                } else {
+                                    root["result"][ii]["d"] = szDateEnd;
+
+                                    sprintf(szTmp, "%.3f", (float) (total_real_usage_1 / divider));
+                                    root["result"][ii]["v"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_real_usage_2 / divider));
+                                    root["result"][ii]["v2"] = szTmp;
+
+                                    sprintf(szTmp, "%.3f", (float) (total_real_deliv_1 / divider));
+                                    root["result"][ii]["r1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_real_deliv_2 / divider));
+                                    root["result"][ii]["r2"] = szTmp;
+
+                                    sprintf(szTmp, "%.3f", (float) (total_min_usage_1 / divider));
+                                    root["result"][ii]["c1"] = szTmp;
+                                    sprintf(szTmp, "%.3f", (float) (total_min_usage_2 / divider));
+                                    root["result"][ii]["c3"] = szTmp;
+
+                                    if (total_max_deliv_2 != 0) {
+                                        sprintf(szTmp, "%.3f", (float) (total_min_deliv_1 / divider));
+                                        root["result"][ii]["c2"] = szTmp;
+                                        sprintf(szTmp, "%.3f", (float) (total_min_deliv_2 / divider));
+                                        root["result"][ii]["c4"] = szTmp;
+                                    } else {
+                                        strcpy(szTmp, "0");
+                                        root["result"][ii]["c2"] = szTmp;
+                                        root["result"][ii]["c4"] = szTmp;
+                                    }
+
+                                    ii++;
+                                }
+                            }
+                            if (bHaveDeliverd)
+                            {
+                                root["delivered"] = true;
+                            }
+                    }
+                    else if (dType == pTypeAirQuality)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd);
+                        if (!result.empty())
+                        {
+                            root["result"][ii]["d"] = szDateEnd;
+                            root["result"][ii]["co2_min"] = result[0][0];
+                            root["result"][ii]["co2_max"] = result[0][1];
+                            root["result"][ii]["co2_avg"] = result[0][2];
+                            ii++;
+                        }
+                    }
+                    else if (
+                            ((dType == pTypeGeneral) && ((dSubType == sTypeSoilMoisture) || (dSubType == sTypeLeafWetness))) ||
+                            ((dType == pTypeRFXSensor) && ((dSubType == sTypeRFXSensorAD) || (dSubType == sTypeRFXSensorVolt)))
+                            )
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd);
+                        if (!result.empty())
+                        {
+                            root["result"][ii]["d"] = szDateEnd;
+                            root["result"][ii]["v_min"] = result[0][0];
+                            root["result"][ii]["v_max"] = result[0][1];
+                            ii++;
+                        }
+                    }
+                    else if (
+                            ((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+                            )
+                    {
+                        float vdiv = 10.0F;
+                        if (
+                                ((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+                                ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+                                )
+                        {
+                            vdiv = 1000.0F;
+                        }
+
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd);
+                        if (!result.empty())
+                        {
+                            root["result"][ii]["d"] = szDateEnd;
+                            float fValue1 = float(atof(result[0][0].c_str())) / vdiv;
+                            float fValue2 = float(atof(result[0][1].c_str())) / vdiv;
+                            if (metertype == 1)
+                            {
+                                if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+                                {
+                                    //Inches
+                                    fValue1 *= 0.3937007874015748F;
+                                    fValue2 *= 0.3937007874015748F;
+                                }
+                                else
+                                {
+                                    //Miles
+                                    fValue1 *= 0.6214F;
+                                    fValue2 *= 0.6214F;
+                                }
+                            }
+
+                            if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+                                sprintf(szTmp, "%.3f", fValue1);
+                            else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+                                sprintf(szTmp, "%.3f", fValue1);
+                            else
+                                sprintf(szTmp, "%.1f", fValue1);
+                            root["result"][ii]["v_min"] = szTmp;
+                            if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+                                sprintf(szTmp, "%.3f", fValue2);
+                            else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+                                sprintf(szTmp, "%.3f", fValue2);
+                            else
+                                sprintf(szTmp, "%.1f", fValue2);
+                            root["result"][ii]["v_max"] = szTmp;
+                            ii++;
+                        }
+                    }
+                    else if (dType == pTypeLux)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd);
+                        if (!result.empty())
+                        {
+                            root["result"][ii]["d"] = szDateEnd;
+                            root["result"][ii]["lux_min"] = result[0][0];
+                            root["result"][ii]["lux_max"] = result[0][1];
+                            root["result"][ii]["lux_avg"] = result[0][2];
+                            ii++;
+                        }
+                    }
+                    else if (dType == pTypeWEIGHT)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd);
+                        if (!result.empty())
+                        {
+                            root["result"][ii]["d"] = szDateEnd;
+                            sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][0].c_str()) / 10.0F);
+                            root["result"][ii]["v_min"] = szTmp;
+                            sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0F);
+                            root["result"][ii]["v_max"] = szTmp;
+                            ii++;
+                        }
+                    }
+                    else if (dType == pTypeUsage)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd);
+                        if (!result.empty())
+                        {
+                            root["result"][ii]["d"] = szDateEnd;
+                            root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0F;
+                            root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0F;
+                            ii++;
+                        }
+                    }
+                    else if (!bIsManagedCounter)
+                    {
+                        /*if (sgroupby == "year") {
+
+                        } else*/ {
+                            // get the first value
+                            result = m_sql.safe_query(
+                                    //"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                    "SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
+                                    idx, szDateEnd);
+                            if (!result.empty())
+                            {
+                                std::vector<std::string> sd = result[0];
+                                unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
+                                unsigned long long total_max = total_min;
+                                unsigned long long total_real;
+
+                                // Get the last value
+                                result = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+                                        idx, szDateEnd);
+                                if (!result.empty()) {
+                                    std::vector<std::string> sd = result[0];
+                                    total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+                                }
+
+                                total_real = total_max - total_min;
+                                sprintf(szTmp, "%lld", total_real);
+                                std::string szValue = szTmp;
+
+                                if (!sgroupby.empty()) {
+                                    float todayValue = total_real / divider;
+                                    std::string formatString;
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                            formatString = "%.3f";
+                                            break;
+                                        case MTYPE_GAS:
+                                            formatString = "%.2f";
+                                            break;
+                                        case MTYPE_WATER:
+                                            formatString = "%.3f";
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            formatString = "%g";
+                                            break;
+                                    }
+                                    AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, formatString);
+                                } else {
+                                    root["result"][ii]["d"] = szDateEnd;
+                                    switch (metertype)
+                                    {
+                                        case MTYPE_ENERGY:
+                                        case MTYPE_ENERGY_GENERATED:
+                                        {
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+
+                                            std::vector<std::string> mresults;
+                                            StringSplit(sValue, ";", mresults);
+                                            if (mresults.size() == 2)
+                                            {
+                                                sValue = mresults[1];
+                                            }
+                                            if (dType == pTypeENERGY)
+                                                sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
+                                            else
+                                                sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                        }
+                                            break;
+                                        case MTYPE_GAS:
+                                            sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_WATER:
+                                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                        case MTYPE_COUNTER:
+                                            sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+                                            root["result"][ii]["v"] = szTmp;
+                                            sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+                                            root["result"][ii]["c"] = szTmp;
+                                            break;
+                                    }
+                                    ii++;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (sensor == "wind") {
+                    root["status"] = "OK";
+                    root["title"] = "Graph " + sensor + " " + srange;
+
+                    int ii = 0;
+
+                    result = m_sql.safe_query(
+                            "SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
+                            " Gust_Max, Date "
+                            "FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
+                                                                   " AND Date<='%q') ORDER BY Date ASC",
+                            dbasetable.c_str(), idx, szDateStart, szDateEnd);
+                    if (!result.empty())
+                    {
+                        for (const auto &sd : result)
+                        {
+                            root["result"][ii]["d"] = sd[5].substr(0, 16);
+                            root["result"][ii]["di"] = sd[0];
+
+                            int intSpeed = atoi(sd[2].c_str());
+                            int intGust = atoi(sd[4].c_str());
+                            if (m_sql.m_windunit != WINDUNIT_Beaufort)
+                            {
+                                sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+                                root["result"][ii]["sp"] = szTmp;
+                                sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+                                root["result"][ii]["gu"] = szTmp;
+                            }
+                            else
+                            {
+                                float windspeedms = float(intSpeed) * 0.1F;
+                                float windgustms = float(intGust) * 0.1F;
+                                sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+                                root["result"][ii]["sp"] = szTmp;
+                                sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+                                root["result"][ii]["gu"] = szTmp;
+                            }
+                            ii++;
+                        }
+                    }
+                    //add today (have to calculate it)
+                    result = m_sql.safe_query(
+                            "SELECT AVG(Direction), MIN(Speed), MAX(Speed),"
+                            " MIN(Gust), MAX(Gust) "
+                            "FROM Wind WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC",
+                            idx, szDateEnd);
+                    if (!result.empty())
+                    {
+                        std::vector<std::string> sd = result[0];
+
+                        root["result"][ii]["d"] = szDateEnd;
+                        root["result"][ii]["di"] = sd[0];
+
+                        int intSpeed = atoi(sd[2].c_str());
+                        int intGust = atoi(sd[4].c_str());
+                        if (m_sql.m_windunit != WINDUNIT_Beaufort)
+                        {
+                            sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+                            root["result"][ii]["sp"] = szTmp;
+                            sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+                            root["result"][ii]["gu"] = szTmp;
+                        }
+                        else
+                        {
+                            float windspeedms = float(intSpeed) * 0.1F;
+                            float windgustms = float(intGust) * 0.1F;
+                            sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+                            root["result"][ii]["sp"] = szTmp;
+                            sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+                            root["result"][ii]["gu"] = szTmp;
+                        }
+                        ii++;
+                    }
+                    //Previous Year
+                    result = m_sql.safe_query(
+                            "SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
+                            " Gust_Max, Date "
+                            "FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
+                                                                   " AND Date<='%q') ORDER BY Date ASC",
+                            dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+                    if (!result.empty())
+                    {
+                        iPrev = 0;
+                        for (const auto &sd : result)
+                        {
+                            root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
+                            root["resultprev"][iPrev]["di"] = sd[0];
+
+                            int intSpeed = atoi(sd[2].c_str());
+                            int intGust = atoi(sd[4].c_str());
+                            if (m_sql.m_windunit != WINDUNIT_Beaufort)
+                            {
+                                sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+                                root["resultprev"][iPrev]["sp"] = szTmp;
+                                sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+                                root["resultprev"][iPrev]["gu"] = szTmp;
+                            }
+                            else
+                            {
+                                float windspeedms = float(intSpeed) * 0.1F;
+                                float windgustms = float(intGust) * 0.1F;
+                                sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+                                root["resultprev"][iPrev]["sp"] = szTmp;
+                                sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+                                root["resultprev"][iPrev]["gu"] = szTmp;
+                            }
+                            iPrev++;
+                        }
+                    }
+                }
+            }//month or year
+            else if ((srange.substr(0, 1) == "2") && (srange.substr(10, 1) == "T") && (srange.substr(11, 1) == "2")) // custom range 2013-01-01T2013-12-31
+            {
+                std::string szDateStart = srange.substr(0, 10);
+                std::string szDateEnd = srange.substr(11, 10);
+                std::string sgraphtype = request::findValue(&req, "graphtype");
+                std::string sgraphTemp = request::findValue(&req, "graphTemp");
+                std::string sgraphChill = request::findValue(&req, "graphChill");
+                std::string sgraphHum = request::findValue(&req, "graphHum");
+                std::string sgraphBaro = request::findValue(&req, "graphBaro");
+                std::string sgraphDew = request::findValue(&req, "graphDew");
+                std::string sgraphSet = request::findValue(&req, "graphSet");
+
+                if (sensor == "temp") {
+                    root["status"] = "OK";
+                    root["title"] = "Graph " + sensor + " " + srange;
+
+                    bool sendTemp = false;
+                    bool sendChill = false;
+                    bool sendHum = false;
+                    bool sendBaro = false;
+                    bool sendDew = false;
+                    bool sendSet = false;
+
+                    if ((sgraphTemp == "true") &&
+                        ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
+                         ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
+                         ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
+                         ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
+                         ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
+                         (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
+                        )
+                            )
+                    {
+                        sendTemp = true;
+                    }
+                    if ((sgraphSet == "true") &&
+                        ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))) //FIXME cheat for water setpoint is just on or off
+                    {
+                        sendSet = true;
+                    }
+                    if ((sgraphChill == "true") &&
+                        (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
+                         ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
+                            )
+                    {
+                        sendChill = true;
+                    }
+                    if ((sgraphHum == "true") &&
+                        ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
+                            )
+                    {
+                        sendHum = true;
+                    }
+                    if ((sgraphBaro == "true") && (
+                            (dType == pTypeTEMP_HUM_BARO) ||
+                            (dType == pTypeTEMP_BARO) ||
+                            ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+                    ))
+                    {
+                        sendBaro = true;
+                    }
+                    if ((sgraphDew == "true") && ((dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO)))
+                    {
+                        sendDew = true;
+                    }
+
+                    if (sgraphtype == "1")
+                    {
+                        // Need to get all values of the end date so 23:59:59 is appended to the date string
+                        result = m_sql.safe_query(
+                                "SELECT Temperature, Chill, Humidity, Barometer,"
+                                " Date, DewPoint, SetPoint "
+                                "FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
+                                                                                " AND Date>='%q' AND Date<='%q 23:59:59') ORDER BY Date ASC",
+                                idx, szDateStart.c_str(), szDateEnd.c_str());
+                        int ii = 0;
+                        if (!result.empty())
+                        {
+                            for (const auto &sd : result)
+                            {
+                                root["result"][ii]["d"] = sd[4];//.substr(0,16);
+                                if (sendTemp)
+                                {
+                                    double te = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+                                    double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+                                    root["result"][ii]["te"] = te;
+                                    root["result"][ii]["tm"] = tm;
+                                }
+                                if (sendChill)
+                                {
+                                    double ch = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+                                    double cm = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+                                    root["result"][ii]["ch"] = ch;
+                                    root["result"][ii]["cm"] = cm;
+                                }
+                                if (sendHum)
+                                {
+                                    root["result"][ii]["hu"] = sd[2];
+                                }
+                                if (sendBaro)
+                                {
+                                    if (dType == pTypeTEMP_HUM_BARO)
+                                    {
+                                        if (dSubType == sTypeTHBFloat)
+                                        {
+                                            sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+                                            root["result"][ii]["ba"] = szTmp;
+                                        }
+                                        else
+                                            root["result"][ii]["ba"] = sd[3];
+                                    }
+                                    else if (dType == pTypeTEMP_BARO)
+                                    {
+                                        sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+                                        root["result"][ii]["ba"] = szTmp;
+                                    }
+                                    else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+                                    {
+                                        sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0F);
+                                        root["result"][ii]["ba"] = szTmp;
+                                    }
+                                }
+                                if (sendDew)
+                                {
+                                    double dp = ConvertTemperature(atof(sd[5].c_str()), tempsign);
+                                    root["result"][ii]["dp"] = dp;
+                                }
+                                if (sendSet)
+                                {
+                                    double se = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+                                    root["result"][ii]["se"] = se;
+                                }
+                                ii++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max,"
+                                " Humidity, Barometer, Date, DewPoint, Temp_Avg,"
+                                " SetPoint_Min, SetPoint_Max, SetPoint_Avg "
+                                "FROM Temperature_Calendar "
+                                "WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
+                                                               " AND Date<='%q') ORDER BY Date ASC",
+                                idx, szDateStart.c_str(), szDateEnd.c_str());
+                        int ii = 0;
+                        if (!result.empty())
+                        {
+                            for (const auto &sd : result)
+                            {
+                                root["result"][ii]["d"] = sd[6].substr(0, 16);
+                                if (sendTemp)
+                                {
+                                    double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+                                    double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+                                    double ta = ConvertTemperature(atof(sd[8].c_str()), tempsign);
+
+                                    root["result"][ii]["te"] = te;
+                                    root["result"][ii]["tm"] = tm;
+                                    root["result"][ii]["ta"] = ta;
+                                }
+                                if (sendChill)
+                                {
+                                    double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
+                                    double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+
+                                    root["result"][ii]["ch"] = ch;
+                                    root["result"][ii]["cm"] = cm;
+                                }
+                                if (sendHum)
+                                {
+                                    root["result"][ii]["hu"] = sd[4];
+                                }
+                                if (sendBaro)
+                                {
+                                    if (dType == pTypeTEMP_HUM_BARO)
+                                    {
+                                        if (dSubType == sTypeTHBFloat)
+                                        {
+                                            sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+                                            root["result"][ii]["ba"] = szTmp;
+                                        }
+                                        else
+                                            root["result"][ii]["ba"] = sd[5];
+                                    }
+                                    else if (dType == pTypeTEMP_BARO)
+                                    {
+                                        sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+                                        root["result"][ii]["ba"] = szTmp;
+                                    }
+                                    else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+                                    {
+                                        sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+                                        root["result"][ii]["ba"] = szTmp;
+                                    }
+                                }
+                                if (sendDew)
+                                {
+                                    double dp = ConvertTemperature(atof(sd[7].c_str()), tempsign);
+                                    root["result"][ii]["dp"] = dp;
+                                }
+                                if (sendSet)
+                                {
+                                    double sm = ConvertTemperature(atof(sd[9].c_str()), tempsign);
+                                    double sx = ConvertTemperature(atof(sd[10].c_str()), tempsign);
+                                    double se = ConvertTemperature(atof(sd[11].c_str()), tempsign);
+                                    root["result"][ii]["sm"] = sm;
+                                    root["result"][ii]["se"] = se;
+                                    root["result"][ii]["sx"] = sx;
+                                    char szTmp[1024];
+                                    sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
+                                    _log.Log(LOG_STATUS, "%s", szTmp);
+
+                                }
+                                ii++;
+                            }
+                        }
+
+                        //add today (have to calculate it)
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Temperature), MAX(Temperature),"
+                                " MIN(Chill), MAX(Chill), AVG(Humidity),"
+                                " AVG(Barometer), MIN(DewPoint), AVG(Temperature),"
+                                " MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) "
+                                "FROM Temperature WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd.c_str());
+                        if (!result.empty())
+                        {
+                            std::vector<std::string> sd = result[0];
+
+                            root["result"][ii]["d"] = szDateEnd;
+                            if (sendTemp)
+                            {
+                                double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+                                double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+                                double ta = ConvertTemperature(atof(sd[7].c_str()), tempsign);
+
+                                root["result"][ii]["te"] = te;
+                                root["result"][ii]["tm"] = tm;
+                                root["result"][ii]["ta"] = ta;
+                            }
+                            if (sendChill)
+                            {
+                                double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
+                                double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+                                root["result"][ii]["ch"] = ch;
+                                root["result"][ii]["cm"] = cm;
+                            }
+                            if (sendHum)
+                            {
+                                root["result"][ii]["hu"] = sd[4];
+                            }
+                            if (sendBaro)
+                            {
+                                if (dType == pTypeTEMP_HUM_BARO)
+                                {
+                                    if (dSubType == sTypeTHBFloat)
+                                    {
+                                        sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+                                        root["result"][ii]["ba"] = szTmp;
+                                    }
+                                    else
+                                        root["result"][ii]["ba"] = sd[5];
+                                }
+                                else if (dType == pTypeTEMP_BARO)
+                                {
+                                    sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+                                    root["result"][ii]["ba"] = szTmp;
+                                }
+                                else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+                                {
+                                    sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0F);
+                                    root["result"][ii]["ba"] = szTmp;
+                                }
+                            }
+                            if (sendDew)
+                            {
+                                double dp = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+                                root["result"][ii]["dp"] = dp;
+                            }
+                            if (sendSet)
+                            {
+                                double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
+                                double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
+                                double se = ConvertTemperature(atof(sd[10].c_str()), tempsign);
+
+                                root["result"][ii]["sm"] = sm;
+                                root["result"][ii]["se"] = se;
+                                root["result"][ii]["sx"] = sx;
+                            }
+                            ii++;
+                        }
+                    }
+                }
+                else if (sensor == "uv") {
+                    root["status"] = "OK";
+                    root["title"] = "Graph " + sensor + " " + srange;
+
+                    result = m_sql.safe_query(
+                            "SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ""
+                                                                                      " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+                            dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+                    int ii = 0;
+                    if (!result.empty())
+                    {
+                        for (const auto &sd : result)
+                        {
+                            root["result"][ii]["d"] = sd[1].substr(0, 16);
+                            root["result"][ii]["uvi"] = sd[0];
+                            ii++;
+                        }
+                    }
+                    //add today (have to calculate it)
+                    result = m_sql.safe_query(
+                            "SELECT MAX(Level) FROM UV WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                            idx, szDateEnd.c_str());
+                    if (!result.empty())
+                    {
+                        std::vector<std::string> sd = result[0];
+
+                        root["result"][ii]["d"] = szDateEnd;
+                        root["result"][ii]["uvi"] = sd[0];
+                        ii++;
+                    }
+                }
+                else if (sensor == "rain") {
+                    root["status"] = "OK";
+                    root["title"] = "Graph " + sensor + " " + srange;
+
+                    result = m_sql.safe_query(
+                            "SELECT Total, Rate, Date FROM %s "
+                            "WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+                            dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+                    int ii = 0;
+                    if (!result.empty())
+                    {
+                        for (const auto &sd : result)
+                        {
+                            root["result"][ii]["d"] = sd[2].substr(0, 16);
+                            root["result"][ii]["mm"] = sd[0];
+                            ii++;
+                        }
+                    }
+                    //add today (have to calculate it)
+                    if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+                                idx, szDateEnd.c_str());
+                    }
+                    else
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd.c_str());
+                    }
+                    if (!result.empty())
+                    {
+                        std::vector<std::string> sd = result[0];
+
+                        float total_min = static_cast<float>(atof(sd[0].c_str()));
+                        float total_max = static_cast<float>(atof(sd[1].c_str()));
+                        //int rate = atoi(sd[2].c_str());
+
+                        float total_real = 0;
+                        if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+                        {
+                            total_real = total_max;
+                        }
+                        else
+                        {
+                            total_real = total_max - total_min;
+                        }
+                        sprintf(szTmp, "%.1f", total_real);
+                        root["result"][ii]["d"] = szDateEnd;
+                        root["result"][ii]["mm"] = szTmp;
+                        ii++;
+                    }
+                }
+                else if (sensor == "counter") {
+                    root["status"] = "OK";
+                    root["title"] = "Graph " + sensor + " " + srange;
+                    root["ValueQuantity"] = options["ValueQuantity"];
+                    root["ValueUnits"] = options["ValueUnits"];
+
+                    int ii = 0;
+                    if (dType == pTypeP1Power)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT Value1,Value2,Value5,Value6, Date "
+                                "FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
+                                                                       " AND Date<='%q') ORDER BY Date ASC",
+                                dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+                        if (!result.empty())
+                        {
+                            bool bHaveDeliverd = false;
+                            for (const auto &sd : result)
+                            {
+                                root["result"][ii]["d"] = sd[4].substr(0, 16);
+
+                                std::string szUsage1 = sd[0];
+                                std::string szDeliv1 = sd[1];
+                                std::string szUsage2 = sd[2];
+                                std::string szDeliv2 = sd[3];
+
+                                float fUsage = (float)(atof(szUsage1.c_str()) + atof(szUsage2.c_str()));
+                                float fDeliv = (float)(atof(szDeliv1.c_str()) + atof(szDeliv2.c_str()));
+
+                                if (fDeliv != 0)
+                                    bHaveDeliverd = true;
+                                sprintf(szTmp, "%.3f", fUsage / divider);
+                                root["result"][ii]["v"] = szTmp;
+                                sprintf(szTmp, "%.3f", fDeliv / divider);
+                                root["result"][ii]["v2"] = szTmp;
+                                ii++;
+                            }
+                            if (bHaveDeliverd)
+                            {
+                                root["delivered"] = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+                        if (!result.empty())
+                        {
+                            for (const auto &sd : result)
+                            {
+                                std::string szValue = sd[0];
+                                switch (metertype)
+                                {
+                                    case MTYPE_ENERGY:
+                                    case MTYPE_ENERGY_GENERATED:
+                                        sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                        szValue = szTmp;
+                                        break;
+                                    case MTYPE_GAS:
+                                        sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+                                        szValue = szTmp;
+                                        break;
+                                    case MTYPE_WATER:
+                                        sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                        szValue = szTmp;
+                                        break;
+                                }
+                                root["result"][ii]["d"] = sd[1].substr(0, 16);
+                                root["result"][ii]["v"] = szValue;
+                                ii++;
+                            }
+                        }
+                    }
+                    //add today (have to calculate it)
+                    if (dType == pTypeP1Power)
+                    {
+                        result = m_sql.safe_query(
+                                "SELECT MIN(Value1), MAX(Value1), MIN(Value2),"
+                                " MAX(Value2),MIN(Value5), MAX(Value5),"
+                                " MIN(Value6), MAX(Value6) "
+                                "FROM MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                idx, szDateEnd.c_str());
+                        bool bHaveDeliverd = false;
+                        if (!result.empty())
+                        {
+                            std::vector<std::string> sd = result[0];
+
+                            unsigned long long total_min_usage_1 = std::strtoull(sd[0].c_str(), nullptr, 10);
+                            unsigned long long total_max_usage_1 = std::strtoull(sd[1].c_str(), nullptr, 10);
+                            unsigned long long total_min_usage_2 = std::strtoull(sd[4].c_str(), nullptr, 10);
+                            unsigned long long total_max_usage_2 = std::strtoull(sd[5].c_str(), nullptr, 10);
+                            unsigned long long total_real_usage;
+
+                            unsigned long long total_min_deliv_1 = std::strtoull(sd[2].c_str(), nullptr, 10);
+                            unsigned long long total_max_deliv_1 = std::strtoull(sd[3].c_str(), nullptr, 10);
+                            unsigned long long total_min_deliv_2 = std::strtoull(sd[6].c_str(), nullptr, 10);
+                            unsigned long long total_max_deliv_2 = std::strtoull(sd[7].c_str(), nullptr, 10);
+                            unsigned long long total_real_deliv;
+
+                            total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
+                            total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
+
+                            if (total_real_deliv != 0)
+                                bHaveDeliverd = true;
+
+                            root["result"][ii]["d"] = szDateEnd;
+
+                            sprintf(szTmp, "%lld", total_real_usage);
+                            std::string szValue = szTmp;
+                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                            root["result"][ii]["v"] = szTmp;
+                            sprintf(szTmp, "%llu", total_real_deliv);
+                            szValue = szTmp;
+                            sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                            root["result"][ii]["v2"] = szTmp;
+                            ii++;
+                            if (bHaveDeliverd)
+                            {
+                                root["delivered"] = true;
+                            }
+                        }
+                    }
+                    else if (!bIsManagedCounter)
+                    {	// get the first value of the day
+                        result = m_sql.safe_query(
+                                //"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+                                "SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1",
+                                idx, szDateEnd.c_str());
+                        if (!result.empty())
+                        {
+                            std::vector<std::string> sd = result[0];
+                            unsigned long long total_min = std::strtoull(sd[0].c_str(), nullptr, 10);
+                            unsigned long long total_max = total_min;
+                            unsigned long long total_real;
+
+                            // get the last value of the day
+                            result = m_sql.safe_query(
+                                    "SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1",
+                                    idx, szDateEnd.c_str());
+                            if (!result.empty())
+                            {
+                                std::vector<std::string> sd = result[0];
+                                total_max = std::strtoull(sd[0].c_str(), nullptr, 10);
+                            }
+
+                            total_real = total_max - total_min;
+                            sprintf(szTmp, "%lld", total_real);
+
+                            std::string szValue = szTmp;
+                            switch (metertype)
+                            {
+                                case MTYPE_ENERGY:
+                                case MTYPE_ENERGY_GENERATED:
+                                    sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                    szValue = szTmp;
+                                    break;
+                                case MTYPE_GAS:
+                                    sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
+                                    szValue = szTmp;
+                                    break;
+                                case MTYPE_WATER:
+                                    sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+                                    szValue = szTmp;
+                                    break;
+                            }
+
+                            root["result"][ii]["d"] = szDateEnd;
+                            root["result"][ii]["v"] = szValue;
+                            ii++;
+                        }
+                    }
+                }
+                else if (sensor == "wind") {
+                    root["status"] = "OK";
+                    root["title"] = "Graph " + sensor + " " + srange;
+
+                    int ii = 0;
+
+                    result = m_sql.safe_query(
+                            "SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
+                            " Gust_Max, Date "
+                            "FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q'"
+                                                                   " AND Date<='%q') ORDER BY Date ASC",
+                            dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+                    if (!result.empty())
+                    {
+                        for (const auto &sd : result)
+                        {
+                            root["result"][ii]["d"] = sd[5].substr(0, 16);
+                            root["result"][ii]["di"] = sd[0];
+
+                            int intSpeed = atoi(sd[2].c_str());
+                            int intGust = atoi(sd[4].c_str());
+                            if (m_sql.m_windunit != WINDUNIT_Beaufort)
+                            {
+                                sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+                                root["result"][ii]["sp"] = szTmp;
+                                sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+                                root["result"][ii]["gu"] = szTmp;
+                            }
+                            else
+                            {
+                                float windspeedms = float(intSpeed) * 0.1F;
+                                float windgustms = float(intGust) * 0.1F;
+                                sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+                                root["result"][ii]["sp"] = szTmp;
+                                sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+                                root["result"][ii]["gu"] = szTmp;
+                            }
+                            ii++;
+                        }
+                    }
+                    //add today (have to calculate it)
+                    result = m_sql.safe_query(
+                            "SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC",
+                            idx, szDateEnd.c_str());
+                    if (!result.empty())
+                    {
+                        std::vector<std::string> sd = result[0];
+
+                        root["result"][ii]["d"] = szDateEnd;
+                        root["result"][ii]["di"] = sd[0];
+
+                        int intSpeed = atoi(sd[2].c_str());
+                        int intGust = atoi(sd[4].c_str());
+                        if (m_sql.m_windunit != WINDUNIT_Beaufort)
+                        {
+                            sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+                            root["result"][ii]["sp"] = szTmp;
+                            sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+                            root["result"][ii]["gu"] = szTmp;
+                        }
+                        else
+                        {
+                            float windspeedms = float(intSpeed) * 0.1F;
+                            float windgustms = float(intGust) * 0.1F;
+                            sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+                            root["result"][ii]["sp"] = szTmp;
+                            sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+                            root["result"][ii]["gu"] = szTmp;
+                        }
+                        ii++;
+                    }
+                }
+            }//custom range
+        }
+
+        /**
+         * Retrieve user session from store, without remote host.
+         */
+        WebEmStoredSession CWebServer::GetSession(const std::string &sessionId)
+        {
+            //_log.Log(LOG_STATUS, "SessionStore : get...");
+            WebEmStoredSession session;
+
+            if (sessionId.empty()) {
+                _log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
+            }
+            else {
+                std::vector<std::vector<std::string> > result;
+                result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'",
+                        sessionId.c_str());
+                if (!result.empty()) {
+                    session.id = result[0][0];
+                    session.username = base64_decode(result[0][1]);
+                    session.auth_token = result[0][2];
+
+                    std::string sExpirationDate = result[0][3];
+                    //time_t now = mytime(NULL);
+                    struct tm tExpirationDate;
+                    ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
+                    // RemoteHost is not used to restore the session
+                    // LastUpdate is not used to restore the session
+                }
+            }
+
+            return session;
+        }
+
+        /*
+         * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
+         * for each combination year/category.
+         */
+        void CWebServer::GroupBy(
+                Json::Value &root,
+                std::string dbasetable,
+                uint64_t idx,
+                std::string sgroupby,
+                std::function<std::string (std::string)> counter,
+                std::function<std::string (std::string)> value,
+                std::function<std::string (double)> sumToResult
+        ) {
+            /*
+             * This query selects all records (in mc0) that belong to DeviceRowID, each with the record before it (in mc1), and calculates for each record
+             * the "usage" by subtracting the previous counter from its counter.
+             * - It does not take into account records that have a 0-valued counter.
+             * - When the previous counter is greater than its counter, assumed is that a meter change has taken place; the previous counter is ignored
+             *   and the value of the record is taken as the "usage" (hoping for the best as the value is not always reliable.)
+             * - The reason why not simply the record values are summed, but instead the differences between all the individual counters are summed, is that
+             *   records for some days are not recorded or sometimes disappear, hence values would be missing and that would result in an incomplete total.
+             *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
+             */
+            std::vector<std::vector<std::string>> result = m_sql.safe_query(
+                (std::string("")
+                + " select"
+                + "  strftime('%%Y',Date) as Year,"
+                + "  sum(Difference) as Sum"
+                + (sgroupby == "quarter" ? std::string("")
+                    + ",case"
+                    + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'"
+                    + "                                                              else 'Q4'"
+                    + "   end as Quarter" :
+                    sgroupby == "month" ?
+                        ",strftime('%%m',Date) as Month" :
+                            "")
+                + " from ("
+                + " 	select"
+                + "         mc0.DeviceRowID,"
+                + "         date(mc0.Date) as Date,"
+                + "         case when ("+counter("mc1")+") <= ("+counter("mc0")+") then ("+counter("mc0")+") - ("+counter("mc1")+") else ("+value("mc0")+") end as Difference"
+                + " 	from "+dbasetable+" mc0"
+                + " 	inner join "+dbasetable+" mc1 on mc1.DeviceRowID = mc0.DeviceRowID"
+                + "         and mc1.Date = (select max(mcm.Date) from "+dbasetable+" mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and ("+counter("mcm")+") <> 0)"
+                + " 	where"
+                + "         mc0.DeviceRowID = %" PRIu64 ""
+                + "         and ("+counter("mc0")+") <> 0"
+                + "         and (select min(Date) from "+dbasetable+" where DeviceRowID = %" PRIu64 " and ("+counter("")+") <> 0) <= mc1.Date"
+                + "         and mc0.Date <= (select max(Date) from "+dbasetable+" where DeviceRowID = %" PRIu64 " and ("+counter("")+") <> 0)"
+                + " )"
+                + " group by strftime('%%Y',Date)"
+                + (sgroupby == "quarter" ? std::string("")
+                    + ",case"
+                    + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'"
+                    + "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'"
+                    + "                                                              else 'Q4'"
+                    + "   end" :
+                    sgroupby == "month" ?
+                        ",strftime('%%m',Date)" :
+                            "")
+                + " order by 1 asc"
+                + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : "")).c_str(),
+                idx,
+                idx,
+                idx
+            );
+            if (!result.empty()) {
+                int firstYearCounting = 0;
+                double fsumPrevious;
+                for (const auto &sd : result) {
+                    const int year = atoi(sd[0].c_str());
+                    const double fsum = atof(sd[1].c_str());
+                    const char *trend = firstYearCounting == 0 ? "" : fsumPrevious < fsum ? "up" : fsumPrevious > fsum ? "down" : "equal";
+                    const int ii = root["result"].size();
+                    if (firstYearCounting == 0 || year < firstYearCounting) {
+                        firstYearCounting = year;
+                    }
+                    root["result"][ii]["y"] = sd[0];
+                    root["result"][ii]["c"] = sgroupby == "year" ? sd[0] : sd[2];
+                    root["result"][ii]["s"] = sumToResult(fsum);
+                    root["result"][ii]["t"] = trend;
+                    fsumPrevious = fsum;
+                }
+                root["firstYear"] = firstYearCounting;
+            }
+        }
+
+        /*
+         * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
+         * respective category with todayValue.
+         */
+        void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString) {
+            std::string todayYear = today.substr(0, 4);
+            std::string todayCategory;
+            if (sgroupby == "quarter") {
+                std::string todayMonth = today.substr(5, 2);
+                if (todayMonth == "01" || todayMonth == "02" || todayMonth == "03") {
+                    todayCategory = "Q1";
+                } else if (todayMonth == "04" || todayMonth == "05" || todayMonth == "06") {
+                    todayCategory = "Q2";
+                } else if (todayMonth == "07" || todayMonth == "08" || todayMonth == "09") {
+                    todayCategory = "Q3";
+                } else {
+                    todayCategory = "Q4";
+                }
+            } else if (sgroupby == "month") {
+                todayCategory = today.substr(5, 2);
+            } else {
+                todayCategory = todayYear;
+            }
+            int todayResultIndex = -1;
+            for (int resultIndex = 0; resultIndex < root["result"].size() && todayResultIndex == -1; resultIndex++) {
+                std::string resultYear = root["result"][resultIndex]["y"].asString();
+                std::string resultCategory = root["result"][resultIndex]["c"].asString();
+                if (resultYear == todayYear && todayCategory == resultCategory) {
+                    todayResultIndex = resultIndex;
+                }
+            }
+            float resultPlusTodayValue;
+            if (todayResultIndex == -1) {
+                todayResultIndex = root["result"].size();
+                resultPlusTodayValue = todayValue;
+                root["result"][todayResultIndex]["y"] = todayYear.c_str();
+                root["result"][todayResultIndex]["c"] = todayCategory.c_str();
+            } else {
+                resultPlusTodayValue = atof(root["result"][todayResultIndex]["s"].asString().c_str()) + todayValue;
+            }
+            char szTmp[30];
+            sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
+            root["result"][todayResultIndex]["s"] = szTmp;
+        }
+
+        /**
+         * Save user session.
+         */
+        void CWebServer::StoreSession(const WebEmStoredSession & session) {
+            //_log.Log(LOG_STATUS, "SessionStore : store...");
+            if (session.id.empty()) {
+                _log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
+                return;
+            }
+
+            char szExpires[30];
+            struct tm ltime;
+            localtime_r(&session.expires, &ltime);
+            strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
+
+            std::string remote_host = (session.remote_host.size() <= 50) ? // IPv4 : 15, IPv6 : (39|45)
+                    session.remote_host : session.remote_host.substr(0, 50);
+
+            WebEmStoredSession storedSession = GetSession(session.id);
+            if (storedSession.id.empty()) {
+                m_sql.safe_query(
+                        "INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate, RemoteHost) VALUES ('%q', '%q', '%q', '%q', '%q')",
+                        session.id.c_str(),
+                        base64_encode(session.username).c_str(),
+                        session.auth_token.c_str(),
+                        szExpires,
+                        remote_host.c_str());
+            }
+            else {
+                m_sql.safe_query(
+                        "UPDATE UserSessions set AuthToken = '%q', ExpirationDate = '%q', RemoteHost = '%q', LastUpdate = datetime('now', 'localtime') WHERE SessionID = '%q'",
+                        session.auth_token.c_str(),
+                        szExpires,
+                        remote_host.c_str(),
+                        session.id.c_str());
+            }
+        }
+
+        /**
+         * Remove user session and expired sessions.
+         */
+        void CWebServer::RemoveSession(const std::string & sessionId) {
+            //_log.Log(LOG_STATUS, "SessionStore : remove...");
+            if (sessionId.empty()) {
+                return;
+            }
+            m_sql.safe_query(
+                    "DELETE FROM UserSessions WHERE SessionID = '%q'",
+                    sessionId.c_str());
+        }
+
+        /**
+         * Remove all expired user sessions.
+         */
+        void CWebServer::CleanSessions() {
+            //_log.Log(LOG_STATUS, "SessionStore : clean...");
+            m_sql.safe_query(
+                    "DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
+        }
+
+        /**
+         * Delete all user's session, except the session used to modify the username or password.
+         * username must have been hashed
+         *
+         * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
+         * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
+         */
+        void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession) {
+            m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
+        }
+
+    } // namespace server
 } // namespace http

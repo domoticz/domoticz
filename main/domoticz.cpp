@@ -506,10 +506,16 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		szFlag = stdstring_trim(szFlag);
 		sLine = stdstring_trim(sLine);
 
-		if (szFlag == "http_port") {
-			webserver_settings.listening_port = sLine;
-		}
+        if (szFlag == "http_address") {
+            webserver_settings.listening_address = sLine;
+        }
+        else if (szFlag == "http_port") {
+            webserver_settings.listening_port = sLine;
+        }
 #ifdef WWW_ENABLE_SSL
+		else if (szFlag == "ssl_address") {
+			secure_webserver_settings.listening_address = sLine;
+		}
 		else if (szFlag == "ssl_port") {
 			secure_webserver_settings.listening_port = sLine;
 		}
