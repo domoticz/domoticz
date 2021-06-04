@@ -28,7 +28,7 @@ class CEnOceanESP3 : public AsyncSerial, public CDomoticzHardwareBase
 	~CEnOceanESP3() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, unsigned char length);
-	unsigned long m_id_base;
+	uint32_t m_id_base;
 
       private:
 	void Init();
@@ -38,7 +38,6 @@ class CEnOceanESP3 : public AsyncSerial, public CDomoticzHardwareBase
 	void Do_Work();
 	bool ParseData();
 	void Add2SendQueue(const char *pData, size_t length);
-	float GetValueRange(float InValue, float ScaleMax, float ScaleMin = 0, float RangeMax = 255, float RangeMin = 0);
 
 	bool sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
 	bool sendFrameQueue(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
