@@ -16179,11 +16179,11 @@ namespace http {
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
-					    if (sensorarea.empty()) {
-                            _log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby);
-                            return;
-                        }
                         if (!sgroupby.empty()) {
+                            if (sensorarea.empty()) {
+                                _log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby);
+                                return;
+                            }
                             std::function<std::string (const char*, char*, char*, char*, char*)> sensorareaExpr = [sensorarea, this] (const char* expr, char* usageLow, char* usageNormal, char* deliveryLow, char* deliveryNormal) {
                                 if (sensorarea == "usage") {
                                     return std_format(expr, usageLow, usageNormal);
@@ -18000,7 +18000,8 @@ namespace http {
             /*
              * This query selects all records (in mc0) that belong to DeviceRowID, each with the record before it (in mc1), and calculates for each record
              * the "usage" by subtracting the previous counter from its counter.
-             * - It does not take into account records that have a 0-valued counter.
+             * - It does not take into account records that have a 0-valued counter, to prevent one falling between two categories, which would cause the
+             *   value for one category to be extremely low and the value for the other extremely high.
              * - When the previous counter is greater than its counter, assumed is that a meter change has taken place; the previous counter is ignored
              *   and the value of the record is taken as the "usage" (hoping for the best as the value is not always reliable.)
              * - The reason why not simply the record values are summed, but instead the differences between all the individual counters are summed, is that
