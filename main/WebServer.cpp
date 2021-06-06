@@ -16181,7 +16181,7 @@ namespace http {
 					{
                         if (!sgroupby.empty()) {
                             if (sensorarea.empty()) {
-                                _log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby);
+                                _log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby.c_str());
                                 return;
                             }
                             std::function<std::string (const char*, char*, char*, char*, char*)> sensorareaExpr = [sensorarea, this] (const char* expr, char* usageLow, char* usageNormal, char* deliveryLow, char* deliveryNormal) {
