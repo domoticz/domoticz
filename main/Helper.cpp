@@ -1403,8 +1403,8 @@ const std::string std_format(const char* szFormat, ...)
 	const int iLength = std::vsnprintf(NULL, 0, szFormat, vaCopy);
 	va_end(vaCopy);
 
-	std::vector<char> zc(iLength + 1);
+	std::vector<char> zc(iLength + 1, 0);
 	std::vsnprintf(zc.data(), zc.size(), szFormat, vaArgs);
 	va_end(vaArgs);
-	return std::string(zc.data(), zc.size());
+	return std::string(zc.data(), zc.size() - 1);
 }

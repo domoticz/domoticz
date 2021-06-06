@@ -1,6 +1,6 @@
 local utils = require('Utils')
 local _MS -- kind of a cache so we don't have to extract ms every time
-local gTimes --
+local gTimes
 local ruleWords = {}
 
 local isEmpty = function(v)
@@ -14,7 +14,7 @@ end
 
 local function getSMs(s)
 	local ms = 0
-	local parts = utils.stringSplit(s, '.') -- do string splitting instead of math stuff.. can't seem to get the floating points right
+	local parts = utils.stringSplit(s, '.') -- do string split instead of math stuff.
 	s = tonumber(parts[1])
 	if (parts[2] ~= nil) then
 		-- should always be three digits!!
@@ -832,12 +832,12 @@ local function Time(sDate, isUTC, _testMS)
 
 	-- returns true if self.time matches the rule
 	function self.matchesRule(rule, processed)
-
-		if type(rule) == 'string' and ( string.len(rule == nil and "" or rule) == 0) then
+		if type(rule) ~= 'string' or rule == '' then
+			utils.log('Time rule is not a string.',utils.LOG_ERROR)
 			return false
 
 		-- split into atomic time rules to simplify and speedup processing
-		elseif type(rule) == 'string' and not(processed) then
+		elseif not(processed) then
 			populateAstrotimes()
 			local rule = rule:lower()
 			local validPositiveRules = true
@@ -862,7 +862,13 @@ local function Time(sDate, isUTC, _testMS)
 			local positiveRules, negativeRules
 			local exceptPosition = rule:find(negativeKeyword)
 
-			if exceptPosition then
+			if rule:find('%s+or%s+') then
+				local subRules = utils.splitLine(rule, 'or')
+				for _, subRule in ipairs(subRules) do
+					if self.matchesRule( subRule ) then return true end
+				end
+				return false
+			elseif exceptPosition then
 				positiveRules = ruleSplit(rule:sub(1, exceptPosition - 1))
 				negativeRules = ruleSplit(rule:sub(exceptPosition + #negativeKeyword, #rule))
 			else

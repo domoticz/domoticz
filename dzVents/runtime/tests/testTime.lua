@@ -1368,6 +1368,37 @@ describe('Time', function()
 				end)
 			end)
 
+			describe('or', function()
+
+			it('should interpret the or statement between two rules', function()
+
+				_G.timeofday = { ['SunriseInMinutes'] = 360, ['SunsetInMinutes'] = 24 }
+				t = Time('2021-04-19 00:24:00')
+
+				assert.is_true(t.matchesRule('at midnight or at sunset'))
+				assert.is_true(t.matchesRule('at midnight or at 00:24'))
+				assert.is_true(t.matchesRule('at midnight or at 00:00-00:30'))
+				assert.is_false(t.matchesRule('at midnight or at 00:00-00:03'))
+				assert.is_true(t.matchesRule('at midnight or at 00:00-00:03 or 336 minutes before sunrise'))
+
+				t = Time('2021-04-19 00:00:00')
+				assert.is_true(t.matchesRule('at midnight or at sunrise'))
+				assert.is_true(t.matchesRule('at sunrise or at midnight'))
+
+				t = Time('2021-04-19 00:24:00')
+				assert.is_false(t.matchesRule('at 7:30-00:00 on mon and at 00:00-00:30 on tue'))
+
+				t = Time('2021-04-20 00:24:00')
+				assert.is_true(t.matchesRule('at 7:30-00:00 on mon') or t.matchesRule('at 00:00-03:00 on tue'))
+
+				t = Time('2021-04-20 00:24:00')
+				assert.is_true(t.matchesRule('at 7:30-00:00 on mon		or				at 00:00-03:00 on tue')) -- do not extra remove tabs
+
+				t = Time('2021-04-20 00:26:00')
+				assert.is_true(t.matchesRule('at nighttime at 21:32-05:44 every 5 minutes on sat, tue except at 04:00 or at nighttime at 21:32-05:44 every 2 minutes on sat, tue except at 04:00 '))
+			end)
+end)
+
 			describe('between', function()
 
 				it('should return nil if there is no range set', function()
@@ -2036,8 +2067,8 @@ describe('Time', function()
 				local t = Time('2017-04-21 08:04:00')
 				assert.is_true(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
 
-				t = Time('2017-04-21 07:04:00')
-				assert.is_false(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
+				t = Time('2021-04-19 11:04:00')
+				assert.is_true(t.matchesRule('at 7:30-00:30 on mon'))
 
 			end)
 

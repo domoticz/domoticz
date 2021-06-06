@@ -55,6 +55,10 @@
 			<td><input type="checkbox" id="influxlinkenabled" checked><label for="influxlinkenabled"></td>
 		</tr>
 		<tr>
+			<td align="right" style="width:80px"><span data-i18n="Influx V2.0 API"></span>:</td>
+			<td><input type="checkbox" ng-model="influxversion2" id="influxversion2"><label for="influxversion2"></td>
+		</tr>
+		<tr>
 			<td align="right" style="width:110px"><label><span data-i18n="Remote Address"></span>:</label></td>
 			<td><input type="text" id="tcpaddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
@@ -73,12 +77,12 @@
 			<td><input type="text" id="database" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:110px"><label><span data-i18n="Username"></span>:</label></td>
+			<td align="right" style="width:110px"><label><span ng-show="!influxversion2" data-i18n="Username"></span><span ng-show="influxversion2" data-i18n="Organization">Organization</span>:</label></td>
 			<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:110px"><label><span data-i18n="Password"></span>:</label></td>
-			<td><input type="text" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+			<td align="right" style="width:110px"><label><span ng-show="!influxversion2" data-i18n="Password"></span><span ng-show="influxversion2" data-i18n="Token">Token</span>:</label></td>
+			<td><input type="text" id="password" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
 		<tr>
 			<td align="right" style="width:80px"><span data-i18n="Debug to logfile"></span>:</td>

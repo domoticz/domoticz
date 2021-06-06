@@ -630,14 +630,12 @@ bool CSQLHelper::OpenDatabase()
 		sqlite3_close(m_dbase);
 		return false;
 	}
-#ifndef WIN32
-	//test, this could improve performance
+	std::string pragma_journal_mode = "PRAGMA journal_mode = " + m_journal_mode;
+	sqlite3_exec(m_dbase, pragma_journal_mode.c_str(), nullptr, nullptr, nullptr);
 	sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", nullptr, nullptr, nullptr);
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", nullptr, nullptr, nullptr);
-#else
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
-#endif
-	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA busy_timeout = 1000", nullptr, nullptr, nullptr);
+
 	std::vector<std::vector<std::string> > result = query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bool bNewInstall = (result.empty());
 	int dbversion = 0;
@@ -3926,6 +3924,11 @@ void CSQLHelper::SetDatabaseName(const std::string& DBName)
 	m_dbase_name = DBName;
 }
 
+void CSQLHelper::SetJournalMode(const std::string& mode)
+{
+	m_journal_mode = mode;
+}
+
 bool CSQLHelper::DoesColumnExistsInTable(const std::string& columnname, const std::string& tablename)
 {
 	if (!m_dbase)
@@ -3964,6 +3967,9 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 {
 	if (!m_dbase)
 		return false;
+
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+
 	sqlite3_stmt *stmt = nullptr;
 	char* zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
 	if (!zQuery)
@@ -4018,7 +4024,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
-
+    _log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);

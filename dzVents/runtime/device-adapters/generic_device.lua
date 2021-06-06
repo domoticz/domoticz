@@ -63,14 +63,8 @@ return {
 		local _states = adapterManager.states
 
 		if (data.lastUpdate == '' or data.lastUpdate == nil) then
-			local level
-			if (data.name ~= nil and data.name ~= '') then
-				level = utils.LOG_ERROR
-			else
-				level = utils.LOG_DEBUG
-			end
 			if data.baseType ~= 'camera' and data.baseType ~= 'hardware' then
-				utils.log('Discarding device. No last update info found: ' .. domoticz.utils._.str(data), level)
+				utils.log('Discarding device. No last update info found: ' .. utils._.str(data), utils.LOG_DEBUG)
 			end
 			return nil
 		end
