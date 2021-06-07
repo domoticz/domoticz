@@ -1095,7 +1095,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						// RORG_4BS_TEACHIN_EEP_BIT is 0 -> Teach-in Variant 1 : data doesn't contain EEP and Manufacturer ID
 						// An EEP profile must be manually allocated per sender ID (see EEP 2.6.2 specification §3.3 p173/197)
-						Log(LOG_NORM, "4BS, Variant 1 Teach-in diagram: Sender_ID: 0x%08lX", iNodeID);
+						Log(LOG_NORM, "4BS, Variant 1 Teach-in diagram: Sender_ID: 0x%08X", iNodeID);
 						Log(LOG_NORM, "Teach-in data contains no EEP profile. Created generic A5-02-05 profile (0/40°C temp sensor); please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
 
 						manufacturer = 0x7FF;			// Generic
@@ -1115,7 +1115,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						profile = DATA_BYTE3 >> 2;
 						ttype = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
 
-						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: 0x%08lX\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
+						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
 							iNodeID, manufacturer,EnOceanGetManufacturerName(manufacturer),
 							profile, ttype, EnOceanGetProfileTypeLabel(RORG_4BS, profile, ttype));
  					}
@@ -1127,10 +1127,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						// If not found, add it to the database
 						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, nodeID.c_str(), manufacturer, profile, ttype);
-						Log(LOG_NORM, "Sender_ID 0x%08lX inserted in the database", iNodeID);
+						Log(LOG_NORM, "Sender_ID 0x%08X inserted in the database", iNodeID);
 					}
 					else
-						Log(LOG_NORM, "Sender_ID 0x%08lX already in the database", iNodeID);
+						Log(LOG_NORM, "Sender_ID 0x%08X already in the database", iNodeID);
 					ReloadVLDNodes();
 				}
 				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
@@ -1590,7 +1590,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					Profile = 0x02;
 					iType = 0x01;
 					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, nodeID.c_str(), manufacturer, Profile, iType);
-					Log(LOG_NORM, "Sender_ID 0x%08lX inserted in the database with default profile F6-%02x-%02x", iNodeID, Profile, iType);
+					Log(LOG_NORM, "Sender_ID 0x%08X inserted in the database with default profile F6-%02x-%02x", iNodeID, Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
 				}
 				else
@@ -1598,7 +1598,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					// hardware device was already teached-in
 					Profile=atoi(result[0][1].c_str());
 					iType=atoi(result[0][2].c_str());
-					Debug(DEBUG_HARDWARE, "Sender_ID 0x%08lX found in the database with profile F6-%02x-%02x", iNodeID, Profile, iType);
+					Debug(DEBUG_HARDWARE, "Sender_ID 0x%08X found in the database with profile F6-%02x-%02x", iNodeID, Profile, iType);
 					if( (Profile == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
 						 ((iType == 0x0F) || (iType == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
 						)
@@ -1847,10 +1847,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							// If not found, add it to the database
 							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, nodeID.c_str(), manID, func, type);
-							Log(LOG_NORM, "Sender_ID 0x%08lX inserted in the database", iNodeID);
+							Log(LOG_NORM, "Sender_ID 0x%08X inserted in the database", iNodeID);
 						}
 						else
-							Log(LOG_NORM, "Sender_ID 0x%08lX already in the database", iNodeID);
+							Log(LOG_NORM, "Sender_ID 0x%08X already in the database", iNodeID);
 						ReloadVLDNodes();
 
 						if((rorg == 0xD2) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))
