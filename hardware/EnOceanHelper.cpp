@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include <string>
 
 #include "../main/Logger.h"
