@@ -336,6 +336,7 @@ hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
+hardware/plugins/PythonObjectEx.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp

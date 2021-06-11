@@ -23,7 +23,8 @@
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzModuleDef;
-	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
+	extern struct PyModuleDef DomoticzExModuleDef;
+	extern void LogPythonException(CPlugin *pPlugin, const std::string &sHandler);
 
 	void CImage_dealloc(CImage* self)
 	{
@@ -91,11 +92,15 @@ namespace Plugins {
 
 		try
 		{
-			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef pModule = PyState_FindModule(&DomoticzModuleDef);
 			if (!pModule)
 			{
-				_log.Log(LOG_ERROR, "CImage:%s, unable to find module for current interpreter.", __func__);
-				return 0;
+				pModule = PyState_FindModule(&DomoticzExModuleDef);
+				if (!pModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) Domoticz/DomoticzEx modules not found in interpreter.", __func__);
+					return 0;
+				}
 			}
 
 			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
@@ -209,8 +214,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Image creation failed, Image object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CImage_delete(CImage* self, PyObject *args)
@@ -254,8 +258,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Image deletion failed, Image object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CImage_str(CImage* self)
@@ -266,7 +269,10 @@ namespace Plugins {
 
 	void CDevice_dealloc(CDevice* self)
 	{
+		Py_XDECREF(self->PluginKey);
+		Py_XDECREF(self->DeviceID);
 		Py_XDECREF(self->Name);
+		Py_XDECREF(self->LastUpdate);
 		Py_XDECREF(self->Description);
 		Py_XDECREF(self->sValue);
 		PyDict_Clear(self->Options);
@@ -356,7 +362,7 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
-	static void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
+	extern void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
 	{
 		Type = pTypeGeneral;
 
@@ -541,10 +547,10 @@ namespace Plugins {
 
 		try
 		{
-			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef pModule = PyState_FindModule(&DomoticzModuleDef);
 			if (!pModule)
 			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+				_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
 				return 0;
 			}
 
@@ -721,8 +727,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device refresh failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CDevice_insert(CDevice* self)
@@ -827,8 +832,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device creation failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds)
@@ -1059,8 +1063,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device update failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CDevice_delete(CDevice* self)
@@ -1104,11 +1107,10 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device deletion failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
-	PyObject * CDevice_touch(CDevice * self)
+	PyObject* CDevice_touch(CDevice * self)
 	{
 		Py_BEGIN_ALLOW_THREADS
 		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
@@ -1252,11 +1254,15 @@ namespace Plugins {
 
 		try
 		{
-			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef pModule = PyState_FindModule(&DomoticzModuleDef);
 			if (!pModule)
 			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
-				return 0;
+				pModule = PyState_FindModule(&DomoticzExModuleDef);
+				if (!pModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) Domoticz/DomoticzEx modules not found in interpreter.", __func__);
+					return 0;
+				}
 			}
 
 			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
@@ -1357,8 +1363,17 @@ namespace Plugins {
 		{
 			if (pTarget)
 			{
-				Py_INCREF(pTarget);
-				self->Target = pTarget;
+				// This check is not effective enough, almost all Python variables pass it
+				PyNewRef pFunc = PyObject_GetAttrString(pTarget, "__init__");
+				if (!pFunc || !PyCallable_Check(pFunc))
+				{
+					_log.Log(LOG_ERROR, "Object is not callable, Target parameter ignored.");
+				}
+				else
+				{
+					Py_INCREF(pTarget);
+					self->Target = pTarget;
+				}
 			}
 			if (!iTimeout || (iTimeout > 199))
 			{
@@ -1371,7 +1386,7 @@ namespace Plugins {
 			}
 		}
 
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject *CConnection_listen(CConnection *self, PyObject *args, PyObject *kwds)
@@ -1446,8 +1461,7 @@ namespace Plugins {
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_disconnect(CConnection * self)
@@ -1464,8 +1478,7 @@ namespace Plugins {
 		else
 			_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, self->pPlugin->m_Name.c_str());
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_bytes(CConnection * self)
@@ -1511,8 +1524,7 @@ namespace Plugins {
 			return pLastSeen;
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_str(CConnection * self)
@@ -1540,6 +1552,5 @@ namespace Plugins {
 							 self->Transport, self->Protocol, self->Address, self->Port, self->Baud, self->Timeout, sParent.c_str());
 		return pRetVal;
 	}
-
 } // namespace Plugins
 #endif

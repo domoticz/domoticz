@@ -11516,7 +11516,7 @@ namespace http {
 						if (pHardware->HwdType == HTYPE_PythonPlugin)
 						{
 							Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-							bHaveTimeout = pPlugin->HasNodeFailed(atoi(sd[2].c_str()));
+							bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), atoi(sd[2].c_str()));
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}

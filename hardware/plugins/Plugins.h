@@ -4,6 +4,7 @@
 #include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
 #include "PythonObjects.h"
+#include "PythonObjectEx.h"
 
 #ifndef byte
 typedef unsigned char byte;
@@ -16,6 +17,7 @@ namespace Plugins {
 	class CPluginMessageBase;
 	class CPluginNotifier;
 	class CPluginTransport;
+	class PyBorrowedRef;
 
 	enum PluginDebugMask
 	{
@@ -90,18 +92,21 @@ namespace Plugins {
 	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
 
 	  bool WriteToHardware(const char *pdata, unsigned char length) override;
-	  void SendCommand(int Unit, const std::string &command, int level, _tColor color);
-	  void SendCommand(int Unit, const std::string &command, float level);
+	  void SendCommand(const std::string &DeviceID, int Unit, const std::string &command, int level, _tColor color);
+	  void SendCommand(const std::string &DeviceID, int Unit, const std::string &command, float level);
 
-	  void onDeviceAdded(int Unit);
-	  void onDeviceModified(int Unit);
-	  void onDeviceRemoved(int Unit);
+	  void onDeviceAdded(const std::string DeviceID, int Unit);
+	  void onDeviceModified(const std::string DeviceID, int Unit);
+	  void onDeviceRemoved(const std::string DeviceID, int Unit);
 	  void MessagePlugin(CPluginMessageBase *pMessage);
-	  void DeviceAdded(int Unit);
-	  void DeviceModified(int Unit);
-	  void DeviceRemoved(int Unit);
+	  void DeviceAdded(const std::string DeviceID, int Unit);
+	  void DeviceModified(const std::string DeviceID, int Unit);
+	  void DeviceRemoved(const std::string DeviceID, int Unit);
 
-	  bool HasNodeFailed(int Unit);
+	  bool HasNodeFailed(const std::string DeviceID, int Unit);
+
+	  PyBorrowedRef FindDevice(const std::string &Key);
+	  PyBorrowedRef	FindUnitInDevice(const std::string &deviceKey, const int unitKey);
 
 	  std::string m_PluginKey;
 	  PyDictObject*	m_DeviceDict;
@@ -128,12 +133,13 @@ namespace Plugins {
 	};
 
 	//
-//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
-//
+	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
+	//
 	struct module_state {
 		CPlugin* pPlugin;
 		PyObject* error;
-		PyTypeObject*	pDeviceClass;
+		PyTypeObject *pDeviceClass;
+		PyTypeObject *pUnitClass;
 	};
 
 	//
@@ -170,6 +176,14 @@ namespace Plugins {
 		operator CDevice *() const
 		{
 			return (CDevice *)m_pObject;
+		}
+		operator CDeviceEx *() const
+		{
+			return (CDeviceEx *)m_pObject;
+		}
+		operator CUnitEx *() const
+		{
+			return (CUnitEx *)m_pObject;
 		}
 		PyObject **operator&()
 		{

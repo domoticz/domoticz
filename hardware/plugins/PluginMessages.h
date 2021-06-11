@@ -10,6 +10,7 @@ typedef unsigned char byte;
 namespace Plugins {
 
 	extern std::mutex PythonMutex;			// controls access to Python
+	extern struct PyModuleDef DomoticzExModuleDef;
 
 	class CPluginMessageBase
 	{
@@ -20,6 +21,7 @@ namespace Plugins {
 	  CPlugin *m_pPlugin;
 	  std::string m_Name;
 	  int m_HwdID;
+	  std::string m_DeviceID;
 	  int m_Unit;
 	  bool m_Delay;
 	  time_t m_When;
@@ -88,6 +90,44 @@ namespace Plugins {
 		};
 		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Target, m_Callback, pParams); };
 		virtual const char* PythonName() { return m_Callback.c_str(); };
+
+	      protected:
+		bool UpdateEventTarget(const std::string DeviceID, int Unit)
+		{
+			// Used by some events in DomoticzEx.  Looks for callback existance on Unit, Device and Plugin in that order
+			PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+			if (pModule)
+			{
+				module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+				if (pModState)
+				{
+					PyBorrowedRef	pUnit = pModState->pPlugin->FindUnitInDevice(m_DeviceID, m_Unit);
+					if ((pUnit) && (PyObject_HasAttrString(pUnit, m_Callback.c_str())))
+					{
+						PyNewRef pFunc = PyObject_GetAttrString(pUnit, m_Callback.c_str());
+						if (pFunc && PyCallable_Check(pFunc))
+						{
+							m_Target += pUnit;	// Increment ref count because pFunc will decrement it on function exit
+							return true;
+						}
+					}
+
+					PyBorrowedRef	pDevice = pModState->pPlugin->FindDevice(m_DeviceID);
+					if ((pDevice) && (PyObject_HasAttrString(pDevice, m_Callback.c_str())))
+					{
+						PyNewRef pFunc = PyObject_GetAttrString(pDevice, m_Callback.c_str());
+						if (pFunc && PyCallable_Check(pFunc))
+						{
+							m_Target += pDevice;	// Increment ref count because pFunc will decrement it on function exit
+							return true;
+						}
+					}
+				}
+				// True signals that DomoticzEx is loaded so both DeviceID and Unit should be used in the callback
+				return true;
+			}
+			return false;
+		}
 	};
 
 	class onStartCallback : public CCallbackBase
@@ -207,60 +247,100 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onDeviceAddedCallback : public CCallbackBase
 	{
 	public:
-		onDeviceAddedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceAdded") { m_Unit = Unit; };
+		onDeviceAddedCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit) : CCallbackBase(pPlugin, "onDeviceAdded")
+		{
+			m_DeviceID = DeviceID;
+			m_Unit = Unit;
+		};
 	protected:
-	  void ProcessLocked() override
-	  {
-		  m_pPlugin->onDeviceAdded(m_Unit);
+		void ProcessLocked() override
+		{
+			m_pPlugin->onDeviceAdded(m_DeviceID, m_Unit);
 
-		  PyNewRef	pParams = Py_BuildValue("(i)", m_Unit);
-		  Callback(pParams);
-	  };
+			if (UpdateEventTarget(m_DeviceID, m_Unit))
+			{
+				PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
+				Callback(pParams);
+			}
+			else
+			{
+				PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+				Callback(pParams);
+			}
+		};
 	};
 
 	class onDeviceModifiedCallback : public CCallbackBase
 	{
 	public:
-		onDeviceModifiedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceModified") { m_Unit = Unit; };
+		onDeviceModifiedCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit) : CCallbackBase(pPlugin, "onDeviceModified")
+		{
+			m_DeviceID = DeviceID;
+			m_Unit = Unit;
+		};
 	protected:
-	  void ProcessLocked() override
-	  {
-		  m_pPlugin->onDeviceModified(m_Unit);
+		void ProcessLocked() override
+		{
+			m_pPlugin->onDeviceModified(m_DeviceID, m_Unit);
 
-		  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-		  Callback(pParams);
-	  };
+			if (UpdateEventTarget(m_DeviceID, m_Unit))
+			{
+				PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
+				Callback(pParams);
+			}
+			else
+			{
+				PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+				Callback(pParams);
+			}
+		};
 	};
 
 	class onDeviceRemovedCallback : public CCallbackBase
 	{
 	public:
-		onDeviceRemovedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceRemoved") { m_Unit = Unit; };
+		onDeviceRemovedCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit) : CCallbackBase(pPlugin, "onDeviceRemoved")
+		{
+			m_DeviceID = DeviceID;
+			m_Unit = Unit;
+		};
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-		  Callback(pParams);
+		  if (UpdateEventTarget(m_DeviceID, m_Unit))
+		  {
+			  PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
+			  Callback(pParams);
+		  }
+		  else
+		  {
+			  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+			  Callback(pParams);
+		  }
 
-		  m_pPlugin->onDeviceRemoved(m_Unit);
+		  m_pPlugin->onDeviceRemoved(m_DeviceID, m_Unit);
 	  };
 	};
 
 	class onCommandCallback : public CCallbackBase
 	{
 	public:
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const std::string &color) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit, const std::string &Command, const int level, const std::string &color)
+			: CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
+			m_DeviceID = DeviceID;
 			m_Unit = Unit;
 			m_fLevel = -273.15F;
 			m_Command = Command;
 			m_iLevel = level;
 			m_iColor = color;
 		};
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit, const std::string &Command, const float level)
+			: CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
+			m_DeviceID = DeviceID;
 			m_Unit = Unit;
 			m_fLevel = level;
 			m_Command = Command;
@@ -276,13 +356,27 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  void ProcessLocked() override
 	  {
 		  PyNewRef pParams;
-		  if (m_fLevel != -273.15F)
+		  if (UpdateEventTarget(m_DeviceID, m_Unit))
 		  {
-			  pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
+			  if (m_fLevel != -273.15F)
+			  {
+				  pParams = Py_BuildValue("sisfs", m_DeviceID.c_str(), m_Unit, m_Command.c_str(), m_fLevel, "");
+			  }
+			  else
+			  {
+				  pParams = Py_BuildValue("sisis", m_DeviceID.c_str(), m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+			  }
 		  }
 		  else
 		  {
-			  pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+			  if (m_fLevel != -273.15F)
+			  {
+				  pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
+			  }
+			  else
+			  {
+				  pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+			  }
 		  }
 		  Callback(pParams);
 	  };
@@ -291,9 +385,11 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onSecurityEventCallback : public CCallbackBase
 	{
 	public:
-		onSecurityEventCallback(CPlugin* pPlugin, int Unit, const int level, const std::string& Description) : CCallbackBase(pPlugin, "onSecurityEvent")
+		onSecurityEventCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit, const int level, const std::string &Description)
+			: CCallbackBase(pPlugin, "onSecurityEvent")
 		{
 			m_Name = __func__;
+			m_DeviceID = DeviceID;
 			m_Unit = Unit;
 			m_iLevel = level;
 			m_Description = Description;
@@ -304,8 +400,16 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked() override
 	  {
-		  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
-		  Callback(pParams);
+		  if (UpdateEventTarget(m_DeviceID, m_Unit))
+		  {
+			  PyNewRef pParams = Py_BuildValue("siis", m_DeviceID.c_str(), m_Unit, m_iLevel, m_Description.c_str());
+			  Callback(pParams);
+		  }
+		  else
+		  {
+			  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
+			  Callback(pParams);
+		  }
 	  };
 	};
 
