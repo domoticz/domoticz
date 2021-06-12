@@ -259,7 +259,9 @@ namespace Plugins {
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
 			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pConnection->Target = ((CConnection *)m_pConnection)->Target;
+			Py_INCREF(pConnection->Target);
+			pConnection->pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 
 			// Add it to the plugins list of connections
 			pConnection->pPlugin->AddConnection(pTcpTransport);
@@ -619,12 +621,23 @@ namespace Plugins {
 				boost::system::error_code ec;
 				int	iPort = atoi(m_Port.c_str());
 
-				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
-				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
-				if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
+				// Handle broadcast messages
+				if (m_IP == "255.255.255.255")
 				{
-					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
-					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+					m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::address_v4::any(), iPort));
+					m_Socket->set_option(boost::asio::ip::udp::socket::socket_base::broadcast(true));
+					m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+				}
+				else
+				{
+					m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
+					m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+					// Hanlde multicast
+					if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
+					{
+						m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+						m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+					}
 				}
 			}
 
@@ -669,7 +682,9 @@ namespace Plugins {
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
 			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pConnection->Target = ((CConnection *)m_pConnection)->Target;
+			Py_INCREF(pConnection->Target);
+			pConnection->pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 
 			// Create Protocol object to handle connection's traffic
 			pConnection->pPlugin->MessagePlugin(new ProtocolDirective(pConnection->pPlugin, pConnection));
