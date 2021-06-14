@@ -30,7 +30,7 @@ namespace Plugins {
 	};
 
 	static PyMethodDef CDeviceEx_methods[] = {
-		{ "Refresh", (PyCFunction)CDeviceEx_refresh, METH_NOARGS, "Placeholder, for compatibility only" },
+		{ "Refresh", (PyCFunction)CDeviceEx_refresh, METH_NOARGS, "Refresh the device and it's units" },
 		{ nullptr } /* Sentinel */
 	};
 
@@ -110,22 +110,22 @@ namespace Plugins {
 
 	static PyMemberDef CUnitEx_members[] = {
 		{ "ID", T_INT, offsetof(CUnitEx, ID), READONLY, "Domoticz internal ID" },
-		{ "Name", T_OBJECT, offsetof(CUnitEx, Name), READONLY, "Name" },
 		{ "Unit", T_INT, offsetof(CUnitEx, Unit), READONLY, "Numeric Unit number" },
-		{ "nValue", T_INT, offsetof(CUnitEx, nValue), READONLY, "Numeric device value" },
-		{ "sValue", T_OBJECT, offsetof(CUnitEx, sValue), READONLY, "String device value" },
-		{ "SignalLevel", T_INT, offsetof(CUnitEx, SignalLevel), READONLY, "Numeric signal level" },
-		{ "BatteryLevel", T_INT, offsetof(CUnitEx, BatteryLevel), READONLY, "Numeric battery level" },
-		{ "Image", T_INT, offsetof(CUnitEx, Image), READONLY, "Numeric image number" },
-		{ "Type", T_INT, offsetof(CUnitEx, Type), READONLY, "Numeric device type" },
-		{ "SubType", T_INT, offsetof(CUnitEx, SubType), READONLY, "Numeric device subtype" },
-		{ "SwitchType", T_INT, offsetof(CUnitEx, SwitchType), READONLY, "Numeric device switchtype" },
+		{ "Name", T_STRING, offsetof(CUnitEx, Name), 0, "Name" },
+		{ "nValue", T_INT, offsetof(CUnitEx, nValue), 0, "Numeric device value" },
+		{ "sValue", T_STRING, offsetof(CUnitEx, sValue), 0, "String device value" },
+		{ "SignalLevel", T_INT, offsetof(CUnitEx, SignalLevel), 0, "Numeric signal level" },
+		{ "BatteryLevel", T_INT, offsetof(CUnitEx, BatteryLevel), 0, "Numeric battery level" },
+		{ "Image", T_INT, offsetof(CUnitEx, Image), 0, "Numeric image number" },
+		{ "Type", T_INT, offsetof(CUnitEx, Type), 0, "Numeric device type" },
+		{ "SubType", T_INT, offsetof(CUnitEx, SubType), 0, "Numeric device subtype" },
+		{ "SwitchType", T_INT, offsetof(CUnitEx, SwitchType), 0, "Numeric device switchtype" },
 		{ "LastLevel", T_INT, offsetof(CUnitEx, LastLevel), READONLY, "Previous device level" },
-		{ "LastUpdate", T_OBJECT, offsetof(CUnitEx, LastUpdate), READONLY, "Last update timestamp" },
+		{ "LastUpdate", T_STRING, offsetof(CUnitEx, LastUpdate), READONLY, "Last update timestamp" },
 		{ "Options", T_OBJECT, offsetof(CUnitEx, Options), READONLY, "Device options" },
-		{ "Used", T_INT, offsetof(CUnitEx, Used), READONLY, "Numeric device Used flag" },
-		{ "Description", T_OBJECT, offsetof(CUnitEx, Description), READONLY, "Description" },
-		{ "Color", T_OBJECT, offsetof(CUnitEx, Color), READONLY, "Color JSON dictionary" },
+		{ "Used", T_INT, offsetof(CUnitEx, Used), 0, "Numeric device Used flag" },
+		{ "Description", T_STRING, offsetof(CUnitEx, Description), 0, "Description" },
+		{ "Color", T_OBJECT, offsetof(CUnitEx, Color), 0, "Color JSON dictionary" },
 		{ "Parent", T_OBJECT, offsetof(CUnitEx, Parent), READONLY, "Parent device" },
 		{ nullptr } /* Sentinel */
 	};

@@ -2181,38 +2181,38 @@ namespace Plugins
 				PyBorrowedRef	pDevice;
 				Py_ssize_t pos = 0;
 				// Sanity check to make sure the reference counting is all good.
-				while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, (PyObject **)&pDevice))
+				while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &pDevice))
 				{
 					// Dictionary should be full of Devices but Python script can make this assumption false, log warning if this has happened
-					int isDevice = PyObject_IsInstance((PyObject *)pDevice, (PyObject *)pModState->pDeviceClass);
+					int isDevice = PyObject_IsInstance(pDevice, (PyObject *)pModState->pDeviceClass);
 					if (isDevice == -1)
 					{
 						LogPythonException("Error determining type of Python object during dealloc");
 					}
 					else if (isDevice == 0)
 					{
-						Log(LOG_NORM, "%s: Device dictionary contained non-Device entry.", __func__);
+						Log(LOG_NORM, "%s: Device dictionary contained non-Device entry '%s'.", __func__, pDevice->ob_type->tp_name);
 					}
 					else
 					{
 						PyNewRef pUnits = PyObject_GetAttrString(pDevice, "Units");	// Free any Units if the object has them
 						if (pUnits)
 						{
-							PyObject*	key;
-							PyObject*	pUnit;
+							PyBorrowedRef key;
+							PyBorrowedRef pUnit;
 							Py_ssize_t	pos = 0;
 							// Sanity check to make sure the reference counting is all good.
-							while (PyDict_Next(pUnits, &pos, &key, (PyObject **)&pUnit))
+							while (PyDict_Next(pUnits, &pos, &key, &pUnit))
 							{
 								// Dictionary should be full of Units but Python script can make this assumption false, log warning if this has happened
-								int isValue = PyObject_IsInstance((PyObject *)pUnit, (PyObject *)pModState->pUnitClass);
+								int isValue = PyObject_IsInstance(pUnit, (PyObject *)pModState->pUnitClass);
 								if (isValue == -1)
 								{
 									_log.Log(LOG_ERROR, "Error determining type of Python object during dealloc");
 								}
 								else if (isValue == 0)
 								{
-									_log.Log(LOG_NORM, "%s: Unit dictionary contained non-Unit entry.", __func__);
+									_log.Log(LOG_NORM, "%s: Unit dictionary contained non-Unit entry '%s'.", __func__, pUnit->ob_type->tp_name);
 								}
 								else
 								{

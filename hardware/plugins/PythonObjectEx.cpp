@@ -601,14 +601,7 @@ namespace Plugins {
 						{
 							self->ID = atoi(result[0][0].c_str());
 
-							PyNewRef pKey = PyLong_FromLong(self->Unit);
-							if (PyDict_SetItem((PyObject *)pModState->pPlugin->m_DeviceDict, pKey, (PyObject *)self) == -1)
-							{
-								pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", pModState->pPlugin->m_Name.c_str(), self->Unit);
-								Py_RETURN_NONE;
-							}
-
-							// Device successfully created, now set the options when supplied
+							// DeviceStatus successfully created, now set the options when supplied
 							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
 							{
 								PyObject *pKeyDict, *pValueDict;
@@ -633,8 +626,27 @@ namespace Plugins {
 												sDeviceID.c_str());
 								}
 							}
+							else
+							{
+								// otherwise update the parent if required
+								PyBorrowedRef pParent = PyDict_GetItem((PyObject *)pModState->pPlugin->m_DeviceDict, pDevice->DeviceID);
+								if (self->Parent != pParent)
+								{
+									Py_DECREF(self->Parent);
+									self->Parent = pParent;
+								}
+							}
 
-							// Refresh device data to ensure it is usable straight away
+							// Now insert the Unit in the Parent's Units diction
+							PyNewRef pKey = PyLong_FromLong(self->Unit);
+							if (PyDict_SetItem((PyObject *)((CDeviceEx*)self->Parent)->m_UnitDict, pKey, (PyObject *)self) == -1)
+							{
+								pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", pModState->pPlugin->m_Name.c_str(),
+											self->Unit);
+								Py_RETURN_NONE;
+							}
+
+							// Refresh DeviceStatus data to ensure it is usable straight away
 							PyObject *pRetVal = CUnitEx_refresh(self);
 							Py_DECREF(pRetVal);
 						}
@@ -684,60 +696,40 @@ namespace Plugins {
 		{
 			pModState->pPlugin->SetHeartbeatReceived();
 
-			int nValue = self->nValue;
-			char *sValue = nullptr;
-			int iSignalLevel = self->SignalLevel;
-			int iBatteryLevel = self->BatteryLevel;
-			int iImage = self->Image;
-			PyObject *pOptionsDict = nullptr;
-
-			char *Name = nullptr;
 			char *TypeName = nullptr;
-			int iType = self->Type;
-			int iSubType = self->SubType;
-			int iSwitchType = self->SwitchType;
-			int iUsed = self->Used;
-			uint64_t DevRowIdx;
-			char *Description = nullptr;
-			char *Color = nullptr;
 			int SuppressTriggers = false;
 
-			std::string sName = PyUnicode_AsUTF8(self->Name);
-			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
-			std::string sDeviceID = PyUnicode_AsUTF8(pDevice->DeviceID);
-			std::string sDescription = PyUnicode_AsUTF8(self->Description);
-			static char *kwlist[] = { "nValue", "sValue",  "Image",	"SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName",
-						  "Type", "Subtype", "Switchtype", "Used", "Description",  "Color", "SuppressTriggers", nullptr };
+			static char *kwlist[] = { "TypeName", "SuppressTriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiOssiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &Name, &TypeName,
-							 &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sp", kwlist, &SuppressTriggers))
 			{
 				pModState->pPlugin->Log(LOG_ERROR,
-					 "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.",
-					 __func__, sName.c_str());
+					 "(%s) Failed to parse parameters: 'SuppressTriggers' expected.", __func__);
 				LogPythonException(pModState->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
 
+			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
+			std::string sDeviceID = PyUnicode_AsUTF8(pDevice->DeviceID);
 			std::string sID = std::to_string(self->ID);
 
-			// Name change
-			if (Name)
-			{
-				sName = Name;
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("Name", sName, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// Description change
-			if (Description)
-			{
-				std::string sDescription = Description;
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("Description", sDescription, sID);
-				Py_END_ALLOW_THREADS
-			}
+			// Build representations of changeable fields (these may not be of the right type so be defensive)
+			PyNewRef pPyStr = PyObject_Str(self->Name);
+			std::string sName = PyUnicode_AsUTF8(pPyStr);
+			pPyStr = PyObject_Str(self->Description);
+			std::string sDescription = PyUnicode_AsUTF8(pPyStr);
+			pPyStr = PyObject_Str(self->sValue);
+			std::string sValue = PyUnicode_AsUTF8(pPyStr);
+			pPyStr = PyObject_Str(self->sValue);
+			std::string sColor = PyUnicode_AsUTF8(pPyStr);
+			sColor = _tColor(sColor).toJSONString();
+			int nValue = self->nValue;
+			int iType = self->Type;
+			int iSubType = self->SubType;
+			int iSwitchType = self->SwitchType;
+			PyBorrowedRef pOptionsDict = self->Options;
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
 			if (TypeName)
@@ -746,103 +738,60 @@ namespace Plugins {
 				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
 				// Reset nValue and sValue when changing device types
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("nValue", 0, sID);
-				m_sql.UpdateDeviceValue("sValue", stdsValue, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// Type change
-			if (iType != self->Type)
-			{
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("Type", iType, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// SubType change
-			if (iSubType != self->SubType)
-			{
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("SubType", iSubType, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// SwitchType change
-			if (iSwitchType != self->SwitchType)
-			{
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// Image change
-			if (iImage != self->Image)
-			{
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("CustomImage", iImage, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// Used change
-			if (iUsed != self->Used)
-			{
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("Used", iUsed, sID);
-				Py_END_ALLOW_THREADS
-			}
-
-			// Color change
-			if (Color)
-			{
-				std::string sColor = _tColor(std::string(Color)).toJSONString(); // Parse the color to detect incorrectly formatted color data
-				Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("Color", sColor, sID);
-				Py_END_ALLOW_THREADS
+				nValue = 0;
+				sValue = stdsValue;
 			}
 
 			// Options provided, assume change
+			std::string sOptionValue;
 			if (pOptionsDict && PyDict_Check(pOptionsDict))
 			{
 				if (self->SubType != sTypeCustom)
 				{
-					PyObject *pKeyDict, *pValueDict;
+					PyBorrowedRef	pKeyDict, pValueDict;
 					Py_ssize_t pos = 0;
 					std::map<std::string, std::string> mpOptions;
-					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+					while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict))
 					{
 						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
 						PyNewRef pStr = PyObject_Str(pValueDict);
 						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
-					Py_BEGIN_ALLOW_THREADS m_sql.SetDeviceOptions(self->ID, mpOptions);
-					Py_END_ALLOW_THREADS
+					sOptionValue = m_sql.FormatDeviceOptions(mpOptions);
 				}
 				else
 				{
-					std::string sOptionValue;
 					PyBorrowedRef pValue = PyDict_GetItemString(pOptionsDict, "Custom");
 					if (pValue)
 					{
-						sOptionValue = PyUnicode_AsUTF8(pValue);
+						pPyStr = PyObject_Str(pValue);
+						sOptionValue = PyUnicode_AsUTF8(pPyStr);
 					}
-
-					time_t now = time(nullptr);
-					struct tm ltime;
-					localtime_r(&now, &ltime);
-					Py_BEGIN_ALLOW_THREADS m_sql.UpdateDeviceValue("Options", iUsed, sID);
-					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID==%s) AND (Unit==%d)",
-						sOptionValue.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-					Py_END_ALLOW_THREADS
 				}
 			}
+
+			// Do an atomic update of non-key fields
+			Py_BEGIN_ALLOW_THREADS
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%s', Description='%s', Used=%d, Type=%d, SubType=%d, SwitchType=%d, CustomImage=%d, Color='%s', SignalLevel=%d, BatteryLevel=%d, Options='%s', LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", 
+								sName.c_str(), sDescription.c_str(), self->Used, iType, iSubType, iSwitchType, self->Image, sColor.c_str(), self->SignalLevel,
+								self->BatteryLevel, sOptionValue.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+			Py_END_ALLOW_THREADS
 
 			// Suppress Triggers updates non-key fields only (specifically NOT nValue or sValue)
 			if (!SuppressTriggers)
 			{
+				uint64_t DevRowIdx;
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					pModState->pPlugin->Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 				}
-				Py_BEGIN_ALLOW_THREADS DevRowIdx = m_sql.UpdateValue(pModState->pPlugin->m_HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType,
-										     (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+				Py_BEGIN_ALLOW_THREADS 
+				DevRowIdx = m_sql.UpdateValue(pModState->pPlugin->m_HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str(), sName, true);
 				Py_END_ALLOW_THREADS
-					// if this is an internal Security Panel then there are some extra updates required if state has changed
-					if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
+
+				// if this is an internal Security Panel then there are some extra updates required if state has changed
+				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
 					switch (nValue)
 					{
@@ -868,15 +817,14 @@ namespace Plugins {
 				}
 
 				// Notify MQTT and various push mechanisms and notifications
-				Py_BEGIN_ALLOW_THREADS m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
+				Py_BEGIN_ALLOW_THREADS
+				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
 				m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
-
-				// Trigger any associated scene / groups
-				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue, "Python");
+				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
 				Py_END_ALLOW_THREADS
 			}
 
-			CUnitEx_refresh(self);
+			PyNewRef	pRetVal = CUnitEx_refresh(self);
 		}
 		else
 		{
@@ -970,12 +918,14 @@ namespace Plugins {
 		{
 			pModState->pPlugin->Log(LOG_ERROR, "Unit touch failed, UnitEx object is not associated with a plugin.");
 		}
-		Py_END_ALLOW_THREADS return CUnitEx_refresh(self);
+		Py_END_ALLOW_THREADS
+		
+		return CUnitEx_refresh(self);
 	}
 
 	PyObject *CUnitEx_str(CUnitEx *self)
 	{
-		PyObject *pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
+		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U'", self->Unit, self->Name, self->nValue, self->sValue);
 		return pRetVal;
 	}
 } // namespace Plugins
