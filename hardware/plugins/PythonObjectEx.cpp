@@ -784,7 +784,7 @@ namespace Plugins {
 				uint64_t DevRowIdx;
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue.c_str());
 				}
 				Py_BEGIN_ALLOW_THREADS 
 				DevRowIdx = m_sql.UpdateValue(pModState->pPlugin->m_HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str(), sName, true);
