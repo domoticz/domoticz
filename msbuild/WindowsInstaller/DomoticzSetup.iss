@@ -38,8 +38,6 @@ PrivilegesRequired=admin
 SolidCompression=yes
 UsePreviousAppDir=yes
 DirExistsWarning=no
-WizardImageFile=compiler:WizModernImage-IS.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 [Tasks]
 Name: RunAsApp; Description: "Run as application "; Flags: exclusive;
