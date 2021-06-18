@@ -795,13 +795,12 @@ namespace Plugins {
 							// Device successfully created, now set the options when supplied
 							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
 							{
-								PyObject *pKeyDict, *pValueDict;
+								PyBorrowedRef	pKeyDict, pValueDict;
 								Py_ssize_t pos = 0;
 								std::map<std::string, std::string> mpOptions;
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
-									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-									PyNewRef pStr = PyObject_Str(pValueDict);
-									std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+									std::string sOptionName = pKeyDict;
+									std::string sOptionValue = pValueDict;
 									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -963,14 +962,13 @@ namespace Plugins {
 			{
 				if (self->SubType != sTypeCustom)
 				{
-					PyObject *pKeyDict, *pValueDict;
+					PyBorrowedRef	pKeyDict, pValueDict;
 					Py_ssize_t pos = 0;
 					std::map<std::string, std::string> mpOptions;
 					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
 					{
-						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-						PyNewRef pStr = PyObject_Str(pValueDict);
-						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+						std::string sOptionName = pKeyDict;
+						std::string sOptionValue = pValueDict;
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
 					Py_BEGIN_ALLOW_THREADS

@@ -12,11 +12,13 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
+	// forward declarations
 	class CDirectiveBase;
 	class CEventBase;
 	class CPluginMessageBase;
 	class CPluginNotifier;
 	class CPluginTransport;
+	class PyNewRef;
 	class PyBorrowedRef;
 
 	enum PluginDebugMask
@@ -184,6 +186,17 @@ namespace Plugins {
 		operator CUnitEx *() const
 		{
 			return (CUnitEx *)m_pObject;
+		}
+		operator std::string() const
+		{
+			if (!m_pObject)
+				return std::string("");
+			PyObject* pString = PyObject_Str(m_pObject);
+			if (!pString)
+				return std::string("");
+			std::string sUTF8 = PyUnicode_AsUTF8(pString);
+			Py_DECREF(pString);
+			return sUTF8;
 		}
 		PyObject **operator&()
 		{

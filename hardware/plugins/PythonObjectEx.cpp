@@ -177,15 +177,20 @@ namespace Plugins {
 				PyNewRef pKey = PyLong_FromLong(atoi(sd[1].c_str()));
 				if (PyDict_SetItem((PyObject *)self->m_UnitDict, pKey, pUnit) == -1)
 				{
-					PyNewRef pString = PyObject_Str(pKey);
-					std::string sUTF = PyUnicode_AsUTF8(pString);
-					pModState->pPlugin->Log(LOG_ERROR, "Failed to add key '%s' to Unit dictionary.", sUTF.c_str());
+					pModState->pPlugin->Log(LOG_ERROR, "Failed to add key '%s' to Unit dictionary.", std::string(pKey).c_str());
 					goto Error;
 				}
 
 				// Force the object to refresh from the database
 				PyNewRef pRefresh = PyObject_GetAttrString(pUnit, "Refresh");
-				PyNewRef pObj = PyObject_CallNoArgs(pRefresh);
+				if (pRefresh && PyCallable_Check(pRefresh))
+				{
+					PyNewRef pReturnValue = PyObject_CallObject(pRefresh, NULL);
+				}
+				else
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "Failed to refresh object '%s', method missing or not callable.", std::string(pKey).c_str());
+				}
 			}
 		}
 	Error:
@@ -392,18 +397,14 @@ namespace Plugins {
 					{
 						if (PyUnicode_Check(pValue))
 						{
-							PyObject *pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
-							PyObject *pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
+							PyNewRef	pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
+							PyNewRef	pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
 							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
 							{
 								_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
 										pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-								Py_XDECREF(pKeyDict);
-								Py_XDECREF(pValueDict);
 								break;
 							}
-							Py_XDECREF(pKeyDict);
-							Py_XDECREF(pValueDict);
 						}
 						else
 						{
@@ -463,8 +464,7 @@ namespace Plugins {
 		if ((pModState->pPlugin) && (pModState->pPlugin->m_HwdID != -1) && (self->Unit != -1))
 		{
 			CDeviceEx *pDevice = (CDeviceEx*)self->Parent;
-			PyNewRef pString = PyObject_Str(pDevice->DeviceID);
-			std::string sDevice = PyUnicode_AsUTF8(pString);
+			std::string sDevice = PyBorrowedRef(pDevice->DeviceID);
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, "
@@ -604,14 +604,13 @@ namespace Plugins {
 							// DeviceStatus successfully created, now set the options when supplied
 							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
 							{
-								PyObject *pKeyDict, *pValueDict;
+								PyBorrowedRef	pKeyDict, pValueDict;
 								Py_ssize_t pos = 0;
 								std::map<std::string, std::string> mpOptions;
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict))
 								{
-									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-									PyNewRef pStr = PyObject_Str(pValueDict);
-									std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+									std::string sOptionName = pKeyDict;
+									std::string sOptionValue = pValueDict;
 									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -647,8 +646,7 @@ namespace Plugins {
 							}
 
 							// Refresh DeviceStatus data to ensure it is usable straight away
-							PyObject *pRetVal = CUnitEx_refresh(self);
-							Py_DECREF(pRetVal);
+							PyNewRef	pRetVal = CUnitEx_refresh(self);
 						}
 						else
 						{
@@ -716,14 +714,10 @@ namespace Plugins {
 			std::string sID = std::to_string(self->ID);
 
 			// Build representations of changeable fields (these may not be of the right type so be defensive)
-			PyNewRef pPyStr = PyObject_Str(self->Name);
-			std::string sName = PyUnicode_AsUTF8(pPyStr);
-			pPyStr = PyObject_Str(self->Description);
-			std::string sDescription = PyUnicode_AsUTF8(pPyStr);
-			pPyStr = PyObject_Str(self->sValue);
-			std::string sValue = PyUnicode_AsUTF8(pPyStr);
-			pPyStr = PyObject_Str(self->sValue);
-			std::string sColor = PyUnicode_AsUTF8(pPyStr);
+			std::string sName = PyBorrowedRef(self->Name);
+			std::string sDescription = PyBorrowedRef(self->Description);
+			std::string sValue = PyBorrowedRef(self->sValue);
+			std::string sColor = PyBorrowedRef(self->Color);
 			sColor = _tColor(sColor).toJSONString();
 			int nValue = self->nValue;
 			int iType = self->Type;
@@ -753,9 +747,8 @@ namespace Plugins {
 					std::map<std::string, std::string> mpOptions;
 					while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict))
 					{
-						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-						PyNewRef pStr = PyObject_Str(pValueDict);
-						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+						std::string sOptionName = pKeyDict;
+						std::string sOptionValue = pValueDict;
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
 					sOptionValue = m_sql.FormatDeviceOptions(mpOptions);
@@ -765,8 +758,7 @@ namespace Plugins {
 					PyBorrowedRef pValue = PyDict_GetItemString(pOptionsDict, "Custom");
 					if (pValue)
 					{
-						pPyStr = PyObject_Str(pValue);
-						sOptionValue = PyUnicode_AsUTF8(pPyStr);
+						sOptionValue = (std::string)pValue;
 					}
 				}
 			}
