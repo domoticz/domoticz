@@ -844,7 +844,7 @@ bool CEnOceanESP3::ParseData()
 		if (m_bufferpos==33)
 		{
 			//Version Information
-			Log(LOG_STATUS,"Version_Info, App: %02x.%02x.%02x.%02x, API: %02x.%02x.%02x.%02x, ChipID: %02x.%02x.%02x.%02x, ChipVersion: %02x.%02x.%02x.%02x, Description: %s",
+			Log(LOG_STATUS,"Version_Info, App: %02X.%02X.%02X.%02X, API: %02X.%02X.%02X.%02X, ChipID: %02X.%02X.%02X.%02X, ChipVersion: %02X.%02X.%02X.%02X, Description: %s",
 				m_buffer[1],m_buffer[2],m_buffer[3],m_buffer[4],
 				m_buffer[5],m_buffer[6],m_buffer[7],m_buffer[8],
 				m_buffer[9],m_buffer[10],m_buffer[11],m_buffer[12],
@@ -859,7 +859,7 @@ bool CEnOceanESP3::ParseData()
 	else
 	{
 		char szTmp[100];
-		sprintf(szTmp,"Unhandled Packet Type (0x%02x)",m_ReceivedPacketType);
+		sprintf(szTmp,"Unhandled Packet Type (%02X)",m_ReceivedPacketType);
 		Log(LOG_STATUS, "%s", szTmp);
 	}
 	/*
@@ -942,7 +942,7 @@ bool CEnOceanESP3::ParseData()
 				unsigned char SecondUpDown=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
 				unsigned char SecondAction=(pFrame->DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
 	#ifdef _DEBUG
-				Log(LOG_NORM,"Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
+				Log(LOG_NORM,"Received RPS N-Message Node %08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
 					iNodeID, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction);
 	#endif
 				//We distinguish 3 types of buttons from a switch: Left/Right/Left+Right
@@ -1015,7 +1015,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 		else {
 			rssi = static_cast<int>((rssi_dbm + 100) / 5);
 		}
-		sprintf(szTmp,"destination: 0x%02x%02x%02x%02x RSSI: %i dBm (%i/11)",
+		sprintf(szTmp,"destination: %02X%02X%02X%02X RSSI: %i dBm (%i/11)",
 			m_buffer[m_DataSize+1],m_buffer[m_DataSize+2],m_buffer[m_DataSize+3],m_buffer[m_DataSize+4],rssi_dbm,rssi
 			);
 
@@ -1028,7 +1028,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 	{
 		case RORG_1BS: // 1 byte communication (Contacts/Switches)
 			{
-				sprintf(szTmp,"1BS data: Sender id: 0x%02x%02x%02x%02x Data: %02x",
+				sprintf(szTmp,"1BS data: Sender id: %02X%02X%02X%02X Data: %02X",
 					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
 					m_buffer[0]
 				);
@@ -1064,7 +1064,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 			break;
 		case RORG_4BS: // 4 byte communication
 			{
-				sprintf(szTmp,"4BS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",
+				sprintf(szTmp,"4BS data: Sender id: %02X%02X%02X%02X Status: %02X Data: %02X",
 					m_buffer[5],m_buffer[6],m_buffer[7],m_buffer[8],
 					m_buffer[9],
 					m_buffer[3]
@@ -1095,7 +1095,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						// RORG_4BS_TEACHIN_EEP_BIT is 0 -> Teach-in Variant 1 : data doesn't contain EEP and Manufacturer ID
 						// An EEP profile must be manually allocated per sender ID (see EEP 2.6.2 specification §3.3 p173/197)
-						Log(LOG_NORM, "4BS, Variant 1 Teach-in diagram: Sender_ID: 0x%08X", iNodeID);
+						Log(LOG_NORM, "4BS, Variant 1 Teach-in diagram: Sender_ID: %08X", iNodeID);
 						Log(LOG_NORM, "Teach-in data contains no EEP profile. Created generic A5-02-05 profile (0/40°C temp sensor); please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
 
 						manufacturer = 0x7FF;			// Generic
@@ -1115,7 +1115,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						profile = DATA_BYTE3 >> 2;
 						ttype = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
 
-						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
+						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: %08X\nManufacturer: %03X (%s)\nProfile: %02X\nType: %02X (%s)",
 							iNodeID, manufacturer,EnOceanGetManufacturerName(manufacturer),
 							profile, ttype, EnOceanGetProfileTypeLabel(RORG_4BS, profile, ttype));
  					}
@@ -1127,10 +1127,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						// If not found, add it to the database
 						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, nodeID.c_str(), manufacturer, profile, ttype);
-						Log(LOG_NORM, "Sender_ID 0x%08X inserted in the database", iNodeID);
+						Log(LOG_NORM, "Sender_ID %08X inserted in the database", iNodeID);
 					}
 					else
-						Log(LOG_NORM, "Sender_ID 0x%08X already in the database", iNodeID);
+						Log(LOG_NORM, "Sender_ID %08X already in the database", iNodeID);
 					ReloadVLDNodes();
 				}
 				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
@@ -1552,7 +1552,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 		case RORG_RPS: // repeated switch communication
 			{
 #ifdef ENOCEAN_BUTTON_DEBUG
-				sprintf(szTmp, "RPS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",
+				sprintf(szTmp, "RPS data: Sender id: %02X%02X%02X%02X Status: %02X Data: %02X",
 					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
 					m_buffer[6],
 					m_buffer[1]
@@ -1590,7 +1590,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					Profile = 0x02;
 					iType = 0x01;
 					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, nodeID.c_str(), manufacturer, Profile, iType);
-					Log(LOG_NORM, "Sender_ID 0x%08X inserted in the database with default profile F6-%02x-%02x", iNodeID, Profile, iType);
+					Log(LOG_NORM, "Sender_ID %08X inserted in the database with default profile F6-%02X-%02X", iNodeID, Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
 				}
 				else
@@ -1598,7 +1598,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					// hardware device was already teached-in
 					Profile=atoi(result[0][1].c_str());
 					iType=atoi(result[0][2].c_str());
-					Debug(DEBUG_HARDWARE, "Sender_ID 0x%08X found in the database with profile F6-%02x-%02x", iNodeID, Profile, iType);
+					Debug(DEBUG_HARDWARE, "Sender_ID %08X found in the database with profile F6-%02X-%02X", iNodeID, Profile, iType);
 					if( (Profile == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
 						 ((iType == 0x0F) || (iType == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
 						)
@@ -1637,7 +1637,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 #ifdef ENOCEAN_BUTTON_DEBUG
 						Log(LOG_NORM,
-							"Received RPS N-Message   message: 0x%02X Node 0x%08x RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
+							"Received RPS N-Message   message: %02X Node %08x RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
 							DATA_BYTE3,
 							iNodeID,
 							RockerID,
@@ -1699,7 +1699,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							}
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-							Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
+							Log(LOG_NORM, "EnOcean message: %02X Node %08x UnitID: %02X cmd: %02X ",
 								DATA_BYTE3,
 								iNodeID,
 								tsen.LIGHTING2.unitcode,
@@ -1722,7 +1722,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							unsigned char UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-							Log(LOG_NORM, "Received RPS T21-Message message: 0x%02X Node 0x%08x ButtonID: %i Pressed: %i UD: %i",
+							Log(LOG_NORM, "Received RPS T21-Message message: %02X Node %08x ButtonID: %i Pressed: %i UD: %i",
 								DATA_BYTE3,
 								iNodeID,
 								ButtonID,
@@ -1757,7 +1757,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							}
 #ifdef ENOCEAN_BUTTON_DEBUG
 
-							Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
+							Log(LOG_NORM, "EnOcean message: %02X Node %08x UnitID: %02X cmd: %02X ",
 								DATA_BYTE3,
 								iNodeID,
 								tsen.LIGHTING2.unitcode,
@@ -1776,7 +1776,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				// Tested with an Ubiwizz UBILD001-QM smoke detector
 				else if (Profile == 0x05)
 				{
-					Debug(DEBUG_HARDWARE, "message profile F6-05-xx: Data=0x%02X", m_buffer[1]);
+					Debug(DEBUG_HARDWARE, "message profile F6-05-xx: Data=%02X", m_buffer[1]);
 					bool alarm = false;
 					int batterylevel = 255;
 					if (iType == 0x00 || iType == 0x02)  // only profiles F6-05-00 and F6-05-02 report Energy LOW warning
@@ -1786,24 +1786,24 @@ void CEnOceanESP3::ParseRadioDatagram()
 					switch (m_buffer[1]) {
 						case 0x00:   // profiles F6-05-00 and F6-05-02
 						{
-							Debug(DEBUG_HARDWARE, "Alarm OFF from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							Debug(DEBUG_HARDWARE, "Alarm OFF from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
 							break;
 						}
 						case 0x10:  // profiles F6-05-00 and F6-05-02
 						{
-							Log(LOG_NORM, "Alarm ON from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							Log(LOG_NORM, "Alarm ON from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
 							alarm = true;
 							break;
 						}
 						case 0x11:  // profile F6-05-01
 						{
-							Log(LOG_NORM, "Alarm ON water detected from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							Log(LOG_NORM, "Alarm ON water detected from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
 							alarm = true;
 							break;
 						}
 						case 0x30:  // profiles F6-05-00 and F6-05-02
 						{
-							Log(LOG_NORM, "Energy LOW warning from Sender id 0x%02x%02x%02x%02x", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+							Log(LOG_NORM, "Energy LOW warning from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
 							batterylevel = 5;
 							break;
 						}
@@ -1847,10 +1847,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							// If not found, add it to the database
 							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, nodeID.c_str(), manID, func, type);
-							Log(LOG_NORM, "Sender_ID 0x%08X inserted in the database", iNodeID);
+							Log(LOG_NORM, "Sender_ID %08X inserted in the database", iNodeID);
 						}
 						else
-							Log(LOG_NORM, "Sender_ID 0x%08X already in the database", iNodeID);
+							Log(LOG_NORM, "Sender_ID %08X already in the database", iNodeID);
 						ReloadVLDNodes();
 
 						if((rorg == 0xD2) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))
@@ -1878,7 +1878,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.LIGHTING2.cmnd     = light2_sOff;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-								Log(LOG_NORM, "EnOcean message: 0xD4 Node 0x%08x UnitID: %02X cmd: %02X ",
+								Log(LOG_NORM, "EnOcean message: 0xD4 Node %08x UnitID: %02X cmd: %02X ",
 											iNodeID,
 											tsen.LIGHTING2.unitcode,
 											tsen.LIGHTING2.cmnd
@@ -1894,7 +1894,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						break;
 					}
 
-					Log(LOG_NORM, "Unhandled RORG (%02x), uni_bi (%02x [1=bidir]), response_expected (%02x [0=yes]), request (%02x), cmd (%02x)", m_buffer[0], uni_bi_directional_communication,eep_teach_in_response_expected, teach_in_request, cmd);
+					Log(LOG_NORM, "Unhandled RORG (%02X), uni_bi (%02X [1=bidir]), response_expected (%02X [0=yes]), request (%02X), cmd (%02X)", m_buffer[0], uni_bi_directional_communication,eep_teach_in_response_expected, teach_in_request, cmd);
 				}
 			break;
 
@@ -1951,7 +1951,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-					Log(LOG_NORM, "EnOcean: VLD->RX msg: Node %s CMD: 0x%X IO: 0x%02X (UnitID: %d) OV: 0x%02X (Cmnd: %d Level: %d)",
+					Log(LOG_NORM, "EnOcean: VLD->RX msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
 						szDeviceID, CMD, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd, tsen.LIGHTING2.level);
 #endif //ENOCEAN_BUTTON_DEBUG
 
@@ -1974,7 +1974,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 			}
 			break;
 		default:
-			Log(LOG_NORM, "Unhandled RORG (%02x)", m_buffer[0]);
+			Log(LOG_NORM, "Unhandled RORG (%02X)", m_buffer[0]);
 			break;
 	}
 }
