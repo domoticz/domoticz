@@ -4725,7 +4725,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-			pPlugin->DeviceAdded(unit);
+			pPlugin->DeviceAdded(ID, unit);
 		}
 #endif
 	}
@@ -7427,22 +7427,23 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 	StringSplit(idx, ";", _idx);
 	if (_idx.empty())
 		return;
-	std::set<std::pair<std::string, std::string> > removeddevices;
+	std::set<std::tuple<std::string, std::string, std::string>> removeddevices;
 #ifdef ENABLE_PYTHON
 	for (const auto &str : _idx)
 	{
 		_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: ID: %s", str.c_str());
 		std::vector<std::vector<std::string> > result;
-		result = safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == '%q')", str.c_str());
+		result = safe_query("SELECT HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID == '%q')", str.c_str());
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
 			std::string HwID = sd[0];
-			std::string Unit = sd[1];
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
+			std::string DeviceID = sd[1];
+			std::string Unit = sd[2];
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
 			if (pHardware != nullptr)
 			{
-				removeddevices.insert(std::make_pair(HwID, Unit));
+				removeddevices.insert(std::make_tuple(HwID, DeviceID, Unit));
 			}
 		}
 	}
@@ -7495,15 +7496,16 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #ifdef ENABLE_PYTHON
 	for (const auto& it : removeddevices)
 	{
-		int HwID = atoi(it.first.c_str());
-		int Unit = atoi(it.second.c_str());
+		int HwID = atoi(std::get<0>(it).c_str());
+		std::string DeviceID = std::get<1>(it);
+		int Unit = atoi(std::get<2>(it).c_str());
 		// Notify plugin to sync plugins' device list
 		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwID);
 		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %u", HwID, Unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-			pPlugin->DeviceRemoved(Unit);
+			pPlugin->DeviceRemoved(DeviceID, Unit);
 		}
 	}
 #endif

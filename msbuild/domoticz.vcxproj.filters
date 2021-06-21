@@ -504,6 +504,9 @@
     <Filter Include="Devices\Meteorologisk">
       <UniqueIdentifier>{54d3120a-1deb-4a3c-959d-7f89f33a1fd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Plugin Framework">
+      <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2141,27 +2144,6 @@
     <ClInclude Include="..\main\EventsPythonModule.h">
       <Filter>EventSystem\Python</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginManager.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\Plugins.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
-      <Filter>EventSystem\Python</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\HTMLSanitizer.h">
       <Filter>Helpers</Filter>
     </ClInclude>
@@ -2218,6 +2200,30 @@
     </ClInclude>
     <ClInclude Include="..\hardware\TeleinfoTCP.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonObjectEx.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\Plugins.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginManager.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
+      <Filter>Plugin Framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2908,24 +2914,6 @@
     <ClCompile Include="..\main\EventsPythonModule.cpp">
       <Filter>EventSystem\Python</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
-      <Filter>EventSystem\Python</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
-      <Filter>EventSystem\Python</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
-      <Filter>EventSystem\Python</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
-      <Filter>EventSystem\Python</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
-      <Filter>EventSystem\Python</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
-      <Filter>EventSystem\Python</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\HTMLSanitizer.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
@@ -2970,6 +2958,27 @@
     </ClCompile>
     <ClCompile Include="..\hardware\TeleinfoTCP.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PythonObjectEx.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
+      <Filter>Plugin Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
