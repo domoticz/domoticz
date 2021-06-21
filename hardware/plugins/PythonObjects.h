@@ -138,6 +138,7 @@ namespace Plugins {
 		{ "TimedOut", T_INT, offsetof(CDevice, TimedOut), READONLY, "Is the device marked as timed out" },
 		{ "Description", T_OBJECT, offsetof(CDevice, Description), READONLY, "Description" },
 		{ "Color", T_OBJECT, offsetof(CDevice, Color), READONLY, "Color JSON dictionary" },
+		{ "Key", T_INT, offsetof(CDevice, Unit), READONLY, "Device dictionary key" },
 		{ nullptr } /* Sentinel */
 	};
 

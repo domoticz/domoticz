@@ -1298,7 +1298,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id=ID_BYTE1;
 							tsen.RFXSENSOR.filler=ID_BYTE0&0x0F;
-							tsen.RFXSENSOR.rssi=rssi;
+							tsen.RFXSENSOR.rssi=(ID_BYTE0&0xF0)>>4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1355,7 +1355,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.id1=ID_BYTE2;
 						tsen.TEMP.id2=ID_BYTE1;
 						tsen.TEMP.battery_level=ID_BYTE0&0x0F;
-						tsen.TEMP.rssi=rssi;
+						tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 						tsen.TEMP.tempsign=(temp>=0)?0:1;
 						int at10 = round(std::abs(temp * 10.0F));
@@ -1408,7 +1408,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 								tsen.RFXSENSOR.id = ID_BYTE1;
 								tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-								tsen.RFXSENSOR.rssi = rssi;
+								tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 								tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 								tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
 								sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1448,7 +1448,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id = ID_BYTE1;
 							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-							tsen.RFXSENSOR.rssi = rssi;
+							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1488,7 +1488,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id = ID_BYTE1;
 							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-							tsen.RFXSENSOR.rssi = rssi;
+							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
