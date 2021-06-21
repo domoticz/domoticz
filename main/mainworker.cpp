@@ -13305,7 +13305,7 @@ void MainWorker::SetInternalSecStatus()
 	//Update Domoticz Security Device
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
-	tsen.SECURITY1.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.SECURITY1.packetlength = sizeof(tsen.SECURITY1) - 1;
 	tsen.SECURITY1.packettype = pTypeSecurity1;
 	tsen.SECURITY1.subtype = sTypeDomoticzSecurity;
 	tsen.SECURITY1.battery_level = 9;
