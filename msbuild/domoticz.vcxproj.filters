@@ -2225,6 +2225,9 @@
     <ClInclude Include="..\hardware\plugins\DelayedLink.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanESP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2979,6 +2982,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
       <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnOceanESP.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

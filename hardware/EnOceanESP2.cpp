@@ -179,7 +179,7 @@ typedef struct enocean_data_structure_MDA {
 			  /**
 			   * \brief Modem telegram
 			   *
-			   * 6byte Modem Telegram (original or repeated)
+			   * 6byte Modem Telegram (original or repeated message)
 			   */
 #define C_ORG_6DT 0x0A
 			   /**
@@ -1201,9 +1201,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.subtype = sTypeTEMP10;
 				tsen.TEMP.id1 = pFrame->ID_BYTE2;
 				tsen.TEMP.id2 = pFrame->ID_BYTE1;
+				// WARNING
+				// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+				// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
 				tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
 				int at10 = round(std::abs(temp * 10.0F));
 				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
@@ -1239,6 +1241,9 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+					// WARNING :
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1296,9 +1301,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.subtype = sTypeTEMP10;
 				tsen.TEMP.id1 = pFrame->ID_BYTE2;
 				tsen.TEMP.id2 = pFrame->ID_BYTE1;
+				// WARNING
+				// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+				// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
 				tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
 				int at10 = round(std::abs(temp * 10.0F));
 				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
@@ -1349,6 +1356,9 @@ bool CEnOceanESP2::ParseData()
 						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 						tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+						// WARNING :
+						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 						tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1389,6 +1399,9 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+					// WARNING :
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1428,6 +1441,9 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+					// WARNING :
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
