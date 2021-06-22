@@ -3455,7 +3455,7 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 	}
 	else if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
-		// WARNING :
+		// WARNING
 		// battery_level & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
 		// Set BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 		BatteryLevel = 255;
@@ -9285,7 +9285,7 @@ void MainWorker::decode_RFXSensor(const CDomoticzHardwareBase* pHardware, const 
 
 	if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
-		// WARNING :
+		// WARNING
 		// filler & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
 		// Set BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 		BatteryLevel = 255;

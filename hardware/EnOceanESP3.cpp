@@ -1300,7 +1300,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.packettype=pTypeRFXSensor;
 							tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id=ID_BYTE1;
-							// WARNING :
+							// WARNING
 							// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 							// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 							tsen.RFXSENSOR.filler=ID_BYTE0&0x0F;
@@ -1415,7 +1415,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 								tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 								tsen.RFXSENSOR.id = ID_BYTE1;
-								// WARNING :
+								// WARNING
 								// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 								// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 								tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
@@ -1458,7 +1458,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id = ID_BYTE1;
-							// WARNING :
+							// WARNING
 							// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 							// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
@@ -1501,7 +1501,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 							tsen.RFXSENSOR.id = ID_BYTE1;
-							// WARNING :
+							// WARNING
 							// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 							// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
