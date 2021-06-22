@@ -1,11 +1,12 @@
 #pragma once
 
+#include "EnOceanESP.h"
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
 #define ENOCEAN2_READ_BUFFER_SIZE 40
 
-class CEnOceanESP2 : public AsyncSerial, public CDomoticzHardwareBase
+class CEnOceanESP2 : public EnOceanESP, public AsyncSerial, public CDomoticzHardwareBase
 {
 	enum _eEnOcean_Receive_State
 	{

@@ -1,20 +1,22 @@
 #include "stdafx.h"
-#include "EnOceanHelper.h"
-#include "EnOceanESP3.h"
-#include "../main/Logger.h"
-#include "../main/Helper.h"
-#include "../main/RFXtrx.h"
-#include "../main/SQLHelper.h"
 
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include "hardwaretypes.h"
-#include "../main/localtime_r.h"
-
-#include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+#include <boost/exception/diagnostic_information.hpp>
+
+#include "../main/Logger.h"
+#include "../main/Helper.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
+#include "../main/localtime_r.h"
+
+#include "hardwaretypes.h"
+#include "EnOceanESP3.h"
+
 
 #if _DEBUG
 	#define ENOCEAN_BUTTON_DEBUG
@@ -564,11 +566,11 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 	if (tsen->LIGHTING2.packettype!=pTypeLighting2)
 		return false; //only allowed to control switches
 
-	uint32_t iNodeID = EnOceanGetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
 	{
-		std::string nodeID = EnOceanGetNodeID(iNodeID);
-		std::string baseID = EnOceanGetNodeID(m_id_base);
+		std::string nodeID = GetNodeID(iNodeID);
+		std::string baseID = GetNodeID(m_id_base);
 		Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 		return false;
 	}
@@ -588,7 +590,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 	//because they are threaded differently
 	bool bIsDimmer=false;
 	uint8_t LastLevel=0;
-	std::string nodeID = EnOceanGetNodeID(iNodeID);
+	std::string nodeID = GetNodeID(iNodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, nodeID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
@@ -753,11 +755,11 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 		RBUF *tsen = (RBUF*)pdata;
 		if (tsen->LIGHTING2.packettype != pTypeLighting2)
 			return; //only allowed to control switches
-		uint32_t iNodeID = EnOceanGetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+		uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 		if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
 		{
-			std::string nodeID = EnOceanGetNodeID(iNodeID);
-			std::string baseID = EnOceanGetNodeID(m_id_base);
+			std::string nodeID = GetNodeID(iNodeID);
+			std::string baseID = GetNodeID(m_id_base);
 			Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 			return;
 		}
@@ -837,7 +839,7 @@ bool CEnOceanESP3::ParseData()
 		if ((m_bBaseIDRequested)&&(m_bufferpos==6))
 		{
 			m_bBaseIDRequested=false;
-			m_id_base = EnOceanGetINodeID(m_buffer[1], m_buffer[2], m_buffer[3], m_buffer[4]);
+			m_id_base = GetINodeID(m_buffer[1], m_buffer[2], m_buffer[3], m_buffer[4]);
 			//unsigned char changes_left=m_buffer[5];
 			Log(LOG_STATUS,"Transceiver ID_Base: %08X",m_id_base);
 		}
@@ -868,7 +870,7 @@ bool CEnOceanESP3::ParseData()
 		if (Checksum!=pFrame->CHECKSUM)
 			return false; //checksum Mismatch!
 
-		uint32_t iNodeID = EnOceanGetINodeID(pFrame->ID_BYTE3, pFrame->ID_BYTE2, pFrame->ID_BYTE1, pFrame->ID_BYTE0);
+		uint32_t iNodeID = GetINodeID(pFrame->ID_BYTE3, pFrame->ID_BYTE2, pFrame->ID_BYTE1, pFrame->ID_BYTE0);
 
 		//Handle possible OK/Errors
 		bool bStopProcessing=false;
@@ -1081,8 +1083,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 				unsigned char ID_BYTE1  = m_buffer[7];
 				unsigned char ID_BYTE0  = m_buffer[8];
 
-				uint32_t iNodeID = EnOceanGetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
-				std::string nodeID = EnOceanGetNodeID(iNodeID);
+				uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
+				std::string nodeID = GetNodeID(iNodeID);
 
 				if ((DATA_BYTE0 & RORG_4BS_TEACHIN_LRN_BIT) == 0)	// LRN_BIT is 0 -> Teach-in datagram
 				{
@@ -1116,8 +1118,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 						ttype = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
 
 						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: %08X\nManufacturer: %03X (%s)\nProfile: %02X\nType: %02X (%s)",
-							iNodeID, manufacturer,EnOceanGetManufacturerName(manufacturer),
-							profile, ttype, EnOceanGetProfileTypeLabel(RORG_4BS, profile, ttype));
+							iNodeID, manufacturer,GetManufacturerName(manufacturer),
+							profile, ttype, GetProfileTypeLabel(RORG_4BS, profile, ttype));
  					}
 
 					// Search the sensor in database
@@ -1219,7 +1221,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 						// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
-						float temp=EnOceanGetDeviceValue(DATA_BYTE1, 40, 0, 0, 255);
+						float temp=GetDeviceValue(DATA_BYTE1, 40, 0, 0, 255);
 						if (Manufacturer == 0x0D)
 						{
 							//Eltako
@@ -1234,7 +1236,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								nightReduction = 4;
 							else if (DATA_BYTE3 == 0x1F)
 								nightReduction = 5;
-							//float setpointTemp=EnOceanGetDeviceValue(DATA_BYTE2, 0, 40, 0, 255);
+							//float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 40, 0, 255);
 						}
 						else
 						{
@@ -1279,17 +1281,17 @@ void CEnOceanESP3::ParseRadioDatagram()
 						if (Manufacturer == 0x0D)
 						{
 							if(DATA_BYTE2 == 0)
-								lux=EnOceanGetDeviceValue(DATA_BYTE3, 0, 100, 0, 255);
+								lux=GetDeviceValue(DATA_BYTE3, 0, 100, 0, 255);
 							else
-								lux=EnOceanGetDeviceValue(DATA_BYTE2, 300, 30000, 0, 255);
+								lux=GetDeviceValue(DATA_BYTE2, 300, 30000, 0, 255);
 						}
 						else
 						{
-							float voltage=EnOceanGetDeviceValue(DATA_BYTE3, 0, 5100, 0, 255); //mV
+							float voltage=GetDeviceValue(DATA_BYTE3, 0, 5100, 0, 255); //mV
 							if(DATA_BYTE0 & 1)
-								lux=EnOceanGetDeviceValue(DATA_BYTE2, 300, 30000, 0, 255);
+								lux=GetDeviceValue(DATA_BYTE2, 300, 30000, 0, 255);
 							else
-								lux=EnOceanGetDeviceValue(DATA_BYTE1, 600, 60000, 0, 255);
+								lux=GetDeviceValue(DATA_BYTE1, 600, 60000, 0, 255);
 
 							RBUF tsen;
 							memset(&tsen,0,sizeof(RBUF));
@@ -1344,9 +1346,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						float temp;
 						if (iType<0x20)
-							temp=EnOceanGetDeviceValue(DATA_BYTE1, ScaleMin, ScaleMax, 255, 0);
+							temp=GetDeviceValue(DATA_BYTE1, ScaleMin, ScaleMax, 255, 0);
 						else
-							temp=EnOceanGetDeviceValue(float(((DATA_BYTE2&3)<<8)|DATA_BYTE1), ScaleMin, ScaleMax, 0, 255); //10bit
+							temp=GetDeviceValue(float(((DATA_BYTE2&3)<<8)|DATA_BYTE1), ScaleMin, ScaleMax, 0, 255); //10bit
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
@@ -1372,8 +1374,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 						else if (iType == 0x02) { ScaleMin = -20; ScaleMax = 60; }
 						else if (iType == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
 
-						float temp = EnOceanGetDeviceValue(DATA_BYTE1, ScaleMin, ScaleMax, 0, 250);
-						float hum = EnOceanGetDeviceValue(DATA_BYTE2, 0, 100, 0, 255);
+						float temp = GetDeviceValue(DATA_BYTE1, ScaleMin, ScaleMax, 0, 250);
+						float hum = GetDeviceValue(DATA_BYTE2, 0, 100, 0, 255);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
@@ -1401,7 +1403,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							if (DATA_BYTE0 & 1)
 							{
 								//Voltage supported
-								float voltage = EnOceanGetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
+								float voltage = GetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
 								memset(&tsen, 0, sizeof(RBUF));
 								tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 								tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1441,7 +1443,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							RBUF tsen;
 
-							float voltage = EnOceanGetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
+							float voltage = GetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1481,7 +1483,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							RBUF tsen;
 
-							float voltage = EnOceanGetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
+							float voltage = GetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1537,9 +1539,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						// TODO: Check sensor availability flags and only report humidity and/or temp if available.
 
-						float temp = EnOceanGetDeviceValue(DATA_BYTE1, 0, 51, 0, 255);
-						float hum = EnOceanGetDeviceValue(DATA_BYTE3, 0, 100, 0, 200);
-						int co2 = (int)EnOceanGetDeviceValue(DATA_BYTE2, 0, 2550, 0, 255);
+						float temp = GetDeviceValue(DATA_BYTE1, 0, 51, 0, 255);
+						float hum = GetDeviceValue(DATA_BYTE3, 0, 100, 0, 200);
+						int co2 = (int)GetDeviceValue(DATA_BYTE2, 0, 2550, 0, 255);
 						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 						// Report battery level as 9
@@ -1573,8 +1575,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 				unsigned char ID_BYTE2=m_buffer[3];
 				unsigned char ID_BYTE1=m_buffer[4];
 				unsigned char ID_BYTE0=m_buffer[5];
-				uint32_t iNodeID = EnOceanGetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
-				std::string nodeID = EnOceanGetNodeID(iNodeID);
+				uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
+				std::string nodeID = GetNodeID(iNodeID);
 				int Profile;
 				int iType;
 
@@ -1835,12 +1837,12 @@ void CEnOceanESP3::ParseRadioDatagram()
 						unsigned char ID_BYTE2=m_buffer[9];
 						unsigned char ID_BYTE1=m_buffer[10];
 						unsigned char ID_BYTE0=m_buffer[11];
-						uint32_t iNodeID = EnOceanGetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
+						uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
 
 						Log(LOG_NORM, "teach-in request received from %08lX (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", iNodeID, manID, nb_channel, rorg,func,type);
 
 						// Record EnOcean device profile
-						std::string nodeID = EnOceanGetNodeID(iNodeID);
+						std::string nodeID = GetNodeID(iNodeID);
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
 						if (result.empty())
