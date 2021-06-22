@@ -1838,7 +1838,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						unsigned char ID_BYTE0=m_buffer[11];
 						uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
 
-						Log(LOG_NORM, "teach-in request received from %08lX (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", iNodeID, manID, nb_channel, rorg,func,type);
+						Log(LOG_NORM, "teach-in request received from %08X (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", iNodeID, manID, nb_channel, rorg,func,type);
 
 						// Record EnOcean device profile
 						std::string nodeID = GetNodeID(iNodeID);
