@@ -1168,7 +1168,6 @@ bool CEnOceanESP2::ParseData()
 				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 40, 0, 0, 255);
 				if (Manufacturer == ELTAKO)
 				{
-					//Eltako
 					int nightReduction = 0;
 					if (pFrame->DATA_BYTE3 == 0x06)
 						nightReduction = 1;

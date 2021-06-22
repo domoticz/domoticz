@@ -1222,9 +1222,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 						// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 						float temp=GetDeviceValue(DATA_BYTE1, 40, 0, 0, 255);
-						if (Manufacturer == 0x0D)
+						if (Manufacturer == ELTAKO)
 						{
-							//Eltako
 							int nightReduction = 0;
 							if (DATA_BYTE3 == 0x06)
 								nightReduction = 1;
@@ -1278,7 +1277,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
 						// DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
 						float lux =0;
-						if (Manufacturer == 0x0D)
+						if (Manufacturer == ELTAKO)
 						{
 							if(DATA_BYTE2 == 0)
 								lux=GetDeviceValue(DATA_BYTE3, 0, 100, 0, 255);
