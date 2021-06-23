@@ -213,7 +213,7 @@ hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp
 hardware/eHouse/EhouseTcpClient.cpp
 hardware/eHouse/EhouseUdpListener.cpp
-hardware/EnOceanESP.cpp
+hardware/EnOceanEEP.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/EnphaseAPI.cpp
