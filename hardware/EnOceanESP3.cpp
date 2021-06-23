@@ -17,6 +17,166 @@
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"
 
+// ESP3 Packet types
+enum ESP3_PACKET_TYPE : uint8_t
+{
+	PACKET_RADIO_ERP1 = 0x01,	  // Radio telegram
+	PACKET_RESPONSE = 0x02,		  // Response to any packet
+	PACKET_RADIO_SUB_TEL = 0x03,	  // Radio subtelegram
+	PACKET_EVENT = 0x04,		  // Event message
+	PACKET_COMMON_COMMAND = 0x05,	  // Common command"
+	PACKET_SMART_ACK_COMMAND = 0x06,  // Smart Acknowledge command
+	PACKET_REMOTE_MAN_COMMAND = 0x07, // Remote management command
+	PACKET_RADIO_MESSAGE = 0x09,	  // Radio message
+	PACKET_RADIO_ERP2 = 0x0A,	  // ERP2 protocol radio telegram
+	PACKET_CONFIG_COMMAND = 0x0B,	  // RESERVED
+	PACKET_COMMAND_ACCEPTED = 0x0C,	  // For long operations, informs the host the command is accepted
+	PACKET_RADIO_802_15_4 = 0x10,	  // 802_15_4 Raw Packet
+	PACKET_COMMAND_2_4 = 0x11,	  // 2.4 GHz Command
+};
+
+// ESP3 Return codes
+enum ESP3_RETURN_CODE : uint8_t
+{
+	RET_OK = 0x00,			// OK ... command is understood and triggered
+	RET_ERROR = 0x01,		// There is an error occured
+	RET_NOT_SUPPORTED = 0x02,	// The functionality is not supported by that implementation
+	RET_WRONG_PARAM = 0x03,		// There was a wrong parameter in the command
+	RET_OPERATION_DENIED = 0x04,	// Example: memory access denied (code-protected)
+	RET_LOCK_SET = 0x05,		// Duty cycle lock
+	RET_BUFFER_TO_SMALL = 0x06,	// The internal ESP3 buffer of the device is too small, to handle this telegram
+	RET_NO_FREE_BUFFER = 0x07,	// Currently all internal buffers are used
+	RET_MEMORY_ERROR = 0x82,	// The memory write process failed
+	RET_BASEID_OUT_OF_RANGE = 0x90, // BaseID out of range
+	RET_BASEID_MAX_REACHED = 0x91,	// BaseID has already been changed 10 times, no more changes are allowed
+};
+
+// ESP3 Event codes
+enum ESP3_EVENT_CODE : uint8_t
+{
+	SA_RECLAIM_NOT_SUCCESSFUL = 0x01, // Informs the external host about an unsuccessful reclaim by a Smart Ack. client
+	SA_CONFIRM_LEARN = 0x02,	  // Request to the external host about how to handle a received learn-in / learn-out of a Smart Ack. client
+	SA_LEARN_ACK = 0x03,		  // Response to the Smart Ack. client about the result of its Smart Acknowledge learn request
+	CO_READY = 0x04,		  // Inform the external about the readiness for operation
+	CO_EVENT_SECUREDEVICES = 0x05,	  // Informs the external host about an event in relation to security processing
+	CO_DUTYCYCLE_LIMIT = 0x06,	  // Informs the external host about reaching the duty cycle limit
+	CO_TRANSMIT_FAILED = 0x07,	  // Informs the external host about not being able to send a telegram
+	CO_TX_DONE = 0x08,		  // Informs that all TX operations are done
+	CO_LRN_MODE_DISABLED = 0x09	  // Informs that the learn mode has time-out
+};
+
+// ESP3 Common commands
+enum ESP3_COMMON_COMMAND : uint8_t
+{
+	CO_WR_SLEEP = 0x01,			  // Enter energy saving mode
+	CO_WR_RESET = 0x02,			  // Reset the device
+	CO_RD_VERSION = 0x03,			  // Read the device version information
+	CO_RD_SYS_LOG = 0x04,			  // Read system log
+	CO_WR_SYS_LOG = 0x05,			  // Reset system log
+	CO_WR_BIST = 0x06,			  // Perform Self Test
+	CO_WR_IDBASE = 0x07,			  // Set ID range base address
+	CO_RD_IDBASE = 0x08,			  // Read ID range base address
+	CO_WR_REPEATER = 0x09,			  // Set Repeater Level
+	CO_RD_REPEATER = 0x10,			  // Read Repeater Level
+	CO_WR_FILTER_ADD = 0x11,		  // Add filter to filter list
+	CO_WR_FILTER_DEL = 0x12,		  // Delete a specific filter from filter list
+	CO_WR_FILTER_DEL_ALL = 0x13,		  // Delete all filters from filter list
+	CO_WR_FILTER_ENABLE = 0x14,		  // Enable / disable filter list
+	CO_RD_FILTER = 0x15,			  // Read filters from filter list
+	CO_WR_WAIT_MATURITY = 0x16,		  // Wait until the end of telegram maturity time before received radio telegrams will be forwarded to the external host
+	CO_WR_SUBTEL = 0x17,			  // Enable / Disable transmission of additional subtelegram info to the external host
+	CO_WR_MEM = 0x18,			  // Write data to device memory
+	CO_RD_MEM = 0x19,			  // Read data from device memory
+	CO_RD_MEM_ADDRESS = 0x20,		  // Read address and length of the configuration area and the Smart Ack Table
+	CO_RD_SECURITY = 0x21,			  // DEPRECATED Read own security information (level, // key)
+	CO_WR_SECURITY = 0x22,			  // DEPRECATED Write own security information (level, // key)
+	CO_WR_LEARNMODE = 0x23,			  // Enable / disable learn mode
+	CO_RD_LEARNMODE = 0x24,			  // ead learn mode status
+	CO_WR_SECUREDEVICE_ADD = 0x25,		  // DEPRECATED Add a secure device
+	CO_WR_SECUREDEVICE_DEL = 0x26,		  // Delete a secure device from the link table
+	CO_RD_SECUREDEVICE_BY_INDEX = 0x27,	  // DEPRECATED Read secure device by index
+	CO_WR_MODE = 0x28,			  // Set the gateway transceiver mode
+	CO_RD_NUMSECUREDEVICES = 0x29,		  // Read number of secure devices in the secure link table
+	CO_RD_SECUREDEVICE_BY_ID = 0x30,	  // Read information about a specific secure device from the secure link table using the device ID
+	CO_WR_SECUREDEVICE_ADD_PSK = 0x31,	  // Add Pre-shared key for inbound secure device
+	CO_WR_SECUREDEVICE_ENDTEACHIN = 0x32,	  // Send Secure teach-In message
+	CO_WR_TEMPORARY_RLC_WINDOW = 0x33,	  // Set a temporary rolling-code window for every taught-in device
+	CO_RD_SECUREDEVICE_PSK = 0x34,		  // Read PSK
+	CO_RD_DUTYCYCLE_LIMIT = 0x35,		  // Read the status of the duty cycle limit monitor
+	CO_SET_BAUDRATE = 0x36,			  // Set the baud rate used to communicate with the external host
+	CO_GET_FREQUENCY_INFO = 0x37,		  // Read the radio frequency and protocol supported by the device
+	CO_38T_STEPCODE = 0x38,			  // Read Hardware Step code and Revision of the Device
+	CO_40_RESERVED = 0x40,			  // Reserved
+	CO_41_RESERVED = 0x41,			  // Reserved
+	CO_42_RESERVED = 0x42,			  // Reserved
+	CO_43_RESERVED = 0x43,			  // Reserved
+	CO_44_RESERVED = 0x44,			  // Reserved
+	CO_45_RESERVED = 0x45,			  // Reserved
+	CO_WR_REMAN_CODE = 0x46,		  // Set the security code to unlock Remote Management functionality via radio
+	CO_WR_STARTUP_DELAY = 0x47,		  // Set the startup delay (time from power up until start of operation)
+	CO_WR_REMAN_REPEATING = 0x48,		  // Select if REMAN telegrams originating from this module can be repeated
+	CO_RD_REMAN_REPEATING = 0x49,		  // Check if REMAN telegrams originating from this module can be repeated
+	CO_SET_NOISETHRESHOLD = 0x50,		  // Set the RSSI noise threshold level for telegram reception
+	CO_GET_NOISETHRESHOLD = 0x51,		  // Read the RSSI noise threshold level for telegram reception
+	CO_52_RESERVED = 0x52,			  // Reserved
+	CO_53_RESERVED = 0x53,			  // Reserved
+	CO_WR_RLC_SAVE_PERIOD = 0x54,		  // Set the period in which outgoing RLCs are saved to the EEPROM
+	CO_WR_RLC_LEGACY_MODE = 0x55,		  // Activate the legacy RLC security mode allowing roll-over and using the RLC acceptance window for 24bit explicit RLC
+	CO_WR_SECUREDEVICEV2_ADD = 0x56,	  // Add secure device to secure link table
+	CO_RD_SECUREDEVICEV2_BY_INDEX = 0x57,	  // Read secure device from secure link table using the table index
+	CO_WR_RSSITEST_MODE = 0x58,		  // Control the state of the RSSI-Test mode
+	CO_RD_RSSITEST_MODE = 0x59,		  // Read the state of the RSSI-Test Mode
+	CO_WR_SECUREDEVICE_MAINTENANCEKEY = 0x60, // Add the maintenance key information into the secure link table
+	CO_RD_SECUREDEVICE_MAINTENANCEKEY = 0x61, // Read by index the maintenance key information from the secure link table
+	CO_WR_TRANSPARENT_MODE = 0x62,		  // Control the state of the transparent mode
+	CO_RD_TRANSPARENT_MODE = 0x63,		  // Read the state of the transparent mode
+	CO_WR_TX_ONLY_MODE = 0x64,		  // Control the state of the TX only mode
+	CO_RD_TX_ONLY_MODE = 0x65		  // Read the state of the TX only mode} COMMON_COMMAND;
+};
+
+// ESP3 Smart Ack codes
+enum ESP3_SMART_ACK_CODE : uint8_t
+{
+	SA_WR_LEARNMODE = 0x01,	     // Set/Reset Smart Ack learn mode
+	SA_RD_LEARNMODE = 0x02,	     // Get Smart Ack learn mode state
+	SA_WR_LEARNCONFIRM = 0x03,   // Used for Smart Ack to add or delete a mailbox of a client
+	SA_WR_CLIENTLEARNRQ = 0x04,  // Send Smart Ack Learn request (Client)
+	SA_WR_RESET = 0x05,	     // Send reset command to a Smart Ack client
+	SA_RD_LEARNEDCLIENTS = 0x06, // Get Smart Ack learned sensors / mailboxes
+	SA_WR_RECLAIMS = 0x07,	     // Set number of reclaim attempts
+	SA_WR_POSTMASTER = 0x08	     // Activate/Deactivate Post master functionality
+};
+
+// ESP3 Function return codes
+enum ESP3_FUNC_RETURN_CODE : uint8_t
+{
+	RC_OK = 0,		    // Action performed. No problem detected
+	RC_EXIT,		    // Action not performed. No problem detected
+	RC_KO,			    // Action not performed. Problem detected
+	RC_TIME_OUT,		    // Action couldn't be carried out within a certain time.
+	RC_FLASH_HW_ERROR,	    // The write/erase/verify process failed, the flash page seems to be corrupted
+	RC_NEW_RX_BYTE,		    // A new UART/SPI byte received
+	RC_NO_RX_BYTE,		    // No new UART/SPI byte received
+	RC_NEW_RX_TEL,		    // New telegram received
+	RC_NO_RX_TEL,		    // No new telegram received
+	RC_NOT_VALID_CHKSUM,	    // Checksum not valid
+	RC_NOT_VALID_TEL,	    // Telegram not valid
+	RC_BUFF_FULL,		    // Buffer full, no space in Tx or Rx buffer
+	RC_ADDR_OUT_OF_MEM,	    // Address is out of memory
+	RC_NOT_VALID_PARAM,	    // Invalid function parameter
+	RC_BIST_FAILED,		    // Built in self test failed
+	RC_ST_TIMEOUT_BEFORE_SLEEP, // Before entering power down, the short term timer had timed out.
+	RC_MAX_FILTER_REACHED,	    // Maximum number of filters reached, no more filter possible
+	RC_FILTER_NOT_FOUND,	    // Filter to delete not found
+	RC_BASEID_OUT_OF_RANGE,	    // BaseID out of range
+	RC_BASEID_MAX_REACHED,	    // BaseID was changed 10 times, no more changes are allowed
+	RC_XTAL_NOT_STABLE,	    // XTAL is not stable
+	RC_NO_TX_TEL,		    // No telegram for transmission in queue
+	RC_ELEGRAM_WAIT,	    //	Waiting before sending broadcast message
+	RC_OUT_OF_RANGE,	    //	Generic out of range return code
+	RC_LOCK_SET,		    //	Function was not executed due to sending lock
+	RC_NEW_TX_TEL		    // New telegram transmitted
+};
 
 #if _DEBUG
 	#define ENOCEAN_BUTTON_DEBUG
@@ -1052,7 +1212,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 				tsen.LIGHTING2.packettype=pTypeLighting2;
 				tsen.LIGHTING2.subtype=sTypeAC;
 				tsen.LIGHTING2.seqnbr=0;
-
 				tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
 				tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
 				tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
@@ -1221,7 +1380,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 						// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
-						float temp=GetDeviceValue(DATA_BYTE1, 40, 0, 0, 255);
+						float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
 						if (Manufacturer == ELTAKO)
 						{
 							int nightReduction = 0;
@@ -1235,7 +1394,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								nightReduction = 4;
 							else if (DATA_BYTE3 == 0x1F)
 								nightReduction = 5;
-							//float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 40, 0, 255);
+							//float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
 						}
 						else
 						{
@@ -1282,17 +1441,17 @@ void CEnOceanESP3::ParseRadioDatagram()
 						if (Manufacturer == ELTAKO)
 						{
 							if(DATA_BYTE2 == 0)
-								lux=GetDeviceValue(DATA_BYTE3, 0, 100, 0, 255);
+								lux = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 100);
 							else
-								lux=GetDeviceValue(DATA_BYTE2, 300, 30000, 0, 255);
+								lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
 						}
 						else
 						{
-							float voltage=GetDeviceValue(DATA_BYTE3, 0, 5100, 0, 255); //mV
+							float voltage = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
 							if(DATA_BYTE0 & 1)
-								lux=GetDeviceValue(DATA_BYTE2, 300, 30000, 0, 255);
+								lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
 							else
-								lux=GetDeviceValue(DATA_BYTE1, 600, 60000, 0, 255);
+								lux = GetDeviceValue(DATA_BYTE1, 0, 255, 600, 60000);
 
 							RBUF tsen;
 							memset(&tsen,0,sizeof(RBUF));
@@ -1350,9 +1509,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						float temp;
 						if (iType<0x20)
-							temp=GetDeviceValue(DATA_BYTE1, ScaleMin, ScaleMax, 255, 0);
+							temp = GetDeviceValue(DATA_BYTE1, 255, 0, ScaleMin, ScaleMax);
 						else
-							temp=GetDeviceValue(float(((DATA_BYTE2&3)<<8)|DATA_BYTE1), ScaleMin, ScaleMax, 0, 255); //10bit
+							temp = GetDeviceValue(((DATA_BYTE2 & 3) << 8) | DATA_BYTE1, 0, 255, ScaleMin, ScaleMax); // 10bit
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
@@ -1380,8 +1539,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 						else if (iType == 0x02) { ScaleMin = -20; ScaleMax = 60; }
 						else if (iType == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
 
-						float temp = GetDeviceValue(DATA_BYTE1, ScaleMin, ScaleMax, 0, 250);
-						float hum = GetDeviceValue(DATA_BYTE2, 0, 100, 0, 255);
+						float temp = GetDeviceValue(DATA_BYTE1, 0, 250, ScaleMin, ScaleMax);
+						float hum = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 100);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
@@ -1409,7 +1568,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							if (DATA_BYTE0 & 1)
 							{
 								//Voltage supported
-								float voltage = GetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
+								float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 								memset(&tsen, 0, sizeof(RBUF));
 								tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 								tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1431,7 +1590,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.packettype = pTypeLighting2;
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
-
 							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
 							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
@@ -1452,7 +1610,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							RBUF tsen;
 
-							float voltage = GetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
+							float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1473,7 +1631,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.packettype = pTypeLighting2;
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
-
 							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
 							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
@@ -1495,7 +1652,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						{
 							RBUF tsen;
 
-							float voltage = GetDeviceValue(DATA_BYTE3, 0, 5.0F, 0, 250);
+							float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1528,7 +1685,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.packettype = pTypeLighting2;
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
-
 							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
 							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
@@ -1554,9 +1710,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						// TODO: Check sensor availability flags and only report humidity and/or temp if available.
 
-						float temp = GetDeviceValue(DATA_BYTE1, 0, 51, 0, 255);
-						float hum = GetDeviceValue(DATA_BYTE3, 0, 100, 0, 200);
-						int co2 = (int)GetDeviceValue(DATA_BYTE2, 0, 2550, 0, 255);
+						float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 0, 51);
+						float hum = GetDeviceValue(DATA_BYTE3, 0, 200, 0, 100);
+						int co2 = (int)GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
 						int NodeID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 						// Report battery level as 9
@@ -1676,7 +1832,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.packettype=pTypeLighting2;
 							tsen.LIGHTING2.subtype=sTypeAC;
 							tsen.LIGHTING2.seqnbr=0;
-
 							tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
 							tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
 							tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
@@ -1753,7 +1908,6 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.packettype = pTypeLighting2;
 							tsen.LIGHTING2.subtype = sTypeAC;
 							tsen.LIGHTING2.seqnbr = 0;
-
 							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
 							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
 							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
@@ -1883,14 +2037,12 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.LIGHTING2.packettype=pTypeLighting2;
 								tsen.LIGHTING2.subtype=sTypeAC;
 								tsen.LIGHTING2.seqnbr=0;
-
 								tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
 								tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
 								tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
 								tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
 								tsen.LIGHTING2.level=0;
 								tsen.LIGHTING2.rssi=rssi;
-
 								tsen.LIGHTING2.unitcode = nbc + 1;
 								tsen.LIGHTING2.cmnd     = light2_sOff;
 
@@ -1982,9 +2134,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 				}
 				if (func == 0x03 && type == 0x0A)
 				{ // D2-03-0A Push Button – Single Button
-					int battery = (int)double((255.0 / 100.0)*m_buffer[1]);
-					unsigned char DATA_BYTE0 = m_buffer[2]; //1 = simple press, 2=double press, 3=long press, 4=press release
-					SendGeneralSwitch(id, DATA_BYTE0, battery, 1, 0, "Switch", m_Name, 12);
+					uint8_t BATT = (uint8_t) GetDeviceValue(m_buffer[1], 1, 100, 1, 100);
+					uint8_t BA = m_buffer[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
+					SendGeneralSwitch(id, BA, BATT, 1, 0, "Switch", m_Name, 12);
 					return;
 				}
 				Log(LOG_NORM, "EnOcean: Node %s, Unhandled EEP (%02X-%02X-%02X)", szDeviceID, RORG_VLD, func, type);
@@ -1994,4 +2146,314 @@ void CEnOceanESP3::ParseRadioDatagram()
 			Log(LOG_NORM, "Unhandled RORG (%02X)", m_buffer[0]);
 			break;
 	}
+}
+
+struct _tPacketTypeTable
+{
+	uint8_t PT;
+	const char *label;
+	const char *description;
+};
+
+static const _tPacketTypeTable _packetTypeTable[] = {
+	{ PACKET_RADIO_ERP1, "RADIO_ERP1", "ERP1 radio telegram" },
+	{ PACKET_RESPONSE, "RESPONSE", "Response to any packet" },
+	{ PACKET_RADIO_SUB_TEL, "RADIO_SUB_TEL", "Radio subtelegram" },
+	{ PACKET_EVENT, "EVENT", "Event message" },
+	{ PACKET_COMMON_COMMAND, "COMMON_COMMAND", "Common command" },
+	{ PACKET_SMART_ACK_COMMAND, "SMART_ACK_COMMAND", "Smart Acknowledge command" },
+	{ PACKET_REMOTE_MAN_COMMAND, "REMOTE_MAN_COMMAND", "Remote management command" },
+	{ PACKET_RADIO_MESSAGE, "RADIO_MESSAGE", "Radio message" },
+	{ PACKET_RADIO_ERP2, "RADIO_ERP2", "ERP2 radio telegram" },
+	{ PACKET_CONFIG_COMMAND, "CONFIG_COMMAND", "RESERVED" },
+	{ PACKET_COMMAND_ACCEPTED, "COMMAND_ACCEPTED", "For long operations, informs the host the command is accepted" },
+	{ PACKET_RADIO_802_15_4, "RADIO_802_15_4", "802_15_4 Raw Packet" },
+	{ PACKET_COMMAND_2_4, "COMMAND_2_4", "2.4 GHz Command" },
+	{ 0, nullptr, nullptr }
+};
+
+const char *CEnOceanESP3::GetPacketTypeLabel(uint8_t PT)
+{
+	for (const _tPacketTypeTable *pTable = _packetTypeTable; pTable->PT; pTable++)
+		if (pTable->PT == PT)
+			return pTable->label;
+
+	return "RESERVED";
+}
+
+const char *CEnOceanESP3::GetPacketTypeDescription(uint8_t PT)
+{
+	for (const _tPacketTypeTable *pTable = _packetTypeTable; pTable->PT; pTable++)
+		if (pTable->PT == PT)
+			return pTable->description;
+
+	return "Reserved ESP3 packet type";
+}
+
+struct _tReturnCodeTable
+{
+	uint8_t RC;
+	const char *label;
+	const char *description;
+};
+
+static const _tReturnCodeTable _returnCodeTable[] = {
+	{ RET_OK, "OK", "No error" },
+	{ RET_ERROR, "ERROR", "There is an error occurred" },
+	{ RET_NOT_SUPPORTED, "NOT_SUPPORTED", "The functionality is not supported by that implementation" },
+	{ RET_WRONG_PARAM, "WRONG_PARAM", "There was a wrong parameter in the command" },
+	{ RET_OPERATION_DENIED, "OPERATION_DENIED", "The operation cannot be performed" },
+	{ RET_LOCK_SET, "LOCK_SET", "Duty cycle lock" },
+	{ RET_BUFFER_TO_SMALL, "BUFFER_TO_SMALL", "The internal ESP3 buffer of the device is too small, to handle this telegram" },
+	{ RET_NO_FREE_BUFFER, "NO_FREE_BUFFER", "Currently all internal buffers are used" },
+	{ RET_MEMORY_ERROR, "MEMORY_ERROR", "The memory write process failed" },
+	{ RET_BASEID_OUT_OF_RANGE, "BASEID_OUT_OF_RANGE", "Invalid BaseID" },
+	{ RET_BASEID_MAX_REACHED, "BASEID_MAX_REACHED", "BaseID has already been changed 10 times, no more changes are allowed" },
+	{ 0, nullptr, nullptr }
+};
+
+const char *CEnOceanESP3::GetReturnCodeLabel(uint8_t RC)
+{
+	for (const _tReturnCodeTable *pTable = _returnCodeTable; pTable->label; pTable++)
+		if (pTable->RC == RC)
+			return pTable->label;
+
+	if (RC > 0x80)
+		return "RC>0x80";
+
+	return "UNKNOWN";
+}
+
+const char *CEnOceanESP3::GetReturnCodeDescription(uint8_t RC)
+{
+	for (const _tReturnCodeTable *pTable = _returnCodeTable; pTable->description; pTable++)
+		if (pTable->RC == RC)
+			return pTable->description;
+
+	if (RC > 0x80)
+		return "Return codes greater than 0x80 used for commands with special return information, not commonly useable";
+
+	return "<<Unknown return code... Please report!<<";
+}
+
+struct _tEventCodeTable
+{
+	uint8_t EC;
+	const char *label;
+	const char *description;
+};
+static const _tEventCodeTable _eventCodeTable[] = {
+	{ SA_RECLAIM_NOT_SUCCESSFUL, "RECLAIM_NOT_SUCCESSFUL", "Informs the external host about an unsuccessful reclaim by a Smart Ack client" },
+	{ SA_CONFIRM_LEARN, "CONFIRM_LEARN", "Request to the external host about how to handle a received learn-in / learn-out of a Smart Ack. client" },
+	{ SA_LEARN_ACK, "LEARN_ACK", "Response to the Smart Ack. client about the result of its Smart Acknowledge learn request" },
+	{ CO_READY, "READY", "Inform the external about the readiness for operation" },
+	{ CO_EVENT_SECUREDEVICES, "EVENT_SECUREDEVICES", "Informs the external host about an event in relation to security processing" },
+	{ CO_DUTYCYCLE_LIMIT, "DUTYCYCLE_LIMIT", "Informs the external host about reaching the duty cycle limit" },
+	{ CO_TRANSMIT_FAILED, "TRANSMIT_FAILED", "Informs the external host about not being able to send a telegram" },
+	{ CO_TX_DONE, "TX_DONE", "Informs that all TX operations are done" },
+	{ CO_LRN_MODE_DISABLED, "LRN_MODE_DISABLED", "Informs that the learn mode has time-out" },
+	{ 0, nullptr, nullptr }
+};
+
+const char *CEnOceanESP3::GetEventCodeLabel(const uint8_t EC)
+{
+	for (const _tEventCodeTable *pTable = _eventCodeTable; pTable->EC; pTable++)
+		if (pTable->EC == EC)
+			return pTable->label;
+
+	return "UNKNOWN";
+}
+
+const char *CEnOceanESP3::GetEventCodeDescription(const uint8_t EC)
+{
+	for (const _tEventCodeTable *pTable = _eventCodeTable; pTable->EC; pTable++)
+		if (pTable->EC == EC)
+			return pTable->description;
+
+	return ">>Unkown function event code... Please report!<<";
+}
+
+struct _tCommonCommandTable
+{
+	uint8_t CC;
+	const char *label;
+	const char *description;
+};
+
+static const _tCommonCommandTable _commonCommandTable[] = {
+	{ CO_WR_SLEEP, "WR_SLEEP", "Enter energy saving mode" },
+	{ CO_WR_RESET, "WR_RESET", "Reset the device" },
+	{ CO_RD_VERSION, "RD_VERSION", "Read the device version information" },
+	{ CO_RD_SYS_LOG, "RD_SYS_LOG", "Read system log" },
+	{ CO_WR_SYS_LOG, "WR_SYS_LOG", "Reset system log" },
+	{ CO_WR_BIST, "WR_BIST", "Perform Self Test" },
+	{ CO_WR_IDBASE, "WR_IDBASE", "Set ID range base address" },
+	{ CO_RD_IDBASE, "RD_IDBASE", "Read ID range base address" },
+	{ CO_WR_REPEATER, "WR_REPEATER", "Set Repeater Level" },
+	{ CO_RD_REPEATER, "RD_REPEATER", "Read Repeater Level" },
+	{ CO_WR_FILTER_ADD, "WR_FILTER_ADD", "Add filter to filter list" },
+	{ CO_WR_FILTER_DEL, "WR_FILTER_DEL", "Delete a specific filter from filter list" },
+	{ CO_WR_FILTER_DEL_ALL, "WR_FILTER_DEL_ALL", "Delete all filters from filter list" },
+	{ CO_WR_FILTER_ENABLE, "WR_FILTER_ENABLE", "Enable / disable filter list" },
+	{ CO_RD_FILTER, "RD_FILTER", "Read filters from filter list" },
+	{ CO_WR_WAIT_MATURITY, "WR_WAIT_MATURITY", "Wait until the end of telegram maturity time before received radio telegrams will be forwarded to the external host" },
+	{ CO_WR_SUBTEL, "WR_SUBTEL", "Enable / Disable transmission of additional subtelegram info to the external host" },
+	{ CO_WR_MEM, "WR_MEM", "Write data to device memory" },
+	{ CO_RD_MEM, "RD_MEM", "Read data from device memory" },
+	{ CO_RD_MEM_ADDRESS, "RD_MEM_ADDRESS", "Read address and length of the configuration area and the Smart Ack Table" },
+	{ CO_RD_SECURITY, "RD_SECURITY", "key)" },
+	{ CO_WR_SECURITY, "WR_SECURITY", "key)" },
+	{ CO_WR_LEARNMODE, "WR_LEARNMODE", "Enable / disable learn mode" },
+	{ CO_RD_LEARNMODE, "RD_LEARNMODE", "ead learn mode status" },
+	{ CO_WR_SECUREDEVICE_ADD, "WR_SECUREDEVICE_ADD", "DEPRECATED Add a secure device" },
+	{ CO_WR_SECUREDEVICE_DEL, "WR_SECUREDEVICE_DEL", "Delete a secure device from the link table" },
+	{ CO_RD_SECUREDEVICE_BY_INDEX, "RD_SECUREDEVICE_BY_INDEX", "DEPRECATED Read secure device by index" },
+	{ CO_WR_MODE, "WR_MODE", "Set the gateway transceiver mode" },
+	{ CO_RD_NUMSECUREDEVICES, "RD_NUMSECUREDEVICES", "Read number of secure devices in the secure link table" },
+	{ CO_RD_SECUREDEVICE_BY_ID, "RD_SECUREDEVICE_BY_ID", "Read information about a specific secure device from the secure link table using the device ID" },
+	{ CO_WR_SECUREDEVICE_ADD_PSK, "WR_SECUREDEVICE_ADD_PSK", "Add Pre-shared key for inbound secure device" },
+	{ CO_WR_SECUREDEVICE_ENDTEACHIN, "WR_SECUREDEVICE_ENDTEACHIN", "Send Secure teach-In message" },
+	{ CO_WR_TEMPORARY_RLC_WINDOW, "WR_TEMPORARY_RLC_WINDOW", "Set a temporary rolling-code window for every taught-in device" },
+	{ CO_RD_SECUREDEVICE_PSK, "RD_SECUREDEVICE_PSK", "Read PSK" },
+	{ CO_RD_DUTYCYCLE_LIMIT, "RD_DUTYCYCLE_LIMIT", "Read the status of the duty cycle limit monitor" },
+	{ CO_SET_BAUDRATE, "SET_BAUDRATE", "Set the baud rate used to communicate with the external host" },
+	{ CO_GET_FREQUENCY_INFO, "GET_FREQUENCY_INFO", "Read the radio frequency and protocol supported by the device" },
+	{ CO_38T_STEPCODE, "38T_STEPCODE", "Read Hardware Step code and Revision of the Device" },
+	{ CO_40_RESERVED, "40_RESERVED", "Reserved" },
+	{ CO_41_RESERVED, "41_RESERVED", "Reserved" },
+	{ CO_42_RESERVED, "42_RESERVED", "Reserved" },
+	{ CO_43_RESERVED, "43_RESERVED", "Reserved" },
+	{ CO_44_RESERVED, "44_RESERVED", "Reserved" },
+	{ CO_45_RESERVED, "45_RESERVED", "Reserved" },
+	{ CO_WR_REMAN_CODE, "WR_REMAN_CODE", "Set the security code to unlock Remote Management functionality via radio" },
+	{ CO_WR_STARTUP_DELAY, "WR_STARTUP_DELAY", "Set the startup delay (time from power up until start of operation)" },
+	{ CO_WR_REMAN_REPEATING, "WR_REMAN_REPEATING", "Select if REMAN telegrams originating from this module can be repeated" },
+	{ CO_RD_REMAN_REPEATING, "RD_REMAN_REPEATING", "Check if REMAN telegrams originating from this module can be repeated" },
+	{ CO_SET_NOISETHRESHOLD, "SET_NOISETHRESHOLD", "Set the RSSI noise threshold level for telegram reception" },
+	{ CO_GET_NOISETHRESHOLD, "GET_NOISETHRESHOLD", "Read the RSSI noise threshold level for telegram reception" },
+	{ CO_52_RESERVED, "52_RESERVED", "Reserved" },
+	{ CO_53_RESERVED, "53_RESERVED", "Reserved" },
+	{ CO_WR_RLC_SAVE_PERIOD, "WR_RLC_SAVE_PERIOD", "Set the period in which outgoing RLCs are saved to the EEPROM" },
+	{ CO_WR_RLC_LEGACY_MODE, "WR_RLC_LEGACY_MODE", "Activate the legacy RLC security mode allowing roll-over and using the RLC acceptance window for 24bit explicit RLC" },
+	{ CO_WR_SECUREDEVICEV2_ADD, "WR_SECUREDEVICEV2_ADD", "Add secure device to secure link table" },
+	{ CO_RD_SECUREDEVICEV2_BY_INDEX, "RD_SECUREDEVICEV2_BY_INDEX", "Read secure device from secure link table using the table index" },
+	{ CO_WR_RSSITEST_MODE, "WR_RSSITEST_MODE", "Control the state of the RSSI-Test mode" },
+	{ CO_RD_RSSITEST_MODE, "RD_RSSITEST_MODE", "Read the state of the RSSI-Test Mode" },
+	{ CO_WR_SECUREDEVICE_MAINTENANCEKEY, "WR_SECUREDEVICE_MAINTENANCEKEY", "Add the maintenance key information into the secure link table" },
+	{ CO_RD_SECUREDEVICE_MAINTENANCEKEY, "RD_SECUREDEVICE_MAINTENANCEKEY", "Read by index the maintenance key information from the secure link table" },
+	{ CO_WR_TRANSPARENT_MODE, "WR_TRANSPARENT_MODE", "Control the state of the transparent mode" },
+	{ CO_RD_TRANSPARENT_MODE, "RD_TRANSPARENT_MODE", "Read the state of the transparent mode" },
+	{ CO_WR_TX_ONLY_MODE, "WR_TX_ONLY_MODE", "Control the state of the TX only mode" },
+	{ CO_RD_TX_ONLY_MODE, "RD_TX_ONLY_MODE", "Read the state of the TX only mode" },
+	{ 0, nullptr, nullptr }
+};
+
+const char *CEnOceanESP3::GetCommonCommandLabel(const uint8_t CC)
+{
+	for (const _tCommonCommandTable *pTable = _commonCommandTable; pTable->CC; pTable++)
+		if (pTable->CC == CC)
+			return pTable->label;
+
+	return "UNKNOWN";
+}
+
+const char *CEnOceanESP3::GetCommonCommandDescription(const uint8_t CC)
+{
+	for (const _tCommonCommandTable *pTable = _commonCommandTable; pTable->CC; pTable++)
+		if (pTable->CC == CC)
+			return pTable->description;
+
+	return ">>Unkown Common Command... Please report!<<";
+}
+
+struct _tSmarkAckCodeTable
+{
+	uint8_t SA;
+	const char *label;
+	const char *description;
+};
+
+static const _tSmarkAckCodeTable _smarkAckCodeTable[] = {
+	{ SA_WR_LEARNMODE, "WR_LEARNMODE", "Set/Reset Smart Ack learn mode" },
+	{ SA_RD_LEARNMODE, "RD_LEARNMODE", "Get Smart Ack learn mode state" },
+	{ SA_WR_LEARNCONFIRM, "WR_LEARNCONFIRM", "Used for Smart Ack to add or delete a mailbox of a client" },
+	{ SA_WR_CLIENTLEARNRQ, "WR_CLIENTLEARNRQ", "Send Smart Ack Learn request (Client)" },
+	{ SA_WR_RESET, "WR_RESET", "Send reset command to a Smart Ack client" },
+	{ SA_RD_LEARNEDCLIENTS, "RD_LEARNEDCLIENTS", "Get Smart Ack learned sensors / mailboxes" },
+	{ SA_WR_RECLAIMS, "WR_RECLAIMS", "Set number of reclaim attempts" },
+	{ SA_WR_POSTMASTER, "WR_POSTMASTER", "Activate/Deactivate Post master functionality" },
+	{ 0, nullptr, nullptr }
+};
+
+const char *CEnOceanESP3::GetSmarkAckCodeLabel(const uint8_t SA)
+{
+	for (const _tSmarkAckCodeTable *pTable = _smarkAckCodeTable; pTable->SA; pTable++)
+		if (pTable->SA == SA)
+			return pTable->label;
+
+	return "UNKNOWN";
+}
+
+const char *CEnOceanESP3::GetSmartAckCodeDescription(const uint8_t SA)
+{
+	for (const _tSmarkAckCodeTable *pTable = _smarkAckCodeTable; pTable->SA; pTable++)
+		if (pTable->SA == SA)
+			return pTable->description;
+
+	return ">>Unkown smark ack code... Please report!<<";
+}
+
+struct _tFunctionReturnCodeTable
+{
+	uint8_t RC;
+	const char *label;
+	const char *description;
+};
+
+static const _tFunctionReturnCodeTable _functionReturnCodeTable[] = {
+	{ RC_OK, "RC_OK", "Action performed. No problem detected" },
+	{ RC_EXIT, "RC_EXIT", "Action not performed. No problem detected" },
+	{ RC_KO, "RC_KO", "Action not performed. Problem detected" },
+	{ RC_TIME_OUT, "RC_TIME_OUT", "Action couldn't be carried out within a certain time." },
+	{ RC_FLASH_HW_ERROR, "RC_FLASH_HW_ERROR", "The write/erase/verify process failed, the flash page seems to be corrupted" },
+	{ RC_NEW_RX_BYTE, "RC_NEW_RX_BYTE", "A new UART/SPI byte received" },
+	{ RC_NO_RX_BYTE, "RC_NO_RX_BYTE", "No new UART/SPI byte received" },
+	{ RC_NEW_RX_TEL, "RC_NEW_RX_TEL", "New telegram received" },
+	{ RC_NO_RX_TEL, "RC_NO_RX_TEL", "No new telegram received" },
+	{ RC_NOT_VALID_CHKSUM, "RC_NOT_VALID_CHKSUM", "Checksum not valid" },
+	{ RC_NOT_VALID_TEL, "RC_NOT_VALID_TEL", "Telegram not valid" },
+	{ RC_BUFF_FULL, "RC_BUFF_FULL", "Buffer full, no space in Tx or Rx buffer" },
+	{ RC_ADDR_OUT_OF_MEM, "RC_ADDR_OUT_OF_MEM", "Address is out of memory" },
+	{ RC_NOT_VALID_PARAM, "RC_NOT_VALID_PARAM", "Invalid function parameter" },
+	{ RC_BIST_FAILED, "RC_BIST_FAILED", "Built in self test failed" },
+	{ RC_ST_TIMEOUT_BEFORE_SLEEP, "RC_ST_TIMEOUT_BEFORE_SLEEP", "Before entering power down, the short term timer had timed out." },
+	{ RC_MAX_FILTER_REACHED, "RC_MAX_FILTER_REACHED", "Maximum number of filters reached, no more filter possible" },
+	{ RC_FILTER_NOT_FOUND, "RC_FILTER_NOT_FOUND", "Filter to delete not found" },
+	{ RC_BASEID_OUT_OF_RANGE, "RC_BASEID_OUT_OF_RANGE", "BaseID out of range" },
+	{ RC_BASEID_MAX_REACHED, "RC_BASEID_MAX_REACHED", "BaseID was changed 10 times, no more changes are allowed" },
+	{ RC_XTAL_NOT_STABLE, "RC_XTAL_NOT_STABLE", "XTAL is not stable" },
+	{ RC_NO_TX_TEL, "RC_NO_TX_TEL", "No telegram for transmission in queue" },
+	{ RC_ELEGRAM_WAIT, "RC_ELEGRAM_WAIT", "Waiting before sending broadcast message" },
+	{ RC_OUT_OF_RANGE, "RC_OUT_OF_RANGE", "Generic out of range return code" },
+	{ RC_LOCK_SET, "RC_LOCK_SET", "Function was not executed due to sending lock" },
+	{ RC_NEW_TX_TEL, "RC_NEW_TX_TEL", "New telegram transmitted" },
+	{ 0, nullptr, nullptr }
+};
+
+const char *CEnOceanESP3::GetFunctionReturnCodeLabel(const uint8_t RC)
+{
+	for (const _tFunctionReturnCodeTable *pTable = _functionReturnCodeTable; pTable->RC; pTable++)
+		if (pTable->RC == RC)
+			return pTable->label;
+
+	return "UNKNOWN";
+}
+
+const char *CEnOceanESP3::GetFunctionReturnCodeDescription(const uint8_t RC)
+{
+	for (const _tFunctionReturnCodeTable *pTable = _functionReturnCodeTable; pTable->RC; pTable++)
+		if (pTable->RC == RC)
+			return pTable->description;
+
+	return ">>Unkown function return code... Please report!<<";
 }

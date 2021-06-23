@@ -4,7 +4,7 @@
 
 #include "../main/Logger.h"
 
-#include "EnOceanESP.h"
+#include "EnOceanEEP.h"
 
 struct _tManufacturerTable
 {
@@ -137,7 +137,7 @@ static const _tManufacturerTable _manufacturerTable[] = {
 	{ 0, nullptr, nullptr },
 };
 
-const char *EnOceanESP::GetManufacturerLabel(uint32_t ID)
+const char *CEnOceanEEP::GetManufacturerLabel(uint32_t ID)
 {
 	for (const _tManufacturerTable *pTable = _manufacturerTable; pTable->ID != 0 || pTable->label != nullptr; pTable++)
 		if (pTable->ID == ID)
@@ -146,7 +146,7 @@ const char *EnOceanESP::GetManufacturerLabel(uint32_t ID)
 	return "UNKNOWN";
 }
 
-const char *EnOceanESP::GetManufacturerName(uint32_t ID)
+const char *CEnOceanEEP::GetManufacturerName(uint32_t ID)
 {
 	for (const _tManufacturerTable *pTable = _manufacturerTable; pTable->ID != 0 || pTable->name != nullptr; pTable++)
 		if (pTable->ID == ID)
@@ -155,362 +155,50 @@ const char *EnOceanESP::GetManufacturerName(uint32_t ID)
 	return ">>Unkown manufacturer... Please report!<<";
 }
 
-struct _tPacketTypeTable
-{
-	uint8_t PT;
-	const char* label;
-	const char* description;
-};
-
-static const _tPacketTypeTable _packetTypeTable[] = {
-	{ PACKET_RADIO_ERP1, "RADIO_ERP1", "ERP1 radio telegram" },
-	{ PACKET_RESPONSE, "RESPONSE", "Response to any packet" },
-	{ PACKET_RADIO_SUB_TEL, "RADIO_SUB_TEL", "Radio subtelegram" },
-	{ PACKET_EVENT, "EVENT", "Event message" },
-	{ PACKET_COMMON_COMMAND, "COMMON_COMMAND", "Common command" },
-	{ PACKET_SMART_ACK_COMMAND, "SMART_ACK_COMMAND", "Smart Acknowledge command" },
-	{ PACKET_REMOTE_MAN_COMMAND, "REMOTE_MAN_COMMAND", "Remote management command" },
-	{ PACKET_RADIO_MESSAGE, "RADIO_MESSAGE", "Radio message" },
-	{ PACKET_RADIO_ERP2, "RADIO_ERP2", "ERP2 radio telegram" },
-	{ PACKET_CONFIG_COMMAND, "CONFIG_COMMAND", "RESERVED" },
-	{ PACKET_COMMAND_ACCEPTED, "COMMAND_ACCEPTED", "For long operations, informs the host the command is accepted" },
-	{ PACKET_RADIO_802_15_4, "RADIO_802_15_4", "802_15_4 Raw Packet" },
-	{ PACKET_COMMAND_2_4, "COMMAND_2_4", "2.4 GHz Command" },
-	{ 0, nullptr, nullptr }
-};
-
-const char *EnOceanESP::GetPacketTypeLabel(uint8_t PT)
-{
-	for (const _tPacketTypeTable* pTable = _packetTypeTable; pTable->PT; pTable++)
-		if (pTable->PT == PT)
-			return pTable->label;
-
-	return "RESERVED";
-}
-
-const char *EnOceanESP::GetPacketTypeDescription(uint8_t PT)
-{
-	for (const _tPacketTypeTable* pTable = _packetTypeTable; pTable->PT; pTable++)
-		if (pTable->PT == PT)
-			return pTable->description;
-
-	return "Reserved ESP3 packet type";
-}
-
 struct _tRORGTable
 {
 	uint8_t RORG;
-	const char* label;
-	const char* description;
+	const char *label;
+	const char *description;
 };
 
-static const _tRORGTable _RORGTable[] = {
-	{ RORG_ST, "ST", "Secure telegram" },
-	{ RORG_ST_WE, "ST_WE", "Secure telegram with RORG encapsulation" },
-	{ RORG_STT_FW, "STT_FW", "Secure teach-in telegram for switch" },
-	{ RORG_4BS, "4BS", "4 Bytes Communication" },
-	{ RORG_ADT, "ADT", "Adressing Destination Telegram" },
-	{ RORG_SM_REC, "SM_REC", "Smart Ack Reclaim" },
-	{ RORG_GP_SD, "GP_SD", "Generic Profiles selective data" },
-	{ RORG_SM_LRN_REQ, "SM_LRN_REQ", "Smart Ack Learn Request" },
-	{ RORG_SM_LRN_ANS, "SM_LRN_ANS", "Smart Ack Learn Answer" },
-	{ RORG_SM_ACK_SGNL, "SM_ACK_SGNL", "Smart Acknowledge Signal telegram" },
-	{ RORG_MSC, "MSC", "Manufacturer Specific Communication" },
-	{ RORG_VLD, "VLD", "Variable length data telegram" },
-	{ RORG_UTE, "UTE", "Universal teach-in EEP based" },
-	{ RORG_1BS, "1BS", "1 Byte Communication" },
-	{ RORG_RPS, "RPS", "Repeated Switch Communication" },
-	{ RORG_SYS_EX, "SYS_EX", "Remote Management" },
-	{ 0, nullptr, nullptr }
-};
+static const _tRORGTable _RORGTable[] = { { RORG_ST, "ST", "Secure telegram" },
+					  { RORG_ST_WE, "ST_WE", "Secure telegram with RORG encapsulation" },
+					  { RORG_STT_FW, "STT_FW", "Secure teach-in telegram for switch" },
+					  { RORG_4BS, "4BS", "4 Bytes Communication" },
+					  { RORG_ADT, "ADT", "Adressing Destination Telegram" },
+					  { RORG_SM_REC, "SM_REC", "Smart Ack Reclaim" },
+					  { RORG_GP_SD, "GP_SD", "Generic Profiles selective data" },
+					  { RORG_SM_LRN_REQ, "SM_LRN_REQ", "Smart Ack Learn Request" },
+					  { RORG_SM_LRN_ANS, "SM_LRN_ANS", "Smart Ack Learn Answer" },
+					  { RORG_SM_ACK_SGNL, "SM_ACK_SGNL", "Smart Acknowledge Signal telegram" },
+					  { RORG_MSC, "MSC", "Manufacturer Specific Communication" },
+					  { RORG_VLD, "VLD", "Variable length data telegram" },
+					  { RORG_UTE, "UTE", "Universal teach-in EEP based" },
+					  { RORG_1BS, "1BS", "1 Byte Communication" },
+					  { RORG_RPS, "RPS", "Repeated Switch Communication" },
+					  { RORG_SYS_EX, "SYS_EX", "Remote Management" },
+					  { 0, nullptr, nullptr } };
 
-const char *EnOceanESP::GetRORGLabel(uint8_t RORG)
+const char *CEnOceanEEP::GetRORGLabel(uint8_t RORG)
 {
-	for (const _tRORGTable* pTable = _RORGTable; pTable->RORG; pTable++)
+	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG; pTable++)
 		if (pTable->RORG == RORG)
 			return pTable->label;
 
 	return "UNKNOWN";
 }
 
-const char *EnOceanESP::GetRORGDescription(uint8_t RORG)
+const char *CEnOceanEEP::GetRORGDescription(uint8_t RORG)
 {
-	for (const _tRORGTable* pTable = _RORGTable; pTable->RORG; pTable++)
+	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG; pTable++)
 		if (pTable->RORG == RORG)
 			return pTable->description;
 
 	return ">>Unkown RORG... Please report!<<";
 }
 
-struct _tReturnCodeTable
-{
-	uint8_t RC;
-	const char* label;
-	const char* description;
-};
-
-static const _tReturnCodeTable _returnCodeTable[] = {
-	{ RET_OK, "OK", "No error" },
-	{ RET_ERROR, "ERROR", "There is an error occurred" },
-	{ RET_NOT_SUPPORTED, "NOT_SUPPORTED", "The functionality is not supported by that implementation" },
-	{ RET_WRONG_PARAM, "WRONG_PARAM", "There was a wrong parameter in the command" },
-	{ RET_OPERATION_DENIED, "OPERATION_DENIED", "The operation cannot be performed" },
-	{ RET_LOCK_SET, "LOCK_SET", "Duty cycle lock" },
-	{ RET_BUFFER_TO_SMALL, "BUFFER_TO_SMALL", "The internal ESP3 buffer of the device is too small, to handle this telegram" },
-	{ RET_NO_FREE_BUFFER, "NO_FREE_BUFFER", "Currently all internal buffers are used" },
-	{ RET_MEMORY_ERROR, "MEMORY_ERROR", "The memory write process failed" },
-	{ RET_BASEID_OUT_OF_RANGE, "BASEID_OUT_OF_RANGE", "Invalid BaseID" },
-	{ RET_BASEID_MAX_REACHED, "BASEID_MAX_REACHED", "BaseID has already been changed 10 times, no more changes are allowed" },
-	{ 0, nullptr, nullptr }
-};
-
-const char *EnOceanESP::GetReturnCodeLabel(uint8_t RC)
-{
-	for (const _tReturnCodeTable* pTable = _returnCodeTable; pTable->label; pTable++)
-		if (pTable->RC == RC)
-			return pTable->label;
-
-	if (RC > 0x80)
-		return "RC>0x80";
-
-	return "UNKNOWN";
-}
-
-const char *EnOceanESP::GetReturnCodeDescription(uint8_t RC)
-{
-	for (const _tReturnCodeTable* pTable = _returnCodeTable; pTable->description; pTable++)
-		if (pTable->RC == RC)
-			return pTable->description;
-
-	if (RC > 0x80)
-		return "Return codes greater than 0x80 used for commands with special return information, not commonly useable";
-
-	return "<<Unknown return code... Please report!<<";
-}
-
-struct _tEventCodeTable
-{
-	uint8_t EC;
-	const char* label;
-	const char* description;
-};
-static const _tEventCodeTable _eventCodeTable[] = {
-	{ SA_RECLAIM_NOT_SUCCESSFUL, "RECLAIM_NOT_SUCCESSFUL", "Informs the external host about an unsuccessful reclaim by a Smart Ack client" },
-	{ SA_CONFIRM_LEARN, "CONFIRM_LEARN", "Request to the external host about how to handle a received learn-in / learn-out of a Smart Ack. client" },
-	{ SA_LEARN_ACK, "LEARN_ACK", "Response to the Smart Ack. client about the result of its Smart Acknowledge learn request" },
-	{ CO_READY, "READY", "Inform the external about the readiness for operation" },
-	{ CO_EVENT_SECUREDEVICES, "EVENT_SECUREDEVICES", "Informs the external host about an event in relation to security processing" },
-	{ CO_DUTYCYCLE_LIMIT, "DUTYCYCLE_LIMIT", "Informs the external host about reaching the duty cycle limit" },
-	{ CO_TRANSMIT_FAILED, "TRANSMIT_FAILED", "Informs the external host about not being able to send a telegram" },
-	{ CO_TX_DONE, "TX_DONE", "Informs that all TX operations are done" },
-	{ CO_LRN_MODE_DISABLED, "LRN_MODE_DISABLED", "Informs that the learn mode has time-out" },
-	{ 0, nullptr, nullptr }
-};
-
-const char *EnOceanESP::GetEventCodeLabel(const uint8_t EC)
-{
-	for (const _tEventCodeTable* pTable = _eventCodeTable; pTable->EC; pTable++)
-		if (pTable->EC == EC)
-			return pTable->label;
-
-	return "UNKNOWN";
-}
-
-const char *EnOceanESP::GetEventCodeDescription(const uint8_t EC)
-{
-	for (const _tEventCodeTable* pTable = _eventCodeTable; pTable->EC; pTable++)
-		if (pTable->EC == EC)
-			return pTable->description;
-
-	return ">>Unkown function event code... Please report!<<";
-}
-
-struct _tCommonCommandTable
-{
-	uint8_t CC;
-	const char* label;
-	const char* description;
-};
-
-static const _tCommonCommandTable _commonCommandTable[] = {
-	{ CO_WR_SLEEP, "WR_SLEEP", "Enter energy saving mode" },
-	{ CO_WR_RESET, "WR_RESET", "Reset the device" },
-	{ CO_RD_VERSION, "RD_VERSION", "Read the device version information" },
-	{ CO_RD_SYS_LOG, "RD_SYS_LOG", "Read system log" },
-	{ CO_WR_SYS_LOG, "WR_SYS_LOG", "Reset system log" },
-	{ CO_WR_BIST, "WR_BIST", "Perform Self Test" },
-	{ CO_WR_IDBASE, "WR_IDBASE", "Set ID range base address" },
-	{ CO_RD_IDBASE, "RD_IDBASE", "Read ID range base address" },
-	{ CO_WR_REPEATER, "WR_REPEATER", "Set Repeater Level" },
-	{ CO_RD_REPEATER, "RD_REPEATER", "Read Repeater Level" },
-	{ CO_WR_FILTER_ADD, "WR_FILTER_ADD", "Add filter to filter list" },
-	{ CO_WR_FILTER_DEL, "WR_FILTER_DEL", "Delete a specific filter from filter list" },
-	{ CO_WR_FILTER_DEL_ALL, "WR_FILTER_DEL_ALL", "Delete all filters from filter list" },
-	{ CO_WR_FILTER_ENABLE, "WR_FILTER_ENABLE", "Enable / disable filter list" },
-	{ CO_RD_FILTER, "RD_FILTER", "Read filters from filter list" },
-	{ CO_WR_WAIT_MATURITY, "WR_WAIT_MATURITY", "Wait until the end of telegram maturity time before received radio telegrams will be forwarded to the external host" },
-	{ CO_WR_SUBTEL, "WR_SUBTEL", "Enable / Disable transmission of additional subtelegram info to the external host" },
-	{ CO_WR_MEM, "WR_MEM", "Write data to device memory" },
-	{ CO_RD_MEM, "RD_MEM", "Read data from device memory" },
-	{ CO_RD_MEM_ADDRESS, "RD_MEM_ADDRESS", "Read address and length of the configuration area and the Smart Ack Table" },
-	{ CO_RD_SECURITY, "RD_SECURITY", "key)" },
-	{ CO_WR_SECURITY, "WR_SECURITY", "key)" },
-	{ CO_WR_LEARNMODE, "WR_LEARNMODE", "Enable / disable learn mode" },
-	{ CO_RD_LEARNMODE, "RD_LEARNMODE", "ead learn mode status" },
-	{ CO_WR_SECUREDEVICE_ADD, "WR_SECUREDEVICE_ADD", "DEPRECATED Add a secure device" },
-	{ CO_WR_SECUREDEVICE_DEL, "WR_SECUREDEVICE_DEL", "Delete a secure device from the link table" },
-	{ CO_RD_SECUREDEVICE_BY_INDEX, "RD_SECUREDEVICE_BY_INDEX", "DEPRECATED Read secure device by index" },
-	{ CO_WR_MODE, "WR_MODE", "Set the gateway transceiver mode" },
-	{ CO_RD_NUMSECUREDEVICES, "RD_NUMSECUREDEVICES", "Read number of secure devices in the secure link table" },
-	{ CO_RD_SECUREDEVICE_BY_ID, "RD_SECUREDEVICE_BY_ID", "Read information about a specific secure device from the secure link table using the device ID" },
-	{ CO_WR_SECUREDEVICE_ADD_PSK, "WR_SECUREDEVICE_ADD_PSK", "Add Pre-shared key for inbound secure device" },
-	{ CO_WR_SECUREDEVICE_ENDTEACHIN, "WR_SECUREDEVICE_ENDTEACHIN", "Send Secure teach-In message" },
-	{ CO_WR_TEMPORARY_RLC_WINDOW, "WR_TEMPORARY_RLC_WINDOW", "Set a temporary rolling-code window for every taught-in device" },
-	{ CO_RD_SECUREDEVICE_PSK, "RD_SECUREDEVICE_PSK", "Read PSK" },
-	{ CO_RD_DUTYCYCLE_LIMIT, "RD_DUTYCYCLE_LIMIT", "Read the status of the duty cycle limit monitor" },
-	{ CO_SET_BAUDRATE, "SET_BAUDRATE", "Set the baud rate used to communicate with the external host" },
-	{ CO_GET_FREQUENCY_INFO, "GET_FREQUENCY_INFO", "Read the radio frequency and protocol supported by the device" },
-	{ CO_38T_STEPCODE, "38T_STEPCODE", "Read Hardware Step code and Revision of the Device" },
-	{ CO_40_RESERVED, "40_RESERVED", "Reserved" },
-	{ CO_41_RESERVED, "41_RESERVED", "Reserved" },
-	{ CO_42_RESERVED, "42_RESERVED", "Reserved" },
-	{ CO_43_RESERVED, "43_RESERVED", "Reserved" },
-	{ CO_44_RESERVED, "44_RESERVED", "Reserved" },
-	{ CO_45_RESERVED, "45_RESERVED", "Reserved" },
-	{ CO_WR_REMAN_CODE, "WR_REMAN_CODE", "Set the security code to unlock Remote Management functionality via radio" },
-	{ CO_WR_STARTUP_DELAY, "WR_STARTUP_DELAY", "Set the startup delay (time from power up until start of operation)" },
-	{ CO_WR_REMAN_REPEATING, "WR_REMAN_REPEATING", "Select if REMAN telegrams originating from this module can be repeated" },
-	{ CO_RD_REMAN_REPEATING, "RD_REMAN_REPEATING", "Check if REMAN telegrams originating from this module can be repeated" },
-	{ CO_SET_NOISETHRESHOLD, "SET_NOISETHRESHOLD", "Set the RSSI noise threshold level for telegram reception" },
-	{ CO_GET_NOISETHRESHOLD, "GET_NOISETHRESHOLD", "Read the RSSI noise threshold level for telegram reception" },
-	{ CO_52_RESERVED, "52_RESERVED", "Reserved" },
-	{ CO_53_RESERVED, "53_RESERVED", "Reserved" },
-	{ CO_WR_RLC_SAVE_PERIOD, "WR_RLC_SAVE_PERIOD", "Set the period in which outgoing RLCs are saved to the EEPROM" },
-	{ CO_WR_RLC_LEGACY_MODE, "WR_RLC_LEGACY_MODE", "Activate the legacy RLC security mode allowing roll-over and using the RLC acceptance window for 24bit explicit RLC" },
-	{ CO_WR_SECUREDEVICEV2_ADD, "WR_SECUREDEVICEV2_ADD", "Add secure device to secure link table" },
-	{ CO_RD_SECUREDEVICEV2_BY_INDEX, "RD_SECUREDEVICEV2_BY_INDEX", "Read secure device from secure link table using the table index" },
-	{ CO_WR_RSSITEST_MODE, "WR_RSSITEST_MODE", "Control the state of the RSSI-Test mode" },
-	{ CO_RD_RSSITEST_MODE, "RD_RSSITEST_MODE", "Read the state of the RSSI-Test Mode" },
-	{ CO_WR_SECUREDEVICE_MAINTENANCEKEY, "WR_SECUREDEVICE_MAINTENANCEKEY", "Add the maintenance key information into the secure link table" },
-	{ CO_RD_SECUREDEVICE_MAINTENANCEKEY, "RD_SECUREDEVICE_MAINTENANCEKEY", "Read by index the maintenance key information from the secure link table" },
-	{ CO_WR_TRANSPARENT_MODE, "WR_TRANSPARENT_MODE", "Control the state of the transparent mode" },
-	{ CO_RD_TRANSPARENT_MODE, "RD_TRANSPARENT_MODE", "Read the state of the transparent mode" },
-	{ CO_WR_TX_ONLY_MODE, "WR_TX_ONLY_MODE", "Control the state of the TX only mode" },
-	{ CO_RD_TX_ONLY_MODE, "RD_TX_ONLY_MODE", "Read the state of the TX only mode" },
-	{ 0, nullptr, nullptr }
-};
-
-const char *EnOceanESP::GetCommonCommandLabel(const uint8_t CC)
-{
-	for (const _tCommonCommandTable* pTable = _commonCommandTable; pTable->CC; pTable++)
-		if (pTable->CC == CC)
-			return pTable->label;
-
-	return "UNKNOWN";
-}
-
-const char *EnOceanESP::GetCommonCommandDescription(const uint8_t CC)
-{
-	for (const _tCommonCommandTable* pTable = _commonCommandTable; pTable->CC; pTable++)
-		if (pTable->CC == CC)
-			return pTable->description;
-
-	return ">>Unkown Common Command... Please report!<<";
-}
-
-struct _tSmarkAckCodeTable
-{
-	uint8_t SA;
-	const char* label;
-	const char* description;
-};
-
-static const _tSmarkAckCodeTable _smarkAckCodeTable[] = {
-	{ SA_WR_LEARNMODE, "WR_LEARNMODE", "Set/Reset Smart Ack learn mode" },
-	{ SA_RD_LEARNMODE, "RD_LEARNMODE", "Get Smart Ack learn mode state" },
-	{ SA_WR_LEARNCONFIRM, "WR_LEARNCONFIRM", "Used for Smart Ack to add or delete a mailbox of a client" },
-	{ SA_WR_CLIENTLEARNRQ, "WR_CLIENTLEARNRQ", "Send Smart Ack Learn request (Client)" },
-	{ SA_WR_RESET, "WR_RESET", "Send reset command to a Smart Ack client" },
-	{ SA_RD_LEARNEDCLIENTS, "RD_LEARNEDCLIENTS", "Get Smart Ack learned sensors / mailboxes" },
-	{ SA_WR_RECLAIMS, "WR_RECLAIMS", "Set number of reclaim attempts" },
-	{ SA_WR_POSTMASTER, "WR_POSTMASTER", "Activate/Deactivate Post master functionality" },
-	{ 0, nullptr, nullptr }
-};
-
-const char *EnOceanESP::GetSmarkAckCodeLabel(const uint8_t SA)
-{
-	for (const _tSmarkAckCodeTable* pTable =_smarkAckCodeTable; pTable->SA; pTable++)
-		if (pTable->SA == SA)
-			return pTable->label;
-
-	return "UNKNOWN";
-}
-
-const char *EnOceanESP::GetSmartAckCodeDescription(const uint8_t SA)
-{
-	for (const _tSmarkAckCodeTable* pTable =_smarkAckCodeTable; pTable->SA; pTable++)
-		if (pTable->SA == SA)
-			return pTable->description;
-
-	return ">>Unkown smark ack code... Please report!<<";
-}
-
-struct _tFunctionReturnCodeTable
-{
-	uint8_t RC;
-	const char* label;
-	const char* description;
-};
-
-static const _tFunctionReturnCodeTable _functionReturnCodeTable[] = {
-	{ RC_OK, "RC_OK", "Action performed. No problem detected" },
-	{ RC_EXIT, "RC_EXIT", "Action not performed. No problem detected" },
-	{ RC_KO, "RC_KO", "Action not performed. Problem detected" },
-	{ RC_TIME_OUT, "RC_TIME_OUT", "Action couldn't be carried out within a certain time." },
-	{ RC_FLASH_HW_ERROR, "RC_FLASH_HW_ERROR", "The write/erase/verify process failed, the flash page seems to be corrupted" },
-	{ RC_NEW_RX_BYTE, "RC_NEW_RX_BYTE", "A new UART/SPI byte received" },
-	{ RC_NO_RX_BYTE, "RC_NO_RX_BYTE", "No new UART/SPI byte received" },
-	{ RC_NEW_RX_TEL, "RC_NEW_RX_TEL", "New telegram received" },
-	{ RC_NO_RX_TEL, "RC_NO_RX_TEL", "No new telegram received" },
-	{ RC_NOT_VALID_CHKSUM, "RC_NOT_VALID_CHKSUM", "Checksum not valid" },
-	{ RC_NOT_VALID_TEL, "RC_NOT_VALID_TEL", "Telegram not valid" },
-	{ RC_BUFF_FULL, "RC_BUFF_FULL", "Buffer full, no space in Tx or Rx buffer" },
-	{ RC_ADDR_OUT_OF_MEM, "RC_ADDR_OUT_OF_MEM", "Address is out of memory" },
-	{ RC_NOT_VALID_PARAM, "RC_NOT_VALID_PARAM", "Invalid function parameter" },
-	{ RC_BIST_FAILED, "RC_BIST_FAILED", "Built in self test failed" },
-	{ RC_ST_TIMEOUT_BEFORE_SLEEP, "RC_ST_TIMEOUT_BEFORE_SLEEP", "Before entering power down, the short term timer had timed out." },
-	{ RC_MAX_FILTER_REACHED, "RC_MAX_FILTER_REACHED", "Maximum number of filters reached, no more filter possible" },
-	{ RC_FILTER_NOT_FOUND, "RC_FILTER_NOT_FOUND", "Filter to delete not found" },
-	{ RC_BASEID_OUT_OF_RANGE, "RC_BASEID_OUT_OF_RANGE", "BaseID out of range" },
-	{ RC_BASEID_MAX_REACHED, "RC_BASEID_MAX_REACHED", "BaseID was changed 10 times, no more changes are allowed" },
-	{ RC_XTAL_NOT_STABLE, "RC_XTAL_NOT_STABLE", "XTAL is not stable" },
-	{ RC_NO_TX_TEL, "RC_NO_TX_TEL", "No telegram for transmission in queue" },
-	{ RC_ELEGRAM_WAIT, "RC_ELEGRAM_WAIT", "Waiting before sending broadcast message" },
-	{ RC_OUT_OF_RANGE, "RC_OUT_OF_RANGE", "Generic out of range return code" },
-	{ RC_LOCK_SET, "RC_LOCK_SET", "Function was not executed due to sending lock" },
-	{ RC_NEW_TX_TEL, "RC_NEW_TX_TEL", "New telegram transmitted" },
-	{ 0, nullptr, nullptr }
-};
-
-const char *EnOceanESP::GetFunctionReturnCodeLabel(const uint8_t RC)
-{
-	for (const _tFunctionReturnCodeTable* pTable =_functionReturnCodeTable; pTable->RC; pTable++)
-		if (pTable->RC == RC)
-			return pTable->label;
-
-	return "UNKNOWN";
-}
-
-const char *EnOceanESP::GetFunctionReturnCodeDescription(const uint8_t RC)
-{
-	for (const _tFunctionReturnCodeTable* pTable =_functionReturnCodeTable; pTable->RC; pTable++)
-		if (pTable->RC == RC)
-			return pTable->description;
-
-	return ">>Unkown function return code... Please report!<<";
-}
-
-//EEP 2021-05-01 from EnOcean website
+// EEP 2021-05-01 from EnOcean website
 
 struct _tEEPTable
 {
@@ -926,7 +614,7 @@ static const _tEEPTable _EEPTable[] = {
 	{ 0, 0, 0, nullptr, nullptr, nullptr },
 };
 
-const char *EnOceanESP::GetProfile(const int RORG, const int func, const int type)
+const char *CEnOceanEEP::GetProfile(const int RORG, const int func, const int type)
 {
 	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
@@ -935,7 +623,7 @@ const char *EnOceanESP::GetProfile(const int RORG, const int func, const int typ
 	return nullptr;
 }
 
-const char *EnOceanESP::GetProfileTypeLabel(const int RORG, const int func, const int type)
+const char *CEnOceanEEP::GetProfileTypeLabel(const int RORG, const int func, const int type)
 {
 	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
@@ -944,7 +632,7 @@ const char *EnOceanESP::GetProfileTypeLabel(const int RORG, const int func, cons
 	return "UNKNOWN";
 }
 
-const char *EnOceanESP::GetProfileTypeDescription(const int RORG, const int func, const int type)
+const char *CEnOceanEEP::GetProfileTypeDescription(const int RORG, const int func, const int type)
 {
 	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
@@ -953,12 +641,12 @@ const char *EnOceanESP::GetProfileTypeDescription(const int RORG, const int func
 	return ">>Unkown EEP... Please report!<<";
 }
 
-uint32_t EnOceanESP::GetINodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0)
+uint32_t CEnOceanEEP::GetINodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0)
 {
 	return (uint32_t) ((ID3 << 24) | (ID2 << 16) | (ID1 << 8) | ID0);
 }
 
-std::string EnOceanESP::GetNodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0)
+std::string CEnOceanEEP::GetNodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0)
 {
 	char szNodeID[10];
 	sprintf(szNodeID, "%02X%02X%02X%02X", ID3, ID2, ID1, ID0);
@@ -966,7 +654,7 @@ std::string EnOceanESP::GetNodeID(const uint8_t ID3, const uint8_t ID2, const ui
 	return nodeID;
 }
 
-std::string EnOceanESP::GetNodeID(const uint32_t iNodeID)
+std::string CEnOceanEEP::GetNodeID(const uint32_t iNodeID)
 {
 	char szNodeID[10];
 	sprintf(szNodeID, "%08X", iNodeID);
@@ -974,11 +662,20 @@ std::string EnOceanESP::GetNodeID(const uint32_t iNodeID)
 	return nodeID;
 }
 
-float EnOceanESP::GetDeviceValue(const float rawValue, const float scaleMin, const float scaleMax, const float rangeMin, const float rangeMax)
+float CEnOceanEEP::GetDeviceValue(const uint8_t rawValue, const uint8_t rangeMin, const uint8_t rangeMax, const float scaleMin, const float scaleMax)
 {
-	if ((scaleMax == scaleMin) || (rangeMax == rangeMin))
+	if (rangeMax == rangeMin)
 		return 0.0F;
 
+	uint8_t rawValueInt;
+	
+	if (rawValue < rangeMin)
+		rawValueInt = rangeMin;
+	else if (rawValue > rangeMax)
+		rawValueInt = rangeMax;
+	else
+		rawValueInt = rawValue;
+
 	float multiplyer = (scaleMax - scaleMin) / (rangeMax - rangeMin);
-	return multiplyer * (rawValue - rangeMin) + scaleMin;
+	return multiplyer * (rawValueInt - rangeMin) + scaleMin;
 }

@@ -766,7 +766,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 
 	enocean_data_structure iframe = create_base_frame();
 	iframe.H_SEQ_LENGTH = 0x6B;//TX+Length
-	iframe.ORG = 0x05;
+	iframe.ORG = C_ORG_RPS;
 
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
@@ -789,7 +789,6 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		RockerID = tsen->LIGHTING2.unitcode - 1;
 	else
 		return false;//double not supported yet!
-
 
 	//First we need to find out if this is a Dimmer switch,
 	//because they are threaded differently
@@ -857,7 +856,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		//Dim On DATA_BYTE0 = 0x09
 		//Dim Off DATA_BYTE0 = 0x08
 
-		iframe.ORG = 0x07;
+		iframe.ORG = C_ORG_4BS;
 		iframe.DATA_BYTE3 = 2;
 		iframe.DATA_BYTE2 = iLevel;
 		iframe.DATA_BYTE1 = 1;//very fast dimming
@@ -885,7 +884,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 
 		enocean_data_structure iframe = create_base_frame();
 		iframe.H_SEQ_LENGTH = 0x6B;//TX+Length
-		iframe.ORG = 0x05;
+		iframe.ORG = C_ORG_RPS;
 
 		uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 		if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
@@ -911,7 +910,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 			return;//double not supported yet!
 
 		//Teach in, DATA 2,1,0 set to 0
-		iframe.ORG = 0x07;
+		iframe.ORG = C_ORG_4BS;
 		iframe.DATA_BYTE3 = 2;
 		iframe.DATA_BYTE2 = 0;
 		iframe.DATA_BYTE1 = 0;
@@ -1165,7 +1164,7 @@ bool CEnOceanESP2::ParseData()
 				// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
 				// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 				// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
-				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 40, 0, 0, 255);
+				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 40, 0);
 				if (Manufacturer == ELTAKO)
 				{
 					int nightReduction = 0;
@@ -1179,7 +1178,7 @@ bool CEnOceanESP2::ParseData()
 						nightReduction = 4;
 					else if (pFrame->DATA_BYTE3 == 0x1F)
 						nightReduction = 5;
-					//float setpointTemp = GetDeviceValue(pFrame->DATA_BYTE2, 0, 40, 0, 255);
+					//float setpointTemp = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0, 40);
 				}
 				else
 				{
@@ -1225,15 +1224,15 @@ bool CEnOceanESP2::ParseData()
 				float lux = 0;
 				if (Manufacturer == ELTAKO)
 					if (pFrame->DATA_BYTE2 == 0)
-						lux = GetDeviceValue(pFrame->DATA_BYTE3, 0, 100, 0, 255);
+						lux = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0, 100);
 					else
-						lux = GetDeviceValue(pFrame->DATA_BYTE2, 300, 30000, 0, 255);
+						lux = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300, 30000);
 				else {
-					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 5100, 0, 255); //mV
+					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
 					if (pFrame->DATA_BYTE0 & 1)
-						lux = GetDeviceValue(pFrame->DATA_BYTE2, 300, 30000, 0, 255);
+						lux = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300, 30000);
 					else
-						lux = GetDeviceValue(pFrame->DATA_BYTE1, 600, 60000, 0, 255);
+						lux = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 600, 60000);
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1291,9 +1290,9 @@ bool CEnOceanESP2::ParseData()
 
 				float temp;
 				if (iType < 0x20)
-					temp = GetDeviceValue(pFrame->DATA_BYTE1, ScaleMin, ScaleMax, 0, 255);
+					temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax);
 				else
-					temp = GetDeviceValue(float(((pFrame->DATA_BYTE2 & 3) << 8) | pFrame->DATA_BYTE1), ScaleMin, ScaleMax, 0, 255); //10bit
+					temp = GetDeviceValue(((pFrame->DATA_BYTE2 & 3) << 8) | pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax); // 10bit
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
@@ -1321,8 +1320,8 @@ bool CEnOceanESP2::ParseData()
 				else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
 				else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
 
-				float temp = GetDeviceValue(pFrame->DATA_BYTE1, ScaleMin, ScaleMax, 0, 255);
-				float hum = GetDeviceValue(pFrame->DATA_BYTE2, 0, 100, 0, 255);
+				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax);
+				float hum = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0, 100);
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
@@ -1350,7 +1349,7 @@ bool CEnOceanESP2::ParseData()
 					if (pFrame->DATA_BYTE0 & 1)
 					{
 						//Voltage supported
-						float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 5.0F, 0, 250);
+						float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1372,7 +1371,6 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.packettype = pTypeLighting2;
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
-
 					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
 					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
 					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
@@ -1393,7 +1391,7 @@ bool CEnOceanESP2::ParseData()
 				{
 					RBUF tsen;
 
-					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 5.0F, 0, 250);
+					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1414,7 +1412,6 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.packettype = pTypeLighting2;
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
-
 					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
 					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
 					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
@@ -1435,7 +1432,7 @@ bool CEnOceanESP2::ParseData()
 				{
 					RBUF tsen;
 
-					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 5.0F, 0, 250);
+					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1468,7 +1465,6 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.packettype = pTypeLighting2;
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
-
 					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
 					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
 					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
