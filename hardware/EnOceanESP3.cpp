@@ -1645,7 +1645,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							//Error code
 						}
 					}
-					if (iType == 0x07 && iType == 0x03)
+					else if (iType == 0x07 && iType == 0x03)
 					{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
 						//(EPP A5-07-03)
 						if (DATA_BYTE3 < 251)
