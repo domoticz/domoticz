@@ -1278,7 +1278,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: %08X\nManufacturer: %03X (%s)\nProfile: %02X\nType: %02X (%s)",
 							iNodeID, manufacturer,GetManufacturerName(manufacturer),
-							profile, ttype, GetProfileTypeLabel(RORG_4BS, profile, ttype));
+							profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
  					}
 
 					// Search the sensor in database

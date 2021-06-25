@@ -1059,7 +1059,7 @@ bool CEnOceanESP2::ParseData()
 				int ttype = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
 				Log(LOG_NORM, "4BS, Teach-in diagram: Sender_ID: %08X\nManufacturer: %02X (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
 					iNodeID, manufacturer, GetManufacturerName(manufacturer),
-					profile, ttype, GetProfileTypeLabel(RORG_4BS, profile, ttype));
+					profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());

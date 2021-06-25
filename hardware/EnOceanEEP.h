@@ -132,22 +132,22 @@ enum ENOCEAN_MANUFACTURER : uint16_t
 // ESP3 RORGs
 enum ESP3_RORG_TYPE : uint8_t
 {
-	RORG_ST = 0x30,		 // Secure telegram
-	RORG_ST_WE = 0x31,	 // Secure telegram with RORG encapsulation
-	RORG_STT_FW = 0x35,	 // Secure teach-in telegram for switch
-	RORG_4BS = 0xA5,	 // 4 Bytes Communication
-	RORG_ADT = 0xA6,	 // Adressing Destination Telegram
-	RORG_SM_REC = 0xA7,	 // Smart Ack Reclaim
-	RORG_GP_SD = 0xB3,	 // Generic Profiles selective data
-	RORG_SM_LRN_REQ = 0xC6,	 // Smart Ack Learn Request
-	RORG_SM_LRN_ANS = 0xC7,	 // Smart Ack Learn Answer
+	RORG_ST = 0x30,			// Secure telegram
+	RORG_ST_WE = 0x31,		// Secure telegram with RORG encapsulation
+	RORG_STT_FW = 0x35,		// Secure teach-in telegram for switch
+	RORG_4BS = 0xA5,		// 4 Bytes Communication
+	RORG_ADT = 0xA6,		// Adressing Destination Telegram
+	RORG_SM_REC = 0xA7,		// Smart Ack Reclaim
+	RORG_GP_SD = 0xB3,		// Generic Profiles selective data
+	RORG_SM_LRN_REQ = 0xC6,	// Smart Ack Learn Request
+	RORG_SM_LRN_ANS = 0xC7,	// Smart Ack Learn Answer
 	RORG_SM_ACK_SGNL = 0xD0, // Smart Acknowledge Signal telegram
-	RORG_MSC = 0xD1,	 // Manufacturer Specific Communication
-	RORG_VLD = 0xD2,	 // Variable length data telegram
-	RORG_UTE = 0xD4,	 // Universal teach-in EEP based
-	RORG_1BS = 0xD5,	 // 1 Byte Communication
-	RORG_RPS = 0xF6,	 // Repeated Switch Communication
-	RORG_SYS_EX = 0xC5,	 // Remote Management
+	RORG_MSC = 0xD1,		// Manufacturer Specific Communication
+	RORG_VLD = 0xD2,		// Variable length data telegram
+	RORG_UTE = 0xD4,		// Universal teach-in EEP based
+	RORG_1BS = 0xD5,		// 1 Byte Communication
+	RORG_RPS = 0xF6,		// Repeated Switch Communication
+	RORG_SYS_EX = 0xC5		// Remote Management
 };
 
 class CEnOceanEEP
@@ -159,14 +159,14 @@ class CEnOceanEEP
 	const char *GetRORGLabel(const uint8_t RORG);
 	const char *GetRORGDescription(const uint8_t RORG);
 
-	const char *GetProfile(const int RORG, const int func, const int type);
-	const char *GetProfileTypeLabel(const int RORG, const int func, const int type);
-	const char *GetProfileTypeDescription(const int RORG, const int func, const int type);
+	const char *GetEEP(const int RORG, const int func, const int type);
+	const char *GetEEPLabel(const int RORG, const int func, const int type);
+	const char *GetEEPDescription(const int RORG, const int func, const int type);
 
 	uint32_t GetINodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0);
 
 	std::string GetNodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0);
 	std::string GetNodeID(const uint32_t iNodeID);
 
-	float GetDeviceValue(const uint8_t rawValue, const uint8_t rangeMin, const uint8_t rangeMax, const float scaleMin, const float scaleMax);
+	float GetDeviceValue(const uint32_t rawValue, const uint32_t rangeMin, const uint32_t rangeMax, const float scaleMin, const float scaleMax);
 };

@@ -614,7 +614,7 @@ static const _tEEPTable _EEPTable[] = {
 	{ 0, 0, 0, nullptr, nullptr, nullptr },
 };
 
-const char *CEnOceanEEP::GetProfile(const int RORG, const int func, const int type)
+const char *CEnOceanEEP::GetEEP(const int RORG, const int func, const int type)
 {
 	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
@@ -623,7 +623,7 @@ const char *CEnOceanEEP::GetProfile(const int RORG, const int func, const int ty
 	return nullptr;
 }
 
-const char *CEnOceanEEP::GetProfileTypeLabel(const int RORG, const int func, const int type)
+const char *CEnOceanEEP::GetEEPLabel(const int RORG, const int func, const int type)
 {
 	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
@@ -632,7 +632,7 @@ const char *CEnOceanEEP::GetProfileTypeLabel(const int RORG, const int func, con
 	return "UNKNOWN";
 }
 
-const char *CEnOceanEEP::GetProfileTypeDescription(const int RORG, const int func, const int type)
+const char *CEnOceanEEP::GetEEPDescription(const int RORG, const int func, const int type)
 {
 	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
@@ -662,12 +662,12 @@ std::string CEnOceanEEP::GetNodeID(const uint32_t iNodeID)
 	return nodeID;
 }
 
-float CEnOceanEEP::GetDeviceValue(const uint8_t rawValue, const uint8_t rangeMin, const uint8_t rangeMax, const float scaleMin, const float scaleMax)
+float CEnOceanEEP::GetDeviceValue(const uint32_t rawValue, const uint32_t rangeMin, const uint32_t rangeMax, const float scaleMin, const float scaleMax)
 {
 	if (rangeMax == rangeMin)
 		return 0.0F;
 
-	uint8_t rawValueInt;
+	uint32_t rawValueInt;
 	
 	if (rawValue < rangeMin)
 		rawValueInt = rangeMin;

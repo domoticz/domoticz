@@ -3667,6 +3667,9 @@ void MainWorker::decode_Hum(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		case sTypeHUM2:
 			WriteMessage("subtype       = HUM2 - LaCrosse WS2300");
 			break;
+		case sTypeHUM3:
+			WriteMessage("subtype       = HUM3 - Inovalley S80 plant humidity sensor");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->HUM.packettype, pResponse->HUM.subtype);
 			WriteMessage(szTmp);
