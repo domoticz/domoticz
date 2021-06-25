@@ -1,377 +1,25 @@
 #include "stdafx.h"
-#include "EnOceanESP2.h"
-#include "../main/Logger.h"
-#include "../main/Helper.h"
-#include "../main/RFXtrx.h"
-#include "../main/SQLHelper.h"
 
 #include <string>
 #include <algorithm>
 #include <iostream>
-#include "hardwaretypes.h"
-#include "../main/localtime_r.h"
-
-#include <boost/exception/diagnostic_information.hpp>
 #include <cmath>
 #include <ctime>
+
+#include <boost/exception/diagnostic_information.hpp>
+
+#include "../main/Logger.h"
+#include "../main/Helper.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
+#include "../main/localtime_r.h"
+
+#include "hardwaretypes.h"
+#include "EnOceanESP2.h"
 
 #define ENOCEAN_RETRY_DELAY 30
 
 #define round(a) ( int ) ( a + .5 )
-
-//Acknowledgments:
-//Part of this code it based on the work of Daniel Lechner, Andreas Dielacher
-//Note: This is for the ESP 2.0 protocol !!!
-
-struct _tTableLookup2
-{
-	unsigned long ID;
-	const char* Label;
-};
-struct _tTableLookup3
-{
-	unsigned long ID1;
-	unsigned long ID2;
-	const char* Label;
-};
-
-const char* LookupTable2(const _tTableLookup2* pOrgTable, unsigned long ID)
-{
-	while (pOrgTable->Label)
-	{
-		if (pOrgTable->ID == ID)
-			return pOrgTable->Label;
-		pOrgTable++;
-	}
-
-	return ">>Unkown... Please report!<<";
-}
-
-const char* LookupTable3(const _tTableLookup3* pOrgTable, unsigned long ID1, unsigned long ID2)
-{
-	while (pOrgTable->Label)
-	{
-		if ((pOrgTable->ID1 == ID1) && (pOrgTable->ID2 == ID2))
-			return pOrgTable->Label;
-		pOrgTable++;
-	}
-
-	return ">>Unkown... Please report!<<";
-}
-
-const char* Get_EnoceanManufacturer(unsigned long ID)
-{
-	const _tTableLookup2 TTable[] = {
-		{ 0x001, "Peha" },
-		{ 0x002, "Thermokon" },
-		{ 0x003, "Servodan" },
-		{ 0x004, "EchoFlex Solutions" },
-		{ 0x005, "Omnio AG" },
-		{ 0x006, "Hardmeier electronics" },
-		{ 0x007, "Regulvar Inc" },
-		{ 0x008, "Ad Hoc Electronics" },
-		{ 0x009, "Distech Controls" },
-		{ 0x00A, "Kieback + Peter" },
-		{ 0x00B, "EnOcean GmbH" },
-		{ 0x00C, "Probare" },
-		{ 0x00D, "Eltako" },
-		{ 0x00E, "Leviton" },
-		{ 0x00F, "Honeywell" },
-		{ 0x010, "Spartan Peripheral Devices" },
-		{ 0x011, "Siemens" },
-		{ 0x012, "T-Mac" },
-		{ 0x013, "Reliable Controls Corporation" },
-		{ 0x014, "Elsner Elektronik GmbH" },
-		{ 0x015, "Diehl Controls" },
-		{ 0x016, "BSC Computer" },
-		{ 0x017, "S+S Regeltechnik GmbH" },
-		{ 0x018, "Masco Corporation" },
-		{ 0x019, "Intesis Software SL" },
-		{ 0x01A, "Res." },
-		{ 0x01B, "Lutuo Technology" },
-		{ 0x01C, "CAN2GO" },
-		{ 0x01D, "SAUTER" },
-		{ 0x01E, "BOOT_UP" },
-		{ 0x01F, "OSRAM SYLVANIA" },
-		{ 0x020, "UNOTECH" },
-		{ 0x021, "DELTA_CONTROLS_INC" },
-		{ 0x022, "UNITRONIC_AG" },
-		{ 0x023, "NANOSENSE" },
-		{ 0x024, "THE_S4_GROUP" },
-		{ 0x025, "MSR_SOLUTIONS" },
-		{ 0x026, "GE" },
-		{ 0x027, "MAICO" },
-		{ 0x028, "RUSKIN_COMPANY" },
-		{ 0x029, "MAGNUM_ENERGY_SOLUTIONS" },
-		{ 0x02A, "KMC_CONTROLS" },
-		{ 0x02B, "ECOLOGIX_CONTROLS" },
-		{ 0x02C, "TRIO_2_SYS" },
-		{ 0x02D, "AFRISO_EURO_INDEX" },
-		{ 0x030, "NEC_ACCESSTECHNICA_LTD" },
-		{ 0x031, "ITEC_CORPORATION" },
-		{ 0x032, "SIMICX_CO_LTD" },
-		{ 0x034, "EUROTRONIC_TECHNOLOGY_GMBH" },
-		{ 0x035, "ART_JAPAN_CO_LTD" },
-		{ 0x036, "TIANSU_AUTOMATION_CONTROL_SYSTE_CO_LTD" },
-		{ 0x038, "GRUPPO_GIORDANO_IDEA_SPA" },
-		{ 0x039, "ALPHAEOS_AG" },
-		{ 0x03A, "TAG_TECHNOLOGIES" },
-		{ 0x03C, "CLOUD_BUILDINGS_LTD" },
-		{ 0x03E, "GIGA_CONCEPT" },
-		{ 0x03F, "SENSORTEC" },
-		{ 0x040, "JAEGER_DIREKT" },
-		{ 0x041, "AIR_SYSTEM_COMPONENTS_INC" },
-		{ 0x042, "ERMINE Corp." },
-		{ 0x043, "SODA GmbH" },
-		{ 0x045, "Holter Regelarmaturen GmbH Co. KG" },
-		{ 0x046, "NodOn" },
-		{ 0x047, "DEUTA Controls GmbH" },
-		{ 0x048, "Ewattch" },
-		{ 0x049, "Micropelt GmbH" },
-		{ 0x04A, "Caleffi Spa." },
-		{ 0x04B, "Digital Concept" },
-		{ 0x04C, "Emerson Climate Technologies" },
-		{ 0x04D, "ADEE electronic" },
-		{ 0x04E, "ALTECON srl" },
-		{ 0x04F, "Nanjing Putian elecommunications Co." },
-		{ 0x050, "Terralux" },
-		{ 0x051, "iEXERGY GmbH" },
-		{ 0x052, "Connectivity Solutions GmbH" },
-		{ 0x053, "Oventrop GmbH Co. KG" },
-		{ 0x054, "Builing Automation Products" },
-		{ 0x055, "Functional Devices, Inc." },
-		{ 0x056, "OGGA" },
-		{ 0x057, "itho daalderop" },
-		{ 0x058, "Resol" },
-		{ 0x059, "Advanced Devices" },
-		{ 0x05A, "Autani LLC." },
-		{ 0x05B, "Dr. Riedel GmbH" },
-		{ 0x05C, "HOPPE Holding AG" },
-		{ 0x05D, "SIEGENIA-AUBI KG" },
-		{ 0x05E, "ADEO Services" },
-		{ 0x05F, "EiMSIG, EFP GmbH" },
-		{ 0x060, "VIMAR S.p.a." },
-		{ 0x061, "Glen Dimplex" },
-		{ 0x062, "PMDM GmbH" },
-		{ 0x063, "Hubbell Lighting" },
-		{ 0x064, "Debflex S.A." },
-		{ 0x065, "Perfactory Sensorsystems" },
-		{ 0x066, "Watty Corporation" },
-		{ 0x067, "WAGO Kontakttechnik GmbH Co. KG" },
-		{ 0x068, "Kessel AG" },
-		{ 0x069, "Aug. GmbH Co. KG" },
-		{ 0x06A, "DECELECT" },
-		{ 0x06B, "MST Industries" },
-		{ 0x06C, "Becker Antriebs GmbH" },
-		{ 0x06D, "Nexelec" },
-		{ 0x06E, "Wieland Electric GmbH" },
-		{ 0x06F, "AVIDSEN" },
-		{ 0x070, "CWS-boco International GmbH" },
-		{ 0x071, "Roto Frank AG" },
-		{ 0x072, "ALM Controls e.k." },
-		{ 0x073, "Tommaso Technologies Ltd." },
-		{ 0x074, "Rehaus AG + Co." },
-		{ 0x075, "Inaba Denki Sangyo Co. Ltd." },
-		{ 0x076, "Hager Control SAS" },
-		{ 0x7FF, "Multi user Manufacturer ID" },
-		{ 0, nullptr },
-	};
-	return LookupTable2(TTable, ID);
-}
-
-//EEP 2.5
-
-struct _t4BSLookup
-{
-	const int Org;
-	const int Func;
-	const int Type;
-	const char* Description;
-	const char* Label;
-};
-
-const _t4BSLookup T4BSTable[] = {
-	// A5-02: Temperature Sensors
-	{ 0xA5, 0x02, 0x01, "Temperature Sensor Range -40C to 0C", "Temperature.01" },
-	{ 0xA5, 0x02, 0x02, "Temperature Sensor Range -30C to +10C", "Temperature.02" },
-	{ 0xA5, 0x02, 0x03, "Temperature Sensor Range -20C to +20C", "Temperature.03" },
-	{ 0xA5, 0x02, 0x04, "Temperature Sensor Range -10C to +30C", "Temperature.04" },
-	{ 0xA5, 0x02, 0x05, "Temperature Sensor Range 0C to +40C", "Temperature.05" },
-	{ 0xA5, 0x02, 0x06, "Temperature Sensor Range +10C to +50C", "Temperature.06" },
-	{ 0xA5, 0x02, 0x07, "Temperature Sensor Range +20C to +60C", "Temperature.07" },
-	{ 0xA5, 0x02, 0x08, "Temperature Sensor Range +30C to +70C", "Temperature.08" },
-	{ 0xA5, 0x02, 0x09, "Temperature Sensor Range +40C to +80C", "Temperature.09" },
-	{ 0xA5, 0x02, 0x0A, "Temperature Sensor Range +50C to +90C", "Temperature.0A" },
-	{ 0xA5, 0x02, 0x0B, "Temperature Sensor Range +60C to +100C", "Temperature.0B" },
-	{ 0xA5, 0x02, 0x10, "Temperature Sensor Range -60C to +20C", "Temperature.10" },
-	{ 0xA5, 0x02, 0x11, "Temperature Sensor Range -50C to +30C", "Temperature.11" },
-	{ 0xA5, 0x02, 0x12, "Temperature Sensor Range -40C to +40C", "Temperature.12" },
-	{ 0xA5, 0x02, 0x13, "Temperature Sensor Range -30C to +50C", "Temperature.13" },
-	{ 0xA5, 0x02, 0x14, "Temperature Sensor Range -20C to +60C", "Temperature.14" },
-	{ 0xA5, 0x02, 0x15, "Temperature Sensor Range -10C to +70C", "Temperature.15" },
-	{ 0xA5, 0x02, 0x16, "Temperature Sensor Range 0C to +80C", "Temperature.16" },
-	{ 0xA5, 0x02, 0x17, "Temperature Sensor Range +10C to +90C", "Temperature.17" },
-	{ 0xA5, 0x02, 0x18, "Temperature Sensor Range +20C to +100C", "Temperature.18" },
-	{ 0xA5, 0x02, 0x19, "Temperature Sensor Range +30C to +110C", "Temperature.19" },
-	{ 0xA5, 0x02, 0x1A, "Temperature Sensor Range +40C to +120C", "Temperature.1A" },
-	{ 0xA5, 0x02, 0x1B, "Temperature Sensor Range +50C to +130C", "Temperature.1B" },
-	{ 0xA5, 0x02, 0x20, "10 Bit Temperature Sensor Range -10C to +41.2C", "Temperature.20" },
-	{ 0xA5, 0x02, 0x30, "10 Bit Temperature Sensor Range -40C to +62.3C", "Temperature.30" },
-
-	// A5-04: Temperature and Humidity Sensor
-	{ 0xA5, 0x04, 0x01, "Range 0C to +40C and 0% to 100%", "TempHum.01" },
-	{ 0xA5, 0x04, 0x02, "Range -20C to +60C and 0% to 100%", "TempHum.02" },
-
-	// A5-06: Light Sensor
-	{ 0xA5, 0x06, 0x01, "Range 300lx to 60.000lx", "LightSensor.01" },
-	{ 0xA5, 0x06, 0x02, "Range 0lx to 1.020lx", "LightSensor.02" },
-	{ 0xA5, 0x06, 0x03, "10-bit measurement (1-Lux resolution) with range 0lx to 1000lx", "LightSensor.03" },
-
-	// A5-07: Occupancy Sensor
-	{ 0xA5, 0x07, 0x01, "Occupancy with Supply voltage monitor", "OccupancySensor.01" },
-	{ 0xA5, 0x07, 0x02, "Occupancy with Supply voltage monitor", "OccupancySensor.02" },
-	{ 0xA5, 0x07, 0x03, "Occupancy with Supply voltage monitor and 10-bit illumination measurement", "OccupancySensor.03" },
-
-	// A5-08: Light, Temperature and Occupancy Sensor
-	{ 0xA5, 0x08, 0x01, "Range 0lx to 510lx, 0C to +51C and Occupancy Button", "TempOccupancySensor.01" },
-	{ 0xA5, 0x08, 0x02, "Range 0lx to 1020lx, 0C to +51C and Occupancy Button", "TempOccupancySensor.02" },
-	{ 0xA5, 0x08, 0x03, "Range 0lx to 1530lx, -30C to +50C and Occupancy Button", "TempOccupancySensor.03" },
-
-	// A5-09: Gas Sensor
-	{ 0xA5, 0x09, 0x01, "CO Sensor (not in use)", "GasSensor.01" },
-	{ 0xA5, 0x09, 0x02, "CO-Sensor 0 ppm to 1020 ppm", "GasSensor.02" },
-	{ 0xA5, 0x09, 0x04, "CO2 Sensor", "GasSensor.04" },
-	{ 0xA5, 0x09, 0x05, "VOC Sensor", "GasSensor.05" },
-	{ 0xA5, 0x09, 0x06, "Radon", "GasSensor.06" },
-	{ 0xA5, 0x09, 0x07, "Particles", "GasSensor.07" },
-
-	// 7. A5-10: Room Operating Panel
-	{ 0xA5, 0x10, 0x01, "Temperature Sensor, Set Point, Fan Speed and Occupancy Control", "RoomOperatingPanel.01" },
-	{ 0xA5, 0x10, 0x02, "Temperature Sensor, Set Point, Fan Speed and Day/Night Control", "RoomOperatingPanel.02" },
-	{ 0xA5, 0x10, 0x03, "Temperature Sensor, Set Point Control", "RoomOperatingPanel.03" },
-	{ 0xA5, 0x10, 0x04, "Temperature Sensor, Set Point and Fan Speed Control", "RoomOperatingPanel.04" },
-	{ 0xA5, 0x10, 0x05, "Temperature Sensor, Set Point and Occupancy Control", "RoomOperatingPanel.05" },
-	{ 0xA5, 0x10, 0x06, "Temperature Sensor, Set Point and Day/Night Control", "RoomOperatingPanel.06" },
-	{ 0xA5, 0x10, 0x07, "Temperature Sensor, Fan Speed Control", "RoomOperatingPanel.07" },
-	{ 0xA5, 0x10, 0x08, "Temperature Sensor, Fan Speed and Occupancy Control", "RoomOperatingPanel.08" },
-	{ 0xA5, 0x10, 0x09, "Temperature Sensor, Fan Speed and Day/Night Control", "RoomOperatingPanel.09" },
-	{ 0xA5, 0x10, 0x0A, "Temperature Sensor, Set Point Adjust and Single Input Contact", "RoomOperatingPanel.0A" },
-	{ 0xA5, 0x10, 0x0B, "Temperature Sensor and Single Input Contact", "RoomOperatingPanel.0B" },
-	{ 0xA5, 0x10, 0x0C, "Temperature Sensor and Occupancy Control", "RoomOperatingPanel.0C" },
-	{ 0xA5, 0x10, 0x0D, "Temperature Sensor and Day/Night Control", "RoomOperatingPanel.0D" },
-	{ 0xA5, 0x10, 0x10, "Temperature and Humidity Sensor, Set Point and Occupancy Control", "RoomOperatingPanel.10" },
-	{ 0xA5, 0x10, 0x11, "Temperature and Humidity Sensor, Set Point and Day/Night Control", "RoomOperatingPanel.11" },
-	{ 0xA5, 0x10, 0x12, "Temperature and Humidity Sensor and Set Point", "RoomOperatingPanel.12" },
-	{ 0xA5, 0x10, 0x13, "Temperature and Humidity Sensor, Occupancy Control", "RoomOperatingPanel.13" },
-	{ 0xA5, 0x10, 0x14, "Temperature and Humidity Sensor, Day/Night Control", "RoomOperatingPanel.14" },
-	{ 0xA5, 0x10, 0x15, "10 Bit Temperature Sensor, 6 bit Set Point Control", "RoomOperatingPanel.15" },
-	{ 0xA5, 0x10, 0x16, "10 Bit Temperature Sensor, 6 bit Set Point Control;Occupancy Control", "RoomOperatingPanel.16" },
-	{ 0xA5, 0x10, 0x17, "10 Bit Temperature Sensor, Occupancy Control", "RoomOperatingPanel.17" },
-	{ 0xA5, 0x10, 0x18, "Illumination, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
-	  "RoomOperatingPanel.18" },
-	{ 0xA5, 0x10, 0x19, "Humidity, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
-	  "RoomOperatingPanel.19" },
-	{ 0xA5, 0x10, 0x1A, "Supply voltage monitor, Temperature Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
-	  "RoomOperatingPanel.1A" },
-	{ 0xA5, 0x10, 0x1B, "Supply Voltage Monitor, Illumination, Temperature Sensor, Fan Speed and Occupancy Control",
-	  "RoomOperatingPanel.1B" },
-	{ 0xA5, 0x10, 0x1C, "Illumination, Illumination Set Point, Temperature Sensor, Fan Speed and Occupancy Control",
-	  "RoomOperatingPanel.1C" },
-	{ 0xA5, 0x10, 0x1D, "Humidity, Humidity Set Point, Temperature Sensor, Fan Speed and Occupancy Control", "RoomOperatingPanel.1D" },
-	{ 0xA5, 0x10, 0x1E, "Supply Voltage Monitor, Illumination, Temperature Sensor, Fan Speed and Occupancy Control",
-	  "RoomOperatingPanel.1B" }, // same as 1B
-	{ 0xA5, 0x10, 0x1F, "Temperature Sensor, Set Point, Fan Speed, Occupancy and Un-Occupancy Control", "RoomOperatingPanel.1F" },
-
-	// A5-11: Controller Status
-	{ 0xA5, 0x11, 0x01, "Lighting Controller", "ControllerStatus.01" },
-	{ 0xA5, 0x11, 0x02, "Temperature Controller Output", "ControllerStatus.02" },
-	{ 0xA5, 0x11, 0x03, "Blind Status", "ControllerStatus.03" },
-	{ 0xA5, 0x11, 0x04, "Extended Lighting Status", "ControllerStatus.04" },
-
-	// A5-12: Automated meter reading (AMR)
-	{ 0xA5, 0x12, 0x00, "Counter", "AMR.Counter" },
-	{ 0xA5, 0x12, 0x01, "Electricity", "AMR.Electricity" },
-	{ 0xA5, 0x12, 0x02, "Gas", "AMR.Gas" },
-	{ 0xA5, 0x12, 0x03, "Water", "AMR.Water" },
-
-	// A5-13: Environmental Applications
-	{ 0xA5, 0x13, 0x01, "Weather Station", "EnvironmentalApplications.01" },
-	{ 0xA5, 0x13, 0x02, "Sun Intensity", "EnvironmentalApplications.02" },
-	{ 0xA5, 0x13, 0x03, "Date Exchange", "EnvironmentalApplications.03" },
-	{ 0xA5, 0x13, 0x04, "Time and Day Exchange", "EnvironmentalApplications.04" },
-	{ 0xA5, 0x13, 0x05, "Direction Exchange", "EnvironmentalApplications.05" },
-	{ 0xA5, 0x13, 0x06, "Geographic Position Exchange", "EnvironmentalApplications.06" },
-	{ 0xA5, 0x13, 0x10, "Sun position and radiation", "EnvironmentalApplications.10" },
-
-	// A5-14: Multi-Func Sensor
-	{ 0xA5, 0x14, 0x01, "Single Input Contact (Window/Door), Supply voltage monitor", "MultiFuncSensor.01" },
-	{ 0xA5, 0x14, 0x02, "Single Input Contact (Window/Door), Supply voltage monitor and Illumination", "MultiFuncSensor.02" },
-	{ 0xA5, 0x14, 0x03, "Single Input Contact (Window/Door), Supply voltage monitor and Vibration", "MultiFuncSensor.03" },
-	{ 0xA5, 0x14, 0x04, "Single Input Contact (Window/Door), Supply voltage monitor, Vibration and Illumination",
-	  "MultiFuncSensor.04" },
-	{ 0xA5, 0x14, 0x05, "Vibration/Tilt, Supply voltage monitor", "MultiFuncSensor.05" },
-	{ 0xA5, 0x14, 0x06, "Vibration/Tilt, Illumination and Supply voltage monitor", "MultiFuncSensor.06" },
-
-	// A5-20: HVAC Components
-	{ 0xA5, 0x20, 0x01, "Battery Powered Actuator (BI-DIR)", "HVAC.01" },
-	{ 0xA5, 0x20, 0x02, "Basic Actuator (BI-DIR)", "HVAC.02" },
-	{ 0xA5, 0x20, 0x03, "Line powered Actuator (BI-DIR)", "HVAC.03" },
-	{ 0xA5, 0x20, 0x10, "Generic HVAC Interface (BI-DIR)", "HVAC.10" },
-	{ 0xA5, 0x20, 0x11, "Generic HVAC Interface - Error Control (BI-DIR)", "HVAC.11" },
-	{ 0xA5, 0x20, 0x12, "Temperature Controller Input", "HVAC.12" },
-
-	// A5-30: Digital Input
-	{ 0xA5, 0x30, 0x01, "Single Input Contact, Battery Monitor", "DigitalInput.01" },
-	{ 0xA5, 0x30, 0x02, "Single Input Contact", "DigitalInput.02" },
-
-	// A5-37: Energy Management
-	{ 0xA5, 0x37, 0x01, "Demand Response", "EnergyManagement.01" },
-
-	// A5-38: Central Command
-	{ 0xA5, 0x38, 0x08, "Gateway", "CentralCommand.01" },
-	{ 0xA5, 0x38, 0x09, "Extended Lighting-Control", "CentralCommand.02" },
-
-	// A5-3F: Universal
-	{ 0xA5, 0x3F, 0x00, "Radio Link Test (BI-DIR)", "Universal.01" },
-
-	// End of table
-	{ 0, 0, 0, nullptr, nullptr },
-};
-
-const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
-{
-	const _t4BSLookup* pOrgTable = (const _t4BSLookup*)&T4BSTable;
-	while (pOrgTable->Label)
-	{
-		if (
-			(pOrgTable->Org == Org) &&
-			(pOrgTable->Func == Func) &&
-			(pOrgTable->Type == Type)
-			)
-			return pOrgTable->Label;
-		pOrgTable++;
-	}
-
-	return ">>Unkown... Please report!<<";
-}
-
-const char* Get_Enocean4BSDesc(const int Org, const int Func, const int Type)
-{
-	const _t4BSLookup* pOrgTable = (const _t4BSLookup*)&T4BSTable;
-	while (pOrgTable->Label)
-	{
-		if (
-			(pOrgTable->Org == Org) &&
-			(pOrgTable->Func == Func) &&
-			(pOrgTable->Type == Type)
-			)
-			return pOrgTable->Description;
-		pOrgTable++;
-	}
-
-	return ">>Unkown... Please report!<<";
-}
-
 
 /**
  * \brief The default structure for EnOcean packets
@@ -531,7 +179,7 @@ typedef struct enocean_data_structure_MDA {
 			  /**
 			   * \brief Modem telegram
 			   *
-			   * 6byte Modem Telegram (original or repeated)
+			   * 6byte Modem Telegram (original or repeated message)
 			   */
 #define C_ORG_6DT 0x0A
 			   /**
@@ -1118,19 +766,21 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 
 	enocean_data_structure iframe = create_base_frame();
 	iframe.H_SEQ_LENGTH = 0x6B;//TX+Length
-	iframe.ORG = 0x05;
+	iframe.ORG = C_ORG_RPS;
 
-	unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
-	if ((sID < m_id_base) || (sID > m_id_base + 129))
+	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	std::string nodeID = GetNodeID(iNodeID);
+	if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
 	{
-		Log(LOG_ERROR, "Can not switch with this DeviceID, use a switch created with our id_base!...");
+		std::string baseID = GetNodeID(m_id_base);
+		Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 		return false;
 	}
 
-	iframe.ID_BYTE3 = (unsigned char)((sID & 0xFF000000) >> 24);//tsen->LIGHTING2.id1;
-	iframe.ID_BYTE2 = (unsigned char)((sID & 0x00FF0000) >> 16);//tsen->LIGHTING2.id2;
-	iframe.ID_BYTE1 = (unsigned char)((sID & 0x0000FF00) >> 8);//tsen->LIGHTING2.id3;
-	iframe.ID_BYTE0 = (unsigned char)(sID & 0x0000FF);//tsen->LIGHTING2.id4;
+	iframe.ID_BYTE3 = (unsigned char)tsen->LIGHTING2.id1;
+	iframe.ID_BYTE2 = (unsigned char)tsen->LIGHTING2.id2;
+	iframe.ID_BYTE1 = (unsigned char)tsen->LIGHTING2.id3;
+	iframe.ID_BYTE0 = (unsigned char)tsen->LIGHTING2.id4;
 
 	unsigned char RockerID = 0;
 	unsigned char Pressed = 1;
@@ -1140,15 +790,13 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	else
 		return false;//double not supported yet!
 
-
 	//First we need to find out if this is a Dimmer switch,
 	//because they are threaded differently
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
 	std::vector<std::vector<std::string> > result;
-	char szDeviceID[20];
-	sprintf(szDeviceID, "%08X", (unsigned int)sID);
-	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szDeviceID, int(tsen->LIGHTING2.unitcode));
+	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, nodeID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
 	{
 		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
@@ -1208,7 +856,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		//Dim On DATA_BYTE0 = 0x09
 		//Dim Off DATA_BYTE0 = 0x08
 
-		iframe.ORG = 0x07;
+		iframe.ORG = C_ORG_4BS;
 		iframe.DATA_BYTE3 = 2;
 		iframe.DATA_BYTE2 = iLevel;
 		iframe.DATA_BYTE1 = 1;//very fast dimming
@@ -1236,19 +884,21 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 
 		enocean_data_structure iframe = create_base_frame();
 		iframe.H_SEQ_LENGTH = 0x6B;//TX+Length
-		iframe.ORG = 0x05;
+		iframe.ORG = C_ORG_RPS;
 
-		unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
-		if ((sID < m_id_base) || (sID > m_id_base + 129))
+		uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+		if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
 		{
-			Log(LOG_ERROR, "Can not switch with this DeviceID, use a switch created with our id_base!...");
+			std::string nodeID = GetNodeID(iNodeID);
+			std::string baseID = GetNodeID(m_id_base);
+			Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 			return;
 		}
 
-		iframe.ID_BYTE3 = (unsigned char)((sID & 0xFF000000) >> 24);//tsen->LIGHTING2.id1;
-		iframe.ID_BYTE2 = (unsigned char)((sID & 0x00FF0000) >> 16);//tsen->LIGHTING2.id2;
-		iframe.ID_BYTE1 = (unsigned char)((sID & 0x0000FF00) >> 8);//tsen->LIGHTING2.id3;
-		iframe.ID_BYTE0 = (unsigned char)(sID & 0x0000FF);//tsen->LIGHTING2.id4;
+		iframe.ID_BYTE3 = tsen->LIGHTING2.id1;
+		iframe.ID_BYTE2 = tsen->LIGHTING2.id2;
+		iframe.ID_BYTE1 = tsen->LIGHTING2.id3;
+		iframe.ID_BYTE0 = tsen->LIGHTING2.id4;
 
 		unsigned char RockerID = 0;
 		//unsigned char UpDown = 1;
@@ -1260,7 +910,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 			return;//double not supported yet!
 
 		//Teach in, DATA 2,1,0 set to 0
-		iframe.ORG = 0x07;
+		iframe.ORG = C_ORG_4BS;
 		iframe.DATA_BYTE3 = 2;
 		iframe.DATA_BYTE2 = 0;
 		iframe.DATA_BYTE1 = 0;
@@ -1270,18 +920,6 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 	}
 }
 
-float CEnOceanESP2::GetValueRange(const float InValue, const float ScaleMax, const float ScaleMin, const float RangeMax, const float RangeMin)
-{
-	float vscale = ScaleMax - ScaleMin;
-	if (vscale == 0)
-		return 0.0F;
-	float vrange = RangeMax - RangeMin;
-	if (vrange == 0)
-		return 0.0F;
-	float multiplyer = vscale / vrange;
-	return multiplyer * (InValue - RangeMin) + ScaleMin;
-}
-
 bool CEnOceanESP2::ParseData()
 {
 	enocean_data_structure* pFrame = (enocean_data_structure*)&m_buffer;
@@ -1289,9 +927,8 @@ bool CEnOceanESP2::ParseData()
 	if (Checksum != pFrame->CHECKSUM)
 		return false; //checksum Mismatch!
 
-	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
-	char szDeviceID[20];
-	sprintf(szDeviceID, "%08X", (unsigned int)id);
+	uint32_t iNodeID = GetINodeID(pFrame->ID_BYTE3, pFrame->ID_BYTE2, pFrame->ID_BYTE1, pFrame->ID_BYTE0);
+	std::string nodeID = GetNodeID(iNodeID);
 
 	//Handle possible OK/Errors
 	bool bStopProcessing = false;
@@ -1350,8 +987,8 @@ bool CEnOceanESP2::ParseData()
 	switch (pFrame->ORG)
 	{
 	case C_ORG_INF_IDBASE:
-		m_id_base = (pFrame->DATA_BYTE3 << 24) + (pFrame->DATA_BYTE2 << 16) + (pFrame->DATA_BYTE1 << 8) + pFrame->DATA_BYTE0;
-		Log(LOG_STATUS, "Transceiver ID_Base: 0x%08lx", m_id_base);
+		m_id_base = GetINodeID(pFrame->DATA_BYTE3, pFrame->DATA_BYTE2, pFrame->DATA_BYTE1, pFrame->DATA_BYTE0);
+		Log(LOG_STATUS, "Transceiver ID_Base: %08X", m_id_base);
 		break;
 	case C_ORG_RPS:
 		if (pFrame->STATUS & S_RPS_NU) {
@@ -1365,7 +1002,7 @@ bool CEnOceanESP2::ParseData()
 			unsigned char SecondAction = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SA) >> DB3_RPS_NU_SA_SHIFT;
 #ifdef _DEBUG
 			Log(LOG_NORM, "Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
-				id,
+				iNodeID,
 				RockerID,
 				UpDown,
 				Pressed,
@@ -1420,29 +1057,27 @@ bool CEnOceanESP2::ParseData()
 				int manufacturer = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 				int profile = pFrame->DATA_BYTE3 >> 2;
 				int ttype = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
-				Log(LOG_NORM, "4BS, Teach-in diagram: Sender_ID: 0x%08lX\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
-					id, manufacturer, Get_EnoceanManufacturer(manufacturer),
-					profile, ttype, Get_Enocean4BSType(0xA5, profile, ttype));
-
+				Log(LOG_NORM, "4BS, Teach-in diagram: Sender_ID: %08X\nManufacturer: %02X (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
+					iNodeID, manufacturer, GetManufacturerName(manufacturer),
+					profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
 
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
+				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
 				if (result.empty())
 				{
 					//Add it to the database
 					result = m_sql.safe_query(
 						"INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) "
 						"VALUES (%d,'%q',%d,%d,%d)",
-						m_HwdID, szDeviceID, manufacturer, profile, ttype);
+						m_HwdID, nodeID.c_str(), manufacturer, profile, ttype);
 				}
-
 			}
 		}
 		else
 		{
 			//Following sensors need to have had a teach-in
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
+			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
 			if (result.empty())
 			{
 				char* pszHumenTxt = enocean_hexToHuman(pFrame);
@@ -1457,11 +1092,8 @@ bool CEnOceanESP2::ParseData()
 			int Profile = atoi(result[0][2].c_str());
 			int iType = atoi(result[0][3].c_str());
 
-			const std::string szST = Get_Enocean4BSType(0xA5, Profile, iType);
-
-			if (szST == "AMR.Counter")
-			{
-				//0xA5, 0x12, 0x00, "Counter"
+			if (Profile == 0x12 && iType == 0x00)
+			{ // A5-12-00, Automated Meter Reading, Counter
 				unsigned long cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1477,9 +1109,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 			}
-			else if (szST == "AMR.Electricity")
-			{
-				//0xA5, 0x12, 0x01, "Electricity"
+			else if (Profile == 0x12 && iType == 0x01)
+			{ // A5-12-01, Automated Meter Reading, Electricity
 				int cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
 				_tUsageMeter umeter;
 				umeter.id1 = (BYTE)pFrame->ID_BYTE3;
@@ -1490,9 +1121,8 @@ bool CEnOceanESP2::ParseData()
 				umeter.fusage = (float)cvalue;
 				sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
 			}
-			else if (szST == "AMR.Gas")
-			{
-				//0xA5, 0x12, 0x02, "Gas"
+			else if (Profile == 0x12 && iType == 0x02)
+			{ // A5-12-02, Automated Meter Reading, Gas
 				unsigned long cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1508,9 +1138,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 			}
-			else if (szST == "AMR.Water")
-			{
-				//0xA5, 0x12, 0x03, "Water"
+			else if (Profile == 0x12 && iType == 0x03)
+			{ // A5-12-03, Automated Meter Reading, Water
 				unsigned long cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1526,68 +1155,65 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 			}
-			else if (szST.find("RoomOperatingPanel") == 0)
-			{
-				if (iType < 0x0E)
+			else if (Profile == 0x10 && iType <= 0x0D)
+			{ // A5-10-01..OD, RoomOperatingPanel
+				// Room Sensor and Control Unit (EEP A5-10-01 ... A5-10-0D)
+				// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
+				// pFrame->DATA_BYTE3 is the fan speed or night reduction for Eltako
+				// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
+				// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
+				// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
+				// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
+				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 40, 0);
+				if (Manufacturer == ELTAKO)
 				{
-					// Room Sensor and Control Unit (EEP A5-10-01 ... A5-10-0D)
-					// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
-					// pFrame->DATA_BYTE3 is the fan speed or night reduction for Eltako
-					// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
-					// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
-					// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
-					// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
-					float temp = GetValueRange(pFrame->DATA_BYTE1, 0, 40);
-					if (Manufacturer == 0x0D)
-					{
-						//Eltako
-						int nightReduction = 0;
-						if (pFrame->DATA_BYTE3 == 0x06)
-							nightReduction = 1;
-						else if (pFrame->DATA_BYTE3 == 0x0C)
-							nightReduction = 2;
-						else if (pFrame->DATA_BYTE3 == 0x13)
-							nightReduction = 3;
-						else if (pFrame->DATA_BYTE3 == 0x19)
-							nightReduction = 4;
-						else if (pFrame->DATA_BYTE3 == 0x1F)
-							nightReduction = 5;
-						//float setpointTemp = GetValueRange(pFrame->DATA_BYTE2, 40);
-					}
-					else
-					{
-						int fspeed = 3;
-						if (pFrame->DATA_BYTE3 >= 145)
-							fspeed = 2;
-						else if (pFrame->DATA_BYTE3 >= 165)
-							fspeed = 1;
-						else if (pFrame->DATA_BYTE3 >= 190)
-							fspeed = 0;
-						else if (pFrame->DATA_BYTE3 >= 210)
-							fspeed = -1; //auto
-						//int iswitch = pFrame->DATA_BYTE0 & 1;
-					}
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-					tsen.TEMP.packettype = pTypeTEMP;
-					tsen.TEMP.subtype = sTypeTEMP10;
-					tsen.TEMP.id1 = pFrame->ID_BYTE2;
-					tsen.TEMP.id2 = pFrame->ID_BYTE1;
-					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
-					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-
-					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = round(std::abs(temp * 10.0F));
-					tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
-					at10 -= (tsen.TEMP.temperatureh * 256);
-					tsen.TEMP.temperaturel = (BYTE)(at10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
+					int nightReduction = 0;
+					if (pFrame->DATA_BYTE3 == 0x06)
+						nightReduction = 1;
+					else if (pFrame->DATA_BYTE3 == 0x0C)
+						nightReduction = 2;
+					else if (pFrame->DATA_BYTE3 == 0x13)
+						nightReduction = 3;
+					else if (pFrame->DATA_BYTE3 == 0x19)
+						nightReduction = 4;
+					else if (pFrame->DATA_BYTE3 == 0x1F)
+						nightReduction = 5;
+					//float setpointTemp = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0, 40);
 				}
+				else
+				{
+					int fspeed = 3;
+					if (pFrame->DATA_BYTE3 >= 145)
+						fspeed = 2;
+					else if (pFrame->DATA_BYTE3 >= 165)
+						fspeed = 1;
+					else if (pFrame->DATA_BYTE3 >= 190)
+						fspeed = 0;
+					else if (pFrame->DATA_BYTE3 >= 210)
+						fspeed = -1; //auto
+					//int iswitch = pFrame->DATA_BYTE0 & 1;
+				}
+				RBUF tsen;
+				memset(&tsen, 0, sizeof(RBUF));
+				tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+				tsen.TEMP.packettype = pTypeTEMP;
+				tsen.TEMP.subtype = sTypeTEMP10;
+				tsen.TEMP.id1 = pFrame->ID_BYTE2;
+				tsen.TEMP.id2 = pFrame->ID_BYTE1;
+				// WARNING
+				// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+				// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
+				tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
+				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
+				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
+				int at10 = round(std::abs(temp * 10.0F));
+				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+				at10 -= (tsen.TEMP.temperatureh * 256);
+				tsen.TEMP.temperaturel = (BYTE)(at10);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 			}
-			else if (szST == "LightSensor.01")
-			{
-				// Light Sensor (EEP A5-06-01)
+			else if (Profile == 0x06 && iType == 0x01)
+			{ // A5-06-01, Light Sensor
 				// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
 				// pFrame->DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
 				// pFrame->DATA_BYTE3 is the low illuminance for Eltako devices where
@@ -1596,29 +1222,27 @@ bool CEnOceanESP2::ParseData()
 				// pFrame->DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
 				// pFrame->DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
 				float lux = 0;
-				if (Manufacturer == 0x0D)
-				{
-					if (pFrame->DATA_BYTE2 == 0) {
-						lux = GetValueRange(pFrame->DATA_BYTE3, 100);
-					}
-					else {
-						lux = GetValueRange(pFrame->DATA_BYTE2, 30000, 300);
-					}
-				}
+				if (Manufacturer == ELTAKO)
+					if (pFrame->DATA_BYTE2 == 0)
+						lux = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0, 100);
+					else
+						lux = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300, 30000);
 				else {
-					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5100); //mV
-					if (pFrame->DATA_BYTE0 & 1) {
-						lux = GetValueRange(pFrame->DATA_BYTE2, 30000, 300);
-					}
-					else {
-						lux = GetValueRange(pFrame->DATA_BYTE1, 60000, 600);
-					}
+					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
+					if (pFrame->DATA_BYTE0 & 1)
+						lux = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300, 30000);
+					else
+						lux = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 600, 60000);
+
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+					// WARNING
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1634,9 +1258,8 @@ bool CEnOceanESP2::ParseData()
 				lmeter.fLux = lux;
 				sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
 			}
-			else if (szST.find("Temperature") == 0)
-			{
-				//(EPP A5-02 01/30)
+			else if (Profile == 0x02)
+			{	// A5-02-01..30, Temperature sensor
 				float ScaleMax = 0;
 				float ScaleMin = 0;
 				if (iType == 0x01) { ScaleMax = -40; ScaleMin = 0; }
@@ -1662,22 +1285,14 @@ bool CEnOceanESP2::ParseData()
 				else if (iType == 0x19) { ScaleMax = 30; ScaleMin = 110; }
 				else if (iType == 0x1A) { ScaleMax = 40; ScaleMin = 120; }
 				else if (iType == 0x1B) { ScaleMax = 50; ScaleMin = 130; }
-				else if (iType == 0x20)
-				{
-					ScaleMax = -10;
-					ScaleMin = 41.2F;
-				}
-				else if (iType == 0x30)
-				{
-					ScaleMax = -40;
-					ScaleMin = 62.3F;
-				}
+				else if (iType == 0x20) { ScaleMax = -10; ScaleMin = 41.2F; }
+				else if (iType == 0x30) { ScaleMax = -40; ScaleMin = 62.3F; }
 
 				float temp;
 				if (iType < 0x20)
-					temp = GetValueRange(pFrame->DATA_BYTE1, ScaleMax, ScaleMin);
+					temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax);
 				else
-					temp = GetValueRange(float(((pFrame->DATA_BYTE2 & 3) << 8) | pFrame->DATA_BYTE1), ScaleMax, ScaleMin); //10bit
+					temp = GetDeviceValue(((pFrame->DATA_BYTE2 & 3) << 8) | pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax); // 10bit
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
@@ -1685,9 +1300,11 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.subtype = sTypeTEMP10;
 				tsen.TEMP.id1 = pFrame->ID_BYTE2;
 				tsen.TEMP.id2 = pFrame->ID_BYTE1;
+				// WARNING
+				// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+				// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
 				tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-
 				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
 				int at10 = round(std::abs(temp * 10.0F));
 				tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
@@ -1695,17 +1312,16 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.temperaturel = (BYTE)(at10);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 			}
-			else if (szST == "TempHum")
-			{
-				//(EPP A5-04 01/02)
+			else if (Profile == 0x04)
+			{ // A5-04-01..04, Temperature and Humidity Sensor
 				float ScaleMax = 0;
 				float ScaleMin = 0;
 				if (iType == 0x01) { ScaleMax = 0; ScaleMin = 40; }
 				else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
 				else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
 
-				float temp = GetValueRange(pFrame->DATA_BYTE1, ScaleMax, ScaleMin);
-				float hum = GetValueRange(pFrame->DATA_BYTE2, 100);
+				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax);
+				float hum = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0, 100);
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
@@ -1724,9 +1340,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1, nullptr);
 			}
-			else if (szST == "OccupancySensor.01")
-			{
-				//(EPP A5-07-01)
+			else if (Profile == 0x07 && iType == 0x01)
+			{ // A5-07-01, Occupancy sensor with Supply voltage monitor
 				if (pFrame->DATA_BYTE3 < 251)
 				{
 					RBUF tsen;
@@ -1734,12 +1349,15 @@ bool CEnOceanESP2::ParseData()
 					if (pFrame->DATA_BYTE0 & 1)
 					{
 						//Voltage supported
-						float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0F, 0, 250, 0);
+						float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 						tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+						// WARNING
+						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 						tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 						tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1753,7 +1371,6 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.packettype = pTypeLighting2;
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
-
 					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
 					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
 					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
@@ -1768,19 +1385,21 @@ bool CEnOceanESP2::ParseData()
 					//Error code
 				}
 			}
-			else if (szST == "OccupancySensor.02")
-			{
-				//(EPP A5-07-02)
+			else if (Profile == 0x07 && iType == 0x02)
+			{ // A5-07-02, , Occupancy sensor with Supply voltage monitor
 				if (pFrame->DATA_BYTE3 < 251)
 				{
 					RBUF tsen;
 
-					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0F, 0, 250, 0);
+					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+					// WARNING
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1793,7 +1412,6 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.packettype = pTypeLighting2;
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
-
 					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
 					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
 					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;
@@ -1808,19 +1426,21 @@ bool CEnOceanESP2::ParseData()
 					//Error code
 				}
 			}
-			else if (szST == "OccupancySensor.03")
-			{
-				//(EPP A5-07-03)
+			else if (Profile == 0x07 && iType == 0x03)
+			{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
 				if (pFrame->DATA_BYTE3 < 251)
 				{
 					RBUF tsen;
 
-					float voltage = GetValueRange(pFrame->DATA_BYTE3, 5.0F, 0, 250, 0);
+					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+					// WARNING
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
 					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
@@ -1845,7 +1465,6 @@ bool CEnOceanESP2::ParseData()
 					tsen.LIGHTING2.packettype = pTypeLighting2;
 					tsen.LIGHTING2.subtype = sTypeAC;
 					tsen.LIGHTING2.seqnbr = 0;
-
 					tsen.LIGHTING2.id1 = (BYTE)pFrame->ID_BYTE3;
 					tsen.LIGHTING2.id2 = (BYTE)pFrame->ID_BYTE2;
 					tsen.LIGHTING2.id3 = (BYTE)pFrame->ID_BYTE1;

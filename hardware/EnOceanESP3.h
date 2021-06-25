@@ -1,12 +1,13 @@
 #pragma once
 
+#include "EnOceanEEP.h"
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 #include <map>
 
 #define ENOCEAN3_READ_BUFFER_SIZE 65 * 1024
 
-class CEnOceanESP3 : public AsyncSerial, public CDomoticzHardwareBase
+class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
 	enum _eEnOcean_Receive_State
 	{
@@ -28,7 +29,7 @@ class CEnOceanESP3 : public AsyncSerial, public CDomoticzHardwareBase
 	~CEnOceanESP3() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, unsigned char length);
-	unsigned long m_id_base;
+	uint32_t m_id_base;
 
       private:
 	void Init();
@@ -38,7 +39,6 @@ class CEnOceanESP3 : public AsyncSerial, public CDomoticzHardwareBase
 	void Do_Work();
 	bool ParseData();
 	void Add2SendQueue(const char *pData, size_t length);
-	float GetValueRange(float InValue, float ScaleMax, float ScaleMin = 0, float RangeMax = 255, float RangeMin = 0);
 
 	bool sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
 	bool sendFrameQueue(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
@@ -47,6 +47,24 @@ class CEnOceanESP3 : public AsyncSerial, public CDomoticzHardwareBase
 	void readCallback(const char *data, size_t len);
 
 	void ReloadVLDNodes();
+
+ 	const char *GetPacketTypeLabel(const uint8_t PT);
+	const char *GetPacketTypeDescription(const uint8_t PT);
+
+	const char *GetReturnCodeLabel(const uint8_t RC);
+	const char *GetReturnCodeDescription(const uint8_t RC);
+
+	const char *GetFunctionReturnCodeLabel(const uint8_t RC);
+	const char *GetFunctionReturnCodeDescription(const uint8_t RC);
+
+	const char *GetEventCodeLabel(const uint8_t EC);
+	const char *GetEventCodeDescription(const uint8_t EC);
+
+	const char *GetCommonCommandLabel(const uint8_t CC);
+	const char *GetCommonCommandDescription(const uint8_t CC);
+
+	const char *GetSmarkAckCodeLabel(const uint8_t SA);
+	const char *GetSmartAckCodeDescription(const uint8_t SA);
 
       private:
 	_eEnOcean_Receive_State m_receivestate;
