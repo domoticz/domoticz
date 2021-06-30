@@ -323,7 +323,12 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
-			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
+			m_pWebEm->RegisterPageCode(
+				"/oauth2/v1/auth", [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AccessToken(session, req, rep); }, true);
+			m_pWebEm->RegisterPageCode(
+				"/oauth2/v1/token", [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AuthToken(session, req, rep); }, true);
+
+			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
 			m_pWebEm->RegisterPageCode("/logincheck", [this](auto&& session, auto&& req, auto&& rep) { PostLoginCheck(session, req, rep); }, true);
@@ -369,7 +374,8 @@ namespace http
 			RegisterCommandCode(
 				"gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
 			RegisterCommandCode(
-				"logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
+				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
+
 			RegisterCommandCode(
 				"getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
 			RegisterCommandCode(
@@ -925,7 +931,27 @@ namespace http
 			}
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::GetOauth2AccessToken(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root;
+
+			root["test"] = "AccessToken";
+
+			reply::set_content(&rep, root.toStyledString());
+			return;
+		}
+
+		void CWebServer::PostOauth2AuthToken(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root;
+
+			root["test"] = "AccessToken";
+
+			reply::set_content(&rep, root.toStyledString());
+			return;
+		}
+
+		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{

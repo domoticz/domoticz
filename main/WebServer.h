@@ -48,6 +48,9 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
+	void GetOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
+	void PostOauth2AuthToken(WebEmSession &session, const request &req, reply &rep);
+
 	void PostSettings(WebEmSession& session, const request& req, reply& rep);
 	void PostLoginCheck(WebEmSession& session, const request& req, reply& rep);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
