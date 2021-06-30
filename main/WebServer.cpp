@@ -376,6 +376,11 @@ namespace http
 			m_pWebEm->RegisterPageCode(
 				"/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
 
+			m_pWebEm->RegisterPageCode(
+				"/oauth2/v1/auth", [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AccessToken(session, req, rep); }, true);
+			m_pWebEm->RegisterPageCode(
+				"/oauth2/v1/token", [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AuthToken(session, req, rep); }, true);
+
 			RegisterCommandCode(
 				"getversion", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetVersion(session, req, root); }, true);
 			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
@@ -985,6 +990,26 @@ namespace http
 					root["rights"] = session.rights;
 				}
 			}
+		}
+
+		void CWebServer::GetOauth2AccessToken(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root;
+
+			root["test"] = "AccessToken";
+
+			reply::set_content(&rep, root.toStyledString());
+			return;
+		}
+
+		void CWebServer::PostOauth2AuthToken(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root;
+
+			root["test"] = "AccessToken";
+
+			reply::set_content(&rep, root.toStyledString());
+			return;
 		}
 
 		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
