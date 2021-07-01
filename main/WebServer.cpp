@@ -324,9 +324,9 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
 			m_pWebEm->RegisterPageCode(
-				"/oauth2/v1/auth", [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AccessToken(session, req, rep); }, true);
+				"/oauth2/v1/authorize", [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
 			m_pWebEm->RegisterPageCode(
-				"/oauth2/v1/token", [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AuthToken(session, req, rep); }, true);
+				"/oauth2/v1/token", [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
@@ -931,24 +931,184 @@ namespace http
 			}
 		}
 
-		void CWebServer::GetOauth2AccessToken(WebEmSession &session, const request &req, reply &rep)
+		void CWebServer::GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep)
 		{
 			Json::Value root;
+			root["error"] = "invalid_request";
 
-			root["test"] = "AccessToken";
+			std::string state = request::findValue(&req, "state");
+			if (!state.empty())
+			{
+				root["state"] = state;
+			}
+			std::string response_type = request::findValue(&req, "response_type");
+			std::string client_id = request::findValue(&req, "client_id");
+			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
 
-			reply::set_content(&rep, root.toStyledString());
-			return;
+			if (!redirect_uri.empty() && redirect_uri.substr(0,8) == "https://")	// Absolute and (TLS)safe redirect URI expected
+			{
+				if (req.method == "GET")
+				{
+					if(!response_type.empty() && (response_type.compare("code") == 0 )) // || response_type.compare("token") == 0))
+					{
+						int iUser = -1;
+						if (!client_id.empty())
+						{
+							iUser = FindUser(client_id.c_str());
+							if (iUser >= 0)
+							{
+								root["code"] = GenerateMD5Hash(base64_encode(GenerateUUID()));
+								m_accesscodes[iUser].AccessCode = root["code"].asString();
+								m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
+								m_accesscodes[iUser].RedirectUri = redirect_uri;
+							}
+						}
+						if (iUser == -1)
+						{
+							root["error"] = "unauthorized_client";
+							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
+						}
+					}
+					else
+					{
+						root["error"] = "unsupported_response_type";
+						_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Invalid/unsupported response_type (%s)!", response_type.c_str());
+					}
+				}
+				else
+				{
+					_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Received invalid request method .%s.", req.method.c_str());
+				}
+			}
+			else
+			{
+				rep.status = reply::bad_request;
+				reply::add_header_content_type(&rep, "application/json");
+				reply::set_content(&rep, root.toStyledString());
+				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
+				return;
+			}
+
+			std::stringstream result;
+			if(redirect_uri.find("?") != std::string::npos)
+				result << redirect_uri << "&";
+			else
+				result << redirect_uri << "?";
+
+			if (!root["code"].empty())
+				result << "code=" << CURLEncode::URLEncode(root["code"].asString());
+			else
+				result << "error=" << CURLEncode::URLEncode(root["error"].asString());
+
+			if (!root["state"].empty())
+				result << "&state=" << root["state"].asString();
+
+			reply::add_header(&rep, "Location", result.str());
+			rep.status = reply::moved_temporarily;
 		}
 
-		void CWebServer::PostOauth2AuthToken(WebEmSession &session, const request &req, reply &rep)
+		void CWebServer::PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep)
 		{
 			Json::Value root;
 
-			root["test"] = "AccessToken";
+			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
+			rep.status = reply::bad_request;
+
+			std::string state = request::findValue(&req, "state");
+			std::string grant_type = request::findValue(&req, "grant_type");
+			std::string client_id = request::findValue(&req, "client_id");
+			std::string access_code = request::findValue(&req, "code");
+			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
+			if (!state.empty())
+			{
+				root["state"] = state;
+			}
+
+			if (req.method == "POST")
+			{
+				if(!grant_type.empty() && (grant_type.compare("authorization_code") == 0 )) // || grant_type.compare("token") == 0))
+				{
+					int iUser = -1;
+					if (!client_id.empty())
+					{
+						iUser = FindUser(client_id.c_str());
+						if (iUser >= 0)
+						{
+							if (m_accesscodes[iUser].AccessCode.compare(access_code.c_str()) == 0)
+							{
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for client (%s)!", m_accesscodes[iUser].AccessCode.c_str(), client_id.c_str());
+
+								std::string acRedirectUri = m_accesscodes[iUser].RedirectUri;
+								unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
+								unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+								m_accesscodes[iUser].AccessCode = "";	// Once used, make sure it cannot be used again
+								m_accesscodes[iUser].RedirectUri = "";
+								m_accesscodes[iUser].ExpTime = 0;
+
+								if(acRedirectUri.compare(redirect_uri.c_str()) == 0)
+								{
+									if (CodeTime > CurTime)
+									{
+										std::string jwttoken;
+										uint16_t exptime = 3600;
+
+										std::string client_secret = "DomIssuer";
+										std::string user = "patrick";
+
+										if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, user, exptime))
+										{
+											root["access_token"] = jwttoken;
+											root["token_type"] = "Bearer";
+											root["expires_in"] = exptime;
+											rep.status = reply::ok;
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
+										}
+										else
+										{
+											root["error"] = "server_error";
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Authorization code!");
+											iUser = -1;
+										}
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%lld) (%lld))!", CodeTime, CurTime);
+										iUser = -1;
+									}
+								}
+								else
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Redirect URI does not match (%s) (%s))!", acRedirectUri.c_str(), redirect_uri.c_str());
+									iUser = -1;
+								}
+							}
+							else
+							{
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Cannot find valid access code (%s) for client!", m_accesscodes[iUser].AccessCode.c_str());
+								iUser = -1;
+							}
+						}
+					}
+					if(iUser == -1)
+					{
+						root["error"] = "unauthorized_client";
+						_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
+					}
+				}
+				else
+				{
+					root["error"] = "unsupported_response_type";
+					_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid/unsupported grant_type (%s)!", grant_type.c_str());
+				}
+			}
+			else
+			{
+				root["error"] = "invalid_request";
+				_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Received invalid request method .%s.", req.method.c_str());
+			}
 
 			reply::set_content(&rep, root.toStyledString());
-			return;
 		}
 
 		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
@@ -7810,12 +7970,21 @@ namespace http
 			wtmp.TotSensors = atoi(result[0][0].c_str());
 			m_users.push_back(wtmp);
 
+			_tUserAccessCode utmp;
+			utmp.ID = ID;
+			utmp.ExpTime = 0;
+			utmp.UserName = username;
+			utmp.AccessCode = "";
+			utmp.RedirectUri = "";
+			m_accesscodes.push_back(utmp);
+
 			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs);
 		}
 
 		void CWebServer::ClearUserPasswords()
 		{
 			m_users.clear();
+			m_accesscodes.clear();
 			if (m_pWebEm)
 				m_pWebEm->ClearUserPasswords();
 		}
