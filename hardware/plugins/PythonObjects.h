@@ -228,8 +228,8 @@ namespace Plugins {
 
 	static PyMemberDef CConnection_members[] = {
 		{ "Name", T_OBJECT, offsetof(CConnection, Name), READONLY, "Name" },
-		{ "Address", T_OBJECT, offsetof(CConnection, Address), READONLY, "Address" },
-		{ "Port", T_OBJECT, offsetof(CConnection, Port), READONLY, "Port" },
+		{ "Address", T_OBJECT, offsetof(CConnection, Address), 0, "Address" },
+		{ "Port", T_OBJECT, offsetof(CConnection, Port), 0, "Port" },
 		{ "Baud", T_INT, offsetof(CConnection, Baud), READONLY, "Baud" },
 		{ "Target", T_OBJECT, offsetof(CConnection, Target), 0, "Event target this connection" },
 		{ "Parent", T_OBJECT, offsetof(CConnection, Parent), READONLY, "Parent connection" },

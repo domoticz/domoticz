@@ -84,6 +84,7 @@ namespace Plugins {
 
 		if ((pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1))
 		{
+			// GIL is not held normal conversion to string via PyBorrowedRef cannot be used
 			std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 			std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
