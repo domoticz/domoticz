@@ -1,10 +1,5 @@
 CACHE MANIFEST
 
-acttheme/custom.css
-acttheme/custom.js
-acttheme/images/imgbg.jpg
-
-
 # ref #BuildHash //forces a cache refresh on every new build
 
 CACHE:
