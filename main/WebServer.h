@@ -413,11 +413,14 @@ private:
 
 	struct _tUserAccessCode
 	{
-		unsigned long ID;
+		int ID;
+		int clientID;
 		unsigned long long ExpTime;
 		std::string UserName;
-		std::string AccessCode;
+		std::string AuthCode;
+		std::string Scope;
 		std::string RedirectUri;
+		std::string CodeChallenge;
 	};
 
 	std::vector<_tUserAccessCode> m_accesscodes;

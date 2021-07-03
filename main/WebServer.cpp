@@ -941,9 +941,12 @@ namespace http
 			{
 				root["state"] = state;
 			}
+			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
 			std::string response_type = request::findValue(&req, "response_type");
 			std::string client_id = request::findValue(&req, "client_id");
-			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
+			std::string scope = request::findValue(&req, "scope");
+			std::string code_challenge = request::findValue(&req, "code_challenge");
+			std::string code_challenge_method = request::findValue(&req, "code_challenge_method");
 
 			if (!redirect_uri.empty() && redirect_uri.substr(0,8) == "https://")	// Absolute and (TLS)safe redirect URI expected
 			{
@@ -951,16 +954,59 @@ namespace http
 				{
 					if(!response_type.empty() && (response_type.compare("code") == 0 )) // || response_type.compare("token") == 0))
 					{
+						int iClient = -1;
 						int iUser = -1;
 						if (!client_id.empty())
 						{
-							iUser = FindUser(client_id.c_str());
-							if (iUser >= 0)
+							iClient = FindUser(client_id.c_str());
+							if (iClient >= 0)
 							{
-								root["code"] = GenerateMD5Hash(base64_encode(GenerateUUID()));
-								m_accesscodes[iUser].AccessCode = root["code"].asString();
-								m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
-								m_accesscodes[iUser].RedirectUri = redirect_uri;
+								if (m_users[iClient].userrights == URIGHTS_CLIENTID)	// Found a registered client
+								{
+									// So find the intended User. Should be one of the scope's (user:)
+									std::string UserFromScope = "";
+									std::vector<std::string> strarray;
+									StringSplit(scope, " ", strarray);
+									for (const auto &str : strarray)
+									{
+										if (str.substr(0,5) == "user:")
+										{
+											UserFromScope = str.substr(5);
+											iUser = FindUser(UserFromScope.c_str());
+											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Extracted user (%s)(%d) from scopes", UserFromScope.c_str(), iUser);
+											break;
+										}
+									}
+									if (iUser != -1)
+									{
+										m_accesscodes[iUser].clientID = iClient;
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Could not find intended user in scopes (%s) for Client (%s)!", scope.c_str(), client_id.c_str());
+									}
+								}
+								else
+								{
+									iUser = iClient;	// Working with a regular user (not a registered client)
+									m_accesscodes[iUser].clientID = -1;
+								}
+								if (iUser != -1)
+								{
+									root["code"] = GenerateMD5Hash(base64_encode(GenerateUUID()));
+									m_accesscodes[iUser].AuthCode = root["code"].asString();
+									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
+									m_accesscodes[iUser].RedirectUri = redirect_uri;
+									m_accesscodes[iUser].Scope = scope;
+									if (!(code_challenge.empty() || code_challenge_method.empty()) && code_challenge_method.compare("S256") == 0 )
+									{
+										m_accesscodes[iUser].CodeChallenge = code_challenge;
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: PKCE Code Challenge found, but challenge method (%s) not supported! Challenge ignored!", code_challenge_method.c_str());
+									}
+								}
 							}
 						}
 						if (iUser == -1)
@@ -1019,8 +1065,10 @@ namespace http
 			std::string state = request::findValue(&req, "state");
 			std::string grant_type = request::findValue(&req, "grant_type");
 			std::string client_id = request::findValue(&req, "client_id");
-			std::string access_code = request::findValue(&req, "code");
+			std::string client_secret = request::findValue(&req, "client_secret");
+			std::string auth_code = request::findValue(&req, "code");
 			std::string scope = request::findValue(&req, "scope");
+			std::string code_verifier = request::findValue(&req, "code_verifier");
 			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
 
 			if (!state.empty())
@@ -1036,44 +1084,79 @@ namespace http
 					if (grant_type.compare("authorization_code") == 0 )
 					{
 						bValidGrantType = true;
+						int iClient = -1;
 						int iUser = -1;
 						if (!client_id.empty())
 						{
-							iUser = FindUser(client_id.c_str());
-							if (iUser >= 0)
+							iClient = FindUser(client_id.c_str());
+							if (iClient >= 0)
 							{
-								if (m_accesscodes[iUser].AccessCode.compare(access_code.c_str()) == 0)
+								// Let's find the user for this client with the right auth_code, if any
+								iUser = 0;
+								for (const auto &ac : m_accesscodes)
 								{
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for client (%s)!", m_accesscodes[iUser].AccessCode.c_str(), client_id.c_str());
+									if (ac.AuthCode.compare(auth_code.c_str()) == 0)
+									{
+										if (ac.clientID == iClient || (ac.clientID == -1 && iUser == iClient))
+											break;
+									}
+									iUser++;
+								}
+
+								if (m_accesscodes[iUser].AuthCode.compare(auth_code.c_str()) == 0)
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for user (%d)!", m_accesscodes[iUser].AuthCode.c_str(), iUser);
 
 									std::string acRedirectUri = m_accesscodes[iUser].RedirectUri;
+									std::string acScope = m_accesscodes[iUser].Scope;
+									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
 									unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
 									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+									bool noclient = (m_accesscodes[iUser].clientID == -1);
 
-									m_accesscodes[iUser].AccessCode = "";	// Once used, make sure it cannot be used again
+									m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
 									m_accesscodes[iUser].RedirectUri = "";
+									m_accesscodes[iUser].Scope = "";
+									m_accesscodes[iUser].clientID = -1;
 									m_accesscodes[iUser].ExpTime = 0;
+									m_accesscodes[iUser].CodeChallenge = "";
 
 									if(acRedirectUri.compare(redirect_uri.c_str()) == 0)
 									{
 										if (CodeTime > CurTime)
 										{
-											std::string client_secret = m_users[iUser].Password;
-											std::string user = m_users[iUser].Username;
-
-											if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, user, exptime))
+											bool bPKCE = false;
+											if(!(code_verifier.empty() && CodeChallenge.empty()))
 											{
-												root["access_token"] = jwttoken;
-												root["token_type"] = "Bearer";
-												root["expires_in"] = exptime;
-												root["refresh_token"] = "tbd...";
-												rep.status = reply::ok;
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
+												// We have a code_challenge from the Auth request and now also a code_verifier.. let's see if they match
+												//unsigned char * verifier_hash[SHA256_DIGEST_LENGTH];
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer (%s)!", CodeChallenge.c_str(), code_verifier.c_str());
+												//SHA256(code_verifier.c_str()),SHA256_DIGEST_LENGTH, *verifier_hash);
+												bPKCE = true;
+											}
+											if(code_verifier.empty() || bPKCE)
+											{
+												std::string user = m_users[iUser].Username;
+
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, user, exptime, noclient))
+												{
+													root["access_token"] = jwttoken;
+													root["token_type"] = "Bearer";
+													root["expires_in"] = exptime;
+													root["refresh_token"] = "tbd...";
+													rep.status = reply::ok;
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
+												}
+												else
+												{
+													root["error"] = "server_error";
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+													iUser = -1;
+												}
 											}
 											else
 											{
-												root["error"] = "server_error";
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: PKCE Code verification failed!");
 												iUser = -1;
 											}
 										}
@@ -1091,7 +1174,7 @@ namespace http
 								}
 								else
 								{
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Cannot find valid access code (%s) for client!", m_accesscodes[iUser].AccessCode.c_str());
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Cannot find valid access code (%s) for user!", auth_code.c_str());
 									iUser = -1;
 								}
 							}
@@ -1101,7 +1184,7 @@ namespace http
 							root["error"] = "unauthorized_client";
 							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
 						}
-					}
+					} // end 'authorization_code' grant_type
 					if (grant_type.compare("client_credentials") == 0 )
 					{
 						bValidGrantType = true;
@@ -1124,7 +1207,7 @@ namespace http
 									iUser = FindUser(user.c_str());
 									if(iUser >= 0)
 									{
-										if (m_pWebEm->GenerateJwtToken(jwttoken, user, passwd, user, exptime))
+										if (m_pWebEm->GenerateJwtToken(jwttoken, user, passwd, user, exptime, true))
 										{
 											root["access_token"] = jwttoken;
 											root["token_type"] = "Bearer";
@@ -1150,11 +1233,11 @@ namespace http
 							rep.status = reply::unauthorized;
 							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Client Credentials flow failed!");
 						}
-					}
+					} // end 'client_credentials' grant_type
 					if (grant_type.compare("refresh_token") == 0 )
 					{
 						bValidGrantType = true;
-					}
+					} // end 'refresh_token' grant_type
 				}
 				if(!bValidGrantType)
 				{
@@ -8032,9 +8115,11 @@ namespace http
 
 			_tUserAccessCode utmp;
 			utmp.ID = ID;
-			utmp.ExpTime = 0;
 			utmp.UserName = username;
-			utmp.AccessCode = "";
+			utmp.clientID = -1	;
+			utmp.ExpTime = 0;
+			utmp.AuthCode = "";
+			utmp.Scope = "";
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
