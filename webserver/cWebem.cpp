@@ -1258,6 +1258,7 @@ namespace http {
 						}
 						// Step 2: Find the audience = our ClientID (~ the Username of the Domoticz User where the userright = ClientID)
 						std::string clientid = decodedJWT.get_audience().cbegin()->data();	// Assumption: only 1 element in the AUD set!
+						std::string JWTsubject = decodedJWT.get_subject();
 						_log.Debug(DEBUG_AUTH,"JWT Token audience : %s", clientid.c_str());
 
 						std::string clientsecret;
@@ -1267,7 +1268,7 @@ namespace http {
 						{
 							if (my.Username == clientid)
 							{
-								if (my.userrights == URIGHTS_CLIENTID)
+								if (my.userrights == URIGHTS_CLIENTID || clientid.compare(JWTsubject) == 0)
 								{
 									clientsecret = my.Password;
 									client_key_id = std::to_string(my.ID);
@@ -1317,7 +1318,6 @@ namespace http {
 						}
 						// Step 5: See of the subject (intended user) is available and exists in the User table
 						std::string key_id = decodedJWT.get_key_id();
-						std::string JWTsubject = decodedJWT.get_subject();
 						for (const auto &my : myWebem->m_userpasswords)
 						{
 							if (my.Username == JWTsubject)
@@ -1424,18 +1424,25 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint16_t exptime)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint16_t exptime, const bool noclient)
 		{
 			bool bOk = false;
 
-			// Check if the clientID exists and we have a valid clientSecret for it
+			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
+			std::string hashedsecret = clientsecret;
+			if (clientsecret.length() != 32)	// 2 * MD5_DIGEST_LENGTH
+			{
+				hashedsecret = GenerateMD5Hash(clientsecret);
+			}
+			// Check if the clientID exists and we have a valid clientSecret for it (used when generating Tokens for registered clients)
+			// But with 'noclient', a normal registered user is assumed and checked (used for cases without registered clients. And clientid = user and should be the same)
 			for (const auto &my : myRequestHandler.Get_myWebem()->m_userpasswords)
 			{
 				if (my.Username == clientid)
 				{
-					if (my.userrights == URIGHTS_CLIENTID)	// The 'user' should have CLIENTID rights to be a real Client (and not a normal user)
+					if (my.userrights == URIGHTS_CLIENTID || noclient)	// The 'user' should have CLIENTID rights to be a real Client (and not a normal user) or we skip this check
 					{
-						if (my.Password == GenerateMD5Hash(clientsecret))
+						if (my.Password == hashedsecret)
 						{
 							auto JWT = jwt::create()
 								.set_type("JWT")
