@@ -1868,7 +1868,7 @@ namespace http {
 			{
 				if (_ah.method == "JWT")
 				{
-					_log.Debug(DEBUG_AUTH, "Found JWT Authorization token (%s): Method %s, Userdata %s, rights %s", _ah.response.c_str(), _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+					_log.Debug(DEBUG_AUTH, "Found JWT Authorization token: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;

@@ -1115,7 +1115,7 @@ namespace http
 									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 									bool noclient = (m_accesscodes[iUser].clientID == -1);
 
-									// For so-called (registered) public clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
+									// For so-called (registered) 'public' clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
 									// So in those cases, we use the registered secret
 									if(!noclient && client_secret.empty())
 									{
@@ -1134,13 +1134,14 @@ namespace http
 										if (CodeTime > CurTime)
 										{
 											bool bPKCE = false;
-											if(!(code_verifier.empty() && CodeChallenge.empty()))
+											if(!(code_verifier.empty() || CodeChallenge.empty()))
 											{
 												// We have a code_challenge from the Auth request and now also a code_verifier.. let's see if they match
-												//unsigned char * verifier_hash[SHA256_DIGEST_LENGTH];
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer (%s)!", CodeChallenge.c_str(), code_verifier.c_str());
-												//SHA256(code_verifier.c_str()),SHA256_DIGEST_LENGTH, *verifier_hash);
-												bPKCE = true;
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer!", CodeChallenge.c_str());
+												if (CodeChallenge.compare(base64url_encode(sha256raw(code_verifier))) == 0)
+												{
+													bPKCE = true;
+												}
 											}
 											if(code_verifier.empty() || bPKCE)
 											{
