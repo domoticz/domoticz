@@ -1057,7 +1057,8 @@ namespace http
 		{
 			Json::Value root;
 			std::string jwttoken;
-			uint16_t exptime = 3600;
+			uint16_t exptime = 3600;			// Token validity time (seconds)
+			uint32_t refreshexptime = 86400;	// Refresh token validity time (seconds)
 
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
@@ -1143,7 +1144,11 @@ namespace http
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
 													root["expires_in"] = exptime;
-													root["refresh_token"] = "tbd...";
+													std::string refreshtoken;
+													if (m_pWebEm->GenerateJwtToken(refreshtoken, client_id, client_secret, user, refreshexptime, noclient))
+													{
+														root["refresh_token"] = refreshtoken;
+													}
 													rep.status = reply::ok;
 													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
 												}
