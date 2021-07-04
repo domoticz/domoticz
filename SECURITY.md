@@ -26,10 +26,17 @@ Only __authorization_code__ flow is supported.
 
 The _implicit_ flow is not as it is not secure. But using _authorization_code flow with the PKCE extension_ is also possible now. PKCE stands for _Proof Key for Code Exchange_.
 
-Maybe __client_credentials__ flow support? But only when in _trusted network_?
+We do not support _client_credentials_ flow as we do not want 'anonymous' access by a client/application.
+
+Users can use __password__ flow! But only when in _trusted network_? Easier for local running scripts, etc.?
 
 Support for _refresh_token_ :)
 
+
+## PKCE extension (RFC7636)
+
+Proof Key Code Exchange (pronounced "pixy")
+More secure auth_code flow for public clients (alternative to depricated implicit flow)
 
 ## OpenID Connect (OIDC) support
 
@@ -44,3 +51,8 @@ The __access_token__ returned is called a _JWT_ (Json Web Token).
 https://developer.okta.com/blog/2019/10/21/illustrated-guide-to-oauth-and-oidc
 https://developer.okta.com/blog/2019/05/01/is-the-oauth-implicit-flow-dead
 https://blog.postman.com/pkce-oauth-how-to/
+
+
+https://datatracker.ietf.org/doc/html/rfc6749
+https://datatracker.ietf.org/doc/html/rfc7636
+https://datatracker.ietf.org/doc/html/rfc7519
