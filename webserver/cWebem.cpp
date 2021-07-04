@@ -1430,7 +1430,7 @@ namespace http {
 
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
 			std::string hashedsecret = clientsecret;
-			if (clientsecret.length() != 32)	// 2 * MD5_DIGEST_LENGTH
+			if (!(clientsecret.length() == 32 && isHexRepresentation(clientsecret)))	// 2 * MD5_DIGEST_LENGTH
 			{
 				hashedsecret = GenerateMD5Hash(clientsecret);
 			}
@@ -1458,7 +1458,6 @@ namespace http {
 							bOk = true;
 						}
 					}
-					_log.Debug(DEBUG_AUTH, "ClientID %s password check: %d", clientid.c_str(), bOk);
 				}
 			}
 
