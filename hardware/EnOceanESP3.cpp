@@ -179,24 +179,22 @@ enum ESP3_FUNC_RETURN_CODE : uint8_t
 };
 
 #if _DEBUG
-	#define ENOCEAN_BUTTON_DEBUG
-#endif
-
+#define ENOCEAN_BUTTON_DEBUG
 #define ENABLE_LOGGING
+#endif
 
 #define ENOCEAN_RETRY_DELAY 30
 
-//Write/Read has to be done in sync with ESP3
+// ESP3 packet sync byte
+#define ESP3_SER_SYNC 0x55
 
-#define ESP3_SYNC 0x55
-#define ESP3_HEADER_LENGTH 0x4
-
-#define round(a) ( int ) ( a + .5 )
+// ESP3 packet header length
+#define ESP3_HEADER_LENGTH 4
 
 // the following lines are taken from EO300I API header file
 
 //polynomial G(x) = x8 + x2 + x1 + x0 is used to generate the CRC8 table
-const unsigned char crc8table[256] = {
+const uint8_t crc8table[256] = {
 	0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15,
 	0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
 	0x70, 0x77, 0x7e, 0x79, 0x6c, 0x6b, 0x62, 0x65,
@@ -233,8 +231,7 @@ const unsigned char crc8table[256] = {
 
 #define proc_crc8(crc, data) (crc8table[crc ^ data])
 
-#define SER_SYNCH_CODE 0x55
-#define SER_HEADER_NR_BYTES 0x04
+#define round(a) ((int) (a + .5))
 
 // end of lines from EO300I API header file
 
@@ -366,64 +363,57 @@ const unsigned char crc8table[256] = {
 #define RORG_4BS_TEACHIN_LRN_BIT (1 << 3)
 #define RORG_4BS_TEACHIN_EEP_BIT (1 << 7)
 
-bool CEnOceanESP3::sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen)
+std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
-	unsigned char crc=0;
-	unsigned char buf[1024];
-	int len=0;
+	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
+	uint32_t len = 0;
 
-	buf[len++]=SER_SYNCH_CODE;
-	buf[len++]=(datalen >> 8) & 0xFF; // len
-	buf[len++]=datalen & 0xFF;
-	buf[len++]=optdatalen;
-	buf[len++]=frametype;
+	buf[len++] = ESP3_SER_SYNC;
+	buf[len++] = (datalen >> 8) & 0xFF; // len
+	buf[len++] = datalen & 0xFF;
+	buf[len++] = optdatalen;
+	buf[len++] = packettype;
+
+	uint8_t crc = 0;
+
 	crc = proc_crc8(crc, buf[1]);
 	crc = proc_crc8(crc, buf[2]);
 	crc = proc_crc8(crc, buf[3]);
 	crc = proc_crc8(crc, buf[4]);
-	buf[len++]=crc;
+	buf[len++] = crc;
+
 	crc = 0;
-	for (int i=0;i<datalen;i++) {
-		buf[len]=databuf[i];
-		crc=proc_crc8(crc, buf[len++]);
+	for (uint32_t i = 0; i < datalen; i++)
+	{
+		buf[len] = data[i];
+		crc = proc_crc8(crc, buf[len]);
+		len++;
 	}
-	for (int i=0;i<optdatalen;i++) {
-		buf[len]=optdata[i];
-		crc=proc_crc8(crc, buf[len++]);
+	for (uint32_t i = 0; i < optdatalen; i++)
+	{
+		buf[len] = optdata[i];
+		crc = proc_crc8(crc, buf[len]);
+		len++;
 	}
-	buf[len++]=crc;
-	write((const char*)&buf,len);
-	return true;
+	buf[len++] = crc;
+
+	std::string sBytes;
+	sBytes.assign((const char *)buf, len);
+	return sBytes;
 }
 
-bool CEnOceanESP3::sendFrameQueue(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen)
+void CEnOceanESP3::SendESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
-	unsigned char crc=0;
-	unsigned char buf[1024];
-	int len=0;
+	std::string sBytes = FormatESP3Packet(packettype, data, datalen, optdata, optdatalen);
+	std::lock_guard<std::mutex> l(m_sendMutex);
+	m_sendqueue.insert(m_sendqueue.begin(), sBytes);
+}
 
-	buf[len++]=SER_SYNCH_CODE;
-	buf[len++]=(datalen >> 8) & 0xff; // len
-	buf[len++]=datalen & 0xff;
-	buf[len++]=optdatalen;
-	buf[len++]=frametype;
-	crc = proc_crc8(crc, buf[1]);
-	crc = proc_crc8(crc, buf[2]);
-	crc = proc_crc8(crc, buf[3]);
-	crc = proc_crc8(crc, buf[4]);
-	buf[len++]=crc;
-	crc = 0;
-	for (int i=0;i<datalen;i++) {
-		buf[len]=databuf[i];
-		crc=proc_crc8(crc, buf[len++]);
-	}
-	for (int i=0;i<optdatalen;i++) {
-		buf[len]=optdata[i];
-		crc=proc_crc8(crc, buf[len++]);
-	}
-	buf[len++]=crc;
-	Add2SendQueue((const char*)&buf,len);
-	return true;
+void CEnOceanESP3::SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
+{
+	std::string sBytes = FormatESP3Packet(packettype, data, datalen, optdata, optdatalen);
+	std::lock_guard<std::mutex> l(m_sendMutex);
+	m_sendqueue.push_back(sBytes);
 }
 
 #ifndef _DEBUG
@@ -447,15 +437,12 @@ const std::vector<uint8_t> TestArray[] = { { 0x01, 0x07, 0x07, 0xF6, 0x50, 0x00,
 #endif
 
 
-CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int type)
+CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int type)
 {
-	m_HwdID=ID;
-	m_szSerialPort=devname;
-    m_Type = type;
-	m_bufferpos=0;
-	memset(&m_buffer,0,sizeof(m_buffer));
-	m_id_base=0;
-	m_receivestate=ERS_SYNCBYTE;
+	m_HwdID = ID;
+	m_szSerialPort = devname;
+	m_Type = type;
+	m_id_base = 0;
 #ifdef USE_TEST
 	// Test
 	for (const auto &itt : TestArray)
@@ -496,7 +483,7 @@ bool CEnOceanESP3::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
@@ -532,10 +519,10 @@ void CEnOceanESP3::ReloadVLDNodes()
 
 void CEnOceanESP3::Do_Work()
 {
-	int msec_counter=0;
+	int msec_counter = 0;
 	int sec_counter = 0;
 
-	Log(LOG_STATUS, "Worker started...");
+	Log(LOG_STATUS, "ESP3 worker started...");
 
 	while (!IsStopRequested(200))
 	{
@@ -552,15 +539,14 @@ void CEnOceanESP3::Do_Work()
 
 		if (!isOpen())
 		{
-			if (m_retrycntr==0)
+			if (m_retrycntr == 0)
 			{
 				Log(LOG_STATUS,"serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
 			}
 			m_retrycntr++;
-			if (m_retrycntr/5>=ENOCEAN_RETRY_DELAY)
+			if ((m_retrycntr / 5) >= ENOCEAN_RETRY_DELAY)
 			{
-				m_retrycntr=0;
-				m_bufferpos=0;
+				m_retrycntr = 0;
 				OpenSerialDevice();
 			}
 		}
@@ -572,6 +558,17 @@ void CEnOceanESP3::Do_Work()
 			if (itt!=m_sendqueue.end())
 			{
 				std::string sBytes=*itt;
+#ifdef ENABLE_LOGGING
+				std::stringstream sstr;
+
+				for (size_t i = 0; i < sBytes.length(); i++)
+				{
+					sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (((uint32_t)sBytes[i]) & 0xFF);
+					if (i != sBytes.length() - 1)
+						sstr << " ";
+				}
+				Log(LOG_NORM, "Send: %s", sstr.str().c_str());
+#endif
 				write(sBytes.c_str(),sBytes.size());
 				m_sendqueue.erase(itt);
 			}
@@ -579,28 +576,9 @@ void CEnOceanESP3::Do_Work()
 	}
 	terminate();
 
-	Log(LOG_STATUS,"Worker stopped...");
+	Log(LOG_STATUS, "ESP3 worker stopped");
 }
 
-void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)
-{
-#ifdef ENABLE_LOGGING
-	std::stringstream sstr;
-
-	for (size_t idx = 0; idx < length; idx++)
-	{
-		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (((unsigned int)pData[idx]) & 0xFF);
-		if (idx != length - 1)
-			sstr << " ";
-	}
-	Log(LOG_STATUS,"EnOcean Send: %s",sstr.str().c_str());
-#endif
-
-	std::string sBytes;
-	sBytes.insert(0,pData,length);
-	std::lock_guard<std::mutex> l(m_sendMutex);
-	m_sendqueue.push_back(sBytes);
-}
 
 
 bool CEnOceanESP3::OpenSerialDevice()
@@ -628,92 +606,137 @@ bool CEnOceanESP3::OpenSerialDevice()
 	}
 	m_bIsStarted=true;
 
-	m_receivestate=ERS_SYNCBYTE;
-	setReadCallback([this](auto d, auto l) { readCallback(d, l); });
+	m_receivestate = ERS_SYNCBYTE;
+	setReadCallback([this](auto d, auto l) { ReadCallback(d, l); });
+
 	sOnConnected(this);
 
-	uint8_t buf[100];
+	uint8_t cmd;
 
 	//Request BASE_ID
-	m_bBaseIDRequested=true;
-	buf[0] = CO_RD_IDBASE;
-	sendFrameQueue(PACKET_COMMON_COMMAND, buf, 1, nullptr, 0);
+	m_id_base = 0;
+	cmd = CO_RD_IDBASE;
+	SendESP3PacketQueued(PACKET_COMMON_COMMAND, &cmd, 1, nullptr, 0);
+	Log(LOG_NORM, "Request base ID");
 
 	//Request Version
-	buf[0] = CO_RD_VERSION;
-	sendFrameQueue(PACKET_COMMON_COMMAND, buf, 1, nullptr, 0);
+	m_wait_version_base = true;
+	cmd = CO_RD_VERSION;
+	SendESP3PacketQueued(PACKET_COMMON_COMMAND, &cmd, 1, nullptr, 0);
+	Log(LOG_NORM, "Request base version");
 
 	return true;
 }
 
-void CEnOceanESP3::readCallback(const char *data, size_t len)
+void CEnOceanESP3::ReadCallback(const char *data, size_t len)
 {
-	size_t ii=0;
+	size_t nbyte = 0;
+	uint8_t db;
+	uint8_t *rbuf = nullptr;
+	size_t rbuflen = 0;
+	size_t rbufpos;
 
-	while (ii<len)
+	while (nbyte < len || rbuf != nullptr)
 	{
-		const unsigned char c = data[ii];
-
+		if (rbuf == nullptr)
+			db = data[nbyte++];
+		else
+		{
+			db = rbuf[rbufpos++];
+			if (rbufpos == rbuflen) {
+				free(rbuf);
+				rbuf = nullptr;
+			}
+		}
 		switch (m_receivestate)
 		{
-		case ERS_SYNCBYTE:
-			if (c!=0x55)
-				return;
-			m_receivestate = ERS_HEADER;
-			m_bufferpos=0;
-			break;
-		case ERS_HEADER:
-			m_buffer[m_bufferpos++]=c;
-			if (m_bufferpos==5)
-			{
-				m_DataSize=(m_buffer[0]<<8)|m_buffer[1];
-				m_OptionalDataSize=m_buffer[2];
-				m_ReceivedPacketType=m_buffer[3];
-				unsigned char CRCH=m_buffer[4];
+			case ERS_SYNCBYTE: // Waiting for ESP3_SER_SYNC
+				if (db != ESP3_SER_SYNC)
+				{
+					Log(LOG_ERROR, "Read: Skip unexpected byte (0x%02X)", db);
+					continue;
+				}
+				// Serial synchronization ESP3_SER_SYNC received
+				m_bufferpos = 0;
+				m_wantedlen = ESP3_HEADER_LENGTH;
+				m_crc = 0;
+				m_receivestate = ERS_HEADER;
+				continue;
 
-				unsigned char crc=0;
-				crc = proc_crc8(crc, m_buffer[0]);
-				crc = proc_crc8(crc, m_buffer[1]);
-				crc = proc_crc8(crc, m_buffer[2]);
-				crc = proc_crc8(crc, m_buffer[3]);
+			case ERS_HEADER: // Waiting for 4 byte header
+				m_buffer[m_bufferpos++] = db;
+				m_crc = proc_crc8(m_crc, db);
+				if (m_bufferpos < m_wantedlen)
+					continue;
 
-				if (CRCH==crc)
+				// Header received
+
+				m_datalen = (m_buffer[0] << 8) | m_buffer[1];
+				m_optionallen = m_buffer[2];
+				m_packettype = m_buffer[3];
+
+				if ((m_datalen + m_optionallen) == 0)
 				{
-					m_bufferpos=0;
-					m_wantedlength=m_DataSize+m_OptionalDataSize;
-					m_receivestate = ERS_DATA;
+					Log(LOG_ERROR, "Read: Invalid packet size (no data)");
+					break;
 				}
-				else
+				if ((m_datalen + m_optionallen + 7) >= ESP3_PACKET_BUFFER_SIZE)
 				{
-					Log(LOG_ERROR,"Frame Checksum Error!...");
-					m_receivestate = ERS_SYNCBYTE;
+					Log(LOG_ERROR, "Read: Invalid packet size (oversized)");
+					break;
 				}
-			}
-			break;
-		case ERS_DATA:
-			m_buffer[m_bufferpos++] = c;
-			if (m_bufferpos>=m_wantedlength)
-			{
-				m_receivestate = ERS_CHECKSUM;
-			}
-			break;
-		case ERS_CHECKSUM:
-			{
-				unsigned char CRCD=c;
-				unsigned char crc=0;
-				for (int iCheck=0; iCheck<m_wantedlength; iCheck++)
-					crc = proc_crc8(crc, m_buffer[iCheck]);
-				if (CRCD==crc)
+				m_receivestate = ERS_CRC8H;
+				continue;
+
+			case ERS_CRC8H: // Waiting for header CRC
+				m_buffer[m_bufferpos++] = db;
+				if (db != m_crc)
 				{
-					ParseData();
+					Log(LOG_ERROR, "Read: CRC8H error (expected 0x%02X got 0x%02X)", m_crc, db);
+					break;
 				}
+				m_crc = 0;
+				m_wantedlen += 1 + m_datalen + m_optionallen;
+				m_receivestate = ERS_DATA;
+				continue;
+
+			case ERS_DATA: // Waiting for data CRC
+				m_buffer[m_bufferpos++] = db;
+				m_crc = proc_crc8(m_crc, db);
+				if (m_bufferpos < m_wantedlen)
+					continue;
+
+				// Data + Optional data received
+
+				m_receivestate = ERS_CRC8D;
+				continue;
+
+			case ERS_CRC8D:
+				m_buffer[m_bufferpos++] = db;
+				if (db != m_crc)
+				{
+					Log(LOG_ERROR, "Read: CRC8D error (expected 0x%02X got 0x%02X)", m_crc, db);
+					break;
+				}
+				// parse packet data : node_type + data + optional data
+				ParseESP3Packet(m_buffer + 5, m_bufferpos - 6);
+
 				m_receivestate = ERS_SYNCBYTE;
-			}
-			break;
+				continue;
 		}
-		ii++;
+		// Rolling back (m_bufferpos) bytes
+		Log(LOG_ERROR, "Read: Rolling back %d bytes", m_bufferpos);
+		if (rbuf != nullptr)
+			rbufpos -= m_bufferpos;
+		else
+		{
+			rbuflen = m_bufferpos;
+			rbuf = (uint8_t *) calloc(rbuflen, sizeof(uint8_t));
+			memcpy(rbuf, m_buffer, rbuflen);
+			rbufpos = 0;
+		}
+		m_receivestate = ERS_SYNCBYTE;
 	}
-
 }
 
 bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*length*/)
@@ -731,12 +754,12 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 	{
 		std::string nodeID = GetNodeID(iNodeID);
 		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR, "Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 		return false;
 	}
 
-	unsigned char RockerID=0;
-	unsigned char Pressed=1;
+	uint8_t RockerID = 0;
+	uint8_t Pressed = 1;
 
 	if (tsen->LIGHTING2.unitcode < 10)
 	{
@@ -786,17 +809,13 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		cmnd=light2_sSetLevel;
 	}
 
-	//char buff[512];
-	//sprintf(buff,"cmnd: %d, level: %d, orgcmd: %d",cmnd, iLevel, orgcmd);
-	//Log(LOG_ERROR,buff);
-	unsigned char buf[100];
-	//unsigned char optbuf[100];
+	uint8_t buf[100];
 
 	if(!bIsDimmer)
 	{
 		// on/off switch without dimming capability: Profile F6-02-01
 		// cf. EnOcean Equipment Profiles v2.6.5 page 11 (RPS format) & 14
-		unsigned char UpDown = 1;
+		uint8_t UpDown = 1;
 
 		buf[0] = RORG_RPS;
 
@@ -831,19 +850,13 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 
 		buf[6] = S_RPS_T21|S_RPS_NU;	// press button			// b5=T21, b4=NU, b3-b0= RepeaterCount
 
-		//char buff[512];
-		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
-		//Log(LOG_ERROR,buff);
-
-		sendFrameQueue(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
+		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
 		//Next command is send a bit later (button release)
 		buf[1] = 0;				// no button press
 		buf[6] = S_RPS_T21;	// release button			// b5=T21, b4=NU, b3-b0= RepeaterCount
-		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
-		//Log(LOG_ERROR,buff);
 
-		sendFrameQueue(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
+		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 	}
 	else
 	{
@@ -865,24 +878,19 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		if (cmnd!=light2_sSetLevel)
 		{
 			//On/Off
-			unsigned char UpDown = 1;
+			uint8_t UpDown = 1;
 			UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
 
 			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
 			buf[9] = 0x30;
 
-			sendFrameQueue(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
-
-			//char buff[512];
-			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
-			//Log(LOG_ERROR,buff);
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 
 			//Next command is send a bit later (button release)
 			buf[1] = 0;
 			buf[9] = 0x20;
-			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
-			//Log(LOG_ERROR,buff);
-			sendFrameQueue(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 		}
 		else
 		{
@@ -900,7 +908,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 			else
 				buf[4]=0x09;//Dim On
 
-			sendFrameQueue(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 		}
 	}
 
@@ -920,11 +928,11 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 		{
 			std::string nodeID = GetNodeID(iNodeID);
 			std::string baseID = GetNodeID(m_id_base);
-			Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+			Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 			return;
 		}
 
-		unsigned char buf[100];
+		uint8_t buf[100];
 		buf[0] = 0xa5;
 		buf[1] = 0x2;
 		buf[2] = 0;
@@ -940,89 +948,77 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 
 		if (tsen->LIGHTING2.unitcode < 10)
 		{
-			unsigned char RockerID = 0;
-			//unsigned char UpDown = 1;
-			//unsigned char Pressed = 1;
+			uint8_t RockerID = 0;
+			//uint8_t UpDown = 1;
+			//uint8_t Pressed = 1;
 			RockerID = tsen->LIGHTING2.unitcode - 1;
 		}
 		else
 		{
 			return;//double not supported yet!
 		}
-		sendFrame(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+		SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 	}
 }
 
-bool CEnOceanESP3::ParseData()
+void CEnOceanESP3::ParseESP3Packet(uint8_t *db, size_t len)
 {
 #ifdef ENABLE_LOGGING
 	std::stringstream sstr;
 
-	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_ReceivedPacketType << " (";
-	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_DataSize << "/";
-	sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_OptionalDataSize << ") ";
+	sstr << GetPacketTypeLabel(m_packettype);
 
-	for (int idx=0;idx<m_bufferpos;idx++)
+	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)m_datalen << ")";
+	for (int idx = 0; idx < m_datalen; idx++)
+		sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)db[idx];
+
+	if (m_optionallen > 0)
 	{
-		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (unsigned int)m_buffer[idx];
-		if (idx!=m_bufferpos-1)
-			sstr << " ";
+		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)m_optionallen << ")";
+
+		for (int idx = m_datalen; idx < len; idx++)
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)db[idx];
 	}
-	Log(LOG_STATUS,"%s",sstr.str().c_str());
+	Log(LOG_NORM, "Read: %s", sstr.str().c_str());
 #endif
 
-	if (m_ReceivedPacketType==PACKET_RESPONSE)
+	switch (m_packettype)
 	{
-		//Response
-		unsigned char ResponseCode=m_buffer[0];
-		if (ResponseCode!=0)
+		case PACKET_RESPONSE: // Response
 		{
-			std::string szError="Unknown?";
-			switch (ResponseCode)
+			uint8_t return_code = db[0];
+
+			if (return_code != RET_OK)
 			{
-			case RET_ERROR:
-				szError="RET_ERROR";
-				break;
-			case RET_NOT_SUPPORTED:
-				szError="RET_NOT_SUPPORTED";
-				break;
-			case RET_WRONG_PARAM:
-				szError="RET_WRONG_PARAM";
-				break;
-			case RET_OPERATION_DENIED:
-				szError="RET_OPERATION_DENIED";
-				break;
+				Log(LOG_ERROR, "Received error response %s", GetReturnCodeLabel(return_code));
+				return;
 			}
-			Log(LOG_ERROR,"Response Error (Code: %d, %s)",ResponseCode,szError.c_str());
-			return false;
+			// Response OK
+
+			if (m_id_base == 0 && len == 6)
+			{ // Base ID Information
+				m_id_base = GetINodeID(db[1], db[2], db[3], db[4]);
+				Log(LOG_NORM, "HwdID %d ID_Base %08X", m_HwdID, m_id_base);
+				return;
+			}
+			if (m_wait_version_base && len == 33)
+			{ // Base version Information
+				m_wait_version_base = false;
+				Log(LOG_NORM,
+					 "HwdID %d Version Info: App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X ChipID %02X.%02X.%02X.%02X ChipVersion %02X.%02X.%02X.%02X Description '%s'",
+					 m_HwdID, db[1], db[2], db[3], db[4], db[5], db[6], db[7], db[8], db[9], db[10], db[11], db[12], db[13], db[14], db[15], db[16], (const char *)db + 17);
+				return;
+			}
+			Log(LOG_ERROR, "Unhandled response code (%s)", GetReturnCodeLabel(return_code));
 		}
-		if ((m_bBaseIDRequested)&&(m_bufferpos==6))
-		{
-			m_bBaseIDRequested=false;
-			m_id_base = GetINodeID(m_buffer[1], m_buffer[2], m_buffer[3], m_buffer[4]);
-			//unsigned char changes_left=m_buffer[5];
-			Log(LOG_STATUS,"Transceiver ID_Base: %08X",m_id_base);
-		}
-		if (m_bufferpos==33)
-		{
-			//Version Information
-			Log(LOG_STATUS,"Version_Info, App: %02X.%02X.%02X.%02X, API: %02X.%02X.%02X.%02X, ChipID: %02X.%02X.%02X.%02X, ChipVersion: %02X.%02X.%02X.%02X, Description: %s",
-				m_buffer[1],m_buffer[2],m_buffer[3],m_buffer[4],
-				m_buffer[5],m_buffer[6],m_buffer[7],m_buffer[8],
-				m_buffer[9],m_buffer[10],m_buffer[11],m_buffer[12],
-				m_buffer[13],m_buffer[14],m_buffer[15],m_buffer[16],
-				(const char*)&m_buffer+17
-				);
-		}
-		return true;
-	}
-	if (m_ReceivedPacketType == PACKET_RADIO_ERP1)
-		ParseRadioDatagram();
-	else
-	{
-		char szTmp[100];
-		sprintf(szTmp,"Unhandled Packet Type (%02X)",m_ReceivedPacketType);
-		Log(LOG_STATUS, "%s", szTmp);
+		return;
+
+		case PACKET_RADIO_ERP1:
+			ParseERP1Packet(db, len);
+			return;;
+
+		default:
+			Log(LOG_ERROR, "Unhandled Packet Type (%s)", GetPacketTypeLabel(m_packettype));
 	}
 	/*
 		enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
@@ -1153,56 +1149,54 @@ bool CEnOceanESP3::ParseData()
 			break;
 		}
 	*/
-	return true;
 }
 
-void CEnOceanESP3::ParseRadioDatagram()
+void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 {
-	char szTmp[100];
-	int rssi = 12;  // RSSI for Domoticz
-	// normal value is between 0 (very weak) and 11 (strong)
-	// 12 = no RSSI value in device list
-	if (m_OptionalDataSize == 7)
-	{
-		int rssi_dbm = m_buffer[m_DataSize+5] * -1;  // RSSI reported by Enocean Dongle in dBm
-		// convert RSSI dBm to RSSI Domoticz
-		// this is not the best conversion algo
-		// but, according to my tests, it's a good start
-		if (rssi_dbm > -50) {
-			rssi = 11;
-		}
-		else if (rssi_dbm < -100) {
-			rssi = 0;
-		}
-		else {
-			rssi = static_cast<int>((rssi_dbm + 100) / 5);
-		}
-		sprintf(szTmp,"destination: %02X%02X%02X%02X RSSI: %i dBm (%i/11)",
-			m_buffer[m_DataSize+1],m_buffer[m_DataSize+2],m_buffer[m_DataSize+3],m_buffer[m_DataSize+4],rssi_dbm,rssi
-			);
+	// Parse optional data
 
+	uint8_t rssi = 12; // RSSI for Domoticz, normal value is between 0 (very weak) and 11 (strong), 12 = no RSSI value
+
+	if (m_optionallen > 0)
+	{
+		if (m_optionallen != 7)
+			Log(LOG_ERROR, "Invalid ERP1 optional data size (%d)", m_optionallen);
+		else
+		{
+			// RSSI reported by Enocean Dongle in dBm
+
+			int rssi_dbm = db[m_datalen + 5] * -1;
+
+			// convert RSSI dBm to RSSI Domoticz
+			// this is not the best conversion algo, but, according to my tests, it's a good start
+
+			if (rssi_dbm > -50)
+				rssi = 11;
+			else if (rssi_dbm < -100)
+				rssi = 0;
+			else
+				rssi = static_cast<int>((rssi_dbm + 100) / 5);
+
+			Log(LOG_NORM, "destination: %02X%02X%02X%02X RSSI: %i dBm (%i/11)",
+				db[m_datalen + 1], db[m_datalen + 2], db[m_datalen + 3], db[m_datalen + 4], rssi_dbm, rssi);
+		}
 	}
-	else {
-		sprintf(szTmp, "Optional data size: %i",m_OptionalDataSize);
-	}
-	Log(LOG_NORM, "%s", szTmp);
-	switch (m_buffer[0])
+	// Parse data
+
+	uint8_t RORG = db[0];
+
+	switch (RORG)
 	{
 		case RORG_1BS: // 1 byte communication (Contacts/Switches)
 			{
-				sprintf(szTmp,"1BS data: Sender id: %02X%02X%02X%02X Data: %02X",
-					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
-					m_buffer[0]
-				);
+				Log(LOG_NORM, "1BS msg: Node: %02X%02X%02X%02X Data: %02X", db[2], db[3], db[4], db[5], db[0]);
 
-				Log(LOG_NORM, "%s", szTmp);
+				uint8_t DATA_BYTE0 = db[1];
 
-				unsigned char DATA_BYTE0 = m_buffer[1];
-
-				unsigned char ID_BYTE3  = m_buffer[2];
-				unsigned char ID_BYTE2  = m_buffer[3];
-				unsigned char ID_BYTE1  = m_buffer[4];
-				unsigned char ID_BYTE0  = m_buffer[5];
+				uint8_t ID_BYTE3 = db[2];
+				uint8_t ID_BYTE2 = db[3];
+				uint8_t ID_BYTE1 = db[4];
+				uint8_t ID_BYTE0 = db[5];
 
 				int UpDown=(DATA_BYTE0&1)==0;
 
@@ -1223,24 +1217,20 @@ void CEnOceanESP3::ParseRadioDatagram()
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 			}
 			break;
+
 		case RORG_4BS: // 4 byte communication
 			{
-				sprintf(szTmp,"4BS data: Sender id: %02X%02X%02X%02X Status: %02X Data: %02X",
-					m_buffer[5],m_buffer[6],m_buffer[7],m_buffer[8],
-					m_buffer[9],
-					m_buffer[3]
-				);
-				Log(LOG_NORM, "%s", szTmp);
+			Log(LOG_NORM, "4BS msg: Node: %02X%02X%02X%02X Status: %02X Data: %02X", db[5], db[6], db[7], db[8], db[9], db[3]);
 
-				unsigned char DATA_BYTE3 = m_buffer[1];
-				unsigned char DATA_BYTE2 = m_buffer[2];
-				unsigned char DATA_BYTE1 = m_buffer[3];
-				unsigned char DATA_BYTE0 = m_buffer[4];
+				uint8_t DATA_BYTE3 = db[1];
+				uint8_t DATA_BYTE2 = db[2];
+				uint8_t DATA_BYTE1 = db[3];
+				uint8_t DATA_BYTE0 = db[4];
 
-				unsigned char ID_BYTE3  = m_buffer[5];
-				unsigned char ID_BYTE2  = m_buffer[6];
-				unsigned char ID_BYTE1  = m_buffer[7];
-				unsigned char ID_BYTE0  = m_buffer[8];
+				uint8_t ID_BYTE3 = db[5];
+				uint8_t ID_BYTE2 = db[6];
+				uint8_t ID_BYTE1 = db[7];
+				uint8_t ID_BYTE0 = db[8];
 
 				uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
 				std::string nodeID = GetNodeID(iNodeID);
@@ -1722,30 +1712,22 @@ void CEnOceanESP3::ParseRadioDatagram()
 				}
 			}
 			break;
+
 		case RORG_RPS: // repeated switch communication
 			{
-#ifdef ENOCEAN_BUTTON_DEBUG
-				sprintf(szTmp, "RPS data: Sender id: %02X%02X%02X%02X Status: %02X Data: %02X",
-					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
-					m_buffer[6],
-					m_buffer[1]
-				);
-				Log(LOG_NORM, "%s", szTmp);
-				if (m_buffer[6] & (1 << 2))
-				{
-					Log(LOG_NORM, "T21");
-				}
-#endif // ENOCEAN_BUTTON_DEBUG
+			Log(LOG_NORM, "RPS data: Node: %02X%02X%02X%02X Status: %02X Data: %02X", db[2], db[3], db[4], db[5], db[6], db[1]);
+			if (db[6] & (1 << 2))
+				Log(LOG_NORM, "T21");
 
-				unsigned char STATUS=m_buffer[6];
+				uint8_t STATUS = db[6];
 
-				unsigned char T21 = (m_buffer[6] & S_RPS_T21) >> S_RPS_T21_SHIFT;
-				unsigned char NU = (m_buffer[6] & S_RPS_NU) >> S_RPS_NU_SHIFT;
+				uint8_t T21 = (db[6] & S_RPS_T21) >> S_RPS_T21_SHIFT;
+				uint8_t NU = (db[6] & S_RPS_NU) >> S_RPS_NU_SHIFT;
 
-				unsigned char ID_BYTE3=m_buffer[2];
-				unsigned char ID_BYTE2=m_buffer[3];
-				unsigned char ID_BYTE1=m_buffer[4];
-				unsigned char ID_BYTE0=m_buffer[5];
+				uint8_t ID_BYTE3 = db[2];
+				uint8_t ID_BYTE2 = db[3];
+				uint8_t ID_BYTE1 = db[4];
+				uint8_t ID_BYTE0 = db[5];
 				uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
 				std::string nodeID = GetNodeID(iNodeID);
 				int Profile;
@@ -1795,18 +1777,18 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						//Rocker
 
-						unsigned char DATA_BYTE3=m_buffer[1];
+						uint8_t DATA_BYTE3 = db[1];
 
 						// NU == 1, N-Message
-						unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_NU_BID) >> DB3_RPS_NU_BID_SHIFT;
-						unsigned char RockerID = (DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
-						unsigned char UpDown=(DATA_BYTE3 & DB3_RPS_NU_UD)  >> DB3_RPS_NU_UD_SHIFT;
-						unsigned char Pressed=(DATA_BYTE3 & DB3_RPS_NU_PR) >> DB3_RPS_NU_PR_SHIFT;
+						uint8_t ButtonID = (DATA_BYTE3 & DB3_RPS_NU_BID) >> DB3_RPS_NU_BID_SHIFT;
+						uint8_t RockerID = (DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
+						uint8_t UpDown = (DATA_BYTE3 & DB3_RPS_NU_UD)  >> DB3_RPS_NU_UD_SHIFT;
+						uint8_t Pressed = (DATA_BYTE3 & DB3_RPS_NU_PR) >> DB3_RPS_NU_PR_SHIFT;
 
-						unsigned char SecondButtonID = (DATA_BYTE3 & DB3_RPS_NU_SBID) >> DB3_RPS_NU_SBID_SHIFT;
-						unsigned char SecondRockerID = (DATA_BYTE3 & DB3_RPS_NU_SRID) >> DB3_RPS_NU_SRID_SHIFT;
-						unsigned char SecondUpDown=(DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
-						unsigned char SecondAction=(DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
+						uint8_t SecondButtonID = (DATA_BYTE3 & DB3_RPS_NU_SBID) >> DB3_RPS_NU_SBID_SHIFT;
+						uint8_t SecondRockerID = (DATA_BYTE3 & DB3_RPS_NU_SRID) >> DB3_RPS_NU_SRID_SHIFT;
+						uint8_t SecondUpDown = (DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
+						uint8_t SecondAction = (DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
 						Log(LOG_NORM,
@@ -1886,12 +1868,12 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						if ((T21 == 1) && (NU == 0))
 						{
-							unsigned char DATA_BYTE3 = m_buffer[1];
+							uint8_t DATA_BYTE3 = db[1];
 
-							unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
-							unsigned char Pressed = (DATA_BYTE3 & DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
+							uint8_t ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
+							uint8_t Pressed = (DATA_BYTE3 & DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
 
-							unsigned char UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
+							uint8_t UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
 
 #ifdef ENOCEAN_BUTTON_DEBUG
 							Log(LOG_NORM, "Received RPS T21-Message message: %02X Node %08x ButtonID: %i Pressed: %i UD: %i",
@@ -1954,7 +1936,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						batterylevel = 100;
 					}
-					switch (m_buffer[1]) {
+					switch (db[1]) {
 						case 0x00:   // profiles F6-05-00 and F6-05-02
 						{
 							Debug(DEBUG_HARDWARE, "Alarm OFF from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
@@ -1987,25 +1969,25 @@ void CEnOceanESP3::ParseRadioDatagram()
 		case RORG_UTE:
 				// Universal teach-in (0xD4)
 				{
-					unsigned char uni_bi_directional_communication = (m_buffer[1] >> 7) & 1;		// 0=mono, 1= bi
-					unsigned char eep_teach_in_response_expected = (m_buffer[1] >> 6) & 1;			// 0=yes, 1=no
-					unsigned char teach_in_request = (m_buffer[1] >> 4) & 3;								// 0= request, 1= deletion request, 2=request or deletion request, 3=not used
-					unsigned char cmd = m_buffer[1] & 0x0F;
+					uint8_t uni_bi_directional_communication = (db[1] >> 7) & 1;		// 0=mono, 1= bi
+					uint8_t eep_teach_in_response_expected = (db[1] >> 6) & 1;			// 0=yes, 1=no
+					uint8_t teach_in_request = (db[1] >> 4) & 3;								// 0= request, 1= deletion request, 2=request or deletion request, 3=not used
+					uint8_t cmd = db[1] & 0x0F;
 
 					if(cmd == 0x0)
 					{
 						// EEP Teach-In Query (UTE Message / CMD 0x0)
 
-						unsigned char nb_channel = m_buffer[2];
-						unsigned int manID = ((unsigned int)(m_buffer[4] & 0x7)) << 8 | (m_buffer[3]);
-						unsigned char type = m_buffer[5];
-						unsigned char func = m_buffer[6];
-						unsigned char rorg = m_buffer[7];
+						uint8_t nb_channel = db[2];
+						uint32_t manID = ((uint32_t)(db[4] & 0x7)) << 8 | (db[3]);
+						uint8_t type = db[5];
+						uint8_t func = db[6];
+						uint8_t rorg = db[7];
 
-						unsigned char ID_BYTE3=m_buffer[8];
-						unsigned char ID_BYTE2=m_buffer[9];
-						unsigned char ID_BYTE1=m_buffer[10];
-						unsigned char ID_BYTE0=m_buffer[11];
+						uint8_t ID_BYTE3 = db[8];
+						uint8_t ID_BYTE2 = db[9];
+						uint8_t ID_BYTE1 = db[10];
+						uint8_t ID_BYTE0 = db[11];
 						uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
 
 						Log(LOG_NORM, "teach-in request received from %08X (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", iNodeID, manID, nb_channel, rorg,func,type);
@@ -2052,9 +2034,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 											tsen.LIGHTING2.unitcode,
 											tsen.LIGHTING2.cmnd
 										);
+								Log(LOG_NORM, "channel = %d", nbc+1);
 #endif //ENOCEAN_BUTTON_DEBUG
 
-								Log(LOG_NORM, "channel = %d", nbc+1);
 								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr,
 										 255, m_Name.c_str());
 							}
@@ -2062,22 +2044,21 @@ void CEnOceanESP3::ParseRadioDatagram()
 						}
 						break;
 					}
-
-					Log(LOG_NORM, "Unhandled RORG (%02X), uni_bi (%02X [1=bidir]), response_expected (%02X [0=yes]), request (%02X), cmd (%02X)", m_buffer[0], uni_bi_directional_communication,eep_teach_in_response_expected, teach_in_request, cmd);
+					Log(LOG_ERROR, "Unhandled RORG (%02X), uni_bi (%02X [1=bidir]), response_expected (%02X [0=yes]), request (%02X), cmd (%02X)", db[0], uni_bi_directional_communication,eep_teach_in_response_expected, teach_in_request, cmd);
 				}
 			break;
 
 		case RORG_VLD:
 			{
-				uint8_t ID_BYTE3 = m_buffer[m_DataSize - 5];
-				uint8_t ID_BYTE2 = m_buffer[m_DataSize - 4];
-				uint8_t ID_BYTE1 = m_buffer[m_DataSize - 3];
-				uint8_t ID_BYTE0 = m_buffer[m_DataSize - 2];
+				uint8_t ID_BYTE3 = db[m_datalen - 5];
+				uint8_t ID_BYTE2 = db[m_datalen - 4];
+				uint8_t ID_BYTE1 = db[m_datalen - 3];
+				uint8_t ID_BYTE0 = db[m_datalen - 2];
 				uint32_t id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 
 				char szDeviceID[20];
 				std::vector<std::vector<std::string> > result;
-				sprintf(szDeviceID, "%08X", (unsigned int)id);
+				sprintf(szDeviceID, "%08X", (uint32_t)id);
 
 				// report status only if it is a known device else we may have an incorrect profile
 				auto itt = m_VLDNodes.find(id);
@@ -2093,7 +2074,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 				if (func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
-					uint8_t CMD = m_buffer[1] & 0x0F;			// Command ID
+					uint8_t CMD = db[1] & 0x0F;			// Command ID
 					if (CMD != 0x04)
 					{
 						Log(LOG_NORM, "EnOcean: VLD msg: Node %s, Unhandled CMD (%02X)", szDeviceID, CMD);
@@ -2101,8 +2082,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 					}
 					// CMD 0x4 - Actuator Status Response
 
-					uint8_t IO = m_buffer[2] & 0x1F;	 		// I/O Channel
-					uint8_t OV = m_buffer[3] & 0x7F;			// Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
+					uint8_t IO = db[2] & 0x1F;	 		// I/O Channel
+					uint8_t OV = db[3] & 0x7F;			// Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -2134,16 +2115,17 @@ void CEnOceanESP3::ParseRadioDatagram()
 				}
 				if (func == 0x03 && type == 0x0A)
 				{ // D2-03-0A Push Button – Single Button
-					uint8_t BATT = (uint8_t) GetDeviceValue(m_buffer[1], 1, 100, 1, 100);
-					uint8_t BA = m_buffer[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
+					uint8_t BATT = (uint8_t) GetDeviceValue(db[1], 1, 100, 1, 100);
+					uint8_t BA = db[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
 					SendGeneralSwitch(id, BA, BATT, 1, 0, "Switch", m_Name, 12);
 					return;
 				}
-				Log(LOG_NORM, "EnOcean: Node %s, Unhandled EEP (%02X-%02X-%02X)", szDeviceID, RORG_VLD, func, type);
+				Log(LOG_ERROR, "EnOcean: Node %s, Unhandled EEP (%02X-%02X-%02X)", szDeviceID, RORG_VLD, func, type);
 			}
 			break;
+
 		default:
-			Log(LOG_NORM, "Unhandled RORG (%02X)", m_buffer[0]);
+			Log(LOG_ERROR, "Unhandled RORG (%02X)", RORG);
 			break;
 	}
 }
