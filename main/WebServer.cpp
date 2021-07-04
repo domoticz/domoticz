@@ -1198,9 +1198,11 @@ namespace http
 							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
 						}
 					} // end 'authorization_code' grant_type
-					if (grant_type.compare("client_credentials") == 0 )
+					if (grant_type.compare("password") == 0 )
 					{
 						bValidGrantType = true;
+
+						// Maybe we should only allow this when in a safe 'local' network? So check if request comes from local networks?
 						int iUser = -1;
 						if (request::get_req_header(&req, "Authorization") != nullptr)
 						{
@@ -1220,23 +1222,31 @@ namespace http
 									iUser = FindUser(user.c_str());
 									if(iUser >= 0)
 									{
-										if (m_pWebEm->GenerateJwtToken(jwttoken, user, passwd, user, exptime, true))
+										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
-											root["access_token"] = jwttoken;
-											root["token_type"] = "Bearer";
-											root["expires_in"] = exptime;
-											rep.status = reply::ok;
+											if (m_pWebEm->GenerateJwtToken(jwttoken, user, passwd, user, exptime, true))
+											{
+												root["access_token"] = jwttoken;
+												root["token_type"] = "Bearer";
+												root["expires_in"] = exptime;
+												rep.status = reply::ok;
+											}
+											else
+											{
+												root["error"] = "server_error";
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+												iUser = -1;
+											}
 										}
 										else
 										{
-											root["error"] = "server_error";
-											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid credentials for user (%s) for Password grant flow!", user.c_str());
 											iUser = -1;
 										}
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Client Credentials flow!", user.c_str());
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Password grant flow!", user.c_str());
 									}
 								}
 							}
@@ -1245,9 +1255,9 @@ namespace http
 						{
 							root["error"] = "invalid_client";
 							rep.status = reply::unauthorized;
-							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Client Credentials flow failed!");
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant flow failed!");
 						}
-					} // end 'client_credentials' grant_type
+					} // end 'password' grant_type
 					if (grant_type.compare("refresh_token") == 0 )
 					{
 						bValidGrantType = true;
@@ -1255,7 +1265,7 @@ namespace http
 				}
 				if(!bValidGrantType)
 				{
-					root["error"] = "unsupported_response_type";
+					root["error"] = "unsupported_grant_type";
 					_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid/unsupported grant_type (%s)!", grant_type.c_str());
 				}
 			}
