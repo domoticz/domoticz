@@ -1443,6 +1443,16 @@ std::string GenerateUUID() // DCE/RFC 4122
 	return uuid;
 }
 
+bool isHexRepresentation(const std::string &input)
+{
+	if (input.empty())
+		return false;
+	bool bIsHex = true;
+	for (auto itt = input.begin(); itt != input.end(); ++itt)
+		bIsHex &= (hexCHARS.find(*itt) != std::string::npos);
+	return bIsHex;
+}
+
 double round_digits(double dIn, const int totDigits)
 {
 	std::stringstream sstr;
