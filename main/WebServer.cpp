@@ -8057,6 +8057,7 @@ namespace http
 		void CWebServer::LoadUsers()
 		{
 			ClearUserPasswords();
+			// For backwards compatibility (should be removed sometime), add the user from the Settings Website protection
 			std::string WebUserName, WebPassword;
 			int nValue = 0;
 			if (m_sql.GetPreferencesVar("WebUserName", nValue, WebUserName))
@@ -8066,33 +8067,33 @@ namespace http
 					if ((!WebUserName.empty()) && (!WebPassword.empty()))
 					{
 						WebUserName = base64_decode(WebUserName);
-						// WebPassword = WebPassword;
 						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
-
-						std::vector<std::vector<std::string>> result;
-						result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
-						if (!result.empty())
-						{
-							for (const auto& sd : result)
-							{
-								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
-								if (bIsActive)
-								{
-									unsigned long ID = (unsigned long)atol(sd[0].c_str());
-
-									std::string username = base64_decode(sd[2]);
-									std::string password = sd[3];
-
-									_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-									int activetabs = atoi(sd[5].c_str());
-
-									AddUser(ID, username, password, rights, activetabs);
-								}
-							}
-						}
 					}
 				}
 			}
+			// Add Users
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
+			if (!result.empty())
+			{
+				for (const auto &sd : result)
+				{
+					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					if (bIsActive)
+					{
+						unsigned long ID = (unsigned long)atol(sd[0].c_str());
+
+						std::string username = base64_decode(sd[2]);
+						std::string password = sd[3];
+
+						_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
+						int activetabs = atoi(sd[5].c_str());
+
+						AddUser(ID, username, password, rights, activetabs);
+					}
+				}
+			}
+
 			m_mainworker.LoadSharedUsers();
 		}
 
