@@ -140,3 +140,6 @@ bool isHexRepresentation(const std::string &input);
 double round_digits(double dIn, int totDigits);
 
 const std::string std_format(const char *szFormat, ...);
+
+std::string sha256hex(const std::string &input);
+std::string sha256raw(const std::string &input);
