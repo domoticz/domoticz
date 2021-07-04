@@ -1115,6 +1115,13 @@ namespace http
 									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 									bool noclient = (m_accesscodes[iUser].clientID == -1);
 
+									// For so-called (registered) public clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
+									// So in those cases, we use the registered secret
+									if(!noclient && client_secret.empty())
+									{
+										client_secret = m_users[iClient].Password;
+									}
+
 									m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
 									m_accesscodes[iUser].RedirectUri = "";
 									m_accesscodes[iUser].Scope = "";
@@ -1217,6 +1224,7 @@ namespace http
 											root["access_token"] = jwttoken;
 											root["token_type"] = "Bearer";
 											root["expires_in"] = exptime;
+											rep.status = reply::ok;
 										}
 										else
 										{
