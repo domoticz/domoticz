@@ -17,6 +17,12 @@
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"
 
+//#define _DEBUG
+#ifdef _DEBUG
+#define ENOCEAN_BUTTON_DEBUG
+#define ENABLE_LOGGING
+#endif
+
 // ESP3 Packet types
 enum ESP3_PACKET_TYPE : uint8_t
 {
@@ -177,11 +183,6 @@ enum ESP3_FUNC_RETURN_CODE : uint8_t
 	RC_LOCK_SET,		    //	Function was not executed due to sending lock
 	RC_NEW_TX_TEL		    // New telegram transmitted
 };
-
-#if _DEBUG
-#define ENOCEAN_BUTTON_DEBUG
-#define ENABLE_LOGGING
-#endif
 
 #define ENOCEAN_RETRY_DELAY 30
 
@@ -696,7 +697,7 @@ void CEnOceanESP3::ReadCallback(const char *data, size_t len)
 					break;
 				}
 				m_crc = 0;
-				m_wantedlen += 1 + m_datalen + m_optionallen;
+				m_wantedlen += m_datalen + m_optionallen + 1;
 				m_receivestate = ERS_DATA;
 				continue;
 
@@ -719,7 +720,9 @@ void CEnOceanESP3::ReadCallback(const char *data, size_t len)
 					break;
 				}
 				// parse packet data : node_type + data + optional data
-				ParseESP3Packet(m_buffer + 5, m_bufferpos - 6);
+				uint8_t *data = m_buffer + ESP3_HEADER_LENGTH + 1;
+				uint8_t *optdata = data + m_datalen;
+				ParseESP3Packet(m_packettype, data, m_datalen, optdata, m_optionallen);
 
 				m_receivestate = ERS_SYNCBYTE;
 				continue;
@@ -750,30 +753,27 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 		return false; //only allowed to control switches
 
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	std::string nodeID = GetNodeID(iNodeID);
 	if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
 	{
-		std::string nodeID = GetNodeID(iNodeID);
 		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR, "Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR, "Can not switch with ID %s, use a switch created with base ID %s!", nodeID.c_str(), baseID.c_str());
 		return false;
 	}
 
-	uint8_t RockerID = 0;
-	uint8_t Pressed = 1;
-
-	if (tsen->LIGHTING2.unitcode < 10)
+	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		RockerID = tsen->LIGHTING2.unitcode - 1;
-	}
-	else
+		Log(LOG_ERROR, "ID %s, double not supported!", nodeID.c_str());
 		return false;//double not supported yet!
+	}
 
+	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
+	uint8_t Pressed = 1;
 
 	//First we need to find out if this is a Dimmer switch,
 	//because they are threaded differently
 	bool bIsDimmer=false;
 	uint8_t LastLevel=0;
-	std::string nodeID = GetNodeID(iNodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, nodeID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
@@ -961,32 +961,32 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 	}
 }
 
-void CEnOceanESP3::ParseESP3Packet(uint8_t *db, size_t len)
+void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
 #ifdef ENABLE_LOGGING
 	std::stringstream sstr;
 
-	sstr << GetPacketTypeLabel(m_packettype);
+	sstr << GetPacketTypeLabel(packettype);
 
-	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)m_datalen << ")";
-	for (int idx = 0; idx < m_datalen; idx++)
-		sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)db[idx];
+	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
+	for (int i = 0; i < datalen; i++)
+		sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
 
-	if (m_optionallen > 0)
+	if (optdatalen > 0)
 	{
-		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)m_optionallen << ")";
+		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
 
-		for (int idx = m_datalen; idx < len; idx++)
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)db[idx];
+		for (int i = 0; i < optdatalen; i++)
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
 	}
 	Log(LOG_NORM, "Read: %s", sstr.str().c_str());
 #endif
 
-	switch (m_packettype)
+	switch (packettype)
 	{
 		case PACKET_RESPONSE: // Response
 		{
-			uint8_t return_code = db[0];
+			uint8_t return_code = data[0];
 
 			if (return_code != RET_OK)
 			{
@@ -995,30 +995,30 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t *db, size_t len)
 			}
 			// Response OK
 
-			if (m_id_base == 0 && len == 6)
+			if (m_id_base == 0 && datalen == 5)
 			{ // Base ID Information
-				m_id_base = GetINodeID(db[1], db[2], db[3], db[4]);
+				m_id_base = GetINodeID(data[1], data[2], data[3], data[4]);
 				Log(LOG_NORM, "HwdID %d ID_Base %08X", m_HwdID, m_id_base);
 				return;
 			}
-			if (m_wait_version_base && len == 33)
+			if (m_wait_version_base && datalen == 33)
 			{ // Base version Information
 				m_wait_version_base = false;
 				Log(LOG_NORM,
 					 "HwdID %d Version Info: App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X ChipID %02X.%02X.%02X.%02X ChipVersion %02X.%02X.%02X.%02X Description '%s'",
-					 m_HwdID, db[1], db[2], db[3], db[4], db[5], db[6], db[7], db[8], db[9], db[10], db[11], db[12], db[13], db[14], db[15], db[16], (const char *)db + 17);
+					 m_HwdID, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], (const char *)data + 17);
 				return;
 			}
-			Log(LOG_ERROR, "Unhandled response code (%s)", GetReturnCodeLabel(return_code));
+			Log(LOG_ERROR, "Received unexpected response (%s)", GetReturnCodeLabel(return_code));
 		}
 		return;
 
 		case PACKET_RADIO_ERP1:
-			ParseERP1Packet(db, len);
-			return;;
+			ParseERP1Packet(data, datalen, optdata, optdatalen);
+			return;
 
 		default:
-			Log(LOG_ERROR, "Unhandled Packet Type (%s)", GetPacketTypeLabel(m_packettype));
+			Log(LOG_ERROR, "Unhandled Packet Type (%s)", GetPacketTypeLabel(packettype));
 	}
 	/*
 		enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
@@ -1151,54 +1151,58 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t *db, size_t len)
 	*/
 }
 
-void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
+void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
 	// Parse optional data
 
 	uint8_t rssi = 12; // RSSI for Domoticz, normal value is between 0 (very weak) and 11 (strong), 12 = no RSSI value
 
-	if (m_optionallen > 0)
+	if (optdatalen > 0)
 	{
-		if (m_optionallen != 7)
-			Log(LOG_ERROR, "Invalid ERP1 optional data size (%d)", m_optionallen);
+		if (optdatalen != 7)
+			Log(LOG_ERROR, "Invalid ERP1 optional data size (%d)", optdatalen);
 		else
 		{
 			// RSSI reported by Enocean Dongle in dBm
 
-			int rssi_dbm = db[m_datalen + 5] * -1;
+			uint32_t dstID = GetINodeID(optdata[1], optdata[2], optdata[3], optdata[4]);
+			int dBm = optdata[5] * -1;
 
 			// convert RSSI dBm to RSSI Domoticz
 			// this is not the best conversion algo, but, according to my tests, it's a good start
 
-			if (rssi_dbm > -50)
+			if (dBm > -50)
 				rssi = 11;
-			else if (rssi_dbm < -100)
+			else if (dBm < -100)
 				rssi = 0;
 			else
-				rssi = static_cast<int>((rssi_dbm + 100) / 5);
+				rssi = static_cast<int>((dBm + 100) / 5);
 
-			Log(LOG_NORM, "destination: %02X%02X%02X%02X RSSI: %i dBm (%i/11)",
-				db[m_datalen + 1], db[m_datalen + 2], db[m_datalen + 3], db[m_datalen + 4], rssi_dbm, rssi);
+			Log(LOG_NORM, "Dest: %08X RSSI: %i dBm (%i/11)", dstID, dBm, rssi);
 		}
 	}
 	// Parse data
 
-	uint8_t RORG = db[0];
+	uint8_t RORG = data[0];
+
+	uint8_t ID_BYTE3 = data[datalen - 5];
+	uint8_t ID_BYTE2 = data[datalen - 4];
+	uint8_t ID_BYTE1 = data[datalen - 3];
+	uint8_t ID_BYTE0 = data[datalen - 2];
+	uint32_t iSenderID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
+	std::string senderID = GetNodeID(iSenderID);
+
+	uint8_t STATUS = data[datalen - 1];
 
 	switch (RORG)
 	{
 		case RORG_1BS: // 1 byte communication (Contacts/Switches)
 			{
-				Log(LOG_NORM, "1BS msg: Node: %02X%02X%02X%02X Data: %02X", db[2], db[3], db[4], db[5], db[0]);
+				uint8_t DATA_BYTE0 = data[1];
 
-				uint8_t DATA_BYTE0 = db[1];
+				Log(LOG_NORM, "1BS msg: Node: %08X Data: %02X Status: %02X", iSenderID, DATA_BYTE0, STATUS);
 
-				uint8_t ID_BYTE3 = db[2];
-				uint8_t ID_BYTE2 = db[3];
-				uint8_t ID_BYTE1 = db[4];
-				uint8_t ID_BYTE0 = db[5];
-
-				int UpDown=(DATA_BYTE0&1)==0;
+				int UpDown = (DATA_BYTE0 & 1) == 0;
 
 				RBUF tsen;
 				memset(&tsen,0,sizeof(RBUF));
@@ -1220,20 +1224,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 
 		case RORG_4BS: // 4 byte communication
 			{
-			Log(LOG_NORM, "4BS msg: Node: %02X%02X%02X%02X Status: %02X Data: %02X", db[5], db[6], db[7], db[8], db[9], db[3]);
+				uint8_t DATA_BYTE3 = data[1];
+				uint8_t DATA_BYTE2 = data[2];
+				uint8_t DATA_BYTE1 = data[3];
+				uint8_t DATA_BYTE0 = data[4];
 
-				uint8_t DATA_BYTE3 = db[1];
-				uint8_t DATA_BYTE2 = db[2];
-				uint8_t DATA_BYTE1 = db[3];
-				uint8_t DATA_BYTE0 = db[4];
-
-				uint8_t ID_BYTE3 = db[5];
-				uint8_t ID_BYTE2 = db[6];
-				uint8_t ID_BYTE1 = db[7];
-				uint8_t ID_BYTE0 = db[8];
-
-				uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
-				std::string nodeID = GetNodeID(iNodeID);
+				Log(LOG_NORM, "4BS msg: Node: %s Data: %02X %02X %02X %02X Status: %02X",
+					senderID.c_str(), DATA_BYTE3, DATA_BYTE2, DATA_BYTE1, DATA_BYTE0, STATUS);
 
 				if ((DATA_BYTE0 & RORG_4BS_TEACHIN_LRN_BIT) == 0)	// LRN_BIT is 0 -> Teach-in datagram
 				{
@@ -1246,7 +1243,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 					{
 						// RORG_4BS_TEACHIN_EEP_BIT is 0 -> Teach-in Variant 1 : data doesn't contain EEP and Manufacturer ID
 						// An EEP profile must be manually allocated per sender ID (see EEP 2.6.2 specification §3.3 p173/197)
-						Log(LOG_NORM, "4BS, Variant 1 Teach-in diagram: Sender_ID: %08X", iNodeID);
+						Log(LOG_NORM, "4BS Teach-in, Variant 1: Node: %s", senderID.c_str());
 						Log(LOG_NORM, "Teach-in data contains no EEP profile. Created generic A5-02-05 profile (0/40°C temp sensor); please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
 
 						manufacturer = 0x7FF;			// Generic
@@ -1266,32 +1263,32 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 						profile = DATA_BYTE3 >> 2;
 						ttype = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
 
-						Log(LOG_NORM,"4BS, Variant 2 Teach-in diagram: Sender_ID: %08X\nManufacturer: %03X (%s)\nProfile: %02X\nType: %02X (%s)",
-							iNodeID, manufacturer,GetManufacturerName(manufacturer),
+						Log(LOG_NORM,"4BSTeach-in, Variant 2: Node: %s\nManufacturer: %03X (%s)\nProfile: %02X\nType: %02X (%s)",
+							senderID.c_str(), manufacturer,GetManufacturerName(manufacturer),
 							profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
  					}
 
 					// Search the sensor in database
 					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+					result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
 					if (result.empty())
 					{
 						// If not found, add it to the database
-						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, nodeID.c_str(), manufacturer, profile, ttype);
-						Log(LOG_NORM, "Sender_ID %08X inserted in the database", iNodeID);
+						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, senderID.c_str(), manufacturer, profile, ttype);
+						Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
 					}
 					else
-						Log(LOG_NORM, "Sender_ID %08X already in the database", iNodeID);
+						Log(LOG_NORM, "Node %s already in the database", senderID.c_str());
 					ReloadVLDNodes();
 				}
 				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
 				{
 					//Following sensors need to have had a teach-in
 					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+					result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
 					if (result.empty())
 					{
-						Log(LOG_NORM, "Need Teach-In for %s", nodeID.c_str());
+						Log(LOG_NORM, "Need Teach-In for %s", senderID.c_str());
 						return;
 					}
 					int Manufacturer=atoi(result[0][1].c_str());
@@ -1715,27 +1712,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 
 		case RORG_RPS: // repeated switch communication
 			{
-			Log(LOG_NORM, "RPS data: Node: %02X%02X%02X%02X Status: %02X Data: %02X", db[2], db[3], db[4], db[5], db[6], db[1]);
-			if (db[6] & (1 << 2))
-				Log(LOG_NORM, "T21");
+				uint8_t T21 = (STATUS & S_RPS_T21) >> S_RPS_T21_SHIFT;
+				uint8_t NU = (STATUS & S_RPS_NU) >> S_RPS_NU_SHIFT;
 
-				uint8_t STATUS = db[6];
+				Log(LOG_NORM, "RPS msg: Node: %s Status: %02X (T21: %d NU: %d)", senderID.c_str(), STATUS, T21, NU);
 
-				uint8_t T21 = (db[6] & S_RPS_T21) >> S_RPS_T21_SHIFT;
-				uint8_t NU = (db[6] & S_RPS_NU) >> S_RPS_NU_SHIFT;
-
-				uint8_t ID_BYTE3 = db[2];
-				uint8_t ID_BYTE2 = db[3];
-				uint8_t ID_BYTE1 = db[4];
-				uint8_t ID_BYTE0 = db[5];
-				uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
-				std::string nodeID = GetNodeID(iNodeID);
 				int Profile;
 				int iType;
 
 				// if a button is attached to a module, we should ignore it else its datagram will conflict with status reported by the module using VLD datagram
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+				result = m_sql.safe_query("SELECT ID, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
 				if (result.empty())
 				{
 					// If SELECT returns nothing, add Enocean sensor to the database
@@ -1744,8 +1731,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 					int manufacturer = 0x7FF;  // generic manufacturer
 					Profile = 0x02;
 					iType = 0x01;
-					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, nodeID.c_str(), manufacturer, Profile, iType);
-					Log(LOG_NORM, "Sender_ID %08X inserted in the database with default profile F6-%02X-%02X", iNodeID, Profile, iType);
+					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, senderID.c_str(), manufacturer, Profile, iType);
+					Log(LOG_NORM, "Node %s inserted in the database with default profile F6-%02X-%02X", senderID.c_str(), Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
 				}
 				else
@@ -1753,13 +1740,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 					// hardware device was already teached-in
 					Profile=atoi(result[0][1].c_str());
 					iType=atoi(result[0][2].c_str());
-					Debug(DEBUG_HARDWARE, "Sender_ID %08X found in the database with profile F6-%02X-%02X", iNodeID, Profile, iType);
+					Log(LOG_NORM, "Node %s found in the database with profile F6-%02X-%02X", senderID.c_str(), Profile, iType);
 					if( (Profile == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
 						 ((iType == 0x0F) || (iType == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
 						)
 					{
 #ifdef ENOCEAN_BUTTON_DEBUG
-						Log(LOG_STATUS,"%s, ignore button press", nodeID.c_str());
+						Log(LOG_STATUS,"Node %s, ignore button press", senderID.c_str());
 #endif // ENOCEAN_BUTTON_DEBUG
 						break;
 					}
@@ -1777,7 +1764,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 					{
 						//Rocker
 
-						uint8_t DATA_BYTE3 = db[1];
+						uint8_t DATA_BYTE3 = data[1];
 
 						// NU == 1, N-Message
 						uint8_t ButtonID = (DATA_BYTE3 & DB3_RPS_NU_BID) >> DB3_RPS_NU_BID_SHIFT;
@@ -1791,18 +1778,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 						uint8_t SecondAction = (DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-						Log(LOG_NORM,
-							"Received RPS N-Message   message: %02X Node %08x RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
-							DATA_BYTE3,
-							iNodeID,
-							RockerID,
-							ButtonID,
-							UpDown,
-							Pressed,
-							SecondRockerID,
-							SecondButtonID,
-							SecondUpDown,
-							SecondAction);
+						Log(LOG_NORM, "RPS N-Message: Node %s RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
+							senderID.c_str(),
+							RockerID, ButtonID, UpDown, Pressed,
+							SecondRockerID, SecondButtonID, SecondUpDown, SecondAction);
 #endif // ENOCEAN_BUTTON_DEBUG
 
 						//We distinguish 3 types of buttons from a switch: Left/Right/Left+Right
@@ -1853,12 +1832,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 							}
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-							Log(LOG_NORM, "EnOcean message: %02X Node %08x UnitID: %02X cmd: %02X ",
-								DATA_BYTE3,
-								iNodeID,
-								tsen.LIGHTING2.unitcode,
-								tsen.LIGHTING2.cmnd
-								);
+							Log(LOG_NORM, "RPS msg: Node %s UnitID: %02X cmd: %02X ",
+								senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 #endif //ENOCEAN_BUTTON_DEBUG
 
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1868,7 +1843,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 					{
 						if ((T21 == 1) && (NU == 0))
 						{
-							uint8_t DATA_BYTE3 = db[1];
+							uint8_t DATA_BYTE3 = data[1];
 
 							uint8_t ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
 							uint8_t Pressed = (DATA_BYTE3 & DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
@@ -1876,12 +1851,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 							uint8_t UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-							Log(LOG_NORM, "Received RPS T21-Message message: %02X Node %08x ButtonID: %i Pressed: %i UD: %i",
-								DATA_BYTE3,
-								iNodeID,
-								ButtonID,
-								Pressed,
-								UpDown);
+							Log(LOG_NORM, "RPS T21-msg: Node %s ButtonID: %i Pressed: %i UD: %i",
+								senderID.c_str(), ButtonID, Pressed, UpDown);
 #endif //ENOCEAN_BUTTON_DEBUG
 
 							RBUF tsen;
@@ -1909,13 +1880,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 								tsen.LIGHTING2.cmnd = (UpDown == 1) ? light2_sOn : light2_sOff;
 							}
 #ifdef ENOCEAN_BUTTON_DEBUG
-
-							Log(LOG_NORM, "EnOcean message: %02X Node %08x UnitID: %02X cmd: %02X ",
-								DATA_BYTE3,
-								iNodeID,
-								tsen.LIGHTING2.unitcode,
-								tsen.LIGHTING2.cmnd);
-
+							Log(LOG_NORM, "RPS msg: Node %s UnitID: %02X cmd: %02X ",
+								senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 #endif // ENOCEAN_BUTTON_DEBUG
 
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1929,39 +1895,45 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 				// Tested with an Ubiwizz UBILD001-QM smoke detector
 				else if (Profile == 0x05)
 				{
-					Debug(DEBUG_HARDWARE, "message profile F6-05-xx: Data=%02X", m_buffer[1]);
 					bool alarm = false;
 					int batterylevel = 255;
 					if (iType == 0x00 || iType == 0x02)  // only profiles F6-05-00 and F6-05-02 report Energy LOW warning
-					{
 						batterylevel = 100;
-					}
-					switch (db[1]) {
+
+					switch (data[1]) {
 						case 0x00:   // profiles F6-05-00 and F6-05-02
 						{
-							Debug(DEBUG_HARDWARE, "Alarm OFF from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+#ifdef ENOCEAN_BUTTON_DEBUG
+							Log(LOG_NORM, "Alarm OFF from Node %s", senderID.c_str());
+#endif
 							break;
 						}
 						case 0x10:  // profiles F6-05-00 and F6-05-02
 						{
-							Log(LOG_NORM, "Alarm ON from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+#ifdef ENOCEAN_BUTTON_DEBUG
+							Log(LOG_NORM, "Alarm ON from Node %s", senderID.c_str());
+#endif
 							alarm = true;
 							break;
 						}
 						case 0x11:  // profile F6-05-01
 						{
-							Log(LOG_NORM, "Alarm ON water detected from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+#ifdef ENOCEAN_BUTTON_DEBUG
+							Log(LOG_NORM, "Alarm ON water detected from Node %s", senderID.c_str());
+#endif
 							alarm = true;
 							break;
 						}
 						case 0x30:  // profiles F6-05-00 and F6-05-02
 						{
-							Log(LOG_NORM, "Energy LOW warning from Sender id %02X%02X%02X%02X", m_buffer[2], m_buffer[3], m_buffer[4], m_buffer[5]);
+#ifdef ENOCEAN_BUTTON_DEBUG
+							Log(LOG_NORM, "Energy LOW warning from Node %s", senderID.c_str());
+#endif
 							batterylevel = 5;
 							break;
 						}
 					}
-					SendSwitch(iNodeID, 1, batterylevel, alarm, 0, "Detector", m_Name, rssi);
+					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, "Detector", m_Name, rssi);
 				}
 			}
 			break;
@@ -1969,44 +1941,38 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 		case RORG_UTE:
 				// Universal teach-in (0xD4)
 				{
-					uint8_t uni_bi_directional_communication = (db[1] >> 7) & 1;		// 0=mono, 1= bi
-					uint8_t eep_teach_in_response_expected = (db[1] >> 6) & 1;			// 0=yes, 1=no
-					uint8_t teach_in_request = (db[1] >> 4) & 3;								// 0= request, 1= deletion request, 2=request or deletion request, 3=not used
-					uint8_t cmd = db[1] & 0x0F;
+					uint8_t uni_bi_directional_communication = (data[1] >> 7) & 1; // 0=mono, 1= bi
+					uint8_t eep_teach_in_response_expected = (data[1] >> 6) & 1; // 0=yes, 1=no
+					uint8_t teach_in_request = (data[1] >> 4) & 3; // 0= request, 1= deletion request, 2=request or deletion request, 3=not used
+					uint8_t cmd = data[1] & 0x0F;
 
-					if(cmd == 0x0)
+					if (cmd == 0x0)
 					{
 						// EEP Teach-In Query (UTE Message / CMD 0x0)
 
-						uint8_t nb_channel = db[2];
-						uint32_t manID = ((uint32_t)(db[4] & 0x7)) << 8 | (db[3]);
-						uint8_t type = db[5];
-						uint8_t func = db[6];
-						uint8_t rorg = db[7];
+						uint8_t nb_channel = data[2];
+						uint32_t manID = ((uint32_t)(data[4] & 0x7)) << 8 | (data[3]);
+						uint8_t type = data[5];
+						uint8_t func = data[6];
+						uint8_t rorg = data[7];
 
-						uint8_t ID_BYTE3 = db[8];
-						uint8_t ID_BYTE2 = db[9];
-						uint8_t ID_BYTE1 = db[10];
-						uint8_t ID_BYTE0 = db[11];
-						uint32_t iNodeID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
-
-						Log(LOG_NORM, "teach-in request received from %08X (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", iNodeID, manID, nb_channel, rorg,func,type);
+						Log(LOG_NORM, "UTE teach-in request from %s (manufacturer: %03X) device profile: %02X-%02X-%02X nb channels: %d, ",
+							senderID.c_str(), manID, rorg,func,type, nb_channel);
 
 						// Record EnOcean device profile
-						std::string nodeID = GetNodeID(iNodeID);
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+						result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
 						if (result.empty())
 						{
 							// If not found, add it to the database
-							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, nodeID.c_str(), manID, func, type);
-							Log(LOG_NORM, "Sender_ID %08X inserted in the database", iNodeID);
+							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, senderID.c_str(), manID, func, type);
+							Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
 						}
 						else
-							Log(LOG_NORM, "Sender_ID %08X already in the database", iNodeID);
+							Log(LOG_NORM, "Node %s already in the database", senderID.c_str());
 						ReloadVLDNodes();
 
-						if((rorg == 0xD2) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))
+						if((rorg == RORG_VLD) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))
 						{
 							unsigned char nbc;
 
@@ -2029,61 +1995,48 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 								tsen.LIGHTING2.cmnd     = light2_sOff;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-								Log(LOG_NORM, "EnOcean message: 0xD4 Node %08x UnitID: %02X cmd: %02X ",
-											iNodeID,
-											tsen.LIGHTING2.unitcode,
-											tsen.LIGHTING2.cmnd
-										);
-								Log(LOG_NORM, "channel = %d", nbc+1);
+								Log(LOG_NORM, "VLD msg: Node %s UnitID: %02X cmd: %02X channel = %d",
+									senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd, nbc + 1);
+
 #endif //ENOCEAN_BUTTON_DEBUG
 
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr,
-										 255, m_Name.c_str());
+								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 							}
 							return;
 						}
 						break;
 					}
-					Log(LOG_ERROR, "Unhandled RORG (%02X), uni_bi (%02X [1=bidir]), response_expected (%02X [0=yes]), request (%02X), cmd (%02X)", db[0], uni_bi_directional_communication,eep_teach_in_response_expected, teach_in_request, cmd);
+					Log(LOG_ERROR, "UTE msg: Unhandled CMD (%02X), uni_bi (%02X [1=bidir]), request (%02X), response expected (%02X [0=yes])",
+						cmd, uni_bi_directional_communication, teach_in_request, eep_teach_in_response_expected);
 				}
 			break;
 
 		case RORG_VLD:
 			{
-				uint8_t ID_BYTE3 = db[m_datalen - 5];
-				uint8_t ID_BYTE2 = db[m_datalen - 4];
-				uint8_t ID_BYTE1 = db[m_datalen - 3];
-				uint8_t ID_BYTE0 = db[m_datalen - 2];
-				uint32_t id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
-
-				char szDeviceID[20];
-				std::vector<std::vector<std::string> > result;
-				sprintf(szDeviceID, "%08X", (uint32_t)id);
-
 				// report status only if it is a known device else we may have an incorrect profile
-				auto itt = m_VLDNodes.find(id);
+				auto itt = m_VLDNodes.find(iSenderID);
 				if (itt == m_VLDNodes.end())
 				{
-					Log(LOG_NORM, "Need Teach-In for %s", szDeviceID);
+					Log(LOG_NORM, "Need Teach-In for %s", senderID.c_str());
 					return;
 				}
 				uint8_t func = itt->second.profile;
 				uint8_t type = itt->second.type;
 
-				Log(LOG_NORM, "EnOcean message VLD: from Node %s EEP: %02X-%02X-%02X", szDeviceID, RORG_VLD, func, type);
+				Log(LOG_NORM, "VLD msg: Node %s, EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, func, type);
 
 				if (func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
-					uint8_t CMD = db[1] & 0x0F;			// Command ID
+					uint8_t CMD = data[1] & 0x0F;			// Command ID
 					if (CMD != 0x04)
 					{
-						Log(LOG_NORM, "EnOcean: VLD msg: Node %s, Unhandled CMD (%02X)", szDeviceID, CMD);
+						Log(LOG_NORM, "VLD msg: Node %s, Unhandled CMD (%02X)", senderID.c_str(), CMD);
 						return;
 					}
 					// CMD 0x4 - Actuator Status Response
 
-					uint8_t IO = db[2] & 0x1F;	 		// I/O Channel
-					uint8_t OV = db[3] & 0x7F;			// Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
+					uint8_t IO = data[2] & 0x1F;	 		// I/O Channel
+					uint8_t OV = data[3] & 0x7F;			// Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -2101,8 +2054,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 					tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
-					Log(LOG_NORM, "EnOcean: VLD->RX msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
-						szDeviceID, CMD, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd, tsen.LIGHTING2.level);
+					Log(LOG_NORM, "VLD->RX msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
+						senderID.c_str(), CMD, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd, tsen.LIGHTING2.level);
 #endif //ENOCEAN_BUTTON_DEBUG
 
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -2115,18 +2068,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *db, size_t len)
 				}
 				if (func == 0x03 && type == 0x0A)
 				{ // D2-03-0A Push Button – Single Button
-					uint8_t BATT = (uint8_t) GetDeviceValue(db[1], 1, 100, 1, 100);
-					uint8_t BA = db[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
-					SendGeneralSwitch(id, BA, BATT, 1, 0, "Switch", m_Name, 12);
+					uint8_t BATT = (uint8_t) GetDeviceValue(data[1], 1, 100, 1, 100);
+					uint8_t BA = data[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
+					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, "Switch", m_Name, 12);
 					return;
 				}
-				Log(LOG_ERROR, "EnOcean: Node %s, Unhandled EEP (%02X-%02X-%02X)", szDeviceID, RORG_VLD, func, type);
+				Log(LOG_ERROR, "Node %s, Unhandled EEP (%02X-%02X-%02X)", senderID.c_str(), RORG_VLD, func, type);
 			}
 			break;
 
 		default:
 			Log(LOG_ERROR, "Unhandled RORG (%02X)", RORG);
-			break;
 	}
 }
 

@@ -48,8 +48,8 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	void SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 
 	void ReadCallback(const char *data, size_t len);
-	void ParseESP3Packet(uint8_t *db, size_t len);
-	void ParseERP1Packet(uint8_t *db, size_t len);
+	void ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
+	void ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 
 	void ReloadVLDNodes();
 
