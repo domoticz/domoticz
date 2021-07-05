@@ -20,7 +20,7 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 		ERS_CRC8D
 	};
 	
-	struct _tVLDNode
+	struct NodeInfo
 	{
 		int idx;
 		int manufacturer;
@@ -37,7 +37,6 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	uint32_t m_id_base;
 
       private:
-	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool OpenSerialDevice();
@@ -51,7 +50,7 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	void ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	void ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 
-	void ReloadVLDNodes();
+	void LoadNodesFromDatabase();
 
  	const char *GetPacketTypeLabel(const uint8_t PT);
 	const char *GetPacketTypeDescription(const uint8_t PT);
@@ -77,7 +76,7 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	uint32_t m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;
 	
-	std::map<uint32_t, _tVLDNode> m_VLDNodes;
+	std::map<uint32_t, NodeInfo> m_nodes;
 
  	uint8_t m_buffer[ESP3_PACKET_BUFFER_SIZE];
 	uint32_t m_bufferpos;
