@@ -1057,7 +1057,7 @@ namespace http
 		{
 			Json::Value root;
 			std::string jwttoken;
-			uint16_t exptime = 3600;			// Token validity time (seconds)
+			uint32_t exptime = 3600;			// Token validity time (seconds)
 			uint32_t refreshexptime = 86400;	// Refresh token validity time (seconds)
 
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
