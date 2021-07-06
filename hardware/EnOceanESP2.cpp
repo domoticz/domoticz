@@ -773,7 +773,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
 	{
 		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 		return false;
 	}
 
@@ -891,7 +891,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 		{
 			std::string nodeID = GetNodeID(iNodeID);
 			std::string baseID = GetNodeID(m_id_base);
-			Log(LOG_ERROR,"EnOcean: Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+			Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 			return;
 		}
 

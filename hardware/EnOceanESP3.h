@@ -1,22 +1,26 @@
 #pragma once
 
+#include <map>
+
 #include "EnOceanEEP.h"
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
-#include <map>
 
-#define ENOCEAN3_READ_BUFFER_SIZE 65 * 1024
+// 550 bytes buffer is enough for one ESP3 packet, EnOceanLink 1.8.1.0, eoPacket.h
+#define ESP3_PACKET_BUFFER_SIZE 550
 
 class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
-	enum _eEnOcean_Receive_State
+ 	enum ReceiveState
 	{
 		ERS_SYNCBYTE = 0,
 		ERS_HEADER,
+		ERS_CRC8H,
 		ERS_DATA,
-		ERS_CHECKSUM
+		ERS_CRC8D
 	};
-	struct _tVLDNode
+	
+	struct NodeInfo
 	{
 		int idx;
 		int manufacturer;
@@ -24,29 +28,29 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 		uint8_t type;
 	};
 
-      public:
+     public:
 	CEnOceanESP3(int ID, const std::string &devname, int type);
 	~CEnOceanESP3() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, unsigned char length);
+
 	uint32_t m_id_base;
 
       private:
-	void Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool OpenSerialDevice();
 	void Do_Work();
-	bool ParseData();
-	void Add2SendQueue(const char *pData, size_t length);
 
-	bool sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
-	bool sendFrameQueue(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen);
+	std::string FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
+	void SendESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
+	void SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 
-	void ParseRadioDatagram();
-	void readCallback(const char *data, size_t len);
+	void ReadCallback(const char *data, size_t len);
+	void ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
+	void ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 
-	void ReloadVLDNodes();
+	void LoadNodesFromDatabase();
 
  	const char *GetPacketTypeLabel(const uint8_t PT);
 	const char *GetPacketTypeDescription(const uint8_t PT);
@@ -66,25 +70,26 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	const char *GetSmarkAckCodeLabel(const uint8_t SA);
 	const char *GetSmartAckCodeDescription(const uint8_t SA);
 
-      private:
-	_eEnOcean_Receive_State m_receivestate;
-	int m_wantedlength;
-
-	std::shared_ptr<std::thread> m_thread;
-	int m_Type;
 	std::string m_szSerialPort;
+	int m_Type;
 
-	bool m_bBaseIDRequested;
+	uint32_t m_retrycntr;
+	std::shared_ptr<std::thread> m_thread;
+	
+	std::map<uint32_t, NodeInfo> m_nodes;
 
-	// Create a circular buffer.
-	unsigned char m_ReceivedPacketType;
-	int m_DataSize;
-	int m_OptionalDataSize;
-	unsigned char m_buffer[ENOCEAN3_READ_BUFFER_SIZE];
-	int m_bufferpos;
-	int m_retrycntr;
+ 	uint8_t m_buffer[ESP3_PACKET_BUFFER_SIZE];
+	uint32_t m_bufferpos;
 
-	std::map<uint32_t, _tVLDNode> m_VLDNodes;
+	ReceiveState m_receivestate;
+	uint32_t m_wantedlen;
+	uint8_t m_crc;
+
+	uint8_t m_packettype;
+	uint16_t m_datalen;
+	uint8_t m_optionallen;
+
+	bool m_wait_version_base;
 
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
