@@ -60,6 +60,7 @@ namespace Plugins {
 
 		void Do_Work();
 
+		void LogTraceback(PyTracebackObject *pTraceback);
 		void LogPythonException();
 		void LogPythonException(const std::string &);
 
@@ -132,16 +133,6 @@ namespace Plugins {
 	protected:
 	  bool SendMessageImplementation(uint64_t Idx, const std::string &Name, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
 					 const std::string &Sound, bool bFromNotification) override;
-	};
-
-	//
-	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
-	//
-	struct module_state {
-		CPlugin* pPlugin;
-		PyObject* error;
-		PyTypeObject *pDeviceClass;
-		PyTypeObject *pUnitClass;
 	};
 
 	//
@@ -265,5 +256,17 @@ namespace Plugins {
 				Py_XDECREF(m_pObject);
 			}
 		};
+	};
+
+	//
+	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
+	//
+	struct module_state
+	{
+		CPlugin *pPlugin;
+		PyBorrowedRef lastCallback; // last callback called
+		PyObject *error;
+		PyTypeObject *pDeviceClass;
+		PyTypeObject *pUnitClass;
 	};
 } // namespace Plugins

@@ -148,7 +148,7 @@ namespace Plugins {
 		}
 
 		// Populate the unit dictionary if there are any
-		std::string DeviceID = PyUnicode_AsUTF8(self->DeviceID);
+		std::string DeviceID = PyBorrowedRef(self->DeviceID);
 		std::vector<std::vector<std::string>> result;
 		result = m_sql.safe_query("SELECT Name, Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s')", pModState->pPlugin->m_HwdID, DeviceID.c_str());
 		if (!result.empty())
@@ -548,9 +548,9 @@ namespace Plugins {
 
 		if (pModState->pPlugin)
 		{
-			std::string sName = PyUnicode_AsUTF8(self->Name);
+			std::string sName = PyBorrowedRef(self->Name);
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
-			std::string sDeviceID = PyUnicode_AsUTF8(pDevice->DeviceID);
+			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
 			if (self->ID == -1)
 			{
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
@@ -568,10 +568,10 @@ namespace Plugins {
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 					if (result.empty())
 					{
-						std::string sValue = PyUnicode_AsUTF8(self->sValue);
-						std::string sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); // Parse the color to detect incorrectly formatted color data
+						std::string sValue = PyBorrowedRef(self->sValue);
+						std::string sColor = _tColor(std::string(PyBorrowedRef(self->Color))).toJSONString(); // Parse the color to detect incorrectly formatted color data
 						std::string sLongName = sName;
-						std::string sDescription = PyUnicode_AsUTF8(self->Description);
+						std::string sDescription = PyBorrowedRef(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
 						{
 							PyBorrowedRef pValueDict = PyDict_GetItemString(self->Options, "Custom");
@@ -579,7 +579,7 @@ namespace Plugins {
 							if (!pValueDict)
 								sOptionValue = "";
 							else
-								sOptionValue = PyUnicode_AsUTF8(pValueDict);
+								sOptionValue = (std::string)pValueDict;
 
 							m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, "
 									 "nValue, sValue, CustomImage, Description, Color, Options) "
@@ -710,7 +710,7 @@ namespace Plugins {
 			}
 
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
-			std::string sDeviceID = PyUnicode_AsUTF8(pDevice->DeviceID);
+			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
 			std::string sID = std::to_string(self->ID);
 
 			// Build representations of changeable fields (these may not be of the right type so be defensive)
@@ -776,7 +776,8 @@ namespace Plugins {
 				uint64_t DevRowIdx;
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue.c_str());
+					std::string sValue = PyBorrowedRef(self->sValue);
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, sValue.c_str(), nValue, sValue.c_str());
 				}
 				Py_BEGIN_ALLOW_THREADS 
 				DevRowIdx = m_sql.UpdateValue(pModState->pPlugin->m_HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str(), sName, true);
@@ -844,7 +845,7 @@ namespace Plugins {
 
 		if (!pModState->pPlugin)
 		{
-			std::string sName = PyUnicode_AsUTF8(self->Name);
+			std::string sName = PyBorrowedRef(self->Name);
 			if (self->ID != -1)
 			{
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)

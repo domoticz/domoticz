@@ -1220,7 +1220,7 @@ namespace Plugins {
 					return nullptr;
 				}
 
-				self->Parent = (CConnection *)Py_None;
+				self->Parent = Py_None;
 				Py_INCREF(Py_None);
 
 				self->pPlugin = nullptr;

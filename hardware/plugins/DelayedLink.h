@@ -91,13 +91,15 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_ImportModule, const char *);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_RichCompareBool, PyObject* COMMA PyObject* COMMA int);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallObject, PyObject *COMMA PyObject *);
-		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallNoArgs, PyObject *);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallNoArgs, PyObject *);						// Python 3.9 !!!!
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
 		DECLARE_PYTHON_SYMBOL(int, PyEval_ThreadsInitialized, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Get, );
-		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyEval_SaveThread, void);
-		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(PyThreadState *, PyEval_SaveThread, void);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyEval_GetLocals, void);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyEval_GetGlobals, void);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
@@ -145,6 +147,7 @@ namespace Plugins {
 #endif
 		Py_ssize_t		_Py_RefTotal;
 		PyObject		_Py_NoneStruct;
+		PyObject *		dzPy_None;
 
 		SharedLibraryProxy() {
 			shared_lib_ = nullptr;
@@ -242,6 +245,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_ThreadsInitialized);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Get);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SaveThread);
+					RESOLVE_PYTHON_SYMBOL(PyEval_GetLocals);
+					RESOLVE_PYTHON_SYMBOL(PyEval_GetGlobals);
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
@@ -401,6 +406,15 @@ namespace Plugins {
 
 extern	SharedLibraryProxy* pythonLib;
 
+// Create local pointer to Py_None, required to work around build complaints
+#ifdef Py_None
+	#undef Py_None
+#endif
+#define Py_None					pythonLib->dzPy_None
+#ifdef Py_RETURN_NONE
+	#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
+#endif
+#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
 #define	Py_LoadLibrary			pythonLib->Py_LoadLibrary
 #define	Py_GetVersion			pythonLib->Py_GetVersion
 #define	Py_IsInitialized		pythonLib->Py_IsInitialized
@@ -463,6 +477,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define	PyEval_ThreadsInitialized	pythonLib->PyEval_ThreadsInitialized
 #define	PyThreadState_Get		pythonLib->PyThreadState_Get
 #define PyEval_SaveThread		pythonLib->PyEval_SaveThread
+#define PyEval_GetLocals		pythonLib->PyEval_GetLocals
+#define PyEval_GetGlobals		pythonLib->PyEval_GetGlobals
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
 #define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
 #define PyThreadState_Swap		pythonLib->PyThreadState_Swap

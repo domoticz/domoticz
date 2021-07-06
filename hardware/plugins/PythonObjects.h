@@ -210,7 +210,7 @@ namespace Plugins {
 		CPluginTransport*	pTransport;
 		PyObject*			Protocol;
 		CPluginProtocol*	pProtocol;
-		CConnection *		Parent;
+		PyObject*			Parent;
 	};
 
 	void CConnection_dealloc(CConnection* self);

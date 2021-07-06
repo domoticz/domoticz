@@ -222,11 +222,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debug, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debug, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -255,11 +255,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Log, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Log, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -284,11 +284,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", std::string(__func__).c_str());
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", std::string(__func__).c_str());
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -313,11 +313,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Error, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Error, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -343,11 +343,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debugging, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debugging, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -375,31 +375,36 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Heartbeat(PyObject *self, PyObject *args)
 	{
+		int iPollinterval = 0;
+
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Heartbeat, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Heartbeat, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
-			int iPollinterval;
-			if (!PyArg_ParseTuple(args, "i", &iPollinterval))
+			iPollinterval = pModState->pPlugin->PollInterval(0);
+			if (PyTuple_Check(args) && PyTuple_Size(args))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
-				LogPythonException(pModState->pPlugin, std::string(__func__));
-			}
-			else
-			{
-				//	Add heartbeat command to message queue
-				pModState->pPlugin->MessagePlugin(new PollIntervalDirective(pModState->pPlugin, iPollinterval));
+				if (!PyArg_ParseTuple(args, "i", &iPollinterval))
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
+					LogPythonException(pModState->pPlugin, std::string(__func__));
+				}
+				else
+				{
+					//	Add heartbeat command to message queue
+					pModState->pPlugin->MessagePlugin(new PollIntervalDirective(pModState->pPlugin, iPollinterval));
+				}
 			}
 		}
 
-		Py_RETURN_NONE;
+		return PyLong_FromLong(iPollinterval);
 	}
 
 	static PyObject *PyDomoticz_Notifier(PyObject *self, PyObject *args)
@@ -543,7 +548,7 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Log, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else
 		{
@@ -551,7 +556,7 @@ namespace Plugins
 			PyTypeObject *pUnitClass = NULL;
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &pDeviceClass, &pUnitClass))
 			{
-				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Register failed to parse parameters: Python class name expected.", pModState->pPlugin->m_Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s failed to parse parameters: Python class name expected.", pModState->pPlugin->m_Name.c_str(), __func__);
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
@@ -576,20 +581,118 @@ namespace Plugins
 				}
 				if (pUnitClass)
 				{
-					PyTypeObject *pBaseClass = pUnitClass->tp_base;
-					while (pBaseClass)
+					if (pModState->pUnitClass)
 					{
-						if (pBaseClass->tp_name == pModState->pUnitClass->tp_name)
+						PyTypeObject *pBaseClass = pUnitClass->tp_base;
+						while (pBaseClass)
 						{
-							_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pUnitClass->tp_name);
-							pModState->pUnitClass = pUnitClass;
-							break;
+							if (pBaseClass->tp_name == pModState->pUnitClass->tp_name)
+							{
+								_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pUnitClass->tp_name);
+								pModState->pUnitClass = pUnitClass;
+								break;
+							}
+							pBaseClass = pBaseClass->tp_base;
 						}
-						pBaseClass = pBaseClass->tp_base;
+						if (pUnitClass->tp_name != pModState->pUnitClass->tp_name)
+						{
+							_log.Log((_eLogLevel)LOG_ERROR, "Class '%s' registration failed, Unit is not derived from '%s'", pUnitClass->tp_name,
+								 pModState->pDeviceClass->tp_name);
+						}
 					}
-					if (pUnitClass->tp_name != pModState->pUnitClass->tp_name)
+					else
 					{
-						_log.Log((_eLogLevel)LOG_ERROR, "Class '%s' registration failed, Unit is not derived from '%s'", pDeviceClass->tp_name, pModState->pDeviceClass->tp_name);
+						_log.Log((_eLogLevel)LOG_ERROR, "Class '%s' registration failed, imported Domoticz module does not support Unit objects", pUnitClass->tp_name);
+					}
+				}
+			}
+		}
+
+		Py_RETURN_NONE;
+	}
+
+	static PyObject *PyDomoticz_Dump(PyObject *self, PyObject *args, PyObject *kwds)
+	{
+		static char *kwlist[] = { "Object", NULL };
+		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			PyObject *pTarget = NULL; // Object reference count not increased
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) %s failed to parse parameters: Object expected (Optional).", pModState->pPlugin->m_Name.c_str(), __func__);
+				LogPythonException(pModState->pPlugin, std::string(__func__));
+			}
+			else
+			{
+				PyNewRef pLocals = PyObject_Dir(pModState->lastCallback);
+				if (PyList_Check(pLocals)) // && PyIter_Check(pLocals))  // Check fails but iteration works??!?
+				{
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Context dump:", pModState->pPlugin->m_Name.c_str());
+					PyNewRef pIter = PyObject_GetIter(pLocals);
+					PyNewRef pItem = PyIter_Next(pIter);
+					while (pItem)
+					{
+						std::string sAttrName = pItem;
+						if (sAttrName.substr(0, 2) != "__") // ignore system stuff
+						{
+							if (PyObject_HasAttrString(pModState->lastCallback, sAttrName.c_str()))
+							{
+								PyNewRef pValue = PyObject_GetAttrString(pModState->lastCallback, sAttrName.c_str());
+								if (!PyCallable_Check(pValue)) // Filter out methods
+								{
+									std::string strValue = pValue;
+									if (strValue.length())
+									{
+										std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
+										pModState->pPlugin->Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", pModState->pPlugin->m_Name.c_str(), sAttrName.c_str(),
+													sBlank.c_str(), strValue.c_str());
+									}
+								}
+							}
+						}
+						pItem = PyIter_Next(pIter);
+					}
+				}
+				PyBorrowedRef pLocalVars = PyEval_GetLocals();
+				if (PyDict_Check(pLocalVars))
+				{
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Locals dump:", pModState->pPlugin->m_Name.c_str());
+					PyBorrowedRef key;
+					PyBorrowedRef value;
+					Py_ssize_t pos = 0;
+					while (PyDict_Next(pLocalVars, &pos, &key, &value))
+					{
+						std::string sValue = value;
+						std::string sKey = key;
+						std::string sBlank((sKey.length() < 20) ? 20 - sKey.length() : 0, ' ');
+						pModState->pPlugin->Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", pModState->pPlugin->m_Name.c_str(), sKey.c_str(), sBlank.c_str(), sValue.c_str());
+					}
+				}
+				PyBorrowedRef pGlobalVars = PyEval_GetGlobals();
+				if (PyDict_Check(pGlobalVars))
+				{
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Globals dump:", pModState->pPlugin->m_Name.c_str());
+					PyBorrowedRef key;
+					PyBorrowedRef value;
+					Py_ssize_t pos = 0;
+					while (PyDict_Next(pGlobalVars, &pos, &key, &value))
+					{
+						std::string sKey = key;
+						if ((sKey.substr(0, 2) != "__") && !PyCallable_Check(value)) // ignore system stuff and fucntions
+						{
+							std::string sBlank((sKey.length() < 20) ? 20 - sKey.length() : 0, ' ');
+							std::string sValue = value;
+							pModState->pPlugin->Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", pModState->pPlugin->m_Name.c_str(), sKey.c_str(), sBlank.c_str(), sValue.c_str());
+						}
 					}
 				}
 			}
@@ -608,6 +711,7 @@ namespace Plugins
 						 { "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
 						 { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
 						 { "Register", (PyCFunction)PyDomoticz_Register, METH_VARARGS | METH_KEYWORDS, "Register Device override class." },
+						 { "Dump", (PyCFunction)PyDomoticz_Dump, METH_VARARGS | METH_KEYWORDS, "Dump string values of an object or all locals to the log." },
 						 { nullptr, nullptr, 0, nullptr } };
 
 	static int DomoticzTraverse(PyObject *m, visitproc visit, void *arg)
@@ -731,6 +835,45 @@ namespace Plugins
 		m_bIsStarted = false;
 	}
 
+	void CPlugin::LogTraceback(PyTracebackObject *pTraceback)
+	{
+		if (pTraceback)
+		{
+			Log(LOG_ERROR, "(%s) Exception traceback:", m_Name.c_str());
+		}
+		else
+		{
+			Log(LOG_ERROR, "(%s) No traceback available", m_Name.c_str());
+		}
+
+		// Log a stack trace if there is one
+		PyTracebackObject *pTraceFrame = pTraceback;
+		while (pTraceFrame)
+		{
+			PyFrameObject *frame = pTraceFrame->tb_frame;
+			if (frame)
+			{
+				int lineno = PyFrame_GetLineNumber(frame);
+				PyCodeObject *pCode = frame->f_code;
+				std::string FileName;
+				if (pCode->co_filename)
+				{
+					FileName = (std::string)PyBorrowedRef(pCode->co_filename);
+				}
+				std::string FuncName = "Unknown";
+				if (pCode->co_name)
+				{
+					FuncName = (std::string)PyBorrowedRef(pCode->co_name);
+				}
+				if (!FileName.empty())
+					Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
+				else
+					Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
+			}
+			pTraceFrame = pTraceFrame->tb_next;
+		}
+	}
+		
 	void CPlugin::LogPythonException()
 	{
 		PyTracebackObject *pTraceback;
@@ -831,6 +974,9 @@ namespace Plugins
 				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), std::string(pErrBytes).c_str());
 		}
 
+		// Log a stack trace if there is one
+		LogTraceback(pTraceback);
+
 		if (!pExcept && !pValue && !pTraceback)
 		{
 			Log(LOG_ERROR, "(%s) Call to import module failed, unable to decode exception.", m_Name.c_str());
@@ -874,31 +1020,7 @@ namespace Plugins
 		}
 
 		// Log a stack trace if there is one
-		PyTracebackObject *pTraceFrame = pTraceback;
-		while (pTraceFrame)
-		{
-			PyFrameObject *frame = pTraceFrame->tb_frame;
-			if (frame)
-			{
-				int lineno = PyFrame_GetLineNumber(frame);
-				PyCodeObject *pCode = frame->f_code;
-				std::string FileName;
-				if (pCode->co_filename)
-				{
-					FileName = (std::string)PyBorrowedRef(pCode->co_filename);
-				}
-				std::string FuncName = "Unknown";
-				if (pCode->co_name)
-				{
-					FuncName = (std::string)PyBorrowedRef(pCode->co_name);
-				}
-				if (!FileName.empty())
-					Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
-				else
-					Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
-			}
-			pTraceFrame = pTraceFrame->tb_next;
-		}
+		LogTraceback(pTraceback);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
@@ -1177,6 +1299,10 @@ namespace Plugins
 				goto Error;
 			}
 
+			// Get an instance of the single, central Py_None to use in local code
+			PyBorrowedRef globalNone = Py_BuildValue("");
+			Py_None = globalNone;
+
 			// Prepend plugin directory to path so that python will search it early when importing
 #ifdef WIN32
 			std::wstring sSeparator = L";";
@@ -1230,7 +1356,7 @@ namespace Plugins
 								if (pSite && PyUnicode_Check(pSite))
 								{
 									std::wstringstream ssPath;
-									ssPath << PyUnicode_AsUTF8(pSite);
+									ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
 									sPath += sSeparator + ssPath.str();
 								}
 							}
@@ -1560,7 +1686,7 @@ namespace Plugins
 			delete pConnection->pProtocol;
 			pConnection->pProtocol = nullptr;
 		}
-		std::string sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
+		std::string sProtocol = PyBorrowedRef(pConnection->Protocol);
 		pConnection->pProtocol = CPluginProtocol::Create(sProtocol);
 		if (m_bDebug & PDM_CONNECTION)
 			Log(LOG_NORM, "(%s) Protocol set to: '%s'.", m_Name.c_str(), sProtocol.c_str());
@@ -1581,17 +1707,17 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				std::string sConnection = PyBorrowedRef(pConnection->Name);
 				Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", m_Name.c_str(), sConnection.c_str());
 			}
 			pConnection->pProtocol = new CPluginProtocol();
 		}
 
-		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-		std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		std::string sTransport = PyBorrowedRef(pConnection->Transport);
+		std::string sAddress = PyBorrowedRef(pConnection->Address);
 		if ((sTransport == "TCP/IP") || (sTransport == "TLS/IP"))
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			if (sPort.empty())
@@ -1648,17 +1774,17 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				std::string sConnection = PyBorrowedRef(pConnection->Name);
 				Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", m_Name.c_str(), sConnection.c_str());
 			}
 			pConnection->pProtocol = new CPluginProtocol();
 		}
 
-		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-		std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		std::string sTransport = PyBorrowedRef(pConnection->Transport);
+		std::string sAddress = PyBorrowedRef(pConnection->Address);
 		if (sTransport == "TCP/IP")
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			if (!pConnection->pProtocol->Secure())
@@ -1668,7 +1794,7 @@ namespace Plugins
 		}
 		else if (sTransport == "UDP/IP")
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (pConnection->pProtocol->Secure())
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
@@ -1677,7 +1803,7 @@ namespace Plugins
 		}
 		else if (sTransport == "ICMP/IP")
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (pConnection->pProtocol->Secure())
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
@@ -1717,8 +1843,8 @@ namespace Plugins
 	{
 		WriteDirective *pMessage = (WriteDirective *)pMess;
 		CConnection *pConnection = pMessage->m_pConnection;
-		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-		std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+		std::string sTransport = PyBorrowedRef(pConnection->Transport);
+		std::string sConnection = PyBorrowedRef(pConnection->Name);
 		if (pConnection->pTransport)
 		{
 			if (sTransport == "UDP/IP")
@@ -1739,8 +1865,8 @@ namespace Plugins
 			// UDP is connectionless so create a temporary transport and write to it
 			if (sTransport == "UDP/IP")
 			{
-				std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
-				std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+				std::string sAddress = PyBorrowedRef(pConnection->Address);
+				std::string sPort = PyBorrowedRef(pConnection->Port);
 				if (m_bDebug & PDM_CONNECTION)
 				{
 					if (!sPort.empty())
@@ -1792,9 +1918,9 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-				std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
-				std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+				std::string sTransport = PyBorrowedRef(pConnection->Transport);
+				std::string sAddress = PyBorrowedRef(pConnection->Address);
+				std::string sPort = PyBorrowedRef(pConnection->Port);
 				if ((sTransport == "Serial") || (sPort.empty()))
 					Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
@@ -2028,9 +2154,9 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-				std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
-				std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+				std::string sTransport = PyBorrowedRef(pConnection->Transport);
+				std::string sAddress = PyBorrowedRef(pConnection->Address);
+				std::string sPort = PyBorrowedRef(pConnection->Port);
 				if ((sTransport == "Serial") || (sPort.empty()))
 					Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
@@ -2083,11 +2209,36 @@ namespace Plugins
 				PyNewRef pFunc = PyObject_GetAttrString(pTarget, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
+					module_state *pModState = nullptr;
+					PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+					if (!brModule)
+					{
+						brModule = PyState_FindModule(&DomoticzExModuleDef);
+					}
+
+					if (brModule)
+					{
+						pModState = ((struct module_state *)PyModule_GetState(brModule));
+					}
+
+					// Store the callback object so the Dump function has context if invoked
+					if (pModState)
+					{
+						pModState->lastCallback = pTarget;
+					}
+
 					if (m_bDebug & PDM_QUEUE)
 						Log(LOG_NORM, "(%s) Calling message handler '%s' on '%s' type object.", m_Name.c_str(), sHandler.c_str(), pTarget->ob_type->tp_name);
 
 					PyErr_Clear();
+
+					// Invokde the callback function
 					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, pParams);
+
+					if (pModState)
+					{
+						pModState->lastCallback = nullptr;	
+					}
 					if (!pReturnValue || PyErr_Occurred())
 					{
 						LogPythonException(sHandler);
@@ -2221,7 +2372,7 @@ namespace Plugins
 									if (pUnit->ob_refcnt > 1)
 									{
 										PyNewRef pName = PyObject_GetAttrString(pUnit, "Name");
-										std::string sName = PyUnicode_AsUTF8(pName);
+										std::string sName = PyBorrowedRef(pName);
 										_log.Log(LOG_ERROR, "%s: Unit '%s' Reference Count not one: %d.", __func__, sName.c_str(), pUnit->ob_refcnt);
 									}
 									else if (pUnit->ob_refcnt < 1)
