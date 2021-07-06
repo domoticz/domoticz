@@ -1152,9 +1152,15 @@ namespace http
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
 													root["expires_in"] = exptime;
-													std::string refreshtoken;
-													if (m_pWebEm->GenerateJwtToken(refreshtoken, client_id, client_secret, user, refreshexptime, noclient))
+													if (!noclient)
 													{
+														std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
+														WebEmStoredSession refreshsession;
+														refreshsession.id = GenerateMD5Hash(refreshtoken);
+														refreshsession.auth_token = refreshtoken;
+														refreshsession.expires = mytime(nullptr) + refreshexptime;
+														refreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
+														StoreSession(refreshsession);
 														root["refresh_token"] = refreshtoken;
 													}
 													rep.status = reply::ok;
@@ -1261,6 +1267,65 @@ namespace http
 					if (grant_type.compare("refresh_token") == 0 )
 					{
 						bValidGrantType = true;
+						std::string refresh_token = request::findValue(&req, "refresh_token");
+						if (!refresh_token.empty())
+						{
+							WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refresh_token));
+							if	((!refreshsession.id.empty())
+								&& (refreshsession.auth_token.compare(refresh_token) == 0)
+								&& (refreshsession.expires > mytime(nullptr))
+								)
+							{
+								std::vector<std::string> strarray;
+								StringSplit(refreshsession.username,";", strarray);
+								if(strarray.size() == 2)
+								{
+									int iClient = std::atoi(strarray[0].c_str());
+									int iUser = std::atoi(strarray[1].c_str());
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found valid Refresh token (%s) (c:%d,u:%d)!", refresh_token.c_str(), iClient, iUser);
+
+									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime))
+									{
+										root["access_token"] = jwttoken;
+										root["token_type"] = "Bearer";
+										root["expires_in"] = exptime;
+										std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
+										WebEmStoredSession newrefreshsession;
+										newrefreshsession.id = GenerateMD5Hash(refreshtoken);
+										newrefreshsession.auth_token = refreshtoken;
+										newrefreshsession.expires = mytime(nullptr) + refreshexptime;
+										newrefreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
+										StoreSession(newrefreshsession);
+										root["refresh_token"] = refreshtoken;
+										rep.status = reply::ok;
+									}
+									else
+									{
+										root["error"] = "server_error";
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate new Access Token from Resfreshtoken!");
+									}
+								}
+								else
+								{
+									root["error"] = "access_denied";
+									rep.status = reply::unauthorized;
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) does not contain valid reference to client/user (%s)!", refresh_token.c_str(), refreshsession.username.c_str());
+								}
+							}
+							else
+							{
+								root["error"] = "access_denied";
+								rep.status = reply::unauthorized;
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) is not valid or expired!", refresh_token.c_str());
+							}
+							RemoveSession(refreshsession.id);
+						}
+						else
+						{
+							root["error"] = "invalid_request";
+							rep.status = reply::bad_request;
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unable to process refresh token request!");
+						}
 					} // end 'refresh_token' grant_type
 				}
 				if(!bValidGrantType)
