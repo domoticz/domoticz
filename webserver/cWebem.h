@@ -13,7 +13,8 @@ namespace http
 		{
 			URIGHTS_VIEWER = 0,
 			URIGHTS_SWITCHER,
-			URIGHTS_ADMIN
+			URIGHTS_ADMIN,
+			URIGHTS_CLIENTID=255
 		};
 		enum _eAuthenticationMethod
 		{
@@ -58,18 +59,17 @@ namespace http
 			uint8_t Mask[16] = { 0 };
 		} IPNetwork;
 
-		// Parsed Authorization header
-		struct ah
-		{
-			std::string method;
-			std::string user;
-			std::string response;
-			std::string uri;
-			std::string cnonce;
-			std::string qop;
-			std::string nc;
-			std::string nonce;
-			std::string ha1;
+		// Parsed Authorization header (RFC2617)
+		struct ah {
+			std::string method;		// HTTP request method
+			std::string user;		// Username
+			std::string response;	// Response with the request-digest
+			std::string uri;		// Digest-Uri
+			std::string cnonce;		// Client Nonce
+			std::string qop;		// Quality of Protection
+			std::string nc;			// Nonce Count
+			std::string nonce;		// Nonce
+			std::string ha1;		// A1 = unq(username-value) ":" unq(realm-value) ":" passwd
 		};
 
 		/**
@@ -123,27 +123,29 @@ namespace http
 			}
 
 			/// Handle a request and produce a reply.
-			void handle_request(const request &req, reply &rep) override;
+				void handle_request(const request &req, reply &rep) override;
 
-		      private:
-			char *strftime_t(const char *format, time_t rawtime);
-			bool CompressWebOutput(const request &req, reply &rep);
-			/// Websocket methods
-			bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
-			std::string compute_accept_header(const std::string &websocket_key);
-			bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
-			void send_authorization_request(reply &rep);
-			void send_remove_cookie(reply &rep);
-			std::string generateSessionID();
-			void send_cookie(reply &rep, const WebEmSession &session);
-			bool AreWeInLocalNetwork(const std::string &sHost, const request &req);
-			int authorize(WebEmSession &session, const request &req, reply &rep);
-			void Logout();
-			int parse_auth_header(const request &req, struct ah *ah);
-			std::string generateAuthToken(const WebEmSession &session, const request &req);
-			bool checkAuthToken(WebEmSession &session);
-			void removeAuthToken(const std::string &sessionId);
-		};
+			      private:
+				char *strftime_t(const char *format, time_t rawtime);
+				bool CompressWebOutput(const request &req, reply &rep);
+				/// Websocket methods
+				bool is_upgrade_request(WebEmSession &session, const request &req, reply &rep);
+				std::string compute_accept_header(const std::string &websocket_key);
+				bool CheckAuthentication(WebEmSession &session, const request &req, reply &rep);
+				void send_authorization_request(reply &rep);
+				void send_remove_cookie(reply &rep);
+				std::string generateSessionID();
+				void send_cookie(reply &rep, const WebEmSession &session);
+				bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
+				bool AreWeInLocalNetwork(const std::string &sHost);
+				bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
+				int authorize(WebEmSession &session, const request &req, reply &rep);
+				void Logout();
+				int parse_auth_header(const request &req, struct ah *ah);
+				std::string generateAuthToken(const WebEmSession &session, const request &req);
+				bool checkAuthToken(WebEmSession &session);
+				void removeAuthToken(const std::string &sessionId);
+	};
 		// forward declaration for friend declaration
 		class CProxyClient;
 		/**
@@ -187,6 +189,8 @@ namespace http
 			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, _eUserRights userrights, int activetabs);
 			std::string ExtractRequestPath(const std::string &original_request_path);
 			bool IsBadRequestPath(const std::string &original_request_path);
+
+			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint16_t exptime);
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;

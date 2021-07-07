@@ -314,8 +314,6 @@ namespace http
 					StringSplit(WebLocalNetworks, ";", strarray);
 					for (const auto &str : strarray)
 						m_pWebEm->AddLocalNetworks(str);
-					// add local hostname
-					m_pWebEm->AddLocalNetworks("");
 				}
 			}
 
@@ -377,6 +375,9 @@ namespace http
 				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
 			m_pWebEm->RegisterPageCode(
 				"/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
+
+			RegisterCommandCode(
+				"getjwttoken", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetJwtToken(session, req, root); }, true);
 
 			RegisterCommandCode(
 				"getversion", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetVersion(session, req, root); }, true);
@@ -970,6 +971,11 @@ namespace http
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
 					}
+					if (m_users[iUser].userrights == URIGHTS_CLIENTID) {
+						// Not a right for users to login with
+						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+						return;
+					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
@@ -980,6 +986,48 @@ namespace http
 					session.rememberme = (rememberme == "true");
 					root["user"] = session.username;
 					root["rights"] = session.rights;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_GetJwtToken(WebEmSession &session, const request& req, Json::Value &root)
+		{
+			root["title"] = "getjwttoken";
+			root["status"] = "ERR";
+			
+			if (req.method == "POST")
+			{
+				std::string user = request::findValue(&req, "username");
+				if (!user.empty())
+				{
+					if (request::get_req_header(&req, "Authorization") != nullptr)
+					{
+						std::string auth_header = request::get_req_header(&req, "Authorization");
+						// Basic Auth header
+						size_t npos = auth_header.find("Basic ");
+						if (npos != std::string::npos)
+						{
+							std::string decoded = base64_decode(auth_header.substr(6));
+							npos = decoded.find(':');
+							if (npos != std::string::npos)
+							{
+								std::string clientid = decoded.substr(0, npos);
+								std::string clientsecret = decoded.substr(npos + 1);
+								_log.Debug(DEBUG_AUTH, "GetJWTToken: Found a Basic Auth Header for ClientID (%s) and User (%s)", clientid.c_str(), user.c_str());
+								
+								std::string jwttoken;
+								uint16_t exptime = 3600;
+								
+								if (m_pWebEm->GenerateJwtToken(jwttoken, clientid, clientsecret, user, exptime))
+								{
+									root["access_token"] = jwttoken;
+									root["token_type"] = "Bearer";
+									root["expires_in"] = exptime;
+									root["status"] = "OK";
+								}
+							}
+						}
+					}
 				}
 			}
 		}
