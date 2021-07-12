@@ -13,9 +13,42 @@ There are a number of 'components'/'functions' involved when it comes to Domotic
 * Users
 * Trusted networks
 * _Clients_
-* The Domoticz resource server (core server)
-* The Domoticz UI (should be regarded as a _client_)
-* The Domoticz Authorization/Authentication (IAM) 'server' (actually part of the core server at the moment)
+* _Domoticz_
+    * The Domoticz __UI__ (should be regarded as a _client_)
+    * The Domoticz __resource server__ (core server)
+    * The Domoticz __'IAM server'__ (Identity & Access Management)    
+        _(actually part of the core server at the moment)_
+
+### Isn't Domoticz just 1 Application?
+Yes and No :)
+
+From a User perspective, often it is consired as a single application. Until the point where users start using alternative _'tools'_ to access/control their Domoticz setup.
+
+For example when using an alternative- and/or additional Dashboard. An additional _'application'_ gets installed and is connected to the existing Domoticz installation.
+
+Same goes for example when a user starts to use a mobile native app. The Users installs an additional app on the mobile device and connects it to the Domoticz installation.
+
+From a development architectural perspective, different parts of the Domoticz installation are used in different ways and situation.
+
+The core part, the _resource server_ is always used. It is the heart of the system that holds and controls all devices and data.
+
+Depending on the User(s) environment 1 of more different _User Interfaces (UI's)_ are used to interact with the _resource server_. Each of those different _UI's_ is called a _client_. And a standard Domoticz installation comes with a default _client_, the web _UI_.
+
+When a Domoticz setup becomes either more complex, gets more users, needs connection to the Internet or other less- or insecure networks, it becomes neccessary to add ___SECURITY___. This is where the functions and features of the _IAM server_ comes into play.
+
+### IAM server
+
+Domoticz has a build-in _IAM service_ (part of the core server at the moment) that can be used to handle _Identity_ (Authentication) and _Access_ (Authorization) Management. Here we can define Users and their (access)rights for a (single) Domoticz installation.
+
+But often in larger/complex environments, there usually already is a more centralized _IAM service_, for example a Windows AD (Active Directory) Server.
+
+Also in modern (Hybrid) Cloud environments, a more centralized _IAM service_ is often in place.
+
+Using a centralized _IAM service_, instead of the internal _IAM server_ of each Domoticz installation, makes it much easier the do the on-and offboarding of Users, granting and revoking rights, etc. Also _Single Sign-On_ (SSO) to different applications including one- or more Domoticz installations becomes possible.
+
+And thanks to modern (web)standards like OAuth2, OpenID Connect, etc. different _IAM Services and servers_ become interchangable and interopperable, making the life of sysadmins a little easier.
+
+Due to the now build in support of those standards, Domoticz can become integrated in such environments. 
 
 ## Add user-management
 
@@ -29,7 +62,8 @@ Users coming from a _'trusted network'_ do not need to _identify_ themselves.
 
 But when coming from 'outside' a trusted network, Domoticz will require the user to authenticate.
 
-## Add _clients_ (Applications that want to communicate with the Domoticz Server)
+## Add _clients_ 
+_(Applications that want to communicate with the Domoticz Server)_
 
 Next to _normal_ User Management, it is also possible to register _clients_. Clients are 'applications' that would like to interact with the core Domoticz server to retrieve information and/or perform actions. These applications should/could do so on behalf of registered Users.
 
@@ -44,6 +78,17 @@ The __problem__ is 'how to trust all these _clients_?'. Putting your Domoticz Us
 
 Therefor it is better to tell the 'Domoticz resource server' which _clients_ are allowed to ask for access on behalf of a User when providing User credentials. 
 
+# Connecting Domoticz to the Internet/Cloud
+
+More and more, Users are looking into ways to control their _Automated Home_ from a distance. So preferably _through the Cloud_. This means that a Domoticz setup somehow needs to be _accesible_ outside the safe environment of the Home.
+
+This means there is a need to have some kind of _application_ (a _client_) that can access the _resource server_ to perform actions or exchange data.
+
+The _resource server_ always has to be _in the Home_ (local) as here it can safely be connected to the devices it controls. Putting the _resource server_ in the Cloud would mean that all communication between Domoticz and the devices would have to go through the Cloud. That is not a wanted scenario as it poses numerous security risks that are almost impossible to mitigate. And probably not even possible with some/most hardware devices.
+
+That leaves on the _client_ as a candidate to make accessible/run in the Cloud.
+
+And to make sure that the _client_ can safely interact with the (local) _resource server_, this has to be secured. Using Identity and Access Management (IAM) is a good way to secure the _resource server_.
 
 # Supporting web standards
 
