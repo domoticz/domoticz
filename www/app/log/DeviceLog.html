@@ -19,10 +19,10 @@
     <device-graph-log ng-if="::vm.isGraphLog()" device="::vm.device"></device-graph-log>
     <device-counter-log ng-if="::vm.isInstantAndCounterLog()" device="::vm.device" subtype="'instantAndCounter'"></device-counter-log>
     <device-counter-log ng-if="::vm.isP1EnergyLog()" device="::vm.device" subtype="'p1Energy'"></device-counter-log>
-    <device-counter-log ng-if="::vm.isCounterLog()" device="::vm.device" subtype="'counter'"></device-counter-log>
     <device-counter-log ng-if="::vm.isCounterLog() && vm.isGasDevice()" device="::vm.device" subtype="'gas'"></device-counter-log>
     <device-counter-log ng-if="::vm.isCounterLog() && vm.isWaterDevice()" device="::vm.device" subtype="'water'"></device-counter-log>
     <device-counter-log ng-if="::vm.isCounterLog() && vm.isCounterDevice()" device="::vm.device" subtype="'counter'"></device-counter-log>
+    <device-counter-log ng-if="::vm.isCounterLog()" device="::vm.device" subtype="'counter'"></device-counter-log>
 
     <div class="js-device-log-content"></div>
 </div>
