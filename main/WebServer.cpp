@@ -933,14 +933,13 @@ namespace http
 
 		void CWebServer::GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep)
 		{
-			Json::Value root;
-			root["error"] = "invalid_request";
+			bool bAuthenticated = false;
+			bool bAuthorized = false;
+
+			std::string code;
+			std::string error;
 
 			std::string state = request::findValue(&req, "state");
-			if (!state.empty())
-			{
-				root["state"] = state;
-			}
 			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
 			std::string response_type = request::findValue(&req, "response_type");
 			std::string client_id = request::findValue(&req, "client_id");
@@ -961,9 +960,15 @@ namespace http
 							iClient = FindUser(client_id.c_str());
 							if (iClient >= 0)
 							{
+								std::string Username;
+
+								bAuthenticated = m_pWebEm->FindAuthenticatedUser(Username, req);
+								_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Checking User (%s) Authenticated (%d)!", Username.c_str(), bAuthenticated);
+
 								if (m_users[iClient].userrights == URIGHTS_CLIENTID)	// Found a registered client
 								{
 									// So find the intended User. Should be one of the scope's (user:)
+									/*
 									std::string UserFromScope = "";
 									std::vector<std::string> strarray;
 									StringSplit(scope, " ", strarray);
@@ -977,6 +982,8 @@ namespace http
 											break;
 										}
 									}
+									*/
+									iUser = FindUser(Username.c_str());
 									if (iUser != -1)
 									{
 										m_accesscodes[iUser].clientID = iClient;
@@ -991,10 +998,10 @@ namespace http
 									iUser = iClient;	// Working with a regular user (not a registered client)
 									m_accesscodes[iUser].clientID = -1;
 								}
-								if (iUser != -1)
+								if (iUser != -1 && bAuthenticated)
 								{
-									root["code"] = GenerateMD5Hash(base64_encode(GenerateUUID()));
-									m_accesscodes[iUser].AuthCode = root["code"].asString();
+									code = GenerateMD5Hash(base64_encode(GenerateUUID()));
+									m_accesscodes[iUser].AuthCode = code;
 									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
 									m_accesscodes[iUser].RedirectUri = redirect_uri;
 									m_accesscodes[iUser].Scope = scope;
@@ -1004,34 +1011,53 @@ namespace http
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: PKCE Code Challenge found, but challenge method (%s) not supported! Challenge ignored!", code_challenge_method.c_str());
+										if (!code_challenge.empty())
+										{
+											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: PKCE Code Challenge found, but challenge method (%s) not supported! Challenge ignored!", code_challenge_method.c_str());
+										}
 									}
+									bAuthorized = true;
+								}
+								else
+								{
+									rep.status = reply::unauthorized;
+									error = "Authentication failed";
 								}
 							}
 						}
 						if (iUser == -1)
 						{
-							root["error"] = "unauthorized_client";
+							rep.status = reply::forbidden;
+							error = "unauthorized_client";
 							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
 						}
 					}
 					else
 					{
-						root["error"] = "unsupported_response_type";
+						rep.status = reply::bad_request;
+						error = "unsupported_response_type";
 						_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Invalid/unsupported response_type (%s)!", response_type.c_str());
 					}
 				}
 				else
 				{
+					rep.status = reply::bad_request;
 					_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Received invalid request method .%s.", req.method.c_str());
 				}
 			}
 			else
 			{
 				rep.status = reply::bad_request;
+				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
+			}
+
+			if (!(bAuthorized && bAuthenticated))
+			{
+				Json::Value root;
+				root["error"] = error;
+
 				reply::add_header_content_type(&rep, "application/json");
 				reply::set_content(&rep, root.toStyledString());
-				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
 				return;
 			}
 
@@ -1041,13 +1067,13 @@ namespace http
 			else
 				result << redirect_uri << "?";
 
-			if (!root["code"].empty())
-				result << "code=" << CURLEncode::URLEncode(root["code"].asString());
+			if (!code.empty())
+				result << "code=" << CURLEncode::URLEncode(code);
 			else
-				result << "error=" << CURLEncode::URLEncode(root["error"].asString());
+				result << "error=" << CURLEncode::URLEncode(error);
 
-			if (!root["state"].empty())
-				result << "&state=" << root["state"].asString();
+			if (!state.empty())
+				result << "&state=" << state;
 
 			reply::add_header(&rep, "Location", result.str());
 			rep.status = reply::moved_temporarily;

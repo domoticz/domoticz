@@ -1082,15 +1082,6 @@ namespace http {
 			return mySessionStore;
 		}
 
-		// Check the user's password, return 1 if OK
-		static int check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
-		{
-			if ((ah->nonce.empty()) && (!ah->response.empty()))
-				return (ha1 == GenerateMD5Hash(ah->response));
-
-			return 0;
-		}
-
 		std::string cWebem::GetPort()
 		{
 			return m_settings.listening_port;
@@ -1167,6 +1158,31 @@ namespace http {
 			// Schedule next cleanup
 			m_session_clean_timer.expires_at(m_session_clean_timer.expires_at() + boost::posix_time::minutes(15));
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
+		}
+
+		bool cWebem::FindAuthenticatedUser(std::string &user, const request &req)
+		{
+			return myRequestHandler.CheckUserAuthorization(user, req);
+		}
+
+		bool cWebemRequestHandler::CheckUserAuthorization(std::string &user, const request &req)
+		{
+			struct ah _ah;
+
+			if(!parse_auth_header(req, &_ah))
+				return false;
+
+			user = _ah.user;
+
+			// Check if valid password has been provided for the user
+			for (const auto &my : myWebem->m_userpasswords)
+			{
+				if (my.Username == user && my.userrights != URIGHTS_CLIENTID)
+				{
+					return check_password(&_ah, my.Password, myWebem->m_DigistRealm);
+				}
+			}
+			return false;
 		}
 
 		// Return 1 on success. Always initializes the ah structure.
@@ -1352,6 +1368,15 @@ namespace http {
 				_log.Debug(DEBUG_AUTH, "Found a Bearer Token (%s)", sToken.c_str());
 				return 1;
 			}
+			return 0;
+		}
+
+		// Check the user's password, return 1 if OK
+		int cWebemRequestHandler::check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
+		{
+			if ((ah->nonce.empty()) && (!ah->response.empty()))
+				return (ha1 == GenerateMD5Hash(ah->response));
+
 			return 0;
 		}
 
