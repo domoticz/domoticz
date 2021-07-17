@@ -77,10 +77,10 @@ namespace http {
 			proxymanager.Stop();
 			// restart
 #ifdef WWW_ENABLE_SSL
-			cWebem *my_pWebEm = (plainServer_ != nullptr ? plainServer_->m_pWebEm
-								     : (secureServer_ != nullptr ? secureServer_->m_pWebEm : nullptr));
+			cWebem *my_pWebEm = (plainServer_ != nullptr && plainServer_->m_pWebEm != nullptr ? plainServer_->m_pWebEm
+								     : (secureServer_ != nullptr && secureServer_->m_pWebEm != nullptr ? secureServer_->m_pWebEm : nullptr));
 #else
-			cWebem* my_pWebEm = plainServer_ != NULL ? plainServer_->m_pWebEm : NULL;
+			cWebem* my_pWebEm = plainServer_ != nullptr && plainServer_->m_pWebEm != nullptr ? plainServer_->m_pWebEm : nullptr;
 #endif
 			if (my_pWebEm == nullptr)
 			{
@@ -164,8 +164,6 @@ namespace http {
 				StringSplit(WebLocalNetworks, ";", strarray);
 				for (const auto &str : strarray)
 					it->m_pWebEm->AddLocalNetworks(str);
-				// add local hostname
-				it->m_pWebEm->AddLocalNetworks("");
 
 				it->m_pWebEm->ClearRemoteProxyIPs();
 				strarray.clear();

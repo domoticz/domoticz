@@ -48,6 +48,9 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
+	void GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep);
+	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
+
 	void PostSettings(WebEmSession& session, const request& req, reply& rep);
 	void PostLoginCheck(WebEmSession& session, const request& req, reply& rep);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -386,6 +389,21 @@ private:
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
 	std::string m_server_alias;
+
+	struct _tUserAccessCode
+	{
+		int ID;
+		int clientID;
+		unsigned long long ExpTime;
+		std::string UserName;
+		std::string AuthCode;
+		std::string Scope;
+		std::string RedirectUri;
+		std::string CodeChallenge;
+	};
+
+	std::vector<_tUserAccessCode> m_accesscodes;
+
 };
 
 	} // namespace server
