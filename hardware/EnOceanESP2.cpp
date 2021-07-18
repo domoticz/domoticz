@@ -782,21 +782,23 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	iframe.ID_BYTE1 = (unsigned char)tsen->LIGHTING2.id3;
 	iframe.ID_BYTE0 = (unsigned char)tsen->LIGHTING2.id4;
 
-	unsigned char RockerID = 0;
-	unsigned char Pressed = 1;
-
-	if (tsen->LIGHTING2.unitcode < 10)
-		RockerID = tsen->LIGHTING2.unitcode - 1;
-	else
+	if (tsen->LIGHTING2.unitcode >= 10)
+	{
+		Log(LOG_ERROR, "ID %s, double not supported!", nodeID.c_str());
 		return false;//double not supported yet!
-
+	}
 	//First we need to find out if this is a Dimmer switch,
 	//because they are threaded differently
+
+	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
+	uint8_t Pressed = 1;
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
+
+	std::string deviceID = GetDeviceID(nodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, nodeID.c_str(), int(tsen->LIGHTING2.unitcode));
+		m_HwdID, deviceID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
 	{
 		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
