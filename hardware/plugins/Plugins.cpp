@@ -99,23 +99,8 @@ namespace Plugins
 			Py_XDECREF(pErrBytes);
 
 		// Log a stack trace if there is one
-		PyTracebackObject *pTraceFrame = pTraceback;
-		while (pTraceFrame)
-		{
-			PyFrameObject *frame = pTraceFrame->tb_frame;
-			if (frame)
-			{
-				int lineno = PyFrame_GetLineNumber(frame);
-				PyCodeObject *pCode = frame->f_code;
-				std::string sFileName = PyBorrowedRef(pCode->co_filename);
-				std::string sFuncBytes = PyBorrowedRef(pCode->co_name);
-				if (pPlugin)
-					pPlugin->Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, sFileName.c_str(), sFuncBytes.c_str());
-				else
-					_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, sFileName.c_str(), sFuncBytes.c_str());
-			}
-			pTraceFrame = pTraceFrame->tb_next;
-		}
+		if (pPlugin && pTraceback)
+			pPlugin->LogTraceback(pTraceback);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
@@ -322,7 +307,7 @@ namespace Plugins
 		else
 		{
 			char *msg;
-			if (!PyArg_ParseTuple(args, "s", &msg))
+			if ((PyTuple_Size(args) != 1) || !PyArg_ParseTuple(args, "s", &msg))
 			{
 				// TODO: Dump data to aid debugging
 				pModState->pPlugin->Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
