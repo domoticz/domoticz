@@ -422,7 +422,7 @@ namespace Plugins {
 				if (pModState)
 				{
 					pPlugin = pModState->pPlugin;
-					_log.Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1))");
+					_log.Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description=""))");
 					LogPythonException(pPlugin, __func__);
 				}
 			}
@@ -468,7 +468,7 @@ namespace Plugins {
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, "
-						  "Description, Color, Used FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
+						  "Description, Color, Used, AddjValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
 						  pModState->pPlugin->m_HwdID, sDevice.c_str(), self->Unit);
 			if (!result.empty())
 			{
@@ -519,6 +519,7 @@ namespace Plugins {
 					Py_XDECREF(self->Color);
 					self->Color = PyUnicode_FromString(_tColor(std::string(sd[15])).toJSONString().c_str()); // Parse the color to detect incorrectly formatted color data
 					self->Used = atoi(sd[16].c_str());
+					self->Adjustment= static_cast<float>(atof(sd[17].c_str()));
 				}
 			}
 		}
@@ -656,8 +657,8 @@ namespace Plugins {
 					}
 					else
 					{
-						pModState->pPlugin->Log(LOG_ERROR, "(%s) Unit creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.",
-									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
+						pModState->pPlugin->Log(LOG_ERROR, "(%s) Unit creation failed, Hardware/DeviceID/Unit combination (%d/%s/%d) already exists in Domoticz.",
+									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 					}
 				}
 			}

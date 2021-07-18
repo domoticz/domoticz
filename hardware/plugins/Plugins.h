@@ -60,7 +60,6 @@ namespace Plugins {
 
 		void Do_Work();
 
-		void LogTraceback(PyTracebackObject *pTraceback);
 		void LogPythonException();
 		void LogPythonException(const std::string &);
 
@@ -70,6 +69,8 @@ namespace Plugins {
 
 	  bool StartHardware() override;
 	  bool StopHardware() override;
+
+	  void LogTraceback(PyTracebackObject *pTraceback);
 
 	  int PollInterval(int Interval = -1);
 	  PyObject*	PythonModule() { return m_PyModule; };

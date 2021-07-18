@@ -527,6 +527,11 @@ namespace Plugins {
 			Type = pTypeSecurity1;
 			SubType = sTypeDomoticzSecurity;
 		}
+		else if (sTypeName == "Set Point")
+		{
+			Type = pTypeThermostat;
+			SubType = sTypeThermSetpoint;
+		}
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
