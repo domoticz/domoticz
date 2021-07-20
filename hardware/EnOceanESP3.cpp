@@ -25,7 +25,9 @@
 #define ENABLE_ESP3_DEVICE_DEBUG
 #endif
 
-// DEBUG: Enable running ReadCallback reception tests
+// Enable running ReadCallback test
+// Enable running SP3 protocol tests emulating nodes with different EEP
+// These tests are launched when ESP3 worker is started
 //#define ENABLE_ESP3_TESTS
 #ifdef ENABLE_ESP3_TESTS
 //#define READCALLBACK_TESTS
@@ -47,7 +49,7 @@ enum ESP3_PACKET_TYPE : uint8_t
 	PACKET_RESPONSE = 0x02,		  // Response to any packet
 	PACKET_RADIO_SUB_TEL = 0x03,	  // Radio subtelegram
 	PACKET_EVENT = 0x04,		  // Event message
-	PACKET_COMMON_COMMAND = 0x05,	  // Common command"
+	PACKET_COMMON_COMMAND = 0x05,	  // Common command
 	PACKET_SMART_ACK_COMMAND = 0x06,  // Smart Acknowledge command
 	PACKET_REMOTE_MAN_COMMAND = 0x07, // Remote management command
 	PACKET_RADIO_MESSAGE = 0x09,	  // Radio message
@@ -775,7 +777,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
-		open(m_szSerialPort, 57600); //ECP3 open with 57600
+		open(m_szSerialPort, 57600); // ECP3 open with 57600
 		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
@@ -1306,9 +1308,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				if ((DATA_BYTE0 & RORG_4BS_TEACHIN_LRN_BIT) == 0)	// LRN_BIT is 0 -> Teach-in datagram
 				{
-					uint16_t manufacturer;
-					uint8_t profile;
-					uint8_t ttype;
+					uint16_t manID;
+					uint8_t func;
+					uint8_t type;
 
 					// 2016-01-31 Stéphane Guillard : added handling of this case:
 					if ((DATA_BYTE0 & RORG_4BS_TEACHIN_EEP_BIT) == 0)
@@ -1320,9 +1322,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Log(LOG_NORM, "Created generic A5-02-05 profile (0/40°C temp sensor)");
 						Log(LOG_NORM, "Please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
 
-						manufacturer = UNKNOWN_MANUFACTURER; // Generic
-						profile = 0x02; // Temperature Sensor Range 0C to +40C
-						ttype = 0x05;
+						manID = UNKNOWN_MANUFACTURER; // Generic
+						func = 0x02; // Temperature Sensor Range 0C to +40C
+						type = 0x05;
 					}
 					else
 					{
@@ -1333,19 +1335,19 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						//6 Bit		7 Bit	11 Bit			1Bit		1Bit	1Bit	1Bit	1Bit	1Bit	1Bit	1Bit
 
 						// Extract manufacturer, profile and type from data
-						manufacturer = ((DATA_BYTE2 & 7) << 8) | DATA_BYTE1;
-						profile = DATA_BYTE3 >> 2;
-						ttype = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
+						manID = ((DATA_BYTE2 & 7) << 8) | DATA_BYTE1;
+						func = DATA_BYTE3 >> 2;
+						type = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
 
 						Log(LOG_NORM,"4BSTeach-in, Variant 2: Node: %s Manufacturer: %03X (%s) EEP: %02X-%02X-%02X (%s)",
-							senderID.c_str(), manufacturer, GetManufacturerName(manufacturer),
-							RORG_4BS, profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
+							senderID.c_str(), manID, GetManufacturerName(manID),
+							RORG_4BS, func, type, GetEEPLabel(RORG_4BS, func, type));
  					}
 
 					// Search the sensor in database
 					if (pNode == nullptr)
 					{ // If not found, add it to the database
-						TeachInNode(senderID, manufacturer, RORG_4BS, profile, ttype, ((DATA_BYTE0 & RORG_4BS_TEACHIN_EEP_BIT) == 0));
+						TeachInNode(senderID, manID, RORG_4BS, func, type, ((DATA_BYTE0 & RORG_4BS_TEACHIN_EEP_BIT) == 0));
 						Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
 					}
 					else
@@ -1361,10 +1363,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						return;
 					}
 					uint16_t Manufacturer = pNode->manufacturerID;
-					uint8_t Profile = pNode->func;
-					uint8_t iType = pNode->type;
+					uint8_t func = pNode->func;
+					uint8_t type = pNode->type;
 
-					if (Profile == 0x12 && iType == 0x00)
+					if (func == 0x12 && type == 0x00)
 					{ // A5-12-00, Automated Meter Reading, Counter
 						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						RBUF tsen;
@@ -1381,7 +1383,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 					}
-					else if (Profile == 0x12 && iType == 0x01)
+					else if (func == 0x12 && type == 0x01)
 					{ // A5-12-01, Automated Meter Reading, Electricity
 						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						_tUsageMeter umeter;
@@ -1393,7 +1395,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						umeter.fusage=(float)cvalue;
 						sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
 					}
-					else if (Profile == 0x12 && iType == 0x02)
+					else if (func == 0x12 && type == 0x02)
 					{ // A5-12-02, Automated Meter Reading, Gas
 						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						RBUF tsen;
@@ -1410,7 +1412,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 					}
-					else if (Profile == 0x12 && iType == 0x03)
+					else if (func == 0x12 && type == 0x03)
 					{ // A5-12-03, Automated Meter Reading, Water
 						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						RBUF tsen;
@@ -1427,7 +1429,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 					}
-					else if (Profile == 0x10 && iType <= 0x0D)
+					else if (func == 0x10 && type <= 0x0D)
 					{ // A5-10-01..OD, RoomOperatingPanel
 						// Room Sensor and Control Unit (EEP A5-10-01 ... A5-10-0D)
 						// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
@@ -1484,7 +1486,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.temperaturel=(BYTE)(at10);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 					}
-					else if (Profile == 0x06 && iType == 0x01)
+					else if (func == 0x06 && type == 0x01)
 					{ // A5-06-01, Light Sensor
 						// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
 						// DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
@@ -1533,38 +1535,38 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						lmeter.fLux=lux;
 						sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
 					}
-					else if (Profile == 0x02)
+					else if (func == 0x02)
 					{ // A5-02-01..30, Temperature sensor
 						float ScaleMax=0;
 						float ScaleMin=0;
-						if (iType==0x01) { ScaleMin=-40; ScaleMax=0; }
-						else if (iType==0x02) { ScaleMin=-30; ScaleMax=10; }
-						else if (iType==0x03) { ScaleMin=-20; ScaleMax=20; }
-						else if (iType==0x04) { ScaleMin=-10; ScaleMax=30; }
-						else if (iType==0x05) { ScaleMin=0; ScaleMax=40; }
-						else if (iType==0x06) { ScaleMin=10; ScaleMax=50; }
-						else if (iType==0x07) { ScaleMin=20; ScaleMax=60; }
-						else if (iType==0x08) { ScaleMin=30; ScaleMax=70; }
-						else if (iType==0x09) { ScaleMin=40; ScaleMax=80; }
-						else if (iType==0x0A) { ScaleMin=50; ScaleMax=90; }
-						else if (iType==0x0B) { ScaleMin=60; ScaleMax=100; }
-						else if (iType==0x10) { ScaleMin=-60; ScaleMax=20; }
-						else if (iType==0x11) { ScaleMin=-50; ScaleMax=30; }
-						else if (iType==0x12) { ScaleMin=-40; ScaleMax=40; }
-						else if (iType==0x13) { ScaleMin=-30; ScaleMax=50; }
-						else if (iType==0x14) { ScaleMin=-20; ScaleMax=60; }
-						else if (iType==0x15) { ScaleMin=-10; ScaleMax=70; }
-						else if (iType==0x16) { ScaleMin=0; ScaleMax=80; }
-						else if (iType==0x17) { ScaleMin=10; ScaleMax=90; }
-						else if (iType==0x18) { ScaleMin=20; ScaleMax=100; }
-						else if (iType==0x19) { ScaleMin=30; ScaleMax=110; }
-						else if (iType==0x1A) { ScaleMin=40; ScaleMax=120; }
-						else if (iType==0x1B) { ScaleMin=50; ScaleMax=130; }
-						else if (iType == 0x20) { ScaleMin = -10; ScaleMax = 41.2F; }
-						else if (iType == 0x30) { ScaleMin = -40; ScaleMax = 62.3F; }
+						if (type == 0x01) { ScaleMin=-40; ScaleMax=0; }
+						else if (type == 0x02) { ScaleMin=-30; ScaleMax=10; }
+						else if (type == 0x03) { ScaleMin=-20; ScaleMax=20; }
+						else if (type == 0x04) { ScaleMin=-10; ScaleMax=30; }
+						else if (type == 0x05) { ScaleMin=0; ScaleMax=40; }
+						else if (type == 0x06) { ScaleMin=10; ScaleMax=50; }
+						else if (type == 0x07) { ScaleMin=20; ScaleMax=60; }
+						else if (type == 0x08) { ScaleMin=30; ScaleMax=70; }
+						else if (type == 0x09) { ScaleMin=40; ScaleMax=80; }
+						else if (type == 0x0A) { ScaleMin=50; ScaleMax=90; }
+						else if (type == 0x0B) { ScaleMin=60; ScaleMax=100; }
+						else if (type == 0x10) { ScaleMin=-60; ScaleMax=20; }
+						else if (type == 0x11) { ScaleMin=-50; ScaleMax=30; }
+						else if (type == 0x12) { ScaleMin=-40; ScaleMax=40; }
+						else if (type == 0x13) { ScaleMin=-30; ScaleMax=50; }
+						else if (type == 0x14) { ScaleMin=-20; ScaleMax=60; }
+						else if (type == 0x15) { ScaleMin=-10; ScaleMax=70; }
+						else if (type == 0x16) { ScaleMin=0; ScaleMax=80; }
+						else if (type == 0x17) { ScaleMin=10; ScaleMax=90; }
+						else if (type == 0x18) { ScaleMin=20; ScaleMax=100; }
+						else if (type == 0x19) { ScaleMin=30; ScaleMax=110; }
+						else if (type == 0x1A) { ScaleMin=40; ScaleMax=120; }
+						else if (type == 0x1B) { ScaleMin=50; ScaleMax=130; }
+						else if (type == 0x20) { ScaleMin = -10; ScaleMax = 41.2F; }
+						else if (type == 0x30) { ScaleMin = -40; ScaleMax = 62.3F; }
 
 						float temp;
-						if (iType<0x20)
+						if (type<0x20)
 							temp = GetDeviceValue(DATA_BYTE1, 255, 0, ScaleMin, ScaleMax);
 						else
 							temp = GetDeviceValue(((DATA_BYTE2 & 3) << 8) | DATA_BYTE1, 0, 255, ScaleMin, ScaleMax); // 10bit
@@ -1587,13 +1589,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.temperaturel=(BYTE)(at10);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 					}
-					else if (Profile == 0x04)
+					else if (func == 0x04)
 					{ // A5-04-01..04, Temperature and Humidity Sensor
 						float ScaleMax = 0;
 						float ScaleMin = 0;
-						if (iType == 0x01) { ScaleMin = 0; ScaleMax = 40; }
-						else if (iType == 0x02) { ScaleMin = -20; ScaleMax = 60; }
-						else if (iType == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
+						if (type == 0x01) { ScaleMin = 0; ScaleMax = 40; }
+						else if (type == 0x02) { ScaleMin = -20; ScaleMax = 60; }
+						else if (type == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
 
 						float temp = GetDeviceValue(DATA_BYTE1, 0, 250, ScaleMin, ScaleMax);
 						float hum = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 100);
@@ -1615,7 +1617,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1, nullptr);
 					}
-					else if (Profile == 0x07 && iType == 0x01)
+					else if (func == 0x07 && type == 0x01)
 					{ // A5-07-01, Occupancy sensor with Supply voltage monitor
 						if (DATA_BYTE3 < 251)
 						{
@@ -1660,8 +1662,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							//Error code
 						}
 					}
-					else if (iType == 0x07 && iType == 0x02)
-					{ // A5-07-02, , Occupancy sensor with Supply voltage monitor
+					else if (func == 0x07 && type == 0x02)
+					{ // A5-07-02, Occupancy sensor with Supply voltage monitor
 						if (DATA_BYTE3 < 251)
 						{
 							RBUF tsen;
@@ -1701,7 +1703,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							//Error code
 						}
 					}
-					else if (iType == 0x07 && iType == 0x03)
+					else if (func == 0x07 && type == 0x03)
 					{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
 						//(EPP A5-07-03)
 						if (DATA_BYTE3 < 251)
@@ -1755,7 +1757,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							//Error code
 						}
 					}
-					else if (iType == 0x09 && iType == 0x04)
+					else if (func == 0x09 && type == 0x04)
 					{	// A5-09-04, CO2 Gas Sensor with Temp and Humidity
 						// DB3 = Humidity in 0.5% steps, 0...200 -> 0...100% RH (0x51 = 40%)
 						// DB2 = CO2 concentration in 10 ppm steps, 0...255 -> 0...2550 ppm (0x39 = 570 ppm)
@@ -1786,30 +1788,30 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				Log(LOG_NORM, "RPS msg: Node: %s Status: %02X (T21: %d NU: %d)", senderID.c_str(), STATUS, T21, NU);
 
-				int Profile;
-				int iType;
+				int func;
+				int type;
 
 				if (pNode == nullptr)
 				{
 					// If SELECT returns nothing, add Enocean sensor to the database
 					// with a default profile and type. The profile and type
 					// will have to be updated manually by the user.
-					Profile = 0x02;
-					iType = 0x01;
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, Profile, iType, true);
-					Log(LOG_NORM, "Node %s inserted in the database with default profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, Profile, iType);
+					func = 0x02;
+					type = 0x01;
+					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, func, type, true);
+					Log(LOG_NORM, "Node %s inserted in the database with default profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, func, type);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
 				}
 				else
 				{
 					// hardware device was already teached-in
-					Profile = pNode->func;
-					iType = pNode->type;
-					Log(LOG_NORM, "Node %s found in the database with profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, Profile, iType);
+					func = pNode->func;
+					type = pNode->type;
+					Log(LOG_NORM, "Node %s found in the database with profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, func, type);
 
 					// if a button is attached to a module, ignore it else it will conflict with status reported using VLD datagram
-					if( (Profile == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
-						 ((iType == 0x0F) || (iType == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
+					if( (func == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
+						 ((type == 0x0F) || (type == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
 						)
 					{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
@@ -1824,7 +1826,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				// Profile F6-02-01
 				// Rocker switch, 2 Rocker (Light and blind control, Application style 1)
-				if ((Profile == 0x02) && (iType == 0x01))
+				if ((func == 0x02) && (type == 0x01))
 				{
 
 					if (STATUS & S_RPS_NU)
@@ -1959,11 +1961,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				// F6-05-01 : Liquid leakage sensor
 				// F6-05-02 : Smoke detector
 				// Tested with an Ubiwizz UBILD001-QM smoke detector
-				else if (Profile == 0x05)
+				else if (func == 0x05)
 				{
 					bool alarm = false;
 					uint8_t batterylevel = 255;
-					if (iType == 0x00 || iType == 0x02)  // only profiles F6-05-00 and F6-05-02 report Energy LOW warning
+					if (func == 0x00 || type == 0x02)  // only profiles F6-05-00 and F6-05-02 report Energy LOW warning
 						batterylevel = 100;
 
 					switch (data[1]) {
@@ -2018,25 +2020,25 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						uint8_t nb_channel = data[2];
 						uint32_t manID = ((uint32_t)(data[4] & 0x7)) << 8 | (data[3]);
-						uint8_t type = data[5];
-						uint8_t func = data[6];
-						uint8_t rorg = data[7];
+						uint8_t node_type = data[5];
+						uint8_t node_func = data[6];
+						uint8_t node_rorg = data[7];
 
 						Log(LOG_NORM, "UTE teach-in request from %s (manufacturer: %03X) device profile: %02X-%02X-%02X nb channels: %d, ",
-							senderID.c_str(), manID, rorg, func, type, nb_channel);
+							senderID.c_str(), manID, node_rorg, node_func, node_type, nb_channel);
 
 						// Record EnOcean device profile
 						if (pNode == nullptr)
 						{
 							// If not found, add it to the database
-							TeachInNode(senderID, manID, rorg, func, type, false);
+							TeachInNode(senderID, manID, node_rorg, node_func, node_type, false);
 							Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
 						}
 						else
 							Log(LOG_NORM, "Node %s already in the database", senderID.c_str());
 						LoadNodesFromDatabase();
 
-						if((rorg == RORG_VLD) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))
+						if((node_rorg == RORG_VLD) && (node_func == 0x01) && ((node_type == 0x12) || (node_type == 0x0F)))
 						{
 							uint8_t nbc;
 
