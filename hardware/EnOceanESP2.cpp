@@ -795,7 +795,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
 
-	std::string deviceID = GetDeviceID(nodeID);
+	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 		m_HwdID, deviceID.c_str(), int(tsen->LIGHTING2.unitcode));
