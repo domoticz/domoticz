@@ -17,25 +17,24 @@
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"
 
-#define _DEBUG
+//#define _DEBUG
 #ifdef _DEBUG
 // DEBUG: Enable logging of ESP3 packets management
-//#define ENABLE_ESP3_PROTOCOL_DEBUG
+#define ENABLE_ESP3_PROTOCOL_DEBUG
 // DEBUG: Enable logging of ESP3 devices management
-#define ENABLE_ESP3_DEVICE_DEBUG
+//#define ENABLE_ESP3_DEVICE_DEBUG
 #endif
 
 // DEBUG: Enable running ReadCallback reception tests
-#define ENABLE_ESP3_TESTS
+//#define ENABLE_ESP3_TESTS
 #ifdef ENABLE_ESP3_TESTS
-#define READCALLBACK_TESTS
+//#define READCALLBACK_TESTS
 #define ESP3_TESTS_1BS_D5_00_01
 #define ESP3_TESTS_4BS_A5_02_05
 #define ESP3_TESTS_4BS_A5_02_01
 #define ESP3_TESTS_4BS_A5_02_20
 #define ESP3_TESTS_4BS_A5_04_01
 #define ESP3_TESTS_4BS_A5_20_01
-#define ESP3_TESTS_RPS_F6_01_01
 #define ESP3_TESTS_RPS_F6_02_01
 #define ESP3_TESTS_UTE_D2_01_12
 #define ESP3_TESTS_VLD_D2_01_12
@@ -480,25 +479,69 @@ bool CEnOceanESP3::StopHardware()
 void CEnOceanESP3::LoadNodesFromDatabase()
 {
 	m_nodes.clear();
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, DeviceID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d)", m_HwdID);
-	if (!result.empty())
-	{
-		for (const auto &sd : result)
-		{
-			NodeInfo node;
-			node.idx = atoi(sd[0].c_str());
-			node.manufacturer = atoi(sd[2].c_str());
-			node.profile = (uint8_t)atoi(sd[3].c_str());
-			node.type = (uint8_t)atoi(sd[4].c_str());
 
-			//convert to hex, and we have our ID
-			std::stringstream s_strid;
-			s_strid << std::hex << std::uppercase << sd[1];
-			uint32_t devid;
-			s_strid >> devid;
-			m_nodes[devid] = node;
-		}
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors WHERE (HardwareID==%d)", m_HwdID);
+	if (result.empty())
+		return;
+	
+	for (const auto &sd : result)
+	{
+		NodeInfo node;
+
+		node.idx = atoi(sd[0].c_str());
+		node.nodeID = sd[1];
+		node.manufacturerID = atoi(sd[2].c_str());
+		node.RORG = 0x00;
+		node.func = (uint8_t)atoi(sd[3].c_str());
+		node.type = (uint8_t)atoi(sd[4].c_str());
+		node.generic = true;
+
+		m_nodes[GetINodeID(node.nodeID)] = node;
+	}
+}
+
+CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const uint32_t iNodeID)
+{
+	auto node = m_nodes.find(iNodeID);
+
+	if (node == m_nodes.end())
+		return nullptr;
+
+	return &(node->second);
+}
+
+CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const std::string nodeID)
+{
+	return GetNodeInfo(GetINodeID(nodeID));
+}
+
+void CEnOceanESP3::TeachInNode(const std::string nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic)
+{
+	Log(LOG_NORM, "Teach-in Node: HwdID %u Node %s Manufacturer %03X (%s) %sEEP %02X-%02X-%02X (%s)",
+		m_HwdID, nodeID.c_str(), manID, GetManufacturerName(manID),
+		generic ? "Generic " : "", RORG, func, type, GetEEPLabel(RORG, func, type));
+
+	m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, Type) VALUES (%d,'%q',%d,%d,%d)",
+		m_HwdID, nodeID.c_str(), manID, func, type);
+
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) and (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+	if (result.empty())
+		LoadNodesFromDatabase(); // Should never happend, since node was just created in the database!
+	else
+	{
+		NodeInfo node;
+
+		node.idx = (uint32_t)atoi(result[0][0].c_str());
+		node.nodeID = nodeID;
+		node.manufacturerID = manID;
+		node.RORG = RORG;
+		node.func = func;
+		node.type = type;
+		node.generic = generic;
+
+		m_nodes[GetINodeID(node.nodeID)] = node;
 	}
 }
 
@@ -735,14 +778,14 @@ bool CEnOceanESP3::OpenSerialDevice()
 	sOnConnected(this);
 
 #ifdef ENABLE_ESP3_TESTS
-	Log(LOG_STATUS, "Read: ESP3 tests ---------------------------------");
+	Log(LOG_STATUS, "------------ ESP3 tests begin ---------------------------");
 	m_sql.AllowNewHardwareTimer(1);
 
 	for (const auto &itt : ESP3TestsCases)
 		ReadCallback((const char *)itt.data(), itt.size());
 
 	m_sql.AllowNewHardwareTimer(0);
-	Log(LOG_STATUS, "Read: ESP3 tests end -----------------------------");
+	Log(LOG_STATUS, "------------ ESP3 tests end -----------------------------");
 #endif
 
 	uint8_t cmd;
@@ -762,7 +805,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 	return true;
 }
 
-bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (m_id_base==0)
 		return false;
@@ -794,7 +837,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char /*leng
 	bool bIsDimmer=false;
 	uint8_t LastLevel=0;
 
-	std::string deviceID = GetDeviceID(nodeID);
+	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, deviceID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
@@ -1211,6 +1254,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 	uint8_t ID_BYTE0 = data[datalen - 2];
 	uint32_t iSenderID = GetINodeID(ID_BYTE3, ID_BYTE2, ID_BYTE1, ID_BYTE0);
 	std::string senderID = GetNodeID(iSenderID);
+	NodeInfo* pNode = GetNodeInfo(iSenderID);
 
 	uint8_t STATUS = data[datalen - 1];
 
@@ -1268,9 +1312,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Log(LOG_NORM, "Created generic A5-02-05 profile (0/40°C temp sensor)");
 						Log(LOG_NORM, "Please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
 
-						manufacturer = 0x7FF;			// Generic
-						profile = 0x02;					// == T4BSTable[4].Func: Temperature Sensor Range 0C to +40C
-						ttype = 0x05;						// == T4BSTable[4].Type
+						manufacturer = UNKNOWN_MANUFACTURER; // Generic
+						profile = 0x02; // Temperature Sensor Range 0C to +40C
+						ttype = 0x05;
 					}
 					else
 					{
@@ -1285,19 +1329,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						profile = DATA_BYTE3 >> 2;
 						ttype = ((DATA_BYTE3 & 0x03) << 5) | (DATA_BYTE2 >> 3);
 
-						Log(LOG_NORM,"4BSTeach-in, Variant 2: Node: %s\nManufacturer: %03X (%s)\nProfile: %02X\nType: %02X (%s)",
-							senderID.c_str(), manufacturer,GetManufacturerName(manufacturer),
-							profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
+						Log(LOG_NORM,"4BSTeach-in, Variant 2: Node: %s Manufacturer: %03X (%s) EEP: %02X-%02X-%02X (%s)",
+							senderID.c_str(), manufacturer, GetManufacturerName(manufacturer),
+							RORG_4BS, profile, ttype, GetEEPLabel(RORG_4BS, profile, ttype));
  					}
 
 					// Search the sensor in database
-					std::vector<std::vector<std::string>> result;
-					result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
-					if (result.empty())
-					{
-						// If not found, add it to the database
-						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)",
-							m_HwdID, senderID.c_str(), manufacturer, profile, ttype);
+					if (pNode == nullptr)
+					{ // If not found, add it to the database
+						TeachInNode(senderID, manufacturer, RORG_4BS, profile, ttype, ((DATA_BYTE0 & RORG_4BS_TEACHIN_EEP_BIT) == 0));
 						Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
 					}
 					else
@@ -1307,16 +1347,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
 				{
 					//Following sensors need to have had a teach-in
-					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
-					if (result.empty())
+					if (pNode == nullptr)
 					{
 						Log(LOG_NORM, "Need Teach-In for %s", senderID.c_str());
 						return;
 					}
-					uint16_t Manufacturer = atoi(result[0][1].c_str());
-					uint8_t Profile = atoi(result[0][2].c_str());
-					uint8_t iType = atoi(result[0][3].c_str());
+					uint16_t Manufacturer = pNode->manufacturerID;
+					uint8_t Profile = pNode->func;
+					uint8_t iType = pNode->type;
 
 					if (Profile == 0x12 && iType == 0x00)
 					{ // A5-12-00, Automated Meter Reading, Counter
@@ -1743,33 +1781,31 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				int Profile;
 				int iType;
 
-				// if a button is attached to a module, we should ignore it else its datagram will conflict with status reported by the module using VLD datagram
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
-				if (result.empty())
+				if (pNode == nullptr)
 				{
 					// If SELECT returns nothing, add Enocean sensor to the database
 					// with a default profile and type. The profile and type
 					// will have to be updated manually by the user.
-					uint16_t manufacturer = 0x7FF;  // generic manufacturer
 					Profile = 0x02;
 					iType = 0x01;
-					m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d, '%q', %d, %d, %d)", m_HwdID, senderID.c_str(), manufacturer, Profile, iType);
-					Log(LOG_NORM, "Node %s inserted in the database with default profile F6-%02X-%02X", senderID.c_str(), Profile, iType);
+					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, Profile, iType, true);
+					Log(LOG_NORM, "Node %s inserted in the database with default profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, Profile, iType);
 					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
 				}
 				else
 				{
 					// hardware device was already teached-in
-					Profile=atoi(result[0][1].c_str());
-					iType=atoi(result[0][2].c_str());
-					Log(LOG_NORM, "Node %s found in the database with profile F6-%02X-%02X", senderID.c_str(), Profile, iType);
+					Profile = pNode->func;
+					iType = pNode->type;
+					Log(LOG_NORM, "Node %s found in the database with profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, Profile, iType);
+
+					// if a button is attached to a module, ignore it else it will conflict with status reported using VLD datagram
 					if( (Profile == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
 						 ((iType == 0x0F) || (iType == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
 						)
 					{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_STATUS,"Node %s, ignore button press", senderID.c_str());
+						Log(LOG_STATUS,"Node %s, Ignore VLD button press", senderID.c_str());
 #endif
 						break;
 					}
@@ -1979,15 +2015,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						uint8_t rorg = data[7];
 
 						Log(LOG_NORM, "UTE teach-in request from %s (manufacturer: %03X) device profile: %02X-%02X-%02X nb channels: %d, ",
-							senderID.c_str(), manID, rorg,func,type, nb_channel);
+							senderID.c_str(), manID, rorg, func, type, nb_channel);
 
 						// Record EnOcean device profile
-						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, senderID.c_str());
-						if (result.empty())
+						if (pNode == nullptr)
 						{
 							// If not found, add it to the database
-							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, senderID.c_str(), manID, func, type);
+							TeachInNode(senderID, manID, rorg, func, type, false);
 							Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
 						}
 						else
@@ -2033,16 +2067,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			break;
 
 		case RORG_VLD:
-			{
-				// report status only if it is a known device else we may have an incorrect profile
-				auto itt = m_nodes.find(iSenderID);
-				if (itt == m_nodes.end())
+			{ // VLD telegram, D2-xx-xx, Variable Length Data
+				if (pNode == nullptr)
 				{
-					Log(LOG_NORM, "VLD msg: Need Teach-In for %s", senderID.c_str());
+					Log(LOG_NORM, "VLD msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
-				uint8_t func = itt->second.profile;
-				uint8_t type = itt->second.type;
+				uint8_t func = pNode->func;
+				uint8_t type = pNode->type;
 
 				Log(LOG_NORM, "VLD msg: Node %s, EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, func, type);
 
@@ -2075,7 +2107,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM, "VLD->RX msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
+					Log(LOG_NORM, "VLD msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
 						senderID.c_str(), CMD, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd, tsen.LIGHTING2.level);
 #endif
 
