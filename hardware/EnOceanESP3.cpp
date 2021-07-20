@@ -22,7 +22,7 @@
 // DEBUG: Enable logging of ESP3 packets management
 #define ENABLE_ESP3_PROTOCOL_DEBUG
 // DEBUG: Enable logging of ESP3 devices management
-//#define ENABLE_ESP3_DEVICE_DEBUG
+#define ENABLE_ESP3_DEVICE_DEBUG
 #endif
 
 // DEBUG: Enable running ReadCallback reception tests
@@ -387,6 +387,37 @@ const uint8_t crc8table[256] = {
 #define RORG_4BS_TEACHIN_LRN_BIT (1 << 3)
 #define RORG_4BS_TEACHIN_EEP_BIT (1 << 7)
 
+std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
+{
+	std::stringstream sstr;
+
+	sstr << GetPacketTypeLabel(packettype);
+
+	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
+	for (int i = 0; i < datalen; i++)
+		sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
+
+	if (optdatalen > 0)
+	{
+		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
+
+		for (int i = 0; i < optdatalen; i++)
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
+	}
+	return sstr.str();
+}
+
+std::string CEnOceanESP3::DumpESP3Packet(std::string esp3packet)
+{
+	uint8_t packettype = esp3packet[4];
+	uint8_t *data = (uint8_t *) &esp3packet[ESP3_HEADER_LENGTH + 2];
+	uint16_t datalen = esp3packet[1] << 8 | esp3packet[2];
+	uint8_t *optdata = data + datalen;
+	uint8_t optdatalen = esp3packet[3];
+
+	return DumpESP3Packet(packettype, data, datalen, optdata, optdatalen);
+}
+
 std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
 	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
@@ -580,15 +611,7 @@ void CEnOceanESP3::Do_Work()
 			std::string sBytes = *it;
 
 #ifdef ENABLE_ESP3_PROTOCOL_DEBUG
-			std::stringstream sstr;
-
-			for (size_t i = 0; i < sBytes.length(); i++)
-			{
-				sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (((uint32_t)sBytes[i]) & 0xFF);
-				if (i != sBytes.length() - 1)
-					sstr << " ";
-			}
-			Log(LOG_NORM, "Send: %s", sstr.str().c_str());
+			Log(LOG_NORM, "Send: %s", DumpESP3Packet(sBytes).c_str());
 #endif
 			// write telegram to ESP3 hardware
 			write(sBytes.c_str(), sBytes.size());
@@ -1141,22 +1164,7 @@ void CEnOceanESP3::ReadCallback(const char *data, size_t len)
 void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
 #ifdef ENABLE_ESP3_PROTOCOL_DEBUG
-	std::stringstream sstr;
-
-	sstr << GetPacketTypeLabel(packettype);
-
-	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
-	for (int i = 0; i < datalen; i++)
-		sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
-
-	if (optdatalen > 0)
-	{
-		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
-
-		for (int i = 0; i < optdatalen; i++)
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
-	}
-	Log(LOG_NORM, "Read: %s", sstr.str().c_str());
+	Log(LOG_NORM, "Read: %s", DumpESP3Packet(packettype, data, datalen, optdata, optdatalen).c_str());
 #endif
 
 	switch (packettype)

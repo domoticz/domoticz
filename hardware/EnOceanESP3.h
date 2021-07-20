@@ -37,6 +37,9 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	bool OpenSerialDevice();
 	void Do_Work();
 
+	std::string DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
+	std::string DumpESP3Packet(std::string esp3packet);
+
 	std::string FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	void SendESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	void SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
