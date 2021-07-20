@@ -646,6 +646,16 @@ uint32_t CEnOceanEEP::GetINodeID(const uint8_t ID3, const uint8_t ID2, const uin
 	return (uint32_t) ((ID3 << 24) | (ID2 << 16) | (ID1 << 8) | ID0);
 }
 
+uint32_t CEnOceanEEP::GetINodeID(const std::string nodeID)
+{
+    std::stringstream s_strid;
+    s_strid << std::hex << std::uppercase << nodeID;
+    uint32_t iNodeID;
+    s_strid >> iNodeID;
+
+	return iNodeID;
+}
+
 std::string CEnOceanEEP::GetNodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0)
 {
 	char szNodeID[10];
@@ -660,25 +670,6 @@ std::string CEnOceanEEP::GetNodeID(const uint32_t iNodeID)
 	sprintf(szNodeID, "%08X", iNodeID);
 	std::string nodeID = szNodeID;
 	return nodeID;
-}
-
-std::string CEnOceanEEP::GetNodeID(const std::string deviceID)
-{
-	// DeviceID to NodeID
-    // Pad to 8 characters inserting leading '0' if necessary
-	std::stringstream s_strid;
-	s_strid << std::setw(8) << std::setfill('0') << deviceID;
-	std::string nodeID;
-	s_strid >> nodeID;
-	return nodeID;
-}
-
-std::string CEnOceanEEP::GetDeviceID(const std::string nodeID)
-{
-	// NodeID to DeviceID
-    // If a leading '0' if present, remove it and pad to 7 characters
-    // else deviceID = nodeID
-	return (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
 }
 
 float CEnOceanEEP::GetDeviceValue(const uint32_t rawValue, const uint32_t rangeMin, const uint32_t rangeMax, const float scaleMin, const float scaleMax)
