@@ -12459,16 +12459,28 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		return false;
 
 	std::vector<std::string> sd = result[0];
-
-	//uint8_t dType = atoi(sd[3].c_str());
-	//uint8_t dSubType = atoi(sd[4].c_str());
+	std::string hwdid = sd[0];
+	std::string devid = sd[1];
+	int dtype = atoi(sd[3].c_str());
+	int subtype = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	int iOnDelay = atoi(sd[6].c_str());
 	int nValue = atoi(sd[7].c_str());
 	std::string sValue = sd[8];
 	std::string devName = sd[9];
 	//std::string sOptions = sd[10].c_str();
-
+	// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
+	CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+	if (pBaseHardware != nullptr)
+	{
+		if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
+		{
+			ConvertToGeneralSwitchType(devid, dtype, subtype);
+			sd[1] = devid;
+			sd[3] = std::to_string(dtype);
+			sd[4] = std::to_string(subtype);
+		}
+	}
 	bool bIsOn = IsLightSwitchOn(switchcmd);
 	if (ooc)//Only on change
 	{

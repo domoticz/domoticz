@@ -106,6 +106,7 @@ upon context	LSB first. Define provided data by the device
 #define SEND_OREGON_PROTOCOLV3_433 20 /* not reachable by API */
 #define SEND_TIC_433 21 /* not reachable by API */
 #define SEND_FS20_868 22
+#define SEND_EDISIO 23
 
 /* ***************************************** */
 #define RECEIVED_PROTOCOL_UNDEFINED 0
@@ -141,6 +142,7 @@ upon context	LSB first. Define provided data by the device
 #define INFOS_TYPE12 12 /* deprecated */
 #define INFOS_TYPE13 13
 #define INFOS_TYPE14 14
+#define INFOS_TYPE15 15
 
 struct INCOMING_RF_INFOS_TYPE0
 { // used by X10 / Domia Lite protocols
@@ -302,6 +304,15 @@ struct INCOMING_RF_INFOS_TYPE14
 	unsigned short idMsb;
 	unsigned short qualifier;
 };
+struct INCOMING_RF_INFOS_TYPE15
+{ // Used by EDISIO
+	unsigned short subtype; // Command field
+	unsigned short idLsb;
+	unsigned short idMsb;
+	unsigned short qualifier; // channel identifier
+	unsigned short infos;	  // MID (D0-D7): Model field, BL (D8-D15): Battery level (1/10V)
+	uint32_t additionalData;
+};
 /* *************************************************************************** */
 
 struct REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER
@@ -334,5 +345,8 @@ struct REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME
 		struct INCOMING_RF_INFOS_TYPE10 type10;
 		struct INCOMING_RF_INFOS_TYPE11 type11;
 		struct INCOMING_RF_INFOS_TYPE12 type12;
+		struct INCOMING_RF_INFOS_TYPE13 type13;
+		struct INCOMING_RF_INFOS_TYPE14 type14;
+		struct INCOMING_RF_INFOS_TYPE15 type15;
 	} infos;
 } sREGULAR_INCOMING_RF_TO_BINARY_USB_FRAME;

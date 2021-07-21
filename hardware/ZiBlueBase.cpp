@@ -47,6 +47,14 @@ const char *szZiBlueProtocolRFLink(const unsigned char id)
 		{ 14, "reserved" },	     //
 		{ 15, "reserved" },	     //
 		{ 16, "KD101_433" },	     //
+		{ 17, "reserved" },	     //
+		{ 18, "reserved" },	     //
+		{ 19, "reserved" },	     //
+		{ 20, "reserved" },	     //
+		{ 21, "reserved" },	     //
+		{ 22, "FS20_868" },	     //
+		{ 22, "EDISIO" },	     //
+
 		{ 0, nullptr },		     //
 	};
 	return findTableIDSingle1(Table, id);
@@ -68,6 +76,10 @@ const char *szZiBlueProtocol(const unsigned char id)
 		{ 9, "RTS" },	  //
 		{ 10, "KD101" },  //
 		{ 11, "PARROT" }, //
+		{ 13, "TIC" }, //
+		{ 14, "FS20" },	  //
+		{ 15, "JAMMING" }, //
+		{ 16, "EDISIO" }, //
 		{ 0, nullptr },	  //
 	};
 	return findTableIDSingle1(Table, id);
@@ -79,15 +91,34 @@ struct _tZiBlueStringIntHelper
 	int gType;
 };
 
-const _tZiBlueStringIntHelper ziblue_switches[] = { { "X10", sSwitchTypeX10 },
-						    //{ "Kaku", sSwitchTypeARC },
-						    { "AC", sSwitchTypeAC },
-						    { "Blyss", sSwitchTypeBlyss },
-						    { "RTS", sSwitchTypeRTS },
-						    { "", -1 } };
+const _tZiBlueStringIntHelper ziblue_switches[] = {
+	{ "VISONIC 433", sSwitchTypeAB400D },
+	{ "VISONIC 868", sSwitchTypeWaveman },
+	{ "CHACON", sSwitchTypeAC },
+	{ "DOMIA", sSwitchTypeARC },
+	{ "X10", sSwitchTypeX10 },
+	{ "X2D 433", sSwitchTypeEMW200 },
+	{ "X2D 868", sSwitchTypeIMPULS },
+	{ "X2D ELEC", sSwitchTypeRisingSun },
+	{ "X2D GAS", sSwitchTypePhilips },
+	{ "RTS", sSwitchTypeRTS },
+	{ "BLYSS", sSwitchTypeBlyss },
+	{ "PARROT", sSwitchTypeEnergenie },
+	{ "KD101", sSwitchTypeEnergenie5 },
+	{ "FS20 868", sSwitchTypeHomeConfort },
+	{ "EDISIO", sSwitchTypeForest },
+	{ "", -1 }
+};
 
 const _tZiBlueStringIntHelper ziBlueswitchcommands[] = {
-	{ "ON", gswitch_sOn }, { "OFF", gswitch_sOff }, { "ALLON", gswitch_sGroupOn }, { "ALLOFF", gswitch_sGroupOff }, { "DIM", gswitch_sDim }, { "BRIGHT", gswitch_sBright }, { "", -1 }
+	{ "ON", gswitch_sOn },
+	{ "OFF", gswitch_sOff },
+	{ "ALLON", gswitch_sGroupOn },
+	{ "ALLOFF", gswitch_sGroupOff },
+	{ "DIM", gswitch_sDim },
+	{ "BRIGHT", gswitch_sBright },
+	{ "ALLOFF", gswitch_sStop },
+	{ "", -1 }
 };
 
 int GetGeneralZiBlueFromString(const _tZiBlueStringIntHelper *pTable, const std::string &szType)
@@ -159,7 +190,11 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pSwitch->type == pTypeGeneralSwitch)
 	{
 		std::string switchcmnd = GetGeneralZiBlueFromInt(ziBlueswitchcommands, pSwitch->cmnd);
-
+		if (switchcmnd.empty())
+		{
+			Log(LOG_ERROR, "trying to send unknown switch command: %d", pSwitch->cmnd);
+			return false;
+		}
 		// check setlevel command
 		if (pSwitch->cmnd == gswitch_sSetLevel)
 		{
@@ -171,12 +206,6 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 			char buffer[50] = { 0 };
 			sprintf(buffer, "%d", svalue);
 			switchcmnd = buffer;
-		}
-
-		if (switchcmnd.empty())
-		{
-			Log(LOG_ERROR, "trying to send unknown switch command: %d", pSwitch->cmnd);
-			return false;
 		}
 
 		struct _tOutgoingFrame
@@ -217,16 +246,79 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		if (switchtype == "X10")
 		{
 			oFrame.protocol = SEND_X10_PROTOCOL_433;
-			oFrame.ID_1 = ((pSwitch->id << 4) + pSwitch->unitcode);
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "AC")
+		else if (switchtype == "CHACON")
 		{
 			oFrame.protocol = SEND_CHACON_PROTOCOL_433;
-			oFrame.ID_1 = (uint8_t)((pSwitch->id & 0xFF000000) >> 24);
-			oFrame.ID_2 = (uint8_t)((pSwitch->id & 0x00FF0000) >> 16);
-			oFrame.ID_3 = (uint8_t)((pSwitch->id & 0x0000FF00) >> 8);
-			oFrame.ID_4 = (uint8_t)((pSwitch->id & 0x000000FF));
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
+		else if (switchtype == "DOMIA")
+		{
+			oFrame.protocol = SEND_DOMIA_PROTOCOL_433;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "RTS")
+		{
+			oFrame.protocol = SEND_SOMFY_PROTOCOL_433;
+			oFrame.ID_1 = ((((pSwitch->id&0xFF) - 10) << 4) + (pSwitch->unitcode - 1));
+			oFrame.qualifier = (pSwitch->id & 0x00FF0000) != 0 ? 1 : 0;
+		}
+		else if (switchtype == "VISONIC 433")
+		{
+			oFrame.protocol = SEND_VISONIC_PROTOCOL_433;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "VISONIC 868")
+		{
+			oFrame.protocol = SEND_VISONIC_PROTOCOL_868;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "X2D 433")
+		{
+			oFrame.protocol = SEND_X2D_PROTOCOL_433;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "X2D 868")
+		{
+			oFrame.protocol = SEND_X2D_PROTOCOL_868;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "X2D ELEC")
+		{
+			oFrame.protocol = SEND_X2D_HA_ELEC_PROTOCOL_868;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "X2D GAS")
+		{
+			oFrame.protocol = SEND_X2D_HA_GASOIL_PROTOCOL_868;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "BLYSS")
+		{
+			oFrame.protocol = SEND_BLYSS_PROTOCOL_433;
+			oFrame.ID_1 = ((((pSwitch->id & 0xFF) - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "PARROT")
+		{
+			oFrame.protocol = SEND_PARROT;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "KD101")
+		{
+			oFrame.protocol = SEND_KD101_PROTOCOL_433;
+			oFrame.ID_1 = ((((pSwitch->id & 0xFF) - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (switchtype == "FS20 868")
+		{
+			oFrame.protocol = SEND_FS20_868;
+			oFrame.ID_1 = ((((pSwitch->id & 0xFF) - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		//else if (switchtype == "EDISIO")
+		//{
+		//	oFrame.protocol = SEND_EDISIO;
+		//	oFrame.ID_1 = (((pSwitch->id - 10) << 4) + (pSwitch->unitcode - 1));
+		//}
 		else
 		{
 			Log(LOG_ERROR, "unsupported switch protocol");
@@ -256,6 +348,10 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 				break;
 			case gswitch_sGroupOn:
 				oFrame.action = SEND_ACTION_ALL_ON;
+				break;
+			case gswitch_sStop:
+				oFrame.action = SEND_ACTION_DIM;
+				oFrame.dimValue = 50; 
 				break;
 		}
 

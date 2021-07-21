@@ -4806,6 +4806,11 @@ namespace http
 					{
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
+					else if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
+					{
+						//dtype = pTypeGeneralSwitch;
+						ConvertToGeneralSwitchTypeRFP(devid, dtype, subtype);
+					}
 				}
 				// -----------------------------------------------
 
@@ -5451,6 +5456,11 @@ namespace http
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
 					{
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
+					}
+					else if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
+					{
+						//dtype = pTypeGeneralSwitch;
+						ConvertToGeneralSwitchTypeRFP(devid, dtype, subtype);
 					}
 				}
 				// -----------------------------------------------
