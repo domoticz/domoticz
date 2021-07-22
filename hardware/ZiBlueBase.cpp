@@ -117,7 +117,7 @@ const _tZiBlueStringIntHelper ziBlueswitchcommands[] = {
 	{ "ALLOFF", gswitch_sGroupOff },
 	{ "DIM", gswitch_sDim },
 	{ "BRIGHT", gswitch_sBright },
-	{ "ALLOFF", gswitch_sStop },
+	{ "STOP", gswitch_sStop },
 	{ "", -1 }
 };
 
@@ -653,6 +653,27 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				break;
 			case INFOS_TYPE3:
 				//  Used by RFY PROTOCOL
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE3))
+				{
+					INCOMING_RF_INFOS_TYPE3 *pSen = (INCOMING_RF_INFOS_TYPE3 *)(data + 8);
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM, "subtype: %d, idLSB: %04X, idMSB: %04X, qualifier: %04X, temp: %.1f, hygro: %d", pSen->subtype, pSen->idLsb, pSen->idMsb, pSen->qualifier);
+#endif
+					std::string cmd = "Unknown";
+					if (pSen->qualifier == 1)
+					{
+						cmd = "OFF";
+					}
+					else if (pSen->qualifier == 4)
+					{
+						cmd = "STOP";
+					}
+					else if (pSen->qualifier == 7)
+					{
+						cmd = "ON";
+					}
+					SendSwitchInt(pSen->idLsb ^ pSen->idMsb, 1, 255, "RTS", cmd, 0);
+				}
 				break;
 			case INFOS_TYPE4:
 				// Used by  Scientific Oregon  protocol ( thermo/hygro sensors)

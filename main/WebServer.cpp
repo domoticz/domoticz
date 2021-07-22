@@ -4809,7 +4809,7 @@ namespace http
 					else if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
 					{
 						//dtype = pTypeGeneralSwitch;
-						ConvertToGeneralSwitchTypeRFP(devid, dtype, subtype);
+						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
 				}
 				// -----------------------------------------------
