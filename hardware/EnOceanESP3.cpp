@@ -31,7 +31,7 @@
 //#define ENABLE_ESP3_TESTS
 #ifdef ENABLE_ESP3_TESTS
 //#define READCALLBACK_TESTS
-#define ESP3_TESTS_1BS_D5_00_01
+//#define ESP3_TESTS_1BS_D5_00_01
 #define ESP3_TESTS_4BS_A5_02_05
 #define ESP3_TESTS_4BS_A5_02_01
 #define ESP3_TESTS_4BS_A5_02_20
@@ -397,7 +397,10 @@ std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint
 
 	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
 	for (int i = 0; i < datalen; i++)
-		sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
+		if (i == 0 && packettype == PACKET_RADIO_ERP1)
+			sstr << " " << GetRORGLabel((uint32_t)data[i]);
+		else
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
 
 	if (optdatalen > 0)
 	{
@@ -1130,7 +1133,7 @@ void CEnOceanESP3::ReadCallback(const char *data, size_t len)
 					Log(LOG_ERROR, "Read: CRC8D error (expected 0x%02X got 0x%02X)", m_crc, db);
 					break;
 				}
-				// Parse packet data : type + data + optional data
+				// Parse ESP3 packet : type + data + optional data
 				uint8_t *data = m_buffer + ESP3_HEADER_LENGTH + 1;
 				uint8_t *optdata = data + m_datalen;
 				ParseESP3Packet(m_packettype, data, m_datalen, optdata, m_optionallen);
@@ -1167,7 +1170,7 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 
 			if (return_code != RET_OK)
 			{
-				Log(LOG_ERROR, "Received error response %s", GetReturnCodeLabel(return_code));
+				Log(LOG_ERROR, "HwdID %d, received error response %s", m_HwdID, GetReturnCodeLabel(return_code));
 				return;
 			}
 			// Response OK
@@ -1186,7 +1189,7 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 					 m_HwdID, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], (const char *)data + 17);
 				return;
 			}
-			Log(LOG_ERROR, "Received unexpected response (%s)", GetReturnCodeLabel(return_code));
+			Log(LOG_NORM, "HwdID %d, received response (%s)", m_HwdID, GetReturnCodeLabel(return_code));
 		}
 		return;
 
@@ -1195,7 +1198,7 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 			return;
 
 		default:
-			Log(LOG_ERROR, "Unhandled Packet Type (%s)", GetPacketTypeLabel(packettype));
+			Log(LOG_ERROR, "HwdID %d, ESP3 Packet Type not supported (%s)", m_HwdID, GetPacketTypeLabel(packettype));
 	}
 }
 
