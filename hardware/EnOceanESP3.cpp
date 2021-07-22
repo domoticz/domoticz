@@ -428,6 +428,12 @@ std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, ui
 	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
 	uint32_t len = 0;
 
+	uint8_t defaulERP1optdata[] = { 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+	if (optdatalen == 0 && packettype == PACKET_RADIO_ERP1)
+	{ // If not provided, add default optional data for PACKET_RADIO_ERP1
+		optdata = defaulERP1optdata;
+		optdatalen = 7;
+	}
 	buf[len++] = ESP3_SER_SYNC;
 	buf[len++] = (uint8_t) bitrange(datalen, 8, 0x00FF);
 	buf[len++] = (uint8_t) bitrange(datalen, 0, 0x00FF);
