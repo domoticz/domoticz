@@ -261,7 +261,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		else if (switchtype == "RTS")
 		{
 			oFrame.protocol = SEND_SOMFY_PROTOCOL_433;
-			oFrame.ID_1 = ((((pSwitch->id&0xFF) - 10) << 4) + (pSwitch->unitcode - 1));
+			oFrame.ID_1 = ((((pSwitch->id&0xFF)) << 4) + (pSwitch->unitcode - 1));
 			oFrame.qualifier = (pSwitch->id & 0x00FF0000) != 0 ? 1 : 0;
 		}
 		else if (switchtype == "VISONIC 433")

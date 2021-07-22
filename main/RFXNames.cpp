@@ -4156,9 +4156,9 @@ void ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, int &subtype)
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 		devid = szTmp;
 	}
-	else if (dtype == pTypeRFY)
-	{
-		dtype = pTypeGeneralSwitch;
-		subtype = sSwitchTypeRTS;
-	}
+	//else if (dtype == pTypeRFY)
+	//{
+	//	dtype = pTypeGeneralSwitch;
+	//	subtype = sSwitchTypeRTS;
+	//}
 }
