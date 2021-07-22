@@ -20,7 +20,7 @@
 //#define _DEBUG
 #ifdef _DEBUG
 // DEBUG: Enable logging of ESP3 packets management
-#define ENABLE_ESP3_PROTOCOL_DEBUG
+//#define ENABLE_ESP3_PROTOCOL_DEBUG
 // DEBUG: Enable logging of ESP3 devices management
 #define ENABLE_ESP3_DEVICE_DEBUG
 #endif
@@ -259,7 +259,30 @@ const uint8_t crc8table[256] = {
 
 #define round(a) ((int) (a + .5))
 
-// end of lines from EO300I API header file
+// UTE Direction response codes
+typedef enum
+{
+	UTE_UNIDIRECTIONAL = 0,	// Unidirectional
+	UTE_BIDIRECTIONAL = 1	// Bidirectional
+} UTE_DIRECTION;
+
+// UTE Response codes
+typedef enum
+{
+	GENERAL_REASON = 0,		// Request not accepted because of general reason
+	TEACHIN_ACCEPTED = 1, 	// Request accepted, teach-in successful
+	TEACHOUT_ACCEPTED = 2, 	// Request accepted, teach-out successful
+	EEP_NOT_SUPPORTED = 3 	// Request not accepted, EEP not supported
+} UTE_RESPONSE_CODE;
+
+// UTE Direction response codes
+typedef enum
+{
+	UTE_QUERY = 0,		// Teach-in query command
+	UTE_RESPONSE = 1	// Teach-in response command
+} UTE_CMD;
+
+// Lines from EO300I API header file
 
 /**
  * @defgroup bitmasks Bitmasks for various fields.
@@ -2045,72 +2068,142 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 		case RORG_UTE:
 			{	// UTE telegram, D4-xx-xx, Universal Teach-in
-
-					uint8_t uni_bi_directional_communication = (data[1] >> 7) & 1; // 0=mono, 1= bi
-					uint8_t eep_teach_in_response_expected = (data[1] >> 6) & 1; // 0=yes, 1=no
-					uint8_t teach_in_request = (data[1] >> 4) & 3; // 0= request, 1= deletion request, 2=request or deletion request, 3=not used
-					uint8_t cmd = data[1] & 0x0F;
-
-					if (cmd == 0x0)
-					{
-						// EEP Teach-In Query (UTE Message / CMD 0x0)
-
-						uint8_t nb_channel = data[2];
-						uint32_t manID = ((uint32_t)(data[4] & 0x7)) << 8 | (data[3]);
-						uint8_t node_type = data[5];
-						uint8_t node_func = data[6];
-						uint8_t node_rorg = data[7];
-
-						Log(LOG_NORM, "UTE teach-in request from %s (manufacturer: %03X) device profile: %02X-%02X-%02X nb channels: %d, ",
-							senderID.c_str(), manID, node_rorg, node_func, node_type, nb_channel);
-
-						// Record EnOcean device profile
-						if (pNode == nullptr)
-						{
-							// If not found, add it to the database
-							TeachInNode(senderID, manID, node_rorg, node_func, node_type, false);
-							Log(LOG_NORM, "Node %s inserted in the database", senderID.c_str());
-						}
-						else
-							Log(LOG_NORM, "Node %s already in the database", senderID.c_str());
-						LoadNodesFromDatabase();
-
-						if (node_rorg == RORG_VLD && node_func == 0x01 && (node_type == 0x12 || node_type == 0x0F))
-						{
-							uint8_t nbc;
-
-							for (nbc = 0; nbc < nb_channel; nbc++)
-							{
-								RBUF tsen;
-
-								memset(&tsen,0,sizeof(RBUF));
-								tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
-								tsen.LIGHTING2.packettype=pTypeLighting2;
-								tsen.LIGHTING2.subtype=sTypeAC;
-								tsen.LIGHTING2.seqnbr=0;
-								tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
-								tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
-								tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
-								tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
-								tsen.LIGHTING2.level=0;
-								tsen.LIGHTING2.rssi=rssi;
-								tsen.LIGHTING2.unitcode = nbc + 1;
-								tsen.LIGHTING2.cmnd     = light2_sOff;
-
-#ifdef ENABLE_ESP3_DEVICE_DEBUG
-								Log(LOG_NORM, "VLD msg: Node %s UnitID: %02X cmd: %02X channel = %d",
-									senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd, nbc + 1);
-#endif
-
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
-							}
-							return;
-						}
-						break;
-					}
-					Log(LOG_ERROR, "UTE msg: Unhandled CMD (%02X), uni_bi (%02X [1=bidir]), request (%02X), response expected (%02X [0=yes])",
-						cmd, uni_bi_directional_communication, teach_in_request, eep_teach_in_response_expected);
+				uint8_t CMD = bitrange(data[1], 0, 0x0F);				// 0=teach-in query, 1=teach-In response
+				if (CMD != 0)
+				{
+					Log(LOG_ERROR, "UTE teach request: Node %s, command 0x%1X not supported", senderID.c_str(), CMD);
+					return;
 				}
+				// UTE teach-in or teach-out Query (UTE Telegram / CMD 0x0)
+
+				uint8_t ute_direction = bitrange(data[1], 7, 0x01);	// 0=uni-directional, 1= bi-directional
+				uint8_t need_response = bitrange(data[1], 6, 0x01);	// 0=yes, 1=no
+				uint8_t ute_request = bitrange(data[1], 4, 0x03);		// 0=teach-in, 1=teach-out, 2=teach-in or teach-out
+
+				uint8_t node_nb_channels = data[2];
+
+				uint16_t node_manID = (bitrange(data[4], 0, 0x07) << 8) | data[3];
+
+				uint8_t node_type = data[5];
+				uint8_t node_func = data[6];
+				uint8_t node_RORG = data[7];
+
+				Log(LOG_NORM, "UTE %s-directional %s request from Node %s, %sresponse expected",
+					(ute_direction == 0) ? "uni" : "bi",
+					(ute_request == 0) ? "teach-in" : ((ute_request == 1) ? "teach-out" : "teach-in or teach-out"),
+					senderID.c_str(),
+					(need_response == 0) ? "" : "no "
+					);
+
+				uint8_t buf[15];
+
+				if (need_response == 0)
+				{ // Prepare response buffer
+					// the device that is intended to be taught-in broadcasts a query message and gets back
+					// an addresses response message, containing its own EnOcean ID as the transmission target address
+					buf[0] = RORG_UTE;
+					buf[2] = data[2]; // nb channels
+					buf[3] = data[3]; // manufacturer ID
+					buf[4] = data[4];
+					buf[5] = data[5]; // type
+					buf[6] = data[6]; // func
+					buf[7] = data[7]; // RORG
+					buf[8] = data[8];	// Dest ID
+					buf[9] = data[9];
+					buf[10] = data[10];
+					buf[11] = data[11];
+					buf[12] = 0x00; // status
+				}
+				if (pNode == nullptr)
+				{ // Node not found
+					if (ute_request == 1)
+					{ // Node not found and teach-out request => ignore
+						Log(LOG_NORM, "Unknown Node %s, teach-out request ignored", senderID.c_str());
+
+						if (need_response == 0)
+						{ // Build and send response
+							buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHOUT_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
+							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						}
+						return;
+					}
+					if (!m_sql.m_bAcceptNewHardware)
+					{ // Node not found and learn mode disabled => error
+						Log(LOG_NORM, "Unknown Node %s, please allow accepting new hardware and proceed to teach-in", senderID.c_str());
+						if (need_response == 0)
+						{ // Build and send response
+							buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (GENERAL_REASON & 0x03) << 4 | UTE_RESPONSE;
+							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						}
+						return;
+					}
+					// Node not found and learn mode enabled and teach-in request : add it to the database
+
+					Log(LOG_NORM, "Creating Node %s Manufacturer 0x%03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
+						senderID.c_str(), node_manID, GetManufacturerName(node_manID),
+						node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
+						node_nb_channels, (node_nb_channels > 1) ? "s" : "");
+
+					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, false);
+
+					if (need_response == 0)
+					{ // Build and send response
+						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+					}
+					if (node_RORG == RORG_VLD && node_func == 0x01 && (node_type == 0x0D || node_type == 0x0E || node_type == 0x0F || node_type == 0x12))
+					{
+						// Create devices for :
+						// D2-01-0D, Micro smart plug, single channel, with external button control
+						// D2-01-0E, Micro smart plug, single channel, with external button control
+						// D2-01-0F, Slot-in module, single channel, with external button control
+						// D2-01-12, Slot-in module, dual channels, with external button control
+
+						for (uint8_t nbc = 0; nbc < node_nb_channels; nbc++)
+						{
+							RBUF tsen;
+							memset(&tsen, 0, sizeof(RBUF));
+							tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+							tsen.LIGHTING2.packettype = pTypeLighting2;
+							tsen.LIGHTING2.subtype = sTypeAC;
+							tsen.LIGHTING2.seqnbr = 0;
+							tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+							tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+							tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+							tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+							tsen.LIGHTING2.level = 0;
+							tsen.LIGHTING2.rssi = rssi;
+							tsen.LIGHTING2.unitcode = nbc + 1;
+							tsen.LIGHTING2.cmnd = light2_sOff;
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+						}
+					}
+					return;
+				}
+				// Node found
+				if (ute_request == 0)
+				{ // Node found and teach-in request => ignore
+					Log(LOG_NORM, "Node %s already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
+						senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+
+					if (need_response == 0)
+					{ // Build and send response
+						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+					}
+				}
+				else if (ute_request == 1 || ute_request == 2)
+				{ // Node found and teach-out request => teach-out
+					// ignore teach-out request to avoid teach-in/out loop
+					Log(LOG_NORM, "UTE msg: Node %s, teach-out request not supported", senderID.c_str());
+
+					if (need_response == 0)
+					{ // Build and send response
+						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (GENERAL_REASON & 0x03) << 4 | UTE_RESPONSE;
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+					}
+				}
+			}
 			return;
 
 		case RORG_VLD:
