@@ -414,10 +414,6 @@ typedef enum
 #define DB3_HRC_SR  0x08
 #define DB3_HRC_SR_SHIFT 3
 
-// 2016-01-31 Stéphane Guillard : added 4BS learn bit definitions below
-#define RORG_4BS_TEACHIN_LRN_BIT (1 << 3)
-#define RORG_4BS_TEACHIN_EEP_BIT (1 << 7)
-
 std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
 {
 	std::stringstream sstr;
@@ -644,8 +640,9 @@ void CEnOceanESP3::Do_Work()
 				m_retrycntr = 0;
 				OpenSerialDevice();
 			}
+			continue;
 		}
-		else if (!m_sendqueue.empty())
+		if (!m_sendqueue.empty())
 		{ // Send first queued telegram
 			std::vector<std::string>::iterator it = m_sendqueue.begin();
 			std::string sBytes = *it;
@@ -1064,39 +1061,41 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 {
 	if (m_id_base==0)
 		return;
-	if (isOpen()) {
-		RBUF *tsen = (RBUF*)pdata;
-		if (tsen->LIGHTING2.packettype != pTypeLighting2)
-			return; //only allowed to control switches
-		uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-		std::string nodeID = GetNodeID(iNodeID);
-		if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
-		{
-			std::string baseID = GetNodeID(m_id_base);
-			Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
-			return;
-		}
+	if (!isOpen())
+		return;
 
-		uint8_t buf[100];
-		buf[0] = 0xa5;
-		buf[1] = 0x2;
-		buf[2] = 0;
-		buf[3] = 0;
-		buf[4] = 0x0; // DB0.3=0 -> teach in
-		buf[5] = (iNodeID >> 24) & 0xFF;
-		buf[6] = (iNodeID >> 16) & 0xFF;
-		buf[7] = (iNodeID >> 8) & 0xFF;
-		buf[8] = iNodeID & 0xFF;
-		buf[9] = 0x30; // status
+	RBUF *tsen = (RBUF*)pdata;
+	if (tsen->LIGHTING2.packettype != pTypeLighting2)
+		return; //only allowed to control switches
 
-		if (tsen->LIGHTING2.unitcode >= 10)
-		{
-			Log(LOG_ERROR, "Node %s, double not supported", nodeID.c_str());
-			return;
-		}
-		
-		SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	std::string nodeID = GetNodeID(iNodeID);
+	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
+	{
+		std::string baseID = GetNodeID(m_id_base);
+		Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		return;
 	}
+	if (tsen->LIGHTING2.unitcode >= 10)
+	{
+		Log(LOG_ERROR, "Node %s, double not supported", nodeID.c_str());
+		return;
+	}
+
+	uint8_t buf[10];
+
+	buf[0] = RORG_4BS;
+	buf[1] = 0x02;
+	buf[2] = 0x00;
+	buf[3] = 0x00;
+	buf[4] = 0x00; // DB0.3=0 -> teach in
+	buf[5] = (iNodeID >> 24) & 0xFF;
+	buf[6] = (iNodeID >> 16) & 0xFF;
+	buf[7] = (iNodeID >> 8) & 0xFF;
+	buf[8] = iNodeID & 0xFF;
+	buf[9] = 0x30; // status
+
+	SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 }
 
 void CEnOceanESP3::ReadCallback(const char *data, size_t len)
@@ -1471,7 +1470,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				// 4BS data
-				
+
 				if (pNode == nullptr)
 				{
 					Log(LOG_NORM, "4BS msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
@@ -1559,8 +1558,21 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 					// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
-					if (pNode->manufacturerID == ELTAKO)
-					{
+					if (pNode->manufacturerID != ELTAKO)
+					{ // Generic A5-10-01..OD EEP
+						uint8_t fspeed = 3;
+						if (DATA_BYTE3 >= 145)
+							fspeed = 2;
+						else if (DATA_BYTE3 >= 165)
+							fspeed = 1;
+						else if (DATA_BYTE3 >= 190)
+							fspeed = 0;
+						else if (DATA_BYTE3 >= 210)
+							fspeed = -1; //auto
+						//uint8_t iswitch = DATA_BYTE0 & 1;
+					}
+					else
+					{ // WARNING : ELTAKO specific implementation
 						uint8_t nightReduction = 0;
 						if (DATA_BYTE3 == 0x06)
 							nightReduction = 1;
@@ -1573,19 +1585,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						else if (DATA_BYTE3 == 0x1F)
 							nightReduction = 5;
 						//float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
-					}
-					else
-					{
-						uint8_t fspeed = 3;
-						if (DATA_BYTE3 >= 145)
-							fspeed = 2;
-						else if (DATA_BYTE3 >= 165)
-							fspeed = 1;
-						else if (DATA_BYTE3 >= 190)
-							fspeed = 0;
-						else if (DATA_BYTE3 >= 210)
-							fspeed = -1; //auto
-						//uint8_t iswitch = DATA_BYTE0 & 1;
 					}
 					RBUF tsen;
 					memset(&tsen,0,sizeof(RBUF));
@@ -1617,15 +1616,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
 					// DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
 					float lux =0;
-					if (pNode->manufacturerID == ELTAKO)
-					{
-						if(DATA_BYTE2 == 0)
-							lux = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 100);
-						else
-							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
-					}
-					else
-					{
+					if (pNode->manufacturerID != ELTAKO)
+					{ // Generic A5-06-01 EEP
 						float voltage = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
 						if(DATA_BYTE0 & 1)
 							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
@@ -1647,6 +1639,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 					}
+					else
+					{ // WARNING : ELTAKO specific implementation
+						if(DATA_BYTE2 == 0)
+							lux = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 100);
+						else
+							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
+					}
 					_tLightMeter lmeter;
 					lmeter.id1=(BYTE)ID_BYTE3;
 					lmeter.id2=(BYTE)ID_BYTE2;
@@ -1657,7 +1656,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
 					return;
 				}
-				if (pNode->func == 0x02)
+				if (pNode->func == 0x02 && (pNode->type <= 0x1B || pNode->type == 0x20 || pNode->type == 0x30))
 				{ // A5-02-01..30, Temperature sensor
 					float ScaleMax=0;
 					float ScaleMin=0;
@@ -1712,8 +1711,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
 					return;
 				}
-				if (pNode->func == 0x04)
-				{ // A5-04-01..04, Temperature and Humidity Sensor
+				if (pNode->func == 0x04 && pNode->type <= 0x03)
+				{ // A5-04-01..03, Temperature and Humidity Sensor
 					float ScaleMax = 0;
 					float ScaleMin = 0;
 					if (pNode->type == 0x01) { ScaleMin = 0; ScaleMax = 40; }
@@ -1743,136 +1742,127 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x01)
 				{ // A5-07-01, Occupancy sensor with Supply voltage monitor
-					if (DATA_BYTE3 < 251)
+					RBUF tsen;
+
+					if (DATA_BYTE0 & 1)
 					{
-						RBUF tsen;
-
-						if (DATA_BYTE0 & 1)
-						{
-							//Voltage supported
-							float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
-							memset(&tsen, 0, sizeof(RBUF));
-							tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
-							tsen.RFXSENSOR.packettype = pTypeRFXSensor;
-							tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
-							tsen.RFXSENSOR.id = ID_BYTE1;
-							// WARNING
-							// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-							// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-							tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
-							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
-						}
-
-						bool bPIROn = (DATA_BYTE1 > 127);
+						//Voltage supported
+						float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
 						memset(&tsen, 0, sizeof(RBUF));
-						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-						tsen.LIGHTING2.packettype = pTypeLighting2;
-						tsen.LIGHTING2.subtype = sTypeAC;
-						tsen.LIGHTING2.seqnbr = 0;
-						tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-						tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
-						tsen.LIGHTING2.level = 0;
-						tsen.LIGHTING2.rssi = rssi;
-						tsen.LIGHTING2.unitcode = 1;
-						tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+						tsen.RFXSENSOR.id = ID_BYTE1;
+						// WARNING
+						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+						tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
+						tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
+						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 					}
+
+					bool bPIROn = (DATA_BYTE1 > 127);
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+					tsen.LIGHTING2.packettype = pTypeLighting2;
+					tsen.LIGHTING2.subtype = sTypeAC;
+					tsen.LIGHTING2.seqnbr = 0;
+					tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+					tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+					tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+					tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+					tsen.LIGHTING2.level = 0;
+					tsen.LIGHTING2.rssi = rssi;
+					tsen.LIGHTING2.unitcode = 1;
+					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x02)
 				{ // A5-07-02, Occupancy sensor with Supply voltage monitor
-					if (DATA_BYTE3 < 251)
-					{
-						RBUF tsen;
+					RBUF tsen;
 
-						float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
-						memset(&tsen, 0, sizeof(RBUF));
-						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
-						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
-						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
-						tsen.RFXSENSOR.id = ID_BYTE1;
-						// WARNING
-						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-						tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-						tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
-						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+					float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+					tsen.RFXSENSOR.id = ID_BYTE1;
+					// WARNING
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+					tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
+					tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
+					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
+					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 
-						bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
-						memset(&tsen, 0, sizeof(RBUF));
-						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-						tsen.LIGHTING2.packettype = pTypeLighting2;
-						tsen.LIGHTING2.subtype = sTypeAC;
-						tsen.LIGHTING2.seqnbr = 0;
-						tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-						tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
-						tsen.LIGHTING2.level = 0;
-						tsen.LIGHTING2.rssi = rssi;
-						tsen.LIGHTING2.unitcode = 1;
-						tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
-					}
+					bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+					tsen.LIGHTING2.packettype = pTypeLighting2;
+					tsen.LIGHTING2.subtype = sTypeAC;
+					tsen.LIGHTING2.seqnbr = 0;
+					tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+					tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+					tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+					tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+					tsen.LIGHTING2.level = 0;
+					tsen.LIGHTING2.rssi = rssi;
+					tsen.LIGHTING2.unitcode = 1;
+					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x03)
 				{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
-					//(EPP A5-07-03)
-					if (DATA_BYTE3 < 251)
-					{
-						RBUF tsen;
+					RBUF tsen;
 
-						float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
-						memset(&tsen, 0, sizeof(RBUF));
-						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
-						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
-						tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
-						tsen.RFXSENSOR.id = ID_BYTE1;
-						// WARNING
-						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-						tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-						tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
-						tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
-						tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+					float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+					tsen.RFXSENSOR.id = ID_BYTE1;
+					// WARNING
+					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+					tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
+					tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
+					tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
+					tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
 
-						uint16_t lux = (DATA_BYTE2 << 2) | (DATA_BYTE1>>6);
-						if (lux > 1000)
-							lux = 1000;
-						_tLightMeter lmeter;
-						lmeter.id1 = (BYTE)ID_BYTE3;
-						lmeter.id2 = (BYTE)ID_BYTE2;
-						lmeter.id3 = (BYTE)ID_BYTE1;
-						lmeter.id4 = (BYTE)ID_BYTE0;
-						lmeter.dunit = 1;
-						lmeter.fLux = (float)lux;
-						sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+					uint16_t lux = (DATA_BYTE2 << 2) | (DATA_BYTE1>>6);
+					if (lux > 1000)
+						lux = 1000;
+					_tLightMeter lmeter;
+					lmeter.id1 = (BYTE)ID_BYTE3;
+					lmeter.id2 = (BYTE)ID_BYTE2;
+					lmeter.id3 = (BYTE)ID_BYTE1;
+					lmeter.id4 = (BYTE)ID_BYTE0;
+					lmeter.dunit = 1;
+					lmeter.fLux = (float)lux;
+					sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
 
-						bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
-						memset(&tsen, 0, sizeof(RBUF));
-						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-						tsen.LIGHTING2.packettype = pTypeLighting2;
-						tsen.LIGHTING2.subtype = sTypeAC;
-						tsen.LIGHTING2.seqnbr = 0;
-						tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
-						tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
-						tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
-						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
-						tsen.LIGHTING2.level = 0;
-						tsen.LIGHTING2.rssi = rssi;
-						tsen.LIGHTING2.unitcode = 1;
-						tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
-					}
+					bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
+
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+					tsen.LIGHTING2.packettype = pTypeLighting2;
+					tsen.LIGHTING2.subtype = sTypeAC;
+					tsen.LIGHTING2.seqnbr = 0;
+					tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+					tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+					tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+					tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+					tsen.LIGHTING2.level = 0;
+					tsen.LIGHTING2.rssi = rssi;
+					tsen.LIGHTING2.unitcode = 1;
+					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x09 && pNode->type == 0x04)
@@ -1888,7 +1878,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 0, 51);
 					float hum = GetDeviceValue(DATA_BYTE3, 0, 200, 0, 100);
-					uint8_t co2 = (uint8_t) GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
+					int co2 = (int) GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
 					uint32_t shortID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 					// Report battery level as 9
@@ -2144,12 +2134,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					return;
 				}
-				// The code below supports all the F6-05-xx 'Detectors' profiles:
+				// The code below supports F6-05-xx 'Detectors' profiles:
 				// F6-05-00 : Wind speed threshold detector
 				// F6-05-01 : Liquid leakage sensor
 				// F6-05-02 : Smoke detector
 				// Tested with an Ubiwizz UBILD001-QM smoke detector
-				if (pNode->func == 0x05)
+				if (pNode->func == 0x05 && pNode->type <= 0x02)
 				{
 					bool alarm = false;
 					uint8_t batterylevel = 255;
@@ -2293,6 +2283,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						for (uint8_t nbc = 0; nbc < node_nb_channels; nbc++)
 						{
 							RBUF tsen;
+
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
 							tsen.LIGHTING2.packettype = pTypeLighting2;
@@ -2392,7 +2383,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (func == 0x03 && type == 0x0A)
 				{ // D2-03-0A Push Button – Single Button
-					uint8_t BATT = (uint8_t) GetDeviceValue(data[1], 1, 100, 1, 100);
+					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1, 100));
 					uint8_t BA = data[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
 					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, "Switch", m_Name, 12);
 					return;
