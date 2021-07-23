@@ -32,7 +32,6 @@
 #ifdef ENABLE_ESP3_TESTS
 //#define READCALLBACK_TESTS
 #define ESP3_TESTS_1BS_D5_00_01
-#define ESP3_TESTS_1BS_D5_00_01
 #define ESP3_TESTS_4BS_A5_02_05
 #define ESP3_TESTS_4BS_A5_02_01
 #define ESP3_TESTS_4BS_A5_02_20
@@ -1385,7 +1384,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// Should never happend, since D5-00-01 is the only 1BS EEP
 				Log(LOG_ERROR, "1BS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+					senderID.c_str(), RORG_1BS, pNode->func, pNode->type, GetEEPLabel(RORG_1BS, pNode->func, pNode->type));
 			}
 			return;
 
@@ -1889,7 +1888,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 0, 51);
 					float hum = GetDeviceValue(DATA_BYTE3, 0, 200, 0, 100);
-					uint32_t co2 = (uint32_t) GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
+					uint8_t co2 = (uint8_t) GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
 					uint32_t shortID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 					// Report battery level as 9
@@ -1898,7 +1897,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				Log(LOG_ERROR, "4BS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+					senderID.c_str(), RORG_4BS, pNode->func, pNode->type, GetEEPLabel(RORG_4BS, pNode->func, pNode->type));
 			}
 			return;
 
@@ -1930,7 +1929,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						m_RPS_teachin_timer = GetClockTicks();
 						m_RPS_teachin_count = 1;
 						Log(LOG_NORM, "RPS teach-in request #%u from Node %s", m_RPS_teachin_count, senderID.c_str());
-						Log(LOG_NORM, "RPS teach-in requires %u actions in less than %ums to complete", TEACH_NB_REQUESTS, TEACH_MAX_DELAY);
+						Log(LOG_NORM, "RPS teach-in requires %u actions in less than %ldms to complete", TEACH_NB_REQUESTS, TEACH_MAX_DELAY);
 						return;
 					}
 					if (DATA != m_RPS_teachin_DATA || STATUS != m_RPS_teachin_STATUS)
@@ -2193,6 +2192,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, "Detector", m_Name, rssi);
 					return;
 				}
+				Log(LOG_ERROR, "RPS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
+					senderID.c_str(), RORG_RPS, pNode->func, pNode->type, GetEEPLabel(RORG_RPS, pNode->func, pNode->type));
 			}
 			return;
 
@@ -2397,7 +2398,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				Log(LOG_ERROR, "VLD msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+					senderID.c_str(), RORG_VLD, pNode->func, pNode->type, GetEEPLabel(RORG_VLD, pNode->func, pNode->type));
 			}
 			return;
 
