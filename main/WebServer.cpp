@@ -937,7 +937,7 @@ namespace http
 			bool bAuthorized = false;
 
 			std::string code;
-			std::string error;
+			std::string error = "unknown_error";
 
 			std::string state = request::findValue(&req, "state");
 			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
@@ -962,27 +962,18 @@ namespace http
 							{
 								std::string Username;
 
-								bAuthenticated = m_pWebEm->FindAuthenticatedUser(Username, req);
-								_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Checking User (%s) Authenticated (%d)!", Username.c_str(), bAuthenticated);
+								bAuthenticated = m_pWebEm->FindAuthenticatedUser(Username, req, rep);
+
+								if (Username.empty())
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: No valid User, present Basic Auth Dialog!");
+									return;
+								}
+
+								_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Checking User (%s) if authenticated (%d)!", Username.c_str(), bAuthenticated);
 
 								if (m_users[iClient].userrights == URIGHTS_CLIENTID)	// Found a registered client
 								{
-									// So find the intended User. Should be one of the scope's (user:)
-									/*
-									std::string UserFromScope = "";
-									std::vector<std::string> strarray;
-									StringSplit(scope, " ", strarray);
-									for (const auto &str : strarray)
-									{
-										if (str.substr(0,5) == "user:")
-										{
-											UserFromScope = str.substr(5);
-											iUser = FindUser(UserFromScope.c_str());
-											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Extracted user (%s)(%d) from scopes", UserFromScope.c_str(), iUser);
-											break;
-										}
-									}
-									*/
 									iUser = FindUser(Username.c_str());
 									if (iUser != -1)
 									{
@@ -990,7 +981,7 @@ namespace http
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Could not find intended user in scopes (%s) for Client (%s)!", scope.c_str(), client_id.c_str());
+										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Could not find an authenticated user for Client (%s)!", client_id.c_str());
 									}
 								}
 								else
@@ -1020,45 +1011,32 @@ namespace http
 								}
 								else
 								{
-									rep.status = reply::unauthorized;
-									error = "Authentication failed";
+									error = "Authentication for a user has failed!";
 								}
 							}
 						}
 						if (iUser == -1)
 						{
-							rep.status = reply::forbidden;
 							error = "unauthorized_client";
 							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
 						}
 					}
 					else
 					{
-						rep.status = reply::bad_request;
 						error = "unsupported_response_type";
 						_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Invalid/unsupported response_type (%s)!", response_type.c_str());
 					}
 				}
 				else
 				{
-					rep.status = reply::bad_request;
+					error = "unsupported_request_method";
 					_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Received invalid request method .%s.", req.method.c_str());
 				}
 			}
 			else
 			{
-				rep.status = reply::bad_request;
+				error = "missing or wrong redirect_uri";
 				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
-			}
-
-			if (!(bAuthorized && bAuthenticated))
-			{
-				Json::Value root;
-				root["error"] = error;
-
-				reply::add_header_content_type(&rep, "application/json");
-				reply::set_content(&rep, root.toStyledString());
-				return;
 			}
 
 			std::stringstream result;
