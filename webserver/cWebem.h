@@ -150,7 +150,7 @@ namespace http
 			std::string generateAuthToken(const WebEmSession &session, const request &req);
 			bool checkAuthToken(WebEmSession &session);
 			void removeAuthToken(const std::string &sessionId);
-			int check_password(struct ah *ah, const std::string &ha1, const std::string &realm);
+			int check_password(struct ah *ah, const std::string &ha1);
 		};
 
 		/**
@@ -192,7 +192,7 @@ namespace http
 			bool IsBadRequestPath(const std::string &original_request_path);
 
 			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const bool noclient = false);
-			bool FindAuthenticatedUser(std::string &user, const request &req);
+			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;

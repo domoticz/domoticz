@@ -1160,9 +1160,23 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
-		bool cWebem::FindAuthenticatedUser(std::string &user, const request &req)
+		bool cWebem::FindAuthenticatedUser(std::string &user, const request &req, reply &rep)
 		{
-			return myRequestHandler.CheckUserAuthorization(user, req);
+			bool bStatus = myRequestHandler.CheckUserAuthorization(user, req);
+
+			if (user.empty())
+			{
+				rep = reply::stock_reply(reply::unauthorized);
+				rep.status = reply::unauthorized;
+				char szAuthHeader[200];
+				sprintf(szAuthHeader,
+					"Basic "
+					"realm=\"%s\"",
+					m_DigistRealm.c_str());
+				reply::add_header(&rep, "WWW-Authenticate", szAuthHeader);
+			}
+
+			return bStatus;
 		}
 
 		bool cWebemRequestHandler::CheckUserAuthorization(std::string &user, const request &req)
@@ -1172,14 +1186,13 @@ namespace http {
 			if(!parse_auth_header(req, &_ah))
 				return false;
 
-			user = _ah.user;
-
 			// Check if valid password has been provided for the user
 			for (const auto &my : myWebem->m_userpasswords)
 			{
-				if (my.Username == user && my.userrights != URIGHTS_CLIENTID)
+				if (my.Username == _ah.user && my.userrights != URIGHTS_CLIENTID)
 				{
-					return check_password(&_ah, my.Password, myWebem->m_DigistRealm);
+					user = _ah.user;	// At least we know it is an existing User
+					return check_password(&_ah, my.Password);
 				}
 			}
 			return false;
@@ -1372,7 +1385,7 @@ namespace http {
 		}
 
 		// Check the user's password, return 1 if OK
-		int cWebemRequestHandler::check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
+		int cWebemRequestHandler::check_password(struct ah *ah, const std::string &ha1)
 		{
 			if ((ah->nonce.empty()) && (!ah->response.empty()))
 				return (ha1 == GenerateMD5Hash(ah->response));
@@ -1430,7 +1443,7 @@ namespace http {
 			{
 				if (my.Username == _ah.user)
 				{
-					int bOK = check_password(&_ah, my.Password, myWebem->m_DigistRealm);
+					int bOK = check_password(&_ah, my.Password);
 					_log.Debug(DEBUG_AUTH, "User %s password check: %d", _ah.user.c_str(), bOK);
 					if (!bOK || my.userrights == URIGHTS_CLIENTID)	// User with ClientID 'rights' are not real users!
 					{
