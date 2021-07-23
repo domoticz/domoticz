@@ -1889,7 +1889,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 0, 51);
 					float hum = GetDeviceValue(DATA_BYTE3, 0, 200, 0, 100);
-					int co2 = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
+					uint32_t co2 = (uint32_t) GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
 					uint32_t shortID = (ID_BYTE2 << 8) + ID_BYTE1;
 
 					// Report battery level as 9
