@@ -105,4 +105,10 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
+
+	std::string m_RPS_teachin_nodeID;
+	uint8_t m_RPS_teachin_DATA;
+	uint8_t m_RPS_teachin_STATUS;
+	time_t m_RPS_teachin_timer;
+	uint8_t m_RPS_teachin_count;
 };

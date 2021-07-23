@@ -259,6 +259,11 @@ const uint8_t crc8table[256] = {
 
 #define round(a) ((int) (a + .5))
 
+// Nb consecutives teach request from a node to allow teach-in
+#define TEACH_NB_REQUESTS 3
+// Maximum delay to receive TEACH_NB_REQUESTS from a node to allow teach-in
+#define TEACH_MAX_DELAY ((time_t) 2000)
+
 // UTE Direction response codes
 typedef enum
 {
@@ -746,6 +751,10 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_RPS_F6_02_01
 // F6-02-01, Rocker Switch, 2 Rocker - teach-in
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x53, 0x00, 0x09 },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x53, 0x00, 0x09 },
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x53, 0x00, 0x09 },
 
@@ -1876,58 +1885,102 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 		case RORG_RPS:
 			{ // RPS telegram, F6-xx-xx, Repeated Switch Communication
-				uint8_t T21 = (STATUS & S_RPS_T21) >> S_RPS_T21_SHIFT;
-				uint8_t NU = (STATUS & S_RPS_NU) >> S_RPS_NU_SHIFT;
+				uint8_t DATA = data[1];
 
-				Log(LOG_NORM, "RPS msg: Node: %s Status: %02X (T21: %d NU: %d)", senderID.c_str(), STATUS, T21, NU);
-
-				int func;
-				int type;
+				uint8_t T21 = bitrange(STATUS, 5, 0x01); // 0=PTM switch module of type 1 (PTM1xx), 1=PTM switch module of type 2 (PTM2xx)
+				uint8_t NU = bitrange(STATUS, 4, 0x01); // 0=U-message (Unassigned), 1=N-message (Normal)
 
 				if (pNode == nullptr)
-				{
-					func = 0x02;
-					type = 0x01;
+				{ // Node not found
+					if (!m_sql.m_bAcceptNewHardware)
+					{ // Node not found, but learn mode disabled
+						Log(LOG_NORM, "RPS teach-in request from Node %s", senderID.c_str());
+						Log(LOG_NORM, "Unknown Node %s, please allow accepting new hardware and proceed to teach-in", senderID.c_str());
+						return;
+					}
+					// Node not found and learn mode enabled
+
+					// EnOcean EEP 2.6.8, §1.7, p.13
+					// To avoid inadvertent learning, RPS telegrams have to be triggered 3 times within 2 seconds to allow teach-in
+
+					if (senderID != m_RPS_teachin_nodeID)
+					{ // First occurence of RPS teach-in request for senderID
+						m_RPS_teachin_nodeID = senderID;
+						m_RPS_teachin_DATA = DATA;
+						m_RPS_teachin_STATUS = STATUS;
+						m_RPS_teachin_timer = GetClockTicks();
+						m_RPS_teachin_count = 1;
+						Log(LOG_NORM, "RPS teach-in request #%u from Node %s", m_RPS_teachin_count, senderID.c_str());
+						Log(LOG_NORM, "RPS teach-in requires %u actions in less than %ums to complete", TEACH_NB_REQUESTS, TEACH_MAX_DELAY);
+						return;
+					}
+					if (DATA != m_RPS_teachin_DATA || STATUS != m_RPS_teachin_STATUS)
+					{ // Same node ID, but data or status differ => ignore telegram
+						Log(LOG_NORM, "RPS teach-in request from Node %s (ignored telegram)", senderID.c_str());
+						return;
+					}
+					time_t now = GetClockTicks();
+					if (m_RPS_teachin_timer != 0 && now > (m_RPS_teachin_timer + TEACH_MAX_DELAY))
+					{ // Max delay expired => teach-in request ignored
+						m_RPS_teachin_nodeID = "";
+						Log(LOG_NORM, "RPS teach-in request from Node %s (timed out)", senderID.c_str());
+						return;
+					}
+					if (++m_RPS_teachin_count < TEACH_NB_REQUESTS)
+					{ // TEACH_NB_REQUESTS not reached => continue to wait
+						Log(LOG_NORM, "RPS teach-in request #%u from Node %s", m_RPS_teachin_count, senderID.c_str());
+						return;
+					}
+					// Received 3 identical telegrams from the node within delay => proceed to teach-in
+
+					m_RPS_teachin_nodeID = "";
+					Log(LOG_NORM, "RPS teach-in request #%u from Node %s accepted", m_RPS_teachin_count, senderID.c_str());
+
+					// EEP F6-01-01, Rocker Switch, 2 Rocker
+					uint8_t node_func = 0x02;
+					uint8_t node_type = 0x01;
 
 					Log(LOG_NORM, "Creating Node %s with generic EEP %02X-%02X-%02X (%s)",
-						senderID.c_str(), RORG_RPS, func, type, GetEEPLabel(RORG_RPS, func, type));
+						senderID.c_str(), RORG_RPS, node_func, node_type, GetEEPLabel(RORG_RPS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, func, type, true);
-					Log(LOG_NORM, "Node %s inserted in the database with default profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, func, type);
-					Log(LOG_NORM, "If your Enocean RPS device uses another profile, you must update its configuration.");
+					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, node_func, node_type, true);
+					return;
 				}
-				else
-				{
-					// hardware device was already teached-in
-					func = pNode->func;
-					type = pNode->type;
-					Log(LOG_NORM, "Node %s found in the database with profile %02X-%02X-%02X", senderID.c_str(), RORG_RPS, func, type);
+				// RPS data telegram
 
-					// if a button is attached to a module, ignore it else it will conflict with status reported using VLD datagram
-					if( (func == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
-						 ((type == 0x0F) || (type == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
-						)
-					{
+				Log(LOG_NORM, "RPS %s: Node %s EEP %02X-%02X_%02X (%s) DATA %02X (%s)",
+					(NU == 0) ? "U-msg" : "N-msg",
+					senderID.c_str(),
+					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+					DATA, (T21 == 0) ? "PTM1xx" : "PTM2xx");
+
+				// EEP D2-01-XX, Electronic Switches and Dimmers with Local Control
+				// D2-01-0D, Micro smart plug, single channel, with external button control
+				// D2-01-0E, Micro smart plug, single channel, with external button control
+				// D2-01-0F, Slot-in module, single channel, with external button control
+				// D2-01-12, Slot-in module, dual channels, with external button control
+				// These nodes send RPS telegrams whenever the external button control is used
+				// Ignore these RPS telegrams : device status will be reported using VLD datagram
+
+				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type == 0x01))
+				{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_STATUS,"Node %s, Ignore VLD button press", senderID.c_str());
+					Log(LOG_NORM,"Node %s, VLD device button press ignored", senderID.c_str());
 #endif
-						break;
-					}
+					return;
 				}
+				// RPS data
 
-				// Whether we use the ButtonID reporting with ON/OFF
-				bool useButtonIDs = true;
-
-				// EEP F6-02-01
-				// Rocker switch, 2 Rocker (Light and blind control, Application style 1)
-				if ((func == 0x02) && (type == 0x01))
+				if (pNode->func == 0x02 && pNode->type == 0x01)
 				{
+					// EEP F6-02-01
+					// Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+
+					bool useButtonIDs = true; // Whether we use the ButtonID reporting with ON/OFF
 
 					if (STATUS & S_RPS_NU)
 					{
-						//Rocker
-
 						uint8_t DATA_BYTE3 = data[1];
 
 						// NU == 1, N-Message
@@ -2050,17 +2103,18 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 						}
 					}
+					return;
 				}
 				// The code below supports all the F6-05-xx 'Detectors' profiles:
 				// F6-05-00 : Wind speed threshold detector
 				// F6-05-01 : Liquid leakage sensor
 				// F6-05-02 : Smoke detector
 				// Tested with an Ubiwizz UBILD001-QM smoke detector
-				else if (func == 0x05)
+				if (pNode->func == 0x05)
 				{
 					bool alarm = false;
 					uint8_t batterylevel = 255;
-					if (type == 0x00 || type == 0x02) // only F6-05-00 and F6-05-02 report Energy LOW warning
+					if (pNode->type == 0x00 || pNode->type == 0x02) // only F6-05-00 and F6-05-02 report Energy LOW warning
 						batterylevel = 100;
 
 					switch (data[1]) {
@@ -2097,6 +2151,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						}
 					}
 					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, "Detector", m_Name, rssi);
+					return;
 				}
 			}
 			return;
