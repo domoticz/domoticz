@@ -31,12 +31,14 @@
 //#define ENABLE_ESP3_TESTS
 #ifdef ENABLE_ESP3_TESTS
 //#define READCALLBACK_TESTS
-//#define ESP3_TESTS_1BS_D5_00_01
+#define ESP3_TESTS_1BS_D5_00_01
+#define ESP3_TESTS_1BS_D5_00_01
 #define ESP3_TESTS_4BS_A5_02_05
 #define ESP3_TESTS_4BS_A5_02_01
 #define ESP3_TESTS_4BS_A5_02_20
 #define ESP3_TESTS_4BS_A5_04_01
 #define ESP3_TESTS_4BS_A5_20_01
+#define ESP3_TESTS_RPS_F6_01_01
 #define ESP3_TESTS_RPS_F6_02_01
 #define ESP3_TESTS_UTE_D2_01_12
 #define ESP3_TESTS_VLD_D2_01_12
@@ -748,6 +750,23 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // A5-20-01 Teach-in request, Variation 3
 	{ ESP3_SER_SYNC, 0x00, 0x0A, 0x00, PACKET_RADIO_ERP1, 0x80, RORG_4BS, 0x80, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x20, 0x01, 0x00, 0xA5 },
 #endif
+
+#ifdef ESP3_TESTS_RPS_F6_01_01
+// F6-01-01, Switch Buttons, Push Button - teach-in
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
+
+// F6-01-01, Switch Buttons, Push Button - use
+// Following is interpreted as generic EEP F6-02-01
+// RPS N-msg: Button pressed
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
+// RPS N-msg: Button released
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
+# endif
 
 #ifdef ESP3_TESTS_RPS_F6_02_01
 // F6-02-01, Rocker Switch, 2 Rocker - teach-in
@@ -1972,10 +1991,31 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// RPS data
 
-				if (pNode->func == 0x02 && pNode->type == 0x01)
-				{
-					// EEP F6-02-01
-					// Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+				if (pNode->func == 0x01 && pNode->type == 0x01)
+				{ // F6-01-01, Switch Buttons, Push button
+					uint8_t PB = bitrange(DATA, 4, 0x01);
+
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+					tsen.LIGHTING2.packettype = pTypeLighting2;
+					tsen.LIGHTING2.subtype = sTypeAC;
+					tsen.LIGHTING2.seqnbr = 0;
+					tsen.LIGHTING2.id1 = (BYTE)ID_BYTE3;
+					tsen.LIGHTING2.id2 = (BYTE)ID_BYTE2;
+					tsen.LIGHTING2.id3 = (BYTE)ID_BYTE1;
+					tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
+					tsen.LIGHTING2.level = 0;
+					tsen.LIGHTING2.rssi = rssi;
+					tsen.LIGHTING2.unitcode = 1;
+					tsen.LIGHTING2.cmnd = PB ? light2_sOn : light2_sOff;
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+					return;
+				}
+				if (pNode->func == 0x02 && (pNode->type == 0x01 ||pNode->type == 0x02))
+				{ // F6-02-01, F6-02-02
+					// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+					// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
 
 					bool useButtonIDs = true; // Whether we use the ButtonID reporting with ON/OFF
 
