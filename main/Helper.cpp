@@ -763,6 +763,20 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 	return ret;
 }
 
+time_t GetClockTicks()
+{
+#ifdef CLOCK_REALTIME
+	struct timespec ts;
+
+	if (!clock_gettime(CLOCK_REALTIME, &ts))
+		return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+#endif
+	struct timeval tv;
+
+	gettimeofday(&tv, nullptr);
+	return(ts.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
 std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
