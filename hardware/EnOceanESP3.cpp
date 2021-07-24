@@ -20,7 +20,7 @@
 //#define _DEBUG
 #ifdef _DEBUG
 // DEBUG: Enable logging of ESP3 packets management
-//#define ENABLE_ESP3_PROTOCOL_DEBUG
+#define ENABLE_ESP3_PROTOCOL_DEBUG
 // DEBUG: Enable logging of ESP3 devices management
 #define ENABLE_ESP3_DEVICE_DEBUG
 #endif
@@ -414,99 +414,6 @@ typedef enum
 #define DB3_HRC_SR  0x08
 #define DB3_HRC_SR_SHIFT 3
 
-std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
-{
-	std::stringstream sstr;
-
-	sstr << GetPacketTypeLabel(packettype);
-
-	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
-	for (int i = 0; i < datalen; i++)
-		if (i == 0 && packettype == PACKET_RADIO_ERP1)
-			sstr << " " << GetRORGLabel((uint32_t)data[i]);
-		else
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
-
-	if (optdatalen > 0)
-	{
-		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
-
-		for (int i = 0; i < optdatalen; i++)
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
-	}
-	return sstr.str();
-}
-
-std::string CEnOceanESP3::DumpESP3Packet(std::string esp3packet)
-{
-	uint8_t packettype = esp3packet[4];
-	uint8_t *data = (uint8_t *) &esp3packet[ESP3_HEADER_LENGTH + 2];
-	uint16_t datalen = esp3packet[1] << 8 | esp3packet[2];
-	uint8_t *optdata = data + datalen;
-	uint8_t optdatalen = esp3packet[3];
-
-	return DumpESP3Packet(packettype, data, datalen, optdata, optdatalen);
-}
-
-std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
-{
-	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
-	uint32_t len = 0;
-
-	uint8_t defaulERP1optdata[] = { 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
-	if (optdatalen == 0 && packettype == PACKET_RADIO_ERP1)
-	{ // If not provided, add default optional data for PACKET_RADIO_ERP1
-		optdata = defaulERP1optdata;
-		optdatalen = 7;
-	}
-	buf[len++] = ESP3_SER_SYNC;
-	buf[len++] = (uint8_t) bitrange(datalen, 8, 0x00FF);
-	buf[len++] = (uint8_t) bitrange(datalen, 0, 0x00FF);
-	buf[len++] = optdatalen;
-	buf[len++] = packettype;
-
-	uint8_t crc = 0;
-
-	crc = proc_crc8(crc, buf[1]);
-	crc = proc_crc8(crc, buf[2]);
-	crc = proc_crc8(crc, buf[3]);
-	crc = proc_crc8(crc, buf[4]);
-	buf[len++] = crc;
-
-	crc = 0;
-	for (uint32_t i = 0; i < datalen; i++)
-	{
-		buf[len] = data[i];
-		crc = proc_crc8(crc, buf[len]);
-		len++;
-	}
-	for (uint32_t i = 0; i < optdatalen; i++)
-	{
-		buf[len] = optdata[i];
-		crc = proc_crc8(crc, buf[len]);
-		len++;
-	}
-	buf[len++] = crc;
-
-	std::string sBytes;
-	sBytes.assign((const char *)buf, len);
-	return sBytes;
-}
-
-void CEnOceanESP3::SendESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
-{
-	std::string sBytes = FormatESP3Packet(packettype, data, datalen, optdata, optdatalen);
-	std::lock_guard<std::mutex> l(m_sendMutex);
-	m_sendqueue.insert(m_sendqueue.begin(), sBytes);
-}
-
-void CEnOceanESP3::SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
-{
-	std::string sBytes = FormatESP3Packet(packettype, data, datalen, optdata, optdatalen);
-	std::lock_guard<std::mutex> l(m_sendMutex);
-	m_sendqueue.push_back(sBytes);
-}
-
 CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int type)
 {
 	m_HwdID = ID;
@@ -659,7 +566,7 @@ void CEnOceanESP3::Do_Work()
 	}
 	// Close ESP3 hardware
 	terminate();
-	Log(LOG_STATUS, "ESP3 worker stopped");
+	Log(LOG_STATUS, "ESP3 worker stopped...");
 }
 
 #ifdef ENABLE_ESP3_TESTS
@@ -834,13 +741,13 @@ bool CEnOceanESP3::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 57600); // ECP3 open with 57600
-		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
 		Log(LOG_ERROR, "Error opening serial port!");
 #ifdef _DEBUG
-		Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+		Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
 		(void)e;
 #endif
@@ -851,7 +758,9 @@ bool CEnOceanESP3::OpenSerialDevice()
 		Log(LOG_ERROR, "Error opening serial port!");
 		return false;
 	}
-	m_bIsStarted=true;
+	m_bIsStarted = true;
+
+	m_RPS_teachin_nodeID = "";
 
 	m_receivestate = ERS_SYNCBYTE;
 	setReadCallback([this](auto d, auto l) { ReadCallback(d, l); });
@@ -886,101 +795,248 @@ bool CEnOceanESP3::OpenSerialDevice()
 	return true;
 }
 
+std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
+{
+	std::stringstream sstr;
+
+	sstr << GetPacketTypeLabel(packettype);
+
+	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
+	for (int i = 0; i < datalen; i++)
+		if (i == 0 && packettype == PACKET_RADIO_ERP1)
+			sstr << " " << GetRORGLabel((uint32_t)data[i]);
+		else
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
+
+	if (optdatalen > 0)
+	{
+		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
+
+		for (int i = 0; i < optdatalen; i++)
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
+	}
+	return sstr.str();
+}
+
+std::string CEnOceanESP3::DumpESP3Packet(std::string esp3packet)
+{
+	uint8_t packettype = esp3packet[4];
+	uint8_t *data = (uint8_t *) &esp3packet[ESP3_HEADER_LENGTH + 2];
+	uint16_t datalen = esp3packet[1] << 8 | esp3packet[2];
+	uint8_t *optdata = data + datalen;
+	uint8_t optdatalen = esp3packet[3];
+
+	return DumpESP3Packet(packettype, data, datalen, optdata, optdatalen);
+}
+
+std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
+{
+	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
+	uint32_t len = 0;
+
+	uint8_t defaulERP1optdata[] = { 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+	if (optdatalen == 0 && packettype == PACKET_RADIO_ERP1)
+	{ // If not provided, add default optional data for PACKET_RADIO_ERP1
+		optdata = defaulERP1optdata;
+		optdatalen = 7;
+	}
+	buf[len++] = ESP3_SER_SYNC;
+	buf[len++] = (uint8_t) bitrange(datalen, 8, 0x00FF);
+	buf[len++] = (uint8_t) bitrange(datalen, 0, 0x00FF);
+	buf[len++] = optdatalen;
+	buf[len++] = packettype;
+
+	uint8_t crc = 0;
+
+	crc = proc_crc8(crc, buf[1]);
+	crc = proc_crc8(crc, buf[2]);
+	crc = proc_crc8(crc, buf[3]);
+	crc = proc_crc8(crc, buf[4]);
+	buf[len++] = crc;
+
+	crc = 0;
+	for (uint32_t i = 0; i < datalen; i++)
+	{
+		buf[len] = data[i];
+		crc = proc_crc8(crc, buf[len]);
+		len++;
+	}
+	for (uint32_t i = 0; i < optdatalen; i++)
+	{
+		buf[len] = optdata[i];
+		crc = proc_crc8(crc, buf[len]);
+		len++;
+	}
+	buf[len++] = crc;
+
+	std::string sBytes;
+	sBytes.assign((const char *)buf, len);
+	return sBytes;
+}
+
+void CEnOceanESP3::SendESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
+{
+	std::string sBytes = FormatESP3Packet(packettype, data, datalen, optdata, optdatalen);
+	std::lock_guard<std::mutex> l(m_sendMutex);
+	m_sendqueue.insert(m_sendqueue.begin(), sBytes);
+}
+
+void CEnOceanESP3::SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen)
+{
+	std::string sBytes = FormatESP3Packet(packettype, data, datalen, optdata, optdatalen);
+	std::lock_guard<std::mutex> l(m_sendMutex);
+	m_sendqueue.push_back(sBytes);
+}
+
 bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_id_base==0)
+	if (m_id_base == 0)
 		return false;
 	if (!isOpen())
 		return false;
-	RBUF *tsen=(RBUF*)pdata;
-	if (tsen->LIGHTING2.packettype!=pTypeLighting2)
-		return false; //only allowed to control switches
+
+	RBUF *tsen = (RBUF *)pdata;
+	if (tsen->LIGHTING2.packettype != pTypeLighting2)
+		return false; // Only allowed to control switches
 
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
+
 	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
 	{
-		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR, "Can not switch with ID %s, use a switch created with base ID %s!", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 		return false;
 	}
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		Log(LOG_ERROR, "Node %s, double not supported!", nodeID.c_str());
+		Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
 		return false;
 	}
-	//First we need to find out if this is a Dimmer switch,
-	//because they are threaded differently
 
 	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
 	uint8_t Pressed = 1;
-	bool bIsDimmer=false;
-	uint8_t LastLevel=0;
+	bool bIsDimmer = false;
+	uint8_t LastLevel = 0;
+
+	//First we need to find out if this is a Dimmer switch, because they are threaded differently
 
 	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, deviceID.c_str(), int(tsen->LIGHTING2.unitcode));
+	std::vector<std::vector<std::string>> result;
+
+	result = m_sql.safe_query("SELECT SwitchType, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, deviceID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
 	{
-		_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
-		if (switchtype==STYPE_Dimmer)
-			bIsDimmer=true;
-		LastLevel=(uint8_t)atoi(result[0][1].c_str());
+		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+		if (switchtype == STYPE_Dimmer)
+			bIsDimmer = true;
+		LastLevel = (uint8_t)atoi(result[0][1].c_str());
 	}
 
-	uint8_t iLevel=tsen->LIGHTING2.level;
-	int cmnd=tsen->LIGHTING2.cmnd;
-	int orgcmd=cmnd;
-	if ((tsen->LIGHTING2.level==0)&&(!bIsDimmer))
-		cmnd=light2_sOff;
+	uint8_t iLevel = tsen->LIGHTING2.level;
+	int cmnd = tsen->LIGHTING2.cmnd;
+	int orgcmd = cmnd;
+	if (tsen->LIGHTING2.level == 0 && !bIsDimmer)
+		cmnd = light2_sOff;
 	else
 	{
-		if (cmnd==light2_sOn)
-			iLevel=LastLevel;
+		if (cmnd == light2_sOn)
+			iLevel = LastLevel;
 		else
-		{
-			//scale to 0 - 100 %
-			iLevel=tsen->LIGHTING2.level;
-			if (iLevel>15)
-				iLevel=15;
+		{ // scale to 0 - 100 %
+			iLevel = tsen->LIGHTING2.level;
+			if (iLevel > 15)
+				iLevel = 15;
 			float fLevel = (100.0F / 15.0F) * float(iLevel);
 			if (fLevel > 99.0F)
 				fLevel = 100.0F;
-			iLevel=(uint8_t)(fLevel);
+			iLevel = (uint8_t)(fLevel);
 		}
-		cmnd=light2_sSetLevel;
+		cmnd = light2_sSetLevel;
 	}
 
-	uint8_t buf[100];
+	uint8_t buf[20];
 
-	if(!bIsDimmer)
+	if (bIsDimmer)
+	{
+		// EEP A5-38-02, On/Off switch with dimming capability
+		// cf. EnOcean Equipment Profiles 2.6.5 pages 12 (4BS format) & 103
+		buf[0] = RORG_RPS;
+		buf[1] = 0x02;
+		buf[2] = 100;  // level
+		buf[3] = 1;    // speed
+		buf[4] = 0x09; // Dim Off
+		buf[5]=(iNodeID >> 24) & 0xFF;	// Sender ID
+		buf[6]=(iNodeID >> 16) & 0xFF;
+		buf[7]=(iNodeID >> 8) & 0xFF;
+		buf[8]=iNodeID & 0xFF;
+		buf[9] = 0x30; // status
+
+		if (cmnd != light2_sSetLevel)
+		{
+			// On/Off
+			uint8_t UpDown = 1;
+			UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
+
+			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
+			buf[9] = 0x30;
+
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+
+			// Next command is send a bit later (button release)
+			buf[1] = 0;
+			buf[9] = 0x20;
+
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+		}
+		else
+		{
+			// Send dim value
+
+			// Dim On DATA_BYTE0 = 0x09
+			// Dim Off DATA_BYTE0 = 0x08
+
+			buf[1] = 2;
+			buf[2] = iLevel;
+			buf[3] = 1; // very fast dimming
+
+			if ((iLevel == 0) || (orgcmd == light2_sOff))
+				buf[4] = 0x08; // Dim Off
+			else
+				buf[4] = 0x09; // Dim On
+
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+		}
+	}
+	else
 	{
 		// EEP F6-02-01, On/Off switch without dimming capability
-		// cf. EnOcean Equipment Profiles v2.6.5 page 11 (RPS format) & 14
+		// cf. EnOcean Equipment Profiles 2.6.5 page 11 (RPS format) & 14
 		uint8_t UpDown = 1;
 
 		buf[0] = RORG_RPS;
 
 		UpDown = ((orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff));
 
-		switch(RockerID)
+		switch (RockerID)
 		{
 			case 0:	// Button A
-						if(UpDown)
-							buf[1] = F60201_BUTTON_A1 << F60201_R1_SHIFT;
-						else
-							buf[1] = F60201_BUTTON_A0 << F60201_R1_SHIFT;
-						break;
+				if(UpDown)
+					buf[1] = F60201_BUTTON_A1 << F60201_R1_SHIFT;
+				else
+					buf[1] = F60201_BUTTON_A0 << F60201_R1_SHIFT;
+				break;
 
 			case 1:	// Button B
-						if(UpDown)
-							buf[1] = F60201_BUTTON_B1 << F60201_R1_SHIFT;
-						else
-							buf[1] = F60201_BUTTON_B0 << F60201_R1_SHIFT;
-						break;
+				if(UpDown)
+					buf[1] = F60201_BUTTON_B1 << F60201_R1_SHIFT;
+				else
+					buf[1] = F60201_BUTTON_B0 << F60201_R1_SHIFT;
+				break;
 
 			default:
-						return false;	// not supported
+				return false; // not supported
 		}
 
 		buf[1] |= F60201_EB_MASK;		// button is pressed
@@ -995,85 +1051,33 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
 		//Next command is send a bit later (button release)
-		buf[1] = 0;				// no button press
-		buf[6] = S_RPS_T21;	// release button => b5=T21, b4=NU, b3-b0= RepeaterCount
+		buf[1] = 0; // no button press
+		buf[6] = S_RPS_T21; // release button
 
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
-	}
-	else
-	{
-		// EEP A5-38-02, On/Off switch with dimming capability
-		// cf. EnOcean Equipment Profiles v2.6.5 page 12 (4BS format) & 103
-		buf[0]=0xa5;
-		buf[1]=0x2;
-		buf[2]=100;	//level
-		buf[3]=1;	//speed
-		buf[4]=0x09; // Dim Off
-
-		buf[5]=(iNodeID >> 24) & 0xFF;	// Sender ID
-		buf[6]=(iNodeID >> 16) & 0xFF;
-		buf[7]=(iNodeID >> 8) & 0xFF;
-		buf[8]=iNodeID & 0xFF;
-
-		buf[9]=0x30; // status
-
-		if (cmnd!=light2_sSetLevel)
-		{
-			//On/Off
-			uint8_t UpDown = 1;
-			UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
-
-			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
-			buf[9] = 0x30;
-
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
-
-			//Next command is send a bit later (button release)
-			buf[1] = 0;
-			buf[9] = 0x20;
-
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
-		}
-		else
-		{
-			//Send dim value
-
-			//Dim On DATA_BYTE0 = 0x09
-			//Dim Off DATA_BYTE0 = 0x08
-
-			buf[1]=2;
-			buf[2]=iLevel;
-			buf[3]=1;//very fast dimming
-
-			if ((iLevel==0)||(orgcmd==light2_sOff))
-				buf[4]=0x08; //Dim Off
-			else
-				buf[4]=0x09;//Dim On
-
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
-		}
 	}
 
 	return true;
 }
 
-void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*length*/)
+void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char length)
 {
-	if (m_id_base==0)
+	if (m_id_base == 0)
 		return;
 	if (!isOpen())
 		return;
 
-	RBUF *tsen = (RBUF*)pdata;
+	RBUF *tsen = (RBUF *)pdata;
 	if (tsen->LIGHTING2.packettype != pTypeLighting2)
-		return; //only allowed to control switches
+		return; // Only allowed to control switches
 
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
+
 	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
 	{
-		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 		return;
 	}
 	if (tsen->LIGHTING2.unitcode >= 10)
@@ -1081,6 +1085,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char /*le
 		Log(LOG_ERROR, "Node %s, double not supported", nodeID.c_str());
 		return;
 	}
+	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
 
 	uint8_t buf[10];
 
@@ -1277,7 +1282,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			if (dstID != ERP1_BROADCAST_TRANSMISSION && dstID != m_id_base)
 			{
 #ifdef ENABLE_ESP3_PROTOCOL_DEBUG
-				Log(LOG_NORM, "HwdID %d, Ignore addressed telegram sent to %08X", m_id_base, dstID);
+				Log(LOG_NORM, "HwdID %d, ignore addressed telegram sent to %08X", m_id_base, dstID);
 #endif
 				return;
 			}
@@ -1330,7 +1335,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					if (pNode != nullptr)
 					{
 						Log(LOG_NORM, "Node %s already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
-							senderID.c_str(), RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+							senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 						return;
 					}
 					if (!m_sql.m_bAcceptNewHardware)
@@ -1352,7 +1357,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				// 1BS data
-				
+
 				if (pNode == nullptr)
 				{
 					Log(LOG_NORM, "1BS msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
@@ -1362,7 +1367,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				{ // D5-00-01, Contacts and Switches, Single Input Contact
 					uint8_t CO = bitrange(DATA_BYTE0, 0, 0x01);
 
-					Log(LOG_NORM, "1BS msg: Node %08X Contact %s", iSenderID, CO ? "Off" : "On");
+					Log(LOG_NORM, "1BS msg: Node %s Contact %s", senderID.c_str(), CO ? "Off" : "On");
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -1481,181 +1486,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 
 					DATA_BYTE3, DATA_BYTE2, DATA_BYTE1, DATA_BYTE0);
 
-				if (pNode->func == 0x12 && pNode->type == 0x00)
-				{ // A5-12-00, Automated Meter Reading, Counter
-					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
-					RBUF tsen;
-					memset(&tsen,0,sizeof(RBUF));
-					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
-					tsen.RFXMETER.packettype=pTypeRFXMeter;
-					tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-					tsen.RFXMETER.rssi=rssi;
-					tsen.RFXMETER.id1=ID_BYTE2;
-					tsen.RFXMETER.id2=ID_BYTE1;
-					tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
-					return;
-				}
-				if (pNode->func == 0x12 && pNode->type == 0x01)
-				{ // A5-12-01, Automated Meter Reading, Electricity
-					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
-					_tUsageMeter umeter;
-					umeter.id1=(BYTE)ID_BYTE3;
-					umeter.id2=(BYTE)ID_BYTE2;
-					umeter.id3=(BYTE)ID_BYTE1;
-					umeter.id4=(BYTE)ID_BYTE0;
-					umeter.dunit=1;
-					umeter.fusage=(float)cvalue;
-					sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
-					return;
-				}
-				if (pNode->func == 0x12 && pNode->type == 0x02)
-				{ // A5-12-02, Automated Meter Reading, Gas
-					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
-					RBUF tsen;
-					memset(&tsen,0,sizeof(RBUF));
-					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
-					tsen.RFXMETER.packettype=pTypeRFXMeter;
-					tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-					tsen.RFXMETER.rssi=rssi;
-					tsen.RFXMETER.id1=ID_BYTE2;
-					tsen.RFXMETER.id2=ID_BYTE1;
-					tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
-					return;
-				}
-				if (pNode->func == 0x12 && pNode->type == 0x03)
-				{ // A5-12-03, Automated Meter Reading, Water
-					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
-					RBUF tsen;
-					memset(&tsen,0,sizeof(RBUF));
-					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
-					tsen.RFXMETER.packettype=pTypeRFXMeter;
-					tsen.RFXMETER.subtype=sTypeRFXMeterCount;
-					tsen.RFXMETER.rssi=rssi;
-					tsen.RFXMETER.id1=ID_BYTE2;
-					tsen.RFXMETER.id2=ID_BYTE1;
-					tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
-					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
-					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
-					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
-					return;
-				}
-				if (pNode->func == 0x10 && pNode->type <= 0x0D)
-				{ // A5-10-01..OD, RoomOperatingPanel
-					// Room Sensor and Control Unit (EEP A5-10-01 ... A5-10-0D)
-					// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
-					// DATA_BYTE3 is the fan speed or night reduction for Eltako
-					// DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
-					// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
-					// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
-					// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
-					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
-					if (pNode->manufacturerID != ELTAKO)
-					{ // Generic A5-10-01..OD EEP
-						uint8_t fspeed = 3;
-						if (DATA_BYTE3 >= 145)
-							fspeed = 2;
-						else if (DATA_BYTE3 >= 165)
-							fspeed = 1;
-						else if (DATA_BYTE3 >= 190)
-							fspeed = 0;
-						else if (DATA_BYTE3 >= 210)
-							fspeed = -1; //auto
-						//uint8_t iswitch = DATA_BYTE0 & 1;
-					}
-					else
-					{ // WARNING : ELTAKO specific implementation
-						uint8_t nightReduction = 0;
-						if (DATA_BYTE3 == 0x06)
-							nightReduction = 1;
-						else if (DATA_BYTE3 == 0x0C)
-							nightReduction = 2;
-						else if (DATA_BYTE3 == 0x13)
-							nightReduction = 3;
-						else if (DATA_BYTE3 == 0x19)
-							nightReduction = 4;
-						else if (DATA_BYTE3 == 0x1F)
-							nightReduction = 5;
-						//float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
-					}
-					RBUF tsen;
-					memset(&tsen,0,sizeof(RBUF));
-					tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-					tsen.TEMP.packettype=pTypeTEMP;
-					tsen.TEMP.subtype=sTypeTEMP10;
-					tsen.TEMP.id1=ID_BYTE2;
-					tsen.TEMP.id2=ID_BYTE1;
-					// WARNING
-					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
-					tsen.TEMP.battery_level=ID_BYTE0&0x0F;
-					tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
-					tsen.TEMP.tempsign=(temp>=0)?0:1;
-					int at10 = round(std::abs(temp * 10.0F));
-					tsen.TEMP.temperatureh=(BYTE)(at10/256);
-					at10-=(tsen.TEMP.temperatureh*256);
-					tsen.TEMP.temperaturel=(BYTE)(at10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
-					return;
-				}
-				if (pNode->func == 0x06 && pNode->type == 0x01)
-				{ // A5-06-01, Light Sensor
-					// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
-					// DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
-					// DATA_BYTE3 is the low illuminance for Eltako devices where
-					// min 0x00 = 0 lx, max 0xFF = 100 lx, if DATA_BYTE2 = 0
-					// DATA_BYTE2 is the illuminance (ILL2) where min 0x00 = 300 lx, max 0xFF = 30000 lx
-					// DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
-					// DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
-					float lux =0;
-					if (pNode->manufacturerID != ELTAKO)
-					{ // Generic A5-06-01 EEP
-						float voltage = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
-						if(DATA_BYTE0 & 1)
-							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
-						else
-							lux = GetDeviceValue(DATA_BYTE1, 0, 255, 600, 60000);
-
-						RBUF tsen;
-						memset(&tsen,0,sizeof(RBUF));
-						tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
-						tsen.RFXSENSOR.packettype=pTypeRFXSensor;
-						tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
-						tsen.RFXSENSOR.id=ID_BYTE1;
-						// WARNING
-						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-						tsen.RFXSENSOR.filler=ID_BYTE0&0x0F;
-						tsen.RFXSENSOR.rssi=(ID_BYTE0&0xF0)>>4;
-						tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
-						tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
-					}
-					else
-					{ // WARNING : ELTAKO specific implementation
-						if(DATA_BYTE2 == 0)
-							lux = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 100);
-						else
-							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
-					}
-					_tLightMeter lmeter;
-					lmeter.id1=(BYTE)ID_BYTE3;
-					lmeter.id2=(BYTE)ID_BYTE2;
-					lmeter.id3=(BYTE)ID_BYTE1;
-					lmeter.id4=(BYTE)ID_BYTE0;
-					lmeter.dunit=1;
-					lmeter.fLux=lux;
-					sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
-					return;
-				}
 				if (pNode->func == 0x02 && (pNode->type <= 0x1B || pNode->type == 0x20 || pNode->type == 0x30))
 				{ // A5-02-01..30, Temperature sensor
 					float ScaleMax=0;
@@ -1713,6 +1543,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x04 && pNode->type <= 0x03)
 				{ // A5-04-01..03, Temperature and Humidity Sensor
+					// TOTO : implement A5-04-04
+
 					float ScaleMax = 0;
 					float ScaleMin = 0;
 					if (pNode->type == 0x01) { ScaleMin = 0; ScaleMax = 40; }
@@ -1740,14 +1572,64 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, nullptr, -1, nullptr);
 					return;
 				}
+				if (pNode->func == 0x06 && pNode->type == 0x01)
+				{ // A5-06-01, Light Sensor
+					// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
+					// DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
+					// DATA_BYTE3 is the low illuminance for Eltako devices where
+					// min 0x00 = 0 lx, max 0xFF = 100 lx, if DATA_BYTE2 = 0
+					// DATA_BYTE2 is the illuminance (ILL2) where min 0x00 = 300 lx, max 0xFF = 30000 lx
+					// DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
+					// DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
+					float lux =0;
+					if (pNode->manufacturerID != ELTAKO)
+					{ // General case for A5-06-01 EEP
+						float voltage = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
+						if(DATA_BYTE0 & 1)
+							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
+						else
+							lux = GetDeviceValue(DATA_BYTE1, 0, 255, 600, 60000);
+
+						RBUF tsen;
+						memset(&tsen,0,sizeof(RBUF));
+						tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
+						tsen.RFXSENSOR.packettype=pTypeRFXSensor;
+						tsen.RFXSENSOR.subtype=sTypeRFXSensorVolt;
+						tsen.RFXSENSOR.id=ID_BYTE1;
+						// WARNING
+						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+						tsen.RFXSENSOR.filler=ID_BYTE0&0x0F;
+						tsen.RFXSENSOR.rssi=(ID_BYTE0&0xF0)>>4;
+						tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
+						tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, nullptr, 255, nullptr);
+					}
+					else
+					{ // WARNING : ELTAKO specific implementation
+						if(DATA_BYTE2 == 0)
+							lux = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 100);
+						else
+							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
+					}
+					_tLightMeter lmeter;
+					lmeter.id1=(BYTE)ID_BYTE3;
+					lmeter.id2=(BYTE)ID_BYTE2;
+					lmeter.id3=(BYTE)ID_BYTE1;
+					lmeter.id4=(BYTE)ID_BYTE0;
+					lmeter.dunit=1;
+					lmeter.fLux=lux;
+					sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+					return;
+				}
 				if (pNode->func == 0x07 && pNode->type == 0x01)
 				{ // A5-07-01, Occupancy sensor with Supply voltage monitor
 					RBUF tsen;
 
 					if (DATA_BYTE0 & 1)
-					{
-						//Voltage supported
+					{ //Voltage supported
 						float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // need to convert value from V to mV
+
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 						tsen.RFXSENSOR.packettype = pTypeRFXSensor;
@@ -1884,6 +1766,131 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// Report battery level as 9
 					SendTempHumSensor(shortID, 9, temp, round(hum), "GasSensor.04", rssi);
 					SendAirQualitySensor((shortID & 0xFF00) >> 8, shortID & 0xFF, 9, co2, "GasSensor.04");
+					return;
+				}
+				if (pNode->func == 0x10 && pNode->type <= 0x0D)
+				{ // A5-10-01..OD, RoomOperatingPanel
+					// Room Sensor and Control Unit (EEP A5-10-01 ... A5-10-0D)
+					// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
+					// DATA_BYTE3 is the fan speed or night reduction for Eltako
+					// DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
+					// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
+					// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
+					// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
+					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
+					if (pNode->manufacturerID != ELTAKO)
+					{ // General case for A5-10-01..OD EEP
+						uint8_t fspeed = 3;
+						if (DATA_BYTE3 >= 145)
+							fspeed = 2;
+						else if (DATA_BYTE3 >= 165)
+							fspeed = 1;
+						else if (DATA_BYTE3 >= 190)
+							fspeed = 0;
+						else if (DATA_BYTE3 >= 210)
+							fspeed = -1; //auto
+						//uint8_t iswitch = DATA_BYTE0 & 1;
+					}
+					else
+					{ // WARNING : ELTAKO specific implementation
+						uint8_t nightReduction = 0;
+						if (DATA_BYTE3 == 0x06)
+							nightReduction = 1;
+						else if (DATA_BYTE3 == 0x0C)
+							nightReduction = 2;
+						else if (DATA_BYTE3 == 0x13)
+							nightReduction = 3;
+						else if (DATA_BYTE3 == 0x19)
+							nightReduction = 4;
+						else if (DATA_BYTE3 == 0x1F)
+							nightReduction = 5;
+						//float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
+					}
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+					tsen.TEMP.packettype=pTypeTEMP;
+					tsen.TEMP.subtype=sTypeTEMP10;
+					tsen.TEMP.id1=ID_BYTE2;
+					tsen.TEMP.id2=ID_BYTE1;
+					// WARNING
+					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
+					tsen.TEMP.battery_level=ID_BYTE0&0x0F;
+					tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
+					tsen.TEMP.tempsign=(temp>=0)?0:1;
+					int at10 = round(std::abs(temp * 10.0F));
+					tsen.TEMP.temperatureh=(BYTE)(at10/256);
+					at10-=(tsen.TEMP.temperatureh*256);
+					tsen.TEMP.temperaturel=(BYTE)(at10);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, nullptr, -1, nullptr);
+					return;
+				}
+				if (pNode->func == 0x12 && pNode->type == 0x00)
+				{ // A5-12-00, Automated Meter Reading, Counter
+					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
+					tsen.RFXMETER.packettype=pTypeRFXMeter;
+					tsen.RFXMETER.subtype=sTypeRFXMeterCount;
+					tsen.RFXMETER.rssi=rssi;
+					tsen.RFXMETER.id1=ID_BYTE2;
+					tsen.RFXMETER.id2=ID_BYTE1;
+					tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
+					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
+					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
+					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+					return;
+				}
+				if (pNode->func == 0x12 && pNode->type == 0x01)
+				{ // A5-12-01, Automated Meter Reading, Electricity
+					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+					_tUsageMeter umeter;
+					umeter.id1=(BYTE)ID_BYTE3;
+					umeter.id2=(BYTE)ID_BYTE2;
+					umeter.id3=(BYTE)ID_BYTE1;
+					umeter.id4=(BYTE)ID_BYTE0;
+					umeter.dunit=1;
+					umeter.fusage=(float)cvalue;
+					sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
+					return;
+				}
+				if (pNode->func == 0x12 && pNode->type == 0x02)
+				{ // A5-12-02, Automated Meter Reading, Gas
+					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
+					tsen.RFXMETER.packettype=pTypeRFXMeter;
+					tsen.RFXMETER.subtype=sTypeRFXMeterCount;
+					tsen.RFXMETER.rssi=rssi;
+					tsen.RFXMETER.id1=ID_BYTE2;
+					tsen.RFXMETER.id2=ID_BYTE1;
+					tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
+					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
+					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
+					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
+					return;
+				}
+				if (pNode->func == 0x12 && pNode->type == 0x03)
+				{ // A5-12-03, Automated Meter Reading, Water
+					uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+					RBUF tsen;
+					memset(&tsen,0,sizeof(RBUF));
+					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
+					tsen.RFXMETER.packettype=pTypeRFXMeter;
+					tsen.RFXMETER.subtype=sTypeRFXMeterCount;
+					tsen.RFXMETER.rssi=rssi;
+					tsen.RFXMETER.id1=ID_BYTE2;
+					tsen.RFXMETER.id2=ID_BYTE1;
+					tsen.RFXMETER.count1 = (BYTE)((cvalue & 0xFF000000) >> 24);
+					tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
+					tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
+					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, nullptr, 255, nullptr);
 					return;
 				}
 				Log(LOG_ERROR, "4BS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
@@ -2134,30 +2141,29 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					return;
 				}
-				// The code below supports F6-05-xx 'Detectors' profiles:
-				// F6-05-00 : Wind speed threshold detector
-				// F6-05-01 : Liquid leakage sensor
-				// F6-05-02 : Smoke detector
-				// Tested with an Ubiwizz UBILD001-QM smoke detector
 				if (pNode->func == 0x05 && pNode->type <= 0x02)
-				{
-					bool alarm = false;
-					uint8_t batterylevel = 255;
-					if (pNode->type == 0x00 || pNode->type == 0x02) // only F6-05-00 and F6-05-02 report Energy LOW warning
-						batterylevel = 100;
+				{ // F6-05-xx, Detectors
+					// F6-05-00 : Wind speed threshold detector
+					// F6-05-01 : Liquid leakage sensor
+					// F6-05-02 : Smoke detector
 
-					switch (data[1]) {
+					bool alarm = false;
+					// Only EEP F6-05-00 and F6-05-02 report Energy LOW warning
+					int batterylevel = (pNode->type == 0x00 || pNode->type == 0x02) ? 255 : 100;
+
+					switch (DATA)
+					{
 						case 0x00: // F6-05-00 and F6-05-02
 						{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "Node %s Alarm OFF", senderID.c_str());
+							Log(LOG_NORM, "RPS msg: Node %s Alarm OFF", senderID.c_str());
 #endif
 							break;
 						}
 						case 0x10: // F6-05-00 and F6-05-02
 						{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "Node %s Alarm ON", senderID.c_str());
+							Log(LOG_NORM, "RPS msg: Node %s Alarm ON", senderID.c_str());
 #endif
 							alarm = true;
 							break;
@@ -2165,7 +2171,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						case 0x11: // F6-05-01
 						{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "Node %s Alarm ON water detected", senderID.c_str());
+							Log(LOG_NORM, "RPS msg: Node %s Alarm ON water detected", senderID.c_str());
 #endif
 							alarm = true;
 							break;
@@ -2173,13 +2179,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						case 0x30: // F6-05-00 and F6-05-02
 						{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "Node %s Energy LOW warning", senderID.c_str());
+							Log(LOG_NORM, "RPS msg: Node %s Energy LOW warning", senderID.c_str());
 #endif
 							batterylevel = 5;
 							break;
 						}
 					}
-					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, "Detector", m_Name, rssi);
+					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, GetEEPLabel(RORG_RPS, pNode->func, pNode->type), m_Name, rssi);
 					return;
 				}
 				Log(LOG_ERROR, "RPS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
@@ -2188,7 +2194,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		case RORG_UTE:
-			{	// UTE telegram, D4-xx-xx, Universal Teach-in
+			{ // UTE telegram, D4-xx-xx, Universal Teach-in
 				uint8_t CMD = bitrange(data[1], 0, 0x0F);				// 0=teach-in query, 1=teach-In response
 				if (CMD != 0)
 				{
@@ -2335,23 +2341,20 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "VLD msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
-				uint8_t func = pNode->func;
-				uint8_t type = pNode->type;
+				Log(LOG_NORM, "VLD msg: Node %s, EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, pNode->func, pNode->type);
 
-				Log(LOG_NORM, "VLD msg: Node %s, EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, func, type);
-
-				if (func == 0x01)
+				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
-					uint8_t CMD = data[1] & 0x0F;			// Command ID
+					uint8_t CMD = bitrange(data[1], 0, 0x0F); // Command ID
 					if (CMD != 0x04)
 					{
-						Log(LOG_ERROR, "VLD msg: Node %s, Unhandled CMD (%02X)", senderID.c_str(), CMD);
+						Log(LOG_ERROR, "VLD msg: Node %s, command 0x%01X not supported", senderID.c_str(), CMD);
 						return;
 					}
 					// CMD 0x4 - Actuator Status Response
 
-					uint8_t IO = data[2] & 0x1F;	 		// I/O Channel
-					uint8_t OV = data[3] & 0x7F;			// Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
+					uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
+					uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -2367,13 +2370,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.rssi = rssi;
 					tsen.LIGHTING2.unitcode = IO + 1;
 					tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
 					Log(LOG_NORM, "VLD msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
 						senderID.c_str(), CMD, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd, tsen.LIGHTING2.level);
 #endif
-
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 
 					// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
 					// Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)
@@ -2381,8 +2383,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// Ex: nodon inwall 2 channels will show 3 entries. Unit 0 is the local switch, 1 is the first channel, 2 is the second channel.
 					return;
 				}
-				if (func == 0x03 && type == 0x0A)
-				{ // D2-03-0A Push Button – Single Button
+				if (pNode->func == 0x03 && pNode->type == 0x0A)
+				{ // D2-03-0A, Push Button, Single Button
 					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1, 100));
 					uint8_t BA = data[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
 					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, "Switch", m_Name, 12);
