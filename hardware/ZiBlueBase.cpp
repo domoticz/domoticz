@@ -65,22 +65,23 @@ const char *szZiBlueProtocolRFLink(const unsigned char id)
 const char *szZiBlueProtocol(const unsigned char id)
 {
 	static const STR_TABLE_SINGLE Table[] = {
-		{ 1, "X10" },	  //
-		{ 2, "VISONIC" }, //
-		{ 3, "BLYSS" },	  //
-		{ 4, "CHACON" },  //
-		{ 5, "OREGON" },  //
-		{ 6, "DOMIA" },	  //
-		{ 7, "OWL" },	  //
-		{ 8, "X2D" },	  //
-		{ 9, "RTS" },	  //
-		{ 10, "KD101" },  //
-		{ 11, "PARROT" }, //
-		{ 13, "TIC" }, //
-		{ 14, "FS20" },	  //
-		{ 15, "JAMMING" }, //
-		{ 16, "EDISIO" }, //
-		{ 0, nullptr },	  //
+		{ RECEIVED_PROTOCOL_X10,		"X10"		},
+		{ RECEIVED_PROTOCOL_VISONIC,	"VISONIC"	},
+		{ RECEIVED_PROTOCOL_BLYSS,		"BLYSS"		},
+		{ RECEIVED_PROTOCOL_CHACON,		"CHACON"	},
+		{ RECEIVED_PROTOCOL_OREGON,		"OREGON"	},
+		{ RECEIVED_PROTOCOL_DOMIA,		"DOMIA"		},
+		{ RECEIVED_PROTOCOL_OWL,		"OWL"		},
+		{ RECEIVED_PROTOCOL_X2D,		"X2D"		},
+		{ RECEIVED_PROTOCOL_RFY,		"RTS"		},
+		{ RECEIVED_PROTOCOL_KD101,		"KD101"		},
+		{ RECEIVED_PROTOCOL_PARROT,		"PARROT"	},
+		{ RECEIVED_PROTOCOL_DIGIMAX,	"DIGIMAX"	}, // deprecated
+		{ RECEIVED_PROTOCOL_TIC,		"TIC"		},
+		{ RECEIVED_PROTOCOL_FS20,		"FS20"		},
+		{ RECEIVED_PROTOCOL_JAMMING,	"JAMMING"	},
+		{ RECEIVED_PROTOCOL_EDISIO,		"EDISIO"	},
+		{ 0,							nullptr		},
 	};
 	return findTableIDSingle1(Table, id);
 }
@@ -107,6 +108,8 @@ const _tZiBlueStringIntHelper ziblue_switches[] = {
 	{ "KD101", sSwitchTypeEnergenie5 },
 	{ "FS20 868", sSwitchTypeHomeConfort },
 	{ "EDISIO", sSwitchTypeForest },
+	{ "JAMMING SIMU", sSwitchTypeRFCustom },
+	{ "JAMMING", -2 },
 	{ "", -1 }
 };
 
@@ -165,6 +168,8 @@ void CZiBlueBase::OnConnected()
 	WriteInt("ZIA++FORMAT RFLINK BINARY\r");
 	m_bRFLinkOn = true;
 	WriteInt("ZIA++REPEATER OFF\r");
+	SendSwitchInt(0, -2, 255, "JAMMING", "OFF", 0, "Jamming");
+	SendSwitchInt(1, sSwitchTypeRFCustom, 255, "JAMMING SIMU", "OFF", 0, "Jamming Simulation");
 }
 
 void CZiBlueBase::OnDisconnected()
@@ -184,6 +189,11 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 	if (switchtype.empty())
 	{
 		Log(LOG_ERROR, "trying to send unknown switch type: %d", pSwitch->subtype);
+		return false;
+	}
+	else if (switchtype == "JAMMING")
+	{
+		// JAMMING is read only
 		return false;
 	}
 
@@ -319,6 +329,10 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		//	oFrame.protocol = SEND_EDISIO;
 		//	oFrame.ID_1 = (((pSwitch->id - 10) << 4) + (pSwitch->unitcode - 1));
 		//}
+		else if (switchtype == "JAMMING SIMU") // active jamming simulation
+		{
+			WriteInt("ZIA++JAMMING SIMULATE\r");
+		}
 		else
 		{
 			Log(LOG_ERROR, "unsupported switch protocol");
@@ -361,7 +375,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int BatteryLevel, const std::string &switchType, const std::string &switchcmd, const int level)
+bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int BatteryLevel, const std::string &switchType, const std::string &switchcmd, const int level, const std::string& defaultName)
 {
 	int intswitchtype = GetGeneralZiBlueFromString(ziblue_switches, switchType);
 	if (intswitchtype == -1)
@@ -399,7 +413,7 @@ bool CZiBlueBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch, nullptr, BatteryLevel, m_Name.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultName.c_str(), BatteryLevel, m_Name.c_str());
 	return true;
 }
 
@@ -549,23 +563,26 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					std::string switchCmd;
 					switch (pSen->subtype)
 					{
-						case SEND_ACTION_OFF:
+						case 0:
 							switchCmd = "OFF";
 							break;
-						case SEND_ACTION_ON:
+						case 1:
 							switchCmd = "ON";
 							break;
-						case SEND_ACTION_BRIGHT:
+						case 2:
 							switchCmd = "BRIGHT";
 							break;
-						case SEND_ACTION_DIM:
+						case 3:
 							switchCmd = "DIM";
 							break;
-						case SEND_ACTION_ALL_ON:
+						case 4:
+							switchCmd = "ALLOFF";
+							break;
+						case 5:
 							switchCmd = "ALLON";
 							break;
-						case SEND_ACTION_ALL_OFF:
-							switchCmd = "ALLOFF";
+						default:
+							switchCmd = "UNKNOWN";
 							break;
 					}
 					const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
@@ -579,36 +596,41 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				}
 				break;
 			case INFOS_TYPE1:
-				// Used by X10 (24/32 bits ID),  CHACON , KD101, BLYSS
+				// Used by X10 (24/32 bits ID),  CHACON , KD101, BLYSS, JAMMING
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE1))
 				{
 					INCOMING_RF_INFOS_TYPE1 *pSen = (INCOMING_RF_INFOS_TYPE1 *)(data + 8);
 					int DevID = (pSen->idMsb << 16) + pSen->idLsb;
 					std::string switchCmd;
+					const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
 					switch (pSen->subtype)
 					{
-						case SEND_ACTION_OFF:
+						case 0:
 							switchCmd = "OFF";
 							break;
-						case SEND_ACTION_ON:
+						case 1:
 							switchCmd = "ON";
 							break;
-							/*
-											case SEND_ACTION_BRIGHT:
-												switchCmd = "BRIGHT";
-												break;
-											case SEND_ACTION_DIM:
-												switchCmd = "DIM";
-												break;
-											case SEND_ACTION_ALL_ON:
-												switchCmd = "ALLON";
-												break;
-											case SEND_ACTION_ALL_OFF:
-												switchCmd = "ALLOFF";
-												break;
-							*/
+						case 2:
+							switchCmd = "BRIGHT";
+							break;
+						case 4:
+							switchCmd = "ALLOFF";
+							break;
+						case 5:
+							switchCmd = "ALLON";
+							break;
+						default:
+							switchCmd = "UNKNOWN";
+							break;
 					}
-					const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
+					if (pIncomming->protocol == RECEIVED_PROTOCOL_JAMMING)
+					{
+						SendSwitchInt(0, -2, 255, "JAMMING", switchCmd, 0, "Jamming");
+						if (switchCmd == "OFF")
+							SendSwitchInt(1, sSwitchTypeRFCustom, 255, "JAMMING SIMU", "OFF", 0, "Jamming Simulation");
+						break;
+					}
 					if (szProtocol != nullptr)
 					{
 						SendSwitchInt(DevID, 1, 255, std::string(szProtocol), switchCmd, 0);
@@ -659,7 +681,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d, idLSB: %04X, idMSB: %04X, qualifier: %04X, temp: %.1f, hygro: %d", pSen->subtype, pSen->idLsb, pSen->idMsb, pSen->qualifier);
 #endif
-					std::string cmd = "Unknown";
+					std::string cmd = "UNKNOWN";
 					if (pSen->qualifier == 1)
 					{
 						cmd = "OFF";
@@ -672,7 +694,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					{
 						cmd = "ON";
 					}
-					SendSwitchInt(pSen->idLsb ^ pSen->idMsb, 1, 255, "RTS", cmd, 0);
+					SendSwitchInt(pSen->idLsb ^ pSen->idMsb, 1, 255, "RTS Remote", cmd, 0);
 				}
 				break;
 			case INFOS_TYPE4:
@@ -705,21 +727,110 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				break;
 			case INFOS_TYPE6:
 				// Used by  Scientific Oregon  protocol  (Wind sensors)
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE6))
+				{
+					INCOMING_RF_INFOS_TYPE6 *pSen = (INCOMING_RF_INFOS_TYPE6 *)(data + 8);
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, speed: %.1f, direction: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
+					    pSen->qualifier, float(pSen->speed), pSen->direction);
+#endif
+					SendWind(pSen->idPHY ^ pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, pSen->direction, float(pSen->speed),
+						0, 0, 0, false, false, "Wind");
+				}
 				break;
 			case INFOS_TYPE7:
 				// Used by  Scientific Oregon  protocol  ( UV  sensors)
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE7))
+				{
+					INCOMING_RF_INFOS_TYPE7 *pSen = (INCOMING_RF_INFOS_TYPE7 *)(data + 8);
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, uv: %.1f", pSen->subtype, pSen->idPHY, pSen->idChannel,
+					    pSen->qualifier, float(pSen->light)/10);
+#endif
+					SendSolarRadiationSensor(pSen->idPHY ^ pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->light)/10, "UV Index");
+				}
 				break;
 			case INFOS_TYPE8:
 				// Used by  OWL  ( Energy/power sensors)
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE8))
+				{
+					INCOMING_RF_INFOS_TYPE8 *pSen = (INCOMING_RF_INFOS_TYPE8 *)(data + 8);
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, power: %d, p1: %d, p2: %d, p3: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
+					    pSen->qualifier, pSen->power, pSen->powerI1, pSen->powerI2, pSen->powerI3);
+#endif
+					SendWattMeter(pSen->idPHY ^ pSen->idChannel, 0, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power");
+					int energy = (pSen->energyMsb << 16) + pSen->energyLsb;
+					SendKwhMeter(pSen->idPHY ^ pSen->idChannel, 1, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power), float(energy) / 1000, "Energy");
+					if ((pSen->qualifier & 0x02) != 0)
+					{
+						SendWattMeter(pSen->idPHY ^ pSen->idChannel, 2, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I1");
+						SendWattMeter(pSen->idPHY ^ pSen->idChannel, 3, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I2");
+						SendWattMeter(pSen->idPHY ^ pSen->idChannel, 4, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->power) / 10, "Power I3");
+					}
+				}
 				break;
 			case INFOS_TYPE9:
 				// Used by  OREGON  ( Rain sensors)
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE9))
+				{
+					INCOMING_RF_INFOS_TYPE9 *pSen = (INCOMING_RF_INFOS_TYPE9 *)(data + 8);
+					int totalRain = pSen->totalRainLsb + int(pSen->totalRainMsb) << 16;
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, rain: %d, totalRain: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
+					    pSen->qualifier, pSen->rain, totalRain);
+#endif
+					SendRainRateSensor(pSen->idPHY ^ pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->rain) / 100, "RainRate");
+					SendRainSensor(pSen->idPHY ^ pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(totalRain) / 10, "TotalRain");
+				}
 				break;
 			case INFOS_TYPE10:
 				// Used by Thermostats  X2D protocol
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE10))
+				{
+					INCOMING_RF_INFOS_TYPE10 *pSen = (INCOMING_RF_INFOS_TYPE10 *)(data + 8);
+					int DevID = pSen->idLsb + int(pSen->idMsb) << 16;
+					uint8_t Tamper_Flag = (pSen->qualifier & 0x01) != 0;
+					uint8_t Anomaly_Flag = (pSen->qualifier & 0x02) != 0;
+					uint8_t LowBat_Flag = (pSen->qualifier & 0x04) != 0;
+					uint8_t TestAssoc_Flag = (pSen->qualifier & 0x10) != 0;
+					uint8_t DomesticFrame_Flag = (pSen->qualifier & 0x20) != 0;
+					uint8_t x2dVariant = (pSen->qualifier & 0xC0) >> 6;
+					// Function values:
+					//0 : SPECIAL, 1 : HEATING_SPEED, 2 : OPERATING_MODE, 12 : REGULATION, 26 : THERMIC_AREA_STATE 
+					int function = pSen->function & 0xFF;
+					// State values (OPERATING_MODE ):
+					// 0: ECO, 1 : MODERAT, 2 : MEDIO, 3 : COMFORT, 4 : STOP, 5 : OUT OF FROST, 6 : SPECIAL, 7 : AUTO, 8 : CENTRALISED
+					// State values (other cases):
+					// 0: OFF, 1: ON
+					int state = pSen->mode & 0xFF; 
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM,
+					    "subtype: %d, id: %04X, qualifier: %04X, tamperFlag: %d, alarmFlag: %d, lowBatteryFlag: %d,"
+					    "testAssocFlag: %d, domesticFrameFlag: %d, x2variant: %d, function: %d, state: %d",
+					    pSen->subtype, DevID, pSen->qualifier, Tamper_Flag, Anomaly_Flag, LowBat_Flag, TestAssoc_Flag,
+						DomesticFrame_Flag, x2dVariant, function, state);
+#endif
+				}
 				break;
 			case INFOS_TYPE11:
 				// Used by Alarm/remote control devices  X2D protocol
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE11))
+				{
+					INCOMING_RF_INFOS_TYPE11 *pSen = (INCOMING_RF_INFOS_TYPE11 *)(data + 8);
+					int id = pSen->idLsb + int(pSen->idMsb) << 16;
+					int Tamper_Flag = (pSen->qualifier & 0x01) != 0;
+					int Alarm_Flag = (pSen->qualifier & 0x02) != 0;
+					int LowBat_Flag = (pSen->qualifier & 0x04) != 0;
+					int TestAssoc_Flag = (pSen->qualifier & 0x10) != 0;
+					int DomesticFrame_Flag = (pSen->qualifier & 0x20) != 0;
+					int x2dVariant = (pSen->qualifier & 0xC0) >> 6;
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM, "subtype: %d, id: %04X, qualifier: %04X, tamperFlag: %d, alarmFlag: %d, lowBatteryFlag: %d,"
+						"testAssocFlag: %d, domesticFrameFlag: %d, x2variant: %d", pSen->subtype, id, pSen->qualifier, 
+						Tamper_Flag, Alarm_Flag, LowBat_Flag, TestAssoc_Flag, DomesticFrame_Flag, x2dVariant);
+#endif
+				}
 				break;
 			case INFOS_TYPE12:
 				// deprecated // Used by  DIGIMAX TS10 protocol
@@ -761,6 +872,32 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					m_LastReceivedKWhMeterValue[pSen->idLsb ^ pSen->idMsb ^ 1] = total1;
 					m_LastReceivedKWhMeterTime[pSen->idLsb ^ pSen->idMsb ^ 2] = m_LastReceivedTime;
 					m_LastReceivedKWhMeterValue[pSen->idLsb ^ pSen->idMsb ^ 2] = total2;
+				}
+				break;
+			case INFOS_TYPE14:
+				// Used by FS20
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE14))
+				{
+					INCOMING_RF_INFOS_TYPE14 *pSen = (INCOMING_RF_INFOS_TYPE14 *)(data + 8);
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM,
+					    "subtype: %d, idLsb: %04X, idMsb: %04X, qualifier: %04X",
+					    pSen->subtype, pSen->idLsb, pSen->idMsb, pSen->qualifier);
+#endif
+				}
+				break;
+			case INFOS_TYPE15:
+				// Used by EDISIO
+				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE15))
+				{
+					INCOMING_RF_INFOS_TYPE15 *pSen = (INCOMING_RF_INFOS_TYPE15 *)(data + 8);
+					char mid = pSen->infos & 0xFF;
+					char batteryLevel = (pSen->infos & 0xFF00) >> 8;
+#ifdef DEBUG_ZIBLUE
+					Log(LOG_NORM,
+					    "subtype: %d, idLsb: %04X, idMsb: %04X, qualifier: %04X, MID: %04X, battery: %04X, additionalData: %d",
+					    pSen->subtype, pSen->idLsb, pSen->idMsb, pSen->qualifier, mid, batteryLevel, pSen->additionalData);
+#endif
 				}
 				break;
 		}
