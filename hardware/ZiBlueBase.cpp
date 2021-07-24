@@ -633,7 +633,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					}
 					if (szProtocol != nullptr)
 					{
-						SendSwitchInt(DevID, 1, 255, std::string(szProtocol), switchCmd, 0);
+						SendSwitchInt(DevID, 1, 255, std::string(szProtocol), switchCmd, 0, std::string(szProtocol));
 					}
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d (%s), DevID: %04X", pSen->subtype, switchCmd.c_str(), DevID);
@@ -694,7 +694,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					{
 						cmd = "ON";
 					}
-					SendSwitchInt(pSen->idLsb ^ pSen->idMsb, 1, 255, "RTS Remote", cmd, 0);
+					SendSwitchInt(pSen->idLsb ^ pSen->idMsb, 1, 255, "RTS", cmd, 0, "RTS Remote");
 				}
 				break;
 			case INFOS_TYPE4:
