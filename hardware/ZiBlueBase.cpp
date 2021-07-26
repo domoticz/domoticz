@@ -332,6 +332,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		else if (switchtype == "JAMMING SIMU") // active jamming simulation
 		{
 			WriteInt("ZIA++JAMMING SIMULATE\r");
+			return true;
 		}
 		else
 		{
@@ -775,7 +776,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE9))
 				{
 					INCOMING_RF_INFOS_TYPE9 *pSen = (INCOMING_RF_INFOS_TYPE9 *)(data + 8);
-					int totalRain = pSen->totalRainLsb + int(pSen->totalRainMsb) << 16;
+					int totalRain = pSen->totalRainLsb + (int(pSen->totalRainMsb) << 16);
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, rain: %d, totalRain: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
 					    pSen->qualifier, pSen->rain, totalRain);
@@ -789,7 +790,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE10))
 				{
 					INCOMING_RF_INFOS_TYPE10 *pSen = (INCOMING_RF_INFOS_TYPE10 *)(data + 8);
-					int DevID = pSen->idLsb + int(pSen->idMsb) << 16;
+					int DevID = pSen->idLsb + (int(pSen->idMsb) << 16);
 					uint8_t Tamper_Flag = (pSen->qualifier & 0x01) != 0;
 					uint8_t Anomaly_Flag = (pSen->qualifier & 0x02) != 0;
 					uint8_t LowBat_Flag = (pSen->qualifier & 0x04) != 0;
@@ -818,7 +819,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE11))
 				{
 					INCOMING_RF_INFOS_TYPE11 *pSen = (INCOMING_RF_INFOS_TYPE11 *)(data + 8);
-					int id = pSen->idLsb + int(pSen->idMsb) << 16;
+					int id = pSen->idLsb + (int(pSen->idMsb) << 16);
 					int Tamper_Flag = (pSen->qualifier & 0x01) != 0;
 					int Alarm_Flag = (pSen->qualifier & 0x02) != 0;
 					int LowBat_Flag = (pSen->qualifier & 0x04) != 0;
