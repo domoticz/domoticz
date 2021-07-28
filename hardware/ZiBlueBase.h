@@ -24,14 +24,14 @@ class CZiBlueBase : public CDomoticzHardwareBase
 	CZiBlueBase();
 	~CZiBlueBase() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
-
+	static void ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, int &subtype);
       private:
 	void Init();
 	void OnConnected();
 	void OnDisconnected();
 	void ParseData(const char *data, size_t len);
 	bool ParseBinary(uint8_t SDQ, const uint8_t *data, size_t len);
-	bool SendSwitchInt(int ID, int switchunit, int BatteryLevel, const std::string &switchType, const std::string &switchcmd, int level, const std::string &defaultName = "Unknown");
+	bool SendSwitchInt(int ID, int switchunit, int BatteryLevel, const std::string &switchType, const std::string &switchcmd, int level, const std::string &defaultName);
 
 	virtual bool WriteInt(const std::string &sendString) = 0;
 	virtual bool WriteInt(const uint8_t *pData, size_t length) = 0;

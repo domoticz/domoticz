@@ -18,6 +18,68 @@
 #define ENABLE_LOGGING
 #define DEBUG_ZIBLUE
 #endif
+// Edisio Command Field
+#define EDISIO_CMD_NULL 0x00		 // null instruction
+#define EDISIO_CMD_ON 0x01		 // channel switched on
+#define EDISIO_CMD_OFF 0x02		 // channel switched off
+#define EDISIO_CMD_TOGGLE 0x03		 // channel toggled
+#define EDISIO_CMD_DIM 0x04		 // channel dimmed to x% (1 additional byte hex 0x03 to 0x64)
+#define EDISIO_CMD_DIM_UP 0x05		 // dim channel up 3%
+#define EDISIO_CMD_DIM_DOWN 0x06	 // dim channel odnw 3%
+#define EDISIO_CMD_DIM_A 0x07		 // dim channel toggled
+#define EDISIO_CMD_DIM_STOP 0x08	 // dim stop
+#define EDISIO_CMD_SHUTTER_OPEN 0x09	 // channel switched to open
+#define EDISIO_CMD_SHUTTER_CLOSE 0x0A	 // channel switched to close
+#define EDISIO_CMD_SHUTTER_CLOSE2 0x1B	 // channel switched to close (usb dongle v1.0)
+#define EDISIO_CMD_SHUTTER_STOP 0x0B	 // channel switched to stop
+#define EDISIO_CMD_RGB 0x0C		 // (3 bytes of additional data containing R, G and B)
+#define EDISIO_CMD_RGB_C 0x0D		 // reserved
+#define EDISIO_CMD_RGB_PLUS 0x0E	 // reserved
+#define EDISIO_CMD_OPEN_SLOW 0x0F	 // reserved
+#define EDISIO_CMD_SET_SHORT 0x10	 // paring request (only with CID value hex 0x09)
+#define EDISIO_CMD_SET_5S 0x11		 // unparing one channel (only with CID value hex 0x09)
+#define EDISIO_CMD_SET_10S 0x12		 // unparing all channels (only with CID value hex 0x09)
+#define EDISIO_CMD_STUDY 0x16		 // paring request by gateway
+#define EDISIO_CMD_DEL_BUTTON 0x17	 // reserved for gateway
+#define EDISIO_CMD_DEL_ALL 0x18		 // reserved for gateway
+#define EDISIO_CMD_SET_TEMPERATURE 0x19	 // temperature send by the sensor (2 bytes of additional field)
+#define EDISIO_CMD_DOOR_OPEN 0x1A	 // status sent by the sensor
+#define EDISIO_CMD_BROADCAST_QUERY 0x1F	 // reserved
+#define EDISIO_CMD_QUERY_STATUS 0x20	 // request sent by the gateway toknow receiver status
+#define EDISIO_CMD_REPORT_STATUS 0x21	 // response fromthe receiver after 'QUERY_STATUS' (n bytes additional data)
+#define EDISIO_CMD_READ_CUSTOM 0x23	 // read customizable data
+#define EDISIO_CMD_SAVE_CUSTOM 0x24	 // save customizable receiver data (n bytes)
+#define EDISIO_CMD_REPORT_CUSTOM 0x29	 // response from receiver after READ_CUSTOM and SAVE_CUSTOM (n bytes)
+#define EDISIO_CMD_SET_SHORT_DIMMER 0x2C // dimmer pairing request (n bytes)
+#define EDISIO_CMD_SET_SHORT_SENSOR 0x2F // sensor paring request (n bytes)
+
+// Edisio Model Field
+//                                           Device            |     Function                         | Products ref
+#define EDISIO_MODEL_EMITRBTN 0x01  // Emmiter 8 channels   | 8x On/Off/Pulse/Open/Stop/Close      | ETC1/ETC4/EBP8
+#define EDISIO_MODEL_EMS_100 0x07   // Motion Sensor        | On/Off/Pulse/PilotWire/Open/Close    | EMS-100
+#define EDISIO_MODEL_ETS_100 0x08   // Temperature Sensor   | Temperature                          | ETS-100
+#define EDISIO_MODEL_EDS_100 0x09   // Door Sensor          | On/Off/Pulse/Open/Close              | EDS-100
+#define EDISIO_MODEL_EMR_2000 0x10  // Receiver 1 Output    | 1x On/Off/Pulse                      | EMR-2000
+#define EDISIO_MODEL_EMV_400 0x11   // Receiver 2 Outputs   | 2x On/Off or 1x Open/Stop/Close      | EMV-400
+#define EDISIO_MODEL_EDR_D4 0x12    // Receiver 4 Outputs   | 4x On/Off or Dimmer                  | EDR-D4
+#define EDISIO_MODEL_EDR_B4 0x13    // Receiver 4 Outputs   | 4x On/Off/Pulse or 1x Open/Stop/Close| EDR-B4
+#define EDISIO_MODEL_EMSD_300A 0x14 // Receiver 1 Output    | 1x On/Off or Dimmer                  | EMSD-300A
+#define EDISIO_MODEL_EMSD_300 0x15  // Receiver 1 Output    | 1x On/Off or Dimmer                  | EMSD-300
+#define EDISIO_MODEL_EGW 0x16	    // Gateway              | Send and receive all commandes       | EGW
+#define EDISIO_MODEL_EMM_230 0x17   // Emmiter 2 channels   | 2x On/Off/Pulse/Open/Stop/Close      | EMM-230
+#define EDISIO_MODEL_EMM_100 0x18   // Emmiter 2 channels   | 2x On/Off/Pulse/Open/Stop/Close      | EMM-100
+#define EDISIO_MODEL_ED_TH_01 0x0E  // Thermostat           | Thermostat                           | ED-TH-04
+#define EDISIO_MODEL_ED_LI_01 0x0B  // Receiver 1 Output    | 1x On/Off                            | ED-LI-01
+#define EDISIO_MODEL_ED_TH_02 0x0F  // Receiver 1 Output    | 1x On/Off Heater/Cooler              | ED-TH-02
+#define EDISIO_MODEL_ED_TH_03 0x0C  // Receiver 1 Output FP | 1x Off/Eco/Confort/Auto (Fil Pilot)  | ED-TH-03
+#define EDISIO_MODEL_ED_SH_01 0x0D  // Receiver 2 Outputs   | 1x Open/Stop/Close                   | ED-SH-01
+#define EDISIO_MODEL_IR_TRANS 0x1B  // IR transmitter       | Trigger                              | EGW-PRO/EN
+#define EDISIO_MODEL_STM_250 0x1E   // Enocean sensor       | Door                                 | STM-250
+#define EDISIO_MODEL_STM_330 0x1F   // Enocean sensor       | Temperature                          | STM-330
+#define EDISIO_MODEL_PTM_210 0x20   // Enocean sensor       | Switch                               | PTM-210
+#define EDISIO_MODEL_IR_DEVICE 0x21 // Virtual device       | IR remote control                    | EGW-PRO/EN
+#define EDISIO_MODEL_EN_DET 0x22    // Enocean motion       | Motion                               | EGW-PRO/EN
+#define EDISIO_MODEL_EN_SOC 0x23    // Enocean socket       | Socket                               | EGW-PRO/EN
 
 typedef struct _STR_TABLE_SINGLE
 {
@@ -559,7 +621,6 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				{
 					INCOMING_RF_INFOS_TYPE0 *pSen = (INCOMING_RF_INFOS_TYPE0 *)(data + 8);
 					uint8_t houseCode = (pSen->id & 0xF0) >> 4;
-					;
 					uint8_t dev = pSen->id & 0x0F;
 					std::string switchCmd;
 					switch (pSen->subtype)
@@ -589,7 +650,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
 					if (szProtocol != nullptr)
 					{
-						SendSwitchInt(houseCode, dev, 255, std::string(szProtocol), switchCmd, 0);
+						SendSwitchInt(houseCode, dev, 255, std::string(szProtocol), switchCmd, 0, std::string(szProtocol) );
 					}
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d (%s), houseCode: %c, dev: %d", pSen->subtype, switchCmd.c_str(), (uint8_t)('A' + houseCode), dev + 1);
@@ -671,6 +732,27 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 #ifdef DEBUG_ZIBLUE
 						Log(LOG_NORM, "Key_Id: %04X", Key_Id);
 #endif
+						const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
+						std::string switchCmd;
+						switch (pSen->qualifier)
+						{
+							case 0x08:
+								switchCmd = "UNKNOWN";
+								break;
+							case 0x10:
+								switchCmd = "ON";
+								break;
+							case 0x20:
+								switchCmd = "STOP";
+								break;
+							case 0x40:
+								switchCmd = "OFF";
+								break;
+							default:
+								switchCmd = "UNKNOWN";
+								break;
+						}
+						SendSwitchInt(pSen->idMsb ^ pSen->idLsb, 1, 255, std::string(szProtocol), switchCmd, 0, "Visonic Remote");
 					}
 				}
 				break;
@@ -680,7 +762,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				{
 					INCOMING_RF_INFOS_TYPE3 *pSen = (INCOMING_RF_INFOS_TYPE3 *)(data + 8);
 #ifdef DEBUG_ZIBLUE
-					Log(LOG_NORM, "subtype: %d, idLSB: %04X, idMSB: %04X, qualifier: %04X, temp: %.1f, hygro: %d", pSen->subtype, pSen->idLsb, pSen->idMsb, pSen->qualifier);
+					Log(LOG_NORM, "subtype: %d, idLSB: %04X, idMSB: %04X, qualifier: %04X", pSen->subtype, pSen->idLsb, pSen->idMsb, 
+						pSen->qualifier);
 #endif
 					std::string cmd = "UNKNOWN";
 					if (pSen->qualifier == 1)
@@ -703,9 +786,11 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE4))
 				{
 					INCOMING_RF_INFOS_TYPE4 *pSen = (INCOMING_RF_INFOS_TYPE4 *)(data + 8);
+					uint16_t random = pSen->idChannel & 0xFF80;
+					uint16_t channel = pSen->idChannel & 0x007F;
 #ifdef DEBUG_ZIBLUE
-					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, temp: %.1f, hygro: %d", pSen->subtype, pSen->idPHY, pSen->idChannel, pSen->qualifier,
-					    float(pSen->temp) / 10.0f, pSen->hygro);
+					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, random: %X, channel: %d, temp: %.1f, hygro: %d", pSen->subtype, pSen->idPHY, pSen->idChannel, pSen->qualifier,
+					    random, channel, float(pSen->temp) / 10.0f, pSen->hygro);
 #endif
 					if (pSen->hygro > 0)
 						SendTempHumSensor(pSen->idPHY ^ pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0F, pSen->hygro, "Temp+Hum");
@@ -718,9 +803,11 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE5))
 				{
 					INCOMING_RF_INFOS_TYPE5 *pSen = (INCOMING_RF_INFOS_TYPE5 *)(data + 8);
+					uint16_t random = pSen->idChannel & 0xFF80;
+					uint16_t channel = pSen->idChannel & 0x007F;
 #ifdef DEBUG_ZIBLUE
-					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, temp: %.1f, hygro: %d, pressure: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
-					    pSen->qualifier, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure);
+					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, random: %X, channel: %d,temp: %.1f, hygro: %d, pressure: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
+					    pSen->qualifier, random, channel, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure);
 #endif
 					SendTempHumBaroSensor(pSen->idPHY ^ pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0F, pSen->hygro, pSen->pressure, 0,
 							      "Temp+Hum+Baro");
@@ -731,6 +818,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE6))
 				{
 					INCOMING_RF_INFOS_TYPE6 *pSen = (INCOMING_RF_INFOS_TYPE6 *)(data + 8);
+					uint16_t random = pSen->idChannel & 0xFF80;
+					uint16_t channel = pSen->idChannel & 0x007F;
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, speed: %.1f, direction: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
 					    pSen->qualifier, float(pSen->speed), pSen->direction);
@@ -744,6 +833,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE7))
 				{
 					INCOMING_RF_INFOS_TYPE7 *pSen = (INCOMING_RF_INFOS_TYPE7 *)(data + 8);
+					uint16_t random = pSen->idChannel & 0xFF80;
+					uint16_t channel = pSen->idChannel & 0x007F;
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, uv: %.1f", pSen->subtype, pSen->idPHY, pSen->idChannel,
 					    pSen->qualifier, float(pSen->light)/10);
@@ -756,6 +847,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE8))
 				{
 					INCOMING_RF_INFOS_TYPE8 *pSen = (INCOMING_RF_INFOS_TYPE8 *)(data + 8);
+					uint16_t random = pSen->idChannel & 0xFFF0;
+					uint16_t channel = pSen->idChannel & 0x000F;
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, power: %d, p1: %d, p2: %d, p3: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
 					    pSen->qualifier, pSen->power, pSen->powerI1, pSen->powerI2, pSen->powerI3);
@@ -776,6 +869,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE9))
 				{
 					INCOMING_RF_INFOS_TYPE9 *pSen = (INCOMING_RF_INFOS_TYPE9 *)(data + 8);
+					uint16_t random = pSen->idChannel & 0xFF80;
+					uint16_t channel = pSen->idChannel & 0x007F;
 					int totalRain = pSen->totalRainLsb + (int(pSen->totalRainMsb) << 16);
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM, "subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, rain: %d, totalRain: %d", pSen->subtype, pSen->idPHY, pSen->idChannel,
@@ -835,6 +930,9 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				break;
 			case INFOS_TYPE12:
 				// deprecated // Used by  DIGIMAX TS10 protocol
+#ifdef DEBUG_ZIBLUE
+				Log(LOG_NORM, "DEPRECATED DIGIMAX TS10 protocol");
+#endif
 				break;
 			case INFOS_TYPE13:
 				// Used by  Cartelectronic TIC/Pulses devices (Teleinfo/TeleCounters)
@@ -880,6 +978,17 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				if (dlen == sizeof(INCOMING_RF_INFOS_TYPE14))
 				{
 					INCOMING_RF_INFOS_TYPE14 *pSen = (INCOMING_RF_INFOS_TYPE14 *)(data + 8);
+					uint16_t houseCode = pSen->idLsb;
+					uint8_t adress = ((pSen->idMsb&0xFF00) >> 8);
+					uint8_t cmd = pSen->subtype & 0xFF;
+					if (cmd == 0x11)
+					{
+						//ON
+					}
+					else
+					{
+						//0x00: OFF
+					}
 #ifdef DEBUG_ZIBLUE
 					Log(LOG_NORM,
 					    "subtype: %d, idLsb: %04X, idMsb: %04X, qualifier: %04X",
@@ -911,4 +1020,129 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 	Log(LOG_NORM, "----------------");
 #endif
 	return true;
+}
+void CZiBlueBase::ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, int &subtype)
+{
+	if (dtype == pTypeLighting1)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeIMPULS)
+			subtype = sSwitchTypeIMPULS;
+		if (subtype == sTypeAB400D)
+			subtype = sSwitchTypeAB400D;
+		std::stringstream s_strid;
+		s_strid << std::hex << atoi(devid.c_str());
+		devid = s_strid.str();
+		devid = "000000" + devid;
+	}
+	else if (dtype == pTypeLighting2)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeAC)
+			subtype = sSwitchTypeAC;
+		if (subtype == sTypeHEU)
+		{
+			subtype = sSwitchTypeHEU;
+		}
+		if (subtype == sTypeKambrook)
+			subtype = sSwitchTypeKambrook;
+	}
+	else if (dtype == pTypeLighting3)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeKoppla)
+			subtype = sSwitchTypeKoppla;
+	}
+	else if (dtype == pTypeLighting4)
+	{
+		dtype = pTypeGeneralSwitch;
+	}
+	else if (dtype == pTypeLighting5)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeEMW100)
+		{
+			subtype = sSwitchTypeEMW100;
+			devid = "00" + devid;
+		}
+		if (subtype == sTypeLivolo)
+		{
+			subtype = sSwitchTypeLivolo;
+			devid = "00" + devid;
+		}
+		if (subtype == sTypeLightwaveRF)
+		{
+			subtype = sSwitchTypeLightwaveRF;
+			devid = "00" + devid;
+		}
+		if (subtype == sTypeLivolo1to10)
+		{
+			subtype = sSwitchTypeLivoloAppliance;
+			devid = "00" + devid;
+		}
+		if (subtype == sTypeEurodomest)
+			subtype = sSwitchTypeEurodomest;
+	}
+	else if (dtype == pTypeLighting6)
+	{
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeBlyss;
+	}
+	else if (dtype == pTypeChime)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeByronSX)
+			subtype = sSwitchTypeByronSX;
+		if (subtype == sTypeSelectPlus)
+			subtype = sSwitchTypeSelectPlus;
+		if (subtype == sTypeByronBY)
+			subtype = sSwitchTypeSelectPlus3;
+		if (subtype == sTypeByronMP001)
+			subtype = sSwitchTypeByronMP001;
+	}
+	else if (dtype == pTypeSecurity1)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeSecX10)
+			subtype = sSwitchTypeX10secu;
+		if (subtype == sTypeSecX10M)
+			subtype = sSwitchTypeX10secu;
+		if (subtype == sTypeSecX10R)
+			subtype = sSwitchTypeX10secu;
+	}
+	else if (dtype == pTypeHomeConfort)
+	{
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeHomeConfort;
+	}
+	else if (dtype == pTypeBlinds)
+	{
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeBlindsT5)
+			subtype = sSwitchTypeBofu;
+		else if (subtype == sTypeBlindsT6)
+			subtype = sSwitchTypeBrel;
+		else if (subtype == sTypeBlindsT7)
+			subtype = sSwitchTypeDooya;
+		else if (subtype == sTypeBlindsT8)
+			subtype = sSwitchTypeBofu;
+		else if (subtype == sTypeBlindsT9)
+			subtype = sSwitchTypeBrel;
+		else if (subtype == sTypeBlindsT10)
+			subtype = sSwitchTypeDooya;
+		std::stringstream s_strid;
+		s_strid << std::hex << strtoul(devid.c_str(), nullptr, 16);
+		unsigned long deviceid = 0;
+		s_strid >> deviceid;
+		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
+		char szTmp[20];
+		sprintf(szTmp, "%08lX", deviceid);
+		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
+		devid = szTmp;
+	}
+	// else if (dtype == pTypeRFY)
+	//{
+	//	dtype = pTypeGeneralSwitch;
+	//	subtype = sSwitchTypeRTS;
+	//}
 }

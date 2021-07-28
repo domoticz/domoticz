@@ -306,6 +306,7 @@ struct INCOMING_RF_INFOS_TYPE14
 	unsigned short idMsb;
 	unsigned short qualifier;
 };
+
 struct INCOMING_RF_INFOS_TYPE15
 { // Used by EDISIO
 	unsigned short subtype; // Command field
@@ -315,69 +316,6 @@ struct INCOMING_RF_INFOS_TYPE15
 	unsigned short infos;	  // MID (D0-D7): Model field, BL (D8-D15): Battery level (1/10V)
 	uint32_t additionalData;
 };
-
-// Edisio Command Field
-#define EDISIO_CMD_NULL 0x00             // null instruction
-#define EDISIO_CMD_ON 0x01               // channel switched on
-#define EDISIO_CMD_OFF 0x02              // channel switched off
-#define EDISIO_CMD_TOGGLE 0x03           // channel toggled
-#define EDISIO_CMD_DIM 0x04              // channel dimmed to x% (1 additional byte hex 0x03 to 0x64)
-#define EDISIO_CMD_DIM_UP 0x05           // dim channel up 3%
-#define EDISIO_CMD_DIM_DOWN 0x06         // dim channel odnw 3%
-#define EDISIO_CMD_DIM_A 0x07            // dim channel toggled
-#define EDISIO_CMD_DIM_STOP 0x08         // dim stop
-#define EDISIO_CMD_SHUTTER_OPEN 0x09     // channel switched to open
-#define EDISIO_CMD_SHUTTER_CLOSE 0x0A    // channel switched to close
-#define EDISIO_CMD_SHUTTER_CLOSE2 0x1B   // channel switched to close (usb dongle v1.0)
-#define EDISIO_CMD_SHUTTER_STOP 0x0B     // channel switched to stop
-#define EDISIO_CMD_RGB 0x0C              // (3 bytes of additional data containing R, G and B)
-#define EDISIO_CMD_RGB_C 0x0D            // reserved
-#define EDISIO_CMD_RGB_PLUS 0x0E         // reserved
-#define EDISIO_CMD_OPEN_SLOW 0x0F        // reserved
-#define EDISIO_CMD_SET_SHORT 0x10        // paring request (only with CID value hex 0x09)
-#define EDISIO_CMD_SET_5S 0x11           // unparing one channel (only with CID value hex 0x09)
-#define EDISIO_CMD_SET_10S 0x12          // unparing all channels (only with CID value hex 0x09)
-#define EDISIO_CMD_STUDY 0x16            // paring request by gateway
-#define EDISIO_CMD_DEL_BUTTON 0x17       // reserved for gateway
-#define EDISIO_CMD_DEL_ALL 0x18          // reserved for gateway
-#define EDISIO_CMD_SET_TEMPERATURE 0x19  // temperature send by the sensor (2 bytes of additional field)
-#define EDISIO_CMD_DOOR_OPEN 0x1A        // status sent by the sensor
-#define EDISIO_CMD_BROADCAST_QUERY 0x1F  // reserved
-#define EDISIO_CMD_QUERY_STATUS 0x20     // request sent by the gateway toknow receiver status
-#define EDISIO_CMD_REPORT_STATUS 0x21    // response fromthe receiver after 'QUERY_STATUS' (n bytes additional data)
-#define EDISIO_CMD_READ_CUSTOM 0x23      // read customizable data
-#define EDISIO_CMD_SAVE_CUSTOM 0x24      // save customizable receiver data (n bytes)
-#define EDISIO_CMD_REPORT_CUSTOM 0x29    // response from receiver after READ_CUSTOM and SAVE_CUSTOM (n bytes)
-#define EDISIO_CMD_SET_SHORT_DIMMER 0x2C // dimmer pairing request (n bytes)
-#define EDISIO_CMD_SET_SHORT_SENSOR 0x2F // sensor paring request (n bytes)
-
-// Edisio Model Field
-//                                           Device            |     Function                         | Products ref
-#define EDISIO_MODEL_EMITRBTN 0x01     // Emmiter 8 channels   | 8x On/Off/Pulse/Open/Stop/Close      | ETC1/ETC4/EBP8
-#define EDISIO_MODEL_EMS_100 0x07      // Motion Sensor        | On/Off/Pulse/PilotWire/Open/Close    | EMS-100
-#define EDISIO_MODEL_ETS_100 0x08      // Temperature Sensor   | Temperature                          | ETS-100
-#define EDISIO_MODEL_EDS_100 0x09      // Door Sensor          | On/Off/Pulse/Open/Close              | EDS-100
-#define EDISIO_MODEL_EMR_2000 0x10     // Receiver 1 Output    | 1x On/Off/Pulse                      | EMR-2000
-#define EDISIO_MODEL_EMV_400 0x11      // Receiver 2 Outputs   | 2x On/Off or 1x Open/Stop/Close      | EMV-400
-#define EDISIO_MODEL_EDR_D4 0x12       // Receiver 4 Outputs   | 4x On/Off or Dimmer                  | EDR-D4
-#define EDISIO_MODEL_EDR_B4 0x13       // Receiver 4 Outputs   | 4x On/Off/Pulse or 1x Open/Stop/Close| EDR-B4
-#define EDISIO_MODEL_EMSD_300A 0x14    // Receiver 1 Output    | 1x On/Off or Dimmer                  | EMSD-300A
-#define EDISIO_MODEL_EMSD_300 0x15     // Receiver 1 Output    | 1x On/Off or Dimmer                  | EMSD-300
-#define EDISIO_MODEL_EGW 0x16          // Gateway              | Send and receive all commandes       | EGW
-#define EDISIO_MODEL_EMM_230 0x17      // Emmiter 2 channels   | 2x On/Off/Pulse/Open/Stop/Close      | EMM-230
-#define EDISIO_MODEL_EMM_100 0x18      // Emmiter 2 channels   | 2x On/Off/Pulse/Open/Stop/Close      | EMM-100
-#define EDISIO_MODEL_ED_TH_01 0x0E     // Thermostat           | Thermostat                           | ED-TH-04
-#define EDISIO_MODEL_ED_LI_01 0x0B     // Receiver 1 Output    | 1x On/Off                            | ED-LI-01
-#define EDISIO_MODEL_ED_TH_02 0x0F     // Receiver 1 Output    | 1x On/Off Heater/Cooler              | ED-TH-02
-#define EDISIO_MODEL_ED_TH_03 0x0C     // Receiver 1 Output FP | 1x Off/Eco/Confort/Auto (Fil Pilot)  | ED-TH-03
-#define EDISIO_MODEL_ED_SH_01 0x0D     // Receiver 2 Outputs   | 1x Open/Stop/Close                   | ED-SH-01
-#define EDISIO_MODEL_IR_TRANS 0x1B     // IR transmitter       | Trigger                              | EGW-PRO/EN
-#define EDISIO_MODEL_STM_250 0x1E      // Enocean sensor       | Door                                 | STM-250
-#define EDISIO_MODEL_STM_330 0x1F      // Enocean sensor       | Temperature                          | STM-330
-#define EDISIO_MODEL_PTM_210 0x20      // Enocean sensor       | Switch                               | PTM-210
-#define EDISIO_MODEL_IR_DEVICE 0x21    // Virtual device       | IR remote control                    | EGW-PRO/EN
-#define EDISIO_MODEL_EN_DET 0x22       // Enocean motion       | Motion                               | EGW-PRO/EN
-#define EDISIO_MODEL_EN_SOC 0x23       // Enocean socket       | Socket                               | EGW-PRO/EN
 /* *************************************************************************** */
 
 struct REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER

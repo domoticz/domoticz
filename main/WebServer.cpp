@@ -37,6 +37,7 @@
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/AirconWithMe.h"
+#include "../hardware/ZiblueBase.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -5460,7 +5461,7 @@ namespace http
 					else if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
 					{
 						//dtype = pTypeGeneralSwitch;
-						ConvertToGeneralSwitchTypeRFP(devid, dtype, subtype);
+						CZiBlueBase::ConvertToGeneralSwitchTypeRFP(devid, dtype, subtype);
 					}
 				}
 				// -----------------------------------------------

@@ -294,4 +294,3 @@ bool IsLightSwitchOn(const std::string &lstatus);
 bool IsSerialDevice(_eHardwareTypes htype);
 bool IsNetworkDevice(_eHardwareTypes htype);
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);
-void ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, int &subtype);
