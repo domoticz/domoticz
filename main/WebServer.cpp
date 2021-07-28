@@ -37,7 +37,7 @@
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/AirconWithMe.h"
-#include "../hardware/ZiblueBase.h"
+#include "../hardware/ZiBlueBase.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
