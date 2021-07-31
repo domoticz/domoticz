@@ -343,6 +343,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 
 
 	unsigned int sensoridx = (id & 0xff) | ((channel & 0xff) << 8);
+	if (model == "TFA-Drop") {
+		sensoridx = id;
+	}
 
 	if (haveTemp && haveHumidity)
 	{

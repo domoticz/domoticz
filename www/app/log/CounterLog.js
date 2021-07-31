@@ -1,5 +1,5 @@
-define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams'],
-    function (app, _, RefreshingChart) {
+define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log/CounterLogParams'],
+    function (app, _, RefreshingChart, DataLoader, ChartLoader) {
 
         app.component('deviceCounterLog', {
             bindings: {
@@ -37,11 +37,13 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsDayTemplate,
                             {
                                 isShortLogChart: true,
-                                yAxes: subtype.yAxesDay,
+                                yAxes: subtype.yAxesDay(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                                 },
-                                extendDataRequest: subtype.extendDataRequestDay
+                                extendDataRequest: subtype.extendDataRequestDay,
+                                preprocessData: subtype.preprocessDayData,
+                                preprocessDataItems: subtype.preprocessDayDataItems
                             },
                             subtype.daySeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -73,10 +75,12 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsWeekTemplate,
                             {
                                 isShortLogChart: false,
-                                yAxes: subtype.yAxesWeek,
+                                yAxes: subtype.yAxesWeek(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
-                                }
+                                },
+                                preprocessData: subtype.preprocesWeeksData,
+                                preprocessDataItems: subtype.preprocessWeekDataItems
                             },
                             subtype.weekSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -108,10 +112,12 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsMonthYearTemplate,
                             {
                                 isShortLogChart: false,
-                                yAxes: subtype.yAxesMonthYear,
+                                yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
-                                }
+                                },
+                                preprocessData: subtype.preprocessMonthYearData,
+                                preprocessDataItems: subtype.preprocessMonthYearDataItems
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )
@@ -143,13 +149,83 @@ define(['app', 'lodash', 'RefreshingChart', 'log/Chart', 'log/CounterLogParams']
                             subtype.chartParamsMonthYearTemplate,
                             {
                                 isShortLogChart: false,
-                                yAxes: subtype.yAxesMonthYear,
+                                yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
-                                }
+                                },
+                                preprocessData: subtype.preprocessMonthYearData,
+                                preprocessDataItems: subtype.preprocessMonthYearDataItems
                             },
                             subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
                         )
+                    );
+                }
+            }
+        });
+
+        app.component('counterCompareChart', {
+            require: {
+                logCtrl: '^deviceCounterLog'
+            },
+            bindings: {
+                device: '<'
+            },
+            templateUrl: 'app/log/chart-compare.html',
+            controllerAs: 'vm',
+            controller: function ($location, $route, $scope, $timeout, $element, domoticzGlobals, domoticzApi, domoticzDataPointApi, chart, counterLogParams, counterLogSubtypeRegistry) {
+                const self = this;
+                self.groupingBy = 'month';
+
+                self.$onInit = function () {
+                    const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
+                    self.chart = new RefreshingChart(
+                        chart.baseParams($),
+                        chart.angularParams($location, $route, $scope, $timeout, $element),
+                        chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
+                        counterLogParams.chartParamsCompare(domoticzGlobals, self,
+                            subtype.chartParamsCompareTemplate(self),
+                            {
+                                isShortLogChart: false,
+                                yAxes: subtype.yAxesCompare(self.device.SwitchTypeVal),
+                                extendDataRequest: function (dataRequest) {
+                                    dataRequest['groupby'] = self.groupingBy;
+                                    return subtype.extendDataRequestCompare.call(self, dataRequest);
+                                },
+                                preprocessData: function (data) {
+                                    if (subtype.preprocessCompareData !== undefined) {
+                                        subtype.preprocessCompareData.call(self, data);
+                                    }
+                                    this.firstYear = data.firstYear;
+                                    this.categories = categoriesFromGroupingBy.call(this, self.groupingBy);
+                                    if (self.chart.chart.xAxis[0].categories === true) {
+                                        self.chart.chart.xAxis[0].categories = [];
+                                    } else {
+                                        self.chart.chart.xAxis[0].categories.length = 0;
+                                    }
+                                    this.categories.forEach(function (c) {
+                                        self.chart.chart.xAxis[0].categories.push(c); });
+
+                                    function categoriesFromGroupingBy(groupingBy) {
+                                        if (groupingBy === 'year') {
+                                            return _.range(this.firstYear, new Date().getFullYear() + 1).map(year => year.toString());
+                                        } else if (groupingBy === 'quarter') {
+                                            return ['Q1', 'Q2', 'Q3', 'Q4'];
+                                        } else if (groupingBy === 'month') {
+                                            return _.range(1, 13).map(month => pad2(month));
+                                        }
+
+                                        function pad2(i) {
+                                            return (i < 10 ? '0' : '') + i.toString();
+                                        }
+                                    }
+                                },
+                                preprocessDataItems: subtype.preprocessCompareDataItems
+                            },
+                            subtype.compareSeriesSuppliers(self)
+                        ),
+                        new DataLoader(),
+                        new ChartLoader($location),
+                        null
                     );
                 }
             }

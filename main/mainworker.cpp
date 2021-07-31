@@ -496,16 +496,16 @@ bool MainWorker::GetSunSettings()
 	SunRiseSet::_tSubRiseSetResults sresult;
 	SunRiseSet::GetSunRiseSet(dLatitude, dLongitude, year, month, day, sresult);
 
-	std::string sunrise = fmt::format("{:02}:{:02}:00", sresult.SunRiseHour, sresult.SunRiseMin);
-	std::string sunset = fmt::format("{:02}:{:02}:00", sresult.SunSetHour, sresult.SunSetMin);
-	std::string daylength = fmt::format("{:02}:{:02}:00", sresult.DaylengthHours, sresult.DaylengthMins);
-	std::string sunatsouth = fmt::format("{:02}:{:02}:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
-	std::string civtwstart = fmt::format("{:02}:{:02}:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
-	std::string civtwend = fmt::format("{:02}:{:02}:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
-	std::string nauttwstart = fmt::format("{:02}:{:02}:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
-	std::string nauttwend = fmt::format("{:02}:{:02}:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
-	std::string asttwstart = fmt::format("{:02}:{:02}:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
-	std::string asttwend = fmt::format("{:02}:{:02}:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
+	std::string sunrise = std_format("%02d:%02d:00", sresult.SunRiseHour, sresult.SunRiseMin);
+	std::string sunset = std_format("%02d:%02d:00", sresult.SunSetHour, sresult.SunSetMin);
+	std::string daylength = std_format("%02d:%02d:00", sresult.DaylengthHours, sresult.DaylengthMins);
+	std::string sunatsouth = std_format("%02d:%02d:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
+	std::string civtwstart = std_format("%02d:%02d:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
+	std::string civtwend = std_format("%02d:%02d:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
+	std::string nauttwstart = std_format("%02d:%02d:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
+	std::string nauttwend = std_format("%02d:%02d:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
+	std::string asttwstart = std_format("%02d:%02d:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
+	std::string asttwend = std_format("%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
 
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
 
@@ -1166,7 +1166,7 @@ bool MainWorker::Start()
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
 	if (rnvalue != 0)
 	{
-		std::string sPort = fmt::format("{}", rnvalue);
+		std::string sPort = std_format("%d", rnvalue);
 		m_sharedserver.sDecodeRXMessage.connect([this](auto hw, auto rx, auto name, auto battery, auto user) { DecodeRXMessage(hw, rx, name, battery, user); });
 		m_sharedserver.StartServer("::", sPort.c_str());
 
@@ -1806,7 +1806,7 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const uint8_t* pRXComma
 
 	switch (devType) {
 	case pTypeLighting1:
-		ID = fmt::format("{}", pResponse->LIGHTING1.housecode);
+		ID = std_format("%d", pResponse->LIGHTING1.housecode);
 		Unit = pResponse->LIGHTING1.unitcode;
 		break;
 	case pTypeLighting2:
@@ -2615,6 +2615,10 @@ void MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase* pHardware,
 					strcpy(szTmp, "Pro XL1");
 					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
 					break;
+				case FWtypeProXL2:
+					strcpy(szTmp, "Pro XL2");
+					NoiseLevel = static_cast<int>(pResponse->IRESPONSE.msg11);
+					break;
 				default:
 					strcpy(szTmp, "?");
 					break;
@@ -2633,7 +2637,8 @@ void MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase* pHardware,
 					sprintf(szTmp, "Noise Level: %d", pMyHardware->m_NoiseLevel);
 					WriteMessage(szTmp);
 				}
-				if (FWType == FWtypeProXL1)
+				if (
+					(FWType == FWtypeProXL1) || (FWType == FWtypeProXL2))
 				{
 					pMyHardware->SetAsyncType(pMyHardware->m_AsyncType);
 				}
@@ -3038,11 +3043,18 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 	uint8_t Unit = 0;
 	uint8_t cmnd = 0;
 	uint8_t SignalLevel = pResponse->RAIN.rssi;
-	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, pResponse->RAIN.subtype == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
+	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, subType == sTypeRAIN1 || subType == sTypeRAIN9, pResponse->RAIN.battery_level & 0x0F);
 
-	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
-
-	float TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0F;
+	int Rainrate = 0;
+	float TotalRain = 0;
+	if (subType == sTypeRAIN9) {
+		uint16_t rainCount = (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3 + 10;
+		TotalRain = roundf(float(rainCount * 2.54F)) / 10.0F;
+	}
+	else {
+		Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+		TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0F;
+	}
 
 	if (subType == sTypeRAINByRate)
 	{
@@ -3168,7 +3180,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 			WriteMessage("subtype       = DarkSky for example (Only rate, no total, no counter) rate in mm/hour x 10000, so all decimals will fit");
 			break;
 		default:
-			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, subType);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -3179,12 +3191,12 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		sprintf(szTmp, "ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
 
-		if (pResponse->RAIN.subtype == sTypeRAIN1)
+		if (subType == sTypeRAIN1)
 		{
 			sprintf(szTmp, "Rain rate     = %d mm/h", Rainrate);
 			WriteMessage(szTmp);
 		}
-		else if (pResponse->RAIN.subtype == sTypeRAIN2)
+		else if (subType == sTypeRAIN2)
 		{
 			sprintf(szTmp, "Rain rate     = %d mm/h", Rainrate);
 			WriteMessage(szTmp);
@@ -3195,7 +3207,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		sprintf(szTmp, "Signal level  = %d", pResponse->RAIN.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(pResponse->RAIN.subtype == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
+		decode_BateryLevel(subType == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
@@ -3443,8 +3455,12 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 	}
 	else if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
+		// WARNING
+		// battery_level & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
+		// Set BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 		BatteryLevel = 255;
 		SignalLevel = 12;
+		// Set Unit = ID_BYTE0
 		Unit = (pResponse->TEMP.rssi << 4) | pResponse->TEMP.battery_level;
 	}
 
@@ -3650,6 +3666,9 @@ void MainWorker::decode_Hum(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			break;
 		case sTypeHUM2:
 			WriteMessage("subtype       = HUM2 - LaCrosse WS2300");
+			break;
+		case sTypeHUM3:
+			WriteMessage("subtype       = HUM3 - Inovalley S80 plant humidity sensor");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->HUM.packettype, pResponse->HUM.subtype);
@@ -9269,8 +9288,12 @@ void MainWorker::decode_RFXSensor(const CDomoticzHardwareBase* pHardware, const 
 
 	if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
+		// WARNING
+		// filler & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
+		// Set BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 		BatteryLevel = 255;
 		SignalLevel = 12;
+		// Set Unit = ID_BYTE0
 		Unit = (pResponse->RFXSENSOR.rssi << 4) | pResponse->RFXSENSOR.filler;
 	}
 
@@ -11410,7 +11433,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				switchcmd = "Set Color";
 			}
 		}
-		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, color);
+		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(sd[1], Unit, switchcmd, level, color);
 #endif
 		return true;
 	}
@@ -12096,7 +12119,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			lcmd.CHIME.id2 = ID4;
 			lcmd.CHIME.sound = Unit;
 		}
-		lcmd.CHIME.filler = 0;
+		lcmd.CHIME.id4 = 0;
 		lcmd.CHIME.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
 			return false;
@@ -12592,7 +12615,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
 #ifdef ENABLE_PYTHON
-		((Plugins::CPlugin*)pHardware)->SendCommand(Unit, "Set Level", TempValue);
+		((Plugins::CPlugin*)pHardware)->SendCommand(sd[1], Unit, "Set Level", TempValue);
 #endif
 	}
 	else if (
@@ -13293,7 +13316,7 @@ void MainWorker::SetInternalSecStatus()
 	//Update Domoticz Security Device
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
-	tsen.SECURITY1.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.SECURITY1.packetlength = sizeof(tsen.SECURITY1) - 1;
 	tsen.SECURITY1.packettype = pTypeSecurity1;
 	tsen.SECURITY1.subtype = sTypeDomoticzSecurity;
 	tsen.SECURITY1.battery_level = 9;

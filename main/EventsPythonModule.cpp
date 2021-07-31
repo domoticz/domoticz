@@ -15,7 +15,7 @@
 		extern std::mutex PythonMutex;		// only used during startup when multiple threads could use Python
 
 		void*   m_PyInterpreter;
-        bool ModuleInitalized = false;
+        bool ModuleInitialized = false;
 
         struct eventModule_state {
             PyObject*	error;
@@ -93,13 +93,13 @@
 		// This is called during the import of the plugin module
 		// triggered by the "import Domoticz" statement
 
-		_log.Log(LOG_STATUS, "Python EventSystem: Initalizing event module.");
+		_log.Log(LOG_STATUS, "Python EventSystem: Initializing event module.");
 
 		PyObject *pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
 		return pModule;
 	}
 
-	int PythonEventsInitalized = 0;
+	int PythonEventsInitialized = 0;
 
 	bool PythonEventsInitialize(const std::string &szUserDataFolder)
 	{
@@ -139,7 +139,7 @@
             sPath += Plugins::Py_GetPath();
             Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
 
-            PythonEventsInitalized = 1;
+            PythonEventsInitialized = 1;
 
             PyObject* pModule = Plugins::PythonEventsGetModule();
 			PyEval_SaveThread();
@@ -147,7 +147,7 @@
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
                 return false;
             }
-            ModuleInitalized = true;
+            ModuleInitialized = true;
             return true;
 	}
 
@@ -201,7 +201,7 @@
 				       std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet)
 	{
 
-		if (!ModuleInitalized)
+		if (!ModuleInitialized)
 		{
 			return;
 		}
@@ -462,7 +462,7 @@
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Python not initalized");
+			_log.Log(LOG_ERROR, "EventSystem: Python not Initialized");
 		}
 	}
     } // namespace Plugins

@@ -42,25 +42,25 @@ namespace Plugins {
 	void CPluginTransport::handleTimeout(const boost::system::error_code &ec)
 	{
 		CPlugin *pPlugin = m_pConnection->pPlugin;
+		if (!pPlugin)
+			return;
 
 		if (!ec) // Timeout, no response
 		{
 			if (pPlugin->m_bDebug & PDM_CONNECTION)
 			{
-				_log.Log(LOG_NORM, "(%s) Timeout for port '%s'", pPlugin->m_Name.c_str(), m_Port.c_str());
+				pPlugin->Log(LOG_NORM, "Timeout for port '%s'", m_Port.c_str());
 			}
-
-			CPlugin *pPlugin = m_pConnection->pPlugin;
 			pPlugin->MessagePlugin(new onTimeoutCallback(pPlugin, m_pConnection));
 			configureTimeout();
 		}
 		else if (ec != boost::asio::error::operation_aborted) // Timer canceled by message arriving
 		{
-			_log.Log(LOG_ERROR, "(%s) Timer error for port '%s': %d, %s", pPlugin->m_Name.c_str(), m_Port.c_str(), ec.value(), ec.message().c_str());
+			pPlugin->Log(LOG_ERROR, "Timer error for port '%s': %d, %s", m_Port.c_str(), ec.value(), ec.message().c_str());
 		}
-		else if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
+		else if ((pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
 		{
-			_log.Log(LOG_NORM, "(%s) Timer aborted (%s).", pPlugin->m_Name.c_str(), m_Port.c_str());
+			pPlugin->Log(LOG_NORM, "Timer aborted (%s).", m_Port.c_str());
 		}
 	}
 
@@ -79,17 +79,21 @@ namespace Plugins {
 		// If the Python CConnection object reference count ever drops to one the the connection is out of scope so shut it down
 		CConnection*	pConnection = (CConnection*)m_pConnection;
 		CPlugin *pPlugin = pConnection ? pConnection->pPlugin : nullptr;
-		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1))
+		if (!pPlugin)
+			return;
+
+		if ((pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1))
 		{
+			// GIL is not held normal conversion to string via PyBorrowedRef cannot be used
 			std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 			std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if ((sTransport == "Serial") || (!sPort.length()))
-				_log.Log(LOG_NORM, "(%s) Connection '%s' released by Python, reference count is %d.", pPlugin->m_Name.c_str(), sAddress.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
+				pPlugin->Log(LOG_NORM, "Connection '%s' released by Python, reference count is %d.", sAddress.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
 			else
-				_log.Log(LOG_NORM, "(%s) Connection '%s:%s' released by Python, reference count is %d.", pPlugin->m_Name.c_str(), sAddress.c_str(), sPort.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
+				pPlugin->Log(LOG_NORM, "Connection '%s:%s' released by Python, reference count is %d.", sAddress.c_str(), sPort.c_str(), (int)m_pConnection->ob_base.ob_refcnt);
 		}
-		if (!m_bDisconnectQueued && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1) && pPlugin)
+		if (!m_bDisconnectQueued && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1))
 		{
 			pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
@@ -99,6 +103,8 @@ namespace Plugins {
 	bool CPluginTransportTCP::handleConnect()
 	{
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return false;
 
 		try
 		{
@@ -121,7 +127,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			pPlugin->Log(LOG_ERROR, "Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
 		}
@@ -135,6 +141,8 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 
 		if (!err)
 		{
@@ -149,8 +157,8 @@ namespace Plugins {
 			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "(%s) asynchronous resolve aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
+				pPlugin->Log(LOG_NORM, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 		}
 	}
 
@@ -158,6 +166,8 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 
 		pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 
@@ -171,8 +181,8 @@ namespace Plugins {
 		else
 		{
 			m_bConnected = false;
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "(%s) asynchronous connect aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
+				pPlugin->Log(LOG_NORM, "Asynchronous connect aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 		}
 
@@ -244,13 +254,16 @@ namespace Plugins {
 			pConnection->Port = PyUnicode_FromString(sPort.c_str());
 
 			Py_XDECREF(pConnection->Parent);
-			pConnection->Parent = m_pConnection;
+			pConnection->Parent = (PyObject*)m_pConnection;
 			Py_INCREF(m_pConnection);
 			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
 			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pConnection->Target = ((CConnection *)m_pConnection)->Target;
+			if (pConnection->Target)
+				Py_INCREF(pConnection->Target);
+			pConnection->pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 
 			// Add it to the plugins list of connections
 			pConnection->pPlugin->AddConnection(pTcpTransport);
@@ -273,10 +286,13 @@ namespace Plugins {
 		}
 		else
 		{
-			if (err != boost::asio::error::operation_aborted)
-				_log.Log(LOG_ERROR, "Plugin: Accept Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+			CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
+			if (!pPlugin)
+				return;
 
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			if (err != boost::asio::error::operation_aborted)
+				pPlugin->Log(LOG_ERROR, "Accept Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
@@ -286,6 +302,8 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 		if (!e)
 		{
 			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
@@ -302,19 +320,29 @@ namespace Plugins {
 		}
 		else
 		{
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
-					((e == boost::asio::error::operation_aborted) ||	// Client side connections (from connecting)
-					 (e == boost::asio::error::eof)))					// Server side connections (from listening)
-				_log.Log(LOG_NORM, "(%s) Queued asynchronous read aborted (%s:%s), [%d] %s.", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
+			if ((pPlugin->m_bDebug & PDM_CONNECTION) && 
+				(
+					(e == boost::asio::error::operation_aborted) || // Client side connections (from connecting)
+					(e == boost::asio::error::eof)		     // Server side connections (from listening)
+			    )
+			)
+			{
+				_log.Log(LOG_NORM, "Queued asynchronous read aborted (%s:%s), [%d] %s.", m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
+			}
 			else
 			{
-				if ((e != boost::asio::error::eof) &&
-					(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-					(e.value() != 125) &&	// Operation canceled
-					(e != boost::asio::error::address_in_use) &&
+				if (
+					(e != boost::asio::error::eof) && 
+					(e.value() != 121) && // Semaphore timeout expiry or end of file aka 'lost contact'
+				    (e.value() != 125) && // Operation canceled
+				    (e != boost::asio::error::address_in_use) &&
 					(e != boost::asio::error::operation_aborted) &&
-					(e.value() != 1236))	// local disconnect cause by hardware reload
-					_log.Log(LOG_ERROR, "(%s): Async Read Exception (%s:%s): %d, %s", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
+					// (e != boost::asio::error::connection_reset) &&
+				    (e.value() != 1236) // local disconnect cause by hardware reload
+					) 
+				{
+					pPlugin->Log(LOG_ERROR, "Async Read Exception (%s:%s): %d, %s", m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
+				}
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
@@ -328,12 +356,14 @@ namespace Plugins {
 		{
 			try
 			{
-				int		iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(pMessage, pMessage.size()));
+				int	iSentBytes = boost::asio::write(*m_Socket, boost::asio::buffer(pMessage, pMessage.size()));
 				m_iTotalBytes += iSentBytes;
 				if (iSentBytes != pMessage.size())
 				{
 					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-					_log.Log(LOG_ERROR, "(%s) Not all data written to socket (%s:%s). %d expected, %d written", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), iSentBytes);
+					if (!pPlugin)
+						return;
+					pPlugin->Log(LOG_ERROR, "Not all data written to socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), iSentBytes);
 				}
 			}
 			catch (std::exception & e)
@@ -350,10 +380,12 @@ namespace Plugins {
 	bool CPluginTransportTCP::handleDisconnect()
 	{
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return false;
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) Handling TCP disconnect, socket (%s:%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected?"":"not "));
+			pPlugin->Log(LOG_NORM, "Handling TCP disconnect, socket (%s:%s) is %sconnected", m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(nullptr);
@@ -374,7 +406,7 @@ namespace Plugins {
 			m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
 			if (e)
 			{
-				_log.Log(LOG_ERROR, "(%s): Socket Shutdown Error: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
+				pPlugin->Log(LOG_ERROR, "Socket Shutdown Error: %d, %s", e.value(), e.message().c_str());
 			}
 			else
 			{
@@ -403,7 +435,10 @@ namespace Plugins {
 				if (iSentBytes != pMessage.size())
 				{
 					CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-					_log.Log(LOG_ERROR, "(%s) Not all data written to secure socket (%s:%s). %d expected, %d written", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), int(pMessage.size()), iSentBytes);
+					if (!pPlugin)
+						return;
+					pPlugin->Log(LOG_ERROR, "Not all data written to secure socket (%s:%s). %d expected, %d written", m_IP.c_str(), m_Port.c_str(), int(pMessage.size()),
+						     iSentBytes);
 				}
 			}
 			catch (std::exception & e)
@@ -436,6 +471,8 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 
 		if (!err)
 		{
@@ -466,15 +503,15 @@ namespace Plugins {
 			}
 			catch (boost::system::system_error se)
 			{
-				_log.Log(LOG_ERROR, "(%s) TLS Handshake Exception: '%s' connecting to '%s:%s'", pPlugin->m_Name.c_str(), se.what(), m_IP.c_str(), m_Port.c_str());
+				_log.Log(LOG_ERROR, "TLS Handshake Exception: '%s' connecting to '%s:%s'", se.what(), m_IP.c_str(), m_Port.c_str());
 				pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			}
 		}
 		else
 		{
 			m_bConnected = false;
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				_log.Log(LOG_NORM, "(%s) asynchronous secure connect aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
+				_log.Log(LOG_NORM, "Asynchronous secure connect aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 		}
@@ -491,12 +528,17 @@ namespace Plugins {
 		// for each certificate in the certificate chain, starting from the root
 		// certificate authority.
 
+		CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return false;
+
 		char subject_name[256];
 		X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
 		X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
+
+		if (m_pConnection && pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) TLS Certificate found '%s'", ((CConnection*)m_pConnection)->pPlugin->m_Name.c_str(), subject_name);
+			pPlugin->Log(LOG_NORM, "TLS Certificate found '%s'", subject_name);
 		}
 
 		// TODO: Add some certificate checking
@@ -529,7 +571,7 @@ namespace Plugins {
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((e == boost::asio::error::operation_aborted) || (e == boost::asio::error::eof)))
 			{
-				_log.Log(LOG_NORM, "(%s) Queued asynchronous secure read aborted.", pPlugin->m_Name.c_str());
+				pPlugin->Log(LOG_NORM, "Queued asynchronous secure read aborted.");
 			}
 			else
 			{
@@ -540,7 +582,7 @@ namespace Plugins {
 					(e.value() != 335544539) &&	// SSL/TLS short read, should be ignored
 					(e != boost::asio::error::operation_aborted) &&
 					(e.value() != 1236))	// local disconnect cause by hardware reload
-					_log.Log(LOG_ERROR, "(%s): Async Secure Read Exception: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
+					pPlugin->Log(LOG_ERROR, "Async Secure Read Exception: %d, %s", e.value(), e.message().c_str());
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
@@ -581,12 +623,23 @@ namespace Plugins {
 				boost::system::error_code ec;
 				int	iPort = atoi(m_Port.c_str());
 
-				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
-				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
-				if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
+				// Handle broadcast messages
+				if (m_IP == "255.255.255.255")
 				{
-					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
-					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+					m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::address_v4::any(), iPort));
+					m_Socket->set_option(boost::asio::ip::udp::socket::socket_base::broadcast(true));
+					m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+				}
+				else
+				{
+					m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
+					m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+					// Hanlde multicast
+					if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
+					{
+						m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+						m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+					}
 				}
 			}
 
@@ -631,7 +684,10 @@ namespace Plugins {
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
 			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pConnection->Target = ((CConnection *)m_pConnection)->Target;
+			if (pConnection->Target)
+				Py_INCREF(pConnection->Target);
+			pConnection->pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 
 			// Create Protocol object to handle connection's traffic
 			pConnection->pPlugin->MessagePlugin(new ProtocolDirective(pConnection->pPlugin, pConnection));
@@ -655,8 +711,10 @@ namespace Plugins {
 		}
 		else
 		{
-			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
-				_log.Log(LOG_NORM, "(%s) Queued asynchronous UDP read aborted (%s:%s).", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str());
+			if (!pPlugin)
+				return;
+			if (pPlugin->m_bDebug & PDM_CONNECTION)
+				pPlugin->Log(LOG_NORM, "Queued asynchronous UDP read aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
 			else
 			{
 				if ((ec.value() != boost::asio::error::eof) &&
@@ -664,7 +722,7 @@ namespace Plugins {
 					(ec.value() != 125) &&	// Operation canceled
 					(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 					(ec.value() != 1236))	// local disconnect cause by hardware reload
-					_log.Log(LOG_ERROR, "(%s): Async UDP Read Exception: %d, %s", pPlugin->m_Name.c_str(), ec.value(), ec.message().c_str());
+					pPlugin->Log(LOG_ERROR, "Async UDP Read Exception: %d, %s", ec.value(), ec.message().c_str());
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection, false));
@@ -710,10 +768,12 @@ namespace Plugins {
 	bool CPluginTransportUDP::handleDisconnect()
 	{
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return false;
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) Handling UDP disconnect, socket (%s:%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
+			pPlugin->Log(LOG_NORM, "Handling UDP disconnect, socket (%s:%s) is %sconnected", m_IP.c_str(), m_Port.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(nullptr);
@@ -727,7 +787,7 @@ namespace Plugins {
 				if (e)
 				{
 					if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
-						_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
+						pPlugin->Log(LOG_ERROR, "Socket Shutdown Error: %d, %s", e.value(), e.message().c_str());
 					else
 						m_Socket->close();
 				}
@@ -814,12 +874,14 @@ namespace Plugins {
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return;
 
 		if (!ec)  // Timeout, no response
 		{
 			if (pPlugin->m_bDebug & PDM_CONNECTION)
 			{
-				_log.Log(LOG_NORM, "(%s) ICMP timeout for address '%s'", pPlugin->m_Name.c_str(), m_IP.c_str());
+				pPlugin->Log(LOG_NORM, "ICMP timeout for address '%s'", m_IP.c_str());
 			}
 
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
@@ -828,11 +890,11 @@ namespace Plugins {
 		}
 		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
-			_log.Log(LOG_ERROR, "(%s) ICMP timer error for address '%s': %d, %s", pPlugin->m_Name.c_str(), m_IP.c_str(), ec.value(), ec.message().c_str());
+			pPlugin->Log(LOG_ERROR, "ICMP timer error for address '%s': %d, %s", m_IP.c_str(), ec.value(), ec.message().c_str());
 		}
-		else if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
+		else if ((pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
 		{
-			_log.Log(LOG_NORM, "(%s) ICMP timer aborted (%s).", pPlugin->m_Name.c_str(), m_IP.c_str());
+			pPlugin->Log(LOG_NORM, "ICMP timer aborted (%s).", m_IP.c_str());
 		}
 	}
 
@@ -884,15 +946,16 @@ namespace Plugins {
 		{
 			if ((pPlugin->m_bDebug & PDM_CONNECTION) &&
 				((ec == boost::asio::error::operation_aborted) || (ec == boost::asio::error::eof)))
-				_log.Log(LOG_NORM, "(%s) Queued asynchronous ICMP read aborted (%s).", pPlugin->m_Name.c_str(), m_IP.c_str());
+				pPlugin->Log(LOG_NORM, "Queued asynchronous ICMP read aborted (%s).", m_IP.c_str());
 			else
 			{
-				if ((ec.value() != boost::asio::error::eof) &&
-					(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-					(ec.value() != 125) &&	// Operation canceled
-					(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
-					(ec.value() != 1236))	// local disconnect cause by hardware reload
-						_log.Log(LOG_ERROR, "(%s): Async Receive From Exception: %d, %s", pPlugin->m_Name.c_str(), ec.value(), ec.message().c_str());
+				if ((ec.value() != boost::asio::error::eof) && (ec.value() != 121) && // Semaphore timeout expiry or end of file aka 'lost contact'
+				    (ec.value() != 125) &&					      // Operation canceled
+				    (ec.value() != boost::asio::error::operation_aborted) &&	      // Abort due to shutdown during disconnect
+				    (ec.value() != 1236))					      // local disconnect cause by hardware reload
+				{
+					pPlugin->Log(LOG_ERROR, "Async Receive From Exception: %d, %s", ec.value(), ec.message().c_str());
+				}
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection, false));
@@ -906,8 +969,12 @@ namespace Plugins {
 		if (!m_bConnected)
 		{
 			CConnection*	pConnection = (CConnection*)this->m_pConnection;
-			std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
-			_log.Log(LOG_ERROR, "(%s) Transport not initialized, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->m_Name.c_str(), sConnection.c_str());
+			CPlugin *pPlugin = pConnection->pPlugin;
+			if (!pPlugin)
+				return;
+			std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+
+			pPlugin->Log(LOG_ERROR, "Transport not initialized, write directive to '%s' ignored. Connectionless transport should be Listening.", sConnection.c_str());
 		}
 
 		// Reset timeout if one is set or set one
@@ -944,10 +1011,12 @@ namespace Plugins {
 	bool CPluginTransportICMP::handleDisconnect()
 	{
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin)
+			return false;
 
 		if (pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s) Handling ICMP disconnect, socket (%s) is %sconnected", pPlugin->m_Name.c_str(), m_IP.c_str(), (m_bConnected ? "" : "not "));
+			pPlugin->Log(LOG_NORM, "Handling ICMP disconnect, socket (%s) is %sconnected", m_IP.c_str(), (m_bConnected ? "" : "not "));
 		}
 
 		m_tLastSeen = time(nullptr);
@@ -967,7 +1036,7 @@ namespace Plugins {
 #else
 				if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
 #endif
-					_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->m_Name.c_str(), e.value(), e.message().c_str());
+					pPlugin->Log(LOG_ERROR, "Socket Shutdown Error: %d, %s", e.value(), e.message().c_str());
 			}
 			else
 			{

@@ -23,8 +23,7 @@ SET(DOMO_MIN_LIBBOOST_VERSION 1.66.0)
 option(USE_BUILTIN_JSONCPP "Use builtin JSonCPP" YES)
 option(USE_BUILTIN_MINIZIP "Use builtin Minizip" YES)
 option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
-option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
-option(USE_BUILTIN_LIBFMT "Use builtin FMT library" YES)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" NO)
 
 # Optional dependencies
 option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
@@ -132,9 +131,6 @@ ENDIF()
 IF(USE_BUILTIN_SQLITE AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/sqlite-amalgamation/CMakeLists.txt")
   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
-IF(USE_BUILTIN_LIBFMT AND NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmtlib/CMakeLists.txt")
-  message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-ENDIF()
 
 # Target
 set(
@@ -217,6 +213,7 @@ hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp
 hardware/eHouse/EhouseTcpClient.cpp
 hardware/eHouse/EhouseUdpListener.cpp
+hardware/EnOceanEEP.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/EnphaseAPI.cpp
@@ -327,6 +324,7 @@ hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/XiaomiGateway.cpp
+hardware/XiaomiDeviceSupport.cpp
 hardware/Yeelight.cpp
 hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp
@@ -339,6 +337,7 @@ hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
+hardware/plugins/PythonObjectEx.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp
@@ -563,25 +562,6 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite3_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
-# FmtLib
-IF(USE_BUILTIN_LIBFMT)
-  add_subdirectory (extern/fmtlib EXCLUDE_FROM_ALL)
-  target_link_libraries(domoticz fmt::fmt)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/extern/fmtlib)
-ELSE(USE_BUILTIN_LIBFMT)
-  find_package(PkgConfig)
-  pkg_check_modules(FMT REQUIRED fmt)
-  IF(FMT_FOUND)
-    MESSAGE(STATUS "FMT includes found at: ${FMT_INCLUDE_DIRS}")
-    target_include_directories(domoticz PRIVATE ${FMT_INCLUDE_DIRS})
-    target_link_directories(domoticz PRIVATE ${FMT_LIBRARY_DIRS})
-    target_link_libraries(domoticz ${FMT_LIBRARIES})
-  ELSE(FMT_FOUND)
-    MESSAGE(FATAL_ERROR "FMT not found on your system!")
-  ENDIF(FMT_FOUND)
-ENDIF(USE_BUILTIN_LIBFMT)
-
-
 # minizip
 IF(USE_BUILTIN_MINIZIP)
   add_subdirectory (extern/minizip EXCLUDE_FROM_ALL)
@@ -743,7 +723,7 @@ ELSE()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-IF(EXISTS /sys/class/gpio)
+IF(EXISTS /sys/class/gpio OR FORCE_WITH_GPIO)
   message(STATUS "GPIO is available")
   add_definitions(-DWITH_GPIO)
 ELSE()
@@ -762,7 +742,7 @@ ELSE()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 ENDIF(TELLDUSCORE_INCLUDE)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${FMT_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${MINIZIP_LIBRARIES} ${CURL_LIBRARIES} pthread ${MQTT_LIBRARIES} ${LUA_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz -lresolv)

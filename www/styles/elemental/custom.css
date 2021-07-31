@@ -178,7 +178,7 @@ body table#itemtablenostatus tbody tr{
 	filter: none;
 }
 
-.btnstyle {
+.btnstyle, .btnstylerev {
 	margin-top: 10px;
 }
 
@@ -452,6 +452,7 @@ table.mobileitem {
 
 .events-editor-tree__file:link,
 .events-editor-tree-item__file:link,
-.devices-filters__item {
+.devices-filters__item,
+#hardwarecontent li {
 	line-height: normal;
 }

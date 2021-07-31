@@ -1,9 +1,10 @@
-define(['app'], function (app) {
+define(['app', 'log/Chart'], function (app) {
 
-    app.factory('counterLogSeriesSupplier', function () {
+    app.factory('counterLogSeriesSupplier', function (chart) {
         return {
             dataItemsKeysPredicatedSeriesSupplier: dataItemsKeysPredicatedSeriesSupplier,
-            summingSeriesSupplier: summingSeriesSupplier
+            summingSeriesSupplier: summingSeriesSupplier,
+            counterCompareSeriesSuppliers: counterCompareSeriesSuppliers
         };
 
         function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplier) {
@@ -85,6 +86,62 @@ define(['app'], function (app) {
                 },
                 seriesSupplier
             );
+        }
+
+        function counterCompareSeriesSuppliers(ctrl) {
+            return function (data) {
+                return _.range(data.firstYear, new Date().getFullYear() + 1)
+                    .reduce(
+                        function (seriesSuppliers, year) {
+                            return seriesSuppliers.concat({
+                                id: year.toString(),
+                                year: year,
+                                template: {
+                                    name: year.toString(),
+                                    color: chart.yearColor(year),
+                                    index: year - data.firstYear + 1
+                                    /*
+                                    ,stack: ctrl.groupingBy === 'year' ? 0 : 1
+                                     */
+                                },
+                                postprocessXaxis: function (xAxis) {
+                                    // xAxis.categories =
+                                    //     this.dataSupplier.categories
+                                        /*.reduce((categories, category) => {
+                                                if (!categories.includes(category)) {
+                                                    categories.push(category);
+                                                }
+                                                return categories;
+                                            },
+                                            (xAxis.categories === true ? [] : xAxis.categories)
+                                        )
+                                        .sort()*/;
+                                },
+                                initialiseDatapoints: function () {
+                                    this.datapoints = this.dataSupplier.categories.map(function (category) {
+                                        return null;
+                                    });
+                                },
+                                acceptDatapointFromDataItem: function (dataItem, datapoint) {
+                                    const categoryIndex = this.dataSupplier.categories.indexOf(dataItem["c"]);
+                                    if (categoryIndex !== -1) {
+                                        this.datapoints[categoryIndex] = datapoint;
+                                    }
+                                },
+                                dataItemIsValid: function (dataItem) {
+                                    return this.year === parseInt(dataItem["y"]);
+                                },
+                                datapointFromDataItem: function (dataItem) {
+                                    return {
+                                        y: this.valueFromDataItem(dataItem["s"]),
+                                        trend: dataItem["t"]
+                                    };
+                                }
+                            });
+                        },
+                        []
+                    );
+            }
         }
     });
 

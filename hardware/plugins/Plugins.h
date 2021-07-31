@@ -4,6 +4,7 @@
 #include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
 #include "PythonObjects.h"
+#include "PythonObjectEx.h"
 
 #ifndef byte
 typedef unsigned char byte;
@@ -11,11 +12,14 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
+	// forward declarations
 	class CDirectiveBase;
 	class CEventBase;
 	class CPluginMessageBase;
 	class CPluginNotifier;
 	class CPluginTransport;
+	class PyNewRef;
+	class PyBorrowedRef;
 
 	enum PluginDebugMask
 	{
@@ -66,6 +70,8 @@ namespace Plugins {
 	  bool StartHardware() override;
 	  bool StopHardware() override;
 
+	  void LogTraceback(PyTracebackObject *pTraceback);
+
 	  int PollInterval(int Interval = -1);
 	  PyObject*	PythonModule() { return m_PyModule; };
 	  void Notifier(const std::string &Notifier = "");
@@ -90,18 +96,21 @@ namespace Plugins {
 	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
 
 	  bool WriteToHardware(const char *pdata, unsigned char length) override;
-	  void SendCommand(int Unit, const std::string &command, int level, _tColor color);
-	  void SendCommand(int Unit, const std::string &command, float level);
+	  void SendCommand(const std::string &DeviceID, int Unit, const std::string &command, int level, _tColor color);
+	  void SendCommand(const std::string &DeviceID, int Unit, const std::string &command, float level);
 
-	  void onDeviceAdded(int Unit);
-	  void onDeviceModified(int Unit);
-	  void onDeviceRemoved(int Unit);
+	  void onDeviceAdded(const std::string DeviceID, int Unit);
+	  void onDeviceModified(const std::string DeviceID, int Unit);
+	  void onDeviceRemoved(const std::string DeviceID, int Unit);
 	  void MessagePlugin(CPluginMessageBase *pMessage);
-	  void DeviceAdded(int Unit);
-	  void DeviceModified(int Unit);
-	  void DeviceRemoved(int Unit);
+	  void DeviceAdded(const std::string DeviceID, int Unit);
+	  void DeviceModified(const std::string DeviceID, int Unit);
+	  void DeviceRemoved(const std::string DeviceID, int Unit);
 
-	  bool HasNodeFailed(int Unit);
+	  bool HasNodeFailed(const std::string DeviceID, int Unit);
+
+	  PyBorrowedRef FindDevice(const std::string &Key);
+	  PyBorrowedRef	FindUnitInDevice(const std::string &deviceKey, const int unitKey);
 
 	  std::string m_PluginKey;
 	  PyDictObject*	m_DeviceDict;
@@ -125,15 +134,6 @@ namespace Plugins {
 	protected:
 	  bool SendMessageImplementation(uint64_t Idx, const std::string &Name, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
 					 const std::string &Sound, bool bFromNotification) override;
-	};
-
-	//
-//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
-//
-	struct module_state {
-		CPlugin* pPlugin;
-		PyObject* error;
-		PyTypeObject*	pDeviceClass;
 	};
 
 	//
@@ -170,6 +170,25 @@ namespace Plugins {
 		operator CDevice *() const
 		{
 			return (CDevice *)m_pObject;
+		}
+		operator CDeviceEx *() const
+		{
+			return (CDeviceEx *)m_pObject;
+		}
+		operator CUnitEx *() const
+		{
+			return (CUnitEx *)m_pObject;
+		}
+		operator std::string() const
+		{
+			if (!m_pObject)
+				return std::string("");
+			PyObject* pString = PyObject_Str(m_pObject);
+			if (!pString)
+				return std::string("");
+			std::string sUTF8 = PyUnicode_AsUTF8(pString);
+			Py_DECREF(pString);
+			return sUTF8;
 		}
 		PyObject **operator&()
 		{
@@ -238,5 +257,17 @@ namespace Plugins {
 				Py_XDECREF(m_pObject);
 			}
 		};
+	};
+
+	//
+	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
+	//
+	struct module_state
+	{
+		CPlugin *pPlugin;
+		PyBorrowedRef lastCallback; // last callback called
+		PyObject *error;
+		PyTypeObject *pDeviceClass;
+		PyTypeObject *pUnitClass;
 	};
 } // namespace Plugins

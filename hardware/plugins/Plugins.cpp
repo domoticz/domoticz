@@ -99,23 +99,8 @@ namespace Plugins
 			Py_XDECREF(pErrBytes);
 
 		// Log a stack trace if there is one
-		PyTracebackObject *pTraceFrame = pTraceback;
-		while (pTraceFrame)
-		{
-			PyFrameObject *frame = pTraceFrame->tb_frame;
-			if (frame)
-			{
-				int lineno = PyFrame_GetLineNumber(frame);
-				PyCodeObject *pCode = frame->f_code;
-				PyNewRef	pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
-				PyNewRef	pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
-				if (pPlugin)
-					pPlugin->Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, ((PyBytesObject*)pFileBytes)->ob_sval, ((PyBytesObject*)pFuncBytes)->ob_sval);
-				else
-					_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, ((PyBytesObject*)pFileBytes)->ob_sval, ((PyBytesObject*)pFuncBytes)->ob_sval);
-			}
-			pTraceFrame = pTraceFrame->tb_next;
-		}
+		if (pPlugin && pTraceback)
+			pPlugin->LogTraceback(pTraceback);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
@@ -147,15 +132,13 @@ namespace Plugins
 			PyCodeObject *pCode = frame->f_code;
 			if (pCode && pCode->co_filename)
 			{
-				PyNewRef pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
-				sFuncName = ((PyBytesObject *)pFileBytes)->ob_sval;
+				sFuncName = (std::string)PyBorrowedRef(pCode->co_filename);
 			}
 			if (pCode && pCode->co_name)
 			{
 				if (!sFuncName.empty())
 					sFuncName += "\\";
-				PyNewRef pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
-				sFuncName += ((PyBytesObject *)pFuncBytes)->ob_sval;
+				sFuncName += (std::string)PyBorrowedRef(pCode->co_name);
 			}
 
 			switch (what)
@@ -193,15 +176,13 @@ namespace Plugins
 			PyCodeObject *pCode = frame->f_code;
 			if (pCode && pCode->co_filename)
 			{
-				PyNewRef	pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
-				sFuncName = ((PyBytesObject *)pFileBytes)->ob_sval;
+				sFuncName = (std::string)PyBorrowedRef(pCode->co_filename);
 			}
 			if (pCode && pCode->co_name)
 			{
 				if (!sFuncName.empty())
 					sFuncName += "\\";
-				PyNewRef	pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
-				sFuncName += ((PyBytesObject *)pFuncBytes)->ob_sval;
+				sFuncName += (std::string)PyBorrowedRef(pCode->co_name);
 			}
 
 			switch (what)
@@ -226,11 +207,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debug, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debug, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -251,8 +232,7 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Log(PyObject *self, PyObject *args)
@@ -260,11 +240,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Log, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Log, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -281,8 +261,7 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Status(PyObject *self, PyObject *args)
@@ -290,11 +269,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", std::string(__func__).c_str());
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", std::string(__func__).c_str());
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -311,8 +290,7 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Error(PyObject *self, PyObject *args)
@@ -320,16 +298,16 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Error, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Error, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
 			char *msg;
-			if (!PyArg_ParseTuple(args, "s", &msg))
+			if ((PyTuple_Size(args) != 1) || !PyArg_ParseTuple(args, "s", &msg))
 			{
 				// TODO: Dump data to aid debugging
 				pModState->pPlugin->Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->m_Name.c_str());
@@ -342,8 +320,7 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Debugging(PyObject *self, PyObject *args)
@@ -351,11 +328,11 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debugging, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Debugging, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
@@ -378,38 +355,41 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Heartbeat(PyObject *self, PyObject *args)
 	{
+		int iPollinterval = 0;
+
 		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Heartbeat, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Heartbeat, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
-			int iPollinterval;
-			if (!PyArg_ParseTuple(args, "i", &iPollinterval))
+			iPollinterval = pModState->pPlugin->PollInterval(0);
+			if (PyTuple_Check(args) && PyTuple_Size(args))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
-				LogPythonException(pModState->pPlugin, std::string(__func__));
-			}
-			else
-			{
-				//	Add heartbeat command to message queue
-				pModState->pPlugin->MessagePlugin(new PollIntervalDirective(pModState->pPlugin, iPollinterval));
+				if (!PyArg_ParseTuple(args, "i", &iPollinterval))
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->m_Name.c_str());
+					LogPythonException(pModState->pPlugin, std::string(__func__));
+				}
+				else
+				{
+					//	Add heartbeat command to message queue
+					pModState->pPlugin->MessagePlugin(new PollIntervalDirective(pModState->pPlugin, iPollinterval));
+				}
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		return PyLong_FromLong(iPollinterval);
 	}
 
 	static PyObject *PyDomoticz_Notifier(PyObject *self, PyObject *args)
@@ -447,8 +427,7 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Trace(PyObject *self, PyObject *args)
@@ -488,8 +467,7 @@ namespace Plugins
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Configuration(PyObject *self, PyObject *args, PyObject *kwds)
@@ -549,6 +527,165 @@ namespace Plugins
 		return pConfig;
 	}
 
+	static PyObject *PyDomoticz_Register(PyObject *self, PyObject *args, PyObject *kwds)
+	{
+		static char *kwlist[] = { "Device", "Unit", NULL };
+		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else
+		{
+			PyTypeObject *pDeviceClass = NULL;
+			PyTypeObject *pUnitClass = NULL;
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &pDeviceClass, &pUnitClass))
+			{
+				_log.Log(LOG_ERROR, "(%s) %s failed to parse parameters: Python class name expected.", pModState->pPlugin->m_Name.c_str(), __func__);
+				LogPythonException(pModState->pPlugin, std::string(__func__));
+			}
+			else
+			{
+				if (pDeviceClass)
+				{
+					PyTypeObject *pBaseClass = pDeviceClass->tp_base;
+					while (pBaseClass)
+					{
+						if (pBaseClass->tp_name == pModState->pDeviceClass->tp_name)
+						{
+							_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pDeviceClass->tp_name);
+							pModState->pDeviceClass = pDeviceClass;
+							break;
+						}
+						pBaseClass = pBaseClass->tp_base;
+					}
+					if (pDeviceClass->tp_name != pModState->pDeviceClass->tp_name)
+					{
+						_log.Log((_eLogLevel)LOG_ERROR, "Class '%s' registration failed, Device is not derived from '%s'", pDeviceClass->tp_name, pModState->pDeviceClass->tp_name);
+					}
+				}
+				if (pUnitClass)
+				{
+					if (pModState->pUnitClass)
+					{
+						PyTypeObject *pBaseClass = pUnitClass->tp_base;
+						while (pBaseClass)
+						{
+							if (pBaseClass->tp_name == pModState->pUnitClass->tp_name)
+							{
+								_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pUnitClass->tp_name);
+								pModState->pUnitClass = pUnitClass;
+								break;
+							}
+							pBaseClass = pBaseClass->tp_base;
+						}
+						if (pUnitClass->tp_name != pModState->pUnitClass->tp_name)
+						{
+							_log.Log((_eLogLevel)LOG_ERROR, "Class '%s' registration failed, Unit is not derived from '%s'", pUnitClass->tp_name,
+								 pModState->pDeviceClass->tp_name);
+						}
+					}
+					else
+					{
+						_log.Log((_eLogLevel)LOG_ERROR, "Class '%s' registration failed, imported Domoticz module does not support Unit objects", pUnitClass->tp_name);
+					}
+				}
+			}
+		}
+
+		Py_RETURN_NONE;
+	}
+
+	static PyObject *PyDomoticz_Dump(PyObject *self, PyObject *args, PyObject *kwds)
+	{
+		static char *kwlist[] = { "Object", NULL };
+		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			PyObject *pTarget = NULL; // Object reference count not increased
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) %s failed to parse parameters: Object expected (Optional).", pModState->pPlugin->m_Name.c_str(), __func__);
+				LogPythonException(pModState->pPlugin, std::string(__func__));
+			}
+			else
+			{
+				PyNewRef pLocals = PyObject_Dir(pModState->lastCallback);
+				if (PyList_Check(pLocals)) // && PyIter_Check(pLocals))  // Check fails but iteration works??!?
+				{
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Context dump:", pModState->pPlugin->m_Name.c_str());
+					PyNewRef pIter = PyObject_GetIter(pLocals);
+					PyNewRef pItem = PyIter_Next(pIter);
+					while (pItem)
+					{
+						std::string sAttrName = pItem;
+						if (sAttrName.substr(0, 2) != "__") // ignore system stuff
+						{
+							if (PyObject_HasAttrString(pModState->lastCallback, sAttrName.c_str()))
+							{
+								PyNewRef pValue = PyObject_GetAttrString(pModState->lastCallback, sAttrName.c_str());
+								if (!PyCallable_Check(pValue)) // Filter out methods
+								{
+									std::string strValue = pValue;
+									if (strValue.length())
+									{
+										std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
+										pModState->pPlugin->Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", pModState->pPlugin->m_Name.c_str(), sAttrName.c_str(),
+													sBlank.c_str(), strValue.c_str());
+									}
+								}
+							}
+						}
+						pItem = PyIter_Next(pIter);
+					}
+				}
+				PyBorrowedRef pLocalVars = PyEval_GetLocals();
+				if (PyDict_Check(pLocalVars))
+				{
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Locals dump:", pModState->pPlugin->m_Name.c_str());
+					PyBorrowedRef key;
+					PyBorrowedRef value;
+					Py_ssize_t pos = 0;
+					while (PyDict_Next(pLocalVars, &pos, &key, &value))
+					{
+						std::string sValue = value;
+						std::string sKey = key;
+						std::string sBlank((sKey.length() < 20) ? 20 - sKey.length() : 0, ' ');
+						pModState->pPlugin->Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", pModState->pPlugin->m_Name.c_str(), sKey.c_str(), sBlank.c_str(), sValue.c_str());
+					}
+				}
+				PyBorrowedRef pGlobalVars = PyEval_GetGlobals();
+				if (PyDict_Check(pGlobalVars))
+				{
+					pModState->pPlugin->Log(LOG_NORM, "(%s) Globals dump:", pModState->pPlugin->m_Name.c_str());
+					PyBorrowedRef key;
+					PyBorrowedRef value;
+					Py_ssize_t pos = 0;
+					while (PyDict_Next(pGlobalVars, &pos, &key, &value))
+					{
+						std::string sKey = key;
+						if ((sKey.substr(0, 2) != "__") && !PyCallable_Check(value)) // ignore system stuff and fucntions
+						{
+							std::string sBlank((sKey.length() < 20) ? 20 - sKey.length() : 0, ' ');
+							std::string sValue = value;
+							pModState->pPlugin->Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", pModState->pPlugin->m_Name.c_str(), sKey.c_str(), sBlank.c_str(), sValue.c_str());
+						}
+					}
+				}
+			}
+		}
+
+		Py_RETURN_NONE;
+	}
+
 	static PyMethodDef DomoticzMethods[] = { { "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
 						 { "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
 						 { "Status", PyDomoticz_Status, METH_VARARGS, "Write a status message to Domoticz log." },
@@ -558,6 +695,8 @@ namespace Plugins
 						 { "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
 						 { "Trace", PyDomoticz_Trace, METH_VARARGS, "Enable/Disable line level Python tracing." },
 						 { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
+						 { "Register", (PyCFunction)PyDomoticz_Register, METH_VARARGS | METH_KEYWORDS, "Register Device override class." },
+						 { "Dump", (PyCFunction)PyDomoticz_Dump, METH_VARARGS | METH_KEYWORDS, "Dump string values of an object or all locals to the log." },
 						 { nullptr, nullptr, 0, nullptr } };
 
 	static int DomoticzTraverse(PyObject *m, visitproc visit, void *arg)
@@ -580,6 +719,7 @@ namespace Plugins
 		// This is called during the import of the plugin module
 		// triggered by the "import Domoticz" statement
 		PyObject *pModule = PyModule_Create2(&DomoticzModuleDef, PYTHON_API_VERSION);
+		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
 
 		if (PyType_Ready(&CDeviceType) < 0)
 		{
@@ -587,10 +727,56 @@ namespace Plugins
 			return pModule;
 		}
 		Py_INCREF((PyObject *)&CDeviceType);
-
 		PyModule_AddObject(pModule, "Device", (PyObject *)&CDeviceType);
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
 		pModState->pDeviceClass = &CDeviceType;
+		pModState->pUnitClass = nullptr;
+
+		if (PyType_Ready(&CConnectionType) < 0)
+		{
+			_log.Log(LOG_ERROR, "%s, Connection Type not ready.", __func__);
+			return pModule;
+		}
+		Py_INCREF((PyObject *)&CConnectionType);
+		PyModule_AddObject(pModule, "Connection", (PyObject *)&CConnectionType);
+
+		if (PyType_Ready(&CImageType) < 0)
+		{
+			_log.Log(LOG_ERROR, "%s, Image Type not ready.", __func__);
+			return pModule;
+		}
+		Py_INCREF((PyObject *)&CImageType);
+		PyModule_AddObject(pModule, "Image", (PyObject *)&CImageType);
+
+		return pModule;
+	}
+
+	struct PyModuleDef DomoticzExModuleDef = { PyModuleDef_HEAD_INIT, "DomoticzEx", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, DomoticzTraverse, DomoticzClear, nullptr };
+
+	PyMODINIT_FUNC PyInit_DomoticzEx(void)
+	{
+
+		// This is called during the import of the plugin module
+		// triggered by the "import Domoticz" statement
+		PyObject *pModule = PyModule_Create2(&DomoticzExModuleDef, PYTHON_API_VERSION);
+		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+
+		if (PyType_Ready(&CDeviceExType) < 0)
+		{
+			_log.Log(LOG_ERROR, "%s, Device Type not ready.", __func__);
+			return pModule;
+		}
+		Py_INCREF((PyObject *)&CDeviceExType);
+		PyModule_AddObject(pModule, "Device", (PyObject *)&CDeviceExType);
+		pModState->pDeviceClass = &CDeviceExType;
+
+		if (PyType_Ready(&CUnitExType) < 0)
+		{
+			_log.Log(LOG_ERROR, "%s, Unit Type not ready.", __func__);
+			return pModule;
+		}
+		Py_INCREF((PyObject *)&CUnitExType);
+		PyModule_AddObject(pModule, "Unit", (PyObject *)&CUnitExType);
+		pModState->pUnitClass = &CUnitExType;
 
 		if (PyType_Ready(&CConnectionType) < 0)
 		{
@@ -634,6 +820,45 @@ namespace Plugins
 		m_bIsStarted = false;
 	}
 
+	void CPlugin::LogTraceback(PyTracebackObject *pTraceback)
+	{
+		if (pTraceback)
+		{
+			Log(LOG_ERROR, "(%s) Exception traceback:", m_Name.c_str());
+		}
+		else
+		{
+			Log(LOG_ERROR, "(%s) No traceback available", m_Name.c_str());
+		}
+
+		// Log a stack trace if there is one
+		PyTracebackObject *pTraceFrame = pTraceback;
+		while (pTraceFrame)
+		{
+			PyFrameObject *frame = pTraceFrame->tb_frame;
+			if (frame)
+			{
+				int lineno = PyFrame_GetLineNumber(frame);
+				PyCodeObject *pCode = frame->f_code;
+				std::string FileName;
+				if (pCode->co_filename)
+				{
+					FileName = (std::string)PyBorrowedRef(pCode->co_filename);
+				}
+				std::string FuncName = "Unknown";
+				if (pCode->co_name)
+				{
+					FuncName = (std::string)PyBorrowedRef(pCode->co_name);
+				}
+				if (!FileName.empty())
+					Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
+				else
+					Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
+			}
+			pTraceFrame = pTraceFrame->tb_next;
+		}
+	}
+		
 	void CPlugin::LogPythonException()
 	{
 		PyTracebackObject *pTraceback;
@@ -658,23 +883,19 @@ namespace Plugins
 				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "path"))
 				{
-					PyNewRef	pString = PyObject_GetAttrString(pValue, "path");
-					PyNewRef	pBytes = PyUnicode_AsASCIIString(pString);
-					if (pBytes)
+					std::string sPath = PyNewRef(PyObject_GetAttrString(pValue, "path"));
+					if (sPath.length() && (sPath != "None"))
 					{
-						sError += "Path: ";
-						sError += ((PyBytesObject *)pBytes)->ob_sval;
+						sError += "Path: " + sPath;
 					}
 				}
 				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "name"))
 				{
-					PyNewRef	pString = PyObject_GetAttrString(pValue, "name");
-					PyNewRef	pBytes = PyUnicode_AsASCIIString(pString);
-					if (pBytes)
+					std::string sName = PyNewRef(PyObject_GetAttrString(pValue, "name"));
+					if (sName.length() && (sName != "None"))
 					{
-						sError += " Name: ";
-						sError += ((PyBytesObject *)pBytes)->ob_sval;
+						sError += " Name: " + sName;
 					}
 				}
 				if (!sError.empty())
@@ -687,10 +908,8 @@ namespace Plugins
 				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "filename"))
 				{
-					PyNewRef pString = PyObject_GetAttrString(pValue, "filename");
-					PyNewRef pBytes = PyUnicode_AsASCIIString(pString);
-					sError += "File: ";
-					sError += ((PyBytesObject *)pBytes)->ob_sval;
+					std::string sName = PyNewRef(PyObject_GetAttrString(pValue, "name"));
+					sError += "File: " + sName;
 				}
 				long long lineno = -1;
 				long long offset = -1;
@@ -723,9 +942,7 @@ namespace Plugins
 				PyErr_Clear();
 				if (PyObject_HasAttrString(pValue, "text"))
 				{
-					PyNewRef pText = PyObject_GetAttrString(pValue, "text");
-					PyNewRef pString = PyObject_Str(pText);
-					std::string sUTF = PyUnicode_AsUTF8(pString);
+					std::string sUTF = PyNewRef(PyObject_GetAttrString(pValue, "text"));
 					Log(LOG_ERROR, "(%s) Error Line '%s'", m_Name.c_str(), sUTF.c_str());
 				}
 				else
@@ -739,8 +956,11 @@ namespace Plugins
 				}
 			}
 			else
-				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), ((PyBytesObject *)pErrBytes)->ob_sval);
+				Log(LOG_ERROR, "(%s) Module Import failed '%s'", m_Name.c_str(), std::string(pErrBytes).c_str());
 		}
+
+		// Log a stack trace if there is one
+		LogTraceback(pTraceback);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
@@ -757,7 +977,7 @@ namespace Plugins
 		PyNewRef	pExcept;
 		PyNewRef	pValue;
 		PyTypeObject *TypeName;
-		PyNewRef	pErrBytes = nullptr;
+		PyNewRef pErrBytes;
 		const char *pTypeText = nullptr;
 
 		PyErr_Fetch(&pExcept, &pValue, (PyObject **)&pTraceback);
@@ -767,55 +987,25 @@ namespace Plugins
 			TypeName = (PyTypeObject *)pExcept;
 			pTypeText = TypeName->tp_name;
 		}
-		if (pValue)
+		if (pTypeText && pValue)
 		{
-			pErrBytes = PyUnicode_AsASCIIString(pValue);
+			Log(LOG_ERROR, "(%s) '%s' failed '%s':'%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText, std::string(pValue).c_str());
 		}
-		if (pTypeText && pErrBytes)
-		{
-			Log(LOG_ERROR, "(%s) '%s' failed '%s':'%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText, ((PyBytesObject *)pErrBytes)->ob_sval);
-		}
-		if (pTypeText && !pErrBytes)
+		if (pTypeText && !pValue)
 		{
 			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), pTypeText);
 		}
-		if (!pTypeText && pErrBytes)
+		if (!pTypeText && pValue)
 		{
-			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), ((PyBytesObject *)pErrBytes)->ob_sval);
+			Log(LOG_ERROR, "(%s) '%s' failed '%s'.", m_Name.c_str(), sHandler.c_str(), std::string(pValue).c_str());
 		}
-		if (!pTypeText && !pErrBytes)
+		if (!pTypeText && !pValue)
 		{
 			Log(LOG_ERROR, "(%s) '%s' failed, unable to determine error.", m_Name.c_str(), sHandler.c_str());
 		}
 
 		// Log a stack trace if there is one
-		PyTracebackObject *pTraceFrame = pTraceback;
-		while (pTraceFrame)
-		{
-			PyFrameObject *frame = pTraceFrame->tb_frame;
-			if (frame)
-			{
-				int lineno = PyFrame_GetLineNumber(frame);
-				PyCodeObject *pCode = frame->f_code;
-				std::string FileName;
-				if (pCode->co_filename)
-				{
-					PyNewRef pFileBytes = PyUnicode_AsASCIIString(pCode->co_filename);
-					FileName = ((PyBytesObject*)pFileBytes)->ob_sval;
-				}
-				std::string FuncName = "Unknown";
-				if (pCode->co_name)
-				{
-					PyNewRef pFuncBytes = PyUnicode_AsASCIIString(pCode->co_name);
-					FuncName = ((PyBytesObject*)pFuncBytes)->ob_sval;
-				}
-				if (!FileName.empty())
-					Log(LOG_ERROR, "(%s) ----> Line %d in '%s', function %s", m_Name.c_str(), lineno, FileName.c_str(), FuncName.c_str());
-				else
-					Log(LOG_ERROR, "(%s) ----> Line %d in '%s'", m_Name.c_str(), lineno, FuncName.c_str());
-			}
-			pTraceFrame = pTraceFrame->tb_next;
-		}
+		LogTraceback(pTraceback);
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
@@ -829,9 +1019,11 @@ namespace Plugins
 	int CPlugin::PollInterval(int Interval)
 	{
 		if (Interval > 0)
+		{
 			m_iPollInterval = Interval;
-		if (m_bDebug & PDM_PLUGIN)
-			Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", m_Name.c_str(), m_iPollInterval);
+			if (m_bDebug & PDM_PLUGIN)
+				Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", m_Name.c_str(), m_iPollInterval);
+		}
 		return m_iPollInterval;
 	}
 
@@ -1094,6 +1286,10 @@ namespace Plugins
 				goto Error;
 			}
 
+			// Get an instance of the single, central Py_None to use in local code
+			PyBorrowedRef globalNone = Py_BuildValue("");
+			Py_None = globalNone;
+
 			// Prepend plugin directory to path so that python will search it early when importing
 #ifdef WIN32
 			std::wstring sSeparator = L";";
@@ -1147,7 +1343,7 @@ namespace Plugins
 								if (pSite && PyUnicode_Check(pSite))
 								{
 									std::wstringstream ssPath;
-									ssPath << PyUnicode_AsUTF8(pSite);
+									ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
 									sPath += sSeparator + ssPath.str();
 								}
 							}
@@ -1205,13 +1401,31 @@ namespace Plugins
 			}
 
 			// Domoticz callbacks need state so they know which plugin to act on
-			PyObject *pMod = PyState_FindModule(&DomoticzModuleDef);
-			if (!pMod)
+			PyBorrowedRef	brModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef	brModuleEx = PyState_FindModule(&DomoticzExModuleDef);
+
+			// Check author has not loaded both Domoticz modules
+			if ((brModule) && (brModuleEx))
 			{
-				Log(LOG_ERROR, "(%s) start up failed, Domoticz module not found in interpreter.", m_PluginKey.c_str());
+				Log(LOG_ERROR, "(%s) %s failed, Domoticz and DomoticzEx modules both found in interpreter, use one or the other.", __func__, m_PluginKey.c_str());
 				goto Error;
 			}
-			module_state *pModState = ((struct module_state *)PyModule_GetState(pMod));
+
+			if (!brModule)
+			{
+				brModule = brModuleEx;
+				if (!brModule)
+				{
+					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
+					goto Error;
+				}
+			}
+			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			if (!pModState)
+			{
+				Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+				goto Error;
+			}
 			pModState->pPlugin = this;
 
 			//	Add start command to message queue
@@ -1272,7 +1486,7 @@ namespace Plugins
 	{
 		try
 		{
-			PyBorrowedRef	pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
+			PyBorrowedRef pModuleDict = PyModule_GetDict(PythonModule()); // returns a borrowed referece to the __dict__ object for the module
 			PyNewRef		pParamsDict = PyDict_New();
 			if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
 			{
@@ -1331,11 +1545,23 @@ namespace Plugins
 				goto Error;
 			}
 
+			std::string tupleStr = "(si)";
 			PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
-			if (!brModule)
+
+			if (brModule)
 			{
-				Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
-				goto Error;
+				result = m_sql.safe_query("SELECT '', Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
+			}
+			else
+			{
+				brModule = PyState_FindModule(&DomoticzExModuleDef);
+				if (!brModule)
+				{
+					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
+					goto Error;
+				}
+				result = m_sql.safe_query("SELECT DISTINCT DeviceID, '-1' FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
+				tupleStr = "(s)";
 			}
 
 			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
@@ -1346,33 +1572,47 @@ namespace Plugins
 			}
 
 			// load associated devices to make them available to python
-			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 			if (!result.empty())
 			{
-				PyType_Ready(&CDeviceType);
+				PyType_Ready(pModState->pDeviceClass);
 				// Add device objects into the device dictionary with Unit as the key
 				for (const auto &sd : result)
 				{
-					PyNewRef nrArgList = Py_BuildValue("(si)", "", atoi(sd[0].c_str()));
+					// Build argument list
+					PyNewRef nrArgList = Py_BuildValue(tupleStr.c_str(), sd[0].c_str(), atoi(sd[1].c_str()));
 					if (!nrArgList)
 					{
-						Log(LOG_ERROR, "Building Device argument list failed for Unit %d.", atoi(sd[0].c_str()));
+						Log(LOG_ERROR, "Building device argument list failed for key %s/%s.", sd[0].c_str(), sd[1].c_str());
 						goto Error;
 					}
 					PyNewRef pDevice = PyObject_CallObject((PyObject *)pModState->pDeviceClass, nrArgList);
 					if (!pDevice)
 					{
-						Log(LOG_ERROR, "Device object creation failed for Unit %d.", atoi(sd[0].c_str()));
+						Log(LOG_ERROR, "Device object creation failed for key %s/%s.", sd[0].c_str(), sd[1].c_str());
 						goto Error;
 					}
 
-					PyNewRef pKey = PyLong_FromLong(atoi(sd[0].c_str()));
-					if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, pDevice) == -1)
+					// Add the object to the dictionary
+					PyNewRef pKey = PyObject_GetAttrString(pDevice, "Key");
+					if (!PyDict_Contains((PyObject*)m_DeviceDict, pKey))
 					{
-						Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
-						goto Error;
+						if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, pDevice) == -1)
+						{
+							Log(LOG_ERROR, "(%s) failed to add key '%s' to device dictionary.", m_PluginKey.c_str(), std::string(pKey).c_str());
+							goto Error;
+						}
 					}
-					CDevice_refresh(pDevice);
+
+					// Force the object to refresh from the database
+					PyNewRef	pRefresh = PyObject_GetAttrString(pDevice, "Refresh");
+					if (pRefresh && PyCallable_Check(pRefresh))
+					{
+						PyNewRef pReturnValue = PyObject_CallObject(pRefresh, NULL);
+					}
+					else
+					{
+						pModState->pPlugin->Log(LOG_ERROR, "Failed to refresh object '%s', method missing or not callable.", std::string(pKey).c_str());
+					}
 				}
 			}
 
@@ -1433,7 +1673,7 @@ namespace Plugins
 			delete pConnection->pProtocol;
 			pConnection->pProtocol = nullptr;
 		}
-		std::string sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
+		std::string sProtocol = PyBorrowedRef(pConnection->Protocol);
 		pConnection->pProtocol = CPluginProtocol::Create(sProtocol);
 		if (m_bDebug & PDM_CONNECTION)
 			Log(LOG_NORM, "(%s) Protocol set to: '%s'.", m_Name.c_str(), sProtocol.c_str());
@@ -1454,17 +1694,17 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				std::string sConnection = PyBorrowedRef(pConnection->Name);
 				Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", m_Name.c_str(), sConnection.c_str());
 			}
 			pConnection->pProtocol = new CPluginProtocol();
 		}
 
-		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-		std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		std::string sTransport = PyBorrowedRef(pConnection->Transport);
+		std::string sAddress = PyBorrowedRef(pConnection->Address);
 		if ((sTransport == "TCP/IP") || (sTransport == "TLS/IP"))
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			if (sPort.empty())
@@ -1521,17 +1761,17 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				std::string sConnection = PyBorrowedRef(pConnection->Name);
 				Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", m_Name.c_str(), sConnection.c_str());
 			}
 			pConnection->pProtocol = new CPluginProtocol();
 		}
 
-		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-		std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		std::string sTransport = PyBorrowedRef(pConnection->Transport);
+		std::string sAddress = PyBorrowedRef(pConnection->Address);
 		if (sTransport == "TCP/IP")
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", m_Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			if (!pConnection->pProtocol->Secure())
@@ -1541,7 +1781,7 @@ namespace Plugins
 		}
 		else if (sTransport == "UDP/IP")
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (pConnection->pProtocol->Secure())
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
@@ -1550,7 +1790,7 @@ namespace Plugins
 		}
 		else if (sTransport == "ICMP/IP")
 		{
-			std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+			std::string sPort = PyBorrowedRef(pConnection->Port);
 			if (pConnection->pProtocol->Secure())
 				Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", m_Name.c_str(), sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
@@ -1590,8 +1830,8 @@ namespace Plugins
 	{
 		WriteDirective *pMessage = (WriteDirective *)pMess;
 		CConnection *pConnection = pMessage->m_pConnection;
-		std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-		std::string sConnection = PyUnicode_AsUTF8(pConnection->Name);
+		std::string sTransport = PyBorrowedRef(pConnection->Transport);
+		std::string sConnection = PyBorrowedRef(pConnection->Name);
 		if (pConnection->pTransport)
 		{
 			if (sTransport == "UDP/IP")
@@ -1612,8 +1852,8 @@ namespace Plugins
 			// UDP is connectionless so create a temporary transport and write to it
 			if (sTransport == "UDP/IP")
 			{
-				std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
-				std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+				std::string sAddress = PyBorrowedRef(pConnection->Address);
+				std::string sPort = PyBorrowedRef(pConnection->Port);
 				if (m_bDebug & PDM_CONNECTION)
 				{
 					if (!sPort.empty())
@@ -1665,9 +1905,9 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-				std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
-				std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+				std::string sTransport = PyBorrowedRef(pConnection->Transport);
+				std::string sAddress = PyBorrowedRef(pConnection->Address);
+				std::string sPort = PyBorrowedRef(pConnection->Port);
 				if ((sTransport == "Serial") || (sPort.empty()))
 					Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
@@ -1695,44 +1935,164 @@ namespace Plugins
 		}
 	}
 
-	void CPlugin::onDeviceAdded(int Unit)
+	void CPlugin::onDeviceAdded(const std::string DeviceID, int Unit)
 	{
-		CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
-
-		PyNewRef	pKey = PyLong_FromLong(Unit);
-		if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
+		PyBorrowedRef pObject;
+		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (pModule)
 		{
-			Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", m_PluginKey.c_str(), Unit);
-			return;
+			module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+			if (!pModState)
+			{
+				_log.Log(LOG_ERROR, "(%s) unable to obtain module state.", __func__);
+				return;
+			}
+
+			if (!pModState->pPlugin)
+			{
+				PyBorrowedRef pyDevice = FindDevice(DeviceID);
+				if (!pyDevice)
+				{
+					// Create the device object if not found
+					PyNewRef nrArgList = Py_BuildValue("(s)", DeviceID.c_str());
+					if (!nrArgList)
+					{
+						Log(LOG_ERROR, "Building device argument list failed for key %s.", DeviceID.c_str());
+						return;
+					}
+					PyNewRef pDevice = PyObject_CallObject((PyObject *)pModState->pDeviceClass, nrArgList);
+					if (!pDevice)
+					{
+						Log(LOG_ERROR, "Device object creation failed for key %s.", DeviceID.c_str());
+						return;
+					}
+
+					// Add the object to the dictionary
+					PyNewRef pKey = PyObject_GetAttrString(pDevice, "Key");
+					if (!PyDict_Contains((PyObject *)m_DeviceDict, pKey))
+					{
+						if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, pDevice) == -1)
+						{
+							Log(LOG_ERROR, "(%s) failed to add key '%s' to device dictionary.", m_PluginKey.c_str(), std::string(pKey).c_str());
+							return;
+						}
+					}
+
+					// now find it
+					pyDevice = FindDevice(DeviceID);
+				}
+
+				// Create unit object
+				PyNewRef nrArgList = Py_BuildValue("(ssi)", "", DeviceID.c_str(), Unit);
+				if (!nrArgList)
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "Building device argument list failed for key %s/%d.", DeviceID.c_str(), Unit);
+					return;
+				}
+				PyNewRef pUnit = PyObject_CallObject((PyObject *)pModState->pUnitClass, nrArgList);
+				if (!pUnit)
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "Unit object creation failed for key %d.", Unit);
+					return;
+				}
+
+				// and add it to the parent directory
+				CDeviceEx *pDevice = pyDevice;
+				PyNewRef pKey = PyLong_FromLong(Unit);
+				if (PyDict_SetItem((PyObject *)pDevice->m_UnitDict, pKey, pUnit) == -1)
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "Failed to add key '%s' to Unit dictionary.", std::string(pKey).c_str());
+					return;
+				}
+
+				// Force the Unit object to refresh from the database
+				PyNewRef pRefresh = PyObject_GetAttrString(pUnit, "Refresh");
+				if (pRefresh && PyCallable_Check(pRefresh))
+				{
+					PyNewRef pReturnValue = PyObject_CallObject(pRefresh, NULL);
+				}
+				else
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "Failed to refresh object '%s', method missing or not callable.", std::string(pKey).c_str());
+				}
+			}
 		}
-		pDevice->pPlugin = this;
-		pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
-		pDevice->HwdID = m_HwdID;
-		pDevice->Unit = Unit;
-		CDevice_refresh(pDevice);
-		Py_DECREF(pDevice);
+		else
+		{
+			CDevice *pDevice = (CDevice *)CDevice_new(&CDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
+
+			PyNewRef pKey = PyLong_FromLong(Unit);
+			if (PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)pDevice) == -1)
+			{
+				Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", m_PluginKey.c_str(), Unit);
+				return;
+			}
+			pDevice->pPlugin = this;
+			pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
+			pDevice->HwdID = m_HwdID;
+			pDevice->Unit = Unit;
+			CDevice_refresh(pDevice);
+			Py_DECREF(pDevice);
+		}
 	}
 
-	void CPlugin::onDeviceModified(int Unit)
+	void CPlugin::onDeviceModified(const std::string DeviceID, int Unit)
 	{
-		PyNewRef	pKey = PyLong_FromLong(Unit);
-		CDevice *pDevice = (CDevice *)PyDict_GetItem((PyObject *)m_DeviceDict, pKey);
+		PyBorrowedRef pObject;
+		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (pModule)
+		{
+			pObject = FindUnitInDevice(DeviceID, Unit);
+		}
+		else
+		{
+			PyNewRef pKey = PyLong_FromLong(Unit);
+			pObject = PyDict_GetItem((PyObject *)m_DeviceDict, pKey);
+		}
 
-		if (!pDevice)
+		if (!pObject)
 		{
 			Log(LOG_ERROR, "(%s) failed to refresh unit '%u' in device dictionary.", m_PluginKey.c_str(), Unit);
 			return;
 		}
 
-		CDevice_refresh(pDevice);
+		// Force the object to refresh from the database
+		if (PyObject_HasAttrString(pObject, "Refresh"))
+		{
+			PyNewRef pRefresh = PyObject_GetAttrString(pObject, "Refresh");
+			if (pRefresh && PyCallable_Check(pRefresh))
+			{
+				PyNewRef pReturnValue = PyObject_CallObject(pRefresh, NULL);
+			}
+			else
+			{
+				Log(LOG_ERROR, "Failed to refresh object '%s', method missing or not callable.", DeviceID.c_str());
+			}
+		}
 	}
 
-	void CPlugin::onDeviceRemoved(int Unit)
+	void CPlugin::onDeviceRemoved(const std::string DeviceID, int Unit)
 	{
-		PyNewRef	pKey = PyLong_FromLong(Unit);
-		if (PyDict_DelItem((PyObject *)m_DeviceDict, pKey) == -1)
+		PyNewRef pKey = PyLong_FromLong(Unit);
+		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (pModule)
 		{
-			Log(LOG_ERROR, "(%s) failed to remove unit '%u' from device dictionary.", m_PluginKey.c_str(), Unit);
+			PyBorrowedRef pObject = FindDevice(DeviceID.c_str());
+			if (pObject)
+			{
+				CDeviceEx *pDevice = (CDeviceEx *)pObject;
+				if (PyDict_DelItem((PyObject *)pDevice->m_UnitDict, pKey) == -1)
+				{
+					Log(LOG_ERROR, "(%s) failed to remove Unit '%u' from Unit dictionary of '%s'.", m_PluginKey.c_str(), Unit, DeviceID.c_str());
+				}
+			}
+		}
+		else
+		{
+			if (PyDict_DelItem((PyObject *)m_DeviceDict, pKey) == -1)
+			{
+				Log(LOG_ERROR, "(%s) failed to remove Unit '%u' from Device dictionary.", m_PluginKey.c_str(), Unit);
+			}
 		}
 	}
 
@@ -1748,21 +2108,21 @@ namespace Plugins
 		m_MessageQueue.push_back(pMessage);
 	}
 
-	void CPlugin::DeviceAdded(int Unit)
+	void CPlugin::DeviceAdded(const std::string DeviceID, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceAddedCallback(this, Unit);
+		CPluginMessageBase *pMessage = new onDeviceAddedCallback(this, DeviceID, Unit);
 		MessagePlugin(pMessage);
 	}
 
-	void CPlugin::DeviceModified(int Unit)
+	void CPlugin::DeviceModified(const std::string DeviceID, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceModifiedCallback(this, Unit);
+		CPluginMessageBase *pMessage = new onDeviceModifiedCallback(this, DeviceID, Unit);
 		MessagePlugin(pMessage);
 	}
 
-	void CPlugin::DeviceRemoved(int Unit)
+	void CPlugin::DeviceRemoved(const std::string DeviceID, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(this, Unit);
+		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(this, DeviceID, Unit);
 		MessagePlugin(pMessage);
 	}
 
@@ -1781,9 +2141,9 @@ namespace Plugins
 		{
 			if (m_bDebug & PDM_CONNECTION)
 			{
-				std::string sTransport = PyUnicode_AsUTF8(pConnection->Transport);
-				std::string sAddress = PyUnicode_AsUTF8(pConnection->Address);
-				std::string sPort = PyUnicode_AsUTF8(pConnection->Port);
+				std::string sTransport = PyBorrowedRef(pConnection->Transport);
+				std::string sAddress = PyBorrowedRef(pConnection->Address);
+				std::string sPort = PyBorrowedRef(pConnection->Port);
 				if ((sTransport == "Serial") || (sPort.empty()))
 					Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", m_Name.c_str(), sAddress.c_str());
 				else
@@ -1836,11 +2196,36 @@ namespace Plugins
 				PyNewRef pFunc = PyObject_GetAttrString(pTarget, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
+					module_state *pModState = nullptr;
+					PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+					if (!brModule)
+					{
+						brModule = PyState_FindModule(&DomoticzExModuleDef);
+					}
+
+					if (brModule)
+					{
+						pModState = ((struct module_state *)PyModule_GetState(brModule));
+					}
+
+					// Store the callback object so the Dump function has context if invoked
+					if (pModState)
+					{
+						pModState->lastCallback = pTarget;
+					}
+
 					if (m_bDebug & PDM_QUEUE)
-						Log(LOG_NORM, "(%s) Calling message handler '%s'.", m_Name.c_str(), sHandler.c_str());
+						Log(LOG_NORM, "(%s) Calling message handler '%s' on '%s' type object.", m_Name.c_str(), sHandler.c_str(), pTarget->ob_type->tp_name);
 
 					PyErr_Clear();
+
+					// Invokde the callback function
 					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, pParams);
+
+					if (pModState)
+					{
+						pModState->lastCallback = nullptr;	
+					}
 					if (!pReturnValue || PyErr_Occurred())
 					{
 						LogPythonException(sHandler);
@@ -1851,14 +2236,14 @@ namespace Plugins
 						{
 							// See if additional information is available
 							PyNewRef pLocals = PyObject_Dir(pTarget);
-							if (PyList_Check(pLocals))
+							if (PyList_Check(pLocals))  // && PyIter_Check(pLocals))  // Check fails but iteration works??!?
 							{
 								Log(LOG_NORM, "(%s) Local context:", m_Name.c_str());
 								PyNewRef pIter = PyObject_GetIter(pLocals);
 								PyNewRef pItem = PyIter_Next(pIter);
 								while (pItem)
 								{
-									std::string sAttrName = PyUnicode_AsUTF8(pItem);
+									std::string sAttrName = pItem;
 									if (sAttrName.substr(0, 2) != "__") // ignore system stuff
 									{
 										if (PyObject_HasAttrString(pTarget, sAttrName.c_str()))
@@ -1866,13 +2251,12 @@ namespace Plugins
 											PyNewRef pValue = PyObject_GetAttrString(pTarget, sAttrName.c_str());
 											if (!PyCallable_Check(pValue)) // Filter out methods
 											{
-												PyNewRef nrString = PyObject_Str(pValue);
-												if (nrString)
+												std::string	strValue = pValue;
+												if (strValue.length())
 												{
-													std::string sUTF = PyUnicode_AsUTF8(nrString);
 													std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
 													Log(LOG_NORM, "(%s) ----> '%s'%s '%s'", m_Name.c_str(), sAttrName.c_str(), sBlank.c_str(),
-													    sUTF.c_str());
+													    strValue.c_str());
 												}
 											}
 										}
@@ -1916,48 +2300,98 @@ namespace Plugins
 			if (m_DeviceDict)
 			{
 				PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
-				if (!m_PyModule)
+				if (!brModule)
 				{
-					_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
-					return;
+					brModule = PyState_FindModule(&DomoticzExModuleDef);
+					if (!brModule)
+					{
+						Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
+						return;
+					}
 				}
 
 				module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
 				if (!pModState)
 				{
-					_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+					Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 					return;
 				}
 
 				PyBorrowedRef	key;
 				PyBorrowedRef	pDevice;
 				Py_ssize_t pos = 0;
-				// Sanity check to make sure the reference counbting is all good.
-				while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, (PyObject **)&pDevice))
+				// Sanity check to make sure the reference counting is all good.
+				while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &pDevice))
 				{
 					// Dictionary should be full of Devices but Python script can make this assumption false, log warning if this has happened
-					int isDevice = PyObject_IsInstance((PyObject *)pDevice, (PyObject *)pModState->pDeviceClass);
+					int isDevice = PyObject_IsInstance(pDevice, (PyObject *)pModState->pDeviceClass);
 					if (isDevice == -1)
 					{
 						LogPythonException("Error determining type of Python object during dealloc");
 					}
 					else if (isDevice == 0)
 					{
-						_log.Log(LOG_NORM, "%s: Device dictionary contained non-Device entry.", __func__);
+						Log(LOG_NORM, "%s: Device dictionary contained non-Device entry '%s'.", __func__, pDevice->ob_type->tp_name);
 					}
 					else
 					{
+						PyNewRef pUnits = PyObject_GetAttrString(pDevice, "Units");	// Free any Units if the object has them
+						if (pUnits)
+						{
+							PyBorrowedRef key;
+							PyBorrowedRef pUnit;
+							Py_ssize_t	pos = 0;
+							// Sanity check to make sure the reference counting is all good.
+							while (PyDict_Next(pUnits, &pos, &key, &pUnit))
+							{
+								// Dictionary should be full of Units but Python script can make this assumption false, log warning if this has happened
+								int isValue = PyObject_IsInstance(pUnit, (PyObject *)pModState->pUnitClass);
+								if (isValue == -1)
+								{
+									_log.Log(LOG_ERROR, "Error determining type of Python object during dealloc");
+								}
+								else if (isValue == 0)
+								{
+									_log.Log(LOG_NORM, "%s: Unit dictionary contained non-Unit entry '%s'.", __func__, pUnit->ob_type->tp_name);
+								}
+								else
+								{
+									if (pUnit->ob_refcnt > 1)
+									{
+										PyNewRef pName = PyObject_GetAttrString(pUnit, "Name");
+										std::string sName = PyBorrowedRef(pName);
+										_log.Log(LOG_ERROR, "%s: Unit '%s' Reference Count not one: %d.", __func__, sName.c_str(), pUnit->ob_refcnt);
+									}
+									else if (pUnit->ob_refcnt < 1)
+									{
+										_log.Log(LOG_ERROR, "%s: Unit Reference Count not one: %d.", __func__, pUnit->ob_refcnt);
+									}
+								}
+							}
+							PyDict_Clear(pUnits);
+						}
+						else
+						{
+							PyErr_Clear();
+						}
+
 						if (pDevice->ob_refcnt > 1)
 						{
-							std::string sName = PyUnicode_AsUTF8(((CDevice*)pDevice)->Name);
-							_log.Log(LOG_ERROR, "%s: Device '%s' Reference Count not one: %d.", __func__, sName.c_str(), pDevice->ob_refcnt);
+							PyNewRef pName = PyObject_GetAttrString(pDevice, "Name");
+							if (!pName)
+							{
+								PyErr_Clear();
+								pName = PyObject_GetAttrString(pDevice, "DeviceID");
+							}
+							Log(LOG_ERROR, "%s: Device '%s' Reference Count not correct, expected %d found %d.", __func__, std::string(pName).c_str(), 1, (int)pDevice->ob_refcnt);
 						}
 						else if (pDevice->ob_refcnt < 1)
 						{
-							_log.Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, pDevice->ob_refcnt);
+							Log(LOG_ERROR, "%s: Device Reference Count is less than one: %d.", __func__, (int)pDevice->ob_refcnt);
 						}
 					}
 				}
+				PyDict_Clear((PyObject*)m_DeviceDict);
 			}
 
 			// Stop Python
@@ -2005,7 +2439,7 @@ namespace Plugins
 
 	bool CPlugin::LoadSettings()
 	{
-		PyObject *pModuleDict = PyModule_GetDict((PyObject *)m_PyModule); // returns a borrowed referece to the __dict__ object for the module
+		PyBorrowedRef	pModuleDict = PyModule_GetDict(PythonModule()); // returns a borrowed referece to the __dict__ object for the module
 		if (m_SettingsDict)
 			Py_XDECREF(m_SettingsDict);
 		m_SettingsDict = (PyDictObject *)PyDict_New();
@@ -2024,8 +2458,7 @@ namespace Plugins
 			// Add settings strings into the settings dictionary with Unit as the key
 			for (const auto &sd : result)
 			{
-				PyObject *pKey = PyUnicode_FromString(sd[0].c_str());
-				PyObject *pValue = nullptr;
+				PyNewRef	pValue;
 				if (!sd[2].empty())
 				{
 					pValue = PyUnicode_FromString(sd[2].c_str());
@@ -2034,13 +2467,11 @@ namespace Plugins
 				{
 					pValue = PyUnicode_FromString(sd[1].c_str());
 				}
-				if (PyDict_SetItem((PyObject *)m_SettingsDict, pKey, pValue))
+				if (PyDict_SetItemString((PyObject *)m_SettingsDict, sd[0].c_str(), pValue))
 				{
 					Log(LOG_ERROR, "(%s) failed to add setting '%s' to settings dictionary.", m_PluginKey.c_str(), sd[0].c_str());
 					return false;
 				}
-				Py_XDECREF(pValue);
-				Py_XDECREF(pKey);
 			}
 		}
 
@@ -2090,20 +2521,20 @@ namespace Plugins
 		return true;
 	}
 
-	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const _tColor color)
+	void CPlugin::SendCommand(const std::string &DeviceID, const int Unit, const std::string &command, const int level, const _tColor color)
 	{
 		//	Add command to message queue
 		std::string JSONColor = color.toJSONString();
-		MessagePlugin(new onCommandCallback(this, Unit, command, level, JSONColor));
+		MessagePlugin(new onCommandCallback(this, DeviceID, Unit, command, level, JSONColor));
 	}
 
-	void CPlugin::SendCommand(const int Unit, const std::string &command, const float level)
+	void CPlugin::SendCommand(const std::string &DeviceID, const int Unit, const std::string &command, const float level)
 	{
 		//	Add command to message queue
-		MessagePlugin(new onCommandCallback(this, Unit, command, level));
+		MessagePlugin(new onCommandCallback(this, DeviceID, Unit, command, level));
 	}
 
-	bool CPlugin::HasNodeFailed(const int Unit)
+	bool CPlugin::HasNodeFailed(const std::string DeviceID, const int Unit)
 	{
 		if (!m_DeviceDict)
 			return true;
@@ -2112,21 +2543,54 @@ namespace Plugins
 		Py_ssize_t pos = 0;
 		while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, &value))
 		{
-			long iKey = PyLong_AsLong(key);
-			if (iKey == -1 && PyErr_Occurred())
+			// Handle different Device dictionaries types
+			if (PyUnicode_Check(key))
 			{
-				PyErr_Clear();
-				return false;
+				// Version 2+ of the framework, keyed by DeviceID
+				std::string sKey = PyUnicode_AsUTF8(key);
+				if (sKey == DeviceID)
+				{
+					CDeviceEx *pDevice = (CDeviceEx *)value;
+					return (pDevice->TimedOut != 0);
+				}
 			}
-
-			if (iKey == Unit)
+			else
 			{
-				CDevice *pDevice = (CDevice *)value;
-				return (pDevice->TimedOut != 0);
+				// Version 1 of the framework, keyed by Unit
+				long iKey = PyLong_AsLong(key);
+				if (iKey == -1 && PyErr_Occurred())
+				{
+					PyErr_Clear();
+					return false;
+				}
+
+				if (iKey == Unit)
+				{
+					CDevice *pDevice = (CDevice *)value;
+					return (pDevice->TimedOut != 0);
+				}
 			}
 		}
 
 		return false;
+	}
+
+	PyBorrowedRef CPlugin::FindDevice(const std::string &Key)
+	{
+		return PyDict_GetItemString((PyObject *)m_DeviceDict, Key.c_str());
+	}
+
+	PyBorrowedRef	CPlugin::FindUnitInDevice(const std::string &deviceKey, const int unitKey)
+	{
+		CDeviceEx *pDevice = this->FindDevice(deviceKey);
+
+		if (pDevice)
+		{
+			PyNewRef pKey = PyLong_FromLong(unitKey);
+			return PyBorrowedRef(PyDict_GetItem((PyObject *)pDevice->m_UnitDict, pKey));
+		}
+
+		return nullptr;
 	}
 
 	CPluginNotifier::CPluginNotifier(CPlugin *pPlugin, const std::string &NotifierName)

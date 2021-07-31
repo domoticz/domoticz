@@ -8,7 +8,7 @@ local self = {
 	LOG_INFO = 3,
 	LOG_WARNING = 3,
 	LOG_DEBUG = 4,
-	DZVERSION = '3.1.7',
+	DZVERSION = '3.1.8',
 }
 
 function jsonParser:unsupportedTypeEncoder(value_of_unsupported_type)
@@ -142,6 +142,19 @@ function self.stringSplit(text, sep, convertNumber, convertNil)
 	for str in string.gmatch(text, "([^" ..sep.. "]" .. include .. ")" ) do
 		if convertNil and str == '' then str = convertNil end
 		table.insert(t, ( convertNumber and tonumber(str) ) or str)
+	end
+	return t
+end
+
+function self.splitLine (line, word)
+	local start = 1
+	local first, last = 0
+	local t = {}
+	while true do
+		first, last = line:find('%s+'.. word .. '%s+', start)
+		table.insert(t,line:sub(start, ( ( first and first - 1) or #line)))
+		if not first then break end
+		start = last + 1
 	end
 	return t
 end

@@ -168,7 +168,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
       <AdditionalLibraryDirectories>./Windows Libraries/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;fmt.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;./Windows Libraries/openzwave/OpenZWave.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua.lib;libcurl.lib;minizip.lib;jsoncpp.lib;libcrypto.lib;libssl.lib;Wldap32.lib;zlib.lib;pthreadVC3.lib;sqlite3.lib;mosquitto.lib;./Windows Libraries/openzwave/OpenZWave.lib;boost_thread-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_system-vc140-mt.lib;Crypt32.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -588,6 +588,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanEEP.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\EnphaseAPI.h" />
@@ -612,6 +613,7 @@
     <ClInclude Include="..\hardware\Meteorologisk.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
+    <ClInclude Include="..\hardware\plugins\PythonObjectEx.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
     <ClInclude Include="..\hardware\serial\impl\win.h" />
     <ClInclude Include="..\hardware\SysfsGpio.h" />
@@ -809,6 +811,7 @@
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
     <ClInclude Include="..\hardware\XiaomiGateway.h" />
+    <ClInclude Include="..\hardware\XiaomiDeviceSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\hardware\1Wire.cpp">
@@ -890,6 +893,7 @@
       </LanguageStandard>
     </ClCompile>
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
+    <ClCompile Include="..\hardware\EnOceanEEP.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
     <ClCompile Include="..\hardware\EnphaseAPI.cpp" />
@@ -912,6 +916,7 @@
     <ClCompile Include="..\hardware\Meteorologisk.cpp" />
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp" />
+    <ClCompile Include="..\hardware\plugins\PythonObjectEx.cpp" />
     <ClCompile Include="..\hardware\Rtl433.cpp" />
     <ClCompile Include="..\hardware\SysfsGpio.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
@@ -1118,6 +1123,7 @@
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
     <ClCompile Include="..\hardware\XiaomiGateway.cpp" />
+    <ClCompile Include="..\hardware\XiaomiDeviceSupport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc" />
