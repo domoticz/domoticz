@@ -30,8 +30,8 @@ std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *userp) // called once for each header
 {
 	size_t realsize = size * nmemb;
-	std::vector<std::string>* pvHeaderData = (std::vector<std::string>*)userp;
-	pvHeaderData->push_back(std::string((unsigned char*)contents, (std::find((unsigned char*)contents, (unsigned char*)contents + realsize, '\r'))));
+	auto pvHeaderData = (std::vector<std::string> *)userp;
+	pvHeaderData->emplace_back((unsigned char *)contents, (std::find((unsigned char *)contents, (unsigned char *)contents + realsize, '\r')));
 	return realsize;
 }
 

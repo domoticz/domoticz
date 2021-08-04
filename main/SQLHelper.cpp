@@ -4040,7 +4040,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 					if ((value == nullptr) && (col == 0))
 						break;
 					if (value == nullptr)
-						values.push_back(std::string("")); //insert empty string
+						values.emplace_back(""); // insert empty string
 					else
 						values.push_back(value);
 				}
@@ -4108,9 +4108,9 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 					if ((blobSize == 0) && (col == 0))
 						break;
 					if (value == nullptr)
-						values.push_back(std::string("")); //insert empty string
+						values.emplace_back(""); // insert empty string
 					else
-						values.push_back(std::string(value, value + blobSize));
+						values.emplace_back(value, value + blobSize);
 				}
 				if (!values.empty())
 					results.push_back(values);
