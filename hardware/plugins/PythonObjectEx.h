@@ -13,6 +13,8 @@ namespace Plugins {
 		PyObject*		DeviceID;
 		int				TimedOut;
 		PyDictObject*	m_UnitDict;
+
+		static bool isInstance(PyObject *pObject);
 	};
 
 	void CDeviceEx_dealloc(CDeviceEx *self);
@@ -97,6 +99,8 @@ namespace Plugins {
 		PyObject*	Description;
 		PyObject*	Color;
 		PyObject*	Parent;
+
+		static bool isInstance(PyObject*	pObject);
 	};
 
 	void CUnitEx_dealloc(CUnitEx *self);
