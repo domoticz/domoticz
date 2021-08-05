@@ -1131,7 +1131,7 @@ bool BleBox::LoadNodes()
 			if (deviceTypeID == -1)
 				continue;
 
-			m_devices.insert(std::pair<const std::string, const int>(addressIP, deviceTypeID));
+			m_devices.emplace(addressIP, deviceTypeID);
 		}
 		return true;
 	}

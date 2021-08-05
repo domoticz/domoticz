@@ -144,7 +144,7 @@ public:
 				value.replace(p2, 1, " ");
 			}
 
-			values.insert(std::pair< std::string, std::string >(name, value));
+			values.emplace(name, value);
 			p = q + 1;
 		}
 	}

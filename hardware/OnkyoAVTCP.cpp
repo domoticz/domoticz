@@ -452,12 +452,13 @@ void OnkyoAVTCP::EnsureSwitchDevice(int ID, const char *options)
 
 std::string OnkyoAVTCP::BuildSelectorOptions(const std::string &names, const std::string &ids)
 {
-	std::map<std::string, std::string> optionsMap;
-	optionsMap.insert(std::pair<std::string, std::string>("LevelOffHidden", "true"));
-	optionsMap.insert(std::pair<std::string, std::string>("SelectorStyle", "1"));
-	optionsMap.insert(std::pair<std::string, std::string>("LevelNames", names));
-	optionsMap.insert(std::pair<std::string, std::string>("LevelActions", ids));
-	return m_sql.FormatDeviceOptions(optionsMap);
+	std::map<std::string, std::string> optionsMap{
+		{ "LevelOffHidden", "true" },
+		{ "SelectorStyle", "1" },
+		{ "LevelNames", names },
+		{ "LevelActions", ids },
+	};
+	return m_sql.FormatDeviceOptions(std::move(optionsMap));
 }
 
 bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)

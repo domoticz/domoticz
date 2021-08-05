@@ -740,7 +740,7 @@ namespace http
 
 		void CWebServer::RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication)
 		{
-			m_webcommands.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
+			m_webcommands.emplace(idname, ResponseFunction);
 			if (bypassAuthentication)
 			{
 				m_pWebEm->RegisterWhitelistCommandsString(idname);
@@ -749,7 +749,7 @@ namespace http
 
 		void CWebServer::RegisterRType(const char *idname, const webserver_response_function &ResponseFunction)
 		{
-			m_webrtypes.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
+			m_webrtypes.emplace(idname, ResponseFunction);
 		}
 
 		void CWebServer::HandleRType(const std::string &rtype, WebEmSession &session, const request &req, Json::Value &root)

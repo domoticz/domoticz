@@ -140,7 +140,7 @@ namespace http {
 
 		void cWebem::RegisterIncludeCode(const char *idname, const webem_include_function &fun)
 		{
-			myIncludes.insert(std::pair<std::string, webem_include_function >(std::string(idname), fun));
+			myIncludes.emplace(idname, fun);
 		}
 		/**
 
@@ -156,12 +156,12 @@ namespace http {
 
 		void cWebem::RegisterIncludeCodeW(const char *idname, const webem_include_function_w &fun)
 		{
-			myIncludes_w.insert(std::pair<std::string, webem_include_function_w >(std::string(idname), fun));
+			myIncludes_w.emplace(idname, fun);
 		}
 
 		void cWebem::RegisterPageCode(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
-			myPages.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
+			myPages.emplace(pageurl, fun);
 			if (bypassAuthentication)
 			{
 				RegisterWhitelistURLString(pageurl);
@@ -169,7 +169,7 @@ namespace http {
 		}
 		void cWebem::RegisterPageCodeW(const char *pageurl, const webem_page_function &fun, bool bypassAuthentication)
 		{
-			myPages_w.insert(std::pair<std::string, webem_page_function >(std::string(pageurl), fun));
+			myPages_w.emplace(pageurl, fun);
 			if (bypassAuthentication)
 			{
 				RegisterWhitelistURLString(pageurl);
@@ -187,7 +187,7 @@ namespace http {
 		*/
 		void cWebem::RegisterActionCode(const char *idname, const webem_action_function &fun)
 		{
-			myActions.insert(std::pair<std::string, webem_action_function >(std::string(idname), fun));
+			myActions.emplace(idname, fun);
 		}
 
 		//Used by non basic-auth authentication (for example login forms) to bypass returning false when not authenticated
@@ -406,7 +406,7 @@ namespace http {
 							if (pos == std::string::npos)
 								return false;
 							szValue = szContent.substr(0, pos - 2);
-							req.parameters.insert(std::pair< std::string, std::string >(szVariable, szValue));
+							req.parameters.emplace(szVariable, szValue);
 
 							szContent = szContent.substr(pos + szBoundary.size());
 							pos = szContent.find("\r\n");
@@ -442,7 +442,7 @@ namespace http {
 					    (strstr(pContent_Type, "application/xml") != nullptr))
 					{
 						//Raw data
-						req.parameters.insert(std::pair< std::string, std::string >("data", req.content));
+						req.parameters.emplace("data", req.content);
 						// call the function
 						try
 						{
@@ -492,7 +492,7 @@ namespace http {
 					value.replace(p, 1, " ");
 				}
 
-				req.parameters.insert(std::pair< std::string, std::string >(name, value));
+				req.parameters.emplace(name, value);
 				p = q + 1;
 			}
 
@@ -604,7 +604,7 @@ namespace http {
 					// now, url-decode only the value
 					std::string decoded;
 					request_handler::url_decode(value, decoded);
-					req.parameters.insert(std::pair< std::string, std::string >(name, decoded));
+					req.parameters.emplace(name, decoded);
 					p = q + 1;
 				}
 			}
@@ -674,7 +674,7 @@ namespace http {
 							if (pos == std::string::npos)
 								return true;
 							szValue = szContent.substr(0, pos - 2);
-							req.parameters.insert(std::pair< std::string, std::string >(szVariable, szValue));
+							req.parameters.emplace(szVariable, szValue);
 
 							szContent = szContent.substr(pos + szBoundary.size());
 							pos = szContent.find("\r\n");
@@ -725,7 +725,7 @@ namespace http {
 							// now, url-decode only the value
 							std::string decoded;
 							request_handler::url_decode(value, decoded);
-							req.parameters.insert(std::pair< std::string, std::string >(name, decoded));
+							req.parameters.emplace(name, decoded);
 							p = q + 1;
 						}
 					}

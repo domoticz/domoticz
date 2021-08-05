@@ -117,7 +117,7 @@ CEvohomeRadio::~CEvohomeRadio()
 
 void CEvohomeRadio::RegisterDecoder(unsigned int cmd, const fnc_evohome_decode &fndecoder)
 {
-	m_Decoders.insert(std::pair<int, fnc_evohome_decode >(cmd, fndecoder));
+	m_Decoders.emplace(cmd, fndecoder);
 }
 
 bool CEvohomeRadio::StartHardware()

@@ -806,7 +806,7 @@ namespace Plugins {
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
 									std::string sOptionName = pKeyDict;
 									std::string sOptionValue = pValueDict;
-									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+									mpOptions.emplace(sOptionName, sOptionValue);
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
 							}
@@ -990,7 +990,7 @@ namespace Plugins {
 					{
 						std::string sOptionName = pKeyDict;
 						std::string sOptionValue = pValueDict;
-						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+						mpOptions.emplace(sOptionName, sOptionValue);
 					}
 					Py_BEGIN_ALLOW_THREADS
 					m_sql.SetDeviceOptions(self->ID, mpOptions);

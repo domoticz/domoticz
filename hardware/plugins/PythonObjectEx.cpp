@@ -639,7 +639,7 @@ namespace Plugins {
 								{
 									std::string sOptionName = pKeyDict;
 									std::string sOptionValue = pValueDict;
-									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+									mpOptions.emplace(sOptionName, sOptionValue);
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
 							}
@@ -777,7 +777,7 @@ namespace Plugins {
 					{
 						std::string sOptionName = pKeyDict;
 						std::string sOptionValue = pValueDict;
-						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+						mpOptions.emplace(sOptionName, sOptionValue);
 					}
 					sOptionValue = m_sql.FormatDeviceOptions(mpOptions);
 				}

@@ -13403,7 +13403,7 @@ void MainWorker::HeartbeatUpdate(const std::string& component, bool critical /*=
 		itt->second.first = now;
 	}
 	else {
-		m_componentheartbeats[component] = std::make_pair(now, critical);
+		m_componentheartbeats[component] = { now, critical };
 	}
 }
 

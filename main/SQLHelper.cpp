@@ -7443,7 +7443,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
 			if (pHardware != nullptr)
 			{
-				removeddevices.insert(std::make_tuple(HwID, DeviceID, Unit));
+				removeddevices.emplace(HwID, DeviceID, Unit);
 			}
 		}
 	}
@@ -9164,7 +9164,7 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 				oValue = oValue.substr(tpos + 1);
 				std::string optionValue = decode ? base64_decode(oValue) : oValue;
 				//_log.Log(LOG_STATUS, "DEBUG : Build device option ['%s': '%s'] => ['%s': '%s']", optionArray[0].c_str(), optionArray[1].c_str(), optionName.c_str(), optionValue.c_str());
-				optionsMap.insert(std::pair<std::string, std::string>(optionName, optionValue));
+				optionsMap.emplace(optionName, optionValue);
 			}
 		}
 	}

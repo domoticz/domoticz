@@ -2321,7 +2321,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options
 			ss << i;
 			std::string level(ss.str());
 			//_log.Log(LOG_STATUS, "DEBUG : Get selector status '%s' for level %s", levelName.c_str(), level.c_str());
-			statuses.insert(std::pair<std::string, std::string>(level.c_str(), levelName.c_str()));
+			statuses.emplace(level, levelName);
 			i += 10;
 		}
 	}

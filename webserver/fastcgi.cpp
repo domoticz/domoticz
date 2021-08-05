@@ -216,7 +216,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 					break;
 				value.replace(p, 1, " ");
 			}
-			parameters.insert(std::pair< std::string, std::string >(name, value));
+			parameters.emplace(name, value);
 			p = q + 1;
 		}
 	}
@@ -278,7 +278,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 								std::string szContent;
 								size_t bpos = size_t(ss.tellg());
 								szContent = req.content.substr(bpos, ss.rdbuf()->str().size() - bpos - szBoundary.size() - 6);
-								parameters.insert(std::pair< std::string, std::string >(vName, szContent));
+								parameters.emplace(vName, szContent);
 								break;
 							}
 						}

@@ -246,7 +246,7 @@ namespace Plugins {
 									break;
 							}
 							readFile.close();
-							m_PluginXml.insert(std::pair<std::string, std::string>(plugin_Dir, sXML));
+							m_PluginXml.emplace(plugin_Dir, sXML);
 						}
 						catch (...)
 						{
@@ -266,7 +266,7 @@ namespace Plugins {
 		{
 			std::lock_guard<std::mutex> l(PluginMutex);
 			pPlugin = new CPlugin(HwdID, Name, PluginKey);
-			m_pPlugins.insert(std::pair<int, CPlugin*>(HwdID, pPlugin));
+			m_pPlugins.emplace(HwdID, pPlugin);
 		}
 		else
 		{
