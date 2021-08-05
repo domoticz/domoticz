@@ -4,7 +4,6 @@
 
 #include "request_handler.hpp"
 #include <boost/logic/tribool.hpp>
-#include <boost/tuple/tuple.hpp>
 
 #include "reply.hpp"
 #include "request.hpp"
