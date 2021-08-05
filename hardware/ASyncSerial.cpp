@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 #include <boost/smart_ptr/shared_array.hpp>  // for shared_array
 #include <boost/system/error_code.hpp>       // for error_code
 #include <boost/system/system_error.hpp>     // for system_error
@@ -56,7 +55,7 @@ public:
 
     boost::asio::io_service io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
-    boost::thread backgroundThread; ///< Thread that runs read/write operations
+    std::thread backgroundThread;  ///< Thread that runs read/write operations
     bool open{ false };		    ///< True if port open
     bool error{ false };	    ///< Error flag
     mutable std::mutex errorMutex; ///< Mutex for access to error
@@ -122,7 +121,7 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 	// This gives some work to the io_service before it is started
 	pimpl->io.post([this] { return doRead(); });
 
-	boost::thread t([p = &pimpl->io] { p->run(); });
+	auto t = std::thread([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false); // If we get here, no error
 	pimpl->open = true;    // Port is now open
@@ -154,7 +153,7 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 	//This gives some work to the io_service before it is started
 	pimpl->io.post([this] { return doRead(); });
 
-	boost::thread t([p = &pimpl->io] { p->run(); });
+	auto t = std::thread([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false);//If we get here, no error
 	pimpl->open=true; //Port is now open
