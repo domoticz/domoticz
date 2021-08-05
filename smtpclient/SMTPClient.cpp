@@ -75,10 +75,7 @@ void SMTPClient::SetCredentials(const std::string& Username, const std::string& 
 
 void SMTPClient::AddAttachment(const std::string& adata, const std::string& atype)
 {
-	std::pair<std::string, std::string> tattachment;
-	tattachment.first = adata;
-	tattachment.second = atype;
-	m_Attachments.push_back(tattachment);
+	m_Attachments.emplace_back(adata, atype);
 }
 
 void SMTPClient::SetPlainBody(const std::string& body)

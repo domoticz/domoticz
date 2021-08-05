@@ -3956,8 +3956,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	iStates.clear();
-	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates),
-		       [](const std::pair<const uint64_t, CEventSystem::_tDeviceStatus> &m) { return m.second; });
+	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates), [](auto &&m) { return m.second; });
 }
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)

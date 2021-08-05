@@ -1096,8 +1096,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		return -1;
 	}
 
-	std::pair<unsigned char*, unsigned int> cmdPayload;
-	cmdPayload = getFullFrame(cmd, cmdLength);
+	auto cmdPayload = getFullFrame(cmd, cmdLength);
 
 	//Send cmd
 	if (send(m_socket, (const char*)cmdPayload.first, cmdPayload.second, 0) < 0)

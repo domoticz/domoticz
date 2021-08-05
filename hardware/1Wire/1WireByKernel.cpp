@@ -260,8 +260,7 @@ void C1WireByKernel::ThreadBuildDevicesList()
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 {
 	Locker l(m_Mutex);
-	std::transform(m_Devices.begin(), m_Devices.end(), std::back_inserter(devices),
-		       [](const std::pair<const std::string, C1WireByKernel::DeviceState *> &m) { return m.second->GetDevice(); });
+	std::transform(m_Devices.begin(), m_Devices.end(), std::back_inserter(devices), [](auto &&m) { return m.second->GetDevice(); });
 }
 
 const C1WireByKernel::DeviceState* C1WireByKernel::GetDevicePendingState(const std::string& deviceId) const
