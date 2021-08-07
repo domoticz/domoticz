@@ -360,8 +360,8 @@ void MyNode::updatePoll(char* ilist, char* plist)
 #endif
 			return;
 		}
-		std::vector<char*>::iterator it = ids.begin();
-		std::vector<bool>::iterator pit = polls.begin();
+		auto it = ids.begin();
+		auto pit = polls.begin();
 		while (it != ids.end() && pit != polls.end()) {
 			v = lookup(*it);
 			if (v == nullptr)

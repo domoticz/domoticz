@@ -240,7 +240,7 @@ namespace http {
 				std::string code = reply.substr(p + 11, q - p - 15);
 
 				// find the function associated with this code
-				std::map < std::string, webem_include_function >::iterator pf = myIncludes.find(code);
+				auto pf = myIncludes.find(code);
 				if (pf != myIncludes.end())
 				{
 					// insert generated text
@@ -259,7 +259,7 @@ namespace http {
 				else
 				{
 					// no function found, look for a wide character fuction
-					std::map < std::string, webem_include_function_w >::iterator pf = myIncludes_w.find(code);
+					auto pf = myIncludes_w.find(code);
 					if (pf != myIncludes_w.end())
 					{
 						// function found
@@ -333,8 +333,7 @@ namespace http {
 			// find function matching action code
 			size_t q = uri.find(".webem");
 			std::string code = uri.substr(1, q - 1);
-			std::map < std::string, webem_action_function >::iterator
-				pfun = myActions.find(code);
+			auto pfun = myActions.find(code);
 			if (pfun == myActions.end())
 				return false;
 
@@ -536,17 +535,12 @@ namespace http {
 				request_path = request_path.substr(0, paramPos);
 			}
 
-			std::map < std::string, webem_page_function >::iterator
-				pfun = myPages.find(request_path);
-
+			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 				return true;
 			//check wchar_t
-			std::map < std::string, webem_page_function >::iterator
-				pfunW = myPages_w.find(request_path);
-			if (pfunW != myPages_w.end())
-				return true;
-			return false;
+			auto pfunW = myPages_w.find(request_path);
+			return pfunW != myPages_w.end();
 		}
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
@@ -749,9 +743,7 @@ namespace http {
 			}
 			std::string strMimeType = mime_types::extension_to_type(extension);
 
-			std::map < std::string, webem_page_function >::iterator
-				pfun = myPages.find(request_path);
-
+			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 			{
 				rep.status = reply::ok;
@@ -801,8 +793,7 @@ namespace http {
 			}
 
 			//check wchar_t
-			std::map < std::string, webem_page_function >::iterator
-				pfunW = myPages_w.find(request_path);
+			auto pfunW = myPages_w.find(request_path);
 			if (pfunW == myPages_w.end())
 				return false;
 

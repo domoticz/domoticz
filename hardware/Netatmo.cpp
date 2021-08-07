@@ -968,11 +968,9 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 		_tNetatmoDevice nDevice;
 		bool bHaveFoundND = false;
 		iDevIndex = 0;
-		std::vector<_tNetatmoDevice>::const_iterator ittND;
-		for (ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
+		for (auto ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
 		{
-			std::vector<std::string>::const_iterator ittNM;
-			for (ittNM = ittND->ModulesIDs.begin(); ittNM != ittND->ModulesIDs.end(); ++ittNM)
+			for (auto ittNM = ittND->ModulesIDs.begin(); ittNM != ittND->ModulesIDs.end(); ++ittNM)
 			{
 				if (*ittNM == id)
 				{
@@ -1022,8 +1020,8 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 		}
 		stdreplace(name, "'", " ");
 
-		//std::set<std::string> dataTypes;
-		//for (Json::Value::iterator itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
+		// std::set<std::string> dataTypes;
+		// for (auto itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
 		//{
 		//	dataTypes.insert((*itDataType).asCString());
 		//}
@@ -1343,7 +1341,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				int moduleID = iModuleIndex;
 
 				//Find the module (name/id)
-				for (std::map<std::string, std::string>::const_iterator itt = m_ModuleNames.begin(); itt != m_ModuleNames.end(); ++itt)
+				for (auto itt = m_ModuleNames.begin(); itt != m_ModuleNames.end(); ++itt)
 				{
 					if (itt->first == id)
 					{
@@ -1404,7 +1402,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				int roomID = iDevIndex + 1;
 
 				//Find the room name
-				for (std::map<std::string, std::string>::const_iterator itt = m_RoomNames.begin(); itt != m_RoomNames.end(); ++itt)
+				for (auto itt = m_RoomNames.begin(); itt != m_RoomNames.end(); ++itt)
 				{
 					if (itt->first == id)
 					{

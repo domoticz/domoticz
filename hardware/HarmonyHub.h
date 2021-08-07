@@ -27,12 +27,10 @@ class Function
 		std::string ret = "    Function: ";
 		ret.append(m_strName);
 		ret.append("\n      Commands:");
-		std::vector<Action>::iterator it = m_vecActions.begin();
-		std::vector<Action>::iterator ite = m_vecActions.end();
-		for (; it != ite; ++it)
+		for (auto &&action : m_vecActions)
 		{
 			ret.append("\n\t");
-			ret.append(it->toString());
+			ret.append(action.toString());
 		}
 		ret.append("\n");
 		return ret;
@@ -61,11 +59,9 @@ class Device
 		ret.append(" - ");
 		ret.append(m_strModel);
 		ret.append("\nFunctions: \n");
-		std::vector<Function>::iterator it = m_vecFunctions.begin();
-		std::vector<Function>::iterator ite = m_vecFunctions.end();
-		for (; it != ite; ++it)
+		for (auto &&function : m_vecFunctions)
 		{
-			ret.append(it->toString());
+			ret.append(function.toString());
 		}
 		return ret;
 	}

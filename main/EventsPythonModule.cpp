@@ -259,8 +259,7 @@
 				// Mutex
 				// boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 
-				std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
-				for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
+				for (auto it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
 				{
 					CEventSystem::_tDeviceStatus sitem = it_type->second;
 					// object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType,
@@ -379,8 +378,7 @@
 				// This doesn't work
 				// boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
 
-				std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
-				for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
+				for (auto it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
 				{
 					CEventSystem::_tUserVariable uvitem = it_var->second;
 					Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(),

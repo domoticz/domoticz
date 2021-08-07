@@ -116,7 +116,7 @@ namespace Plugins {
 
 				boost::system::error_code ec;
 				boost::asio::ip::tcp::resolver::query query(m_IP, m_Port);
-				boost::asio::ip::tcp::resolver::iterator iter = m_Resolver.resolve(query);
+				auto iter = m_Resolver.resolve(query);
 				boost::asio::ip::tcp::endpoint endpoint = *iter;
 
 				//
@@ -851,7 +851,7 @@ namespace Plugins {
 
 				boost::system::error_code ec;
 				boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), m_IP, "");
-				boost::asio::ip::icmp::resolver::iterator iter = m_Resolver.resolve(query);
+				auto iter = m_Resolver.resolve(query);
 				m_Endpoint = *iter;
 
 				//

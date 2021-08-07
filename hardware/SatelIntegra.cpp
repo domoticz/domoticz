@@ -1060,11 +1060,9 @@ void SatelIntegra::UpdateAlarmAndArmName()
 
 void expandForSpecialValue(std::deque<unsigned char> &result)
 {
-	auto it = result.begin();
-
 	const unsigned char specialValue = 0xFE;
 
-	for (; it != result.end(); it++)
+	for (auto it = result.begin(); it != result.end(); it++)
 	{
 		if (*it == specialValue)
 		{

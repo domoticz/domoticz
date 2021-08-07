@@ -9159,7 +9159,8 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 
 	int iTotalAdded = 0;
 
-	for (clx::unzip::iterator pos = in.begin(); pos != in.end(); ++pos) {
+	for (auto pos = in.begin(); pos != in.end(); ++pos)
+	{
 		//_log.Log(LOG_STATUS, "unzip: %s", pos->path().c_str());
 		std::string fpath = pos->path();
 

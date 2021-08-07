@@ -601,7 +601,7 @@ namespace http {
 		void CProxySharedData::RemoveTCPClient(DomoticzTCP *client)
 		{
 			// fast remove from vector
-			std::vector<DomoticzTCP *>::iterator it = std::find(TCPClients.begin(), TCPClients.end(), client);
+			auto it = std::find(TCPClients.begin(), TCPClients.end(), client);
 			if (it != TCPClients.end()) {
 				using std::swap;
 				// swap the one to be removed with the last element

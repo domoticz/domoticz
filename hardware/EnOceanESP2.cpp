@@ -403,7 +403,7 @@ void CEnOceanESP2::Do_Work()
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
 
-			std::vector<std::string>::iterator itt = m_sendqueue.begin();
+			auto itt = m_sendqueue.begin();
 			if (itt != m_sendqueue.end())
 			{
 				std::string sBytes = *itt;

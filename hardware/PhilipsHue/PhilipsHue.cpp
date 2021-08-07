@@ -972,7 +972,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	}
 
 	int gID = 0;
-	std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
+	auto myGroup = m_groups.find(gID);
 	if (myGroup != m_groups.end())
 	{
 		if (!StatesSimilar(myGroup->second.gstate, tstate))
