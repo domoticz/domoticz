@@ -203,6 +203,33 @@ namespace Plugins {
 		return pRetVal;
 	}
 
+	bool CDeviceEx::isInstance(PyObject *pObject)
+	{
+		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (brModule)
+		{
+			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			if (pModState)
+			{
+				int isDevice = PyObject_IsInstance(pObject, (PyObject *)pModState->pDeviceClass);
+				if (isDevice == -1)
+				{
+					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+					if (PyErr_Occurred())
+					{
+						PyErr_Clear();
+					}
+				}
+				else if (isDevice)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	void CUnitEx_dealloc(CUnitEx *self)
 	{
 		Py_XDECREF(self->Name);
@@ -921,6 +948,33 @@ namespace Plugins {
 	{
 		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U'", self->Unit, self->Name, self->nValue, self->sValue);
 		return pRetVal;
+	}
+
+	bool CUnitEx::isInstance(PyObject *pObject)
+	{
+		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (brModule)
+		{
+			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			if (pModState)
+			{
+				int isUnit = PyObject_IsInstance(pObject, (PyObject *)pModState->pUnitClass);
+				if (isUnit == -1)
+				{
+					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+					if (PyErr_Occurred())
+					{
+						PyErr_Clear();
+					}
+				}
+				else if (isUnit)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 } // namespace Plugins
 #endif

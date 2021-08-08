@@ -259,8 +259,21 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 
 			if (UpdateEventTarget(m_DeviceID, m_Unit))
 			{
-				PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
-				Callback(pParams);
+				if (CUnitEx::isInstance(m_Target))
+				{
+					PyNewRef pParams = Py_BuildValue("()");
+					Callback(pParams);
+				}
+				else if (CDeviceEx::isInstance(m_Target))
+				{
+					PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+					Callback(pParams);
+				}
+				else
+				{
+					PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
+					Callback(pParams);
+				}
 			}
 			else
 			{
@@ -285,8 +298,21 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 
 			if (UpdateEventTarget(m_DeviceID, m_Unit))
 			{
-				PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
-				Callback(pParams);
+				if (CUnitEx::isInstance(m_Target))
+				{
+					PyNewRef pParams = Py_BuildValue("()");
+					Callback(pParams);
+				}
+				else if (CDeviceEx::isInstance(m_Target))
+				{
+					PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+					Callback(pParams);
+				}
+				else
+				{
+					PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
+					Callback(pParams);
+				}
 			}
 			else
 			{
@@ -309,8 +335,21 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  {
 		  if (UpdateEventTarget(m_DeviceID, m_Unit))
 		  {
-			  PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
-			  Callback(pParams);
+			  if (CUnitEx::isInstance(m_Target))
+			  {
+				  PyNewRef pParams = Py_BuildValue("()");
+				  Callback(pParams);
+			  }
+			  else if (CDeviceEx::isInstance(m_Target))
+			  {
+				  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
+				  Callback(pParams);
+			  }
+			  else
+			  {
+				  PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
+				  Callback(pParams);
+			  }
 		  }
 		  else
 		  {
@@ -358,13 +397,38 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		  PyNewRef pParams;
 		  if (UpdateEventTarget(m_DeviceID, m_Unit))
 		  {
-			  if (m_fLevel != -273.15F)
+			  if (CUnitEx::isInstance(m_Target))
 			  {
-				  pParams = Py_BuildValue("sisfs", m_DeviceID.c_str(), m_Unit, m_Command.c_str(), m_fLevel, "");
+				  if (m_fLevel != -273.15F)
+				  {
+					  pParams = Py_BuildValue("sfs", m_Command.c_str(), m_fLevel, "");
+				  }
+				  else
+				  {
+					  pParams = Py_BuildValue("sis", m_Command.c_str(), m_iLevel, m_iColor.c_str());
+				  }
+			  }
+			  else if (CDeviceEx::isInstance(m_Target))
+			  {
+				  if (m_fLevel != -273.15F)
+				  {
+					  pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
+				  }
+				  else
+				  {
+					  pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+				  }
 			  }
 			  else
 			  {
-				  pParams = Py_BuildValue("sisis", m_DeviceID.c_str(), m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+				  if (m_fLevel != -273.15F)
+				  {
+					  pParams = Py_BuildValue("sisfs", m_DeviceID.c_str(), m_Unit, m_Command.c_str(), m_fLevel, "");
+				  }
+				  else
+				  {
+					  pParams = Py_BuildValue("sisis", m_DeviceID.c_str(), m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
+				  }
 			  }
 		  }
 		  else
@@ -402,8 +466,21 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  {
 		  if (UpdateEventTarget(m_DeviceID, m_Unit))
 		  {
-			  PyNewRef pParams = Py_BuildValue("siis", m_DeviceID.c_str(), m_Unit, m_iLevel, m_Description.c_str());
-			  Callback(pParams);
+			  if (CUnitEx::isInstance(m_Target))
+			  {
+				  PyNewRef pParams = Py_BuildValue("is", m_iLevel, m_Description.c_str());
+				  Callback(pParams);
+			  }
+			  else if (CDeviceEx::isInstance(m_Target))
+			  {
+				  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
+				  Callback(pParams);
+			  }
+			  else
+			  {
+				  PyNewRef pParams = Py_BuildValue("siis", m_DeviceID.c_str(), m_Unit, m_iLevel, m_Description.c_str());
+				  Callback(pParams);
+			  }
 		  }
 		  else
 		  {

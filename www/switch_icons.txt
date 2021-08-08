@@ -19,3 +19,4 @@ ComputerPC;Computer PC;Personal Computer System
 Phone;Phone;Mobile Phone
 Sun;Sun;Sun
 Rain;Rain;Rain
+clock;Clock;Chronological device

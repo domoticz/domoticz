@@ -1019,9 +1019,11 @@ namespace Plugins
 	int CPlugin::PollInterval(int Interval)
 	{
 		if (Interval > 0)
+		{
 			m_iPollInterval = Interval;
-		if (m_bDebug & PDM_PLUGIN)
-			Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", m_Name.c_str(), m_iPollInterval);
+			if (m_bDebug & PDM_PLUGIN)
+				Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", m_Name.c_str(), m_iPollInterval);
+		}
 		return m_iPollInterval;
 	}
 
