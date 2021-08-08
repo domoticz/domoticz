@@ -485,12 +485,12 @@ CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const uint32_t iNodeID)
 	return &(node->second);
 }
 
-CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const std::string nodeID)
+CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const std::string &nodeID)
 {
 	return GetNodeInfo(GetINodeID(nodeID));
 }
 
-void CEnOceanESP3::TeachInNode(const std::string nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic)
+void CEnOceanESP3::TeachInNode(const std::string &nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic)
 {
 	Log(LOG_NORM, "Teach-in Node: HwdID %u Node %s Manufacturer %03X (%s) %sEEP %02X-%02X-%02X (%s)",
 		m_HwdID, nodeID.c_str(), manID, GetManufacturerName(manID),

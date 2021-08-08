@@ -646,7 +646,7 @@ uint32_t CEnOceanEEP::GetINodeID(const uint8_t ID3, const uint8_t ID2, const uin
 	return (uint32_t) ((ID3 << 24) | (ID2 << 16) | (ID1 << 8) | ID0);
 }
 
-uint32_t CEnOceanEEP::GetINodeID(const std::string nodeID)
+uint32_t CEnOceanEEP::GetINodeID(const std::string &nodeID)
 {
     std::stringstream s_strid;
     s_strid << std::hex << std::uppercase << nodeID;

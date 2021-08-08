@@ -51,9 +51,9 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	void LoadNodesFromDatabase();
 
 	NodeInfo *GetNodeInfo(const uint32_t iNodeID);
-	NodeInfo *GetNodeInfo(const std::string nodeID);
+	NodeInfo *GetNodeInfo(const std::string &nodeID);
 
-	void TeachInNode(const std::string nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
+	void TeachInNode(const std::string &nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
 
 	const char *GetPacketTypeLabel(const uint8_t PT);
 	const char *GetPacketTypeDescription(const uint8_t PT);
