@@ -131,7 +131,7 @@ public:
 	bool m_allowwakeup;
 
 	tVehicle m_car;
-	CVehicleApi *m_api;
+	std::unique_ptr<CVehicleApi> m_api;
 	concurrent_queue<tApiCommand> m_commands;
 	bool m_setcommand_scheduled;
 	int m_command_nr_tries;

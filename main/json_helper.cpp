@@ -7,7 +7,7 @@ bool ParseJSon(const std::string& inStr, Json::Value& json_output, std::string *
 		return false;
 
 	Json::CharReaderBuilder builder;
-	const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+	auto reader = std::unique_ptr<Json::CharReader>(builder.newCharReader());
 
 	return reader->parse(
 		reinterpret_cast<const char*>(inStr.c_str()),
@@ -22,7 +22,7 @@ bool ParseJSonStrict(const std::string& inStr, Json::Value& json_output, std::st
 
 	Json::CharReaderBuilder builder;
 	builder.strictMode(&builder.settings_);
-	const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+	auto reader = std::unique_ptr<Json::CharReader>(builder.newCharReader());
 
 	return reader->parse(
 		reinterpret_cast<const char*>(inStr.c_str()),

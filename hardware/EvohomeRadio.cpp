@@ -129,7 +129,7 @@ bool CEvohomeRadio::StartHardware()
 		try
 		{
 			std::string debug_file = szUserDataFolder + "evoraw.log";
-			m_pEvoLog = new std::ofstream(debug_file.c_str(), std::ios::out | std::ios::app);
+			m_pEvoLog = std::make_unique<std::ofstream>(debug_file.c_str(), std::ios::out | std::ios::app);
 		}
 		catch (...)
 		{
