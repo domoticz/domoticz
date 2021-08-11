@@ -104,7 +104,7 @@ namespace http {
 			void reset_abandoned_timeout();
 
 			/// Socket for the (PLAIN) connection.
-			boost::asio::ip::tcp::socket* socket_;
+			std::unique_ptr<boost::asio::ip::tcp::socket> socket_;
 			//Host EndPoint
 			std::string host_endpoint_address_;
 			std::string host_endpoint_port_;
@@ -157,7 +157,7 @@ namespace http {
 			bool secure_;
 #ifdef WWW_ENABLE_SSL
 			// the SSL socket
-			ssl_socket* sslsocket_;
+			std::unique_ptr<ssl_socket> sslsocket_;
 			void handle_handshake(const boost::system::error_code& error);
 #endif
 

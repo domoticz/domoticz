@@ -39,10 +39,7 @@ namespace http {
 			keepalive_ = false;
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
-#ifdef WWW_ENABLE_SSL
-			sslsocket_ = nullptr;
-#endif
-			socket_ = new boost::asio::ip::tcp::socket(io_service);
+			socket_ = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
 		}
 
 #ifdef WWW_ENABLE_SSL
@@ -65,7 +62,7 @@ namespace http {
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
 			socket_ = nullptr;
-			sslsocket_ = new ssl_socket(io_service, context);
+			sslsocket_ = std::make_unique<ssl_socket>(io_service, context);
 		}
 #endif
 
@@ -540,10 +537,6 @@ namespace http {
 		connection::~connection()
 		{
 			// free up resources, delete the socket pointers
-			delete socket_;
-#ifdef WWW_ENABLE_SSL
-			delete sslsocket_;
-#endif
 			delete[] send_buffer_;
 		}
 
