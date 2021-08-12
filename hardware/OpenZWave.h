@@ -6,7 +6,6 @@
 #include <time.h>
 #include "ZWaveBase.h"
 #include "ASyncSerial.h"
-#include <list>
 #include "openzwave/control_panel/ozwcp.h"
 
 namespace OpenZWave
@@ -26,7 +25,7 @@ class COpenZWave : public ZWaveBase
       public:
 	typedef struct
 	{
-		std::list<OpenZWave::ValueID> Values;
+		std::deque<OpenZWave::ValueID> Values;
 		time_t m_LastSeen;
 	} NodeCommandClass;
 
@@ -172,7 +171,7 @@ class COpenZWave : public ZWaveBase
 
 	OpenZWave::Manager *m_pManager;
 
-	std::list<NodeInfo> m_nodes;
+	std::deque<NodeInfo> m_nodes;
 
 	std::string m_szSerialPort;
 	unsigned int m_controllerID;

@@ -66,7 +66,7 @@ uint8 SUCnodeId = 0;
 const char* cmode = "";
 int32 debug = false;
 bool MyNode::nodechanged = false;
-std::list<uint8> MyNode::removed;
+std::deque<uint8> MyNode::removed;
 extern std::string szUserDataFolder;
 
 //static Webserver *wserver;
