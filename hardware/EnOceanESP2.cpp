@@ -770,7 +770,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
-	if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
+	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
 	{
 		std::string baseID = GetNodeID(m_id_base);
 		Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
@@ -782,21 +782,23 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	iframe.ID_BYTE1 = (unsigned char)tsen->LIGHTING2.id3;
 	iframe.ID_BYTE0 = (unsigned char)tsen->LIGHTING2.id4;
 
-	unsigned char RockerID = 0;
-	unsigned char Pressed = 1;
-
-	if (tsen->LIGHTING2.unitcode < 10)
-		RockerID = tsen->LIGHTING2.unitcode - 1;
-	else
-		return false;//double not supported yet!
-
+	if (tsen->LIGHTING2.unitcode >= 10)
+	{
+		Log(LOG_ERROR, "ID %s, double not supported!", nodeID.c_str());
+		return false;
+	}
 	//First we need to find out if this is a Dimmer switch,
 	//because they are threaded differently
+
+	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
+	uint8_t Pressed = 1;
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
+
+	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, nodeID.c_str(), int(tsen->LIGHTING2.unitcode));
+		m_HwdID, deviceID.c_str(), int(tsen->LIGHTING2.unitcode));
 	if (!result.empty())
 	{
 		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
@@ -887,27 +889,24 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 		iframe.ORG = C_ORG_RPS;
 
 		uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-		if ((iNodeID <= m_id_base) || (iNodeID > m_id_base + 128))
+		std::string nodeID = GetNodeID(iNodeID);
+		if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
 		{
-			std::string nodeID = GetNodeID(iNodeID);
 			std::string baseID = GetNodeID(m_id_base);
 			Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
 			return;
 		}
 
-		iframe.ID_BYTE3 = tsen->LIGHTING2.id1;
-		iframe.ID_BYTE2 = tsen->LIGHTING2.id2;
-		iframe.ID_BYTE1 = tsen->LIGHTING2.id3;
-		iframe.ID_BYTE0 = tsen->LIGHTING2.id4;
+		iframe.ID_BYTE3 = (unsigned char)tsen->LIGHTING2.id1;
+		iframe.ID_BYTE2 = (unsigned char)tsen->LIGHTING2.id2;
+		iframe.ID_BYTE1 = (unsigned char)tsen->LIGHTING2.id3;
+		iframe.ID_BYTE0 = (unsigned char)tsen->LIGHTING2.id4;
 
-		unsigned char RockerID = 0;
-		//unsigned char UpDown = 1;
-		//unsigned char Pressed = 1;
-
-		if (tsen->LIGHTING2.unitcode < 10)
-			RockerID = tsen->LIGHTING2.unitcode - 1;
-		else
-			return;//double not supported yet!
+		if (tsen->LIGHTING2.unitcode >= 10)
+		{
+			Log(LOG_ERROR, "ID %s, double not supported!", nodeID.c_str());
+			return;
+		}
 
 		//Teach in, DATA 2,1,0 set to 0
 		iframe.ORG = C_ORG_4BS;
