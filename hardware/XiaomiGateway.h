@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <boost/tuple/tuple.hpp>
 #include <list>
 #include <mutex>
 #include "XiaomiDeviceSupport.h"
@@ -134,7 +133,7 @@ class XiaomiGateway : public CDomoticzHardwareBase
 
 	      private:
 		std::mutex m_mutex;
-		std::vector<boost::tuple<std::string, std::string, std::string>> m_GatewayTokens;
+		std::vector<std::tuple<std::string, std::string, std::string>> m_GatewayTokens;
 
 		XiaomiGatewayTokenManager()
 		{
