@@ -2169,12 +2169,16 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				// D2-01-0E, Micro smart plug, single channel, with external button control
 				// D2-01-0F, Slot-in module, single channel, with external button control
 				// D2-01-12, Slot-in module, dual channels, with external button control
+				// D2-01-15, D2-01-16, D2-01-17
 				// These nodes send RPS telegrams whenever the external button control is used
 				// Ignore these RPS telegrams : device status will be reported using VLD datagram
 
 				if (pNode->RORG == RORG_VLD
 					|| (pNode->RORG == 0x00 && pNode->func == 0x01
-						&& (pNode->type == 0x0D || pNode->type == 0x0E || pNode->type == 0x0F || pNode->type == 0x12)))
+						&& (pNode->type == 0x0D || pNode->type == 0x0E
+							|| pNode->type == 0x0F || pNode->type == 0x12
+							|| pNode->type == 0x15 || pNode->type == 0x16
+							|| pNode->type == 0x17)))
 				{
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
 					Log(LOG_NORM,"Node %s, VLD device button press ignored", senderID.c_str());
@@ -2467,13 +2471,18 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
 						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
 					}
-					if (node_RORG == RORG_VLD && node_func == 0x01 && (node_type == 0x0D || node_type == 0x0E || node_type == 0x0F || node_type == 0x12))
+					if (node_RORG == RORG_VLD && node_func == 0x01
+						&& (node_type == 0x0D || node_type == 0x0E
+							|| node_type == 0x0F || node_type == 0x12
+							|| node_type == 0x15 || node_type == 0x16
+							|| node_type == 0x17))
 					{
 						// Create devices for :
 						// D2-01-0D, Micro smart plug, single channel, with external button control
 						// D2-01-0E, Micro smart plug, single channel, with external button control
 						// D2-01-0F, Slot-in module, single channel, with external button control
 						// D2-01-12, Slot-in module, dual channels, with external button control
+						// D2-01-15, D2-01-16, D2-01-17
 
 						for (uint8_t nbc = 0; nbc < node_nb_channels; nbc++)
 						{
