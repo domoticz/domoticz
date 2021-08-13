@@ -59,7 +59,8 @@ Source: ".\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
 
 Source: "..\Windows Libraries\Redist\*"; DestDir: {app}; Flags: ignoreversion
-;Needed for 64bit Source: "..\Windows Libraries\Redist\vcruntime140_1.dll"; DestDir: {app}; Flags: ignoreversion
+; VC++ redistributable runtime. InstallVC2019Redist(), if needed.
+Source: ".\VC_redist.x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall; AfterInstall: InstallVC2019Redist; Check: VC2019RedistNeedsInstall
 
 [Icons]
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 
@@ -217,4 +218,45 @@ begin
     MsgBox('You are upgrading an existing installation of Domoticz.'+ chr(13) +'It is recommended to reboot your system after this upgrade'+ chr(13) +'in order to avoid com port issues.', mbInformation, MB_OK);
   end;
   Result := True;
+end;
+
+function VC2019RedistNeedsInstall: Boolean;
+var 
+  Version: String;
+  Filename: String;
+begin
+  // Location of vcruntime140.dll seen from a 32bit setup (C:\Windows\System32\vcruntime140.dll) is from real SysWOW64 folder
+  Filename := ExpandConstant('{sys}\vcruntime140.dll');
+  Log('VC Redist Version check : ' + Filename);
+  if GetVersionNumbersString(Filename, Version) then
+  begin
+    // Is the installed version at least 14.29 ? 
+    Log('VC Redist Version check : found ' + Version);
+    Result := (CompareStr(Version, '14.29.30040.0')<0);
+  end
+  else 
+  begin
+    // Not even an old version installed
+    Log('VC Runtime not found');
+    Result := True;
+  end;
+end;
+
+procedure InstallVC2019Redist;
+var
+  StatusText: string;
+  ResultCode: Integer;
+begin
+  StatusText := WizardForm.StatusLabel.Caption;
+  WizardForm.StatusLabel.Caption := 'Installing Microsoft Visual C++ 2019 Redistributable...';
+  WizardForm.ProgressGauge.Style := npbstMarquee;
+  try
+    if not Exec(ExpandConstant('{tmp}\VC_redist.x86.exe'), '/quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+  begin
+    MsgBox('VC++ redist installation failed with code: ' + IntToStr(ResultCode) + '.'+ chr(13) + 'Install will continue, but Domiticz may not run correctly.'+ chr(13) + chr(13) + 'Reboot your system and try setup again if this is the case.', mbError, MB_OK);
+  end;
+  finally
+    WizardForm.StatusLabel.Caption := StatusText;
+    WizardForm.ProgressGauge.Style := npbstNormal;
+  end;
 end;
