@@ -1144,19 +1144,30 @@ bool CEnOceanESP2::ParseData()
 			}
 			else if (Profile == 0x12 && iType == 0x02)
 			{ // A5-12-02, Automated Meter Reading, Gas
-				unsigned long cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
+				uint8_t TI = bitrange(pFrame->DATA_BYTE0, 4, 0x0F); // Tarif info
+				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
+				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
+				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
+
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;
 				tsen.RFXMETER.packettype = pTypeRFXMeter;
 				tsen.RFXMETER.subtype = sTypeRFXMeterCount;
-				tsen.RFXMETER.rssi = 12;
 				tsen.RFXMETER.id1 = pFrame->ID_BYTE2;
 				tsen.RFXMETER.id2 = pFrame->ID_BYTE1;
-				tsen.RFXMETER.count1 = (BYTE) ((cvalue & 0xFF000000) >> 24);
-				tsen.RFXMETER.count2 = (BYTE) ((cvalue & 0x00FF0000) >> 16);
-				tsen.RFXMETER.count3 = (BYTE) ((cvalue & 0x0000FF00) >> 8);
-				tsen.RFXMETER.count4 = (BYTE) (cvalue & 0x000000FF);
+				tsen.RFXMETER.count1 = (BYTE) ((MR & 0xFF000000) >> 24);
+				tsen.RFXMETER.count2 = (BYTE) ((MR & 0x00FF0000) >> 16);
+				tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
+				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
+				tsen.RFXMETER.rssi = 12;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+#endif
+
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, nullptr, 255, nullptr);
 			}
 			else if (Profile == 0x12 && iType == 0x03)
