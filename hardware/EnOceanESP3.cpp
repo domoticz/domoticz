@@ -39,6 +39,7 @@
 //#define ESP3_TESTS_4BS_A5_12_00
 //#define ESP3_TESTS_4BS_A5_12_01
 //#define ESP3_TESTS_4BS_A5_12_02
+//#define ESP3_TESTS_4BS_A5_12_03
 //#define ESP3_TESTS_4BS_A5_20_01
 //#define ESP3_TESTS_RPS_F6_01_01
 //#define ESP3_TESTS_RPS_F6_02_01
@@ -814,6 +815,47 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 //  divisor (scale): x/1000
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0B, 0x01, RORG_4BS, 0x12, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x56 },
 #endif // ESP3_TESTS_4BS_A5_12_02
+
+#ifdef ESP3_TESTS_4BS_A5_12_03
+// A5-12-03, Water
+// Test Case : Unknown node
+//  Unknown node Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x48, 0x18, 0x00, 0x80, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x9B },
+// Test Case : Meter reading Tests
+//  Min Meter reading Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+//  Max Meter reading Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xFF, 0xFF, 0xFF, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xCD },
+//  Mid Meter reading Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x7F, 0xFF, 0xFF, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xCA },
+// Test Case : Tariff info Tests
+//  Min Tariff info Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+//  Max Tariff info Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0xF8, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x1F },
+//  Mid Tariff info Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x78, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xEE },
+// Test Case : Data type (unit) Enum Test
+//  Data type (unit): Cumulative value
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+//  Data type (unit): Current value
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0C, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xCA },
+// Test Case : Divisor (scale) Enum Test
+//  Divisor (scale): x/1
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+//  Divisor (scale): x/10
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x09, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x00 },
+//  Divisor (scale): x/100
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0A, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xBB },
+//  Divisor (scale): x/1000
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0B, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x2F },
+// Test Case : unusedFieldTest
+//  unused field test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+#endif // ESP3_TESTS_4BS_A5_12_03
 
 #ifdef ESP3_TESTS_4BS_A5_20_01
 // A5-20-01, Battery Powered Actuator (BI-DIR)
@@ -2066,8 +2108,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				if (pNode->func == 0x10 && pNode->type <= 0x0D)
 				{ // A5-10-01..OD, RoomOperatingPanel
 					// Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, [untested]
-
-					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
 					if (pNode->manufacturerID != ELTAKO)
 					{ // General case for A5-10-01..OD EEP
 						// DATA_BYTE3 is the fan speed
@@ -2108,6 +2148,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						// float setpointTemp = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
 					}
+					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
+
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
@@ -2131,7 +2173,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x00)
 				{ // A5-12-00, Automated Meter Reading, Counter
-					uint8_t CH = bitrange(DATA_BYTE0, 4, 0x0F); // channel number
+					uint8_t CH = bitrange(DATA_BYTE0, 4, 0x0F); // Channel number
 					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 : cumulative count, 1: current value / s
 					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
 					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
@@ -2162,7 +2204,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				if (pNode->func == 0x12 && pNode->type == 0x01)
 				{ // A5-12-01, Automated Meter Reading, Electricity
 					uint32_t MR = (DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1;
-					uint8_t TI = bitrange(DATA_BYTE0, 4, 0x0F); // Tarif info
+					uint8_t TI = bitrange(DATA_BYTE0, 4, 0x0F); // Tariff info
 					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
 					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
 					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
@@ -2185,7 +2227,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x02)
 				{ // A5-12-02, Automated Meter Reading, Gas
-					uint8_t TI = bitrange(DATA_BYTE0, 4, 0x0F); // Tarif info
+					uint8_t TI = bitrange(DATA_BYTE0, 4, 0x0F); // Tariff info
 					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
 					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
 					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
@@ -2215,7 +2257,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x03)
 				{ // A5-12-03, Automated Meter Reading, Water
-					uint32_t cvalue = (DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1;
+					uint8_t TI = bitrange(DATA_BYTE0, 4, 0x0F); // Tariff info
+					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
+					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
+					uint32_t MR = round(GetDeviceValue((DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -2225,11 +2271,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.seqnbr = 0;
 					tsen.RFXMETER.id1 = ID_BYTE2;
 					tsen.RFXMETER.id2 = ID_BYTE1;
-					tsen.RFXMETER.count1 = (BYTE) ((cvalue & 0xFF000000) >> 24);
-					tsen.RFXMETER.count2 = (BYTE) ((cvalue & 0x00FF0000) >> 16);
-					tsen.RFXMETER.count3 = (BYTE) ((cvalue & 0x0000FF00) >> 8);
-					tsen.RFXMETER.count4 = (BYTE) (cvalue & 0x000000FF);
+					tsen.RFXMETER.count1 = (BYTE) ((MR & 0xFF000000) >> 24);
+					tsen.RFXMETER.count2 = (BYTE) ((MR & 0x00FF0000) >> 16);
+					tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
+					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 					tsen.RFXMETER.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, nullptr, 255, nullptr);
 					return;
 				}
@@ -2744,7 +2796,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				Log(LOG_ERROR, "VLD msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(RORG_VLD, pNode->func, pNode->type));
+					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 			}
 			return;
 
