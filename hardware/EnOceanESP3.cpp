@@ -37,6 +37,7 @@
 //#define ESP3_TESTS_4BS_A5_02_20
 //#define ESP3_TESTS_4BS_A5_04_01
 //#define ESP3_TESTS_4BS_A5_12_00
+//#define ESP3_TESTS_4BS_A5_12_01
 //#define ESP3_TESTS_4BS_A5_20_01
 //#define ESP3_TESTS_RPS_F6_01_01
 //#define ESP3_TESTS_RPS_F6_02_01
@@ -736,6 +737,44 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 //  Divisor: x/1000
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0B, 0x01, RORG_4BS, 0x12, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xA4 },
 #endif // ESP3_TESTS_4BS_A5_12_00
+
+#ifdef ESP3_TESTS_4BS_A5_12_01
+// A5-12-01, Electricity
+// Test Case : Unknown node
+//  Unknown node Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x66 },
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x48, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x08 },
+// Test Case : Meter reading Tests
+//  Min Meter reading Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x66 },
+//  Max Meter reading Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xFF, 0xFF, 0xFF, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x3F },
+//  Mid Meter reading Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x7F, 0xFF, 0xFF, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
+// Test Case : Tariff info Tests
+//  Min Tariff info Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x66 },
+//  Max Tariff info Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0xF8, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xED },
+//  Mid Tariff info Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x78, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x1C },
+// Test Case : Data type (unit) Enum Test
+//  Data type (unit): Cumulative value
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x66 },
+//  Data type (unit): Current value
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0C, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
+// Test Case : Divisor (scale) Enum Test
+//  Divisor (scale): x/1
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x66 },
+//  Divisor (scale): x/10
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x09, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xF2 },
+//  Divisor (scale): x/100
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0A, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x49 },
+//  Divisor (scale): x/1000
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0B, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xDD },
+#endif // ESP3_TESTS_4BS_A5_12_01
 
 #ifdef ESP3_TESTS_4BS_A5_20_01
 // A5-20-01, Battery Powered Actuator (BI-DIR)
@@ -2028,7 +2067,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						else if (DATA_BYTE3 == 0x1F)
 							nightReduction = 5;
 
-						// float setpointTemp=GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
+						// float setpointTemp = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
 					}
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -2083,14 +2122,25 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x01)
 				{ // A5-12-01, Automated Meter Reading, Electricity
-					uint32_t cvalue = (DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1;
+					uint32_t MR = (DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1;
+					uint8_t TI = bitrange(DATA_BYTE0, 4, 0x0F); // Tarif info
+					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
+					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
+
 					_tUsageMeter umeter;
 					umeter.id1 = (BYTE) ID_BYTE3;
 					umeter.id2 = (BYTE) ID_BYTE2;
 					umeter.id3 = (BYTE) ID_BYTE1;
 					umeter.id4 = (BYTE) ID_BYTE0;
 					umeter.dunit = 1;
-					umeter.fusage = (float) cvalue;
+					umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &umeter, nullptr, 255, nullptr);
 					return;
 				}
@@ -2285,7 +2335,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 #endif
 
 						if (Pressed == 1)
-						{
+						{ // Energy bow pressed
 							RBUF tsen;
 							memset(&tsen, 0, sizeof(RBUF));
 							tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
@@ -2331,12 +2381,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Log(LOG_NORM, "RPS msg: Node %s UnitID: %02X cmd: %02X ",
 								senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 #endif
+
 							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 						}
 					}
 					else
-					{
-						if ((T21 == 1) && (NU == 0))
+					{ // RPS U-Message
+						// Release message of any button pressed before
+
+						// TODO : check if following if is necessary or not
+
+						if (T21 == 1 && NU == 0)
 						{
 							uint8_t DATA_BYTE3 = data[1];
 
@@ -2378,6 +2433,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Log(LOG_NORM, "RPS msg: Node %s UnitID: %02X cmd: %02X ",
 								senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 #endif
+
 							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 						}
 					}
@@ -2390,7 +2446,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// F6-05-02 : Smoke detector
 
 					bool alarm = false;
-					// Only EEP F6-05-00 and F6-05-02 report Energy LOW warning
+					// Only F6-05-00 and F6-05-02 report Energy LOW warning
 					int batterylevel = (pNode->type == 0x00 || pNode->type == 0x02) ? 255 : 100;
 
 					switch (DATA)
@@ -2431,7 +2487,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				Log(LOG_ERROR, "RPS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), RORG_RPS, pNode->func, pNode->type, GetEEPLabel(RORG_RPS, pNode->func, pNode->type));
+					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(RORG_RPS, pNode->func, pNode->type));
 			}
 			return;
 
@@ -2588,7 +2644,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "VLD msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
-				Log(LOG_NORM, "VLD msg: Node %s, EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, pNode->func, pNode->type);
+				Log(LOG_NORM, "VLD msg: Node %s EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, pNode->func, pNode->type);
 
 				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
@@ -2601,6 +2657,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// CMD 0x4 - Actuator Status Response
 
 					uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
+
 					uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
 
 					RBUF tsen;

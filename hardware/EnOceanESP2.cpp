@@ -1121,15 +1121,26 @@ bool CEnOceanESP2::ParseData()
 			}
 			else if (Profile == 0x12 && iType == 0x01)
 			{ // A5-12-01, Automated Meter Reading, Electricity
-				int cvalue = (pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | (pFrame->DATA_BYTE1);
+				uint32_t MR =(pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1;
+				uint8_t TI = bitrange(pFrame->DATA_BYTE0, 4, 0x0F); // Tarif info
+				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
+				float scaleMax = (DIV == 0) ? 16777215.0F : ((DIV == 1) ? 1677721.5F : ((DIV == 2) ? 167772.15F : 16777.215F));
+
 				_tUsageMeter umeter;
 				umeter.id1 = (BYTE) pFrame->ID_BYTE3;
 				umeter.id2 = (BYTE) pFrame->ID_BYTE2;
 				umeter.id3 = (BYTE) pFrame->ID_BYTE1;
 				umeter.id4 = (BYTE) pFrame->ID_BYTE0;
 				umeter.dunit = 1;
-				umeter.fusage = (float) cvalue;
-				sDecodeRXMessage(this, (const unsigned char *)&umeter, nullptr, 255, nullptr);
+				umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+#endif
+
+				sDecodeRXMessage(this, (const unsigned char *) &umeter, nullptr, 255, nullptr);
 			}
 			else if (Profile == 0x12 && iType == 0x02)
 			{ // A5-12-02, Automated Meter Reading, Gas
