@@ -1658,42 +1658,42 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					// Node not found and learn mode enabled : add it to the database
 
-					uint16_t manID;
-					uint8_t func;
-					uint8_t type;
+					uint16_t node_manID;
+					uint8_t node_func;
+					uint8_t node_type;
 
 					if (LRN_TYPE == 0)
 					{ // 4BS teach-in, variation 1 : without EEP
 						// An EEP must be manually allocated (see EEP 2.6.2 specification §3.3 p173/197)
 
-						manID = UNKNOWN_MANUFACTURER;
-						func = 0x02; // Generic Temperature Sensors, Temperature Sensor ranging from 0°C to +40°C
-						type = 0x05;
+						node_manID = UNKNOWN_MANUFACTURER;
+						node_func = 0x02; // Generic Temperature Sensors, Temperature Sensor ranging from 0°C to +40°C
+						node_type = 0x05;
 
 						Log(LOG_NORM, "Creating Node %s with generic EEP %02X-%02X-%02X (%s)",
-							senderID.c_str(), RORG_4BS, func, type, GetEEPLabel(RORG_4BS, func, type));
+							senderID.c_str(), RORG_4BS, node_func, node_type, GetEEPLabel(RORG_4BS, node_func, node_type));
 						Log(LOG_NORM, "Please adjust by hand if need be");
 					}
 					else
 					{ // 4BS teach-in variation 2, with Manufacturer ID and EEP
-						manID = (bitrange(DATA_BYTE2, 0, 0x07) << 8) | DATA_BYTE1;
-						func = bitrange(DATA_BYTE3, 2, 0x3F);
-						type = (bitrange(DATA_BYTE3, 0, 0x03) << 5) | bitrange(DATA_BYTE2, 3, 0x1F);
+						node_manID = (bitrange(DATA_BYTE2, 0, 0x07) << 8) | DATA_BYTE1;
+						node_func = bitrange(DATA_BYTE3, 2, 0x3F);
+						node_type = (bitrange(DATA_BYTE3, 0, 0x03) << 5) | bitrange(DATA_BYTE2, 3, 0x1F);
 
 						Log(LOG_NORM, "Creating Node %s Manufacturer 0x%03X (%s) EEP %02X-%02X-%02X (%s)",
-							senderID.c_str(), manID, GetManufacturerName(manID),
-							RORG_4BS, func, type, GetEEPLabel(RORG_4BS, func, type));
+							senderID.c_str(), node_manID, GetManufacturerName(node_manID),
+							RORG_4BS, node_func, node_type, GetEEPLabel(RORG_4BS, node_func, node_type));
 					}
 
-					TeachInNode(senderID, manID, RORG_4BS, func, type, (LRN_TYPE == 0));
+					TeachInNode(senderID, node_manID, RORG_4BS, node_func, node_type, (LRN_TYPE == 0));
 
 					// EEP requiring 4BS teach-in variation 3 response
 					// A5-20-XX, HVAC Components
 					// A5-38-08, Central Command Gateway
 					// A5-3F-00, Radio Link Test
-					if (func == 0x20
-						|| (func == 0x38 && type == 0x08)
-						|| (func == 0x3F && type == 0x00))
+					if (node_func == 0x20
+						|| (node_func == 0x38 && node_type == 0x08)
+						|| (node_func == 0x3F && node_type == 0x00))
 					{
 						Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", senderID.c_str());
 
@@ -2483,11 +2483,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							break;
 						}
 					}
-					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, GetEEPLabel(RORG_RPS, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
 					return;
 				}
 				Log(LOG_ERROR, "RPS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(RORG_RPS, pNode->func, pNode->type));
+					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 			}
 			return;
 
@@ -2644,7 +2644,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "VLD msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
-				Log(LOG_NORM, "VLD msg: Node %s EEP: %02X-%02X-%02X", senderID.c_str(), RORG_VLD, pNode->func, pNode->type);
+				Log(LOG_NORM, "VLD msg: Node %s EEP: %02X-%02X-%02X", senderID.c_str(), pNode->RORG, pNode->func, pNode->type);
 
 				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
@@ -2658,7 +2658,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
 
-					uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value : 0x00 = OFF, 0x01...0x64: Output value 1% to 100% or ON
+					uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value % : 0x00 = Off, 0x01...0x64: On or 1% to 100%
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -2690,12 +2690,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				if (pNode->func == 0x03 && pNode->type == 0x0A)
 				{ // D2-03-0A, Push Button, Single Button
 					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1, 100));
-					uint8_t BA = data[2]; // 1 = simple press, 2=double press, 3=long press, 4=long press released
+					uint8_t BA = data[2]; // 1 = simple press, 2 = double press, 3 = long press, 4 = long press released
 					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, "Switch", m_Name, 12);
 					return;
 				}
 				Log(LOG_ERROR, "VLD msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
-					senderID.c_str(), RORG_VLD, pNode->func, pNode->type, GetEEPLabel(RORG_VLD, pNode->func, pNode->type));
+					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(RORG_VLD, pNode->func, pNode->type));
 			}
 			return;
 
