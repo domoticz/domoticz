@@ -31,10 +31,9 @@
 //#define ENABLE_ESP3_TESTS
 #ifdef ENABLE_ESP3_TESTS
 //#define READCALLBACK_TESTS
+//#define ESP3_TESTS_UNKNOWN_NODE
 //#define ESP3_TESTS_1BS_D5_00_01
-//#define ESP3_TESTS_4BS_A5_02_01
-//#define ESP3_TESTS_4BS_A5_02_05
-//#define ESP3_TESTS_4BS_A5_02_20
+//#define ESP3_TESTS_4BS_A5_02_XX
 //#define ESP3_TESTS_4BS_A5_04_01
 //#define ESP3_TESTS_4BS_A5_12_00
 //#define ESP3_TESTS_4BS_A5_12_01
@@ -605,11 +604,21 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x00, PACKET_RADIO_ERP1, 0x11, RORG_1BS, ESP3_SER_SYNC, 0x00, RORG_1BS, 0x00, 0x21, 0x00, 0xFF },
 #endif // READCALLBACK_TESTS
 
+#ifdef ESP3_TESTS_UNKNOWN_NODE
+// Test Case : Unknown node
+//  1BS Unknown node Test
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_1BS, 0x08, 0x00, RORG_1BS, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x62 },
+//  4BS Unknown node Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x00, RORG_4BS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x99 },
+// Test Case : Unknown node
+//  RPS Unknown node Test
+	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x00, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xC2 },
+// Unknown node Test
+	{ ESP3_SER_SYNC, 0x00, 0x09, 0x07, PACKET_RADIO_ERP1, 0x56, RORG_VLD, 0x04, 0x60, 0xE4, 0x00, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x19 },
+#endif // ESP3_TESTS_UNKNOWN_NODE
+
 #ifdef ESP3_TESTS_1BS_D5_00_01
 // D5-00-01, Single Input Contact
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_1BS, 0x08, 0x01, RORG_1BS, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x3F },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_1BS, 0x00, 0x01, RORG_1BS, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x83 },
@@ -622,11 +631,8 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_1BS, 0x09, 0x01, RORG_1BS, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAB },
 #endif // ESP3_TESTS_1BS_D5_00_01
 
-#ifdef ESP3_TESTS_4BS_A5_02_01
+#ifdef ESP3_TESTS_4BS_A5_02_XX
 // A5-02-01, Temperature Sensor Range -40C to 0C
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC4 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test, Variation 2
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x08, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x1A },
@@ -637,30 +643,8 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xF4 },
 //  Mid Temperature Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x7F, 0x08, 0x01, RORG_4BS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x1D },
-#endif // ESP3_TESTS_4BS_A5_02_01
 
-#ifdef ESP3_TESTS_4BS_A5_02_05
-// A5-02-05, Temperature Sensor Range 0C to +40C
-// Test Case : Unknown node
-//  Unknown node Test
-	{ ESP3_SER_SYNC, 0x00, 0x0A, 0x00, PACKET_RADIO_ERP1, 0x80, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x05, 0x00, 0x2F },
-// Test Case : Teach-in Test
-//  Unidirectional Teach-in Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x08, 0x28, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x05, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x3B },
-// Test Case : Temperature Tests
-//  Min Temperature Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x05, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x27 },
-//  Max Temperature Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x02, 0x05, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x17 },
-//  Mid Temperature Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x7F, 0x08, 0x01, RORG_4BS, 0x02, 0x05, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xFE },
-#endif // ESP3_TESTS_4BS_A5_02_05
-
-#ifdef ESP3_TESTS_4BS_A5_02_20
 // A5-02-20, 10 Bit Temperature Sensor Range -10C to +41.2C
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x03, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x68 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x09, 0x00, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xDF },
@@ -671,13 +655,22 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x02, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x80 },
 //  Mid Temperature Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x01, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x05 },
-#endif // ESP3_TESTS_4BS_A5_02_20
+
+// A5-02-30, 10 Bit Temperature Sensor Range -40C to +62.3C
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x09, 0x80, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x5B },
+// Test Case : Temperature Tests
+//  Min Temperature Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x03, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xED },
+//  Max Temperature Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x02, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x05 },
+//  Mid Temperature Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x01, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x80 },
+#endif // ESP3_TESTS_4BS_A5_02_XX
 
 #ifdef ESP3_TESTS_4BS_A5_04_01
 // A5-04-01, Range 0C to +40C and 0% to 100%
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x83 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x10, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x5D },
@@ -704,9 +697,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_4BS_A5_12_00
 // A5-12-00, Counter
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x1F },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x48, 0x00, 0x00, 0x80, 0x01, RORG_4BS, 0x12, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC2 },
@@ -742,9 +732,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_4BS_A5_12_01
 // A5-12-01, Electricity
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x66 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x48, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x12, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x08 },
@@ -780,9 +767,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_4BS_A5_12_02
 // A5-12-02, Gas
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xED },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x48, 0x10, 0x00, 0x80, 0x01, RORG_4BS, 0x12, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x51 },
@@ -818,9 +802,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_4BS_A5_12_03
 // A5-12-03, Water
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x48, 0x18, 0x00, 0x80, 0x01, RORG_4BS, 0x12, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x9B },
@@ -859,9 +840,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_4BS_A5_20_01
 // A5-20-01, Battery Powered Actuator (BI-DIR)
-// Test Case : Unknown node
-//  Unknown node Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x20, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x07 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x80, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x20, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xFE },
@@ -949,9 +927,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_RPS_F6_01_01
 // A5-20-01, Switch Buttons, Push Button
-// Test Case : Unknown node
-//  Unknown node Test
-	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x00, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xC2 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
@@ -970,9 +945,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 
 #ifdef ESP3_TESTS_RPS_F6_02_01
 // F6-02-01, Light and Blind Control - Application Style 1
-// Test Case : Unknown node
-//  Unknown node Test
-	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x00, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x23 },
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
@@ -1806,61 +1778,88 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 
 					DATA_BYTE3, DATA_BYTE2, DATA_BYTE1, DATA_BYTE0);
 
-				if (pNode->func == 0x02 && (pNode->type <= 0x1B || pNode->type == 0x20 || pNode->type == 0x30))
+				if (pNode->func == 0x02)
 				{ // A5-02-01..30, Temperature sensor
-					float ScaleMax=0;
-					float ScaleMin=0;
-					if (pNode->type == 0x01) { ScaleMin=-40; ScaleMax=0; }
-					else if (pNode->type == 0x02) { ScaleMin=-30; ScaleMax=10; }
-					else if (pNode->type == 0x03) { ScaleMin=-20; ScaleMax=20; }
-					else if (pNode->type == 0x04) { ScaleMin=-10; ScaleMax=30; }
-					else if (pNode->type == 0x05) { ScaleMin=0; ScaleMax=40; }
-					else if (pNode->type == 0x06) { ScaleMin=10; ScaleMax=50; }
-					else if (pNode->type == 0x07) { ScaleMin=20; ScaleMax=60; }
-					else if (pNode->type == 0x08) { ScaleMin=30; ScaleMax=70; }
-					else if (pNode->type == 0x09) { ScaleMin=40; ScaleMax=80; }
-					else if (pNode->type == 0x0A) { ScaleMin=50; ScaleMax=90; }
-					else if (pNode->type == 0x0B) { ScaleMin=60; ScaleMax=100; }
-					else if (pNode->type == 0x10) { ScaleMin=-60; ScaleMax=20; }
-					else if (pNode->type == 0x11) { ScaleMin=-50; ScaleMax=30; }
-					else if (pNode->type == 0x12) { ScaleMin=-40; ScaleMax=40; }
-					else if (pNode->type == 0x13) { ScaleMin=-30; ScaleMax=50; }
-					else if (pNode->type == 0x14) { ScaleMin=-20; ScaleMax=60; }
-					else if (pNode->type == 0x15) { ScaleMin=-10; ScaleMax=70; }
-					else if (pNode->type == 0x16) { ScaleMin=0; ScaleMax=80; }
-					else if (pNode->type == 0x17) { ScaleMin=10; ScaleMax=90; }
-					else if (pNode->type == 0x18) { ScaleMin=20; ScaleMax=100; }
-					else if (pNode->type == 0x19) { ScaleMin=30; ScaleMax=110; }
-					else if (pNode->type == 0x1A) { ScaleMin=40; ScaleMax=120; }
-					else if (pNode->type == 0x1B) { ScaleMin=50; ScaleMax=130; }
-					else if (pNode->type == 0x20) { ScaleMin = -10; ScaleMax = 41.2F; }
-					else if (pNode->type == 0x30) { ScaleMin = -40; ScaleMax = 62.3F; }
+					float TMP = -275.0F; // Initialize to an arbitrary out of range value
+					if (pNode->type == 0x01)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -40.0F, 0.0F);
+					else if (pNode->type == 0x02)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -30.0F, 10.0F);
+					else if (pNode->type == 0x03)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -20.0F, 20.0F);
+					else if (pNode->type == 0x04)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -10.0F, 30.0F);
+					else if (pNode->type == 0x05)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 0.0F, 40.0F);
+					else if (pNode->type == 0x06)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 10.0F, 50.0F);
+					else if (pNode->type == 0x07)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 20.0F, 60.0F);
+					else if (pNode->type == 0x08)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 30.0F, 70.0F);
+					else if (pNode->type == 0x09)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 40.0F, 80.0F);
+					else if (pNode->type == 0x0A)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 50.0F, 90.0F);
+					else if (pNode->type == 0x0B)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 60.0F, 100.0F);
+					else if (pNode->type == 0x10)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -60.0F, 20.0F);
+					else if (pNode->type == 0x11)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -50.0F, 30.0F);
+					else if (pNode->type == 0x12)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -40.0F, 40.0F);
+					else if (pNode->type == 0x13)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -30.0F, 50.0F);
+					else if (pNode->type == 0x14)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -20.0F, 60.0F);
+					else if (pNode->type == 0x15)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, -10.0F, 70.0F);
+					else if (pNode->type == 0x16)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 0.0F, 80.0F);
+					else if (pNode->type == 0x17)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 10.0F, 90.0F);
+					else if (pNode->type == 0x18)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 20.0F, 100.0F);
+					else if (pNode->type == 0x19)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 30.0F, 110.0F);
+					else if (pNode->type == 0x1A)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 40.0F, 120.0F);
+					else if (pNode->type == 0x1B)
+						TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 50.0F, 130.0F);
+					else if (pNode->type == 0x20)
+						TMP = GetDeviceValue(((DATA_BYTE2 & 0x03) << 8) | DATA_BYTE1, 1023, 0, -10.0F, 41.2F); // 10bit
+					else if (pNode->type == 0x30)
+						TMP = GetDeviceValue(((DATA_BYTE2 & 0x03) << 8) | DATA_BYTE1, 1023, 0, -40.0F, 62.3F); // 10bit
 
-					float temp;
-					if (pNode->type < 0x20)
-						temp = GetDeviceValue(DATA_BYTE1, 255, 0, ScaleMin, ScaleMax);
-					else
-						temp = GetDeviceValue(((DATA_BYTE2 & 3) << 8) | DATA_BYTE1, 0, 255, ScaleMin, ScaleMax); // 10bit
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-					tsen.TEMP.packettype = pTypeTEMP;
-					tsen.TEMP.subtype = sTypeTEMP10;
-					tsen.TEMP.seqnbr = 0;
-					tsen.TEMP.id1 = ID_BYTE2;
-					tsen.TEMP.id2 = ID_BYTE1;
-					// WARNING
-					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
-					tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
-					tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
-					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = round(std::abs(temp * 10.0F));
-					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
-					at10 -= (tsen.TEMP.temperatureh * 256);
-					tsen.TEMP.temperaturel = (BYTE) at10;
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
-					return;
+					if (TMP > -274.0F)
+					{ // TMP value has been changed => EEP is managed => update TMP
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+						tsen.TEMP.packettype = pTypeTEMP;
+						tsen.TEMP.subtype = sTypeTEMP10;
+						tsen.TEMP.seqnbr = 0;
+						tsen.TEMP.id1 = ID_BYTE2;
+						tsen.TEMP.id2 = ID_BYTE1;
+						// WARNING
+						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
+						tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
+						tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
+						int at10 = round(std::abs(TMP * 10.0F));
+						tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
+						at10 -= (tsen.TEMP.temperatureh * 256);
+						tsen.TEMP.temperaturel = (BYTE) at10;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", senderID.c_str(), TMP);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
+						return;
+					}
 				}
 				if (pNode->func == 0x04 && pNode->type <= 0x03)
 				{ // A5-04-01..03, Temperature and Humidity Sensor

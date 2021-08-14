@@ -1114,7 +1114,7 @@ bool CEnOceanESP2::ParseData()
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
 				Log(LOG_NORM,"4BS msg: Node %s, CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
-					senderID.c_str(), CH, DT, DIV, scaleMax, MR);
+					nodeID.c_str(), CH, DT, DIV, scaleMax, MR);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, nullptr, 255, nullptr);
@@ -1137,7 +1137,7 @@ bool CEnOceanESP2::ParseData()
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
 					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &umeter, nullptr, 255, nullptr);
@@ -1163,9 +1163,9 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 				tsen.RFXMETER.rssi = 12;
 
-#ifdef ENABLE_ESP3_DEVICE_DEBUG
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
 					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, nullptr, 255, nullptr);
@@ -1191,9 +1191,9 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 				tsen.RFXMETER.rssi = 12;
 
-#ifdef ENABLE_ESP3_DEVICE_DEBUG
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
 					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
+						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, nullptr, 255, nullptr);
@@ -1318,59 +1318,84 @@ bool CEnOceanESP2::ParseData()
 			}
 			else if (Profile == 0x02)
 			{	// A5-02-01..30, Temperature sensor
-				float ScaleMax = 0;
-				float ScaleMin = 0;
-				if (iType == 0x01) { ScaleMax = -40; ScaleMin = 0; }
-				else if (iType == 0x02) { ScaleMax = -30; ScaleMin = 10; }
-				else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 20; }
-				else if (iType == 0x04) { ScaleMax = -10; ScaleMin = 30; }
-				else if (iType == 0x05) { ScaleMax = 0; ScaleMin = 40; }
-				else if (iType == 0x06) { ScaleMax = 10; ScaleMin = 50; }
-				else if (iType == 0x07) { ScaleMax = 20; ScaleMin = 60; }
-				else if (iType == 0x08) { ScaleMax = 30; ScaleMin = 70; }
-				else if (iType == 0x09) { ScaleMax = 40; ScaleMin = 80; }
-				else if (iType == 0x0A) { ScaleMax = 50; ScaleMin = 90; }
-				else if (iType == 0x0B) { ScaleMax = 60; ScaleMin = 100; }
-				else if (iType == 0x10) { ScaleMax = -60; ScaleMin = 20; }
-				else if (iType == 0x11) { ScaleMax = -50; ScaleMin = 30; }
-				else if (iType == 0x12) { ScaleMax = -40; ScaleMin = 40; }
-				else if (iType == 0x13) { ScaleMax = -30; ScaleMin = 50; }
-				else if (iType == 0x14) { ScaleMax = -20; ScaleMin = 60; }
-				else if (iType == 0x15) { ScaleMax = -10; ScaleMin = 70; }
-				else if (iType == 0x16) { ScaleMax = 0; ScaleMin = 80; }
-				else if (iType == 0x17) { ScaleMax = 10; ScaleMin = 90; }
-				else if (iType == 0x18) { ScaleMax = 20; ScaleMin = 100; }
-				else if (iType == 0x19) { ScaleMax = 30; ScaleMin = 110; }
-				else if (iType == 0x1A) { ScaleMax = 40; ScaleMin = 120; }
-				else if (iType == 0x1B) { ScaleMax = 50; ScaleMin = 130; }
-				else if (iType == 0x20) { ScaleMax = -10; ScaleMin = 41.2F; }
-				else if (iType == 0x30) { ScaleMax = -40; ScaleMin = 62.3F; }
+				float TMP = -275.0F; // Initialize to an arbitrary out of range value
+				if (iType == 0x01)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -40.0F, 0.0F);
+				else if (iType == 0x02)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -30.0F, 10.0F);
+				else if (iType == 0x03)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -20.0F, 20.0F);
+				else if (iType == 0x04)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -10.0F, 30.0F);
+				else if (iType == 0x05)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 0.0F, 40.0F);
+				else if (iType == 0x06)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 10.0F, 50.0F);
+				else if (iType == 0x07)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 20.0F, 60.0F);
+				else if (iType == 0x08)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 30.0F, 70.0F);
+				else if (iType == 0x09)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 40.0F, 80.0F);
+				else if (iType == 0x0A)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 50.0F, 90.0F);
+				else if (iType == 0x0B)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 60.0F, 100.0F);
+				else if (iType == 0x10)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -60.0F, 20.0F);
+				else if (iType == 0x11)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -50.0F, 30.0F);
+				else if (iType == 0x12)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -40.0F, 40.0F);
+				else if (iType == 0x13)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -30.0F, 50.0F);
+				else if (iType == 0x14)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -20.0F, 60.0F);
+				else if (iType == 0x15)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, -10.0F, 70.0F);
+				else if (iType == 0x16)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 0.0F, 80.0F);
+				else if (iType == 0x17)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 10.0F, 90.0F);
+				else if (iType == 0x18)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 20.0F, 100.0F);
+				else if (iType == 0x19)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 30.0F, 110.0F);
+				else if (iType == 0x1A)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 40.0F, 120.0F);
+				else if (iType == 0x1B)
+					TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 50.0F, 130.0F);
+				else if (iType == 0x20)
+					TMP = GetDeviceValue(((pFrame->DATA_BYTE2 & 0x03) << 8) | pFrame->DATA_BYTE1, 1023, 0, -10.0F, 41.2F); // 10bit
+				else if (iType == 0x30)
+					TMP = GetDeviceValue(((pFrame->DATA_BYTE2 & 0x03) << 8) | pFrame->DATA_BYTE1, 1023, 0, -40.0F, 62.3F); // 10bit
 
-				float temp;
+				if (TMP > -274.0F)
+				{ // TMP value has been changed => EEP is managed => update TMP
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+					tsen.TEMP.packettype = pTypeTEMP;
+					tsen.TEMP.subtype = sTypeTEMP10;
+					tsen.TEMP.id1 = pFrame->ID_BYTE2;
+					tsen.TEMP.id2 = pFrame->ID_BYTE1;
+					// WARNING
+					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+					// decode_Temp sets battery_level = 255 (Unknown) & rssi = 12 (Not available)
+					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
+					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
+					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
+					int at10 = round(std::abs(TMP * 10.0F));
+					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
+					at10 -= (tsen.TEMP.temperatureh * 256);
+					tsen.TEMP.temperaturel = (BYTE) at10;
 
-				if (iType < 0x20)
-					temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax);
-				else
-					temp = GetDeviceValue(((pFrame->DATA_BYTE2 & 3) << 8) | pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax); // 10bit
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", nodeID.c_str(), TMP);
+#endif
 
-				RBUF tsen;
-				memset(&tsen, 0, sizeof(RBUF));
-				tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-				tsen.TEMP.packettype = pTypeTEMP;
-				tsen.TEMP.subtype = sTypeTEMP10;
-				tsen.TEMP.id1 = pFrame->ID_BYTE2;
-				tsen.TEMP.id2 = pFrame->ID_BYTE1;
-				// WARNING
-				// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-				// decode_Temp sets battery_level = 255 (Unknown) & rssi = 12 (Not available)
-				tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
-				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp * 10.0F));
-				tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
-				at10 -= (tsen.TEMP.temperatureh * 256);
-				tsen.TEMP.temperaturel = (BYTE) at10;
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
+				}
 			}
 			else if (Profile == 0x04)
 			{ // A5-04-01..04, Temperature and Humidity Sensor
