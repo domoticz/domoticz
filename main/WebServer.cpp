@@ -299,7 +299,7 @@ namespace http
 
 			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
 
-			m_pWebEm->SetDigistRealm("Domoticz.com");
+			m_pWebEm->SetDigistRealm("Domoticz.local");
 			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
