@@ -1108,7 +1108,7 @@ namespace http
 									iUser++;
 								}
 
-								if (m_accesscodes[iUser].AuthCode.compare(auth_code.c_str()) == 0)
+								if ((iUser < m_accesscodes.size()) && (m_accesscodes[iUser].AuthCode.compare(auth_code.c_str()) == 0))
 								{
 									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for user (%d)!", m_accesscodes[iUser].AuthCode.c_str(), iUser);
 
