@@ -39,6 +39,7 @@
 //#define ESP3_TESTS_4BS_A5_07_01
 //#define ESP3_TESTS_4BS_A5_07_02
 //#define ESP3_TESTS_4BS_A5_07_03
+//#define ESP3_TESTS_4BS_A5_10_0X
 //#define ESP3_TESTS_4BS_A5_12_00
 //#define ESP3_TESTS_4BS_A5_12_01
 //#define ESP3_TESTS_4BS_A5_12_02
@@ -1007,6 +1008,61 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 //  PIR Status: Motion detected
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x88, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
 #endif // ESP3_TESTS_4BS_A5_07_03
+
+#ifdef ESP3_TESTS_4BS_A5_10_0X
+// A5-10-01, Temperature Sensor, Set Point, Fan Speed and Occupancy Control
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x40, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC8 },
+// Test Case : Turn-switch for fan speed Enum Test
+//  Turn-switch for fan speed: Stage Auto
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xFF, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x4F },
+//  Turn-switch for fan speed: Stage 0
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xD1, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x13 },
+//  Turn-switch for fan speed: Stage 1
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xBD, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xCB },
+//  Turn-switch for fan speed: Stage 2
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xA4, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xF9 },
+//  Turn-switch for fan speed: Stage 3
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x90, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x91 },
+// Test Case : Set point Tests
+//  Min Set point Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB6 },
+//  Max Set point Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFF, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x26 },
+//  Mid Set point Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7F, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x27 },
+// Test Case : Temperature Tests
+//  Min Temperature Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x86 },
+//  Max Temperature Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB6 },
+//  Mid Temperature Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x7F, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x5F },
+// Test Case : Occupancy button
+//  Button released
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x09, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x22 },
+//  Button pressed
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB6 },
+// A5-10-0B, Temperature Sensor and Single Input Contact
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x40, 0x58, 0x00, 0x80, 0x01, RORG_4BS, 0x10, 0x0B, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x19 },
+// Test Case : Contact State Enum Test
+//  Contact State: closed
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x0B, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x85 },
+//  Contact State: open
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x09, 0x01, RORG_4BS, 0x10, 0x0B, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x11 },
+// A5-10-0D, Temperature Sensor and Day/Night Control
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x40, 0x68, 0x00, 0x80, 0x01, RORG_4BS, 0x10, 0x0D, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAB },
+// Test Case : Slide switch Enum Test
+//  Slide switch: Position I / Night / Off
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x10, 0x0D, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x94 },
+//  Slide switch: Position O / Day / On
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x09, 0x01, RORG_4BS, 0x10, 0x0D, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x00 },
+#endif // ESP3_TESTS_4BS_A5_10_0X
 
 #ifdef ESP3_TESTS_4BS_A5_12_00
 // A5-12-00, Counter
@@ -2492,7 +2548,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x10 && pNode->type <= 0x0D)
 				{ // A5-10-01..OD, RoomOperatingPanel
-					// Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, [untested]
+					RBUF tsen;
+
 					if (pNode->manufacturerID != ELTAKO)
 					{ // General case for A5-10-01..OD
 						// DATA_BYTE3 is the fan speed
@@ -2500,17 +2557,89 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 						// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 
-						uint8_t fspeed = 3;
-						if (DATA_BYTE3 >= 145)
-							fspeed = 2;
-						else if (DATA_BYTE3 >= 165)
-							fspeed = 1;
-						else if (DATA_BYTE3 >= 190)
-							fspeed = 0;
-						else if (DATA_BYTE3 >= 210)
-							fspeed = -1; // Auto
+						// A5-10-01, A5-10-02, A5-10-04, A5-10-07, A5-10-08, A5-10-09 have FAN information
+						if (pNode->type == 0x01 || pNode->type == 0x02 || pNode->type == 0x04 || pNode->type == 0x07 || pNode->type == 0x08 || pNode->type == 0x09)
+						{
+							uint8_t FAN;
+							if (DATA_BYTE3 >= 210)
+								FAN = fan_NovyLearn; // Auto
+							else if (DATA_BYTE3 >= 190)
+								FAN = fan_NovyLight;
+							else if (DATA_BYTE3 >= 165)
+								FAN = fan_NovyMin;
+							else if (DATA_BYTE3 >= 145)
+								FAN = fan_NovyPlus;
+							else
+								FAN = fan_NovyPower;
 
-						// uint8_t iswitch = DATA_BYTE0 & 1;
+							memset(&tsen, 0, sizeof(RBUF));
+							tsen.FAN.packetlength = sizeof(tsen.FAN) - 1;
+							tsen.FAN.packettype = pTypeFan;
+							tsen.FAN.subtype = sTypeNovy;
+							tsen.FAN.seqnbr = 0;
+							tsen.FAN.id1 = ID_BYTE3;
+							tsen.FAN.id2 = ID_BYTE2;
+							tsen.FAN.id3 = ID_BYTE1;
+							tsen.FAN.cmnd = FAN;
+							tsen.FAN.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+							Log(LOG_NORM,"4BS msg: Node %s, FAN %u", senderID.c_str(), FAN);
+#endif
+
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, nullptr, -1, nullptr);
+						}
+
+						// A5-10-01, A5-10-02, A5-10-03, A5-10-04, A5-10-05, A5-10-06, A5-10-0A have SP information
+						if (pNode->type == 0x01 || pNode->type == 0x02 || pNode->type == 0x03 || pNode->type == 0x04 || pNode->type == 0x05 || pNode->type == 0x06 || pNode->type == 0x0A)
+						{
+							float SP = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 255.0F);
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+							Log(LOG_NORM,"4BS msg: Node %s, SP %.0F", senderID.c_str(), SP);
+#endif
+						}
+
+						// A5-10-01, A5-10-05, A5-10-08, A5-10-0C have OCC information
+						// A5-10-02, A5-10-06, A5-10-09, A5-10-0D have SLSW information
+						// A5-10-0A, A5-10-0B have CTST information
+						if (pNode->type == 0x01 || pNode->type == 0x05 || pNode->type == 0x08 || pNode->type == 0x0C
+							|| pNode->type == 0x02 || pNode->type == 0x06 || pNode->type == 0x09 || pNode->type == 0x0D
+							|| pNode->type == 0x0A || pNode->type == 0x0B)
+						{
+							uint8_t SW = bitrange(DATA_BYTE0, 0, 0x01);
+
+							memset(&tsen, 0, sizeof(RBUF));
+							tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+							tsen.LIGHTING2.packettype = pTypeLighting2;
+							tsen.LIGHTING2.subtype = sTypeAC;
+							tsen.LIGHTING2.seqnbr = 0;
+							tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
+							tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
+							tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
+							tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
+							tsen.LIGHTING2.level = 0;
+							tsen.LIGHTING2.unitcode = 1;
+							tsen.LIGHTING2.cmnd = (SW == 0) ? light2_sOff : light2_sOn;
+							tsen.LIGHTING2.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+							const char *sSW;
+							const char *sSW0;
+							const char *sSW1;
+
+							if (pNode->type == 0x01 || pNode->type == 0x05 || pNode->type == 0x08 || pNode->type == 0x0C)
+								sSW = "OCC", sSW0 = "Button pressed", sSW1 = "Button released";
+							else if (pNode->type == 0x02 || pNode->type == 0x06 || pNode->type == 0x09 || pNode->type == 0x0D)
+								sSW = "SLSW", sSW0 = "Position I/Night/Off", sSW1 = "Position O/Day/On";
+							else // if (pNode->type == 0x0A || pNode->type == 0x0B)
+								sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
+
+							Log(LOG_NORM,"4BS msg: Node %s, %s %u (%s)", senderID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
+#endif
+
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+						}
 					}
 					else
 					{ // WARNING : ELTAKO specific implementation
@@ -2531,11 +2660,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						else if (DATA_BYTE3 == 0x1F)
 							nightReduction = 5;
 
-						// float setpointTemp = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 40);
+						// float SPTMP = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0, 40.0);
 					}
-					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 40, 0);
+					// All A5-10-01 to A5-10-0D have TMP information
 
-					RBUF tsen;
+					float TMP = GetDeviceValue(DATA_BYTE1, 255, 0, 0.0F, 40.0F);
+
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 					tsen.TEMP.packettype = pTypeTEMP;
@@ -2546,13 +2676,18 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// WARNING
 					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
 					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
-					tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
-					tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
-					tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = round(std::abs(temp * 10.0F));
+					tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
+					tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
+					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
+					int at10 = round(std::abs(TMP * 10.0F));
 					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 					at10 -= tsen.TEMP.temperatureh * 256;
 					tsen.TEMP.temperaturel = (BYTE) at10;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", senderID.c_str(), TMP);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
 					return;
 				}

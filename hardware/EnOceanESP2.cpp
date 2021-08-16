@@ -1200,7 +1200,7 @@ bool CEnOceanESP2::ParseData()
 			}
 			else if (Profile == 0x10 && iType <= 0x0D)
 			{ // A5-10-01..OD, Room Operating Panel
-				// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
+				RBUF tsen;
 
 				if (Manufacturer != ELTAKO)
 				{ // General case for A5-10-01..OD
@@ -1209,25 +1209,99 @@ bool CEnOceanESP2::ParseData()
 					// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 					// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 
-					int fspeed = 3;
-					if (pFrame->DATA_BYTE3 >= 145)
-						fspeed = 2;
-					else if (pFrame->DATA_BYTE3 >= 165)
-						fspeed = 1;
-					else if (pFrame->DATA_BYTE3 >= 190)
-						fspeed = 0;
-					else if (pFrame->DATA_BYTE3 >= 210)
-						fspeed = -1; // Auto
-					// int iswitch = pFrame->DATA_BYTE0 & 1;
+					// A5-10-01, A5-10-02, A5-10-04, A5-10-07, A5-10-08, A5-10-09 have FAN information
+					if (iType == 0x01 || iType == 0x02 || iType == 0x04 || iType == 0x07 || iType == 0x08 || iType == 0x09)
+					{
+						uint8_t FAN;
+						if (pFrame->DATA_BYTE3 >= 210)
+							FAN = fan_NovyLearn; // Auto
+						else if (pFrame->DATA_BYTE3 >= 190)
+							FAN = fan_NovyLight;
+						else if (pFrame->DATA_BYTE3 >= 165)
+							FAN = fan_NovyMin;
+						else if (pFrame->DATA_BYTE3 >= 145)
+							FAN = fan_NovyPlus;
+						else
+							FAN = fan_NovyPower;
+
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.FAN.packetlength = sizeof(tsen.FAN) - 1;
+						tsen.FAN.packettype = pTypeFan;
+						tsen.FAN.subtype = sTypeNovy;
+						tsen.FAN.seqnbr = 0;
+						tsen.FAN.id1 = pFrame->ID_BYTE3;
+						tsen.FAN.id2 = pFrame->ID_BYTE2;
+						tsen.FAN.id3 = pFrame->ID_BYTE1;
+						tsen.FAN.cmnd = FAN;
+						tsen.FAN.rssi = 12;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, FAN %u", nodeID.c_str(), FAN);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, nullptr, -1, nullptr);
+					}
+
+					// A5-10-01, A5-10-02, A5-10-03, A5-10-04, A5-10-05, A5-10-06, A5-10-0A have SP information
+					if (iType == 0x01 || iType == 0x02 || iType == 0x03 || iType == 0x04 || iType == 0x05 || iType == 0x06 || iType == 0x0A)
+					{
+						float SP = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 255.0F);
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, SP %.0F", nodeID.c_str(), SP);
+#endif
+					}
+
+					// A5-10-01, A5-10-05, A5-10-08, A5-10-0C have OCC information
+					// A5-10-02, A5-10-06, A5-10-09, A5-10-0D have SLSW information
+					// A5-10-0A, A5-10-0B have CTST information
+					if (iType == 0x01 || iType == 0x05 || iType == 0x08 || iType == 0x0C
+						|| iType == 0x02 || iType == 0x06 || iType == 0x09 || iType == 0x0D
+						|| iType == 0x0A || iType == 0x0B)
+					{
+						uint8_t SW = bitrange(pFrame->DATA_BYTE0, 0, 0x01);
+
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+						tsen.LIGHTING2.id1 = (BYTE) pFrame->ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE) pFrame->ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE) pFrame->ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE) pFrame->ID_BYTE0;
+						tsen.LIGHTING2.level = 0;
+						tsen.LIGHTING2.unitcode = 1;
+						tsen.LIGHTING2.cmnd = (SW == 0) ? light2_sOff : light2_sOn;
+						tsen.LIGHTING2.rssi = 12;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						const char *sSW;
+						const char *sSW0;
+						const char *sSW1;
+
+						if (iType == 0x01 || iType == 0x05 || iType == 0x08 || iType == 0x0C)
+							sSW = "OCC", sSW0 = "Button pressed", sSW1 = "Button released";
+						else if (iType == 0x02 || iType == 0x06 || iType == 0x09 || iType == 0x0D)
+							sSW = "SLSW", sSW0 = "Position I/Night/Off", sSW1 = "Position O/Day/On";
+						else // if (iType == 0x0A || iType == 0x0B)
+							sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
+
+						Log(LOG_NORM,"4BS msg: Node %s, %s %u (%s)", nodeID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+					}
 				}
 				else
 				{ // WARNING : ELTAKO specific implementation
+					// Eltako FTR55D, FTR55H
 					// pFrame->DATA_BYTE3 is the night reduction
 					// pFrame->DATA_BYTE2 is reference temperature where 0x00 = 0°C ... 0xFF = 40°C
 					// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 					// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 
-					int nightReduction = 0;
+					uint8_t nightReduction = 0;
 					if (pFrame->DATA_BYTE3 == 0x06)
 						nightReduction = 1;
 					else if (pFrame->DATA_BYTE3 == 0x0C)
@@ -1238,27 +1312,34 @@ bool CEnOceanESP2::ParseData()
 						nightReduction = 4;
 					else if (pFrame->DATA_BYTE3 == 0x1F)
 						nightReduction = 5;
-					// float setpointTemp = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0, 40);
+					// float SPTMP = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 40.0F);
 				}
-				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 40, 0);
+				// All A5-10-01 to A5-10-0D have TMP information
 
-				RBUF tsen;
+				float TMP = GetDeviceValue(pFrame->DATA_BYTE1, 255, 0, 0.0F, 40.0F);
+
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 				tsen.TEMP.packettype = pTypeTEMP;
 				tsen.TEMP.subtype = sTypeTEMP10;
+				tsen.TEMP.seqnbr = 0;
 				tsen.TEMP.id1 = pFrame->ID_BYTE2;
 				tsen.TEMP.id2 = pFrame->ID_BYTE1;
 				// WARNING
 				// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
 				// decode_Temp sets battery_level = 255 (Unknown) & rssi = 12 (Not available)
-				tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
-				tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-				tsen.TEMP.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp * 10.0F));
+				tsen.TEMP.battery_level = bitrange(pFrame->ID_BYTE0, 0, 0x0F);
+				tsen.TEMP.rssi = bitrange(pFrame->ID_BYTE0, 4, 0x0F);
+				tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
+				int at10 = round(std::abs(TMP * 10.0F));
 				tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 				at10 -= tsen.TEMP.temperatureh * 256;
 				tsen.TEMP.temperaturel = (BYTE) at10;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", nodeID.c_str(), TMP);
+#endif
+
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
 			}
 			else if (Profile == 0x06 && iType == 0x01)
