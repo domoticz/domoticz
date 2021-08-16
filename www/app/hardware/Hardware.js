@@ -4496,6 +4496,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
+			$("#hardwarecontent #divrfplayerdoc").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -4787,6 +4788,9 @@ define(['app'], function (app) {
 			    else {
 			        $("#hardwarecontent #divmqtt #mqtt_publish").show();
 			    }
+			}
+			if (text.indexOf("RFPlayer") >= 0) {
+				$("#hardwarecontent #divrfplayerdoc").show();
 			}
 		}
 
