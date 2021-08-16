@@ -1440,7 +1440,7 @@ bool CEnOceanESP2::ParseData()
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, nullptr, -1, nullptr);
 			}
 			else if (Profile == 0x07 && iType == 0x01)
-			{ // A5-07-01, Occupancy sensor with Supply voltage monitor
+			{ // A5-07-01, Occupancy sensor with optional Supply voltage monitor
 				RBUF tsen;
 
 				uint8_t SVA = bitrange(pFrame->DATA_BYTE0, 0, 0x01);
@@ -1498,43 +1498,50 @@ bool CEnOceanESP2::ParseData()
 			}
 			else if (Profile == 0x07 && iType == 0x02)
 			{ // A5-07-02, Occupancy sensor with Supply voltage monitor
-				if (pFrame->DATA_BYTE3 < 251)
-				{
-					RBUF tsen;
+				RBUF tsen;
 
-					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0, 5000.0F); // Convert V to mV
+				float SVC = GetDeviceValue(pFrame->DATA_BYTE3, 0, 250, 0.0F, 5000.0F); // Convert V to mV
 
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
-					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
-					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
-					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
-					// WARNING
-					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
-					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-					tsen.RFXSENSOR.msg1 = (BYTE) (voltage / 256);
-					tsen.RFXSENSOR.msg2 = (BYTE) (voltage - (tsen.RFXSENSOR.msg1 * 256));
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
+				memset(&tsen, 0, sizeof(RBUF));
+				tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
+				tsen.RFXSENSOR.packettype = pTypeRFXSensor;
+				tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+				tsen.RFXSENSOR.seqnbr = 0;
+				tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
+				// WARNING
+				// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
+				// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+				tsen.RFXSENSOR.filler = bitrange(pFrame->ID_BYTE0, 0, 0x0F);
+				tsen.RFXSENSOR.rssi = bitrange(pFrame->ID_BYTE0, 4, 0x0F);
+				tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
+				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-					bool bPIROn = (pFrame->DATA_BYTE0 & 0x80) != 0;
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
+#endif
 
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-					tsen.LIGHTING2.packettype = pTypeLighting2;
-					tsen.LIGHTING2.subtype = sTypeAC;
-					tsen.LIGHTING2.seqnbr = 0;
-					tsen.LIGHTING2.id1 = (BYTE) pFrame->ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE) pFrame->ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE) pFrame->ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE) pFrame->ID_BYTE0;
-					tsen.LIGHTING2.level = 0;
-					tsen.LIGHTING2.rssi = 12;
-					tsen.LIGHTING2.unitcode = 1;
-					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
-				}
+				uint8_t PIRS = bitrange(pFrame->DATA_BYTE0, 7, 0x01);
+
+				memset(&tsen, 0, sizeof(RBUF));
+				tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+				tsen.LIGHTING2.packettype = pTypeLighting2;
+				tsen.LIGHTING2.subtype = sTypeAC;
+				tsen.LIGHTING2.seqnbr = 0;
+				tsen.LIGHTING2.id1 = (BYTE) pFrame->ID_BYTE3;
+				tsen.LIGHTING2.id2 = (BYTE) pFrame->ID_BYTE2;
+				tsen.LIGHTING2.id3 = (BYTE) pFrame->ID_BYTE1;
+				tsen.LIGHTING2.id4 = (BYTE) pFrame->ID_BYTE0;
+				tsen.LIGHTING2.level = 0;
+				tsen.LIGHTING2.unitcode = 1;
+				tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
+				tsen.LIGHTING2.rssi = 12;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+						nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+#endif
+
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 			}
 			else if (Profile == 0x07 && iType == 0x03)
 			{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
