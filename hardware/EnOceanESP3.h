@@ -11,26 +11,21 @@
 
 class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
- 	enum ReceiveState
-	{
-		ERS_SYNCBYTE = 0,
-		ERS_HEADER,
-		ERS_CRC8H,
-		ERS_DATA,
-		ERS_CRC8D
-	};
-	
+      public:
 	struct NodeInfo
 	{
-		int idx;
-		int manufacturer;
-		uint8_t profile;
+		uint32_t idx;
+		std::string nodeID;
+		uint16_t manufacturerID;
+		uint8_t RORG;
+		uint8_t func;
 		uint8_t type;
+		bool generic;
 	};
 
-     public:
 	CEnOceanESP3(int ID, const std::string &devname, int type);
 	~CEnOceanESP3() override = default;
+
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, unsigned char length);
 
@@ -42,6 +37,9 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	bool OpenSerialDevice();
 	void Do_Work();
 
+	std::string DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
+	std::string DumpESP3Packet(std::string esp3packet);
+
 	std::string FormatESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	void SendESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	void SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
@@ -52,7 +50,12 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 
 	void LoadNodesFromDatabase();
 
- 	const char *GetPacketTypeLabel(const uint8_t PT);
+	NodeInfo *GetNodeInfo(const uint32_t iNodeID);
+	NodeInfo *GetNodeInfo(const std::string &nodeID);
+
+	void TeachInNode(const std::string &nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
+
+	const char *GetPacketTypeLabel(const uint8_t PT);
 	const char *GetPacketTypeDescription(const uint8_t PT);
 
 	const char *GetReturnCodeLabel(const uint8_t RC);
@@ -75,11 +78,20 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 
 	uint32_t m_retrycntr;
 	std::shared_ptr<std::thread> m_thread;
-	
+
 	std::map<uint32_t, NodeInfo> m_nodes;
 
- 	uint8_t m_buffer[ESP3_PACKET_BUFFER_SIZE];
+	uint8_t m_buffer[ESP3_PACKET_BUFFER_SIZE];
 	uint32_t m_bufferpos;
+
+	enum ReceiveState
+	{
+		ERS_SYNCBYTE = 0,
+		ERS_HEADER,
+		ERS_CRC8H,
+		ERS_DATA,
+		ERS_CRC8D
+	};
 
 	ReceiveState m_receivestate;
 	uint32_t m_wantedlen;
@@ -93,4 +105,10 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
+
+	std::string m_RPS_teachin_nodeID;
+	uint8_t m_RPS_teachin_DATA;
+	uint8_t m_RPS_teachin_STATUS;
+	time_t m_RPS_teachin_timer;
+	uint8_t m_RPS_teachin_count;
 };

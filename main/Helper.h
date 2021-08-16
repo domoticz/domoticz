@@ -64,6 +64,7 @@ double ConvertTemperature(double tValue, unsigned char tSign);
 
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode);
 
+time_t GetClockTicks();
 std::string TimeToString(const time_t *ltime, _eTimeFormat format);
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 

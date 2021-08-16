@@ -37,6 +37,7 @@
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/AirconWithMe.h"
+#include "../hardware/ZiBlueBase.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -4806,6 +4807,11 @@ namespace http
 					{
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
+					else if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
+					{
+						//dtype = pTypeGeneralSwitch;
+						ConvertToGeneralSwitchType(devid, dtype, subtype);
+					}
 				}
 				// -----------------------------------------------
 
@@ -5451,6 +5457,11 @@ namespace http
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
 					{
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
+					}
+					else if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
+					{
+						//dtype = pTypeGeneralSwitch;
+						CZiBlueBase::ConvertToGeneralSwitchTypeRFP(devid, dtype, subtype);
 					}
 				}
 				// -----------------------------------------------

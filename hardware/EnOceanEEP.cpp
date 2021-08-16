@@ -646,6 +646,16 @@ uint32_t CEnOceanEEP::GetINodeID(const uint8_t ID3, const uint8_t ID2, const uin
 	return (uint32_t) ((ID3 << 24) | (ID2 << 16) | (ID1 << 8) | ID0);
 }
 
+uint32_t CEnOceanEEP::GetINodeID(const std::string &nodeID)
+{
+    std::stringstream s_strid;
+    s_strid << std::hex << std::uppercase << nodeID;
+    uint32_t iNodeID;
+    s_strid >> iNodeID;
+
+	return iNodeID;
+}
+
 std::string CEnOceanEEP::GetNodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0)
 {
 	char szNodeID[10];
@@ -664,18 +674,22 @@ std::string CEnOceanEEP::GetNodeID(const uint32_t iNodeID)
 
 float CEnOceanEEP::GetDeviceValue(const uint32_t rawValue, const uint32_t rangeMin, const uint32_t rangeMax, const float scaleMin, const float scaleMax)
 {
-	if (rangeMax == rangeMin)
-		return 0.0F;
+	if (rangeMax == rangeMin) // Should never happend
+		return (scaleMax + scaleMin) / 2.0F;
 
-	uint32_t rawValueInt;
-	
-	if (rawValue < rangeMin)
-		rawValueInt = rangeMin;
-	else if (rawValue > rangeMax)
-		rawValueInt = rangeMax;
-	else
-		rawValueInt = rawValue;
+    if (rangeMin > rangeMax)
+        return GetDeviceValue(rawValue, rangeMax, rangeMin, scaleMax, scaleMin);
 
-	float multiplyer = (scaleMax - scaleMin) / (rangeMax - rangeMin);
-	return multiplyer * (rawValueInt - rangeMin) + scaleMin;
+    uint32_t validRawValue;
+
+    if (rawValue < rangeMin)
+        validRawValue = rangeMin;
+    else if (rawValue > rangeMax)
+        validRawValue = rangeMax;
+    else
+        validRawValue = rawValue;
+
+ 	float multiplyer = (scaleMax - scaleMin) / ((float) (rangeMax - rangeMin));
+
+ 	return multiplyer * ((float) (validRawValue - rangeMin)) + scaleMin;
 }

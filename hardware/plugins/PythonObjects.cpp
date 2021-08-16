@@ -945,6 +945,22 @@ namespace Plugins {
 				Py_END_ALLOW_THREADS
 			}
 
+			// BatteryLevel change
+			if (iBatteryLevel != self->BatteryLevel)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("BatteryLevel", iBatteryLevel, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			// SignalLevel change
+			if (iSignalLevel != self->SignalLevel)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("SignalLevel", iSignalLevel, sID);
+				Py_END_ALLOW_THREADS
+			}
+
 			// Used change
 			if (iUsed != self->Used)
 			{

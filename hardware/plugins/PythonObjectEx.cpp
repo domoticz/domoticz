@@ -203,6 +203,33 @@ namespace Plugins {
 		return pRetVal;
 	}
 
+	bool CDeviceEx::isInstance(PyObject *pObject)
+	{
+		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (brModule)
+		{
+			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			if (pModState)
+			{
+				int isDevice = PyObject_IsInstance(pObject, (PyObject *)pModState->pDeviceClass);
+				if (isDevice == -1)
+				{
+					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+					if (PyErr_Occurred())
+					{
+						PyErr_Clear();
+					}
+				}
+				else if (isDevice)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	void CUnitEx_dealloc(CUnitEx *self)
 	{
 		Py_XDECREF(self->Name);
@@ -764,26 +791,17 @@ namespace Plugins {
 				}
 			}
 
-			// Do an atomic update of non-key fields
+			// Do an atomic update (do not change this to individual field updates!!!!!!!)
 			Py_BEGIN_ALLOW_THREADS
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%s', Description='%s', Used=%d, Type=%d, SubType=%d, SwitchType=%d, CustomImage=%d, Color='%s', SignalLevel=%d, BatteryLevel=%d, Options='%s', LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", 
-								sName.c_str(), sDescription.c_str(), self->Used, iType, iSubType, iSwitchType, self->Image, sColor.c_str(), self->SignalLevel,
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%s', Description='%s', Used=%d, Type=%d, SubType=%d, SwitchType=%d, nValue=%d, sValue='%s', CustomImage=%d, Color='%s', "
+					 "SignalLevel=%d, BatteryLevel=%d, Options='%s', LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", 
+								sName.c_str(), sDescription.c_str(), self->Used, iType, iSubType, iSwitchType, nValue, sValue.c_str(), self->Image, sColor.c_str(), self->SignalLevel,
 								self->BatteryLevel, sOptionValue.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 			Py_END_ALLOW_THREADS
 
-			// Suppress Triggers updates non-key fields only (specifically NOT nValue or sValue)
+			// Only trigger notifications if Suppress Triggers is not true
 			if (!SuppressTriggers)
 			{
-				uint64_t DevRowIdx;
-				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
-				{
-					std::string sValue = PyBorrowedRef(self->sValue);
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, sValue.c_str(), nValue, sValue.c_str());
-				}
-				Py_BEGIN_ALLOW_THREADS 
-				DevRowIdx = m_sql.UpdateValue(pModState->pPlugin->m_HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str(), sName, true);
-				Py_END_ALLOW_THREADS
-
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
@@ -811,10 +829,20 @@ namespace Plugins {
 				}
 
 				// Notify MQTT and various push mechanisms and notifications
-				Py_BEGIN_ALLOW_THREADS
-				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
-				m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
-				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
+				Py_BEGIN_ALLOW_THREADS uint64_t DevRowIdx = -1;
+				std::vector<std::vector<std::string>> result =
+					m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				if (!result.empty())
+				{
+					DevRowIdx = std::stoull(result[0][0]);
+					m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
+					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+					m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
+				}
+				else
+				{
+					pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to get Device Row Index for %d/%s/%d.", __func__, pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				}
 				Py_END_ALLOW_THREADS
 			}
 
@@ -921,6 +949,33 @@ namespace Plugins {
 	{
 		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U'", self->Unit, self->Name, self->nValue, self->sValue);
 		return pRetVal;
+	}
+
+	bool CUnitEx::isInstance(PyObject *pObject)
+	{
+		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+		if (brModule)
+		{
+			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			if (pModState)
+			{
+				int isUnit = PyObject_IsInstance(pObject, (PyObject *)pModState->pUnitClass);
+				if (isUnit == -1)
+				{
+					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+					if (PyErr_Occurred())
+					{
+						PyErr_Clear();
+					}
+				}
+				else if (isUnit)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 } // namespace Plugins
 #endif

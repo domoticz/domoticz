@@ -164,6 +164,7 @@ class CEnOceanEEP
 	const char *GetEEPDescription(const int RORG, const int func, const int type);
 
 	uint32_t GetINodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0);
+	uint32_t GetINodeID(const std::string &nodeID);
 
 	std::string GetNodeID(const uint8_t ID3, const uint8_t ID2, const uint8_t ID1, const uint8_t ID0);
 	std::string GetNodeID(const uint32_t iNodeID);
