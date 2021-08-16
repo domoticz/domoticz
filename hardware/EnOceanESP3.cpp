@@ -46,8 +46,8 @@
 //#define ESP3_TESTS_4BS_A5_20_01
 //#define ESP3_TESTS_RPS_F6_01_01
 //#define ESP3_TESTS_RPS_F6_02_01
-//#define ESP3_TESTS_UTE_D2_01_12
 //#define ESP3_TESTS_VLD_D2_01_12
+//#define ESP3_TESTS_VLD_D2_03_0A
 #endif
 
 // ESP3 Packet types
@@ -1301,16 +1301,12 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x47 },
 #endif // ESP3_TESTS_RPS_F6_02_01
 
-#ifdef ESP3_TESTS_UTE_D2_01_12
-// D2-01-12, , Slot-in module, dual channels, with external button control
+#ifdef ESP3_TESTS_VLD_D2_01_12
+// D2-01-12, Slot-in module, dual channels, with external button control
 // Test Case : Teach-in Test
 //  Bi-directional teach-in or teach-out request from Node 00D20001, response expected
 	{ ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0xA0, 0x02, 0x46, 0x00, 0x12, 0x01, RORG_VLD, 0x01, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0x2F },
 	{ ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0xA0, 0x02, 0x46, 0x00, 0x12, 0x01, RORG_VLD, 0x01, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0x2F },
-#endif // ESP3_TESTS_UTE_D2_01_12
-
-#ifdef ESP3_TESTS_VLD_D2_01_12
-// D2-01-12, , Slot-in module, dual channels, with external button control
 // Test Case : Actuator Status Response + Buttons usage Test
 // VLD msg: Actuator Status Response, Channel 0 status On
 	{ ESP3_SER_SYNC, 0x00, 0x09, 0x07, PACKET_RADIO_ERP1, 0x56, RORG_VLD, 0x04, 0x60, 0xE4, 0x01, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x44 },
@@ -1341,6 +1337,30 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // VLD msg: Actuator Status Response, Channel 1 status Off
 	{ ESP3_SER_SYNC, 0x00, 0x09, 0x07, PACKET_RADIO_ERP1, 0x56, RORG_VLD, 0x04, 0x61, 0x80, 0x01, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xAE },
 #endif // ESP3_TESTS_VLD_D2_01_12
+
+#ifdef ESP3_TESTS_VLD_D2_03_0A
+// D2-03-0A, Push Button – Single Button
+// Test Case : Teach-in Test
+//  Universal Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x60, 0x01, 0x46, 0x00, 0x0A, 0x03, 0xD2, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x93 },
+    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x60, 0x01, 0x46, 0x00, 0x0A, 0x03, 0xD2, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x93 },
+// Test Case : Battery Autonomy
+//   Min Battery Autonomy
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x01, 0x00, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x73 },
+//   Max Battery Autonomy
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x64, 0x00, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x10 },
+//   Mid Battery Autonomy
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x32, 0x00, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xD5 },
+// Test Case : Button action
+//   Simple Press
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x00, 0x01, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x02 },
+//   Double press
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x00, 0x02, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB9 },
+//   Long press
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x00, 0x03, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x2D },
+//   Long press release
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x00, 0x04, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC8 },
+#endif // ESP3_TESTS_VLD_D2_03_0A
 };
 #endif
 
@@ -1926,7 +1946,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 	switch (RORG)
 	{
 		case RORG_1BS:
-			{ // 1BS telegram, D5-xx-xx, 1 Byte Communication
+			{ // 1BS telegram, D5-XX-XX, 1 Byte Communication
 				uint8_t DATA_BYTE0 = data[1];
 				uint8_t LRN = bitrange(DATA_BYTE0, 3, 0x01);
 
@@ -1995,7 +2015,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		case RORG_4BS:
-			{ // 4BS telegram, A5-xx-xx, 4 bytes communication
+			{ // 4BS telegram, A5-XX-XX, 4 bytes communication
 				uint8_t DATA_BYTE3 = data[1];
 				uint8_t DATA_BYTE2 = data[2];
 				uint8_t DATA_BYTE1 = data[3];
@@ -2656,7 +2676,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		case RORG_RPS:
-			{ // RPS telegram, F6-xx-xx, Repeated Switch Communication
+			{ // RPS telegram, F6-XX-XX, Repeated Switch Communication
 				uint8_t DATA = data[1];
 
 				uint8_t T21 = bitrange(STATUS, 5, 0x01); // 0=PTM switch module of type 1 (PTM1xx), 1=PTM switch module of type 2 (PTM2xx)
@@ -2906,7 +2926,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type <= 0x02)
-				{ // F6-05-xx, Detectors
+				{ // F6-05-XX, Detectors
 					// F6-05-00 : Wind speed threshold detector
 					// F6-05-01 : Liquid leakage sensor
 					// F6-05-02 : Smoke detector
@@ -2958,7 +2978,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		case RORG_UTE:
-			{ // UTE telegram, D4-xx-xx, Universal Teach-in
+			{ // UTE telegram, D4-XX-XX, Universal Teach-in
 				uint8_t CMD = bitrange(data[1], 0, 0x0F);				// 0=teach-in query, 1=teach-In response
 				if (CMD != 0)
 				{
@@ -3104,7 +3124,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			return;
 
 		case RORG_VLD:
-			{ // VLD telegram, D2-xx-xx, Variable Length Data
+			{ // VLD telegram, D2-XX-XX, Variable Length Data
 				if (pNode == nullptr)
 				{
 					Log(LOG_NORM, "VLD msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
@@ -3155,9 +3175,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x03 && pNode->type == 0x0A)
 				{ // D2-03-0A, Push Button, Single Button
-					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1, 100));
-					uint8_t BA = data[2]; // 1 = simple press, 2 = double press, 3 = long press, 4 = long press released
-					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, "Switch", m_Name, 12);
+					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1.0F, 100.0F));
+					uint8_t BA = data[2]; // 1 = Simple press, 2 = Double press, 3 = Long press, 4 = Long press released
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+					Log(LOG_NORM, "VLD msg: Node %s BATT %d% BA %02X (%s)", senderID.c_str(),
+						BATT, BA, (BA == 1) ? "Simple press" : ((BA == 2) ? "Double press" : ((BA == 3) ? "Long press" : ((BA == 4) ? "Long press released" : "Invalid value"))));
+#endif
+
+					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
 					return;
 				}
 				Log(LOG_ERROR, "VLD msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
