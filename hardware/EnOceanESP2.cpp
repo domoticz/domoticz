@@ -1520,6 +1520,8 @@ bool CEnOceanESP2::ParseData()
 					Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
 #endif
 
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
+
 				uint8_t PIRS = bitrange(pFrame->DATA_BYTE0, 7, 0x01);
 
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1567,44 +1569,46 @@ bool CEnOceanESP2::ParseData()
 				Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
 #endif
 
-					float ILL = GetDeviceValue((pFrame->DATA_BYTE2 << 2) | bitrange(pFrame->DATA_BYTE1, 6, 0x03), 0, 1000, 0.0F, 1000.0F);
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
 
-					_tLightMeter lmeter;
-					lmeter.id1 = (BYTE) pFrame->ID_BYTE3;
-					lmeter.id2 = (BYTE) pFrame->ID_BYTE2;
-					lmeter.id3 = (BYTE) pFrame->ID_BYTE1;
-					lmeter.id4 = (BYTE) pFrame->ID_BYTE0;
-					lmeter.dunit = 1;
-					lmeter.fLux = ILL;
+				float ILL = GetDeviceValue((pFrame->DATA_BYTE2 << 2) | bitrange(pFrame->DATA_BYTE1, 6, 0x03), 0, 1000, 0.0F, 1000.0F);
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, ILL %.1Flx", nodeID.c_str(), ILL);
-#endif
-
-					sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
-
-					uint8_t PIRS = bitrange(pFrame->DATA_BYTE0, 7, 0x01);
-
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-					tsen.LIGHTING2.packettype = pTypeLighting2;
-					tsen.LIGHTING2.subtype = sTypeAC;
-					tsen.LIGHTING2.seqnbr = 0;
-					tsen.LIGHTING2.id1 = (BYTE) pFrame->ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE) pFrame->ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE) pFrame->ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE) pFrame->ID_BYTE0;
-					tsen.LIGHTING2.level = 0;
-					tsen.LIGHTING2.unitcode = 1;
-					tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
-					tsen.LIGHTING2.rssi = 12;
+				_tLightMeter lmeter;
+				lmeter.id1 = (BYTE) pFrame->ID_BYTE3;
+				lmeter.id2 = (BYTE) pFrame->ID_BYTE2;
+				lmeter.id3 = (BYTE) pFrame->ID_BYTE1;
+				lmeter.id4 = (BYTE) pFrame->ID_BYTE0;
+				lmeter.dunit = 1;
+				lmeter.fLux = ILL;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
-							nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+					Log(LOG_NORM,"4BS msg: Node %s, ILL %.1Flx", nodeID.c_str(), ILL);
 #endif
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+				sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
+
+				uint8_t PIRS = bitrange(pFrame->DATA_BYTE0, 7, 0x01);
+
+				memset(&tsen, 0, sizeof(RBUF));
+				tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+				tsen.LIGHTING2.packettype = pTypeLighting2;
+				tsen.LIGHTING2.subtype = sTypeAC;
+				tsen.LIGHTING2.seqnbr = 0;
+				tsen.LIGHTING2.id1 = (BYTE) pFrame->ID_BYTE3;
+				tsen.LIGHTING2.id2 = (BYTE) pFrame->ID_BYTE2;
+				tsen.LIGHTING2.id3 = (BYTE) pFrame->ID_BYTE1;
+				tsen.LIGHTING2.id4 = (BYTE) pFrame->ID_BYTE0;
+				tsen.LIGHTING2.level = 0;
+				tsen.LIGHTING2.unitcode = 1;
+				tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
+				tsen.LIGHTING2.rssi = 12;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+						nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+#endif
+
+				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 			}
 		}
 	}
