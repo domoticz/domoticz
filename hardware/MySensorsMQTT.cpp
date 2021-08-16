@@ -118,7 +118,7 @@ std::string MySensorsMQTT::ConvertMessageToMySensorsLine(const std::string &topi
 {
 	std::string sMessage = topic + "/" + qMessage;
 	boost::replace_all(sMessage, m_TopicInWithoutHash, "");
-	boost::replace_all(sMessage, "/", ";");
+	std::replace(sMessage.begin(), sMessage.end(), '/', ';');
 	if (sMessage[0] == ';')
 	{
 		sMessage = sMessage.substr(1);
@@ -171,7 +171,7 @@ void MySensorsMQTT::ConvertMySensorsLineToMessage(const std::string &sLine, std:
 	}
 
 	sTopic = std::string(sLine.substr(0, indexLastSeperator));
-	boost::replace_all(sTopic, ";", "/");
+	std::replace(sTopic.begin(), sTopic.end(), ';', '/');
 	sTopic.insert(0, m_TopicOut + "/");
 
 	sPayload = std::string(sLine.substr(indexLastSeperator + 1));
