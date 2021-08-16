@@ -38,6 +38,7 @@
 //#define ESP3_TESTS_4BS_A5_06_01
 //#define ESP3_TESTS_4BS_A5_07_01
 //#define ESP3_TESTS_4BS_A5_07_02
+//#define ESP3_TESTS_4BS_A5_07_03
 //#define ESP3_TESTS_4BS_A5_12_00
 //#define ESP3_TESTS_4BS_A5_12_01
 //#define ESP3_TESTS_4BS_A5_12_02
@@ -982,6 +983,30 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 //  PIR Status: Motion detected
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x88, 0x01, RORG_4BS, 0x07, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x41 },
 #endif // ESP3_TESTS_4BS_A5_07_02
+
+#ifdef ESP3_TESTS_4BS_A5_07_03
+// A5-07-03, Occupancy with Supply voltage monitor and 10-bit illumination measurement
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x1C, 0x18, 0x00, 0x80, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x6E },
+// Test Case : Supply voltage (REQUIRED) Tests
+//  Min Supply voltage  Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC9 },
+//  Max Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFA, 0x00, 0x08, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x36 },
+//  Mid Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7D, 0x00, 0x08, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x35 },
+// Test Case : Illumination Tests
+//  Min Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC9 },
+//  Max Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFD, 0x00, 0x08, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x34 },
+//  Mid Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7D, 0x00, 0x08, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x35 },
+// Test Case : PIR Status Enum Test
+//  PIR Status: Motion detected
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x88, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
+#endif // ESP3_TESTS_4BS_A5_07_03
 
 #ifdef ESP3_TESTS_4BS_A5_12_00
 // A5-12-00, Counter
@@ -2361,7 +2386,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				{ // A5-07-03, Occupancy sensor with Supply voltage monitor and 10-bit illumination measurement
 					RBUF tsen;
 
-					float voltage = GetDeviceValue(DATA_BYTE3, 0, 250, 0, 5000.0F); // Convert V to mV
+					float SVC = GetDeviceValue(DATA_BYTE3, 0, 250, 0.0F, 5000.0F); // Convert V to mV
 
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
@@ -2372,15 +2397,18 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// WARNING
 					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-					tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-					tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
-					tsen.RFXSENSOR.msg1 = (BYTE) (voltage / 256);
-					tsen.RFXSENSOR.msg2 = (BYTE) (voltage - (tsen.RFXSENSOR.msg1 * 256));
+					tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
+					tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
+					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
+					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", senderID.c_str(), SVC);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
 
-					uint16_t lux = (DATA_BYTE2 << 2) | (DATA_BYTE1>>6);
-					if (lux > 1000)
-						lux = 1000;
+					float ILL = GetDeviceValue((DATA_BYTE2 << 2) | bitrange(DATA_BYTE1, 6, 0x03), 0, 1000, 0.0F, 1000.0F);
 
 					_tLightMeter lmeter;
 					lmeter.id1 = (BYTE) ID_BYTE3;
@@ -2388,10 +2416,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					lmeter.id3 = (BYTE) ID_BYTE1;
 					lmeter.id4 = (BYTE) ID_BYTE0;
 					lmeter.dunit = 1;
-					lmeter.fLux = (float)lux;
+					lmeter.fLux = ILL;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, ILL %.1Flx", senderID.c_str(), ILL);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
 
-					bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
+					uint8_t PIRS = bitrange(DATA_BYTE0, 7, 0x01);
 
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
@@ -2404,8 +2437,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
 					tsen.LIGHTING2.level = 0;
 					tsen.LIGHTING2.unitcode = 1;
-					tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
+					tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 					tsen.LIGHTING2.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+							senderID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					return;
 				}
