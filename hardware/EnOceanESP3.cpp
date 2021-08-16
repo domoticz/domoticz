@@ -35,6 +35,7 @@
 //#define ESP3_TESTS_1BS_D5_00_01
 //#define ESP3_TESTS_4BS_A5_02_XX
 //#define ESP3_TESTS_4BS_A5_04_01
+//#define ESP3_TESTS_4BS_A5_06_01
 //#define ESP3_TESTS_4BS_A5_12_00
 //#define ESP3_TESTS_4BS_A5_12_01
 //#define ESP3_TESTS_4BS_A5_12_02
@@ -891,6 +892,54 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAC },
 #endif // ESP3_TESTS_4BS_A5_04_01
 
+#ifdef ESP3_TESTS_4BS_A5_06_01
+// A5-06-01, Range 300lx to 60.000lx
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x18, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x9D },
+// Test Case : Supply voltage Tests
+//  Min Supply voltage Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x53 },
+//  Max Supply voltage Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xFF, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAA },
+//  Mid Supply voltage Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x7F, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAD },
+// Test Case : Illumination Tests ILL1
+//  Min Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x53 },
+//  Max Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x63 },
+//  Mid Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x7F, 0x08, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xBA },
+// Test Case : Illumination Tests ILL2
+//  Min Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x09, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC7 },
+//  Max Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFF, 0x00, 0x09, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x57 },
+//  Mid Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7F, 0x00, 0x09, 0x01, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x56 },
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test (ELTAKO)
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x18, 0x08 | (ELTAKO & 0x700), (ELTAKO & 0x0FF), 0x80, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x3F },
+// Test Case : Illumination Tests ILL1 (ELTAKO)
+	// DATA_BYTE2 is Range select where 0 = ILL1 else = ILL2
+	// DATA_BYTE3 is the low illuminance (ILL1) where min 0 = 0 lx, max 255 = 100 lx
+	// DATA_BYTE2 is the illuminance (ILL2) where min 0 = 300 lx, max 255 = 30000 lx
+//  Min Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB4 },
+//  Max Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xFF, 0x00, 0x00, 0x08, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x4D },
+//  Mid Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x7F, 0x00, 0x00, 0x08, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x4A },
+// Test Case : Illumination Tests ILL2 (ELTAKO)
+//  Min Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x01, 0x00, 0x08, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x01 },
+//  Max Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFF, 0x00, 0x08, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x24 },
+//  Mid Illumination Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7F, 0x00, 0x08, 0x02, RORG_4BS, 0x06, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x25 },
+#endif // ESP3_TESTS_4BS_A5_06_01
+
 #ifdef ESP3_TESTS_4BS_A5_12_00
 // A5-12-00, Counter
 // Test Case : Teach-in Test
@@ -1454,7 +1503,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 	if (bIsDimmer)
 	{ // A5-38-02, On/Off switch with dimming capability
-		// Cf. EnOcean Equipment Profiles 2.6.5 pages 12 (4BS format) & 103
 		buf[0] = RORG_RPS;
 		buf[1] = 0x02;
 		buf[2] = 0x64; // Level : 100
@@ -1497,7 +1545,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	}
 	else
 	{ // F6-02-01, On/Off switch without dimming capability
-		// Cf. EnOcean Equipment Profiles 2.6.5 page 11 (RPS format) & 14
 		uint8_t UpDown = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
 
 		buf[0] = RORG_RPS;
@@ -1913,7 +1960,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					if (LRN_TYPE == 0)
 					{ // 4BS teach-in, variation 1 : without EEP
-						// An EEP must be manually allocated (see EEP 2.6.2 specification §3.3 p173/197)
+						// EnOcean EEP 2.6.8 specification §3.3 p.321 : an EEP must be manually allocated
 
 						node_manID = UNKNOWN_MANUFACTURER;
 						node_func = 0x02; // Generic Temperature Sensors, Temperature Sensor ranging from 0°C to +40°C
@@ -2091,24 +2138,25 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x06 && pNode->type == 0x01)
 				{ // A5-06-01, Light Sensor
-					// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
 
-					float lux = 0.0F;
+					uint8_t RS;
+					float ILL = 0.0F;
 
 					if (pNode->manufacturerID != ELTAKO)
-					{ // General case for A5-06-01 EEP
+					{ // General case for A5-06-01
 						// DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
 
-						float voltage = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 5100); // Convert from V to mV
+						float SVC = GetDeviceValue(DATA_BYTE3, 0, 255, 0.0F, 5100.0F); // Convert V to mV
 
 						// DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
 						// DATA_BYTE1 is the illuminance (ILL1) where min 0 = 600 lx, max 255 = 60000 lx
 						// DATA_BYTE2 is the illuminance (ILL2) where min 0 = 300 lx, max 255 = 30000 lx
 
-						if (DATA_BYTE0 & 1)
-							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
+						RS = bitrange(DATA_BYTE0, 0, 0x01);
+						if (RS == 0)
+							ILL = GetDeviceValue(DATA_BYTE1, 0, 255, 600.0F, 60000.0F);
 						else
-							lux = GetDeviceValue(DATA_BYTE1, 0, 255, 600, 60000);
+							ILL = GetDeviceValue(DATA_BYTE2, 0, 255, 300.0F, 30000.0F);
 
 						RBUF tsen;
 						memset(&tsen, 0, sizeof(RBUF));
@@ -2120,22 +2168,29 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						// WARNING
 						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-						tsen.RFXSENSOR.filler = ID_BYTE0 & 0x0F;
-						tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
-						tsen.RFXSENSOR.msg1 = (BYTE) (voltage / 256);
-						tsen.RFXSENSOR.msg2 = (BYTE) (voltage - (tsen.RFXSENSOR.msg1 * 256));
+						tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
+						tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
+						tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
+						tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", senderID.c_str(), SVC);
+#endif
+
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
 					}
 					else
 					{ // WARNING : ELTAKO specific implementation
-						// DATA_BYTE2 is Range select where 0 = ILL1, 1 = ILL2
+						// Eltako FAH60, FAH60B, FAH65S, FIH65S, FAH63, FIH63
+						// DATA_BYTE2 is Range select where 0 = ILL1  else = ILL2
 						// DATA_BYTE3 is the low illuminance (ILL1) where min 0 = 0 lx, max 255 = 100 lx
 						// DATA_BYTE2 is the illuminance (ILL2) where min 0 = 300 lx, max 255 = 30000 lx
 
-						if (DATA_BYTE2 == 0)
-							lux = GetDeviceValue(DATA_BYTE3, 0, 255, 0, 100);
+						RS = DATA_BYTE2;
+						if (RS == 0)
+							ILL = GetDeviceValue(DATA_BYTE3, 0, 255, 0.0F, 100.0F);
 						else
-							lux = GetDeviceValue(DATA_BYTE2, 0, 255, 300, 30000);
+							ILL = GetDeviceValue(DATA_BYTE2, 0, 255, 300.0F, 30000.0F);
 					}
 					_tLightMeter lmeter;
 					lmeter.id1 = (BYTE) ID_BYTE3; // Sender ID
@@ -2143,7 +2198,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					lmeter.id3 = (BYTE) ID_BYTE1;
 					lmeter.id4 = (BYTE) ID_BYTE0;
 					lmeter.dunit = 1;
-					lmeter.fLux = lux;
+					lmeter.fLux = ILL;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, RS %s ILL %.1Flx", senderID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
 					return;
 				}
@@ -2304,7 +2364,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				{ // A5-10-01..OD, RoomOperatingPanel
 					// Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, [untested]
 					if (pNode->manufacturerID != ELTAKO)
-					{ // General case for A5-10-01..OD EEP
+					{ // General case for A5-10-01..OD
 						// DATA_BYTE3 is the fan speed
 						// DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
@@ -2502,7 +2562,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					// Node not found and learn mode enabled
 
-					// EnOcean EEP 2.6.8, §1.7, p.13
+					// EnOcean EEP 2.6.8 specification, §1.7 p.13
 					// To avoid inadvertent learning, RPS telegrams have to be triggered 3 times within 2 seconds to allow teach-in
 
 					if (senderID != m_RPS_teachin_nodeID)

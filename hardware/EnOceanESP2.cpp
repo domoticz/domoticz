@@ -1203,7 +1203,7 @@ bool CEnOceanESP2::ParseData()
 				// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
 
 				if (Manufacturer != ELTAKO)
-				{ // General case for A5-10-01..OD EEP
+				{ // General case for A5-10-01..OD
 					// pFrame->DATA_BYTE3 is the fan speed
 					// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
 					// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
@@ -1265,56 +1265,72 @@ bool CEnOceanESP2::ParseData()
 			{ // A5-06-01, Light Sensor
 				// [Eltako FAH60, FAH63, FIH63, Thermokon SR65 LI, untested]
 
-				float lux = 0.0F;
+				uint8_t RS;
+				float ILL = 0.0F;
 
 				if (Manufacturer != ELTAKO)
-				{ // General case for A5-06-01 EEP
+				{ // General case for A5-06-01
 					// pFrame->DATA_BYTE3 is the voltage where 0x00 = 0 V ... 0xFF = 5.1 V
 
-					float voltage = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0, 5100); // need to convert value from V to mV
+					float SVC = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0.0F, 5100.0F); // Convert V to mV
 
-					// pFrame->DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
-					// pFrame->DATA_BYTE1 is the illuminance (ILL1) where min 0x00 = 600 lx, max 0xFF = 60000 lx
-					// pFrame->DATA_BYTE2 is the illuminance (ILL2) where min 0x00 = 300 lx, max 0xFF = 30000 lx
+					// DATA_BYTE0_bit_0 is Range select where 0 = ILL1, 1 = ILL2
+					// DATA_BYTE1 is the illuminance (ILL1) where min 0 = 600 lx, max 255 = 60000 lx
+					// DATA_BYTE2 is the illuminance (ILL2) where min 0 = 300 lx, max 255 = 30000 lx
 
-					if ((pFrame->DATA_BYTE0 & 1) == 0)
-						lux = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 600, 60000);
+					RS = bitrange(pFrame->DATA_BYTE0, 0, 0x01);
+					if (RS == 0)
+						ILL = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 600.0F, 60000.0F);
 					else
-						lux = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300, 30000);
+						ILL = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300.0F, 30000.0F);
 
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.RFXSENSOR.packetlength = sizeof(tsen.RFXSENSOR) - 1;
 					tsen.RFXSENSOR.packettype = pTypeRFXSensor;
 					tsen.RFXSENSOR.subtype = sTypeRFXSensorVolt;
+					tsen.RFXSENSOR.seqnbr = 0;
 					tsen.RFXSENSOR.id = pFrame->ID_BYTE1;
 					// WARNING
 					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
 					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
-					tsen.RFXSENSOR.filler = pFrame->ID_BYTE0 & 0x0F;
-					tsen.RFXSENSOR.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
-					tsen.RFXSENSOR.msg1 = (BYTE) (voltage / 256);
-					tsen.RFXSENSOR.msg2 = (BYTE) (voltage - (tsen.RFXSENSOR.msg1 * 256));
+					tsen.RFXSENSOR.filler = bitrange(pFrame->ID_BYTE0, 0, 0x0F);
+					tsen.RFXSENSOR.rssi = bitrange(pFrame->ID_BYTE0, 4, 0x0F);
+					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
+					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
 				}
 				else
 				{ // WARNING : ELTAKO specific implementation
-					// If pFrame->DATA_BYTE2 = 0, pFrame->DATA_BYTE3 is the low illuminance where min 0x00 = 0 lx, max 0xFF = 100 lx
-					// Else pFrame->DATA_BYTE2 is the illuminance where min 0x00 = 300 lx, max 0xFF = 30000 lx
+					// Eltako FAH60, FAH60B, FAH65S, FIH65S, FAH63, FIH63
+					// DATA_BYTE2 is Range select where 0 = ILL1, 1 = ILL2
+					// DATA_BYTE3 is the low illuminance (ILL1) where min 0 = 0 lx, max 255 = 100 lx
+					// DATA_BYTE2 is the illuminance (ILL2) where min 0 = 300 lx, max 255 = 30000 lx
 
-					if (pFrame->DATA_BYTE2 == 0)
-						lux = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0, 100);
+					RS = pFrame->DATA_BYTE2;
+					if (RS == 0)
+						ILL = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0.0F, 100.0F);
 					else
-						lux = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300, 30000);
+						ILL = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 300.0F, 30000.0F);
 				}
 				_tLightMeter lmeter;
-				lmeter.id1 = (BYTE) pFrame->ID_BYTE3;
+				lmeter.id1 = (BYTE) pFrame->ID_BYTE3; // Sender ID
 				lmeter.id2 = (BYTE) pFrame->ID_BYTE2;
 				lmeter.id3 = (BYTE) pFrame->ID_BYTE1;
 				lmeter.id4 = (BYTE) pFrame->ID_BYTE0;
 				lmeter.dunit = 1;
-				lmeter.fLux = lux;
-				sDecodeRXMessage(this, (const unsigned char *)&lmeter, nullptr, 255, nullptr);
+				lmeter.fLux = ILL;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s, RS %s ILL %.1Flx", nodeID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
+#endif
+
+				sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
 			}
 			else if (Profile == 0x02)
 			{	// A5-02-01..30, Temperature sensor
