@@ -2771,7 +2771,10 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 148)
 		{
-			query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
+			if(!DoesColumnExistsInTable("LogLevel", "Hardware"))
+			{
+				query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
+			}
 		}
 	}
 	else if (bNewInstall)
