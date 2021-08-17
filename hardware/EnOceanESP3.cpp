@@ -46,7 +46,7 @@
 //#define ESP3_TESTS_4BS_A5_12_03
 //#define ESP3_TESTS_4BS_A5_20_01
 //#define ESP3_TESTS_RPS_F6_01_01
-//#define ESP3_TESTS_RPS_F6_02_01
+//#define ESP3_TESTS_RPS_F6_02_0X
 //#define ESP3_TESTS_VLD_D2_01_12
 //#define ESP3_TESTS_VLD_D2_03_0A
 #endif
@@ -296,132 +296,6 @@ typedef enum
 	UTE_RESPONSE = 1	// Teach-in response command
 } UTE_CMD;
 
-// Lines from EO300I API header file
-
-/**
- * @defgroup bitmasks Bitmasks for various fields.
- * There are two definitions for every bit mask. First, the bit mask itself
- * and also the number of necessary shifts.
- * @{
- */
-/**
- * @defgroup status_rps Status of telegram (for RPS telegrams)
- * Bitmasks for the status-field, if ORG = RPS.
- * @{
- */
-#define S_RPS_T21 0x20
-#define S_RPS_T21_SHIFT 5
-#define S_RPS_NU  0x10
-#define S_RPS_NU_SHIFT 4
-#define S_RPS_RPC 0x0F
-#define S_RPS_RPC_SHIFT 0
-/*@}*/
-
-#define F60201_R1_MASK 0xE0
-#define F60201_R1_SHIFT 5
-#define F60201_EB_MASK 0x10
-#define F60201_EB_SHIFT 4
-#define F60201_R2_MASK 0x0E
-#define F60201_R2_SHIFT 1
-#define F60201_SA_MASK 0x01
-#define F60201_SA_SHIFT 0
-
-#define F60201_BUTTON_A1 0
-#define F60201_BUTTON_A0 1
-#define F60201_BUTTON_B1 2
-#define F60201_BUTTON_B0 3
-
-/**
- * @defgroup status_rpc Status of telegram (for 1BS, 4BS, HRC or 6DT telegrams)
- * Bitmasks for the status-field, if ORG = 1BS, 4BS, HRC or 6DT.
- * @{
- */
-#define S_RPC 0x0F
-#define S_RPC_SHIFT 0
-/*@}*/
-
-/**
- * @defgroup data3 Meaning of data_byte 3 (for RPS telegrams, NU = 1)
- * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 1.
- * Specification can be found at:
- *      https://www.enocean.com/fileadmin/redaktion/enocean_alliance/pdf/EnOcean_Equipment_Profiles_EEP_V2.6.3_public.pdf
- * @{
- */
-
-	//!	Rocker ID Mask
-#define DB3_RPS_NU_RID 0xC0
-#define DB3_RPS_NU_RID_SHIFT 6
-
-//!	Button ID Mask
-#define DB3_RPS_NU_BID 0xE0
-#define DB3_RPS_NU_BID_SHIFT 5
-
-//!	Up Down Mask
-#define DB3_RPS_NU_UD  0x20
-#define DB3_RPS_NU_UD_SHIFT  5
-
-//!	Pressed Mask
-#define DB3_RPS_NU_PR  0x10
-#define DB3_RPS_NU_PR_SHIFT 4
-
-//!	Second Rocker ID Mask
-#define DB3_RPS_NU_SRID 0x0C
-#define DB3_RPS_NU_SRID_SHIFT 2
-
-//!	Second Button ID Mask
-#define DB3_RPS_NU_SBID 0x0E
-#define DB3_RPS_NU_SBID_SHIFT 1
-
-//!	Second UpDown Mask
-#define DB3_RPS_NU_SUD 0x02
-#define DB3_RPS_NU_SUD_SHIFT 1
-
-//!	Second Action Mask
-#define DB3_RPS_NU_SA 0x01
-#define DB3_RPS_NU_SA_SHIFT 0
-
-/*@}*/
-
-/**
- * @defgroup data3_1 Meaning of data_byte 3 (for RPS telegrams, NU = 0)
- * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 0.
- * @{
- */
-#define DB3_RPS_BUTTONS 0xE0
-#define DB3_RPS_BUTTONS_SHIFT 5
-#define DB3_RPS_PR 0x10
-#define DB3_RPS_PR_SHIFT 4
-/*@}*/
-
-/**
- * @defgroup data0 Meaning of data_byte 0 (for 4BS telegrams)
- * Bitmasks for the data_byte0-field, if ORG = 4BS.
- * @{
- */
-#define DB0_4BS_DI_3 0x08
-#define DB0_4BS_DI_3_SHIFT 3
-#define DB0_4BS_DI_2 0x04
-#define DB0_4BS_DI_2_SHIFT 2
-#define DB0_4BS_DI_1 0x02
-#define DB0_4BS_DI_1_SHIFT 1
-#define DB0_4BS_DI_0 0x01
-#define DB0_4BS_DI_0_SHIFT 0
-/*@}*/
-
-/**
- * @defgroup data3_hrc Meaning of data_byte 3 (for HRC telegrams)
- * Bitmasks for the data_byte3-field, if ORG = HRC.
- * @{
- */
-#define DB3_HRC_RID 0xC0
-#define DB3_HRC_RID_SHIFT 6
-#define DB3_HRC_UD  0x20
-#define DB3_HRC_UD_SHIFT 5
-#define DB3_HRC_PR  0x10
-#define DB3_HRC_PR_SHIFT 4
-#define DB3_HRC_SR  0x08
-#define DB3_HRC_SR_SHIFT 3
-
 CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int type)
 {
 	m_HwdID = ID;
@@ -530,6 +404,25 @@ void CEnOceanESP3::TeachInNode(const std::string &nodeID, const uint16_t manID, 
 
 		m_nodes[GetINodeID(node.nodeID)] = node;
 	}
+}
+
+void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
+{
+	if (pNode == nullptr)
+		return;
+
+	if (pNode->func == 0x00 && pNode->type == 0x00)
+		return;
+	
+	if (pNode->RORG == RORG)
+		return;
+
+	Log(LOG_NORM, "Update Node %s EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+		pNode->nodeID.c_str(),
+		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+
+	pNode->RORG = RORG;		
 }
 
 void CEnOceanESP3::Do_Work()
@@ -1322,7 +1215,7 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 #endif // ESP3_TESTS_4BS_A5_20_01
 
 #ifdef ESP3_TESTS_RPS_F6_01_01
-// A5-20-01, Switch Buttons, Push Button
+// F6-01-01, Switch Buttons, Push Button
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
@@ -1330,17 +1223,17 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
-	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
 // Test Case : Button actions
-// NB. following is interpreted as generic EEP F6-02-01
+// NB. following is interpreted as generic EEP F6-02-01 created by default...
 // RPS N-msg: Button pressed
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x9F },
 // RPS N-msg: Button released
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x01, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0xE0 },
 # endif // ESP3_TESTS_RPS_F6_01_01
 
-#ifdef ESP3_TESTS_RPS_F6_02_01
+#ifdef ESP3_TESTS_RPS_F6_02_0X
 // F6-02-01, Light and Blind Control - Application Style 1
+// F6-02-02, Light and Blind Control - Application Style 2
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
@@ -1348,41 +1241,33 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x53, 0x00, 0x09 },
 	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x7E },
-	{ ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x53, 0x00, 0x09 },
 // Test Case : Rocker 1st action
 //  Button AI
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x47 },
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x61 },
 //  Button A0
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x20, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB9 },
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x30, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x9F },
 //  Button BI
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x40, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xBC },
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x50, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x9A },
 //  Button B0
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x60, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x42 },
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x70, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x64 },
 // Test Case : Rocker 2nd action
-//  Button AI 2nd action
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x01, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xD3 },
-//  Button A0 2nd action
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x03, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xFC },
-//  Button BI 2nd action
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x05, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x8D },
-//  Button B0 2nd action
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x07, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xA2 },
+//  Button A0 + AI 2nd action
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x21, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x74 },
+//  Button A0 + BI 2nd action
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x25, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x2A },
+//  Button B0 + BI 2nd action
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x65, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xD1 },
+//  Button AI + B0 2nd action
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x07, 0x01, RORG_RPS, 0x02, 0x01, 0x30, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xFB },
 // Test Case : Number of buttons pressed simultaneously
 //  no button
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x47 },
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x56 },
 //  3 or 4 buttons
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x60, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x42 },
-// Test Case : Energy Bow Status 30
-//  Pressed (status 30)
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
-//  Released (status 30)
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x47 },
-// Test Case : Energy Bow Status 20
-//  Pressed (status 20)
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x10, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
-//  Released (status 20)
-    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x47 },
-#endif // ESP3_TESTS_RPS_F6_02_01
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x70, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x53 },
+// Test Case : Energy Bow Status
+//  Released
+    { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x00, 0x01, RORG_RPS, 0x02, 0x01, 0x20, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x29 },
+#endif // ESP3_TESTS_RPS_F6_02_0X
 
 #ifdef ESP3_TESTS_VLD_D2_01_12
 // D2-01-12, Slot-in module, dual channels, with external button control
@@ -1628,7 +1513,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	}
 
 	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
-	uint8_t Pressed = 1;
+	uint8_t EB = 1;
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
 
@@ -1686,14 +1571,15 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		if (cmnd != light2_sSetLevel)
 		{ // On/Off
-			uint8_t UpDown = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
+			uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
 
-			buf[1] = (RockerID << DB3_RPS_NU_RID_SHIFT) | (UpDown << DB3_RPS_NU_UD_SHIFT) | (Pressed << DB3_RPS_NU_PR_SHIFT);
+			buf[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
 			buf[9] = 0x30;
 
 			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 
-			// Next command is send a bit later (button release)
+			// Button release is send a bit later
+	
 			buf[1] = 0x00;
 			buf[9] = 0x20;
 
@@ -1715,48 +1601,37 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	}
 	else
 	{ // F6-02-01, On/Off switch without dimming capability
-		uint8_t UpDown = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
+		uint8_t CO = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
 
 		buf[0] = RORG_RPS;
 
 		switch (RockerID)
 		{
 			case 0: // Button A
-				if (UpDown)
-					buf[1] = F60201_BUTTON_A1 << F60201_R1_SHIFT;
-				else
-					buf[1] = F60201_BUTTON_A0 << F60201_R1_SHIFT;
+				buf[1] = CO ? 0x00 : 0x20;
 				break;
 
 			case 1: // Button B
-				if (UpDown)
-					buf[1] = F60201_BUTTON_B1 << F60201_R1_SHIFT;
-				else
-					buf[1] = F60201_BUTTON_B0 << F60201_R1_SHIFT;
+				buf[1] = CO ? 0x40 : 0x60;
 				break;
 
 			default:
 				return false; // Not supported
 		}
-
-		buf[1] |= F60201_EB_MASK; // Button is pressed
-
+		buf[1] |= 0x10; // Press energy bow
 		buf[2] = tsen->LIGHTING2.id1; // Sender ID
 		buf[3] = tsen->LIGHTING2.id2;
 		buf[4] = tsen->LIGHTING2.id3;
 		buf[5] = tsen->LIGHTING2.id4;
-
-		buf[6] = S_RPS_T21 | S_RPS_NU; // Press button
-
+		buf[6] = 0x30; // Press button
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
-		// Next command is send a bit later (button release)
-		buf[1] = 0x00; // No button press
-		buf[6] = S_RPS_T21; // Release button
+		// Button release is send a bit later
 
+		buf[1] = 0x00; // No button press
+		buf[6] = 0x20; // Release button
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 	}
-
 	return true;
 }
 
@@ -2067,6 +1942,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "1BS msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
+				CheckAndUpdateNodeRORG(pNode, RORG_1BS);
+
 				if (pNode->func == 0x00 && pNode->type == 0x01)
 				{ // D5-00-01, Contacts and Switches, Single Input Contact
 					uint8_t CO = bitrange(DATA_BYTE0, 0, 0x01);
@@ -2186,6 +2063,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "4BS msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
+				CheckAndUpdateNodeRORG(pNode, RORG_4BS);
+
 				Log(LOG_NORM, "4BS msg: Node %s EEP %02X-%02X-%02X (%s) Data %02X %02X %02X %02X",
 					senderID.c_str(),
 					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 
@@ -2891,8 +2770,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			{ // RPS telegram, F6-XX-XX, Repeated Switch Communication
 				uint8_t DATA = data[1];
 
-				uint8_t T21 = bitrange(STATUS, 5, 0x01); // 0=PTM switch module of type 1 (PTM1xx), 1=PTM switch module of type 2 (PTM2xx)
-				uint8_t NU = bitrange(STATUS, 4, 0x01); // 0=U-message (Unassigned), 1=N-message (Normal)
+				uint8_t T21 = bitrange(STATUS, 5, 0x01); // 0 = PTM switch module of type 1 (PTM1xx), 1 = PTM switch module of type 2 (PTM2xx)
+				uint8_t NU = bitrange(STATUS, 4, 0x01); // 0 = U-message (Unassigned), 1 = N-message (Normal)
 
 				if (pNode == nullptr)
 				{ // Node not found
@@ -2942,7 +2821,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Log(LOG_NORM, "RPS teach-in request #%u from Node %s accepted", m_RPS_teachin_count, senderID.c_str());
 
-					// EEP F6-01-01, Rocker Switch, 2 Rocker
+					// F6-02-01, Rocker Switch, 2 Rocker
 					uint8_t node_func = 0x02;
 					uint8_t node_type = 0x01;
 
@@ -2955,12 +2834,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// RPS data
 
-				Log(LOG_NORM, "RPS %s: Node %s EEP %02X-%02X_%02X (%s) DATA %02X (%s)",
-					(NU == 0) ? "U-msg" : "N-msg",
-					senderID.c_str(),
-					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
-					DATA, (T21 == 0) ? "PTM1xx" : "PTM2xx");
-
 				// EEP D2-01-XX, Electronic Switches and Dimmers with Local Control
 				// D2-01-0D, Micro smart plug, single channel, with external button control
 				// D2-01-0E, Micro smart plug, single channel, with external button control
@@ -2970,19 +2843,20 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				// These nodes send RPS telegrams whenever the external button control is used
 				// Ignore these RPS telegrams : device status will be reported using VLD datagram
 
-				if (pNode->RORG == RORG_VLD
-					|| (pNode->RORG == 0x00 && pNode->func == 0x01
-						&& (pNode->type == 0x0D || pNode->type == 0x0E
-							|| pNode->type == 0x0F || pNode->type == 0x12
-							|| pNode->type == 0x15 || pNode->type == 0x16
-							|| pNode->type == 0x17)))
+				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type >= 0x02))
 				{
-#ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM,"Node %s, VLD device button press ignored", senderID.c_str());
-#endif
+					Log(LOG_NORM,"RPS %c-msg: Node %s, button press from VLD device (ignored)",
+						(NU == 0) ? 'U' : 'N', senderID.c_str());
+					CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 					return;
 				}
-				// RPS data
+				CheckAndUpdateNodeRORG(pNode, RORG_RPS);
+
+				Log(LOG_NORM, "RPS %c-msg: Node %s EEP %02X-%02X-%02X (%s) Data %02X (%s) Status %02X",
+					(NU == 0) ? 'U' : 'N',
+					senderID.c_str(),
+					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+					DATA, (T21 == 0) ? "PTM1xx" : "PTM2xx", STATUS);
 
 				if (pNode->func == 0x01 && pNode->type == 0x01)
 				{ // F6-01-01, Switch Buttons, Push button
@@ -3002,6 +2876,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = PB ? light2_sOn : light2_sOff;
 					tsen.LIGHTING2.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+					Log(LOG_NORM, "Node %s PB %s", senderID.c_str(), PB ? "Pressed" : "Released");
+#endif
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					return;
 				}
@@ -3010,31 +2889,34 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
 					// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
 
-					bool useButtonIDs = true; // Whether we use the ButtonID reporting with ON/OFF
+					if (NU == 1)
+					{ // RPS N-Message
+						uint8_t R1 = bitrange(DATA, 5, 0x07);
+						uint8_t R1_AB = bitrange(DATA, 6, 0x01);
+						uint8_t R1_IO = bitrange(DATA, 5, 0x01);
 
-					if (STATUS & S_RPS_NU)
-					{
-						uint8_t DATA_BYTE3 = data[1];
+						uint8_t EB = bitrange(DATA, 4, 0x01);
 
-						// NU == 1, N-Message
-						uint8_t ButtonID = (DATA_BYTE3 & DB3_RPS_NU_BID) >> DB3_RPS_NU_BID_SHIFT;
-						uint8_t RockerID = (DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
-						uint8_t UpDown = (DATA_BYTE3 & DB3_RPS_NU_UD)  >> DB3_RPS_NU_UD_SHIFT;
-						uint8_t Pressed = (DATA_BYTE3 & DB3_RPS_NU_PR) >> DB3_RPS_NU_PR_SHIFT;
+						uint8_t R2 = bitrange(DATA, 1, 0x07);
+						uint8_t R2_AB = bitrange(DATA, 2, 0x01);
+						uint8_t R2_IO = bitrange(DATA, 1, 0x01);
 
-						uint8_t SecondButtonID = (DATA_BYTE3 & DB3_RPS_NU_SBID) >> DB3_RPS_NU_SBID_SHIFT;
-						uint8_t SecondRockerID = (DATA_BYTE3 & DB3_RPS_NU_SRID) >> DB3_RPS_NU_SRID_SHIFT;
-						uint8_t SecondUpDown = (DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
-						uint8_t SecondAction = (DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
+						uint8_t SA = bitrange(DATA, 0, 0x01);
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM, "RPS N-Message: Node %s RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
-							senderID.c_str(),
-							RockerID, ButtonID, UpDown, Pressed,
-							SecondRockerID, SecondButtonID, SecondUpDown, SecondAction);
+						if (SA == 0)
+							Log(LOG_NORM, "Node %s Button %c%c %s",
+								senderID.c_str(),
+								(R1_AB == 0) ? 'A' : 'B', (R1_IO == 0) ? 'I' : 'O',
+								(EB == 0) ? "released" : "pressed");
+						else
+							Log(LOG_NORM, "Node %s Buttons %c%c and %c%c simultaneously %s",
+								senderID.c_str(),
+								(R1_AB == 0) ? 'A' : 'B', (R1_IO == 0) ? 'I' : 'O', (R2_AB == 0) ? 'A' : 'B', (R2_IO == 0) ? 'I' : 'O',
+								(EB == 0) ? "released" : "pressed");
 #endif
 
-						if (Pressed == 1)
+						if (EB == 1)
 						{ // Energy bow pressed
 							RBUF tsen;
 							memset(&tsen, 0, sizeof(RBUF));
@@ -3049,36 +2931,16 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.LIGHTING2.level = 0;
 
 							// 3 types of buttons presses from a switch: A / B / A & B
-							if (SecondAction==0)
-							{
-								if (useButtonIDs)
-								{ // Left/Right Pressed
-									tsen.LIGHTING2.unitcode = ButtonID + 1;
-									tsen.LIGHTING2.cmnd     = light2_sOn; // Button is pressed, so we don't get an OFF message here
-								}
-								else
-								{ // Left/Right Up/Down
-									tsen.LIGHTING2.unitcode = RockerID + 1;
-									tsen.LIGHTING2.cmnd     = (UpDown == 1) ? light2_sOn : light2_sOff;
-								}
-							}
+							if (SA == 0)
+								tsen.LIGHTING2.unitcode = R1 + 1; // A / B Pressed
 							else
-							{
-								if (useButtonIDs)
-								{ // Left+Right Pressed
-									tsen.LIGHTING2.unitcode = ButtonID + 10;
-									tsen.LIGHTING2.cmnd     = light2_sOn;  // Button is pressed, so we don't get an OFF message here
-								}
-								else
-								{ // Left+Right Up/Down
-									tsen.LIGHTING2.unitcode = SecondRockerID + 10;
-									tsen.LIGHTING2.cmnd     = (SecondUpDown == 1) ? light2_sOn : light2_sOff;
-								}
-							}
+								tsen.LIGHTING2.unitcode = R1 + 10; // A & B Pressed
+							
+							tsen.LIGHTING2.cmnd = light2_sOn; // Button is pressed, so we don't get an OFF message here
 							tsen.LIGHTING2.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "RPS msg: Node %s UnitID: %02X cmd: %02X ",
+							Log(LOG_NORM, "RPS N-msg: Node %s UnitID: %02X cmd: %02X",
 								senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 #endif
 
@@ -3089,53 +2951,33 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // RPS U-Message
 						// Release message of any button pressed before
 
-						// TODO : check if following if is necessary or not
+						uint8_t R1 = bitrange(DATA, 5, 0x07);
+						uint8_t EB = bitrange(DATA, 4, 0x01);
 
-						if (T21 == 1 && NU == 0)
-						{
-							uint8_t DATA_BYTE3 = data[1];
-
-							uint8_t ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
-							uint8_t Pressed = (DATA_BYTE3 & DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
-							uint8_t UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
-
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+						tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
+						tsen.LIGHTING2.level = 0;
+						tsen.LIGHTING2.unitcode = 0; // Does not matter, since we are using a group command
+						tsen.LIGHTING2.cmnd = (EB == 1) ? light2_sGroupOn : light2_sGroupOff;
+						tsen.LIGHTING2.rssi = rssi;
+						
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "RPS T21-msg: Node %s ButtonID: %i Pressed: %i UD: %i",
-								senderID.c_str(), ButtonID, Pressed, UpDown);
+						Log(LOG_NORM, "RPS U-msg: Node %s Energy Bow %s (%s pressed) UnitID: %02X cmd: %02X",
+							senderID.c_str(),
+							(EB == 0) ? "released" : "pressed",
+							(R1 == 0) ? "no button" : "3 or 4 buttons",
+							tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 #endif
 
-							RBUF tsen;
-							memset(&tsen, 0, sizeof(RBUF));
-							tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-							tsen.LIGHTING2.packettype = pTypeLighting2;
-							tsen.LIGHTING2.subtype = sTypeAC;
-							tsen.LIGHTING2.seqnbr = 0;
-							tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
-							tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
-							tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
-							tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
-							tsen.LIGHTING2.level = 0;
-
-							if (useButtonIDs)
-							{
-								// It's the release message of any button pressed before
-								tsen.LIGHTING2.unitcode = 0; // Does not matter, since we are using a group command
-								tsen.LIGHTING2.cmnd = (Pressed == 1) ? light2_sGroupOn : light2_sGroupOff;
-							}
-							else
-							{
-								tsen.LIGHTING2.unitcode = 1;
-								tsen.LIGHTING2.cmnd = (UpDown == 1) ? light2_sOn : light2_sOff;
-							}
-							tsen.LIGHTING2.rssi = rssi;
-							
-#ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM, "RPS msg: Node %s UnitID: %02X cmd: %02X ",
-								senderID.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
-#endif
-
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
-						}
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					}
 					return;
 				}
@@ -3312,6 +3154,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				// Node found
+
+				CheckAndUpdateNodeRORG(pNode, node_RORG);
+
 				if (ute_request == 0)
 				{ // Node found and teach-in request => ignore
 					Log(LOG_NORM, "Node %s already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
@@ -3344,6 +3189,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "VLD msg: Unknown Node %s, please proceed to teach-in", senderID.c_str());
 					return;
 				}
+				CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+
 				Log(LOG_NORM, "VLD msg: Node %s EEP: %02X-%02X-%02X", senderID.c_str(), pNode->RORG, pNode->func, pNode->type);
 
 				if (pNode->func == 0x01)

@@ -774,35 +774,27 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	if (tsen->LIGHTING2.packettype != pTypeLighting2)
 		return false; // Only allowed to control switches
 
-	enocean_data_structure iframe = create_base_frame();
-	iframe.H_SEQ_LENGTH = 0x6B; // TX+Length
-	iframe.ORG = C_ORG_RPS;
-
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
+	
 	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
 	{
 		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 		return false;
 	}
-
-	iframe.ID_BYTE3 = (unsigned char) tsen->LIGHTING2.id1;
-	iframe.ID_BYTE2 = (unsigned char) tsen->LIGHTING2.id2;
-	iframe.ID_BYTE1 = (unsigned char) tsen->LIGHTING2.id3;
-	iframe.ID_BYTE0 = (unsigned char) tsen->LIGHTING2.id4;
-
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		Log(LOG_ERROR, "ID %s, double press not supported!", nodeID.c_str());
+		Log(LOG_ERROR, "Node %s, double press not supported!", nodeID.c_str());
 		return false;
 	}
-	// Find out if this is a Dimmer switch, because they are threaded differently
-
 	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
-	uint8_t Pressed = 1;
+	uint8_t EB = 1;
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
+
+	// Find out if this is a Dimmer switch, because they are threaded differently
 
 	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
 	std::vector<std::vector<std::string> > result;
@@ -824,9 +816,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	else
 	{
 		if (cmnd == light2_sOn)
-		{
 			iLevel = LastLevel;
-		}
 		else
 		{ // Scale to 0 - 100 %
 			iLevel = tsen->LIGHTING2.level;
@@ -835,43 +825,50 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 			float fLevel = (100.0F / 15.0F) * float(iLevel);
 			if (fLevel > 99.0F)
 				fLevel = 100.0F;
-			iLevel = (uint8_t)(fLevel);
+			iLevel = (uint8_t) fLevel;
 		}
 		cmnd = light2_sSetLevel;
 	}
 
+	enocean_data_structure iframe = create_base_frame();
+
+	iframe.H_SEQ_LENGTH = 0x6B; // TX + Length
+	iframe.ORG = C_ORG_RPS;
+	iframe.ID_BYTE3 = (unsigned char) tsen->LIGHTING2.id1;
+	iframe.ID_BYTE2 = (unsigned char) tsen->LIGHTING2.id2;
+	iframe.ID_BYTE1 = (unsigned char) tsen->LIGHTING2.id3;
+	iframe.ID_BYTE0 = (unsigned char) tsen->LIGHTING2.id4;
+
 	if (cmnd != light2_sSetLevel)
 	{ // On/Off
-		unsigned char UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
+		uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
 
-
-		iframe.DATA_BYTE3 = (RockerID << DB3_RPS_NU_RID_SHIFT) | (UpDown << DB3_RPS_NU_UD_SHIFT) | (Pressed << DB3_RPS_NU_PR_SHIFT);//0x30;
+		iframe.DATA_BYTE3 = (RockerID << 6) | (CO << 5) | (EB << 4);
 		iframe.STATUS = 0x30;
-
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
 
 		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
 
-		// Next command is send a bit later (button release)
-		iframe.DATA_BYTE3 = 0;
+		// Button release is send a bit later
+
+		iframe.DATA_BYTE3 = 0x00;
 		iframe.STATUS = 0x20;
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+
 		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
 	}
 	else
 	{ // Send dim value
-
 		iframe.ORG = C_ORG_4BS;
-		iframe.DATA_BYTE3 = 2;
+		iframe.DATA_BYTE3 = 0x02;
 		iframe.DATA_BYTE2 = iLevel;
-		iframe.DATA_BYTE1 = 1; // Very fast dimming
-
+		iframe.DATA_BYTE1 = 0x01; // Very fast dimming
 		if ((iLevel == 0) || (orgcmd == light2_sOff))
 			iframe.DATA_BYTE0 = 0x08; // Dim Off
 		else
 			iframe.DATA_BYTE0 = 0x09; // Dim On
-
 		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+
 		Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
 	}
 	return true;
@@ -890,40 +887,33 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 	if (tsen->LIGHTING2.packettype != pTypeLighting2)
 		return; // Only allowed to control switches
 
-	enocean_data_structure iframe = create_base_frame();
-	iframe.H_SEQ_LENGTH = 0x6B; // TX+Length
-	iframe.ORG = C_ORG_RPS;
-
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
 
 	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
 	{
-		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR,"Can not switch with ID %s, use a switch created with base ID %s!...", nodeID.c_str(), baseID.c_str());
+		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 		return;
 	}
-
-	iframe.ID_BYTE3 = (unsigned char) tsen->LIGHTING2.id1;
-	iframe.ID_BYTE2 = (unsigned char) tsen->LIGHTING2.id2;
-	iframe.ID_BYTE1 = (unsigned char) tsen->LIGHTING2.id3;
-	iframe.ID_BYTE0 = (unsigned char) tsen->LIGHTING2.id4;
-
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
 		Log(LOG_ERROR, "ID %s, double press not supported!", nodeID.c_str());
 		return;
 	}
+	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
 
-	// 4BS Teach-in
+	enocean_data_structure iframe = create_base_frame();
+
+	iframe.H_SEQ_LENGTH = 0x6B; // TX + Length
 	iframe.ORG = C_ORG_4BS;
-	iframe.DATA_BYTE3 = 2;
-	iframe.DATA_BYTE2 = 0;
-	iframe.DATA_BYTE1 = 0;
-	iframe.DATA_BYTE0 = 0;
+	iframe.DATA_BYTE3 = 0x02;
+	iframe.DATA_BYTE2 = 0x00;
+	iframe.DATA_BYTE1 = 0x00;
+	iframe.DATA_BYTE0 = 0x00;
 	iframe.CHECKSUM = enocean_calc_checksum(&iframe);
 
-	Add2SendQueue((const char*)&iframe, sizeof(enocean_data_structure));
+	Add2SendQueue((const char*) &iframe, sizeof(enocean_data_structure));
 }
 
 bool CEnOceanESP2::ParseData()
@@ -1006,14 +996,8 @@ bool CEnOceanESP2::ParseData()
 			unsigned char SecondUpDown = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD) >> DB3_RPS_NU_SUD_SHIFT;
 			unsigned char SecondAction = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SA) >> DB3_RPS_NU_SA_SHIFT;
 #ifdef _DEBUG
-			Log(LOG_NORM, "Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
-				iNodeID,
-				RockerID,
-				UpDown,
-				Pressed,
-				SecondRockerID,
-				SecondUpDown,
-				SecondAction);
+			Log(LOG_NORM, "RPS N-msg: Node %08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
+				iNodeID, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction);
 #endif
 			// 3 types of buttons from a switch: Left/Right/Left+Right
 			if (Pressed == 1)
