@@ -1113,7 +1113,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-				Log(LOG_NORM,"4BS msg: Node %s, CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
+				Log(LOG_NORM,"4BS msg: Node %s CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID.c_str(), CH, DT, DIV, scaleMax, MR);
 #endif
 
@@ -1136,7 +1136,7 @@ bool CEnOceanESP2::ParseData()
 				umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
@@ -1164,7 +1164,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.rssi = 12;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
@@ -1192,7 +1192,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.rssi = 12;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
@@ -1236,7 +1236,7 @@ bool CEnOceanESP2::ParseData()
 						tsen.FAN.rssi = 12;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, FAN %u", nodeID.c_str(), FAN);
+						Log(LOG_NORM,"4BS msg: Node %s FAN %u", nodeID.c_str(), FAN);
 #endif
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, nullptr, -1, nullptr);
@@ -1248,7 +1248,7 @@ bool CEnOceanESP2::ParseData()
 						float SP = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 255.0F);
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, SP %.0F", nodeID.c_str(), SP);
+						Log(LOG_NORM,"4BS msg: Node %s SP %.0F", nodeID.c_str(), SP);
 #endif
 					}
 
@@ -1287,7 +1287,7 @@ bool CEnOceanESP2::ParseData()
 						else // if (iType == 0x0A || iType == 0x0B)
 							sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
 
-						Log(LOG_NORM,"4BS msg: Node %s, %s %u (%s)", nodeID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
+						Log(LOG_NORM,"4BS msg: Node %s %s %u (%s)", nodeID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
 #endif
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -1337,7 +1337,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.temperaturel = (BYTE) at10;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", nodeID.c_str(), TMP);
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
@@ -1379,7 +1379,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
+						Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1406,7 +1406,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.fLux = ILL;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, RS %s ILL %.1Flx", nodeID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
+						Log(LOG_NORM,"4BS msg: Node %s RS %s ILL %.1Flx", nodeID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
@@ -1486,7 +1486,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", nodeID.c_str(), TMP);
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
@@ -1596,14 +1596,14 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-				Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
+				Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
 				}
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
 				else
-					Log(LOG_NORM,"4BS msg: Node %s, SVC not supported", nodeID.c_str());
+					Log(LOG_NORM,"4BS msg: Node %s SVC not supported", nodeID.c_str());
 #endif
 
 				uint8_t PIRS = pFrame->DATA_BYTE1;
@@ -1623,7 +1623,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.rssi = 12;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+					Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
 						nodeID.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
 #endif
 
@@ -1650,7 +1650,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
+					Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1672,7 +1672,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.rssi = 12;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+					Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
 						nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 #endif
 
@@ -1699,7 +1699,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-				Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", nodeID.c_str(), SVC);
+				Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -1715,7 +1715,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.fLux = ILL;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, ILL %.1Flx", nodeID.c_str(), ILL);
+					Log(LOG_NORM,"4BS msg: Node %s ILL %.1Flx", nodeID.c_str(), ILL);
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
@@ -1737,7 +1737,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.rssi = 12;
 
 #ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+					Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
 						nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 #endif
 

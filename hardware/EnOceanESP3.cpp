@@ -1784,7 +1784,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 	}
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		Log(LOG_ERROR, "Node %s, double not supported", nodeID.c_str());
+		Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
 		return;
 	}
 	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
@@ -2091,7 +2091,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				// Should never happend, since D5-00-01 is the only 1BS EEP
-				Log(LOG_ERROR, "1BS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
+				Log(LOG_ERROR, "1BS msg: Node %s EEP %02X-%02X-%02X (%s) not supported",
 					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 			}
 			return;
@@ -2267,7 +2267,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.temperaturel = (BYTE) at10;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", senderID.c_str(), TMP);
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", senderID.c_str(), TMP);
 #endif
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
@@ -2394,7 +2394,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", senderID.c_str(), SVC);
+						Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", senderID.c_str(), SVC);
 #endif
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -2421,7 +2421,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					lmeter.fLux = ILL;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, RS %s ILL %.1Flx", senderID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
+						Log(LOG_NORM,"4BS msg: Node %s RS %s ILL %.1Flx", senderID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
@@ -2451,14 +2451,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", senderID.c_str(), SVC);
+						Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", senderID.c_str(), SVC);
 #endif
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
 					}
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
 					else
-						Log(LOG_NORM,"4BS msg: Node %s, SVC not supported", senderID.c_str());
+						Log(LOG_NORM,"4BS msg: Node %s SVC not supported", senderID.c_str());
 #endif
 
 					uint8_t PIRS = DATA_BYTE1;
@@ -2478,7 +2478,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+						Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
 							senderID.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
 #endif
 
@@ -2506,7 +2506,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", senderID.c_str(), SVC);
+						Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", senderID.c_str(), SVC);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -2528,7 +2528,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+						Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
 							senderID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 #endif
 
@@ -2556,7 +2556,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, SVC %.1FmV", senderID.c_str(), SVC);
+						Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", senderID.c_str(), SVC);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, nullptr, 255, nullptr);
@@ -2572,7 +2572,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					lmeter.fLux = ILL;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, ILL %.1Flx", senderID.c_str(), ILL);
+						Log(LOG_NORM,"4BS msg: Node %s ILL %.1Flx", senderID.c_str(), ILL);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
@@ -2594,7 +2594,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s, PIRS %u (%s)",
+						Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
 							senderID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 #endif
 
@@ -2661,7 +2661,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.FAN.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM,"4BS msg: Node %s, FAN %u", senderID.c_str(), FAN);
+							Log(LOG_NORM,"4BS msg: Node %s FAN %u", senderID.c_str(), FAN);
 #endif
 
 							sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, nullptr, -1, nullptr);
@@ -2673,7 +2673,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							float SP = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 255.0F);
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-							Log(LOG_NORM,"4BS msg: Node %s, SP %.0F", senderID.c_str(), SP);
+							Log(LOG_NORM,"4BS msg: Node %s SP %.0F", senderID.c_str(), SP);
 #endif
 						}
 
@@ -2712,7 +2712,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							else // if (pNode->type == 0x0A || pNode->type == 0x0B)
 								sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
 
-							Log(LOG_NORM,"4BS msg: Node %s, %s %u (%s)", senderID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
+							Log(LOG_NORM,"4BS msg: Node %s %s %u (%s)", senderID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
 #endif
 
 							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
@@ -2762,7 +2762,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TMP %.1F°C", senderID.c_str(), TMP);
+					Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", senderID.c_str(), TMP);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
@@ -2791,7 +2791,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID.c_str(), CH, DT, DIV, scaleMax, MR);
 #endif
 
@@ -2815,7 +2815,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
@@ -2845,7 +2845,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
@@ -2875,14 +2875,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.rssi = rssi;
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s, TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID.c_str(), TI, DT, DIV, scaleMax, MR);
 #endif
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, nullptr, 255, nullptr);
 					return;
 				}
-				Log(LOG_ERROR, "4BS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
+				Log(LOG_ERROR, "4BS msg: Node %s EEP %02X-%02X-%02X (%s) not supported",
 					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 			}
 			return;
@@ -3186,7 +3186,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					SendSwitch(iSenderID, 1, batterylevel, alarm, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
 					return;
 				}
-				Log(LOG_ERROR, "RPS msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
+				Log(LOG_ERROR, "RPS msg: Node %s EEP %02X-%02X-%02X (%s) not supported",
 					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 			}
 			return;
@@ -3409,13 +3409,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
 					return;
 				}
-				Log(LOG_ERROR, "VLD msg: Node %s, EEP %02X-%02X-%02X (%s) not supported",
+				Log(LOG_ERROR, "VLD msg: Node %s EEP %02X-%02X-%02X (%s) not supported",
 					senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 			}
 			return;
 
 		default:
-			Log(LOG_NORM, "ERP1: Node %s, RORG %s (%s) not supported", senderID.c_str(), GetRORGLabel(RORG), GetRORGDescription(RORG));
+			Log(LOG_NORM, "ERP1: Node %s RORG %s (%s) not supported", senderID.c_str(), GetRORGLabel(RORG), GetRORGDescription(RORG));
 	}
 }
 
