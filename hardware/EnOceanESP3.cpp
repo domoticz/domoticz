@@ -39,6 +39,7 @@
 //#define ESP3_TESTS_4BS_A5_07_01
 //#define ESP3_TESTS_4BS_A5_07_02
 //#define ESP3_TESTS_4BS_A5_07_03
+//#define ESP3_TESTS_4BS_A5_09_04
 //#define ESP3_TESTS_4BS_A5_10_0X
 //#define ESP3_TESTS_4BS_A5_12_00
 //#define ESP3_TESTS_4BS_A5_12_01
@@ -417,7 +418,7 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode->RORG == RORG)
 		return;
 
-	Log(LOG_NORM, "Update Node %s EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+	Log(LOG_NORM, "Node %s, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
 		pNode->nodeID.c_str(),
 		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
 		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
@@ -928,6 +929,26 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 //  PIR Status: Motion detected
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x88, 0x01, RORG_4BS, 0x07, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x38 },
 #endif // ESP3_TESTS_4BS_A5_07_03
+
+#ifdef ESP3_TESTS_4BS_A5_09_04
+// A5-09-04, CO2 Gas Sensor with Temp and Humidity
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x24, 0x20, 0x00, 0x80, 0x01, RORG_4BS, 0x09, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x58 },
+// Test Case : Temperature/Humidity/CONC Tests
+//  Min Temperature/Humidity/CONC Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0E, 0x01, RORG_4BS, 0x09, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xEE },
+//  Max Temperature/Humidity/CONC Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xC8, 0xFF, 0xFF, 0x0E, 0x01, RORG_4BS, 0x09, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xD9 },
+//  Mid Temperature/Humidity/CONC Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x64, 0x7F, 0x7F, 0x0E, 0x01, RORG_4BS, 0x09, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x5E },
+// Test Case : H-Sensor Enum Test
+//  H-Sensor: Humidity Sensor not available
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xC8, 0xFF, 0x00, 0x08, 0x01, RORG_4BS, 0x09, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x98 },
+// Test Case : T-Sensor Enum Test
+//  T-Sensor: Temperature Sensor not available
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFF, 0xFF, 0x08, 0x01, RORG_4BS, 0x09, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x3F },
+#endif // ESP3_TESTS_4BS_A5_09_04
 
 #ifdef ESP3_TESTS_4BS_A5_10_0X
 // A5-10-01, Temperature Sensor, Set Point, Fan Speed and Occupancy Control
@@ -2130,7 +2151,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 						tsen.TEMP.packettype = pTypeTEMP;
-						tsen.TEMP.subtype = sTypeTEMP10;
+						tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
 						tsen.TEMP.seqnbr = 0;
 						tsen.TEMP.id1 = ID_BYTE2;
 						tsen.TEMP.id2 = ID_BYTE1;
@@ -2190,7 +2211,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
 						tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
-						tsen.TEMP_HUM.subtype = sTypeTH_LC_TC; // LaCrosse TX3
+						tsen.TEMP_HUM.subtype = sTypeTH5; // WTGR800
 						tsen.TEMP_HUM.seqnbr = 0;
 						tsen.TEMP_HUM.id1 = ID_BYTE2;
 						tsen.TEMP_HUM.id2 = ID_BYTE1;
@@ -2482,24 +2503,71 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				if (pNode->func == 0x09 && pNode->type == 0x04)
 				{ // A5-09-04, CO2 Gas Sensor with Temp and Humidity
-					// DB3 = Humidity in 0.5% steps, 0...200 -> 0...100% RH (0x51 = 40%)
-					// DB2 = CO2 concentration in 10 ppm steps, 0...255 -> 0...2550 ppm (0x39 = 570 ppm)
-					// DB1 = Temperature in 0.2C steps, 0...255 -> 0...51 C (0x7B = 24.6 C)
-					// DB0 = flags (DB0.3: 1=data, 0=teach-in; DB0.2: 1=Hum Sensor available, 0=no Hum; DB0.1: 1=Temp sensor available, 0=No Temp; DB0.0 not used)
-					// mBuffer[15] is RSSI as -dBm (ie value of 100 means "-100 dBm"), but RssiLevel is in the range 0...11 (or reported as 12 if not known)
-					// Battery level is not reported by node, so use fixed value of 9 as per other sensor functions
-
-					// TODO: Check sensor availability flags and only report humidity and/or temp if available.
+					// Battery level is not reported, so set value 9 (OK)
 					// TODO: Report battery level as 255 (unknown battery level) ?
 
-					float temp = GetDeviceValue(DATA_BYTE1, 0, 255, 0, 51);
-					float hum = GetDeviceValue(DATA_BYTE3, 0, 200, 0, 100);
-					int co2 = (int) GetDeviceValue(DATA_BYTE2, 0, 255, 0, 2550);
-					uint32_t shortID = (ID_BYTE2 << 8) + ID_BYTE1;
+					RBUF tsen;
 
-					// Report battery level as 9
-					SendTempHumSensor(shortID, 9, temp, round(hum), "GasSensor.04", rssi);
-					SendAirQualitySensor((shortID & 0xFF00) >> 8, shortID & 0xFF, 9, co2, "GasSensor.04");
+					uint8_t HSN = bitrange(DATA_BYTE0, 2, 0x01);
+					if (HSN == 1)
+					{
+						float HUM = GetDeviceValue(DATA_BYTE3, 0, 200, 0.0F, 100.0F);
+
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
+						tsen.HUM.packettype = pTypeHUM;
+						tsen.HUM.subtype = sTypeHUM1; // LaCrosse TX3
+						tsen.HUM.seqnbr = 0;
+						tsen.HUM.id1 = ID_BYTE2;
+						tsen.HUM.id2 = ID_BYTE1;
+						tsen.HUM.humidity = (BYTE)round(HUM);
+						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
+						tsen.HUM.battery_level = 9; // OK
+						tsen.HUM.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s HUM %d%", senderID.c_str(), tsen.HUM.humidity);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, nullptr, -1, nullptr);
+					}
+
+					float CONC = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s CO2 %.1Fppm", senderID.c_str(), CONC);
+#endif
+
+					SendAirQualitySensor(ID_BYTE2, ID_BYTE1, 9, round(CONC), GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+
+					uint8_t TSN = bitrange(DATA_BYTE0, 1, 0x01);
+					if (TSN == 1)
+					{
+						float TMP = GetDeviceValue(DATA_BYTE1, 0, 255, 0.0F, 51.0F);
+
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+						tsen.TEMP.packettype = pTypeTEMP;
+						tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
+						tsen.TEMP.id1 = ID_BYTE2;
+						tsen.TEMP.id2 = ID_BYTE1;
+						// WARNING
+						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+						// decode_Temp assumes BatteryLevel to Unknown and SignalLevel to Not available
+						tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
+						tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
+						int at10 = round(std::abs(TMP * 10.0F));
+						tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
+						at10 -= (tsen.TEMP.temperatureh * 256);
+						tsen.TEMP.temperaturel = (BYTE) at10;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", senderID.c_str(), TMP);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
+					}
 					return;
 				}
 				if (pNode->func == 0x10 && pNode->type <= 0x0D)
@@ -2625,7 +2693,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 					tsen.TEMP.packettype = pTypeTEMP;
-					tsen.TEMP.subtype = sTypeTEMP10;
+					tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
 					tsen.TEMP.seqnbr = 0;
 					tsen.TEMP.id1 = ID_BYTE2;
 					tsen.TEMP.id2 = ID_BYTE1;

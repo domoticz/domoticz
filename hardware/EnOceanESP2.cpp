@@ -986,7 +986,8 @@ bool CEnOceanESP2::ParseData()
 		Log(LOG_STATUS, "Transceiver ID_Base: %08X", m_id_base);
 		break;
 	case C_ORG_RPS:
-		if (pFrame->STATUS & S_RPS_NU) {
+		if (pFrame->STATUS & S_RPS_NU)
+		{
 			// Rocker
 			// NU == 1, N-Message
 			unsigned char RockerID = (pFrame->DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
@@ -1305,7 +1306,7 @@ bool CEnOceanESP2::ParseData()
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 				tsen.TEMP.packettype = pTypeTEMP;
-				tsen.TEMP.subtype = sTypeTEMP10;
+				tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
 				tsen.TEMP.seqnbr = 0;
 				tsen.TEMP.id1 = pFrame->ID_BYTE2;
 				tsen.TEMP.id2 = pFrame->ID_BYTE1;
@@ -1455,7 +1456,7 @@ bool CEnOceanESP2::ParseData()
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 					tsen.TEMP.packettype = pTypeTEMP;
-					tsen.TEMP.subtype = sTypeTEMP10;
+					tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
 					tsen.TEMP.id1 = pFrame->ID_BYTE2;
 					tsen.TEMP.id2 = pFrame->ID_BYTE1;
 					// WARNING
@@ -1513,7 +1514,7 @@ bool CEnOceanESP2::ParseData()
 					memset(&tsen, 0, sizeof(RBUF));
 					tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
 					tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
-					tsen.TEMP_HUM.subtype = sTypeTH5;
+					tsen.TEMP_HUM.subtype = sTypeTH5; // WTGR800
 					tsen.TEMP_HUM.id1 = pFrame->ID_BYTE2;
 					tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
 					tsen.TEMP_HUM.tempsign = (TMP >= 0) ? 0 : 1;
@@ -1726,6 +1727,74 @@ bool CEnOceanESP2::ParseData()
 #endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
+			}
+			else if (Profile == 0x09 && iType == 0x04)
+			{ // A5-09-04, CO2 Gas Sensor with Temp and Humidity
+				// Battery level is not reported, so set value 9 (OK)
+				// TODO: Report battery level as 255 (unknown battery level) ?
+
+				RBUF tsen;
+
+				uint8_t HSN = bitrange(pFrame->DATA_BYTE0, 2, 0x01);
+				if (HSN == 1)
+				{
+					float HUM = GetDeviceValue(pFrame->DATA_BYTE3, 0, 200, 0.0F, 100.0F);
+
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
+					tsen.HUM.packettype = pTypeHUM;
+					tsen.HUM.subtype = sTypeHUM1; // LaCrosse TX3
+					tsen.HUM.seqnbr = 0;
+					tsen.HUM.id1 = pFrame->ID_BYTE2;
+					tsen.HUM.id2 = pFrame->ID_BYTE1;
+					tsen.HUM.humidity = (BYTE)round(HUM);
+					tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
+					tsen.HUM.battery_level = 9; // OK
+					tsen.HUM.rssi = 12;
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s HUM %d%", nodeID.c_str(), tsen.HUM.humidity);
+#endif
+
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, nullptr, -1, nullptr);
+				}
+
+				float CONC = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s CO2 %.1Fppm", nodeID.c_str(), CONC);
+#endif
+
+				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, round(CONC), GetEEPLabel(RORG_4BS, Profile, iType));
+
+				uint8_t TSN = bitrange(pFrame->DATA_BYTE0, 1, 0x01);
+				if (TSN == 1)
+				{
+					float TMP = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, 0.0F, 51.0F);
+
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+					tsen.TEMP.packettype = pTypeTEMP;
+					tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
+					tsen.TEMP.id1 = pFrame->ID_BYTE2;
+					tsen.TEMP.id2 = pFrame->ID_BYTE1;
+					// WARNING
+					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
+					// decode_Temp assumes BatteryLevel to Unknown and SignalLevel to Not available
+					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
+					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
+					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
+					int at10 = round(std::abs(TMP * 10.0F));
+					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
+					at10 -= (tsen.TEMP.temperatureh * 256);
+					tsen.TEMP.temperaturel = (BYTE) at10;
+
+#ifdef ENABLE_ESP_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
+#endif
+
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
+				}
 			}
 		}
 	}
