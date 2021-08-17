@@ -1411,7 +1411,7 @@ bool CEnOceanESP2::ParseData()
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, nullptr, 255, nullptr);
 			}
-			else if (Profile == 0x02)
+			else if (Profile == 0x02 && (iType <= 0x1B || iType == 0x20 || iType == 0x30))
 			{	// A5-02-01..30, Temperature sensor
 				float TMP = -275.0F; // Initialize to an arbitrary out of range value
 				if (iType == 0x01)
@@ -1492,33 +1492,85 @@ bool CEnOceanESP2::ParseData()
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, nullptr, -1, nullptr);
 				}
 			}
-			else if (Profile == 0x04)
+			else if (Profile == 0x04 && iType <= 0x04)
 			{ // A5-04-01..04, Temperature and Humidity Sensor
-				float ScaleMax = 0;
-				float ScaleMin = 0;
-				if (iType == 0x01) { ScaleMax = 0; ScaleMin = 40; }
-				else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
-				else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
+				float HUM = -2.0F;   // Initialize to an arbitrary out of range value
+				float TMP = -275.0F; // Initialize to an arbitrary out of range value
+				if (iType == 0x01)
+				{
+					HUM = GetDeviceValue(pFrame->DATA_BYTE2, 0, 250, 0.0F, 100.0F);
 
-				float temp = GetDeviceValue(pFrame->DATA_BYTE1, 0, 255, ScaleMin, ScaleMax);
-				float hum = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0, 100);
-				RBUF tsen;
-				memset(&tsen, 0, sizeof(RBUF));
-				tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
-				tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
-				tsen.TEMP_HUM.subtype = sTypeTH5;
-				tsen.TEMP_HUM.id1 = pFrame->ID_BYTE2;
-				tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
-				tsen.TEMP_HUM.tempsign = (temp >= 0) ? 0 : 1;
-				int at10 = round(std::abs(temp * 10.0F));
-				tsen.TEMP_HUM.temperatureh = (BYTE) (at10 / 256);
-				at10 -= (tsen.TEMP_HUM.temperatureh * 256);
-				tsen.TEMP_HUM.temperaturel = (BYTE) at10;
-				tsen.TEMP_HUM.humidity = (BYTE) hum;
-				tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-				tsen.TEMP_HUM.battery_level = 9; // OK
-				tsen.TEMP_HUM.rssi = 12; // Not available
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, nullptr, -1, nullptr);
+					uint8_t TSN = (pFrame->DATA_BYTE0 & 0x02) >> 1;
+					if (TSN == 1) // Temperature sensor available
+						TMP = GetDeviceValue(pFrame->DATA_BYTE1, 0, 250, 0.0F, 40.0F);
+				}
+				else if (iType == 0x02)
+				{
+					HUM = GetDeviceValue(pFrame->DATA_BYTE2, 0, 250, 0.0F, 100.0F);
+
+					uint8_t TSN = (pFrame->DATA_BYTE0 & 0x02) >> 1;
+					if (TSN == 1) // Temperature sensor available
+						TMP = GetDeviceValue(pFrame->DATA_BYTE1, 0, 250, -20.0F, 60.0F);
+				}
+				else if (iType == 0x03)
+				{
+					HUM = GetDeviceValue(pFrame->DATA_BYTE3, 0, 255, 0.0F, 100.0F);
+					TMP = GetDeviceValue(bitrange(pFrame->DATA_BYTE2, 0, 0x03) << 8 | pFrame->DATA_BYTE1, 0, 1023, -20.0F, 60.0F); // 10bit
+					// uint8_t TTP = bitrange(pFrame->DATA_BYTE0, 0, 0x01);
+				}
+				else if (iType == 0x04)
+				{
+					HUM = GetDeviceValue(pFrame->DATA_BYTE3, 0, 199, 0.0F, 100.0F);
+					TMP = GetDeviceValue(bitrange(pFrame->DATA_BYTE2, 0, 0x0F) << 8 | pFrame->DATA_BYTE1, 0, 1599, -40.0F, +120.0F); // 12bit
+				}
+				if (TMP > -274.0F && HUM  > -1.0F)
+				{ // TMP + HUM values have been changed => EEP is managed => update TEMP_HUM
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
+					tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
+					tsen.TEMP_HUM.subtype = sTypeTH5;
+					tsen.TEMP_HUM.id1 = pFrame->ID_BYTE2;
+					tsen.TEMP_HUM.id2 = pFrame->ID_BYTE1;
+					tsen.TEMP_HUM.tempsign = (TMP >= 0) ? 0 : 1;
+					int at10 = round(std::abs(TMP * 10.0F));
+					tsen.TEMP_HUM.temperatureh = (BYTE) (at10 / 256);
+					at10 -= (tsen.TEMP_HUM.temperatureh * 256);
+					tsen.TEMP_HUM.temperaturel = (BYTE) at10;
+					tsen.TEMP_HUM.humidity = (BYTE) round(HUM);
+					tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+					tsen.TEMP_HUM.battery_level = 9; // OK
+					tsen.TEMP_HUM.rssi = 12; // Not available
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C HUM %d%",
+							nodeID.c_str(), TMP, tsen.TEMP_HUM.humidity);
+#endif
+
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, nullptr, -1, nullptr);
+				}
+				else if (HUM > -1.0F)
+				{ // HUM value has been changed => EEP is managed => update HUM (TMP unavailable)
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
+					tsen.HUM.packettype = pTypeHUM;
+					tsen.HUM.subtype = sTypeHUM1; // LaCrosse TX3
+					tsen.HUM.seqnbr = 0;
+					tsen.HUM.id1 = pFrame->ID_BYTE2;
+					tsen.HUM.id2 = pFrame->ID_BYTE1;
+					tsen.HUM.humidity = (BYTE) round(HUM);
+					tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
+					tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+					tsen.HUM.rssi = 12; // Not available
+
+#ifdef ENABLE_ESP2_DEVICE_DEBUG
+					Log(LOG_NORM,"4BS msg: Node %s HUM %d%",
+						nodeID.c_str(), tsen.HUM.humidity);
+#endif
+
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, nullptr, -1, nullptr);
+				}
 			}
 			else if (Profile == 0x07 && iType == 0x01)
 			{ // A5-07-01, Occupancy sensor with optional Supply voltage monitor

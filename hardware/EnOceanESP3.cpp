@@ -34,7 +34,7 @@
 //#define ESP3_TESTS_UNKNOWN_NODE
 //#define ESP3_TESTS_1BS_D5_00_01
 //#define ESP3_TESTS_4BS_A5_02_XX
-//#define ESP3_TESTS_4BS_A5_04_01
+//#define ESP3_TESTS_4BS_A5_04_XX
 //#define ESP3_TESTS_4BS_A5_06_01
 //#define ESP3_TESTS_4BS_A5_07_01
 //#define ESP3_TESTS_4BS_A5_07_02
@@ -870,31 +870,58 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x01, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x80 },
 #endif // ESP3_TESTS_4BS_A5_02_XX
 
-#ifdef ESP3_TESTS_4BS_A5_04_01
-// A5-04-01, Range 0C to +40C and 0% to 100%
+#ifdef ESP3_TESTS_4BS_A5_04_XX
+// A5-04-01, TMP 0C to +40C, HUM 0% to 100%
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x10, 0x08, 0x00, 0x80, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x5D },
-// Test Case : Humidity Tests
-//  Min Humidity Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x83 },
-//  Max Humidity Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFA, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x7C },
-//  Mid Humidity Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7D, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x7F },
-// Test Case : Temperature Tests
-//  Min Temperature Test
+// Test Case : Temperature/Humidity Tests
+//  Min Temperature/Humidity Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAC },
-//  Max Temperature Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFA, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xE4 },
-//  Mid Temperature Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x7D, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x88 },
+//  Max Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFA, 0xFA, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x1B },
+//  Mid Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7D, 0x7D, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x74 },
 // Test Case : T-Sensor Enum Test
 //  T-Sensor: not available
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x83 },
-//  T-Sensor: available
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0A, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAC },
-#endif // ESP3_TESTS_4BS_A5_04_01
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xBB, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x4A },
+// A5-04-02, TMP -20C to +60C, HUM 0% to 100%
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x10, 0x10, 0x00, 0x80, 0x01, RORG_4BS, 0x04, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x04 },
+// Test Case : Temperature/Humidity Tests
+//  Min Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x0A, 0x01, RORG_4BS, 0x04, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x27 },
+//  Max Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xFA, 0xFA, 0x0A, 0x01, RORG_4BS, 0x04, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x90 },
+//  Mid Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x7D, 0x7D, 0x0A, 0x01, RORG_4BS, 0x04, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xFF },
+// Test Case : T-Sensor Enum Test
+//  T-Sensor: not available
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0xBB, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xC1 },
+// A5-04-03, TMP -20C to +60C 10bit, HUM 0% to 100%
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x10, 0x18, 0x00, 0x80, 0x01, RORG_4BS, 0x04, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xCE },
+// Test Case : Temperature/Humidity Tests
+//  Min Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x71 },
+//  Max Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xFF, 0x03, 0xFF, 0x08, 0x01, RORG_4BS, 0x04, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x60 },
+//  Mid Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x7F, 0x01, 0xFF, 0x08, 0x01, RORG_4BS, 0x04, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x0A },
+// A5-04-04, TMP -40°C to +120°C 12bit, HUM 0% to 100%
+// Test Case : Teach-in Test
+//  Unidirectional Teach-in Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x10, 0x20, 0x00, 0x80, 0x01, RORG_4BS, 0x04, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xB6 },
+// Test Case : Temperature/Humidity Tests
+//  Min Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x04, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x19 },
+//  Max Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0xC7, 0x06, 0x3F, 0x08, 0x01, RORG_4BS, 0x04, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x21 },
+//  Mid Temperature/Humidity Test
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x64, 0x03, 0x20, 0x08, 0x01, RORG_4BS, 0x04, 0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xFD },
+#endif // ESP3_TESTS_4BS_A5_04_XX
 
 #ifdef ESP3_TESTS_4BS_A5_06_01
 // A5-06-01, Range 300lx to 60.000lx
@@ -1398,7 +1425,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // D2-03-0A, Push Button – Single Button
 // Test Case : Teach-in Test
 //  Universal Teach-in Test
-    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x60, 0x01, 0x46, 0x00, 0x0A, 0x03, 0xD2, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x93 },
     { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x60, 0x01, 0x46, 0x00, 0x0A, 0x03, 0xD2, 0x01, RORG_VLD, 0x03, 0x0A, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x93 },
 // Test Case : Battery Autonomy
 //   Min Battery Autonomy
@@ -2248,37 +2274,88 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						return;
 					}
 				}
-				if (pNode->func == 0x04 && pNode->type <= 0x03)
-				{ // A5-04-01..03, Temperature and Humidity Sensor
-					// TOTO : implement A5-04-04
+				if (pNode->func == 0x04)
+				{ // A5-04-01..04, Temperature and Humidity Sensor
+					float HUM = -2.0F;   // Initialize to an arbitrary out of range value
+					float TMP = -275.0F; // Initialize to an arbitrary out of range value
+					if (pNode->type == 0x01)
+					{
+						HUM = GetDeviceValue(DATA_BYTE2, 0, 250, 0.0F, 100.0F);
 
-					float ScaleMax = 0;
-					float ScaleMin = 0;
-					if (pNode->type == 0x01) { ScaleMin = 0; ScaleMax = 40; }
-					else if (pNode->type == 0x02) { ScaleMin = -20; ScaleMax = 60; }
-					else if (pNode->type == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
+						uint8_t TSN = (DATA_BYTE0 & 0x02) >> 1;
+						if (TSN == 1) // Temperature sensor available
+							TMP = GetDeviceValue(DATA_BYTE1, 0, 250, 0.0F, 40.0F);
+					}
+					else if (pNode->type == 0x02)
+					{
+						HUM = GetDeviceValue(DATA_BYTE2, 0, 250, 0.0F, 100.0F);
 
-					float temp = GetDeviceValue(DATA_BYTE1, 0, 250, ScaleMin, ScaleMax);
-					float hum = GetDeviceValue(DATA_BYTE2, 0, 255, 0, 100);
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
-					tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
-					tsen.TEMP_HUM.subtype = sTypeTH5;
-					tsen.TEMP_HUM.seqnbr = 0;
-					tsen.TEMP_HUM.id1 = ID_BYTE2;
-					tsen.TEMP_HUM.id2 = ID_BYTE1;
-					tsen.TEMP_HUM.tempsign = (temp >= 0) ? 0 : 1;
-					int at10 = round(std::abs(temp * 10.0F));
-					tsen.TEMP_HUM.temperatureh = (BYTE) (at10 / 256);
-					at10 -= (tsen.TEMP_HUM.temperatureh * 256);
-					tsen.TEMP_HUM.temperaturel = (BYTE) at10;
-					tsen.TEMP_HUM.humidity = (BYTE) hum;
-					tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-					tsen.TEMP_HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
-					tsen.TEMP_HUM.rssi = rssi;
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, nullptr, -1, nullptr);
-					return;
+						uint8_t TSN = (DATA_BYTE0 & 0x02) >> 1;
+						if (TSN == 1) // Temperature sensor available
+							TMP = GetDeviceValue(DATA_BYTE1, 0, 250, -20.0F, 60.0F);
+					}
+					else if (pNode->type == 0x03)
+					{
+						HUM = GetDeviceValue(DATA_BYTE3, 0, 255, 0.0F, 100.0F);
+						TMP = GetDeviceValue(bitrange(DATA_BYTE2, 0, 0x03) << 8 | DATA_BYTE1, 0, 1023, -20.0F, 60.0F); // 10bit
+						// uint8_t TTP = DATA_BYTE0 & 0x01;
+					}
+					else if (pNode->type == 0x04)
+					{
+						HUM = GetDeviceValue(DATA_BYTE3, 0, 199, 0.0F, 100.0F);
+						TMP = GetDeviceValue(bitrange(DATA_BYTE2, 0, 0x0F) << 8 | DATA_BYTE1, 0, 1599, -40.0F, +120.0F); // 12bit
+					}
+					if (TMP > -274.0F && HUM  > -1.0F)
+					{ // TMP + HUM values have been changed => EEP is managed => update TEMP_HUM
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
+						tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
+						tsen.TEMP_HUM.subtype = sTypeTH_LC_TC; // LaCrosse TX3
+						tsen.TEMP_HUM.seqnbr = 0;
+						tsen.TEMP_HUM.id1 = ID_BYTE2;
+						tsen.TEMP_HUM.id2 = ID_BYTE1;
+						tsen.TEMP_HUM.tempsign = (TMP >= 0) ? 0 : 1;
+						int at10 = round(std::abs(TMP * 10.0F));
+						tsen.TEMP_HUM.temperatureh = (BYTE) (at10 / 256);
+						at10 -= (tsen.TEMP_HUM.temperatureh * 256);
+						tsen.TEMP_HUM.temperaturel = (BYTE) at10;
+						tsen.TEMP_HUM.humidity = (BYTE) round(HUM);
+						tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+						tsen.TEMP_HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+						tsen.TEMP_HUM.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C HUM %d%",
+							senderID.c_str(), TMP, tsen.TEMP_HUM.humidity);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, nullptr, -1, nullptr);
+						return;
+					}
+					if (HUM > -1.0F)
+					{ // HUM value has been changed => EEP is managed => update HUM (TMP unavailable)
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
+						tsen.HUM.packettype = pTypeHUM;
+						tsen.HUM.subtype = sTypeHUM1; // LaCrosse TX3
+						tsen.HUM.seqnbr = 0;
+						tsen.HUM.id1 = ID_BYTE2;
+						tsen.HUM.id2 = ID_BYTE1;
+						tsen.HUM.humidity = (BYTE) round(HUM);
+						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
+						tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+						tsen.HUM.rssi = rssi;
+
+#ifdef ENABLE_ESP3_DEVICE_DEBUG
+						Log(LOG_NORM,"4BS msg: Node %s HUM %d%",
+							senderID.c_str(), tsen.HUM.humidity);
+#endif
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, nullptr, -1, nullptr);
+						return;
+					}
 				}
 				if (pNode->func == 0x06 && pNode->type == 0x01)
 				{ // A5-06-01, Light Sensor
@@ -2660,7 +2737,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						else if (DATA_BYTE3 == 0x1F)
 							nightReduction = 5;
 
-						// float SPTMP = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0, 40.0);
+						// float SPTMP = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 40.0F);
 					}
 					// All A5-10-01 to A5-10-0D have TMP information
 
@@ -2905,6 +2982,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 #endif
 					return;
 				}
+				// RPS data
+
 				if (pNode->func == 0x01 && pNode->type == 0x01)
 				{ // F6-01-01, Switch Buttons, Push button
 					uint8_t PB = bitrange(DATA, 4, 0x01);
@@ -3298,8 +3377,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
-					Log(LOG_NORM, "VLD msg: Node %s CMD: 0x%X IO: %02X (UnitID: %d) OV: %02X (Cmnd: %d Level: %d)",
-						senderID.c_str(), CMD, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd, tsen.LIGHTING2.level);
+					uint8_t PF = bitrange(data[1], 7, 0x01); // Power failure
+					uint8_t PFD = bitrange(data[1], 6, 0x01); // Power failure detection
+
+					uint8_t OC = bitrange(data[2], 7, 0x01); // Over current switch off
+					uint8_t EL = bitrange(data[2], 5, 0x03); // Error level
+
+					uint8_t LC = bitrange(data[3], 7, 0x01); // Local control
+
+					Log(LOG_NORM, "VLD msg: Node %s status, IO: %02X (UnitID: %d) OV: %02X (Cmnd: %s Level: %d)",
+						senderID.c_str(), IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
+					Log(LOG_NORM, "VLD msg: Node %s status, PF: %d PFD: %d OC: %d EL: %d LC: %d", senderID.c_str(), PF, PFD, OC, EL, LC);
 #endif
 
 					// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
