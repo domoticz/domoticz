@@ -435,6 +435,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		WriteInt((const uint8_t *)&oFrame, sizeof(_tOutgoingFrame));
 		return true;
 	}
+	Log(LOG_ERROR, "Switch is not General Type: ", pSwitch->type);
 	return false;
 }
 
@@ -1021,7 +1022,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 #endif
 	return true;
 }
-void CZiBlueBase::ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, int &subtype)
+void CZiBlueBase::ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 {
 	if (dtype == pTypeLighting1)
 	{
@@ -1140,9 +1141,9 @@ void CZiBlueBase::ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, 
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 		devid = szTmp;
 	}
-	// else if (dtype == pTypeRFY)
-	//{
-	//	dtype = pTypeGeneralSwitch;
-	//	subtype = sSwitchTypeRTS;
-	//}
+	else if (dtype == pTypeRFY)
+	{
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeRTS;
+	}
 }
