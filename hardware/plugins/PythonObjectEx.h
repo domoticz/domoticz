@@ -90,7 +90,8 @@ namespace Plugins {
 		PyObject*	LastUpdate;
 		int			nValue;
 		float		Adjustment;
-		int			SignalLevel;
+		float		Multiplier;
+		int SignalLevel;
 		int			BatteryLevel;
 		PyObject*	sValue;
 		int			Image;
@@ -131,7 +132,8 @@ namespace Plugins {
 		{ "Used", T_INT, offsetof(CUnitEx, Used), 0, "Numeric device Used flag" },
 		{ "Description", T_OBJECT, offsetof(CUnitEx, Description), 0, "Description" },
 		{ "Color", T_OBJECT, offsetof(CUnitEx, Color), 0, "Color JSON dictionary" },
-		{ "Adjustment", T_FLOAT, offsetof(CUnitEx, Adjustment), 0, "Numeric device adjustment value" },
+		{ "Adjustment", T_FLOAT, offsetof(CUnitEx, Adjustment), 0, "nValue adjusted by this vale on update" },
+		{ "Multiplier", T_FLOAT, offsetof(CUnitEx, Multiplier), 0, "nValue multiplied by this vale on update" },
 		{ "Parent", T_OBJECT, offsetof(CUnitEx, Parent), READONLY, "Parent device" },
 		{ nullptr } /* Sentinel */
 	};

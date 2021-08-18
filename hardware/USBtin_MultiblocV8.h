@@ -14,8 +14,8 @@ public:
 	~USBtin_MultiblocV8() override;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
- protected:
-	void ManageThreadV8(bool States);
+protected:
+	void ManageThreadV8(bool States, unsigned int debugmode);
 	void Traitement_MultiblocV8(int IDhexNumber, unsigned int rxDLC, unsigned int Buffer_Octets[8]);
 	unsigned long m_V8switch_id_base;
 
@@ -29,22 +29,33 @@ private:
 	void ClearingBlocList();
 	void BlocList_CheckBloc();
 	void SendRequest(int sID);
-	void Traitement_Trame_Vie(unsigned char RefBloc, char Codage, char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
-	void Traitement_Etat_S_TOR_Recu(unsigned int FrameType, unsigned char RefeBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
-	void Traitement_E_ANA_Recu(unsigned int FrameType, unsigned char RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
-	void Traitement_SFSP_Switch_Recu(unsigned int FrameType, unsigned char RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
+	void Traitement_Trame_Vie(unsigned int RefBloc, char Codage, char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
+	void Traitement_Etat_S_TOR_Recu(unsigned int FrameType, unsigned int RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
+	void Traitement_E_ANA_Recu(unsigned int FrameType, unsigned int RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
+	void Traitement_SFSP_Switch_Recu(unsigned int FrameType, unsigned int RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
 	bool CheckOutputChange(unsigned long sID, int OutputNumber, bool CdeReceive, int LevelReceive);
 	void OutputNewStates(unsigned long sID, int OutputNumber, bool Comandeonoff, int Level);
-	void BlocList_GetInfo(unsigned char RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
+	void BlocList_GetInfo(unsigned int RefBloc, char Codage, char Ssreseau, unsigned int bufferdata[8]);
 	void USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend, char CodeTouche);
 	void USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID_ToSend, char Commande);
 	void USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend, char Commande);
 	void InsertUpdateControlSwitch(int NodeID, int ChildID, const std::string &defaultname);
 	void SetOutputBlinkInDomoticz(unsigned long sID, int OutputNumber, bool Blink);
-	void Traitement_Trame_EtatBloc(unsigned char RefBloc, char Codage, char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
+	void Traitement_Trame_EtatBloc(unsigned int RefBloc, char Codage, char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8]);
 	int getIndexFromBlocname(std::string blocname);
 	void FillBufferSFSP_toSend(int Sid, char KeyCode);
-
+	const char* getBlocnameFromIndex(int indexreference);
+	void Traitement_IBS(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8]);
+	void SendIBSVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string& defaultname);
+	void SendIBSCurrentSensor(int NodeID, uint8_t ChildID, float Amp, const std::string &defaultname);
+	void SendIBTemperatureSensor(const int NodeID, uint8_t ChildID, float Temp, const std::string &defaultname);
+	std::string GetCompleteBlocNameSource( const unsigned int RefBloc, const char Codage, const char Ssreseau );
+	std::string GetBatteryTypeName(int index);
+	std::string GetIBSTypeName(int index);
+	float TimeLeftInMinutes(float current,int DischargeableAh, int lastavailableAh );
+	float GetInformationFromId(int NodeId,int sType);
+	void ComputeTimeLeft(const unsigned int RefBloc, const char Codage, const char Ssreseau, const int ibsindex, const std::string& defaultname);
+	
 	bool m_BOOL_DebugInMultiblocV8;
 	bool m_BOOL_TaskAGo;
 	bool m_BOOL_TaskRqStorGo;
