@@ -200,7 +200,7 @@ define(function () {
             };
 
             this.isCustomLog = function () {
-				var deviceTypes = ['Air Quality','UV','Rain','Current'];
+				var deviceTypes = ['Air Quality','UV','Rain','Current','Wind'];
 				var deviceSubTypes = ['Barometer'];
 
 				if (deviceTypes.includes(this.Type)) {
