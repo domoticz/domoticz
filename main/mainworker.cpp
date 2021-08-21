@@ -11097,6 +11097,10 @@ void MainWorker::decode_Solar(const CDomoticzHardwareBase* pHardware, const tRBU
 	gdevice.intval1 = (pResponse->SOLAR.id1 * 256) + pResponse->SOLAR.id2;
 	gdevice.id = (uint8_t)gdevice.intval1;
 	gdevice.floatval1 = float((pResponse->SOLAR.solarhigh * 256) + float(pResponse->SOLAR.solarlow)) / 100.F;
+
+	if (gdevice.floatval1 > 1361)
+		return; // https://en.wikipedia.org/wiki/Solar_irradiance
+
 	gdevice.rssi = SignalLevel;
 	gdevice.battery_level = BatteryLevel;
 	decode_General(pHardware, pResponse, procResult);

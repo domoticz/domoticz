@@ -936,6 +936,9 @@ void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int Child
 
 void CDomoticzHardwareBase::SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string& defaultname)
 {
+	if (radiation > 1361)
+		return; //https://en.wikipedia.org/wiki/Solar_irradiance
+
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeSolarRadiation;
 	gdevice.id = NodeID;
