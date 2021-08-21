@@ -11097,6 +11097,10 @@ void MainWorker::decode_Solar(const CDomoticzHardwareBase* pHardware, const tRBU
 	gdevice.intval1 = (pResponse->SOLAR.id1 * 256) + pResponse->SOLAR.id2;
 	gdevice.id = (uint8_t)gdevice.intval1;
 	gdevice.floatval1 = float((pResponse->SOLAR.solarhigh * 256) + float(pResponse->SOLAR.solarlow)) / 100.F;
+
+	if (gdevice.floatval1 > 1361)
+		return; // https://en.wikipedia.org/wiki/Solar_irradiance
+
 	gdevice.rssi = SignalLevel;
 	gdevice.battery_level = BatteryLevel;
 	decode_General(pHardware, pResponse, procResult);
@@ -11354,6 +11358,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	if (pHardware == nullptr)
 		return false;
 
+	std::string deviceID = sd[1];
+	int Unit = atoi(sd[2].c_str());
+	int dType = atoi(sd[3].c_str());
+	int dSubType = atoi(sd[4].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+	if (pHardware->HwdType == HTYPE_ZIBLUEUSB || pHardware->HwdType == HTYPE_ZIBLUETCP)
+	{
+		CZiBlueBase::ConvertToGeneralSwitchType(deviceID, dType, dSubType);
+	}
+
 	m_szLastSwitchUser = User;
 
 	if (pHardware->HwdType == HTYPE_DomoticzInternal)
@@ -11375,10 +11389,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 	}
 
-	uint8_t Unit = atoi(sd[2].c_str());
-	uint8_t dType = atoi(sd[3].c_str());
-	uint8_t dSubType = atoi(sd[4].c_str());
-	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
 	//when asking for Toggle, just switch to the opposite value

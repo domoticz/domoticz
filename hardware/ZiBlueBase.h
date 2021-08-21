@@ -24,7 +24,7 @@ class CZiBlueBase : public CDomoticzHardwareBase
 	CZiBlueBase();
 	~CZiBlueBase() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
-	static void ConvertToGeneralSwitchTypeRFP(std::string &devid, int &dtype, int &subtype);
+	static void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);
       private:
 	void Init();
 	void OnConnected();
