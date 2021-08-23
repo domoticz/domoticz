@@ -422,7 +422,7 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 
 	if (pNode->func == 0x00 && pNode->type == 0x00)
 		return;
-	
+
 	if (pNode->RORG == RORG)
 		return;
 
@@ -777,7 +777,7 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0x00, 0x08, 0x01, RORG_4BS, 0x02, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x80 },
 //  Mid Temperature Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x01, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x05 },
-	// A5-02-30, 10 Bit Temperature Sensor Range -40C to +62.3C
+// A5-02-30, 10 Bit Temperature Sensor Range -40C to +62.3C
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x09, 0x80, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x5B },
@@ -1669,7 +1669,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 
 			// Button release is send a bit later
-	
+
 			buf[1] = 0x00;
 			buf[9] = 0x20;
 
@@ -1680,7 +1680,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			buf[1] = 0x02;
 			buf[2] = iLevel;
 			buf[3] = 0x01; // Very fast dimming
-
 			if ((iLevel == 0) || (orgcmd == light2_sOff))
 				buf[4] = 0x08; // Dim Off
 			else
@@ -1714,12 +1713,14 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		buf[4] = tsen->LIGHTING2.id3;
 		buf[5] = tsen->LIGHTING2.id4;
 		buf[6] = 0x30; // Press button
+
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
 		// Button release is send a bit later
 
 		buf[1] = 0x00; // No button press
 		buf[6] = 0x20; // Release button
+
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 	}
 	return true;
@@ -2054,6 +2055,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.unitcode = 1;
 					tsen.LIGHTING2.cmnd = CO ? light2_sOff : light2_sOn;
 					tsen.LIGHTING2.rssi = rssi;
+
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, nullptr, 255, m_Name.c_str());
 					return;
 				}
@@ -3072,7 +3074,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 								tsen.LIGHTING2.unitcode = R1 + 1; // A / B Pressed
 							else
 								tsen.LIGHTING2.unitcode = R1 + 10; // A & B Pressed
-							
+
 							tsen.LIGHTING2.cmnd = light2_sOn; // Button is pressed, so we don't get an OFF message here
 							tsen.LIGHTING2.rssi = rssi;
 
@@ -3105,7 +3107,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.LIGHTING2.unitcode = 0; // Does not matter, since we are using a group command
 						tsen.LIGHTING2.cmnd = (EB == 1) ? light2_sGroupOn : light2_sGroupOff;
 						tsen.LIGHTING2.rssi = rssi;
-						
+
 #ifdef ENABLE_ESP3_DEVICE_DEBUG
 						Log(LOG_NORM, "RPS U-msg: Node %s Energy Bow %s (%s pressed) UnitID: %02X cmd: %02X",
 							senderID.c_str(),
@@ -3144,7 +3146,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x02)
-				{ // F6-05-02 : Smoke detector
+				{ // F6-05-02, Smoke detector
 					bool SMO = (DATA == 0x10);
 					int batterylevel = (DATA == 0x30) ? 5 : 100;
 
@@ -3194,7 +3196,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				if (need_response == 0)
 				{ // Prepare response buffer
-					// the device intended to be taught-in broadcasts a query message
+					// The device intended to be taught-in broadcasts a query message
 					// and gets back an addresses response message, containing its own ID as the transmission target address
 					buf[0] = RORG_UTE;
 					buf[2] = data[2]; // Nb channels
