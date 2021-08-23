@@ -1,6 +1,7 @@
 Version 2021.xxxxx (xxxx)
 - Implemented: Device support for Xiaomi Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM | relay.c2acn01
 - Implemented: InfluxDB Data push, Influx 2.0 support
+- Implemented: Wind Meter, Angle rotation
 - Updated: dzVents; version 3.1.8 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
 - Updated: OpenZWave; Added Electric pulse sensor
 - Changed: default journal mode for windows now WAL (write ahead) add command line option to override
