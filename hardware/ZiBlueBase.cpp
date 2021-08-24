@@ -435,7 +435,7 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		WriteInt((const uint8_t *)&oFrame, sizeof(_tOutgoingFrame));
 		return true;
 	}
-	Log(LOG_ERROR, "Switch is not General Type: ", pSwitch->type);
+	Log(LOG_ERROR, "Switch is not General Type: %d", pSwitch->type);
 	return false;
 }
 
