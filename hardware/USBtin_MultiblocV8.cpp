@@ -1420,10 +1420,10 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	if (FrameType == type_IBS_1_1 || FrameType == type_IBS_2_1 || FrameType == type_IBS_3_1 || FrameType == type_IBS_4_1 || FrameType == type_IBS_5_1 || FrameType == type_IBS_6_1)
 	{
 
-		// if( m_BOOL_DebugInMultiblocV8 == true ){
-		Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 1 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
-		    bufferdata[3], bufferdata[4], bufferdata[5]);
-		//}
+		if( m_BOOL_DebugInMultiblocV8 == true ){
+			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 1 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
+		    	bufferdata[3], bufferdata[4], bufferdata[5]);
+		}
 
 		// frame type 1 contain :
 		// D0+D1 voltage (/100eme volt)
@@ -1465,16 +1465,16 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	else if (FrameType == type_IBS_1_2 || FrameType == type_IBS_2_2 || FrameType == type_IBS_3_2 || FrameType == type_IBS_4_2 || FrameType == type_IBS_5_2 || FrameType == type_IBS_6_2)
 	{
 
-		// if( m_BOOL_DebugInMultiblocV8 == true ){
-		Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 2 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
-		    bufferdata[3], bufferdata[4], bufferdata[5]);
-		//}
-		float Soc = (float)bufferdata[0];
+		if( m_BOOL_DebugInMultiblocV8 == true ){
+			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 2 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
+		    	bufferdata[3], bufferdata[4], bufferdata[5]);
+		}
+		int Soc = (int)bufferdata[0];
 		std::string soc_name = defaultname;
 		soc_name += " SoC";
 		SendPercentageSensor(sID + ChildId, ChildId, 255, Soc, soc_name);
 
-		float Soh = (float)bufferdata[1];
+		int Soh = (int)bufferdata[1];
 		std::string soh_name = defaultname;
 		soh_name += " SoH";
 		SendPercentageSensor(sID + ChildId + 1, ChildId, 255, Soh, soh_name);
@@ -1505,9 +1505,9 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 	else if (FrameType == type_IBS_1_3 || FrameType == type_IBS_2_3 || FrameType == type_IBS_3_3 || FrameType == type_IBS_4_3 || FrameType == type_IBS_5_3 || FrameType == type_IBS_6_3)
 	{
 
-		// if( m_BOOL_DebugInMultiblocV8 == true ){
-		Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 3 [D0: %02X D1: %02X D2: %02X D3: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2], bufferdata[3]);
-		//}
+		if( m_BOOL_DebugInMultiblocV8 == true ){
+			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 3 [D0: %02X D1: %02X D2: %02X D3: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2], bufferdata[3]);
+		}
 
 		int NominalCapacity = bufferdata[1];
 		NominalCapacity <<= 8;
@@ -1647,6 +1647,7 @@ void USBtin_MultiblocV8::ComputeTimeLeft(const unsigned int RefBloc, const char 
 
 	if (timeleft < 0)
 	{ // negative time indicate consumption, no charge
+		timeleft = std::fabs(timeleft); //to obtain positive value in minute
 		SendCustomSensor(((sID + ibsindex + 3) >> 8), (sID + ibsindex + 3) & 0xff, 255, static_cast<float>(timeleft), timeleftD_name, "minutes");
 		SendCustomSensor(((sID + ibsindex + 4) >> 8), (sID + ibsindex + 4) & 0xff, 255, 0, timeleftC_name, "minutes");
 	}
@@ -1663,13 +1664,14 @@ float USBtin_MultiblocV8::TimeLeftInMinutes(float current, int DischargeableAh, 
 	if (current < 0)
 	{
 		float timeleft = (float)DischargeableAh;
-		timeleft -= (timeleft * 40 / 100);
-		timeleft /= current; // timeleft in 1/100 hours so calculate time in minute:
+		timeleft -= ((float)lastavailableAh * 40 / 100 );
+		timeleft /= current; //timeleft in 1/100 hours so calculate time in minute:
 		int hour = static_cast<int>(timeleft);
 		int minute = static_cast<int>((timeleft - hour) * 60);
 		result = (float)(hour * 60);
 		result += minute;
-		return (0 - result); // return negative time to indicate time before discharge
+		//Log(LOG_NORM, "MultiblocV8: TimeLeftInMinutes (negative) %f",result);
+		return result; //return negative time to indicate time before discharge
 	}
 	else
 	{
@@ -1679,6 +1681,7 @@ float USBtin_MultiblocV8::TimeLeftInMinutes(float current, int DischargeableAh, 
 		int minute = static_cast<int>((timeleft - hour) * 60);
 		result = (float)(hour * 60);
 		result += minute;
+		//Log(LOG_NORM, "MultiblocV8: TimeLeftInMinutes (positive) %f",result);
 		return result;
 	}
 }
