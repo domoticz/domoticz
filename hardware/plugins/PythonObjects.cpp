@@ -1155,9 +1155,10 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		if (self->pPlugin && (self->pPlugin->m_bDebug & PDM_CONNECTION))
+		CPlugin *pPlugin = CPlugin::FindPlugin();
+		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
 		{
-			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Target);
@@ -1244,9 +1245,9 @@ namespace Plugins {
 				self->Parent = Py_None;
 				Py_INCREF(Py_None);
 
-				self->pPlugin = nullptr;
 				self->pTransport = nullptr;
 				self->pProtocol = nullptr;
+				self->pPlugin = nullptr;
 			}
 		}
 		catch (std::exception *e)
@@ -1273,33 +1274,8 @@ namespace Plugins {
 
 		try
 		{
-			PyBorrowedRef pModule = PyState_FindModule(&DomoticzModuleDef);
-			if (!pModule)
-			{
-				pModule = PyState_FindModule(&DomoticzExModuleDef);
-				if (!pModule)
-				{
-					_log.Log(LOG_ERROR, "(%s) Domoticz/DomoticzEx modules not found in interpreter.", __func__);
-					return 0;
-				}
-			}
-
-			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
-			if (!pModState)
-			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
-				return 0;
-			}
-
-			if (!pModState->pPlugin)
-			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
-				return 0;
-			}
-
 			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
-				self->pPlugin = pModState->pPlugin;
 				if (pName) {
 					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(pName);
@@ -1322,16 +1298,12 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, self));
 				}
 			}
 			else
 			{
-				CPlugin *pPlugin = nullptr;
-				if (pModState) pPlugin = pModState->pPlugin;
 				_log.Log(LOG_ERROR,
 					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0))");
-				LogPythonException(pPlugin, __func__);
 			}
 		}
 		catch (std::exception *e)
@@ -1348,30 +1320,32 @@ namespace Plugins {
 
 	PyObject *CConnection_connect(CConnection *self, PyObject *args, PyObject *kwds)
 	{
-		Py_INCREF(Py_None);
-
 		if (!self->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
-			return Py_None;
+			self->pPlugin = CPlugin::FindPlugin();
+			if (!self->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+				Py_RETURN_NONE;
+			}
 		}
 
 		//	Add connect command to message queue unless already connected
 		if (self->pPlugin->IsStopRequested(0))
 		{
-			_log.Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			self->pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
-			_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
+			self->pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
-			_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
+			self->pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
@@ -1386,7 +1360,7 @@ namespace Plugins {
 				PyNewRef pFunc = PyObject_GetAttrString(pTarget, "__init__");
 				if (!pFunc || !PyCallable_Check(pFunc))
 				{
-					_log.Log(LOG_ERROR, "Object is not callable, Target parameter ignored.");
+					self->pPlugin->Log(LOG_ERROR, "Object is not callable, Target parameter ignored.");
 				}
 				else
 				{
@@ -1397,11 +1371,15 @@ namespace Plugins {
 			if (!iTimeout || (iTimeout > 199))
 			{
 				self->Timeout = iTimeout;
+				if (!self->pProtocol)
+				{
+					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, self));
+				}
 				self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, self));
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
+				self->pPlugin->Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
 			}
 		}
 
@@ -1410,31 +1388,33 @@ namespace Plugins {
 
 	PyObject *CConnection_listen(CConnection *self, PyObject *args, PyObject *kwds)
 	{
-		Py_INCREF(Py_None);
-
 		if (!self->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
-			return Py_None;
+			self->pPlugin = CPlugin::FindPlugin();
+			if (!self->pPlugin)
+			{
+				self->pPlugin->Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+				Py_RETURN_NONE;
+			}
 		}
 
 		//	Add connect command to message queue unless already connected
 		if (self->pPlugin->IsStopRequested(0))
 		{
-			_log.Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			self->pPlugin->Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
-			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			self->pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
+			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
-			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			self->pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
+			Py_RETURN_NONE;
 		}
 
 		PyObject *pTarget = NULL;
@@ -1450,18 +1430,16 @@ namespace Plugins {
 
 		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, self));
 
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_send(CConnection * self, PyObject * args, PyObject * kwds)
 	{
-		if (!self->pPlugin)
+		CPlugin *pPlugin = self->pPlugin;
+		
+		if (pPlugin->IsStopRequested(0))
 		{
-			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
-		}
-		else if (self->pPlugin->IsStopRequested(0))
-		{
-			_log.Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pPlugin->m_Name.c_str());
 		}
 		else
 		{
@@ -1470,13 +1448,13 @@ namespace Plugins {
 			static char *kwlist[] = { "Message", "Delay", nullptr };
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", self->pPlugin->m_Name.c_str());
-				LogPythonException(self->pPlugin, std::string(__func__));
+				pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", pPlugin->m_Name.c_str());
+				LogPythonException(pPlugin, std::string(__func__));
 			}
 			else
 			{
 				//	Add start command to message queue
-				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, self, pData, iDelay));
+				pPlugin->MessagePlugin(new WriteDirective(pPlugin, self, pData, iDelay));
 			}
 		}
 
@@ -1485,17 +1463,24 @@ namespace Plugins {
 
 	PyObject * CConnection_disconnect(CConnection * self)
 	{
+		CPlugin *pPlugin = self->pPlugin;
+		if (!pPlugin)
+		{
+			pPlugin->Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+			Py_RETURN_NONE;
+		}
+
 		if (self->pTransport)
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, self));
+				pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, self));
 			}
 			else
-				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->m_Name.c_str());
+				pPlugin->Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, pPlugin->m_Name.c_str());
 		}
 		else
-			_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, pPlugin->m_Name.c_str());
 
 		Py_RETURN_NONE;
 	}

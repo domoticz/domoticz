@@ -541,8 +541,8 @@ namespace Plugins
 			PyTypeObject *pUnitClass = NULL;
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &pDeviceClass, &pUnitClass))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s failed to parse parameters: Python class name expected.", pModState->pPlugin->m_Name.c_str(), __func__);
-				LogPythonException(pModState->pPlugin, std::string(__func__));
+				// Module import will not have finished so plugin pointer in module state will not have been initiialised
+				_log.Log(LOG_ERROR, "%s failed to parse parameters: Python class name expected.", __func__);
 			}
 			else
 			{
@@ -818,6 +818,47 @@ namespace Plugins
 	CPlugin::~CPlugin()
 	{
 		m_bIsStarted = false;
+	}
+
+	module_state* CPlugin::FindModule()
+	{
+		// Domoticz potentially has only two possible modules and only one can be loaded
+		PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+		PyBorrowedRef brModuleEx = PyState_FindModule(&DomoticzExModuleDef);
+
+		// Check author has not loaded both Domoticz modules
+		if ((brModule) && (brModuleEx))
+		{
+			_log.Log(LOG_ERROR, "(%s) Domoticz and DomoticzEx modules both found in interpreter, use one or the other.", __func__);
+			return nullptr;
+		}
+
+		if (!brModule)
+		{
+			brModule = brModuleEx;
+			if (!brModule)
+			{
+				_log.Log(LOG_ERROR, "(%s) Domoticz/DomoticzEx modules not found in interpreter.", __func__);
+				return nullptr;
+			}
+		}
+
+		module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			return nullptr;
+		}
+
+		return pModState;
+	}
+
+	CPlugin *CPlugin::FindPlugin()
+	{
+		module_state *pModState = FindModule();
+		if (!pModState)
+			return nullptr;
+		return pModState->pPlugin;
 	}
 
 	void CPlugin::LogTraceback(PyTracebackObject *pTraceback)
@@ -1400,27 +1441,7 @@ namespace Plugins
 				PyErr_Clear();
 			}
 
-			// Domoticz callbacks need state so they know which plugin to act on
-			PyBorrowedRef	brModule = PyState_FindModule(&DomoticzModuleDef);
-			PyBorrowedRef	brModuleEx = PyState_FindModule(&DomoticzExModuleDef);
-
-			// Check author has not loaded both Domoticz modules
-			if ((brModule) && (brModuleEx))
-			{
-				Log(LOG_ERROR, "(%s) %s failed, Domoticz and DomoticzEx modules both found in interpreter, use one or the other.", __func__, m_PluginKey.c_str());
-				goto Error;
-			}
-
-			if (!brModule)
-			{
-				brModule = brModuleEx;
-				if (!brModule)
-				{
-					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
-					goto Error;
-				}
-			}
-			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
+			module_state *pModState = FindModule();
 			if (!pModState)
 			{
 				Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);

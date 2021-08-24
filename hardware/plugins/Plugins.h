@@ -20,6 +20,7 @@ namespace Plugins {
 	class CPluginTransport;
 	class PyNewRef;
 	class PyBorrowedRef;
+	struct module_state;
 
 	enum PluginDebugMask
 	{
@@ -41,7 +42,7 @@ namespace Plugins {
 		int				m_iPollInterval;
 
 		PyThreadState*	m_PyInterpreter;
-		PyObject*		m_PyModule;
+		PyObject*		m_PyModule;			// plugin module itself
 
 		std::string		m_Version;
 		std::string		m_Author;
@@ -66,6 +67,9 @@ namespace Plugins {
 	public:
 	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
 	  ~CPlugin() override;
+
+	  static module_state *FindModule();
+	  static CPlugin*	FindPlugin();
 
 	  bool StartHardware() override;
 	  bool StopHardware() override;
