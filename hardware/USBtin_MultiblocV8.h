@@ -15,7 +15,7 @@ public:
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
 protected:
-	void ManageThreadV8(bool States, unsigned int debugmode);
+	void ManageThreadV8(bool States, bool debugmode);
 	void Traitement_MultiblocV8(int IDhexNumber, unsigned int rxDLC, unsigned int Buffer_Octets[8]);
 	unsigned long m_V8switch_id_base;
 
