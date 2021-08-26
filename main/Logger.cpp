@@ -35,8 +35,8 @@ CLogger::CLogger()
 	m_bEnableLogTimestamps = true;
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
-	m_log_flags = LOG_NORM | LOG_STATUS | LOG_ERROR;
-	m_debug_flags = DEBUG_NORM;
+	SetLogFlags(LOG_NORM | LOG_STATUS | LOG_ERROR);
+	SetDebugFlags(DEBUG_NORM);
 }
 
 CLogger::~CLogger()
@@ -45,7 +45,7 @@ CLogger::~CLogger()
 		m_outputfile.close();
 }
 
-// Supported flags: normal,status,error,debug
+// Supported flags: all,normal,status,error,debug
 bool CLogger::SetLogFlags(const std::string &sFlags)
 {
 	std::vector<std::string> flags;
@@ -61,7 +61,7 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			SetLogFlags(atoi(wflag.c_str()));
+			SetLogFlags(strtoul(wflag.c_str(), nullptr, 10));
 			return true;
 		}
 		if (wflag == "all")
@@ -86,7 +86,7 @@ void CLogger::SetLogFlags(const uint32_t iFlags)
 	m_log_flags = iFlags;
 }
 
-// Supported flags: normal,hardware,received,webserver,eventsystem,python,thread_id
+// Supported flags: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql
 bool CLogger::SetDebugFlags(const std::string &sFlags)
 {
 	std::vector<std::string> flags;
@@ -102,12 +102,12 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			SetLogFlags(atoi(wflag.c_str()));
+			SetDebugFlags(strtoul(wflag.c_str(), nullptr, 10));
 			return true;
 		}
 		if (wflag == "all")
 			iFlags |= DEBUG_ALL;
-		if (wflag == "normal")
+		else if (wflag == "normal")
 			iFlags |= DEBUG_NORM;
 		else if (wflag == "hardware")
 			iFlags |= DEBUG_HARDWARE;
