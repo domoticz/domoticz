@@ -1393,7 +1393,7 @@ namespace Plugins {
 			self->pPlugin = CPlugin::FindPlugin();
 			if (!self->pPlugin)
 			{
-				self->pPlugin->Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+				_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
 				Py_RETURN_NONE;
 			}
 		}
@@ -1436,6 +1436,16 @@ namespace Plugins {
 	PyObject * CConnection_send(CConnection * self, PyObject * args, PyObject * kwds)
 	{
 		CPlugin *pPlugin = self->pPlugin;
+		if (!pPlugin)
+		{
+			self->pPlugin = CPlugin::FindPlugin();
+			if (!self->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
+				Py_RETURN_NONE;
+			}
+			pPlugin = self->pPlugin;
+		}
 		
 		if (pPlugin->IsStopRequested(0))
 		{
@@ -1466,7 +1476,7 @@ namespace Plugins {
 		CPlugin *pPlugin = self->pPlugin;
 		if (!pPlugin)
 		{
-			pPlugin->Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+			_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
 			Py_RETURN_NONE;
 		}
 

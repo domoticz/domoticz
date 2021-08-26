@@ -2381,11 +2381,11 @@ namespace Plugins
 									{
 										PyNewRef pName = PyObject_GetAttrString(pUnit, "Name");
 										std::string sName = PyBorrowedRef(pName);
-										_log.Log(LOG_ERROR, "%s: Unit '%s' Reference Count not one: %ld.", __func__, sName.c_str(), pUnit->ob_refcnt);
+										_log.Log(LOG_ERROR, "%s: Unit '%s' Reference Count not one: %d.", __func__, sName.c_str(), static_cast<int>(pUnit->ob_refcnt));
 									}
 									else if (pUnit->ob_refcnt < 1)
 									{
-										_log.Log(LOG_ERROR, "%s: Unit Reference Count not one: %ld.", __func__, pUnit->ob_refcnt);
+										_log.Log(LOG_ERROR, "%s: Unit Reference Count not one: %d.", __func__, static_cast<int>(pUnit->ob_refcnt));
 									}
 								}
 							}
