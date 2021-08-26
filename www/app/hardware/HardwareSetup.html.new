@@ -1,0 +1,21 @@
+<div class="container">
+    <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+    <h2 class="page-header">{{:: 'Hardware controller' | translate}}: {{ $ctrl.hardware.Name }}</h2>
+</div>
+
+<div class="container" id="hardwarecontent"></div>
+
+<!--
+WARNING :
+The tag name below MUST CORRESPOND to the app component name in setup javascript file, converted from camel to kebab case
+e.g. esp3Hardware (camel case) defined in setup/EnOceanESP3.js corresponds to esp3-hardware (kebab case) here
+-->
+
+<z-wave-hardware ng-if="$ctrl.hardware.Type === 21" hardware="$ctrl.hardware"></z-wave-hardware>
+<wol-hardware ng-if="$ctrl.hardware.Type === 29" hardware="$ctrl.hardware"></wol-hardware>
+<esp3-hardware ng-if="$ctrl.hardware.Type === 31" hardware="$ctrl.hardware"></esp3-hardware>
+<my-sensors-hardware ng-if="[41, 42, 92].includes($ctrl.hardware.Type)" hardware="$ctrl.hardware"></my-sensors-hardware>
+<pinger-hardware ng-if="$ctrl.hardware.Type === 51" hardware="$ctrl.hardware"></pinger-hardware>
+<kodi-hardware ng-if="$ctrl.hardware.Type === 55" hardware="$ctrl.hardware"></kodi-hardware>
+<panasonic-tv-hardware ng-if="$ctrl.hardware.Type === 69" hardware="$ctrl.hardware"></panasonic-tv-hardware>
+<ble-box-hardware ng-if="$ctrl.hardware.Type === 82" hardware="$ctrl.hardware"></ble-box-hardware>
