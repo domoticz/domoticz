@@ -1,0 +1,604 @@
+define(['app'], function (app) {
+
+	/*
+	WARNING :
+	The app component name below MUST CORRESPOND to the tag name in HardwareSetup.html converted from kebab to camel case.
+	e.g. esp3-hardware (kebab case) in HardwareSetup.html corresponds to esp3Hardware (camel case) in setup/EnOceanESP3.js
+	*/
+
+	app.component('esp3Hardware', {
+		bindings: {
+			hardware: '<'
+		},
+		templateUrl: 'app/hardware/setup/EnOceanESP3.html',
+		controller: ESP3HardwareController
+	});
+
+	function ESP3HardwareController($scope, $interval, $http, dataTableDefaultSettings) {
+		var $ctrl = this;
+
+		$ctrl.$onInit = function () {
+			$.esp3hwdid = $ctrl.hardware.idx;
+
+			cursordefault();
+
+			// Load EnOcean Hardware screen template
+			var htmlcontent = $('#enoceansp3').html();
+			$('#hardwarecontent').html(htmlcontent);
+			$('#hardwarecontent').i18n();
+
+			// Prepare EnOcean Nodes table
+			var oTable = $('#nodestable').dataTable({
+				"sDom": '<"H"lfrC>t<"F"ip>',
+				"oTableTools": {
+					"sRowSelect": "single",
+				},
+				"aaSorting": [[0, "asc"]],
+				"bSortClasses": false,
+				"bProcessing": true,
+				"bStateSave": true,
+				"bJQueryUI": true,
+				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				"iDisplayLength": 25,
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
+			});
+
+			// Get EnOcean manufacturers table
+			$.manufacturertbl = [];
+			$.ajax({
+				url: "json.htm?type=command&param=enoceangetmanufacturers",
+				async: false,
+				dataType: 'json',
+				success: function (data, status) {
+					if (typeof data.mantbl != 'undefined') {
+						data.mantbl.sort(SortManufacturersByName);
+						$.each(data.mantbl, function (i, item) {
+							$.manufacturertbl.push({
+								idx : item.idx,
+								name: item.name
+							});
+						});
+					}
+				},
+			});
+
+			// Get EnOcean RORG table
+			$.rorgtbl = [];
+			$.ajax({
+				url: "json.htm?type=command&param=enoceangetrorgs",
+				async: false,
+				dataType: 'json',
+				success: function (data, status) {
+					if (typeof data.rorgtbl != 'undefined') {
+						$.each(data.rorgtbl, function (i, item) {
+							$.rorgtbl.push({
+								RORG: item.RORG,
+								label: item.label,
+								description: item.description
+							});
+						});
+					}
+				},
+			});
+
+			// Get EnOcean EEP table
+			$.eeptbl = [];
+			$.ajax({
+				url: "json.htm?type=command&param=enoceangetprofiles",
+				async: false,
+				dataType: 'json',
+				success: function (data, status) {
+					if (typeof data.eeptbl != 'undefined') {
+						$.each(data.eeptbl, function (i, item) {
+							$.eeptbl.push({
+								RORG: item.RORG,
+								func: item.func,
+								type: item.type,
+								EEP: item.EEP,
+								description: item.description,
+								label: item.label
+							});
+						});
+					}
+				},
+			});
+
+			// Display EnOcean Hardware screen
+			RefreshNodesTable();
+		};
+
+		SortManufacturersByName = function(a, b) {
+			// make sure "Unknown" value comes first
+			if (a.name === "Unknown")
+			    return -1;
+
+			if (b.name === "Unknown")
+			    return 1;
+
+			// Sort all other values aplhabetically
+			var aName = a.name.toLowerCase();
+			var bName = b.name.toLowerCase();
+			return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+		}
+
+		RefreshNodesTable = function () {
+			$('#modal').show();
+
+			// Get EnOcean Nodes and initialize Nodes table rows
+			var oTable = $('#nodestable').dataTable();
+			oTable.fnClearTable();
+			$.ajax({
+				url: "json.htm?type=esp3getnodes&hwdid=" + $.esp3hwdid,
+				async: false,
+				dataType: 'json',
+				success: function (data, status) {
+					if (typeof data.nodetbl != 'undefined') {
+						$.each(data.nodetbl, function (i, item) {
+							var nodedescription = (item.nodegeneric ? "Generic: " : "") + item.nodedescription;
+	
+							if (item.nodestate === "Awake")
+								var nodestate = '<img src="images/ok.png" />';
+							else if (item.nodestate === "Dead")
+								var nodestate = '<img src="images/failed.png" />';
+							else if (item.nodestate === "Sleeping")
+								var nodestate = '<img src="images/sleep.png" />';
+							else
+								var nodestate = '<img src="images/unknown.png" />';
+	
+							var addId = oTable.fnAddData({
+								"nodeid": item.nodeid,
+								"nodename": item.nodename,
+								"nodemanufacturerid": item.nodemanufacturerid,
+								"noderorg": item.noderorg,
+								"nodeeep": item.nodeeep,
+								"nodedescription": nodedescription,
+								"0": item.nodeidx,
+								"1": item.nodeid,
+								"2": item.nodename,
+								"3": item.nodemanufacturername,
+								"4": item.nodeeep,
+								"5": nodedescription,
+								"6": item.nodesignallevel,
+								"7": item.nodebatterylevel,
+								"8": nodestate,
+								"9": item.nodelastupdate,
+							});
+						});
+					}
+				},
+			});
+			/* Add a click handler to the rows - this could be used as a callback */
+			$("#nodestable tbody").off();
+			$("#nodestable tbody").on('click', 'tr', function () {
+				if ($(this).hasClass('row_selected')) { // Is a row selected?
+					// A row is selected
+					// Deselect row
+					$(this).removeClass('row_selected');
+
+					// Reset values of node parameter controls					
+					ResetNodeParameters();
+				}
+				else {
+					// No row is selected
+					// Select row
+					var oTable = $('#nodestable').dataTable();
+					oTable.$('tr.row_selected').removeClass('row_selected');
+					$(this).addClass('row_selected');
+
+					var selectedrow = fnGetSelected(oTable);
+					if (selectedrow.length !== 0) {
+						var data = oTable.fnGetData(selectedrow[0]);
+
+						// Set values of node parameter controls					
+						RefreshNodeParameters(
+							$.esp3hwdid,
+							data["nodeid"],
+							data["nodename"],
+							data["nodemanufacturerid"],
+							data["noderorg"],
+							data["nodeeep"],
+							data["nodedescription"]);
+					}
+				}
+			});
+			// Reset values of node parameter controls					
+			ResetNodeParameters();
+
+			$('#modal').hide();
+		};
+
+/*
+from devices.js
+		function batteryLevelRenderer(value) {
+			if (value === 255) {
+				return '-'
+			}
+			var className = value < 10 ? 'empty' : value < 40 ? 'half' : 'full';
+			var width = Math.ceil(value * 14 / 100);
+			var title = $.t('Battery level') + ': ' + value + '%';
+			return '<div class="battery ' + className + '" style="width: ' + width + 'px" title="' + title + '"></div>';
+		}
+*/
+		ResetNodeParameters = function () {
+			// Reset scope variables
+			$scope.selectednoderorg = 0;
+			$scope.selectednodeeep = "";
+							
+			// Disable node parameters action buttons
+			$('#updatenode').attr("class", "btnstyle3-dis");
+			$('#deletenode').attr("class", "btnstyle3-dis");
+
+			// Reset node parameter controls
+			$("#nodename").val("");
+			$("#nodemanufacturer").html("");
+			$("#nodemanufacturer").val("");
+			$("#noderorg").html("");
+			$("#noderorg").val("");
+			$("#nodeeep").html("");
+			$("#nodeeep").val("");
+			$("#nodeeepdesc").val("");
+			$("#nodedescription").val("");
+
+			// Reset values of node optional parameter controls
+			$("#optionalnodeconfigurationpane").hide();
+			$("#nodeconfiguration").html("");
+		};
+
+		RefreshNodeParameters = function (hwdid, nodeid, nodename, nodemanufacturerid, selectednoderorg, selectednodeeep, nodedescription) {
+			// Set scope variables
+			$scope.selectednoderorg = selectednoderorg;
+			$scope.selectednodeeep = selectednodeeep;
+
+			// Enable node action buttons
+			$('#updatenode').attr("class", "btnstyle3");
+			$("#updatenode").attr("href", "javascript:UpdateNode(" + hwdid + ",\"" + nodeid + "\")");
+			$('#deletenode').attr("class", "btnstyle3");
+			$("#deletenode").attr("href", "javascript:DeleteNode(" + hwdid + ",\"" + nodeid + "\")");
+
+			// Populate EnOcean manufacturers combo
+			$("#nodemanufacturer").html("");
+			$.each($.manufacturertbl, function (i, item) {
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$("#nodemanufacturer").append(option);
+			});
+
+			// Populate EnOcean RORG combo
+			$("#noderorg").html("");
+			$.each($.rorgtbl, function (i, item) {
+				var option = $('<option />');
+				option.attr('value', item.RORG).text(item.label + " (" + addLeadingZeros(parseInt(item.RORG).toString(16).toUpperCase(), 2) +")");
+				$("#noderorg").append(option);
+			});
+
+			$("#nodename").val(nodename);
+			$("#nodemanufacturer").val(nodemanufacturerid);
+
+			// Set combo default selected value
+			if (selectednoderorg !== 0)
+				$("#noderorg").val(selectednoderorg);
+			else {
+				var option = $('<option />');
+				option.attr('value', "").text("Select...");
+				$("#noderorg").prepend(option);
+				$("#noderorg").val("");
+			}
+			RefreshNodeEEP(selectednoderorg, selectednoderorg, selectednodeeep);
+
+			$("#nodedescription").val(nodedescription);
+
+/* Code not used for now, but might be in the future to configure EnOcean nodes parameters
+			// Set values of node optional parameter controls
+			$("#optionalnodeconfigurationpane").hide();
+			$("#nodeconfiguration").html("");
+			if (typeof data["nodeconfig"] !== 'undefined') {
+				//Create configuration setup
+				var bHaveConfiguration = false;
+				var szConfig = '<a class="btnstyle3" id="noderequeststoredvalues" data-i18n="RequestNodeConfiguration" onclick="RequestNodeConfiguration(" + $.esp3hwdid + ",\'" + nodeid + "\')");">Request current node configuration</a><br /><br />';
+				$.each(data["nodeconfig"], function (i, item) {
+					bHaveConfiguration = true;
+					szConfig += '<span class=esp3label">' + item.index + ". " + item.label + ":</span>";
+					var szComboOption;
+					if (item.type === "list") {
+						szConfig += '&nbsp;<select style="width:auto" class="combobox ui-corner-all" id="' + item.index + '">';
+						var iListItem = 0;
+						var totListItems = parseInt(item.listitems);
+						for (iListItem = 0; iListItem < totListItems; iListItem++) {
+							szComboOption = '<option value="' + iListItem + '"';
+							var szOptionTxt = item.listitem[iListItem];
+							if (szOptionTxt === item.value) {
+								szComboOption += ' selected="selected"';
+							}
+							szComboOption += '>' + szOptionTxt + '</option>';
+							szConfig += szComboOption;
+						}
+						szConfig += '</select>';
+						if (item.units !== "") {
+							szConfig += ' (' + item.units + ')';
+						}
+					}
+					else if (item.type === "bool") {
+						szConfig += '<br><select style="width:100%" class="combobox ui-corner-all" id="' + item.index + '">';
+
+						szComboOption = '<option value="False"';
+						if (item.value === "False") {
+							szComboOption += ' selected="selected"';
+						}
+						szComboOption += '>False</option>';
+						szConfig += szComboOption;
+
+						szComboOption = '<option value="True"';
+						if (item.value === "True") {
+							szComboOption += ' selected="selected"';
+						}
+						szComboOption += '>True</option>';
+						szConfig += szComboOption;
+
+						szConfig += '</select>';
+						if (item.units !== "") {
+							szConfig += ' (' + item.units + ')';
+						}
+					}
+					else if (item.type === "string") {
+						szConfig += '<br><input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>';
+
+						if (item.units !== "") {
+							szConfig += ' (' + item.units + ')';
+						}
+						szConfig += " (" + $.t("actual") + ": " + item.value + ")";
+					}
+					else {
+						szConfig += '&nbsp;<input type="text" id="' + item.index + '" value="' + item.value + '" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />';
+						if (item.units !== "") {
+							szConfig += ' (' + item.units + ')';
+						}
+						szConfig += " (" + $.t("actual") + ": " + item.value + ")";
+					}
+					szConfig += "<br /><br />";
+					if (item.help.trim() !== "") {
+						szConfig += '<span class=esp3help">' + EnOceanHTMLFormatString(item.help) + '</span><br>';
+					}								
+					szConfig += "<br />";
+				});
+				if (bHaveConfiguration === true) {
+					szConfig += '<a class="btnstyle3" id="nodeapplyconfiguration" data-i18n="ApplyConfiguration" onclick="ApplyConfiguration(' + nodeidx + ');" >Apply configuration for this node</a><br />';
+					$("#optionalnodeconfigurationpane").show();
+					$("#nodeconfiguration").html(szConfig);
+					$("#nodeconfiguration").i18n();
+				}
+			}
+*/
+		};
+
+		RefreshNodeEEP = function (RORG, selectednoderorg, selectednodeeep) {
+			if (RORG === 0) {
+				RefreshNodeEEPDescription("");
+				return;
+			}
+			if (selectednoderorg === 0)
+				selectednodeeep = selectednodeeep.replace("00", addLeadingZeros(parseInt(RORG).toString(16).toUpperCase(), 2));
+			
+			// Populate EnOcean EEP combo
+			$("#nodeeep").html("");
+
+			var eepfound = false;
+			$.each($.eeptbl, function (i, item) {
+				if (item.RORG == RORG) {
+					var option = $('<option />');
+					option.attr('value', item.EEP).text(item.EEP);
+					$("#nodeeep").append(option);
+
+					if (item.EEP === selectednodeeep)
+						eepfound = true;
+				}
+			});
+
+			// Select default combo value
+			if (eepfound) {
+				$("#nodeeep").val(selectednodeeep);
+				RefreshNodeEEPDescription(selectednodeeep);
+			}
+			else {
+				var option = $('<option />');
+				option.attr('value', "").text("Select...");
+				$("#nodeeep").prepend(option);
+				$("#nodeeep").val("");
+				RefreshNodeEEPDescription("");
+			}
+		};
+
+		RefreshNodeEEPDescription = function (EEP) {
+			var description = "";
+			$.each($.eeptbl, function (i, item) {
+				if (item.EEP === EEP) {
+					description = item.description;
+					return;
+				}
+			});
+			$("#nodeeepdesc").val(description);
+		};
+
+		OnChangeNodeRORG = function (combo) {
+			// Once a RORG value has been selected, remove "Select..." option
+			if (combo.value !== "" && combo.options[0].value === "")
+				combo.remove(0);
+			
+			RefreshNodeEEP(combo.value, $scope.selectednoderorg, $scope.selectednodeeep);
+		};
+
+		OnChangeNodeEEP = function (combo) {
+			// Once an EEP value has been selected, remove "Select..." option
+			if (combo.value !== "" && combo.options[0].value === "")
+				combo.remove(0);
+			
+			RefreshNodeEEPDescription(combo.value);
+		};
+
+		EnableLearnMode = function () {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.ajax({
+				url: "json.htm?type=command&param=esp3enablelearnmode&hwdid=" + $.esp3hwdid + "&minutes=1",
+				async: true,
+				dataType: 'json',
+				success: function (data, status) {
+					$("#esp3lmwaiting").show();
+					$("#esp3lmclose").hide();
+					$('#esp3learnmodedialog').modal('show');
+
+					$scope.mytimer = $interval(function () {
+						$scope.IsNodeTeachedIn();
+					}, 1000);
+				},
+				error: function (result, status, error) {
+					ShowNotify($.t('Problem enabling learn mode!'), 2500, true);
+				},
+			});
+		};
+
+		$scope.IsNodeTeachedIn = function () {
+			if (typeof $scope.mytimer !== 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.ajax({
+				url: "json.htm?type=command&param=esp3isnodeteachedin&hwdid=" + $.esp3hwdid,
+				async: true,
+				dataType: 'json',
+				success: function (data, status) {
+					if (data.result === 1) { // An EnOcean node has been teached-in
+						var lmtext = "<b>New EnOcean node teached-in</b><br><br>";
+						lmtext += "Node ID: <b>" + data.nodeid + "</b><br>";
+						lmtext += "Manufacturer: <b>" + data.manufacturername + "</b><br>";
+						lmtext += "EEP: <b>" + data.eep + "</b><br>";
+						lmtext += "Description: <b>" + data.description + "</b><br><br>";
+						lmtext += '<button type="button" onclick="OnCloseLearnMode()" class="btn btn-default" data-dismiss="modal">OK</button>';
+
+						$("#esp3lmwaiting").hide();
+						$("#esp3lmclose").html(lmtext);
+						$("#esp3lmclose").i18n();
+						$("#esp3lmclose").show();
+						return;
+					}
+					if (data.result === 2) { // Learn mode timed out
+						var lmtext = "<b>Learn mode timed out!</b><br><br>";
+						lmtext +=  "<b>No new EnOcean node teached-in!</b><br><br>";
+						lmtext +=  '<button type="button" onclick="OnCloseLearnMode()" class="btn btn-default" data-dismiss="modal">OK</button>';
+
+						$("#esp3lmwaiting").hide();
+						$("#esp3lmclose").html(lmtext);
+						$("#esp3lmclose").i18n();
+						$("#esp3lmclose").show();
+						return;
+					}
+					// Keep waiting
+					$scope.mytimer = $interval(function () {
+						$scope.IsNodeTeachedIn();
+					}, 1000);
+				},
+				error: function (result, status, error) {
+					ShowNotify($.t('Problem teachin-in node!'), 2500, true);
+				},
+			});
+		};
+
+		OnCancelTeachIn = function () {
+			$.ajax({
+				url: "json.htm?type=command&param=esp3cancelteachin&hwdid=" + $.esp3hwdid,
+				async: true,
+				dataType: 'json',
+			});
+			$interval.cancel($scope.mytimer);
+			$scope.mytimer = undefined;
+			$('#esp3learnmodedialog').modal('hide');
+		};
+
+		OnCloseLearnMode = function () {
+			$('#esp3learnmodedialog').modal('hide');
+			RefreshNodesTable();
+		};
+
+		ResetController = function () {
+			$.ajax({
+				url: "json.htm?type=command&param=esp3controllerreset&hwdid=" + $.esp3hwdid,
+				async: true,
+				dataType: 'json',
+				success: function (data, status) {
+					bootbox.alert($.t('Resetting EnOcean controller...'));
+					RefreshNodesTable();
+				},
+				error: function (result, status, error) {
+					ShowNotify($.t('Problem resetting EnOcean controller!'), 2500, true);
+				},
+			});
+		};
+						
+		UpdateNode = function (hwdid, nodeid) {
+			if ($('#updatenode').attr("class") === "btnstyle3-dis") {
+				return;
+			}
+			var name = $("#nodename").val().trim();
+			if (name === "") {
+				ShowNotify($.t('Please enter a node name!'), 2500, true);
+				return;
+			}
+			var manid = $("#nodemanufacturer option:selected").val();
+			if (typeof manid == 'undefined') {
+				ShowNotify($.t('Please select a manufacturer!'), 2500, true);
+				return;
+			}
+			var eep = $("#nodeeep option:selected").val();
+			if (typeof eep == 'undefined' || eep === "") {
+				ShowNotify($.t('Please select an EnOcean Profile (EEP)!'), 2500, true);
+				return;
+			}
+			bootbox.confirm($.t("Are you sure you want to update node \'" + nodeid + "\'?"), function (confirmed) {
+				if (confirmed) {
+					$.ajax({
+						url: "json.htm?type=command&param=esp3updatenode" +
+							"&hwdid=" + hwdid +
+							"&nodeid=" + encodeURIComponent(nodeid) +
+							"&name=" + encodeURIComponent(name) +
+							"&manufacturerid=" + manid +
+							"&eep=" + encodeURIComponent(eep) +
+							"&description=" + encodeURIComponent($("#nodedescription").val().trim().replace(/^Generic: /, '')),
+						async: true,
+						dataType: 'json',
+						success: function (data, status) {
+							RefreshNodesTable();
+						},
+						error: function (result, status, error) {
+							ShowNotify($.t('Problem updating node \'" + nodeid + "\'!'), 2500, true);
+						},
+					});
+				}
+			});
+		};
+
+		DeleteNode = function (hwdid, nodeid) {
+			if ($('#deletenode').attr("class") === "btnstyle3-dis") {
+				return;
+			}
+			bootbox.confirm($.t("Are you sure you want to remove node \'" + nodeid + "\'?"), function (confirmed) {
+				if (confirmed) {
+					$.ajax({
+						url: "json.htm?type=command&param=esp3deletenode" +
+							"&hwdid=" + hwdid +
+							"&nodeid=" + encodeURIComponent(nodeid),
+						async: true,
+						dataType: 'json',
+						success: function (data, status) {
+							RefreshNodesTable();
+						},
+						error: function (result, status, error) {
+							ShowNotify($.t('Problem deleting node \'" + nodeid + "\'!'), 2500, true);
+						},
+					});
+				}
+			});
+		};
+	}
+});
