@@ -38,6 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#define DB_NAME "domoticz.db"
 #define DB_VERSION 148
 
 extern http::server::CWebServerHelper m_webservers;
@@ -611,7 +612,7 @@ CSQLHelper::CSQLHelper()
 	m_bPreviousAcceptNewHardware = false;
 	m_bLogEventScriptTrigger = false;
 
-	SetDatabaseName("domoticz.db");
+	SetDatabaseName(DB_NAME);
 }
 
 CSQLHelper::~CSQLHelper()
@@ -626,7 +627,8 @@ bool CSQLHelper::OpenDatabase()
 	int rc = sqlite3_open(m_dbase_name.c_str(), &m_dbase);
 	if (rc)
 	{
-		_log.Log(LOG_ERROR, "Error opening SQLite3 database: %s", sqlite3_errmsg(m_dbase));
+		_log.Log(LOG_ERROR, "Error opening Domoticz database: %s", sqlite3_errmsg(m_dbase));
+		_log.Debug(DEBUG_NORM, "(Database path: %s)", m_dbase_name.c_str());
 		sqlite3_close(m_dbase);
 		return false;
 	}
@@ -639,22 +641,26 @@ bool CSQLHelper::OpenDatabase()
 	std::vector<std::vector<std::string> > result = query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bool bNewInstall = (result.empty());
 	int dbversion = 0;
-	if (!bNewInstall)
+	if (bNewInstall)
+  		_log.Debug(DEBUG_NORM, "Creating %s database (version: %d)", m_dbase_name.c_str(), DB_VERSION);
+	else
 	{
 		GetPreferencesVar("DB_Version", dbversion);
-		if (dbversion > DB_VERSION)
+ 		if (dbversion == DB_VERSION)
+  			_log.Debug(DEBUG_NORM, "Opening %s database (version: %d)", m_dbase_name.c_str(), DB_VERSION);
+		else if (dbversion < DB_VERSION)
+  			_log.Debug(DEBUG_NORM, "Upgrading %s database from version %d to %d", m_dbase_name.c_str(), dbversion, DB_VERSION);
+		else
 		{
-			//User is using a newer database on a old Domoticz version
-			//This is very dangerous and should not be allowed
+			// Using a newer database on a old Domoticz version is not allowed
 			_log.Log(LOG_ERROR, "Database incompatible with this Domoticz version. (You cannot downgrade to an old Domoticz version!)");
+			_log.Debug(DEBUG_NORM, "(Cannot downgrade database from version %d to %d!)", dbversion, DB_VERSION);
 			sqlite3_close(m_dbase);
 			m_dbase = nullptr;
 			return false;
 		}
-		//Pre-SQL Patches
 	}
-
-	//create database (if not exists)
+	// Create database (if not exists)
 	sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 	query(sqlCreateDeviceStatus);
 	query(sqlCreateDeviceStatusTrigger);
