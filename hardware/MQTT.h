@@ -5,6 +5,36 @@
 
 class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
+	struct _tMQTTASensor
+	{
+		std::string component_type;
+		std::string unique_id;
+		std::string device_identifiers;
+		std::string name;
+		std::string availability_topic;
+		std::string state_topic;
+		std::string command_topic;
+		std::string unit_of_measurement;
+		std::string value_template;
+
+		bool bOnline = false;
+		time_t last_received = 0;
+		std::string last_value;
+	};
+
+	struct _tMQTTADevice
+	{
+		bool bSubscribed = false;
+		std::string config;
+		std::string identifiers;
+		std::string name;
+		std::string sw_version;
+		std::string model;
+		std::string manufacturer;
+
+		std::map<std::string, bool> sensor_ids;
+	};
+
       public:
 	MQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra, int TLS_Version,
 	     int PublishScheme, const std::string &MQTTClientID, bool PreventLoop);
@@ -21,6 +51,15 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 	void on_log(int level, const char *str) override;
 	void on_error() override;
+
+	void on_auto_discovery_message(const struct mosquitto_message *message);
+	void handle_auto_discovery_sensor_message(const struct mosquitto_message *message);
+
+	void handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bRetained);
+	void handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bRetained);
+	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const bool bRetained);
+	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained);
+	void handle_auto_discovery_camera(_tMQTTASensor *pSensor, const bool bRetained);
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
@@ -51,6 +90,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	int m_TLS_Version;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
+	std::string m_TopicDiscovery;
 
       private:
 	bool ConnectInt();
@@ -59,6 +99,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void SendSceneInfo(uint64_t SceneIdx, const std::string &SceneName);
 	void StopMQTT();
 	void Do_Work();
+	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
@@ -69,4 +110,9 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	bool m_bRetain = false;
 	uint64_t m_LastUpdatedDeviceRowIdx = 0;
 	uint64_t m_LastUpdatedSceneRowIdx = 0;
+
+	// Auto Discovery
+	std::map<std::string, _tMQTTADevice> m_discovered_devices;
+	std::map<std::string, _tMQTTASensor> m_discovered_sensors;
+	std::map<std::string, bool> m_subscribed_topics;
 };
