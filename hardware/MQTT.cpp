@@ -1345,8 +1345,8 @@ void MQTT::handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std:
 	if (pSensor->bOnline)
 	{
 		// update last seen
-		m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID,
-				 pSensor->unique_id, pSensor->devUnit);
+		m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID,
+				 pSensor->unique_id.c_str(), pSensor->devUnit);
 	}
 }
 
