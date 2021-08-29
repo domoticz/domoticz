@@ -7,6 +7,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
 	struct _tMQTTASensor
 	{
+		std::string config;
+
 		std::string component_type;
 		std::string unique_id;
 		std::string device_identifiers;
@@ -16,21 +18,40 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string command_topic;
 		std::string unit_of_measurement;
 		std::string value_template;
+		std::string icon;
+
+		std::string payload_on;
+		std::string payload_off;
+		std::string payload_available;
+		std::string payload_not_available;
+
+		int qos = 0;
+
+		std::map<std::string, std::string> keys;
 
 		bool bOnline = false;
 		time_t last_received = 0;
 		std::string last_value;
+		uint8_t devType = 0;
+		uint8_t subType = 0;
+		uint8_t devUnit = 1;
+		int nValue = 0;
+		std::string sValue;
+		std::string szOptions;
+		int SignalLevel = 12;
+		int BatteryLevel = 255;
 	};
 
 	struct _tMQTTADevice
 	{
 		bool bSubscribed = false;
-		std::string config;
 		std::string identifiers;
 		std::string name;
 		std::string sw_version;
 		std::string model;
 		std::string manufacturer;
+
+		std::map<std::string, std::string> keys;
 
 		std::map<std::string, bool> sensor_ids;
 	};
@@ -55,6 +76,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void on_auto_discovery_message(const struct mosquitto_message *message);
 	void handle_auto_discovery_sensor_message(const struct mosquitto_message *message);
 
+	void handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std::string &payload, const bool bRetained);
 	void handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const bool bRetained);
@@ -90,7 +112,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	int m_TLS_Version;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
-	std::string m_TopicDiscovery;
+	std::string m_TopicDiscoveryPrefix;
 
       private:
 	bool ConnectInt();
