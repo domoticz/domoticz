@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 //
-//	Domoticz Plugin System - Dnpwwo, 2016
+//	Domoticz Plugin System - Dnpwwo, 2021
 //
 #ifdef ENABLE_PYTHON
 
@@ -127,24 +127,17 @@ namespace Plugins {
 
 	PyObject *CDeviceEx_refresh(CDeviceEx *self)
 	{
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (!pModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) DomoticzEx module not found in interpreter.", __func__);
-			return 0;
-		}
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "(%s) unable to obtain module state.", __func__);
-			return 0;
+			_log.Log(LOG_ERROR, "(%s) Unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 
 		if (!pModState->pPlugin)
 		{
 			_log.Log(LOG_ERROR, "(%s) illegal operation, Plugin has not started yet.", __func__);
-			return 0;
+			Py_RETURN_NONE;
 		}
 
 		// Populate the unit dictionary if there are any
@@ -468,24 +461,17 @@ namespace Plugins {
 
 	PyObject *CUnitEx_refresh(CUnitEx *self)
 	{
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (!pModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) DomoticzEx module not found in interpreter.", __func__);
-			return 0;
-		}
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "(%s) unable to obtain module state.", __func__);
-			return 0;
+			_log.Log(LOG_ERROR, "(%s) Unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 
 		if (!pModState->pPlugin)
 		{
 			_log.Log(LOG_ERROR, "(%s) illegal operation, Plugin has not started yet.", __func__);
-			return 0;
+			Py_RETURN_NONE;
 		}
 
 		if ((pModState->pPlugin) && (pModState->pPlugin->m_HwdID != -1) && (self->Unit != -1))
@@ -561,14 +547,7 @@ namespace Plugins {
 
 	PyObject *CUnitEx_insert(CUnitEx *self)
 	{
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (!pModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
-			Py_RETURN_NONE;
-		}
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
 			_log.Log(LOG_ERROR, "(%s) Unable to obtain module state.", __func__);
@@ -705,14 +684,7 @@ namespace Plugins {
 
 	PyObject *CUnitEx_update(CUnitEx *self, PyObject *args, PyObject *kwds)
 	{
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (!pModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
-			Py_RETURN_NONE;
-		}
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
 			_log.Log(LOG_ERROR, "(%s) Unable to obtain module state.", __func__);
@@ -732,7 +704,7 @@ namespace Plugins {
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sp", kwlist, &SuppressTriggers))
 			{
 				pModState->pPlugin->Log(LOG_ERROR,
-					 "(%s) Failed to parse parameters: 'SuppressTriggers' expected.", __func__);
+					 "(%s) Failed to parse parameters: 'TypeName' &/or 'SuppressTriggers' expected.", __func__);
 				LogPythonException(pModState->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
@@ -797,10 +769,34 @@ namespace Plugins {
 
 			// Do an atomic update (do not change this to individual field updates!!!!!!!)
 			Py_BEGIN_ALLOW_THREADS
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%s', Description='%s', Used=%d, Type=%d, SubType=%d, SwitchType=%d, nValue=%d, sValue='%s', CustomImage=%d, Color='%s', "
-					 "SignalLevel=%d, BatteryLevel=%d, Options='%s', LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", 
-								sName.c_str(), sDescription.c_str(), self->Used, iType, iSubType, iSwitchType, nValue, sValue.c_str(), self->Image, sColor.c_str(), self->SignalLevel,
-								self->BatteryLevel, sOptionValue.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+			std::string sSQL = "UPDATE DeviceStatus "
+							   "SET Name=?, Description=?, Used=?, Type=?, SubType=?, SwitchType=?, nValue=?, sValue=?, CustomImage=?, Color=?, SignalLevel=?, BatteryLevel=?, Options=?, LastUpdate=? "
+							   "WHERE (HardwareID==?) AND (DeviceID==?) AND (Unit==?);";
+			std::vector<std::string> vValues;
+			vValues.push_back(sName);
+			vValues.push_back(sDescription);
+			vValues.push_back(std::to_string(self->Used));
+			vValues.push_back(std::to_string(iType));
+			vValues.push_back(std::to_string(iSubType));
+			vValues.push_back(std::to_string(iSwitchType));
+			vValues.push_back(std::to_string(nValue));
+			vValues.push_back(sValue);
+			vValues.push_back(std::to_string(self->Image));
+			vValues.push_back(sColor);
+			vValues.push_back(std::to_string(self->SignalLevel));
+			vValues.push_back(std::to_string(self->BatteryLevel));
+			vValues.push_back(sOptionValue);
+			vValues.push_back(TimeToString(nullptr, TF_DateTime));
+			// Keys
+			vValues.push_back(std::to_string(pModState->pPlugin->m_HwdID));
+			vValues.push_back(sDeviceID);
+			vValues.push_back(std::to_string(self->Unit));
+
+			// Handle any data we get back
+			if (!m_sql.execute_sql(sSQL, &vValues, true))
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+			}
 			Py_END_ALLOW_THREADS
 
 			// Only trigger notifications if Suppress Triggers is not true
@@ -862,14 +858,7 @@ namespace Plugins {
 
 	PyObject *CUnitEx_delete(CUnitEx *self)
 	{
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (!pModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
-			Py_RETURN_NONE;
-		}
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
 			_log.Log(LOG_ERROR, "(%s) Unable to obtain module state.", __func__);
@@ -914,18 +903,11 @@ namespace Plugins {
 
 	PyObject *CUnitEx_touch(CUnitEx *self)
 	{
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (!pModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) DomoticzEx module not found in interpreter.", __func__);
-			return 0;
-		}
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "(%s) unable to obtain module state.", __func__);
-			return 0;
+			_log.Log(LOG_ERROR, "(%s) Unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 
 		if (!pModState->pPlugin)
