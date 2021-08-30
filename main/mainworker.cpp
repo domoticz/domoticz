@@ -11457,6 +11457,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 #endif
 		return true;
 	}
+	if (pHardware->HwdType == HTYPE_MQTT)
+		return ((MQTT *)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
 
 	switch (dType)
 	{

@@ -1217,6 +1217,15 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->payload_not_available = root["payload_not_available"].asString();
 		if (!root["pl_not_avail"].empty())
 			pSensor->payload_not_available = root["pl_not_avail"].asString();
+		if (!root["state_on"].empty())
+			pSensor->state_on = root["state_on"].asString();
+		if (!root["stat_on"].empty())
+			pSensor->state_on = root["stat_on"].asString();
+		if (!root["state_off"].empty())
+			pSensor->state_on = root["state_off"].asString();
+		if (!root["stat_off"].empty())
+			pSensor->state_on = root["stat_off"].asString();
+		
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
 
@@ -1230,11 +1239,22 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		Log(LOG_STATUS, "discovered: %s/%s (unique_id: %s)", pDevice->name.c_str(), pSensor->name.c_str(), pSensor->unique_id.c_str());
 
+		//Sanity checks
+		if (pSensor->component_type == "switch")
+		{
+			if (pSensor->command_topic.empty())
+			{
+				Log(LOG_ERROR, "A switch should have a command_topic!");
+				return;
+			}
+			InsertUpdateSwitch(pSensor);
+		}
+
 		//Check if we want to subscribe to this sensor
 		bool bDoSubscribe = false;
 
 		//Only add component_type = "sensor" for now
-		bDoSubscribe = (pSensor->component_type == "sensor");
+		bDoSubscribe = ((pSensor->component_type == "sensor") || (pSensor->component_type == "switch"));
 
 		if (bDoSubscribe)
 		{
@@ -1334,6 +1354,8 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 #endif
 			if (pSensor->component_type == "sensor")
 				handle_auto_discovery_sensor(pSensor, message->retain);
+			else if (pSensor->component_type == "switch")
+				handle_auto_discovery_switch(pSensor, message->retain);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -1623,4 +1645,100 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 			}
 		}
 	}
+}
+
+void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
+{
+	pSensor->devUnit = 1;
+	pSensor->devType = pTypeGeneralSwitch;
+	pSensor->subType = sSwitchGeneralSwitch;
+
+	int level = 0;
+	if (level > 100)
+		level = 100;
+
+	int nValue = 0;
+	std::string sValue = std_format("%d", level);
+
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+	if (result.empty())
+	{
+		// New switch, add it to the system
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+				 "VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, nValue,
+				 sValue.c_str());
+		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+	}
+	if (result.empty())
+		return; //should not happen!
+
+	std::string szIdx = result[0][0];
+	uint64_t DevRowIdx = std::stoull(szIdx);
+	std::string szDeviceName = result[0][1];
+	int nvalue = atoi(result[0][2].c_str());
+
+	if (pSensor->last_value.empty())
+		return;
+	bool bOn = false;
+	if (pSensor->last_value == pSensor->payload_on)
+		bOn = true;
+	else if (pSensor->last_value == pSensor->payload_off)
+		bOn = false;
+	else
+		bOn = (pSensor->last_value == "on") || (pSensor->last_value == "ON");
+
+			// check if we have a change, if not do not update it
+	if ((!bOn) && (nvalue == 0))
+		return;
+	if ((bOn && (nvalue != 0)))
+	{
+		// Check Level
+		int slevel = atoi(result[0][3].c_str());
+		if (slevel == level)
+			return;
+	}
+	nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+	
+	pSensor->nValue = nValue;
+	pSensor->sValue = sValue;
+
+	m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', SignalLevel=%d, BatteryLevel=%d, LastUpdate='%s' WHERE (ID=='%s')", pSensor->nValue, pSensor->sValue.c_str(),
+			 pSensor->SignalLevel, pSensor->BatteryLevel, TimeToString(nullptr, TF_DateTime).c_str(), szIdx.c_str());
+
+	// Notify MQTT and various push mechanisms and notifications
+	m_mainworker.sOnDeviceReceived(m_HwdID, DevRowIdx, szDeviceName, nullptr);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, m_HwdID, pSensor->unique_id, szDeviceName, pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->nValue, pSensor->sValue);
+	m_mainworker.CheckSceneCode(DevRowIdx, pSensor->devType, pSensor->subType, pSensor->nValue, pSensor->sValue.c_str(), "MQTT Auto");
+}
+
+void MQTT::handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bRetained)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
+bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, const std::string &command, int level, _tColor color)
+{
+	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
+	{
+		Log(LOG_ERROR, "Switch not found!? (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+		return false;
+	}
+	_tMQTTASensor *pSensor = &m_discovered_sensors[DeviceID];
+
+	std::string szSendValue;
+
+	if (command == "On")
+		szSendValue = pSensor->payload_on;
+	else if (command == "Off")
+		szSendValue = pSensor->payload_off;
+
+	if (szSendValue.empty())
+	{
+		Log(LOG_ERROR, "Switch command not supported (%s - %s/%s)", command, DeviceID.c_str(), DeviceName.c_str());
+		return false;
+	}
+	SendMessage(pSensor->command_topic, szSendValue);
+	return true;
 }

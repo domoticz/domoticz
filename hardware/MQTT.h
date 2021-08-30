@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DomoticzHardware.h"
+#include "hardwaretypes.h"
 #include "MySensorsBase.h"
 #include "../main/mosquitto_helper.h"
 
@@ -20,10 +22,12 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string value_template;
 		std::string icon;
 
-		std::string payload_on;
-		std::string payload_off;
+		std::string payload_on = "ON";
+		std::string payload_off = "OFF";
 		std::string payload_available;
 		std::string payload_not_available;
+		std::string state_on;
+		std::string state_off;
 
 		int qos = 0;
 
@@ -83,6 +87,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_camera(_tMQTTASensor *pSensor, const bool bRetained);
 
+	bool SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, const std::string &command, int level, _tColor color);
+
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
 	bool m_bDoReconnect;
@@ -122,6 +128,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void StopMQTT();
 	void Do_Work();
 	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
+	void InsertUpdateSwitch(_tMQTTASensor *pSensor);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
