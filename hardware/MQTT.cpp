@@ -1240,11 +1240,28 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		Log(LOG_STATUS, "discovered: %s/%s (unique_id: %s)", pDevice->name.c_str(), pSensor->name.c_str(), pSensor->unique_id.c_str());
 
 		//Sanity checks
-		if (pSensor->component_type == "switch")
+		if (pSensor->component_type == "sensor")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "A sensor should have a state_topic!");
+				return;
+			}
+		}
+		else if (pSensor->component_type == "switch")
 		{
 			if (pSensor->command_topic.empty())
 			{
 				Log(LOG_ERROR, "A switch should have a command_topic!");
+				return;
+			}
+			InsertUpdateSwitch(pSensor);
+		}
+		else if (pSensor->component_type == "binary_sensor")
+		{
+			if (pSensor->state_topic.empty())
+			{
+				Log(LOG_ERROR, "A binary_sensor should have a state_topic!");
 				return;
 			}
 			InsertUpdateSwitch(pSensor);
@@ -1254,7 +1271,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		bool bDoSubscribe = false;
 
 		//Only add component_type = "sensor" for now
-		bDoSubscribe = ((pSensor->component_type == "sensor") || (pSensor->component_type == "switch"));
+		bDoSubscribe = ((pSensor->component_type == "sensor") || (pSensor->component_type == "binary_sensor") || (pSensor->component_type == "switch"));
 
 		if (bDoSubscribe)
 		{
@@ -1356,6 +1373,8 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 				handle_auto_discovery_sensor(pSensor, message->retain);
 			else if (pSensor->component_type == "switch")
 				handle_auto_discovery_switch(pSensor, message->retain);
+			else if (pSensor->component_type == "binary_sensor")
+				handle_auto_discovery_binary_sensor(pSensor, message->retain);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -1718,6 +1737,11 @@ void MQTT::handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bReta
 	InsertUpdateSwitch(pSensor);
 }
 
+void MQTT::handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
 bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, const std::string &command, int level, _tColor color)
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
@@ -1726,6 +1750,12 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		return false;
 	}
 	_tMQTTASensor *pSensor = &m_discovered_sensors[DeviceID];
+
+	if (pSensor->component_type != "switch")
+	{
+		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+		return false;
+	}
 
 	std::string szSendValue;
 
