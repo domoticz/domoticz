@@ -1383,6 +1383,23 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 	}
 }
 
+uint64_t MQTT::UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+			      const char *sValue, std::string &devname, bool bUseOnOffAction)
+{
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
+	if (DeviceRowIdx == (uint64_t)-1)
+		return -1;
+	if (m_bOutputLog)
+	{
+		std::string szLogString = RFX_Type_Desc(devType, 1) + std::string("/") + std::string(RFX_Type_SubType_Desc(devType, subType)) + " (" + devname + ")";
+		Log(LOG_NORM, szLogString);
+	}
+	m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
+	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValue);
+	m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
+	return DeviceRowIdx;
+}
+
 void MQTT::handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std::string &payload, const bool bRetained)
 {
 	if (bRetained)
@@ -1538,21 +1555,8 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 		if (bRetained)
 			return; //only update when a new value is received
 
-		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', SignalLevel=%d, BatteryLevel=%d, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
-				 pSensor->nValue, pSensor->sValue.c_str(), pSensor->SignalLevel, pSensor->BatteryLevel, TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID, pSensor->unique_id.c_str(),
-				 pSensor->devUnit);
-	}
-
-	// Notify MQTT and various push mechanisms and notifications
-	uint64_t DevRowIdx = -1;
-	result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
-	if (!result.empty())
-	{
-		DevRowIdx = std::stoull(result[0][0]);
-		std::string devName = result[0][1];
-		m_mainworker.sOnDeviceReceived(m_HwdID, DevRowIdx, devName, nullptr);
-		m_notifications.CheckAndHandleNotification(DevRowIdx, m_HwdID, pSensor->unique_id, devName, pSensor->devUnit, devType, subType, pSensor->nValue, pSensor->sValue);
-		m_mainworker.CheckSceneCode(DevRowIdx, devType, subType, pSensor->nValue, pSensor->sValue.c_str(), "MQTT Auto");
+		UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+				  pSensor->sValue.c_str(), result[0][0]);
 	}
 
 	if ((bIsTemp || bIsHum || bIsBaro) && (!bRetained))
@@ -1655,11 +1659,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 
 					if (bRetained)
 						return; // only update when a new value is received
-
-					m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', SignalLevel=%d, BatteryLevel=%d, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') "
-							 "AND (Unit==%d)",
-							 nValue, sValue.c_str(), pSensor->SignalLevel, pSensor->BatteryLevel, TimeToString(nullptr, TF_DateTime).c_str(), m_HwdID, szDeviceID.c_str(),
-							 1);
+					UpdateValueInt(m_HwdID, szDeviceID.c_str(), 1, devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, nValue, sValue.c_str(), result[0][0]);
 				}
 			}
 		}
@@ -1723,8 +1723,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	pSensor->nValue = nValue;
 	pSensor->sValue = sValue;
 
-	m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', SignalLevel=%d, BatteryLevel=%d, LastUpdate='%s' WHERE (ID=='%s')", pSensor->nValue, pSensor->sValue.c_str(),
-			 pSensor->SignalLevel, pSensor->BatteryLevel, TimeToString(nullptr, TF_DateTime).c_str(), szIdx.c_str());
+	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue, pSensor->sValue.c_str(),
+		       szDeviceName);
 
 	// Notify MQTT and various push mechanisms and notifications
 	m_mainworker.sOnDeviceReceived(m_HwdID, DevRowIdx, szDeviceName, nullptr);

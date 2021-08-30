@@ -87,6 +87,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_camera(_tMQTTASensor *pSensor, const bool bRetained);
 
+	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
+				const char *sValue, std::string &devname, bool bUseOnOffAction = true);
 	bool SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, const std::string &command, int level, _tColor color);
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
