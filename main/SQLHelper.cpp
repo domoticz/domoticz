@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 148
+#define DB_VERSION 149
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2771,9 +2771,68 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 148)
 		{
-			if(!DoesColumnExistsInTable("LogLevel", "Hardware"))
+			if (!DoesColumnExistsInTable("LogLevel", "Hardware"))
 			{
 				query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
+			}
+		}
+		if (dbversion < 149)
+		{
+			// Patch for MQTT: adding default in/ouput topics
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string>> result;
+			szQuery << "SELECT ID, Extra FROM Hardware WHERE([Type]==" << HTYPE_MQTT << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto &sd : result)
+				{
+					std::string ID = sd.at(0);
+					std::string Options = sd.at(1);
+
+					std::vector<std::string> strarray;
+					StringSplit(Options, ";", strarray);
+
+					if (strarray.size()==4)
+						continue;
+
+					if (strarray.empty())
+					{
+						strarray.push_back("");
+						strarray.push_back("domoticz/in");
+						strarray.push_back("domoticz/out");
+					}
+					else if (strarray.size() == 1)
+					{
+						strarray.push_back("domoticz/in");
+						strarray.push_back("domoticz/out");
+						strarray.push_back("");
+					}
+					else if (strarray.size() == 2)
+					{
+						if (strarray[1].empty())
+							strarray[1] = "domoticz/in";
+						strarray.push_back("domoticz/out;");
+					}
+					else if (strarray.size() == 2)
+					{
+						if (strarray[1].empty())
+							strarray[1] = "domoticz/in";
+						if (strarray[2].empty())
+							strarray[2] = "domoticz/out";
+					}
+					strarray.push_back("");
+					Options.clear();
+					int iIndex = 0;
+					for (const auto ittOptions : strarray)
+					{
+						if (iIndex > 0)
+							Options += ";";
+						Options += ittOptions;
+						iIndex++;
+					}
+					safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID=%s)", Options.c_str(), ID.c_str());
+				}
 			}
 		}
 	}

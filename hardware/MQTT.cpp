@@ -46,9 +46,6 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 	m_publish_scheme = (_ePublishTopics)(PublishScheme & ~RETAIN_BIT);
 	Debug(DEBUG_HARDWARE, "MQTT PublishSchema %d (%d), Retain %d", m_publish_scheme, PublishScheme, m_bRetain);
 
-	m_TopicIn = TOPIC_IN;
-	m_TopicOut = TOPIC_OUT;
-
 	std::vector<std::string> strarray;
 	StringSplit(CAfilenameExtra, ";", strarray);
 	if (!strarray.empty())
@@ -170,7 +167,11 @@ void MQTT::on_connect(int rc)
 			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect([this](auto id, auto idx, auto &&name, auto cmd) { SendDeviceInfo(id, idx, name, cmd); });
 			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect([this](auto scene, auto &&name) { SendSceneInfo(scene, name); });
 		}
-		SubscribeTopic(m_TopicIn.c_str());
+		if (!m_TopicIn.empty())
+			SubscribeTopic(m_TopicIn.c_str());
+		else
+			Log(LOG_STATUS, "Default input topic disabled in settings...");
+
 		if (!m_TopicDiscoveryPrefix.empty())
 			SubscribeTopic((m_TopicDiscoveryPrefix + std::string("/#")).c_str());
 	}
@@ -728,13 +729,15 @@ void MQTT::SendHeartbeat()
 
 void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 {
+	if (!m_IsConnected)
+	{
+		Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
+		return;
+	}
+	if (Topic.empty())
+		return;
 	try
 	{
-		if (!m_IsConnected)
-		{
-			Log(LOG_STATUS, "Not Connected, failed to send message: %s", Message.c_str());
-			return;
-		}
 		publish(nullptr, Topic.c_str(), Message.size(), Message.c_str(), QOS, m_bRetain);
 	}
 	catch (...)
@@ -757,13 +760,15 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 	if (!m_IsConnected)
 		return;
 
+	if (m_TopicOut.empty())
+		return;
+
 	if (m_bPreventLoop && (DeviceRowIdx == m_LastUpdatedDeviceRowIdx))
 	{
 		// we should ignore this now
 		m_LastUpdatedDeviceRowIdx = 0;
 		return;
 	}
-
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description, LastLevel, Color, LastUpdate "
 				  "FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")",
@@ -901,6 +906,12 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 
 void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string & /*SceneName*/)
 {
+	if (!m_IsConnected)
+		return;
+
+	if (m_TopicOut.empty())
+		return;
+
 	if (m_bPreventLoop && (SceneIdx == m_LastUpdatedSceneRowIdx))
 	{
 		// we should ignore this now
