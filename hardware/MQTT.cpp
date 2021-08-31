@@ -1228,8 +1228,31 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		if (!root["brightness"].empty())
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
-		if (!root["color_mode"].empty())
-			pSensor->bBrightness = (root["color_mode"].asString() == "true");
+		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
+			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
+		if (!root["supported_color_modes"].empty())
+		{
+			// onoff, brightness, color_temp, hs, xy, rgb, rgbw, rgbww.
+			std::map<std::string, uint8_t> _modes;
+			for (const auto &itt : root["supported_color_modes"])
+			{
+				_modes[itt.asString()] = 1;
+			}
+			if (_modes.find("rgbww") != _modes.end())
+				pSensor->supported_color_modes = "rgbww";
+			else if (_modes.find("rgbw") != _modes.end())
+				pSensor->supported_color_modes = "rgbw";
+			else if (_modes.find("rgb") != _modes.end())
+				pSensor->supported_color_modes = "rgb";
+			else if (_modes.find("color_temp") != _modes.end())
+				pSensor->supported_color_modes = "color_temp";
+			else if (_modes.find("xy") != _modes.end())
+				pSensor->supported_color_modes = "xy";
+			else if (_modes.find("hs") != _modes.end())
+				pSensor->supported_color_modes = "hs";
+			if (_modes.find("brightness") != _modes.end())
+				pSensor->bBrightness = true;
+		}
 		
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
@@ -1675,14 +1698,39 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	pSensor->devType = pTypeGeneralSwitch;
 	pSensor->subType = sSwitchGeneralSwitch;
 
+	int switchType = STYPE_OnOff;
+
+	if (pSensor->bColor_mode)
+	{
+		pSensor->devType = pTypeColorSwitch;
+		pSensor->subType = sTypeColor_RGB;
+
+		if (pSensor->supported_color_modes == "rgb")
+			pSensor->subType = sTypeColor_RGB;
+		else if (pSensor->supported_color_modes == "rgbw")
+			pSensor->subType = sTypeColor_RGB_W_Z;
+		else if (pSensor->supported_color_modes == "rgbww")
+			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+		else
+		{
+			Log(LOG_ERROR, "Unhandled solor switch type '%s' (%s)", pSensor->supported_color_modes.c_str(), pSensor->name.c_str());
+			return;
+		}
+		switchType = STYPE_Dimmer;
+	}
+	else if (pSensor->bBrightness)
+	{
+		switchType = STYPE_Dimmer;
+	}
+
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 	if (result.empty())
 	{
 		// New switch, add it to the system
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-				 "VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, 0, "0");
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+				 "VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, 0, "0");
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 	}
 	if (result.empty())
@@ -1697,34 +1745,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	int nValue = atoi(result[0][2].c_str());
 	std::string sValue = result[0][3];
 	std::string sColor = result[0][4];
-	pSensor->subType = atoi(result[0][5].c_str());
+	int subType = atoi(result[0][5].c_str());
 
-	if (pSensor->bColor_mode == true)
-	{
-		//not finished yet
-		/*
-		unsigned sType = sSwitchGeneralSwitch;
-		switch (LType)
-		{
-			case HLTYPE_CW_WW:
-				sType = sTypeColor_CW_WW;
-				break;
-			case HLTYPE_RGB_CW_WW:
-				sType = sTypeColor_RGB_CW_WW;
-				break;
-			case HLTYPE_RGB_W:
-			//case HLTYPE_RGB:
-			default:
-				sType = sTypeColor_RGB_W;
-				break;
-		}
-		if (sType != pSensor->subType)
-		{
-			pSensor->subType = sType;
-			m_sql.UpdateDeviceValue("SubType", (int)sType, szIdx);
-		}
-		*/
-	}
+	if (pSensor->subType != subType)
+		m_sql.UpdateDeviceValue("SubType", subType, szIdx);
+	pSensor->subType = subType;
 
 	bool bOn = false;
 
@@ -1737,6 +1762,12 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	}
 	std::string szOnOffValue = pSensor->last_value;
 	int level = 0;
+
+	_tColor color_old;
+	_tColor color_new;
+	color_old.mode = ColorModeCustom;
+	color_new.mode = ColorModeCustom;
+	bool bHaveColorChange = false;
 
 	if (bIsJSON)
 	{
@@ -1751,6 +1782,51 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 			double dLevel = (100.0 / 255.0) * root["brightness"].asInt();
 			level = (int)dLevel;
 		}
+		if (!root["color"].empty())
+		{
+			Json::Value root_color;
+			bool ret = ParseJSon(sColor, root_color);
+			if (ret)
+			{
+				if (root_color.isObject())
+				{
+					color_old.fromJSON(root_color);
+				}
+			}
+
+			if (!root["color"]["r"].empty())
+				color_new.r = root["color"]["r"].asInt();
+			if (!root["color"]["g"].empty())
+				color_new.g = root["color"]["g"].asInt();
+			if (!root["color"]["b"].empty())
+				color_new.b = root["color"]["b"].asInt();
+			if (!root["color"]["c"].empty())
+				color_new.cw = root["color"]["c"].asInt();
+			if (!root["color"]["w"].empty())
+				color_new.ww = root["color"]["w"].asInt();
+
+			if ((!root["color"]["x"].empty()) && (!root["color"]["y"].empty()))
+			{
+				// convert xy to rgb
+				_tColor::RgbFromXY(root["color"]["x"].asDouble(), root["color"]["y"].asDouble(), color_new.r, color_new.g, color_new.b);
+			}
+			if ((!root["color"]["h"].empty()) && (!root["color"]["s"].empty()))
+			{
+				// convert hue/sat to rgb
+				float iHue = float(root["color"]["h"].asDouble()) * 360.0F / 65535.0F;
+				float iSat = float(root["color"]["s"].asDouble()) / 254.0F;
+				int r = 0;
+				int g = 0;
+				int b = 0;
+				hsb2rgb(iHue, iSat, 1.0F, r, g, b, 255);
+				color_new.r = (uint8_t)r;
+				color_new.g = (uint8_t)g;
+				color_new.b = (uint8_t)b;
+			}
+			std::string szColorOld = color_old.toJSONString();
+			std::string szColorNew = color_new.toJSONString();
+			bHaveColorChange = szColorOld != szColorNew;
+		}
 	}
 
 	if (level > 100)
@@ -1763,15 +1839,21 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	else
 		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON");
 
-			// check if we have a change, if not do not update it
+	// check if we have a change, if not do not update it
 	if ((!bOn) && (nValue == 0))
-		return;
+	{
+		if (!bHaveColorChange)
+			return;
+	}
 	if ((bOn && (nValue != 0)))
 	{
 		// Check Level
 		int slevel = atoi(sValue.c_str());
 		if (slevel == level)
-			return;
+		{
+			if (!bHaveColorChange)
+				return;
+		}
 	}
 	nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
 	sValue = std_format("%d", level);
@@ -1781,6 +1863,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 
 	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue, pSensor->sValue.c_str(),
 		       szDeviceName);
+	if (bHaveColorChange)
+		m_sql.UpdateDeviceValue("Color", color_new.toJSONString(), szIdx);
 }
 
 void MQTT::handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bRetained)
@@ -1829,6 +1913,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			szSendValue = pSensor->payload_off;
 		}
 	}
+	else if ((command == "Set Color") && (pSensor->component_type == "light"))
+	{
+		//That's valid
+	}
 	else
 	{
 		Log(LOG_ERROR, "Switch command not supported (%s - %s/%s)", command, DeviceID.c_str(), DeviceName.c_str());
@@ -1850,6 +1938,36 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		{
 			root["state"] = pSensor->payload_on;
 			root["brightness"] = (int)((255.0/100.0) * level);
+		}
+		else if (command == "Set Color")
+		{
+			if (pSensor->supported_color_modes == "xs")
+			{
+				double x, y, z;
+				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
+				root["color"]["x"] = x;
+				root["color"]["y"] = y;
+			}
+			else if (pSensor->supported_color_modes == "hs")
+			{
+				float hsb[3];
+				rgb2hsb(color.r, color.g, color.b, hsb);
+				root["color"]["h"] = hsb[0];
+				root["color"]["s"] = hsb[1];
+				root["brightness"] = hsb[1] * 255.0F;
+			}
+			else
+			{
+				root["state"] = pSensor->payload_on;
+				root["color"]["r"] = color.r;
+				root["color"]["g"] = color.g;
+				root["color"]["b"] = color.b;
+
+				if (pSensor->supported_color_modes == "rgbw")
+					root["color"]["c"] = color.cw;
+				else if (pSensor->supported_color_modes == "rgbww")
+					root["color"]["w"] = color.ww;
+			}
 		}
 		else
 		{

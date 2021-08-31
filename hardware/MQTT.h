@@ -31,6 +31,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 		bool bBrightness = false;
 		bool bColor_mode = false;
+		std::string supported_color_modes = "rgb";
 
 		int qos = 0;
 
