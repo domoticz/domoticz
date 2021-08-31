@@ -29,6 +29,9 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string state_on;
 		std::string state_off;
 
+		bool bBrightness = false;
+		bool bColor_mode = false;
+
 		int qos = 0;
 
 		std::map<std::string, std::string> keys;
@@ -89,7 +92,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 				const char *sValue, std::string &devname, bool bUseOnOffAction = true);
-	bool SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, const std::string &command, int level, _tColor color);
+	bool SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, std::string command, int level, _tColor color);
 
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
