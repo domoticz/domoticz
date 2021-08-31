@@ -20,12 +20,14 @@ class CZiBlueBase : public CDomoticzHardwareBase
 		ZIBLUE_STATE_DATA_ASCII
 	};
 
-      public:
+	public:
 	CZiBlueBase();
 	~CZiBlueBase() override = default;
+	virtual const std::string& GetManualSwitchesJsonConfiguration() const override;
+	virtual void GetManualSwitchParameters(const std::multimap<std::string, std::string> &parameters, _eSwitchType &switchtypeInOut, int &lighttypeInOut,
+					int &dtypeOut, int &dsubTypeOut,std::string &devidOut, std::string &sunitOut) const override;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
-	static void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);
-      private:
+	private:
 	void Init();
 	void OnConnected();
 	void OnDisconnected();

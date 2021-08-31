@@ -154,21 +154,22 @@ struct _tZiBlueStringIntHelper
 	int gType;
 };
 
-const _tZiBlueStringIntHelper ziblue_switches[] = {
-	{ "VISONIC 433", sSwitchTypeAB400D },
-	{ "VISONIC 868", sSwitchTypeWaveman },
+	const _tZiBlueStringIntHelper ziblue_switches[] = {
+	{ "VISONIC 433", sSwitchTypeVisonic433 },
+	{ "VISONIC 868", sSwitchTypeVisonic868 },
 	{ "CHACON", sSwitchTypeAC },
 	{ "DOMIA", sSwitchTypeARC },
 	{ "X10", sSwitchTypeX10 },
-	{ "X2D 433", sSwitchTypeEMW200 },
-	{ "X2D 868", sSwitchTypeIMPULS },
-	{ "X2D ELEC", sSwitchTypeRisingSun },
-	{ "X2D GAS", sSwitchTypePhilips },
+	{ "X2D 433", sSwitchTypeX2D433 },
+	{ "X2D 868", sSwitchTypeX2D868 },
+	{ "X2D SHUTTER", sSwitchTypeX2DShutter },
+	{ "X2D ELEC", sSwitchTypeX2DElec },
+	{ "X2D GAS", sSwitchTypeX2DGas },
 	{ "RTS", sSwitchTypeRTS },
 	{ "BLYSS", sSwitchTypeBlyss },
-	{ "PARROT", sSwitchTypeEnergenie },
-	{ "KD101", sSwitchTypeEnergenie5 },
-	{ "FS20 868", sSwitchTypeHomeConfort },
+	{ "PARROT", sSwitchTypeParrot },
+	{ "KD101", sSwitchTypeKD101 },
+	{ "FS20 868", sSwitchTypeFS20 },
 	{ "EDISIO", sSwitchTypeForest },
 	{ "JAMMING SIMU", sSwitchTypeRFCustom },
 	{ "JAMMING", -2 },
@@ -223,6 +224,106 @@ void CZiBlueBase::Init()
 	memset(&m_rfbuffer, 0, sizeof(m_rfbuffer));
 }
 
+static std::string jsonConfig="["
+	       "{\"idx\":\"1\",\"name\":\"Visonic 433MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"2\",\"name\":\"Visonic 868MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"3\",\"name\":\"Chacon\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"4\",\"name\":\"Domia\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"5\",\"name\":\"X10\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"6\",\"name\":\"X2D 433MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"7\",\"name\":\"X2D 868MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"8\",\"name\":\"X2D SHUTTER\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit  Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"9\",\"name\":\"X2D ELEC\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"10\",\"name\":\"X2D GAS\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"11\",\"name\":\"RTS\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"},{\"name\":\"qualifier\",\"display\":\"Qualifier\",\"type\":\"bool\"}]},"
+	       "{\"idx\":\"12\",\"name\":\"Blyss\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"13\",\"name\":\"Parrot\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"16\",\"name\":\"KD101\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"22\",\"name\":\"FS20 868\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
+	       "{\"idx\":\"23\",\"name\":\"EDISIO\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]}"
+			"]";
+const std::string &CZiBlueBase::GetManualSwitchesJsonConfiguration() const
+{
+	return jsonConfig;
+}
+void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> &parameters, _eSwitchType &switchtypeInOut, int &lighttypeInOut, 
+										int &dtypeOut, int &dsubTypeOut, std::string &devidOut, std::string &sunitOut) const
+{
+	dtypeOut = pTypeGeneralSwitch;
+	switch (lighttypeInOut)
+	{
+		case SEND_VISONIC_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeVisonic433;
+			break;
+		case SEND_VISONIC_PROTOCOL_868:
+			dsubTypeOut = sSwitchTypeVisonic868;
+			break;
+		case SEND_CHACON_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeAC;
+			break;
+		case SEND_DOMIA_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeARC;
+			break;
+		case SEND_X10_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeX10;
+			break;
+		case SEND_X2D_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeX2D433;
+			break;
+		case SEND_X2D_PROTOCOL_868:
+			dsubTypeOut = sSwitchTypeX2D868;
+			break;
+		case SEND_X2D_SHUTTER_PROTOCOL_868:
+			dsubTypeOut = sSwitchTypeX2DShutter;
+			break;
+		case SEND_X2D_HA_ELEC_PROTOCOL_868:
+			dsubTypeOut = sSwitchTypeX2DElec;
+			break;
+		case SEND_X2D_HA_GASOIL_PROTOCOL_868:
+			dsubTypeOut = sSwitchTypeX2DGas;
+			break;
+		case SEND_SOMFY_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeRTS;
+			break;
+		case SEND_BLYSS_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeBlyss;
+			break;
+		case SEND_PARROT:
+			dsubTypeOut = sSwitchTypeParrot;
+			break;
+		case SEND_KD101_PROTOCOL_433:
+			dsubTypeOut = sSwitchTypeKD101;
+			break;
+		case SEND_FS20_868:
+			dsubTypeOut = sSwitchTypeFS20;
+			break;
+	}
+	auto it = parameters.find("housecode");
+	if (it != parameters.end())
+	{
+		int ID = atoi(it->second.c_str());
+		std::stringstream s_strid;
+		s_strid << std::hex << ID;
+		devidOut = s_strid.str();
+	}
+	it = parameters.find("unitcode");
+	if (it != parameters.end())
+	{
+		sunitOut = it->second;
+	}
+	if (lighttypeInOut == SEND_SOMFY_PROTOCOL_433)
+	{
+		it = parameters.find("qualifier");
+		if (it != parameters.end())
+		{
+			int id = atoi(devidOut.c_str());
+			int qualifier = it->second == "true" ? 1 : 0; 
+			id |= qualifier << 16;
+			devidOut = std::to_string(id);
+		}
+	}
+}
+
 void CZiBlueBase::OnConnected()
 {
 	Init();
@@ -247,13 +348,13 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (pSwitch->type != pTypeGeneralSwitch)
 		return false;
-	std::string switchtype = GetGeneralZiBlueFromInt(ziblue_switches, pSwitch->subtype);
-	if (switchtype.empty())
+	std::string protocol = GetGeneralZiBlueFromInt(ziblue_switches, pSwitch->subtype);
+	if (protocol.empty())
 	{
 		Log(LOG_ERROR, "trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
-	else if (switchtype == "JAMMING")
+	else if (protocol == "JAMMING")
 	{
 		// JAMMING is read only
 		return false;
@@ -315,83 +416,97 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		_tOutgoingFrame oFrame;
 
 		std::stringstream sstr;
-		if (switchtype == "X10")
+		if (protocol == "X10")
 		{
 			oFrame.protocol = SEND_X10_PROTOCOL_433;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+			// no return state, so change its value now
+			sDecodeRXMessage(this, (const unsigned char *)&pSwitch, "X10", 100, m_Name.c_str());
 		}
-		else if (switchtype == "CHACON")
+		else if (protocol == "CHACON")
 		{
 			oFrame.protocol = SEND_CHACON_PROTOCOL_433;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+			// no return state, so change its value now
+			sDecodeRXMessage(this, (const unsigned char *)&pSwitch, "Chacon", 100, m_Name.c_str());
 		}
-		else if (switchtype == "DOMIA")
+		else if (protocol == "DOMIA")
 		{
 			oFrame.protocol = SEND_DOMIA_PROTOCOL_433;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+			// no return state, so change its value now
+			sDecodeRXMessage(this, (const unsigned char *)&pSwitch, "Domia", 100, m_Name.c_str());
 		}
-		else if (switchtype == "RTS")
+		else if (protocol == "RTS")
 		{
 			oFrame.protocol = SEND_SOMFY_PROTOCOL_433;
-			oFrame.ID_1 = ((((pSwitch->id&0xFF)) << 4) + (pSwitch->unitcode - 1));
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 			oFrame.qualifier = (pSwitch->id & 0x00FF0000) != 0 ? 1 : 0;
+			// no return state, so change its value now
+			sDecodeRXMessage(this, (const unsigned char *)&pSwitch, "RTS", 100, m_Name.c_str());
 		}
-		else if (switchtype == "VISONIC 433")
+		else if (protocol == "VISONIC 433")
 		{
 			oFrame.protocol = SEND_VISONIC_PROTOCOL_433;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "VISONIC 868")
+		else if (protocol == "VISONIC 868")
 		{
 			oFrame.protocol = SEND_VISONIC_PROTOCOL_868;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "X2D 433")
+		else if (protocol == "X2D 433")
 		{
 			oFrame.protocol = SEND_X2D_PROTOCOL_433;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "X2D 868")
+		else if (protocol == "X2D 868")
 		{
 			oFrame.protocol = SEND_X2D_PROTOCOL_868;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "X2D ELEC")
+		else if (protocol == "X2D SHUTTER")
+		{
+			oFrame.protocol = SEND_X2D_SHUTTER_PROTOCOL_868;
+			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (protocol == "X2D ELEC")
 		{
 			oFrame.protocol = SEND_X2D_HA_ELEC_PROTOCOL_868;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "X2D GAS")
+		else if (protocol == "X2D GAS")
 		{
 			oFrame.protocol = SEND_X2D_HA_GASOIL_PROTOCOL_868;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "BLYSS")
+		else if (protocol == "BLYSS")
 		{
 			oFrame.protocol = SEND_BLYSS_PROTOCOL_433;
 			oFrame.ID_1 = ((((pSwitch->id & 0xFF) - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "PARROT")
+		else if (protocol == "PARROT")
 		{
 			oFrame.protocol = SEND_PARROT;
 			oFrame.ID_1 = (((pSwitch->id - 65) << 4) + (pSwitch->unitcode - 1));
+			sDecodeRXMessage(this, (const unsigned char *)&pSwitch, "Parrot", 100, m_Name.c_str());
 		}
-		else if (switchtype == "KD101")
+		else if (protocol == "KD101")
 		{
 			oFrame.protocol = SEND_KD101_PROTOCOL_433;
 			oFrame.ID_1 = ((((pSwitch->id & 0xFF) - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		else if (switchtype == "FS20 868")
+		else if (protocol == "FS20 868")
 		{
 			oFrame.protocol = SEND_FS20_868;
 			oFrame.ID_1 = ((((pSwitch->id & 0xFF) - 65) << 4) + (pSwitch->unitcode - 1));
 		}
-		//else if (switchtype == "EDISIO")
-		//{
-		//	oFrame.protocol = SEND_EDISIO;
-		//	oFrame.ID_1 = (((pSwitch->id - 10) << 4) + (pSwitch->unitcode - 1));
-		//}
-		else if (switchtype == "JAMMING SIMU") // active jamming simulation
+		else if (protocol == "EDISIO")
+		{
+			oFrame.protocol = SEND_EDISIO;
+			oFrame.ID_1 = (((pSwitch->id - 10) << 4) + (pSwitch->unitcode - 1));
+		}
+		else if (protocol == "JAMMING SIMU") // active jamming simulation
 		{
 			WriteInt("ZIA++JAMMING SIMULATE\r");
 			return true;
@@ -1021,129 +1136,4 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 	Log(LOG_NORM, "----------------");
 #endif
 	return true;
-}
-void CZiBlueBase::ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
-{
-	if (dtype == pTypeLighting1)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeIMPULS)
-			subtype = sSwitchTypeIMPULS;
-		if (subtype == sTypeAB400D)
-			subtype = sSwitchTypeAB400D;
-		std::stringstream s_strid;
-		s_strid << std::hex << atoi(devid.c_str());
-		devid = s_strid.str();
-		devid = "000000" + devid;
-	}
-	else if (dtype == pTypeLighting2)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeAC)
-			subtype = sSwitchTypeAC;
-		if (subtype == sTypeHEU)
-		{
-			subtype = sSwitchTypeHEU;
-		}
-		if (subtype == sTypeKambrook)
-			subtype = sSwitchTypeKambrook;
-	}
-	else if (dtype == pTypeLighting3)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeKoppla)
-			subtype = sSwitchTypeKoppla;
-	}
-	else if (dtype == pTypeLighting4)
-	{
-		dtype = pTypeGeneralSwitch;
-	}
-	else if (dtype == pTypeLighting5)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeEMW100)
-		{
-			subtype = sSwitchTypeEMW100;
-			devid = "00" + devid;
-		}
-		if (subtype == sTypeLivolo)
-		{
-			subtype = sSwitchTypeLivolo;
-			devid = "00" + devid;
-		}
-		if (subtype == sTypeLightwaveRF)
-		{
-			subtype = sSwitchTypeLightwaveRF;
-			devid = "00" + devid;
-		}
-		if (subtype == sTypeLivolo1to10)
-		{
-			subtype = sSwitchTypeLivoloAppliance;
-			devid = "00" + devid;
-		}
-		if (subtype == sTypeEurodomest)
-			subtype = sSwitchTypeEurodomest;
-	}
-	else if (dtype == pTypeLighting6)
-	{
-		dtype = pTypeGeneralSwitch;
-		subtype = sSwitchTypeBlyss;
-	}
-	else if (dtype == pTypeChime)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeByronSX)
-			subtype = sSwitchTypeByronSX;
-		if (subtype == sTypeSelectPlus)
-			subtype = sSwitchTypeSelectPlus;
-		if (subtype == sTypeByronBY)
-			subtype = sSwitchTypeSelectPlus3;
-		if (subtype == sTypeByronMP001)
-			subtype = sSwitchTypeByronMP001;
-	}
-	else if (dtype == pTypeSecurity1)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeSecX10)
-			subtype = sSwitchTypeX10secu;
-		if (subtype == sTypeSecX10M)
-			subtype = sSwitchTypeX10secu;
-		if (subtype == sTypeSecX10R)
-			subtype = sSwitchTypeX10secu;
-	}
-	else if (dtype == pTypeHomeConfort)
-	{
-		dtype = pTypeGeneralSwitch;
-		subtype = sSwitchTypeHomeConfort;
-	}
-	else if (dtype == pTypeBlinds)
-	{
-		dtype = pTypeGeneralSwitch;
-		if (subtype == sTypeBlindsT5)
-			subtype = sSwitchTypeBofu;
-		else if (subtype == sTypeBlindsT6)
-			subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT7)
-			subtype = sSwitchTypeDooya;
-		else if (subtype == sTypeBlindsT8)
-			subtype = sSwitchTypeBofu;
-		else if (subtype == sTypeBlindsT9)
-			subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT10)
-			subtype = sSwitchTypeDooya;
-		std::stringstream s_strid;
-		s_strid << std::hex << strtoul(devid.c_str(), nullptr, 16);
-		unsigned long deviceid = 0;
-		s_strid >> deviceid;
-		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-		char szTmp[20];
-		sprintf(szTmp, "%08lX", deviceid);
-		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
-		devid = szTmp;
-	}
-	else if (dtype == pTypeRFY)
-	{
-		dtype = pTypeGeneralSwitch;
-		subtype = sSwitchTypeRTS;
-	}
 }
