@@ -303,7 +303,7 @@ void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std
 	{
 		int ID = atoi(it->second.c_str());
 		std::stringstream s_strid;
-		s_strid << std::hex << ID;
+		s_strid << std::hex << std::setfill('0') << std::setw(8) << ID;
 		devidOut = s_strid.str();
 	}
 	it = parameters.find("unitcode");
@@ -319,7 +319,9 @@ void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std
 			int id = atoi(devidOut.c_str());
 			int qualifier = it->second == "true" ? 1 : 0; 
 			id |= qualifier << 16;
-			devidOut = std::to_string(id);
+			std::stringstream temp;
+			temp << std::setfill('0') << std::setw(8) << id;
+			devidOut = temp.str();
 		}
 	}
 }
