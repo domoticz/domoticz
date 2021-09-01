@@ -997,24 +997,27 @@ void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
 
 void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 {
-	Json::Value root;
-
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char *)message->payload, (char *)message->payload + message->payloadlen);
 
 	if (qMessage.empty())
 		return;
 
-	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
-
-	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
-
 	std::string component;
 	std::string node_id;
 	std::string object_id;
 	std::string action;
-
 	std::vector<std::string> strarray;
+	Json::Value root;
+
+	bool ret = ParseJSon(qMessage, root);
+	if ((!ret) || (!root.isObject()))
+		goto disovery_invaliddata;
+
+	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
+
+	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
+
 	StringSplit(topic, "/", strarray);
 
 	if (strarray.size()== 1)
@@ -1057,10 +1060,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 	{
 		return;
 	}
-
-	bool ret = ParseJSon(qMessage, root);
-	if ((!ret) || (!root.isObject()))
-		goto disovery_invaliddata;
 
 	if (action != "config")
 	{
@@ -1638,6 +1637,12 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 		subType = sTypeVoltage;
 		pSensor->sValue = pSensor->last_value;
 	}
+	else if (szUnit == "mV")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeVoltage;
+		pSensor->sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str()))/1000.0F);
+	}
 	else if (szUnit == "A")
 	{
 		devType = pTypeGeneral;
@@ -2054,7 +2059,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	}
 	else
 	{
-		Log(LOG_ERROR, "Switch command not supported (%s - %s/%s)", command, DeviceID.c_str(), DeviceName.c_str());
+		Log(LOG_ERROR, "Switch command not supported (%s - %s/%s)", command.c_str(), DeviceID.c_str(), DeviceName.c_str());
 		return false;
 	}
 
