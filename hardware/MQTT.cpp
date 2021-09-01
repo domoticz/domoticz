@@ -1747,7 +1747,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 						bFoundHum = true;
 						pFoundHumSensor = pDeviceSensor;
 					}
-					else if (pDeviceSensor->devType == pTypeBARO)
+					else if ((pDeviceSensor->devType == pTypeGeneral) && (pDeviceSensor->subType == sTypeBaro))
 					{
 						if (bFoundBaro)
 							bIsValid = false; // multiple found
