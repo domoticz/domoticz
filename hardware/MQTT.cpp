@@ -1125,21 +1125,22 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		pDevice->identifiers = device_identifiers;
 		if (!root["device"]["name"].empty())
 			pDevice->name = root["device"]["name"].asString();
-		if (!root["dev"]["name"].empty())
+		else if (!root["dev"]["name"].empty())
 			pDevice->name = root["dev"]["name"].asString();
 		if (pDevice->name.empty())
 			pDevice->name = pDevice->identifiers;
+
 		if (!root["device"]["sw_version"].empty())
 			pDevice->sw_version = root["device"]["sw_version"].asString();
-		if (!root["dev"]["sw"].empty())
+		else if (!root["dev"]["sw"].empty())
 			pDevice->sw_version = root["dev"]["sw"].asString();
 		if (!root["device"]["model"].empty())
 			pDevice->model = root["device"]["model"].asString();
-		if (!root["dev"]["mdl"].empty())
+		else if (!root["dev"]["mdl"].empty())
 			pDevice->model = root["dev"]["mdl"].asString();
 		if (!root["device"]["manufacturer"].empty())
 			pDevice->manufacturer = root["device"]["manufacturer"].asString();
-		if (!root["dev"]["mf"].empty())
+		else if (!root["dev"]["mf"].empty())
 			pDevice->manufacturer = root["dev"]["mf"].asString();
 
 		for (const auto ittMember : root["device"].getMemberNames())
@@ -1177,24 +1178,45 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		if (!root["availability_topic"].empty())
 			pSensor->availability_topic = root["availability_topic"].asString();
-		if (!root["avty_t"].empty())
+		else if (!root["avty_t"].empty())
 			pSensor->availability_topic = root["avty_t"].asString();
+		else
+		{
+			Json::Value rootAvailability;
+			if (!root["availability"].empty())
+				rootAvailability = root["availability"];
+			else if (!root["avty"].empty())
+				rootAvailability = root["avty"];
+			for (const auto &ittAvail : rootAvailability)
+			{
+				if (!ittAvail["topic"].empty())
+					pSensor->availability_topic = ittAvail["topic"].asString();
+				if (!ittAvail["payload_available"].empty())
+					pSensor->payload_available = ittAvail["payload_available"].asString();
+				if (!ittAvail["payload_not_available"].empty())
+					pSensor->payload_not_available = ittAvail["payload_not_available"].asString();
+			}
+		}
 		if (!root["state_topic"].empty())
 			pSensor->state_topic = root["state_topic"].asString();
-		if (!root["stat_t"].empty())
+		else if (!root["stat_t"].empty())
 			pSensor->state_topic = root["stat_t"].asString();
+		else if (!root["json_attributes_topic"].empty())
+			pSensor->state_topic = root["json_attributes_topic"].asString();
+
 		if (!root["command_topic"].empty())
 			pSensor->command_topic = root["command_topic"].asString();
-		if (!root["cmd_t"].empty())
+		else if (!root["cmd_t"].empty())
 			pSensor->command_topic = root["cmd_t"].asString();
+		
 		if (!root["unit_of_measurement"].empty())
 			pSensor->unit_of_measurement = root["unit_of_measurement"].asString();
-		if (!root["unit_of_meas"].empty())
+		else if (!root["unit_of_meas"].empty())
 			pSensor->unit_of_measurement = root["unit_of_meas"].asString();
 
 		if (!root["value_template"].empty())
 			pSensor->value_template = root["value_template"].asString();
-		if (!root["val_tpl"].empty())
+		else if (!root["val_tpl"].empty())
 			pSensor->value_template = root["val_tpl"].asString();
 		stdreplace(pSensor->value_template, "{", "");
 		stdreplace(pSensor->value_template, "}", "");
@@ -1203,31 +1225,31 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		if (!root["icon"].empty())
 			pSensor->icon = root["icon"].asString();
-		if (!root["ic"].empty())
+		else if (!root["ic"].empty())
 			pSensor->icon = root["ic"].asString();
 		if (!root["payload_on"].empty())
 			pSensor->payload_on = root["payload_on"].asString();
-		if (!root["pl_on"].empty())
+		else if (!root["pl_on"].empty())
 			pSensor->payload_on = root["pl_on"].asString();
 		if (!root["payload_off"].empty())
 			pSensor->payload_off = root["payload_off"].asString();
-		if (!root["pl_off"].empty())
+		else if (!root["pl_off"].empty())
 			pSensor->payload_off = root["pl_off"].asString();
 		if (!root["payload_available"].empty())
 			pSensor->payload_available = root["payload_available"].asString();
-		if (!root["pl_avail"].empty())
+		else if (!root["pl_avail"].empty())
 			pSensor->payload_available = root["pl_avail"].asString();
 		if (!root["payload_not_available"].empty())
 			pSensor->payload_not_available = root["payload_not_available"].asString();
-		if (!root["pl_not_avail"].empty())
+		else if (!root["pl_not_avail"].empty())
 			pSensor->payload_not_available = root["pl_not_avail"].asString();
 		if (!root["state_on"].empty())
 			pSensor->state_on = root["state_on"].asString();
-		if (!root["stat_on"].empty())
+		else if (!root["stat_on"].empty())
 			pSensor->state_on = root["stat_on"].asString();
 		if (!root["state_off"].empty())
 			pSensor->state_on = root["state_off"].asString();
-		if (!root["stat_off"].empty())
+		else if (!root["stat_off"].empty())
 			pSensor->state_on = root["stat_off"].asString();
 
 		if (!root["brightness"].empty())
