@@ -1436,7 +1436,7 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 			std::string szLogMessage = std_format("%s (value: %s", pSensor->name.c_str(), pSensor->last_value.c_str());
 			if (!pSensor->unit_of_measurement.empty())
 			{
-				szLogMessage += " " + pSensor->unit_of_measurement;
+				szLogMessage += " " + utf8_to_string(pSensor->unit_of_measurement);
 			}
 			szLogMessage += ")";
 			Log(LOG_NORM, "MQTT received: %s", szLogMessage.c_str());
@@ -1586,9 +1586,12 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	}
 	else if (szUnit == "%")
 	{
-		if (pSensor->state_topic.find("humidity") != std::string::npos)
+		if (
+			(pSensor->object_id.find("humidity") != std::string::npos)
+			|| (pSensor->state_topic.find("humidity") != std::string::npos)
+			|| (pSensor->unique_id.find("humidity") != std::string::npos))
 		{
-			bool bIsHum = true;
+			bIsHum = true;
 			devType = pTypeHUM;
 			subType = sTypeHUM2;
 			pSensor->nValue = atoi(pSensor->last_value.c_str());
@@ -1604,7 +1607,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	}
 	else if (szUnit == "hPa")
 	{
-		bool bIsBaro = true;
+		bIsBaro = true;
 		devType = pTypeGeneral;
 		subType = sTypeBaro;
 		pSensor->szOptions = pSensor->unit_of_measurement;
