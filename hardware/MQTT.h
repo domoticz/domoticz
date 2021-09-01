@@ -12,6 +12,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string config;
 
 		std::string component_type;
+		std::string object_id;
 		std::string unique_id;
 		std::string device_identifiers;
 		std::string name;
@@ -90,6 +91,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_camera(_tMQTTASensor *pSensor, const bool bRetained);
+	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
+	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 
 	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 				const char *sValue, std::string &devname, bool bUseOnOffAction = true);

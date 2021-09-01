@@ -599,6 +599,8 @@ void MQTT::on_disconnect(int rc)
 				Log(LOG_ERROR, "disconnected, restarting (rc=%d)", rc);
 			}
 			m_subscribed_topics.clear();
+			m_discovered_devices.clear();
+			m_discovered_sensors.clear();
 			m_bDoReconnect = true;
 		}
 	}
@@ -995,6 +997,8 @@ void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
 
 void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 {
+	Json::Value root;
+
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char *)message->payload, (char *)message->payload + message->payloadlen);
 
@@ -1045,11 +1049,18 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		|| (object_id == "over-load_status")
 		|| (object_id.find("battery") == 0)
 		|| (object_id == "linkquality")
+		|| (object_id == "sensitivity")
 		|| (object_id == "color_temp_startup")
+		|| (object_id == "requested_brightness_level")
+		|| (object_id == "requested_brightness_percent")
 		)
 	{
 		return;
 	}
+
+	bool ret = ParseJSon(qMessage, root);
+	if ((!ret) || (!root.isObject()))
+		goto disovery_invaliddata;
 
 	if (action != "config")
 	{
@@ -1071,11 +1082,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 	
 	try
 	{
-		Json::Value root;
-		bool ret = ParseJSon(qMessage, root);
-		if ((!ret) || (!root.isObject()))
-			goto disovery_invaliddata;
-
 		std::string sensor_unique_id;
 		if (!root["unique_id"].empty())
 			sensor_unique_id = root["unique_id"].asString();
@@ -1185,6 +1191,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
 		_tMQTTASensor *pSensor = &m_discovered_sensors[sensor_unique_id];
 		pSensor->unique_id = sensor_unique_id;
+		pSensor->object_id = object_id;
 		pSensor->config = qMessage;
 		pSensor->component_type = component;
 		pSensor->device_identifiers = device_identifiers;
@@ -1234,6 +1241,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->value_template = root["val_tpl"].asString();
 		stdreplace(pSensor->value_template, "{", "");
 		stdreplace(pSensor->value_template, "}", "");
+		stdstring_trim(pSensor->value_template);
+
 		if (pSensor->value_template.find("value_json") == 0)
 			pSensor->value_template = pSensor->value_template.substr(strlen("value_json."));
 
@@ -1290,8 +1299,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 				pSensor->supported_color_modes = "xy";
 			else if (_modes.find("hs") != _modes.end())
 				pSensor->supported_color_modes = "hs";
-			else if (_modes.find("color_temp") != _modes.end())
-				pSensor->supported_color_modes = "color_temp";
 			if (_modes.find("brightness") != _modes.end())
 				pSensor->bBrightness = true;
 		}
@@ -1487,6 +1494,53 @@ void MQTT::handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std:
 	}
 }
 
+MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
+{
+	//Retrieved sensor from same device with specified measurement unit
+	_tMQTTADevice* pDevice = &m_discovered_devices[pSensor->device_identifiers];
+	if (pDevice == nullptr)
+		return nullptr; //device not found!?
+
+	for (const auto ittSensorID : pDevice->sensor_ids)
+	{
+		if (m_discovered_sensors.find(ittSensorID.first) != m_discovered_sensors.end())
+		{
+			_tMQTTASensor* pDeviceSensor = &m_discovered_sensors[ittSensorID.first];
+			if (pDeviceSensor->unit_of_measurement == szMeasurementUnit)
+				return pDeviceSensor;
+		}
+	}
+	return nullptr;
+}
+
+MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const uint8_t devType, const int subType, const int devUnit)
+{
+	//Retrieved sensor from same device with specified device type/subtype/unit
+	_tMQTTADevice* pDevice = &m_discovered_devices[pSensor->device_identifiers];
+	if (pDevice == nullptr)
+		return nullptr; //device not found!?
+
+	for (const auto ittSensorID : pDevice->sensor_ids)
+	{
+		if (m_discovered_sensors.find(ittSensorID.first) != m_discovered_sensors.end())
+		{
+			_tMQTTASensor* pDeviceSensor = &m_discovered_sensors[ittSensorID.first];
+			if (pDeviceSensor->devType == devType)
+			{
+				if ((pDeviceSensor->subType == subType) || (subType == -1))
+				{
+					if ((pDeviceSensor->devUnit == devUnit) || (devUnit == -1))
+					{
+						return pDeviceSensor;
+					}
+				}
+			}
+		}
+	}
+	return nullptr;
+
+}
+
 void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bRetained)
 {
 	pSensor->devUnit = 1;
@@ -1582,8 +1636,33 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
-		pSensor->szOptions = pSensor->unit_of_measurement;
 		pSensor->sValue = pSensor->last_value;
+	}
+	else if (szUnit == "A")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeCurrent;
+		pSensor->sValue = pSensor->last_value;
+	}
+	else if (szUnit == "W")
+	{
+		devType = pTypeUsage;
+		subType = sTypeElectric;
+		pSensor->sValue = pSensor->last_value;
+	}
+	else if (szUnit == "kWh")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeKwh;
+
+		float fUsage = 0;
+		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str()));
+		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "W");
+		if (pWattSensor)
+		{
+			fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+		}
+		pSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
 	}
 	else if (szUnit == "Text")
 	{
@@ -1754,7 +1833,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 		else if (pSensor->supported_color_modes == "rgbww")
 			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
 		else if (pSensor->supported_color_modes == "color_temp")
+		{
+			//Actually I think this is just a normal white bulb
 			pSensor->subType = sTypeColor_RGB;
+		}
 		else
 		{
 			Log(LOG_ERROR, "Unhandled color switch type '%s' (%s)", pSensor->supported_color_modes.c_str(), pSensor->name.c_str());
