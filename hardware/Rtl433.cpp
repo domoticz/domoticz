@@ -442,6 +442,7 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		SendLuxSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, lux, model);
 		bHandled = true;
 	}
+
 	if (!strcmp(model.c_str(), "X10-Security"))
 	{
 		// More X10 sensors can be added if their codes are known
