@@ -120,7 +120,7 @@ bool MQTT::StopHardware()
 
 void MQTT::on_subscribe(int /*mid*/, int /*qos_count*/, const int * /*granted_qos*/)
 {
-	Log(LOG_STATUS, "Subscribed");
+	//Log(LOG_STATUS, "Subscribed");
 	m_IsConnected = true;
 }
 
@@ -1036,6 +1036,21 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		action = strarray[3];
 	}
 
+	//skip some non-needed types, they will be transmitted in the state topic anyways (for 90%)
+	if (
+		(object_id == "update_available")
+		|| (object_id == "power_on_behavior")
+		|| (object_id == "power_outage_memory")
+		|| (object_id == "update_state")
+		|| (object_id == "over-load_status")
+		|| (object_id.find("battery") == 0)
+		|| (object_id == "linkquality")
+		|| (object_id == "color_temp_startup")
+		)
+	{
+		return;
+	}
+
 	if (action != "config")
 	{
 		Log(LOG_ERROR, "MQTT_Discovery: Something other then 'config' received on discovery topic! (%s/%s)!", topic.c_str(), qMessage.c_str());
@@ -1061,13 +1076,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		if ((!ret) || (!root.isObject()))
 			goto disovery_invaliddata;
 
-		if (root["name"].empty())
-		{
-			//Yes it's optional... but this should be required
-			Log(LOG_ERROR, "MQTT_Discovery: Not all required fields received! (name)");
-			goto disovery_invaliddata;
-		}
-
 		std::string sensor_unique_id;
 		if (!root["unique_id"].empty())
 			sensor_unique_id = root["unique_id"].asString();
@@ -1077,6 +1085,12 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		{
 			//It's optional, but good to have one
 			sensor_unique_id = GenerateUUID();
+		}
+
+		if (root["name"].empty())
+		{
+			//Yes it's optional... but this should be required.. wierd
+			root["name"] = sensor_unique_id;
 		}
 
 		std::string device_identifiers;
@@ -1276,6 +1290,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 				pSensor->supported_color_modes = "xy";
 			else if (_modes.find("hs") != _modes.end())
 				pSensor->supported_color_modes = "hs";
+			else if (_modes.find("color_temp") != _modes.end())
+				pSensor->supported_color_modes = "color_temp";
 			if (_modes.find("brightness") != _modes.end())
 				pSensor->bBrightness = true;
 		}
@@ -1303,8 +1319,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			}
 		}
 		else if (
-			(pSensor->component_type == "binary_sensor")
-			|| (pSensor->component_type == "switch")
+			//(pSensor->component_type == "binary_sensor")
+			(pSensor->component_type == "switch")
 			|| (pSensor->component_type == "light"))
 		{
 			if (pSensor->command_topic.empty())
@@ -1737,9 +1753,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 			pSensor->subType = sTypeColor_RGB_W_Z;
 		else if (pSensor->supported_color_modes == "rgbww")
 			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+		else if (pSensor->supported_color_modes == "color_temp")
+			pSensor->subType = sTypeColor_RGB;
 		else
 		{
-			Log(LOG_ERROR, "Unhandled solor switch type '%s' (%s)", pSensor->supported_color_modes.c_str(), pSensor->name.c_str());
+			Log(LOG_ERROR, "Unhandled color switch type '%s' (%s)", pSensor->supported_color_modes.c_str(), pSensor->name.c_str());
 			return;
 		}
 		switchType = STYPE_Dimmer;
@@ -1799,7 +1817,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	{
 		if (root["state"].empty())
 		{
-			Log(LOG_ERROR, "Unhandled state received '%s' (%s)", pSensor->last_value.c_str(), szDeviceName);
+			Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
 			return;
 		}
 		szOnOffValue = root["state"].asString();
@@ -1849,6 +1867,15 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 				color_new.g = (uint8_t)g;
 				color_new.b = (uint8_t)b;
 			}
+			std::string szColorOld = color_old.toJSONString();
+			std::string szColorNew = color_new.toJSONString();
+			bHaveColorChange = szColorOld != szColorNew;
+		}
+		else if (!root["color_temp"].empty())
+		{
+			float CT = root["color_temp"].asFloat();
+			float iCt = (float(CT) - 153.0F) / (500.0F - 153.0F) * 255.0F;
+			color_new = _tColor((uint8_t)round(iCt), ColorModeTemp);
 			std::string szColorOld = color_old.toJSONString();
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
@@ -1967,7 +1994,14 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 		else if (command == "Set Color")
 		{
-			if (pSensor->supported_color_modes == "xs")
+			if (pSensor->supported_color_modes == "xy")
+			{
+				double x, y, z;
+				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
+				root["color"]["x"] = x;
+				root["color"]["y"] = y;
+			}
+			else if (pSensor->supported_color_modes == "color_temp") //seen as XY, should it be Hue ?
 			{
 				double x, y, z;
 				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
