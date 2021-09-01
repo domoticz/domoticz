@@ -173,7 +173,11 @@ void MQTT::on_connect(int rc)
 			Log(LOG_STATUS, "Default input topic disabled in settings...");
 
 		if (!m_TopicDiscoveryPrefix.empty())
+		{
 			SubscribeTopic((m_TopicDiscoveryPrefix + std::string("/#")).c_str());
+			//Send online status
+			SendMessage(m_TopicDiscoveryPrefix + std::string("/status"), "online");
+		}
 	}
 	else
 	{
