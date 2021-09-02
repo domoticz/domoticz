@@ -286,6 +286,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 		lux = ( (float)atof(data["light_klx"].c_str()) ) * 1000;
 		haveLux = true;
 	}
+	if (FindField(data, "light_lux"))
+	{
+		lux = (float)atof(data["light_lux"].c_str());
+		haveLux = true;
+	}
 	if (FindField(data, "snr"))
 	{
 		/* Map the received Signal to Noise Ratio to the domoticz RSSI 4-bit field that has range of 0-11 (12-15 display '-' in device tab).
