@@ -1228,7 +1228,31 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->command_topic = root["command_topic"].asString();
 		else if (!root["cmd_t"].empty())
 			pSensor->command_topic = root["cmd_t"].asString();
-		
+
+		if (!root["position_topic"].empty())
+			pSensor->position_topic = root["position_topic"].asString();
+		if (!root["pos_t"].empty())
+			pSensor->position_topic = root["pos_t"].asString();
+		if (!root["position_template"].empty())
+			pSensor->position_template = root["position_template"].asString();
+		if (!root["pos_tpl"].empty())
+			pSensor->position_template = root["pos_tpl"].asString();
+		stdreplace(pSensor->position_template, "{", "");
+		stdreplace(pSensor->position_template, "}", "");
+		stdstring_trim(pSensor->position_template);
+
+		if (!root["set_position_topic"].empty())
+			pSensor->set_position_topic = root["set_position_topic"].asString();
+		else if (!root["set_pos_t"].empty())
+			pSensor->set_position_topic = root["set_pos_t"].asString();
+		if (!root["set_position_template"].empty())
+			pSensor->set_position_template = root["set_position_template"].asString();
+		if (!root["set_pos_tpl"].empty())
+			pSensor->set_position_template = root["set_pos_tpl"].asString();
+		stdreplace(pSensor->set_position_template, "{", "");
+		stdreplace(pSensor->set_position_template, "}", "");
+		stdstring_trim(pSensor->set_position_template);
+
 		if (!root["unit_of_measurement"].empty())
 			pSensor->unit_of_measurement = root["unit_of_measurement"].asString();
 		else if (!root["unit_of_meas"].empty())
@@ -1327,7 +1351,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		else if (
 			//(pSensor->component_type == "binary_sensor")
 			(pSensor->component_type == "switch")
-			|| (pSensor->component_type == "light"))
+			|| (pSensor->component_type == "light")
+			)
 		{
 			if (pSensor->command_topic.empty())
 			{
@@ -1336,13 +1361,17 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			}
 			InsertUpdateSwitch(pSensor);
 		}
+		else if (pSensor->component_type == "cover")
+		{
+			InsertUpdateSwitch(pSensor);
+		}
 
 		//Check if we want to subscribe to this sensor
 		bool bDoSubscribe = false;
 
 		//Only add component_type = "sensor" for now
 		bDoSubscribe =
-			((pSensor->component_type == "sensor") || (pSensor->component_type == "binary_sensor") || (pSensor->component_type == "switch") || (pSensor->component_type == "light"));
+			((pSensor->component_type == "sensor") || (pSensor->component_type == "binary_sensor") || (pSensor->component_type == "switch") || (pSensor->component_type == "light") || (pSensor->component_type == "cover"));
 
 		if (bDoSubscribe)
 		{
@@ -1353,6 +1382,10 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			if (!pSensor->state_topic.empty())
 			{
 				SubscribeTopic(pSensor->state_topic, pSensor->qos);
+			}
+			if (!pSensor->position_topic.empty())
+			{
+				SubscribeTopic(pSensor->position_topic, pSensor->qos);
 			}
 		}
 	}
@@ -1378,7 +1411,10 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 	{
 		_tMQTTASensor *pSensor = &itt.second;
 
-		if (pSensor->state_topic == topic)
+		if (
+			(pSensor->state_topic == topic)
+			|| (pSensor->position_topic == topic)
+			)
 		{
 			bool bIsJSON = false;
 			Json::Value root;
@@ -1458,6 +1494,8 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 				handle_auto_discovery_binary_sensor(pSensor, message->retain);
 			else if (pSensor->component_type == "light")
 				handle_auto_discovery_light(pSensor, message->retain);
+			else if (pSensor->component_type == "cover")
+				handle_auto_discovery_cover(pSensor, message->retain);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -1549,7 +1587,7 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor
 
 }
 
-void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bRetained)
+void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const bool bRetained)
 {
 	pSensor->devUnit = 1;
 	int devType = pTypeGeneral;
@@ -1567,7 +1605,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 
 	if (szUnit.empty())
 	{
-		char *p;
+		char* p;
 		double converted = strtod(pSensor->last_value.c_str(), &p);
 		if (*p)
 		{
@@ -1582,7 +1620,12 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 		// probably WIFI strength, should be handled differently and used as signal strength
 		return;
 	}
-	else if (szUnit == "°C")
+	else if (
+		(szUnit == "°C")
+		|| (szUnit == "C")
+		|| (pSensor->value_template.find("temperature") != std::string::npos)
+		|| (pSensor->state_topic.find("temperature") != std::string::npos)
+		)
 	{
 		bIsTemp = true;
 		devType = pTypeTEMP;
@@ -1598,7 +1641,9 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 		if (
 			(pSensor->object_id.find("humidity") != std::string::npos)
 			|| (pSensor->state_topic.find("humidity") != std::string::npos)
-			|| (pSensor->unique_id.find("humidity") != std::string::npos))
+			|| (pSensor->unique_id.find("humidity") != std::string::npos)
+			|| (pSensor->value_template.find("humidity") != std::string::npos)
+			)
 		{
 			bIsHum = true;
 			devType = pTypeHUM;
@@ -1617,6 +1662,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	else if (
 		(szUnit == "hPa")
 		|| (szUnit == "kPa")
+		|| (pSensor->value_template.find("pressure") != std::string::npos)
 		)
 	{
 		bIsBaro = true;
@@ -1818,7 +1864,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	}
 }
 
-void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
+void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
 	pSensor->devUnit = 1;
 	pSensor->devType = pTypeGeneralSwitch;
@@ -1853,6 +1899,13 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	{
 		switchType = STYPE_Dimmer;
 	}
+	else if (
+		(!pSensor->position_topic.empty())
+		|| (!pSensor->set_position_topic.empty())
+		)
+	{
+		switchType = STYPE_BlindsPercentage;
+	}
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
@@ -1860,8 +1913,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	{
 		// New switch, add it to the system
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-				 "VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, 0, "0");
+			"VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+			m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, 0, "0");
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 	}
 	if (result.empty())
@@ -1912,6 +1965,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 		{
 			double dLevel = (100.0 / 255.0) * root["brightness"].asInt();
 			level = (int)dLevel;
+		}
+		if (!root["position"].empty())
+		{
+			level = root["position"].asInt();
 		}
 		if (!root["color"].empty())
 		{
@@ -1968,22 +2025,45 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 			bHaveColorChange = szColorOld != szColorNew;
 		}
 	}
+	else {
+		if (is_number(szOnOffValue))
+		{
+			//must be a level
+			level = atoi(szOnOffValue.c_str());
+			if (level > 0)
+			{
+				if (level != 100)
+					szOnOffValue = "Set Level";
+				else
+					szOnOffValue = "on";
+			}
+			else
+				szOnOffValue = "off";
+		}
+	}
 
 	if (level > 100)
 		level = 100;
+
+	int slevel = atoi(sValue.c_str());
+	bool bHaveLevelChange = (slevel != level);
+
 
 	if (szOnOffValue == pSensor->payload_on)
 		bOn = true;
 	else if (szOnOffValue == pSensor->payload_off)
 		bOn = false;
 	else
-		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON") || (szOnOffValue == "true");
+		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON") || (szOnOffValue == "true") || (szOnOffValue == "Set Level");
 
 	// check if we have a change, if not do not update it
 	if ((!bOn) && (nValue == 0))
 	{
-		if (!bHaveColorChange)
-			return;
+		if (!bHaveLevelChange)
+		{
+			if (!bHaveColorChange)
+				return;
+		}
 	}
 	if ((bOn && (nValue != 0)))
 	{
@@ -1995,14 +2075,20 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 				return;
 		}
 	}
-	nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+	if (szOnOffValue == "Set Level")
+	{
+		nValue = gswitch_sSetLevel;
+	}
+	else
+		nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+
 	sValue = std_format("%d", level);
-	
+
 	pSensor->nValue = nValue;
 	pSensor->sValue = sValue;
 
 	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue, pSensor->sValue.c_str(),
-		       szDeviceName);
+		szDeviceName);
 	if (bHaveColorChange)
 		m_sql.UpdateDeviceValue("Color", color_new.toJSONString(), szIdx);
 }
@@ -2022,6 +2108,11 @@ void MQTT::handle_auto_discovery_light(_tMQTTASensor *pSensor, const bool bRetai
 	InsertUpdateSwitch(pSensor);
 }
 
+void MQTT::handle_auto_discovery_cover(_tMQTTASensor* pSensor, const bool bRetained)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
 bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, std::string command, int level, _tColor color)
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
@@ -2033,7 +2124,9 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 	if (
 		(pSensor->component_type != "switch")
-		&& (pSensor->component_type != "light"))
+		&& (pSensor->component_type != "light")
+		&& (pSensor->component_type != "cover")
+		)
 	{
 		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
 		return false;
@@ -2065,7 +2158,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 	if (pSensor->component_type == "light")
 	{
-		//convert to JSON
 		Json::Value root;
 
 		if (
@@ -2127,7 +2219,68 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			return false;
 		}
 
-		szSendValue = root.toStyledString();
+		szSendValue = JSonToRawString(root);
+	}
+	else if (pSensor->component_type == "cover")
+	{
+		Json::Value root;
+
+		if (command == "Set Level")
+		{
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+			if (!result.empty())
+			{
+				m_sql.safe_query(
+					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
+					level, result[0][0].c_str());
+			}
+			if (!pSensor->set_position_topic.empty())
+			{
+				if (pSensor->set_position_template.empty())
+				{
+					szSendValue = std::to_string(level);
+				}
+				else
+				{
+					std::vector<std::string> strarray;
+					StringSplit(pSensor->set_position_template, ":", strarray);
+					if (strarray.size() == 2)
+					{
+						std::string szKey = strarray[0];
+						stdreplace(szKey, "\"","");
+						stdstring_trim(szKey);
+						root[szKey] = level;
+						szSendValue = JSonToRawString(root);
+					}
+					else
+					{
+						Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+						return false;
+					}
+				}
+				SendMessage(pSensor->set_position_topic, szSendValue);
+
+			}
+			else {
+				Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+				return false;
+			}
+		}
+		else if (command == "On")
+		{
+			szSendValue = "CLOSE";
+		}
+		else if (command == "Off")
+		{
+			szSendValue = "OPEN";
+		}
+		else if (command == "Stop")
+		{
+			szSendValue = "STOP";
+		}
+		SendMessage(pSensor->command_topic, szSendValue);
+		return true;
 	}
 
 	SendMessage(pSensor->command_topic, szSendValue);

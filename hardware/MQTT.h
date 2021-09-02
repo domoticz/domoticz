@@ -16,11 +16,19 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string unique_id;
 		std::string device_identifiers;
 		std::string name;
+
 		std::string availability_topic;
 		std::string state_topic;
 		std::string command_topic;
+		std::string position_topic;
+		std::string set_position_topic;
+
 		std::string unit_of_measurement;
+
 		std::string value_template;
+		std::string position_template;
+		std::string set_position_template;
+
 		std::string icon;
 
 		std::string payload_on = "ON";
@@ -90,7 +98,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const bool bRetained);
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained);
-	void handle_auto_discovery_camera(_tMQTTASensor *pSensor, const bool bRetained);
+	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const bool bRetained);
+	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const bool bRetained);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 
@@ -137,7 +146,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void StopMQTT();
 	void Do_Work();
 	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
-	void InsertUpdateSwitch(_tMQTTASensor *pSensor);
+	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
