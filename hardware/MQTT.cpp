@@ -1597,9 +1597,6 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const bool bReta
 	bool bIsTemp = false;
 	bool bIsHum = false;
 	bool bIsBaro = false;
-	float temp = 0;
-	int humidity = 0;
-	float baro = 0;
 
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
 
@@ -1631,7 +1628,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const bool bReta
 		devType = pTypeTEMP;
 		subType = sTypeTEMP1;
 
-		temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+		float temp = static_cast<float>(atof(pSensor->last_value.c_str()));
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
 		pSensor->sValue = std_format("%.1f", temp);
@@ -1771,6 +1768,10 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const bool bReta
 		int nValue = 0;
 		std::string sValue;
 
+		float temp = 0;
+		int humidity = 0;
+		float pressure = 0;
+
 		_tMQTTASensor* pTempSensor = (bIsTemp) ? pSensor : nullptr;
 		_tMQTTASensor* pHumSensor = (bIsHum) ? pSensor : nullptr;
 		_tMQTTASensor* pBaroSensor = (bIsBaro) ? pSensor : nullptr;
@@ -1781,6 +1782,17 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const bool bReta
 			pHumSensor = get_auto_discovery_sensor_unit(pSensor, pTypeHUM, sTypeHUM2);
 		if (!pBaroSensor)
 			pBaroSensor = get_auto_discovery_sensor_unit(pSensor, pTypeGeneral, sTypeBaro);
+
+		if (pTempSensor)
+			temp = static_cast<float>(atof(pTempSensor->last_value.c_str()));
+		if (pHumSensor)
+			humidity = pHumSensor->nValue;
+		if (pBaroSensor)
+		{
+			pressure = static_cast<float>(atof(pBaroSensor->last_value.c_str()));
+			if (pBaroSensor->unit_of_measurement == "kPa")
+				pressure *= 10.0F;
+		}
 
 		if (pTempSensor && pHumSensor && pBaroSensor)
 		{
@@ -1795,22 +1807,27 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const bool bReta
 			devType = pTypeTEMP_HUM_BARO;
 			subType = sTypeTHBFloat;
 			uint8_t nforecast = wsbaroforecast_some_clouds;
-			if (baro <= 980)
+			if (pressure <= 980)
 				nforecast = wsbaroforecast_heavy_rain;
-			else if (baro <= 995)
+			else if (pressure <= 995)
 			{
 				if (temp > 1)
 					nforecast = wsbaroforecast_rain;
 				else
 					nforecast = wsbaroforecast_snow;
 			}
-			else if (baro >= 1029)
+			else if (pressure >= 1029)
 				nforecast = wsbaroforecast_sunny;
-			sValue = std_format("%.1f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), baro, nforecast);
+			sValue = std_format("%.1f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), pressure, nforecast);
 		}
 		else if (pTempSensor && pHumSensor)
 		{
 			//Temp + Hum
+			if (
+				(pTempSensor->last_received == 0) 
+				|| (pHumSensor->last_received == 0)
+				)
+				return; // not all 2 received yet
 			devType = pTypeTEMP_HUM;
 			subType = sTypeTH1;
 			sValue = std_format("%.1f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
