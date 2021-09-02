@@ -1390,6 +1390,15 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 			std::string szValue;
 			if (bIsJSON)
 			{
+				if (!root["linkquality"].empty())
+				{
+					pSensor->SignalLevel = (int)round((10.0F / 255.0F) * root["linkquality"].asFloat());
+				}
+				if (!root["battery"].empty())
+				{
+					pSensor->BatteryLevel = root["battery"].asInt();
+				}
+				
 				std::string value_template = pSensor->value_template;
 				if (!value_template.empty())
 				{
@@ -1550,6 +1559,9 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	bool bIsTemp = false;
 	bool bIsHum = false;
 	bool bIsBaro = false;
+	float temp = 0;
+	int humidity = 0;
+	float baro = 0;
 
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
 
@@ -1576,12 +1588,9 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 		devType = pTypeTEMP;
 		subType = sTypeTEMP1;
 
-		float temp = static_cast<float>(atof(pSensor->last_value.c_str()));
-
+		temp = static_cast<float>(atof(pSensor->last_value.c_str()));
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
-
 		temp += AddjValue;
-
 		pSensor->sValue = std_format("%.1f", temp);
 	}
 	else if (szUnit == "%")
@@ -1605,13 +1614,17 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 			pSensor->sValue = pSensor->last_value;
 		}
 	}
-	else if (szUnit == "hPa")
+	else if (
+		(szUnit == "hPa")
+		|| (szUnit == "kPa")
+		)
 	{
 		bIsBaro = true;
 		devType = pTypeGeneral;
 		subType = sTypeBaro;
-		pSensor->szOptions = pSensor->unit_of_measurement;
 		float pressure = static_cast<float>(atof(pSensor->last_value.c_str()));
+		if (szUnit == "kPa")
+			pressure *= 10.0F;
 		int nforecast = bmpbaroforecast_cloudy;
 		if (pressure <= 980)
 			nforecast = bmpbaroforecast_thunderstorm;
@@ -1672,6 +1685,16 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 		}
 		pSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
 	}
+	else if (
+		(szUnit == "lx")
+		||(szUnit == "lux")
+		|| (pSensor->state_topic.find("illuminance_lux") != std::string::npos)
+		)
+	{
+		devType = pTypeLux;
+		subType = sTypeLux;
+		pSensor->sValue = std_format("%.0f", static_cast<float>(atof(pSensor->last_value.c_str())));
+	}
 	else if (szUnit == "Text")
 	{
 		devType = pTypeGeneral;
@@ -1692,131 +1715,105 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bReta
 	pSensor->devType = devType;
 	pSensor->subType = subType;
 
-	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
-				  pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType);
-	if (result.empty())
+	if (bIsTemp || bIsHum || bIsBaro)
 	{
-		//Insert
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, Options, nValue, sValue) "
-				 "VALUES (%d, '%q', %d, %d, %d, %d, %d, '%q', %d, '1;%q', %d, '%q')",
-				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1,
-				 pSensor->szOptions.c_str(), pSensor->nValue, pSensor->sValue.c_str());
+		if (m_discovered_devices.find(pSensor->device_identifiers) == m_discovered_devices.end())
+			return; //not discovered yet!?
+
+		std::string szDeviceID = pSensor->device_identifiers;
+		std::string sDeviceName = m_discovered_devices[pSensor->device_identifiers].name;
+		int nValue = 0;
+		std::string sValue;
+
+		_tMQTTASensor* pTempSensor = (bIsTemp) ? pSensor : nullptr;
+		_tMQTTASensor* pHumSensor = (bIsHum) ? pSensor : nullptr;
+		_tMQTTASensor* pBaroSensor = (bIsBaro) ? pSensor : nullptr;
+
+		if (!pTempSensor)
+			pTempSensor = get_auto_discovery_sensor_unit(pSensor, pTypeTEMP, sTypeTEMP1);
+		if (!pHumSensor)
+			pHumSensor = get_auto_discovery_sensor_unit(pSensor, pTypeHUM, sTypeHUM2);
+		if (!pBaroSensor)
+			pBaroSensor = get_auto_discovery_sensor_unit(pSensor, pTypeGeneral, sTypeBaro);
+
+		if (pTempSensor && pHumSensor && pBaroSensor)
+		{
+			//Temp + Hum + Baro
+			if (
+				(pTempSensor->last_received == 0)
+				|| (pHumSensor->last_received == 0)
+				|| (pBaroSensor->last_received == 0)
+				)
+				return; //not all 3 received yet
+			//make a new sensor and use the 'device_identifier' as ID
+			devType = pTypeTEMP_HUM_BARO;
+			subType = sTypeTHBFloat;
+			uint8_t nforecast = wsbaroforecast_some_clouds;
+			if (baro <= 980)
+				nforecast = wsbaroforecast_heavy_rain;
+			else if (baro <= 995)
+			{
+				if (temp > 1)
+					nforecast = wsbaroforecast_rain;
+				else
+					nforecast = wsbaroforecast_snow;
+			}
+			else if (baro >= 1029)
+				nforecast = wsbaroforecast_sunny;
+			sValue = std_format("%.1f;%d;%d;%.1f;%d", temp, humidity, Get_Humidity_Level(humidity), baro, nforecast);
+		}
+		else if (pTempSensor && pHumSensor)
+		{
+			//Temp + Hum
+			devType = pTypeTEMP_HUM;
+			subType = sTypeTH1;
+			sValue = std_format("%.1f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
+		}
+		else
+		{
+			devType = pSensor->devType;
+			subType = pSensor->subType;
+			nValue = pSensor->nValue;
+			sValue = pSensor->sValue;
+		}
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, szDeviceID.c_str(), 1, devType, subType);
+		if (result.empty())
+		{
+			// Insert
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+				"VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				m_HwdID, szDeviceID.c_str(), devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, sDeviceName.c_str(), 1, nValue, sValue.c_str());
+		}
+		else
+		{
+			// Update
+			if (bRetained)
+				return; // only update when a new value is received
+			UpdateValueInt(m_HwdID, szDeviceID.c_str(), 1, devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, nValue, sValue.c_str(), result[0][0]);
+		}
 	}
 	else
 	{
-		//Update
-
-		if (bRetained)
-			return; //only update when a new value is received
-
-		UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-				  pSensor->sValue.c_str(), result[0][0]);
-	}
-
-	if ((bIsTemp || bIsHum || bIsBaro) && (!bRetained))
-	{
-		// try to combine them into once device
-		// find root device, check if there is (one of each!) temp/hum(/baro) and if found combine the sensor
-		bool bIsValid = true;
-		bool bFoundTemp = false;
-		bool bFoundHum = false;
-		bool bFoundBaro = false;
-		_tMQTTASensor *pFoundTempSensor = nullptr;
-		_tMQTTASensor *pFoundHumSensor = nullptr;
-		_tMQTTASensor *pFoundBaroSensor = nullptr;
-		if (m_discovered_devices.find(pSensor->device_identifiers) != m_discovered_devices.end())
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+			pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType);
+		if (result.empty())
 		{
-			_tMQTTADevice *pDevice = &m_discovered_devices[pSensor->device_identifiers];
-			for (const auto ittSensor : pDevice->sensor_ids)
-			{
-				if (m_discovered_sensors.find(ittSensor.first) != m_discovered_sensors.end())
-				{
-					_tMQTTASensor *pDeviceSensor = &m_discovered_sensors[ittSensor.first];
-					if (pDeviceSensor->devType == pTypeTEMP)
-					{
-						if (bFoundTemp)
-							bIsValid = false; // multiple found
-						bFoundTemp = true;
-						pFoundTempSensor = pDeviceSensor;
-					}
-					else if (pDeviceSensor->devType == pTypeHUM)
-					{
-						if (bFoundHum)
-							bIsValid = false; // multiple found
-						bFoundHum = true;
-						pFoundHumSensor = pDeviceSensor;
-					}
-					else if ((pDeviceSensor->devType == pTypeGeneral) && (pDeviceSensor->subType == sTypeBaro))
-					{
-						if (bFoundBaro)
-							bIsValid = false; // multiple found
-						bFoundBaro = true;
-						pFoundBaroSensor = pDeviceSensor;
-					}
-				}
-			}
+			//Insert
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, Options, nValue, sValue) "
+				"VALUES (%d, '%q', %d, %d, %d, %d, %d, '%q', %d, '1;%q', %d, '%q')",
+				m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1,
+				pSensor->szOptions.c_str(), pSensor->nValue, pSensor->sValue.c_str());
 		}
-		if (bIsValid)
+		else
 		{
-			if (
-				(bFoundTemp && bFoundHum & bFoundBaro)
-				|| (bFoundTemp && bFoundHum))
-			{
-				//make a new sensor and use the 'device_identifier' as ID
-				std::string szDeviceID = pSensor->device_identifiers;
-				std::string sDeviceName = m_discovered_devices[pSensor->device_identifiers].name;
-				int nValue = 0;
-				std::string sValue;
-				devType = 0;
-				subType = 0;
-				float Temp = static_cast<float>(atof(pFoundTempSensor->last_value.c_str()));
-				int Hum = pFoundHumSensor->nValue;
-				if (bFoundTemp && bFoundHum & bFoundBaro)
-				{
-					devType = pTypeTEMP_HUM_BARO;
-					subType = sTypeTHBFloat;
-					float Baro = static_cast<float>(atof(pFoundBaroSensor->last_value.c_str()));
-
-					uint8_t nforecast = wsbaroforecast_some_clouds;
-					if (Baro <= 980)
-						nforecast = wsbaroforecast_heavy_rain;
-					else if (Baro <= 995)
-					{
-						if (Temp > 1)
-							nforecast = wsbaroforecast_rain;
-						else
-							nforecast = wsbaroforecast_snow;
-					}
-					else if (Baro >= 1029)
-						nforecast = wsbaroforecast_sunny;
-					sValue = std_format("%.1f;%d;%d;%.1f;%d", Temp, Hum, Get_Humidity_Level(Hum), Baro, nforecast);
-				}
-				else if (bFoundTemp && bFoundHum)
-				{
-					devType = pTypeTEMP_HUM;
-					subType = sTypeTH1;
-					sValue = std_format("%.1f;%d;%d", Temp, Hum, Get_Humidity_Level(Hum));
-				}
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-							  m_HwdID, szDeviceID.c_str(), 1, devType, subType);
-				if (result.empty())
-				{
-					// Insert
-					m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-							 "VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-							 m_HwdID, szDeviceID.c_str(), devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, sDeviceName.c_str(), 1, nValue, sValue.c_str());
-				}
-				else
-				{
-					// Update
-
-					if (bRetained)
-						return; // only update when a new value is received
-					UpdateValueInt(m_HwdID, szDeviceID.c_str(), 1, devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, nValue, sValue.c_str(), result[0][0]);
-				}
-			}
+			//Update
+			if (bRetained)
+				return; //only update when a new value is received
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+				pSensor->sValue.c_str(), result[0][0]);
 		}
 	}
 }
@@ -1980,7 +1977,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor *pSensor)
 	else if (szOnOffValue == pSensor->payload_off)
 		bOn = false;
 	else
-		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON");
+		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON") || (szOnOffValue == "true");
 
 	// check if we have a change, if not do not update it
 	if ((!bOn) && (nValue == 0))
@@ -2075,7 +2072,12 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			(command == "On")
 			|| (command == "Off"))
 		{
-			root["state"] = szSendValue;
+			if (szSendValue == "true")
+				root["state"] = true;
+			else if (szSendValue == "false")
+				root["state"] = false;
+			else
+				root["state"] = szSendValue;
 		}
 		else if (command == "Set Level")
 		{
