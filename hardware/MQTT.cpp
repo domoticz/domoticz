@@ -995,6 +995,40 @@ void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
 	}
 }
 
+void MQTT::CleanValueTemplate(std::string &szValueTemplate)
+{
+	stdreplace(szValueTemplate, "{", "");
+	stdreplace(szValueTemplate, "}", "");
+	stdstring_trim(szValueTemplate);
+}
+
+std::string MQTT::GetValueTemplateKey(const std::string &szValueTemplate)
+{
+	std::string szKey;
+	std::vector<std::string> strarray;
+
+	if (szValueTemplate.find("value_json.") != std::string::npos)
+	{
+		StringSplit(szValueTemplate, ".", strarray);
+		if (strarray.size() == 2)
+		{
+			szKey = strarray[1];
+		}
+
+	}
+	else
+	{
+		StringSplit(szValueTemplate, ":", strarray);
+		if (strarray.size() == 2)
+		{
+			szKey = strarray[0];
+			stdreplace(szKey, "\"", "");
+		}
+	}
+	stdstring_trim(szKey);
+	return szKey;
+}
+
 void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
@@ -1237,9 +1271,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->position_template = root["position_template"].asString();
 		if (!root["pos_tpl"].empty())
 			pSensor->position_template = root["pos_tpl"].asString();
-		stdreplace(pSensor->position_template, "{", "");
-		stdreplace(pSensor->position_template, "}", "");
-		stdstring_trim(pSensor->position_template);
+		CleanValueTemplate(pSensor->position_template);
 
 		if (!root["set_position_topic"].empty())
 			pSensor->set_position_topic = root["set_position_topic"].asString();
@@ -1249,9 +1281,26 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->set_position_template = root["set_position_template"].asString();
 		if (!root["set_pos_tpl"].empty())
 			pSensor->set_position_template = root["set_pos_tpl"].asString();
-		stdreplace(pSensor->set_position_template, "{", "");
-		stdreplace(pSensor->set_position_template, "}", "");
-		stdstring_trim(pSensor->set_position_template);
+		CleanValueTemplate(pSensor->set_position_template);
+
+		if (!root["brightness_command_topic"].empty())
+			pSensor->brightness_command_topic = root["brightness_command_topic"].asString();
+		else if (!root["bri_cmd_t"].empty())
+			pSensor->brightness_command_topic = root["bri_cmd_t"].asString();
+		if (!root["brightness_state_topic"].empty())
+			pSensor->brightness_state_topic = root["brightness_state_topic"].asString();
+		else if (!root["bri_stat_t"].empty())
+			pSensor->brightness_state_topic = root["bri_stat_t"].asString();
+		if (!root["brightness_scale"].empty())
+			pSensor->brightness_scale = root["brightness_scale"].asFloat();
+		else if (!root["bri_scl"].empty())
+			pSensor->brightness_scale = root["bri_scl"].asFloat();
+		if (!root["brightness_value_template"].empty())
+			pSensor->brightness_value_template = root["brightness_value_template"].asString();
+		else if (!root["bri_val_tpl"].empty())
+			pSensor->brightness_value_template = root["bri_val_tpl"].asString();
+		CleanValueTemplate(pSensor->brightness_value_template);
+		
 
 		if (!root["unit_of_measurement"].empty())
 			pSensor->unit_of_measurement = root["unit_of_measurement"].asString();
@@ -1262,9 +1311,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->value_template = root["value_template"].asString();
 		else if (!root["val_tpl"].empty())
 			pSensor->value_template = root["val_tpl"].asString();
-		stdreplace(pSensor->value_template, "{", "");
-		stdreplace(pSensor->value_template, "}", "");
-		stdstring_trim(pSensor->value_template);
+		CleanValueTemplate(pSensor->value_template);
 
 		if (pSensor->value_template.find("value_json") == 0)
 			pSensor->value_template = pSensor->value_template.substr(strlen("value_json."));
@@ -1386,6 +1433,10 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			if (!pSensor->position_topic.empty())
 			{
 				SubscribeTopic(pSensor->position_topic, pSensor->qos);
+			}
+			if (!pSensor->brightness_state_topic.empty())
+			{
+				SubscribeTopic(pSensor->brightness_state_topic, pSensor->qos);
 			}
 		}
 	}
@@ -1905,6 +1956,12 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			//Actually I think this is just a normal white bulb
 			pSensor->subType = sTypeColor_RGB;
 		}
+		else if (pSensor->supported_color_modes == "brightness")
+		{
+			//a normal dimmer
+			pSensor->devType = pTypeGeneralSwitch;
+			pSensor->subType = sSwitchGeneralSwitch;
+		}
 		else
 		{
 			Log(LOG_ERROR, "Unhandled color switch type '%s' (%s)", pSensor->supported_color_modes.c_str(), pSensor->name.c_str());
@@ -1912,7 +1969,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		switchType = STYPE_Dimmer;
 	}
-	else if (pSensor->bBrightness)
+	else if (
+		(pSensor->bBrightness)
+		||(!pSensor->brightness_command_topic.empty())
+		||(!pSensor->brightness_state_topic.empty())
+		)
 	{
 		switchType = STYPE_Dimmer;
 	}
@@ -2191,7 +2252,26 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		else if (command == "Set Level")
 		{
 			root["state"] = pSensor->payload_on;
-			root["brightness"] = (int)((255.0/100.0) * level);
+			int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
+
+			if (!pSensor->brightness_value_template.empty())
+			{
+				std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
+				if (!szKey.empty())
+					root[szKey] = slevel;
+				else
+				{
+					Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+					return false;
+				}
+			}
+			else
+				root["brightness"] = slevel;
+
+			szSendValue = JSonToRawString(root);
+			std::string szTopic = (!pSensor->brightness_command_topic.empty()) ? pSensor->brightness_command_topic : pSensor->set_position_topic;
+			SendMessage(szTopic, szSendValue);
+			return true;
 		}
 		else if (command == "Set Color")
 		{
@@ -2260,13 +2340,9 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				}
 				else
 				{
-					std::vector<std::string> strarray;
-					StringSplit(pSensor->set_position_template, ":", strarray);
-					if (strarray.size() == 2)
+					std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
+					if (!szKey.empty())
 					{
-						std::string szKey = strarray[0];
-						stdreplace(szKey, "\"","");
-						stdstring_trim(szKey);
 						root[szKey] = level;
 						szSendValue = JSonToRawString(root);
 					}

@@ -22,12 +22,15 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string command_topic;
 		std::string position_topic;
 		std::string set_position_topic;
+		std::string brightness_command_topic;
+		std::string brightness_state_topic;
 
 		std::string unit_of_measurement;
 
 		std::string value_template;
 		std::string position_template;
 		std::string set_position_template;
+		std::string brightness_value_template;
 
 		std::string icon;
 
@@ -39,6 +42,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string state_off;
 
 		bool bBrightness = false;
+		float brightness_scale = 254.0F;
+
 		bool bColor_mode = false;
 		std::string supported_color_modes = "rgb";
 
@@ -147,6 +152,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void Do_Work();
 	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
+	void CleanValueTemplate(std::string &szValueTemplate);
+	std::string GetValueTemplateKey(const std::string &szValueTemplate);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
