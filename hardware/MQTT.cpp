@@ -1954,7 +1954,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		else if (pSensor->supported_color_modes == "color_temp")
 		{
 			//Actually I think this is just a normal white bulb
-			pSensor->subType = sTypeColor_RGB;
+			pSensor->subType = sTypeColor_CW_WW;
 		}
 		else if (pSensor->supported_color_modes == "brightness")
 		{
@@ -2282,12 +2282,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				root["color"]["x"] = x;
 				root["color"]["y"] = y;
 			}
-			else if (pSensor->supported_color_modes == "color_temp") //seen as XY, should it be Hue ?
+			else if (pSensor->supported_color_modes == "color_temp") //seen as XY
 			{
-				double x, y, z;
-				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
-				root["color"]["x"] = x;
-				root["color"]["y"] = y;
+				//color.cw color.ww t
+				root["color"]["color_temp"] = (int)((500.0/255.0)*color.t);
 			}
 			else if (pSensor->supported_color_modes == "hs")
 			{
