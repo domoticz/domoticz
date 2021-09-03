@@ -47,6 +47,18 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		bool bColor_mode = false;
 		std::string supported_color_modes = "rgb";
 
+		//Climate
+		std::string mode_command_topic;
+		std::string mode_state_topic;
+		std::string mode_state_template;
+		std::vector<std::string> climate_modes;
+		std::string temperature_command_topic;
+		std::string temperature_state_topic;
+		std::string temperature_state_template;
+		std::string temperature_unit = "C";
+		std::string current_temperature_topic;
+		std::string current_temperature_template;
+
 		int qos = 0;
 
 		std::map<std::string, std::string> keys;
@@ -98,13 +110,14 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void on_auto_discovery_message(const struct mosquitto_message *message);
 	void handle_auto_discovery_sensor_message(const struct mosquitto_message *message);
 
-	void handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std::string &payload, const bool bRetained);
-	void handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const bool bRetained);
-	void handle_auto_discovery_switch(_tMQTTASensor *pSensor, const bool bRetained);
-	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const bool bRetained);
-	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const bool bRetained);
-	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const bool bRetained);
-	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const bool bRetained);
+	void handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std::string &payload, const struct mosquitto_message* message);
+	void handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_switch(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 
