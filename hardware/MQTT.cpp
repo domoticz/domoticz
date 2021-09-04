@@ -2402,7 +2402,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			else if (pSensor->supported_color_modes == "color_temp") //seen as XY
 			{
 				//color.cw color.ww t
-				root["color"]["color_temp"] = (int)((500.0/255.0)*color.t);
+				root["color_temp"] = (int)((500.0/255.0)*color.t);
 			}
 			else if (pSensor->supported_color_modes == "hs")
 			{
