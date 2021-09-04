@@ -581,7 +581,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		goto mqttinvaliddata;
 	}
 mqttinvaliddata:
-	Log(LOG_ERROR, "Invalid data received!");
+	Log(LOG_ERROR, "Invalid/Unhandled data received! (Topic: %s, Message: %s)", topic.c_str(), qMessage.c_str());
 }
 
 void MQTT::on_disconnect(int rc)
@@ -1490,7 +1490,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 	}
 	return;
 disovery_invaliddata:
-	Log(LOG_ERROR, "MQTT_Discovery: Invalid data received!");
+	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (Topic: %s, Message: %s)", topic.c_str(), qMessage.c_str());
 }
 
 void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *message)
@@ -2386,7 +2386,11 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				root["brightness"] = slevel;
 
 			szSendValue = JSonToRawString(root);
-			std::string szTopic = (!pSensor->brightness_command_topic.empty()) ? pSensor->brightness_command_topic : pSensor->set_position_topic;
+			std::string szTopic = pSensor->command_topic;
+			if (!pSensor->brightness_command_topic.empty())
+				szTopic = pSensor->brightness_command_topic;
+			else if (!pSensor->set_position_topic.empty())
+				szTopic = pSensor->set_position_topic;
 			SendMessage(szTopic, szSendValue);
 			return true;
 		}
