@@ -2424,6 +2424,22 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				else if (pSensor->supported_color_modes == "rgbww")
 					root["color"]["w"] = color.ww;
 			}
+			int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
+
+			if (!pSensor->brightness_value_template.empty())
+			{
+				std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
+				if (!szKey.empty())
+					root[szKey] = slevel;
+				else
+				{
+					Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+					return false;
+				}
+			}
+			else
+				root["brightness"] = slevel;
+
 		}
 		else
 		{
