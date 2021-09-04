@@ -12625,6 +12625,10 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	if (hindex == -1)
 		return false;
 
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
 	unsigned long ID;
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
@@ -12639,9 +12643,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	uint8_t dSubType = atoi(sd[4].c_str());
 	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
 	//
 	//	For plugins all the specific logic below is irrelevent
 	//	so just send the full details to the plugin so that it can take appropriate action
@@ -12670,7 +12671,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) ||
-		(pHardware->HwdType == HTYPE_OpenWebNetTCP)
+		(pHardware->HwdType == HTYPE_OpenWebNetTCP) ||
+		(pHardware->HwdType == HTYPE_MQTT)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -12746,6 +12748,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		{
 			COpenWebNetTCP* pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
 			return pGateway->SetSetpoint(ID, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_MQTT)
+		{
+			MQTT *pGateway = reinterpret_cast<MQTT*>(pHardware);
+			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}
 	else

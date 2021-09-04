@@ -2284,13 +2284,37 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		}
 		else
 			temp_setpoint = static_cast<float>(atof(qMessage.c_str()));
+
+		pSensor->nValue = 0;
+		pSensor->sValue = std_format("%.2f", temp_setpoint);
+		pSensor->devType = pTypeThermostat;
+		pSensor->subType = sTypeThermSetpoint;
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+					  pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+		if (result.empty())
+		{
+			// Insert
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+					 "VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+					 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1,
+					 pSensor->nValue, pSensor->sValue.c_str());
+		}
+		else
+		{
+			// Update
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+				       pSensor->sValue.c_str(),
+				       result[0][0]);
+		}
+
 	}
 	if (pSensor->current_temperature_topic == topic)
 	{
 		float temp_current = 0;
 		if (bIsJSON)
 		{
-			//Current Setpoint
+			//Current temperature
 			if (!pSensor->current_temperature_template.empty())
 			{
 				std::string szKey = GetValueTemplateKey(pSensor->current_temperature_template);
@@ -2305,6 +2329,37 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		}
 		else
 			temp_current = static_cast<float>(atof(qMessage.c_str()));
+
+		pSensor->devType = pTypeTEMP;
+		pSensor->subType = sTypeTEMP1;
+
+		pSensor->nValue = 0;
+
+		float AddjValue = 0.0F;
+		float AddjMulti = 1.0F;
+
+		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, AddjValue, AddjMulti);
+		temp_current += AddjValue;
+		pSensor->sValue = std_format("%.1f", temp_current);
+
+		pSensor->subType = sTypeThermSetpoint;
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+					  pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+		if (result.empty())
+		{
+			// Insert
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+					 "VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+					 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1,
+					 pSensor->nValue, pSensor->sValue.c_str());
+		}
+		else
+		{
+			// Update
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+				       pSensor->sValue.c_str(), result[0][0]);
+		}
 	}
 }
 
@@ -2512,5 +2567,40 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	}
 
 	SendMessage(pSensor->command_topic, szSendValue);
+	return true;
+}
+
+bool MQTT::SetSetpoint(const std::string &DeviceID, const float Temp)
+{
+	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
+	{
+		return false;
+	}
+	_tMQTTASensor *pSensor = &m_discovered_sensors[DeviceID];
+	if (pSensor->component_type != "climate")
+	{
+		return false;
+	}
+
+	Json::Value root;
+	if (!pSensor->temperature_state_template.empty())
+	{
+		std::string szKey = GetValueTemplateKey(pSensor->temperature_state_template);
+		if (!szKey.empty())
+			root[szKey] = Temp;
+		else
+		{
+			Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
+			return false;
+		}
+	}
+	else
+		root["target_temp"] = Temp;
+	std::string szSendValue = JSonToRawString(root);
+
+	std::string szTopic = pSensor->state_topic;
+	if (!pSensor->temperature_command_topic.empty())
+		szTopic = pSensor->temperature_command_topic;
+	SendMessage(szTopic, szSendValue);
 	return true;
 }
