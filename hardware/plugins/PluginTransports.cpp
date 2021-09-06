@@ -140,9 +140,6 @@ namespace Plugins {
 	void CPluginTransportTCP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
 
 		if (!err)
 		{
@@ -153,12 +150,20 @@ namespace Plugins {
 		{
 			m_bConnecting = false;
 
-			// Notify plugin of failure and trigger cleanup
-			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
-			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
+			CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
+			if (pPlugin)
+			{
+				// Notify plugin of failure and trigger cleanup
+				pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
+				pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 
-			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				pPlugin->Log(LOG_NORM, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+				if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
+					pPlugin->Log(LOG_NORM, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: Connection to '%s:%s' not associated with a plugin", __func__, m_IP.c_str(), m_Port.c_str());
+			}
 		}
 	}
 
