@@ -86,16 +86,6 @@ void CLogger::SetLogFlags(const uint32_t iFlags)
 	m_log_flags = iFlags;
 }
 
-uint32_t CLogger::GetLogFlags()
-{
-	return m_log_flags;
-}
-
-bool CLogger::IsLogLevelEnabled(const _eLogLevel level)
-{
-	return (m_log_flags & level);
-}
-
 // Supported flags: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql
 bool CLogger::SetDebugFlags(const std::string &sFlags)
 {
@@ -145,9 +135,9 @@ void CLogger::SetDebugFlags(const uint32_t iFlags)
 	m_debug_flags = iFlags;
 }
 
-uint32_t CLogger::GetDebugFlags()
+bool CLogger::IsLogLevelEnabled(const _eLogLevel level)
 {
-	return m_debug_flags;
+	return (m_log_flags & level);
 }
 
 bool CLogger::IsDebugLevelEnabled(const _eDebugLevel level)
