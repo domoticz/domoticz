@@ -267,8 +267,8 @@ namespace Plugins {
 					return nullptr;
 				}
 				self->nValue = 0;
-				self->SignalLevel = 0;
-				self->BatteryLevel = 0;
+				self->SignalLevel = 12;
+				self->BatteryLevel = 255;
 				self->sValue = PyUnicode_FromString("");
 				if (self->sValue == nullptr)
 				{
@@ -714,17 +714,16 @@ namespace Plugins {
 			pModState->pPlugin->SetHeartbeatReceived();
 
 			char *TypeName = nullptr;
+			int bWriteLog = false;
 
-			static char *kwlist[] = { "TypeName", nullptr };
+			static char *kwlist[] = { "Log", "TypeName", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &TypeName))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ps", kwlist, &bWriteLog, &TypeName))
 			{
-				pModState->pPlugin->Log(LOG_ERROR,
-					 "(%s) Failed to parse parameters: 'TypeName' expected.", __func__);
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' expected.", __func__);
 				LogPythonException(pModState->pPlugin, __func__);
-				Py_INCREF(Py_None);
-				return Py_None;
+				Py_RETURN_NONE;
 			}
 
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
@@ -794,11 +793,9 @@ namespace Plugins {
 				int oldnValue = atoi(result[0][1].c_str());
 				std::string oldsValue = result[0][2];
 
-				if ((nValue != oldnValue) && (int((float(nValue) + self->Adjustment) * self->Multiplier) != oldnValue))
+				if (nValue != oldnValue)
 				{
 					nValueChanged = true;
-					// Apply adjustment to nValue if it changed
-					nValue = int((float(nValue) + self->Adjustment) * self->Multiplier);
 				}
 				if (sValue != oldsValue)
 				{
@@ -878,6 +875,21 @@ namespace Plugins {
 				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
 				m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
+
+				// Write a log entry if requested
+				if (bWriteLog)
+				{
+					std::string sSQL = "INSERT INTO LightingLog (DeviceRowID, nValue, sValue, Date) VALUES (?,?,?,?)";
+					std::vector<std::string> vValues;
+					vValues.push_back(result[0][0]);
+					vValues.push_back(std::to_string(nValue));
+					vValues.push_back(sValue);
+					vValues.push_back(TimeToString(nullptr, TF_DateTime));
+					if (!m_sql.execute_sql(sSQL, &vValues, true))
+					{
+						pModState->pPlugin->Log(LOG_ERROR, "%s: Insert into 'LightingLog' failed ", __func__);
+					}
+				}
 				Py_END_ALLOW_THREADS
 			}
 
