@@ -1448,7 +1448,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			}
 		}
 		else if (
-			//(pSensor->component_type == "binary_sensor")
 			(pSensor->component_type == "switch")
 			|| (pSensor->component_type == "light")
 			)
@@ -1464,6 +1463,19 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		{
 			InsertUpdateSwitch(pSensor);
 		}
+		else if (pSensor->component_type == "climate")
+		{
+			if (pSensor->temperature_command_topic.empty())
+			{
+				Log(LOG_ERROR, "Missing temperature_command_topic!");
+				return;
+			}
+		}
+		else if (pSensor->component_type == "binary_sensor")
+		{
+			handle_auto_discovery_binary_sensor(pSensor, message);
+		}
+
 
 		//Check if we want to subscribe to this sensor
 		bool bDoSubscribe = false;
@@ -1987,6 +1999,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	pSensor->devUnit = 1;
 	pSensor->devType = pTypeGeneralSwitch;
 	pSensor->subType = sSwitchGeneralSwitch;
+	int Used = 1;
 
 	int switchType = STYPE_OnOff;
 
@@ -2034,6 +2047,15 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		switchType = STYPE_BlindsPercentage;
 	}
+	else if (pSensor->component_type == "binary_sensor")
+	{
+		if ((pSensor->object_id.find("_state") != std::string::npos) || (pSensor->object_id.find("_status") != std::string::npos) ||
+		    (pSensor->object_id.find("_unknown") != std::string::npos) || (pSensor->object_id.find("tamper") != std::string::npos))
+		{
+			//Don't add these into our system used
+			Used = 0;
+		}
+	}
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
@@ -2041,8 +2063,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		// New switch, add it to the system
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-			"VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-			m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, 0, "0");
+				 "VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), Used, 0, "0");
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 	}
 	if (result.empty())
@@ -2228,6 +2250,10 @@ void MQTT::handle_auto_discovery_switch(_tMQTTASensor *pSensor, const struct mos
 
 void MQTT::handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message)
 {
+	if ((pSensor->object_id.find("any") != std::string::npos) || (pSensor->object_id == "battery_islow") || (pSensor->object_id == "battery_ishigh") ||
+	    (pSensor->object_id == "over-load_status") || (pSensor->object_id == "hardware_status") || (pSensor->object_id == "update_available"))
+		return; // don't want these
+
 	InsertUpdateSwitch(pSensor);
 }
 
