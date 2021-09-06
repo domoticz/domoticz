@@ -44,12 +44,10 @@ class CLogger
 
 	bool SetLogFlags(const std::string &sFlags);
 	void SetLogFlags(const uint32_t iFlags);
-	uint32_t GetLogFlags();
 	bool IsLogLevelEnabled(const _eLogLevel level);
 
 	bool SetDebugFlags(const std::string &sFlags);
 	void SetDebugFlags(const uint32_t iFlags);
-	uint32_t GetDebugFlags();
 	bool IsDebugLevelEnabled(const _eDebugLevel level);
 
 	void SetOutputFile(const char *OutputFile);
