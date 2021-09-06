@@ -128,15 +128,29 @@ int CDomoticzHardwareBase::SetThreadNameInt(const std::thread::native_handle_typ
 void CDomoticzHardwareBase::Log(const _eLogLevel level, const std::string& sLogline)
 {
 	if (!(m_LogLevelEnabled & (uint32_t)level))
-		return; //this type of log is disabled
+		return; // Log level is disabled by hardware parameters
 
+	uint32_t currentLogFlags = _log.GetLogFlags();
+	_log.SetLogFlags(m_LogLevelEnabled);
+
+	// Save and force log level
+	
 	_log.Log(level, "%s: %s", m_Name.c_str(), sLogline.c_str());
+
+	// Restore previous log level
+
+	_log.SetLogFlags(currentLogFlags);
 }
 
 void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...)
 {
 	if (!(m_LogLevelEnabled & (uint32_t)level))
-		return; // this type of log is disabled
+		return; // Log level is disabled by hardware parameters
+
+	// Save and force log level
+	
+	uint32_t currentLogFlags = _log.GetLogFlags();
+	_log.SetLogFlags(m_LogLevelEnabled);
 
 	va_list argList;
 	char cbuffer[MAX_LOG_LINE_LENGTH];
@@ -144,21 +158,55 @@ void CDomoticzHardwareBase::Log(const _eLogLevel level, const char* logline, ...
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
 	_log.Log(level, "%s: %s", m_Name.c_str(), cbuffer);
+
+	// Restore previous log level
+
+	_log.SetLogFlags(currentLogFlags);
 }
 
 void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const std::string& sLogline)
 {
+	if (!(m_DebugLevelEnabled & (uint32_t)level))
+		return; // Debug level is disabled by hardware parameters
+
+	// Save and force debug level
+	
+	uint32_t currentLogFlags = _log.GetLogFlags();
+	_log.SetLogFlags(currentLogFlags | LOG_DEBUG_INT);
+	uint32_t currentDebugFlags = _log.GetDebugFlags();
+	_log.SetDebugFlags(currentDebugFlags | m_DebugLevelEnabled);
+
 	_log.Debug(level, "%s: %s", m_Name.c_str(), sLogline.c_str());
+
+	// Restore previous debug level
+
+	_log.SetLogFlags(currentLogFlags);
+	_log.SetDebugFlags(currentDebugFlags);
 }
 
 void CDomoticzHardwareBase::Debug(const _eDebugLevel level, const char* logline, ...)
 {
+	if (!(m_DebugLevelEnabled & (uint32_t)level))
+		return; // Debug level is disabled by hardware parameters
+
+	// Save and force debug level
+	
+	uint32_t currentLogFlags = _log.GetLogFlags();
+	_log.SetLogFlags(currentLogFlags | LOG_DEBUG_INT);
+	uint32_t currentDebugFlags = _log.GetDebugFlags();
+	_log.SetDebugFlags(currentDebugFlags | m_DebugLevelEnabled);
+
 	va_list argList;
 	char cbuffer[MAX_LOG_LINE_LENGTH];
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
 	_log.Debug(level, "%s: %s", m_Name.c_str(), cbuffer);
+
+	// Restore previous debug level
+	
+	_log.SetLogFlags(currentLogFlags);
+	_log.SetDebugFlags(currentDebugFlags);
 }
 
 //Sensor Helpers
