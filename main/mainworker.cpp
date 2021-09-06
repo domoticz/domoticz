@@ -1076,7 +1076,8 @@ bool MainWorker::AddHardwareFromParams(
 	if (pHardware)
 	{
 		pHardware->HwdType = Type;
-		pHardware->m_LogLevelEnabled = LogLevelEnabled;
+		pHardware->m_LogLevelEnabled = LogLevelEnabled & 0x0000FFFF;
+		pHardware->m_DebugLevelEnabled = (LogLevelEnabled & 0xFFFF0000) >> 16;
 		pHardware->m_Name = Name;
 		pHardware->m_ShortName = Hardware_Short_Desc(Type);
 		pHardware->m_DataTimeout = DataTimeout;

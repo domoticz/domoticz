@@ -42,13 +42,17 @@ define(['app'], function (app) {
 			var bEnabled = $('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 			var datatimeout = $('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 			
-			var logLevel = 0;
+			var logLevel = 0x00000000;
 			if ($("#hardwarecontent #hardwareparamstable #loglevelInfo").prop("checked"))
-				logLevel |= 1;
+				logLevel |= 0x00000001;
 			if ($("#hardwarecontent #hardwareparamstable #loglevelStatus").prop("checked"))
-				logLevel |= 2;
+				logLevel |= 0x00000002;
 			if ($("#hardwarecontent #hardwareparamstable #loglevelError").prop("checked"))
-				logLevel |= 4;
+				logLevel |= 0x00000004;
+			if ($("#hardwarecontent #hardwareparamstable #debuglevelNormal").prop("checked"))
+				logLevel |= 0x00010000;
+			if ($("#hardwarecontent #hardwareparamstable #debuglevelHardware").prop("checked"))
+				logLevel |= 0x00020000;
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
@@ -1444,13 +1448,17 @@ define(['app'], function (app) {
 			var bEnabled = $('#hardwarecontent #hardwareparamstable #enabled').is(":checked");
 			var datatimeout = $('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 
-			var logLevel = 0;
+			var logLevel = 0x00000000;
 			if ($("#hardwarecontent #hardwareparamstable #loglevelInfo").prop("checked"))
-				logLevel |= 1;
+				logLevel |= 0x00000001;
 			if ($("#hardwarecontent #hardwareparamstable #loglevelStatus").prop("checked"))
-				logLevel |= 2;
+				logLevel |= 0x00000002;
 			if ($("#hardwarecontent #hardwareparamstable #loglevelError").prop("checked"))
-				logLevel |= 4;
+				logLevel |= 0x00000004;
+			if ($("#hardwarecontent #hardwareparamstable #debuglevelNormal").prop("checked"))
+				logLevel |= 0x00010000;
+			if ($("#hardwarecontent #hardwareparamstable #debuglevelHardware").prop("checked"))
+				logLevel |= 0x00020000;
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
@@ -3925,18 +3933,22 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode6").val(data["Mode6"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Extra").val(data["Extra"]);
 							UpdateHardwareParamControls();
-							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
-							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
-							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 0x00000001)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 0x00000002)!=0));
+							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 0x00000004)!=0));
+							$('#hardwarecontent #hardwareparamstable #debuglevelNormal').prop('checked', ((data["LogLevel"] & 0x00010000)!=0));
+							$('#hardwarecontent #hardwareparamstable #debuglevelHardware').prop('checked', ((data["LogLevel"] & 0x00020000)!=0));
 							return;
 						}
 						
 						UpdateHardwareParamControls();
 
 						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
-						$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
-						$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
-						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 0x00000001)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 0x00000002)!=0));
+						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 0x00000004)!=0));
+						$('#hardwarecontent #hardwareparamstable #debuglevelNormal').prop('checked', ((data["LogLevel"] & 0x00010000)!=0));
+						$('#hardwarecontent #hardwareparamstable #debuglevelHardware').prop('checked', ((data["LogLevel"] & 0x00020000)!=0));
 						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
 						if (
@@ -4447,6 +4459,8 @@ define(['app'], function (app) {
 			$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', true);
 			$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', true);
 			$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', true);
+			$('#hardwarecontent #hardwareparamstable #debuglevelNormal').prop('checked', false);
+			$('#hardwarecontent #hardwareparamstable #debuglevelHardware').prop('checked', false);
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 			$("#hardwarecontent #username").show();
