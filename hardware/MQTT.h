@@ -27,6 +27,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 		std::string unit_of_measurement;
 
+		std::string state_value_template;
 		std::string value_template;
 		std::string position_template;
 		std::string set_position_template;

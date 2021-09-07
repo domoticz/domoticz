@@ -1315,6 +1315,12 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->value_template = root["val_tpl"].asString();
 		CleanValueTemplate(pSensor->value_template);
 
+		if (!root["state_value_template"].empty())
+			pSensor->state_value_template = root["state_value_template"].asString();
+		else if (!root["stat_val_tpl"].empty())
+			pSensor->state_value_template = root["stat_val_tpl"].asString();
+		CleanValueTemplate(pSensor->state_value_template);
+
 		if (pSensor->value_template.find("value_json") == 0)
 			pSensor->value_template = pSensor->value_template.substr(strlen("value_json."));
 
@@ -2114,12 +2120,15 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	if (bIsJSON)
 	{
-		if (root["state"].empty())
+		if (!root["state"].empty())
+			szOnOffValue = root["state"].asString();
+		else if (!root["value"].empty())
+			szOnOffValue = root["value"].asString();
+		else
 		{
 			Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
 			return;
 		}
-		szOnOffValue = root["state"].asString();
 		if (!root["brightness"].empty())
 		{
 			double dLevel = (100.0 / 255.0) * root["brightness"].asInt();
@@ -2531,12 +2540,20 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			(command == "On")
 			|| (command == "Off"))
 		{
+			std::string szKey = "state";
+
+			if (!pSensor->state_value_template.empty())
+			{
+				//quick check
+				if (pSensor->state_value_template.find("value_json.value") != std::string::npos)
+					szKey = "value";
+			}
 			if (szSendValue == "true")
-				root["state"] = true;
+				root[szKey] = true;
 			else if (szSendValue == "false")
-				root["state"] = false;
+				root[szKey] = false;
 			else
-				root["state"] = szSendValue;
+				root[szKey] = szSendValue;
 		}
 		else if (command == "Set Level")
 		{
