@@ -1319,7 +1319,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->state_value_template = root["state_value_template"].asString();
 		else if (!root["stat_val_tpl"].empty())
 			pSensor->state_value_template = root["stat_val_tpl"].asString();
-		CleanValueTemplate(pSensor->state_value_template);
 
 		if (pSensor->value_template.find("value_json") == 0)
 			pSensor->value_template = pSensor->value_template.substr(strlen("value_json."));
@@ -2123,7 +2122,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		if (!root["state"].empty())
 			szOnOffValue = root["state"].asString();
 		else if (!root["value"].empty())
-			szOnOffValue = root["value"].asString();
+		{
+			int iValue = root["value"].asInt();
+			szOnOffValue = (iValue != 0) ? pSensor->payload_on : pSensor->payload_off;
+		}
 		else
 		{
 			Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
@@ -2540,20 +2542,19 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			(command == "On")
 			|| (command == "Off"))
 		{
-			std::string szKey = "state";
-
-			if (!pSensor->state_value_template.empty())
+			if (pSensor->state_value_template.empty())
 			{
-				//quick check
-				if (pSensor->state_value_template.find("value_json.value") != std::string::npos)
-					szKey = "value";
+				if (szSendValue == "true")
+					root["state"] = true;
+				else if (szSendValue == "false")
+					root["state"] = false;
+				else
+					root["state"] = szSendValue;
 			}
-			if (szSendValue == "true")
-				root[szKey] = true;
-			else if (szSendValue == "false")
-				root[szKey] = false;
 			else
-				root[szKey] = szSendValue;
+			{
+				root["value"] = (command == "On") ? 1 : 0;
+			}
 		}
 		else if (command == "Set Level")
 		{
