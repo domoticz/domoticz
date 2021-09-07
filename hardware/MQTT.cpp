@@ -1374,6 +1374,15 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			if (_modes.find("brightness") != _modes.end())
 				pSensor->bBrightness = true;
 		}
+		if (!root["min_mireds"].empty())
+			pSensor->min_mireds = root["min_mireds"].asInt();
+		if (!root["min_mirs"].empty())
+			pSensor->min_mireds = root["min_mirs"].asInt();
+		if (!root["max_mireds"].empty())
+			pSensor->max_mireds = root["max_mireds"].asInt();
+		if (!root["max_mirs"].empty())
+			pSensor->max_mireds = root["max_mirs"].asInt();
+
 		
 		//Climate
 		if (!root["mode_command_topic"].empty())
@@ -2168,7 +2177,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		else if (!root["color_temp"].empty())
 		{
 			float CT = root["color_temp"].asFloat();
-			float iCt = (float(CT) - 153.0F) / (500.0F - 153.0F) * 255.0F;
+			float iCt =( (float(CT) - pSensor->min_mireds) / (pSensor->max_mireds - pSensor->min_mireds)) * 255.0F;
 			color_new = _tColor((uint8_t)round(iCt), ColorModeTemp);
 			std::string szColorOld = color_old.toJSONString();
 			std::string szColorNew = color_new.toJSONString();
@@ -2569,7 +2578,9 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			else if (pSensor->supported_color_modes == "color_temp") //seen as XY
 			{
 				//color.cw color.ww t
-				root["color_temp"] = (int)((500.0/255.0)*color.t);
+				float iCt = pSensor->min_mireds + ((static_cast<float>(pSensor->max_mireds - pSensor->min_mireds) / 255.0F) * color.t);
+				root["color_temp"] = (int)round(iCt);
+
 			}
 			else if (pSensor->supported_color_modes == "hs")
 			{

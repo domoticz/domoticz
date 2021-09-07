@@ -47,6 +47,9 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		bool bColor_mode = false;
 		std::string supported_color_modes = "rgb";
 
+		int min_mireds = 154;
+		int max_mireds = 500;
+
 		//Climate
 		std::string mode_command_topic;
 		std::string mode_state_topic;
