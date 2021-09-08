@@ -1507,6 +1507,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			SubscribeTopic(pSensor->mode_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->temperature_state_template, pSensor->qos);
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
+			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
 		}
 	}
 	catch (const std::exception &e)
@@ -2128,17 +2129,30 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		else
 		{
-			Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
-			return;
+			if (root["brightness"].empty() && root["position"].empty())
+			{
+				Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
+				return;
+			}
 		}
 		if (!root["brightness"].empty())
 		{
 			double dLevel = (100.0 / 255.0) * root["brightness"].asInt();
 			level = (int)dLevel;
+			if (
+				(szOnOffValue != pSensor->payload_on)
+				&&(szOnOffValue != pSensor->payload_off))
+			{
+				szOnOffValue = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
+			}
 		}
 		if (!root["position"].empty())
 		{
 			level = root["position"].asInt();
+			if ((szOnOffValue != pSensor->payload_on) && (szOnOffValue != pSensor->payload_off))
+			{
+				szOnOffValue = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
+			}
 		}
 		if (!root["color"].empty())
 		{
@@ -2318,7 +2332,28 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		{
 			std::string szKey = GetValueTemplateKey(pSensor->mode_state_template);
 			if (!szKey.empty())
-				current_mode = root[szKey].asString();
+			{
+				if (!root[szKey].empty())
+				{
+					current_mode = root[szKey].asString();
+				}
+				else
+				{
+					if (pSensor->mode_state_template.find("value_json.value") != std::string::npos)
+					{
+						szKey = "value";
+						if (!root[szKey].empty())
+						{
+							current_mode = root[szKey].asString();
+						}
+						else
+						{
+							Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+							return;
+						}
+					}
+				}
+			}
 			else
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
