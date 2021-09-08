@@ -2071,6 +2071,16 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			Used = 0;
 		}
 	}
+	if (pSensor->object_id == "occupancy")
+		switchType = STYPE_Motion;
+	else if (pSensor->object_id == "contact")
+		switchType = STYPE_DoorContact;
+	else if (pSensor->object_id == "smoke")
+		switchType = STYPE_SMOKEDETECTOR;
+	else if (pSensor->object_id == "door-window")
+		switchType = STYPE_DoorContact;
+	else if (pSensor->object_id == "door_state")
+		switchType = STYPE_DoorContact;
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
