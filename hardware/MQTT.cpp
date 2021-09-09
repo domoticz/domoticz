@@ -2742,7 +2742,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					}
 				}
 				SendMessage(pSensor->set_position_topic, szSendValue);
-
+				return true;
 			}
 			else {
 				Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
