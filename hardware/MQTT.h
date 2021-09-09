@@ -122,6 +122,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_scene(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 

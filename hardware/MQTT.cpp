@@ -1092,6 +1092,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		|| (object_id == "color_temp_startup")
 		|| (object_id == "requested_brightness_level")
 		|| (object_id == "requested_brightness_percent")
+		|| (object_id == "device_automation")
 		)
 	{
 		return;
@@ -1332,6 +1333,10 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->payload_on = root["payload_on"].asString();
 		else if (!root["pl_on"].empty())
 			pSensor->payload_on = root["pl_on"].asString();
+		if (!root["payload"].empty())
+			pSensor->payload_on = root["payload_on"].asString();
+		if (!root["pl"].empty())
+			pSensor->payload_on = root["payload_on"].asString();
 		if (!root["payload_off"].empty())
 			pSensor->payload_off = root["payload_off"].asString();
 		else if (!root["pl_off"].empty())
@@ -1727,6 +1732,14 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 	bool bIsHum = false;
 	bool bIsBaro = false;
 
+	if (pSensor->value_template == "action")
+		return;
+	else if (pSensor->value_template == "click")
+	{
+		InsertUpdateSwitch(pSensor);
+		return;
+	}
+
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
 
 	if (szUnit.empty())
@@ -2084,16 +2097,30 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorContact;
 	else if (pSensor->object_id == "door_state")
 		switchType = STYPE_DoorContact;
+	else if (pSensor->value_template == "click")
+	{
+		//Scene devices
+		if (pSensor->last_value == "on")
+		{
+			pSensor->devUnit = 1;
+			switchType = STYPE_PushOn;
+		}
+		else if (pSensor->last_value == "off")
+		{
+			pSensor->devUnit = 2;
+			switchType = STYPE_PushOff;
+		}
+	}
 
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+	result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
 	if (result.empty())
 	{
 		// New switch, add it to the system
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-				 "VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), Used, 0, "0");
-		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+				 "VALUES (%d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), Used, 0, "0");
+		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
 	}
 	if (result.empty())
 		return; // should not happen!
@@ -2254,22 +2281,28 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON") || (szOnOffValue == "true") || (szOnOffValue == "Set Level");
 
 	// check if we have a change, if not do not update it
-	if ((!bOn) && (nValue == 0))
+	if (
+		(switchType != STYPE_PushOn)
+		&& (switchType != STYPE_PushOff)
+		)
 	{
-		if (!bHaveLevelChange)
+		if ((!bOn) && (nValue == 0))
 		{
-			if (!bHaveColorChange)
-				return;
+			if (!bHaveLevelChange)
+			{
+				if (!bHaveColorChange)
+					return;
+			}
 		}
-	}
-	if ((bOn && (nValue != 0)))
-	{
-		// Check Level
-		int slevel = atoi(sValue.c_str());
-		if (slevel == level)
+		if ((bOn && (nValue != 0)))
 		{
-			if (!bHaveColorChange)
-				return;
+			// Check Level
+			int slevel = atoi(sValue.c_str());
+			if (slevel == level)
+			{
+				if (!bHaveColorChange)
+					return;
+			}
 		}
 	}
 	if (szOnOffValue == "Set Level")
@@ -2310,6 +2343,11 @@ void MQTT::handle_auto_discovery_light(_tMQTTASensor *pSensor, const struct mosq
 }
 
 void MQTT::handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
+void MQTT::handle_auto_discovery_scene(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	InsertUpdateSwitch(pSensor);
 }
