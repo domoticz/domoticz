@@ -2074,6 +2074,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	}
 	if (pSensor->object_id == "occupancy")
 		switchType = STYPE_Motion;
+	else if (pSensor->object_id == "motion")
+		switchType = STYPE_Motion;
 	else if (pSensor->object_id == "contact")
 		switchType = STYPE_DoorContact;
 	else if (pSensor->object_id == "smoke")
@@ -2592,7 +2594,19 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				(pSensor->command_topic.find("zwave/") == 0)&&
 				(!pSensor->brightness_command_topic.empty()))
 			{
-				root["brightness"] = (command == "On") ? 255 : 0;
+				if (!pSensor->brightness_value_template.empty())
+				{
+					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
+					if (!szKey.empty())
+						root[szKey] = (command == "On") ? 255 : 0;
+					else
+					{
+						Log(LOG_ERROR, "light device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+						return false;
+					}
+				}
+				else
+					root["brightness"] = (command == "On") ? 255 : 0;
 			}
 			else
 			{
@@ -2616,7 +2630,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					root[szKey] = slevel;
 				else
 				{
-					Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+					Log(LOG_ERROR, "light device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
 					return false;
 				}
 			}
