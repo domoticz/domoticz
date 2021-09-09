@@ -1732,7 +1732,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 	bool bIsHum = false;
 	bool bIsBaro = false;
 
-	if (pSensor->value_template == "action")
+	if (pSensor->value_template.find("action") == 0)
 		return;
 	else if (pSensor->value_template == "click")
 	{
@@ -2108,6 +2108,16 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		else if (pSensor->last_value == "off")
 		{
 			pSensor->devUnit = 2;
+			switchType = STYPE_PushOff;
+		}
+		else if (pSensor->last_value == "brightness_up")
+		{
+			pSensor->devUnit = 3;
+			switchType = STYPE_PushOn;
+		}
+		else if (pSensor->last_value == "brightness_down")
+		{
+			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
 		}
 	}
