@@ -1099,13 +1099,14 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 	if (action != "config")
 	{
-		Log(LOG_ERROR, "MQTT_Discovery: Something other then 'config' received on discovery topic! (%s/%s)!", topic.c_str(), qMessage.c_str());
 		if (action == "state")
 		{
 			//0/1 (or online/offline)
 			return;
 		}
-		else if (action == "switch")
+		Log(LOG_ERROR, "MQTT_Discovery: Something other then 'config' received on discovery topic! (%s/%s)!", topic.c_str(), qMessage.c_str());
+
+		if (action == "switch")
 		{
 			// seen with ESP-EASY
 			// ON/OFF
