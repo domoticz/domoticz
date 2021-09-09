@@ -2587,7 +2587,13 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			(command == "On")
 			|| (command == "Off"))
 		{
-			if (pSensor->state_value_template.empty())
+			if (
+				(pSensor->command_topic.find("zwave/") == 0)&&
+				(!pSensor->brightness_command_topic.empty()))
+			{
+				root["brightness"] = (command == "On") ? 255 : 0;
+			}
+			else
 			{
 				if (szSendValue == "true")
 					root["state"] = true;
@@ -2596,14 +2602,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				else
 					root["state"] = szSendValue;
 			}
-			else
-			{
-				root["value"] = (command == "On") ? 1 : 0;
-			}
 		}
 		else if (command == "Set Level")
 		{
-			root["state"] = pSensor->payload_on;
+			//root["state"] = pSensor->payload_on;
 			int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
 
 			if (!pSensor->brightness_value_template.empty())
