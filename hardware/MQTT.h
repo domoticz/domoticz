@@ -68,7 +68,6 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::map<std::string, std::string> keys;
 
 		bool bOnline = false;
-		bool bExtendedName = false;
 		time_t last_received = 0;
 		std::string last_value;
 		uint8_t devType = 0;

@@ -2044,8 +2044,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	std::string szOnOffValue = pSensor->last_value;
 	int level = 0;
-
 	int switchType = STYPE_OnOff;
+	std::string szSensorName = pSensor->name;
 
 	if (pSensor->bColor_mode)
 	{
@@ -2135,21 +2135,13 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
 		}
-		if (!pSensor->bExtendedName)
-		{
-			pSensor->name += "_" + pSensor->last_value;
-			pSensor->bExtendedName = true;
-		}
+		szSensorName += "_" + pSensor->last_value;
 	}
 	else if (pSensor->object_id == "scene_state_sceneid")
 	{
 		pSensor->devUnit = atoi(pSensor->last_value.c_str());
 		switchType = STYPE_PushOn;
-		if (!pSensor->bExtendedName)
-		{
-			pSensor->name += "_" + pSensor->last_value;
-			pSensor->bExtendedName = true;
-		}
+		szSensorName += "_" + pSensor->last_value;
 		szOnOffValue = "on";
 	}
 
@@ -2160,7 +2152,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		// New switch, add it to the system
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 				 "VALUES (%d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), Used, 0, "0");
+				 m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, szSensorName.c_str(), Used, 0, "0");
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
 	}
 	if (result.empty())
