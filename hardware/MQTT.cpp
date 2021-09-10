@@ -1001,6 +1001,11 @@ void MQTT::CleanValueTemplate(std::string &szValueTemplate)
 {
 	stdreplace(szValueTemplate, "{", "");
 	stdreplace(szValueTemplate, "}", "");
+	size_t tpos = szValueTemplate.find("|");
+	if (tpos != std::string::npos)
+	{
+		szValueTemplate = szValueTemplate.substr(0, tpos);
+	}
 	stdstring_trim(szValueTemplate);
 }
 
@@ -1039,6 +1044,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 	if (qMessage.empty())
 		return;
 
+	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
+
 	std::string component;
 	std::string node_id;
 	std::string object_id;
@@ -1048,11 +1055,13 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 	bool ret = ParseJSon(qMessage, root);
 	if ((!ret) || (!root.isObject()))
+	{
+		if (topic == "status")
+			return;
 		goto disovery_invaliddata;
+	}
 
 	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
-
-	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
 
 	StringSplit(topic, "/", strarray);
 
@@ -1734,8 +1743,11 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 
 	if (pSensor->value_template.find("action") == 0)
 		return;
-	else if (pSensor->value_template == "click")
+	else if (
+		(pSensor->value_template == "click")
+		|| (pSensor->object_id == "scene_state_sceneid"))
 	{
+		//Scene
 		InsertUpdateSwitch(pSensor);
 		return;
 	}
@@ -2030,6 +2042,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	pSensor->subType = sSwitchGeneralSwitch;
 	int Used = 1;
 
+	std::string szOnOffValue = pSensor->last_value;
+	int level = 0;
+
 	int switchType = STYPE_OnOff;
 
 	if (pSensor->bColor_mode)
@@ -2120,6 +2135,22 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
 		}
+		if (!pSensor->bExtendedName)
+		{
+			pSensor->name += "_" + pSensor->last_value;
+			pSensor->bExtendedName = true;
+		}
+	}
+	else if (pSensor->object_id == "scene_state_sceneid")
+	{
+		pSensor->devUnit = atoi(pSensor->last_value.c_str());
+		switchType = STYPE_PushOn;
+		if (!pSensor->bExtendedName)
+		{
+			pSensor->name += "_" + pSensor->last_value;
+			pSensor->bExtendedName = true;
+		}
+		szOnOffValue = "on";
 	}
 
 	std::vector<std::vector<std::string>> result;
@@ -2159,8 +2190,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		bIsJSON = root.isObject();
 	}
-	std::string szOnOffValue = pSensor->last_value;
-	int level = 0;
 
 	_tColor color_old;
 	_tColor color_new;
