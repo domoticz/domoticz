@@ -1683,7 +1683,156 @@ void MQTT::handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std:
 	}
 }
 
-MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
+void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
+{
+	devType = pTypeGeneral;
+	subType = sTypeCustom;
+	szOptions = "";
+	nValue = 0;
+	sValue = "";
+
+	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
+	float AddjValue = 0.0F;
+	float AddjMulti = 1.0F;
+
+	if (
+		(szUnit == "°C")
+		|| (szUnit == "C")
+		|| (pSensor->value_template.find("temperature") != std::string::npos)
+		|| (pSensor->state_topic.find("temperature") != std::string::npos)
+		)
+	{
+		devType = pTypeTEMP;
+		subType = sTypeTEMP1;
+
+		float temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
+		sValue = std_format("%.1f", temp);
+	}
+	else if (szUnit == "%")
+	{
+		if (
+			(pSensor->object_id.find("humidity") != std::string::npos)
+			|| (pSensor->state_topic.find("humidity") != std::string::npos)
+			|| (pSensor->unique_id.find("humidity") != std::string::npos)
+			|| (pSensor->value_template.find("humidity") != std::string::npos)
+			)
+		{
+			devType = pTypeHUM;
+			subType = sTypeHUM2;
+			nValue = atoi(pSensor->last_value.c_str());
+			sValue = std_format("%d", Get_Humidity_Level(pSensor->nValue));
+		}
+		else
+		{
+			devType = pTypeGeneral;
+			subType = sTypeCustom;
+			szOptions = pSensor->unit_of_measurement;
+			sValue = pSensor->last_value;
+		}
+	}
+	else if (
+		(szUnit == "hPa")
+		|| (szUnit == "kPa")
+		|| (pSensor->value_template.find("pressure") != std::string::npos)
+		)
+	{
+		devType = pTypeGeneral;
+		subType = sTypeBaro;
+		float pressure = static_cast<float>(atof(pSensor->last_value.c_str()));
+		if (szUnit == "kPa")
+			pressure *= 10.0F;
+		int nforecast = bmpbaroforecast_cloudy;
+		if (pressure <= 980)
+			nforecast = bmpbaroforecast_thunderstorm;
+		else if (pressure <= 995)
+			nforecast = bmpbaroforecast_rain;
+		else if (pressure >= 1029)
+			nforecast = bmpbaroforecast_sunny;
+		sValue = std_format("%.02f;%d", pressure, nforecast);
+	}
+	else if (szUnit == "ppm")
+	{
+		devType = pTypeAirQuality;
+		subType = sTypeVoltcraft;
+		nValue = atoi(pSensor->last_value.c_str());
+	}
+	else if (szUnit == "µg/m³")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeCustom;
+		szOptions = pSensor->unit_of_measurement;
+		sValue = pSensor->last_value;
+	}
+	else if (szUnit == "V")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeVoltage;
+		sValue = pSensor->last_value;
+	}
+	else if (szUnit == "mV")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeVoltage;
+		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())) / 1000.0F);
+	}
+	else if (szUnit == "A")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeCurrent;
+		sValue = pSensor->last_value;
+	}
+	else if (szUnit == "W")
+	{
+		devType = pTypeUsage;
+		subType = sTypeElectric;
+		sValue = pSensor->last_value;
+	}
+	else if (szUnit == "kWh")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeKwh;
+
+		float fUsage = 0;
+		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str()));
+		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "W");
+		if (pWattSensor)
+		{
+			fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+		}
+		sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+	}
+	else if (
+		(szUnit == "lx")
+		|| (szUnit == "lux")
+		|| (pSensor->state_topic.find("illuminance_lux") != std::string::npos)
+		)
+	{
+		devType = pTypeLux;
+		subType = sTypeLux;
+		sValue = std_format("%.0f", static_cast<float>(atof(pSensor->last_value.c_str())));
+	}
+	else if (szUnit == "Text")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeTextStatus;
+		sValue = pSensor->last_value;
+	}
+	else
+	{
+		devType = pTypeGeneral;
+		subType = sTypeCustom;
+		szOptions = pSensor->unit_of_measurement;
+		sValue = pSensor->last_value;
+	}
+
+	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
+		szOptions = "??";
+
+}
+
+MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
 {
 	//Retrieved sensor from same device with specified measurement unit
 	_tMQTTADevice* pDevice = &m_discovered_devices[pSensor->device_identifiers];
@@ -1702,7 +1851,7 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor
 	return nullptr;
 }
 
-MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor, const uint8_t devType, const int subType, const int devUnit)
+MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType, const int devUnit)
 {
 	//Retrieved sensor from same device with specified device type/subtype/unit
 	_tMQTTADevice* pDevice = &m_discovered_devices[pSensor->device_identifiers];
@@ -1714,9 +1863,17 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor
 		if (m_discovered_sensors.find(ittSensorID.first) != m_discovered_sensors.end())
 		{
 			_tMQTTASensor* pDeviceSensor = &m_discovered_sensors[ittSensorID.first];
-			if (pDeviceSensor->devType == devType)
+
+			uint8_t devsensor_devType, devsensor_subType;
+			std::string szOptions;
+			int nValue = 0;
+			std::string sValue;
+
+			GuessSensorTypeValue(pDeviceSensor, devsensor_devType, devsensor_subType, szOptions, nValue, sValue);
+
+			if (devsensor_devType == devType)
 			{
-				if ((pDeviceSensor->subType == subType) || (subType == -1))
+				if ((devsensor_subType == subType) || (subType == -1))
 				{
 					if ((pDeviceSensor->devUnit == devUnit) || (devUnit == -1))
 					{
@@ -1727,23 +1884,13 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(_tMQTTASensor* pSensor
 		}
 	}
 	return nullptr;
-
 }
 
 void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
-	pSensor->devUnit = 1;
-	int devType = pTypeGeneral;
-	int subType = sTypeCustom;
-	float AddjValue = 0.0F;
-	float AddjMulti = 1.0F;
-	bool bIsTemp = false;
-	bool bIsHum = false;
-	bool bIsBaro = false;
-
 	if (pSensor->value_template.find("action") == 0)
 		return;
-	else if (
+	if (
 		(pSensor->value_template == "click")
 		|| (pSensor->object_id == "scene_state_sceneid"))
 	{
@@ -1771,146 +1918,35 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 		// probably WIFI strength, should be handled differently and used as signal strength
 		return;
 	}
-	else if (
-		(szUnit == "°C")
-		|| (szUnit == "C")
-		|| (pSensor->value_template.find("temperature") != std::string::npos)
-		|| (pSensor->state_topic.find("temperature") != std::string::npos)
+
+	pSensor->devUnit = 1;
+	bool bIsTemp = false;
+	bool bIsHum = false;
+	bool bIsBaro = false;
+
+	GuessSensorTypeValue(pSensor, pSensor->devType, pSensor->subType, pSensor->szOptions, pSensor->nValue, pSensor->sValue);
+
+	if (
+		(pSensor->devType == pTypeTEMP)
+		&& (pSensor->subType == sTypeTEMP1)
 		)
 	{
 		bIsTemp = true;
-		devType = pTypeTEMP;
-		subType = sTypeTEMP1;
-
-		float temp = static_cast<float>(atof(pSensor->last_value.c_str()));
-		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
-		pSensor->sValue = std_format("%.1f", temp);
-	}
-	else if (szUnit == "%")
-	{
-		if (
-			(pSensor->object_id.find("humidity") != std::string::npos)
-			|| (pSensor->state_topic.find("humidity") != std::string::npos)
-			|| (pSensor->unique_id.find("humidity") != std::string::npos)
-			|| (pSensor->value_template.find("humidity") != std::string::npos)
-			)
-		{
-			bIsHum = true;
-			devType = pTypeHUM;
-			subType = sTypeHUM2;
-			pSensor->nValue = atoi(pSensor->last_value.c_str());
-			pSensor->sValue = std_format("%d", Get_Humidity_Level(pSensor->nValue));
-		}
-		else
-		{
-			devType = pTypeGeneral;
-			subType = sTypeCustom;
-			pSensor->szOptions = pSensor->unit_of_measurement;
-			pSensor->sValue = pSensor->last_value;
-		}
 	}
 	else if (
-		(szUnit == "hPa")
-		|| (szUnit == "kPa")
-		|| (pSensor->value_template.find("pressure") != std::string::npos)
+		(pSensor->devType == pTypeHUM)
+		&& (pSensor->subType == sTypeHUM2)
+		)
+	{
+		bIsHum = true;
+	}
+	else if (
+		(pSensor->devType == pTypeGeneral)
+		&& (pSensor->subType == sTypeBaro)
 		)
 	{
 		bIsBaro = true;
-		devType = pTypeGeneral;
-		subType = sTypeBaro;
-		float pressure = static_cast<float>(atof(pSensor->last_value.c_str()));
-		if (szUnit == "kPa")
-			pressure *= 10.0F;
-		int nforecast = bmpbaroforecast_cloudy;
-		if (pressure <= 980)
-			nforecast = bmpbaroforecast_thunderstorm;
-		else if (pressure <= 995)
-			nforecast = bmpbaroforecast_rain;
-		else if (pressure >= 1029)
-			nforecast = bmpbaroforecast_sunny;
-		pSensor->sValue = std_format("%.02f;%d", pressure, nforecast);
 	}
-	else if (szUnit == "ppm")
-	{
-		devType = pTypeAirQuality;
-		subType = sTypeVoltcraft;
-		pSensor->nValue = atoi(pSensor->last_value.c_str());
-	}
-	else if (szUnit == "µg/m³")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeCustom;
-		pSensor->szOptions = pSensor->unit_of_measurement;
-		pSensor->sValue = pSensor->last_value;
-	}
-	else if (szUnit == "V")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeVoltage;
-		pSensor->sValue = pSensor->last_value;
-	}
-	else if (szUnit == "mV")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeVoltage;
-		pSensor->sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str()))/1000.0F);
-	}
-	else if (szUnit == "A")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeCurrent;
-		pSensor->sValue = pSensor->last_value;
-	}
-	else if (szUnit == "W")
-	{
-		devType = pTypeUsage;
-		subType = sTypeElectric;
-		pSensor->sValue = pSensor->last_value;
-	}
-	else if (szUnit == "kWh")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeKwh;
-
-		float fUsage = 0;
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str()));
-		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "W");
-		if (pWattSensor)
-		{
-			fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
-		}
-		pSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
-	}
-	else if (
-		(szUnit == "lx")
-		||(szUnit == "lux")
-		|| (pSensor->state_topic.find("illuminance_lux") != std::string::npos)
-		)
-	{
-		devType = pTypeLux;
-		subType = sTypeLux;
-		pSensor->sValue = std_format("%.0f", static_cast<float>(atof(pSensor->last_value.c_str())));
-	}
-	else if (szUnit == "Text")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeTextStatus;
-		pSensor->sValue = pSensor->last_value;
-	}
-	else
-	{
-		devType = pTypeGeneral;
-		subType = sTypeCustom;
-		pSensor->szOptions = pSensor->unit_of_measurement;
-		pSensor->sValue = pSensor->last_value;
-	}
-
-	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
-		pSensor->szOptions = "??";
-
-	pSensor->devType = devType;
-	pSensor->subType = subType;
 
 	if (bIsTemp || bIsHum || bIsBaro)
 	{
@@ -1921,6 +1957,8 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 		std::string sDeviceName = m_discovered_devices[pSensor->device_identifiers].name;
 		int nValue = 0;
 		std::string sValue;
+		uint8_t devType = pSensor->devType;
+		uint8_t subType = pSensor->subType;
 
 		float temp = 0;
 		int humidity = 0;
