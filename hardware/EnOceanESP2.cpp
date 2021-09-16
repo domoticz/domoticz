@@ -1504,7 +1504,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP_HUM.battery_level = 9; // OK
 					tsen.TEMP_HUM.rssi = 12; // Not available
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C HUM %d%", nodeID.c_str(), TMP, tsen.TEMP_HUM.humidity);
+					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C HUM %d%%", nodeID.c_str(), TMP, tsen.TEMP_HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1523,7 +1523,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
 					tsen.HUM.rssi = 12; // Not available
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%", nodeID.c_str(), tsen.HUM.humidity);
+					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", nodeID.c_str(), tsen.HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1703,7 +1703,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.battery_level = 9; // OK
 					tsen.HUM.rssi = 12;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%", nodeID.c_str(), tsen.HUM.humidity);
+					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", nodeID.c_str(), tsen.HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}

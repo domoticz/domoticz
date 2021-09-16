@@ -2283,7 +2283,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP_HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
 						tsen.TEMP_HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C HUM %d%", senderID.c_str(), TMP, tsen.TEMP_HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C HUM %d%%", senderID.c_str(), TMP, tsen.TEMP_HUM.humidity);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
 						return;
@@ -2303,7 +2303,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
 						tsen.HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%", senderID.c_str(), tsen.HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", senderID.c_str(), tsen.HUM.humidity);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
 						return;
@@ -2553,7 +2553,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.battery_level = 9; // OK
 						tsen.HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%", senderID.c_str(), tsen.HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", senderID.c_str(), tsen.HUM.humidity);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
 					}
@@ -3302,7 +3302,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1.0F, 100.0F));
 					uint8_t BA = data[2]; // 1 = Simple press, 2 = Double press, 3 = Long press, 4 = Long press released
 
-					Debug(DEBUG_NORM, "VLD msg: Node %s BATT %d% BA %02X (%s)", senderID.c_str(),
+					Debug(DEBUG_NORM, "VLD msg: Node %s BATT %d%% BA %02X (%s)", senderID.c_str(),
 						BATT, BA, (BA == 1) ? "Simple press" : ((BA == 2) ? "Double press" : ((BA == 3) ? "Long press" : ((BA == 4) ? "Long press released" : "Invalid value"))));
 
 					SendGeneralSwitch(iSenderID, BA, BATT, 1, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
@@ -3385,7 +3385,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.battery_level = (BYTE) batterylevel;
 						tsen.HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%", senderID.c_str(), tsen.HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", senderID.c_str(), tsen.HUM.humidity);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
 					}
