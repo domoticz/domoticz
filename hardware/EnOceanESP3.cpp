@@ -1641,7 +1641,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		uint8_t data[20];
 
 		if (switchtype == STYPE_OnOff)
-		{ // Virtual switch : F6-02-xx emulation
+		{ // ESP3 virtual switch : F6-02-01/02, emulation
 			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
 			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
 
@@ -1682,13 +1682,10 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 7, nullptr, 0);
 			return true;
 		}
-
-		// ESP3 virtual dimmers, emulate RPS EEP: F6-02-01, Rocker Switch, 2 Rocker
-		// They ALWAYS send RPS telegrams, for On/Off and dimming
-
 		if (switchtype == STYPE_Dimmer)
-		{ // Virtual dimmer: A5-38-08 emulation
-			// A5-38-08, Central command, Gateway
+		{ // ESP3 virtual dimmer: F6-02-01 emulation
+			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
 			data[0] = RORG_RPS;
 			data[1] = 0x02;
 			data[2] = 0x64; // Level : 100
@@ -1744,52 +1741,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	return false;
 }
 
-void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char length)
-{
-	if (m_id_base == 0 || m_id_chip == 0)
-		return;
-
-	if (!isOpen())
-		return;
-
-	RBUF *tsen = (RBUF *) pdata;
-
-	if (tsen->LIGHTING2.packettype != pTypeLighting2)
-		return; // Only allowed to control switches
-
-	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	std::string nodeID = GetNodeID(iNodeID);
-
-	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
-	{
-		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
-		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
-		return;
-	}
-	if (tsen->LIGHTING2.unitcode >= 10)
-	{
-		Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
-		return;
-	}
-	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
-
-	uint8_t buf[10];
-
-	// TODO: recheck following values
-
-	buf[0] = RORG_4BS;
-	buf[1] = 0x02;
-	buf[2] = 0x00;
-	buf[3] = 0x00;
-	buf[4] = 0x00; // DB0.3 = 0 -> teach in
-	buf[5] = tsen->LIGHTING2.id1; // Sender ID
-	buf[6] = tsen->LIGHTING2.id2;
-	buf[7] = tsen->LIGHTING2.id3;
-	buf[8] = tsen->LIGHTING2.id4;
-	buf[9] = 0x30; // Status
-
-	SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
-}
 
 void CEnOceanESP3::ReadCallback(const char *data, size_t len)
 {
