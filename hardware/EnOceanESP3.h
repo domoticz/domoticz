@@ -11,7 +11,7 @@
 
 class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
-      public:
+public:
 	struct NodeInfo
 	{
 		uint32_t idx;
@@ -29,13 +29,22 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, unsigned char length);
 
-	uint32_t m_id_base;
+	NodeInfo *GetNodeInfo(const uint32_t iNodeID);
+	NodeInfo *GetNodeInfo(const std::string &nodeID);
 
-      private:
+	void TeachInNode(const std::string &nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
+	void CheckAndUpdateNodeRORG(NodeInfo *pNode, const uint8_t RORG);
+
+	uint32_t m_id_base;
+	uint32_t m_id_chip;
+
+private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool OpenSerialDevice();
 	void Do_Work();
+
+	void LoadNodesFromDatabase();
 
 	std::string DumpESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	std::string DumpESP3Packet(std::string esp3packet);
@@ -47,14 +56,6 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	void ReadCallback(const char *data, size_t len);
 	void ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
 	void ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *optdata, uint8_t optdatalen);
-
-	void LoadNodesFromDatabase();
-
-	NodeInfo *GetNodeInfo(const uint32_t iNodeID);
-	NodeInfo *GetNodeInfo(const std::string &nodeID);
-
-	void TeachInNode(const std::string &nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
-	void CheckAndUpdateNodeRORG(NodeInfo *pNode, const uint8_t RORG);
 
 	const char *GetPacketTypeLabel(const uint8_t PT);
 	const char *GetPacketTypeDescription(const uint8_t PT);
@@ -101,8 +102,6 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 	uint8_t m_packettype;
 	uint16_t m_datalen;
 	uint8_t m_optionallen;
-
-	bool m_wait_version_base;
 
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
