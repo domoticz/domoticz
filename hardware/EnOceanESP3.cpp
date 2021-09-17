@@ -304,6 +304,7 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int t
 	m_szSerialPort = devname;
 	m_Type = type;
 	m_id_base = 0;
+	m_id_chip = 0;
 }
 
 bool CEnOceanESP3::StartHardware()
@@ -1465,7 +1466,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 	SendESP3PacketQueued(PACKET_COMMON_COMMAND, &cmd, 1, nullptr, 0);
 
 	// Request base version
-	m_wait_version_base = true;
+	m_id_chip = 0;
 	cmd = CO_RD_VERSION;
 	Debug(DEBUG_HARDWARE, "Request base version");
 	SendESP3PacketQueued(PACKET_COMMON_COMMAND, &cmd, 1, nullptr, 0);
@@ -1568,7 +1569,7 @@ void CEnOceanESP3::SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint1
 
 bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_id_base == 0)
+	if (m_id_base == 0 || m_id_chip == 0)
 		return false;
 
 	if (!isOpen())
@@ -1720,7 +1721,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char length)
 {
-	if (m_id_base == 0)
+	if (m_id_base == 0 || m_id_chip == 0)
 		return;
 
 	if (!isOpen())
@@ -1901,11 +1902,11 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 				Log(LOG_STATUS, "HwdID %d ID_Base %08X", m_HwdID, m_id_base);
 				return;
 			}
-			if (m_wait_version_base && datalen == 33)
+			if (m_id_chip == 0 && datalen == 33)
 			{ // Base version Information
-				m_wait_version_base = false;
-				Log(LOG_STATUS, "HwdID %d App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X ChipID %02X.%02X.%02X.%02X ChipVersion %02X.%02X.%02X.%02X Description '%s'",
-					 m_HwdID, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], (const char *)data + 17);
+				m_id_chip = GetINodeID(data[9], data[10], data[11], data[12]);
+				Log(LOG_STATUS, "HwdID %d ChipID %08X ChipVersion %02X.%02X.%02X.%02X App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X Description '%s'",
+					 m_HwdID, m_id_chip, data[13], data[14], data[15], data[16], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], (const char *)data + 17);
 				return;
 			}
 			Debug(DEBUG_NORM, "HwdID %d, received response (%s)", m_HwdID, GetReturnCodeLabel(return_code));
@@ -1938,9 +1939,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			uint32_t dstID = GetINodeID(optdata[1], optdata[2], optdata[3], optdata[4]);
 
 			// Ignore telegrams addressed to another device
-			if (dstID != ERP1_BROADCAST_TRANSMISSION && dstID != m_id_base)
+			if (dstID != ERP1_BROADCAST_TRANSMISSION && dstID != m_id_base && dstID != m_id_chip)
 			{
-				Debug(DEBUG_HARDWARE, "HwdID %d, ignore addressed telegram sent to %08X", m_id_base, dstID);
+				Debug(DEBUG_HARDWARE, "HwdID %d, ignore addressed telegram sent to %08X", m_HwdID, dstID);
 				return;
 			}
 
@@ -2128,10 +2129,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						buf[2] = 0x00;		// DB0.1
 						buf[3] = 0x00;		// DB0.2
 						buf[4] = 0xF0;		// DB0.3 -> teach-in response
-						buf[5] = ID_BYTE3; 	// Send to teached-in node id
-						buf[6] = ID_BYTE2;
-						buf[7] = ID_BYTE1;
-						buf[8] = ID_BYTE0;
+						buf[5] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+						buf[6] = bitrange(m_id_chip, 16, 0xFF);
+						buf[7] = bitrange(m_id_chip, 8, 0xFF);
+						buf[8] = bitrange(m_id_chip, 0, 0xFF);
 						buf[9] = 0x00;		// Status
 						SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 					}
@@ -3127,10 +3128,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					buf[5] = data[5]; // Type
 					buf[6] = data[6]; // Func
 					buf[7] = data[7]; // RORG
-					buf[8] = data[8]; // Dest ID
-					buf[9] = data[9];
-					buf[10] = data[10];
-					buf[11] = data[11];
+					buf[8] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+					buf[9] = bitrange(m_id_chip, 16, 0xFF);
+					buf[10] = bitrange(m_id_chip, 8, 0xFF);
+					buf[11] = bitrange(m_id_chip, 0, 0xFF);
 					buf[12] = 0x00; // Status
 				}
 				if (pNode == nullptr)
