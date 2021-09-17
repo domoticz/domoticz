@@ -116,10 +116,10 @@ namespace Plugins
 
 	int PyDomoticz_ProfileFunc(PyObject *self, PyFrameObject *frame, int what, PyObject *arg)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			return 0;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -160,10 +160,10 @@ namespace Plugins
 
 	int PyDomoticz_TraceFunc(PyObject *self, PyFrameObject *frame, int what, PyObject *arg)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			return 0;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -204,10 +204,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Debug(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -237,10 +237,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Log(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -266,10 +266,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Status(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -295,10 +295,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Error(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -325,10 +325,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Debugging(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -362,10 +362,10 @@ namespace Plugins
 	{
 		int iPollinterval = 0;
 
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -394,10 +394,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Notifier(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -432,10 +432,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Trace(PyObject *self, PyObject *args)
 	{
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -472,16 +472,10 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_Configuration(PyObject *self, PyObject *args, PyObject *kwds)
 	{
-		PyObject *pConfig = Py_None;
-		std::string sConfig;
-		std::vector<std::vector<std::string>> result;
-
-		Py_INCREF(Py_None);
-
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
+		module_state *pModState = CPlugin::FindModule();
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+			Py_RETURN_NONE;
 		}
 		else if (!pModState->pPlugin)
 		{
@@ -498,10 +492,10 @@ namespace Plugins
 				if (!PyDict_Check(pNewConfig))
 				{
 					pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Function expects no parameter or a Dictionary.", __func__);
-					return pConfig;
+					Py_RETURN_NONE;
 				}
 				//  Convert to JSON and store
-				sConfig = jsonProtocol.PythontoJSON(pNewConfig);
+				std::string sConfig = jsonProtocol.PythontoJSON(pNewConfig);
 
 				// Update database
 				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
@@ -509,33 +503,29 @@ namespace Plugins
 			PyErr_Clear();
 
 			// Read the configuration
-			result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
 			if (result.empty())
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
-				return pConfig;
+				Py_RETURN_NONE;
 			}
 
 			// Build a Python structure to return
-			sConfig = result[0][0];
+			std::string sConfig = result[0][0];
 			if (sConfig.empty())
 				sConfig = "{}";
-			pConfig = jsonProtocol.JSONtoPython(sConfig);
-			Py_DECREF(Py_None);
+
+			return jsonProtocol.JSONtoPython(sConfig);
 		}
 
-		return pConfig;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_Register(PyObject *self, PyObject *args, PyObject *kwds)
 	{
 		static char *kwlist[] = { "Device", "Unit", NULL };
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
-		}
-		else
+		module_state *pModState = CPlugin::FindModule();
+		if (pModState)
 		{
 			PyTypeObject *pDeviceClass = NULL;
 			PyTypeObject *pUnitClass = NULL;
@@ -599,16 +589,8 @@ namespace Plugins
 	static PyObject *PyDomoticz_Dump(PyObject *self, PyObject *args, PyObject *kwds)
 	{
 		static char *kwlist[] = { "Object", NULL };
-		module_state *pModState = ((struct module_state *)PyModule_GetState(self));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
-		}
-		else if (!pModState->pPlugin)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
-		}
-		else
+		module_state *pModState = CPlugin::FindModule();
+		if (pModState)
 		{
 			PyObject *pTarget = NULL; // Object reference count not increased
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
