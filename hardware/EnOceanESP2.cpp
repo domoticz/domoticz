@@ -1758,7 +1758,7 @@ bool CEnOceanESP2::ParseData()
 		char* pszHumenTxt = enocean_hexToHuman(pFrame);
 		if (pszHumenTxt)
 		{
-			Log(LOG_NORM, pszHumenTxt);
+			Log(LOG_NORM, "%s", pszHumenTxt);
 			free(pszHumenTxt);
 		}
 	}
