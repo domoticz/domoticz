@@ -3100,16 +3100,20 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t CMD = bitrange(data[1], 0, 0x0F);				// 0 = teach-in query, 1 = teach-In response
 				if (CMD != 0)
 				{
-					Log(LOG_ERROR, "UTE teach request: Node %s, command 0x%1X not supported", senderID.c_str(), CMD);
+					Log(LOG_ERROR, "UTE teach request: Node %s, CMD 0x%1X not supported", senderID.c_str(), CMD);
 					return;
 				}
 				// UTE teach-in or teach-out Query (UTE Telegram / CMD 0x0)
 
 				uint8_t ute_direction = bitrange(data[1], 7, 0x01);	// 0 = uni-directional, 1 = bi-directional
-				uint8_t need_response = bitrange(data[1], 6, 0x01);	// 0 = yes, 1 = no
+				uint8_t ute_response = bitrange(data[1], 6, 0x01);	// 0 = yes, 1 = no
 				uint8_t ute_request = bitrange(data[1], 4, 0x03); // 0 = teach-in, 1 = teach-out, 2 = teach-in or teach-out
 
-				uint8_t node_nb_channels = data[2];
+				// TODO: is num_channel information reliable ?
+				// EEP 2.6.8 specifies : 0x00..0xFE = individual channel number, 0xFF = all supported channels
+				// Nodon SIN-2-2-01 Slot-in module (D2-01-0D) always sends 2, which corresponds to the number of supported channels
+				// Nodon MSP-2-1-01 Micro Smart Plug (D2-01-0E) always sends 1, which corresponds to the number of supported channels
+				uint8_t num_channel = data[2]; // 0x00..0xFE = individual channel number, 0xFF = all supported channels
 
 				uint16_t node_manID = (bitrange(data[4], 0, 0x07) << 8) | data[3];
 
@@ -3117,30 +3121,40 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t node_func = data[6];
 				uint8_t node_RORG = data[7];
 
-				Log(LOG_NORM, "UTE %s-directional %s request from Node %s, %sresponse expected",
+				Log(LOG_NORM, "UTE %s-directional %s request from Node %s, nb_channels %u, %sresponse expected",
 					(ute_direction == 0) ? "uni" : "bi",
 					(ute_request == 0) ? "teach-in" : ((ute_request == 1) ? "teach-out" : "teach-in or teach-out"),
-					senderID.c_str(),
-					(need_response == 0) ? "" : "no ");
+					senderID.c_str(), num_channel,
+					(ute_response == 0) ? "" : "no ");
 
-				uint8_t buf[15];
+				uint8_t data[13];
+				uint8_t optdata[7];
 
-				if (need_response == 0)
+				if (ute_response == 0)
 				{ // Prepare response buffer
 					// The device intended to be taught-in broadcasts a query message
 					// and gets back an addresses response message, containing its own ID as the transmission target address
-					buf[0] = RORG_UTE;
-					buf[2] = data[2]; // Nb channels
-					buf[3] = data[3]; // Manufacturer ID
-					buf[4] = data[4];
-					buf[5] = data[5]; // Type
-					buf[6] = data[6]; // Func
-					buf[7] = data[7]; // RORG
-					buf[8] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
-					buf[9] = bitrange(m_id_chip, 16, 0xFF);
-					buf[10] = bitrange(m_id_chip, 8, 0xFF);
-					buf[11] = bitrange(m_id_chip, 0, 0xFF);
-					buf[12] = 0x00; // Status
+					data[0] = RORG_UTE;
+					data[1] = ((UTE_BIDIRECTIONAL & 0x01) << 7) | (UTE_RESPONSE & 0x0F); // UTE data
+					data[2] = data[2]; // Num channel
+					data[3] = data[3]; // Manufacturer ID
+					data[4] = data[4];
+					data[5] = data[5]; // Type
+					data[6] = data[6]; // Func
+					data[7] = data[7]; // RORG
+					data[8] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+					data[9] = bitrange(m_id_chip, 16, 0xFF);
+					data[10] = bitrange(m_id_chip, 8, 0xFF);
+					data[11] = bitrange(m_id_chip, 0, 0xFF);
+					data[12] = 0x00; // Status
+
+					optdata[0] = 0x03; // SubTelNum : Send = 0x03
+					optdata[1] = data[8]; // Dest ID
+					optdata[2] = data[9];
+					optdata[3] = data[10];
+					optdata[4] = data[11];
+					optdata[5] = 0xFF; // RSSI : Send = 0xFF
+					optdata[6] = 0x00; // Seurity Level : Send = ignored
 				}
 				if (pNode == nullptr)
 				{ // Node not found
@@ -3148,37 +3162,48 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // Node not found and teach-out request => ignore
 						Log(LOG_NORM, "Unknown Node %s, teach-out request ignored", senderID.c_str());
 
-						if (need_response == 0)
+						if (ute_response == 0)
 						{ // Build and send response
-							buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHOUT_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
-							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+							data[1] |= (GENERAL_REASON & 0x03) << 4;
+
+							Debug(DEBUG_NORM, "Send UTE teach-out refused response");
+
+							SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
 						}
 						return;
 					}
 					if (!m_sql.m_bAcceptNewHardware)
 					{ // Node not found and learn mode disabled => error
 						Log(LOG_NORM, "Unknown Node %s, please allow accepting new hardware and proceed to teach-in", senderID.c_str());
-						if (need_response == 0)
+						if (ute_response == 0)
 						{ // Build and send response
-							buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (GENERAL_REASON & 0x03) << 4 | UTE_RESPONSE;
-							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+							data[1] |= (GENERAL_REASON & 0x03) << 4;
+
+							Debug(DEBUG_NORM, "Send UTE teach-in refused response");
+
+							SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
 						}
 						return;
 					}
 					// Node not found and learn mode enabled and teach-in request : add it to the database
 
-					Log(LOG_NORM, "Creating Node %s Manufacturer 0x%03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
+					Log(LOG_NORM, "Creating Node %s Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
 						senderID.c_str(), node_manID, GetManufacturerName(node_manID),
 						node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
-						node_nb_channels, (node_nb_channels > 1) ? "s" : "");
+						num_channel, (num_channel > 1) ? "s" : "");
 
 					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, false);
 
-					if (need_response == 0)
+					if (ute_response == 0)
 					{ // Build and send response
-						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						data[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
+
+						Debug(DEBUG_NORM, "Send UTE teach-in accepted response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
 					}
+					// TODO : instead of creating node channels, ask all node channels to report their status
+
 					if (node_RORG == RORG_VLD && node_func == 0x01
 						&& (node_type == 0x0D || node_type == 0x0E
 							|| node_type == 0x0F || node_type == 0x12
@@ -3192,7 +3217,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						// D2-01-12, Slot-in module, dual channels, with external button control
 						// D2-01-15, D2-01-16, D2-01-17
 
-						for (uint8_t nbc = 1; nbc <= node_nb_channels; nbc++)
+						// TODO : num_channel is only a valid channel number when between 0x00 & 0x1D
+						// 0x1E means all supported output channels
+						// 0x1F means input channel (for mains supply)
+						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
 							RBUF tsen;
 
@@ -3226,10 +3254,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "Node %s already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
 						senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 
-					if (need_response == 0)
+					if (ute_response == 0)
 					{ // Build and send response
-						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						data[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
+
+						Debug(DEBUG_NORM, "Send UTE teach-in accepted response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
 					}
 				}
 				else if (ute_request == 1 || ute_request == 2)
@@ -3237,10 +3268,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// Ignore teach-out request to avoid teach-in/out loop
 					Debug(DEBUG_NORM, "UTE msg: Node %s, teach-out request not supported", senderID.c_str());
 
-					if (need_response == 0)
+					if (ute_response == 0)
 					{ // Build and send response
-						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (GENERAL_REASON & 0x03) << 4 | UTE_RESPONSE;
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						data[1] |= (GENERAL_REASON & 0x03) << 4;
+
+						Debug(DEBUG_NORM, "Send UTE teach-out refused response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
 					}
 				}
 			}
