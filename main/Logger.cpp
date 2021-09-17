@@ -181,7 +181,7 @@ void CLogger::ForwardErrorsToNotificationSystem(const bool bDoForward)
 
 void CLogger::Log(const _eLogLevel level, const std::string &sLogline)
 {
-	Log(level, "%s", sLogline.c_str());
+	Log(level, sLogline.c_str());
 }
 
 void CLogger::Log(const _eLogLevel level, const char *logline, ...)
