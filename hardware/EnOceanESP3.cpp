@@ -3294,50 +3294,50 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
 					uint8_t CMD = bitrange(data[1], 0, 0x0F); // Command ID
-					if (CMD != 0x04)
-					{
-						Log(LOG_ERROR, "VLD msg: Node %s, command 0x%01X not supported", senderID.c_str(), CMD);
+
+					// TODO: manage remote configuration and querying/polling
+					// TODO: manage CMD 0x7 - Actuator Measurement Response
+					// TODO: manage CMD 0xA - Actuator Pilot Wire Mode Response
+
+					if (CMD == 0x04)
+					{ // CMD 0x4 - Actuator Status Response
+						uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
+
+						uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value : 0x00 = Off, 0x01...0x64: On or 1% to 100%
+
+						uint8_t PF = bitrange(data[1], 7, 0x01); // Power failure
+						uint8_t PFD = bitrange(data[1], 6, 0x01); // Power failure detection
+
+						uint8_t OC = bitrange(data[2], 7, 0x01); // Over current switch off
+						uint8_t EL = bitrange(data[2], 5, 0x03); // Error level
+
+						uint8_t LC = bitrange(data[3], 7, 0x01); // Local control
+
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+						tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
+						tsen.LIGHTING2.level = OV;
+						tsen.LIGHTING2.unitcode = IO + 1;
+						tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
+						tsen.LIGHTING2.rssi = rssi;
+
+						Debug(DEBUG_NORM, "VLD msg: Node %s status, IO %02X (UnitID %d) OV %02X (Cmnd %s Level %d)",
+							senderID.c_str(), IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
+						Debug(DEBUG_NORM, "VLD msg: Node %s status, PF %d PFD %d OC %d EL %d LC %d", senderID.c_str(), PF, PFD, OC, EL, LC);
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
 						return;
 					}
-					// CMD 0x4 - Actuator Status Response
+					// TODO: handle other CMD returning status data
 
-					uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
-
-					uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value % : 0x00 = Off, 0x01...0x64: On or 1% to 100%
-
-					uint8_t PF = bitrange(data[1], 7, 0x01); // Power failure
-					uint8_t PFD = bitrange(data[1], 6, 0x01); // Power failure detection
-
-					uint8_t OC = bitrange(data[2], 7, 0x01); // Over current switch off
-					uint8_t EL = bitrange(data[2], 5, 0x03); // Error level
-
-					uint8_t LC = bitrange(data[3], 7, 0x01); // Local control
-
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-					tsen.LIGHTING2.packettype = pTypeLighting2;
-					tsen.LIGHTING2.subtype = sTypeAC;
-					tsen.LIGHTING2.seqnbr = 0;
-					tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
-					tsen.LIGHTING2.level = OV;
-					tsen.LIGHTING2.unitcode = IO + 1;
-					tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
-					tsen.LIGHTING2.rssi = rssi;
-
-					Debug(DEBUG_NORM, "VLD msg: Node %s status, IO %02X (UnitID %d) OV %02X (Cmnd %s Level %d)",
-						senderID.c_str(), IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
-					Debug(DEBUG_NORM, "VLD msg: Node %s status, PF %d PFD %d OC %d EL %d LC %d", senderID.c_str(), PF, PFD, OC, EL, LC);
-
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
-
-					// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
-					// Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)
-					// If a device has local control (ex: nodon inwall module with physically attached switched), domoticz will record the local control as unit 0.
-					// Ex: nodon inwall 2 channels will show 3 entries. Unit 0 is the local switch, 1 is the first channel, 2 is the second channel.
+					Log(LOG_ERROR, "VLD msg: Node %s, command 0x%01X not supported", senderID.c_str(), CMD);
 					return;
 				}
 				if (pNode->func == 0x03 && pNode->type == 0x0A)
