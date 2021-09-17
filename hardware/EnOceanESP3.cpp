@@ -2939,16 +2939,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// RPS data
 
-				// EEP D2-01-XX, Electronic Switches and Dimmers with Local Control
-				// D2-01-0D, Micro smart plug, single channel, with external button control
-				// D2-01-0E, Micro smart plug, single channel, with external button control
-				// D2-01-0F, Slot-in module, single channel, with external button control
-				// D2-01-12, Slot-in module, dual channels, with external button control
-				// D2-01-15, D2-01-16, D2-01-17
-				// These nodes send RPS telegrams whenever the external button control is used
-				// Ignore these RPS telegrams : device status will be reported using VLD datagram
+				// WARNING : D2-01-XX, Electronic Switches and Dimmers with Local Control
+				// Several VLD nodes having external button control send RPS telegrams
+				// Esamples of concerned EEP : D2-01-0F, D2-01-12, D2-01-15, D2-01-16 & D2-01-17
+				// Ignore RPS data for these nodes, because status will be reported by VLD datagram
 
-				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type >= 0x02))
+				// RORG = VLD => just ignore RPS data
+				// RORG unknown & func = 0x01 & type != 0x01 => VLD-O1-XX => update RORG and ignore RPS data
+				// RORG unknown & func = 0x01 & type = 0x01 => RPS-O1-O1 or VLD-O1-XX => assume RPS-01-01
+				// Nb. RORG shall be later updated to VLD whenever the node will report its status
+
+				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type != 0x01))
 				{
 					Debug(DEBUG_NORM, "RPS %c-msg: Node %s, button press from VLD device (ignored)",
 						(NU == 0) ? 'U' : 'N', senderID.c_str());
@@ -3389,9 +3390,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					uint8_t ES = bitrange(data[2], 1, 0x03);
 					// Remaining Product Life Time, in months
 					uint8_t RPLT = (bitrange(data[2], 0, 0x01) << 7) | bitrange(data[3], 1, 0x7F);
-					// Temperature (linear), 0..250=>0..50 °C, 255 = Error
+					// Temperature (linear), 0..250=>0..50°C, 255 = Error
 					uint8_t TMP8 = (bitrange(data[3], 0, 0x01) << 7) | bitrange(data[4], 1, 0x7F);
-					// Relative Humidity (linear), 0..200=>0..100 %RH, 255 = Error
+					// Relative Humidity (linear), 0..200=>0..100%RH, 255 = Error
 					uint8_t HUM = (bitrange(data[4], 0, 0x01) << 7) | bitrange(data[5], 1, 0x7F);
 					// Hygrothermal Comfort Index, 0 = Good, 1 = Medium, 2 = Bad, 3 = Error
 					uint8_t HCI = (bitrange(data[5], 0, 0x01) << 1) | bitrange(data[6], 7, 0x01);
