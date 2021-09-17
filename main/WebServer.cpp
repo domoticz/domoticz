@@ -8880,13 +8880,12 @@ namespace http
 					}
 					else
 					{
-						sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
 						if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) ||
 						    (dType == pTypeHUM) || (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) ||
 						    (dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) || (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) ||
 						    (dType == pTypeP1Power) || (dType == pTypeP1Gas))
 						{
-							root["result"][ii]["ID"] = szData;
+							root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int)atoi(sd[1].c_str())) : sd[1];
 						}
 						else
 						{
