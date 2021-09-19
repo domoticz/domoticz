@@ -27,7 +27,6 @@ public:
 	~CEnOceanESP3() override = default;
 
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
-	void SendDimmerTeachIn(const char *pdata, unsigned char length);
 
 	NodeInfo *GetNodeInfo(const uint32_t iNodeID);
 	NodeInfo *GetNodeInfo(const std::string &nodeID);
