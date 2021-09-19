@@ -1737,6 +1737,53 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		Log(LOG_ERROR, "Node %s (virtual), switch type not supported (%d)", nodeID.c_str(), switchtype);
 		return false;
 	}
+	NodeInfo* pNode = GetNodeInfo(nodeID);
+
+	if (pNode != nullptr
+		&& (pNode->RORG == RORG_VLD || pNode->RORG == 0x00)
+		&& pNode->func == 0x01
+		&& (pNode->type == 0x0D || pNode->type == 0x0E || pNode->type == 0x0F || pNode->type == 0x12))
+	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
+		// D2-01-0D, Micro smart plug, single channel, with external button control
+		// D2-01-0E, Micro smart plug, single channel, with external button control
+		// D2-01-0F, Slot-in module, single channel, with external button control
+		// D2-01-12, Slot-in module, dual channels, with external button control
+
+		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+
+		if (tsen->LIGHTING2.unitcode > 0x1D)
+		{
+			Log(LOG_ERROR, "Node %s, channel %d not supported", nodeID.c_str(), (int) tsen->LIGHTING2.unitcode);
+			return false;
+		}
+
+		uint8_t data[9];
+		uint8_t optdata[7];
+
+		data[0] = RORG_VLD;
+		data[1] = 0x01; // CMD 0x1, Actuator set output
+		data[2] = tsen->LIGHTING2.unitcode - 1; // I/O Channel
+		data[3] = (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00; // Output Value
+		data[4] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+		data[5] = bitrange(m_id_chip, 16, 0xFF);
+		data[6] = bitrange(m_id_chip, 8, 0xFF);
+		data[7] = bitrange(m_id_chip, 0, 0xFF);
+		data[8] = 0x00; // Status
+
+		optdata[0] = 0x03; // SubTelNum : Send = 0x03
+		optdata[1] = tsen->LIGHTING2.id1; // Dest ID
+		optdata[2] = tsen->LIGHTING2.id2;
+		optdata[3] = tsen->LIGHTING2.id3;
+		optdata[4] = tsen->LIGHTING2.id4;
+		optdata[5] = 0xFF; // RSSI : Send = 0xFF
+		optdata[6] = 0x00; // Seurity Level : Send = ignored
+
+		Debug(DEBUG_NORM, "Send %s switch command to Node %s",
+			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID.c_str());
+
+		SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 9, optdata, 7);
+		return true;
+	}
 	Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
 	Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 	return false;
