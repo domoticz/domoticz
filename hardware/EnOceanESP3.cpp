@@ -1480,19 +1480,19 @@ std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint
 
 	sstr << GetPacketTypeLabel(packettype);
 
-	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
+	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) datalen << ")";
 	for (int i = 0; i < datalen; i++)
 		if (i == 0 && packettype == PACKET_RADIO_ERP1)
-			sstr << " " << GetRORGLabel((uint32_t)data[i]);
+			sstr << " " << GetRORGLabel((uint32_t) data[i]);
 		else
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) data[i];
 
 	if (optdatalen > 0)
 	{
-		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
+		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) optdatalen << ")";
 
 		for (int i = 0; i < optdatalen; i++)
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) optdata[i];
 	}
 	return sstr.str();
 }
@@ -1639,7 +1639,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			cmnd = light2_sSetLevel;
 		}
 
-		uint8_t data[20];
+		uint8_t buf[20];
 
 		if (switchtype == STYPE_OnOff)
 		{ // ESP3 virtual switch : F6-02-01/02, emulation
@@ -1648,89 +1648,89 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 			uint8_t CO = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
 
-			data[0] = RORG_RPS;
+			buf[0] = RORG_RPS;
 
 			switch (RockerID)
 			{
 				case 0: // Button A
-					data[1] = CO ? 0x00 : 0x20;
+					buf[1] = CO ? 0x00 : 0x20;
 					break;
 
 				case 1: // Button B
-					data[1] = CO ? 0x40 : 0x60;
+					buf[1] = CO ? 0x40 : 0x60;
 					break;
 
 				default:
 					return false; // Not supported
 			}
-			data[1] |= 0x10; // Press energy bow
-			data[2] = tsen->LIGHTING2.id1; // Sender ID
-			data[3] = tsen->LIGHTING2.id2;
-			data[4] = tsen->LIGHTING2.id3;
-			data[5] = tsen->LIGHTING2.id4;
-			data[6] = 0x30; // Press button
+			buf[1] |= 0x10; // Press energy bow
+			buf[2] = tsen->LIGHTING2.id1; // Sender ID
+			buf[3] = tsen->LIGHTING2.id2;
+			buf[4] = tsen->LIGHTING2.id3;
+			buf[5] = tsen->LIGHTING2.id4;
+			buf[6] = 0x30; // Press button
 
 			Debug(DEBUG_NORM, "Node %s, virtual switch, set to %s",
 				nodeID.c_str(), CO ? "On" : "Off");
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 7, nullptr, 0);
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
 			// Button release is send a bit later
 
-			data[1] = 0x00; // No button press
-			data[6] = 0x20; // Release button
+			buf[1] = 0x00; // No button press
+			buf[6] = 0x20; // Release button
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 7, nullptr, 0);
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 			return true;
 		}
 		if (switchtype == STYPE_Dimmer)
 		{ // ESP3 virtual dimmer: F6-02-01 emulation
 			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
 			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
-			data[0] = RORG_RPS;
-			data[1] = 0x02;
-			data[2] = 0x64; // Level : 100
-			data[3] = 0x01; // Speed : 1
-			data[4] = 0x09; // Dim Off
-			data[5] = tsen->LIGHTING2.id1; // Sender ID
-			data[6] = tsen->LIGHTING2.id2;
-			data[7] = tsen->LIGHTING2.id3;
-			data[8] = tsen->LIGHTING2.id4;
-			data[9] = 0x30; // Status
+			buf[0] = RORG_RPS;
+			buf[1] = 0x02;
+			buf[2] = 0x64; // Level : 100
+			buf[3] = 0x01; // Speed : 1
+			buf[4] = 0x09; // Dim Off
+			buf[5] = tsen->LIGHTING2.id1; // Sender ID
+			buf[6] = tsen->LIGHTING2.id2;
+			buf[7] = tsen->LIGHTING2.id3;
+			buf[8] = tsen->LIGHTING2.id4;
+			buf[9] = 0x30; // Status
 
 			if (cmnd != light2_sSetLevel)
 			{ // On/Off
 				uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
 
-				data[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
-				data[9] = 0x30;
+				buf[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
+				buf[9] = 0x30;
 
 				Debug(DEBUG_NORM, "Node %s, virtual dimmer, set to %s",
 					nodeID.c_str(), CO ? "On" : "Off");
 
-				SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 
 				// Button release is send a bit later
 
-				data[1] = 0x00;
-				data[9] = 0x20;
+				buf[1] = 0x00;
+				buf[9] = 0x20;
 
-				SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 			}
 			else
 			{ // Dimmer value
-				data[1] = 0x02;
-				data[2] = iLevel;
-				data[3] = 0x01; // Very fast dimming
+				buf[1] = 0x02;
+				buf[2] = iLevel;
+				buf[3] = 0x01; // Very fast dimming
 				if (iLevel == 0 || orgcmd == light2_sOff)
-					data[4] = 0x08; // Dim Off
+					buf[4] = 0x08; // Dim Off
 				else
-					data[4] = 0x09; // Dim On
+					buf[4] = 0x09; // Dim On
 
 				Debug(DEBUG_NORM, "Node %s, virtual dimmer, dimm %s, level %d%%",
 					nodeID.c_str(), (iLevel == 0 || orgcmd == light2_sOff) ? "Off" : "On", iLevel);
 
-				SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 			}
 			return true;
 		}
@@ -1757,31 +1757,31 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			return false;
 		}
 
-		uint8_t data[9];
-		uint8_t optdata[7];
+		uint8_t buf[9];
+		uint8_t optbuf[7];
 
-		data[0] = RORG_VLD;
-		data[1] = 0x01; // CMD 0x1, Actuator set output
-		data[2] = tsen->LIGHTING2.unitcode - 1; // I/O Channel
-		data[3] = (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00; // Output Value
-		data[4] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
-		data[5] = bitrange(m_id_chip, 16, 0xFF);
-		data[6] = bitrange(m_id_chip, 8, 0xFF);
-		data[7] = bitrange(m_id_chip, 0, 0xFF);
-		data[8] = 0x00; // Status
+		buf[0] = RORG_VLD;
+		buf[1] = 0x01; // CMD 0x1, Actuator set output
+		buf[2] = tsen->LIGHTING2.unitcode - 1; // I/O Channel
+		buf[3] = (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00; // Output Value
+		buf[4] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+		buf[5] = bitrange(m_id_chip, 16, 0xFF);
+		buf[6] = bitrange(m_id_chip, 8, 0xFF);
+		buf[7] = bitrange(m_id_chip, 0, 0xFF);
+		buf[8] = 0x00; // Status
 
-		optdata[0] = 0x03; // SubTelNum : Send = 0x03
-		optdata[1] = tsen->LIGHTING2.id1; // Dest ID
-		optdata[2] = tsen->LIGHTING2.id2;
-		optdata[3] = tsen->LIGHTING2.id3;
-		optdata[4] = tsen->LIGHTING2.id4;
-		optdata[5] = 0xFF; // RSSI : Send = 0xFF
-		optdata[6] = 0x00; // Seurity Level : Send = ignored
+		optbuf[0] = 0x03; // SubTelNum : Send = 0x03
+		optbuf[1] = tsen->LIGHTING2.id1; // Dest ID
+		optbuf[2] = tsen->LIGHTING2.id2;
+		optbuf[3] = tsen->LIGHTING2.id3;
+		optbuf[4] = tsen->LIGHTING2.id4;
+		optbuf[5] = 0xFF; // RSSI : Send = 0xFF
+		optbuf[6] = 0x00; // Seurity Level : Send = ignored
 
 		Debug(DEBUG_NORM, "Send %s switch command to Node %s",
 			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID.c_str());
 
-		SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 9, optdata, 7);
+		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
 		return true;
 	}
 	Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
@@ -2145,22 +2145,22 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{
 						Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", senderID.c_str());
 
-						uint8_t data[10];
+						uint8_t buf[10];
 
-						data[0] = RORG_4BS;
-						data[1] = data[1]; // Func, Type and Manufacturer ID
-						data[2] = data[2];
-						data[3] = data[3];
-						data[1] = 0xF0; // Successful teach-in
-						data[5] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
-						data[6] = bitrange(m_id_chip, 16, 0xFF);
-						data[7] = bitrange(m_id_chip, 8, 0xFF);
-						data[8] = bitrange(m_id_chip, 0, 0xFF);
-						data[9] = 0x00; // Status
+						buf[0] = RORG_4BS;
+						buf[1] = DATA_BYTE3; // Func, Type and Manufacturer ID
+						buf[2] = DATA_BYTE2;
+						buf[3] = DATA_BYTE1;
+						buf[1] = 0xF0; // Successful teach-in
+						buf[5] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+						buf[6] = bitrange(m_id_chip, 16, 0xFF);
+						buf[7] = bitrange(m_id_chip, 8, 0xFF);
+						buf[8] = bitrange(m_id_chip, 0, 0xFF);
+						buf[9] = 0x00; // Status
 
 						Debug(DEBUG_NORM, "Send 4BS teach-in accepted response");
 
-						SendESP3Packet(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 					}
 					return;
 				}
@@ -3146,34 +3146,34 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					senderID.c_str(), num_channel,
 					(ute_response == 0) ? "" : "no ");
 
-				uint8_t data[13];
-				uint8_t optdata[7];
+				uint8_t buf[13];
+				uint8_t optbuf[7];
 
 				if (ute_response == 0)
 				{ // Prepare response buffer
 					// The device intended to be taught-in broadcasts a query message
 					// and gets back an addresses response message, containing its own ID as the transmission target address
-					data[0] = RORG_UTE;
-					data[1] = ((UTE_BIDIRECTIONAL & 0x01) << 7) | (UTE_RESPONSE & 0x0F); // UTE data
-					data[2] = data[2]; // Num channel
-					data[3] = data[3]; // Manufacturer ID
-					data[4] = data[4];
-					data[5] = data[5]; // Type
-					data[6] = data[6]; // Func
-					data[7] = data[7]; // RORG
-					data[8] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
-					data[9] = bitrange(m_id_chip, 16, 0xFF);
-					data[10] = bitrange(m_id_chip, 8, 0xFF);
-					data[11] = bitrange(m_id_chip, 0, 0xFF);
-					data[12] = 0x00; // Status
+					buf[0] = RORG_UTE;
+					buf[1] = ((UTE_BIDIRECTIONAL & 0x01) << 7) | (UTE_RESPONSE & 0x0F); // UTE data
+					buf[2] = num_channel;
+					buf[3] = data[3]; // Manufacturer ID
+					buf[4] = data[4];
+					buf[5] = node_type;
+					buf[6] = node_func;
+					buf[7] = node_RORG;
+					buf[8] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+					buf[9] = bitrange(m_id_chip, 16, 0xFF);
+					buf[10] = bitrange(m_id_chip, 8, 0xFF);
+					buf[11] = bitrange(m_id_chip, 0, 0xFF);
+					buf[12] = 0x00; // Status
 
-					optdata[0] = 0x03; // SubTelNum : Send = 0x03
-					optdata[1] = data[8]; // Dest ID
-					optdata[2] = data[9];
-					optdata[3] = data[10];
-					optdata[4] = data[11];
-					optdata[5] = 0xFF; // RSSI : Send = 0xFF
-					optdata[6] = 0x00; // Seurity Level : Send = ignored
+					optbuf[0] = 0x03; // SubTelNum : Send = 0x03
+					optbuf[1] = ID_BYTE3; // Dest ID
+					optbuf[2] = ID_BYTE2;
+					optbuf[3] = ID_BYTE1;
+					optbuf[4] = ID_BYTE0;
+					optbuf[5] = 0xFF; // RSSI : Send = 0xFF
+					optbuf[6] = 0x00; // Seurity Level : Send = ignored
 				}
 				if (pNode == nullptr)
 				{ // Node not found
@@ -3183,11 +3183,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						if (ute_response == 0)
 						{ // Build and send response
-							data[1] |= (GENERAL_REASON & 0x03) << 4;
+							buf[1] |= (GENERAL_REASON & 0x03) << 4;
 
 							Debug(DEBUG_NORM, "Send UTE teach-out refused response");
 
-							SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
+							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 						}
 						return;
 					}
@@ -3196,11 +3196,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Log(LOG_NORM, "Unknown Node %s, please allow accepting new hardware and proceed to teach-in", senderID.c_str());
 						if (ute_response == 0)
 						{ // Build and send response
-							data[1] |= (GENERAL_REASON & 0x03) << 4;
+							buf[1] |= (GENERAL_REASON & 0x03) << 4;
 
 							Debug(DEBUG_NORM, "Send UTE teach-in refused response");
 
-							SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
+							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 						}
 						return;
 					}
@@ -3215,11 +3215,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					if (ute_response == 0)
 					{ // Build and send response
-						data[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
+						buf[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
 
 						Debug(DEBUG_NORM, "Send UTE teach-in accepted response");
 
-						SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 					}
 					// TODO : instead of creating node channels, ask all node channels to report their status
 
@@ -3275,11 +3275,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					if (ute_response == 0)
 					{ // Build and send response
-						data[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
+						buf[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
 
 						Debug(DEBUG_NORM, "Send UTE teach-in accepted response");
 
-						SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 					}
 				}
 				else if (ute_request == 1 || ute_request == 2)
@@ -3289,11 +3289,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					if (ute_response == 0)
 					{ // Build and send response
-						data[1] |= (GENERAL_REASON & 0x03) << 4;
+						buf[1] |= (GENERAL_REASON & 0x03) << 4;
 
 						Debug(DEBUG_NORM, "Send UTE teach-out refused response");
 
-						SendESP3Packet(PACKET_RADIO_ERP1, data, 13, optdata, 7);
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 					}
 				}
 			}
