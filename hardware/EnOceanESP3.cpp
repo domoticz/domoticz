@@ -2890,16 +2890,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// RPS data
 
-				// EEP D2-01-XX, Electronic Switches and Dimmers with Local Control
-				// D2-01-0D, Micro smart plug, single channel, with external button control
-				// D2-01-0E, Micro smart plug, single channel, with external button control
-				// D2-01-0F, Slot-in module, single channel, with external button control
-				// D2-01-12, Slot-in module, dual channels, with external button control
-				// D2-01-15, D2-01-16, D2-01-17
-				// These nodes send RPS telegrams whenever the external button control is used
-				// Ignore these RPS telegrams : device status will be reported using VLD datagram
+				// WARNING : D2-01-XX, Electronic Switches and Dimmers with Local Control
+				// Several VLD nodes having external button control send RPS telegrams
+				// Esamples of concerned EEP : D2-01-0F, D2-01-12, D2-01-15, D2-01-16 & D2-01-17
+				// Ignore RPS data for these nodes, because status will be reported by VLD datagram
 
-				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type >= 0x02))
+				// RORG = VLD => just ignore RPS data
+				// RORG unknown & func = 0x01 & type != 0x01 => VLD-O1-XX => update RORG and ignore RPS data
+				// RORG unknown & func = 0x01 & type = 0x01 => RPS-O1-O1 or VLD-O1-XX => assume RPS-01-01
+				// Nb. RORG shall be later updated to VLD whenever the node will report its status
+
+				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type != 0x01))
 				{
 					Debug(DEBUG_NORM, "RPS %c-msg: Node %s, button press from VLD device (ignored)",
 						(NU == 0) ? 'U' : 'N', senderID.c_str());
