@@ -1588,140 +1588,158 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
 
-	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
-	{
-		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
-		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
-		return false;
-	}
-	if (tsen->LIGHTING2.unitcode >= 10)
-	{
-		Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
-		return false;
-	}
-
-	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
-	uint8_t EB = 1;
-	bool bIsDimmer = false;
-	uint8_t LastLevel = 0;
-
-	// Find out if this is a Dimmer switch, because they are threaded differently
-
-	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
-	std::vector<std::vector<std::string>> result;
-
-	result = m_sql.safe_query("SELECT SwitchType, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, deviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
-	if (!result.empty())
-	{
-		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
-		if (switchtype == STYPE_Dimmer)
-			bIsDimmer = true;
-		LastLevel = (uint8_t)atoi(result[0][1].c_str());
-	}
-
-	uint8_t iLevel = tsen->LIGHTING2.level;
-	int cmnd = tsen->LIGHTING2.cmnd;
-	int orgcmd = cmnd;
-	if (tsen->LIGHTING2.level == 0 && !bIsDimmer)
-		cmnd = light2_sOff;
-	else
-	{
-		if (cmnd == light2_sOn)
-			iLevel = LastLevel;
-		else
-		{ // Scale to 0 - 100 %
-			iLevel = tsen->LIGHTING2.level;
-			if (iLevel > 15)
-				iLevel = 15;
-			float fLevel = (100.0F / 15.0F) * float(iLevel);
-			if (fLevel > 99.0F)
-				fLevel = 100.0F;
-			iLevel = (uint8_t) fLevel;
+	if (iNodeID > m_id_base && iNodeID <= (m_id_base + 128))
+	{ // Virtual switch created from m_id_base
+		if (tsen->LIGHTING2.unitcode >= 10)
+		{
+			Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
+			return false;
 		}
-		cmnd = light2_sSetLevel;
-	}
 
-	uint8_t buf[20];
+		uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
+		uint8_t EB = 1;
+		_eSwitchType switchtype = STYPE_OnOff;
+		uint8_t LastLevel = 0;
 
-	if (bIsDimmer)
-	{ // A5-38-02, On/Off switch with dimming capability
-		buf[0] = RORG_RPS;
-		buf[1] = 0x02;
-		buf[2] = 0x64; // Level : 100
-		buf[3] = 0x01; // Speed : 1
-		buf[4] = 0x09; // Dim Off
-		buf[5] = tsen->LIGHTING2.id1; // Sender ID
-		buf[6] = tsen->LIGHTING2.id2;
-		buf[7] = tsen->LIGHTING2.id3;
-		buf[8] = tsen->LIGHTING2.id4;
-		buf[9] = 0x30; // Status
+		// Find out if this is a virtual switch or dimmer, because they are threaded differently
+		// Virtual On/Off emulate RPS EEP: F6-02-01/02, Rocker switch, 2 Rocker
+		// Virtual dimmers emulate 4BS EEP: A5-38-08, Central Command, Gateway
 
-		if (cmnd != light2_sSetLevel)
-		{ // On/Off
-			uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
 
-			buf[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
-			buf[9] = 0x30;
+		std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
+		std::vector<std::vector<std::string>> result;
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+		result = m_sql.safe_query("SELECT SwitchType, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+			m_HwdID, deviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
+		if (!result.empty())
+		{ // Device found in the database
+			switchtype = (_eSwitchType) atoi(result[0][0].c_str());
+			LastLevel = (uint8_t) atoi(result[0][1].c_str());
+		}
+
+		uint8_t iLevel = tsen->LIGHTING2.level;
+		int cmnd = tsen->LIGHTING2.cmnd;
+		int orgcmd = cmnd;
+		if (tsen->LIGHTING2.level == 0 && switchtype != STYPE_Dimmer)
+			cmnd = light2_sOff;
+		else
+		{
+			if (cmnd == light2_sOn)
+				iLevel = LastLevel;
+			else
+			{ // Scale to 0 - 100%
+				iLevel = tsen->LIGHTING2.level;
+				if (iLevel > 15)
+					iLevel = 15;
+				float fLevel = (100.0F / 15.0F) * float(iLevel);
+				if (fLevel > 99.0F)
+					fLevel = 100.0F;
+				iLevel = (uint8_t) fLevel;
+			}
+			cmnd = light2_sSetLevel;
+		}
+
+		uint8_t data[20];
+
+		if (switchtype == STYPE_OnOff)
+		{ // ESP3 virtual switch : F6-02-01/02, emulation
+			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
+
+			uint8_t CO = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
+
+			data[0] = RORG_RPS;
+
+			switch (RockerID)
+			{
+				case 0: // Button A
+					data[1] = CO ? 0x00 : 0x20;
+					break;
+
+				case 1: // Button B
+					data[1] = CO ? 0x40 : 0x60;
+					break;
+
+				default:
+					return false; // Not supported
+			}
+			data[1] |= 0x10; // Press energy bow
+			data[2] = tsen->LIGHTING2.id1; // Sender ID
+			data[3] = tsen->LIGHTING2.id2;
+			data[4] = tsen->LIGHTING2.id3;
+			data[5] = tsen->LIGHTING2.id4;
+			data[6] = 0x30; // Press button
+
+			Debug(DEBUG_NORM, "Node %s, virtual switch, set to %s",
+				nodeID.c_str(), CO ? "On" : "Off");
+
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 7, nullptr, 0);
 
 			// Button release is send a bit later
 
-			buf[1] = 0x00;
-			buf[9] = 0x20;
+			data[1] = 0x00; // No button press
+			data[6] = 0x20; // Release button
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 7, nullptr, 0);
+			return true;
 		}
-		else
-		{ // Send dim value
-			buf[1] = 0x02;
-			buf[2] = iLevel;
-			buf[3] = 0x01; // Very fast dimming
-			if ((iLevel == 0) || (orgcmd == light2_sOff))
-				buf[4] = 0x08; // Dim Off
+		if (switchtype == STYPE_Dimmer)
+		{ // ESP3 virtual dimmer: F6-02-01 emulation
+			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
+			data[0] = RORG_RPS;
+			data[1] = 0x02;
+			data[2] = 0x64; // Level : 100
+			data[3] = 0x01; // Speed : 1
+			data[4] = 0x09; // Dim Off
+			data[5] = tsen->LIGHTING2.id1; // Sender ID
+			data[6] = tsen->LIGHTING2.id2;
+			data[7] = tsen->LIGHTING2.id3;
+			data[8] = tsen->LIGHTING2.id4;
+			data[9] = 0x30; // Status
+
+			if (cmnd != light2_sSetLevel)
+			{ // On/Off
+				uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
+
+				data[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
+				data[9] = 0x30;
+
+				Debug(DEBUG_NORM, "Node %s, virtual dimmer, set to %s",
+					nodeID.c_str(), CO ? "On" : "Off");
+
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+
+				// Button release is send a bit later
+
+				data[1] = 0x00;
+				data[9] = 0x20;
+
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+			}
 			else
-				buf[4] = 0x09; // Dim On
+			{ // Dimmer value
+				data[1] = 0x02;
+				data[2] = iLevel;
+				data[3] = 0x01; // Very fast dimming
+				if (iLevel == 0 || orgcmd == light2_sOff)
+					data[4] = 0x08; // Dim Off
+				else
+					data[4] = 0x09; // Dim On
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+				Debug(DEBUG_NORM, "Node %s, virtual dimmer, dimm %s, level %d%%",
+					nodeID.c_str(), (iLevel == 0 || orgcmd == light2_sOff) ? "Off" : "On", iLevel);
+
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
+			}
+			return true;
 		}
+		Log(LOG_ERROR, "Node %s (virtual), switch type not supported (%d)", nodeID.c_str(), switchtype);
+		return false;
 	}
-	else
-	{ // F6-02-01, On/Off switch without dimming capability
-		uint8_t CO = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
-
-		buf[0] = RORG_RPS;
-
-		switch (RockerID)
-		{
-			case 0: // Button A
-				buf[1] = CO ? 0x00 : 0x20;
-				break;
-
-			case 1: // Button B
-				buf[1] = CO ? 0x40 : 0x60;
-				break;
-
-			default:
-				return false; // Not supported
-		}
-		buf[1] |= 0x10; // Press energy bow
-		buf[2] = tsen->LIGHTING2.id1; // Sender ID
-		buf[3] = tsen->LIGHTING2.id2;
-		buf[4] = tsen->LIGHTING2.id3;
-		buf[5] = tsen->LIGHTING2.id4;
-		buf[6] = 0x30; // Press button
-
-		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
-
-		// Button release is send a bit later
-
-		buf[1] = 0x00; // No button press
-		buf[6] = 0x20; // Release button
-
-		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
-	}
-	return true;
+	Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+	Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
+	return false;
 }
 
 void CEnOceanESP3::ReadCallback(const char *data, size_t len)
