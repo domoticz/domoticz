@@ -2110,14 +2110,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						node_func = bitrange(DATA_BYTE3, 2, 0x3F);
 						node_type = (bitrange(DATA_BYTE3, 0, 0x03) << 5) | bitrange(DATA_BYTE2, 3, 0x1F);
 
-						Log(LOG_NORM, "Creating Node %s Manufacturer 0x%03X (%s) EEP %02X-%02X-%02X (%s)",
+						Log(LOG_NORM, "Creating Node %s Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
 							senderID.c_str(), node_manID, GetManufacturerName(node_manID),
 							RORG_4BS, node_func, node_type, GetEEPLabel(RORG_4BS, node_func, node_type));
 					}
 
 					TeachInNode(senderID, node_manID, RORG_4BS, node_func, node_type, (LRN_TYPE == 0));
 
-					// EEP requiring 4BS teach-in variation 3 response
+					// 4BS EEP requiring teach-in variation 3 response
 					// A5-20-XX, HVAC Components
 					// A5-38-08, Central Command Gateway
 					// A5-3F-00, Radio Link Test
@@ -2127,19 +2127,22 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{
 						Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", senderID.c_str());
 
-						uint8_t buf[10];
+						uint8_t data[10];
 
-						buf[0] = RORG_4BS;
-						buf[1] = 0x02;		// DB0.0
-						buf[2] = 0x00;		// DB0.1
-						buf[3] = 0x00;		// DB0.2
-						buf[4] = 0xF0;		// DB0.3 -> teach-in response
-						buf[5] = ID_BYTE3; 	// Send to teached-in node id
-						buf[6] = ID_BYTE2;
-						buf[7] = ID_BYTE1;
-						buf[8] = ID_BYTE0;
-						buf[9] = 0x00;		// Status
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+						data[0] = RORG_4BS;
+						data[1] = data[1]; // Func, Type and Manufacturer ID
+						data[2] = data[2];
+						data[3] = data[3];
+						data[1] = 0xF0; // Successful teach-in
+						data[5] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+						data[6] = bitrange(m_id_chip, 16, 0xFF);
+						data[7] = bitrange(m_id_chip, 8, 0xFF);
+						data[8] = bitrange(m_id_chip, 0, 0xFF);
+						data[9] = 0x00; // Status
+
+						Debug(DEBUG_NORM, "Send 4BS teach-in accepted response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, data, 10, nullptr, 0);
 					}
 					return;
 				}
