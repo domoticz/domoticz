@@ -1513,7 +1513,12 @@ std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, ui
 	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
 	uint32_t len = 0;
 
-	uint8_t defaulERP1optdata[] = { 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+	uint8_t defaulERP1optdata[] =
+	{	0x03, // SubTelNum : Send = 0x03
+		0xFF, 0xFF, 0xFF, 0xFF, // Dest ID : Broadcast = 0xFFFFFFFF
+		0xFF, // RSSI : Send = 0xFF
+		0x00 // Seurity Level : Send = will be ignored
+	};
 	if (optdatalen == 0 && packettype == PACKET_RADIO_ERP1)
 	{ // If not provided, add default optional data for PACKET_RADIO_ERP1
 		optdata = defaulERP1optdata;
