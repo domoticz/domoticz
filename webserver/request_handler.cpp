@@ -21,6 +21,9 @@
 #include "request.hpp"
 #include "cWebem.h"
 #include "GZipHelper.h"
+#ifndef WEBSERVER_DONT_USE_ZIP
+	#include <iowin32.h>
+#endif
 
 #include "../main/Logger.h"
 
@@ -33,7 +36,6 @@
 #ifdef WIN32
 // some ported functions
 #define timegm _mkgmtime
-#define stat _stat
 
 extern "C" const char* strptime(const char* s, const char* f, struct tm* tm)
 {
@@ -287,7 +289,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	  }
 
 	  // maybe it is a folder, lets add the index file
-	  if (!is.is_open() && (full_path.find('.') == std::string::npos))
+	  struct stat sb;
+	  if (!is.is_open() && stat(full_path.c_str(), &sb) == 0 && (sb.st_mode & S_IFDIR))
 	  {
 		  full_path = doc_root_ + request_path + "/index.html";
 		  if (bHaveGZipSupport) // first try gzip version

@@ -1,7 +1,7 @@
 define(['app'], function (app) {
 	app.controller('DPInfluxController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
-		LoadConfiguration = function() 
+		$scope.LoadConfiguration = function() 
 		{
 			$.ajax({
 				url: "json.htm?type=command&param=getinfluxlinkconfig",
@@ -19,6 +19,9 @@ define(['app'], function (app) {
 							$('#influxremote #influxlinkenabled').prop('checked', false);
 							if (data.InfluxActive) {
 								$('#influxremote #influxlinkenabled').prop('checked', true);
+							}
+							if (data.InfluxVersion2) {
+								$scope.influxversion2 = true;
 							}
 							$('#influxremote #debugenabled').prop('checked', false);
 							if (data.InfluxDebug) {
@@ -40,6 +43,7 @@ define(['app'], function (app) {
 			{
 				linkactive = 1;
 			}
+			var isVersion2 = ($scope.influxversion2 == true) ? 1 : 0;	
 			var remoteurl = $('#influxremote #tcpaddress').val();
 			var port = $('#influxremote #tcpport').val();
 			if (port.Length==0)
@@ -57,6 +61,7 @@ define(['app'], function (app) {
 				 url:
 					"json.htm?type=command&param=saveinfluxlinkconfig" +
 					"&linkactive=" + linkactive +
+					"&isversion2=" + isVersion2 +
 					"&remote=" + encodeURIComponent(remoteurl) +
 					"&port=" + port +
 					"&path=" + path +
@@ -285,7 +290,7 @@ define(['app'], function (app) {
 			});
 			//global var
 			$.linkIdx=0;
-			LoadConfiguration();
+			$scope.LoadConfiguration();
 			ShowLinks();
 		};
 	} ]);

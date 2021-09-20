@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 148
+#define DB_VERSION 149
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -590,6 +590,64 @@ constexpr auto sqlCreateMobileDevices =
 
 extern std::string szUserDataFolder;
 
+CSQLStatement::CSQLStatement(sqlite3 *pDBase, const std::string &pSQL)
+	: m_DBase(pDBase)
+	, m_Statement(nullptr)
+	, iNextParam(1)
+	, m_Status(SQLITE_OK)
+{
+	const char *pTail;
+	int iRetVal = sqlite3_prepare_v3(m_DBase, pSQL.c_str(), pSQL.length(), 0, &m_Statement, &pTail);
+	if (iRetVal != SQLITE_OK)
+	{
+		m_Status = iRetVal;
+		m_ErrorText = sqlite3_errmsg(m_DBase);
+	}
+}
+
+int CSQLStatement::AddParameter(std::string &pParam)
+{
+	std::string sText = pParam;
+	// Strip delimiters if supplied
+	if (((sText[0] == '\'') && (sText[sText.length() - 1] == '\'')) || (sText[0] == '\"') && (sText[sText.length() - 1] == '\"'))
+	{
+		sText = pParam.substr(1, pParam.size() - 2);
+		;
+	}
+
+	int iRetVal = sqlite3_bind_text(m_Statement, iNextParam++, sText.c_str(), sText.length(), SQLITE_TRANSIENT);
+	if (iRetVal != SQLITE_OK)
+	{
+		m_Status = iRetVal;
+		m_ErrorText = sqlite3_errmsg(m_DBase);
+	}
+	return iRetVal;
+}
+
+int CSQLStatement::Execute()
+{
+	int iRetVal = sqlite3_step(m_Statement);
+	if (iRetVal != SQLITE_DONE)
+	{
+		m_Status = iRetVal;
+		m_ErrorText = sqlite3_errmsg(m_DBase);
+	}
+	return iRetVal;
+}
+
+bool CSQLStatement::Error()
+{
+	return (m_Status != SQLITE_OK) && (m_Status != SQLITE_DONE);
+};
+
+CSQLStatement::~CSQLStatement()
+{
+	if (m_Statement)
+	{
+		sqlite3_finalize(m_Statement);
+	}
+}
+
 CSQLHelper::CSQLHelper()
 {
 	m_LastSwitchRowID = 0;
@@ -630,14 +688,12 @@ bool CSQLHelper::OpenDatabase()
 		sqlite3_close(m_dbase);
 		return false;
 	}
-#ifndef WIN32
-	//test, this could improve performance
+	std::string pragma_journal_mode = "PRAGMA journal_mode = " + m_journal_mode;
+	sqlite3_exec(m_dbase, pragma_journal_mode.c_str(), nullptr, nullptr, nullptr);
 	sqlite3_exec(m_dbase, "PRAGMA synchronous = NORMAL", nullptr, nullptr, nullptr);
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode = WAL", nullptr, nullptr, nullptr);
-#else
-	sqlite3_exec(m_dbase, "PRAGMA journal_mode=DELETE", NULL, NULL, NULL);
-#endif
-	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA foreign_keys = ON", nullptr, nullptr, nullptr);
+	sqlite3_exec(m_dbase, "PRAGMA busy_timeout = 1000", nullptr, nullptr, nullptr);
+
 	std::vector<std::vector<std::string> > result = query("SELECT name FROM sqlite_master WHERE type='table' AND name='DeviceStatus'");
 	bool bNewInstall = (result.empty());
 	int dbversion = 0;
@@ -2773,7 +2829,69 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 148)
 		{
-			query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
+			if (!DoesColumnExistsInTable("LogLevel", "Hardware"))
+			{
+				query("ALTER TABLE Hardware ADD COLUMN [LogLevel] INTEGER DEFAULT 7"); // LOG_NORM + LOG_STATUS + LOG_ERROR
+			}
+		}
+		if (dbversion < 149)
+		{
+			// Patch for MQTT: adding default in/ouput topics
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string>> result;
+			szQuery << "SELECT ID, Extra FROM Hardware WHERE([Type]==" << HTYPE_MQTT << ")";
+			result = query(szQuery.str());
+			if (!result.empty())
+			{
+				for (const auto &sd : result)
+				{
+					std::string ID = sd.at(0);
+					std::string Options = sd.at(1);
+
+					std::vector<std::string> strarray;
+					StringSplit(Options, ";", strarray);
+
+					if (strarray.size()==4)
+						continue;
+
+					if (strarray.empty())
+					{
+						strarray.push_back("");
+						strarray.push_back("domoticz/in");
+						strarray.push_back("domoticz/out");
+					}
+					else if (strarray.size() == 1)
+					{
+						strarray.push_back("domoticz/in");
+						strarray.push_back("domoticz/out");
+						strarray.push_back("");
+					}
+					else if (strarray.size() == 2)
+					{
+						if (strarray[1].empty())
+							strarray[1] = "domoticz/in";
+						strarray.push_back("domoticz/out;");
+					}
+					else if (strarray.size() == 2)
+					{
+						if (strarray[1].empty())
+							strarray[1] = "domoticz/in";
+						if (strarray[2].empty())
+							strarray[2] = "domoticz/out";
+					}
+					strarray.push_back("");
+					Options.clear();
+					int iIndex = 0;
+					for (const auto ittOptions : strarray)
+					{
+						if (iIndex > 0)
+							Options += ";";
+						Options += ittOptions;
+						iIndex++;
+					}
+					safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID=%s)", Options.c_str(), ID.c_str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -3926,6 +4044,11 @@ void CSQLHelper::SetDatabaseName(const std::string& DBName)
 	m_dbase_name = DBName;
 }
 
+void CSQLHelper::SetJournalMode(const std::string& mode)
+{
+	m_journal_mode = mode;
+}
+
 bool CSQLHelper::DoesColumnExistsInTable(const std::string& columnname, const std::string& tablename)
 {
 	if (!m_dbase)
@@ -3964,6 +4087,9 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 {
 	if (!m_dbase)
 		return false;
+
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+
 	sqlite3_stmt *stmt = nullptr;
 	char* zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
 	if (!zQuery)
@@ -3989,7 +4115,39 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	return true;
 }
 
-std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char* fmt, ...)
+int CSQLHelper::execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError)
+{
+	CSQLStatement sqlStatement(m_dbase, sSQL);
+	std::vector<std::vector<std::string>> result;
+	for (unsigned int i = 0; (i < pValues->size()) && (!sqlStatement.Error()); i++)
+	{
+		sqlStatement.AddParameter((*pValues)[i]);
+	}
+
+	if (!sqlStatement.Error())
+	{
+		sqlStatement.Execute();
+	}
+
+	if (!sqlStatement.Error())
+	{
+		result = m_sql.safe_query("SELECT changes();");
+	}
+	else
+	{
+		if (bLogError)
+		{
+			_log.Log(LOG_ERROR, "Error performing operation: '%s'", sqlStatement.ErrorText());
+		}
+	}
+
+	if (result.empty() || result[0][0] == "0")
+		return 0;
+	else
+		return atoi(result[0][0].c_str());
+}
+
+std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -4018,7 +4176,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
-
+    _log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
@@ -4719,7 +4877,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::UpdateValueInt: Notifying plugin %u about creation of device %u", HardwareID, unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-			pPlugin->DeviceAdded(unit);
+			pPlugin->DeviceAdded(ID, unit);
 		}
 #endif
 	}
@@ -7421,22 +7579,23 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 	StringSplit(idx, ";", _idx);
 	if (_idx.empty())
 		return;
-	std::set<std::pair<std::string, std::string> > removeddevices;
+	std::set<std::tuple<std::string, std::string, std::string>> removeddevices;
 #ifdef ENABLE_PYTHON
 	for (const auto &str : _idx)
 	{
 		_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: ID: %s", str.c_str());
 		std::vector<std::vector<std::string> > result;
-		result = safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID == '%q')", str.c_str());
+		result = safe_query("SELECT HardwareID, DeviceID, Unit FROM DeviceStatus WHERE (ID == '%q')", str.c_str());
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
 			std::string HwID = sd[0];
-			std::string Unit = sd[1];
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
+			std::string DeviceID = sd[1];
+			std::string Unit = sd[2];
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(HwID, HTYPE_PythonPlugin);
 			if (pHardware != nullptr)
 			{
-				removeddevices.insert(std::make_pair(HwID, Unit));
+				removeddevices.insert(std::make_tuple(HwID, DeviceID, Unit));
 			}
 		}
 	}
@@ -7489,15 +7648,16 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #ifdef ENABLE_PYTHON
 	for (const auto& it : removeddevices)
 	{
-		int HwID = atoi(it.first.c_str());
-		int Unit = atoi(it.second.c_str());
+		int HwID = atoi(std::get<0>(it).c_str());
+		std::string DeviceID = std::get<1>(it);
+		int Unit = atoi(std::get<2>(it).c_str());
 		// Notify plugin to sync plugins' device list
 		CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HwID);
 		if (pHardware != nullptr && pHardware->HwdType == HTYPE_PythonPlugin)
 		{
 			_log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: Notifying plugin %u about deletion of device %u", HwID, Unit);
 			Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-			pPlugin->DeviceRemoved(Unit);
+			pPlugin->DeviceRemoved(DeviceID, Unit);
 		}
 	}
 #endif

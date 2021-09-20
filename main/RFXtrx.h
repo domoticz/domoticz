@@ -9,7 +9,7 @@
 
 /*
                                                                    
-Copyright 2011-2020, RFXCOM
+Copyright 2011-2021, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
 Netherlands Copyright Laws and Treaties and shall be subject to the 
@@ -27,13 +27,25 @@ portions of this file.
 */
 
 /*
+SDK version 9.31	April 6, 2021
+	BlindsT19 Louvolite vertical added (not yet operational)
+	BlindsT20 Ozroll E-Trans added
+	FWtypeProXL2 added
+	Water level sensor added
+	Chime structure - filler changed to id4
+	Chime 1byOne QH A19 rev10 added
+	undecode byronsx added
+
+SDK Version 9.30 June 2, 2020
+	BlindsT11 – unit code all, 1-6 added
+
 SDK version 9.29	February 27, 2020
 	LucciAirDC Speed 1 to 6 added
-	Cherubini blinds added
+	BlindsT18 Cherubini blinds added
 
 SDK version 9.28	January 11, 2020
 	Rain9 TFA 30.3233.01 added
-	Gaposa blinds added
+	BlindsT17 Gaposa blinds added
 
 SDK version 9.27	August 12, 2019
 	Hunter fan added
@@ -417,6 +429,7 @@ SDK version 4.9
 #define sTypeRFYremoteList 0x03
 #define sTypeASAremoteList 0x04
 #define sTypeCherubiniRemoteList 0x05
+#define sTypeOzrollRemoteList 0x06
 #define sTypeRecStarted 0x07
 #define sTypeInterfaceWrongCommand 0xFF
 #define trxType310 0x50
@@ -433,6 +446,7 @@ SDK version 4.9
 #define FWtypePro1 0x5
 #define FWtypePro2 0x6
 #define FWtypeProXL1 0x10
+#define FWtypeProXL2 0x13
 
 //433 config bits
 #define msg3_AE 0x01			//AE Blyss
@@ -539,6 +553,7 @@ SDK version 4.9
 #define sTypeUhomeconfort 0x16
 #define sTypeURFXtrx868 0x17
 #define sTypeUfunkbus 0x19
+#define sTypeUbyronsx 0x1A
 
 //types for Lighting
 #define pTypeLighting1 0x10
@@ -716,6 +731,7 @@ SDK version 4.9
 #define sTypeByronBY 0x3
 #define sTypeEnvivo 0x4
 #define sTypeAlfawise 0x5
+#define sType1byOne 0x6
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -851,6 +867,8 @@ SDK version 4.9
 #define sTypeBlindsT16 0x10	//Zemismart
 #define sTypeBlindsT17 0x11	//Gaposa
 #define sTypeBlindsT18 0x12	//Cherubini
+#define sTypeBlindsT19 0x13	//Louvolite vertical
+#define sTypeBlindsT20 0x14	//Ozroll E-Trans
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -883,6 +901,16 @@ SDK version 4.9
 #define blinds_s18ListRemotes 0x5
 #define blinds_s18EraseThis 0x6
 #define blinds_s18EraseAll 0x7
+#define blinds_s19CloseCW 0x0
+#define blinds_s19CloseCCW 0x1
+#define blinds_s19Open45 0x2
+#define blinds_s19Open90 0x3
+#define blinds_s19Open135 0x4
+#define blinds_s19Confirm 0x5
+#define blinds_s20ListRemotes 0x4
+#define blinds_s20EraseThis 0x5
+#define blinds_s20EraseAll 0x6
+
 
 //types for RFY
 #define pTypeRFY 0x1A
@@ -1285,6 +1313,10 @@ SDK version 4.9
 #define fs20_sOn_100_for_time_period 0x19 
 #define fs20_sOn_last_dim_level_period 0x1A 
 #define fs20_sReset 0x1B
+
+//Water level sensor
+#define pTypeLEVELSENSOR 0x73
+#define sType0 0x0
 
 //WEATHER STATIONS
 #define pTypeWEATHER 0x76
@@ -1700,9 +1732,9 @@ typedef union tRBUF {
 		BYTE	sound;
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
-		BYTE	filler : 4;
+		BYTE	id4 : 4;
 #else
-		BYTE	filler  : 4;
+		BYTE	id4  : 4;
 		BYTE	rssi : 4;
 #endif
 	} CHIME;
@@ -2631,6 +2663,35 @@ typedef union tRBUF {
 	BYTE	rssi : 4;
 #endif
     } FS20;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	message;
+		BYTE	depth1;
+		BYTE	depth2;
+#ifdef IS_BIG_ENDIAN
+		BYTE	temperaturesign : 1;
+		BYTE	temperaturehigh : 7;
+#else
+		BYTE	temperaturehigh : 7;
+		BYTE	temperaturesign : 1;
+#endif
+		BYTE	temperaturelow;
+		BYTE	rfu1;
+		BYTE	rfu2;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} LEVELSENSOR;
 
 	struct {
 		BYTE packetlength;

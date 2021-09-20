@@ -392,8 +392,13 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						SetLanguage(data.language);
 
 						//Translate Highcharts (partly)
+						const formattedNumber = Intl.NumberFormat().format(1234.5);
+						const decimalPoint = formattedNumber[5] === '.' || formattedNumber[5] === ',' ? formattedNumber[5] : '.';
+						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' ? formattedNumber[1] : ',';
 						Highcharts.setOptions({
 							lang: {
+								decimalPoint: decimalPoint,
+								thousandsSep: thousandsSep,
 								months: [
 									$.t('January'),
 									$.t('February'),

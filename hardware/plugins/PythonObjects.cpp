@@ -23,7 +23,8 @@
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzModuleDef;
-	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
+	extern struct PyModuleDef DomoticzExModuleDef;
+	extern void LogPythonException(CPlugin *pPlugin, const std::string &sHandler);
 
 	void CImage_dealloc(CImage* self)
 	{
@@ -91,11 +92,15 @@ namespace Plugins {
 
 		try
 		{
-			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef pModule = PyState_FindModule(&DomoticzModuleDef);
 			if (!pModule)
 			{
-				_log.Log(LOG_ERROR, "CImage:%s, unable to find module for current interpreter.", __func__);
-				return 0;
+				pModule = PyState_FindModule(&DomoticzExModuleDef);
+				if (!pModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) Domoticz/DomoticzEx modules not found in interpreter.", __func__);
+					return 0;
+				}
 			}
 
 			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
@@ -209,8 +214,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Image creation failed, Image object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CImage_delete(CImage* self, PyObject *args)
@@ -254,8 +258,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Image deletion failed, Image object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CImage_str(CImage* self)
@@ -266,7 +269,10 @@ namespace Plugins {
 
 	void CDevice_dealloc(CDevice* self)
 	{
+		Py_XDECREF(self->PluginKey);
+		Py_XDECREF(self->DeviceID);
 		Py_XDECREF(self->Name);
+		Py_XDECREF(self->LastUpdate);
 		Py_XDECREF(self->Description);
 		Py_XDECREF(self->sValue);
 		PyDict_Clear(self->Options);
@@ -356,7 +362,7 @@ namespace Plugins {
 		return (PyObject *)self;
 	}
 
-	static void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
+	extern void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject* OptionsIn, PyObject* OptionsOut)
 	{
 		Type = pTypeGeneral;
 
@@ -521,6 +527,11 @@ namespace Plugins {
 			Type = pTypeSecurity1;
 			SubType = sTypeDomoticzSecurity;
 		}
+		else if (sTypeName == "Set Point")
+		{
+			Type = pTypeThermostat;
+			SubType = sTypeThermSetpoint;
+		}
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
@@ -541,10 +552,10 @@ namespace Plugins {
 
 		try
 		{
-			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef pModule = PyState_FindModule(&DomoticzModuleDef);
 			if (!pModule)
 			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+				_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
 				return 0;
 			}
 
@@ -721,8 +732,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device refresh failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CDevice_insert(CDevice* self)
@@ -790,13 +800,12 @@ namespace Plugins {
 							// Device successfully created, now set the options when supplied
 							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
 							{
-								PyObject *pKeyDict, *pValueDict;
+								PyBorrowedRef	pKeyDict, pValueDict;
 								Py_ssize_t pos = 0;
 								std::map<std::string, std::string> mpOptions;
 								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
-									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-									PyNewRef pStr = PyObject_Str(pValueDict);
-									std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+									std::string sOptionName = pKeyDict;
+									std::string sOptionValue = pValueDict;
 									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 								}
 								m_sql.SetDeviceOptions(self->ID, mpOptions);
@@ -827,8 +836,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device creation failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds)
@@ -937,6 +945,22 @@ namespace Plugins {
 				Py_END_ALLOW_THREADS
 			}
 
+			// BatteryLevel change
+			if (iBatteryLevel != self->BatteryLevel)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("BatteryLevel", iBatteryLevel, sID);
+				Py_END_ALLOW_THREADS
+			}
+
+			// SignalLevel change
+			if (iSignalLevel != self->SignalLevel)
+			{
+				Py_BEGIN_ALLOW_THREADS
+				m_sql.UpdateDeviceValue("SignalLevel", iSignalLevel, sID);
+				Py_END_ALLOW_THREADS
+			}
+
 			// Used change
 			if (iUsed != self->Used)
 			{
@@ -959,14 +983,13 @@ namespace Plugins {
 			{
 				if (self->SubType != sTypeCustom)
 				{
-					PyObject *pKeyDict, *pValueDict;
+					PyBorrowedRef	pKeyDict, pValueDict;
 					Py_ssize_t pos = 0;
 					std::map<std::string, std::string> mpOptions;
 					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
 					{
-						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-						PyNewRef pStr = PyObject_Str(pValueDict);
-						std::string sOptionValue = PyUnicode_AsUTF8(pStr);
+						std::string sOptionName = pKeyDict;
+						std::string sOptionValue = pValueDict;
 						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 					}
 					Py_BEGIN_ALLOW_THREADS
@@ -1059,8 +1082,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device update failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject* CDevice_delete(CDevice* self)
@@ -1104,11 +1126,10 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Device deletion failed, Device object is not associated with a plugin.");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
-	PyObject * CDevice_touch(CDevice * self)
+	PyObject* CDevice_touch(CDevice * self)
 	{
 		Py_BEGIN_ALLOW_THREADS
 		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
@@ -1134,9 +1155,10 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		if (self->pPlugin && (self->pPlugin->m_bDebug & PDM_CONNECTION))
+		CPlugin *pPlugin = CPlugin::FindPlugin();
+		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
 		{
-			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Target);
@@ -1220,12 +1242,12 @@ namespace Plugins {
 					return nullptr;
 				}
 
-				self->Parent = (CConnection *)Py_None;
+				self->Parent = Py_None;
 				Py_INCREF(Py_None);
 
-				self->pPlugin = nullptr;
 				self->pTransport = nullptr;
 				self->pProtocol = nullptr;
+				self->pPlugin = nullptr;
 			}
 		}
 		catch (std::exception *e)
@@ -1252,29 +1274,8 @@ namespace Plugins {
 
 		try
 		{
-			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
-			if (!pModule)
-			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
-				return 0;
-			}
-
-			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
-			if (!pModState)
-			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
-				return 0;
-			}
-
-			if (!pModState->pPlugin)
-			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
-				return 0;
-			}
-
 			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
-				self->pPlugin = pModState->pPlugin;
 				if (pName) {
 					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(pName);
@@ -1297,16 +1298,12 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, self));
 				}
 			}
 			else
 			{
-				CPlugin *pPlugin = nullptr;
-				if (pModState) pPlugin = pModState->pPlugin;
 				_log.Log(LOG_ERROR,
 					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0))");
-				LogPythonException(pPlugin, __func__);
 			}
 		}
 		catch (std::exception *e)
@@ -1323,30 +1320,32 @@ namespace Plugins {
 
 	PyObject *CConnection_connect(CConnection *self, PyObject *args, PyObject *kwds)
 	{
-		Py_INCREF(Py_None);
-
 		if (!self->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
-			return Py_None;
+			self->pPlugin = CPlugin::FindPlugin();
+			if (!self->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+				Py_RETURN_NONE;
+			}
 		}
 
 		//	Add connect command to message queue unless already connected
 		if (self->pPlugin->IsStopRequested(0))
 		{
-			_log.Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			self->pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
-			_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
+			self->pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
-			_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
+			self->pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
@@ -1357,50 +1356,65 @@ namespace Plugins {
 		{
 			if (pTarget)
 			{
-				Py_INCREF(pTarget);
-				self->Target = pTarget;
+				// This check is not effective enough, almost all Python variables pass it
+				PyNewRef pFunc = PyObject_GetAttrString(pTarget, "__init__");
+				if (!pFunc || !PyCallable_Check(pFunc))
+				{
+					self->pPlugin->Log(LOG_ERROR, "Object is not callable, Target parameter ignored.");
+				}
+				else
+				{
+					Py_INCREF(pTarget);
+					self->Target = pTarget;
+				}
 			}
 			if (!iTimeout || (iTimeout > 199))
 			{
 				self->Timeout = iTimeout;
+				if (!self->pProtocol)
+				{
+					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, self));
+				}
 				self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, self));
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
+				self->pPlugin->Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
 			}
 		}
 
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject *CConnection_listen(CConnection *self, PyObject *args, PyObject *kwds)
 	{
-		Py_INCREF(Py_None);
-
 		if (!self->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
-			return Py_None;
+			self->pPlugin = CPlugin::FindPlugin();
+			if (!self->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
+				Py_RETURN_NONE;
+			}
 		}
 
 		//	Add connect command to message queue unless already connected
 		if (self->pPlugin->IsStopRequested(0))
 		{
-			_log.Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			self->pPlugin->Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
-			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			self->pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
+			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
-			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			self->pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
+			Py_RETURN_NONE;
 		}
 
 		PyObject *pTarget = NULL;
@@ -1416,18 +1430,26 @@ namespace Plugins {
 
 		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, self));
 
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_send(CConnection * self, PyObject * args, PyObject * kwds)
 	{
-		if (!self->pPlugin)
+		CPlugin *pPlugin = self->pPlugin;
+		if (!pPlugin)
 		{
-			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+			self->pPlugin = CPlugin::FindPlugin();
+			if (!self->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
+				Py_RETURN_NONE;
+			}
+			pPlugin = self->pPlugin;
 		}
-		else if (self->pPlugin->IsStopRequested(0))
+		
+		if (pPlugin->IsStopRequested(0))
 		{
-			_log.Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pPlugin->m_Name.c_str());
 		}
 		else
 		{
@@ -1436,36 +1458,41 @@ namespace Plugins {
 			static char *kwlist[] = { "Message", "Delay", nullptr };
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", self->pPlugin->m_Name.c_str());
-				LogPythonException(self->pPlugin, std::string(__func__));
+				pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", pPlugin->m_Name.c_str());
+				LogPythonException(pPlugin, std::string(__func__));
 			}
 			else
 			{
 				//	Add start command to message queue
-				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, self, pData, iDelay));
+				pPlugin->MessagePlugin(new WriteDirective(pPlugin, self, pData, iDelay));
 			}
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_disconnect(CConnection * self)
 	{
+		CPlugin *pPlugin = self->pPlugin;
+		if (!pPlugin)
+		{
+			_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
+			Py_RETURN_NONE;
+		}
+
 		if (self->pTransport)
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, self));
+				pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, self));
 			}
 			else
-				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->m_Name.c_str());
+				pPlugin->Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, pPlugin->m_Name.c_str());
 		}
 		else
-			_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, pPlugin->m_Name.c_str());
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_bytes(CConnection * self)
@@ -1511,8 +1538,7 @@ namespace Plugins {
 			return pLastSeen;
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	PyObject * CConnection_str(CConnection * self)
@@ -1540,6 +1566,5 @@ namespace Plugins {
 							 self->Transport, self->Protocol, self->Address, self->Port, self->Baud, self->Timeout, sParent.c_str());
 		return pRetVal;
 	}
-
 } // namespace Plugins
 #endif

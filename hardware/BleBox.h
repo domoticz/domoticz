@@ -53,7 +53,7 @@ class BleBox : public CDomoticzHardwareBase
       private:
 	int m_PollInterval;
 	std::shared_ptr<std::thread> m_thread;
-	std::map<const std::string, const int> m_devices;
+	std::map<std::string, int> m_devices;
 	std::mutex m_mutex;
 
 	_tColor m_RGBWColorState;

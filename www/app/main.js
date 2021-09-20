@@ -21,7 +21,7 @@ require.config({
 		'blockly-blocks': '../js/blockly/blocks_compressed',
 		'blockly-msg-en': '../js/blockly/msg/en',
 		'luxon': '../js/luxon.min',
-		'lodash': '../js/lodash-custom.merge.min',
+		'lodash': '../js/lodash-custom.min',
 		Base: 'log/Base',
 		AngularBase: 'log/AngularBase',
 		DomoticzBase: 'log/DomoticzBase',

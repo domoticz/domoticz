@@ -23,6 +23,8 @@
 #include <limits.h>
 #include <cstring>
 #include <stdarg.h>
+#include <locale>
+#include <codecvt>
 
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
@@ -763,6 +765,20 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 	return ret;
 }
 
+time_t GetClockTicks()
+{
+#ifdef CLOCK_REALTIME
+	struct timespec ts;
+
+	if (!clock_gettime(CLOCK_REALTIME, &ts))
+		return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+#endif
+	struct timeval tv;
+
+	gettimeofday(&tv, nullptr);
+	return(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
 std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
@@ -1408,3 +1424,19 @@ const std::string std_format(const char* szFormat, ...)
 	va_end(vaArgs);
 	return std::string(zc.data(), zc.size() - 1);
 }
+
+std::string utf8_to_string(const std::string& utf8str)
+{
+	std::wstring wstr = utf8_to_wstring(utf8str);
+	std::vector<char> buf(wstr.size());
+	std::use_facet<std::ctype<wchar_t>>(std::locale("")).narrow(wstr.data(), wstr.data() + wstr.size(), '?', buf.data());
+	return std::string(buf.data(), buf.size());
+}
+
+std::wstring utf8_to_wstring(const std::string& utf8str)
+{
+	// UTF-8 to wstring
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
+	return wconv.from_bytes(utf8str);
+}
+

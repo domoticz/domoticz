@@ -627,7 +627,7 @@ Full daynames are allowed in dzVents >= 3.1.7
 			'at <astroMoment>',			-- dzVents >= 3.0.16 Uses the times received from Domoticz
 			'at <astroMoment> on sat,sun',
 			'xx minutes before <astroMoment>',	--
-			'xx minutes after <astroMoment>,	-- Please note that these relative times will cross dates
+			'xx minutes after <astroMoment>',	-- Please note that these relative times will cross dates
 			'between aa and bb'			-- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
 										-- aa/bb can be sunrise/sunset/solarnoon ('between sunset and sunrise' and 'between solarnoon and sunrise' will cross dates)
 										-- aa/bb can be 'xx minutes before/after <astroMoment>'
@@ -1222,6 +1222,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelActions**: *String*. |-separated list of url actions for selector switches.
  - **levelName**: *String*. Current level name for selector switches.
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
+ - **levelVal**: *Number*. Specific for selector switches.
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOn()**: *Function*. Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
