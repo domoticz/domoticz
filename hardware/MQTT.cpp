@@ -2818,57 +2818,53 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	{
 		Json::Value root;
 
-		if (command == "Set Level")
+		if (command == "On")
 		{
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-			if (!result.empty())
-			{
-				m_sql.safe_query(
-					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
-					level, result[0][0].c_str());
-			}
-			if (!pSensor->set_position_topic.empty())
-			{
-				if (pSensor->set_position_template.empty())
-				{
-					szSendValue = std::to_string(level);
-				}
-				else
-				{
-					std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
-					if (!szKey.empty())
-					{
-						root[szKey] = level;
-						szSendValue = JSonToRawString(root);
-					}
-					else
-					{
-						Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-						return false;
-					}
-				}
-				SendMessage(pSensor->set_position_topic, szSendValue);
-				return true;
-			}
-			else {
-				Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-				return false;
-			}
-		}
-		else if (command == "On")
-		{
-			szSendValue = "CLOSE";
+			level = 255;
 		}
 		else if (command == "Off")
 		{
-			szSendValue = "OPEN";
+			level = 0;
 		}
 		else if (command == "Stop")
 		{
-			szSendValue = "STOP";
+			level = 254;
 		}
-		SendMessage(pSensor->command_topic, szSendValue);
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+		if (!result.empty())
+		{
+			m_sql.safe_query(
+				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
+				level, result[0][0].c_str());
+		}
+		if (!pSensor->set_position_topic.empty())
+		{
+			if (pSensor->set_position_template.empty())
+			{
+				szSendValue = std::to_string(level);
+			}
+			else
+			{
+				std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
+				if (!szKey.empty())
+				{
+					root[szKey] = level;
+					szSendValue = JSonToRawString(root);
+				}
+				else
+				{
+					Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+					return false;
+				}
+			}
+			SendMessage(pSensor->set_position_topic, szSendValue);
+			return true;
+		}
+		else {
+			Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+			return false;
+		}
 		return true;
 	}
 	if (pSensor->component_type == "climate")
