@@ -594,6 +594,17 @@ constexpr auto sqlCreateMobileDevices =
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
 
+constexpr auto sqlCreateApplications =
+"CREATE TABLE IF NOT EXISTS [Applications]("
+"[ID] INTEGER PRIMARY KEY, "
+"[Active] BOOLEAN NOT NULL DEFAULT false, "
+"[Applicationname] VARCHAR(100) DEFAULT '',"
+"[Secret] VARCHAR(100) DEFAULT '',"
+"[Public] BOOLEAN NOT NULL DEFAULT false, "
+"[LastSeen] DATETIME DEFAULT NULL,"
+"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
+");";
+
 extern std::string szUserDataFolder;
 
 CSQLStatement::CSQLStatement(sqlite3 *pDBase, const std::string &pSQL)
@@ -778,6 +789,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateToonDevices);
 	query(sqlCreateUserSessions);
 	query(sqlCreateMobileDevices);
+	query(sqlCreateApplications);
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
