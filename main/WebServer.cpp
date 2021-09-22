@@ -6729,7 +6729,7 @@ namespace http
 				{
 					if (!FindAdminUser())
 					{
-						root["message"] = "Add a Admin user first! (Or enable Settings/Website Protection)";
+						root["message"] = "Add a Admin user first!";
 						return;
 					}
 				}
@@ -6771,7 +6771,7 @@ namespace http
 				{
 					if (!FindAdminUser())
 					{
-						root["message"] = "Add a Admin user first! (Or enable Settings/Website Protection)";
+						root["message"] = "Add a Admin user first!";
 						return;
 					}
 				}
@@ -6835,6 +6835,103 @@ namespace http
 				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 
 				LoadUsers();
+			}
+			else if (cparam == "getapplications" || cparam == "addapplication" || cparam == "updateapplication" || cparam == "deleteapplication")
+			{	// CRUD operations for Applications
+				root["title"] = "Applications";
+				if (session.rights < 2)
+				{
+					session.reply_status = reply::forbidden;
+					return; // Only admin user allowed
+				}
+				if 	(cparam == "getapplications")
+				{
+					root["title"] = "GetApplications";
+					std::vector<std::vector<std::string>> result;
+					result = m_sql.safe_query("SELECT ID, Active, Applicationname, Secret, Public, LastSeen FROM Applications ORDER BY ID ASC");
+					if (!result.empty())
+					{
+						int ii = 0;
+						for (const auto &sd : result)
+						{
+							root["result"][ii]["idx"] = sd[0];
+							root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
+							root["result"][ii]["Applicationname"] = sd[2];
+							root["result"][ii]["Secret"] = sd[3];
+							root["result"][ii]["Public"] = (sd[4] == "1") ? "true" : "false";
+							root["result"][ii]["LastSeen"] = sd[5];
+							ii++;
+						}
+					}
+				}
+				else if (cparam == "addapplication" || cparam == "updateapplication")
+				{
+					root["title"] = "AddUpdateApplication";
+					std::string senabled = request::findValue(&req, "enabled");
+					std::string applicationname = request::findValue(&req, "applicationname");
+					std::string secret = request::findValue(&req, "secret");
+					std::string spublic = request::findValue(&req, "public");
+					std::string idx = request::findValue(&req, "idx");
+					if ((senabled.empty()) || (applicationname.empty())|| (spublic.empty()))
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+					if ((spublic != "true") && secret.empty())
+					{
+						root["statustext"] = "Secret's can only be empty for Public Clients!";
+						return;
+					}
+					// Check for duplicate application name
+					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (Applicationname == '%q')", applicationname.c_str());
+					if (!result.empty())
+					{
+						std::string oidx = result[0][0];
+						if (cparam == "addapplication" || (!idx.empty() && oidx != idx))
+						{
+							root["statustext"] = "Duplicate Applicationname!";
+							return;
+						}
+					}
+					if (cparam == "addapplication")
+					{
+						root["title"] = "AddApplication";
+						m_sql.safe_query("INSERT INTO Applications (Active, Applicationname, Secret, Public) VALUES (%d,'%q','%q',%d)",
+								(senabled == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(),(spublic == "true") ? 1 : 0);
+					}
+					else if (cparam == "updateapplication")
+					{
+						root["title"] = "UpdateApplication";
+						if (idx.empty())
+						{
+							session.reply_status = reply::bad_request;
+							return;
+						}
+						m_sql.safe_query("UPDATE Applications SET Active=%d, Applicationname='%q', Secret='%q', Public=%d WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), (spublic == "true") ? 1 : 0, idx.c_str());
+					}
+				}
+				else if (cparam == "deleteapplication")
+				{
+					root["title"] = "DeleteApplication";
+					std::string idx = request::findValue(&req, "idx");
+					if (idx.empty())
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+
+					// Remove Application
+					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
+					if (result.size() != 1)
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+					m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
+				}
+				root["status"] = "OK";
+				//LoadUsers();
 			}
 			else if (cparam == "clearlightlog")
 			{
