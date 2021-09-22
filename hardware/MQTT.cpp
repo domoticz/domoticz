@@ -1350,6 +1350,29 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->payload_off = root["payload_off"].asString();
 		else if (!root["pl_off"].empty())
 			pSensor->payload_off = root["pl_off"].asString();
+
+		if (!root["payload_open"].empty())
+			pSensor->payload_open = root["payload_open"].asString();
+		else if (!root["pl_open"].empty())
+			pSensor->payload_open = root["pl_open"].asString();
+		if (!root["payload_close"].empty())
+			pSensor->payload_close = root["payload_close"].asString();
+		else if (!root["pl_cls"].empty())
+			pSensor->payload_close = root["pl_cls"].asString();
+		if (!root["payload_stop"].empty())
+			pSensor->payload_stop = root["payload_stop"].asString();
+		else if (!root["pl_stop"].empty())
+			pSensor->payload_stop = root["pl_stop"].asString();
+		if (!root["position_open"].empty())
+			pSensor->position_open = root["position_open"].asInt();
+		else if (!root["pos_open"].empty())
+			pSensor->position_open = root["pos_open"].asInt();
+		if (!root["position_closed"].empty())
+			pSensor->position_closed = root["position_closed"].asInt();
+		else if (!root["pos_clsd"].empty())
+			pSensor->position_closed = root["pos_clsd"].asInt();
+
+
 		if (!root["payload_available"].empty())
 			pSensor->payload_available = root["payload_available"].asString();
 		else if (!root["pl_avail"].empty())
@@ -2817,18 +2840,31 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	else if (pSensor->component_type == "cover")
 	{
 		Json::Value root;
+		std::string szValue;
 
 		if (command == "On")
 		{
-			level = 255;
+			level = pSensor->position_open;
+			szValue = pSensor->payload_open;
 		}
 		else if (command == "Off")
 		{
-			level = 0;
+			level = pSensor->position_closed;
+			szValue = pSensor->payload_close;
 		}
 		else if (command == "Stop")
 		{
+			if (pSensor->payload_stop.empty())
+			{
+				Log(LOG_STATUS, "Conver does not support STOP command (%s - %s/%s)", command.c_str(), DeviceID.c_str(), DeviceName.c_str());
+				return false;
+			}
 			level = 254;
+			szValue = pSensor->payload_stop;
+		}
+		else if (command == "Set Level")
+		{
+			szValue = std::to_string(level);
 		}
 		std::vector<std::vector<std::string>> result;
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
@@ -2842,14 +2878,20 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		{
 			if (pSensor->set_position_template.empty())
 			{
-				szSendValue = std::to_string(level);
+				szSendValue = szValue;
 			}
 			else
 			{
 				std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
 				if (!szKey.empty())
 				{
-					root[szKey] = level;
+					if (is_number(szValue))
+					{
+						float iValue = ((float(std::stoi(szValue)) - pSensor->position_closed) / (pSensor->position_open - pSensor->position_closed)) * 100.0F;
+						root[szKey] = (int)iValue;
+					}
+					else
+						root[szKey] = szValue;
 					szSendValue = JSonToRawString(root);
 				}
 				else

@@ -37,6 +37,12 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 		std::string payload_on = "ON";
 		std::string payload_off = "OFF";
+		std::string payload_open = "OPEN";
+		std::string payload_close = "CLOSE";
+		std::string payload_stop;
+		int position_open = 100;
+		int position_closed = 0;
+		
 		std::string payload_available;
 		std::string payload_not_available;
 		std::string state_on;
