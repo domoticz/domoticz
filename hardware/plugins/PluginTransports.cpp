@@ -84,6 +84,7 @@ namespace Plugins {
 
 		if ((pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_base.ob_refcnt <= 1))
 		{
+			// GIL is not held normal conversion to string via PyBorrowedRef cannot be used
 			std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 			std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
@@ -139,9 +140,6 @@ namespace Plugins {
 	void CPluginTransportTCP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
 		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
 
 		if (!err)
 		{
@@ -152,12 +150,20 @@ namespace Plugins {
 		{
 			m_bConnecting = false;
 
-			// Notify plugin of failure and trigger cleanup
-			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
-			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
+			CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
+			if (pPlugin)
+			{
+				// Notify plugin of failure and trigger cleanup
+				pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
+				pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 
-			if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
-				pPlugin->Log(LOG_NORM, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+				if ((pPlugin->m_bDebug & PDM_CONNECTION) && (err == boost::asio::error::operation_aborted))
+					pPlugin->Log(LOG_NORM, "Asynchronous resolve aborted (%s:%s).", m_IP.c_str(), m_Port.c_str());
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: Connection to '%s:%s' not associated with a plugin", __func__, m_IP.c_str(), m_Port.c_str());
+			}
 		}
 	}
 
@@ -253,13 +259,16 @@ namespace Plugins {
 			pConnection->Port = PyUnicode_FromString(sPort.c_str());
 
 			Py_XDECREF(pConnection->Parent);
-			pConnection->Parent = m_pConnection;
+			pConnection->Parent = (PyObject*)m_pConnection;
 			Py_INCREF(m_pConnection);
 			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
 			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pConnection->Target = ((CConnection *)m_pConnection)->Target;
+			if (pConnection->Target)
+				Py_INCREF(pConnection->Target);
+			pConnection->pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 
 			// Add it to the plugins list of connections
 			pConnection->pPlugin->AddConnection(pTcpTransport);
@@ -619,12 +628,23 @@ namespace Plugins {
 				boost::system::error_code ec;
 				int	iPort = atoi(m_Port.c_str());
 
-				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
-				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
-				if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
+				// Handle broadcast messages
+				if (m_IP == "255.255.255.255")
 				{
-					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
-					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+					m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::address_v4::any(), iPort));
+					m_Socket->set_option(boost::asio::ip::udp::socket::socket_base::broadcast(true));
+					m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+				}
+				else
+				{
+					m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
+					m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+					// Hanlde multicast
+					if (((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.")) || (m_IP.substr(0, 4) == "255."))
+					{
+						m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+						m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+					}
 				}
 			}
 
@@ -669,7 +689,10 @@ namespace Plugins {
 			Py_INCREF(pConnection->Transport);
 			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
 			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pConnection->Target = ((CConnection *)m_pConnection)->Target;
+			if (pConnection->Target)
+				Py_INCREF(pConnection->Target);
+			pConnection->pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 
 			// Create Protocol object to handle connection's traffic
 			pConnection->pPlugin->MessagePlugin(new ProtocolDirective(pConnection->pPlugin, pConnection));

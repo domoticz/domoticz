@@ -132,3 +132,127 @@ std::string _tColor::toString() const
 
 	return std::string(tmp);
 }
+
+void _tColor::RgbFromXY(const double x, const double y, uint8_t &r8, uint8_t &g8, uint8_t &b8)
+{
+	double brightness = 1.0;
+
+	/* Returns (r, g, b) for given x, y values.
+	   Implementation of the instructions found on the Philips Hue iOS SDK docs: http://goo.gl/kWKXKl
+	*/
+
+	// Calculate XYZ values Convert using the following formulas:
+	double Y = brightness;
+	double X = (Y / y) * x;
+	double Z = (Y / y) * (1 - x - y);
+
+	// Convert to RGB using Wide RGB D65 conversion
+	double r = X * 1.656492 - Y * 0.354851 - Z * 0.255038;
+	double g = -X * 0.707196 + Y * 1.655397 + Z * 0.036152;
+	double b = X * 0.051713 - Y * 0.121364 + Z * 1.011530;
+
+	// Scale before gamma correction
+	if (r > b && r > g && r > 1.0)
+	{
+		// red is too big
+		g = g / r;
+		b = b / r;
+		r = 1.0;
+	}
+	else if (g > b && g > r && g > 1.0)
+	{
+		// green is too big
+		r = r / g;
+		b = b / g;
+		g = 1.0;
+	}
+	else if (b > r && b > g && b > 1.0)
+	{
+		// blue is too big
+		r = r / b;
+		g = g / b;
+		b = 1.0;
+	}
+
+	// Apply gamma correction
+	r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * pow(r, (1.0 / 2.4)) - 0.055;
+	g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * pow(g, (1.0 / 2.4)) - 0.055;
+	b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * pow(b, (1.0 / 2.4)) - 0.055;
+
+	// Bring all negative components to zero
+	r = std::max(0.0, r);
+	g = std::max(0.0, g);
+	b = std::max(0.0, b);
+
+	// If one component is greater than 1, weight components by that value.
+	// TODO: Rewrite with C++11 lambda functions:
+	// max_component = max(r, g, b)
+	//    if max_component > 1:
+	//        r, g, b = map(lambda x: x / max_component, [r, g, b])
+	if (r > b && r > g)
+	{
+		// red is biggest
+		if (r > 1.0)
+		{
+			g = g / r;
+			b = b / r;
+			r = 1.0;
+		}
+	}
+	else if (g > b && g > r)
+	{
+		// green is biggest
+		if (g > 1.0)
+		{
+			r = r / g;
+			b = b / g;
+			g = 1.0;
+		}
+	}
+	else if (b > r && b > g)
+	{
+		// blue is biggest
+		if (b > 1.0)
+		{
+			r = r / b;
+			g = g / b;
+			b = 1.0;
+		}
+	}
+
+	// Convert the RGB values to your color object The rgb values from the above formulas are between 0.0 and 1.0.
+	r8 = uint8_t(r * 255.0);
+	g8 = uint8_t(g * 255.0);
+	b8 = uint8_t(b * 255.0);
+}
+
+void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double &x, double &y, double &z)
+{
+	float r = float(r8) / 255.0F;
+	float g = float(g8) / 255.0F;
+	float b = float(b8) / 255.0F;
+
+	if (r > 0.04045)
+		r = powf(((r + 0.055F) / 1.055F), 2.4F);
+	else
+		r /= 12.92F;
+
+	if (g > 0.04045F)
+		g = powf(((g + 0.055F) / 1.055F), 2.4F);
+	else
+		g /= 12.92F;
+
+	if (b > 0.04045F)
+		b = powf(((b + 0.055F) / 1.055F), 2.4F);
+	else
+		b /= 12.92F;
+
+	r *= 100;
+	g *= 100;
+	b *= 100;
+
+	// Calibration for observer @2° with illumination = D65
+	x = r * 0.4124 + g * 0.3576 + b * 0.1805;
+	y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+	z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+}

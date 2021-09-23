@@ -595,7 +595,7 @@ Full daynames are allowed in dzVents &gt;= 3.1.7
             'at <astroMoment>',         -- dzVents >= 3.0.16 Uses the times received from Domoticz
             'at <astroMoment> on sat,sun',
             'xx minutes before <astroMoment>',  --
-            'xx minutes after <astroMoment>,    -- Please note that these relative times will cross dates
+            'xx minutes after <astroMoment>',   -- Please note that these relative times will cross dates
             'between aa and bb'         -- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
                                         -- aa/bb can be sunrise/sunset/solarnoon ('between sunset and sunrise' and 'between solarnoon and sunrise' will cross dates)
                                         -- aa/bb can be 'xx minutes before/after <astroMoment>'

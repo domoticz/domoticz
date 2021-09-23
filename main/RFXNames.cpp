@@ -313,6 +313,8 @@ const char* Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Selector, "Selector" },
 		{ STYPE_DoorLock, "Door Lock" },
 		{ STYPE_DoorLockInverted, "Door Lock Inverted" },
+		{ STYPE_BlindsPercentageWithStop, "Blinds + Stop" },
+		{ STYPE_BlindsPercentageInvertedWithStop, "Blinds Inverted + Stop" },
 		{ 0, nullptr, nullptr },
 	};
 	return findTableIDSingle1(Table, sType);

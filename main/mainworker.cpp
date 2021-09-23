@@ -190,7 +190,6 @@ extern bool g_bUseUpdater;
 extern http::server::_eWebCompressionMode g_wwwCompressMode;
 extern http::server::CWebServerHelper m_webservers;
 extern bool g_bUseEventTrigger;
-extern std::string szRandomUUID;
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -754,7 +753,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, std::string("Domoticz") + szRandomUUID, Mode3 != 0);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Extra, Mode2, Mode1, std::string("Domoticz") + GenerateUUID() + std::to_string(ID), Mode3 != 0);
 		break;
 	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
@@ -3207,7 +3206,7 @@ void MainWorker::decode_Rain(const CDomoticzHardwareBase* pHardware, const tRBUF
 		sprintf(szTmp, "Signal level  = %d", pResponse->RAIN.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(subType == sTypeRAIN1 || (subType == sTypeRAIN9), pResponse->RAIN.battery_level & 0x0F);
+		decode_BateryLevel(subType == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
@@ -3227,8 +3226,20 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 	uint8_t SignalLevel = pResponse->WIND.rssi;
 	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, pResponse->WIND.subtype == sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
 
+	float AddjValue = 0.0F; //Temp adjustment
+	float AddjMulti = 1.0F; //Wind Speed/Gust adjustment
+	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+
+	float AddjValue2 = 0.0F; //Wind direction adjustment
+	float AddjMulti2 = 1.0F;
+	m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue2, AddjMulti2);
+
 	double dDirection;
 	dDirection = (double)(pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
+
+	//Apply user defined offset
+	dDirection = std::fmod(dDirection + AddjValue2, 360.0);
+
 	dDirection = m_wind_calculator[windID].AddValueAndReturnAvarage(dDirection);
 
 	std::string strDirection;
@@ -3272,9 +3283,7 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;
 
-	float AddjValue = 0.0F;
-	float AddjMulti = 1.0F;
-	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	//Apply user defind multiplication
 	intSpeed = int(float(intSpeed) * AddjMulti);
 	intGust = int(float(intGust) * AddjMulti);
 
@@ -3455,8 +3464,12 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 	}
 	else if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
+		// WARNING
+		// battery_level & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
+		// Set BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 		BatteryLevel = 255;
 		SignalLevel = 12;
+		// Set Unit = ID_BYTE0
 		Unit = (pResponse->TEMP.rssi << 4) | pResponse->TEMP.battery_level;
 	}
 
@@ -3662,6 +3675,9 @@ void MainWorker::decode_Hum(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			break;
 		case sTypeHUM2:
 			WriteMessage("subtype       = HUM2 - LaCrosse WS2300");
+			break;
+		case sTypeHUM3:
+			WriteMessage("subtype       = HUM3 - Inovalley S80 plant humidity sensor");
 			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->HUM.packettype, pResponse->HUM.subtype);
@@ -9281,8 +9297,12 @@ void MainWorker::decode_RFXSensor(const CDomoticzHardwareBase* pHardware, const 
 
 	if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
 	{
+		// WARNING
+		// filler & rssi fields fields are used here to transmit ID_BYTE0 value from EnOcean device
+		// Set BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
 		BatteryLevel = 255;
 		SignalLevel = 12;
+		// Set Unit = ID_BYTE0
 		Unit = (pResponse->RFXSENSOR.rssi << 4) | pResponse->RFXSENSOR.filler;
 	}
 
@@ -11086,6 +11106,10 @@ void MainWorker::decode_Solar(const CDomoticzHardwareBase* pHardware, const tRBU
 	gdevice.intval1 = (pResponse->SOLAR.id1 * 256) + pResponse->SOLAR.id2;
 	gdevice.id = (uint8_t)gdevice.intval1;
 	gdevice.floatval1 = float((pResponse->SOLAR.solarhigh * 256) + float(pResponse->SOLAR.solarlow)) / 100.F;
+
+	if (gdevice.floatval1 > 1361)
+		return; // https://en.wikipedia.org/wiki/Solar_irradiance
+
 	gdevice.rssi = SignalLevel;
 	gdevice.battery_level = BatteryLevel;
 	decode_General(pHardware, pResponse, procResult);
@@ -11343,6 +11367,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	if (pHardware == nullptr)
 		return false;
 
+	std::string deviceID = sd[1];
+	int Unit = atoi(sd[2].c_str());
+	int dType = atoi(sd[3].c_str());
+	int dSubType = atoi(sd[4].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+	if (pHardware->HwdType == HTYPE_ZIBLUEUSB || pHardware->HwdType == HTYPE_ZIBLUETCP)
+	{
+		CZiBlueBase::ConvertToGeneralSwitchType(deviceID, dType, dSubType);
+	}
+
 	m_szLastSwitchUser = User;
 
 	if (pHardware->HwdType == HTYPE_DomoticzInternal)
@@ -11364,10 +11398,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 	}
 
-	uint8_t Unit = atoi(sd[2].c_str());
-	uint8_t dType = atoi(sd[3].c_str());
-	uint8_t dSubType = atoi(sd[4].c_str());
-	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
 	//when asking for Toggle, just switch to the opposite value
@@ -11422,10 +11452,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				switchcmd = "Set Color";
 			}
 		}
-		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, color);
+		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(sd[1], Unit, switchcmd, level, color);
 #endif
 		return true;
 	}
+	if (pHardware->HwdType == HTYPE_MQTT)
+		return ((MQTT *)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
 
 	switch (dType)
 	{
@@ -11491,7 +11523,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (switchtype == STYPE_X10Siren) {
 			level = 15;
 		}
-		else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
+		else if (
+			(switchtype == STYPE_BlindsPercentage)
+			|| (switchtype == STYPE_BlindsPercentageInverted)
+			|| (switchtype == STYPE_BlindsPercentageWithStop)
+			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+			)
+		{
 			if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
 			{
 				if (level == 15)
@@ -12313,6 +12351,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (
 				(switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageInverted)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
+				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				|| (switchtype == STYPE_VenetianBlindsUS)
 				|| (switchtype == STYPE_VenetianBlindsEU)
 				)
@@ -12448,16 +12488,28 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 		return false;
 
 	std::vector<std::string> sd = result[0];
-
-	//uint8_t dType = atoi(sd[3].c_str());
-	//uint8_t dSubType = atoi(sd[4].c_str());
+	std::string hwdid = sd[0];
+	std::string devid = sd[1];
+	int dtype = atoi(sd[3].c_str());
+	int subtype = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	int iOnDelay = atoi(sd[6].c_str());
 	int nValue = atoi(sd[7].c_str());
 	std::string sValue = sd[8];
 	std::string devName = sd[9];
 	//std::string sOptions = sd[10].c_str();
-
+	// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
+	CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+	if (pBaseHardware != nullptr)
+	{
+		if (pBaseHardware->HwdType == HTYPE_ZIBLUEUSB || pBaseHardware->HwdType == HTYPE_ZIBLUETCP)
+		{
+			ConvertToGeneralSwitchType(devid, dtype, subtype);
+			sd[1] = devid;
+			sd[3] = std::to_string(dtype);
+			sd[4] = std::to_string(subtype);
+		}
+	}
 	bool bIsOn = IsLightSwitchOn(switchcmd);
 	if (ooc)//Only on change
 	{
@@ -12580,6 +12632,10 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	if (hindex == -1)
 		return false;
 
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
 	unsigned long ID;
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
@@ -12594,9 +12650,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	uint8_t dSubType = atoi(sd[4].c_str());
 	//_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-	CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
-	if (pHardware == nullptr)
-		return false;
 	//
 	//	For plugins all the specific logic below is irrelevent
 	//	so just send the full details to the plugin so that it can take appropriate action
@@ -12604,7 +12657,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
 #ifdef ENABLE_PYTHON
-		((Plugins::CPlugin*)pHardware)->SendCommand(Unit, "Set Level", TempValue);
+		((Plugins::CPlugin*)pHardware)->SendCommand(sd[1], Unit, "Set Level", TempValue);
 #endif
 	}
 	else if (
@@ -12625,7 +12678,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) ||
-		(pHardware->HwdType == HTYPE_OpenWebNetTCP)
+		(pHardware->HwdType == HTYPE_OpenWebNetTCP) ||
+		(pHardware->HwdType == HTYPE_MQTT)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -12701,6 +12755,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		{
 			COpenWebNetTCP* pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
 			return pGateway->SetSetpoint(ID, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_MQTT)
+		{
+			MQTT *pGateway = reinterpret_cast<MQTT*>(pHardware);
+			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}
 	else
@@ -13154,11 +13213,16 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 			int ilevel = maxDimLevel - 1; // Why -1?
 
 			if (
-				((switchtype == STYPE_Dimmer) ||
-				(switchtype == STYPE_BlindsPercentage) ||
-					(switchtype == STYPE_BlindsPercentageInverted) ||
-					(switchtype == STYPE_Selector)
-					) && (maxDimLevel != 0))
+				(
+					(switchtype == STYPE_Dimmer)
+					|| (switchtype == STYPE_BlindsPercentage)
+					|| (switchtype == STYPE_BlindsPercentageInverted)
+					|| (switchtype == STYPE_BlindsPercentageWithStop)
+					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+					|| (switchtype == STYPE_Selector)
+				)
+				&& (maxDimLevel != 0)
+			   )
 			{
 				if (lstatus == "On")
 				{
@@ -13305,7 +13369,7 @@ void MainWorker::SetInternalSecStatus()
 	//Update Domoticz Security Device
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
-	tsen.SECURITY1.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.SECURITY1.packetlength = sizeof(tsen.SECURITY1) - 1;
 	tsen.SECURITY1.packettype = pTypeSecurity1;
 	tsen.SECURITY1.subtype = sTypeDomoticzSecurity;
 	tsen.SECURITY1.battery_level = 9;

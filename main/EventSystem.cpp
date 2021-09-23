@@ -1638,7 +1638,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query(
-				"SELECT DeviceStatus.HardwareID, DeviceStatus.ID, DeviceStatus.Unit FROM DeviceStatus INNER JOIN Hardware ON DeviceStatus.HardwareID=Hardware.ID WHERE (DeviceStatus.Type=%d AND DeviceStatus.SubType=%d  AND Hardware.Type=%d)",
+				"SELECT DeviceStatus.HardwareID, DeviceStatus.ID, DeviceStatus.DeviceID, DeviceStatus.Unit FROM DeviceStatus INNER JOIN Hardware ON DeviceStatus.HardwareID=Hardware.ID WHERE (DeviceStatus.Type=%d AND DeviceStatus.SubType=%d  AND Hardware.Type=%d)",
 				pTypeSecurity1, sTypeDomoticzSecurity, HTYPE_PythonPlugin);
 
 			if (!result.empty())
@@ -1646,8 +1646,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 				std::vector<std::string> sd = result[0];
 				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(atoi(sd[0].c_str()));
 				if (pPlugin)
-					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(
-						pPlugin, atoi(sd[2].c_str()), item.nValue, m_szSecStatus[item.nValue]));
+					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(pPlugin, sd[2].c_str(), atoi(sd[3].c_str()), item.nValue, m_szSecStatus[item.nValue]));
 			}
 		}
 #endif
@@ -3828,7 +3827,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Locked";
 		}
 	}
-	else if (switchtype == STYPE_Blinds)
+	else if (
+		(switchtype == STYPE_Blinds)
+		|| (switchtype == STYPE_BlindsPercentage)
+		|| (switchtype == STYPE_BlindsPercentageWithStop)
+		)
 	{
 		if (lstatus == "On")
 		{
@@ -3843,7 +3846,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Open";
 		}
 	}
-	else if (switchtype == STYPE_BlindsInverted)
+	else if (
+		(switchtype == STYPE_BlindsInverted)
+		|| (switchtype == STYPE_BlindsPercentageInverted)
+		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+		)
 	{
 		if (lstatus == "Off")
 		{
@@ -3856,28 +3863,6 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		else
 		{
 			lstatus = "Open";
-		}
-	}
-	else if (switchtype == STYPE_BlindsPercentage)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = "Closed";
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = "Open";
-		}
-	}
-	else if (switchtype == STYPE_BlindsPercentageInverted)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = "Open";
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = "Closed";
 		}
 	}
 	else if (switchtype == STYPE_Media)

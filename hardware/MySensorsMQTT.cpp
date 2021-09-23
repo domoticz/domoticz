@@ -13,7 +13,7 @@
 
 MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password,
 			     const std::string &CAfilenameExtra, const int TLS_Version, const int PublishScheme, const bool PreventLoop)
-	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTT::PT_out, std::string("Domoticz-MySensors") + std::string(GenerateUUID()), PreventLoop)
+	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTT::PT_out, std::string("Domoticz-MySensors") + GenerateUUID() + std::to_string(ID), PreventLoop)
 	, MyTopicIn(TOPIC_IN)
 	, MyTopicOut(TOPIC_OUT)
 {
@@ -118,7 +118,7 @@ std::string MySensorsMQTT::ConvertMessageToMySensorsLine(const std::string &topi
 {
 	std::string sMessage = topic + "/" + qMessage;
 	boost::replace_all(sMessage, m_TopicInWithoutHash, "");
-	boost::replace_all(sMessage, "/", ";");
+	std::replace(sMessage.begin(), sMessage.end(), '/', ';');
 	if (sMessage[0] == ';')
 	{
 		sMessage = sMessage.substr(1);
@@ -171,7 +171,7 @@ void MySensorsMQTT::ConvertMySensorsLineToMessage(const std::string &sLine, std:
 	}
 
 	sTopic = std::string(sLine.substr(0, indexLastSeperator));
-	boost::replace_all(sTopic, ";", "/");
+	std::replace(sTopic.begin(), sTopic.end(), ';', '/');
 	sTopic.insert(0, m_TopicOut + "/");
 
 	sPayload = std::string(sLine.substr(indexLastSeperator + 1));

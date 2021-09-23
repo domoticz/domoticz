@@ -588,6 +588,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanEEP.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\EnphaseAPI.h" />
@@ -612,6 +613,7 @@
     <ClInclude Include="..\hardware\Meteorologisk.h" />
     <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\OctoPrintMQTT.h" />
+    <ClInclude Include="..\hardware\plugins\PythonObjectEx.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
     <ClInclude Include="..\hardware\serial\impl\win.h" />
     <ClInclude Include="..\hardware\SysfsGpio.h" />
@@ -891,6 +893,7 @@
       </LanguageStandard>
     </ClCompile>
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
+    <ClCompile Include="..\hardware\EnOceanEEP.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
     <ClCompile Include="..\hardware\EnphaseAPI.cpp" />
@@ -913,6 +916,7 @@
     <ClCompile Include="..\hardware\Meteorologisk.cpp" />
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\OctoPrintMQTT.cpp" />
+    <ClCompile Include="..\hardware\plugins\PythonObjectEx.cpp" />
     <ClCompile Include="..\hardware\Rtl433.cpp" />
     <ClCompile Include="..\hardware\SysfsGpio.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />

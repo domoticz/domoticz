@@ -213,6 +213,7 @@ hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp
 hardware/eHouse/EhouseTcpClient.cpp
 hardware/eHouse/EhouseUdpListener.cpp
+hardware/EnOceanEEP.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/EnphaseAPI.cpp
@@ -336,6 +337,7 @@ hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
+hardware/plugins/PythonObjectEx.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp

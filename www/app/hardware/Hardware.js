@@ -663,9 +663,9 @@ define(['app'], function (app) {
 					extra = encodeURIComponent(extra);
 				}
 				else if ((text.indexOf("MQTT") >= 0)) {
-					extra = $("#hardwarecontent #divmqtt #filename").val().trim();
 					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
 					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
+					var mqttdiscoveryprefix = $("#hardwarecontent #divmqtt #mqttdiscoveryprefix").val().trim();
 					if (mqtttopicin.indexOf("#") >= 0) {
 						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
 						return;
@@ -674,9 +674,13 @@ define(['app'], function (app) {
 						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
 						return;
 					}
-					if ((mqtttopicin!="")||(mqtttopicout!="")) {
-						extra += ";" + mqtttopicin + ";" + mqtttopicout;
+					if (mqttdiscoveryprefix.indexOf("#") >= 0) {
+						ShowNotify($.t('Auto Discovery Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
 					}
+					extra = $("#hardwarecontent #divmqtt #filename").val().trim();
+					extra += ";" + mqtttopicin + ";" + mqtttopicout + ";" + mqttdiscoveryprefix;
+					extra = encodeURIComponent(extra);
 					
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
@@ -2175,9 +2179,9 @@ define(['app'], function (app) {
 					extra = encodeURIComponent(extra);
 				}
 				else if (text.indexOf("MQTT") >= 0) {
-					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
 					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
 					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
+					var mqttdiscoveryprefix = $("#hardwarecontent #divmqtt #mqttdiscoveryprefix").val().trim();
 					if (mqtttopicin.indexOf("#") >= 0) {
 						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
 						return;
@@ -2186,14 +2190,19 @@ define(['app'], function (app) {
 						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
 						return;
 					}
-					if ((mqtttopicin!="")||(mqtttopicout!="")) {
-						extra += ";" + mqtttopicin + ";" + mqtttopicout;
+					if (mqttdiscoveryprefix.indexOf("#") >= 0) {
+						ShowNotify($.t('Auto Discovery Prefix cannot contain a "#" symbol!'), 2500, true);
+						return;
 					}
+					extra = $("#hardwarecontent #divmqtt #filename").val();
+					extra += ";" + mqtttopicin + ";" + mqtttopicout + ";" + mqttdiscoveryprefix;
+					extra = encodeURIComponent(extra);
+
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
 					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
-				if (text.indexOf("Eco Devices") >= 0) {
+				else if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
@@ -4269,6 +4278,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsmqtt #filename").val("");
 							$("#hardwarecontent #divmqtt #mqtttopicin").val("");
 							$("#hardwarecontent #divmqtt #mqtttopicout").val("");
+							$("#hardwarecontent #divmqtt #mqttdiscoveryprefix").val("");
 
 							// Break out any possible topic prefix pieces.
 							var CAfilenameParts = data["Extra"].split(";");
@@ -4278,6 +4288,8 @@ define(['app'], function (app) {
 								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicin").val(CAfilenameParts[1]);
 							if (CAfilenameParts.length > 2)
 								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicout").val(CAfilenameParts[2]);
+							if (CAfilenameParts.length > 3)
+								$("#hardwarecontent #hardwareparamsmqtt #mqttdiscoveryprefix").val(CAfilenameParts[3]);
 						
 							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
@@ -4496,6 +4508,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
+			$("#hardwarecontent #divrfplayerdoc").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -4787,6 +4800,9 @@ define(['app'], function (app) {
 			    else {
 			        $("#hardwarecontent #divmqtt #mqtt_publish").show();
 			    }
+			}
+			if (text.indexOf("RFPlayer") >= 0) {
+				$("#hardwarecontent #divrfplayerdoc").show();
 			}
 		}
 

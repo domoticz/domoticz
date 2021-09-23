@@ -17249,7 +17249,8 @@
              */
             Axis.prototype.labelMetrics = function () {
                 var index = this.tickPositions && this.tickPositions[0] || 0;
-                return this.chart.renderer.fontMetrics(this.options.labels.style.fontSize, this.ticks[index] && this.ticks[index].label);
+                return this.chart.renderer.fontMetrics( this.options.labels.style &&
+                     this.options.labels.style.fontSize, this.ticks[index] && this.ticks[index].label);
             };
             /**
              * Prevent the ticks from getting so close we can't draw the labels. On a
@@ -17361,7 +17362,7 @@
                 }
                 if (!horiz) {
                     // #7028
-                    var cssWidth = labelOptions.style.width;
+                    var cssWidth = labelOptions.style && labelOptions.style.width;
                     if (cssWidth !== void 0) {
                         return parseInt(String(cssWidth), 10);
                     }
@@ -17392,7 +17393,7 @@
                     Math.round(slotWidth - 2 * labelOptions.padding)),
                     attr = {},
                     labelMetrics = this.labelMetrics(),
-                    textOverflowOption = labelStyleOptions.textOverflow,
+                    textOverflowOption = labelOptions.style && labelStyleOptions.textOverflow,
                     commonWidth,
                     commonTextOverflow,
                     maxLabelLength = 0,
@@ -17481,7 +17482,7 @@
                 tickPositions.forEach(function (pos) {
                     var tick = ticks[pos],
                         label = tick && tick.label,
-                        widthOption = labelStyleOptions.width,
+                        widthOption = labelOptions.style && labelStyleOptions.width,
                         css = {};
                     if (label) {
                         // This needs to go before the CSS in old IE (#4502)

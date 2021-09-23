@@ -13,9 +13,36 @@
 			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
+		</table>
+    </form>
+</div>
+<div id="dialog-editwinddevice">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-			<td align="right"><label for="multiply"><span data-i18n="Multiply">Multiply</span>: </label></td>
-			<td><input type="text" id="multiply" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+            <td align="right" style="width:120px"><label>Idx: </label></td>
+			<td><span id="deviceidx"></span></td>
+        </tr>
+        <tr>
+          <td align="right"><label><span data-i18n="Name">Name</span>: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+        </tr>
+		<tr>
+			<td align="right"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+		</tr>
+        <tr>
+			<td align="right"><label for="arotation"><span data-i18n="Angle Rotation">Angle Rotation</span>: </label></td>
+			<td>
+				<select id="arotation" style="width:80px" class="combobox ui-corner-all">
+					<option value="0">0 &deg;</option>
+					<option value="90">90 &deg;</option>
+					<option value="180">180 &deg;</option>
+					<option value="270">270 &deg;</option>
+				</select>&nbsp;&nbsp;
+				<label for="multiply"><span data-i18n="Speed/Gust Multiply">Speed/Gust Multiply</span>: </label>
+				<input type="text" id="multiply" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+			</td>
 		</tr>		
 		</table>
     </form>
