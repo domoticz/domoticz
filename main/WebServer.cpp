@@ -6931,7 +6931,8 @@ namespace http
 					m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
 				}
 				root["status"] = "OK";
-				//LoadUsers();
+				if 	(cparam != "getapplications")
+					LoadUsers();
 			}
 			else if (cparam == "clearlightlog")
 			{
@@ -8280,6 +8281,24 @@ namespace http
 						int activetabs = atoi(sd[5].c_str());
 
 						AddUser(ID, username, password, rights, activetabs);
+					}
+				}
+			}
+			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
+			result.clear();
+			result = m_sql.safe_query("SELECT ID, Active, Applicationname, Secret, Public FROM Applications");
+			if (!result.empty())
+			{
+				for (const auto &sd : result)
+				{
+					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					if (bIsActive)
+					{
+						unsigned long ID = 20000 + (unsigned long)atol(sd[0].c_str());
+						std::string applicationname = sd[2];
+						std::string secret = sd[3];
+						int bPublic = static_cast<int>(atoi(sd[4].c_str()));
+						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic);
 					}
 				}
 			}
