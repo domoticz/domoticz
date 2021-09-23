@@ -17353,7 +17353,7 @@ namespace http
 
 		/*
 		 * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
-		 * respective category with todayValue.
+		 * respective category with todayValue. If root["firstYear"] is missing, the today's year is set in it's place.
 		 */
 		void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString)
 		{
@@ -17404,7 +17404,11 @@ namespace http
 			char szTmp[30];
 			sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
 			root["result"][todayResultIndex]["s"] = szTmp;
-		}
+
+            if (!root.isMember("firstYear")) {
+                root["firstYear"] = todayYear.c_str();
+            }
+        }
 
 		/**
 		 * Save user session.
