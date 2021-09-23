@@ -28,6 +28,8 @@ define(['angular'], function () {
         18: ['Generic48_On.png', 'Generic48_Off.png'],   // Selector
         19: ['Door48_On.png', 'Door48_Off.png'],         // Door Lock
         20: ['Door48_On.png', 'Door48_Off.png'],         // Door Lock Inverted
+        21: ['blinds48.png', 'blinds48.png'],            // Blinds + Stop
+        22: ['blinds48.png', 'blinds48.png'],            // Blinds Inverted + Stop
     });
 
     module.constant('dataTableDefaultSettings', {

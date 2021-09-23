@@ -1404,21 +1404,27 @@
 						<br>
 						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.<br>
 						<br>
-						Alternative topic prefixes for {domoticz/in} and {domoticz/out} can be entered below.<br>
 				</td>
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label for="mqtttopicin"><span data-i18n="Topic In Prefix"></span>:</label></td>
 				<td>
-					<input type="text" id="mqtttopicin" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
-					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b>domoticz/in</b>
+					<input type="text" id="mqtttopicin" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="domoticz/in">
+					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b><span data-i18n="Disabled"></span></b>
 				</td>
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label for="mqtttopicout"><span data-i18n="Topic Out Prefix"></span>:</label></td>
 				<td>
-					<input type="text" id="mqtttopicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
-					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b>domoticz/out</b>
+					<input type="text" id="mqtttopicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="domoticz/out">
+					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b><span data-i18n="Disabled"></span></b>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><label for="mqttdiscoveryprefix"><span data-i18n="Auto Discovery Prefix"></span>:</label></td>
+				<td>
+					<input type="text" id="mqttdiscoveryprefix" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+					&#8592;&nbsp;<span>(for example <b>domoticz</b> or <b>homeassistant</b>)</span>&nbsp;
 				</td>
 			</tr>
 			<tr>
@@ -1609,11 +1615,11 @@
 						<option value="0xF31F" data-i18n="Custom Sensor">Custom Sensor</option>
 						<option value="0xF31B" data-i18n="Distance">Distance</option>
 						<option value="0xF31D" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
-						<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
 						<option value="0xFB02" data-i18n="Gas">Gas</option>
 						<option value="0x5101" data-i18n="Humidity">Humidity</option>
 						<option value="0xF304" data-i18n="Leaf Wetness">Leaf Wetness</option>
 						<option value="0xF601" data-i18n="Lux">Lux</option>
+						<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
 						<option value="0xFA01" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
 						<option value="0xF306" data-i18n="Percentage">Percentage</option>
 						<option value="0xF309" data-i18n="Pressure (Bar)">Pressure (Bar)</option>

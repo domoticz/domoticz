@@ -166,34 +166,35 @@ namespace Plugins {
 			Py_ssize_t	Index = 0;
 			for (auto &pRef : *pJSON)
 			{
+				// PyList_SetItem 'steal' a reference so use PyBorrowedRef instead of PyNewRef
 				if (pRef.isArray() || pRef.isObject())
 				{
-					PyObject* pObj = JSONtoPython(&pRef);
+					PyBorrowedRef pObj = JSONtoPython(&pRef);
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for object.", __func__, Index - 1);
 				}
 				else if (pRef.isUInt())
 				{
-					PyObject *pObj = Py_BuildValue("I", pRef.asUInt());
+					PyBorrowedRef pObj = Py_BuildValue("I", pRef.asUInt());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1))  // steals the ref to pObj
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for unsigned integer.", __func__, Index - 1);
 				}
 				else if (pRef.isInt())
 				{
-					PyObject *pObj = Py_BuildValue("i", pRef.asInt());
+					PyBorrowedRef pObj = Py_BuildValue("i", pRef.asInt());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1)) // steals the ref to pObj
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for integer.", __func__, Index - 1);
 				}
 				else if (pRef.isDouble())
 				{
-					PyObject *pObj = Py_BuildValue("d", pRef.asDouble());
+					PyBorrowedRef pObj = Py_BuildValue("d", pRef.asDouble());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1)) // steals the ref to pObj
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for double.", __func__, Index - 1);
 				}
 				else if (pRef.isConvertibleTo(Json::stringValue))
 				{
 					std::string sString = pRef.asString();
-					PyObject* pObj = Py_BuildValue("s#", sString.c_str(), sString.length());
+					PyBorrowedRef pObj = Py_BuildValue("s#", sString.c_str(), sString.length());
 					if (!pObj || (PyList_SetItem(pRetVal, Index++, pObj) == -1)) // steals the ref to pObj
 						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd', to list for string.", __func__, Index - 1);
 				}
@@ -210,7 +211,7 @@ namespace Plugins {
 				Json::ValueIterator::reference pRef = *it;
 				if (pRef.isArray() || pRef.isObject())
 				{
-					PyObject* pObj = JSONtoPython(&pRef);
+					PyNewRef	pObj = JSONtoPython(&pRef);  // PyDict_SetItemString will add its own reference
 					if (!pObj || (PyDict_SetItemString(pRetVal, KeyName.c_str(), pObj) == -1))
 						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', to dictionary for object.", __func__, KeyName.c_str());
 				}
@@ -233,13 +234,13 @@ namespace Plugins {
 	PyObject *CPluginProtocolJSON::JSONtoPython(const std::string &sData)
 	{
 		Json::Value		root;
-		PyObject* pRetVal = Py_None;
+		PyObject* pRetVal = nullptr;
 
 		bool bRet = ParseJSon(sData, root);
 		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "JSON Protocol: Parse Error on '%s'", sData.c_str());
-			Py_INCREF(Py_None);
+			Py_RETURN_NONE;
 		}
 		else
 		{

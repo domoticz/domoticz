@@ -42,7 +42,7 @@ define(function () {
             this.icon = new DeviceIcon(this);
 
             this.isDimmer = function () {
-                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(this.SwitchType);
+                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'Blinds + Stop', 'Blinds Inverted + Stop', 'TPI'].includes(this.SwitchType);
             };
 
             this.isSelector = function () {

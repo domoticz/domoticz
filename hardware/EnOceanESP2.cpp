@@ -17,12 +17,6 @@
 #include "hardwaretypes.h"
 #include "EnOceanESP2.h"
 
-//#define _DEBUG
-#ifdef _DEBUG
-// DEBUG: Enable logging of ESP2 devices management
-#define ENABLE_ESP2_DEVICE_DEBUG
-#endif
-
 #define ENOCEAN_RETRY_DELAY 30
 
 #define bitrange(data, shift, mask) ((data >> shift) & mask)
@@ -103,161 +97,161 @@ typedef struct enocean_data_structure_MDA {
  * contains the highest 3 bits of the H_SEQ_LENGTH byte.
  * @{
  */
- /**
-  * \brief RRT
-  *
-  * Header identification says receive radio telegram (RRT)
-  */
+/**
+ * \brief RRT
+ *
+ * Header identification says receive radio telegram (RRT)
+ */
 #define C_H_SEQ_RRT 0x00
-  /**
-   * \brief TRT
-   *
-   * Header identification says transmit radio telegram (TRT)
-   */
+/**
+ * \brief TRT
+ *
+ * Header identification says transmit radio telegram (TRT)
+ */
 #define C_H_SEQ_TRT 0x60
-   /**
-	* \brief RMT
-	*
-	* Header identification says receive message telegram (RMT)
-	*/
+/**
+* \brief RMT
+*
+* Header identification says receive message telegram (RMT)
+*/
 #define C_H_SEQ_RMT 0x80
-	/**
-	 * \brief TCT
-	 *
-	 * Header identification says transmit command telegram (TCT)
-	 */
+/**
+ * \brief TCT
+ *
+ * Header identification says transmit command telegram (TCT)
+ */
 #define C_H_SEQ_TCT 0xA0
-	 /**
-	  * \brief OK
-	  *
-	  * Standard message to confirm that an action was performed correctly by the TCM
-	  */
+/**
+ * \brief OK
+ *
+ * Standard message to confirm that an action was performed correctly by the TCM
+ */
 #define H_SEQ_OK 0x80
-	  /**
-	   * \brief ERR
-	   *
-	   * Standard error message response if an action was not performed correctly by the TCM
-	   */
+/**
+ * \brief ERR
+ *
+ * Standard error message response if an action was not performed correctly by the TCM
+ */
 #define H_SEQ_ERR 0x80
-	   /*@}*/
+/*@}*/
 
-	   /**
-		* @defgroup length Length byte
-		* Number of octets following the header octed.
-		* Is contained in the last 5 bits of the H_SEQ_LENGTH byte.
-		* @{
-		*/
-		/**
-		 * \brief Fixed length
-		 *
-		 * Every packet has the same length: 0x0B
-		 */
+/**
+* @defgroup length Length byte
+* Number of octets following the header octed.
+* Is contained in the last 5 bits of the H_SEQ_LENGTH byte.
+* @{
+*/
+/**
+ * \brief Fixed length
+ *
+ * Every packet has the same length: 0x0B
+ */
 #define C_LENGTH 0x0B
-		 /*@}*/
+/*@}*/
 
-		 /**
-		  * @defgroup org Type of telegram
-		  * Type definition of the telegram.
-		  * @{
-		  */
-		  /**
-		   * \brief PTM telegram
-		   *
-		   * Telegram from a PTM switch module received (original or repeated message)
-		   */
+/**
+ * @defgroup org Type of telegram
+ * Type definition of the telegram.
+ * @{
+ */
+/**
+ * \brief PTM telegram
+ *
+ * Telegram from a PTM switch module received (original or repeated message)
+ */
 #define C_ORG_RPS 0x05
-		   /**
-			* \brief 1 byte data telegram
-			*
-			* Detailed 1 byte data telegram from a STM sensor module received (original or repeated message)
-			*/
+/**
+* \brief 1 byte data telegram
+*
+* Detailed 1 byte data telegram from a STM sensor module received (original or repeated message)
+*/
 #define C_ORG_1BS 0x06
-			/**
-			 * \brief 4 byte data telegram
-			 *
-			 * Detailed 4 byte data telegram from a STM sensor module received (original or repeated message)
-			 */
+/**
+ * \brief 4 byte data telegram
+ *
+ * Detailed 4 byte data telegram from a STM sensor module received (original or repeated message)
+ */
 #define C_ORG_4BS 0x07
-			 /**
-			  * \brief CTM telegram
-			  *
-			  * Telegram from a CTM module received (original or repeated message)
-			  */
+/**
+ * \brief CTM telegram
+ *
+ * Telegram from a CTM module received (original or repeated message)
+ */
 #define C_ORG_HRC 0x08
-			  /**
-			   * \brief Modem telegram
-			   *
-			   * 6byte Modem Telegram (original or repeated message)
-			   */
+/**
+ * \brief Modem telegram
+ *
+ * 6byte Modem Telegram (original or repeated message)
+ */
 #define C_ORG_6DT 0x0A
-			   /**
-				* \brief Modem ack
-				*
-				* Modem Acknowledge Telegram
-				*/
+/**
+* \brief Modem ack
+*
+* Modem Acknowledge Telegram
+*/
 #define C_ORG_MDA 0x0B
-				/*@}*/
+/*@}*/
 
 
-				/**
-				 * \brief ID-range telegram
-				 *
-				 * When this command is sent to the TCM, the base ID range number is retrieved though an INF_IDBASE telegram.
-				 */
+/**
+ * \brief ID-range telegram
+ *
+ * When this command is sent to the TCM, the base ID range number is retrieved though an INF_IDBASE telegram.
+ */
 #define C_ORG_RD_IDBASE 0x58
 
-				 /**
-				  * \brief Reset the TCM 120 module
-				  *
-				  * Performs a reset of the TCM microcontroller. When the TCM is
-				  * ready to operate again, it sends an ASCII message (INF_INIT)
-				  * containing the current settings.
-				  */
+/**
+ * \brief Reset the TCM 120 module
+ *
+ * Performs a reset of the TCM microcontroller. When the TCM is
+ * ready to operate again, it sends an ASCII message (INF_INIT)
+ * containing the current settings.
+ */
 #define C_ORG_RESET 0x0A
 
-				  /**
-				   * \brief Actual ID range base
-				   *
-				   * This message informs the user about the ID range base number.
-				   * IDBaseByte3 is the most significant byte.
-				   */
+/**
+ * \brief Actual ID range base
+ *
+ * This message informs the user about the ID range base number.
+ * IDBaseByte3 is the most significant byte.
+ */
 #define C_ORG_INF_IDBASE 0x98
 
 #define C_ORG_RD_SW_VER 0x4B
 #define C_ORG_INF_SW_VER 0x8C
 
-				   /**
-					* @defgroup bitmasks Bitmasks for various fields.
-					* There are two definitions for every bit mask.
-					* First, the bit mask itself and also the number of necessary shifts.
-					* @{
-					*/
-					/**
-					 * @defgroup status_rps Status of telegram (for RPS telegrams)
-					 * Bitmasks for the status-field, if ORG = RPS.
-					 * @{
-					 */
+/**
+* @defgroup bitmasks Bitmasks for various fields.
+* There are two definitions for every bit mask.
+* First, the bit mask itself and also the number of necessary shifts.
+* @{
+*/
+/**
+ * @defgroup status_rps Status of telegram (for RPS telegrams)
+ * Bitmasks for the status-field, if ORG = RPS.
+ * @{
+ */
 #define S_RPS_T21 0x20
 #define S_RPS_T21_SHIFT 5
 #define S_RPS_NU  0x10
 #define S_RPS_NU_SHIFT 4
 #define S_RPS_RPC 0x0F
 #define S_RPS_RPC_SHIFT 0
-					 /*@}*/
-					 /**
-					  * @defgroup status_rpc Status of telegram (for 1BS, 4BS, HRC or 6DT telegrams)
-					  * Bitmasks for the status-field, if ORG = 1BS, 4BS, HRC or 6DT.
-					  * @{
-					  */
+/*@}*/
+/**
+ * @defgroup status_rpc Status of telegram (for 1BS, 4BS, HRC or 6DT telegrams)
+ * Bitmasks for the status-field, if ORG = 1BS, 4BS, HRC or 6DT.
+ * @{
+ */
 #define S_RPC 0x0F
 #define S_RPC_SHIFT 0
-					  /*@}*/
+/*@}*/
 
-					  /**
-					   * @defgroup data3 Meaning of data_byte 3 (for RPS telegrams, NU = 1)
-					   * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 1.
-					   * @{
-					   */
+/**
+ * @defgroup data3 Meaning of data_byte 3 (for RPS telegrams, NU = 1)
+ * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 1.
+ * @{
+ */
 #define DB3_RPS_NU_RID 0xC0
 #define DB3_RPS_NU_RID_SHIFT 6
 #define DB3_RPS_NU_UD  0x20
@@ -270,24 +264,24 @@ typedef struct enocean_data_structure_MDA {
 #define DB3_RPS_NU_SUD_SHIFT 1
 #define DB3_RPS_NU_SA 0x01
 #define DB3_RPS_NU_SA_SHIFT 0
-					   /*@}*/
+/*@}*/
 
-					   /**
-						* @defgroup data3_1 Meaning of data_byte 3 (for RPS telegrams, NU = 0)
-						* Bitmasks for the data_byte3-field, if ORG = RPS and NU = 0.
-						* @{
-						*/
+/**
+* @defgroup data3_1 Meaning of data_byte 3 (for RPS telegrams, NU = 0)
+* Bitmasks for the data_byte3-field, if ORG = RPS and NU = 0.
+* @{
+*/
 #define DB3_RPS_BUTTONS 0xE0
 #define DB3_RPS_BUTTONS_SHIFT 4
 #define DB3_RPS_PR 0x10
 #define DB3_RPS_PR_SHIFT 3
-						/*@}*/
+/*@}*/
 
-						/**
-						 * @defgroup data0 Meaning of data_byte 0 (for 4BS telegrams)
-						 * Bitmasks for the data_byte0-field, if ORG = 4BS.
-						 * @{
-						 */
+/**
+ * @defgroup data0 Meaning of data_byte 0 (for 4BS telegrams)
+ * Bitmasks for the data_byte0-field, if ORG = 4BS.
+ * @{
+ */
 #define DB0_4BS_DI_3 0x08
 #define DB0_4BS_DI_3_SHIFT 3
 #define DB0_4BS_DI_2 0x04
@@ -296,13 +290,13 @@ typedef struct enocean_data_structure_MDA {
 #define DB0_4BS_DI_1_SHIFT 1
 #define DB0_4BS_DI_0 0x01
 #define DB0_4BS_DI_0_SHIFT 0
-						 /*@}*/
+/*@}*/
 
-						 /**
-						  * @defgroup data3_hrc Meaning of data_byte 3 (for HRC telegrams)
-						  * Bitmasks for the data_byte3-field, if ORG = HRC.
-						  * @{
-						  */
+/**
+ * @defgroup data3_hrc Meaning of data_byte 3 (for HRC telegrams)
+ * Bitmasks for the data_byte3-field, if ORG = HRC.
+ * @{
+ */
 #define DB3_HRC_RID 0xC0
 #define DB3_HRC_RID_SHIFT 6
 #define DB3_HRC_UD  0x20
@@ -312,11 +306,11 @@ typedef struct enocean_data_structure_MDA {
 #define DB3_HRC_SR  0x08
 #define DB3_HRC_SR_SHIFT 3
 
-						  /**
-						   * @defgroup Definitions for the string representation
-						   * The definitions for the human-readable string representation
-						   * @{
-						   */
+/**
+ * @defgroup Definitions for the string representation
+ * The definitions for the human-readable string representation
+ * @{
+ */
 #define HR_TYPE "Type: "
 #define HR_RPS  "RPS "
 #define HR_1BS  "1BS "
@@ -330,9 +324,9 @@ typedef struct enocean_data_structure_MDA {
 #define HR_IDBASE "ID_Base: "
 #define HR_SOFTWAREVERSION "Software: "
 #define HR_TYPEUNKN "unknown "
-						   /**
-							* @}
-							*/
+/**
+* @}
+*/
 
 CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int type)
 {
@@ -395,7 +389,7 @@ void CEnOceanESP2::Do_Work()
 		{
 			if (m_retrycntr == 0)
 			{
-				Log(LOG_STATUS, "serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
+				Log(LOG_STATUS, "Serial retrying in %d seconds...", ENOCEAN_RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr / 5 >= ENOCEAN_RETRY_DELAY)
@@ -628,7 +622,8 @@ char* enocean_hexToHuman(const enocean_data_structure* pFrame)
 	return humanString;
 }
 
-enocean_data_structure create_base_frame() {
+enocean_data_structure create_base_frame()
+{
 	enocean_data_structure returnvalue = enocean_clean_data_structure();
 	returnvalue.SYNC_BYTE1 = C_S_BYTE1;
 	returnvalue.SYNC_BYTE2 = C_S_BYTE2;
@@ -636,28 +631,32 @@ enocean_data_structure create_base_frame() {
 	return returnvalue;
 }
 
-enocean_data_structure tcm120_reset() {
+enocean_data_structure tcm120_reset()
+{
 	enocean_data_structure returnvalue = create_base_frame();
 	returnvalue.ORG = C_ORG_RESET;
 	returnvalue.CHECKSUM = enocean_calc_checksum(&returnvalue);
 	return returnvalue;
 }
 
-enocean_data_structure tcm120_rd_idbase() {
+enocean_data_structure tcm120_rd_idbase()
+{
 	enocean_data_structure returnvalue = create_base_frame();
 	returnvalue.ORG = C_ORG_RD_IDBASE;
 	returnvalue.CHECKSUM = enocean_calc_checksum(&returnvalue);
 	return returnvalue;
 }
 
-enocean_data_structure tcm120_rd_sw_ver() {
+enocean_data_structure tcm120_rd_sw_ver()
+{
 	enocean_data_structure returnvalue = create_base_frame();
 	returnvalue.ORG = C_ORG_RD_SW_VER;
 	returnvalue.CHECKSUM = enocean_calc_checksum(&returnvalue);
 	return returnvalue;
 }
 
-enocean_data_structure tcm120_create_inf_packet() {
+enocean_data_structure tcm120_create_inf_packet()
+{
 	enocean_data_structure returnvalue = create_base_frame();
 	returnvalue.H_SEQ_LENGTH = 0x8B;
 	returnvalue.ORG = 0x89;
@@ -671,7 +670,7 @@ bool CEnOceanESP2::OpenSerialDevice()
 	try
 	{
 		open(m_szSerialPort, 9600); // ECP2 open with 9600
-		Log(LOG_STATUS, "Using serial port: %s", m_szSerialPort.c_str());
+		Log(LOG_STATUS, "Using serial port %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception& e)
 	{
@@ -898,7 +897,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 	}
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		Log(LOG_ERROR, "ID %s, double press not supported!", nodeID.c_str());
+		Log(LOG_ERROR, "Node %s, double press not supported!", nodeID.c_str());
 		return;
 	}
 	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
@@ -933,9 +932,7 @@ bool CEnOceanESP2::ParseData()
 		switch (pFrame->ORG)
 		{
 		case 0x58:
-#ifdef _DEBUG
-			Log(LOG_NORM, "OK");
-#endif
+			Debug(DEBUG_NORM, "OK");
 			bStopProcessing = true;
 			break;
 		case 0x28:
@@ -983,7 +980,7 @@ bool CEnOceanESP2::ParseData()
 	{
 	case C_ORG_INF_IDBASE:
 		m_id_base = GetINodeID(pFrame->DATA_BYTE3, pFrame->DATA_BYTE2, pFrame->DATA_BYTE1, pFrame->DATA_BYTE0);
-		Log(LOG_STATUS, "Transceiver ID_Base: %08X", m_id_base);
+		Log(LOG_STATUS, "Transceiver ID_Base %08X", m_id_base);
 		break;
 	case C_ORG_RPS:
 		if (pFrame->STATUS & S_RPS_NU)
@@ -996,10 +993,10 @@ bool CEnOceanESP2::ParseData()
 			unsigned char SecondRockerID = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SRID) >> DB3_RPS_NU_SRID_SHIFT;
 			unsigned char SecondUpDown = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD) >> DB3_RPS_NU_SUD_SHIFT;
 			unsigned char SecondAction = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SA) >> DB3_RPS_NU_SA_SHIFT;
-#ifdef _DEBUG
-			Log(LOG_NORM, "RPS N-msg: Node %08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
+
+			Debug(DEBUG_NORM, "RPS N-msg: Node %08x Rocker ID %i UD %i Pressed %i Second Rocker ID %i SUD %i Second Action %i",
 				iNodeID, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction);
-#endif
+
 			// 3 types of buttons from a switch: Left/Right/Left+Right
 			if (Pressed == 1)
 			{
@@ -1043,7 +1040,7 @@ bool CEnOceanESP2::ParseData()
 				uint16_t manID = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 				uint8_t func = pFrame->DATA_BYTE3 >> 2;
 				uint8_t type = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
-				Log(LOG_NORM, "4BS Teach-in diagram: Sender_ID: %s Manufacturer: %02X (%s) Profile: %02X Type: %02X (%s)",
+				Log(LOG_NORM, "4BS Teach-in diagram: Sender_ID %s Manufacturer %02X (%s) Profile %02X Type %02X (%s)",
 					nodeID.c_str(), manID, GetManufacturerName(manID),
 					func, type, GetEEPLabel(RORG_4BS, func, type));
 
@@ -1079,7 +1076,7 @@ bool CEnOceanESP2::ParseData()
 			if (Profile == 0x12 && iType == 0x00)
 			{ // A5-12-00, Automated Meter Reading, Counter
 				uint8_t CH = bitrange(pFrame->DATA_BYTE0, 4, 0x0F); // Channel number
-				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 : cumulative count, 1: current value / s
+				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count, 1 = current value / s
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
 				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
@@ -1097,10 +1094,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-				Log(LOG_NORM,"4BS msg: Node %s CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
+				Debug(DEBUG_NORM, "4BS msg: Node %s CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID.c_str(), CH, DT, DIV, scaleMax, MR);
-#endif
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1108,7 +1103,7 @@ bool CEnOceanESP2::ParseData()
 			{ // A5-12-01, Automated Meter Reading, Electricity
 				uint32_t MR =(pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1;
 				uint8_t TI = bitrange(pFrame->DATA_BYTE0, 4, 0x0F); // Tariff info
-				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count (kWh), 1 = current value (W)
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.0F : ((DIV == 1) ? 1677721.5F : ((DIV == 2) ? 167772.15F : 16777.215F));
 
@@ -1120,17 +1115,15 @@ bool CEnOceanESP2::ParseData()
 				umeter.dunit = 1;
 				umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x12 && iType == 0x02)
 			{ // A5-12-02, Automated Meter Reading, Gas
 				uint8_t TI = bitrange(pFrame->DATA_BYTE0, 4, 0x0F); // Tariff info
-				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count (kWh), 1 = current value (W)
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
 				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
@@ -1148,17 +1141,15 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 				tsen.RFXMETER.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x12 && iType == 0x03)
 			{ // A5-12-03, Automated Meter Reading, Water
 				uint8_t TI = bitrange(pFrame->DATA_BYTE0, 4, 0x0F); // Tariff info
-				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 : cumulative count (kWh), 1: current value (W)
+				uint8_t DT = bitrange(pFrame->DATA_BYTE0, 2, 0x01); // 0 = cumulative count (kWh), 1 = current value (W)
 				uint8_t DIV = bitrange(pFrame->DATA_BYTE0, 0, 0x03);
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
 				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
@@ -1176,10 +1167,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 				tsen.RFXMETER.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1220,9 +1209,7 @@ bool CEnOceanESP2::ParseData()
 						tsen.FAN.cmnd = FAN;
 						tsen.FAN.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s FAN %u", nodeID.c_str(), FAN);
-#endif
+						Debug(DEBUG_NORM, "4BS msg: Node %s FAN %u", nodeID.c_str(), FAN);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 					}
@@ -1232,9 +1219,9 @@ bool CEnOceanESP2::ParseData()
 					{
 						float SP = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 255.0F);
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s SP %.0F", nodeID.c_str(), SP);
-#endif
+						Debug(DEBUG_NORM, "4BS msg: Node %s SP %.0F", nodeID.c_str(), SP);
+
+						// TODO: implement SP
 					}
 
 					// A5-10-01, A5-10-05, A5-10-08, A5-10-0C have OCC information
@@ -1260,7 +1247,6 @@ bool CEnOceanESP2::ParseData()
 						tsen.LIGHTING2.cmnd = (SW == 0) ? light2_sOff : light2_sOn;
 						tsen.LIGHTING2.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
 						const char *sSW;
 						const char *sSW0;
 						const char *sSW1;
@@ -1272,8 +1258,7 @@ bool CEnOceanESP2::ParseData()
 						else // if (iType == 0x0A || iType == 0x0B)
 							sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
 
-						Log(LOG_NORM,"4BS msg: Node %s %s %u (%s)", nodeID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
-#endif
+						Debug(DEBUG_NORM, "4BS msg: Node %s %s %u (%s)", nodeID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 					}
@@ -1321,9 +1306,7 @@ bool CEnOceanESP2::ParseData()
 				at10 -= tsen.TEMP.temperatureh * 256;
 				tsen.TEMP.temperaturel = (BYTE) at10;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 			}
@@ -1363,9 +1346,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 				}
@@ -1390,9 +1371,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.dunit = 1;
 				lmeter.fLux = ILL;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s RS %s ILL %.1Flx", nodeID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s RS %s ILL %.1Flx", nodeID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1470,9 +1449,7 @@ bool CEnOceanESP2::ParseData()
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1527,10 +1504,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP_HUM.battery_level = 9; // OK
 					tsen.TEMP_HUM.rssi = 12; // Not available
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C HUM %d%",
-							nodeID.c_str(), TMP, tsen.TEMP_HUM.humidity);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C HUM %d%%", nodeID.c_str(), TMP, tsen.TEMP_HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1549,10 +1523,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
 					tsen.HUM.rssi = 12; // Not available
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s HUM %d%",
-						nodeID.c_str(), tsen.HUM.humidity);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", nodeID.c_str(), tsen.HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1580,17 +1551,10 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-				Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 				}
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-				else
-					Log(LOG_NORM,"4BS msg: Node %s SVC not supported", nodeID.c_str());
-#endif
-
 				uint8_t PIRS = pFrame->DATA_BYTE1;
 
 				memset(&tsen, 0, sizeof(RBUF));
@@ -1607,10 +1571,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.cmnd = (PIRS >= 128) ? light2_sOn : light2_sOff;
 				tsen.LIGHTING2.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
-						nodeID.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s PIRS %u (%s)", nodeID.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1634,9 +1595,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
@@ -1656,10 +1615,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 				tsen.LIGHTING2.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
-						nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s PIRS %u (%s)",
+					nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1683,9 +1640,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-				Log(LOG_NORM,"4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
@@ -1699,9 +1654,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.dunit = 1;
 				lmeter.fLux = ILL;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s ILL %.1Flx", nodeID.c_str(), ILL);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s ILL %.1Flx", nodeID.c_str(), ILL);
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
@@ -1721,10 +1674,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 				tsen.LIGHTING2.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-					Log(LOG_NORM,"4BS msg: Node %s PIRS %u (%s)",
-						nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s PIRS %u (%s)",
+					nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1752,18 +1703,14 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.battery_level = 9; // OK
 					tsen.HUM.rssi = 12;
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s HUM %d%", nodeID.c_str(), tsen.HUM.humidity);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", nodeID.c_str(), tsen.HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 
 				float CONC = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
 
-#ifdef ENABLE_ESP2_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s CO2 %.1Fppm", nodeID.c_str(), CONC);
-#endif
+				Debug(DEBUG_NORM, "4BS msg: Node %s CO2 %.1Fppm", nodeID.c_str(), CONC);
 
 				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, round(CONC), GetEEPLabel(RORG_4BS, Profile, iType));
 
@@ -1789,9 +1736,7 @@ bool CEnOceanESP2::ParseData()
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
-#ifdef ENABLE_ESP_DEVICE_DEBUG
-						Log(LOG_NORM,"4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
-#endif
+					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}

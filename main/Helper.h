@@ -25,6 +25,9 @@ void stdlower(std::string& inoutstring);
 void stdupper(std::wstring& inoutstring);
 void stdlower(std::wstring& inoutstring);
 
+std::string utf8_to_string(const std::string &utf8str);
+std::wstring utf8_to_wstring(const std::string &utf8str);
+
 template< typename T > inline
 std::string int_to_hex(T i)
 {

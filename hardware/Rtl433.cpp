@@ -151,6 +151,9 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	bool haveUV = false;
 	float uvi = 0;
 
+	bool haveLux = false;
+	float lux = 0;
+
 	int snr = 12;  // Set to show "-" if no snr is received. rtl_433 uses automatic gain, better to use SNR instead of RSSI to report received RF Signal quality
 
 	int code = 0;
@@ -277,6 +280,16 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	{
 		uvi = (float)atof(data["uv"].c_str());
 		haveUV = true;
+	}
+	if (FindField(data, "light_klx"))
+	{
+		lux = ( (float)atof(data["light_klx"].c_str()) ) * 1000;
+		haveLux = true;
+	}
+	if (FindField(data, "light_lux"))
+	{
+		lux = (float)atof(data["light_lux"].c_str());
+		haveLux = true;
 	}
 	if (FindField(data, "snr"))
 	{
@@ -430,6 +443,11 @@ bool CRtl433::ParseData(std::map<std::string, std::string>& data)
 	if (haveUV)
 	{
 		SendUVSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, uvi, model, snr);
+		bHandled = true;
+	}
+	if (haveLux)
+	{
+		SendLuxSensor((uint8_t)sensoridx, (uint8_t)unit, batterylevel, lux, model);
 		bHandled = true;
 	}
 
