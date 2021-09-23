@@ -3954,8 +3954,14 @@ namespace http
 									root["result"][ii]["Name"] = Name;
 									root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
 									root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
-									bool bIsDimmer = ((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) ||
-											  (switchtype == STYPE_BlindsPercentageInverted) || (switchtype == STYPE_Selector));
+									bool bIsDimmer = (
+										(switchtype == STYPE_Dimmer)
+										|| (switchtype == STYPE_BlindsPercentage)
+										|| (switchtype == STYPE_BlindsPercentageInverted)
+										|| (switchtype == STYPE_BlindsPercentageWithStop)
+										|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+										|| (switchtype == STYPE_Selector)
+										);
 									root["result"][ii]["IsDimmer"] = bIsDimmer;
 
 									std::string dimmerLevels = "none";
@@ -9188,7 +9194,12 @@ namespace http
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
-						else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+						else if (
+							(switchtype == STYPE_BlindsPercentage)
+							|| (switchtype == STYPE_BlindsPercentageInverted)
+							|| (switchtype == STYPE_BlindsPercentageWithStop)
+							|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+							)
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
 							root["result"][ii]["Level"] = LastLevel;
@@ -9202,7 +9213,10 @@ namespace http
 							{
 								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Open" : "Closed";
 							}
-
+							else if (lstatus == "Stop")
+							{
+								lstatus = "Stopped";
+							}
 							root["result"][ii]["Status"] = lstatus;
 						}
 						else if (switchtype == STYPE_Dimmer)

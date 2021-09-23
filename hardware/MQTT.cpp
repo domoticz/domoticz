@@ -2150,7 +2150,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		|| (!pSensor->set_position_topic.empty())
 		)
 	{
-		switchType = STYPE_BlindsPercentage;
+		switchType = STYPE_BlindsPercentageWithStop;
 	}
 	else if (pSensor->component_type == "binary_sensor")
 	{
@@ -2693,6 +2693,8 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			szSendValue = pSensor->payload_on;
 		else if (command == "Off")
 			szSendValue = pSensor->payload_off;
+		else if (command == "Stop")
+			szSendValue = pSensor->payload_stop;
 		else if (command == "Set Level")
 		{
 			if (level == 0)
@@ -2854,25 +2856,23 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 		else if (command == "Stop")
 		{
-			if (pSensor->payload_stop.empty())
-			{
-				Log(LOG_STATUS, "Conver does not support STOP command (%s - %s/%s)", command.c_str(), DeviceID.c_str(), DeviceName.c_str());
-				return false;
-			}
-			level = 254;
+			level = -1;
 			szValue = pSensor->payload_stop;
 		}
 		else if (command == "Set Level")
 		{
 			szValue = std::to_string(level);
 		}
-		std::vector<std::vector<std::string>> result;
-		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-		if (!result.empty())
+		if (level != -1)
 		{
-			m_sql.safe_query(
-				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
-				level, result[0][0].c_str());
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+			if (!result.empty())
+			{
+				m_sql.safe_query(
+					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
+					level, result[0][0].c_str());
+			}
 		}
 		if (!pSensor->set_position_topic.empty())
 		{

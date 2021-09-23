@@ -11523,7 +11523,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (switchtype == STYPE_X10Siren) {
 			level = 15;
 		}
-		else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
+		else if (
+			(switchtype == STYPE_BlindsPercentage)
+			|| (switchtype == STYPE_BlindsPercentageInverted)
+			|| (switchtype == STYPE_BlindsPercentageWithStop)
+			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+			)
+		{
 			if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
 			{
 				if (level == 15)
@@ -12345,6 +12351,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (
 				(switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageInverted)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
+				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				|| (switchtype == STYPE_VenetianBlindsUS)
 				|| (switchtype == STYPE_VenetianBlindsEU)
 				)
@@ -13205,11 +13213,16 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 			int ilevel = maxDimLevel - 1; // Why -1?
 
 			if (
-				((switchtype == STYPE_Dimmer) ||
-				(switchtype == STYPE_BlindsPercentage) ||
-					(switchtype == STYPE_BlindsPercentageInverted) ||
-					(switchtype == STYPE_Selector)
-					) && (maxDimLevel != 0))
+				(
+					(switchtype == STYPE_Dimmer)
+					|| (switchtype == STYPE_BlindsPercentage)
+					|| (switchtype == STYPE_BlindsPercentageInverted)
+					|| (switchtype == STYPE_BlindsPercentageWithStop)
+					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+					|| (switchtype == STYPE_Selector)
+				)
+				&& (maxDimLevel != 0)
+			   )
 			{
 				if (lstatus == "On")
 				{

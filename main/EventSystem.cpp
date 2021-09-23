@@ -3827,7 +3827,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Locked";
 		}
 	}
-	else if (switchtype == STYPE_Blinds)
+	else if (
+		(switchtype == STYPE_Blinds)
+		|| (switchtype == STYPE_BlindsPercentage)
+		|| (switchtype == STYPE_BlindsPercentageWithStop)
+		)
 	{
 		if (lstatus == "On")
 		{
@@ -3842,7 +3846,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Open";
 		}
 	}
-	else if (switchtype == STYPE_BlindsInverted)
+	else if (
+		(switchtype == STYPE_BlindsInverted)
+		|| (switchtype == STYPE_BlindsPercentageInverted)
+		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+		)
 	{
 		if (lstatus == "Off")
 		{
@@ -3855,28 +3863,6 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		else
 		{
 			lstatus = "Open";
-		}
-	}
-	else if (switchtype == STYPE_BlindsPercentage)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = "Closed";
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = "Open";
-		}
-	}
-	else if (switchtype == STYPE_BlindsPercentageInverted)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = "Open";
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = "Closed";
 		}
 	}
 	else if (switchtype == STYPE_Media)

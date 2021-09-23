@@ -5127,9 +5127,16 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
 				|| (switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageInverted)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
+				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				)
 			{
-				if (switchtype == STYPE_BlindsPercentage || switchtype == STYPE_BlindsPercentageInverted)
+				if (
+					switchtype == STYPE_BlindsPercentage
+					|| switchtype == STYPE_BlindsPercentageInverted
+					|| switchtype == STYPE_BlindsPercentageWithStop
+					|| switchtype == STYPE_BlindsPercentageInvertedWithStop
+					)
 				{
 					if (nValue == light2_sOn)
 						llevel = 100;
