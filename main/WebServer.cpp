@@ -1166,6 +1166,8 @@ namespace http
 														refreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
 														StoreSession(refreshsession);
 														root["refresh_token"] = refreshtoken;
+														_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
+														m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
 													}
 													rep.status = reply::ok;
 													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
