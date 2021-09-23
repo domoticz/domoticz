@@ -882,10 +882,6 @@ namespace http {
 				}
 			}
 
-			if (request_path.find("/acttheme/") == 0)
-			{
-				request_path = m_actTheme + request_path.substr(9);
-			}
 			return request_path;
 		}
 
@@ -2145,7 +2141,20 @@ namespace http {
 						{
 							std::string theme_images_path = myWebem->m_actTheme + uri;
 							if (file_exist((doc_root_ + theme_images_path).c_str()))
+							{
 								requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
+								_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
+							}
+						}
+						else if (uri.find("/acttheme/") == 0)
+						{
+							requestCopy.uri = myWebem->m_actTheme + uri.substr(9);
+							_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
+						}
+						else if (uri.find("/styles/default/custom.") == 0)
+						{
+							requestCopy.uri = myWebem->m_actTheme + uri.substr(15);
+							_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
 						}
 
 						request_handler::handle_request(requestCopy, rep, mInfo);
