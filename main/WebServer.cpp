@@ -9205,11 +9205,14 @@ namespace http
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
+/*
 							if ((iLevel > 0) && (iLevel < maxDimLevel))
 							{
 								lstatus = std_format("%d %%", iLevel);
 							}
 							else if (lstatus == "On")
+*/
+							if (lstatus == "On")
 							{
 								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
 							}
