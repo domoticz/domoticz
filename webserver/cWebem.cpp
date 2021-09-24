@@ -2136,25 +2136,24 @@ namespace http {
 					// do normal handling
 					try
 					{
-						std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
-						if (uri.find("/images/") == 0)
+						if (myWebem->m_actTheme.find("default") == std::string::npos)
 						{
-							std::string theme_images_path = myWebem->m_actTheme + uri;
-							if (file_exist((doc_root_ + theme_images_path).c_str()))
+							// A theme is being used (not default) so some theme specific processing might be neccessary
+							std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
+							if (uri.find("/images/") == 0)
 							{
-								requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
+								std::string theme_images_path = myWebem->m_actTheme + uri;
+								if (file_exist((doc_root_ + theme_images_path).c_str()))
+								{
+									requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
+									_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
+								}
+							}
+							else if (uri.find("/styles/default/custom.") == 0)
+							{
+								requestCopy.uri = myWebem->m_actTheme + uri.substr(15);
 								_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
 							}
-						}
-						else if (uri.find("/acttheme/") == 0)
-						{
-							requestCopy.uri = myWebem->m_actTheme + uri.substr(9);
-							_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
-						}
-						else if (uri.find("/styles/default/custom.") == 0)
-						{
-							requestCopy.uri = myWebem->m_actTheme + uri.substr(15);
-							_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
 						}
 
 						request_handler::handle_request(requestCopy, rep, mInfo);
