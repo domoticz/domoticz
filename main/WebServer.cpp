@@ -9205,13 +9205,20 @@ namespace http
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
+/*
+							if ((iLevel > 0) && (iLevel < maxDimLevel))
+							{
+								lstatus = std_format("%d %%", iLevel);
+							}
+							else if (lstatus == "On")
+*/
 							if (lstatus == "On")
 							{
-								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Closed" : "Open";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Open" : "Closed";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Open" : "Closed";
 							}
 							else if (lstatus == "Stop")
 							{
@@ -13266,12 +13273,14 @@ namespace http
 							ldata = (ldata == "On") ? "Open" : "Closed";
 							break;
 						case STYPE_BlindsPercentage:
+						case STYPE_BlindsPercentageWithStop:
 							if ((ldata == "On") || (ldata == "Off"))
 							{
 								ldata = (ldata == "On") ? "Closed" : "Open";
 							}
 							break;
 						case STYPE_BlindsPercentageInverted:
+						case STYPE_BlindsPercentageInvertedWithStop:
 							if ((ldata == "On") || (ldata == "Off"))
 							{
 								ldata = (ldata == "On") ? "Open" : "Closed";

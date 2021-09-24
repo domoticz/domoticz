@@ -793,7 +793,9 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	bool bIsDimmer = false;
 	uint8_t LastLevel = 0;
 
-	// Find out if this is a Dimmer switch, because they are threaded differently
+	// Find out if this is a virtual switch or dimmer, because they are threaded differently
+	// ESP2 virtual switches emulate RPS EEP: F6-02-01/02, Rocker switch, 2 Rocker
+	// ESP2 virtual dimmers emulate 4BS EEP: A5-38-08, Central Command, Gateway
 
 	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
 	std::vector<std::vector<std::string> > result;
@@ -817,7 +819,7 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		if (cmnd == light2_sOn)
 			iLevel = LastLevel;
 		else
-		{ // Scale to 0 - 100 %
+		{ // Scale to 0 - 100%
 			iLevel = tsen->LIGHTING2.level;
 			if (iLevel > 15)
 				iLevel = 15;
@@ -837,6 +839,9 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	iframe.ID_BYTE2 = (unsigned char) tsen->LIGHTING2.id2;
 	iframe.ID_BYTE1 = (unsigned char) tsen->LIGHTING2.id3;
 	iframe.ID_BYTE0 = (unsigned char) tsen->LIGHTING2.id4;
+
+	// TODO: ESP2 virtual dimmers, emulate 4BS EEP: A5-38-08, Central Command, Gateway
+	// They should ALWAYS send 4BS telegrams, for On/Off and dimming
 
 	if (cmnd != light2_sSetLevel)
 	{ // On/Off
@@ -873,6 +878,9 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	return true;
 }
 
+// Called when testing a virtual dimmer, from manual switches creation dialog
+// ESP2 virtual dimmers emulate 4BS EEP: A5-38-08, Central Command, Gateway
+// They need to broadcast a 4BS teach-in request
 void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*length*/)
 {
 	if (m_id_base == 0)
@@ -994,7 +1002,7 @@ bool CEnOceanESP2::ParseData()
 			unsigned char SecondUpDown = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SUD) >> DB3_RPS_NU_SUD_SHIFT;
 			unsigned char SecondAction = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SA) >> DB3_RPS_NU_SA_SHIFT;
 
-			Debug(DEBUG_NORM, "RPS N-msg: Node %08x Rocker ID %i UD %i Pressed %i Second Rocker ID %i SUD %i Second Action %i",
+			Debug(DEBUG_NORM, "RPS N-msg: Node %08X Rocker ID %i UD %i Pressed %i Second Rocker ID %i SUD %i Second Action %i",
 				iNodeID, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction);
 
 			// 3 types of buttons from a switch: Left/Right/Left+Right

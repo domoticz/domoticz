@@ -52,7 +52,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		float brightness_scale = 254.0F;
 
 		bool bColor_mode = false;
-		std::string supported_color_modes = "rgb";
+		std::string supported_color_modes;
 
 		int min_mireds = 154;
 		int max_mireds = 500;

@@ -1408,14 +1408,21 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 				pSensor->supported_color_modes = "rgbw";
 			else if (_modes.find("rgb") != _modes.end())
 				pSensor->supported_color_modes = "rgb";
-			else if (_modes.find("color_temp") != _modes.end())
-				pSensor->supported_color_modes = "color_temp";
 			else if (_modes.find("xy") != _modes.end())
 				pSensor->supported_color_modes = "xy";
+			else if (_modes.find("color_temp") != _modes.end())
+				pSensor->supported_color_modes = "color_temp";
 			else if (_modes.find("hs") != _modes.end())
 				pSensor->supported_color_modes = "hs";
 			if (_modes.find("brightness") != _modes.end())
+			{
+				if (pSensor->supported_color_modes.empty())
+				{
+					//is empty, it's a normal dimmer
+					pSensor->supported_color_modes = "brightness";
+				}
 				pSensor->bBrightness = true;
+			}
 		}
 		if (!root["min_mireds"].empty())
 			pSensor->min_mireds = root["min_mireds"].asInt();
