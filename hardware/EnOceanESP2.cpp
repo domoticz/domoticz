@@ -988,7 +988,7 @@ bool CEnOceanESP2::ParseData()
 	{
 	case C_ORG_INF_IDBASE:
 		m_id_base = GetINodeID(pFrame->DATA_BYTE3, pFrame->DATA_BYTE2, pFrame->DATA_BYTE1, pFrame->DATA_BYTE0);
-		Log(LOG_STATUS, "HwdID %d ID_Base %08X", m_HwdID, m_id_base);
+		Log(LOG_STATUS, "Transceiver ID_Base %08X", m_id_base);
 		break;
 	case C_ORG_RPS:
 		if (pFrame->STATUS & S_RPS_NU)
