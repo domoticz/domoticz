@@ -812,7 +812,6 @@ namespace http
 							for (const auto &file : _ThemeFiles)
 							{
 								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
-								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + '\n';
 							}
 							continue;
