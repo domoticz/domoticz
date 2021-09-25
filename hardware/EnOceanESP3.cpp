@@ -304,6 +304,7 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int t
 	m_szSerialPort = devname;
 	m_Type = type;
 	m_id_base = 0;
+	m_id_chip = 0;
 }
 
 bool CEnOceanESP3::StartHardware()
@@ -1465,7 +1466,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 	SendESP3PacketQueued(PACKET_COMMON_COMMAND, &cmd, 1, nullptr, 0);
 
 	// Request base version
-	m_wait_version_base = true;
+	m_id_chip = 0;
 	cmd = CO_RD_VERSION;
 	Debug(DEBUG_HARDWARE, "Request base version");
 	SendESP3PacketQueued(PACKET_COMMON_COMMAND, &cmd, 1, nullptr, 0);
@@ -1479,19 +1480,19 @@ std::string CEnOceanESP3::DumpESP3Packet(uint8_t packettype, uint8_t *data, uint
 
 	sstr << GetPacketTypeLabel(packettype);
 
-	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)datalen << ")";
+	sstr << " DATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) datalen << ")";
 	for (int i = 0; i < datalen; i++)
 		if (i == 0 && packettype == PACKET_RADIO_ERP1)
-			sstr << " " << GetRORGLabel((uint32_t)data[i]);
+			sstr << " " << GetRORGLabel((uint32_t) data[i]);
 		else
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)data[i];
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) data[i];
 
 	if (optdatalen > 0)
 	{
-		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdatalen << ")";
+		sstr << " OPTDATA (" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) optdatalen << ")";
 
 		for (int i = 0; i < optdatalen; i++)
-			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t)optdata[i];
+			sstr << " " << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (uint32_t) optdata[i];
 	}
 	return sstr.str();
 }
@@ -1512,7 +1513,12 @@ std::string CEnOceanESP3::FormatESP3Packet(uint8_t packettype, uint8_t *data, ui
 	uint8_t buf[ESP3_PACKET_BUFFER_SIZE];
 	uint32_t len = 0;
 
-	uint8_t defaulERP1optdata[] = { 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+	uint8_t defaulERP1optdata[] =
+	{	0x03, // SubTelNum : Send = 0x03
+		0xFF, 0xFF, 0xFF, 0xFF, // Dest ID : Broadcast = 0xFFFFFFFF
+		0xFF, // RSSI : Send = 0xFF
+		0x00 // Seurity Level : Send = will be ignored
+	};
 	if (optdatalen == 0 && packettype == PACKET_RADIO_ERP1)
 	{ // If not provided, add default optional data for PACKET_RADIO_ERP1
 		optdata = defaulERP1optdata;
@@ -1568,7 +1574,7 @@ void CEnOceanESP3::SendESP3PacketQueued(uint8_t packettype, uint8_t *data, uint1
 
 bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_id_base == 0)
+	if (m_id_base == 0 || m_id_chip == 0)
 		return false;
 
 	if (!isOpen())
@@ -1582,187 +1588,205 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 	std::string nodeID = GetNodeID(iNodeID);
 
-	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
-	{
-		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
-		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
-		return false;
-	}
-	if (tsen->LIGHTING2.unitcode >= 10)
-	{
-		Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
-		return false;
-	}
-
-	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
-	uint8_t EB = 1;
-	bool bIsDimmer = false;
-	uint8_t LastLevel = 0;
-
-	// Find out if this is a Dimmer switch, because they are threaded differently
-
-	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
-	std::vector<std::vector<std::string>> result;
-
-	result = m_sql.safe_query("SELECT SwitchType, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, deviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
-	if (!result.empty())
-	{
-		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
-		if (switchtype == STYPE_Dimmer)
-			bIsDimmer = true;
-		LastLevel = (uint8_t)atoi(result[0][1].c_str());
-	}
-
-	uint8_t iLevel = tsen->LIGHTING2.level;
-	int cmnd = tsen->LIGHTING2.cmnd;
-	int orgcmd = cmnd;
-	if (tsen->LIGHTING2.level == 0 && !bIsDimmer)
-		cmnd = light2_sOff;
-	else
-	{
-		if (cmnd == light2_sOn)
-			iLevel = LastLevel;
-		else
-		{ // Scale to 0 - 100 %
-			iLevel = tsen->LIGHTING2.level;
-			if (iLevel > 15)
-				iLevel = 15;
-			float fLevel = (100.0F / 15.0F) * float(iLevel);
-			if (fLevel > 99.0F)
-				fLevel = 100.0F;
-			iLevel = (uint8_t) fLevel;
+	if (iNodeID > m_id_base && iNodeID <= (m_id_base + 128))
+	{ // Virtual switch created from m_id_base
+		if (tsen->LIGHTING2.unitcode >= 10)
+		{
+			Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
+			return false;
 		}
-		cmnd = light2_sSetLevel;
-	}
 
-	uint8_t buf[20];
+		uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
+		uint8_t EB = 1;
+		_eSwitchType switchtype = STYPE_OnOff;
+		uint8_t LastLevel = 0;
 
-	if (bIsDimmer)
-	{ // A5-38-02, On/Off switch with dimming capability
-		buf[0] = RORG_RPS;
-		buf[1] = 0x02;
-		buf[2] = 0x64; // Level : 100
-		buf[3] = 0x01; // Speed : 1
-		buf[4] = 0x09; // Dim Off
-		buf[5] = tsen->LIGHTING2.id1; // Sender ID
-		buf[6] = tsen->LIGHTING2.id2;
-		buf[7] = tsen->LIGHTING2.id3;
-		buf[8] = tsen->LIGHTING2.id4;
-		buf[9] = 0x30; // Status
+		// Find out if this is a virtual switch or dimmer, because they are threaded differently
+		// Virtual On/Off emulate RPS EEP: F6-02-01/02, Rocker switch, 2 Rocker
+		// Virtual dimmers emulate 4BS EEP: A5-38-08, Central Command, Gateway
 
-		if (cmnd != light2_sSetLevel)
-		{ // On/Off
-			uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
 
-			buf[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
-			buf[9] = 0x30;
+		std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
+		std::vector<std::vector<std::string>> result;
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+		result = m_sql.safe_query("SELECT SwitchType, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+			m_HwdID, deviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
+		if (!result.empty())
+		{ // Device found in the database
+			switchtype = (_eSwitchType) atoi(result[0][0].c_str());
+			LastLevel = (uint8_t) atoi(result[0][1].c_str());
+		}
+
+		uint8_t iLevel = tsen->LIGHTING2.level;
+		int cmnd = tsen->LIGHTING2.cmnd;
+		int orgcmd = cmnd;
+		if (tsen->LIGHTING2.level == 0 && switchtype != STYPE_Dimmer)
+			cmnd = light2_sOff;
+		else
+		{
+			if (cmnd == light2_sOn)
+				iLevel = LastLevel;
+			else
+			{ // Scale to 0 - 100%
+				iLevel = tsen->LIGHTING2.level;
+				if (iLevel > 15)
+					iLevel = 15;
+				float fLevel = (100.0F / 15.0F) * float(iLevel);
+				if (fLevel > 99.0F)
+					fLevel = 100.0F;
+				iLevel = (uint8_t) fLevel;
+			}
+			cmnd = light2_sSetLevel;
+		}
+
+		uint8_t buf[20];
+
+		if (switchtype == STYPE_OnOff)
+		{ // ESP3 virtual switch : F6-02-01/02, emulation
+			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
+
+			uint8_t CO = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
+
+			buf[0] = RORG_RPS;
+
+			switch (RockerID)
+			{
+				case 0: // Button A
+					buf[1] = CO ? 0x00 : 0x20;
+					break;
+
+				case 1: // Button B
+					buf[1] = CO ? 0x40 : 0x60;
+					break;
+
+				default:
+					return false; // Not supported
+			}
+			buf[1] |= 0x10; // Press energy bow
+			buf[2] = tsen->LIGHTING2.id1; // Sender ID
+			buf[3] = tsen->LIGHTING2.id2;
+			buf[4] = tsen->LIGHTING2.id3;
+			buf[5] = tsen->LIGHTING2.id4;
+			buf[6] = 0x30; // Press button
+
+			Debug(DEBUG_NORM, "Node %s, virtual switch, set to %s",
+				nodeID.c_str(), CO ? "On" : "Off");
+
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
 			// Button release is send a bit later
 
-			buf[1] = 0x00;
-			buf[9] = 0x20;
+			buf[1] = 0x00; // No button press
+			buf[6] = 0x20; // Release button
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
+			return true;
 		}
-		else
-		{ // Send dim value
+		if (switchtype == STYPE_Dimmer)
+		{ // ESP3 virtual dimmer: F6-02-01 emulation
+			// F6-02-01, Rocker switch, 2 Rocker (Light and blind control, Application style 1)
+			// F6-02-02, Rocker switch, 2 Rocker (Light and blind control, Application style 2)
+			buf[0] = RORG_RPS;
 			buf[1] = 0x02;
-			buf[2] = iLevel;
-			buf[3] = 0x01; // Very fast dimming
-			if ((iLevel == 0) || (orgcmd == light2_sOff))
-				buf[4] = 0x08; // Dim Off
+			buf[2] = 0x64; // Level : 100
+			buf[3] = 0x01; // Speed : 1
+			buf[4] = 0x09; // Dim Off
+			buf[5] = tsen->LIGHTING2.id1; // Sender ID
+			buf[6] = tsen->LIGHTING2.id2;
+			buf[7] = tsen->LIGHTING2.id3;
+			buf[8] = tsen->LIGHTING2.id4;
+			buf[9] = 0x30; // Status
+
+			if (cmnd != light2_sSetLevel)
+			{ // On/Off
+				uint8_t CO = (cmnd != light2_sOff) && (cmnd != light2_sGroupOff);
+
+				buf[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
+				buf[9] = 0x30;
+
+				Debug(DEBUG_NORM, "Node %s, virtual dimmer, set to %s",
+					nodeID.c_str(), CO ? "On" : "Off");
+
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+
+				// Button release is send a bit later
+
+				buf[1] = 0x00;
+				buf[9] = 0x20;
+
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+			}
 			else
-				buf[4] = 0x09; // Dim On
+			{ // Dimmer value
+				buf[1] = 0x02;
+				buf[2] = iLevel;
+				buf[3] = 0x01; // Very fast dimming
+				if (iLevel == 0 || orgcmd == light2_sOff)
+					buf[4] = 0x08; // Dim Off
+				else
+					buf[4] = 0x09; // Dim On
 
-			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+				Debug(DEBUG_NORM, "Node %s, virtual dimmer, dimm %s, level %d%%",
+					nodeID.c_str(), (iLevel == 0 || orgcmd == light2_sOff) ? "Off" : "On", iLevel);
+
+				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+			}
+			return true;
 		}
+		Log(LOG_ERROR, "Node %s (virtual), switch type not supported (%d)", nodeID.c_str(), switchtype);
+		return false;
 	}
-	else
-	{ // F6-02-01, On/Off switch without dimming capability
-		uint8_t CO = (orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff);
+	NodeInfo* pNode = GetNodeInfo(nodeID);
 
-		buf[0] = RORG_RPS;
+	if (pNode != nullptr
+		&& (pNode->RORG == RORG_VLD || pNode->RORG == 0x00)
+		&& pNode->func == 0x01
+		&& (pNode->type == 0x0D || pNode->type == 0x0E || pNode->type == 0x0F || pNode->type == 0x12))
+	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
+		// D2-01-0D, Micro smart plug, single channel, with external button control
+		// D2-01-0E, Micro smart plug, single channel, with external button control
+		// D2-01-0F, Slot-in module, single channel, with external button control
+		// D2-01-12, Slot-in module, dual channels, with external button control
 
-		switch (RockerID)
+		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+
+		if (tsen->LIGHTING2.unitcode > 0x1D)
 		{
-			case 0: // Button A
-				buf[1] = CO ? 0x00 : 0x20;
-				break;
-
-			case 1: // Button B
-				buf[1] = CO ? 0x40 : 0x60;
-				break;
-
-			default:
-				return false; // Not supported
+			Log(LOG_ERROR, "Node %s, channel %d not supported", nodeID.c_str(), (int) tsen->LIGHTING2.unitcode);
+			return false;
 		}
-		buf[1] |= 0x10; // Press energy bow
-		buf[2] = tsen->LIGHTING2.id1; // Sender ID
-		buf[3] = tsen->LIGHTING2.id2;
-		buf[4] = tsen->LIGHTING2.id3;
-		buf[5] = tsen->LIGHTING2.id4;
-		buf[6] = 0x30; // Press button
 
-		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
+		uint8_t buf[9];
+		uint8_t optbuf[7];
 
-		// Button release is send a bit later
+		buf[0] = RORG_VLD;
+		buf[1] = 0x01; // CMD 0x1, Actuator set output
+		buf[2] = tsen->LIGHTING2.unitcode - 1; // I/O Channel
+		buf[3] = (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00; // Output Value
+		buf[4] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+		buf[5] = bitrange(m_id_chip, 16, 0xFF);
+		buf[6] = bitrange(m_id_chip, 8, 0xFF);
+		buf[7] = bitrange(m_id_chip, 0, 0xFF);
+		buf[8] = 0x00; // Status
 
-		buf[1] = 0x00; // No button press
-		buf[6] = 0x20; // Release button
+		optbuf[0] = 0x03; // SubTelNum : Send = 0x03
+		optbuf[1] = tsen->LIGHTING2.id1; // Dest ID
+		optbuf[2] = tsen->LIGHTING2.id2;
+		optbuf[3] = tsen->LIGHTING2.id3;
+		optbuf[4] = tsen->LIGHTING2.id4;
+		optbuf[5] = 0xFF; // RSSI : Send = 0xFF
+		optbuf[6] = 0x00; // Seurity Level : Send = ignored
 
-		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
+		Debug(DEBUG_NORM, "Send %s switch command to Node %s",
+			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID.c_str());
+
+		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
+		return true;
 	}
-	return true;
-}
-
-void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char length)
-{
-	if (m_id_base == 0)
-		return;
-
-	if (!isOpen())
-		return;
-
-	RBUF *tsen = (RBUF *) pdata;
-
-	if (tsen->LIGHTING2.packettype != pTypeLighting2)
-		return; // Only allowed to control switches
-
-	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	std::string nodeID = GetNodeID(iNodeID);
-
-	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
-	{
-		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
-		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
-		return;
-	}
-	if (tsen->LIGHTING2.unitcode >= 10)
-	{
-		Log(LOG_ERROR, "Node %s, double press not supported", nodeID.c_str());
-		return;
-	}
-	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
-
-	uint8_t buf[10];
-
-	// TODO: recheck following values
-
-	buf[0] = RORG_4BS;
-	buf[1] = 0x02;
-	buf[2] = 0x00;
-	buf[3] = 0x00;
-	buf[4] = 0x00; // DB0.3 = 0 -> teach in
-	buf[5] = tsen->LIGHTING2.id1; // Sender ID
-	buf[6] = tsen->LIGHTING2.id2;
-	buf[7] = tsen->LIGHTING2.id3;
-	buf[8] = tsen->LIGHTING2.id4;
-	buf[9] = 0x30; // Status
-
-	SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
+	Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+	Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
+	return false;
 }
 
 void CEnOceanESP3::ReadCallback(const char *data, size_t len)
@@ -1901,11 +1925,11 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 				Log(LOG_STATUS, "HwdID %d ID_Base %08X", m_HwdID, m_id_base);
 				return;
 			}
-			if (m_wait_version_base && datalen == 33)
+			if (m_id_chip == 0 && datalen == 33)
 			{ // Base version Information
-				m_wait_version_base = false;
-				Log(LOG_STATUS, "HwdID %d App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X ChipID %02X.%02X.%02X.%02X ChipVersion %02X.%02X.%02X.%02X Description '%s'",
-					 m_HwdID, data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], (const char *)data + 17);
+				m_id_chip = GetINodeID(data[9], data[10], data[11], data[12]);
+				Log(LOG_STATUS, "HwdID %d ChipID %08X ChipVersion %02X.%02X.%02X.%02X App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X Description '%s'",
+					 m_HwdID, m_id_chip, data[13], data[14], data[15], data[16], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], (const char *)data + 17);
 				return;
 			}
 			Debug(DEBUG_NORM, "HwdID %d, received response (%s)", m_HwdID, GetReturnCodeLabel(return_code));
@@ -1938,9 +1962,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			uint32_t dstID = GetINodeID(optdata[1], optdata[2], optdata[3], optdata[4]);
 
 			// Ignore telegrams addressed to another device
-			if (dstID != ERP1_BROADCAST_TRANSMISSION && dstID != m_id_base)
+			if (dstID != ERP1_BROADCAST_TRANSMISSION && dstID != m_id_base && dstID != m_id_chip)
 			{
-				Debug(DEBUG_HARDWARE, "HwdID %d, ignore addressed telegram sent to %08X", m_id_base, dstID);
+				Debug(DEBUG_HARDWARE, "HwdID %d, ignore addressed telegram sent to %08X", m_HwdID, dstID);
 				return;
 			}
 
@@ -2104,14 +2128,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						node_func = bitrange(DATA_BYTE3, 2, 0x3F);
 						node_type = (bitrange(DATA_BYTE3, 0, 0x03) << 5) | bitrange(DATA_BYTE2, 3, 0x1F);
 
-						Log(LOG_NORM, "Creating Node %s Manufacturer 0x%03X (%s) EEP %02X-%02X-%02X (%s)",
+						Log(LOG_NORM, "Creating Node %s Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
 							senderID.c_str(), node_manID, GetManufacturerName(node_manID),
 							RORG_4BS, node_func, node_type, GetEEPLabel(RORG_4BS, node_func, node_type));
 					}
 
 					TeachInNode(senderID, node_manID, RORG_4BS, node_func, node_type, (LRN_TYPE == 0));
 
-					// EEP requiring 4BS teach-in variation 3 response
+					// 4BS EEP requiring teach-in variation 3 response
 					// A5-20-XX, HVAC Components
 					// A5-38-08, Central Command Gateway
 					// A5-3F-00, Radio Link Test
@@ -2124,15 +2148,18 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						uint8_t buf[10];
 
 						buf[0] = RORG_4BS;
-						buf[1] = 0x02;		// DB0.0
-						buf[2] = 0x00;		// DB0.1
-						buf[3] = 0x00;		// DB0.2
-						buf[4] = 0xF0;		// DB0.3 -> teach-in response
-						buf[5] = ID_BYTE3; 	// Send to teached-in node id
-						buf[6] = ID_BYTE2;
-						buf[7] = ID_BYTE1;
-						buf[8] = ID_BYTE0;
-						buf[9] = 0x00;		// Status
+						buf[1] = DATA_BYTE3; // Func, Type and Manufacturer ID
+						buf[2] = DATA_BYTE2;
+						buf[3] = DATA_BYTE1;
+						buf[1] = 0xF0; // Successful teach-in
+						buf[5] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+						buf[6] = bitrange(m_id_chip, 16, 0xFF);
+						buf[7] = bitrange(m_id_chip, 8, 0xFF);
+						buf[8] = bitrange(m_id_chip, 0, 0xFF);
+						buf[9] = 0x00; // Status
+
+						Debug(DEBUG_NORM, "Send 4BS teach-in accepted response");
+
 						SendESP3Packet(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 					}
 					return;
@@ -2910,16 +2937,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// RPS data
 
-				// EEP D2-01-XX, Electronic Switches and Dimmers with Local Control
-				// D2-01-0D, Micro smart plug, single channel, with external button control
-				// D2-01-0E, Micro smart plug, single channel, with external button control
-				// D2-01-0F, Slot-in module, single channel, with external button control
-				// D2-01-12, Slot-in module, dual channels, with external button control
-				// D2-01-15, D2-01-16, D2-01-17
-				// These nodes send RPS telegrams whenever the external button control is used
-				// Ignore these RPS telegrams : device status will be reported using VLD datagram
+				// WARNING : D2-01-XX, Electronic Switches and Dimmers with Local Control
+				// Several VLD nodes having external button control send RPS telegrams
+				// Esamples of concerned EEP : D2-01-0F, D2-01-12, D2-01-15, D2-01-16 & D2-01-17
+				// Ignore RPS data for these nodes, because status will be reported by VLD datagram
 
-				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type >= 0x02))
+				// RORG = VLD => just ignore RPS data
+				// RORG unknown & func = 0x01 & type != 0x01 => VLD-O1-XX => update RORG and ignore RPS data
+				// RORG unknown & func = 0x01 & type = 0x01 => RPS-O1-O1 or VLD-O1-XX => assume RPS-01-01
+				// Nb. RORG shall be later updated to VLD whenever the node will report its status
+
+				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type != 0x01))
 				{
 					Debug(DEBUG_NORM, "RPS %c-msg: Node %s, button press from VLD device (ignored)",
 						(NU == 0) ? 'U' : 'N', senderID.c_str());
@@ -3091,16 +3119,20 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t CMD = bitrange(data[1], 0, 0x0F);				// 0 = teach-in query, 1 = teach-In response
 				if (CMD != 0)
 				{
-					Log(LOG_ERROR, "UTE teach request: Node %s, command 0x%1X not supported", senderID.c_str(), CMD);
+					Log(LOG_ERROR, "UTE teach request: Node %s, CMD 0x%1X not supported", senderID.c_str(), CMD);
 					return;
 				}
 				// UTE teach-in or teach-out Query (UTE Telegram / CMD 0x0)
 
 				uint8_t ute_direction = bitrange(data[1], 7, 0x01);	// 0 = uni-directional, 1 = bi-directional
-				uint8_t need_response = bitrange(data[1], 6, 0x01);	// 0 = yes, 1 = no
+				uint8_t ute_response = bitrange(data[1], 6, 0x01);	// 0 = yes, 1 = no
 				uint8_t ute_request = bitrange(data[1], 4, 0x03); // 0 = teach-in, 1 = teach-out, 2 = teach-in or teach-out
 
-				uint8_t node_nb_channels = data[2];
+				// TODO: is num_channel information reliable ?
+				// EEP 2.6.8 specifies : 0x00..0xFE = individual channel number, 0xFF = all supported channels
+				// Nodon SIN-2-2-01 Slot-in module (D2-01-0D) always sends 2, which corresponds to the number of supported channels
+				// Nodon MSP-2-1-01 Micro Smart Plug (D2-01-0E) always sends 1, which corresponds to the number of supported channels
+				uint8_t num_channel = data[2]; // 0x00..0xFE = individual channel number, 0xFF = all supported channels
 
 				uint16_t node_manID = (bitrange(data[4], 0, 0x07) << 8) | data[3];
 
@@ -3108,30 +3140,40 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t node_func = data[6];
 				uint8_t node_RORG = data[7];
 
-				Log(LOG_NORM, "UTE %s-directional %s request from Node %s, %sresponse expected",
+				Log(LOG_NORM, "UTE %s-directional %s request from Node %s, nb_channels %u, %sresponse expected",
 					(ute_direction == 0) ? "uni" : "bi",
 					(ute_request == 0) ? "teach-in" : ((ute_request == 1) ? "teach-out" : "teach-in or teach-out"),
-					senderID.c_str(),
-					(need_response == 0) ? "" : "no ");
+					senderID.c_str(), num_channel,
+					(ute_response == 0) ? "" : "no ");
 
-				uint8_t buf[15];
+				uint8_t buf[13];
+				uint8_t optbuf[7];
 
-				if (need_response == 0)
+				if (ute_response == 0)
 				{ // Prepare response buffer
 					// The device intended to be taught-in broadcasts a query message
 					// and gets back an addresses response message, containing its own ID as the transmission target address
 					buf[0] = RORG_UTE;
-					buf[2] = data[2]; // Nb channels
+					buf[1] = ((UTE_BIDIRECTIONAL & 0x01) << 7) | (UTE_RESPONSE & 0x0F); // UTE data
+					buf[2] = num_channel;
 					buf[3] = data[3]; // Manufacturer ID
 					buf[4] = data[4];
-					buf[5] = data[5]; // Type
-					buf[6] = data[6]; // Func
-					buf[7] = data[7]; // RORG
-					buf[8] = data[8]; // Dest ID
-					buf[9] = data[9];
-					buf[10] = data[10];
-					buf[11] = data[11];
+					buf[5] = node_type;
+					buf[6] = node_func;
+					buf[7] = node_RORG;
+					buf[8] = bitrange(m_id_chip, 24, 0xFF); // Sender ID
+					buf[9] = bitrange(m_id_chip, 16, 0xFF);
+					buf[10] = bitrange(m_id_chip, 8, 0xFF);
+					buf[11] = bitrange(m_id_chip, 0, 0xFF);
 					buf[12] = 0x00; // Status
+
+					optbuf[0] = 0x03; // SubTelNum : Send = 0x03
+					optbuf[1] = ID_BYTE3; // Dest ID
+					optbuf[2] = ID_BYTE2;
+					optbuf[3] = ID_BYTE1;
+					optbuf[4] = ID_BYTE0;
+					optbuf[5] = 0xFF; // RSSI : Send = 0xFF
+					optbuf[6] = 0x00; // Seurity Level : Send = ignored
 				}
 				if (pNode == nullptr)
 				{ // Node not found
@@ -3139,37 +3181,48 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // Node not found and teach-out request => ignore
 						Log(LOG_NORM, "Unknown Node %s, teach-out request ignored", senderID.c_str());
 
-						if (need_response == 0)
+						if (ute_response == 0)
 						{ // Build and send response
-							buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHOUT_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
-							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+							buf[1] |= (GENERAL_REASON & 0x03) << 4;
+
+							Debug(DEBUG_NORM, "Send UTE teach-out refused response");
+
+							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 						}
 						return;
 					}
 					if (!m_sql.m_bAcceptNewHardware)
 					{ // Node not found and learn mode disabled => error
 						Log(LOG_NORM, "Unknown Node %s, please allow accepting new hardware and proceed to teach-in", senderID.c_str());
-						if (need_response == 0)
+						if (ute_response == 0)
 						{ // Build and send response
-							buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (GENERAL_REASON & 0x03) << 4 | UTE_RESPONSE;
-							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+							buf[1] |= (GENERAL_REASON & 0x03) << 4;
+
+							Debug(DEBUG_NORM, "Send UTE teach-in refused response");
+
+							SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 						}
 						return;
 					}
 					// Node not found and learn mode enabled and teach-in request : add it to the database
 
-					Log(LOG_NORM, "Creating Node %s Manufacturer 0x%03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
+					Log(LOG_NORM, "Creating Node %s Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
 						senderID.c_str(), node_manID, GetManufacturerName(node_manID),
 						node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
-						node_nb_channels, (node_nb_channels > 1) ? "s" : "");
+						num_channel, (num_channel > 1) ? "s" : "");
 
 					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, false);
 
-					if (need_response == 0)
+					if (ute_response == 0)
 					{ // Build and send response
-						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						buf[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
+
+						Debug(DEBUG_NORM, "Send UTE teach-in accepted response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 					}
+					// TODO : instead of creating node channels, ask all node channels to report their status
+
 					if (node_RORG == RORG_VLD && node_func == 0x01
 						&& (node_type == 0x0D || node_type == 0x0E
 							|| node_type == 0x0F || node_type == 0x12
@@ -3183,7 +3236,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						// D2-01-12, Slot-in module, dual channels, with external button control
 						// D2-01-15, D2-01-16, D2-01-17
 
-						for (uint8_t nbc = 1; nbc <= node_nb_channels; nbc++)
+						// TODO : num_channel is only a valid channel number when between 0x00 & 0x1D
+						// 0x1E means all supported output channels
+						// 0x1F means input channel (for mains supply)
+						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
 							RBUF tsen;
 
@@ -3217,10 +3273,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "Node %s already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
 						senderID.c_str(), pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
 
-					if (need_response == 0)
+					if (ute_response == 0)
 					{ // Build and send response
-						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (TEACHIN_ACCEPTED & 0x03) << 4 | UTE_RESPONSE;
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						buf[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
+
+						Debug(DEBUG_NORM, "Send UTE teach-in accepted response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 					}
 				}
 				else if (ute_request == 1 || ute_request == 2)
@@ -3228,10 +3287,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// Ignore teach-out request to avoid teach-in/out loop
 					Debug(DEBUG_NORM, "UTE msg: Node %s, teach-out request not supported", senderID.c_str());
 
-					if (need_response == 0)
+					if (ute_response == 0)
 					{ // Build and send response
-						buf[1] = (UTE_BIDIRECTIONAL & 0x01) << 7 | (GENERAL_REASON & 0x03) << 4 | UTE_RESPONSE;
-						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, nullptr, 0);
+						buf[1] |= (GENERAL_REASON & 0x03) << 4;
+
+						Debug(DEBUG_NORM, "Send UTE teach-out refused response");
+
+						SendESP3Packet(PACKET_RADIO_ERP1, buf, 13, optbuf, 7);
 					}
 				}
 			}
@@ -3251,50 +3313,50 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
 					uint8_t CMD = bitrange(data[1], 0, 0x0F); // Command ID
-					if (CMD != 0x04)
-					{
-						Log(LOG_ERROR, "VLD msg: Node %s, command 0x%01X not supported", senderID.c_str(), CMD);
+
+					// TODO: manage remote configuration and querying/polling
+					// TODO: manage CMD 0x7 - Actuator Measurement Response
+					// TODO: manage CMD 0xA - Actuator Pilot Wire Mode Response
+
+					if (CMD == 0x04)
+					{ // CMD 0x4 - Actuator Status Response
+						uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
+
+						uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value : 0x00 = Off, 0x01...0x64: On or 1% to 100%
+
+						uint8_t PF = bitrange(data[1], 7, 0x01); // Power failure
+						uint8_t PFD = bitrange(data[1], 6, 0x01); // Power failure detection
+
+						uint8_t OC = bitrange(data[2], 7, 0x01); // Over current switch off
+						uint8_t EL = bitrange(data[2], 5, 0x03); // Error level
+
+						uint8_t LC = bitrange(data[3], 7, 0x01); // Local control
+
+						RBUF tsen;
+						memset(&tsen, 0, sizeof(RBUF));
+						tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
+						tsen.LIGHTING2.packettype = pTypeLighting2;
+						tsen.LIGHTING2.subtype = sTypeAC;
+						tsen.LIGHTING2.seqnbr = 0;
+						tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
+						tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
+						tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
+						tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
+						tsen.LIGHTING2.level = OV;
+						tsen.LIGHTING2.unitcode = IO + 1;
+						tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
+						tsen.LIGHTING2.rssi = rssi;
+
+						Debug(DEBUG_NORM, "VLD msg: Node %s status, IO %02X (UnitID %d) OV %02X (Cmnd %s Level %d)",
+							senderID.c_str(), IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
+						Debug(DEBUG_NORM, "VLD msg: Node %s status, PF %d PFD %d OC %d EL %d LC %d", senderID.c_str(), PF, PFD, OC, EL, LC);
+
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
 						return;
 					}
-					// CMD 0x4 - Actuator Status Response
+					// TODO: handle other CMD returning status data
 
-					uint8_t IO = bitrange(data[2], 0, 0x1F); // I/O Channel
-
-					uint8_t OV = bitrange(data[3], 0, 0x7F); // Output Value % : 0x00 = Off, 0x01...0x64: On or 1% to 100%
-
-					uint8_t PF = bitrange(data[1], 7, 0x01); // Power failure
-					uint8_t PFD = bitrange(data[1], 6, 0x01); // Power failure detection
-
-					uint8_t OC = bitrange(data[2], 7, 0x01); // Over current switch off
-					uint8_t EL = bitrange(data[2], 5, 0x03); // Error level
-
-					uint8_t LC = bitrange(data[3], 7, 0x01); // Local control
-
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.LIGHTING2.packetlength = sizeof(tsen.LIGHTING2) - 1;
-					tsen.LIGHTING2.packettype = pTypeLighting2;
-					tsen.LIGHTING2.subtype = sTypeAC;
-					tsen.LIGHTING2.seqnbr = 0;
-					tsen.LIGHTING2.id1 = (BYTE) ID_BYTE3;
-					tsen.LIGHTING2.id2 = (BYTE) ID_BYTE2;
-					tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
-					tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
-					tsen.LIGHTING2.level = OV;
-					tsen.LIGHTING2.unitcode = IO + 1;
-					tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
-					tsen.LIGHTING2.rssi = rssi;
-
-					Debug(DEBUG_NORM, "VLD msg: Node %s status, IO %02X (UnitID %d) OV %02X (Cmnd %s Level %d)",
-						senderID.c_str(), IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
-					Debug(DEBUG_NORM, "VLD msg: Node %s status, PF %d PFD %d OC %d EL %d LC %d", senderID.c_str(), PF, PFD, OC, EL, LC);
-
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
-
-					// Note: if a device uses simultaneously RPS and VLD (ex: nodon inwall module), it can be partially initialized.
-					// Domoticz will show device status but some functions may not work because EnoceanSensors table has no info on this device (until teach-in is performed)
-					// If a device has local control (ex: nodon inwall module with physically attached switched), domoticz will record the local control as unit 0.
-					// Ex: nodon inwall 2 channels will show 3 entries. Unit 0 is the local switch, 1 is the first channel, 2 is the second channel.
+					Log(LOG_ERROR, "VLD msg: Node %s, command 0x%01X not supported", senderID.c_str(), CMD);
 					return;
 				}
 				if (pNode->func == 0x03 && pNode->type == 0x0A)
@@ -3326,9 +3388,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					uint8_t ES = bitrange(data[2], 1, 0x03);
 					// Remaining Product Life Time, in months
 					uint8_t RPLT = (bitrange(data[2], 0, 0x01) << 7) | bitrange(data[3], 1, 0x7F);
-					// Temperature (linear), 0..250=>0..50 °C, 255 = Error
+					// Temperature (linear), 0..250=>0..50°C, 255 = Error
 					uint8_t TMP8 = (bitrange(data[3], 0, 0x01) << 7) | bitrange(data[4], 1, 0x7F);
-					// Relative Humidity (linear), 0..200=>0..100 %RH, 255 = Error
+					// Relative Humidity (linear), 0..200=>0..100%RH, 255 = Error
 					uint8_t HUM = (bitrange(data[4], 0, 0x01) << 7) | bitrange(data[5], 1, 0x7F);
 					// Hygrothermal Comfort Index, 0 = Good, 1 = Medium, 2 = Bad, 3 = Error
 					uint8_t HCI = (bitrange(data[5], 0, 0x01) << 1) | bitrange(data[6], 7, 0x01);

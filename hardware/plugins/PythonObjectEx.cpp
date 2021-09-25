@@ -198,24 +198,27 @@ namespace Plugins {
 
 	bool CDeviceEx::isInstance(PyObject *pObject)
 	{
-		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (brModule)
+		if (pObject)
 		{
-			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
-			if (pModState)
+			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			if (brModule)
 			{
-				int isDevice = PyObject_IsInstance(pObject, (PyObject *)pModState->pDeviceClass);
-				if (isDevice == -1)
+				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));
+				if (pModState)
 				{
-					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
-					if (PyErr_Occurred())
+					int isDevice = PyObject_IsInstance(pObject, (PyObject*)pModState->pDeviceClass);
+					if (isDevice == -1)
 					{
-						PyErr_Clear();
+						_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+						if (PyErr_Occurred())
+						{
+							PyErr_Clear();
+						}
 					}
-				}
-				else if (isDevice)
-				{
-					return true;
+					else if (isDevice)
+					{
+						return true;
+					}
 				}
 			}
 		}
@@ -557,6 +560,11 @@ namespace Plugins {
 		if (pModState->pPlugin)
 		{
 			std::string sName = PyBorrowedRef(self->Name);
+			if (!(CDeviceEx*)self->Parent)
+			{
+				_log.Log(LOG_ERROR, "(%s) Unit is not associated with a Device.", __func__);
+				Py_RETURN_NONE;
+			}
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
 			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
 			if (self->ID == -1)
@@ -867,7 +875,7 @@ namespace Plugins {
 				Py_BEGIN_ALLOW_THREADS
 				uint64_t	DevRowIdx = std::stoull(result[0][0]);
 				m_mainworker.m_eventsystem.ProcessDevice(pModState->pPlugin->m_HwdID, DevRowIdx, self->Unit, iType, iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str());
-				if (nValueChanged)
+				if (nValueChanged || (self->SubType == sSwitchTypeSelector))
 				{
 					// Handle On & Off actions if they are defined (HandleOnOffAction just returns if they are blank)
 					m_sql.HandleOnOffAction(nValue, result[0][3], result[0][4]);
@@ -980,30 +988,33 @@ namespace Plugins {
 
 	PyObject *CUnitEx_str(CUnitEx *self)
 	{
-		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U'", self->Unit, self->Name, self->nValue, self->sValue);
+		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U', LastUpdate: %U", self->Unit, self->Name, self->nValue, self->sValue, self->LastUpdate);
 		return pRetVal;
 	}
 
 	bool CUnitEx::isInstance(PyObject *pObject)
 	{
-		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (brModule)
+		if (pObject)
 		{
-			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
-			if (pModState)
+			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			if (brModule)
 			{
-				int isUnit = PyObject_IsInstance(pObject, (PyObject *)pModState->pUnitClass);
-				if (isUnit == -1)
+				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));
+				if (pModState)
 				{
-					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
-					if (PyErr_Occurred())
+					int isUnit = PyObject_IsInstance(pObject, (PyObject*)pModState->pUnitClass);
+					if (isUnit == -1)
 					{
-						PyErr_Clear();
+						_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+						if (PyErr_Occurred())
+						{
+							PyErr_Clear();
+						}
 					}
-				}
-				else if (isUnit)
-				{
-					return true;
+					else if (isUnit)
+					{
+						return true;
+					}
 				}
 			}
 		}
