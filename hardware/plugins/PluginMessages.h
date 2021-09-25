@@ -18,30 +18,27 @@ namespace Plugins {
 	  virtual ~CPluginMessageBase() = default;
 	  ;
 
-	  CPlugin *m_pPlugin;
 	  std::string m_Name;
-	  int m_HwdID;
 	  std::string m_DeviceID;
 	  int m_Unit;
 	  bool m_Delay;
 	  time_t m_When;
 
 	protected:
-		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1), m_Delay(false)
+		CPluginMessageBase() : m_Unit(-1), m_Delay(false)
 		{
 			m_Name = __func__;
 			m_When = time(nullptr);
 		};
-		virtual void ProcessLocked() = 0;
+		virtual void ProcessLocked(CPlugin* pPlugin) = 0;
 	public:
 		virtual const char* Name() { return m_Name.c_str(); };
-		virtual const CPlugin*	Plugin() { return m_pPlugin; };
-		virtual void Process()
+		virtual void Process(CPlugin*	pPlugin)
 		{
 			std::lock_guard<std::mutex> l(PythonMutex);
-			m_pPlugin->RestoreThread();
-			ProcessLocked();
-			m_pPlugin->ReleaseThread();
+			pPlugin->RestoreThread();
+			ProcessLocked(pPlugin);
+			pPlugin->ReleaseThread();
 		};
 	};
 
@@ -63,13 +60,13 @@ namespace Plugins {
 	class InitializeMessage : public CPluginMessageBase
 	{
 	public:
-		InitializeMessage(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) { m_Name = __func__; };
-		void Process() override
+		InitializeMessage() : CPluginMessageBase() { m_Name = __func__; };
+		void Process(CPlugin* pPlugin) override
 		{
 			std::lock_guard<std::mutex> l(PythonMutex);
-			m_pPlugin->Initialise();
+			pPlugin->Initialise();
 		};
-		void ProcessLocked() override{};
+		void ProcessLocked(CPlugin* pPlugin) override{};
 	};
 
 	// Base callback message class
@@ -78,17 +75,25 @@ namespace Plugins {
 	protected:
 		PyNewRef	m_Target;
 		std::string m_Callback;
-		void ProcessLocked() override = 0;
+		void ProcessLocked(CPlugin* pPlugin) override = 0;
 
 	      public:
-		CCallbackBase(CPlugin* pPlugin, const std::string &Callback) : CPluginMessageBase(pPlugin), m_Target(pPlugin->PythonModule()), m_Callback(Callback)
+		CCallbackBase(const std::string &Callback) : CPluginMessageBase(), m_Callback(Callback)
 		{
-			if (m_Target)
+		};
+		virtual void Callback(CPlugin* pPlugin, PyObject* pParams)
+		{
+			if (!m_Target)
+			{
+				m_Target = pPlugin->PythonModule();
+			}
+
+			if (m_Target && m_Callback.length())
 			{
 				Py_INCREF(m_Target);
+				pPlugin->Callback(m_Target, m_Callback, pParams);
 			}
 		};
-		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Target, m_Callback, pParams); };
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 
 	      protected:
@@ -133,23 +138,26 @@ namespace Plugins {
 	class onStartCallback : public CCallbackBase
 	{
 	public:
-		onStartCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStart") { m_Name = __func__; };
+		onStartCallback() : CCallbackBase("onStart") { m_Name = __func__; };
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
-		  m_pPlugin->Start();
-		  Callback(nullptr);
+		  pPlugin->Start();
+		  Callback(pPlugin, nullptr);
 	  };
 	};
 
 	class onHeartbeatCallback : public CCallbackBase
 	{
 	public:
-		onHeartbeatCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onHeartbeat") { m_Name = __func__; };
+		onHeartbeatCallback() : CCallbackBase("onHeartbeat")
+		{
+			m_Name = __func__;
+		};
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
-		  Callback(nullptr);
+		  Callback(pPlugin, nullptr);
 	  };
 	};
 
@@ -183,7 +191,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onConnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onConnectCallback(CPlugin* pPlugin, CConnection* Connection, const int Code, const std::string &Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text)
+		onConnectCallback(CConnection* Connection, const int Code, const std::string &Text) : CCallbackBase("onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text)
 		{
 			m_Name = __func__;
 			if (Connection->Target)
@@ -194,7 +202,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		int						m_Status;
 		std::string				m_Text;
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 #ifdef _WIN32
 			std::string textUTF8 = get_utf8_from_ansi(m_Text, GetACP());
@@ -202,14 +210,14 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			std::string textUTF8 = m_Text; // TODO: Is it safe to assume non-Windows will always be UTF-8?
 #endif
 			PyNewRef pParams = Py_BuildValue("Ois", m_pConnection, m_Status, textUTF8.c_str());
-			Callback(pParams);
+			Callback(pPlugin, pParams);
 	  };
 	};
 
 	class onTimeoutCallback : public CCallbackBase, public CHasConnection
 	{
     public:
-		onTimeoutCallback(CPlugin *pPlugin, CConnection *Connection): CCallbackBase(pPlugin, "onTimeout"), CHasConnection(Connection) 
+		onTimeoutCallback(CConnection *Connection): CCallbackBase("onTimeout"), CHasConnection(Connection) 
 		{
 			m_Name = __func__;
 			if (Connection->Target)
@@ -218,17 +226,17 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			}
 		};
     protected:
-		virtual void ProcessLocked() override
+		virtual void ProcessLocked(CPlugin* pPlugin) override
 		{
 			PyNewRef pParams = Py_BuildValue("(O)", m_pConnection);
-			Callback(pParams);
+			Callback(pPlugin, pParams);
 		};
 	};
 
 	class onDisconnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onDisconnectCallback(CPlugin* pPlugin, CConnection* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection)
+		onDisconnectCallback(CConnection* Connection) : CCallbackBase("onDisconnect"), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			if (Connection->Target)
@@ -237,48 +245,48 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			}
 		};
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  PyNewRef pParams = Py_BuildValue("(O)", m_pConnection);
-		  Callback(pParams);
+		  Callback(pPlugin, pParams);
 	  };
 	};
 
 	class onDeviceAddedCallback : public CCallbackBase
 	{
 	public:
-		onDeviceAddedCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit) : CCallbackBase(pPlugin, "onDeviceAdded")
+		onDeviceAddedCallback(const std::string DeviceID, int Unit) : CCallbackBase("onDeviceAdded")
 		{
 			m_DeviceID = DeviceID;
 			m_Unit = Unit;
 		};
 	protected:
-		void ProcessLocked() override
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->onDeviceAdded(m_DeviceID, m_Unit);
+			pPlugin->onDeviceAdded(m_DeviceID, m_Unit);
 
 			if (UpdateEventTarget(m_DeviceID, m_Unit))
 			{
 				if (CUnitEx::isInstance(m_Target))
 				{
 					PyNewRef pParams = Py_BuildValue("()");
-					Callback(pParams);
+					Callback(pPlugin, pParams);
 				}
 				else if (CDeviceEx::isInstance(m_Target))
 				{
 					PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-					Callback(pParams);
+					Callback(pPlugin, pParams);
 				}
 				else
 				{
 					PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
-					Callback(pParams);
+					Callback(pPlugin, pParams);
 				}
 			}
 			else
 			{
 				PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-				Callback(pParams);
+				Callback(pPlugin, pParams);
 			}
 		};
 	};
@@ -286,38 +294,38 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onDeviceModifiedCallback : public CCallbackBase
 	{
 	public:
-		onDeviceModifiedCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit) : CCallbackBase(pPlugin, "onDeviceModified")
+		onDeviceModifiedCallback(const std::string DeviceID, int Unit) : CCallbackBase("onDeviceModified")
 		{
 			m_DeviceID = DeviceID;
 			m_Unit = Unit;
 		};
 	protected:
-		void ProcessLocked() override
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->onDeviceModified(m_DeviceID, m_Unit);
+			pPlugin->onDeviceModified(m_DeviceID, m_Unit);
 
 			if (UpdateEventTarget(m_DeviceID, m_Unit))
 			{
 				if (CUnitEx::isInstance(m_Target))
 				{
 					PyNewRef pParams = Py_BuildValue("()");
-					Callback(pParams);
+					Callback(pPlugin, pParams);
 				}
 				else if (CDeviceEx::isInstance(m_Target))
 				{
 					PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-					Callback(pParams);
+					Callback(pPlugin, pParams);
 				}
 				else
 				{
 					PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
-					Callback(pParams);
+					Callback(pPlugin, pParams);
 				}
 			}
 			else
 			{
 				PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-				Callback(pParams);
+				Callback(pPlugin, pParams);
 			}
 		};
 	};
@@ -325,47 +333,47 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onDeviceRemovedCallback : public CCallbackBase
 	{
 	public:
-		onDeviceRemovedCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit) : CCallbackBase(pPlugin, "onDeviceRemoved")
+		onDeviceRemovedCallback(const std::string DeviceID, int Unit) : CCallbackBase("onDeviceRemoved")
 		{
 			m_DeviceID = DeviceID;
 			m_Unit = Unit;
 		};
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  if (UpdateEventTarget(m_DeviceID, m_Unit))
 		  {
 			  if (CUnitEx::isInstance(m_Target))
 			  {
 				  PyNewRef pParams = Py_BuildValue("()");
-				  Callback(pParams);
+				  Callback(pPlugin, pParams);
 			  }
 			  else if (CDeviceEx::isInstance(m_Target))
 			  {
 				  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-				  Callback(pParams);
+				  Callback(pPlugin, pParams);
 			  }
 			  else
 			  {
 				  PyNewRef pParams = Py_BuildValue("(si)", m_DeviceID.c_str(), m_Unit);
-				  Callback(pParams);
+				  Callback(pPlugin, pParams);
 			  }
 		  }
 		  else
 		  {
 			  PyNewRef pParams = Py_BuildValue("(i)", m_Unit);
-			  Callback(pParams);
+			  Callback(pPlugin, pParams);
 		  }
 
-		  m_pPlugin->onDeviceRemoved(m_DeviceID, m_Unit);
+		  pPlugin->onDeviceRemoved(m_DeviceID, m_Unit);
 	  };
 	};
 
 	class onCommandCallback : public CCallbackBase
 	{
 	public:
-		onCommandCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit, const std::string &Command, const int level, const std::string &color)
-			: CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(const std::string DeviceID, int Unit, const std::string &Command, const int level, const std::string &color)
+			: CCallbackBase("onCommand")
 		{
 			m_Name = __func__;
 			m_DeviceID = DeviceID;
@@ -375,8 +383,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			m_iLevel = level;
 			m_iColor = color;
 		};
-		onCommandCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit, const std::string &Command, const float level)
-			: CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(const std::string DeviceID, int Unit, const std::string &Command, const float level)
+			: CCallbackBase("onCommand")
 		{
 			m_Name = __func__;
 			m_DeviceID = DeviceID;
@@ -392,7 +400,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		float					m_fLevel;
 
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  PyNewRef pParams;
 		  if (UpdateEventTarget(m_DeviceID, m_Unit))
@@ -442,15 +450,15 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 				  pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
 			  }
 		  }
-		  Callback(pParams);
+		  Callback(pPlugin, pParams);
 	  };
 	};
 
 	class onSecurityEventCallback : public CCallbackBase
 	{
 	public:
-		onSecurityEventCallback(CPlugin *pPlugin, const std::string DeviceID, int Unit, const int level, const std::string &Description)
-			: CCallbackBase(pPlugin, "onSecurityEvent")
+		onSecurityEventCallback(const std::string DeviceID, int Unit, const int level, const std::string &Description)
+			: CCallbackBase("onSecurityEvent")
 		{
 			m_Name = __func__;
 			m_DeviceID = DeviceID;
@@ -462,30 +470,30 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		std::string		m_Description;
 
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  if (UpdateEventTarget(m_DeviceID, m_Unit))
 		  {
 			  if (CUnitEx::isInstance(m_Target))
 			  {
 				  PyNewRef pParams = Py_BuildValue("is", m_iLevel, m_Description.c_str());
-				  Callback(pParams);
+				  Callback(pPlugin, pParams);
 			  }
 			  else if (CDeviceEx::isInstance(m_Target))
 			  {
 				  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
-				  Callback(pParams);
+				  Callback(pPlugin, pParams);
 			  }
 			  else
 			  {
 				  PyNewRef pParams = Py_BuildValue("siis", m_DeviceID.c_str(), m_Unit, m_iLevel, m_Description.c_str());
-				  Callback(pParams);
+				  Callback(pPlugin, pParams);
 			  }
 		  }
 		  else
 		  {
 			  PyNewRef pParams = Py_BuildValue("iis", m_Unit, m_iLevel, m_Description.c_str());
-			  Callback(pParams);
+			  Callback(pPlugin, pParams);
 		  }
 	  };
 	};
@@ -493,7 +501,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onMessageCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::string &Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
+		onMessageCallback(CConnection *Connection, const std::string &Buffer) : CCallbackBase("onMessage"), CHasConnection(Connection), m_Data(nullptr)
 		{
 			m_Name = __func__;
 			m_Buffer.reserve(Buffer.length());
@@ -503,7 +511,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 				m_Target += Connection->Target;
 			}
 		};
-		onMessageCallback(CPlugin *pPlugin, CConnection *Connection, const std::vector<byte> &Buffer): CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(nullptr)
+		onMessageCallback(CConnection *Connection, const std::vector<byte> &Buffer): CCallbackBase("onMessage"), CHasConnection(Connection), m_Data(nullptr)
 		{
 			m_Name = __func__;
 			m_Buffer = Buffer;
@@ -512,7 +520,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 				m_Target += Connection->Target;
 			}
 		};
-		onMessageCallback(CPlugin* pPlugin, CConnection* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
+		onMessageCallback(CConnection* Connection, PyObject*	pData) : CCallbackBase("onMessage"), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_Data = pData;
@@ -525,7 +533,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		PyObject*				m_Data;
 
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  PyNewRef pParams = nullptr;
 
@@ -533,14 +541,14 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		  if (!m_Buffer.empty())
 		  {
 			  pParams = Py_BuildValue("Oy#", m_pConnection, &m_Buffer[0], m_Buffer.size());
-			  Callback(pParams);
+			  Callback(pPlugin, pParams);
 		  }
 
 		  // Data is in a dictionary
 		  if (m_Data)
 		  {
 			  pParams = Py_BuildValue("OO", m_pConnection, m_Data);
-			  Callback(pParams);
+			  Callback(pPlugin, pParams);
 			  Py_XDECREF(m_Data);
 		  }
 	  }
@@ -556,7 +564,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 							const std::string& Status,
 							int Priority,
 							const std::string& Sound,
-							const std::string& ImageFile) : CCallbackBase(pPlugin, "onNotification")
+							const std::string& ImageFile) : CCallbackBase("onNotification")
 		{
 			m_Name = __func__;
 			m_Subject = Subject;
@@ -577,22 +585,22 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		std::string				m_ImageFile;
 
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  PyNewRef pParams = Py_BuildValue("ssssiss", m_SuppliedName.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
-		  Callback(pParams);
+		  Callback(pPlugin, pParams);
 	  };
 	};
 
 	class onStopCallback : public CCallbackBase
 	{
 	public:
-		onStopCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStop") { m_Name = __func__; };
+		onStopCallback() : CCallbackBase("onStop") { m_Name = __func__; };
 	protected:
-	  void ProcessLocked() override
+	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
-		  Callback(nullptr);
-		  m_pPlugin->Stop();
+		  Callback(pPlugin, nullptr);
+		  pPlugin->Stop();
 	  };
 	};
 
@@ -600,56 +608,56 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class CDirectiveBase : public CPluginMessageBase
 	{
 	protected:
-	  void ProcessLocked() override = 0;
+	  void ProcessLocked(CPlugin* pPlugin) override = 0;
 
 	public:
-		CDirectiveBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
-		void Process() override
+		CDirectiveBase() : CPluginMessageBase() {};
+		void Process(CPlugin* pPlugin) override
 		{
 			std::lock_guard<std::mutex> l(PythonMutex);
-			m_pPlugin->RestoreThread();
-			ProcessLocked();
-			m_pPlugin->ReleaseThread();
+			pPlugin->RestoreThread();
+			ProcessLocked(pPlugin);
+			pPlugin->ReleaseThread();
 		};
 	};
 
 	class ProtocolDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ProtocolDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
-		void ProcessLocked() override
+		ProtocolDirective(CConnection* Connection) : CDirectiveBase(), CHasConnection(Connection) { m_Name = __func__; };
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->ConnectionProtocol(this);
+			pPlugin->ConnectionProtocol(this);
 		};
 	};
 
 	class ConnectDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ConnectDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
-		void ProcessLocked() override
+		ConnectDirective(CConnection* Connection) : CDirectiveBase(), CHasConnection(Connection) { m_Name = __func__; };
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->ConnectionConnect(this);
+			pPlugin->ConnectionConnect(this);
 		};
 	};
 
 	class ListenDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ListenDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
-		void ProcessLocked() override
+		ListenDirective(CConnection* Connection) : CDirectiveBase(), CHasConnection(Connection) { m_Name = __func__; };
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->ConnectionListen(this);
+			pPlugin->ConnectionListen(this);
 		};
 	};
 
 	class DisconnectDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		DisconnectDirective(CPlugin* pPlugin, CConnection* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
-		void ProcessLocked() override
+		DisconnectDirective(CConnection* Connection) : CDirectiveBase(), CHasConnection(Connection) { m_Name = __func__; };
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->ConnectionDisconnect(this);
+			pPlugin->ConnectionDisconnect(this);
 		};
 	};
 
@@ -657,7 +665,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	{
 	public:
 		PyObject*		m_Object;
-		WriteDirective(CPlugin* pPlugin, CConnection* Connection, PyObject* pData, const int Delay) : CDirectiveBase(pPlugin), CHasConnection(Connection)
+		WriteDirective(CConnection* Connection, PyObject* pData, const int Delay) : CDirectiveBase(), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_Object = pData;
@@ -675,41 +683,41 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 				Py_DECREF(m_Object);
 		}
 
-		void ProcessLocked() override
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->ConnectionWrite(this);
+			pPlugin->ConnectionWrite(this);
 		};
 	};
 
 	class SettingsDirective : public CDirectiveBase
 	{
 	public:
-		SettingsDirective(CPlugin* pPlugin) : CDirectiveBase(pPlugin) { m_Name = __func__; };
-		void ProcessLocked() override
+		SettingsDirective() : CDirectiveBase() { m_Name = __func__; };
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->LoadSettings();
+			pPlugin->LoadSettings();
 		};
 	};
 
 	class PollIntervalDirective : public CDirectiveBase
 	{
 	public:
-		PollIntervalDirective(CPlugin* pPlugin, const int PollInterval) : CDirectiveBase(pPlugin), m_Interval(PollInterval) { m_Name = __func__; };
+		PollIntervalDirective(const int PollInterval) : CDirectiveBase(), m_Interval(PollInterval) { m_Name = __func__; };
 		int						m_Interval;
-		void ProcessLocked() override
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->PollInterval(m_Interval);
+			pPlugin->PollInterval(m_Interval);
 		};
 	};
 
 	class NotifierDirective : public CDirectiveBase
 	{
 	public:
-		NotifierDirective(CPlugin* pPlugin, const char* Name) : CDirectiveBase(pPlugin), m_NotifierName(Name) { m_Name = __func__; };
+		NotifierDirective(const char* Name) : CDirectiveBase(), m_NotifierName(Name) { m_Name = __func__; };
 		std::string		m_NotifierName;
-		void ProcessLocked() override
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->Notifier(m_NotifierName);
+			pPlugin->Notifier(m_NotifierName);
 		};
 	};
 
@@ -717,16 +725,16 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class CEventBase : public CPluginMessageBase
 	{
 	protected:
-	  void ProcessLocked() override = 0;
+	  void ProcessLocked(CPlugin* pPlugin) override = 0;
 
 	public:
-		CEventBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
+		CEventBase() : CPluginMessageBase() {};
 	};
 
 	class ReadEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		ReadEvent(CPlugin* pPlugin, CConnection* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(pPlugin), CHasConnection(Connection)
+		ReadEvent(CConnection* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_ElapsedMs = ElapsedMs;
@@ -735,21 +743,21 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		};
 		std::vector<byte>		m_Buffer;
 		int						m_ElapsedMs;
-		void ProcessLocked() override
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
-			m_pPlugin->ConnectionRead(this);
+			pPlugin->WriteDebugBuffer(m_Buffer, true);
+			pPlugin->ConnectionRead(this);
 		};
 	};
 
 	class DisconnectedEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		DisconnectedEvent(CPlugin* pPlugin, CConnection* Connection) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(true) { m_Name = __func__; };
-		DisconnectedEvent(CPlugin* pPlugin, CConnection* Connection, bool NotifyPlugin) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(NotifyPlugin) { m_Name = __func__; };
-		void ProcessLocked() override
+		DisconnectedEvent(CConnection* Connection) : CEventBase(), CHasConnection(Connection), bNotifyPlugin(true) { m_Name = __func__; };
+		DisconnectedEvent(CConnection* Connection, bool NotifyPlugin) : CEventBase(), CHasConnection(Connection), bNotifyPlugin(NotifyPlugin) { m_Name = __func__; };
+		void ProcessLocked(CPlugin* pPlugin) override
 		{
-			m_pPlugin->DisconnectEvent(this);
+			pPlugin->DisconnectEvent(this);
 		};
 		bool	bNotifyPlugin;
 	};
