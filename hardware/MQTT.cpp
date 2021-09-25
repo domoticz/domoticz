@@ -2126,6 +2126,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			pSensor->subType = sTypeColor_RGB_W_Z;
 		else if (pSensor->supported_color_modes == "rgbww")
 			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+		else if (pSensor->supported_color_modes == "xy")
+			pSensor->subType = sTypeColor_RGB;
 		else if (pSensor->supported_color_modes == "color_temp")
 		{
 			//Actually I think this is just a normal white bulb
