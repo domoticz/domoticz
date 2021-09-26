@@ -3,6 +3,7 @@
 #include "hardwaretypes.h"
 #include "ColorSwitch.h"
 #include "../main/json_helper.h"
+#include <cmath>
 
 _tColor::_tColor()
 {
