@@ -1392,6 +1392,19 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		if (!root["brightness"].empty())
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
+
+		if (!root["rgb"].empty()) {
+			pSensor->bColor_mode = (root["rgb"].asString() != "false");
+			if (!root["color_temp"].empty())
+				pSensor->supported_color_modes = "rgbcct";
+			else
+				pSensor->supported_color_modes = "rgb";
+		}
+		else
+		{
+			if (!root["color_temp"].empty())
+				pSensor->bColor_mode = (root["color_temp"].asString() != "color_temp");
+		}
 		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
 			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
 		if (!root["supported_color_modes"].empty())
@@ -1495,7 +1508,10 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		pDevice->sensor_ids[pSensor->unique_id] = true;
 
-		Log(LOG_STATUS, "discovered: %s/%s (unique_id: %s)", pDevice->name.c_str(), pSensor->name.c_str(), pSensor->unique_id.c_str());
+		if (pSensor->supported_color_modes.empty())
+			Log(LOG_STATUS, "discovered: %s/%s (unique_id: %s)", pDevice->name.c_str(), pSensor->name.c_str(), pSensor->unique_id.c_str());
+		else
+			Log(LOG_STATUS, "discovered: %s/%s (unique_id: %s)  bulbtype: %s", pDevice->name.c_str(), pSensor->name.c_str(), pSensor->unique_id.c_str(), pSensor->supported_color_modes.c_str());
 
 		//Sanity checks
 		if (pSensor->component_type == "sensor")
@@ -2126,6 +2142,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			pSensor->subType = sTypeColor_RGB_W_Z;
 		else if (pSensor->supported_color_modes == "rgbww")
 			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+		else if (pSensor->supported_color_modes == "rgbcct")
+			pSensor->subType = sTypeColor_RGB_CW_WW;
 		else if (pSensor->supported_color_modes == "xy")
 			pSensor->subType = sTypeColor_RGB;
 		else if (pSensor->supported_color_modes == "color_temp")
@@ -2793,8 +2811,8 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			{
 				double x, y, z;
 				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
-				root["color"]["x"] = x;
-				root["color"]["y"] = y;
+				root["color"]["x"] = (int)x * 65535;
+				root["color"]["y"] = (int)y * 65535;
 			}
 			else if (pSensor->supported_color_modes == "color_temp") //seen as XY
 			{
@@ -2810,6 +2828,19 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				root["color"]["h"] = hsb[0];
 				root["color"]["s"] = hsb[1];
 				root["brightness"] = hsb[1] * 255.0F;
+			}
+			else if (pSensor->supported_color_modes == "rgbcct") {
+				// Supports only RGB or WW
+				if (color.ww == 0) {
+					root["color"]["r"] = color.r;
+					root["color"]["g"] = color.g;
+					root["color"]["b"] = color.b;
+				}
+				else {
+					// Both work for milight
+					root["temperature"] = (int)(color.ww / 2.55);
+					root["kelvin"] = (int)(color.ww / 2.55);
+				}
 			}
 			else
 			{

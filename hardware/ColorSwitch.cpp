@@ -228,31 +228,28 @@ void _tColor::RgbFromXY(const double x, const double y, uint8_t &r8, uint8_t &g8
 
 void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double &x, double &y, double &z)
 {
-	float r = float(r8) / 255.0F;
-	float g = float(g8) / 255.0F;
-	float b = float(b8) / 255.0F;
+	float red = float(r8) / 255.0F;
+	float green = float(g8) / 255.0F;
+	float blue = float(b8) / 255.0F;
 
-	if (r > 0.04045)
-		r = powf(((r + 0.055F) / 1.055F), 2.4F);
-	else
-		r /= 12.92F;
+	// Apply gamma correction
+	float r = (red > 0.04045f) ? pow((red + 0.055f) / (1.0f + 0.055f), 2.4f) : (red / 12.92f);
+	float g = (green > 0.04045f) ? pow((green + 0.055f) / (1.0f + 0.055f), 2.4f) : (green / 12.92f);
+	float b = (blue > 0.04045f) ? pow((blue + 0.055f) / (1.0f + 0.055f), 2.4f) : (blue / 12.92f);
 
-	if (g > 0.04045F)
-		g = powf(((g + 0.055F) / 1.055F), 2.4F);
-	else
-		g /= 12.92F;
+	// Wide gamut conversion D65
+	float X = r * 0.649926f + g * 0.103455f + b * 0.197109f;
+	float Y = r * 0.234327f + g * 0.743075f + b * 0.022598f;
+	float Z = r * 0.0000000f + g * 0.053077f + b * 1.035763f;
 
-	if (b > 0.04045F)
-		b = powf(((b + 0.055F) / 1.055F), 2.4F);
-	else
-		b /= 12.92F;
+	x = X / (X + Y + Z);
+	y = Y / (X + Y + Z);
 
-	r *= 100;
-	g *= 100;
-	b *= 100;
+	if (isnan(x)) {
+		x = 0.0f;
+	}
 
-	// Calibration for observer @2° with illumination = D65
-	x = r * 0.4124 + g * 0.3576 + b * 0.1805;
-	y = r * 0.2126 + g * 0.7152 + b * 0.0722;
-	z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+	if (isnan(y)) {
+		y = 0.0f;
+	}
 }
