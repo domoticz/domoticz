@@ -246,11 +246,11 @@ void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, do
 	x = X / (X + Y + Z);
 	y = Y / (X + Y + Z);
 
-	if (isnan(x)) {
+	if (std::isnan(x)) {
 		x = 0.0f;
 	}
 
-	if (isnan(y)) {
+	if (std::isnan(y)) {
 		y = 0.0f;
 	}
 }
