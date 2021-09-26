@@ -1191,10 +1191,10 @@ namespace Plugins {
 
 	static void MQTTPushBackLong(long iLong, std::vector<byte> &vVector)
 	{
-		vVector.push_back(iLong >> 24);
-		vVector.push_back(iLong >> 16);
-		vVector.push_back(iLong >> 8);
-		vVector.push_back(iLong);
+		vVector.push_back(iLong & 0xFF000000 >> 24);
+		vVector.push_back(iLong & 0xFF0000 >> 16);
+		vVector.push_back(iLong & 0xFF00 >> 8);
+		vVector.push_back(iLong & 0xFF);
 	}
 
 	static void MQTTPushBackString(const std::string &sString, std::vector<byte> &vVector)
@@ -1814,7 +1814,7 @@ namespace Plugins {
 				byteValue = 0;
 				if (pDictEntry && PyLong_Check(pDictEntry))
 				{
-					byteValue = PyLong_AsLong(pDictEntry);
+					byteValue = PyLong_AsLong(pDictEntry) & 0xFF;
 				}
 				vVariableHeader.push_back(byteValue);
 
@@ -1879,7 +1879,7 @@ namespace Plugins {
 					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pStr)), vProperties);
 				}
 
-				vPayload.push_back(vProperties.size());
+				vPayload.push_back((uint8_t)vProperties.size());
 				vPayload.insert(vPayload.end(), vProperties.begin(), vProperties.end());
 
 				retVal.push_back(MQTT_CONNACK);
@@ -2097,7 +2097,7 @@ namespace Plugins {
 					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pStr)), vProperties);
 				}
 
-				vPayload.push_back(vProperties.size());
+				vPayload.push_back((uint8_t)vProperties.size());
 				vPayload.insert(vPayload.end(), vProperties.begin(), vProperties.end());
 
 				retVal.push_back(MQTT_PUBACK);
