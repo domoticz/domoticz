@@ -881,7 +881,23 @@ namespace Plugins {
 					m_sql.HandleOnOffAction(nValue, result[0][3], result[0][4]);
 				}
 				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
-				m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+				if (!IsLightOrSwitch(iType, iSubType))
+				{
+					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+				}
+				else
+				{
+					std::string lstatus;
+					int llevel;
+					bool bHaveDimmer;
+					int maxDimLevel;
+					bool bHaveGroupCmd;
+					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					if (self->SubType == STYPE_Selector)
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
+					else
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+				}
 				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
 
 				// Write a log entry if requested
