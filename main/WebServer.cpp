@@ -15478,13 +15478,12 @@ namespace http
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
-						if (!sgroupby.empty())
-						{
-							if (sensorarea.empty())
-							{
+                        if (!sgroupby.empty()) {
+                            if (sensorarea.empty())
+                                {
 								_log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby.c_str());
-								return;
-							}
+                                return;
+                            }
 							std::function<std::string(const char *, char *, char *, char *, char *)> sensorareaExpr =
 								[sensorarea, this](const char *expr, char *usageLow, char *usageNormal, char *deliveryLow, char *deliveryNormal) {
 									if (sensorarea == "usage")
@@ -17276,37 +17275,67 @@ namespace http
 			 * This query selects all records (in mc0) that belong to DeviceRowID, each with the record before it (in mc1), and calculates for each record
 			 * the "usage" by subtracting the previous counter from its counter.
 			 * - It does not take into account records that have a 0-valued counter, to prevent one falling between two categories, which would cause the
-			 *   value for one category to be extremely low and the value for the other extremely high.
+             *   value for one category to be extremely low and the value for the other extremely high.
 			 * - When the previous counter is greater than its counter, assumed is that a meter change has taken place; the previous counter is ignored
 			 *   and the value of the record is taken as the "usage" (hoping for the best as the value is not always reliable.)
 			 * - The reason why not simply the record values are summed, but instead the differences between all the individual counters are summed, is that
 			 *   records for some days are not recorded or sometimes disappear, hence values would be missing and that would result in an incomplete total.
 			 *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
 			 */
-			std::vector<std::vector<std::string>> result = m_sql.safe_query(
-				(std::string("") + " select" + "  strftime('%%Y',Date) as Year," + "  sum(Difference) as Sum" +
-				 (sgroupby == "quarter" ? std::string("") + ",case" + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'" +
-								  "                                                              else 'Q4'" + "   end as Quarter"
-				  : sgroupby == "month" ? ",strftime('%%m',Date) as Month"
-							: "") +
-				 " from (" + " 	select" + "         mc0.DeviceRowID," + "         date(mc0.Date) as Date," + "         case when (" + counter("mc1") + ") <= (" + counter("mc0") +
-				 ") then (" + counter("mc0") + ") - (" + counter("mc1") + ") else (" + value("mc0") + ") end as Difference" + " 	from " + dbasetable + " mc0" + " 	inner join " +
-				 dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID" + "         and mc1.Date = (select max(mcm.Date) from " + dbasetable +
-				 " mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0)" + " 	where" + "         mc0.DeviceRowID = %" PRIu64 "" +
-				 "         and (" + counter("mc0") + ") <> 0" + "         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") +
-				 ") <> 0) <= mc1.Date" + "         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)" + " )" +
-				 " group by strftime('%%Y',Date)" +
-				 (sgroupby == "quarter" ? std::string("") + ",case" + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'" +
-								  "                                                              else 'Q4'" + "   end"
-				  : sgroupby == "month" ? ",strftime('%%m',Date)"
-							: "") +
-				 " order by 1 asc" + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""))
-					.c_str(),
-				idx, idx, idx);
+			std::string queryString;
+            queryString.append(" select");
+            queryString.append("  strftime('%%Y',Date) as Year,");
+            queryString.append("  sum(Difference) as Sum");
+            if (sgroupby == "quarter")
+            {
+                queryString.append(",case");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                queryString.append("                                                              else 'Q4'");
+                queryString.append("   end as Quarter");
+            }
+            else if (sgroupby == "month")
+            {
+                queryString.append(",strftime('%%m',Date) as Month");
+            }
+            queryString.append(" from (");
+            queryString.append(" 	select");
+            queryString.append("         mc0.DeviceRowID,");
+            queryString.append("         date(mc0.Date) as Date,");
+            queryString.append("         case");
+            queryString.append("            when (" + counter("mc1") + ") <= (" + counter("mc0") + ")");
+            queryString.append("            then (" + counter("mc0") + ") - (" + counter("mc1") + ")");
+            queryString.append("            else (" + value("mc0") + ")");
+            queryString.append("         end as Difference");
+            queryString.append(" 	from " + dbasetable + " mc0");
+            queryString.append(" 	inner join " + dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID");
+            queryString.append("         and mc1.Date = (");
+            queryString.append("             select max(mcm.Date)");
+            queryString.append("             from " + dbasetable + " mcm");
+            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0");
+            queryString.append("         )");
+            queryString.append(" 	where");
+            queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
+            queryString.append("         and ("+counter("mc0")+") <> 0");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) <= mc1.Date");
+            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)");
+            queryString.append(" )");
+            queryString.append(" group by strftime('%%Y',Date)");
+            if (sgroupby == "quarter")
+            {
+                queryString.append(",case");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                queryString.append("                                                              else 'Q4'");
+                queryString.append("   end");
+            }
+            else if (sgroupby == "month")
+            {
+                queryString.append(",strftime('%%m',Date)");
+            }
+			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx);
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;
@@ -17333,7 +17362,7 @@ namespace http
 
 		/*
 		 * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
-		 * respective category with todayValue.
+		 * respective category with todayValue. If root["firstYear"] is missing, the today's year is set in it's place.
 		 */
 		void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString)
 		{
@@ -17384,7 +17413,11 @@ namespace http
 			char szTmp[30];
 			sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
 			root["result"][todayResultIndex]["s"] = szTmp;
-		}
+
+            if (!root.isMember("firstYear")) {
+                root["firstYear"] = todayYear.c_str();
+            }
+        }
 
 		/**
 		 * Save user session.
