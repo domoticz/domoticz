@@ -2811,8 +2811,8 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			{
 				double x, y, z;
 				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
-				root["color"]["x"] = (int)x * 65535;
-				root["color"]["y"] = (int)y * 65535;
+				root["color"]["x"] = x;
+				root["color"]["y"] = y;
 			}
 			else if (pSensor->supported_color_modes == "color_temp") //seen as XY
 			{
