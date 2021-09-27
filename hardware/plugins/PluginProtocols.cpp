@@ -1821,7 +1821,6 @@ namespace Plugins {
 				// CONNACK Properties
 				std::vector<byte> vProperties;
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "SessionExpiryInterval");
-				byteValue = 0;
 				if (pDictEntry && PyLong_Check(pDictEntry))
 				{
 					vProperties.push_back(17);
@@ -1829,7 +1828,6 @@ namespace Plugins {
 				}
 
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "MaximumQoS");
-				byteValue = 0;
 				if (pDictEntry && PyLong_Check(pDictEntry))
 				{
 					vProperties.push_back(36);
@@ -1837,7 +1835,6 @@ namespace Plugins {
 				}
 
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "RetainAvailable");
-				byteValue = 0;
 				if (pDictEntry && PyLong_Check(pDictEntry))
 				{
 					vProperties.push_back(37);
@@ -1845,7 +1842,6 @@ namespace Plugins {
 				}
 
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "MaximumPacketSize");
-				byteValue = 0;
 				if (pDictEntry && PyLong_Check(pDictEntry))
 				{
 					vProperties.push_back(39);
@@ -1853,7 +1849,6 @@ namespace Plugins {
 				}
 
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "AssignedClientID");
-				byteValue = 0;
 				if (pDictEntry && (pDictEntry != Py_None))
 				{
 					PyNewRef pStr = PyObject_Str(pDictEntry);
@@ -1862,7 +1857,6 @@ namespace Plugins {
 				}
 
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "ReasonString");
-				byteValue = 0;
 				if (pDictEntry && (pDictEntry != Py_None))
 				{
 					PyNewRef pStr = PyObject_Str(pDictEntry);
@@ -1871,7 +1865,6 @@ namespace Plugins {
 				}
 
 				pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "ResponseInformation");
-				byteValue = 0;
 				if (pDictEntry && (pDictEntry != Py_None))
 				{
 					PyNewRef pStr = PyObject_Str(pDictEntry);
@@ -1933,6 +1926,35 @@ namespace Plugins {
 					}
 				}
 				retVal.push_back(MQTT_SUBSCRIBE | 0x02);	// Add mandatory reserved flags
+			}
+			else if (sVerb == "SUBACK")
+			{
+			// Variable Header
+			PyBorrowedRef pID = PyDict_GetItemString(WriteMessage->m_Object, "PacketIdentifier");
+			long iPacketIdentifier = 0;
+			if (pID && PyLong_Check(pID))
+			{
+				iPacketIdentifier = PyLong_AsLong(pID);
+				MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "(%s) MQTT Subscribe Acknowledgement: No valid PacketIdentifier specified. See Python Plugin wiki page for help.", __func__);
+				return retVal;
+			}
+
+			PyBorrowedRef pDictEntry = PyDict_GetItemString(WriteMessage->m_Object, "QoS");
+			if (pDictEntry && PyLong_Check(pDictEntry))
+			{
+				vPayload.push_back((byte)PyLong_AsLong(pDictEntry));
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "(%s) MQTT Subscribe Acknowledgement: No valid QoS specified, 0 assumed. See Python Plugin wiki page for help.", __func__);
+				vPayload.push_back(0);
+			}
+
+			retVal.push_back(MQTT_SUBACK);
 			}
 			else if (sVerb == "UNSUBSCRIBE")
 			{

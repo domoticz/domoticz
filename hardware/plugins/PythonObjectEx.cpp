@@ -893,7 +893,7 @@ namespace Plugins {
 					int maxDimLevel;
 					bool bHaveGroupCmd;
 					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-					if (self->SubType == STYPE_Selector)
+					if (self->SubType == sSwitchTypeSelector)
 						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
 					else
 						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
