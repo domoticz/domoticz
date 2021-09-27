@@ -862,12 +862,6 @@ namespace http {
 				request_path = m_webRoot + "/";
 			}
 
-			// If path ends in slash (i.e. is a directory) then add "index.html".
-			if (request_path[request_path.size() - 1] == '/')
-			{
-				request_path += "index.html";
-			}
-
 			if (!m_webRoot.empty())
 			{
 				// remove web root if present otherwise
