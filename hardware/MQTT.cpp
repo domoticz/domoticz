@@ -2810,7 +2810,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			if (pSensor->supported_color_modes == "xy")
 			{
 				double Y, x, y;
-				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, Y);
+				_tColor::XYFromRGB(color.r, color.g, color.b, x, y, Y);
 				root["color"]["x"] = x;
 				root["color"]["y"] = y;
 			}
