@@ -2809,12 +2809,12 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		{
 			if (pSensor->supported_color_modes == "xy")
 			{
-				double x, y, z;
-				_tColor::XYFromRGB(color.r, color.g, color.g, x, y, z);
+				double Y, x, y;
+				_tColor::XYFromRGB(color.r, color.g, color.b, x, y, Y);
 				root["color"]["x"] = x;
 				root["color"]["y"] = y;
 			}
-			else if (pSensor->supported_color_modes == "color_temp") //seen as XY
+			else if (pSensor->supported_color_modes == "color_temp")
 			{
 				//color.cw color.ww t
 				float iCt = pSensor->min_mireds + ((static_cast<float>(pSensor->max_mireds - pSensor->min_mireds) / 255.0F) * color.t);

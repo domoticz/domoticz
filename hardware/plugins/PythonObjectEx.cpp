@@ -591,12 +591,38 @@ namespace Plugins {
 						std::string sOptionValue = "";
 
 						// Support weird legacy 'custom' options
-						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						//if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						//{
+						//	PyBorrowedRef pValueDict = PyDict_GetItemString(self->Options, "Custom");
+						//	if (pValueDict)
+						//		sOptionValue = (std::string)pValueDict;
+						//}
+
+						if (PyDict_Size(self->Options) > 0)
 						{
-							PyBorrowedRef pValueDict = PyDict_GetItemString(self->Options, "Custom");
-							if (pValueDict)
-								sOptionValue = (std::string)pValueDict;
+							if (self->SubType != sTypeCustom)
+							{
+								PyBorrowedRef	pKeyDict, pValueDict;
+								Py_ssize_t pos = 0;
+								std::map<std::string, std::string> mpOptions;
+								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict))
+								{
+									std::string sOptionName = pKeyDict;
+									std::string sOptionValue = pValueDict;
+									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+								}
+								sOptionValue = m_sql.FormatDeviceOptions(mpOptions);
+							}
+							else
+							{
+								PyBorrowedRef pValue = PyDict_GetItemString(self->Options, "Custom");
+								if (pValue)
+								{
+									sOptionValue = (std::string)pValue;
+								}
+							}
 						}
+
 
 						std::string sSQL = "INSERT INTO DeviceStatus "
 								   "(HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
@@ -791,6 +817,8 @@ namespace Plugins {
 			// Need to look up current nValue and sValue and only do triggers if one has changed
 			bool nValueChanged = false;
 			bool sValueChanged = false;
+			std::string	sOnAction;
+			std::string	sOffAction;
 			std::vector<std::vector<std::string>> result;
 
 			Py_BEGIN_ALLOW_THREADS
@@ -809,6 +837,8 @@ namespace Plugins {
 				{
 					sValueChanged = true;
 				}
+				sOnAction = result[0][3];
+				sOffAction = result[0][4];
 			}
 
 			// Do an atomic update (do not change this to individual field updates!!!!!!!)
@@ -875,12 +905,22 @@ namespace Plugins {
 				Py_BEGIN_ALLOW_THREADS
 				uint64_t	DevRowIdx = std::stoull(result[0][0]);
 				m_mainworker.m_eventsystem.ProcessDevice(pModState->pPlugin->m_HwdID, DevRowIdx, self->Unit, iType, iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str());
-				if (nValueChanged || (self->SubType == sSwitchTypeSelector))
+
+				// Standard on/off action handling  If a device has these then make sure they are handled.
+				if (self->SwitchType == STYPE_Selector)
+				{
+					sOnAction = GetSelectorSwitchLevelAction(m_sql.BuildDeviceOptions(sOptionValue, true), atoi(sValue.c_str()));
+					sOffAction = GetSelectorSwitchLevelAction(m_sql.BuildDeviceOptions(sOptionValue, true), 0);
+				}
+				if (sOnAction.length() || sOffAction.length())
 				{
 					// Handle On & Off actions if they are defined (HandleOnOffAction just returns if they are blank)
-					m_sql.HandleOnOffAction(nValue, result[0][3], result[0][4]);
+					m_sql.HandleOnOffAction(nValue, sOnAction, sOffAction);
 				}
+
 				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
+
+				// Notifications
 				if (!IsLightOrSwitch(iType, iSubType))
 				{
 					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
@@ -893,7 +933,7 @@ namespace Plugins {
 					int maxDimLevel;
 					bool bHaveGroupCmd;
 					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-					if (self->SubType == sSwitchTypeSelector)
+					if (self->SwitchType == STYPE_Selector)
 						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
 					else
 						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);

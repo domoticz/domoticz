@@ -227,24 +227,31 @@ void _tColor::RgbFromXY(const double x, const double y, uint8_t &r8, uint8_t &g8
 	b8 = uint8_t(b * 255.0);
 }
 
-void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double &x, double &y, double &z)
+void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double& x, double& y, double& Y)
 {
+	//Input r8,g8,b8 0-255
+	//Output Yxy (0 - 1.0)
 	float red = float(r8) / 255.0F;
 	float green = float(g8) / 255.0F;
 	float blue = float(b8) / 255.0F;
 
 	// Apply gamma correction
-	float r = (red > 0.04045f) ? pow((red + 0.055f) / (1.0f + 0.055f), 2.4f) : (red / 12.92f);
-	float g = (green > 0.04045f) ? pow((green + 0.055f) / (1.0f + 0.055f), 2.4f) : (green / 12.92f);
-	float b = (blue > 0.04045f) ? pow((blue + 0.055f) / (1.0f + 0.055f), 2.4f) : (blue / 12.92f);
+	float varR = (red > 0.04045f) ? pow((red + 0.055f) / (1.0f + 0.055f), 2.4f) : (red / 12.92f);
+	float varG = (green > 0.04045f) ? pow((green + 0.055f) / (1.0f + 0.055f), 2.4f) : (green / 12.92f);
+	float varB = (blue > 0.04045f) ? pow((blue + 0.055f) / (1.0f + 0.055f), 2.4f) : (blue / 12.92f);
 
-	// Wide gamut conversion D65
-	float X = r * 0.649926f + g * 0.103455f + b * 0.197109f;
-	float Y = r * 0.234327f + g * 0.743075f + b * 0.022598f;
-	float Z = r * 0.0000000f + g * 0.053077f + b * 1.035763f;
+	float tX = varR * 0.4124f + varG * 0.3576f + varB * 0.1805f;
+	float tY = varR * 0.2126f + varG * 0.7152f + varB * 0.0722f;
+	float tZ = varR * 0.0193f + varG * 0.1192f + varB * 0.9505f;
 
-	x = X / (X + Y + Z);
-	y = Y / (X + Y + Z);
+	// XYZ to Yxy
+	Y = tY;
+	x = tX / (tX + tY + tZ);
+	y = tY / (tX + tY + tZ);
+
+	if (std::isnan(Y)) {
+		Y = 0.0f;
+	}
 
 	if (std::isnan(x)) {
 		x = 0.0f;
