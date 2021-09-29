@@ -2592,7 +2592,15 @@ namespace Plugins
 
 	PyBorrowedRef CPlugin::FindDevice(const std::string &Key)
 	{
-		return PyDict_GetItemString((PyObject *)m_DeviceDict, Key.c_str());
+		if (m_DeviceDict && PyDict_Check(m_DeviceDict))
+		{
+			return PyDict_GetItemString((PyObject*)m_DeviceDict, Key.c_str());
+		}
+		else
+		{
+			Log(LOG_ERROR, "(%s) Devices dictionary null or not valid in '%s'.", m_PluginKey.c_str(), __func__);
+		}
+		return nullptr;
 	}
 
 	PyBorrowedRef	CPlugin::FindUnitInDevice(const std::string &deviceKey, const int unitKey)
