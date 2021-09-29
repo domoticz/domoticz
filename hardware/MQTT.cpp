@@ -2283,8 +2283,21 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			szOnOffValue = root["state"].asString();
 		else if (!root["value"].empty())
 		{
-			int iValue = root["value"].asInt();
-			szOnOffValue = (iValue != 0) ? pSensor->payload_on : pSensor->payload_off;
+			szOnOffValue = root["value"].asString();
+			if (is_number(szOnOffValue))
+			{
+				//must be a level
+				level = atoi(szOnOffValue.c_str());
+				if (level > 0)
+				{
+					if (level != 100)
+						szOnOffValue = "Set Level";
+					else
+						szOnOffValue = "on";
+				}
+				else
+					szOnOffValue = "off";
+			}
 		}
 		else
 		{
