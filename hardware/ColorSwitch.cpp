@@ -231,18 +231,18 @@ void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, do
 {
 	//Input r8,g8,b8 0-255
 	//Output Yxy (0 - 1.0)
-	float red = float(r8) / 255.0F;
-	float green = float(g8) / 255.0F;
-	float blue = float(b8) / 255.0F;
+	double red = double(r8) / 255.0;
+	double green = double(g8) / 255.0;
+	double blue = double(b8) / 255.0;
 
 	// Apply gamma correction
-	float varR = (red > 0.04045f) ? pow((red + 0.055f) / (1.0f + 0.055f), 2.4f) : (red / 12.92f);
-	float varG = (green > 0.04045f) ? pow((green + 0.055f) / (1.0f + 0.055f), 2.4f) : (green / 12.92f);
-	float varB = (blue > 0.04045f) ? pow((blue + 0.055f) / (1.0f + 0.055f), 2.4f) : (blue / 12.92f);
+	double varR = (red > 0.04045) ? pow((red + 0.055) / (1.0 + 0.055), 2.4) : (red / 12.92);
+	double varG = (green > 0.04045) ? pow((green + 0.055) / (1.0 + 0.055), 2.4) : (green / 12.92);
+	double varB = (blue > 0.04045) ? pow((blue + 0.055) / (1.0 + 0.055), 2.4) : (blue / 12.92);
 
-	float tX = varR * 0.4124f + varG * 0.3576f + varB * 0.1805f;
-	float tY = varR * 0.2126f + varG * 0.7152f + varB * 0.0722f;
-	float tZ = varR * 0.0193f + varG * 0.1192f + varB * 0.9505f;
+	double tX = varR * 0.664511 + varG * 0.154324 + varB * 0.162028;
+	double tY = varR * 0.283881 + varG * 0.668433 + varB * 0.047685;
+	double tZ = varR * 0.000088 + varG * 0.072310 + varB * 0.986039;
 
 	// XYZ to Yxy
 	Y = tY;
@@ -250,14 +250,14 @@ void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, do
 	y = tY / (tX + tY + tZ);
 
 	if (std::isnan(Y)) {
-		Y = 0.0f;
+		Y = 0.0;
 	}
 
 	if (std::isnan(x)) {
-		x = 0.0f;
+		x = 0.0;
 	}
 
 	if (std::isnan(y)) {
-		y = 0.0f;
+		y = 0.0;
 	}
 }
