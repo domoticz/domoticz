@@ -2127,12 +2127,10 @@ namespace Plugins {
 			else if (sVerb == "PINGRESP")
 			{
 				retVal.push_back(MQTT_PINGRESP);
-				retVal.push_back(0);
 			}
 			else if (sVerb == "DISCONNECT")
 			{
 				retVal.push_back(MQTT_DISCONNECT);
-				retVal.push_back(0);
 			}
 			else
 			{
