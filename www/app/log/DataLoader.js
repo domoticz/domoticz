@@ -97,7 +97,7 @@ define(function () {
 
         function analyseDataItems(dataItems, seriesSuppliers) {
             runSeriesSuppliersFunction(
-                dataItems.slice(0, 150),
+                (dataItems || []).slice(0, 150),
                 seriesSuppliers
                     .filter(function (seriesSupplier) {
                         return seriesSupplier.analyseDataItem !== undefined;
@@ -110,7 +110,7 @@ define(function () {
 
         function collectDatapoints(dataItems, seriesSuppliers) {
             runSeriesSuppliersFunction(
-                dataItems,
+                dataItems || [],
                 seriesSuppliers.filter(function (seriesSupplier) {
                     return seriesSupplier.valuesFromDataItem !== undefined;
                 }),
