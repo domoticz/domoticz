@@ -1934,13 +1934,15 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* p
 
 void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
-	if (pSensor->value_template.find("action") == 0)
-		return;
 	if (
-		(pSensor->value_template == "click")
+		(pSensor->value_template == "action")
+		|| (pSensor->value_template == "click")
 		|| (pSensor->object_id == "scene_state_sceneid"))
 	{
 		//Scene
+		if (pSensor->last_value == "wakeup")
+			return;
+
 		InsertUpdateSwitch(pSensor);
 		return;
 	}
@@ -2200,9 +2202,14 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorContact;
 	else if (pSensor->object_id == "door_state")
 		switchType = STYPE_DoorContact;
-	else if (pSensor->value_template == "click")
+	else if (
+		(pSensor->value_template == "action")
+		|| (pSensor->value_template == "click")
+		)
 	{
 		//Scene devices
+		if (pSensor->last_value.empty())
+			return;
 		if (pSensor->last_value == "on")
 		{
 			pSensor->devUnit = 1;
@@ -2222,6 +2229,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			pSensor->devUnit = 4;
 			switchType = STYPE_PushOff;
+		}
+		else {
+			//Assume action trigger
+			pSensor->devUnit = Crc8(0, (uint8_t*)pSensor->last_value.c_str(), pSensor->last_value.size());
+			switchType = STYPE_PushOn;
 		}
 		szSensorName += "_" + pSensor->last_value;
 	}
