@@ -25,15 +25,19 @@ define(['app'], function (app) {
     };
 
     const deviceCounterSubtype = {
+        EnergyUsed: 'energy',
         Gas: 'gas',
         Water: 'water',
-        Counter: 'counter'
+        Counter: 'counter',
+        EnergyGenerated: 'energy'
     };
 
     const deviceCounterName = {
+        EnergyUsed: 'Usage',
         Gas: 'Gas',
         Water: 'Water',
-        Counter: 'Counter'
+        Counter: 'Counter',
+        EnergyGenerated: 'Generated'
     };
 
     const valueMultipliers = {
