@@ -88,7 +88,9 @@ define(['app', 'luxon'], function (app, luxon) {
                     title: {
                         text: ''
                     },
-                    labels: false,
+                    labels: {
+                      enabled: false    
+                    },                  
                     categories: ['On'],
                     reversed: true
                 },
