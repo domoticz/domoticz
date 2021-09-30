@@ -843,7 +843,7 @@ namespace Plugins {
 
 			// Do an atomic update (do not change this to individual field updates!!!!!!!)
 			std::string sSQL = "UPDATE DeviceStatus "
-							   "SET Name=?, Description=?, Used=?, Type=?, SubType=?, SwitchType=?, nValue=?, sValue=?, CustomImage=?, Color=?, SignalLevel=?, BatteryLevel=?, Options=?, LastUpdate=? "
+							   "SET Name=?, Description=?, Used=?, Type=?, SubType=?, SwitchType=?, nValue=?, sValue=?, LastLevel=?, CustomImage=?, Color=?, SignalLevel=?, BatteryLevel=?, Options=?, LastUpdate=? "
 							   "WHERE (HardwareID==?) AND (DeviceID==?) AND (Unit==?);";
 			std::vector<std::string> vValues;
 			vValues.push_back(sName);
@@ -854,6 +854,7 @@ namespace Plugins {
 			vValues.push_back(std::to_string(iSwitchType));
 			vValues.push_back(std::to_string(nValue));
 			vValues.push_back(sValue);
+			vValues.push_back(std::to_string(self->LastLevel));
 			vValues.push_back(std::to_string(self->Image));
 			vValues.push_back(sColor);
 			vValues.push_back(std::to_string(self->SignalLevel));
