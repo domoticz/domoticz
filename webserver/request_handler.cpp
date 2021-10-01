@@ -287,12 +287,30 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  full_path = doc_root_ + request_path;
 		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
 	  }
-
 	  // maybe it is a folder, lets add the index file
 	  struct stat sb;
-	  if (!is.is_open() && stat(full_path.c_str(), &sb) == 0 && (sb.st_mode & S_IFDIR))
+	  int iStat = stat(full_path.c_str(), &sb);
+	  if ((iStat == 0) && ((sb.st_mode & S_IFDIR) == S_IFDIR))
 	  {
-		  full_path = doc_root_ + request_path + "/index.html";
+		  // Even a Directory can be 'opened', so close it first before we look for a different file
+		  if (is.is_open())
+		  {
+			is.close();
+		  }
+
+		  // If path ends in slash (as it is a directory) then add "index.html".
+		  if (request_path[request_path.size() - 1] == '/')
+		  {
+		    full_path = doc_root_ + request_path + "index.html";
+		  }
+		  else
+		  {
+			// Directory requests should end with a / otherwise the browser will get confused with relative paths
+			// So we don't add the index.html here but report 400
+			rep = reply::stock_reply(reply::bad_request);
+			return;
+		  }
+
 		  if (bHaveGZipSupport) // first try gzip version
 		  {
 			  full_path += ".gz";
@@ -307,7 +325,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  }
 		  else if (bHaveGZipSupport) // try uncompressed version
 		  {
-			  full_path = doc_root_ + request_path + "/index.html";
+			  full_path = doc_root_ + request_path + "index.html";
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
 		  }
 
@@ -315,6 +333,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  {
 			  extension = "html";
 		  }
+		  _log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%sindex.html).", request_path.c_str(), request_path.c_str());
 	  }
 
 	  // maybe its a gz file (and clients browser does not support compression)
@@ -332,9 +351,6 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		if (!is.is_open())
 		{
 			rep = reply::stock_reply(reply::not_found);
-#ifdef _DEBUG
-			_log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)  (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
-#endif
 			return;
 		}
 
@@ -360,7 +376,16 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		}
 		else
 		{
-			rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+			try
+			{
+				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+			}
+			catch(const std::exception& e)
+			{
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] unable to server content from %s.", request_path.c_str(), full_path.c_str());
+				rep = reply::stock_reply(reply::not_found);
+				return;
+			}
 		}
 		rep.status = reply::ok;
   }
