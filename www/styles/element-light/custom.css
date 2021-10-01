@@ -3,17 +3,17 @@
 @font-face {
 	font-family: "OpenSans";
 	font-style: normal;
-	src: url('../element-light/fonts/OpenSans.ttf');
-	src: local('OpenSans'), url('../element-light/fonts/OpenSans.ttf') format('truetype');
+	src: url('fonts/OpenSans.ttf');
+	src: local('OpenSans'), url('fonts/OpenSans.ttf') format('truetype');
 }
 @font-face {
 	font-family: "DroidSans";
 	font-style: normal;
-	src: url('../element-light/fonts/DroidSans.ttf');
-	src: local('DroidSans'), url('../element-light/fonts/DroidSans.ttf') format('truetype');
+	src: url('fonts/DroidSans.ttf');
+	src: local('DroidSans'), url('fonts/DroidSans.ttf') format('truetype');
 }
 body {
-	background: #202020 url(../element-light/images/imgbg.jpg) repeat !important;
+	background: #202020 url(images/imgbg.jpg) repeat !important;
 }
 #appversion:after {
   content: " ElementMedia Light v0.3";

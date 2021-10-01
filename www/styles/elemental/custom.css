@@ -3,17 +3,17 @@
 @font-face {
 	font-family: "OpenSans";
 	font-style: normal;
-	src: url('../elemental/fonts/OpenSans.ttf');
-	src: local('OpenSans'), url('../elemental/fonts/OpenSans.ttf') format('truetype');
+	src: url('fonts/OpenSans.ttf');
+	src: local('OpenSans'), url('fonts/OpenSans.ttf') format('truetype');
 }
 @font-face {
 	font-family: "DroidSans";
 	font-style: normal;
-	src: url('../elemental/fonts/DroidSans.ttf');
-	src: local('DroidSans'), url('../elemental/fonts/DroidSans.ttf') format('truetype');
+	src: url('fonts/DroidSans.ttf');
+	src: local('DroidSans'), url('fonts/DroidSans.ttf') format('truetype');
 }
 body {
-	background: #202020 url(../elemental/images/imgbg.jpg) no-repeat center center fixed;
+	background: #202020 url(images/imgbg.jpg) no-repeat center center fixed;
 	-webkit-background-size: cover;
   	-moz-background-size: cover;
   	-o-background-size: cover;
@@ -357,7 +357,7 @@ body table#mobileitem tr td:first-child{
 	width: calc(98% - 70px) !important;
 	position: relative;
 	background-color: #8e8d8d;
-	background: url('../elemental/images/bg-track.png') repeat top left;
+	background: url('images/bg-track.png') repeat top left;
 	box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5),
     				  0 1px 0 0px rgba(250, 250, 250, .5);
 }

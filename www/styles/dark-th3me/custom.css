@@ -9,8 +9,8 @@
 @font-face {
   font-family: "Ubuntu";
   font-style: normal;
-  src: url('../dark-th3me/fonts/Ubuntu.ttf');
-  src: local('Ubuntu'), url('../dark-th3me/fonts/Ubuntu.ttf') format('truetype');
+  src: url('fonts/Ubuntu.ttf');
+  src: local('Ubuntu'), url('fonts/Ubuntu.ttf') format('truetype');
 }
 /* Font Ubuntu everywhere */
 html * {
@@ -78,7 +78,7 @@ body {
 /*only show special background when screen is min 1000px width, so tablets show normal background*/
 @media (min-width: 1025px) {
   body {
-    background: #7d7e7d url(../dark-th3me/images/domoticz.jpg) center fixed;
+    background: #7d7e7d url(images/domoticz.jpg) center fixed;
     color: #ffffff;
   }
 }
@@ -441,7 +441,6 @@ table#itemtabletrippleicon td#name {
   margin-left: -26px !important;
 }
 select {
-  color: black;
   background-color: #f5f5f5;
 }
 .ui-widget-content {
