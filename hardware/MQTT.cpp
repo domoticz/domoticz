@@ -2858,7 +2858,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 		else if (command == "Set Color")
 		{
-			//root["state"] = pSensor->payload_on;
+			root["state"] = pSensor->payload_on;
 
 			if (
 				(color.mode == ColorModeRGB)
