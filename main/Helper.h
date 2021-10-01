@@ -29,6 +29,24 @@ void stdlower(std::wstring& inoutstring);
 std::string utf8_to_string(const std::string &utf8str);
 std::wstring utf8_to_wstring(const std::string &utf8str);
 
+template<class T>
+std::string std_map_to_string(const T m)
+{
+	if (m.empty())
+		return "{ <empty!> }";
+	std::string ret;
+	for (const auto itt : m)
+	{
+		if (ret.empty())
+			ret = "{ ";
+		else
+			ret += ", ";
+		ret += itt.first;
+	}
+	ret += " }";
+	return ret;
+}
+
 template< typename T > inline
 std::string int_to_hex(T i)
 {
