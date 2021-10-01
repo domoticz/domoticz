@@ -2140,13 +2140,17 @@ namespace http {
 								if (file_exist((doc_root_ + theme_images_path).c_str()))
 								{
 									requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
-									_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
+									_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified images request to (%s).", uri.c_str(), requestCopy.uri.c_str());
 								}
 							}
-							else if (uri.find("/styles/default/custom.") == 0)
+							else if (uri.find("/styles/") == 0)
 							{
-								requestCopy.uri = myWebem->m_actTheme + uri.substr(15);
-								_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", uri.c_str(), requestCopy.uri.c_str());
+								std::string theme_styles_path = myWebem->m_actTheme + uri.substr(15);
+								if (file_exist((doc_root_ + theme_styles_path).c_str()))
+								{
+									requestCopy.uri = myWebem->GetWebRoot() + theme_styles_path;
+									_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified request to (%s).", uri.c_str(), requestCopy.uri.c_str());
+								}
 							}
 						}
 
