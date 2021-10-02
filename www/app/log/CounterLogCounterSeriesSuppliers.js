@@ -139,6 +139,7 @@ define(['app', 'log/Chart'], function (app) {
                                 + (seriesSupplier.dataSupplier.deviceCounterName !== undefined
                                     ? seriesSupplier.dataSupplier.deviceCounterName
                                     : deviceTypeCounterName(deviceTypeIndex)),
+                            zIndex: 3,
                             tooltip: {
                                 valueSuffix: ' '
                                     + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
