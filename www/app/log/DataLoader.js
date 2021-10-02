@@ -16,15 +16,9 @@ define(function () {
         receiver.seriesSuppliers = completeSeriesSuppliers(receiver.dataSupplier);
 
         function completeSeriesSuppliers(dataSupplier) {
-            const seriesSuppliers = typeof dataSupplier.seriesSuppliers === 'function' ? dataSupplier.seriesSuppliers(data) : dataSupplier.seriesSuppliers;
+            const seriesSuppliers = fromInstanceOrFunction(f => f(data))(dataSupplier.seriesSuppliers);
             return seriesSuppliers
-                .map(function (seriesSupplierOrFunction) {
-                    if (typeof seriesSupplierOrFunction === 'function') {
-                        return seriesSupplierOrFunction(dataSupplier);
-                    } else {
-                        return seriesSupplierOrFunction;
-                    }
-                })
+                .map(fromInstanceOrFunction(f => f(dataSupplier)))
                 .map(function (seriesSupplier) {
                     return _.merge({
                         useDataItemsFromPrevious: false,

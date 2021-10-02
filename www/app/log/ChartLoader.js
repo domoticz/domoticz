@@ -32,7 +32,7 @@ define(['lodash'], function (_) {
                                     data: seriesSupplier.datapoints,
                                     color: seriesSupplier.colorIndex !== undefined ? Highcharts.getOptions().colors[seriesSupplier.colorIndex] : undefined
                                 },
-                                typeof seriesSupplier.template === 'function' ? seriesSupplier.template(seriesSupplier) : seriesSupplier.template
+                                fromInstanceOrFunction(f => f(seriesSupplier))(seriesSupplier.template)
                             );
                         if (self.extendSeriesNameWithLabel && seriesSupplier.label !== undefined) {
                             series.name = '[' + seriesSupplier.label + '] ' + series.name;

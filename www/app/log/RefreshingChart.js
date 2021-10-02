@@ -709,10 +709,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         function chartTitle() {
             if (self.chartName !== undefined) {
                 let chartName;
-                if (typeof self.chartName === 'function')
-                    chartName = self.chartName();
-                else
-                    chartName = self.chartName;
+                chartName = fromInstanceOrFunction()(self.chartName);
                 const periodInTitle = chartTitlePeriod();
                 return chartName + (periodInTitle ? ' ' + periodInTitle : '');
             } else {
@@ -769,7 +766,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             },
             log: function () {
                 return this.indent
-                    + (typeof this.label === 'function' ? this.label() : this.label)
+                    + fromInstanceOrFunction()(this.label)
                     + ': ' + this.lapsedMsecs() + 'msecs';
             },
             split: function (label) {
