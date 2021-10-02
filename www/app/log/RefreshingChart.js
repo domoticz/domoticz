@@ -233,7 +233,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             column: {
                                 pointPlacement: 'between',
                                 borderWidth: 0,
-                                minPointLength: 4,
+                                minPointLength: 2,
                                 pointPadding: 0.1,
                                 groupPadding: 0,
                                 dataLabels: {

@@ -24,47 +24,39 @@ define(function () {
                         useDataItemsFromPrevious: false,
                         dataSupplier: dataSupplier,
                         dataItemKeys: [],
-                        dataItemIsValid:
-                            function (dataItem) {
-                                return this.dataItemKeys.every(function (dataItemKey) {
-                                    return dataItem[dataItemKey] !== undefined;
-                                });
-                            },
+                        convertZeroToNull: false,
+                        dataItemIsValid: dataItem => true,
+                        dataItemIsComplete: function (dataItem) {
+                            return this.dataItemKeys.every(function (dataItemKey) {
+                                return dataItem[dataItemKey] !== undefined;
+                            });
+                        },
                         initialiseDatapoints: function () {
                             this.datapoints = [];
                         },
                         acceptDatapointFromDataItem: function (dataItem, datapoint) {
                             this.datapoints.push(datapoint);
                         },
-                        datapointFromDataItem:
-                            function (dataItem) {
-                                const datapoint = [this.timestampFromDataItem(dataItem)];
-                                this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
-                                    datapoint.push(valueFromDataItem);
-                                });
-                                return datapoint;
-                            },
-                        valuesFromDataItem:
-                            function (dataItem) {
-                                const self = this;
-                                const valueFromDataItem = this.valueFromDataItem;
-                                return this.dataItemKeys.map(function (dataItemKey) {
-                                    return self.valueFromDataItem.call(self, (dataItem[dataItemKey]));
-                                });
-                            },
-                        valueFromDataItem:
-                            function (dataItemValue) {
-                                const parsedValue = parseFloat(dataItemValue);
-                                const processedValue =
-                                    this.postprocessDataItemValue === undefined ? parsedValue : this.postprocessDataItemValue(parsedValue);
-                                return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
-                            },
+                        datapointFromDataItem: function (dataItem) {
+                            const datapoint = [this.timestampFromDataItem(dataItem)];
+                            this.valuesFromDataItem(dataItem).forEach(function (valueFromDataItem) {
+                                datapoint.push(valueFromDataItem);
+                            });
+                            return datapoint;
+                        },
+                        valuesFromDataItem: function (dataItem) {
+                            const self = this;
+                            return this.dataItemKeys.map(function (dataItemKey) {
+                                return self.valueFromDataItem.call(self, dataItem[dataItemKey]);
+                            });
+                        },
+                        valueFromDataItem: function (dataItemValue) {
+                            const parsedValue = parseFloat(dataItemValue);
+                            const processedValue = this.postprocessDataItemValue === undefined ? parsedValue : this.postprocessDataItemValue(parsedValue);
+                            return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
+                        },
                         timestampFromDataItem: function (dataItem) {
-                            if (!this.useDataItemsFromPrevious) {
-                                return dataSupplier.timestampFromDataItem(dataItem);
-                            } else {
-                                return dataSupplier.timestampFromDataItem(dataItem, 1);
-                            }
+                            return dataSupplier.timestampFromDataItem(dataItem, this.useDataItemsFromPrevious ? 1 : 0);
                         }
                     }, seriesSupplier);
                 });
@@ -109,7 +101,7 @@ define(function () {
                     return seriesSupplier.valuesFromDataItem !== undefined;
                 }),
                 function (seriesSupplier, dataItem) {
-                    if (seriesSupplier.dataItemIsValid === undefined || seriesSupplier.dataItemIsValid(dataItem)) {
+                    if (seriesSupplier.dataItemIsValid(dataItem) && seriesSupplier.dataItemIsComplete(dataItem)) {
                         seriesSupplier.acceptDatapointFromDataItem(dataItem, seriesSupplier.datapointFromDataItem(dataItem));
                     }
                 },

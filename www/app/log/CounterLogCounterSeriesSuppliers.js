@@ -38,7 +38,7 @@ define(['app', 'log/Chart'], function (app) {
                             yAxis.options.title.text = this.dataSupplier.deviceCounterName;
                         }
                     },
-                    label: 'A',
+                    label: '1',
                     template: function (seriesSupplier) {
                         return {
                             type: 'column',
@@ -69,7 +69,7 @@ define(['app', 'log/Chart'], function (app) {
                     dataItemKeys: ['v'],
                     postprocessDataItemValue: postprocessDataItemValue,
                     postprocessDatapoints: chart.aggregateTrendline,
-                    label: 'B',
+                    label: '2',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Trendline') + ' '
@@ -100,7 +100,7 @@ define(['app', 'log/Chart'], function (app) {
                     chartZoomLevelChanged: function (chart, zoomLeft, zoomRight) {
                         this.reaggregateTrendlineZoomed(chart, zoomLeft, zoomRight);
                     },
-                    label: 'C',
+                    label: '3',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Trendline') + ' '
@@ -132,7 +132,7 @@ define(['app', 'log/Chart'], function (app) {
                     dataItemKeys: ['v'],
                     useDataItemsFromPrevious: true,
                     postprocessDataItemValue: postprocessDataItemValue,
-                    label: 'D',
+                    label: '4',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Past') + ' '

@@ -167,6 +167,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
+                    convertZeroToNull: true,
                     valueDecimals: 3,
                     label: 'H',
                     series: {
