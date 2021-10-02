@@ -2919,7 +2919,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				}
 			}
 
-			if (pSensor->supported_color_modes.find("brightness") != pSensor->supported_color_modes.end())
+			if (
+				(pSensor->bBrightness)
+				|| (!pSensor->brightness_value_template.empty())
+				)
 			{
 				int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
 
