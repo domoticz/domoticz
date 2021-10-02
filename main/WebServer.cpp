@@ -16113,13 +16113,13 @@ namespace http
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_GAS:
-											return std_format("%.2f", AddjValue + sum / divider);
+											return std_format("%.2f", sum / divider);
 										case MTYPE_WATER:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_COUNTER:
-											return std_format("%g", AddjValue + sum / divider);
+											return std_format("%g", sum / divider);
 									}
 									return std::string("");
 								});
