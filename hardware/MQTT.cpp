@@ -1410,24 +1410,17 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		else
 		{
 			if (!root["rgb"].empty()) {
-				pSensor->bColor_mode = (root["rgb"].asString() != "false");
-				if (pSensor->bColor_mode)
+				if ((root["rgb"].asString() != "false"))
 				{
-					if (!root["color_temp"].empty())
-						pSensor->supported_color_modes["rgbcct"] = 1;
-					else
-						pSensor->supported_color_modes["rgb"] = 1;
+					pSensor->bColor_mode = true;
+					pSensor->supported_color_modes["rgbcct"] = 1;
 				}
 			}
-			else
+			if (!root["color_temp"].empty())
 			{
-				if (!root["color_temp"].empty())
+				if (root["color_temp"].asString() != "false")
 				{
-					bool bHaveColorTemp = (root["color_temp"].asString() != "false");
-					if (bHaveColorTemp)
-					{
-						pSensor->supported_color_modes["color_temp"] = 1;
-					}
+					pSensor->supported_color_modes["color_temp"] = 1;
 				}
 			}
 		}
@@ -2926,12 +2919,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					//color.cw color.ww t
 					float iCt = pSensor->min_mireds + ((static_cast<float>(pSensor->max_mireds - pSensor->min_mireds) / 255.0F) * color.t);
 					root["color_temp"] = (int)round(iCt);
-				}
-				else if (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
-				{
-					// Both work for milight
-					root["temperature"] = (int)(color.ww / 2.55);
-					root["kelvin"] = (int)(color.ww / 2.55);
 				}
 			}
 
