@@ -2441,6 +2441,35 @@ bool CSQLHelper::OpenDatabase()
 			//Two more files to remove
 			std::remove(std::string(szWWWFolder + "/js/domoticzblocks.js.gz").c_str());
 			std::remove(std::string(szWWWFolder + "/js/domoticzblocks_messages_en.js.gz").c_str());
+
+			// Check for selector action url's that are UrlEncoded and convert to non-encoded url's
+			std::vector<std::vector<std::string>> result;
+
+			// Get all selector devices
+			result = safe_query("SELECT ID, Options FROM DeviceStatus WHERE (SwitchType=%d)", STYPE_Selector);
+			for (const auto &sd : result)
+			{
+				std::string idx = sd[0];
+				std::string sOptions = sd[1];
+				if (!sOptions.empty())
+				{
+					std::map<std::string, std::string> options = BuildDeviceOptions(sOptions, true);
+					std::string levelActions = options["LevelActions"];
+
+					if (!levelActions.empty())
+					{
+						std::string laLower(levelActions);
+						stdlower(laLower);
+
+						if (laLower.find("http%3a//") != std::string::npos || laLower.find("https%3a//") != std::string::npos)
+						{
+							options["LevelActions"] = CURLEncode::URLDecode(levelActions);
+							uint64_t ullidx = std::stoull(idx);
+							SetDeviceOptions(ullidx, options);
+						}
+					}
+				}
+			}
 		}
 		if (dbversion < 129)
 		{
