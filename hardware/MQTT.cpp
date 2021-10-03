@@ -1423,8 +1423,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			{
 				if (!root["color_temp"].empty())
 				{
-					pSensor->bColor_mode = (root["color_temp"].asString() != "false");
-					if (pSensor->bColor_mode)
+					bool bHaveColorTemp = (root["color_temp"].asString() != "false");
+					if (bHaveColorTemp)
 					{
 						pSensor->supported_color_modes["color_temp"] = 1;
 					}
@@ -2378,14 +2378,18 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	int switchType = STYPE_OnOff;
 	std::string szSensorName = pSensor->name;
 
-	if (pSensor->bColor_mode)
+	if ((pSensor->bColor_mode) || (!pSensor->supported_color_modes.empty()))
 	{
 		pSensor->devType = pTypeColorSwitch;
 		pSensor->subType = sTypeColor_RGB;
 
-		bool bHaveBrightness = (pSensor->supported_color_modes.find("brightness") != pSensor->supported_color_modes.end());
+		bool bHaveBrightness = (
+			(pSensor->supported_color_modes.find("brightness") != pSensor->supported_color_modes.end())
+			|| (pSensor->bBrightness)
+			);
 		bool bHaveColor = (
-			(pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
+			(pSensor->bColor_mode)
+			|| (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
 			|| (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
 			|| (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
 			|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
@@ -2393,8 +2397,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			);
 		bool bHaveColorTemp = (pSensor->supported_color_modes.find("color_temp") != pSensor->supported_color_modes.end());
 
-		if (bHaveColor && bHaveColorTemp
-			)
+		if (bHaveColor && bHaveColorTemp)
 		{
 			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
 		}
@@ -2421,7 +2424,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 			else
 			{
-				Log(LOG_ERROR, "Unhandled color switch type '%s' (%s)", std_map_to_string(pSensor->supported_color_modes).c_str(), pSensor->name.c_str());
+				//Assume RGB (probably only "color_mode" is set to true)
+				pSensor->subType = sTypeColor_RGB;
 				return;
 			}
 		}
@@ -2655,6 +2659,17 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				color_new.g = (uint8_t)g;
 				color_new.b = (uint8_t)b;
 			}
+
+			if (!root["color_temp"].empty())
+			{
+				float CT = root["color_temp"].asFloat();
+				float iCt = ((float(CT) - pSensor->min_mireds) / (pSensor->max_mireds - pSensor->min_mireds)) * 255.0F;
+				_tColor color_CT = _tColor((uint8_t)round(iCt), ColorModeTemp);
+				color_new.t = color_CT.t;
+				color_new.cw = color_CT.cw;
+				color_new.ww = color_CT.ww;
+			}
+
 			std::string szColorOld = color_old.toJSONString();
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
@@ -2872,8 +2887,17 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					root["color"]["x"] = x;
 					root["color"]["y"] = y;
 				}
+				else if (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
+				{
+					float hsb[3];
+					rgb2hsb(color.r, color.g, color.b, hsb);
+					root["color"]["h"] = hsb[0];
+					root["color"]["s"] = hsb[1];
+					root["brightness"] = hsb[1] * 255.0F;
+				}
 				else if (
-					(pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
+					(pSensor->bColor_mode)
+					|| (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
 					|| (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
 					|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
 					|| (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
@@ -2882,14 +2906,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					root["color"]["r"] = color.r;
 					root["color"]["g"] = color.g;
 					root["color"]["b"] = color.b;
-				}
-				else if (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
-				{
-					float hsb[3];
-					rgb2hsb(color.r, color.g, color.b, hsb);
-					root["color"]["h"] = hsb[0];
-					root["color"]["s"] = hsb[1];
-					root["brightness"] = hsb[1] * 255.0F;
 				}
 				if (
 					(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
