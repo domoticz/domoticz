@@ -183,7 +183,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'chillmin',
             dataItemKeys: ['cm'],
-            dataItemIsValid: function (dataItem) {
+            dataItemIsComplete: function (dataItem) {
                 return dataItem.ch !== undefined;
             },
             template: {
@@ -222,7 +222,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'setpointrange',
             dataItemKeys: ['sm', 'sx'],
-            dataItemIsValid: function (dataItem) {
+            dataItemIsComplete: function (dataItem) {
                 return dataItem.se !== undefined;
             },
             template: {
@@ -265,7 +265,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'temperature_avg',
             dataItemKeys: ['ta'],
-            dataItemIsValid: function (dataItem) {
+            dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
             template: {
@@ -286,7 +286,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'temperature',
             dataItemKeys: ['tm', 'te'],
-            dataItemIsValid: function (dataItem) {
+            dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined;
             },
             template: {
@@ -329,7 +329,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'temp_trendline',
             dataItemKeys: ['ta'],
-            dataItemIsValid: function (dataItem) {
+            dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
             postprocessDatapoints: function (datapoints) {

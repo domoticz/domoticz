@@ -20,7 +20,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
 
             },
             chartParamsCompareTemplate: function (ctrl) {
-                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1));
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1000));
             },
             yAxesDay: function (deviceTypeIndex) {
                 return [
@@ -228,7 +228,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                 return []
                     .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0))
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0))
-                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, times1000, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0));
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
@@ -345,7 +345,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
 
             },
             chartParamsCompareTemplate: function (ctrl) {
-                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1));
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1000));
             },
             yAxesDay: function (deviceTypeIndex) {
                 return [
