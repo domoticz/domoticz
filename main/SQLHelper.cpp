@@ -4875,7 +4875,11 @@ uint64_t CSQLHelper::GetDeviceIndex(const int HardwareID, const std::string& ID,
 	return std::stoull(result[0].at(0));
 }
 
-uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string& devname, const bool bUseOnOffAction)
+uint64_t CSQLHelper::UpdateValueInt(
+        const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
+        const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname,
+        const bool bUseOnOffAction
+)
 {
 	if (!m_dbase)
 		return -1;
@@ -4883,8 +4887,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	uint64_t ulID = 0;
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
-	int old_nValue = -1;
-	std::string old_sValue;
+	int nValueBeforeUpdate = -1;
+	std::string sValueBeforeUpdate;
 	_eSwitchType stype = STYPE_OnOff;
 
 	std::vector<std::vector<std::string> > result;
@@ -4919,8 +4923,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		devname = result[0][1];
 		bDeviceUsed = atoi(result[0][2].c_str()) != 0;
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
-		old_nValue = atoi(result[0][4].c_str());
-		old_sValue = result[0][5];
+		nValueBeforeUpdate = atoi(result[0][4].c_str());
+		sValueBeforeUpdate = result[0][5];
 		time_t now = time(nullptr);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
@@ -4928,29 +4932,38 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		//Default is option 0, read from device
 		if (options["EnergyMeterMode"] == "1" && devType == pTypeGeneral && subType == sTypeKwh)
 		{
-			std::vector<std::string> parts;
-			struct tm ntime;
-			double interval;
-			float nEnergy;
-			char sCompValue[100];
+            double intervalSeconds;
+            struct tm ntime;
 			std::string sLastUpdate = result[0][6];
 			time_t lutime;
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
+			intervalSeconds = difftime(now, lutime);
 
-			interval = difftime(now, lutime);
-			StringSplit(old_sValue, ";", parts);
+            std::vector<std::string> parts;
+			StringSplit(sValueBeforeUpdate, ";", parts);
 			if (parts.size() == 2)
 			{
 				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
-				nEnergy = static_cast<float>(atof(parts[0].c_str()) * interval / 3600 + atof(parts[1].c_str()));
+				float powerDuringInterval = static_cast<float>(atof(parts[0].c_str()));
+				float energyUpToInterval = atof(parts[1].c_str());
+				float energyDuringInterval = powerDuringInterval * intervalSeconds / 3600 + energyUpToInterval;
+				const char* powerAfterInterval = parts[0].c_str();
 				StringSplit(sValue, ";", parts);
 				if (!parts.empty())
 				{
-					sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
-					old_sValue = sCompValue;
+                    char sValueAfterInterval[100];
+                    sprintf(sValueAfterInterval, "%s;%.1f", powerAfterInterval, energyDuringInterval);
+					sValue = sValueAfterInterval;
+				}
+				else
+				{
+                    sValue = sValueBeforeUpdate.c_str();
 				}
 			}
-			sValue = old_sValue.c_str();
+			else
+            {
+                sValue = sValueBeforeUpdate.c_str();
+            }
 		}
 		//~ use different update queries based on the device type
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
@@ -4977,8 +4990,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				//like professional alarm system equipment
 				//.. we should make this an option of course
 				bSameDeviceStatusValue = (
-					(nValue == old_nValue) &&
-					(sValue == old_sValue)
+					(nValue == nValueBeforeUpdate) &&
+					(sValue == sValueBeforeUpdate)
 					);
 			}
 
@@ -5114,8 +5127,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 		//Add Lighting log (Skip duplicates)
 		if (
-			(nValue != old_nValue)
-			|| (sValue != old_sValue)
+			(nValue != nValueBeforeUpdate)
+			|| (sValue != sValueBeforeUpdate)
 			|| (stype == STYPE_Doorbell)
 			|| (stype == STYPE_PushOn)
 			|| (stype == STYPE_PushOff)
