@@ -13461,17 +13461,30 @@ namespace http
 					dbasetable = "Fan_Calendar";
 				else if (sensor == "counter")
 				{
-					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || (dType == pTypeAirQuality) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) || ((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) || ((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness)) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD)) ||
-					    ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt)) || ((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) || (dType == pTypeLux) || (dType == pTypeWEIGHT) || (dType == pTypeUsage))
-						dbasetable = "MultiMeter_Calendar";
-					else
-						dbasetable = "Meter_Calendar";
-				}
+                    if (dType == pTypeP1Power
+                        || dType == pTypeCURRENT
+                        || dType == pTypeCURRENTENERGY
+                        || dType == pTypeAirQuality
+                        || dType == pTypeLux
+                        || dType == pTypeWEIGHT
+                        || dType == pTypeUsage
+                        || dType == pTypeGeneral && dSubType == sTypeVisibility
+                        || dType == pTypeGeneral && dSubType == sTypeDistance
+                        || dType == pTypeGeneral && dSubType == sTypeSolarRadiation
+                        || dType == pTypeGeneral && dSubType == sTypeSoilMoisture
+                        || dType == pTypeGeneral && dSubType == sTypeLeafWetness
+                        || dType == pTypeGeneral && dSubType == sTypeVoltage
+                        || dType == pTypeGeneral && dSubType == sTypeCurrent
+                        || dType == pTypeGeneral && dSubType == sTypePressure
+                        || dType == pTypeGeneral && dSubType == sTypeSoundLevel
+                        || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorAD
+                        || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorVolt
+                    ) {
+                        dbasetable = "MultiMeter_Calendar";
+                    } else {
+                        dbasetable = "Meter_Calendar";
+                    }
+                }
 				else if ((sensor == "wind") || (sensor == "winddir"))
 					dbasetable = "Wind_Calendar";
 				else if (sensor == "uv")
@@ -16100,13 +16113,13 @@ namespace http
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_GAS:
-											return std_format("%.2f", AddjValue + sum / divider);
+											return std_format("%.2f", sum / divider);
 										case MTYPE_WATER:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_COUNTER:
-											return std_format("%g", AddjValue + sum / divider);
+											return std_format("%g", sum / divider);
 									}
 									return std::string("");
 								});
@@ -17333,6 +17346,15 @@ namespace http
             queryString.append("         and ("+counter("mc0")+") <> 0");
             queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) <= mc1.Date");
             queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)");
+            queryString.append("    union all");
+            queryString.append("    select");
+            queryString.append("         DeviceRowID,");
+            queryString.append("         date(Date) as Date,");
+            queryString.append("         " + value(""));
+            queryString.append(" 	from " + dbasetable);
+            queryString.append(" 	where");
+            queryString.append("         DeviceRowID = %" PRIu64 "");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) = Date");
             queryString.append(" )");
             queryString.append(" group by strftime('%%Y',Date)");
             if (sgroupby == "quarter")
@@ -17348,7 +17370,7 @@ namespace http
             {
                 queryString.append(",strftime('%%m',Date)");
             }
-			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx);
+			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;

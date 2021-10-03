@@ -24,11 +24,7 @@ define(function() {
         }
 
         function logtext(lineOrLineFunction) {
-            if (typeof lineOrLineFunction === 'function') {
-                return lineOrLineFunction();
-            } else {
-                return lineOrLineFunction;
-            }
+            return fromInstanceOrFunction()(lineOrLineFunction);
         }
     }
 
