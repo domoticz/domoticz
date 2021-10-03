@@ -96,6 +96,7 @@ define(['app', 'log/Chart'], function (app) {
                         function (seriesSuppliers, year) {
                             return seriesSuppliers.concat({
                                 id: year.toString(),
+                                convertZeroToNull: true,
                                 year: year,
                                 template: {
                                     name: year.toString(),
