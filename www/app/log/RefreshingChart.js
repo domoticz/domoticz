@@ -264,10 +264,6 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     self.consoledebug(function () { return stopwatchDataRequest.log(); });
                     self.consoledebug(function () { return '[' + Base.dateToString(new Date()) + '] refreshing ' + self; });
 
-                    if (typeof data.result === 'undefined') {
-                        return;
-                    }
-
                     const stopwatchCycle = stopwatch('cycle');
                     loadDataInChart(data);
                     synchronizeYaxes();
