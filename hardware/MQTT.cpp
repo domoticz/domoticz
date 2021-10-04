@@ -2381,8 +2381,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			|| (pSensor->bBrightness)
 			);
 		bool bHaveColor = (
-			(pSensor->bColor_mode)
-			|| (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
+			(pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
 			|| (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
 			|| (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
 			|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
@@ -2390,11 +2389,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			);
 		bool bHaveColorTemp = (pSensor->supported_color_modes.find("color_temp") != pSensor->supported_color_modes.end());
 
-		if (bHaveColor && bHaveColorTemp)
-		{
-			pSensor->subType = sTypeColor_RGB_CW_WW_Z;
-		}
-		else if (bHaveColor)
+		if (bHaveColor)
 		{
 			if (
 				(pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
