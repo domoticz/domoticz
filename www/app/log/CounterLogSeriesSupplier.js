@@ -136,7 +136,7 @@ define(['app', 'log/Chart'], function (app) {
                                 dataItemIsComplete: dataItem => true,
                                 datapointFromDataItem: function (dataItem) {
                                     return {
-                                        y: this.valueFromDataItem(dataItem["s"]),
+                                        y: this.valueFromDataItemValue(dataItem["s"]),
                                         trend: dataItem["t"]
                                     };
                                 }

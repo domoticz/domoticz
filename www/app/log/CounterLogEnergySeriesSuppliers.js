@@ -34,6 +34,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'counterEnergyUsedOrGenerated',
                     convertZeroToNull: true,
                     label: 'A',
+                    showWithoutDatapoints: false,
                     series: {
                         type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
@@ -54,6 +55,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'B',
+                    showWithoutDatapoints: false,
                     series: {
                         type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
@@ -148,6 +150,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesContain('eu'), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     label: 'G',
+                    showWithoutDatapoints: false,
                     series: {
                         type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
@@ -187,6 +190,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'I',
+                    showWithoutDatapoints: false,
                     series: {
                         type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),

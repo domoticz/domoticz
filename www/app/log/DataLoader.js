@@ -25,6 +25,7 @@ define(function () {
                         dataSupplier: dataSupplier,
                         dataItemKeys: [],
                         convertZeroToNull: false,
+                        showWithoutDatapoints: true,
                         dataItemIsValid: dataItem => true,
                         dataItemIsComplete: function (dataItem) {
                             return this.dataItemKeys.every(function (dataItemKey) {
@@ -47,10 +48,10 @@ define(function () {
                         valuesFromDataItem: function (dataItem) {
                             const self = this;
                             return this.dataItemKeys.map(function (dataItemKey) {
-                                return self.valueFromDataItem.call(self, dataItem[dataItemKey]);
+                                return self.valueFromDataItemValue.call(self, dataItem[dataItemKey]);
                             });
                         },
-                        valueFromDataItem: function (dataItemValue) {
+                        valueFromDataItemValue: function (dataItemValue) {
                             const parsedValue = parseFloat(dataItemValue);
                             const processedValue = this.postprocessDataItemValue === undefined ? parsedValue : this.postprocessDataItemValue(parsedValue);
                             return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
