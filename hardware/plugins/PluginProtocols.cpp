@@ -1208,13 +1208,20 @@ namespace Plugins {
 		vVector.insert(vVector.end(), sString.begin(), sString.end());
 	}
 
-	static long MQTTDecodeVariableByte(std::vector<byte>::iterator& pIt)
+	long CPluginProtocolMQTT::MQTTDecodeVariableByte(std::vector<byte>::iterator& pIt)
 	{
 		long iRetVal = 0;
 		long multiplier = 1;
 		byte encodedByte;
 		do
 		{
+			// Make sure the end of the buffer has not been reached
+			if (!std::distance(pIt, m_sRetainedData.end()))
+			{
+				_log.Debug(DEBUG_NORM, "(%s) Not enough data received to determine message length.", __func__);
+				return -1;
+			}
+
 			encodedByte = *pIt++;
 			iRetVal += (encodedByte & 127) * multiplier;
 			multiplier *= 128;
@@ -1249,7 +1256,7 @@ namespace Plugins {
 			uint16_t	iPacketIdentifier = 0;
 			long iRemainingLength = MQTTDecodeVariableByte(it);
 
-			if (iRemainingLength > std::distance(it, m_sRetainedData.end()))
+			if ((iRemainingLength < 0) || (iRemainingLength > std::distance(it, m_sRetainedData.end())))
 			{
 				// Full packet has not arrived, wait for more data
 				_log.Debug(DEBUG_NORM, "(%s) Not enough data received (got %ld, expected %ld).", __func__, (long)std::distance(it, m_sRetainedData.end()), iRemainingLength);
