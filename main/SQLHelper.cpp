@@ -3460,7 +3460,7 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 }
 
 #ifndef WIN32
-void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred)
+void CSQLHelper::ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred)
 {
 
 	auto start = std::chrono::system_clock::now();
@@ -3472,7 +3472,7 @@ void CSQLHelper::ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRun
 
 	if (*stillRunning)
 	{
-		_log.Log(LOG_ERROR,"dzVents script command running longer than specified timeout(%d seconds), cancelling...", timeout);
+		_log.Log(LOG_ERROR,"dzVents script command running longer than specified timeout(%d seconds), cancelling...(%s)", timeout, szCommand.c_str());
 		kill (pid,SIGKILL);
 		*timeoutOccurred=true;
 	}
@@ -3642,7 +3642,7 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 		{
 			if (timeout > 0)
 			{
-				T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout, this, pid, timeout, &stillRunning, &timeoutOccurred);
+				T = std::make_shared<std::thread>(&CSQLHelper::ManageExecuteScriptTimeout, this, command, pid, timeout, &stillRunning, &timeoutOccurred);
 			}
 			waitpid(pid, &exitcode, 0);
 			stillRunning = false;
