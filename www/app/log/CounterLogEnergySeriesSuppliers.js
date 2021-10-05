@@ -227,6 +227,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 {
                     id: 'p1EnergyGeneratedArea',
                     dataItemKeys: ['eg'],
+                    showWithoutDatapoints: false,
                     label: 'K',
                     template: {
                         type: 'area',
@@ -257,6 +258,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 {
                     id: 'p1PowerGenerated',
                     dataItemKeys: ['v2'],
+                    showWithoutDatapoints: false,
                     label: 'M',
                     template: {
                         name: $.t('Usage') + ' 2',
@@ -294,6 +296,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'p1EnergyGeneratedArea',
                     dataItemKeys: ['eg'],
                     valueDecimals: 3,
+                    showWithoutDatapoints: false,
                     label: 'O',
                     template: {
                         type: 'area',
@@ -328,6 +331,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataItemKeys: ['v2'],
                     valueDecimals: 3,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'Q',
                     template: {
                         name: $.t('Usage') + ' 2',
@@ -350,6 +354,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
+                    showWithoutDatapoints: false,
                     label: 'R',
                     template: {
                         name: $.t('Return') + ' 1',
@@ -367,6 +372,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
+                    showWithoutDatapoints: false,
                     label: 'S',
                     template: {
                         name: $.t('Return') + ' 2',
@@ -391,6 +397,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     valueDecimals: 3,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'T',
                     template: {
                         name: $.t('Return') + ' 1',
@@ -410,6 +417,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     valueDecimals: 3,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'U',
                     template: {
                         name: $.t('Return') + ' 2',
@@ -433,6 +441,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     dataItemKeys: ['r1', 'r2'],
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'V',
                     series: {
                         type: 'column',
@@ -453,6 +462,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     dataItemKeys: ['r1', 'r2'],
                     postprocessDatapoints: chart.aggregateTrendline,
+                    showWithoutDatapoints: false,
                     label: 'W',
                     series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),
@@ -475,6 +485,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataItemKeys: ['r1', 'r2'],
                     useDataItemsFromPrevious: true,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'X',
                     series: {
                         type: 'column',
