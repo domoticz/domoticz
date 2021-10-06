@@ -2392,13 +2392,30 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 		if (bHaveColor)
 		{
-			if (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
+			if (
+				(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
+				|| (
+					(pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
+					&& (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end())
+					)
+				)
 			{
 				pSensor->subType = sTypeColor_RGB_W_Z;
 			}
-			else if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
+			else if (
+				(pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
+				|| (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end() && bHaveColorTemp)
+				|| (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end() && bHaveColorTemp)
+				)
 			{
 				pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+			}
+			else if (
+				(pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end() && !bHaveColorTemp)
+				|| (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end() && !bHaveColorTemp)
+				)
+			{
+				pSensor->subType = sTypeColor_RGB;
 			}
 			else if (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
 			{
@@ -2406,12 +2423,14 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 			else if (bHaveColorTemp)
 			{
-				pSensor->subType = sTypeColor_RGB_CW_WW_Z;
+				pSensor->subType = sTypeColor_CW_WW;
 			}
 			else
 			{
-				//xy , rgb
+				//assume RGB
 				pSensor->subType = sTypeColor_RGB;
+				//Log(LOG_ERROR, "Unhandled color switch type '%s' (%s)", std_map_to_string(pSensor->supported_color_modes).c_str(), pSensor->name.c_str());
+				//return;
 			}
 		}
 		else if (bHaveColorTemp)
