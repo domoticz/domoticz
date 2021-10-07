@@ -116,6 +116,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'humidity',
             dataItemKeys: ['hu'],
+            showWithoutDatapoints: false,
+            label: 'Hu',
             template: {
                 name: $.t('Humidity'),
                 color: 'limegreen',
@@ -132,6 +134,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'chill',
             dataItemKeys: ['ch'],
+            showWithoutDatapoints: false,
+            label: 'Ch',
             template: {
                 name: $.t('Chill'),
                 color: 'red',
@@ -149,6 +153,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'setpoint',
             dataItemKeys: ['se'],
+            showWithoutDatapoints: false,
+            label: 'Se',
             template: {
                 name: $.t('Set Point'),
                 color: 'blue',
@@ -166,6 +172,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'temperature',
             dataItemKeys: ['te'],
+            label: 'Te',
             template: {
                 name: $.t('Temperature'),
                 color: 'yellow',
@@ -186,6 +193,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             dataItemIsComplete: function (dataItem) {
                 return dataItem.ch !== undefined;
             },
+            showWithoutDatapoints: false,
+            label: 'Cm',
             template: {
                 name: $.t('Chill') + ' ' + $.t('Minimum'),
                 color: 'rgba(255,127,39,0.8)',
@@ -204,6 +213,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         return {
             id: 'setpointavg',
             dataItemKeys: ['se'],
+            showWithoutDatapoints: false,
+            label: 'Sa',
             template: {
                 name: $.t('Set Point') + ' ' + $.t('Average'),
                 color: 'blue',
@@ -225,6 +236,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             dataItemIsComplete: function (dataItem) {
                 return dataItem.se !== undefined;
             },
+            showWithoutDatapoints: false,
+            label: 'Sr',
             template: {
                 name: $.t('Set Point') + ' ' + $.t('Range'),
                 color: 'rgba(164,75,148,1.0)',
@@ -247,6 +260,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             id: 'prev_setpoint',
             dataItemKeys: ['se'],
             useDataItemsFromPrevious: true,
+            showWithoutDatapoints: false,
+            label: 'Sp',
             template: {
                 name: $.t('Past') + ' ' + $.t('Set Point'),
                 color: 'rgba(223,212,246,0.8)',
@@ -268,6 +283,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined && dataItem.ta !== undefined;
             },
+            label: 'Ta',
             template: {
                 name: $.t('Temperature') + ' ' + $.t('Average'),
                 color: 'yellow',
@@ -289,6 +305,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             dataItemIsComplete: function (dataItem) {
                 return dataItem.te !== undefined;
             },
+            label: 'Tr',
             template: {
                 name: $.t('Temperature') + ' ' + $.t('Range'),
                 color: 'rgba(3,190,252,1.0)',
@@ -311,6 +328,8 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
             id: 'prev_temperature',
             dataItemKeys: ['ta'],
             useDataItemsFromPrevious: true,
+            showWithoutDatapoints: false,
+            label: 'Tp',
             template: {
                 name: $.t('Past') + ' ' + $.t('Temperature'),
                 color: 'rgba(224,224,230,0.8)',
@@ -340,6 +359,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                     datapoints.push([trendline.x1, trendline.y1]);
                 }
             },
+            label: 'Tt',
             template: {
                 name: $.t('Trendline') + ' ' + $.t('Temperature'),
                 zIndex: 1,

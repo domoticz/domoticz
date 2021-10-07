@@ -23,7 +23,7 @@ define(['lodash'], function (_) {
             const seriesShown = {};
             seriesSuppliers.forEach(function (seriesSupplier) {
                 const chartSeries = chart.get(seriesSupplier.id);
-                if (seriesSupplier.datapoints !== undefined && seriesSupplier.datapoints.length !== 0) {
+                if (seriesSupplier.datapoints !== undefined && seriesSupplier.datapoints.length !== 0 || seriesSupplier.showWithoutDatapoints) {
                     if (chartSeries === undefined) {
                         const series =
                             _.merge(

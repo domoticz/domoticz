@@ -672,6 +672,7 @@ js/FileSaver.js
 js/highcharts/highcharts.js
 js/highcharts/highcharts-more.js
 js/highcharts/modules/dependency-wheel.js
+js/highcharts/modules/no-data-to-display.js
 js/highcharts/modules/export-data.js
 js/highcharts/modules/exporting.js
 js/highcharts/modules/sankey.js
