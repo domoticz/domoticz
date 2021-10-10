@@ -166,6 +166,21 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 		mInfo.is_modified = true;
 		return false;
 	}
+	// Check Cache-Control header
+	const char *cachecontrol_header;
+	if ((cachecontrol_header = request::get_req_header(&req, "Cache-Control")) != nullptr)
+	{
+		//see if no-cache is requested
+		bool bClientNoCache = (strstr(cachecontrol_header, "no-cache") != nullptr);
+		if (bClientNoCache)
+		{
+			// we have a Cache-Control header asking not to cache so continue to serve content
+			mInfo.is_modified = true;
+			mInfo.mtime_support = false;
+			_log.Debug(DEBUG_WEBSERVER, "[web %s]: Cache-Control header asking no-cache", full_path.c_str());
+			return false;
+		}
+	}
 	mInfo.mtime_support = true;
 	// propagate timestamp to browser
 	reply::add_header(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
@@ -184,7 +199,6 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 			_log.Debug(DEBUG_WEBSERVER, "[web %s]: Delaying status code", full_path.c_str());
 			return false;
 		}
-		rep = reply::stock_reply(reply::not_modified);
 		_log.Debug(DEBUG_WEBSERVER, "[web %s]: Setting status code reply::not_modified", full_path.c_str());
 		return true;
 	}
@@ -224,7 +238,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				if (request_path[request_path.size() - 1] == '/')
 				{
 					full_path += "index.html";
-					_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%sindex.html).", request_path.c_str(), request_path.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%s).", request_path.c_str(), full_path.c_str());
 				}
 				else
 				{
@@ -246,9 +260,6 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			}
 		}
 	}
-
-	mInfo.mtime_support = false;
-	mInfo.delay_status = true;
 
 	// If we don't have a valid URI, than reply a Bad Request (400)
 	if(!bValidUri)
@@ -288,8 +299,10 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			bClientHasGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
 		}
 	}
-	mInfo.delay_status = (!bClientHasGZipSupport);
+
 	rep.bIsGZIP = bClientHasGZipSupport;
+	mInfo.delay_status = (!bClientHasGZipSupport);
+	mInfo.mtime_support = false;
 
 	// Determine if we have a gzip compressed  or an uncompressed file as source
 	bool bHaveLoadedgzip = false;
@@ -335,6 +348,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		{
 			if (not_modified(full_path, req, rep, mInfo))
 			{
+				rep = reply::stock_reply(reply::not_modified);
 				return;
 			}
 		}
