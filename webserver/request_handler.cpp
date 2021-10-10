@@ -226,6 +226,11 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 					full_path += "index.html";
 					_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%sindex.html).", request_path.c_str(), request_path.c_str());
 				}
+				else
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
 			}
 			// Determine the file extension.
 			std::size_t last_slash_pos = full_path.find_last_of('/');
@@ -295,19 +300,17 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	{
 		std::ifstream is;
 
-		_log.Debug(DEBUG_WEBSERVER, "[web:%s] looking for source file (%s) with extension (%s).", request_path.c_str(), full_path.c_str(), extension.c_str());
-
 		// Check gzip source file support. Only for js/htm(l) and css files.
 		if ((extension.find("js")!=std::string::npos) || (extension.find("htm") != std::string::npos) || (extension.find("css") != std::string::npos))
 		{
 			// Let's see if there is an gzipped version of the source file
 			std::string full_path_withgz = full_path + ".gz";
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] looking for compressed source file (%s).", request_path.c_str(), full_path_withgz.c_str());
 			is.open(full_path_withgz.c_str(), std::ios::in | std::ios::binary);
 			if (is.is_open())
 			{
 				bHaveLoadedgzip = true;
 				mInfo.delay_status = false;
+				full_path = full_path_withgz;
 			}
 		}
 
