@@ -177,7 +177,7 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 			// we have a Cache-Control header asking not to cache so continue to serve content
 			mInfo.is_modified = true;
 			mInfo.mtime_support = false;
-			_log.Debug(DEBUG_WEBSERVER, "[web %s]: Cache-Control header asking no-cache", full_path.c_str());
+			//_log.Debug(DEBUG_WEBSERVER, "[web %s]: Cache-Control header asking no-cache", full_path.c_str());
 			return false;
 		}
 	}
@@ -189,22 +189,22 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	{
 		// we have no if-modified header, continue to serve content
 		mInfo.is_modified = true;
-		_log.Debug(DEBUG_WEBSERVER, "[web %s]: No If-Modified-Since header", full_path.c_str());
+		//_log.Debug(DEBUG_WEBSERVER, "[web %s]: No If-Modified-Since header", full_path.c_str());
 		return false;
 	}
 	time_t if_modified_since_time = convert_from_http_date(if_modified);
 	if (if_modified_since_time >= mInfo.last_written) {
 		mInfo.is_modified = false;
 		if (mInfo.delay_status) {
-			_log.Debug(DEBUG_WEBSERVER, "[web %s]: Delaying status code", full_path.c_str());
+			//_log.Debug(DEBUG_WEBSERVER, "[web %s]: Delaying status code", full_path.c_str());
 			return false;
 		}
-		_log.Debug(DEBUG_WEBSERVER, "[web %s]: Setting status code reply::not_modified", full_path.c_str());
+		//_log.Debug(DEBUG_WEBSERVER, "[web %s]: Setting status code reply::not_modified", full_path.c_str());
 		return true;
 	}
 	mInfo.is_modified = true;
 	// file is newer, force new content
-	_log.Debug(DEBUG_WEBSERVER, "[web %s]: Force new content", full_path.c_str());
+	//_log.Debug(DEBUG_WEBSERVER, "[web %s]: Force new content", full_path.c_str());
 	return false;
 }
 
@@ -307,6 +307,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
 	// Determine if we have a gzip compressed  or an uncompressed file as source
 	bool bHaveLoadedgzip = false;
+	bool bHaveCompressed = false;
+	bool bIsCompressibleType = false;
 
 #ifndef WEBSERVER_DONT_USE_ZIP
 	if (!m_bIsZIP)
@@ -317,6 +319,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		// Check gzip source file support. Only for js/htm(l) and css files.
 		if ((extension.find("js")!=std::string::npos) || (extension.find("htm") != std::string::npos) || (extension.find("css") != std::string::npos))
 		{
+			bIsCompressibleType = true;
 			// Let's see if there is an gzipped version of the source file
 			std::string full_path_withgz = full_path + ".gz";
 			is.open(full_path_withgz.c_str(), std::ios::in | std::ios::binary);
@@ -371,6 +374,19 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				// Load the sourcefile (compressed or not)
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 				rep.bIsGZIP = (bClientHasGZipSupport && bHaveLoadedgzip);
+			}
+			if (bClientHasGZipSupport && bIsCompressibleType && (!bHaveLoadedgzip))
+			{
+				// The sourcefile is not compressed, but the client supports receiving compressed content
+				// and the content is a compressible type so let's compress the content
+				CA2GZIP gzip((char*)rep.content.c_str(), (int)rep.content.size());
+				if ((gzip.Length > 0) && (gzip.Length < (int)rep.content.size()))
+				{
+					bHaveCompressed = true;
+					rep.bIsGZIP = true; // flag for later
+					rep.content.clear();
+					rep.content.append((char*)gzip.pgzip, gzip.Length);
+				}
 			}
 		}
 		catch(const std::exception& e)
@@ -427,9 +443,14 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	}
 #endif
 
-	if (bClientHasGZipSupport && bHaveLoadedgzip)
+	if (bClientHasGZipSupport && (bHaveLoadedgzip || bHaveCompressed))
 	{
 		reply::add_header(&rep, "Content-Encoding", "gzip");
+	}
+	else if (mime_types::extension_to_type(extension).find("image/") != std::string::npos)
+	{
+		//Cache images
+		reply::add_header(&rep, "Expires", convert_to_http_date(mytime(nullptr) + 3600 * 24 * 90)); // 3 months
 	}
 
 	reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));

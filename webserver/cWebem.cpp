@@ -2188,8 +2188,6 @@ namespace http {
 							{
 								if (mInfo.mtime_support && !mInfo.is_modified)
 								{
-									_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
-									rep = reply::stock_reply(reply::not_modified);
 									return;
 								}
 							}
@@ -2202,33 +2200,12 @@ namespace http {
 
 							if (!mInfo.mtime_support)
 							{
-								reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)),
-										  true);
+								reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)), true);
 							}
 
 							//check gzip support if yes, send it back in gzip format
 							CompressWebOutput(req, rep);
 						}
-
-						// tell browser that we are using UTF-8 encoding
-						reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
-					}
-					else if (mInfo.mtime_support && !mInfo.is_modified)
-					{
-						rep = reply::stock_reply(reply::not_modified);
-						_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
-						return;
-					}
-					else if (content_type.find("image/") != std::string::npos)
-					{
-						//Cache images
-						reply::add_header(&rep, "Expires",
-								  make_web_time(mytime(nullptr) + 3600 * 24 * 365)); // one year
-					}
-					else
-					{
-						// tell browser that we are using UTF-8 encoding
-						reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 					}
 				}
 			}
