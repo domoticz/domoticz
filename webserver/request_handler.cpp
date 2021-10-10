@@ -221,6 +221,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	std::string full_path;
 	std::string extension;
 
+	rep.bIsGZIP = false;
+
 	// Start with checking if the request URI is a valid one
 	// Decode url to path.
 	if (url_decode(req.uri, request_path))
@@ -300,7 +302,6 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		}
 	}
 
-	rep.bIsGZIP = bClientHasGZipSupport;
 	mInfo.delay_status = (!bClientHasGZipSupport);
 	mInfo.mtime_support = false;
 
@@ -369,6 +370,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			{
 				// Load the sourcefile (compressed or not)
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+				rep.bIsGZIP = (bClientHasGZipSupport && bHaveLoadedgzip);
 			}
 		}
 		catch(const std::exception& e)
