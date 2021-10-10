@@ -174,23 +174,23 @@ bool request_handler::not_modified(const std::string &full_path, const request &
 	{
 		// we have no if-modified header, continue to serve content
 		mInfo.is_modified = true;
-		//_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
+		_log.Debug(DEBUG_WEBSERVER, "[web %s]: No If-Modified-Since header", full_path.c_str());
 		return false;
 	}
 	time_t if_modified_since_time = convert_from_http_date(if_modified);
 	if (if_modified_since_time >= mInfo.last_written) {
 		mInfo.is_modified = false;
 		if (mInfo.delay_status) {
-			//_log.Log(LOG_STATUS, "%s: Delaying status code", full_path.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web %s]: Delaying status code", full_path.c_str());
 			return false;
 		}
 		rep = reply::stock_reply(reply::not_modified);
-		//_log.Log(LOG_STATUS, "%s: Setting status code reply::not_modified", full_path.c_str());
+		_log.Debug(DEBUG_WEBSERVER, "[web %s]: Setting status code reply::not_modified", full_path.c_str());
 		return true;
 	}
 	mInfo.is_modified = true;
 	// file is newer, force new content
-	//_log.Log(LOG_STATUS, "%s: Force content", full_path.c_str());
+	_log.Debug(DEBUG_WEBSERVER, "[web %s]: Force new content", full_path.c_str());
 	return false;
 }
 
@@ -202,152 +202,122 @@ void request_handler::handle_request(const request& req, reply& rep)
 
 void request_handler::handle_request(const request &req, reply &rep, modify_info &mInfo)
 {
-  mInfo.mtime_support = false;
-  // Decode url to path.
-  std::string request_path;
-  if (!url_decode(req.uri, request_path))
-  {
-    rep = reply::stock_reply(reply::bad_request);
-    return;
-  }
+	bool bValidUri = false;
+	std::string request_path;
+	std::string full_path;
+	std::string extension;
 
-  if (myWebem->IsBadRequestPath(request_path))
-  {
-    rep = reply::stock_reply(reply::bad_request);
-    return;
-  }
+	// Start with checking if the request URI is a valid one
+	// Decode url to path.
+	if (url_decode(req.uri, request_path))
+	{
+		if (!myWebem->IsBadRequestPath(request_path))
+		{
+			request_path = myWebem->ExtractRequestPath(request_path);
+			full_path = doc_root_ + request_path;
+			struct stat sb;
+			int iStat = stat(full_path.c_str(), &sb);
+			if ((iStat == 0) && ((sb.st_mode & S_IFDIR) == S_IFDIR))
+			{
+				// If it is a directory, make sure that the request path ends with a slash
+				// So the browser will not get confused with the relative paths
+				if (request_path[request_path.size() - 1] == '/')
+				{
+					full_path += "index.html";
+					_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%sindex.html).", request_path.c_str(), request_path.c_str());
+				}
+			}
+			// Determine the file extension.
+			std::size_t last_slash_pos = full_path.find_last_of('/');
+			std::size_t last_dot_pos = full_path.find_last_of('.');
+			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+			{
+				extension = full_path.substr(last_dot_pos + 1);
+				bValidUri = true;
+			}
+			else
+			{
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] unable to determine extension for %s!", request_path.c_str(), full_path.c_str());
+			}
+		}
+	}
 
-  request_path = myWebem->ExtractRequestPath(request_path);
+	mInfo.mtime_support = false;
+	mInfo.delay_status = true;
 
-  // Determine the file extension.
-  std::size_t last_slash_pos = request_path.find_last_of('/');
-  std::size_t last_dot_pos = request_path.find_last_of('.');
-  std::string extension;
-  if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
-  {
-    extension = request_path.substr(last_dot_pos + 1);
-  }
+	// If we don't have a valid URI, than reply a Bad Request (400)
+	if(!bValidUri)
+	{
+		rep = reply::stock_reply(reply::bad_request);
+		return;
+	}
 
-  bool bHaveGZipSupport=false;
+	// For PHP files, we hand-over the processing to the PHP processor and are done
+	if (extension == "php")
+	{
+		if (!myWebem->m_settings.is_php_enabled())
+		{
+			rep = reply::stock_reply(reply::not_implemented);
+			return;
+		}
 
-  if (myWebem->m_gzipmode != WWW_FORCE_NO_GZIP_SUPPORT)
-  {
-	//check gzip support (only for js/htm(l) and css files
-	if (
-	  (request_path.find(".js")!=std::string::npos)
-	  || (request_path.find(".htm") != std::string::npos)
-	  || (request_path.find(".css") != std::string::npos)
-	  )
+		//
+		//For now this is very simplistic!
+		//Later we should add FastCGI support, or at least provide some environment variables
+		fastcgi_parser::handlePHP(myWebem->m_settings, request_path, req, rep, mInfo);
+		return;
+	}
+
+	// ------------
+	// So we have what seems a valid request and established the extension
+	// Let's try to process it
+
+	// Determine if the Client (Browser) supports a gzip'ped response body
+	bool bClientHasGZipSupport = false;
+	if (myWebem->m_gzipmode != WWW_FORCE_NO_GZIP_SUPPORT)
 	{
 		const char *encoding_header;
 		if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != nullptr)
 		{
 			//see if we support gzip
-			bHaveGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
+			bClientHasGZipSupport = (strstr(encoding_header, "gzip") != nullptr);
 		}
 	}
-  }
+	mInfo.delay_status = (!bClientHasGZipSupport);
+	rep.bIsGZIP = bClientHasGZipSupport;
 
-  bool bHaveLoadedgzip=false;
+	// Determine if we have a gzip compressed  or an uncompressed file as source
+	bool bHaveLoadedgzip = false;
+
 #ifndef WEBSERVER_DONT_USE_ZIP
-  if (!m_bIsZIP)
+	if (!m_bIsZIP)
 #endif
-  {
-	  if (extension == "php")
-	  {
-		  if (!myWebem->m_settings.is_php_enabled())
-		  {
-			  rep = reply::stock_reply(reply::not_implemented);
-			  return;
-		  }
+	{
+		std::ifstream is;
 
-		  //
-		  //For now this is very simplistic!
-		  //Later we should add FastCGI support, or at least provide some environment variables
-		  fastcgi_parser::handlePHP(myWebem->m_settings, request_path, req, rep, mInfo);
-		  return;
-	  }
+		_log.Debug(DEBUG_WEBSERVER, "[web:%s] looking for source file (%s) with extension (%s).", request_path.c_str(), full_path.c_str(), extension.c_str());
 
-	  mInfo.delay_status = true;
-	  std::string full_path = doc_root_ + request_path;
-	  if (bHaveGZipSupport) // first try gzip version
-	  {
-		  full_path += ".gz";
-	  }
+		// Check gzip source file support. Only for js/htm(l) and css files.
+		if ((extension.find("js")!=std::string::npos) || (extension.find("htm") != std::string::npos) || (extension.find("css") != std::string::npos))
+		{
+			// Let's see if there is an gzipped version of the source file
+			std::string full_path_withgz = full_path + ".gz";
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] looking for compressed source file (%s).", request_path.c_str(), full_path_withgz.c_str());
+			is.open(full_path_withgz.c_str(), std::ios::in | std::ios::binary);
+			if (is.is_open())
+			{
+				bHaveLoadedgzip = true;
+				mInfo.delay_status = false;
+			}
+		}
 
-	  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-	  if (is)
-	  {
-		  mInfo.delay_status = (!bHaveGZipSupport);
-		  bHaveLoadedgzip = bHaveGZipSupport;
-		  rep.bIsGZIP = bHaveGZipSupport;
-	  }
-	  else if (bHaveGZipSupport) // try uncompressed version
-	  {
-		  full_path = doc_root_ + request_path;
-		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-	  }
-	  // maybe it is a folder, lets add the index file
-	  struct stat sb;
-	  int iStat = stat(full_path.c_str(), &sb);
-	  if ((iStat == 0) && ((sb.st_mode & S_IFDIR) == S_IFDIR))
-	  {
-		  // Even a Directory can be 'opened', so close it first before we look for a different file
-		  if (is.is_open())
-		  {
-			is.close();
-		  }
+		if (!is.is_open())
+		{
+			// Try opening the normal (non gzip'ped) source file
+			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+		}
 
-		  // If path ends in slash (as it is a directory) then add "index.html".
-		  if (request_path[request_path.size() - 1] == '/')
-		  {
-		    full_path = doc_root_ + request_path + "index.html";
-		  }
-		  else
-		  {
-			// Directory requests should end with a / otherwise the browser will get confused with relative paths
-			// So we don't add the index.html here but report 400
-			rep = reply::stock_reply(reply::bad_request);
-			return;
-		  }
-
-		  if (bHaveGZipSupport) // first try gzip version
-		  {
-			  full_path += ".gz";
-		  }
-
-		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-		  if (is.is_open())
-		  {
-			  mInfo.delay_status = (!bHaveGZipSupport);
-			  bHaveLoadedgzip = bHaveGZipSupport;
-			  rep.bIsGZIP = bHaveGZipSupport;
-		  }
-		  else if (bHaveGZipSupport) // try uncompressed version
-		  {
-			  full_path = doc_root_ + request_path + "index.html";
-			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-		  }
-
-		  if (is.is_open())
-		  {
-			  extension = "html";
-		  }
-		  _log.Debug(DEBUG_WEBSERVER, "[web:%s] modified to (%sindex.html).", request_path.c_str(), request_path.c_str());
-	  }
-
-	  // maybe its a gz file (and clients browser does not support compression)
-	  if (!is.is_open() && (!bHaveGZipSupport))
-	  {
-		  full_path += ".gz";
-		  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-		  if (is.is_open())
-		  {
-			  bHaveLoadedgzip = true;
-			  mInfo.delay_status = false;
-		  }
-	  }
-
+		// Did we find/open a zipped or non-zipped source file?
 		if (!is.is_open())
 		{
 			rep = reply::stock_reply(reply::not_found);
@@ -367,44 +337,45 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		}
 
 		// fill out the reply to be sent to the client.
-		if (bHaveLoadedgzip && (!bHaveGZipSupport))
+		try
 		{
-			std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
-
-			CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
-			rep.content.append(decompress.psz, decompress.Length);
-		}
-		else
-		{
-			try
+			if (bHaveLoadedgzip && (!bClientHasGZipSupport))
 			{
+				// We loaded an already compressed source file, but the client does not seem to support to received it compressed. So we decompress it first.
+				std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+
+				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
+				rep.content.append(decompress.psz, decompress.Length);
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] decompressed content from %s before sending.", request_path.c_str(), full_path.c_str());
+			}
+			else
+			{
+				// Load the sourcefile (compressed or not)
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 			}
-			catch(const std::exception& e)
-			{
-				_log.Debug(DEBUG_WEBSERVER, "[web:%s] unable to server content from %s. %s", request_path.c_str(), full_path.c_str(), e.what());
-				rep = reply::stock_reply(reply::not_found);
-				return;
-			}
+		}
+		catch(const std::exception& e)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] unable to server content from %s (%s).", request_path.c_str(), full_path.c_str(), e.what());
+			rep = reply::stock_reply(reply::not_found);
+			return;
 		}
 		rep.status = reply::ok;
-  }
+
+	}
 #ifndef WEBSERVER_DONT_USE_ZIP
-  else
-  {
+	else
+	{
 	  if (m_uf==NULL)
 	  {
 		  rep = reply::stock_reply(reply::not_found);
-#ifdef _DEBUG
-		  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
-
-#endif
+		  _log.Debug(DEBUG_WEBSERVER, "[web:%s] File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
 		  return;
 	  }
 
 	  //remove first /
 	  request_path=request_path.substr(1);
-	  if (bHaveGZipSupport)
+	  if (bClientHasGZipSupport)
 	  {
 		  std::string gzpath = request_path + ".gz";
 		  if (unzLocateFile(m_uf,gzpath.c_str(),0)==UNZ_OK)
@@ -412,9 +383,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 			  {
 				  rep = reply::stock_reply(reply::not_found);
-#ifdef _DEBUG
-				  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
-#endif
+				  _log.Debug(DEBUG_WEBSERVER, "[web:%s] File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
 				  return;
 			  }
 			  bHaveLoadedgzip=true;
@@ -425,37 +394,32 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  if (unzLocateFile(m_uf,request_path.c_str(),0)!=UNZ_OK)
 		  {
 			  rep = reply::stock_reply(reply::not_found);
-#ifdef _DEBUG
-			  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
-#endif
+			  _log.Debug(DEBUG_WEBSERVER, "[web:%s] File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
 			  return;
 		  }
 		  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 		  {
 			  rep = reply::stock_reply(reply::not_found);
-#ifdef _DEBUG
-			  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
-#endif
+			  _log.Debug(DEBUG_WEBSERVER, "[web:%s] File '%s': %s (%d) (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
 			  return;
 		  }
 	  }
 	  rep.status = reply::ok;
-
-  }
+	}
 #endif
 
-  reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-  reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));
-  reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-  //browser support to prevent XSS
-  reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
-  reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
-  //reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
+	if (bClientHasGZipSupport && bHaveLoadedgzip)
+	{
+		reply::add_header(&rep, "Content-Encoding", "gzip");
+	}
 
-  if (bHaveGZipSupport && bHaveLoadedgzip)
-  {
-	reply::add_header(&rep, "Content-Encoding", "gzip");
-  }
+	reply::add_header_content_type(&rep, mime_types::extension_to_type(extension));
+	reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
+	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+	//browser support to prevent XSS
+	reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
+	reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
+	//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 }
 
 bool request_handler::url_decode(const std::string& in, std::string& out)
