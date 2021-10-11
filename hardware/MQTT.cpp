@@ -1295,7 +1295,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		if (!root["set_pos_tpl"].empty())
 			pSensor->set_position_template = root["set_pos_tpl"].asString();
 		CleanValueTemplate(pSensor->set_position_template);
-
+		if (!root["cover_has_stop_command"].empty())
+			pSensor->bCoverHasStopCommand = root["cover_has_stop_command"].asBool();
 		if (!root["brightness_command_topic"].empty())
 			pSensor->brightness_command_topic = root["brightness_command_topic"].asString();
 		else if (!root["bri_cmd_t"].empty())
@@ -2463,7 +2464,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		|| (!pSensor->set_position_topic.empty())
 		)
 	{
-		switchType = STYPE_BlindsPercentageWithStop;
+		if (pSensor->bCoverHasStopCommand)
+			switchType = STYPE_BlindsPercentageWithStop;
+		else
+			switchType = STYPE_BlindsPercentage;
 	}
 	else if (pSensor->component_type == "binary_sensor")
 	{

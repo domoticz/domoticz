@@ -21,6 +21,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string state_topic;
 		std::string command_topic;
 		std::string position_topic;
+		bool bCoverHasStopCommand = true;
 		std::string set_position_topic;
 		std::string brightness_command_topic;
 		std::string brightness_state_topic;
