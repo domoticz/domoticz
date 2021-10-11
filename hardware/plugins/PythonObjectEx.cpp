@@ -873,8 +873,8 @@ namespace Plugins {
 			}
 			Py_END_ALLOW_THREADS
 
-			// Only trigger notifications if values changed
-			if (nValueChanged || sValueChanged)
+			// Only trigger notifications if a used value is changed
+			if (self->Used && (nValueChanged || sValueChanged))
 			{
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
