@@ -311,7 +311,19 @@ bool COpenWeatherMap::StartHardware()
 		}
 	}
 
-	if(!m_use_owminforecastscreen)
+	if(m_use_owminforecastscreen)
+	{
+		if (m_CityID > 0)
+		{
+			std::stringstream ss;
+			ss << OWM_forecast_URL << m_CityID;
+			m_ForecastURL = ss.str();
+
+			Log(LOG_STATUS, "Updating preferences for forecastscreen to use OpenWeatherMap!");
+			m_sql.UpdatePreferencesVar("ForecastHardwareID",m_HwdID);
+		}
+	}
+	else
 	{
 		int iValue;
 		m_sql.GetPreferencesVar("ForecastHardwareID", iValue);
@@ -320,23 +332,6 @@ bool COpenWeatherMap::StartHardware()
 			// User has de-activated OWM for the forecast screen
 			m_sql.UpdatePreferencesVar("ForecastHardwareID",0);
 			Log(LOG_STATUS, "Updating preferences for forecastscreen to not use OpenWeatherMap anymore (back to default)!");
-		}
-	}
-	else
-	{
-		//Forecast URL
-		if (m_CityID > 0)
-		{
-			std::stringstream ss;
-			ss << OWM_forecast_URL << m_CityID;
-			m_ForecastURL = ss.str();
-
-			// So we can use this for the forecast screen of the UI if the users wants that
-			if(m_use_owminforecastscreen)
-			{
-				Log(LOG_STATUS, "Updating preferences for forecastscreen to use OpenWeatherMap!");
-				m_sql.UpdatePreferencesVar("ForecastHardwareID",m_HwdID);
-			}
 		}
 	}
 
