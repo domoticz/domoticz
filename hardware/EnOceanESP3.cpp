@@ -2938,17 +2938,21 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 				// RPS data
 
-				// WARNING : D2-01-XX, Electronic Switches and Dimmers with Local Control
-				// Several VLD nodes having external button control send RPS telegrams
-				// Esamples of concerned EEP : D2-01-0F, D2-01-12, D2-01-15, D2-01-16 & D2-01-17
+				// WARNING : several VLD nodes, with external switch/button control, also send RPS telegrams
+				// Examples : D2-01-0F, D2-01-12, D2-01-15, D2-01-16, D2-01-17, D2-05-00...
 				// Ignore RPS data for these nodes, because status will be reported by VLD datagram
+				// nb. RPS RORG shall later be updated to VLD, either manually or whenever node sends VLD status
 
-				// RORG = VLD => just ignore RPS data
-				// RORG unknown & func = 0x01 & type != 0x01 => VLD-O1-XX => update RORG and ignore RPS data
-				// RORG unknown & func = 0x01 & type = 0x01 => RPS-O1-O1 or VLD-O1-XX => assume RPS-01-01
-				// Nb. RORG shall be later updated to VLD whenever the node will report its status
+				// TODO: Remove that, as user may want to use external switch/button control as a sensor
 
-				if (pNode->RORG == RORG_VLD || (pNode->RORG == 0x00 && pNode->func == 0x01 && pNode->type != 0x01))
+				// If RORG = VLD
+				// Or RORG unknown & RPS-func-type EEP doesn't exist & VLD-func-type EEP exists
+				// => assume VLD and ignore RPS data
+
+				if (pNode->RORG == RORG_VLD
+					|| (pNode->RORG == 0x00
+						&& GetEEP(RORG_RPS, pNode->func, pNode->type) == nullptr
+						&& GetEEP(RORG_VLD, pNode->func, pNode->type) != nullptr))
 				{
 					Debug(DEBUG_NORM, "RPS %c-msg: Node %08X, button press from VLD device (ignored)",
 						(NU == 0) ? 'U' : 'N', senderID);
