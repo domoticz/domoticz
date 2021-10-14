@@ -1580,13 +1580,22 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 	RBUF *tsen = (RBUF *) pdata;
 
-	if (tsen->LIGHTING2.packettype != pTypeLighting2)
+	uint32_t nodeID;
+
+	if (tsen->RAW.packettype == pTypeLighting2)
+		nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	else
 		return false; // Only allowed to control switches
 
-	uint32_t nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	NodeInfo* pNode = GetNodeInfo(nodeID);
 
-	if (nodeID > m_id_base && nodeID <= (m_id_base + 128))
+	if (pNode == nullptr)
 	{ // Virtual switch created from m_id_base
+		if (nodeID <= m_id_base || nodeID > (m_id_base + 128))
+		{
+			Log(LOG_ERROR, "Node %08X, invalid virtual switch", nodeID);
+			return false;
+		}
 		if (tsen->LIGHTING2.unitcode >= 10)
 		{
 			Log(LOG_ERROR, "Node %08X, double press not supported", nodeID);
@@ -1733,10 +1742,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		Log(LOG_ERROR, "Node %08X (virtual), switch type not supported (%d)", nodeID, switchtype);
 		return false;
 	}
-	NodeInfo* pNode = GetNodeInfo(nodeID);
-
-	if (pNode != nullptr
-		&& (pNode->RORG == RORG_VLD || pNode->RORG == 0x00)
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00)
 		&& pNode->func == 0x01
 		&& (pNode->type == 0x0D || pNode->type == 0x0E || pNode->type == 0x0F || pNode->type == 0x12))
 	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
