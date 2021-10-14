@@ -773,19 +773,17 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	if (tsen->LIGHTING2.packettype != pTypeLighting2)
 		return false; // Only allowed to control switches
 
-	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	std::string nodeID = GetNodeID(iNodeID);
+	uint32_t nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 
-	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
+	if (nodeID <= m_id_base || nodeID > (m_id_base + 128))
 	{
-		std::string baseID = GetNodeID(m_id_base);
-		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+		Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
 		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 		return false;
 	}
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		Log(LOG_ERROR, "Node %s, double press not supported!", nodeID.c_str());
+		Log(LOG_ERROR, "Node %08X, double press not supported!", nodeID);
 		return false;
 	}
 	uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
@@ -797,10 +795,10 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 	// ESP2 virtual switches emulate RPS EEP: F6-02-01/02, Rocker switch, 2 Rocker
 	// ESP2 virtual dimmers emulate 4BS EEP: A5-38-08, Central Command, Gateway
 
-	std::string deviceID = (nodeID[0] == '0') ? nodeID.substr(1, nodeID.length() - 1) : nodeID;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, deviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
+	std::string sDeviceID = GetDeviceID(nodeID);
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT SwitchType, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, sDeviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
 	if (!result.empty())
 	{
 		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
@@ -894,21 +892,20 @@ void CEnOceanESP2::SendDimmerTeachIn(const char* pdata, const unsigned char /*le
 	if (tsen->LIGHTING2.packettype != pTypeLighting2)
 		return; // Only allowed to control switches
 
-	uint32_t iNodeID = GetINodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	std::string nodeID = GetNodeID(iNodeID);
+	uint32_t nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
 
-	if (iNodeID <= m_id_base || iNodeID > (m_id_base + 128))
+	if (nodeID <= m_id_base || nodeID > (m_id_base + 128))
 	{
-		Log(LOG_ERROR, "Node %s can not be used as a switch", nodeID.c_str());
+		Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
 		Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 		return;
 	}
 	if (tsen->LIGHTING2.unitcode >= 10)
 	{
-		Log(LOG_ERROR, "Node %s, double press not supported!", nodeID.c_str());
+		Log(LOG_ERROR, "Node %08X, double press not supported!", nodeID);
 		return;
 	}
-	Log(LOG_NORM, "4BS teach-in request from Node %s (variation 3 : bi-directional)", nodeID.c_str());
+	Log(LOG_NORM, "4BS teach-in request from Node %08X (variation 3 : bi-directional)", nodeID);
 
 	enocean_data_structure iframe = create_base_frame();
 
@@ -930,8 +927,7 @@ bool CEnOceanESP2::ParseData()
 	if (Checksum != pFrame->CHECKSUM)
 		return false; // Checksum mismatch!
 
-	uint32_t iNodeID = GetINodeID(pFrame->ID_BYTE3, pFrame->ID_BYTE2, pFrame->ID_BYTE1, pFrame->ID_BYTE0);
-	std::string nodeID = GetNodeID(iNodeID);
+	uint32_t nodeID = GetNodeID(pFrame->ID_BYTE3, pFrame->ID_BYTE2, pFrame->ID_BYTE1, pFrame->ID_BYTE0);
 
 	// Handle possible OK/Errors
 	bool bStopProcessing = false;
@@ -987,7 +983,7 @@ bool CEnOceanESP2::ParseData()
 	switch (pFrame->ORG)
 	{
 	case C_ORG_INF_IDBASE:
-		m_id_base = GetINodeID(pFrame->DATA_BYTE3, pFrame->DATA_BYTE2, pFrame->DATA_BYTE1, pFrame->DATA_BYTE0);
+		m_id_base = GetNodeID(pFrame->DATA_BYTE3, pFrame->DATA_BYTE2, pFrame->DATA_BYTE1, pFrame->DATA_BYTE0);
 		Log(LOG_STATUS, "Transceiver ID_Base %08X", m_id_base);
 		break;
 	case C_ORG_RPS:
@@ -1003,7 +999,7 @@ bool CEnOceanESP2::ParseData()
 			unsigned char SecondAction = (pFrame->DATA_BYTE3 & DB3_RPS_NU_SA) >> DB3_RPS_NU_SA_SHIFT;
 
 			Debug(DEBUG_NORM, "RPS N-msg: Node %08X Rocker ID %i UD %i Pressed %i Second Rocker ID %i SUD %i Second Action %i",
-				iNodeID, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction);
+				nodeID, RockerID, UpDown, Pressed, SecondRockerID, SecondUpDown, SecondAction);
 
 			// 3 types of buttons from a switch: Left/Right/Left+Right
 			if (Pressed == 1)
@@ -1048,25 +1044,24 @@ bool CEnOceanESP2::ParseData()
 				uint16_t manID = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 				uint8_t func = pFrame->DATA_BYTE3 >> 2;
 				uint8_t type = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
-				Log(LOG_NORM, "4BS Teach-in diagram: Sender_ID %s Manufacturer %02X (%s) Profile %02X Type %02X (%s)",
-					nodeID.c_str(), manID, GetManufacturerName(manID),
+				Log(LOG_NORM, "4BS Teach-in diagram: Node %08X Manufacturer %02X (%s) Profile %02X Type %02X (%s)",
+					nodeID, manID, GetManufacturerName(manID),
 					func, type, GetEEPLabel(RORG_4BS, func, type));
 
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, nodeID);
 				if (result.empty())
 				{ // Add it to the database
-					result = m_sql.safe_query(
-						"INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) "
-						"VALUES (%d,'%q',%d,%d,%d)",
-						m_HwdID, nodeID.c_str(), manID, func, type);
+					m_sql.safe_query(
+						"INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, Type) VALUES (%d,'%08X',%u,%u,%u)",
+						m_HwdID, nodeID, manID, func, type);
 				}
 			}
 		}
 		else
 		{ // Following sensors need to have had a teach-in
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, nodeID.c_str());
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, Type FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, nodeID);
 			if (result.empty())
 			{
 				char* pszHumenTxt = enocean_hexToHuman(pFrame);
@@ -1102,8 +1097,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
-					nodeID.c_str(), CH, DT, DIV, scaleMax, MR);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID, CH, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1123,8 +1118,8 @@ bool CEnOceanESP2::ParseData()
 				umeter.dunit = 1;
 				umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-					nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID, TI, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1149,8 +1144,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 				tsen.RFXMETER.rssi = 12;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-					nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID, TI, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1175,8 +1170,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 				tsen.RFXMETER.rssi = 12;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-					nodeID.c_str(), TI, DT, DIV, scaleMax, MR);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+					nodeID, TI, DT, DIV, scaleMax, MR);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1217,7 +1212,7 @@ bool CEnOceanESP2::ParseData()
 						tsen.FAN.cmnd = FAN;
 						tsen.FAN.rssi = 12;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s FAN %u", nodeID.c_str(), FAN);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X FAN %u", nodeID, FAN);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 					}
@@ -1227,7 +1222,7 @@ bool CEnOceanESP2::ParseData()
 					{
 						float SP = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 255.0F);
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s SP %.0F", nodeID.c_str(), SP);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X SP %.0F", nodeID, SP);
 
 						// TODO: implement SP
 					}
@@ -1266,7 +1261,7 @@ bool CEnOceanESP2::ParseData()
 						else // if (iType == 0x0A || iType == 0x0B)
 							sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
 
-						Debug(DEBUG_NORM, "4BS msg: Node %s %s %u (%s)", nodeID.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X %s %u (%s)", nodeID, sSW, SW, (SW == 0) ? sSW0 : sSW1);
 
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 					}
@@ -1314,7 +1309,7 @@ bool CEnOceanESP2::ParseData()
 				at10 -= tsen.TEMP.temperatureh * 256;
 				tsen.TEMP.temperaturel = (BYTE) at10;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 			}
@@ -1354,7 +1349,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 				}
@@ -1379,7 +1374,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.dunit = 1;
 				lmeter.fLux = ILL;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s RS %s ILL %.1Flx", nodeID.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X RS %s ILL %.1Flx", nodeID, (RS == 0) ? "ILL1" : "ILL2", ILL);
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1457,7 +1452,7 @@ bool CEnOceanESP2::ParseData()
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1512,7 +1507,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP_HUM.battery_level = 9; // OK
 					tsen.TEMP_HUM.rssi = 12; // Not available
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C HUM %d%%", nodeID.c_str(), TMP, tsen.TEMP_HUM.humidity);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C HUM %d%%", nodeID, TMP, tsen.TEMP_HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1531,7 +1526,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
 					tsen.HUM.rssi = 12; // Not available
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", nodeID.c_str(), tsen.HUM.humidity);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X HUM %d%%", nodeID, tsen.HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1559,7 +1554,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 				}
@@ -1579,7 +1574,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.cmnd = (PIRS >= 128) ? light2_sOn : light2_sOff;
 				tsen.LIGHTING2.rssi = 12;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s PIRS %u (%s)", nodeID.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
+				Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)", nodeID, PIRS, (PIRS >= 128) ? "On" : "Off");
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1603,7 +1598,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
@@ -1623,8 +1618,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 				tsen.LIGHTING2.rssi = 12;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s PIRS %u (%s)",
-					nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+				Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)",
+					nodeID, PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1648,7 +1643,7 @@ bool CEnOceanESP2::ParseData()
 				tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 				tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s SVC %.1FmV", nodeID.c_str(), SVC);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", nodeID, SVC);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
@@ -1662,7 +1657,7 @@ bool CEnOceanESP2::ParseData()
 				lmeter.dunit = 1;
 				lmeter.fLux = ILL;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s ILL %.1Flx", nodeID.c_str(), ILL);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X ILL %.1Flx", nodeID, ILL);
 
 				sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 
@@ -1682,8 +1677,8 @@ bool CEnOceanESP2::ParseData()
 				tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 				tsen.LIGHTING2.rssi = 12;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s PIRS %u (%s)",
-					nodeID.c_str(), PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+				Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)",
+					nodeID, PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
@@ -1711,14 +1706,14 @@ bool CEnOceanESP2::ParseData()
 					tsen.HUM.battery_level = 9; // OK
 					tsen.HUM.rssi = 12;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s HUM %d%%", nodeID.c_str(), tsen.HUM.humidity);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X HUM %d%%", nodeID, tsen.HUM.humidity);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
 
 				float CONC = GetDeviceValue(pFrame->DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
 
-				Debug(DEBUG_NORM, "4BS msg: Node %s CO2 %.1Fppm", nodeID.c_str(), CONC);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X CO2 %.1Fppm", nodeID, CONC);
 
 				SendAirQualitySensor(pFrame->ID_BYTE2, pFrame->ID_BYTE1, 9, round(CONC), GetEEPLabel(RORG_4BS, Profile, iType));
 
@@ -1744,7 +1739,7 @@ bool CEnOceanESP2::ParseData()
 					at10 -= (tsen.TEMP.temperatureh * 256);
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %s TMP %.1F°C", nodeID.c_str(), TMP);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}

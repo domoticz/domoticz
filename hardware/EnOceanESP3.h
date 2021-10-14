@@ -15,7 +15,7 @@ public:
 	struct NodeInfo
 	{
 		uint32_t idx;
-		std::string nodeID;
+		uint32_t nodeID;
 		uint16_t manufacturerID;
 		uint8_t RORG;
 		uint8_t func;
@@ -28,10 +28,9 @@ public:
 
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
-	NodeInfo *GetNodeInfo(const uint32_t iNodeID);
-	NodeInfo *GetNodeInfo(const std::string &nodeID);
+	NodeInfo *GetNodeInfo(const uint32_t nodeID);
 
-	void TeachInNode(const std::string &nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
+	void TeachInNode(const uint32_t nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
 	void CheckAndUpdateNodeRORG(NodeInfo *pNode, const uint8_t RORG);
 
 	uint32_t m_id_base;
@@ -105,7 +104,7 @@ private:
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
 
-	std::string m_RPS_teachin_nodeID;
+	uint32_t m_RPS_teachin_nodeID;
 	uint8_t m_RPS_teachin_DATA;
 	uint8_t m_RPS_teachin_STATUS;
 	time_t m_RPS_teachin_timer;
