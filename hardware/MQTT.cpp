@@ -2974,13 +2974,14 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 		if (command == "On")
 		{
-			level = pSensor->position_open;
-			szValue = pSensor->payload_open;
+			level = pSensor->position_closed;
+			szValue = pSensor->payload_close;
+			
 		}
 		else if (command == "Off")
 		{
-			level = pSensor->position_closed;
-			szValue = pSensor->payload_close;
+			level = pSensor->position_open;
+			szValue = pSensor->payload_open;
 		}
 		else if (command == "Stop")
 		{
