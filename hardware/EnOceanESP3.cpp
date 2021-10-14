@@ -348,12 +348,12 @@ void CEnOceanESP3::LoadNodesFromDatabase()
 	{
 		NodeInfo node;
 
-		node.idx = atoi(sd[0].c_str());
+		node.idx = std::stoul(sd[0]);
 		node.nodeID = std::stoul(sd[1], 0, 16);
-		node.manufacturerID = atoi(sd[2].c_str());
+		node.manufacturerID = std::stoul(sd[2]);
 		node.RORG = 0x00;
-		node.func = (uint8_t)atoi(sd[3].c_str());
-		node.type = (uint8_t)atoi(sd[4].c_str());
+		node.func = std::stoul(sd[3]);
+		node.type = std::stoul(sd[4]);
 		node.generic = true;
 /*
 		Debug(DEBUG_NORM, "LoadNodesFromDatabase: Idx %u Node %08X %sEEP %02X-%02X-%02X (%s) Manufacturer %03X (%s)",
@@ -395,7 +395,7 @@ void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID, cons
 	{
 		NodeInfo node;
 
-		node.idx = (uint32_t)atoi(result[0][0].c_str());
+		node.idx = std::stoul(result[0][0]);
 		node.nodeID = nodeID;
 		node.manufacturerID = manID;
 		node.RORG = RORG;
@@ -1609,8 +1609,8 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			m_HwdID, sDeviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
 		if (!result.empty())
 		{ // Device found in the database
-			switchtype = (_eSwitchType) atoi(result[0][0].c_str());
-			LastLevel = (uint8_t) atoi(result[0][1].c_str());
+			switchtype = (_eSwitchType) std::stoul(result[0][0]);
+			LastLevel = std::stoul(result[0][1]);
 		}
 
 		uint8_t iLevel = tsen->LIGHTING2.level;

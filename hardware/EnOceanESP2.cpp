@@ -801,10 +801,10 @@ bool CEnOceanESP2::WriteToHardware(const char* pdata, const unsigned char /*leng
 		m_HwdID, sDeviceID.c_str(), (int) tsen->LIGHTING2.unitcode);
 	if (!result.empty())
 	{
-		_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+		_eSwitchType switchtype = (_eSwitchType) std::stoul(result[0][0]);
 		if (switchtype == STYPE_Dimmer)
 			bIsDimmer = true;
-		LastLevel = (uint8_t)atoi(result[0][1].c_str());
+		LastLevel = std::stoul(result[0][1]);
 	}
 
 	uint8_t iLevel = tsen->LIGHTING2.level;
@@ -1072,9 +1072,9 @@ bool CEnOceanESP2::ParseData()
 				}
 				return true;
 			}
-			int Manufacturer = atoi(result[0][1].c_str());
-			int Profile = atoi(result[0][2].c_str());
-			int iType = atoi(result[0][3].c_str());
+			uint16_t Manufacturer = std::stoul(result[0][1]);
+			uint8_t Profile = std::stoul(result[0][2]);
+			uint8_t iType = std::stoul(result[0][3]);
 
 			if (Profile == 0x12 && iType == 0x00)
 			{ // A5-12-00, Automated Meter Reading, Counter
