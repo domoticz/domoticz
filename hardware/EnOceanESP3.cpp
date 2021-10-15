@@ -1980,7 +1980,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 			else if (dBm < -100)
 				rssi = 0;
 			else
-				rssi = static_cast<int>((dBm + 100) / 5);
+				rssi = static_cast<uint8_t>((dBm + 100) / 5);
 
 			if (dstID == ERP1_BROADCAST_TRANSMISSION)
 				Debug(DEBUG_HARDWARE, "Broadcast RSSI %idBm (%u/11)", dBm, rssi);
