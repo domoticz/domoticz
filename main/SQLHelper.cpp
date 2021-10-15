@@ -651,10 +651,9 @@ bool CSQLHelper::OpenDatabase()
 		else if (dbversion < DB_VERSION)
   			_log.Debug(DEBUG_NORM, "Upgrading %s database from version %d to %d", m_dbase_name.c_str(), dbversion, DB_VERSION);
 		else
-		{
-			// Using a newer database on a old Domoticz version is not allowed
+		{ // Using a newer database on a old Domoticz version is not allowed
 			_log.Log(LOG_ERROR, "Database incompatible with this Domoticz version. (You cannot downgrade to an old Domoticz version!)");
-			_log.Debug(DEBUG_NORM, "(Cannot downgrade database from version %d to %d!)", dbversion, DB_VERSION);
+			_log.Debug(DEBUG_NORM, "(Cannot downgrade %s database from version %d to %d!)", m_dbase_name.c_str(), dbversion, DB_VERSION);
 			sqlite3_close(m_dbase);
 			m_dbase = nullptr;
 			return false;
