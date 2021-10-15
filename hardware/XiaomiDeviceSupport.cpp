@@ -69,7 +69,7 @@ bool XiaomiDeviceSupportUserVariable::LoadSIDsOk()
 	if (m_SIDs == NULL)
 	{
 		std::vector<std::vector<std::string>> result;
-		m_SIDs = new std::vector<std::string>();
+		m_SIDs = std::make_unique<std::vector<std::string>>();
 
 		// Check for relay devices to override from a user variable
 		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == '%s')", m_UserVarName.c_str());

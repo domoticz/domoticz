@@ -332,12 +332,7 @@ XiaomiGateway::XiaomiGateway(const int ID)
 	m_HwdID = ID;
 	m_bDoRestart = false;
 	m_ListenPort9898 = false;
-	m_DeviceSupport = new XiaomiDeviceSupportHardcoded();
-}
-
-XiaomiGateway::~XiaomiGateway()
-{
-	delete m_DeviceSupport;
+	m_DeviceSupport = std::make_unique<XiaomiDeviceSupportHardcoded>();
 }
 
 bool XiaomiGateway::WriteToHardware(const char *pdata, const unsigned char length)
@@ -974,11 +969,10 @@ bool XiaomiGateway::StartHardware()
 	{
 		m_IncludeVoltage = true;
 	}
-	XiaomiDeviceSupportUserVariable *deviceSupport = new XiaomiDeviceSupportUserVariable(m_sql, _log, "relay.c2acn01");
+	auto deviceSupport = std::make_unique<XiaomiDeviceSupportUserVariable>(m_sql, _log, "relay.c2acn01");
 	if (deviceSupport->LoadSIDsOk())
 	{
-		delete m_DeviceSupport;
-		m_DeviceSupport = deviceSupport;
+		m_DeviceSupport = std::move(deviceSupport);
 		Log(LOG_DEBUG_INT, "XiaomiDeviceSupportUserVariable loaded OK");
 	}
 
@@ -1250,7 +1244,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 		if (model.empty())
 		{
-			XiaomiDeviceSupport *devicesupport = m_XiaomiGateway->GetDeviceSupport();
+			auto &&devicesupport = m_XiaomiGateway->GetDeviceSupport();
 			_log.Log(LOG_DEBUG_INT, "XiaomiGateway: model empty for '%s', trying DeviceSupport.", sid.c_str());
 			model = devicesupport->GetXiaomiDeviceModelByID(sid);
 			if (model.empty())

@@ -31,7 +31,6 @@ bool CEvohomeTCP::StopHardware()
 	m_bIsStarted=false;
 	if(m_bDebug && m_pEvoLog)
 	{
-		delete m_pEvoLog;
 		m_pEvoLog = nullptr;
 	}
 	return true;

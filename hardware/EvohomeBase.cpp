@@ -30,7 +30,7 @@
 
 extern std::string szUserDataFolder;
 
-std::ofstream *CEvohomeBase::m_pEvoLog = nullptr;
+std::unique_ptr<std::ofstream> CEvohomeBase::m_pEvoLog;
 #ifdef _DEBUG
 bool CEvohomeBase::m_bDebug=true;
 #else

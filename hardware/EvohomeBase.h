@@ -835,5 +835,5 @@ class CEvohomeBase : public CDomoticzHardwareBase
 	unsigned int m_MaxDeviceID;
 
 	static bool m_bDebug; // Debug mode for extra logging
-	static std::ofstream *m_pEvoLog;
+	static std::unique_ptr<std::ofstream> m_pEvoLog;
 };
