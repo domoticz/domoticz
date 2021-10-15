@@ -1458,6 +1458,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		if (!root["temperature_command_topic"].empty())
 			pSensor->temperature_command_topic = root["temperature_command_topic"].asString();
+		if (!root["temperature_command_template"].empty())
+			pSensor->temperature_command_template = root["temperature_command_template"].asString();
 		if (!root["temp_cmd_t"].empty())
 			pSensor->temperature_command_topic = root["temp_cmd_t"].asString();
 		if (!root["temperature_state_topic"].empty())
@@ -3107,20 +3109,21 @@ bool MQTT::SetSetpoint(const std::string &DeviceID, const float Temp)
 	}
 
 	Json::Value root;
-	if (!pSensor->temperature_state_template.empty())
+	std::string szSendValue;
+	if (!pSensor->temperature_command_template.empty())
 	{
-		std::string szKey = GetValueTemplateKey(pSensor->temperature_state_template);
+		std::string szKey = GetValueTemplateKey(pSensor->temperature_command_template);
 		if (!szKey.empty())
 			root[szKey] = Temp;
 		else
 		{
-			Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
+			Log(LOG_ERROR, "Climate device unhandled temperature_command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
 			return false;
 		}
+		szSendValue = JSonToRawString(root);
 	}
 	else
-		root["target_temp"] = Temp;
-	std::string szSendValue = JSonToRawString(root);
+		szSendValue = std_format("%.1f", Temp);
 
 	std::string szTopic = pSensor->state_topic;
 	if (!pSensor->temperature_command_topic.empty())

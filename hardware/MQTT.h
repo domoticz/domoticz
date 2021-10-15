@@ -63,6 +63,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string mode_state_template;
 		std::vector<std::string> climate_modes;
 		std::string temperature_command_topic;
+		std::string temperature_command_template;
 		std::string temperature_state_topic;
 		std::string temperature_state_template;
 		std::string temperature_unit = "C";
