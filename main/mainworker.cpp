@@ -13415,7 +13415,7 @@ void MainWorker::ForceLogNotificationCheck()
 
 void MainWorker::HandleLogNotifications()
 {
-	std::list<CLogger::_tLogLineStruct> _loglines = _log.GetNotificationLogs();
+	auto _loglines = _log.GetNotificationLogs();
 	if (_loglines.empty())
 		return;
 	//Assemble notification message

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <list>
 #include <mutex>
 #include "XiaomiDeviceSupport.h"
 

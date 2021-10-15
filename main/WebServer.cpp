@@ -2143,7 +2143,7 @@ namespace http
 				lLevel = (_eLogLevel)atoi(sloglevel.c_str());
 			}
 
-			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(lLevel);
+			auto logmessages = _log.GetLog(lLevel);
 			int ii = 0;
 			for (const auto &msg : logmessages)
 			{

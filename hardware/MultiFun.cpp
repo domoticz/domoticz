@@ -1,5 +1,3 @@
-#include <list>
-
 #include "stdafx.h"
 #include "MultiFun.h"
 #include "hardwaretypes.h"

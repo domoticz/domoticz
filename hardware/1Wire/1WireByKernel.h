@@ -1,7 +1,7 @@
 #pragma once
 #include "1WireSystem.h"
 #include <condition_variable>
-#include <list>
+#include <deque>
 #include "../../main/StoppableTask.h"
 
 class C1WireByKernel : public I_1WireSystem, StoppableTask
@@ -75,16 +75,20 @@ private:
    DeviceCollection m_Devices;
 
    // Pending changes queue
-   std::list<DeviceState> m_PendingChanges;
+   std::deque<DeviceState> m_PendingChanges;
    const DeviceState* GetDevicePendingState(const std::string& deviceId) const;
    std::mutex m_PendingChangesMutex;
    std::condition_variable m_PendingChangesCondition;
    class IsPendingChanges
    {
    private:
-      std::list<DeviceState>& m_List;
+     const std::deque<DeviceState> &m_List;
+
    public:
-	   explicit  IsPendingChanges(std::list<DeviceState>& list):m_List(list){}
+     explicit IsPendingChanges(const std::deque<DeviceState> &list)
+	     : m_List(list)
+     {
+     }
       bool operator()() const {return !m_List.empty();}
    };
 };

@@ -1,4 +1,4 @@
-#include <list>
+#include <deque>
 
 #include "stdafx.h"
 #include "SatelIntegra.h"
@@ -1058,9 +1058,9 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	}
 }
 
-void expandForSpecialValue(std::list<unsigned char> &result)
+void expandForSpecialValue(std::deque<unsigned char> &result)
 {
-	std::list<unsigned char>::iterator it = result.begin();
+	auto it = result.begin();
 
 	const unsigned char specialValue = 0xFE;
 
@@ -1210,7 +1210,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength)
 {
-	std::list<unsigned char> result;
+	std::deque<unsigned char> result;
 
 	for (unsigned int i = 0; i < cmdLength; ++i)
 	{
@@ -1234,7 +1234,7 @@ std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigne
 	unsigned int resultSize = result.size();
 	unsigned char* pResult = new unsigned char[resultSize];
 	memset(pResult, 0, resultSize);
-	std::list<unsigned char>::iterator it = result.begin();
+	auto it = result.begin();
 	for (unsigned int index = 0; it != result.end(); ++it, ++index)
 	{
 		pResult[index] = *it;
