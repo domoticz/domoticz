@@ -263,8 +263,8 @@ namespace http {
 			{
 #define FILE_SEND_BUFFER_SIZE 16*1024
 				if (!send_buffer_)
-					send_buffer_ = new uint8_t[FILE_SEND_BUFFER_SIZE];
-				size_t bread = static_cast<size_t>(sendfile_.read((char*)send_buffer_, FILE_SEND_BUFFER_SIZE).gcount());
+					send_buffer_ = std::make_unique<std::array<uint8_t, FILE_SEND_BUFFER_SIZE>>();
+				size_t bread = static_cast<size_t>(sendfile_.read((char *)send_buffer_->data(), FILE_SEND_BUFFER_SIZE).gcount());
 				if (bread <= 0)
 				{
 					//Error reading file!
@@ -272,12 +272,12 @@ namespace http {
 				};
 				if (secure_) {
 #ifdef WWW_ENABLE_SSL
-					boost::asio::async_write(*sslsocket_, boost::asio::buffer(send_buffer_, bread),
+					boost::asio::async_write(*sslsocket_, boost::asio::buffer(*send_buffer_, bread),
 								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 #endif
 				}
 				else {
-					boost::asio::async_write(*socket_, boost::asio::buffer(send_buffer_, bread),
+					boost::asio::async_write(*socket_, boost::asio::buffer(*send_buffer_, bread),
 								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 				}
 				return;
@@ -286,8 +286,7 @@ namespace http {
 			if (sendfile_.is_open())
 				sendfile_.close();
 
-			delete[] send_buffer_;
-			send_buffer_ = nullptr;
+			send_buffer_.release();
 			connection_manager_.stop(shared_from_this());
 		}
 
@@ -532,12 +531,6 @@ namespace http {
 				//Everything has been send. Closing connection.
 				connection_manager_.stop(shared_from_this());
 			}
-		}
-
-		connection::~connection()
-		{
-			// free up resources, delete the socket pointers
-			delete[] send_buffer_;
 		}
 
 		// schedule read timeout timer

@@ -43,7 +43,7 @@ namespace http {
 			explicit connection(boost::asio::io_service& io_service,
 				connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context);
 #endif
-			~connection();
+			~connection() = default;
 
 			/// Get the socket associated with the connection.
 #ifdef WWW_ENABLE_SSL
@@ -87,7 +87,8 @@ namespace http {
 			bool send_file(const std::string& filename, std::string& attachment_name, reply& rep);
 			std::ifstream sendfile_;
 			void handle_write_file(const boost::system::error_code& e, size_t bytes_transferred);
-			uint8_t* send_buffer_;
+#define FILE_SEND_BUFFER_SIZE 16 * 1024
+			std::unique_ptr<std::array<uint8_t, FILE_SEND_BUFFER_SIZE>> send_buffer_;
 
 			/// Initialize read timeout timer
 			void set_read_timeout();
