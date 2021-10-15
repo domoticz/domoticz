@@ -399,7 +399,7 @@ void CPinger::DoPingHosts()
 		if (m_iThreadsRunning < 1000)
 		{
 			//m_iThreadsRunning++;
-			boost::thread t([this, node] { Do_Ping_Worker(node); });
+			auto t = std::thread([this, node] { Do_Ping_Worker(node); });
 			SetThreadName(t.native_handle(), "PingerWorker");
 			t.join();
 		}

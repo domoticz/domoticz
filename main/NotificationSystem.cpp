@@ -3,7 +3,6 @@
 #include "NotificationObserver.h"
 #include "Logger.h"
 #include "Helper.h"
-#include <boost/thread.hpp>
 #include "NotificationSystem.h"
 
 const CNotificationSystem::_tNotificationTypeTable CNotificationSystem::typeTable[] = {

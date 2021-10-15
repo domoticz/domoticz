@@ -3,7 +3,6 @@
 #include <queue>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/thread.hpp>
 #include "proxycereal.hpp"
 #include "cWebem.h"
 #include "../hardware/ASyncTCP.h"

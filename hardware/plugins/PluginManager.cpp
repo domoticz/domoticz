@@ -309,7 +309,7 @@ namespace Plugins {
 		boost::thread_group BoostThreads;
 		for (int i = 0; i < 1; i++)
 		{
-			boost::thread*	bt = BoostThreads.create_thread(BoostWorkers);
+			auto bt = BoostThreads.create_thread(BoostWorkers);
 			SetThreadName(bt->native_handle(), "Plugin_ASIO");
 		}
 
