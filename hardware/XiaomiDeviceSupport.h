@@ -36,7 +36,7 @@ class XiaomiDeviceSupportHardcoded : public XiaomiDeviceSupport
 class XiaomiDeviceSupportUserVariable : public XiaomiDeviceSupport
 {
       private:
-	std::unique_ptr<std::vector<std::string>> m_SIDs;
+	std::vector<std::string> *m_SIDs;
 	CSQLHelper &m_SQL;
 	std::string m_Model;
 	std::string m_UserVarName;

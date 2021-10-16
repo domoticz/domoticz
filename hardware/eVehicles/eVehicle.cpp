@@ -59,13 +59,13 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 	switch (checkedVehicleType)
 	{
 	case Tesla:
-		m_api = std::make_unique<CTeslaApi>(username, password, carid);
+		m_api = new CTeslaApi(username, password, carid);
 		break;
 	case Mercedes:
-		m_api = std::make_unique<CMercApi>(username, password, carid);
+		m_api = new CMercApi(username, password, carid);
 		break;
 	case Testcar:
-		m_api = std::make_unique<CTestcarApi>(username, password, carid);
+		m_api = new CTestcarApi(username, password, carid);
 		break;
 	default:
 		Log(LOG_ERROR, "Unsupported vehicle type.");
@@ -93,6 +93,7 @@ CeVehicle::CeVehicle(const int ID, eVehicleType vehicletype, const std::string& 
 CeVehicle::~CeVehicle()
 {
 	m_commands.clear();
+	delete m_api;
 }
 
 void CeVehicle::Init()

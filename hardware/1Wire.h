@@ -37,7 +37,7 @@ class C1Wire : public CDomoticzHardwareBase
 	std::shared_ptr<std::thread> m_threadSensors;
 	std::shared_ptr<std::thread> m_threadSwitches;
 	StoppableTask m_TaskSwitches;
-	std::unique_ptr<I_1WireSystem> m_system;
+	I_1WireSystem *m_system;
 	std::map<std::string, bool> m_LastSwitchState;
 	std::set<_t1WireDevice> m_sensors;
 	std::set<_t1WireDevice> m_switches;
