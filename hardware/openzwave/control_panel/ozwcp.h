@@ -36,6 +36,7 @@
 // documentation will at all times remain with copyright holders.
 //-----------------------------------------------------------------------------
 
+#include <list>
 #include <algorithm>
 #include <Driver.h>
 #include <Notification.h>
@@ -140,7 +141,7 @@ class MyNode
 	time_t mtime;
 	bool changed;
 	static bool nodechanged;
-	static std::deque<uint8> removed;
+	static std::list<uint8> removed;
 	std::vector<MyGroup *> groups;
 	std::vector<MyValue *> values;
 };
