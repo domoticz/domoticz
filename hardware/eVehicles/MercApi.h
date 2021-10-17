@@ -57,7 +57,7 @@ private:
 	std::string m_accesstoken;
 	std::string m_refreshtoken;
 	std::string m_uservar_refreshtoken;
-	uint64_t m_uservar_refreshtoken_idx;
+	uint32_t m_uservar_refreshtoken_idx;
 
 	uint64_t m_carid;
 	uint32_t m_crc;
