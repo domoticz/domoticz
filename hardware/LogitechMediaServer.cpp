@@ -342,7 +342,7 @@ void CLogitechMediaServer::Do_Work()
 					if (m_iThreadsRunning < 1000)
 					{
 						m_iThreadsRunning++;
-						auto t = std::thread([this, node] { Do_Node_Work(node); });
+						boost::thread t([this, node] { Do_Node_Work(node); });
 						SetThreadName(t.native_handle(), "LogitechNode");
 						t.join();
 					}

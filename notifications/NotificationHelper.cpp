@@ -136,7 +136,7 @@ bool CNotificationHelper::SendMessageEx(
 			{
 				if (bThread)
 				{
-					auto SendMessageEx = std::thread([=] { m_notifier.second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification); });
+					boost::thread SendMessageEx([=] { m_notifier.second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification); });
 					SetThreadName(SendMessageEx.native_handle(), "SendMessageEx");
 				}
 				else

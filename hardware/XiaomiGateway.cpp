@@ -1075,10 +1075,10 @@ void XiaomiGateway::Do_Work()
 	}
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
-	std::thread bt;
+	boost::thread bt;
 	if (m_ListenPort9898)
 	{
-		bt = std::thread([p = &io_service] { p->run(); });
+		bt = boost::thread([p = &io_service] { p->run(); });
 		SetThreadName(bt.native_handle(), "XiaomiGatewayIO");
 	}
 
