@@ -786,8 +786,6 @@ namespace http {
 				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				if (!boost::algorithm::starts_with(strMimeType, "image"))
 				{
-					if (!strMimeType.empty())
-						strMimeType += ";charset=UTF-8";
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
 					reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
@@ -817,7 +815,7 @@ namespace http {
 
 			rep.status = reply::ok;
 			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-			reply::add_header(&rep, "Content-Type", strMimeType + "; charset=UTF-8");
+			reply::add_header_content_type(&rep, strMimeType);
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
@@ -2090,7 +2088,7 @@ namespace http {
 						rep.content = requestCopy.uri;
 						reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 						reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)), true);
-						reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
+						reply::add_header_content_type(&rep, "application/json");
 						return;
 					}
 				}
