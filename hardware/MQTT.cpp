@@ -2972,15 +2972,15 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 		if (command == "On")
 		{
-			level = pSensor->position_open;
-			szValue = pSensor->payload_open;
+			level = pSensor->position_closed;
+			szValue = pSensor->payload_close;
 			if (pSensor->command_topic.empty())
 				command = "Set Level";
 		}
 		else if (command == "Off")
 		{
-			level = pSensor->position_closed;
-			szValue = pSensor->payload_close;
+			level = pSensor->position_open;
+			szValue = pSensor->payload_open;
 			if (pSensor->command_topic.empty())
 				command = "Set Level";
 		}
@@ -2993,14 +2993,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		if (command == "Set Level")
 		{
 			szValue = std::to_string(level);
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-			if (!result.empty())
-			{
-				m_sql.safe_query(
-					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
-					level, result[0][0].c_str());
-			}
 			if (!pSensor->set_position_topic.empty())
 			{
 				if (pSensor->set_position_template.empty())
@@ -3028,7 +3020,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					}
 				}
 				SendMessage(pSensor->set_position_topic, szSendValue);
-				return true;
 			}
 			else {
 				Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
@@ -3036,26 +3027,24 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			}
 		}
 		else {
-			if (level != -1)
-			{
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-				if (!result.empty())
-				{
-					m_sql.safe_query(
-						"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
-						level, result[0][0].c_str());
-				}
-			}
-
 			if (!pSensor->command_topic.empty())
 			{
 				SendMessage(pSensor->command_topic, szValue);
-				return true;
 			}
 			else {
 				Log(LOG_ERROR, "Cover device does not have command_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
 				return false;
+			}
+		}
+		if (level != -1)
+		{
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+			if (!result.empty())
+			{
+				m_sql.safe_query(
+					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
+					level, result[0][0].c_str());
 			}
 		}
 		return true;
