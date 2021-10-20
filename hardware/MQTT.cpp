@@ -2704,9 +2704,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			//must be a level
 			level = atoi(szOnOffValue.c_str());
-			if (level == pSensor->position_closed)
+			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
 				szOnOffValue = "on";
-			else if (level == pSensor->position_open)
+			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
 				szOnOffValue = "off";
 			else if (level > 0)
 			{
