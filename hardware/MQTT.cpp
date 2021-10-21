@@ -2625,7 +2625,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szOnOffValue = "off";
 			else 
 			{
-				level = (int)abs((100.0 / (pSensor->position_closed - pSensor->position_open)) * level);
+				level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
 				szOnOffValue = "Set Level";
 			}
 		}
@@ -2711,7 +2711,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szOnOffValue = "Set Level";
 					// recalculate level to make relative to min/maxpositions
 					if (pSensor->component_type == "cover")
-						level = (int)std::abs((100.0 / (pSensor->position_closed - pSensor->position_open)) * root["position"].asInt());
+						level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
 				}
 				else
 					szOnOffValue = "on";
