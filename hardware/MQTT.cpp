@@ -2619,9 +2619,14 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		if (!root["position"].empty())
 		{
 			level = root["position"].asInt();
-			if ((szOnOffValue != pSensor->payload_on) && (szOnOffValue != pSensor->payload_off))
+			if (level == pSensor->position_closed)
+				szOnOffValue = "on";
+			else if (level == pSensor->position_open)
+				szOnOffValue = "off";
+			else 
 			{
-				szOnOffValue = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
+				level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
+				szOnOffValue = "Set Level";
 			}
 		}
 		if (!root["color"].empty())
@@ -2695,10 +2700,19 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			//must be a level
 			level = atoi(szOnOffValue.c_str());
-			if (level > 0)
+			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
+				szOnOffValue = "on";
+			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
+				szOnOffValue = "off";
+			else if (level > 0)
 			{
 				if (level != 100)
+				{
 					szOnOffValue = "Set Level";
+					// recalculate level to make relative to min/maxpositions
+					if (pSensor->component_type == "cover")
+						level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
+				}
 				else
 					szOnOffValue = "on";
 			}
