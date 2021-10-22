@@ -999,8 +999,12 @@ void MQTT::SubscribeTopic(const std::string &szTopic, const int qos)
 
 void MQTT::CleanValueTemplate(std::string &szValueTemplate)
 {
+	if (szValueTemplate.empty())
+		return;
 	stdreplace(szValueTemplate, "{", "");
 	stdreplace(szValueTemplate, "}", "");
+	stdreplace(szValueTemplate, "'", "");
+	stdreplace(szValueTemplate, "\"", "");
 	size_t tpos = szValueTemplate.find("|");
 	if (tpos != std::string::npos)
 	{
@@ -1034,6 +1038,81 @@ std::string MQTT::GetValueTemplateKey(const std::string &szValueTemplate)
 	}
 	stdstring_trim(szKey);
 	return szKey;
+}
+
+//returns empty if value is not found
+std::string MQTT::GetValueFromTemplate(Json::Value root, const std::string& szValueTemplate)
+{
+	std::string szKey;
+	std::vector<std::string> strarray;
+
+	try
+	{
+		if (szValueTemplate.find("value_json.") != std::string::npos)
+		{
+			std::string tstring = szValueTemplate.substr(std::string("value_json.").size());
+			StringSplit(tstring, ".", strarray);
+			for (const auto itt : strarray)
+			{
+				szKey = itt;
+				if (root[szKey].empty())
+					return ""; //key not found!
+				root = root[szKey];
+			}
+			return root.asString();
+		}
+		else if (szValueTemplate.find("value_json[") != std::string::npos)
+		{
+			//could be one or multiple object and have a possible key at the end
+			//value_json["key1"]["key2"]{.value}
+			std::string tstring = szValueTemplate.substr(std::string("value_json").size());
+			std::string suffix;
+			StringSplit(tstring, ".", strarray);
+			if (strarray.size() == 2)
+			{
+				tstring = strarray[0];
+				suffix = strarray[1];
+			}
+			StringSplit(tstring, "]", strarray);
+			for (const auto itt : strarray)
+			{
+				szKey = itt;
+				stdreplace(szKey, "[", "");
+				stdreplace(szKey, "]", "");
+				if (root[szKey].empty())
+					return ""; //key not found!
+				root = root[szKey];
+			}
+			if (suffix.empty())
+				return root.asString();
+			else
+			{
+				if (root[suffix].empty())
+					return ""; //not found
+				return root[suffix].asString();
+			}
+			return "";
+		}
+		else
+		{
+			StringSplit(szValueTemplate, ":", strarray);
+			if (strarray.size() == 2)
+			{
+				szKey = strarray[0];
+				stdreplace(szKey, "\"", "");
+			}
+			else
+				szKey = szValueTemplate;
+		}
+		stdstring_trim(szKey);
+		if (!root[szKey].empty())
+			return root[szKey].asString();
+	}
+	catch (const std::exception&)
+	{
+
+	}
+	return "";
 }
 
 void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
@@ -1331,9 +1410,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		else if (!root["stat_val_tpl"].empty())
 			pSensor->state_value_template = root["stat_val_tpl"].asString();
 
-		if (pSensor->value_template.find("value_json") == 0)
-			pSensor->value_template = pSensor->value_template.substr(strlen("value_json."));
-
 		if (!root["icon"].empty())
 			pSensor->icon = root["icon"].asString();
 		else if (!root["ic"].empty())
@@ -1615,35 +1691,12 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 				std::string value_template = pSensor->value_template;
 				if (!value_template.empty())
 				{
-					Json::Value key_value = root;
-
-					if (value_template.find('.') != std::string::npos)
+					szValue = GetValueFromTemplate(root, value_template);
+					if (szValue.empty())
 					{
-						std::vector<std::string> strarray;
-						StringSplit(value_template, ".", strarray);
-						if (strarray.size() > 1)
-						{
-							for (auto ittKey : strarray)
-							{
-								if (!key_value[ittKey].empty())
-								{
-									if (key_value[ittKey].isObject())
-										key_value = key_value[ittKey];
-									else
-										value_template = ittKey;
-								}
-								else
-								{
-									// key not found!
-									continue;
-								}
-							}
-						}
+						// key not found!
+						continue;
 					}
-
-					if (key_value[value_template].empty())
-						continue; // key not found
-					szValue = key_value[value_template].asString();
 				}
 				else
 					szValue = qMessage;
@@ -2169,31 +2222,8 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		}
 		if (!pSensor->mode_state_template.empty())
 		{
-			std::string szKey = GetValueTemplateKey(pSensor->mode_state_template);
-			if (!szKey.empty())
-			{
-				if (!root[szKey].empty())
-				{
-					current_mode = root[szKey].asString();
-				}
-				else
-				{
-					if (pSensor->mode_state_template.find("value_json.value") != std::string::npos)
-					{
-						szKey = "value";
-						if (!root[szKey].empty())
-						{
-							current_mode = root[szKey].asString();
-						}
-						else
-						{
-							Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
-							return;
-						}
-					}
-				}
-			}
-			else
+			current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
+			if (current_mode.empty())
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
 				return;
@@ -2270,14 +2300,13 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 			//Current Setpoint
 			if (!pSensor->temperature_state_template.empty())
 			{
-				std::string szKey = GetValueTemplateKey(pSensor->temperature_state_template);
-				if (!szKey.empty())
-					temp_setpoint = root[szKey].asFloat();
-				else
+				std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template);
+				if (tstring.empty())
 				{
 					Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
 					return;
 				}
+				temp_setpoint = static_cast<float>(atof(tstring.c_str()));
 			}
 		}
 		else
@@ -2315,14 +2344,13 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 			//Current temperature
 			if (!pSensor->current_temperature_template.empty())
 			{
-				std::string szKey = GetValueTemplateKey(pSensor->current_temperature_template);
-				if (!szKey.empty())
-					temp_current = root[szKey].asFloat();
-				else
+				std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template);
+				if (tstring.empty())
 				{
 					Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
 					return;
 				}
+				temp_current = static_cast<float>(atof(tstring.c_str()));
 			}
 		}
 		else
