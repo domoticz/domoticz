@@ -375,6 +375,8 @@ namespace http
 			RegisterCommandCode(
 				"getlanguage", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguage(session, req, root); }, true);
 			RegisterCommandCode(
+				"getlanguages", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguages(session, req, root); }, true);
+			RegisterCommandCode(
 				"getthemes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetThemes(session, req, root); }, true);
 			RegisterCommandCode(
 				"gettitle", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetTitle(session, req, root); }, true);
@@ -903,6 +905,16 @@ namespace http
 				root["title"] = "GetLanguage";
 				root["language"] = sValue;
 			}
+		}
+
+		void CWebServer::Cmd_GetLanguages(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			root["title"] = "GetLanguages";
+			for (auto &lang : guiLanguage)
+			{
+				root["result"][lang.first] = lang.second;
+			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetThemes(WebEmSession &session, const request &req, Json::Value &root)
