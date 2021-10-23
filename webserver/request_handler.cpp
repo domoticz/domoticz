@@ -362,7 +362,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		{
 			if (bHaveLoadedgzip && (!bClientHasGZipSupport))
 			{
-				// We loaded an already compressed source file, but the client does not seem to support to received it compressed. So we decompress it first.
+				// We found an already compressed source file, but the client does not seem to support to received it compressed. So we decompress it first.
 				std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 
 				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
@@ -374,6 +374,14 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				// Load the sourcefile (compressed or not)
 				rep.content.append((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
 				rep.bIsGZIP = (bClientHasGZipSupport && bHaveLoadedgzip);
+			}
+			if (bIsCompressibleType && (!bHaveLoadedgzip))
+			{
+				// Find and include any special cWebem strings
+				if (myWebem->Include(rep.content))
+				{
+					_log.Debug(DEBUG_WEBSERVER,"[web:%s] Added some include in non-zipped file", request_path.c_str());
+				}
 			}
 			if (bClientHasGZipSupport && bIsCompressibleType && (!bHaveLoadedgzip))
 			{

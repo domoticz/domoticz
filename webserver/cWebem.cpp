@@ -2159,52 +2159,6 @@ namespace http {
 						rep = reply::stock_reply(reply::internal_server_error);
 						return;
 					}
-
-					// find content type header
-					std::string content_type;
-					for (auto &header : rep.headers)
-					{
-						if (boost::iequals(header.name, "Content-Type"))
-						{
-							content_type = header.value;
-							break;
-						}
-					}
-
-					if (content_type == "text/html"
-						|| content_type == "text/plain"
-						|| content_type == "text/css"
-						|| content_type == "text/javascript"
-						|| content_type == "application/javascript"
-						)
-					{
-						// check if content is not gzipped, include won't work with non-text content
-						if (!rep.bIsGZIP)
-						{
-							// Find and include any special cWebem strings
-							if (!myWebem->Include(rep.content))
-							{
-								if (mInfo.mtime_support && !mInfo.is_modified)
-								{
-									return;
-								}
-							}
-
-							// adjust content length header
-							// ( Firefox ignores this, but apparently some browsers truncate display without it.
-							// fix provided by http://www.codeproject.com/Members/jaeheung72 )
-
-							reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-
-							if (!mInfo.mtime_support)
-							{
-								reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)), true);
-							}
-
-							//check gzip support if yes, send it back in gzip format
-							CompressWebOutput(req, rep);
-						}
-					}
 				}
 			}
 
