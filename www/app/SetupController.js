@@ -245,6 +245,23 @@ define(['app'], function (app) {
 				}
 			});
 
+			//Get Languages
+			$.ajax({
+				url: "json.htm?type=command&param=getlanguages",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						$("#settingscontent #combolanguages").html("");
+						$.each(data.result, function (langcode, language) {
+							var option = $('<option />');
+							option.attr('value', langcode).text(language);
+							$("#settingscontent #combolanguages").append(option);
+						});
+					}
+				}
+			});
+
 			//Get Timer Plans
 			$.ajax({
 				url: "json.htm?type=command&param=gettimerplans",
@@ -528,7 +545,7 @@ define(['app'], function (app) {
 						$("#remotesharedtable #RemoteSharedPort").val(data.RemoteSharedPort);
 					}
 					if (typeof data.Language != 'undefined') {
-						$("#languagetable #combolanguage").val(data.Language);
+						$("#languagetable #combolanguages").val(data.Language);
 					}
 					if (typeof data.WebTheme != 'undefined') {
 						$("#settingscontent #combothemes").val(data.WebTheme);
