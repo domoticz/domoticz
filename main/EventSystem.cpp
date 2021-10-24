@@ -335,18 +335,6 @@ void CEventSystem::Do_Work()
 	_log.Log(LOG_STATUS, "EventSystem: Stopped...");
 
 }
-/*
-std::string utf8_to_string(const char *utf8str, const std::locale& loc)
-{
-// UTF-8 to wstring
-std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
-std::wstring wstr = wconv.from_bytes(utf8str);
-// wstring to string
-std::vector<char> buf(wstr.size());
-std::use_facet<std::ctype<wchar_t>>(loc).narrow(wstr.data(), wstr.data() + wstr.size(), '?', buf.data());
-return std::string(buf.data(), buf.size());
-}
-*/
 
 void CEventSystem::StripQuotes(std::string &sString)
 {

@@ -1398,7 +1398,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->unit_of_measurement = root["unit_of_measurement"].asString();
 		else if (!root["unit_of_meas"].empty())
 			pSensor->unit_of_measurement = root["unit_of_meas"].asString();
-		//pSensor->unit_of_measurement = utf8_to_string(pSensor->unit_of_measurement);
 		stdstring_trim(pSensor->unit_of_measurement);
 
 		if (!root["value_template"].empty())
