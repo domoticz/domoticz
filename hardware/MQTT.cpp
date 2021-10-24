@@ -1398,6 +1398,8 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->unit_of_measurement = root["unit_of_measurement"].asString();
 		else if (!root["unit_of_meas"].empty())
 			pSensor->unit_of_measurement = root["unit_of_meas"].asString();
+		//pSensor->unit_of_measurement = utf8_to_string(pSensor->unit_of_measurement);
+		stdstring_trim(pSensor->unit_of_measurement);
 
 		if (!root["value_template"].empty())
 			pSensor->value_template = root["value_template"].asString();
@@ -1647,6 +1649,18 @@ disovery_invaliddata:
 	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (Topic: %s, Message: %s)", topic.c_str(), qMessage.c_str());
 }
 
+void MQTT::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
+{
+	for (auto& itt : m_discovered_sensors)
+	{
+		_tMQTTASensor* pDevSensor = &itt.second;
+		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
+		{
+			pDevSensor->SignalLevel = pSensor->SignalLevel;
+		}
+	}
+}
+
 void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
@@ -1696,6 +1710,11 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 					{
 						// key not found!
 						continue;
+					}
+					if (value_template.find("RSSI") != std::string::npos)
+					{
+						pSensor->SignalLevel = (int)round((10.0F / 255.0F) * atof(szValue.c_str()));
+						ApplySignalLevelDevice(pSensor);
 					}
 				}
 				else
@@ -1781,6 +1800,17 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 	sValue = "";
 
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
+
+	if (szUnit.empty())
+	{
+		if (!is_number(pSensor->last_value))
+		{
+			// conversion failed because the input wasn't a number
+			// make it a text sensor
+			szUnit = "Text";
+		}
+	}
+
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 
@@ -1991,19 +2021,6 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 	}
 
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
-
-	if (szUnit.empty())
-	{
-		char* p;
-		double converted = strtod(pSensor->last_value.c_str(), &p);
-		if (*p)
-		{
-			// conversion failed because the input wasn't a number
-			// make it a text sensor
-			szUnit = "Text";
-		}
-	}
-
 	if (szUnit == "dBm")
 	{
 		// probably WIFI strength, should be handled differently and used as signal strength
@@ -2046,6 +2063,7 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 
 		std::string szDeviceID = pSensor->device_identifiers;
 		std::string sDeviceName = m_discovered_devices[pSensor->device_identifiers].name;
+
 		int nValue = 0;
 		std::string sValue;
 		uint8_t devType = pSensor->devType;
@@ -2086,9 +2104,9 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 				|| (pBaroSensor->last_received == 0)
 				)
 				return; //not all 3 received yet
-			//make a new sensor and use the 'device_identifier' as ID
 			devType = pTypeTEMP_HUM_BARO;
 			subType = sTypeTHBFloat;
+
 			uint8_t nforecast = wsbaroforecast_some_clouds;
 			if (pressure <= 980)
 				nforecast = wsbaroforecast_heavy_rain;
@@ -2113,12 +2131,17 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 				return; // not all 2 received yet
 			devType = pTypeTEMP_HUM;
 			subType = sTypeTH1;
+
 			sValue = std_format("%.1f;%d;%d", temp, humidity, Get_Humidity_Level(humidity));
 		}
 		else
 		{
+			//No combination found, use original device parameters
 			devType = pSensor->devType;
 			subType = pSensor->subType;
+			szDeviceID = pSensor->unique_id;
+			sDeviceName = pSensor->name;
+
 			nValue = pSensor->nValue;
 			sValue = pSensor->sValue;
 		}
