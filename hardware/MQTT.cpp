@@ -1307,11 +1307,13 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 
 		//sensor
+		/* skip this test to allow for device updates while running
 		if (m_discovered_sensors.find(sensor_unique_id) != m_discovered_sensors.end())
 		{
 			//Already received
-			return;
+			return;  
 		}
+		*/
 		_tMQTTASensor tmpSensor;
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
 		_tMQTTASensor *pSensor = &m_discovered_sensors[sensor_unique_id];
@@ -1612,6 +1614,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 				Log(LOG_ERROR, "Missing temperature_command_topic!");
 				return;
 			}
+			handle_auto_discovery_climate(pSensor, message);
 		}
 		else if (pSensor->component_type == "binary_sensor")
 		{
@@ -2232,10 +2235,8 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		bIsJSON = root.isObject();
 	}
 
-	if (
-		(pSensor->mode_state_topic == topic)
-		&& (!pSensor->climate_modes.empty())
-		)
+	// Create/update Selector device for config and update payloads 
+	if (!pSensor->climate_modes.empty())
 	{
 		std::string current_mode;
 		if (!bIsJSON)
@@ -2246,7 +2247,7 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		if (!pSensor->mode_state_template.empty())
 		{
 			current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
-			if (current_mode.empty())
+			if ((pSensor->mode_state_topic == topic) && current_mode.empty())
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
 				return;
@@ -2269,12 +2270,13 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 					 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), 1, 0);
 			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType,
 						  pSensor->subType);
+			if (result.empty())
+				return; // should not happen!
 		}
-		if (result.empty())
-			return; // should not happen!
-
-		if (pSensor->last_value.empty())
-			return;
+		else {
+			if (pSensor->last_value.empty())
+				return;
+		}
 
 		std::string szIdx = result[0][0];
 		uint64_t DevRowIdx = std::stoull(szIdx);
@@ -2315,26 +2317,29 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 				       pSensor->sValue.c_str(), szDeviceName);
 		}
 	}
-	if (pSensor->temperature_state_topic == topic)
-	{
+		
+	// Create/update SetPoint Thermostat for config and update payloads 
+	if (!pSensor->temperature_command_topic.empty()) {
 		float temp_setpoint = 0;
-		if (bIsJSON)
+		if (pSensor->temperature_state_topic == topic)
 		{
-			//Current Setpoint
-			if (!pSensor->temperature_state_template.empty())
+			if (bIsJSON)
 			{
-				std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template);
-				if (tstring.empty())
+				//Current Setpoint
+				if (!pSensor->temperature_state_template.empty())
 				{
-					Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
-					return;
+					std::string tstring = GetValueFromTemplate(root, pSensor->temperature_state_template);
+					if (tstring.empty())
+					{
+						Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
+						return;
+					}
+					temp_setpoint = static_cast<float>(atof(tstring.c_str()));
 				}
-				temp_setpoint = static_cast<float>(atof(tstring.c_str()));
 			}
+			else
+				temp_setpoint = static_cast<float>(atof(qMessage.c_str()));
 		}
-		else
-			temp_setpoint = static_cast<float>(atof(qMessage.c_str()));
-
 		pSensor->nValue = 0;
 		pSensor->sValue = std_format("%.2f", temp_setpoint);
 		pSensor->devType = pTypeThermostat;
@@ -2359,26 +2364,29 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		}
 
 	}
-	if (pSensor->current_temperature_topic == topic)
-	{
+			
+	// Create/update Temp device for config and update payloads 
+	if (!pSensor->current_temperature_topic.empty()) {
 		float temp_current = 0;
-		if (bIsJSON)
+		if (pSensor->current_temperature_topic == topic)
 		{
-			//Current temperature
-			if (!pSensor->current_temperature_template.empty())
+			if (bIsJSON)
 			{
-				std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template);
-				if (tstring.empty())
+				//Current temperature
+				if (!pSensor->current_temperature_template.empty())
 				{
-					Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
-					return;
+					std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template);
+					if (tstring.empty())
+					{
+						Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
+						return;
+					}
+					temp_current = static_cast<float>(atof(tstring.c_str()));
 				}
-				temp_current = static_cast<float>(atof(tstring.c_str()));
 			}
+			else
+				temp_current = static_cast<float>(atof(qMessage.c_str()));
 		}
-		else
-			temp_current = static_cast<float>(atof(qMessage.c_str()));
-
 		pSensor->devType = pTypeTEMP;
 		pSensor->subType = sTypeTEMP1;
 
