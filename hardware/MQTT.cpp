@@ -1816,6 +1816,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 	if (
 		(szUnit == "°C")
 		|| (szUnit == "C")
+		|| (szUnit == "?C")
 		|| (pSensor->value_template.find("temperature") != std::string::npos)
 		|| (pSensor->state_topic.find("temperature") != std::string::npos)
 		)
