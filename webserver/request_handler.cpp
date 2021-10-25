@@ -382,7 +382,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			}
 			catch(const std::exception& e)
 			{
-				_log.Debug(DEBUG_WEBSERVER, "[web:%s] unable to server content from %s.", request_path.c_str(), full_path.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] unable to server content from %s. %s", request_path.c_str(), full_path.c_str(), e.what());
 				rep = reply::stock_reply(reply::not_found);
 				return;
 			}

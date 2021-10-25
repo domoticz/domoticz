@@ -4945,8 +4945,8 @@ uint64_t CSQLHelper::UpdateValueInt(
 			{
 				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
 				float powerDuringInterval = static_cast<float>(atof(parts[0].c_str()));
-				float energyUpToInterval = atof(parts[1].c_str());
-				float energyDuringInterval = powerDuringInterval * intervalSeconds / 3600 + energyUpToInterval;
+				float energyUpToInterval = static_cast<float>(atof(parts[1].c_str()));
+				float energyDuringInterval = static_cast<float>(powerDuringInterval * intervalSeconds / 3600 + energyUpToInterval);
 				const char* powerAfterInterval = parts[0].c_str();
 				StringSplit(sValue, ";", parts);
 				if (!parts.empty())
