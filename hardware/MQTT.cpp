@@ -3060,7 +3060,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			szValue = std::to_string(level);
 			if (!pSensor->set_position_topic.empty())
 			{
-				float iValue = (((float(level) - pSensor->position_closed) / (pSensor->position_open - pSensor->position_closed)) * 100.0F);
+				int iValue = (int)(((float(level) - pSensor->position_closed) / (pSensor->position_open - pSensor->position_closed)) * 100.0F);
 				if (pSensor->set_position_template.empty())
 				{
 					szSendValue = std::to_string(iValue);
