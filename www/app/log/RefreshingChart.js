@@ -233,7 +233,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             column: {
                                 pointPlacement: 'between',
                                 borderWidth: 0,
-                                minPointLength: 4,
+                                minPointLength: 2,
                                 pointPadding: 0.1,
                                 groupPadding: 0,
                                 dataLabels: {
@@ -263,10 +263,6 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 .then(function (data) {
                     self.consoledebug(function () { return stopwatchDataRequest.log(); });
                     self.consoledebug(function () { return '[' + Base.dateToString(new Date()) + '] refreshing ' + self; });
-
-                    if (typeof data.result === 'undefined') {
-                        return;
-                    }
 
                     const stopwatchCycle = stopwatch('cycle');
                     loadDataInChart(data);
@@ -709,10 +705,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         function chartTitle() {
             if (self.chartName !== undefined) {
                 let chartName;
-                if (typeof self.chartName === 'function')
-                    chartName = self.chartName();
-                else
-                    chartName = self.chartName;
+                chartName = fromInstanceOrFunction()(self.chartName);
                 const periodInTitle = chartTitlePeriod();
                 return chartName + (periodInTitle ? ' ' + periodInTitle : '');
             } else {
@@ -769,7 +762,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             },
             log: function () {
                 return this.indent
-                    + (typeof this.label === 'function' ? this.label() : this.label)
+                    + fromInstanceOrFunction()(this.label)
                     + ': ' + this.lapsedMsecs() + 'msecs';
             },
             split: function (label) {

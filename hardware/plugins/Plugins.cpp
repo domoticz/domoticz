@@ -20,11 +20,11 @@
 
 #include "../../notifications/NotificationHelper.h"
 
-#define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                                                                                          \
-	{                                                                                                                                                                                              \
-		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                                                                                    \
-		if (PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                                                                      \
-			pPlugin->Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", m_PluginKey.c_str(), key, value.c_str());                                                        \
+#define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                      \
+	{                                                                                                                                       \
+		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                               \
+		if (PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                   \
+			pPlugin->Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", m_PluginKey.c_str(), key, value.c_str());     \
 	}
 
 #define GETSTATE(m) ((struct module_state *)PyModule_GetState(m))
@@ -384,7 +384,7 @@ namespace Plugins
 				else
 				{
 					//	Add heartbeat command to message queue
-					pModState->pPlugin->MessagePlugin(new PollIntervalDirective(pModState->pPlugin, iPollinterval));
+					pModState->pPlugin->MessagePlugin(new PollIntervalDirective(iPollinterval));
 				}
 			}
 		}
@@ -422,7 +422,7 @@ namespace Plugins
 				else
 				{
 					//	Add notifier command to message queue
-					pModState->pPlugin->MessagePlugin(new NotifierDirective(pModState->pPlugin, szNotifier));
+					pModState->pPlugin->MessagePlugin(new NotifierDirective(szNotifier));
 				}
 			}
 		}
@@ -543,7 +543,7 @@ namespace Plugins
 					{
 						if (pBaseClass->tp_name == pModState->pDeviceClass->tp_name)
 						{
-							_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pDeviceClass->tp_name);
+							//_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pDeviceClass->tp_name);
 							pModState->pDeviceClass = pDeviceClass;
 							break;
 						}
@@ -563,7 +563,7 @@ namespace Plugins
 						{
 							if (pBaseClass->tp_name == pModState->pUnitClass->tp_name)
 							{
-								_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pUnitClass->tp_name);
+								//_log.Log((_eLogLevel)LOG_NORM, "Class '%s' registered to override '%s'.", pDeviceClass->tp_name, pModState->pUnitClass->tp_name);
 								pModState->pUnitClass = pUnitClass;
 								break;
 							}
@@ -590,7 +590,15 @@ namespace Plugins
 	{
 		static char *kwlist[] = { "Object", NULL };
 		module_state *pModState = CPlugin::FindModule();
-		if (pModState)
+		if (!pModState)
+		{
+			Py_RETURN_NONE;
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
 		{
 			PyObject *pTarget = NULL; // Object reference count not increased
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
@@ -1117,7 +1125,7 @@ namespace Plugins
 
 		//	Add start command to message queue
 		m_bIsStarting = true;
-		MessagePlugin(new InitializeMessage(this));
+		MessagePlugin(new InitializeMessage());
 
 		Log(LOG_STATUS, "(%s) Started.", m_Name.c_str());
 
@@ -1152,14 +1160,14 @@ namespace Plugins
 						if (pPluginTransport)
 						{
 							// std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-							MessagePlugin(new DisconnectDirective(this, pPluginTransport->Connection()));
+							MessagePlugin(new DisconnectDirective(pPluginTransport->Connection()));
 						}
 					}
 				}
 				else
 				{
 					// otherwise just signal stop
-					MessagePlugin(new onStopCallback(this));
+					MessagePlugin(new onStopCallback());
 				}
 
 				// loop on stop to be processed
@@ -1241,12 +1249,11 @@ namespace Plugins
 					bProcessed = true;
 					try
 					{
-						const CPlugin *pPlugin = Message->Plugin();
-						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
+						if (m_bDebug & PDM_QUEUE)
 						{
-							_log.Log(LOG_NORM, "(" + pPlugin->m_Name + ") Processing '" + std::string(Message->Name()) + "' message");
+							Log(LOG_NORM, "(" + m_Name + ") Processing '" + std::string(Message->Name()) + "' message");
 						}
-						Message->Process();
+						Message->Process(this);
 					}
 					catch (...)
 					{
@@ -1257,17 +1264,16 @@ namespace Plugins
 				if (Message)
 				{
 					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
-					CPlugin *pPlugin = (CPlugin *)Message->Plugin();
-					pPlugin->RestoreThread();
+					RestoreThread();
 					delete Message;
-					pPlugin->ReleaseThread();
+					ReleaseThread();
 				}
 			}
 
 			if (Now >= (m_LastHeartbeat + m_iPollInterval))
 			{
 				//	Add heartbeat to message queue
-				MessagePlugin(new onHeartbeatCallback(this));
+				MessagePlugin(new onHeartbeatCallback());
 				m_LastHeartbeat = mytime(nullptr);
 			}
 
@@ -1432,7 +1438,7 @@ namespace Plugins
 			pModState->pPlugin = this;
 
 			//	Add start command to message queue
-			MessagePlugin(new onStartCallback(this));
+			MessagePlugin(new onStartCallback());
 
 			std::string sExtraDetail;
 			TiXmlDocument XmlDoc;
@@ -1687,6 +1693,8 @@ namespace Plugins
 		ConnectDirective *pMessage = (ConnectDirective *)pMess;
 		CConnection *pConnection = pMessage->m_pConnection;
 
+		if (!pConnection->pPlugin) pConnection->pPlugin = this;
+
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
 			Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", m_Name.c_str());
@@ -1753,6 +1761,8 @@ namespace Plugins
 	{
 		ListenDirective *pMessage = (ListenDirective *)pMess;
 		CConnection *pConnection = pMessage->m_pConnection;
+
+		if (!pConnection->pPlugin) pConnection->pPlugin = this;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
@@ -1901,7 +1911,7 @@ namespace Plugins
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
 		{
-			pConnection->pProtocol->Flush(pMessage->m_pPlugin, pConnection);
+			pConnection->pProtocol->Flush(this, pConnection);
 		}
 
 		if (pConnection->pTransport)
@@ -1917,6 +1927,8 @@ namespace Plugins
 					Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", m_Name.c_str(), sAddress.c_str(), sPort.c_str());
 			}
 
+			// Sanity check the directive
+
 			// If transport is not going to disconnect asynchronously tidy it up here
 			if (!pConnection->pTransport->AsyncDisconnect())
 			{
@@ -1928,7 +1940,7 @@ namespace Plugins
 				// Plugin exiting and all connections have disconnect messages queued
 				if (IsStopRequested(0) && m_Transports.empty())
 				{
-					MessagePlugin(new onStopCallback(this));
+					MessagePlugin(new onStopCallback());
 				}
 			}
 			else
@@ -2113,19 +2125,19 @@ namespace Plugins
 
 	void CPlugin::DeviceAdded(const std::string DeviceID, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceAddedCallback(this, DeviceID, Unit);
+		CPluginMessageBase *pMessage = new onDeviceAddedCallback(DeviceID, Unit);
 		MessagePlugin(pMessage);
 	}
 
 	void CPlugin::DeviceModified(const std::string DeviceID, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceModifiedCallback(this, DeviceID, Unit);
+		CPluginMessageBase *pMessage = new onDeviceModifiedCallback(DeviceID, Unit);
 		MessagePlugin(pMessage);
 	}
 
 	void CPlugin::DeviceRemoved(const std::string DeviceID, int Unit)
 	{
-		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(this, DeviceID, Unit);
+		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(DeviceID, Unit);
 		MessagePlugin(pMessage);
 	}
 
@@ -2137,7 +2149,7 @@ namespace Plugins
 		// Return any partial data to plugin
 		if (pConnection->pProtocol)
 		{
-			pConnection->pProtocol->Flush(pMessage->m_pPlugin, pConnection);
+			pConnection->pProtocol->Flush(this, pConnection);
 		}
 
 		if (pConnection->pTransport)
@@ -2160,13 +2172,13 @@ namespace Plugins
 			// inform the plugin if transport is connection based
 			if (pMessage->bNotifyPlugin)
 			{
-				MessagePlugin(new onDisconnectCallback(this, pConnection));
+				MessagePlugin(new onDisconnectCallback(pConnection));
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
 			if (IsStopRequested(0) && m_Transports.empty())
 			{
-				MessagePlugin(new onStopCallback(this));
+				MessagePlugin(new onStopCallback());
 			}
 		}
 	}
@@ -2528,13 +2540,13 @@ namespace Plugins
 	{
 		//	Add command to message queue
 		std::string JSONColor = color.toJSONString();
-		MessagePlugin(new onCommandCallback(this, DeviceID, Unit, command, level, JSONColor));
+		MessagePlugin(new onCommandCallback(DeviceID, Unit, command, level, JSONColor));
 	}
 
 	void CPlugin::SendCommand(const std::string &DeviceID, const int Unit, const std::string &command, const float level)
 	{
 		//	Add command to message queue
-		MessagePlugin(new onCommandCallback(this, DeviceID, Unit, command, level));
+		MessagePlugin(new onCommandCallback(DeviceID, Unit, command, level));
 	}
 
 	bool CPlugin::HasNodeFailed(const std::string DeviceID, const int Unit)
@@ -2580,7 +2592,15 @@ namespace Plugins
 
 	PyBorrowedRef CPlugin::FindDevice(const std::string &Key)
 	{
-		return PyDict_GetItemString((PyObject *)m_DeviceDict, Key.c_str());
+		if (m_DeviceDict && PyDict_Check(m_DeviceDict))
+		{
+			return PyDict_GetItemString((PyObject*)m_DeviceDict, Key.c_str());
+		}
+		else
+		{
+			Log(LOG_ERROR, "(%s) Devices dictionary null or not valid in '%s'.", m_PluginKey.c_str(), __func__);
+		}
+		return nullptr;
 	}
 
 	PyBorrowedRef	CPlugin::FindUnitInDevice(const std::string &deviceKey, const int unitKey)
@@ -2741,11 +2761,13 @@ namespace Plugins
 					szTypeImage = "Contact48";
 					break;
 				case STYPE_Blinds:
+				case STYPE_BlindsInverted:
 				case STYPE_BlindsPercentage:
+				case STYPE_BlindsPercentageInverted:
+				case STYPE_BlindsPercentageWithStop:
+				case STYPE_BlindsPercentageInvertedWithStop:
 				case STYPE_VenetianBlindsUS:
 				case STYPE_VenetianBlindsEU:
-				case STYPE_BlindsPercentageInverted:
-				case STYPE_BlindsInverted:
 					szTypeImage = "blinds48";
 					break;
 				case STYPE_X10Siren:

@@ -37,6 +37,12 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 
 		std::string payload_on = "ON";
 		std::string payload_off = "OFF";
+		std::string payload_open = "OPEN";
+		std::string payload_close = "CLOSE";
+		std::string payload_stop = "STOP";
+		int position_open = 100;
+		int position_closed = 0;
+		
 		std::string payload_available;
 		std::string payload_not_available;
 		std::string state_on;
@@ -46,7 +52,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		float brightness_scale = 254.0F;
 
 		bool bColor_mode = false;
-		std::string supported_color_modes = "rgb";
+		std::map<std::string, uint8_t> supported_color_modes;
 
 		int min_mireds = 154;
 		int max_mireds = 500;
@@ -57,6 +63,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string mode_state_template;
 		std::vector<std::string> climate_modes;
 		std::string temperature_command_topic;
+		std::string temperature_command_template;
 		std::string temperature_state_topic;
 		std::string temperature_state_template;
 		std::string temperature_unit = "C";
@@ -172,8 +179,10 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 	void CleanValueTemplate(std::string &szValueTemplate);
-	std::string GetValueTemplateKey(const std::string &szValueTemplate);
+	std::string GetValueTemplateKey(const std::string& szValueTemplate);
+	std::string GetValueFromTemplate(Json::Value root, const std::string& szValueTemplate);
 	void GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
+	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;

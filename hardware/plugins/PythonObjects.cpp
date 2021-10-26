@@ -1320,9 +1320,10 @@ namespace Plugins {
 
 	PyObject *CConnection_connect(CConnection *self, PyObject *args, PyObject *kwds)
 	{
+		CPlugin* pPlugin = CPlugin::FindPlugin();
 		if (!self->pPlugin)
 		{
-			self->pPlugin = CPlugin::FindPlugin();
+			self->pPlugin = pPlugin;
 			if (!self->pPlugin)
 			{
 				_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
@@ -1331,21 +1332,21 @@ namespace Plugins {
 		}
 
 		//	Add connect command to message queue unless already connected
-		if (self->pPlugin->IsStopRequested(0))
+		if (pPlugin->IsStopRequested(0))
 		{
-			self->pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
-			self->pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
-			self->pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
 			return Py_None;
 		}
 
@@ -1373,13 +1374,13 @@ namespace Plugins {
 				self->Timeout = iTimeout;
 				if (!self->pProtocol)
 				{
-					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, self));
+					pPlugin->MessagePlugin(new ProtocolDirective(self));
 				}
-				self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, self));
+				pPlugin->MessagePlugin(new ConnectDirective(self));
 			}
 			else
 			{
-				self->pPlugin->Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
+				pPlugin->Log(LOG_ERROR, "Timeout parameter ignored, must be zero or greater than 250 milliseconds.");
 			}
 		}
 
@@ -1388,32 +1389,29 @@ namespace Plugins {
 
 	PyObject *CConnection_listen(CConnection *self, PyObject *args, PyObject *kwds)
 	{
-		if (!self->pPlugin)
+		CPlugin* pPlugin = CPlugin::FindPlugin();
+		if (!pPlugin)
 		{
-			self->pPlugin = CPlugin::FindPlugin();
-			if (!self->pPlugin)
-			{
-				_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
-				Py_RETURN_NONE;
-			}
+			_log.Log(LOG_ERROR, "%s:, illegal operation, Connection is not associated with a Plugin.", __func__);
+			Py_RETURN_NONE;
 		}
 
 		//	Add connect command to message queue unless already connected
-		if (self->pPlugin->IsStopRequested(0))
+		if (pPlugin->IsStopRequested(0))
 		{
-			self->pPlugin->Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
-			self->pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
-			self->pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
@@ -1428,7 +1426,7 @@ namespace Plugins {
 			}
 		}
 
-		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, self));
+		pPlugin->MessagePlugin(new ListenDirective(self));
 
 		Py_RETURN_NONE;
 	}
@@ -1464,7 +1462,7 @@ namespace Plugins {
 			else
 			{
 				//	Add start command to message queue
-				pPlugin->MessagePlugin(new WriteDirective(pPlugin, self, pData, iDelay));
+				pPlugin->MessagePlugin(new WriteDirective(self, pData, iDelay));
 			}
 		}
 
@@ -1484,7 +1482,7 @@ namespace Plugins {
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, self));
+				pPlugin->MessagePlugin(new DisconnectDirective(self));
 			}
 			else
 				pPlugin->Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, pPlugin->m_Name.c_str());

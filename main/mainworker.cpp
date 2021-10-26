@@ -11523,7 +11523,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (switchtype == STYPE_X10Siren) {
 			level = 15;
 		}
-		else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
+		else if (
+			(switchtype == STYPE_BlindsPercentage)
+			|| (switchtype == STYPE_BlindsPercentageInverted)
+			|| (switchtype == STYPE_BlindsPercentageWithStop)
+			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+			)
+		{
 			if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
 			{
 				if (level == 15)
@@ -11547,28 +11553,20 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			level = (level > 15) ? 15 : level;
 
 		lcmd.LIGHTING2.level = (uint8_t)level;
-		//Special Teach-In for EnOcean Dimmers
+
 		if ((pHardware->HwdType == HTYPE_EnOceanESP2) && (IsTesting) && (switchtype == STYPE_Dimmer))
-		{
+		{ // Special Teach-In for EnOcean ESP2 dimmers
 			CEnOceanESP2* pEnocean = reinterpret_cast<CEnOceanESP2*>(pHardware);
 			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
 		}
-		else if ((pHardware->HwdType == HTYPE_EnOceanESP3) && (IsTesting) && (switchtype == STYPE_Dimmer))
-		{
-			CEnOceanESP3* pEnocean = reinterpret_cast<CEnOceanESP3*>(pHardware);
-			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
-		}
-		else
-		{
-			if (switchtype != STYPE_Motion) //dont send actual motion off command
-			{
-				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
-					return false;
-			}
+		else if (switchtype != STYPE_Motion)
+		{ // Don't send actual motion off command
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
+				return false;
 		}
 
-		if (!IsTesting) {
-			//send to internal for now (later we use the ACK)
+		if (!IsTesting)
+		{ //send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t *)&lcmd, nullptr, -1, User.c_str());
 		}
 		return true;
@@ -12345,6 +12343,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if (
 				(switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageInverted)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
+				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				|| (switchtype == STYPE_VenetianBlindsUS)
 				|| (switchtype == STYPE_VenetianBlindsEU)
 				)
@@ -13205,11 +13205,16 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 			int ilevel = maxDimLevel - 1; // Why -1?
 
 			if (
-				((switchtype == STYPE_Dimmer) ||
-				(switchtype == STYPE_BlindsPercentage) ||
-					(switchtype == STYPE_BlindsPercentageInverted) ||
-					(switchtype == STYPE_Selector)
-					) && (maxDimLevel != 0))
+				(
+					(switchtype == STYPE_Dimmer)
+					|| (switchtype == STYPE_BlindsPercentage)
+					|| (switchtype == STYPE_BlindsPercentageInverted)
+					|| (switchtype == STYPE_BlindsPercentageWithStop)
+					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+					|| (switchtype == STYPE_Selector)
+				)
+				&& (maxDimLevel != 0)
+			   )
 			{
 				if (lstatus == "On")
 				{

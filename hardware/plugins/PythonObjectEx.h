@@ -126,7 +126,7 @@ namespace Plugins {
 		{ "Type", T_INT, offsetof(CUnitEx, Type), 0, "Numeric device type" },
 		{ "SubType", T_INT, offsetof(CUnitEx, SubType), 0, "Numeric device subtype" },
 		{ "SwitchType", T_INT, offsetof(CUnitEx, SwitchType), 0, "Numeric device switchtype" },
-		{ "LastLevel", T_INT, offsetof(CUnitEx, LastLevel), READONLY, "Previous device level" },
+		{ "LastLevel", T_INT, offsetof(CUnitEx, LastLevel), 0, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CUnitEx, LastUpdate), READONLY, "Last update timestamp" },
 		{ "Options", T_OBJECT, offsetof(CUnitEx, Options), READONLY, "Device options" },
 		{ "Used", T_INT, offsetof(CUnitEx, Used), 0, "Numeric device Used flag" },

@@ -1472,12 +1472,12 @@ void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsi
 		int Soc = (int)bufferdata[0];
 		std::string soc_name = defaultname;
 		soc_name += " SoC";
-		SendPercentageSensor(sID + ChildId, ChildId, 255, Soc, soc_name);
+		SendPercentageSensor(sID + ChildId, ChildId, 255, static_cast<float>(Soc), soc_name);
 
 		int Soh = (int)bufferdata[1];
 		std::string soh_name = defaultname;
 		soh_name += " SoH";
-		SendPercentageSensor(sID + ChildId + 1, ChildId, 255, Soh, soh_name);
+		SendPercentageSensor(sID + ChildId + 1, ChildId, 255, static_cast<float>(Soh), soh_name);
 
 		int DischargeableAh = bufferdata[2];
 		std::string dAh_name = defaultname;

@@ -6269,3 +6269,13 @@ function MakeDatatableTranslations() {
 	$.DataTableLanguage["paginate"]["next"] = $.t("Next");
 	$.DataTableLanguage["paginate"]["last"] = $.t("Last");
 }
+
+function fromInstanceOrFunction(functionTemplate = f => f()) {
+	return function (instanceOrFunction) {
+		if (typeof instanceOrFunction === 'function') {
+			return functionTemplate(instanceOrFunction);
+		} else {
+			return instanceOrFunction;
+		}
+	}
+}

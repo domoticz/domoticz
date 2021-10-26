@@ -337,15 +337,20 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto &&content_part) { DisplayLanguageCombo(content_part); });
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
+			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
+			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
+			m_pWebEm->RegisterPageCode("/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
 			m_pWebEm->RegisterPageCode("/uploadcustomicon", [this](auto &&session, auto &&req, auto &&rep) { Post_UploadCustomIcon(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto &&session, auto &&req, auto &&rep) { GetCameraSnapshot(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/storesettings", [this](auto &&session, auto &&req, auto &&rep) { PostSettings(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto &&session, auto &&req, auto &&rep) { GetDatabaseBackup(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto &&session, auto &&req, auto &&rep) { GetCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
+			// Maybe handle these differently? (Or remove)
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", [this](auto &&session, auto &&req, auto &&rep) { GetFloorplanImage(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
+			// End of 'Pages' to be moved...
 
-			m_pWebEm->RegisterPageCode("/storesettings", [this](auto &&session, auto &&req, auto &&rep) { PostSettings(session, req, rep); });
 			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("rfxupgradefirmware", [this](auto &&session, auto &&req, auto &&redirect_uri) { RFXComUpgradeFirmware(session, req, redirect_uri); });
 			RegisterCommandCode(
@@ -370,24 +375,23 @@ namespace http
 			RegisterCommandCode(
 				"getlanguage", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguage(session, req, root); }, true);
 			RegisterCommandCode(
+				"getlanguages", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguages(session, req, root); }, true);
+			RegisterCommandCode(
 				"getthemes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetThemes(session, req, root); }, true);
 			RegisterCommandCode(
 				"gettitle", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetTitle(session, req, root); }, true);
-
 			RegisterCommandCode(
 				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
-			m_pWebEm->RegisterPageCode(
-				"/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
-
 			RegisterCommandCode(
 				"getversion", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetVersion(session, req, root); }, true);
-			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
-			RegisterCommandCode("clearlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearLog(session, req, root); });
 			RegisterCommandCode(
 				"getauth", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetAuth(session, req, root); }, true);
 			RegisterCommandCode(
 				"getuptime", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetUptime(session, req, root); }, true);
 
+			RegisterCommandCode("storesettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_PostSettings(session, req, root); });
+			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
+			RegisterCommandCode("clearlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearLog(session, req, root); });
 			RegisterCommandCode("gethardwaretypes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetHardwareTypes(session, req, root); });
 			RegisterCommandCode("addhardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddHardware(session, req, root); });
 			RegisterCommandCode("updatehardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateHardware(session, req, root); });
@@ -508,8 +512,7 @@ namespace http
 			RegisterCommandCode("getactualhistory", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetActualHistory(session, req, root); });
 			RegisterCommandCode("getnewhistory", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetNewHistory(session, req, root); });
 
-			RegisterCommandCode(
-				"getconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetConfig(session, req, root); }, true);
 			RegisterCommandCode("getlocation", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto &&session, auto &&req, auto &&root) { Cmd_SendNotification(session, req, root); });
@@ -582,6 +585,8 @@ namespace http
 
 			RegisterCommandCode("addArilux", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddArilux(session, req, root); });
 
+			RegisterCommandCode("tellstickApplySettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_TellstickApplySettings(session, req, root); });
+
 			RegisterRType("graph", [this](auto &&session, auto &&req, auto &&root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("lightlog", [this](auto &&session, auto &&req, auto &&root) { RType_LightLog(session, req, root); });
 			RegisterRType("textlog", [this](auto &&session, auto &&req, auto &&root) { RType_TextLog(session, req, root); });
@@ -622,6 +627,7 @@ namespace http
 			RegisterRType("custom_light_icons", [this](auto &&session, auto &&req, auto &&root) { RType_CustomLightIcons(session, req, root); });
 			RegisterRType("plans", [this](auto &&session, auto &&req, auto &&root) { RType_Plans(session, req, root); });
 			RegisterRType("floorplans", [this](auto &&session, auto &&req, auto &&root) { RType_FloorPlans(session, req, root); });
+
 #ifdef WITH_OPENZWAVE
 			// ZWave
 			RegisterCommandCode("updatezwavenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveUpdateNode(session, req, root); });
@@ -677,7 +683,6 @@ namespace http
 			// pollpost.html
 			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
-			RegisterCommandCode("tellstickApplySettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_TellstickApplySettings(session, req, root); });
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
@@ -812,7 +817,6 @@ namespace http
 							for (const auto &file : _ThemeFiles)
 							{
 								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
-								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + '\n';
 							}
 							continue;
@@ -903,6 +907,16 @@ namespace http
 			}
 		}
 
+		void CWebServer::Cmd_GetLanguages(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			root["title"] = "GetLanguages";
+			for (auto &lang : guiLanguage)
+			{
+				root["result"][lang.first] = lang.second;
+			}
+			root["status"] = "OK";
+		}
+
 		void CWebServer::Cmd_GetThemes(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -927,9 +941,11 @@ namespace http
 				root["Title"] = "Domoticz";
 		}
 
-		// PostSettings
+		// Depricated : This 'page' should not be used anymore. Use command instead
 		void CWebServer::PostLoginCheck(WebEmSession &session, const request &req, reply &rep)
 		{
+			_log.Log(LOG_NORM, "Depricated: Page LoginCheck! Use command instead!");
+
 			Json::Value root;
 			Cmd_LoginCheck(session, req, root);
 
@@ -3954,8 +3970,14 @@ namespace http
 									root["result"][ii]["Name"] = Name;
 									root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
 									root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
-									bool bIsDimmer = ((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) ||
-											  (switchtype == STYPE_BlindsPercentageInverted) || (switchtype == STYPE_Selector));
+									bool bIsDimmer = (
+										(switchtype == STYPE_Dimmer)
+										|| (switchtype == STYPE_BlindsPercentage)
+										|| (switchtype == STYPE_BlindsPercentageInverted)
+										|| (switchtype == STYPE_BlindsPercentageWithStop)
+										|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+										|| (switchtype == STYPE_Selector)
+										);
 									root["result"][ii]["IsDimmer"] = bIsDimmer;
 
 									std::string dimmerLevels = "none";
@@ -7719,13 +7741,33 @@ namespace http
 			return std::any_of(m_users.begin(), m_users.end(), [](const _tWebUserPassword &user) { return user.userrights == URIGHTS_ADMIN; });
 		}
 
+		// Depricated : This 'page' should not be used anymore. Use command instead
 		void CWebServer::PostSettings(WebEmSession &session, const request &req, reply &rep)
+		{
+			_log.Log(LOG_NORM, "Depricated: Page StoreSettings! Use command instead!");
+
+			Json::Value root;
+			Cmd_PostSettings(session, req, root);
+
+			std::string jcallback = request::findValue(&req, "jsoncallback");
+			if (jcallback.empty())
+			{
+				reply::set_content(&rep, root.toStyledString());
+				return;
+			}
+			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+		}
+
+		// PostSettings
+		void CWebServer::Cmd_PostSettings(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
 				session.reply_status = reply::forbidden;
 				return; // Only admin user allowed
 			}
+
+			root["title"] = "StoreSettings";
 
 			std::string Latitude = request::findValue(&req, "Latitude");
 			std::string Longitude = request::findValue(&req, "Longitude");
@@ -8105,18 +8147,7 @@ namespace http
 			// Signal plugins to update Settings dictionary
 			PluginLoadConfig();
 #endif
-
-			Json::Value root;
 			root["status"] = "OK";
-			root["title"] = "StoreSettings";
-
-			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
-			{
-				reply::set_content(&rep, root.toStyledString());
-				return;
-			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession &session, const request &req, std::string &redirect_uri)
@@ -9188,21 +9219,36 @@ namespace http
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
-						else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+						else if (
+							(switchtype == STYPE_BlindsPercentage)
+							|| (switchtype == STYPE_BlindsPercentageInverted)
+							|| (switchtype == STYPE_BlindsPercentageWithStop)
+							|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+							)
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
+/*
+							if ((iLevel > 0) && (iLevel < maxDimLevel))
+							{
+								lstatus = std_format("%d %%", iLevel);
+							}
+							else if (lstatus == "On")
+*/
 							if (lstatus == "On")
 							{
-								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Closed" : "Open";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Open" : "Closed";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Open" : "Closed";
 							}
-
+							else if (lstatus == "Stop")
+							{
+								lstatus = "Stopped";
+							}
 							root["result"][ii]["Status"] = lstatus;
 						}
 						else if (switchtype == STYPE_Dimmer)
@@ -13252,12 +13298,14 @@ namespace http
 							ldata = (ldata == "On") ? "Open" : "Closed";
 							break;
 						case STYPE_BlindsPercentage:
+						case STYPE_BlindsPercentageWithStop:
 							if ((ldata == "On") || (ldata == "Off"))
 							{
 								ldata = (ldata == "On") ? "Closed" : "Open";
 							}
 							break;
 						case STYPE_BlindsPercentageInverted:
+						case STYPE_BlindsPercentageInvertedWithStop:
 							if ((ldata == "On") || (ldata == "Off"))
 							{
 								ldata = (ldata == "On") ? "Open" : "Closed";
@@ -13425,17 +13473,30 @@ namespace http
 					dbasetable = "Fan_Calendar";
 				else if (sensor == "counter")
 				{
-					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || (dType == pTypeAirQuality) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) || ((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) || ((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness)) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD)) ||
-					    ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt)) || ((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) || (dType == pTypeLux) || (dType == pTypeWEIGHT) || (dType == pTypeUsage))
-						dbasetable = "MultiMeter_Calendar";
-					else
-						dbasetable = "Meter_Calendar";
-				}
+                    if (dType == pTypeP1Power
+                        || dType == pTypeCURRENT
+                        || dType == pTypeCURRENTENERGY
+                        || dType == pTypeAirQuality
+                        || dType == pTypeLux
+                        || dType == pTypeWEIGHT
+                        || dType == pTypeUsage
+                        || dType == pTypeGeneral && dSubType == sTypeVisibility
+                        || dType == pTypeGeneral && dSubType == sTypeDistance
+                        || dType == pTypeGeneral && dSubType == sTypeSolarRadiation
+                        || dType == pTypeGeneral && dSubType == sTypeSoilMoisture
+                        || dType == pTypeGeneral && dSubType == sTypeLeafWetness
+                        || dType == pTypeGeneral && dSubType == sTypeVoltage
+                        || dType == pTypeGeneral && dSubType == sTypeCurrent
+                        || dType == pTypeGeneral && dSubType == sTypePressure
+                        || dType == pTypeGeneral && dSubType == sTypeSoundLevel
+                        || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorAD
+                        || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorVolt
+                    ) {
+                        dbasetable = "MultiMeter_Calendar";
+                    } else {
+                        dbasetable = "Meter_Calendar";
+                    }
+                }
 				else if ((sensor == "wind") || (sensor == "winddir"))
 					dbasetable = "Wind_Calendar";
 				else if (sensor == "uv")
@@ -13461,11 +13522,22 @@ namespace http
 						for (const auto &sd : result)
 						{
 							root["result"][ii]["d"] = sd[4].substr(0, 16);
-							if ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) ||
-							    (dType == pTypeTEMP_BARO) || ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-							    (dType == pTypeThermostat1) || (dType == pTypeRadiator1) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
-							    ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)) ||
-							    ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+							if (dType == pTypeRego6XXTemp
+                                || dType == pTypeTEMP
+                                || dType == pTypeTEMP_HUM
+                                || dType == pTypeTEMP_HUM_BARO
+                                || dType == pTypeTEMP_BARO
+                                || dType == pTypeWIND && dSubType == sTypeWIND4
+                                || dType == pTypeUV && dSubType == sTypeUV3
+                                || dType == pTypeThermostat1
+                                || dType == pTypeRadiator1
+                                || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorTemp
+                                || dType == pTypeGeneral && dSubType == sTypeSystemTemp
+                                || dType == pTypeGeneral && dSubType == sTypeBaro
+                                || dType == pTypeThermostat && dSubType == sTypeThermSetpoint
+                                || dType == pTypeEvohomeZone
+                                || dType == pTypeEvohomeWater
+                            )
 							{
 								double tvalue = ConvertTemperature(atof(sd[0].c_str()), tempsign);
 								root["result"][ii]["te"] = tvalue;
@@ -15455,13 +15527,12 @@ namespace http
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
-						if (!sgroupby.empty())
-						{
-							if (sensorarea.empty())
-							{
+                        if (!sgroupby.empty()) {
+                            if (sensorarea.empty())
+                                {
 								_log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby.c_str());
-								return;
-							}
+                                return;
+                            }
 							std::function<std::string(const char *, char *, char *, char *, char *)> sensorareaExpr =
 								[sensorarea, this](const char *expr, char *usageLow, char *usageNormal, char *deliveryLow, char *deliveryNormal) {
 									if (sensorarea == "usage")
@@ -16065,13 +16136,13 @@ namespace http
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_GAS:
-											return std_format("%.2f", AddjValue + sum / divider);
+											return std_format("%.2f", sum / divider);
 										case MTYPE_WATER:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_COUNTER:
-											return std_format("%g", AddjValue + sum / divider);
+											return std_format("%g", sum / divider);
 									}
 									return std::string("");
 								});
@@ -17253,37 +17324,76 @@ namespace http
 			 * This query selects all records (in mc0) that belong to DeviceRowID, each with the record before it (in mc1), and calculates for each record
 			 * the "usage" by subtracting the previous counter from its counter.
 			 * - It does not take into account records that have a 0-valued counter, to prevent one falling between two categories, which would cause the
-			 *   value for one category to be extremely low and the value for the other extremely high.
+             *   value for one category to be extremely low and the value for the other extremely high.
 			 * - When the previous counter is greater than its counter, assumed is that a meter change has taken place; the previous counter is ignored
 			 *   and the value of the record is taken as the "usage" (hoping for the best as the value is not always reliable.)
 			 * - The reason why not simply the record values are summed, but instead the differences between all the individual counters are summed, is that
 			 *   records for some days are not recorded or sometimes disappear, hence values would be missing and that would result in an incomplete total.
 			 *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
 			 */
-			std::vector<std::vector<std::string>> result = m_sql.safe_query(
-				(std::string("") + " select" + "  strftime('%%Y',Date) as Year," + "  sum(Difference) as Sum" +
-				 (sgroupby == "quarter" ? std::string("") + ",case" + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'" +
-								  "                                                              else 'Q4'" + "   end as Quarter"
-				  : sgroupby == "month" ? ",strftime('%%m',Date) as Month"
-							: "") +
-				 " from (" + " 	select" + "         mc0.DeviceRowID," + "         date(mc0.Date) as Date," + "         case when (" + counter("mc1") + ") <= (" + counter("mc0") +
-				 ") then (" + counter("mc0") + ") - (" + counter("mc1") + ") else (" + value("mc0") + ") end as Difference" + " 	from " + dbasetable + " mc0" + " 	inner join " +
-				 dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID" + "         and mc1.Date = (select max(mcm.Date) from " + dbasetable +
-				 " mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0)" + " 	where" + "         mc0.DeviceRowID = %" PRIu64 "" +
-				 "         and (" + counter("mc0") + ") <> 0" + "         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") +
-				 ") <> 0) <= mc1.Date" + "         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)" + " )" +
-				 " group by strftime('%%Y',Date)" +
-				 (sgroupby == "quarter" ? std::string("") + ",case" + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'" +
-								  "                                                              else 'Q4'" + "   end"
-				  : sgroupby == "month" ? ",strftime('%%m',Date)"
-							: "") +
-				 " order by 1 asc" + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""))
-					.c_str(),
-				idx, idx, idx);
+			std::string queryString;
+            queryString.append(" select");
+            queryString.append("  strftime('%%Y',Date) as Year,");
+            queryString.append("  sum(Difference) as Sum");
+            if (sgroupby == "quarter")
+            {
+                queryString.append(",case");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                queryString.append("                                                              else 'Q4'");
+                queryString.append("   end as Quarter");
+            }
+            else if (sgroupby == "month")
+            {
+                queryString.append(",strftime('%%m',Date) as Month");
+            }
+            queryString.append(" from (");
+            queryString.append(" 	select");
+            queryString.append("         mc0.DeviceRowID,");
+            queryString.append("         date(mc0.Date) as Date,");
+            queryString.append("         case");
+            queryString.append("            when (" + counter("mc1") + ") <= (" + counter("mc0") + ")");
+            queryString.append("            then (" + counter("mc0") + ") - (" + counter("mc1") + ")");
+            queryString.append("            else (" + value("mc0") + ")");
+            queryString.append("         end as Difference");
+            queryString.append(" 	from " + dbasetable + " mc0");
+            queryString.append(" 	inner join " + dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID");
+            queryString.append("         and mc1.Date = (");
+            queryString.append("             select max(mcm.Date)");
+            queryString.append("             from " + dbasetable + " mcm");
+            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0");
+            queryString.append("         )");
+            queryString.append(" 	where");
+            queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
+            queryString.append("         and ("+counter("mc0")+") <> 0");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) <= mc1.Date");
+            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)");
+            queryString.append("    union all");
+            queryString.append("    select");
+            queryString.append("         DeviceRowID,");
+            queryString.append("         date(Date) as Date,");
+            queryString.append("         " + value(""));
+            queryString.append(" 	from " + dbasetable);
+            queryString.append(" 	where");
+            queryString.append("         DeviceRowID = %" PRIu64 "");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) = Date");
+            queryString.append(" )");
+            queryString.append(" group by strftime('%%Y',Date)");
+            if (sgroupby == "quarter")
+            {
+                queryString.append(",case");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                queryString.append("                                                              else 'Q4'");
+                queryString.append("   end");
+            }
+            else if (sgroupby == "month")
+            {
+                queryString.append(",strftime('%%m',Date)");
+            }
+			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;
@@ -17310,7 +17420,7 @@ namespace http
 
 		/*
 		 * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
-		 * respective category with todayValue.
+		 * respective category with todayValue. If root["firstYear"] is missing, the today's year is set in it's place.
 		 */
 		void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString)
 		{
@@ -17361,7 +17471,11 @@ namespace http
 			char szTmp[30];
 			sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
 			root["result"][todayResultIndex]["s"] = szTmp;
-		}
+
+            if (!root.isMember("firstYear")) {
+                root["firstYear"] = todayYear.c_str();
+            }
+        }
 
 		/**
 		 * Save user session.

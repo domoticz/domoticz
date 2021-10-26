@@ -335,18 +335,6 @@ void CEventSystem::Do_Work()
 	_log.Log(LOG_STATUS, "EventSystem: Stopped...");
 
 }
-/*
-std::string utf8_to_string(const char *utf8str, const std::locale& loc)
-{
-// UTF-8 to wstring
-std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
-std::wstring wstr = wconv.from_bytes(utf8str);
-// wstring to string
-std::vector<char> buf(wstr.size());
-std::use_facet<std::ctype<wchar_t>>(loc).narrow(wstr.data(), wstr.data() + wstr.size(), '?', buf.data());
-return std::string(buf.data(), buf.size());
-}
-*/
 
 void CEventSystem::StripQuotes(std::string &sString)
 {
@@ -1646,7 +1634,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 				std::vector<std::string> sd = result[0];
 				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(atoi(sd[0].c_str()));
 				if (pPlugin)
-					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(pPlugin, sd[2].c_str(), atoi(sd[3].c_str()), item.nValue, m_szSecStatus[item.nValue]));
+					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(sd[2].c_str(), atoi(sd[3].c_str()), item.nValue, m_szSecStatus[item.nValue]));
 			}
 		}
 #endif
@@ -3827,7 +3815,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Locked";
 		}
 	}
-	else if (switchtype == STYPE_Blinds)
+	else if (
+		(switchtype == STYPE_Blinds)
+		|| (switchtype == STYPE_BlindsPercentage)
+		|| (switchtype == STYPE_BlindsPercentageWithStop)
+		)
 	{
 		if (lstatus == "On")
 		{
@@ -3842,7 +3834,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Open";
 		}
 	}
-	else if (switchtype == STYPE_BlindsInverted)
+	else if (
+		(switchtype == STYPE_BlindsInverted)
+		|| (switchtype == STYPE_BlindsPercentageInverted)
+		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+		)
 	{
 		if (lstatus == "Off")
 		{
@@ -3855,28 +3851,6 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		else
 		{
 			lstatus = "Open";
-		}
-	}
-	else if (switchtype == STYPE_BlindsPercentage)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = "Closed";
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = "Open";
-		}
-	}
-	else if (switchtype == STYPE_BlindsPercentageInverted)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = "Open";
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = "Closed";
 		}
 	}
 	else if (switchtype == STYPE_Media)

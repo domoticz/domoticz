@@ -15,18 +15,18 @@ define(['app', 'log/Chart'], function (app) {
             return undefined;
         }
 
-        function deviceTypeValueUnit(deviceTypeIndex) {
+        function deviceTypeValueUnit(deviceTypeIndex, valueMultiplier=chart.valueMultipliers.m1) {
             const deviceType = chart.deviceTypes.fromIndex(deviceTypeIndex);
             if (deviceType !== undefined) {
                 const deviceTypeValueUnits = chart.valueUnits[chart.deviceCounterSubtype[deviceType]];
                 if (deviceTypeValueUnits !== undefined) {
-                    return deviceTypeValueUnits(chart.valueMultipliers.m1);
+                    return deviceTypeValueUnits(valueMultiplier);
                 }
             }
             return undefined;
         }
 
-        function counterSeriesSuppliers(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
+        function counterSeriesSuppliers(deviceTypeIndex, valueMultiplier, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
                     id: 'counter',
@@ -38,7 +38,7 @@ define(['app', 'log/Chart'], function (app) {
                             yAxis.options.title.text = this.dataSupplier.deviceCounterName;
                         }
                     },
-                    label: 'A',
+                    label: '1',
                     template: function (seriesSupplier) {
                         return {
                             type: 'column',
@@ -51,7 +51,7 @@ define(['app', 'log/Chart'], function (app) {
                                 valueSuffix: ' '
                                     + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
                                         ? seriesSupplier.dataSupplier.deviceValueUnit
-                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                        : deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
                                 valueDecimals: dataItemValueDecimals
                             },
                             color: 'rgba(3,190,252,0.8)',
@@ -62,14 +62,14 @@ define(['app', 'log/Chart'], function (app) {
             ];
         }
 
-        function counterTrendlineSeriesSuppliers(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
+        function counterTrendlineSeriesSuppliers(deviceTypeIndex, valueMultiplier=chart.valueMultipliers.m1, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
                     id: 'counterTrendlineOverall',
                     dataItemKeys: ['v'],
                     postprocessDataItemValue: postprocessDataItemValue,
                     postprocessDatapoints: chart.aggregateTrendline,
-                    label: 'B',
+                    label: '2',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Trendline') + ' '
@@ -82,7 +82,7 @@ define(['app', 'log/Chart'], function (app) {
                                 valueSuffix: ' '
                                     + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
                                         ? seriesSupplier.dataSupplier.deviceValueUnit
-                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                        : deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
                                 valueDecimals: dataItemValueDecimals
                             },
                             color: 'rgba(252,3,3,0.8)',
@@ -100,7 +100,7 @@ define(['app', 'log/Chart'], function (app) {
                     chartZoomLevelChanged: function (chart, zoomLeft, zoomRight) {
                         this.reaggregateTrendlineZoomed(chart, zoomLeft, zoomRight);
                     },
-                    label: 'C',
+                    label: '3',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Trendline') + ' '
@@ -112,7 +112,7 @@ define(['app', 'log/Chart'], function (app) {
                                 valueSuffix: ' '
                                     + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
                                         ? seriesSupplier.dataSupplier.deviceValueUnit
-                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                        : deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
                                 valueDecimals: dataItemValueDecimals
                             },
                             color: 'rgb(252,3,3,0.8)',
@@ -125,25 +125,26 @@ define(['app', 'log/Chart'], function (app) {
             ];
         }
 
-        function counterPreviousSeriesSupplier(deviceTypeIndex, postprocessDataItemValue, dataItemValueDecimals=3) {
+        function counterPreviousSeriesSupplier(deviceTypeIndex, valueMultiplier=chart.valueMultipliers.m1, postprocessDataItemValue, dataItemValueDecimals=3) {
             return [
                 {
                     id: 'counterPrevious',
                     dataItemKeys: ['v'],
                     useDataItemsFromPrevious: true,
                     postprocessDataItemValue: postprocessDataItemValue,
-                    label: 'D',
+                    label: '4',
                     template: function (seriesSupplier) {
                         return {
                             name: $.t('Past') + ' '
                                 + (seriesSupplier.dataSupplier.deviceCounterName !== undefined
                                     ? seriesSupplier.dataSupplier.deviceCounterName
                                     : deviceTypeCounterName(deviceTypeIndex)),
+                            zIndex: 3,
                             tooltip: {
                                 valueSuffix: ' '
                                     + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
                                         ? seriesSupplier.dataSupplier.deviceValueUnit
-                                        : deviceTypeValueUnit(deviceTypeIndex)),
+                                        : deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
                                 valueDecimals: dataItemValueDecimals
                             },
                             color: 'rgba(190,3,252,0.8)',

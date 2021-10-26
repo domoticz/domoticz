@@ -3,6 +3,7 @@
 #include "hardwaretypes.h"
 #include "ColorSwitch.h"
 #include "../main/json_helper.h"
+#include <cmath>
 
 _tColor::_tColor()
 {
@@ -226,33 +227,37 @@ void _tColor::RgbFromXY(const double x, const double y, uint8_t &r8, uint8_t &g8
 	b8 = uint8_t(b * 255.0);
 }
 
-void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double &x, double &y, double &z)
+void _tColor::XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double& x, double& y, double& Y)
 {
-	float r = float(r8) / 255.0F;
-	float g = float(g8) / 255.0F;
-	float b = float(b8) / 255.0F;
+	//Input r8,g8,b8 0-255
+	//Output Yxy (0 - 1.0)
+	double red = double(r8) / 255.0;
+	double green = double(g8) / 255.0;
+	double blue = double(b8) / 255.0;
 
-	if (r > 0.04045)
-		r = powf(((r + 0.055F) / 1.055F), 2.4F);
-	else
-		r /= 12.92F;
+	// Apply gamma correction
+	double varR = (red > 0.04045) ? pow((red + 0.055) / (1.0 + 0.055), 2.4) : (red / 12.92);
+	double varG = (green > 0.04045) ? pow((green + 0.055) / (1.0 + 0.055), 2.4) : (green / 12.92);
+	double varB = (blue > 0.04045) ? pow((blue + 0.055) / (1.0 + 0.055), 2.4) : (blue / 12.92);
 
-	if (g > 0.04045F)
-		g = powf(((g + 0.055F) / 1.055F), 2.4F);
-	else
-		g /= 12.92F;
+	double tX = varR * 0.664511 + varG * 0.154324 + varB * 0.162028;
+	double tY = varR * 0.283881 + varG * 0.668433 + varB * 0.047685;
+	double tZ = varR * 0.000088 + varG * 0.072310 + varB * 0.986039;
 
-	if (b > 0.04045F)
-		b = powf(((b + 0.055F) / 1.055F), 2.4F);
-	else
-		b /= 12.92F;
+	// XYZ to Yxy
+	Y = tY;
+	x = tX / (tX + tY + tZ);
+	y = tY / (tX + tY + tZ);
 
-	r *= 100;
-	g *= 100;
-	b *= 100;
+	if (std::isnan(Y)) {
+		Y = 0.0;
+	}
 
-	// Calibration for observer @2° with illumination = D65
-	x = r * 0.4124 + g * 0.3576 + b * 0.1805;
-	y = r * 0.2126 + g * 0.7152 + b * 0.0722;
-	z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+	if (std::isnan(x)) {
+		x = 0.0;
+	}
+
+	if (std::isnan(y)) {
+		y = 0.0;
+	}
 }

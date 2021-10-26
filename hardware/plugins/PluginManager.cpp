@@ -186,7 +186,7 @@ namespace Plugins {
 			if (plugin.second)
 			{
 				auto pPlugin = reinterpret_cast<CPlugin *>(plugin.second);
-				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
+				pPlugin->MessagePlugin(new SettingsDirective());
 			}
 			else
 			{

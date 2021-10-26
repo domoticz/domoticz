@@ -69,9 +69,26 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	}
 }
 
+bool COpenWeatherMap::ResolveLonLat(const std::string& Location, double& latitude, double& longitude, uint32_t& cityid)
+{
+	std::stringstream sURL;
+	std::vector<std::string> strarray;
+
+	StringSplit(m_Location, ",", strarray);
+	if (strarray.size() == 2)
+	{
+		sURL << OWM_Get_City_Details;
+		sURL << "lat=" << strarray[0] << "&lon=" << strarray[1];
+		sURL << "&appid=" << m_APIKey;
+		sURL << "&units=metric" << "&lang=" << m_Language;
+
+		return ResolveOWMCityLonLat(sURL.str(), latitude, longitude, cityid);
+	}
+	return false;
+}
+
 bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latitude, double& longitude, uint32_t& cityid, const bool IsCityName)
 {
-	std::string sResult;
 	std::stringstream sURL;
 
 	sURL << OWM_Get_City_Details;
@@ -82,11 +99,18 @@ bool COpenWeatherMap::ResolveLocation(const std::string& Location, double& latit
 	sURL << "&appid=" << m_APIKey;
 	sURL << "&units=metric" << "&lang=" << m_Language;
 
-	Debug(DEBUG_NORM, "Get data from %s", sURL.str().c_str());
+	return ResolveOWMCityLonLat(sURL.str(), latitude, longitude, cityid);
+}
+
+bool COpenWeatherMap::ResolveOWMCityLonLat(const std::string sURL, double& latitude, double& longitude, uint32_t& cityid)
+{
+	std::string sResult;
+
+	Debug(DEBUG_NORM, "Get data from %s", sURL.c_str());
 
 	try
 	{
-		if (!HTTPClient::GET(sURL.str(), sResult))
+		if (!HTTPClient::GET(sURL, sResult))
 		{
 			Log(LOG_ERROR, "Error getting http data!");
 			return false;
@@ -167,6 +191,8 @@ bool COpenWeatherMap::StartHardware()
 						m_Lat = std::stod(sLatitude);
 						m_Lon = std::stod(sLongitude);
 
+						m_Location = sLatitude + "," + sLongitude;	// rewrite the default Location data to match what OWN expects
+
 						Log(LOG_STATUS, "Using Domoticz home location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
 					}
 					else
@@ -180,119 +206,124 @@ bool COpenWeatherMap::StartHardware()
 				}
 			}
 		}
-		else
-		{
-			StringSplit(m_Location, ",", strarray);
-			if (strarray.size() == 2)
-			{
-				//It could be a City/Country or a Lat/Long (Londen,UK)
-				sLatitude = strarray[0];
-				sLongitude = strarray[1];
 
-				char* p;
-				double converted = strtod(sLatitude.c_str(), &p);
-				if (*p)
+		StringSplit(m_Location, ",", strarray);
+		if (strarray.size() == 2)
+		{
+			//It could be a City/Country or a Lat/Long (Londen,UK)
+			sLatitude = strarray[0];
+			sLongitude = strarray[1];
+
+			double lat, lon;
+			char* p;
+			double converted = strtod(sLatitude.c_str(), &p);
+			if (*p)
+			{
+				// conversion failed because the input wasn't a number
+				// assume it is a city/country combination
+				Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
+				if (!ResolveLocation(m_Location, lat, lon, cityid))
 				{
-					// conversion failed because the input wasn't a number
-					// assume it is a city/country combination
-					Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
-					double lat, lon;
-					if (!ResolveLocation(m_Location, lat, lon, cityid))
-					{
-						Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
-					}
-					else
-					{
-						Log(LOG_STATUS, "City (%d)-> Lat/Long = %g,%g", cityid, lat, lon);
-						m_Lat = lat;
-						m_Lon = lon;
-						m_CityID = cityid;
-					}
+					Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
+				}
+				else
+				{
+					Log(LOG_STATUS, "City (%d)-> Lat/Long = %g,%g", cityid, lat, lon);
+					m_Lat = lat;
+					m_Lon = lon;
+					m_CityID = cityid;
+				}
+			}
+			else
+			{
+				if (ResolveLonLat(m_Location, lat, lon, cityid))
+				{
+					Log(LOG_STATUS, "Lat/Long = %g,%g -> (Nearest) City (%d)", lat, lon, cityid);
+					m_Lat = lat;
+					m_Lon = lon;
+					m_CityID = cityid;
 				}
 				else
 				{
 					m_Lat = std::stod(sLatitude);
 					m_Lon = std::stod(sLongitude);
-
-					Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
+					Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s) Unable to find nearest City!", sLongitude.c_str(), sLatitude.c_str());
 				}
 			}
-			else if (m_Location.find("lat=") == 0)
+		}
+		else if (m_Location.find("lat=") == 0)
+		{
+			StringSplit(m_Location, "&", strarray);
+			if (strarray.size() == 2)
 			{
-				StringSplit(m_Location, "&", strarray);
-				if (strarray.size() == 2)
+				sLatitude = strarray[0];
+				sLongitude = strarray[1];
+				if ((sLatitude.find("lat=") == 0) && (sLongitude.find("lon=") == 0))
 				{
-					sLatitude = strarray[0];
-					sLongitude = strarray[1];
-					if ((sLatitude.find("lat=") == 0) && (sLongitude.find("lon=") == 0))
-					{
-						m_Lat = std::stod(sLatitude.substr(4));
-						m_Lon = std::stod(sLongitude.substr(4));
-						Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
-					}
-					else
-						Log(LOG_ERROR, "Invalid Location specified! (Check your StationId/CityId or Latitude, Longitude!)");
+					m_Lat = std::stod(sLatitude.substr(4));
+					m_Lon = std::stod(sLongitude.substr(4));
+					Log(LOG_STATUS, "Using specified location (Lon %s, Lat %s)!", sLongitude.c_str(), sLatitude.c_str());
 				}
 				else
 					Log(LOG_ERROR, "Invalid Location specified! (Check your StationId/CityId or Latitude, Longitude!)");
 			}
 			else
+				Log(LOG_ERROR, "Invalid Location specified! (Check your StationId/CityId or Latitude, Longitude!)");
+		}
+		else
+		{
+			//Could be a Station ID (Number) or a City
+			char* p;
+			long converted = strtol(m_Location.c_str(), &p, 10);
+			double lat, lon;
+			if (*p)
 			{
-				//Could be a Station ID (Number) or a City
-				char* p;
-				long converted = strtol(m_Location.c_str(), &p, 10);
-				double lat, lon;
-				if (*p)
+				//City
+				Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
+				if (!ResolveLocation(m_Location, lat, lon, cityid))
 				{
-					//City
-					Log(LOG_STATUS, "Using specified location (City %s)!", m_Location.c_str());
-					if (!ResolveLocation(m_Location, lat, lon, cityid))
-					{
-						Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
-					}
-					else
-					{
-						Log(LOG_STATUS, "City (%d)-> Lat/Long = %g,%g", cityid, lat, lon);
-						m_Lat = lat;
-						m_Lon = lon;
-						m_CityID = cityid;
-					}
+					Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
 				}
 				else
 				{
-					//Station ID
-					Log(LOG_STATUS, "Using specified location (Station ID %s)!", m_Location.c_str());
-					if (!ResolveLocation(m_Location, lat, lon, cityid, false))
-					{
-						Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
-					}
-					else
-					{
-						Log(LOG_STATUS, "City (%d)-> Lat/Long = %g,%g", cityid, lat, lon);
-						m_Lat = lat;
-						m_Lon = lon;
-						m_CityID = cityid;
-					}
+					Log(LOG_STATUS, "City (%d)-> Lat/Long = %g,%g", cityid, lat, lon);
+					m_Lat = lat;
+					m_Lon = lon;
+					m_CityID = cityid;
+				}
+			}
+			else
+			{
+				//Station ID
+				Log(LOG_STATUS, "Using specified location (Station ID %s)!", m_Location.c_str());
+				if (!ResolveLocation(m_Location, lat, lon, cityid, false))
+				{
+					Log(LOG_ERROR, "Unable to resolve City to Latitude/Longitude, please use Latitude,Longitude directly in hardware setup!)");
+				}
+				else
+				{
+					Log(LOG_STATUS, "City (%d)-> Lat/Long = %g,%g", cityid, lat, lon);
+					m_Lat = lat;
+					m_Lon = lon;
+					m_CityID = cityid;
 				}
 			}
 		}
 	}
 
-	//Forecast URL
-	if (m_CityID > 0)
+	if(m_use_owminforecastscreen)
 	{
-		std::stringstream ss;
-		ss << OWM_forecast_URL << m_CityID;
-		m_ForecastURL = ss.str();
-
-		// So we can use this for the forecast screen of the UI if the users wants that
-		if(m_use_owminforecastscreen)
+		if (m_CityID > 0)
 		{
+			std::stringstream ss;
+			ss << OWM_forecast_URL << m_CityID;
+			m_ForecastURL = ss.str();
+
 			Log(LOG_STATUS, "Updating preferences for forecastscreen to use OpenWeatherMap!");
 			m_sql.UpdatePreferencesVar("ForecastHardwareID",m_HwdID);
 		}
 	}
-	if(!m_use_owminforecastscreen)
+	else
 	{
 		int iValue;
 		m_sql.GetPreferencesVar("ForecastHardwareID", iValue);
