@@ -60,23 +60,40 @@ jobs:
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
+          cat appversion.h.txt
 
       # Run automated tests
       - name: test domoticz
         run: |
           cd $GITHUB_WORKSPACE
-          pwd
-          ls -ltrR
-          #./bin/domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz -daemon
-          #pytest-3 -rA --tb=no test/gherkin/
-          #kill -s TERM `cat /var/run/domoticz.pid`
+          ln -s ../test/gherkin/resources/testwebcontent www/test
+          sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+          pytest-3 -rA --tb=no test/gherkin/
+          sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
+        continue-on-error: true
+
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+      - name: Debug
+        run: echo ${{ env.BRANCH_NAME }}
 
       # Upload artifacts
       - uses: actions/upload-artifact@v2
         with:
-          name: my-artifact
+          name: DomArtifacts-${{ env.BRANCH_NAME }}-${{ github.sha }}
           path: |
-            domoticz/bin/
-            domoticz/test/
-            !domoticz/**/*.tmp
+            domoticz
+            appversion.h.txt
+            test/
+            www/
+            lib/
+            !**/*.tar.gz
           retention-days: 7
