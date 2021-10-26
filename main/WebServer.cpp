@@ -4427,8 +4427,6 @@ namespace http
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == nullptr)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) && (pBaseHardware->HwdType != HTYPE_USBtinGateway))
-						return;
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
@@ -4450,6 +4448,8 @@ namespace http
 						ssunitcode << iUnitTest;
 						sunitcode = ssunitcode.str();
 					}
+					else
+						return;
 					// convert to hex, and we have our ID
 					std::stringstream s_strid;
 					s_strid << std::hex << std::uppercase << rID;
@@ -5013,8 +5013,6 @@ namespace http
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == nullptr)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) && (pBaseHardware->HwdType != HTYPE_USBtinGateway))
-						return;
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
@@ -5044,6 +5042,8 @@ namespace http
 						ssunitcode << iUnitTest;
 						sunitcode = ssunitcode.str();
 					}
+					else
+						return;
 					// convert to hex, and we have our ID
 					std::stringstream s_strid;
 					s_strid << std::hex << std::uppercase << rID;
