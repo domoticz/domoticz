@@ -11512,7 +11512,6 @@ namespace http
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
 
-					// Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != nullptr)
 					{
@@ -11541,17 +11540,14 @@ namespace http
 							CRFLinkBase *pMyHardware = reinterpret_cast<CRFLinkBase *>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
-						else
-						{
 #ifdef WITH_OPENZWAVE
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
-								root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
-								root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
-							}
-#endif
+						else if (pHardware->HwdType == HTYPE_OpenZWave)
+						{ // Special case for openzwave (status for nodes queried)
+							COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
+							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
+							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
 						}
+#endif
 					}
 					ii++;
 				}
