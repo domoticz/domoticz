@@ -25,6 +25,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+          sudo apt-get install python3-pytest python3-pytest-bdd
 
       # get CMake
       - name: cmake-compile
@@ -59,3 +60,23 @@ jobs:
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
+
+      # Run automated tests
+      - name: test domoticz
+        run: |
+          cd $GITHUB_WORKSPACE
+          pwd
+          ls -ltrR
+          #./bin/domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz -daemon
+          #pytest-3 -rA --tb=no test/gherkin/
+          #kill -s TERM `cat /var/run/domoticz.pid`
+
+      # Upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: |
+            domoticz/bin/
+            domoticz/test/
+            !domoticz/**/*.tmp
+          retention-days: 7
