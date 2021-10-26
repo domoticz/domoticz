@@ -2686,9 +2686,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szOnOffValue = "off";
 			else 
 			{
-				level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
 				szOnOffValue = "Set Level";
 			}
+			level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
 		}
 		if (!root["color"].empty())
 		{
@@ -2761,33 +2761,45 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			//must be a level
 			level = atoi(szOnOffValue.c_str());
-			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
-				szOnOffValue = "off";
-			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
+			std::string i_szOnOffValue = szOnOffValue;
+
+			// general logic
+			if (level >= 100)
 				szOnOffValue = "on";
-			if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_off)
+			else if (level <= 0)
 				szOnOffValue = "off";
-			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
-				szOnOffValue = "on";
-			else if (level > 0)
+			else
+				szOnOffValue = "Set Level";
+			
+			// binary_sensor logic
+			if (pSensor->component_type == "binary_sensor")
 			{
-				if (level != 100)
-				{
-					szOnOffValue = "Set Level";
-					// recalculate level to make relative to min/maxpositions
-					if (pSensor->component_type == "cover")
-						level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
-				}
-				else
+				if (i_szOnOffValue == pSensor->payload_off)
+					szOnOffValue = "off";
+				else if (i_szOnOffValue == pSensor->payload_on)
 					szOnOffValue = "on";
 			}
-			else
-				szOnOffValue = "off";
+			
+			// cover devices logic  
+			if (pSensor->component_type == "cover")
+			{
+				if (level == pSensor->position_closed)
+					szOnOffValue = "on";
+				else if (level == pSensor->position_open)
+					szOnOffValue = "off";
+				else
+					szOnOffValue = "Set Level";
+
+				// recalculate level to make relative to min/maxpositions and invert 
+				level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
+			}
 		}
 	}
 
 	if (level > 100)
 		level = 100;
+	if (level < 0)
+		level = 0;
 
 	int slevel = atoi(sValue.c_str());
 	bool bHaveLevelChange = (slevel != level);
@@ -3052,17 +3064,24 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 		if (command == "On")
 		{
-			level = pSensor->position_open;
-			szValue = pSensor->payload_open;
+			szValue = pSensor->payload_close;
 			if (pSensor->command_topic.empty())
+			{
 				command = "Set Level";
+				level = 100; // Is recalculated in the "Set Level" logic
+			}
+			else 
+				level = pSensor->position_closed;
 		}
 		else if (command == "Off")
 		{
-			level = pSensor->position_closed;
-			szValue = pSensor->payload_close;
-			if (pSensor->command_topic.empty())
+			szValue = pSensor->payload_open;
+			if (pSensor->command_topic.empty()) {
 				command = "Set Level";
+				level = 0; // Is recalculated in the "Set Level" logic
+			}
+			else
+				level = pSensor->position_open;
 		}
 		else if (command == "Stop")
 		{
@@ -3075,7 +3094,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			szValue = std::to_string(level);
 			if (!pSensor->set_position_topic.empty())
 			{
-				int iValue = (int)(((float(level) - pSensor->position_closed) / (pSensor->position_open - pSensor->position_closed)) * 100.0F);
+				int iValue = (int)(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
 				if (pSensor->set_position_template.empty())
 				{
 					szSendValue = std::to_string(iValue);
@@ -3122,14 +3141,9 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 			if (!result.empty())
 			{
-				if (command == "On")
-					level = 100;
-				else if (command == "Off")
-					level = 0;
-				int nValue = (level > 0) ? 1 : 0;
 				m_sql.safe_query(
-					"UPDATE DeviceStatus SET nValue=%d, LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
-					nValue, level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
+					level, result[0][0].c_str());
 			}
 		}
 		return true;
