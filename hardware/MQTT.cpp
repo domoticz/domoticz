@@ -1736,8 +1736,6 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 			}
 			szLogMessage += ")";
 			Log(LOG_NORM, "MQTT received: %s", szLogMessage.c_str());
-			if (pSensor->last_value == "23")
-				while (1 == 0);
 #endif
 			if (pSensor->component_type == "sensor")
 				handle_auto_discovery_sensor(pSensor, message);
@@ -2015,7 +2013,9 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 	if (
 		(pSensor->value_template == "action")
 		|| (pSensor->value_template == "click")
-		|| (pSensor->object_id == "scene_state_sceneid"))
+		|| (pSensor->object_id == "scene_state_sceneid")
+		|| (pSensor->object_id == "action")
+		)
 	{
 		//Scene
 		if (pSensor->last_value == "wakeup")
@@ -2554,6 +2554,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorContact;
 	else if (
 		(pSensor->value_template == "action")
+		|| (pSensor->object_id == "action")
 		|| (pSensor->value_template == "click")
 		)
 	{
