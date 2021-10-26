@@ -5019,7 +5019,8 @@ namespace http
 						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
-							root["message"] = "BaseID not found, is the hardware running?";
+							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
+							root["message"] = szTmp;
 							return;
 						}
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
@@ -5029,7 +5030,8 @@ namespace http
 						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
-							root["message"] = "BaseID not found, is the hardware running?";
+							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
+							root["message"] = szTmp;
 							return;
 						}
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
