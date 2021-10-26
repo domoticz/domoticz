@@ -2851,6 +2851,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		&& (pSensor->component_type != "light")
 		&& (pSensor->component_type != "cover")
 		&& (pSensor->component_type != "climate")
+		&& (pSensor->component_type != "select")
 		)
 	{
 		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
