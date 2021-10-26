@@ -2831,9 +2831,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szOnOffValue = "off";
 			else 
 			{
-				level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
 				szOnOffValue = "Set Level";
 			}
+			level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
 		}
 		if (!root["color"].empty())
 		{
@@ -2921,7 +2921,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szOnOffValue = "Set Level";
 					// recalculate level to make relative to min/maxpositions
 					if (pSensor->component_type == "cover")
-						level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * level;
+						level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
 				}
 				else
 					szOnOffValue = "on";
@@ -3200,17 +3200,24 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 		if (command == "On")
 		{
-			level = pSensor->position_open;
-			szValue = pSensor->payload_open;
+			szValue = pSensor->payload_close;
 			if (pSensor->command_topic.empty())
+			{
 				command = "Set Level";
+				level = 100; // Is recalculated in the "Set Level" logic
+			}
+			else 
+				level = pSensor->position_closed;
 		}
 		else if (command == "Off")
 		{
-			level = pSensor->position_closed;
-			szValue = pSensor->payload_close;
-			if (pSensor->command_topic.empty())
+			szValue = pSensor->payload_open;
+			if (pSensor->command_topic.empty()) {
 				command = "Set Level";
+				level = 0; // Is recalculated in the "Set Level" logic
+			}
+			else
+				level = pSensor->position_open;
 		}
 		else if (command == "Stop")
 		{
@@ -3223,7 +3230,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			szValue = std::to_string(level);
 			if (!pSensor->set_position_topic.empty())
 			{
-				int iValue = (int)(((float(level) - pSensor->position_closed) / (pSensor->position_open - pSensor->position_closed)) * 100.0F);
+				int iValue = (int)(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
 				if (pSensor->set_position_template.empty())
 				{
 					szSendValue = std::to_string(iValue);
