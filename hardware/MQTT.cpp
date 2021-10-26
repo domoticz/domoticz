@@ -2760,9 +2760,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			//must be a level
 			level = atoi(szOnOffValue.c_str());
 			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
-				szOnOffValue = "on";
-			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
 				szOnOffValue = "off";
+			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
+				szOnOffValue = "on";
 			else if (level > 0)
 			{
 				if (level != 100)
@@ -3045,15 +3045,15 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 		if (command == "On")
 		{
-			level = pSensor->position_closed;
-			szValue = pSensor->payload_close;
+			level = pSensor->position_open;
+			szValue = pSensor->payload_open;
 			if (pSensor->command_topic.empty())
 				command = "Set Level";
 		}
 		else if (command == "Off")
 		{
-			level = pSensor->position_open;
-			szValue = pSensor->payload_open;
+			level = pSensor->position_closed;
+			szValue = pSensor->payload_close;
 			if (pSensor->command_topic.empty())
 				command = "Set Level";
 		}
