@@ -2530,8 +2530,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	}
 	else if (pSensor->component_type == "binary_sensor")
 	{
-		if ((pSensor->object_id.find("_state") != std::string::npos) || (pSensor->object_id.find("_status") != std::string::npos) ||
-			(pSensor->object_id.find("_unknown") != std::string::npos) || (pSensor->object_id.find("tamper") != std::string::npos))
+		if (
+			(pSensor->object_id.find("_status") != std::string::npos)
+			|| (pSensor->object_id.find("_unknown") != std::string::npos)
+			|| (pSensor->object_id.find("tamper") != std::string::npos)
+			)
 		{
 			//Don't add these into our system used
 			Used = 0;
