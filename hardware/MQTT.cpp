@@ -2886,7 +2886,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			return false;
 		}
 	}
-	
+
 	if (pSensor->component_type == "light")
 	{
 		Json::Value root;
@@ -3123,7 +3123,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 		return true;
 	}
-	if (pSensor->component_type == "climate")
+	else if (
+		(pSensor->component_type == "climate")
+		|| (pSensor->component_type == "select")
+		)
 	{
 		if (command == "Set Level")
 		{
