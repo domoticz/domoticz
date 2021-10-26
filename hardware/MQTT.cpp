@@ -1736,6 +1736,8 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 			}
 			szLogMessage += ")";
 			Log(LOG_NORM, "MQTT received: %s", szLogMessage.c_str());
+			if (pSensor->last_value == "23")
+				while (1 == 0);
 #endif
 			if (pSensor->component_type == "sensor")
 				handle_auto_discovery_sensor(pSensor, message);
@@ -2762,6 +2764,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
 				szOnOffValue = "off";
 			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
+				szOnOffValue = "on";
+			if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_off)
+				szOnOffValue = "off";
+			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
 				szOnOffValue = "on";
 			else if (level > 0)
 			{
