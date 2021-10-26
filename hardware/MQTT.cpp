@@ -3122,9 +3122,14 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 			if (!result.empty())
 			{
+				if (command == "On")
+					level = 100;
+				else if (command == "Off")
+					level = 0;
+				int nValue = (level > 0) ? 1 : 0;
 				m_sql.safe_query(
-					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
-					level, result[0][0].c_str());
+					"UPDATE DeviceStatus SET nValue=%d, LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
+					nValue, level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
 			}
 		}
 		return true;
