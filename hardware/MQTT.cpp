@@ -2765,45 +2765,33 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			//must be a level
 			level = atoi(szOnOffValue.c_str());
-			std::string i_szOnOffValue = szOnOffValue;
-
-			// general logic
-			if (level >= 100)
-				szOnOffValue = "on";
-			else if (level <= 0)
+			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
 				szOnOffValue = "off";
-			else
-				szOnOffValue = "Set Level";
-			
-			// binary_sensor logic
-			if (pSensor->component_type == "binary_sensor")
+			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
+				szOnOffValue = "on";
+			if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_off)
+				szOnOffValue = "off";
+			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
+				szOnOffValue = "on";
+			else if (level > 0)
 			{
-				if (i_szOnOffValue == pSensor->payload_off)
-					szOnOffValue = "off";
-				else if (i_szOnOffValue == pSensor->payload_on)
-					szOnOffValue = "on";
-			}
-			
-			// cover devices logic  
-			if (pSensor->component_type == "cover")
-			{
-				if (level == pSensor->position_closed)
-					szOnOffValue = "on";
-				else if (level == pSensor->position_open)
-					szOnOffValue = "off";
-				else
+				if (level != 100)
+				{
 					szOnOffValue = "Set Level";
-
-				// recalculate level to make relative to min/maxpositions and invert 
-				level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
+					// recalculate level to make relative to min/maxpositions
+					if (pSensor->component_type == "cover")
+						level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
+				}
+				else
+					szOnOffValue = "on";
 			}
+			else
+				szOnOffValue = "off";
 		}
 	}
 
 	if (level > 100)
 		level = 100;
-	if (level < 0)
-		level = 0;
 
 	int slevel = atoi(sValue.c_str());
 	bool bHaveLevelChange = (slevel != level);
