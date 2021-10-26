@@ -323,13 +323,6 @@ namespace http {
 			if (last_dot_pos != std::string::npos) {
 				std::string file_extension = filename.substr(last_dot_pos + 1);
 				std::string mime_type = mime_types::extension_to_type(file_extension);
-				if ((mime_type.find("text/") != std::string::npos) ||
-					(mime_type.find("/xml") != std::string::npos) ||
-					(mime_type.find("/javascript") != std::string::npos) ||
-					(mime_type.find("/json") != std::string::npos)) {
-					// Add charset on text content
-					mime_type += ";charset=UTF-8";
-				}
 				reply::add_header_content_type(&rep, mime_type);
 			}
 			reply::add_header_attachment(&rep, attachment_name);

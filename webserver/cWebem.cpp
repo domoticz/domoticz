@@ -786,8 +786,6 @@ namespace http {
 				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				if (!boost::algorithm::starts_with(strMimeType, "image"))
 				{
-					if (!strMimeType.empty())
-						strMimeType += ";charset=UTF-8";
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
 					reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
@@ -817,7 +815,7 @@ namespace http {
 
 			rep.status = reply::ok;
 			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-			reply::add_header(&rep, "Content-Type", strMimeType + "; charset=UTF-8");
+			reply::add_header_content_type(&rep, strMimeType);
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
@@ -2090,7 +2088,7 @@ namespace http {
 						rep.content = requestCopy.uri;
 						reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 						reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)), true);
-						reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
+						reply::add_header_content_type(&rep, "application/json");
 						return;
 					}
 				}
@@ -2160,75 +2158,6 @@ namespace http {
 					{
 						rep = reply::stock_reply(reply::internal_server_error);
 						return;
-					}
-
-					// find content type header
-					std::string content_type;
-					for (auto &header : rep.headers)
-					{
-						if (boost::iequals(header.name, "Content-Type"))
-						{
-							content_type = header.value;
-							break;
-						}
-					}
-
-					if (content_type == "text/html"
-						|| content_type == "text/plain"
-						|| content_type == "text/css"
-						|| content_type == "text/javascript"
-						|| content_type == "application/javascript"
-						)
-					{
-						// check if content is not gzipped, include won't work with non-text content
-						if (!rep.bIsGZIP)
-						{
-							// Find and include any special cWebem strings
-							if (!myWebem->Include(rep.content))
-							{
-								if (mInfo.mtime_support && !mInfo.is_modified)
-								{
-									_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
-									rep = reply::stock_reply(reply::not_modified);
-									return;
-								}
-							}
-
-							// adjust content length header
-							// ( Firefox ignores this, but apparently some browsers truncate display without it.
-							// fix provided by http://www.codeproject.com/Members/jaeheung72 )
-
-							reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-
-							if (!mInfo.mtime_support)
-							{
-								reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)),
-										  true);
-							}
-
-							//check gzip support if yes, send it back in gzip format
-							CompressWebOutput(req, rep);
-						}
-
-						// tell browser that we are using UTF-8 encoding
-						reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
-					}
-					else if (mInfo.mtime_support && !mInfo.is_modified)
-					{
-						rep = reply::stock_reply(reply::not_modified);
-						_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
-						return;
-					}
-					else if (content_type.find("image/") != std::string::npos)
-					{
-						//Cache images
-						reply::add_header(&rep, "Expires",
-								  make_web_time(mytime(nullptr) + 3600 * 24 * 365)); // one year
-					}
-					else
-					{
-						// tell browser that we are using UTF-8 encoding
-						reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 					}
 				}
 			}
