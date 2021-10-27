@@ -2016,7 +2016,9 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 	if (
 		(pSensor->value_template == "action")
 		|| (pSensor->value_template == "click")
-		|| (pSensor->object_id == "scene_state_sceneid"))
+		|| (pSensor->object_id == "scene_state_sceneid")
+		|| (pSensor->object_id == "action")
+		)
 	{
 		//Scene
 		if (pSensor->last_value == "wakeup")
@@ -2536,8 +2538,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	}
 	else if (pSensor->component_type == "binary_sensor")
 	{
-		if ((pSensor->object_id.find("_state") != std::string::npos) || (pSensor->object_id.find("_status") != std::string::npos) ||
-			(pSensor->object_id.find("_unknown") != std::string::npos) || (pSensor->object_id.find("tamper") != std::string::npos))
+		if (
+			(pSensor->object_id.find("_status") != std::string::npos)
+			|| (pSensor->object_id.find("_unknown") != std::string::npos)
+			|| (pSensor->object_id.find("tamper") != std::string::npos)
+			)
 		{
 			//Don't add these into our system used
 			iUsed = 0;
@@ -2557,6 +2562,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorContact;
 	else if (
 		(pSensor->value_template == "action")
+		|| (pSensor->object_id == "action")
 		|| (pSensor->value_template == "click")
 		)
 	{
@@ -2771,6 +2777,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szOnOffValue = "off";
 			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
 				szOnOffValue = "on";
+			if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_off)
+				szOnOffValue = "off";
+			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
+				szOnOffValue = "on";
 			else if (level > 0)
 			{
 				if (level != 100)
@@ -2859,6 +2869,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		&& (pSensor->component_type != "light")
 		&& (pSensor->component_type != "cover")
 		&& (pSensor->component_type != "climate")
+		&& (pSensor->component_type != "select")
 		)
 	{
 		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
@@ -2893,7 +2904,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			return false;
 		}
 	}
-	
+
 	if (pSensor->component_type == "light")
 	{
 		Json::Value root;
@@ -3123,14 +3134,22 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 			if (!result.empty())
 			{
+				if (command == "On")
+					level = 100;
+				else if (command == "Off")
+					level = 0;
+				int nValue = (level > 0) ? 1 : 0;
 				m_sql.safe_query(
-					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %s)",
-					level, result[0][0].c_str());
+					"UPDATE DeviceStatus SET nValue=%d, LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
+					nValue, level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
 			}
 		}
 		return true;
 	}
-	if (pSensor->component_type == "climate")
+	else if (
+		(pSensor->component_type == "climate")
+		|| (pSensor->component_type == "select")
+		)
 	{
 		if (command == "Set Level")
 		{
