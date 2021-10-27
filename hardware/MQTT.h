@@ -11,6 +11,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	{
 		std::string config;
 
+		bool bEnabled_by_default = true;
+
 		std::string component_type;
 		std::string object_id;
 		std::string unique_id;
