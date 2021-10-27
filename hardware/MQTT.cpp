@@ -2534,7 +2534,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		|| (!pSensor->set_position_topic.empty())
 		)
 	{
-		switchType = STYPE_BlindsPercentageWithStop;
+		if (pSensor->payload_stop.empty())
+			switchType = STYPE_BlindsPercentage;
+		else
+			switchType = STYPE_BlindsPercentageWithStop;
 	}
 	else if (pSensor->component_type == "binary_sensor")
 	{
