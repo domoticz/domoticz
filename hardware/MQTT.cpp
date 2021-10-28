@@ -3324,8 +3324,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				std::string state_template;
 				if (!pSensor->mode_state_template.empty())
 					state_template = pSensor->mode_state_template;
-				else if (!pSensor->value_template.empty())
-					state_template = pSensor->value_template;
 
 				if (!state_template.empty())
 				{
