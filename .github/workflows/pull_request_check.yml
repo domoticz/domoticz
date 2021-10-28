@@ -32,14 +32,8 @@ jobs:
             echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
           fi
-
-      - name: Debug
-        run: |
-          echo "Branchname: ${{ env.BRANCH_NAME }}"
-          echo "PR number: ${{ env.PRNUMBER }}"
-          git branch -a
-          git rev-list HEAD --count
-          git log --oneline
+          buildnr=$(git rev-list HEAD --count)
+          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
 
       # install dependencies
       - name: dependencies
@@ -96,7 +90,7 @@ jobs:
       # Upload artifacts
       - uses: actions/upload-artifact@v2
         with:
-          name: DomArtifacts-${{ env.BRANCH_NAME }}-${{ env.PRNUMBER }}
+          name: DomArtifacts-${{ env.BUILDNR }}-${{ env.BRANCH_NAME }}
           path: |
             domoticz
             appversion.h.txt
