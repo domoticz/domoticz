@@ -59,6 +59,9 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		int min_mireds = 154;
 		int max_mireds = 500;
 
+		//Select
+		std::vector<std::string> select_options;
+
 		//Climate
 		std::string mode_command_topic;
 		std::string mode_state_topic;
@@ -131,6 +134,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_select (_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_scene(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
