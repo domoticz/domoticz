@@ -20,6 +20,25 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      # Prepare environment
+      - name: prepare environment
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
+            echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+            echo "PRNUMBER=$(echo ${GITHUB_EVENT_ISSUE_NUMBER})" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+            echo "PRNUMBER=$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
+          fi
+
+      - name: Debug
+        run: |
+          echo "Branchname: ${{ env.BRANCH_NAME }}"
+          echo "PR number: ${{ env.PRNUMBER }}"
+          git branch -a
+          git rev-list HEAD --count
+          git log --oneline
+
       # install dependencies
       - name: dependencies
         run: |
@@ -72,23 +91,10 @@ jobs:
           sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
         continue-on-error: true
 
-      - name: Get branch name (merge)
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
-
-      - name: Get branch name (pull request)
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
-
-      - name: Debug
-        run: echo ${{ env.BRANCH_NAME }}
-
       # Upload artifacts
       - uses: actions/upload-artifact@v2
         with:
-          name: DomArtifacts-${{ env.BRANCH_NAME }}-${{ github.sha }}
+          name: DomArtifacts-${{ env.BRANCH_NAME }}-${{ env.PRNUMBER }}
           path: |
             domoticz
             appversion.h.txt

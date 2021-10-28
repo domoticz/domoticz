@@ -70,6 +70,8 @@ ENDIF()
 #
 #
 
+MESSAGE("Working from source dir .${CMAKE_SOURCE_DIR}.")
+
 MACRO(History_GET_REVISION variable)
   IF(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
     MESSAGE(STATUS "Read ProjectRevision from History.txt")
@@ -87,21 +89,24 @@ MACRO(History_GET_REVISION variable)
 ENDMACRO(History_GET_REVISION)
 
 MACRO(Gitversion_GET_REVISION dir variable)
+  MESSAGE("Executing Gitversion_GET_REVISION Macro (${GIT_EXECUTABLE})")
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    ECHO_OUTPUT_VARIABLE)
 ENDMACRO(Gitversion_GET_REVISION)
 
 find_package(Git QUIET)
 
 Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
+MESSAGE("ProjectRevision from Macro ${ProjectRevision}")
 IF(NOT ProjectRevision)
   MESSAGE(STATUS "Failed to get ProjectRevision from git")
   History_GET_REVISION(ProjectRevision)
 ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
+MESSAGE("ProjectRevision set to ${ProjectRevision}")
 
 ### SUBMODULE / BUNDLED SOFTWARE
 #
