@@ -3287,69 +3287,66 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		|| (pSensor->component_type == "select")
 		)
 	{
-		if (command == "Set Level")
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type=%d) AND (SubType=%d)", m_HwdID, pSensor->unique_id.c_str(),
+						pTypeGeneralSwitch, sSwitchGeneralSwitch);
+		if (result.empty())
+			return false;
+
+		std::string szIdx = result[0][0];
+
+		std::string szCommandTopic;
+		if (!pSensor->mode_command_topic.empty())
+			szCommandTopic = pSensor->mode_command_topic;
+		else if (!pSensor->command_topic.empty())
+			szCommandTopic = pSensor->command_topic;
+
+		Json::Value root;
+		if (!szCommandTopic.empty())
 		{
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type=%d) AND (SubType=%d)", m_HwdID, pSensor->unique_id.c_str(),
-						  pTypeGeneralSwitch, sSwitchGeneralSwitch);
-			if (result.empty())
+			std::map<std::string, std::string> deviceOptions = m_sql.GetDeviceOptions(szIdx);
+
+			if (deviceOptions.find("LevelNames") == deviceOptions.end())
 				return false;
+			int iLevel = level / 10;
 
-			std::string szIdx = result[0][0];
-
-			std::string szCommandTopic;
-			if (!pSensor->mode_command_topic.empty())
-				szCommandTopic = pSensor->mode_command_topic;
-			else if (!pSensor->command_topic.empty())
-				szCommandTopic = pSensor->command_topic;
-
-			Json::Value root;
-			if (!szCommandTopic.empty())
+			std::vector<std::string> strarray;
+			StringSplit(deviceOptions["LevelNames"], "|", strarray);
+			if (iLevel >= (int)strarray.size())
 			{
-				std::map<std::string, std::string> deviceOptions = m_sql.GetDeviceOptions(szIdx);
+				Log(LOG_ERROR, "%s device invalid state requested (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+				return false;
+			}
+			std::string newState = strarray[iLevel];
 
-				if (deviceOptions.find("LevelNames") == deviceOptions.end())
-					return false;
-				int iLevel = level / 10;
+			std::string state_template;
+			if (!pSensor->mode_state_template.empty())
+				state_template = pSensor->mode_state_template;
 
-				std::vector<std::string> strarray;
-				StringSplit(deviceOptions["LevelNames"], "|", strarray);
-				if (iLevel >= (int)strarray.size())
+			if (!state_template.empty())
+			{
+
+				std::string szKey = GetValueTemplateKey(state_template);
+				if (!szKey.empty())
 				{
-					Log(LOG_ERROR, "%s device invalid state requested (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
-					return false;
-				}
-				std::string newState = strarray[iLevel];
-
-				std::string state_template;
-				if (!pSensor->mode_state_template.empty())
-					state_template = pSensor->mode_state_template;
-
-				if (!state_template.empty())
-				{
-
-					std::string szKey = GetValueTemplateKey(state_template);
-					if (!szKey.empty())
-					{
-						root[szKey] = newState;
-						szSendValue = JSonToRawString(root);
-					}
-					else
-					{
-						Log(LOG_ERROR, "%s device unhandled mode_state_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
-						return false;
-					}
+					root[szKey] = newState;
+					szSendValue = JSonToRawString(root);
 				}
 				else
-					szSendValue = newState;
-				SendMessage(szCommandTopic, szSendValue);
-				return true;
+				{
+					Log(LOG_ERROR, "%s device unhandled mode_state_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+					return false;
+				}
 			}
 			else
-			{
-				Log(LOG_ERROR, "%s device does not have mode_command_topic (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
-				return false;
-			}
+				szSendValue = newState;
+			SendMessage(szCommandTopic, szSendValue);
+			return true;
+		}
+		else
+		{
+			Log(LOG_ERROR, "%s device does not have mode_command_topic (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+			return false;
 		}
 	}
 
