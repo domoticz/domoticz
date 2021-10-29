@@ -1019,16 +1019,17 @@ void MQTT::CleanValueTemplate(std::string &szValueTemplate)
 		if (pos == std::string::npos)
 		{
 			pos = szValueTemplate.find("value_json[");
-			if (pos == std::string::npos)
-				while (1 == 0);
 		}
 		if (pos != std::string::npos)
 		{
 			szValueTemplate = szValueTemplate.substr(pos);
 			pos = szValueTemplate.find(' ');
+			if (pos == std::string::npos)
+				pos = szValueTemplate.find("==");
 			if (pos != std::string::npos)
 			{
 				szValueTemplate = szValueTemplate.substr(0, pos);
+				stdstring_trim(szValueTemplate);
 			}
 		}
 	}
