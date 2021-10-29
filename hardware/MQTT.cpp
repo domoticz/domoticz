@@ -2835,6 +2835,19 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 			level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
 		}
+		if (pSensor->component_type == "cover" && !root["value"].empty())
+		{
+			level = root["value"].asInt();
+			if (level == pSensor->position_closed)
+				szOnOffValue = "on";
+			else if (level == pSensor->position_open)
+				szOnOffValue = "off";
+			else
+			{
+				szOnOffValue = "Set Level";
+			}
+			level = (int)(100.0 / (pSensor->position_open - pSensor->position_closed)) * (pSensor->position_open - level);
+		}
 		if (!root["color"].empty())
 		{
 			Json::Value root_color;
