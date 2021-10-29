@@ -1011,6 +1011,27 @@ void MQTT::CleanValueTemplate(std::string &szValueTemplate)
 		szValueTemplate = szValueTemplate.substr(0, tpos);
 	}
 	stdstring_trim(szValueTemplate);
+
+	//Strip if/endif mombojumbo (until we are going to support it)
+	if (szValueTemplate.find("endif") != std::string::npos)
+	{
+		size_t pos = szValueTemplate.find("value_json.");
+		if (pos == std::string::npos)
+		{
+			pos = szValueTemplate.find("value_json[");
+			if (pos == std::string::npos)
+				while (1 == 0);
+		}
+		if (pos != std::string::npos)
+		{
+			szValueTemplate = szValueTemplate.substr(pos);
+			pos = szValueTemplate.find(' ');
+			if (pos != std::string::npos)
+			{
+				szValueTemplate = szValueTemplate.substr(0, pos);
+			}
+		}
+	}
 }
 
 std::string MQTT::GetValueTemplateKey(const std::string &szValueTemplate)
@@ -1025,7 +1046,6 @@ std::string MQTT::GetValueTemplateKey(const std::string &szValueTemplate)
 		{
 			szKey = strarray[1];
 		}
-
 	}
 	else
 	{
@@ -3192,6 +3212,25 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 
 		szSendValue = JSonToRawString(root);
+	}
+	else if (pSensor->component_type == "switch")
+	{
+		if (!pSensor->value_template.empty())
+		{
+			std::string szKey = GetValueTemplateKey(pSensor->value_template);
+			if (!szKey.empty())
+			{
+				Json::Value root;
+				//need to make a function for this (parameters json, string value)
+				if (is_number(szSendValue))
+				{
+					root[szKey] = (int)atoi(szSendValue.c_str());
+				}
+				else
+					root[szKey] = szSendValue;
+				szSendValue = JSonToRawString(root);
+			}
+		}
 	}
 	else if (pSensor->component_type == "cover")
 	{
