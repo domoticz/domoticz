@@ -64,7 +64,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           cd ..
-          git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
           cd open-zwave-read-only
           make
           sudo make install >> /dev/null 2>&1
@@ -75,7 +75,6 @@ jobs:
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
-          cat appversion.h.txt
 
       # Run automated tests
       - name: test domoticz
@@ -88,14 +87,13 @@ jobs:
         continue-on-error: true
 
       # Upload artifacts
-      - uses: actions/upload-artifact@v2
-        with:
-          name: DomArtifacts-${{ env.BUILDNR }}-${{ env.BRANCH_NAME }}
-          path: |
-            domoticz
-            appversion.h.txt
-            test/
-            www/
-            lib/
-            !**/*.tar.gz
-          retention-days: 7
+      #- uses: actions/upload-artifact@v2
+      #  with:
+      #    name: Domoticz-${{ env.BUILDNR }}-${{ env.BRANCH_NAME }}
+      #    path: |
+      #      domoticz
+      #      appversion.h.txt
+      #      www/
+      #      lib/
+      #      !**/*.tar.gz
+      #    retention-days: 7
