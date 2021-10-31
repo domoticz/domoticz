@@ -1188,20 +1188,24 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		action = strarray[3];
 	}
 
-	//skip some non-needed types, they will be transmitted in the state topic anyways (for 90%)
+	//skip some non-needed types, they will be transmitted in the state topic anyways (for 90%) or not necessary
 	if (
 		(object_id == "update_available")
 		|| (object_id == "power_on_behavior")
 		|| (object_id == "power_outage_memory")
 		|| (object_id == "update_state")
 		|| (object_id == "over-load_status")
-		|| (object_id.find("battery") == 0)
 		|| (object_id == "linkquality")
 		|| (object_id == "sensitivity")
 		|| (object_id == "color_temp_startup")
 		|| (object_id == "requested_brightness_level")
 		|| (object_id == "requested_brightness_percent")
 		|| (object_id == "device_automation")
+		|| (object_id == "over-load_status")
+		|| (object_id == "hardware_status")
+		|| (object_id.find("_battery") == 0)
+		|| (object_id.find("_ssid") != std::string::npos)
+		//|| (object_id.find("any") != std::string::npos)
 		)
 	{
 		return;
@@ -2257,10 +2261,6 @@ void MQTT::handle_auto_discovery_switch(_tMQTTASensor *pSensor, const struct mos
 
 void MQTT::handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message)
 {
-	if ((pSensor->object_id.find("any") != std::string::npos) || (pSensor->object_id == "battery_islow") || (pSensor->object_id == "battery_ishigh") ||
-	    (pSensor->object_id == "over-load_status") || (pSensor->object_id == "hardware_status") || (pSensor->object_id == "update_available"))
-		return; // don't want these
-
 	InsertUpdateSwitch(pSensor);
 }
 
@@ -3230,25 +3230,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 
 		szSendValue = JSonToRawString(root);
-	}
-	else if (pSensor->component_type == "switch")
-	{
-		if (!pSensor->value_template.empty())
-		{
-			std::string szKey = GetValueTemplateKey(pSensor->value_template);
-			if (!szKey.empty())
-			{
-				Json::Value root;
-				//need to make a function for this (parameters json, string value)
-				if (is_number(szSendValue))
-				{
-					root[szKey] = (int)atoi(szSendValue.c_str());
-				}
-				else
-					root[szKey] = szSendValue;
-				szSendValue = JSonToRawString(root);
-			}
-		}
 	}
 	else if (pSensor->component_type == "cover")
 	{
