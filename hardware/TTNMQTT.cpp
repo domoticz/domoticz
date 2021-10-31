@@ -64,7 +64,7 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	m_DomLon = 1;
 
 	m_usIPPort = usIPPort;
-	m_TopicIn = Username + "/devices/+/up";
+	m_TopicIn = "v3/" + Username + "/devices/+/up";
 
 #ifdef DEBUG_TTN_R
 	std::string sResult = ReadFile("ttn_mqtt_stringfields.json");
@@ -390,7 +390,7 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 {
 	int DeviceID = 0;
 	
-	//Debug(DEBUG_NORM, "Looking for Device and Sensor (%d): .%s. , .%s.", m_HwdID, DeviceName.c_str(), MacAddress.c_str());
+	Debug(DEBUG_NORM, "Looking for Device and Sensor (%d): .%s. , .%s.", m_HwdID, DeviceName.c_str(), MacAddress.c_str());
 
 	//Get our internal device_id, if not found, add it
 	std::vector<std::vector<std::string> > result;
@@ -593,7 +593,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		//Get device name from MQTT topic
 		std::vector<std::string> strarray;
 		StringSplit(topic, "/", strarray);
-		std::string MQTTDeviceName = strarray[2];
+		std::string MQTTDeviceName = strarray[3];
 
 		//Check if we received a JSON object with payload_raw
 		Json::Value root;
@@ -603,18 +603,22 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			Log(LOG_ERROR, "Invalid data received from %s ! Unable to parse JSON!", MQTTDeviceName.c_str());
 			return;
 		}
-		if (root["payload_raw"].empty())
+		if (root["uplink_message"].empty() || root["end_device_ids"].empty())
 		{
-			Log(LOG_ERROR, "Invalid data received from %s ! No payload_raw found in JSON data!", MQTTDeviceName.c_str());
+			Log(LOG_ERROR, "Invalid data received from %s ! No uplink_message found in JSON data!", MQTTDeviceName.c_str());
 			return;
 		}
 
+		Json::Value uplinkMessage = root["uplink_message"];
+		Json::Value endDeviceIds = root["end_device_ids"];
+		Json::Value applicationIds = endDeviceIds["application_ids"];
+
 		//Get data from message
-		std::string DeviceName = root["dev_id"].asString();
-		std::string AppId = root["app_id"].asString();
-		std::string DeviceSerial = root["hardware_serial"].asString();
-		uint8_t MessagePort = root["port"].asInt();
-		std::string lpp = base64_decode(root["payload_raw"].asString());
+		std::string DeviceName = endDeviceIds["device_id"].asString();
+		std::string DeviceSerial = endDeviceIds["dev_addr"].asString();
+		std::string AppId = applicationIds["application_id"].asString();
+		uint8_t MessagePort = uplinkMessage["f_port"].asInt();
+		std::string lpp = base64_decode(uplinkMessage["frm_payload"].asString());
 
 		//Check if the payload_raw contains valid CayenneLPP structured data
 		//TO-DO: The current CayenneLPP Decoder assumes Dynamic Sensor Payload structure and not other possible Sensor payload structures like Packed
@@ -643,18 +647,18 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					Decoded = true;
 				}
 		}
-
+Debug(DEBUG_HARDWARE, "here (%s)", payload.toStyledString().c_str());
 		if (!Decoded)
 		{
-			if (!root["payload_fields"].empty())
+			if (!uplinkMessage["decoded_payload"].empty())
 			{
 				// Maybe we received a pre-decoded message? TTN has the option for custom decoders where the decoding is done by TTN already
-				if (!ConvertFields2Payload(root["payload_fields"], payload))
+				if (!ConvertFields2Payload(uplinkMessage["decoded_payload"], payload))
 				{
-					Log(LOG_ERROR, "Invalid data received! Unable to decode the raw payload and the fields payload does not contain any (valid) data!");
+					Log(LOG_ERROR, "Invalid data received! Unable to decode the raw payload and the decoded payload does not contain any (valid) data!");
 					return;
 				}
-				Log(LOG_STATUS, "Converted payload_fields to regular payload for processing!");
+				Log(LOG_STATUS, "Converted decoded_payload to regular payload for processing!");
 			}
 			else
 			{
@@ -691,11 +695,12 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		float gwsnr = -999;
 
 		// Let's look at the metadata that TTN also sends when receiving a LoRa message
-		if (!root["metadata"].empty())
+		if (!uplinkMessage["rx_metadata"].empty())
 		{
-			Json::Value MetaData = root["metadata"];
+			Json::Value MetaData = uplinkMessage["rx_metadata"];
 			if (!MetaData["time"].empty())
 			{
+Debug(DEBUG_HARDWARE, "Metadata (%s)", MetaData.toStyledString().c_str());
 				// Retrieve the moment the TTN backend receives the (first part of) this packet
 				// So we have a more accurate time when the measurement happened, compared to
 				// the moment we see the message here in Domoticz
@@ -721,9 +726,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				}
 			}
 			// Let's see if there is metadata from 1 or more gateways that have received this message
-			if (!MetaData["gateways"].empty())
+			if (!MetaData["gateway_ids"].empty())
 			{
-				Json::Value Gateways = MetaData["gateways"];
+				Json::Value Gateways = MetaData["gateway_ids"];
 				// Loop over all gateways and try to find the one with the best signal
 				// and see if the GW has a Geo Location that we could use
 				uint8_t iGW = 0;
@@ -1033,8 +1038,8 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			}
 		}
 	}
-	catch (...)
+	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Error parsing message!!!");
+		Log(LOG_ERROR, "Error parsing message (%s)!!!", e.what());
 	}
 }
