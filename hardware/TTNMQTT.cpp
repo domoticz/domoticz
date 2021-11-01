@@ -508,12 +508,12 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 
 	if (!fields.empty())
 	{
-		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
+		Debug(DEBUG_RECEIVED, "Processing fields payload for %d fields!", fields.size());
 		for (const auto &id : fields.getMemberNames())
 		{
 			if (!(fields[id].isNull()) && ConvertField2Payload(id, fields[id].asString(), index + 1, index, payload))
 			{
-				Debug(DEBUG_NORM, "Converted field %s !", id.c_str());
+				Debug(DEBUG_RECEIVED, "Converted field %s !", id.c_str());
 				index++;
 				ret = true;
 			}
@@ -745,7 +745,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					if (!MetaData[iGW].empty())
 					{
 						Json::Value Gateway = MetaData[iGW];
-Debug(DEBUG_HARDWARE, "Gateway (%s)", Gateway.toStyledString().c_str());
+
 						int lrssi = Gateway["rssi"].asInt();
 						float lsnr = Gateway["snr"].asFloat();
 						bool bBetter = false;
@@ -831,7 +831,7 @@ Debug(DEBUG_HARDWARE, "Gateway (%s)", Gateway.toStyledString().c_str());
 				rssi = CalcDomoticsRssiFromLora(gwrssi, gwsnr);
 			}
 		}
-Debug(DEBUG_HARDWARE, "Payload (%s)", payload.toStyledString().c_str());
+
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
 		for (const auto &p : payload)
