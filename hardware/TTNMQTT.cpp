@@ -647,7 +647,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					Decoded = true;
 				}
 		}
-Debug(DEBUG_HARDWARE, "here (%s)", payload.toStyledString().c_str());
+
 		if (!Decoded)
 		{
 			if (!uplinkMessage["decoded_payload"].empty())
@@ -694,54 +694,62 @@ Debug(DEBUG_HARDWARE, "here (%s)", payload.toStyledString().c_str());
 		int gwrssi = -999;
 		float gwsnr = -999;
 
+		if (!uplinkMessage["received_at"].empty())
+		{
+			// Retrieve the moment the TTN backend receives the (first part of) this packet
+			// So we have a more accurate time when the measurement happened, compared to
+			// the moment we see the message here in Domoticz
+			// TTN time is in ISO8601 format and UTC
+			std::tm t = {};
+			int y,M,d,h,m;
+			float s;
+			const char* UTCttntime;
+
+			UTCttntime = uplinkMessage["received_at"].asString().c_str();
+			sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
+			constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
+		}
+
+		if (!uplinkMessage["locations"].empty())
+		{
+			Json::Value devUserLocation = uplinkMessage["locations"];
+			if (!devUserLocation["user"].empty())
+			{
+				devUserLocation = devUserLocation["user"];
+				if (!(devUserLocation["latitude"].empty() || devUserLocation["longitude"].empty()))
+				{
+					// For this device, Location coordinates are set in the metadata.
+					// Makes sense for non moving sensors without own GPS
+					devlat = devUserLocation["latitude"].asDouble();
+					devlon = devUserLocation["longitude"].asDouble();
+					if (!devUserLocation["altitude"].empty())
+					{
+						devalt = devUserLocation["altitude"].asFloat();
+					}
+				}
+			}
+		}
+
 		// Let's look at the metadata that TTN also sends when receiving a LoRa message
 		if (!uplinkMessage["rx_metadata"].empty())
 		{
-			Json::Value MetaData = uplinkMessage["rx_metadata"];
-			if (!MetaData["time"].empty())
-			{
-Debug(DEBUG_HARDWARE, "Metadata (%s)", MetaData.toStyledString().c_str());
-				// Retrieve the moment the TTN backend receives the (first part of) this packet
-				// So we have a more accurate time when the measurement happened, compared to
-				// the moment we see the message here in Domoticz
-				// TTN time is in ISO8601 format and UTC
-				std::tm t = {};
-				int y,M,d,h,m;
-				float s;
-				const char* UTCttntime;
-
-				UTCttntime = MetaData["time"].asString().c_str();
-				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
-			}
-			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
-			{
-				// For this device, Location coordinates are set in the metadata.
-				// Makes sense for non moving sensors without own GPS
-				devlat = MetaData["latitude"].asDouble();
-				devlon = MetaData["longitude"].asDouble();
-				if (!MetaData["altitude"].empty())
-				{
-					devalt = MetaData["altitude"].asFloat();
-				}
-			}
 			// Let's see if there is metadata from 1 or more gateways that have received this message
-			if (!MetaData["gateway_ids"].empty())
+			if (uplinkMessage["rx_metadata"].isArray())
 			{
-				Json::Value Gateways = MetaData["gateway_ids"];
+				Json::Value MetaData = uplinkMessage["rx_metadata"];
 				// Loop over all gateways and try to find the one with the best signal
 				// and see if the GW has a Geo Location that we could use
 				uint8_t iGW = 0;
 				do
 				{
-					if (!Gateways[iGW].empty())
+					if (!MetaData[iGW].empty())
 					{
-						Json::Value Gateway = Gateways[iGW];
-
+						Json::Value Gateway = MetaData[iGW];
+Debug(DEBUG_HARDWARE, "Gateway (%s)", Gateway.toStyledString().c_str());
 						int lrssi = Gateway["rssi"].asInt();
 						float lsnr = Gateway["snr"].asFloat();
 						bool bBetter = false;
-						bool bGwGeo = (!(Gateway["latitude"].empty() || Gateway["longitude"].empty()));
+						bool bGwGeo = (!(Gateway["location"].empty()));
 						bool bPrevGwGeo = (!(gwlat == 0 || gwlon == 0));
 
 						// Is this gateway closer to the sensor than the previous one (or is this the first/only one)
@@ -798,11 +806,12 @@ Debug(DEBUG_HARDWARE, "Metadata (%s)", MetaData.toStyledString().c_str());
 							// Let's see if it has Geo Location data
 							if (bGwGeo)
 							{
-								gwlat = Gateway["latitude"].asDouble();
-								gwlon = Gateway["longitude"].asDouble();
-								if (!Gateway["altitude"].empty())
+								Json::Value gwLocation = Gateway["location"];
+								gwlat = gwLocation["latitude"].asDouble();
+								gwlon = gwLocation["longitude"].asDouble();
+								if (!gwLocation["altitude"].empty())
 								{
-									gwalt = Gateway["altitude"].asFloat();
+									gwalt = gwLocation["altitude"].asFloat();
 								}
 							}
 							else if (bPrevGwGeo)
@@ -818,11 +827,11 @@ Debug(DEBUG_HARDWARE, "Metadata (%s)", MetaData.toStyledString().c_str());
 					}
 					iGW++;
 				}
-				while (!Gateways[iGW].empty());
+				while (!MetaData[iGW].empty());
 				rssi = CalcDomoticsRssiFromLora(gwrssi, gwsnr);
 			}
 		}
-
+Debug(DEBUG_HARDWARE, "Payload (%s)", payload.toStyledString().c_str());
 		// Walk over the payload to find all used channels. Each channel represents a single sensor.
 		uint8_t chanSensors [65] = {};	// CayenneLPP Data Channel ranges from 0 to 64
 		for (const auto &p : payload)
