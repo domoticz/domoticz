@@ -1863,13 +1863,15 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
 
+	stdlower(szUnit);
+
 	if (szUnit.empty())
 	{
 		if (!is_number(pSensor->last_value))
 		{
 			// conversion failed because the input wasn't a number
 			// make it a text sensor
-			szUnit = "Text";
+			szUnit = "text";
 		}
 	}
 
@@ -1877,9 +1879,9 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 	float AddjMulti = 1.0F;
 
 	if (
-		(szUnit == "°C")
-		|| (szUnit == "C")
-		|| (szUnit == "?C")
+		(szUnit == "°c")
+		|| (szUnit == "c")
+		|| (szUnit == "?c")
 		|| (pSensor->value_template.find("temperature") != std::string::npos)
 		|| (pSensor->state_topic.find("temperature") != std::string::npos)
 		)
@@ -1915,15 +1917,15 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		}
 	}
 	else if (
-		(szUnit == "hPa")
-		|| (szUnit == "kPa")
+		(szUnit == "hpa")
+		|| (szUnit == "kpa")
 		|| (pSensor->value_template.find("pressure") != std::string::npos)
 		)
 	{
 		devType = pTypeGeneral;
 		subType = sTypeBaro;
 		float pressure = static_cast<float>(atof(pSensor->last_value.c_str()));
-		if (szUnit == "kPa")
+		if (szUnit == "kpa")
 			pressure *= 10.0F;
 		int nforecast = bmpbaroforecast_cloudy;
 		if (pressure <= 980)
@@ -1947,31 +1949,31 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		szOptions = pSensor->unit_of_measurement;
 		sValue = pSensor->last_value;
 	}
-	else if (szUnit == "V")
+	else if (szUnit == "v")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
 		sValue = pSensor->last_value;
 	}
-	else if (szUnit == "mV")
+	else if (szUnit == "mv")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeVoltage;
 		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())) / 1000.0F);
 	}
-	else if (szUnit == "A")
+	else if (szUnit == "a")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeCurrent;
 		sValue = pSensor->last_value;
 	}
-	else if (szUnit == "W")
+	else if (szUnit == "w")
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
 		sValue = pSensor->last_value;
 	}
-	else if (szUnit == "kWh")
+	else if (szUnit == "kwh")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeKwh;
@@ -1995,7 +1997,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		subType = sTypeLux;
 		sValue = std_format("%.0f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
-	else if (szUnit == "Text")
+	else if (szUnit == "text")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeTextStatus;
