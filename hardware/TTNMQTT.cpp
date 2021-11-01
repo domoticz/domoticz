@@ -121,6 +121,20 @@ bool CTTNMQTT::StartHardware()
 		}
 	}
 
+	// Check if there is a Certificate file given to use for TLS encryption
+	std::vector<std::string> strarray;
+	StringSplit(m_CAFilename, ";", strarray);
+
+	if (strarray.size() == 3 || strarray.size() == 4)
+	{
+		m_CAFilename = strarray[0];
+	}
+	else
+	{
+		Log(LOG_STATUS, "Unexpected parameters given! Unable to determine CA Certificate filename (%s)", m_CAFilename.c_str());
+		m_CAFilename = "";
+	}
+
 	//force connect the next first time
 	m_IsConnected = false;
 
@@ -225,7 +239,7 @@ bool CTTNMQTT::ConnectIntEx()
 			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		Log(LOG_STATUS, "Enabled TLS mode");
+		Log(LOG_STATUS, "Enabled TLS mode (CA certificate: '%s')", m_CAFilename.c_str());
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
