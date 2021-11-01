@@ -5183,7 +5183,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 					else if (nValue == light2_sOff)
 						llevel = 0;
 				}
-				else if (
+				if (
 					switchtype == STYPE_BlindsPercentageInverted
 					|| switchtype == STYPE_BlindsPercentageInvertedWithStop
 					)
