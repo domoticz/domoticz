@@ -3108,14 +3108,17 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			|| (command == "Off"))
 		{
 			if (
-				(pSensor->command_topic.find("zwave/") == 0)&&
-				(!pSensor->brightness_command_topic.empty()))
+				!pSensor->brightness_command_topic.empty())
 			{
 				if (!pSensor->brightness_value_template.empty())
 				{
 					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
-					if (!szKey.empty())
-						root[szKey] = (command == "On") ? 255 : 0;
+					if (!szKey.empty() && szKey == "value")
+						// just send the plain percentage as HA does for value in template
+						root = (command == "On") ? (int)pSensor->brightness_scale : 0;
+					else if(!szKey.empty())
+						// in case another key was requested
+						root[szKey] = (command == "On") ? (int)pSensor->brightness_scale : 0;
 					else
 					{
 						Log(LOG_ERROR, "light device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
@@ -3123,7 +3126,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					}
 				}
 				else
-					root["brightness"] = (command == "On") ? 255 : 0;
+					root["brightness"] = (command == "On") ? (int)pSensor->brightness_scale : 0;
 			}
 			else
 			{
@@ -3143,7 +3146,12 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			if (!pSensor->brightness_value_template.empty())
 			{
 				std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
-				if (!szKey.empty())
+
+				if (!szKey.empty() && szKey == "value")
+					// just send the plain percentage as HA does for value in template
+					root = slevel;
+				else if (!szKey.empty())
+					// in case another key was requested
 					root[szKey] = slevel;
 				else
 				{
