@@ -2869,10 +2869,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				szOnOffValue = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
 			}
-			else
-			{
-				szOnOffValue = "Set Level";
-			}
 		}
 		if (!root["position"].empty())
 		{
