@@ -9,8 +9,9 @@ This builder still a bit work on progress. It uses Docker to compile OpenZWave a
 The scripts expect that you've cloned both OpenZWave as Domoticz besides one other:
 
 ```shell
-$ git clone https://github.com/OpenZWave/open-zwave
-$ git clone https://github.com/domoticz/domoticz.git
+$ ls domoticz/build/docker-compose.yml
+domoticz/build/docker-compose.yml
+$ git clone https://github.com/domoticz/open-zwave.git
 ```
 
 Then create the Docker image:
