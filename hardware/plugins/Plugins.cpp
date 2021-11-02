@@ -1121,7 +1121,7 @@ namespace Plugins
 		m_bIsStarting = true;
 		MessagePlugin(new InitializeMessage());
 
-		Log(LOG_STATUS, "Started.", m_Name.c_str());
+		Log(LOG_STATUS, "Started.");
 
 		return true;
 	}
