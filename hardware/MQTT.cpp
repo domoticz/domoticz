@@ -3107,29 +3107,12 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			(command == "On")
 			|| (command == "Off"))
 		{
-			if (
-				!pSensor->brightness_command_topic.empty())
+			if (!pSensor->brightness_value_template.empty())
 			{
-				if (!pSensor->brightness_value_template.empty())
-				{
-					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
-					if (!szKey.empty() && szKey == "value")
-						// just send the plain percentage as HA does for value in template
-						root = (command == "On") ? (int)pSensor->brightness_scale : 0;
-					else if(!szKey.empty())
-						// in case another key was requested
-						root[szKey] = (command == "On") ? (int)pSensor->brightness_scale : 0;
-					else
-					{
-						Log(LOG_ERROR, "light device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-						return false;
-					}
-				}
-				else
-					root["brightness"] = (command == "On") ? (int)pSensor->brightness_scale : 0;
+				SendMessage(pSensor->command_topic, szSendValue);
+				return true;
 			}
-			else
-			{
+			else {
 				if (szSendValue == "true")
 					root["state"] = true;
 				else if (szSendValue == "false")
@@ -3160,7 +3143,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				}
 			}
 			else
+			{
 				root["brightness"] = slevel;
+				root["state"] = (slevel > 0) ? "ON" : "OFF";
+			}
 
 			szSendValue = JSonToRawString(root);
 			std::string szTopic = pSensor->command_topic;
