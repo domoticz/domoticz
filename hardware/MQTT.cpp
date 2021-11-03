@@ -3189,6 +3189,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		szDeviceName);
 	if (bHaveColorChange)
 		m_sql.UpdateDeviceValue("Color", color_new.toJSONString(), szIdx);
+	if (bHaveLevelChange)
+		m_sql.UpdateDeviceValue("LastLevel", level, szIdx);
 }
 
 bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, std::string command, int level, _tColor color)
