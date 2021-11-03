@@ -186,7 +186,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 	void CleanValueTemplate(std::string &szValueTemplate);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
-	std::string GetValueFromTemplate(Json::Value root, const std::string& szValueTemplate);
+	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
+	bool SetValueWithTemplate(Json::Value &root, std::string szValueTemplate, std::string szValue);
 	void GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 	virtual void SendHeartbeat();

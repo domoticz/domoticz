@@ -1062,16 +1062,38 @@ std::string MQTT::GetValueTemplateKey(const std::string &szValueTemplate)
 }
 
 //returns empty if value is not found
-std::string MQTT::GetValueFromTemplate(Json::Value root, const std::string& szValueTemplate)
+std::string MQTT::GetValueFromTemplate(Json::Value root, std::string szValueTemplate)
 {
 	std::string szKey;
 	std::vector<std::string> strarray;
 
 	try
 	{
-		if (szValueTemplate.find("value_json.") != std::string::npos)
+		size_t pos;
+		std::map<std::string, std::string> value_options_;
+		pos = szValueTemplate.find("[value_json");
+		if (pos  != std::string::npos)
 		{
-			std::string tstring = szValueTemplate.substr(std::string("value_json.").size());
+			std::string szOptions = szValueTemplate.substr(0, pos);
+			szValueTemplate = szValueTemplate.substr(pos + 1);
+			stdreplace(szValueTemplate, "]", "");
+			StringSplit(szOptions, ",", strarray);
+			for (const auto itt : strarray)
+			{
+				std::vector<std::string> strarray2;
+				StringSplit(itt, ":", strarray2);
+				if (strarray2.size() == 2)
+				{
+					stdstring_trim(strarray2[0]);
+					stdstring_trim(strarray2[1]);
+					value_options_[strarray2[0]] = strarray2[1];
+				}
+			}
+		}
+		pos = szValueTemplate.find("value_json.");
+		if (pos != std::string::npos)
+		{
+			std::string tstring = szValueTemplate.substr(pos + std::string("value_json.").size());
 			StringSplit(tstring, ".", strarray);
 			for (const auto itt : strarray)
 			{
@@ -1080,7 +1102,12 @@ std::string MQTT::GetValueFromTemplate(Json::Value root, const std::string& szVa
 					return ""; //key not found!
 				root = root[szKey];
 			}
-			return root.asString();
+			std::string retVal = root.asString();
+			if (value_options_.find(retVal) != value_options_.end())
+			{
+				retVal = value_options_[retVal];
+			}
+			return retVal;
 		}
 		else if (szValueTemplate.find("value_json[") != std::string::npos)
 		{
@@ -1134,6 +1161,61 @@ std::string MQTT::GetValueFromTemplate(Json::Value root, const std::string& szVa
 
 	}
 	return "";
+}
+
+//Returns true if value is set in JSon object
+bool MQTT::SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue)
+{
+	try
+	{
+		size_t pos;
+		std::vector<std::string> strarray;
+
+		std::map<std::string, std::string> value_options_;
+		pos = szValueTemplate.find("[value_json");
+		if (pos != std::string::npos)
+		{
+			std::string szOptions = szValueTemplate.substr(0, pos);
+			szValueTemplate = szValueTemplate.substr(pos + 1);
+			stdreplace(szValueTemplate, "]", "");
+			StringSplit(szOptions, ",", strarray);
+			for (const auto itt : strarray)
+			{
+				std::vector<std::string> strarray2;
+				StringSplit(itt, ":", strarray2);
+				if (strarray2.size() == 2)
+				{
+					stdstring_trim(strarray2[0]);
+					stdstring_trim(strarray2[1]);
+					value_options_[strarray2[1]] = strarray2[0];
+				}
+			}
+		}
+
+		pos = szValueTemplate.find("value_json.");
+		if (pos != std::string::npos)
+		{
+			std::string tstring = szValueTemplate.substr(pos + std::string("value_json.").size());
+			StringSplit(tstring, ".", strarray);
+			if (strarray.size() != 1)
+				return false; //only support 1 depth for now
+			std::string szKey = strarray[0];
+			if (value_options_.find(szValue) != value_options_.end())
+			{
+				szValue = value_options_[szValue];
+			}
+			if (is_number(szValue))
+				root[szKey] = atoi(szValue.c_str());
+			else
+				root[szKey] = szValue;
+			return true;
+		}
+	}
+	catch (const std::exception&)
+	{
+
+	}
+	return false;
 }
 
 void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
@@ -1203,6 +1285,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		|| (object_id == "device_automation")
 		|| (object_id == "over-load_status")
 		|| (object_id == "hardware_status")
+		|| (object_id.find("_address") != std::string::npos)
 		|| (object_id.find("_battery") == 0)
 		|| (object_id.find("_ssid") != std::string::npos)
 		//|| (object_id.find("any") != std::string::npos)
@@ -1997,6 +2080,29 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		subType = sTypeLux;
 		sValue = std_format("%.0f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
+/*
+*	//our distance sensor is in meters or inches
+	else if (szUnit == "m")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeDistance;
+		sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())) * 100.0F);
+	}
+*/
+	else if (szUnit == "l")
+	{
+		devType = pTypeRFXMeter;
+		subType = sTypeRFXMeterCount;
+		unsigned long counter = (unsigned long)(atof(pSensor->last_value.c_str()) * 1000.0F);
+		sValue = std_format("%lu", counter);
+	}
+	else if (szUnit == "l/hr")
+	{
+		//our sensor is in Liters / minute
+		devType = pTypeGeneral;
+		subType = sTypeWaterflow;
+		sValue = std_format("%.2f", static_cast<float>(atof(pSensor->last_value.c_str())) / 60.0F);
+	}
 	else if (szUnit == "text")
 	{
 		devType = pTypeGeneral;
@@ -2449,7 +2555,7 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		std::string sValue = result[0][3];
 		std::string sOptions = result[0][4];
 
-		int iActualIndex = 0;
+		int iActualIndex = current_mode.empty() ? 0 : -1;
 
 		// Build switch options
 		int iValueIndex = 0;
@@ -2463,6 +2569,13 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 			tmpOptionString += ittOptions;
 			iValueIndex += 10;
 		}
+
+		if (iActualIndex == -1)
+		{
+			Log(LOG_ERROR, "Climate device invalid/unknown mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
+			return;
+		}
+
 		std::map<std::string, std::string> optionsMap;
 		optionsMap["SelectorStyle"] = "0";
 		optionsMap["LevelOffHidden"] = "false";
@@ -3408,11 +3521,8 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 
 			if (!state_template.empty())
 			{
-
-				std::string szKey = GetValueTemplateKey(state_template);
-				if (!szKey.empty())
+				if (SetValueWithTemplate(root, state_template, newState))
 				{
-					root[szKey] = newState;
 					szSendValue = JSonToRawString(root);
 				}
 				else
