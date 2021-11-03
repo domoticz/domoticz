@@ -6,6 +6,7 @@
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
+#include "EnOceanRawValue.h"
 // 550 bytes buffer is enough for one ESP3 packet, EnOceanLink 1.8.1.0, eoPacket.h
 #define ESP3_PACKET_BUFFER_SIZE 550
 
@@ -109,4 +110,14 @@ private:
 	uint8_t m_RPS_teachin_STATUS;
 	time_t m_RPS_teachin_timer;
 	uint8_t m_RPS_teachin_count;
+	int LastPosition = -1;
+    bool WriteVldToHardware(const char* pdata);
+	void createOtherVldUteDevices(uint32_t iSenderID, uint8_t rorg, uint8_t func, uint8_t type, uint8_t nb_channel);
+	bool manageVldMessage(uint32_t iSenderID, unsigned char *vldData, uint8_t func, uint8_t type, std::string &m_Name, uint8_t rssi);
+    std::string GetDbValue(const char* tableName, const char* fieldName, const char* whereFieldName, const char* whereFielValue);
+    void sendVld    (unsigned int sID , unsigned int destID , int channel, int value);
+	void sendVld    (unsigned int sID , unsigned int destID , unsigned char *data, int DataLen );
+	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD * OffsetDes,  ...);
+	uint32_t senDatadVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD* OffsetDes, int* values, int NbValues);
 };
+int getPositionFromCommandLevel(int cmnd, int pos);
