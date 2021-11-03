@@ -75,6 +75,12 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string current_temperature_topic;
 		std::string current_temperature_template;
 
+		//Lock
+		std::string payload_lock = "LOCK";
+		std::string payload_unlock = "UNLOCK";
+		std::string state_locked = "LOCKED";
+		std::string state_unlocked = "UNLOCKED";
+
 		int qos = 0;
 
 		std::map<std::string, std::string> keys;
@@ -129,13 +135,14 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void handle_auto_discovery_availability(_tMQTTASensor *pSensor, const std::string &payload, const struct mosquitto_message* message);
 	void handle_auto_discovery_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_switch(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
-	void handle_auto_discovery_light(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_light(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_select (_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_scene(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_lock(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 

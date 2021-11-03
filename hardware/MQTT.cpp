@@ -1528,6 +1528,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->icon = root["icon"].asString();
 		else if (!root["ic"].empty())
 			pSensor->icon = root["ic"].asString();
+
 		if (!root["payload_on"].empty())
 			pSensor->payload_on = root["payload_on"].asString();
 		else if (!root["pl_on"].empty())
@@ -1562,7 +1563,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		else if (!root["pos_clsd"].empty())
 			pSensor->position_closed = root["pos_clsd"].asInt();
 
-
 		if (!root["payload_available"].empty())
 			pSensor->payload_available = root["payload_available"].asString();
 		else if (!root["pl_avail"].empty())
@@ -1579,6 +1579,23 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			pSensor->state_on = root["state_off"].asString();
 		else if (!root["stat_off"].empty())
 			pSensor->state_on = root["stat_off"].asString();
+
+		if (!root["payload_lock"].empty())
+			pSensor->payload_lock = root["payload_lock"].asString();
+		else if (!root["pl_lock"].empty())
+			pSensor->payload_lock = root["pl_lock"].asString();
+		if (!root["payload_unlock"].empty())
+			pSensor->payload_unlock = root["payload_unlock"].asString();
+		else if (!root["pl_unlk"].empty())
+			pSensor->payload_unlock = root["pl_unlk"].asString();
+		if (!root["state_locked"].empty())
+			pSensor->state_locked = root["state_locked"].asString();
+		else if (!root["stat_locked"].empty())
+			pSensor->state_locked = root["stat_locked"].asString();
+		if (!root["state_unlocked"].empty())
+			pSensor->state_unlocked = root["state_unlocked"].asString();
+		else if (!root["stat_unlocked"].empty())
+			pSensor->state_unlocked = root["stat_unlocked"].asString();
 
 		if (!root["brightness"].empty())
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
@@ -1718,6 +1735,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		else if (
 			(pSensor->component_type == "switch")
 			|| (pSensor->component_type == "light")
+			|| (pSensor->component_type == "lock")
 			)
 		{
 			if (pSensor->command_topic.empty())
@@ -1765,6 +1783,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 				|| (pSensor->component_type == "binary_sensor")
 				|| (pSensor->component_type == "switch")
 				|| (pSensor->component_type == "light")
+				|| (pSensor->component_type == "lock")
 				|| (pSensor->component_type == "select")
 				|| (pSensor->component_type == "cover")
 				|| (pSensor->component_type == "climate")
@@ -1892,6 +1911,8 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 				handle_auto_discovery_select(pSensor, message);
 			else if (pSensor->component_type == "climate")
 				handle_auto_discovery_climate(pSensor, message);
+			else if (pSensor->component_type == "lock")
+				handle_auto_discovery_lock(pSensor, message);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -2377,6 +2398,11 @@ void MQTT::handle_auto_discovery_light(_tMQTTASensor *pSensor, const struct mosq
 	InsertUpdateSwitch(pSensor);
 }
 
+void MQTT::handle_auto_discovery_lock(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
 void MQTT::handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	InsertUpdateSwitch(pSensor);
@@ -2832,6 +2858,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_DoorContact;
 	else if (pSensor->object_id == "door_state")
 		switchType = STYPE_DoorContact;
+	else if (pSensor->object_id == "lock")
+		switchType = STYPE_DoorLock;
 	else if (
 		(pSensor->value_template == "action")
 		|| (pSensor->object_id == "action")
@@ -3080,6 +3108,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szOnOffValue = "off";
 			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
 				szOnOffValue = "on";
+			else if (pSensor->component_type == "lock" && szOnOffValue == pSensor->payload_unlock)
+				szOnOffValue = "off";
+			else if (pSensor->component_type == "lock" && szOnOffValue == pSensor->payload_lock)
+				szOnOffValue = "on";
 			else if (level > 0)
 			{
 				if (level != 100)
@@ -3174,6 +3206,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		&& (pSensor->component_type != "cover")
 		&& (pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
+		&& (pSensor->component_type != "lock")
 		)
 	{
 		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
@@ -3185,6 +3218,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	if (
 		(pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
+		&& (pSensor->component_type != "lock")
 		)
 	{
 		if (command == "On")
@@ -3212,7 +3246,14 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 	}
 
-	if (pSensor->component_type == "light")
+	if (pSensor->component_type == "lock")
+	{
+		if (command == "On")
+			szSendValue = pSensor->payload_lock;
+		else if (command == "Off")
+			szSendValue = pSensor->payload_unlock;
+	}
+	else if (pSensor->component_type == "light")
 	{
 		Json::Value root;
 
