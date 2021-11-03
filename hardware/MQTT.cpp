@@ -3173,14 +3173,32 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 		}
 	}
-	if (szOnOffValue == "Set Level")
-	{
-		nValue = gswitch_sSetLevel;
-	}
-	else
-		nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
 
 	sValue = std_format("%d", level);
+
+	if (root["color"].empty())
+	{
+		if (szOnOffValue == "Set Level")
+		{
+			nValue = gswitch_sSetLevel;
+		}
+		else
+			nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+	}
+	else
+	{
+		if (
+			(szOnOffValue == "Set Level")
+			|| (bOn && (level > 0) && (sValue != pSensor->payload_on))
+			)
+		{
+			nValue = Color_SetBrightnessLevel;
+		}
+		else
+			nValue = (bOn) ? Color_LedOn : Color_LedOff;
+	}
+
+
 
 	pSensor->nValue = nValue;
 	pSensor->sValue = sValue;
