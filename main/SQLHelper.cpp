@@ -9116,22 +9116,33 @@ std::string CSQLHelper::GetDeviceValue(const char * FieldName, const char *Idx)
 }
 */
 
+void CSQLHelper::SendUpdateInt(const std::string& Idx)
+{
+	auto result = safe_query("SELECT HardwareID, Name From DeviceStatus WHERE (ID == %s )", Idx.c_str());
+	if (result.empty())
+		return;
+	m_mainworker.sOnDeviceReceived(atoi(result[0][0].c_str()), atoll(Idx.c_str()), result[0][1], nullptr);
+}
+
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const std::string& Value, const std::string& Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const int Value, const std::string& Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const float Value, const std::string& Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
-
 void CSQLHelper::UpdateDeviceName(const std::string& Idx, const std::string& Name)
 {
 	safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%s' WHERE (ID == %s )", Name.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
 
 bool CSQLHelper::InsertCustomIconFromZip(const std::string& szZip, std::string& ErrorMessage)
