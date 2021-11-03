@@ -3176,7 +3176,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	sValue = std_format("%d", level);
 
-	if (root["color"].empty())
+	if (pSensor->devType != pTypeColorSwitch)
 	{
 		if (szOnOffValue == "Set Level")
 		{
