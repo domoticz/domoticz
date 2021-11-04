@@ -1286,9 +1286,9 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		|| (object_id == "over-load_status")
 		|| (object_id == "hardware_status")
 		|| (object_id.find("_address") != std::string::npos)
-		|| (object_id.find("_battery") == 0)
+		|| (object_id.find("_battery") != std::string::npos)
 		|| (object_id.find("_ssid") != std::string::npos)
-		//|| (object_id.find("any") != std::string::npos)
+		|| (object_id.find("_signal_sensor") != std::string::npos)
 		)
 	{
 		return;
