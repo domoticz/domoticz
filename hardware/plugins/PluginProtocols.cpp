@@ -689,7 +689,12 @@ namespace Plugins {
 					if (PyDict_SetItemString(DataDict, "Verb", pObj) == -1)
 						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Verb", sVerb.c_str());
 
-					std::string		sURL = sFirstLine.substr(sVerb.length() + 1, sFirstLine.find_first_of(' ', sVerb.length() + 1));
+					// Beware - the request may be malformed; so make sure there is more data to process before trying to parse it out
+					std::string sURL;
+					if (sFirstLine.length() > sVerb.length())
+					{
+					        sURL = sFirstLine.substr(sVerb.length() + 1, sFirstLine.find_first_of(' ', sVerb.length() + 1));
+					}
 					PyNewRef pURL = Py_BuildValue("s", sURL.c_str());
 					if (PyDict_SetItemString(DataDict, "URL", pURL) == -1)
 						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "URL", sURL.c_str());
