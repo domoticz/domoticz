@@ -3549,18 +3549,29 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		{
 			std::map<std::string, std::string> deviceOptions = m_sql.GetDeviceOptions(szIdx);
 
-			if (deviceOptions.find("LevelNames") == deviceOptions.end())
-				return false;
 			int iLevel = level / 10;
 
-			std::vector<std::string> strarray;
-			StringSplit(deviceOptions["LevelNames"], "|", strarray);
-			if (iLevel >= (int)strarray.size())
+			std::string newState;
+
+			if (
+				(pSensor->component_type == "climate")
+				&& (iLevel < (int)pSensor->climate_modes.size())
+				)
+			{
+				newState = pSensor->climate_modes.at(iLevel);
+			}
+			else if (
+				(pSensor->component_type == "select")
+				&& (iLevel < (int)pSensor->select_options.size())
+				)
+			{
+				newState = pSensor->select_options.at(iLevel);
+			}
+			if (newState.empty())
 			{
 				Log(LOG_ERROR, "%s device invalid state requested (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
 				return false;
 			}
-			std::string newState = strarray[iLevel];
 
 			std::string state_template;
 			if (!pSensor->mode_state_template.empty())
