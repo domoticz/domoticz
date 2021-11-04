@@ -2533,24 +2533,6 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 	// Create/update Selector device for config and update payloads 
 	if (!pSensor->climate_modes.empty())
 	{
-		std::string current_mode;
-		if (!bIsJSON)
-		{
-			Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
-			return;
-		}
-		if (!pSensor->mode_state_template.empty())
-		{
-			current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
-			if ((pSensor->mode_state_topic == topic) && current_mode.empty())
-			{
-				Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
-				return;
-			}
-		}
-		else
-			current_mode = qMessage;
-
 		pSensor->devType = pTypeGeneralSwitch;
 		pSensor->subType = sSwitchGeneralSwitch;
 		int switchType = STYPE_Selector;
@@ -2562,68 +2544,85 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 			// New switch, add it to the system
 			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
-					 "VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
-					 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
+				"VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
+				m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
 			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType,
-						  pSensor->subType);
+				pSensor->subType);
 			if (result.empty())
 				return; // should not happen!
 		}
-		else {
-			if (pSensor->last_value.empty())
+
+		if (pSensor->mode_state_topic == topic)
+		{
+			std::string current_mode;
+			if (
+				(!pSensor->mode_state_template.empty())
+					&& (bIsJSON)
+				)
+			{
+				current_mode = GetValueFromTemplate(root, pSensor->mode_state_template);
+				if ((pSensor->mode_state_topic == topic) && current_mode.empty())
+				{
+					Log(LOG_ERROR, "Climate device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+					return;
+				}
+			}
+			else
+				current_mode = qMessage;
+
+			std::string szIdx = result[0][0];
+			uint64_t DevRowIdx = std::stoull(szIdx);
+			std::string szDeviceName = result[0][1];
+			int nValue = atoi(result[0][2].c_str());
+			std::string sValue = result[0][3];
+			std::string sOptions = result[0][4];
+
+			int iActualIndex = current_mode.empty() ? 0 : -1;
+
+			// Build switch options
+			int iValueIndex = 0;
+			std::string tmpOptionString;
+			for (const auto& ittOptions : pSensor->climate_modes)
+			{
+				if (ittOptions == current_mode)
+					iActualIndex = iValueIndex;
+				if (!tmpOptionString.empty())
+					tmpOptionString += "|";
+				tmpOptionString += ittOptions;
+				iValueIndex += 10;
+			}
+
+			if (iActualIndex == -1)
+			{
+				Log(LOG_ERROR, "Climate device invalid/unknown mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
 				return;
-		}
+			}
 
-		std::string szIdx = result[0][0];
-		uint64_t DevRowIdx = std::stoull(szIdx);
-		std::string szDeviceName = result[0][1];
-		int nValue = atoi(result[0][2].c_str());
-		std::string sValue = result[0][3];
-		std::string sOptions = result[0][4];
+			std::map<std::string, std::string> optionsMap;
+			optionsMap["SelectorStyle"] = "0";
+			optionsMap["LevelOffHidden"] = "false";
+			optionsMap["LevelNames"] = tmpOptionString;
 
-		int iActualIndex = current_mode.empty() ? 0 : -1;
+			std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
+			if (newOptions != sOptions)
+				m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
-		// Build switch options
-		int iValueIndex = 0;
-		std::string tmpOptionString;
-		for (const auto &ittOptions : pSensor->climate_modes)
-		{
-			if (ittOptions == current_mode)
-				iActualIndex = iValueIndex;
-			if (!tmpOptionString.empty())
-				tmpOptionString += "|";
-			tmpOptionString += ittOptions;
-			iValueIndex += 10;
-		}
+			pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
+			pSensor->sValue = std_format("%d", iActualIndex);
 
-		if (iActualIndex == -1)
-		{
-			Log(LOG_ERROR, "Climate device invalid/unknown mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
-			return;
-		}
-
-		std::map<std::string, std::string> optionsMap;
-		optionsMap["SelectorStyle"] = "0";
-		optionsMap["LevelOffHidden"] = "false";
-		optionsMap["LevelNames"] = tmpOptionString;
-
-		std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-		if (newOptions != sOptions)
-			m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
-
-		pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
-		pSensor->sValue = std_format("%d", iActualIndex);
-
-		if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
-		{
-			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-				       pSensor->sValue.c_str(), szDeviceName);
+			if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
+			{
+				UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+					pSensor->sValue.c_str(), szDeviceName);
+			}
 		}
 	}
 		
 	// Create/update SetPoint Thermostat for config and update payloads 
-	if (!pSensor->temperature_command_topic.empty()) {
-		float temp_setpoint = 0;
+	if (!pSensor->temperature_command_topic.empty())
+	{
+		float temp_setpoint = 18;
+		bool bHaveReceiveValue = false;
 		if (pSensor->temperature_state_topic == topic)
 		{
 			if (bIsJSON)
@@ -2642,6 +2641,7 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 			}
 			else
 				temp_setpoint = static_cast<float>(atof(qMessage.c_str()));
+			bHaveReceiveValue = true;
 		}
 		pSensor->nValue = 0;
 		pSensor->sValue = std_format("%.2f", temp_setpoint);
@@ -2662,35 +2662,36 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		else
 		{
 			// Update
-			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-				       pSensor->sValue.c_str(),
-				       result[0][0]);
+			if (bHaveReceiveValue)
+			{
+				UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+					pSensor->sValue.c_str(),
+					result[0][0]);
+			}
 		}
-
 	}
 			
 	// Create/update Temp device for config and update payloads 
-	if (!pSensor->current_temperature_topic.empty()) {
+	if (pSensor->current_temperature_topic == topic)
+	{
 		float temp_current = 0;
-		if (pSensor->current_temperature_topic == topic)
+		if (bIsJSON)
 		{
-			if (bIsJSON)
+			//Current temperature
+			if (!pSensor->current_temperature_template.empty())
 			{
-				//Current temperature
-				if (!pSensor->current_temperature_template.empty())
+				std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template);
+				if (tstring.empty())
 				{
-					std::string tstring = GetValueFromTemplate(root, pSensor->current_temperature_template);
-					if (tstring.empty())
-					{
-						Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
-						return;
-					}
-					temp_current = static_cast<float>(atof(tstring.c_str()));
+					Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
+					return;
 				}
+				temp_current = static_cast<float>(atof(tstring.c_str()));
 			}
-			else
-				temp_current = static_cast<float>(atof(qMessage.c_str()));
 		}
+		else
+			temp_current = static_cast<float>(atof(qMessage.c_str()));
+
 		pSensor->devType = pTypeTEMP;
 		pSensor->subType = sTypeTEMP1;
 
@@ -2706,21 +2707,21 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		pSensor->subType = sTypeThermSetpoint;
 		std::vector<std::vector<std::string>> result;
 		result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
-					  pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+			pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
 		if (result.empty())
 		{
 			// Insert
 			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
-					 "VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
-					 m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
-					 pSensor->nValue, pSensor->sValue.c_str());
+				"VALUES (%d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+				m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
+				pSensor->nValue, pSensor->sValue.c_str());
 		}
 		else
 		{
 			// Update
 			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
-				       pSensor->sValue.c_str(), result[0][0]);
+				pSensor->sValue.c_str(), result[0][0]);
 		}
 	}
 }
