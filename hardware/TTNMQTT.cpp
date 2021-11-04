@@ -1098,7 +1098,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		if(iGps == 1 || !(devlat == 0 || devlon == 0))
 		{
 			uint64_t nSsrDistance = static_cast<int>(std::rint(1000 * distanceEarth(m_DomLat, m_DomLon, ssrlat, ssrlon)));
-			SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
+			SendDistanceSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance*100, DeviceName + " Home Distance", rssi);
 			Debug(DEBUG_RECEIVED, "Distance between Sensordevice and Domoticz Home is %f meters!", (double)nSsrDistance);
 		}
 
@@ -1114,7 +1114,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			else if (!(ssrlat == 0 && ssrlon == 0))
 			{
 				uint64_t nGwDistance = static_cast<int>(std::rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
-				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
+				SendDistanceSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance*100, DeviceName + " Gateway Distance", rssi);
 				Debug(DEBUG_RECEIVED, "Distance between Sensordevice and gateway is %f meters!", (double)nGwDistance);
 			}
 		}
