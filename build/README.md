@@ -6,11 +6,9 @@ This builder still a bit work on progress. It uses Docker to compile OpenZWave a
 
 ## Installation
 
-The scripts expect that you've cloned both OpenZWave as Domoticz besides one other:
+The scripts expect that you've cloned OpenZWave repository besides Domoticz:
 
 ```shell
-$ ls domoticz/build/docker-compose.yml
-domoticz/build/docker-compose.yml
 $ git clone https://github.com/domoticz/open-zwave.git
 ```
 
@@ -20,7 +18,7 @@ Then create the Docker image:
 $ docker-compose -f domoticz/build/docker-compose.yml build
 ```
 
-This can take a while as it builds CMake and Boost from source. 
+This can take a while as it builds CMake and Boost from source.
 
 
 
@@ -87,7 +85,7 @@ Open http://127.0.0.1:8080/ in your browser.
 ## Usage
 
 ```shell
-$ cd domoticz/build 
+$ cd domoticz/build
 $ ./build
 Usage:
   build clean [-p openzwave | domoticz]   # clean source
