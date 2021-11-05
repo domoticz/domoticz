@@ -111,7 +111,6 @@ private:
 	time_t m_RPS_teachin_timer;
 	uint8_t m_RPS_teachin_count;
 	int LastPosition = -1;
-    bool WriteVldToHardware(const char* pdata);
 	void createOtherVldUteDevices(uint32_t iSenderID, uint8_t rorg, uint8_t func, uint8_t type, uint8_t nb_channel);
 	bool manageVldMessage(uint32_t iSenderID, unsigned char *vldData, uint8_t func, uint8_t type, std::string &m_Name, uint8_t rssi);
     std::string GetDbValue(const char* tableName, const char* fieldName, const char* whereFieldName, const char* whereFielValue);
