@@ -679,3 +679,67 @@ float CEnOceanEEP::GetDeviceValue(const uint32_t rawValue, const uint32_t rangeM
 
  	return multiplyer * ((float) (validRawValue - rangeMin)) + scaleMin;
 }
+
+//convert device ID id from  buffer[] to unsigned int
+unsigned int DeviceArrayToInt(unsigned char m_buffer[])
+{
+	unsigned int id = (m_buffer[0] << 24) + (m_buffer[1] << 16) + (m_buffer[2] << 8) + m_buffer[3];
+	return id;
+}
+//convert device ID id from   unsigned int to buffer[]  
+void  DeviceIntToArray(unsigned int sID, unsigned char buf[])
+{
+
+	buf[0] = (sID >> 24) & 0xff;
+	buf[1] = (sID >> 16) & 0xff;
+	buf[2] = (sID >> 8) & 0xff;
+	buf[3] = sID & 0xff;
+}
+//convert divice ID string to long
+
+unsigned int DeviceIdStringToUInt(std::string DeviceID) {
+	unsigned int ID;
+	sscanf(DeviceID.c_str(), "%x", &ID);
+	return ID;
+}
+
+void  ProfileToRorgFuncType(int EEP, int &Rorg, int &Func, int &Type)
+{
+	Type = EEP & 0xff;
+	EEP >>= 8;
+	Func = EEP & 0xff;
+	EEP >>= 8;
+	Rorg = EEP & 0xff;
+}
+int RorgFuncTypeToProfile( int Rorg, int Func, int Type)
+{
+	return (Rorg * 256 * 256 + Func * 256 + Type);
+}
+int   getRorg(int EEP)
+{
+	return ( EEP >> 16 ) & 0xFF ;
+}
+int   getFunc(int EEP)
+{
+	return (EEP >> 8) & 0xFF;
+}
+int   getType(int EEP)
+{
+	return (EEP ) & 0xFF;
+}
+
+std::string GetEnOceanIDToString(unsigned int DeviceID)
+{
+	char szDeviceID[20];
+	sprintf(szDeviceID, "%08X", (unsigned int)DeviceID);
+	return szDeviceID;
+}
+void setDestination(unsigned char * opt, unsigned int destID)
+{
+	//optionnal data
+	opt[0] = 0x03; //subtel
+	DeviceIntToArray(destID, &opt[1]);
+	opt[5] = 0xff;
+	opt[6] = 00;//RSI 
+
+}

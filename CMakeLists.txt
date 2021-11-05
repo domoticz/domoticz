@@ -216,6 +216,7 @@ hardware/eHouse/EhouseUdpListener.cpp
 hardware/EnOceanEEP.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
+hardware/EnOceanRawValue.cpp
 hardware/EnphaseAPI.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/eVehicles/TeslaApi.cpp

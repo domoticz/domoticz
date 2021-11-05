@@ -16,6 +16,9 @@
 
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"
+#include "EnOceanEepProfil.h"
+#include <stdarg.h>
+
 
 // Enable running SP3 protocol tests
 // They tests are launched when ESP3 worker is started
@@ -51,6 +54,8 @@
 //#define ESP3_TESTS_VLD_D2_01_12
 //#define ESP3_TESTS_VLD_D2_03_0A
 //#define ESP3_TESTS_VLD_D2_14_30
+//#define ESP3_TESTS_VLD_D2_01_0C
+//#define ESP3_TESTS_VLD_D2_05_00
 #endif // ENABLE_ESP3_TESTS
 
 // ESP3 Packet types
@@ -104,70 +109,70 @@ enum ESP3_EVENT_CODE : uint8_t
 // ESP3 Common commands
 enum ESP3_COMMON_COMMAND : uint8_t
 {
-	CO_WR_SLEEP = 0x01,				// Enter energy saving mode
-	CO_WR_RESET = 0x02,				// Reset the device
-	CO_RD_VERSION = 0x03,			// Read the device version information
-	CO_RD_SYS_LOG = 0x04,			// Read system log
-	CO_WR_SYS_LOG = 0x05,			// Reset system log
-	CO_WR_BIST = 0x06,				// Perform Self Test
-	CO_WR_IDBASE = 0x07,			// Set ID range base address
-	CO_RD_IDBASE = 0x08,			// Read ID range base address
-	CO_WR_REPEATER = 0x09,			// Set Repeater Level
-	CO_RD_REPEATER = 0x10,			// Read Repeater Level
-	CO_WR_FILTER_ADD = 0x11,		// Add filter to filter list
-	CO_WR_FILTER_DEL = 0x12,		// Delete a specific filter from filter list
-	CO_WR_FILTER_DEL_ALL = 0x13,	// Delete all filters from filter list
-	CO_WR_FILTER_ENABLE = 0x14,		// Enable / disable filter list
-	CO_RD_FILTER = 0x15,			// Read filters from filter list
-	CO_WR_WAIT_MATURITY = 0x16,		// Wait until the end of telegram maturity time before received radio telegrams will be forwarded to the external host
-	CO_WR_SUBTEL = 0x17,			// Enable / Disable transmission of additional subtelegram info to the external host
-	CO_WR_MEM = 0x18,				// Write data to device memory
-	CO_RD_MEM = 0x19,				// Read data from device memory
-	CO_RD_MEM_ADDRESS = 0x20,		// Read address and length of the configuration area and the Smart Ack Table
-	CO_RD_SECURITY = 0x21,			// DEPRECATED Read own security information (level, key)
-	CO_WR_SECURITY = 0x22,			// DEPRECATED Write own security information (level, key)
-	CO_WR_LEARNMODE = 0x23,			// Enable / disable learn mode
-	CO_RD_LEARNMODE = 0x24,			// Read learn mode status
-	CO_WR_SECUREDEVICE_ADD = 0x25,	// DEPRECATED Add a secure device
-	CO_WR_SECUREDEVICE_DEL = 0x26,	// Delete a secure device from the link table
-	CO_RD_SECUREDEVICE_BY_INDEX = 0x27,	// DEPRECATED Read secure device by index
-	CO_WR_MODE = 0x28,				// Set the gateway transceiver mode
-	CO_RD_NUMSECUREDEVICES = 0x29,	// Read number of secure devices in the secure link table
-	CO_RD_SECUREDEVICE_BY_ID = 0x30, // Read information about a specific secure device from the secure link table using the device ID
-	CO_WR_SECUREDEVICE_ADD_PSK = 0x31, // Add Pre-shared key for inbound secure device
-	CO_WR_SECUREDEVICE_ENDTEACHIN = 0x32, // Send Secure teach-In message
-	CO_WR_TEMPORARY_RLC_WINDOW = 0x33, // Set a temporary rolling-code window for every taught-in device
-	CO_RD_SECUREDEVICE_PSK = 0x34,	// Read PSK
-	CO_RD_DUTYCYCLE_LIMIT = 0x35,	// Read the status of the duty cycle limit monitor
-	CO_SET_BAUDRATE = 0x36,			// Set the baud rate used to communicate with the external host
-	CO_GET_FREQUENCY_INFO = 0x37,	// Read the radio frequency and protocol supported by the device
-	CO_38T_STEPCODE = 0x38,			// Read Hardware Step code and Revision of the Device
-	CO_40_RESERVED = 0x40,			// Reserved
-	CO_41_RESERVED = 0x41,			// Reserved
-	CO_42_RESERVED = 0x42,			// Reserved
-	CO_43_RESERVED = 0x43,			// Reserved
-	CO_44_RESERVED = 0x44,			// Reserved
-	CO_45_RESERVED = 0x45,			// Reserved
-	CO_WR_REMAN_CODE = 0x46,		// Set the security code to unlock Remote Management functionality via radio
-	CO_WR_STARTUP_DELAY = 0x47,		// Set the startup delay (time from power up until start of operation)
-	CO_WR_REMAN_REPEATING = 0x48,	// Select if REMAN telegrams originating from this module can be repeated
-	CO_RD_REMAN_REPEATING = 0x49,	// Check if REMAN telegrams originating from this module can be repeated
-	CO_SET_NOISETHRESHOLD = 0x50,	// Set the RSSI noise threshold level for telegram reception
-	CO_GET_NOISETHRESHOLD = 0x51,	// Read the RSSI noise threshold level for telegram reception
-	CO_52_RESERVED = 0x52,			// Reserved
-	CO_53_RESERVED = 0x53,			// Reserved
-	CO_WR_RLC_SAVE_PERIOD = 0x54,	// Set the period in which outgoing RLCs are saved to the EEPROM
-	CO_WR_RLC_LEGACY_MODE = 0x55,	// Activate the legacy RLC security mode allowing roll-over and using the RLC acceptance window for 24bit explicit RLC
-	CO_WR_SECUREDEVICEV2_ADD = 0x56, // Add secure device to secure link table
-	CO_RD_SECUREDEVICEV2_BY_INDEX = 0x57, // Read secure device from secure link table using the table index
-	CO_WR_RSSITEST_MODE = 0x58,		// Control the state of the RSSI-Test mode
-	CO_RD_RSSITEST_MODE = 0x59,		// Read the state of the RSSI-Test Mode
-	CO_WR_SECUREDEVICE_MAINTENANCEKEY = 0x60, // Add the maintenance key information into the secure link table
-	CO_RD_SECUREDEVICE_MAINTENANCEKEY = 0x61, // Read by index the maintenance key information from the secure link table
-	CO_WR_TRANSPARENT_MODE = 0x62,	// Control the state of the transparent mode
-	CO_RD_TRANSPARENT_MODE = 0x63,	// Read the state of the transparent mode
-	CO_WR_TX_ONLY_MODE = 0x64,		// Control the state of the TX only mode
-	CO_RD_TX_ONLY_MODE = 0x65		// Read the state of the TX only mode} COMMON_COMMAND;
+	CO_WR_SLEEP = 01,			  // Enter energy saving mode
+	CO_WR_RESET = 02,			  // Reset the device
+	CO_RD_VERSION = 03,			  // Read the device version information
+	CO_RD_SYS_LOG = 04,			  // Read system log
+	CO_WR_SYS_LOG = 05,			  // Reset system log
+	CO_WR_BIST = 06,			  // Perform Self Test
+	CO_WR_IDBASE = 07,			  // Set ID range base address
+	CO_RD_IDBASE = 8,			  // Read ID range base address
+	CO_WR_REPEATER = 9,			  // Set Repeater Level
+	CO_RD_REPEATER = 10,			  // Read Repeater Level
+	CO_WR_FILTER_ADD = 11,		  // Add filter to filter list
+	CO_WR_FILTER_DEL = 12,		  // Delete a specific filter from filter list
+	CO_WR_FILTER_DEL_ALL = 13,		  // Delete all filters from filter list
+	CO_WR_FILTER_ENABLE = 14,		  // Enable / disable filter list
+	CO_RD_FILTER = 15,			  // Read filters from filter list
+	CO_WR_WAIT_MATURITY = 16,		  // Wait until the end of telegram maturity time before received radio telegrams will be forwarded to the external host
+	CO_WR_SUBTEL = 17,			  // Enable / Disable transmission of additional subtelegram info to the external host
+	CO_WR_MEM = 18,			  // Write data to device memory
+	CO_RD_MEM = 19,			  // Read data from device memory
+	CO_RD_MEM_ADDRESS = 20,		  // Read address and length of the configuration area and the Smart Ack Table
+	CO_RD_SECURITY = 21,			  // DEPRECATED Read own security information (level, // key)
+	CO_WR_SECURITY = 22,			  // DEPRECATED Write own security information (level, // key)
+	CO_WR_LEARNMODE = 23,			  // Enable / disable learn mode
+	CO_RD_LEARNMODE = 24,			  // ead learn mode status
+	CO_WR_SECUREDEVICE_ADD = 25,		  // DEPRECATED Add a secure device
+	CO_WR_SECUREDEVICE_DEL = 26,		  // Delete a secure device from the link table
+	CO_RD_SECUREDEVICE_BY_INDEX = 27,	  // DEPRECATED Read secure device by index
+	CO_WR_MODE = 28,			  // Set the gateway transceiver mode
+	CO_RD_NUMSECUREDEVICES = 29,		  // Read number of secure devices in the secure link table
+	CO_RD_SECUREDEVICE_BY_ID = 30,	  // Read information about a specific secure device from the secure link table using the device ID
+	CO_WR_SECUREDEVICE_ADD_PSK = 31,	  // Add Pre-shared key for inbound secure device
+	CO_WR_SECUREDEVICE_ENDTEACHIN = 32,	  // Send Secure teach-In message
+	CO_WR_TEMPORARY_RLC_WINDOW = 33,	  // Set a temporary rolling-code window for every taught-in device
+	CO_RD_SECUREDEVICE_PSK = 34,		  // Read PSK
+	CO_RD_DUTYCYCLE_LIMIT = 35,		  // Read the status of the duty cycle limit monitor
+	CO_SET_BAUDRATE = 36,			  // Set the baud rate used to communicate with the external host
+	CO_GET_FREQUENCY_INFO = 37,		  // Read the radio frequency and protocol supported by the device
+	CO_38T_STEPCODE = 38,			  // Read Hardware Step code and Revision of the Device
+	CO_40_RESERVED = 40,			  // Reserved
+	CO_41_RESERVED = 41,			  // Reserved
+	CO_42_RESERVED = 42,			  // Reserved
+	CO_43_RESERVED = 43,			  // Reserved
+	CO_44_RESERVED = 44,			  // Reserved
+	CO_45_RESERVED = 45,			  // Reserved
+	CO_WR_REMAN_CODE = 46,		  // Set the security code to unlock Remote Management functionality via radio
+	CO_WR_STARTUP_DELAY = 47,		  // Set the startup delay (time from power up until start of operation)
+	CO_WR_REMAN_REPEATING = 48,		  // Select if REMAN telegrams originating from this module can be repeated
+	CO_RD_REMAN_REPEATING = 49,		  // Check if REMAN telegrams originating from this module can be repeated
+	CO_SET_NOISETHRESHOLD = 50,		  // Set the RSSI noise threshold level for telegram reception
+	CO_GET_NOISETHRESHOLD = 51,		  // Read the RSSI noise threshold level for telegram reception
+	CO_52_RESERVED = 52,			  // Reserved
+	CO_53_RESERVED = 53,			  // Reserved
+	CO_WR_RLC_SAVE_PERIOD = 54,		  // Set the period in which outgoing RLCs are saved to the EEPROM
+	CO_WR_RLC_LEGACY_MODE = 55,		  // Activate the legacy RLC security mode allowing roll-over and using the RLC acceptance window for 24bit explicit RLC
+	CO_WR_SECUREDEVICEV2_ADD = 56,	  // Add secure device to secure link table
+	CO_RD_SECUREDEVICEV2_BY_INDEX = 57,	  // Read secure device from secure link table using the table index
+	CO_WR_RSSITEST_MODE = 58,		  // Control the state of the RSSI-Test mode
+	CO_RD_RSSITEST_MODE = 59,		  // Read the state of the RSSI-Test Mode
+	CO_WR_SECUREDEVICE_MAINTENANCEKEY = 60, // Add the maintenance key information into the secure link table
+	CO_RD_SECUREDEVICE_MAINTENANCEKEY = 61, // Read by index the maintenance key information from the secure link table
+	CO_WR_TRANSPARENT_MODE = 62,		  // Control the state of the transparent mode
+	CO_RD_TRANSPARENT_MODE = 63,		  // Read the state of the transparent mode
+	CO_WR_TX_ONLY_MODE = 64,		  // Control the state of the TX only mode
+	CO_RD_TX_ONLY_MODE = 65		  // Read the state of the TX only mode} COMMON_COMMAND;
 };
 
 // ESP3 Smart Ack codes
@@ -1409,6 +1414,35 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // VLD msg: IAQTH: Error
 	{ ESP3_SER_SYNC, 0x00, 0x0C, 0x07, PACKET_RADIO_ERP1, 0x96, RORG_VLD, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x01, RORG_VLD, 0x14, 0x30, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xF5 },
 #endif // ESP3_TESTS_VLD_D2_14_30
+
+#ifdef ESP3_TESTS_VLD_D2_01_0C
+// D2-01-0C, pilot wire 
+// Test Case : Teach-in Test
+//  Bi-directional teach-in or teach-out request from Node 00D2010C, response expected
+    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x40, 0x01, 0x46, 0x00, 0x0C, 0x01, 0xD2, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAE },
+
+// Test Case : Actuator Status Response 
+    { 0x55,0x00,0x08,0x07,0x01,0x3D,0xD2,0x0A,0x01,0x01,0xD2,0x01,0x0C,0x00,0x01,0xFF,0xFF,0xFF,0xFF,0x2D,0x00,0xB8 },
+
+//Reply Measurement Response
+    { 0x55,0x00,0x0C,0x07,0x01,0x96,0xD2,0x07,0x20,0x00,0x00,0x00,0x10,0x01,0xD2,0x01,0x0C,0x00,0x01,0xFF,0xFF,0xFF,0xFF,0x2D,0x00,0xC9},
+
+#endif
+
+#ifdef ESP3_TESTS_VLD_D2_05_00
+// D2-05-00, Blinds Control for Position and Angle 
+// Test Case : Teach-in Test
+//  Bi-directional teach-in or teach-out request from Node 00D2010C, response expected
+    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x40, 0x01, 0x46, 0x00, 0x00, 0x05, 0xD2, 0x01, 0xD2, 0x05, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xDF },
+//VLD: senderID: 0585874A EEP:D2-05  Reply Position Position:10
+    { 0x55,0x00,0x0A,0x07,0x01,0xEB,0xD2,0x0A,0x00,0x00,0x04,0x01,0xD2,0x05,0x00,0x00,0x01,0xFF,0xFF,0xFF,0xFF,0x4F,0x00,0x22 },
+//VLD: senderID: 0585874A EEP:D2-05  Reply Position Position:50
+    { 0x55,0x00,0x0A,0x07,0x01,0xEB,0xD2,0x32,0x00,0x00,0x04,0x01,0xD2,0x05,0x00,0x00,0x01,0xFF,0xFF,0xFF,0xFF,0x50,0x00,0xC6 },
+//VLD: senderID: 0585874A EEP:D2-05  Reply Position Position:100
+    { 0x55,0x00,0x0A,0x07,0x01,0xEB,0xD2,0x64,0x00,0x00,0x04,0x01,0xD2,0x05,0x00,0x00,0x01,0xFF,0xFF,0xFF,0xFF,0x50,0x00,0x6A },
+#endif
+
+
 };
 #endif // ENABLE_ESP3_TESTS
 
@@ -1579,7 +1613,9 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 
 	RBUF *tsen = (RBUF *) pdata;
-
+    //if it is an automatic teached in device not manualy created
+    if (WriteVldToHardware(pdata)==true)
+        return true;
 	uint32_t nodeID;
 
 	if (tsen->RAW.packettype == pTypeLighting2)
@@ -3265,6 +3301,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(node_RORG, node_func, node_type), 255, m_Name.c_str());
 						}
 					}
+					else
+                    	createOtherVldUteDevices(   senderID ,  node_RORG , node_func , node_type , num_channel  );
+
 					return;
 				}
 				// Node found
@@ -3312,6 +3351,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
 				Debug(DEBUG_NORM, "VLD msg: Node %08X EEP %02X-%02X-%02X", senderID, pNode->RORG, pNode->func, pNode->type);
+
+                if (manageVldMessage(   senderID , &data[1] ,   pNode->func , pNode->type ,  m_Name ,   rssi ) )
+                    return;
 
 				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
@@ -3775,4 +3817,363 @@ const char *CEnOceanESP3::GetFunctionReturnCodeDescription(const uint8_t RC)
 			return pTable->description;
 
 	return ">>Unkown function return code... Please report!<<";
+}
+///---------------------------------------------------------------------------
+std::string CEnOceanESP3::GetDbValue(const char * tableName ,  const char * fieldName , const char * whereFieldName , const char * whereFielValue )
+{
+    std::vector<std::vector<std::string>> result;
+   
+	result = m_sql.safe_query("select %s from %s  WHERE (%s = '%s' )", fieldName ,  tableName, whereFieldName, whereFielValue );
+    if (result.empty())
+		return "" ;
+    else
+        return result[0][0];
+}
+void CEnOceanESP3::sendVld(unsigned int sID,  unsigned int destID , int channel, int value)
+{
+	unsigned char buff[16];
+
+	buff[0] = RORG_VLD; //vld
+	buff[1] = 0x01;
+	buff[2] = channel;
+	buff[3] = value;
+	buff[4] = (sID >> 24) & 0xff;		// Sender ID
+	buff[5] = (sID >> 16) & 0xff;
+	buff[6] = (sID >> 8) & 0xff;
+	buff[7] = sID & 0xff;
+	buff[8] = 0; //status
+
+	//optionnal data
+	unsigned char opt[16];
+	setDestination(opt,destID);
+
+	//D2 01 00 00 FF 99 DF 01 00
+	//03 FF FF FF FF FF 00
+
+	SendESP3PacketQueued(PACKET_RADIO_ERP1, buff, 9, opt, 7);
+}
+//send a VLD datagramm with payload : data to device Id sID
+void CEnOceanESP3::sendVld(unsigned int sID,  unsigned int destID , unsigned char *data , int DataLen   )
+{
+	unsigned char buffer[256];
+
+	if (DataLen > sizeof(buffer)-6)
+		return;
+
+	unsigned char *buff = buffer ;
+	*buff++ = RORG_VLD; //vld
+	for (int i = 0; i < DataLen; i++)
+		*buff++ = *data++;
+
+	*buff++ = (sID >> 24) & 0xff;		// Sender ID
+	*buff++ = (sID >> 16) & 0xff;
+	*buff++ = (sID >> 8) & 0xff;
+	*buff++ =  sID & 0xff;
+	*buff++ = 0; //status
+
+				 //optionnal data
+    unsigned char opt[16];
+    setDestination(opt,destID);
+    
+	SendESP3PacketQueued(PACKET_RADIO_ERP1, buffer, 6+DataLen, opt, 7);
+}
+//send a VLD datagramm of the command described by descriptor OffsetDes detailed in EEP profile.to device Id sID
+// the argument are variable length
+//it shall correspond to each offset Data detailed in EnOcean_Equipment_Profiles_EEP_v2.x.x_public.
+//the list  parameter shall end with value END_ARG_DATA
+//return is the size of the daya payload in byte 
+// or 0 : if an error occured : not enough parameters passed
+//example :
+//sendVld(srcID, D20500_CMD_2, channel, 2, END_ARG_DATA);
+// send a stop command = 2 to channel 9 for EEP : D2-05-00 ; Blinds control
+//sendVld(srcID, D20500_CMD_1, 100, 127, 0, 0, 0 , 1, END_ARG_DATA);
+// send a got position and angle command = 1 to 
+// POS=100 % 
+// ANG=127 : dont change 
+// REPO=0 goto ditectly 
+// LOCK=0  dont change  , 
+// channel 0
+// CMD = 1 goto command for EEP : D2-05-00 ; Blinds control
+uint32_t CEnOceanESP3::sendVld(unsigned int srcID,  unsigned int destID , T_DATAFIELD * OffsetDes,  ...)
+{
+	uint8_t  data[256+2];
+	va_list value;
+
+	/* Initialize the va_list structure */
+	va_start(value, OffsetDes);
+
+	memset(data, 0, sizeof(data));
+
+	uint32_t DataSize = SetRawValues(data, OffsetDes,  value);
+	if (DataSize)
+		sendVld(srcID,destID, data, DataSize);
+	else
+		Log(LOG_ERROR, "Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+
+
+	va_end(value);
+
+	return  DataSize;
+
+}
+uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID,  unsigned int destID , T_DATAFIELD* OffsetDes, int* values , int NbValues )
+{
+	uint8_t  data[256 + 2];
+
+	memset(data, 0, sizeof(data));
+
+	uint32_t DataSize = setRawDataValues(data, OffsetDes, values,NbValues );
+	if (DataSize)
+		sendVld(srcID,destID, data, DataSize);
+	else
+		Log(LOG_ERROR, " Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+
+
+	return  DataSize;
+
+}
+
+bool updateSwitchType(int HardwareID, const char* deviceID,_eSwitchType SwitchType )
+{
+std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", HardwareID, deviceID);
+		if (!result.empty())
+		{
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID=='%q')", SwitchType, result[0][0].c_str());
+            return false;
+		}
+        return true;
+}
+void  CEnOceanESP3::createOtherVldUteDevices(  uint32_t iSenderID , uint8_t rorg ,uint8_t func ,uint8_t type ,uint8_t nb_channel  )
+{
+
+	//create device blinds switch
+	if ((rorg == 0xD2) && (func == 0x05) && ((type == 0x00) || (type == 0x01)))
+	{
+		for (int nbc = 0; nbc < nb_channel; nbc++)
+		{
+			Log(LOG_NORM, "TEACH Blinds Switch : 0xD2 Node 0x%08x UnitID: %02X cmd: %02X ", iSenderID, nbc + 1, light2_sOff);
+			SendSwitch(iSenderID, nbc + 1, -1, light2_sOff, 0, "Blinds"+GetDeviceID(iSenderID) ,"EnOcean");
+            //wait for decive creation
+            int timeout = 10 ;//1 seconds
+            while (updateSwitchType(m_HwdID,GetDeviceID(iSenderID).c_str(),STYPE_BlindsPercentageWithStop) && (timeout>0)){
+                sleep_milliseconds(100);
+                timeout--;
+            }
+//			CreateDevice(m_HwdID, GetDeviceID(iSenderID).c_str(), nbc + 1, pTypeLighting2, sTypeAC, 0, -1, light2_sOff, "0", GetDeviceID(iSenderID), STYPE_BlindsPercentage , "" , 0 );
+		}
+		return;
+	}
+	 const std::string  deviceType = GetEEPLabel(rorg,func,type) ;
+//    if (deviceType == "PilotWire" ){
+	if ((rorg == 0xD2) && (func == 0x01) && (type == 0x0C) )
+    {
+		Log(LOG_NORM, "TEACH %s  : 0xD2 Node 0x%08x UnitID: %02X ",deviceType.c_str(), iSenderID, 1 );
+    //	SendSelectorSwitch(int NodeID, uint8_t ChildID, std::string &sValue, std::string &defaultname,  int customImage,  bool bDropdown,  std::string &LevelNames,  std::string &LevelActions,  bool bHideOff,  std::string &userName)
+	    SendSelectorSwitch( iSenderID, 1              ,"0"                 ,"PilotWire"+GetDeviceID(iSenderID)       ,  0              ,  false         ,  "Off|Conf|Eco|Freeze|Conf-1|Conf-2" ,  "00|10|20|30|40|50|60"      ,  false         , ""  );
+//								CreateDevice(m_HwdID, GetDeviceID(iSenderID).c_str(),  1, pTypeLighting2, sTypeAC, 0, -1, light2_sOff, "0", GetDeviceID(iSenderID), STYPE_Selector , false, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2" ,  ""      , 0 );
+        SendKwhMeter(iSenderID, 1 , 100 , 0.0  , 0.0 , deviceType , 12 );
+        //create kwh usage
+
+    }
+
+}
+//return f  alse if not managed
+bool CEnOceanESP3::manageVldMessage(  uint32_t iSenderID , unsigned char * vldData,  uint8_t func ,uint8_t type , std::string& m_Name ,  uint8_t rssi )
+{
+	//D2-05 
+	//{ 0xD2 , 0x05 , 0x00 , "Blinds Control for Position and Angle                                            ",  "Type 0x00           
+	if ( (func==0x05)) 
+	{
+				
+		int cmd = GetRawValue(vldData, D20500_CMD1 ,  D20500_CMD1_CMD  ) ;
+		int unitcode = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_CHN);
+		//if position
+		if (cmd == 4 )
+		{
+			//get position
+			int pos = GetRawValue( vldData,D20500_CMD1 ,  D20500_CMD1_POS  ) ;
+			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X EEP:D2-05  Reply Position Position:%d%", iSenderID, pos);
+			bool bon = (pos > 0 ? 1 : 0 );
+			if (pos >= 100)	pos = 100;
+
+ 			SendSwitch(iSenderID, unitcode+1, -1 , bon , pos , "", m_Name.c_str(),rssi);
+			return true;
+		}
+	}
+	if ( (func==0x01)) 
+	{
+				
+		int cmd = GetRawValue(vldData, D20100_CMD7 ,  D20100_CMD7_CMD  ) ;
+        // TITLE:CMD 0x4 - Actuator Status Response
+        // DESC :This message is sent by an actuator if one of the following events occurs:
+        if (cmd == 4 )
+        {
+            //already managed
+            return false;
+        }
+        else
+		// TITLE:CMD 0x7 - Actuator Measurement Response
+		if (cmd ==7  )
+		{
+            std::string mes = printRawDataValues(vldData , D20100_CMD7);
+			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Reply Measurement Response %s", iSenderID, mes.c_str() );
+            int unit  = GetRawValue(vldData, D20100_CMD7 ,  D20100_CMD7_UN  ) ;
+            uint32_t mv    = GetRawValue(vldData, D20100_CMD7 ,  D20100_CMD7_MV  ) ;
+            uint32_t id =  (iSenderID << 8) | 1;
+            //get last total mesure value mtotal
+            std::string sValue = GetDbValue("DeviceStatus" ,  "sValue", "DeviceId" , GetEnOceanIDToString(id).c_str() ) ;
+            std::vector<std::string> strarray;
+	        StringSplit(sValue, ";", strarray);
+             double mtotal = 0;  
+	        if (strarray.size() >= 2)
+		          mtotal = std::stod(strarray[1]);
+            //add current
+            mtotal+=mv;
+            SendKwhMeter(iSenderID, 1 , 100 , mv  , mtotal/1000.0 , "" , 12 );
+//Value: 0x00 = Energy [Ws] 
+//Value: 0x01 = Energy [Wh] 
+//Value: 0x02 = Energy [KWh] 
+//Value: 0x03 = Power [W] 
+//Value: 0x04 = Power [KW] 
+
+            //send CMD 0x9 - Actuator Pilot Wire Mode Query
+				//sendVld(m_id_chip, iSenderID, D20100_CMD9,  9 , END_ARG_DATA);
+            return true;
+		}
+        else
+        // TITLE:CMD 0xA - Actuator Pilot Wire Mode Response
+		if (cmd == 0xA   )
+		{
+            std::string mes = printRawDataValues(vldData , D20100_CMD10);
+			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Actuator Pilot Wire Mode Response %s", iSenderID, mes.c_str() );
+            int pm    = GetRawValue(vldData, D20100_CMD10 ,  D20100_CMD10_PM  ) ;
+            std::string level = std::to_string(pm*10);
+            SendSelectorSwitch( iSenderID, 1              ,level                 ,""       ,  0              ,  false         ,  "Off|Conf|Eco|Freeze|Conf-1|Conf-2" ,  "00|10|20|30|40|50|60"      ,  false         , ""  );
+
+
+            return true;
+		}
+        else
+        // TITLE:CMD 0xD - Actuator External Interface Settings Response
+		if (cmd == 0xD   )
+		{
+            std::string mes = printRawDataValues(vldData , D20100_CMD13);
+			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Actuator External Interface Settings Response %s", iSenderID, mes.c_str() );
+            return true;
+		}
+
+
+	}
+	return false ;
+
+}
+//return position 0..100% from command / level
+int getPositionFromCommandLevel(int cmnd , int pos )
+{
+	if (cmnd == light2_sOn)
+		pos = 100;
+	else if (cmnd == light2_sOff)
+		pos = 0;
+	else
+		pos = pos * 100 / 15;
+
+	return pos;
+}
+//return true if write as been managed
+bool CEnOceanESP3::WriteVldToHardware(const char *pdata)
+{
+	uint32_t iNodeID ;
+	if (m_id_base==0)
+		return false;
+	if (!isOpen())
+		return false;
+	RBUF *tsen=(RBUF*)pdata;
+    const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	
+	if (   (tsen->LIGHTING2.packettype!=pTypeLighting2)
+        && (tsen->LIGHTING2.packettype!=pTypeGeneralSwitch)
+        )
+		return false; //only allowed to control switches
+
+    // id for general switch are inverted 
+	if  (tsen->LIGHTING2.packettype==pTypeGeneralSwitch)
+	    iNodeID=xcmd->id ;
+    else
+        iNodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
+	
+	//not in range GateWay baseAdress..baseAdress+127 
+	//test if is not a switch manually created
+	if (!CheckIsGatewayAdress(iNodeID) )
+	{
+
+        int Manufacturer, Rorg, Func, iType;
+        NodeInfo* pNode = GetNodeInfo(iNodeID);
+		if (pNode==nullptr)
+		{
+			Log(LOG_NORM, " Need Teach-In for %08X", iNodeID);
+			return false;
+		}
+        Rorg=pNode->RORG;
+        Func=pNode->func;
+        iType=pNode->type;
+        Manufacturer=pNode->manufacturerID;
+
+        const std::string  deviceType = GetEEPLabel(pNode->RORG,pNode->func,pNode->type) ;
+
+		//D2-05 : BlindsControl 
+		if ((Rorg == 0xd2) && (Func == 0x05))
+//        if (deviceType == "BlindsControl" )
+		{
+			//build CMD 1 - Go to Position and Angle
+			int channel = tsen->LIGHTING2.unitcode - 1;
+            int cmd = tsen->LIGHTING2.cmnd ;
+			int pos ;
+             if(cmd !=  gswitch_sStop )
+			    pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
+             else
+                pos = LastPosition;
+
+			if (LastPosition == pos) {
+				//send command stop si rappuie
+				sendVld(m_id_chip, iNodeID, D20500_CMD2,  channel, 2, END_ARG_DATA);
+				LastPosition = -1;
+			}else{
+				 sendVld(m_id_chip, iNodeID, D20500_CMD1,  pos, 127, 0, 0, channel, 1, END_ARG_DATA);
+				 LastPosition = pos;
+			}
+		}
+		else	if ((Rorg == 0xd2) && (Func == 0x01) && (iType==0x0C) ){
+//        else if (deviceType == "PilotWire" ){
+        //Value: 0x00 = Off 
+        //Value: 0x01 = Comfort 
+        //Value: 0x02 = Eco 
+        //Value: 0x03 = Anti-freeze 
+        //Value: 0x04 = Comfort-1 
+        //Value: 0x05 = Comfort-2 
+            uint8_t level = 0;
+            if (tsen->LIGHTING2.packettype == pTypeGeneralSwitch)
+                level=xcmd->level;
+            else
+                level = tsen->LIGHTING2.level ;
+            if (xcmd->cmnd == light2_sOn)
+		        level  = 1;
+	        else if (xcmd->cmnd == light2_sOff)
+		        level = 0;
+	        else if (xcmd->cmnd == light2_sSetLevel)
+                 level = level / 10 ;
+	
+            sendVld(m_id_chip, iNodeID, D20100_CMD8, 8 ,level , END_ARG_DATA);
+        }
+		//D2-01 : switch
+//        else if (deviceType == "Switch" )
+		else	if ((Rorg == 0xd2) && (Func == 0x01))
+			sendVld(m_id_chip, iNodeID, D20100_CMD1, 1,0, tsen->LIGHTING2.unitcode - 1, tsen->LIGHTING2.cmnd * 64 , END_ARG_DATA);
+        else
+            Log(LOG_ERROR,"write command for %s : %02X%02X%02X Manufacturer:%s deviceId %08X not managed",deviceType.c_str(), Rorg, Func, iType ,GetManufacturerName(Manufacturer),  iNodeID );
+		return true ;
+
+	}
+    else
+        return false;
 }
