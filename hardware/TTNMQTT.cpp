@@ -464,52 +464,58 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 	return DeviceID;
 }
 
-std::string CTTNMQTT::FindAlias(const std::string orgString)
+bool CTTNMQTT::IsSensorTypeOrAlias(const std::string orgString, const std::string sType)
 {
-	std::string sAlias;
+	bool bIsType = false;
 
-	if(!m_Aliasses.empty())
+	if (orgString == sType)
 	{
-		for (const auto &id : m_Aliasses.getMemberNames())
+		bIsType = true;
+	}
+	else
+	{
+		if(!m_Aliasses.empty())
 		{
-			if (!(m_Aliasses[id].isNull()) && m_Aliasses[id].isArray())
+			if (!(m_Aliasses[sType].isNull()) && m_Aliasses[sType].isArray())
 			{
-				for (Json::Value::iterator it=m_Aliasses[id].begin(); it!=m_Aliasses[id].end(); ++it)
+				for (Json::Value::iterator it=m_Aliasses[sType].begin(); it!=m_Aliasses[sType].end(); ++it)
 				{
-					if ((*it).asString() == orgString)
+					if (orgString == (*it).asString())
 					{
-						sAlias = id;
+						bIsType = true;
+						break;
 					}
 				}
 			}
 		}
 	}
-	return sAlias;
+
+	return bIsType;
 }
 
 bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string &sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
 {
 	bool ret = false;
 
-	if (sType == "temp" || (FindAlias(sType) == "temp")) {
+	if (IsSensorTypeOrAlias(sType, "temp")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "temp";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "humidity" || (FindAlias(sType) == "humidity")) {
+	else if (IsSensorTypeOrAlias(sType, "humidity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "humidity";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "baro" || (FindAlias(sType) == "baro")) {
+	else if (IsSensorTypeOrAlias(sType, "baro")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "baro";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "gps" || (FindAlias(sType) == "gps")) {
+	else if (IsSensorTypeOrAlias(sType, "gps")) {
 		std::vector<std::string> strarray;
 		StringSplit(sValue, ";", strarray);
 
@@ -523,37 +529,37 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 			ret = true;
 		}
 	}
-	else if (sType == "digital_input" || (FindAlias(sType) == "digital_input")) {
+	else if (IsSensorTypeOrAlias(sType, "digital_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "digital_input";
 		payload[index]["value"] = std::stoi(sValue);
 		ret = true;
 	}
-	else if (sType == "digital_output" || (FindAlias(sType) == "digital_output")) {
+	else if (IsSensorTypeOrAlias(sType, "digital_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "digital_output";
 		payload[index]["value"] = std::stoi(sValue);
 		ret = true;
 	}
-	else if (sType == "analog_input" || (FindAlias(sType) == "analog_input")) {
+	else if (IsSensorTypeOrAlias(sType, "analog_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_input";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "analog_output" || (FindAlias(sType) == "analog_output")) {
+	else if (IsSensorTypeOrAlias(sType, "analog_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_output";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "presense" || (FindAlias(sType) == "presence")) {
+	else if (IsSensorTypeOrAlias(sType, "presence")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "presence";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "luminosity" || (FindAlias(sType) == "luminosity")) {
+	else if (IsSensorTypeOrAlias(sType, "luminosity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "luminosity";
 		payload[index]["value"] = std::stof(sValue);
@@ -563,7 +569,7 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 	// The following IS NOT conforming to the CayenneLPP specification
 	// but a 'hack'; When using the TTN External Custom Decoder a payload_fields array is added
 	// and within these fields a 'batterylevel' can be created (integer range between 0 and 100)
-	if (sType == "batterylevel" || (FindAlias(sType) == "batterylevel")) {
+	if (IsSensorTypeOrAlias(sType, "batterylevel")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "batterylevel";
 		payload[index]["value"] = std::stoi(sValue);
@@ -687,7 +693,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 
 		//Get data from message
 		std::string DeviceName = endDeviceIds["device_id"].asString();
-		std::string DeviceSerial = endDeviceIds["dev_addr"].asString();
+		std::string DeviceSerial = endDeviceIds["dev_eui"].asString();
+		std::string DeviceSessionSerial = endDeviceIds["dev_addr"].asString();
+		std::string AppSerial = endDeviceIds["join_eui"].asString();
 		std::string AppId = applicationIds["application_id"].asString();
 		uint8_t MessagePort = uplinkMessage["f_port"].asInt();
 		std::string lpp = base64_decode(uplinkMessage["frm_payload"].asString());
@@ -745,7 +753,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, DeviceSerial);
+		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, AppSerial);
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;

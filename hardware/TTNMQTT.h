@@ -59,7 +59,7 @@ class CTTNMQTT : public MySensorsBase, mosqdz::mosquittodz
 	bool ConnectInt();
 	bool ConnectIntEx();
 	Json::Value GetSensorWithChannel(const Json::Value &root, uint8_t sChannel);
-	std::string FindAlias(const std::string orgString);
+	bool IsSensorTypeOrAlias(const std::string orgString, const std::string sType);
 	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, uint8_t sChannel);
 	bool ConvertField2Payload(const std::string &sType, const std::string &sValue, uint8_t channel, uint8_t index, Json::Value &payload);
 	bool ConvertFields2Payload(const Json::Value &fields, Json::Value &payload);
