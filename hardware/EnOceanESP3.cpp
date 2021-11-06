@@ -1613,15 +1613,16 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 
 	RBUF *tsen = (RBUF *) pdata;
-    //if it is an automatic teached in device not manualy created
-    if (WriteVldToHardware(pdata)==true)
-        return true;
+    const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+
 	uint32_t nodeID;
 
 	if (tsen->RAW.packettype == pTypeLighting2)
 		nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	else
-		return false; // Only allowed to control switches
+	else if (tsen->RAW.packettype == pTypeGeneralSwitch)
+        nodeID=xcmd->id ;
+    else
+        return false; // Only allowed to control switches
 
 	NodeInfo* pNode = GetNodeInfo(nodeID);
 
@@ -1816,12 +1817,70 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		optbuf[5] = 0xFF; // RSSI : Send = 0xFF
 		optbuf[6] = 0x00; // Seurity Level : Send = ignored
 
-		Debug(DEBUG_NORM, "Send %s switch command to Node %08X",
+        //could be replace by
+        //sendVld(m_id_chip, nodeID, D20100_CMD1, 1,0, tsen->LIGHTING2.unitcode - 1, (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00 , END_ARG_DATA);
+		
+        Debug(DEBUG_NORM, "Send %s switch command to Node %08X",
 			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID);
 
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
 		return true;
 	}
+	//D2-05 : BlindsControl 
+    else if ((pNode->RORG  == 0xd2 || pNode->RORG == 0x00 ) && (pNode->func  == 0x05))
+	{
+		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+
+        //build CMD 1 - Go to Position and Angle
+		int channel = tsen->LIGHTING2.unitcode - 1;
+        int cmd = tsen->LIGHTING2.cmnd ;
+		int pos ;
+        if(cmd !=  gswitch_sStop )
+		    pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
+        else
+            pos = LastPosition;
+
+		if (LastPosition == pos) {
+			//send command stop si rappuie
+            Debug(DEBUG_NORM, "Send stop to blinds Control Node: %08X", nodeID );
+			sendVld(m_id_chip, nodeID, D20500_CMD2,  channel, 2, END_ARG_DATA);
+			LastPosition = -1;
+ 		}else{
+                Debug(DEBUG_NORM, "Send position %d %% to blinds Control Node: %08X", pos,nodeID );
+				sendVld(m_id_chip, nodeID, D20500_CMD1,  pos, 127, 0, 0, channel, 1, END_ARG_DATA);
+				LastPosition = pos;
+		}
+        return true ;
+	}
+    //D2010C :PilotWire
+	else	if ((pNode->RORG == 0xd2 || pNode->RORG == 0x00 ) && (pNode->func == 0x01) && (pNode->type==0x0C) ){
+        const char * PilotWireModeStr[]={ "Off", "Comfort" , "Eco" ,"Anti-freeze", "Comfort-1", "Comfort-2" ,""};
+        uint8_t level = 0;
+
+        CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+
+        if (tsen->LIGHTING2.packettype == pTypeGeneralSwitch)
+            level=xcmd->level;
+        else
+            level = tsen->LIGHTING2.level ;
+        if (level>50){
+            Log(LOG_ERROR,"invalide Pilote Wire level %d Node:%08X",level,nodeID);
+            return false;
+        }
+        int PilotWireMode = 0;
+        if (xcmd->cmnd == light2_sOn)
+		    PilotWireMode  = 1;
+	    else if (xcmd->cmnd == light2_sOff)
+		    PilotWireMode = 0;
+	    else if (xcmd->cmnd == light2_sSetLevel)
+                PilotWireMode = level / 10 ;
+        else
+            return false;
+        Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d:%s  to Node: %08X", PilotWireMode,PilotWireModeStr[PilotWireMode],nodeID );
+        sendVld(m_id_chip, nodeID, D20100_CMD8, 8 ,PilotWireMode , END_ARG_DATA);
+
+        return true ;
+    }
 	Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
 	Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
 	return false;
@@ -3995,7 +4054,7 @@ bool CEnOceanESP3::manageVldMessage(  uint32_t iSenderID , unsigned char * vldDa
 			int pos = GetRawValue( vldData,D20500_CMD1 ,  D20500_CMD1_POS  ) ;
 			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X EEP:D2-05  Reply Position Position:%d%", iSenderID, pos);
 			bool bon = (pos > 0 ? 1 : 0 );
-			if (pos >= 100)	pos = 100;
+			if (pos >= 100)	pos = 99;
 
  			SendSwitch(iSenderID, unitcode+1, -1 , bon , pos , "", m_Name.c_str(),rssi);
 			return true;
@@ -4079,101 +4138,4 @@ int getPositionFromCommandLevel(int cmnd , int pos )
 		pos = pos * 100 / 15;
 
 	return pos;
-}
-//return true if write as been managed
-bool CEnOceanESP3::WriteVldToHardware(const char *pdata)
-{
-	uint32_t iNodeID ;
-	if (m_id_base==0)
-		return false;
-	if (!isOpen())
-		return false;
-	RBUF *tsen=(RBUF*)pdata;
-    const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
-	
-	if (   (tsen->LIGHTING2.packettype!=pTypeLighting2)
-        && (tsen->LIGHTING2.packettype!=pTypeGeneralSwitch)
-        )
-		return false; //only allowed to control switches
-
-    // id for general switch are inverted 
-	if  (tsen->LIGHTING2.packettype==pTypeGeneralSwitch)
-	    iNodeID=xcmd->id ;
-    else
-        iNodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	
-	//not in range GateWay baseAdress..baseAdress+127 
-	//test if is not a switch manually created
-	if (!CheckIsGatewayAdress(iNodeID) )
-	{
-
-        int Manufacturer, Rorg, Func, iType;
-        NodeInfo* pNode = GetNodeInfo(iNodeID);
-		if (pNode==nullptr)
-		{
-			Log(LOG_NORM, " Need Teach-In for %08X", iNodeID);
-			return false;
-		}
-        Rorg=pNode->RORG;
-        Func=pNode->func;
-        iType=pNode->type;
-        Manufacturer=pNode->manufacturerID;
-
-        const std::string  deviceType = GetEEPLabel(pNode->RORG,pNode->func,pNode->type) ;
-
-		//D2-05 : BlindsControl 
-		if ((Rorg == 0xd2) && (Func == 0x05))
-//        if (deviceType == "BlindsControl" )
-		{
-			//build CMD 1 - Go to Position and Angle
-			int channel = tsen->LIGHTING2.unitcode - 1;
-            int cmd = tsen->LIGHTING2.cmnd ;
-			int pos ;
-             if(cmd !=  gswitch_sStop )
-			    pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
-             else
-                pos = LastPosition;
-
-			if (LastPosition == pos) {
-				//send command stop si rappuie
-				sendVld(m_id_chip, iNodeID, D20500_CMD2,  channel, 2, END_ARG_DATA);
-				LastPosition = -1;
-			}else{
-				 sendVld(m_id_chip, iNodeID, D20500_CMD1,  pos, 127, 0, 0, channel, 1, END_ARG_DATA);
-				 LastPosition = pos;
-			}
-		}
-		else	if ((Rorg == 0xd2) && (Func == 0x01) && (iType==0x0C) ){
-//        else if (deviceType == "PilotWire" ){
-        //Value: 0x00 = Off 
-        //Value: 0x01 = Comfort 
-        //Value: 0x02 = Eco 
-        //Value: 0x03 = Anti-freeze 
-        //Value: 0x04 = Comfort-1 
-        //Value: 0x05 = Comfort-2 
-            uint8_t level = 0;
-            if (tsen->LIGHTING2.packettype == pTypeGeneralSwitch)
-                level=xcmd->level;
-            else
-                level = tsen->LIGHTING2.level ;
-            if (xcmd->cmnd == light2_sOn)
-		        level  = 1;
-	        else if (xcmd->cmnd == light2_sOff)
-		        level = 0;
-	        else if (xcmd->cmnd == light2_sSetLevel)
-                 level = level / 10 ;
-	
-            sendVld(m_id_chip, iNodeID, D20100_CMD8, 8 ,level , END_ARG_DATA);
-        }
-		//D2-01 : switch
-//        else if (deviceType == "Switch" )
-		else	if ((Rorg == 0xd2) && (Func == 0x01))
-			sendVld(m_id_chip, iNodeID, D20100_CMD1, 1,0, tsen->LIGHTING2.unitcode - 1, tsen->LIGHTING2.cmnd * 64 , END_ARG_DATA);
-        else
-            Log(LOG_ERROR,"write command for %s : %02X%02X%02X Manufacturer:%s deviceId %08X not managed",deviceType.c_str(), Rorg, Func, iType ,GetManufacturerName(Manufacturer),  iNodeID );
-		return true ;
-
-	}
-    else
-        return false;
 }
