@@ -4948,6 +4948,9 @@ define(['app'], function (app) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
 								}
 								$.each(item.parameters, function (i, param) {
+									if (typeof (param.description) != "undefined") {
+										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
+									}
 									PluginParams += '<tr><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
 									if (typeof (param.options) == "undefined") {
 										if (param.field == "SerialPort") {

@@ -350,6 +350,12 @@ namespace Plugins {
 				}
 			}
 
+			// Timer events can still trigger even after errors so cancel explicitly
+			if (m_Timer)
+			{
+				m_Timer->cancel();
+			}
+
 			pPlugin->MessagePlugin(new DisconnectedEvent(m_pConnection));
 			m_bDisconnectQueued = true;
 		}

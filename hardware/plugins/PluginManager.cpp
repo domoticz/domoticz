@@ -429,6 +429,15 @@ namespace http {
 											iOptions++;
 										}
 									}
+
+									TiXmlNode* pXmlDescNode = pXmlEle->FirstChild("description");
+									if (pXmlDescNode)
+									{
+										TiXmlPrinter Xmlprinter;
+										Xmlprinter.SetStreamPrinting();
+										pXmlDescNode->Accept(&Xmlprinter);
+										root[iPluginCnt]["parameters"][iParams]["description"] = Xmlprinter.CStr();
+									}
 									iParams++;
 								}
 							}
