@@ -189,25 +189,32 @@ void MQTT::on_connect(int rc)
 void MQTT::on_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char *)message->payload, (char *)message->payload + message->payloadlen);
-
-	Debug(DEBUG_HARDWARE, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
-
-	if (qMessage.empty())
-		return;
-
-	if (topic != m_TopicIn)
+	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	try
 	{
-		if (topic.find(m_TopicDiscoveryPrefix) == 0)
+		Debug(DEBUG_HARDWARE, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+
+		if (qMessage.empty())
+			return;
+
+		if (topic != m_TopicIn)
 		{
-			on_auto_discovery_message(message);
+			if (topic.find(m_TopicDiscoveryPrefix) == 0)
+			{
+				on_auto_discovery_message(message);
+				return;
+			}
+			if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())
+			{
+				handle_auto_discovery_sensor_message(message);
+				return;
+			}
 			return;
 		}
-		if (m_subscribed_topics.find(topic)!=m_subscribed_topics.end())
-		{
-			handle_auto_discovery_sensor_message(message);
-			return;
-		}
+	}
+	catch (const std::exception &e)
+	{
+		Log(LOG_ERROR, "Exception: %s!", e.what());
 		return;
 	}
 
@@ -576,8 +583,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		}
 		return;
 	}
-	catch (const Json::LogicError &)
+	catch (const Json::LogicError &e)
 	{
+		Log(LOG_ERROR, "Exception: %s!", e.what());
 		goto mqttinvaliddata;
 	}
 mqttinvaliddata:
@@ -813,8 +821,9 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 			{
 				root["id"] = std_format("%04X", std::stoi(did));
 			}
-			catch (const std::exception &)
+			catch (const std::exception &e)
 			{
+				Log(LOG_ERROR, "Exception: %s!", e.what());
 				//illegal ID here !? probably caused by a plugin/script that does not use numbers as 'ID' (which it should!)
 				root["id"] = did;
 			}
@@ -1156,9 +1165,9 @@ std::string MQTT::GetValueFromTemplate(Json::Value root, std::string szValueTemp
 		if (!root[szKey].empty())
 			return root[szKey].asString();
 	}
-	catch (const std::exception&)
+	catch (const std::exception &e)
 	{
-
+		Log(LOG_ERROR, "Exception: %s!", e.what());
 	}
 	return "";
 }
@@ -1211,9 +1220,9 @@ bool MQTT::SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, 
 			return true;
 		}
 	}
-	catch (const std::exception&)
+	catch (const std::exception &e)
 	{
-
+		Log(LOG_ERROR, "Exception: %s!", e.what());
 	}
 	return false;
 }
@@ -1225,6 +1234,9 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 	if (qMessage.empty())
 		return;
+
+	if (topic == m_TopicDiscoveryPrefix)
+		return; //direct payload in discovery topic not allowed
 
 	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
 
@@ -1253,7 +1265,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		return;
 	}
 
-	if (!((strarray.size() == 3) || (strarray.size() == 4)))
+	if (!((strarray.size() == 3) || (strarray.size() == 4) || (strarray.size() == 5) || (strarray.size() == 6)))
 		goto disovery_invaliddata;
 
 	component = strarray[0]; 
@@ -1263,11 +1275,23 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		object_id = strarray[1];
 		action = strarray[2];
 	}
-	else
+	else if (strarray.size() == 4)
 	{
 		node_id = strarray[1];
 		object_id = strarray[2];
 		action = strarray[3];
+	}
+	else if (strarray.size() == 5)
+	{
+		node_id = strarray[1] + "_" + strarray[2];
+		object_id = strarray[3];
+		action = strarray[4];
+	}
+	else if (strarray.size() == 6)
+	{
+		node_id = strarray[1] + "_" + strarray[2];
+		object_id = strarray[3];
+		action = strarray[5];
 	}
 
 	//skip some non-needed types, they will be transmitted in the state topic anyways (for 90%) or not necessary
@@ -1286,7 +1310,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		|| (object_id == "over-load_status")
 		|| (object_id == "hardware_status")
 		|| (object_id.find("_address") != std::string::npos)
-		|| (object_id.find("_battery") != std::string::npos)
 		|| (object_id.find("_ssid") != std::string::npos)
 		|| (object_id.find("_signal_sensor") != std::string::npos)
 		)
@@ -2197,6 +2220,25 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* p
 	return nullptr;
 }
 
+void MQTT::handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	if (pSensor->last_value.empty())
+		return;
+	if (!is_number(pSensor->last_value))
+		return;
+
+	int iLevel = atoi(pSensor->last_value.c_str());
+
+	for (auto& itt : m_discovered_sensors)
+	{
+		_tMQTTASensor* pDevSensor = &itt.second;
+		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
+		{
+			pDevSensor->BatteryLevel = iLevel;
+		}
+	}
+}
+
 void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	if (
@@ -2211,6 +2253,12 @@ void MQTT::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mos
 			return;
 
 		InsertUpdateSwitch(pSensor);
+		return;
+	}
+
+	if (pSensor->object_id.find("battery") != std::string::npos)
+	{
+		handle_auto_discovery_battery(pSensor, message);
 		return;
 	}
 
@@ -2390,6 +2438,8 @@ void MQTT::handle_auto_discovery_switch(_tMQTTASensor *pSensor, const struct mos
 
 void MQTT::handle_auto_discovery_binary_sensor(_tMQTTASensor *pSensor, const struct mosquitto_message* message)
 {
+//	if (pSensor->object_id.find("battery") != std::string::npos)
+	//	return;
 	InsertUpdateSwitch(pSensor);
 }
 
@@ -2903,6 +2953,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		switchType = STYPE_PushOn;
 		szSensorName += "_" + pSensor->last_value;
 		szOnOffValue = "on";
+	}
+	else if (pSensor->object_id.find("battery") != std::string::npos)
+	{
+		//99,9% also received as percentage, so don't add this as 'used'
+		iUsed = 0;
 	}
 
 	std::vector<std::vector<std::string>> result;
