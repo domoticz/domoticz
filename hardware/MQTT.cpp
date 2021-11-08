@@ -823,8 +823,6 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 			}
 			catch (const std::exception &e)
 			{
-				Log(LOG_ERROR, "Exception: %s!", e.what());
-				//illegal ID here !? probably caused by a plugin/script that does not use numbers as 'ID' (which it should!)
 				root["id"] = did;
 			}
 		}
