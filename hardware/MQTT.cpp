@@ -821,7 +821,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 			{
 				root["id"] = std_format("%04X", std::stoi(did));
 			}
-			catch (const std::exception &e)
+			catch (const std::exception&)
 			{
 				root["id"] = did;
 			}
