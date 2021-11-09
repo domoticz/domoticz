@@ -2585,11 +2585,14 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		pSensor->subType = sSwitchGeneralSwitch;
 		int switchType = STYPE_Selector;
 
+		bool bIsNewDevice = false;
+
 		std::vector<std::vector<std::string>> result;
 		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType);
 		if (result.empty())
 		{
 			// New switch, add it to the system
+			bIsNewDevice = true;
 			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -2600,7 +2603,10 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 				return; // should not happen!
 		}
 
-		if (pSensor->mode_state_topic == topic)
+		if (
+			(pSensor->mode_state_topic == topic)
+			|| (bIsNewDevice)
+			)
 		{
 			std::string current_mode;
 			if (
