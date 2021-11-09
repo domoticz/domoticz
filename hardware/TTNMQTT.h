@@ -43,6 +43,7 @@ class CTTNMQTT : public MySensorsBase, mosqdz::mosquittodz
 	std::shared_ptr<std::thread> m_thread;
 	double m_DomLat;
 	double m_DomLon;
+	std::string m_AliassesFile;
 
 	bool StartHardware() override;
 	bool StopHardware() override;
@@ -53,10 +54,12 @@ class CTTNMQTT : public MySensorsBase, mosqdz::mosquittodz
 
       private:
 	std::map<std::string, CBaroForecastCalculator> m_forecast_calculators;
+	Json::Value m_Aliasses;
 
 	bool ConnectInt();
 	bool ConnectIntEx();
 	Json::Value GetSensorWithChannel(const Json::Value &root, uint8_t sChannel);
+	bool IsSensorTypeOrAlias(const std::string orgString, const std::string sType);
 	void FlagSensorWithChannelUsed(Json::Value &root, const std::string &stype, uint8_t sChannel);
 	bool ConvertField2Payload(const std::string &sType, const std::string &sValue, uint8_t channel, uint8_t index, Json::Value &payload);
 	bool ConvertFields2Payload(const Json::Value &fields, Json::Value &payload);
