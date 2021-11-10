@@ -2104,7 +2104,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		subType = sTypeKwh;
 
 		float fUsage = 0;
-		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str()));
+		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "W");
 		if (pWattSensor)
 		{
