@@ -86,6 +86,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/dzVents/runtime/tests
           busted --coverage -o TAP *
+          luacov
           tail -19 luacov.report.out
         continue-on-error: true
 
