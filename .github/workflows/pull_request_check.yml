@@ -25,7 +25,7 @@ jobs:
       # Prepare environment
       - name: prepare environment
         run: |
-          timedatectl set-timezone Europe/Amsterdam
+          sudo timedatectl set-timezone Europe/Amsterdam
           if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
             echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${GITHUB_EVENT_ISSUE_NUMBER})" >> $GITHUB_ENV
