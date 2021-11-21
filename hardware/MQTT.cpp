@@ -3011,6 +3011,15 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	if (bIsJSON)
 	{
+		//COVER: use the "value" as position when "position" not specified in payload (eg: ZWAVEjS2MQTT) 
+		if (pSensor->component_type == "cover")
+		{
+			if (!root["value"].empty() && root["position"].empty())
+			{
+				root["position"] = root["value"];
+			}
+		}
+
 		if (!root["state"].empty())
 			szOnOffValue = root["state"].asString();
 		else if (!root["value"].empty())
@@ -3029,27 +3038,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				}
 				else
 					szOnOffValue = "off";
-				
-				// For cover use the value as position
-				if (pSensor->component_type == "cover")
-				{
-					if (level == pSensor->position_closed)
-						szOnOffValue = "on";
-					else if (level == pSensor->position_open)
-						szOnOffValue = "off";
-					else
-					{
-						szOnOffValue = "Set Level";
-						// recalculate level to make relative to min/maxpositions
-						if (pSensor->component_type == "cover") {
-							if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-								// invert level for inverted blinds with percentage.
-								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-							else
-								level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-						}
-					}
-				}
 			}
 		}
 		else
@@ -3081,14 +3069,14 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else 
 			{
 				szOnOffValue = "Set Level";
-				// Make level relative to 100.
+			}
+			// Always recalculate to make level relative to 100 and invert when needed
 				if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
 					// invert level for inverted blinds with percentage.
 					level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 				else
 					level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
-		}
 		if (!root["color"].empty())
 		{
 			Json::Value root_color;
@@ -3177,7 +3165,14 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				if (level != 100)
 				{
 					szOnOffValue = "Set Level";
-					// recalculate level to make relative to min/maxpositions
+				}
+				else
+					szOnOffValue = "on";
+			}
+			else
+				szOnOffValue = "off";
+
+			// COVERS: Always recalculate to make level relative to 100 and invert when needed
 					if (pSensor->component_type == "cover") {
 						if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
 							// invert level for inverted blinds with percentage.
@@ -3186,12 +3181,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 							level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 					}
 				}
-				else
-					szOnOffValue = "on";
-			}
-			else
-				szOnOffValue = "off";
-		}
 	}
 
 	if (level > 100)
@@ -3483,27 +3472,29 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	{
 		Json::Value root;
 		std::string szValue;
+		_eSwitchType sSwitchType = STYPE_Blinds;
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+		if (!result.empty())
+		{
+			sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
+		}
+		// recalculate the relative mqtt level
+		int mqttLevel = (int)(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
 
 		if (command == "On")
 		{
 			szValue = pSensor->payload_close;
-			if (pSensor->command_topic.empty())
-			{
-				command = "Set Level";
 				level = 100; // Is recalculated in the "Set Level" logic
 			}
-			else 
-				level = pSensor->position_closed;
-		}
 		else if (command == "Off")
 		{
-			szValue = pSensor->payload_open;
-			if (pSensor->command_topic.empty()) {
-				command = "Set Level";
-				level = 0; // Is recalculated in the "Set Level" logic
+			if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop) {
+
 			}
-			else
-				level = pSensor->position_open;
+			else {
+
+			}
 		}
 		else if (command == "Stop")
 		{
@@ -3516,20 +3507,17 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 			szValue = std::to_string(level);
 			if (!pSensor->set_position_topic.empty())
 			{
-				int iValue = (int)(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
 				// invert level for inverted blinds with percentage.
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-				if (!result.empty())
+				if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop) 
 				{
-					_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
-					if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-						iValue = pSensor->position_open - iValue;
+						mqttLevel = pSensor->position_open - mqttLevel;
+						level = 100 - level;
+						szValue = std::to_string(level);
 				}
 				
 				if (pSensor->set_position_template.empty())
 				{
-					szSendValue = std::to_string(iValue);
+					szSendValue = std::to_string(mqttLevel);
 				}
 				else
 				{
@@ -3538,7 +3526,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 					{
 						if (is_number(szValue))
 						{
-							root[szKey] = (int)iValue;
+							root[szKey] = (int)mqttLevel;
 						}
 						else
 							root[szKey] = szValue;
@@ -3570,17 +3558,33 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		if (level != -1)
 		{
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType,SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
 			if (!result.empty())
 			{
+				int nValue = 2;
+				_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][6].c_str());
 				if (command == "On")
+				{
+					nValue = 1;
 					level = 100;
+					if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+						level = 0;
+				}
 				else if (command == "Off")
+				{
+					nValue = 0;
 					level = 0;
-				int nValue = (level > 0) ? 1 : 0;
+					if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+						level = 100;
+				}
+
 				m_sql.safe_query(
-					"UPDATE DeviceStatus SET nValue=%d, LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
-					nValue, level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+					"UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
+					nValue, szValue.c_str(), level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+
+				int slevel = atoi(result[0][3].c_str());
+				if (slevel != level)
+					m_sql.UpdateDeviceValue("LastLevel", level, result[0][0].c_str());
 			}
 		}
 		return true;
