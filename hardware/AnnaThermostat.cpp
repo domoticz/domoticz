@@ -16,14 +16,14 @@
 // Plugwise Anna Thermostat
 // Anna Sensors
 // Anna Switches
-#define sAnneTemperature                    1
-#define sAnneIlluminance                    2
+#define sAnnaTemperature                    1
+#define sAnnaIlluminance                    2
 #define sAnnaThermostat                     3
-#define sAnneIntendedBoilerTemperature      4
-#define sAnneReturnWaterTemperature         5
-#define sAnneBoilerTemperature              6
-#define sAnneMaxBoilerTemperature           7
-#define sAnneBoilerState                    8
+#define sAnnaIntendedBoilerTemperature      4
+#define sAnnaReturnWaterTemperature         5
+#define sAnnaBoilerTemperature              6
+#define sAnnaMaxBoilerTemperature           7
+#define sAnnaBoilerState                    8
 #define sAnnaFlameState                     9
 #define sAnnaProximity                      10
 #define sAnnaPresets                        11
@@ -180,7 +180,7 @@ bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*l
 	{
 		int node_id = pCmd->LIGHTING2.id4;
 		bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
-		if (node_id == sAnneBoilerState || node_id == sAnnaFlameState)
+		if (node_id == sAnnaBoilerState || node_id == sAnnaFlameState)
 		{
 			return false; // just return Error as these are not supposed to be switches
 		}
@@ -515,7 +515,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(sAnneTemperature, 255, temperature, sname);
+					SendTempSensor(sAnnaTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "illuminance")
@@ -524,7 +524,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float illuminance = (float)atof(tmpstr.c_str());
-					SendLuxSensor(sAnneIlluminance, 1, 255, illuminance, sname);
+					SendLuxSensor(sAnnaIlluminance, 1, 255, illuminance, sname);
 				}
 			}
 			else if (sname == "thermostat")
@@ -542,7 +542,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(sAnneIntendedBoilerTemperature, 255, temperature, sname);
+					SendTempSensor(sAnnaIntendedBoilerTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "return_water_temperature")
@@ -551,7 +551,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(sAnneReturnWaterTemperature, 255, temperature, sname);
+					SendTempSensor(sAnnaReturnWaterTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "boiler_temperature")
@@ -560,7 +560,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(sAnneBoilerTemperature, 255, temperature, sname);
+					SendTempSensor(sAnnaBoilerTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "maximum_boiler_temperature")
@@ -569,7 +569,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(sAnneMaxBoilerTemperature, 255, temperature, sname);
+					SendTempSensor(sAnnaMaxBoilerTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "boiler_state")
@@ -579,11 +579,11 @@ void CAnnaThermostat::GetMeterDetails()
 				{
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname, m_Name);
+						SendSwitch(sAnnaBoilerState, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname, m_Name);
+						SendSwitch(sAnnaBoilerState, 1, 255, false, 0, sname, m_Name);
 					}
 				}
 			}
