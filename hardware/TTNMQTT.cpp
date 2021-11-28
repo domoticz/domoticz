@@ -698,7 +698,6 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		std::string AppSerial = endDeviceIds["join_eui"].asString();
 		std::string AppId = applicationIds["application_id"].asString();
 		uint8_t MessagePort = uplinkMessage["f_port"].asInt();
-		std::string lpp = base64_decode(uplinkMessage["frm_payload"].asString());
 
 		//Check if the payload_raw contains valid CayenneLPP structured data
 		//TO-DO: The current CayenneLPP Decoder assumes Dynamic Sensor Payload structure and not other possible Sensor payload structures like Packed
@@ -722,9 +721,12 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				break;
 			case 1:
 			default:
-				if(CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
-				{
-					Decoded = true;
+				if (!uplinkMessage["frm_payload"].empty()) {
+					std::string lpp = base64_decode(uplinkMessage["frm_payload"].asString());
+					if(CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+					{
+						Decoded = true;
+					}
 				}
 		}
 
