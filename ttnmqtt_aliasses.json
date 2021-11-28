@@ -18,5 +18,8 @@
   "analog_input": [],
   "analog_output": [],
   "digital_output": [],
-  "digital_input": []
+  "digital_input": [],
+  "accel": [],
+  "gyro": [],
+  "unixtime": []
 }
