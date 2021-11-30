@@ -143,7 +143,7 @@ namespace Plugins {
 			m_InitialPythonThread = PyEval_SaveThread();
 
 			m_bEnabled = true;
-			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s', %d plugin definitions loaded.", sVersion.c_str(), m_PluginXml.size());
+			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s', %d plugin definitions loaded.", sVersion.c_str(), (int)m_PluginXml.size());
 		}
 		catch (...) {
 			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", szPyVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
