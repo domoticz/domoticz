@@ -13,6 +13,7 @@
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
 
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"
@@ -360,12 +361,12 @@ void CEnOceanESP3::LoadNodesFromDatabase()
 		node.func = static_cast<uint8_t>(std::stoul(sd[3]));
 		node.type = static_cast<uint8_t>(std::stoul(sd[4]));
 		node.generic = true;
-/*
+
 		Debug(DEBUG_NORM, "LoadNodesFromDatabase: Idx %u Node %08X %sEEP %02X-%02X-%02X (%s) Manufacturer %03X (%s)",
 			node.idx, node.nodeID,
 			node.generic ? "Generic " : "", node.RORG, node.func, node.type, GetEEPLabel(node.RORG, node.func, node.type),
 			node.manufacturerID, GetManufacturerName(node.manufacturerID));
-*/
+
 		m_nodes[node.nodeID] = node;
 	}
 }
@@ -4054,7 +4055,7 @@ bool CEnOceanESP3::manageVldMessage(  uint32_t iSenderID , unsigned char * vldDa
 			int pos = GetRawValue( vldData,D20500_CMD1 ,  D20500_CMD1_POS  ) ;
 			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X EEP:D2-05  Reply Position Position:%d%", iSenderID, pos);
 			bool bon = (pos > 0 ? 1 : 0 );
-			if (pos >= 100)	pos = 99;
+			if (pos >= 100)	pos = 0;
 
  			SendSwitch(iSenderID, unitcode+1, -1 , bon , pos , "", m_Name.c_str(),rssi);
 			return true;
@@ -4138,4 +4139,42 @@ int getPositionFromCommandLevel(int cmnd , int pos )
 		pos = pos * 100 / 15;
 
 	return pos;
+}
+void CEnOceanESP3::DeleteSensor(const std::string& sensorId)
+{
+		m_sql.safe_exec_no_return("DELETE FROM EnoceanSensors WHERE (DeviceID == '%q')", sensorId.c_str() );
+        _log.Debug(DEBUG_NORM, "CSQLHelper::DeleteDevices: EnoceanSensors  ID: %s", sensorId.c_str());
+        LoadNodesFromDatabase();
+}
+//delete the sensor in EnoceanSensors table assossiated to the device with ID in deviceStatus table
+//take care that we could have many device.
+void EnOceanDeleteSensorAssociatedWithDevice(const std::string& ID)
+{
+		//get the number of enocean devices with same DeviceId in order to delete from EnoceanSensors
+		std::string SensorDeviceID="";
+		std::vector<std::vector<std::string> > result;
+        //get DeviceID = DeviceID in EnoceanSensors
+		result = m_sql.safe_query("SELECT DeviceID , HardwareID  FROM DeviceStatus   WHERE (ID==%s) ", (ID).c_str());
+		if (result.size()>0)	{
+            SensorDeviceID   = result[0][0];
+			std::string HwID = result[0][1];
+
+            //check if it is ESP3  hardware
+            CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>( m_mainworker.GetHardwareByIDType(HwID, HTYPE_EnOceanESP3));
+
+            if (pEnoceanHardware != nullptr)
+            {
+                //select device with same  EnoceanSensors DeviceID
+                result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus  WHERE (DeviceID=='%s') ", SensorDeviceID.c_str());
+		        int NbDeviceId = result.size();
+                //EnoceanSensors DeviceID is on 8 characteers !!??
+                while (SensorDeviceID.size() < 8)
+    		    SensorDeviceID = '0' + SensorDeviceID;
+            
+                //delete only on the last device
+                if (NbDeviceId==1){
+                    pEnoceanHardware->DeleteSensor(SensorDeviceID);
+                }
+            }
+        }
 }

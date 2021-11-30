@@ -33,6 +33,7 @@ public:
 
 	void TeachInNode(const uint32_t nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic);
 	void CheckAndUpdateNodeRORG(NodeInfo *pNode, const uint8_t RORG);
+    void DeleteSensor(const std::string& sensorId);
 
 	uint32_t m_id_base;
 	uint32_t m_id_chip;
@@ -119,4 +120,5 @@ private:
 	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD * OffsetDes,  ...);
 	uint32_t senDatadVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD* OffsetDes, int* values, int NbValues);
 };
+void EnOceanDeleteSensorAssociatedWithDevice(const std::string& ID);
 int getPositionFromCommandLevel(int cmnd, int pos);

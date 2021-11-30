@@ -26,6 +26,7 @@
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
+#include "../hardware/EnOceanESP3.h"
 
 #ifndef WIN32
 #include <sys/stat.h>
@@ -7657,15 +7658,17 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 		}
 	}
 #endif
-	{
-		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
-
-		char* errorMessage;
-		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
+		{
+			char* errorMessage;
 
 		for (const auto &str : _idx)
 		{
+			//remove DeviceId from EnoceanSensors 
+			EnOceanDeleteSensorAssociatedWithDevice(str);
+
+			//Avoid mutex deadlock here
+			std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+			sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, &errorMessage);
 			safe_exec_no_return("DELETE FROM LightingLog WHERE (DeviceRowID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM LightSubDevices WHERE (ParentID == '%q')", str.c_str());
 			safe_exec_no_return("DELETE FROM LightSubDevices WHERE (DeviceRowID == '%q')", str.c_str());
@@ -7699,8 +7702,8 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", str.c_str());
+			sqlite3_exec(m_dbase, "COMMIT TRANSACTION", nullptr, nullptr, &errorMessage);
 		}
-		sqlite3_exec(m_dbase, "COMMIT TRANSACTION", nullptr, nullptr, &errorMessage);
 	}
 #ifdef ENABLE_PYTHON
 	for (const auto& it : removeddevices)
