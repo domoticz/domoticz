@@ -348,12 +348,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var extra = "";
@@ -433,12 +433,12 @@ define(['app'], function (app) {
 						}
 
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 
@@ -614,12 +614,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -726,12 +726,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
@@ -776,7 +776,7 @@ define(['app'], function (app) {
 			else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
 				var url = $("#hardwarecontent #divhttppoller #url").val();
 				if (url == "") {
-					ShowNotify($.t('Please enter an url!'), 2500, true);
+					ShowNotify($.t('Please enter a url!'), 2500, true);
 					return;
 				}
 				var script = $("#hardwarecontent #divhttppoller #script").val();
@@ -834,7 +834,7 @@ define(['app'], function (app) {
 				}
 				var location = $("#hardwarecontent #divunderground #location").val();
 				if (location == "") {
-					ShowNotify($.t('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter a Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -860,7 +860,7 @@ define(['app'], function (app) {
 			else if(text.indexOf("Meteorologisk") >= 0){
 				var location = $("#hardwarecontent #divmeteorologisk #location").val();
 				if (location == "") {
-					ShowNotify($.t('Please enter an Location specifying Latitude, Longitude (or 0 to use Domoticz home location)!'), 2500, true);
+					ShowNotify($.t('Please enter a Location specifying Latitude, Longitude (or 0 to use Domoticz home location)!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -890,7 +890,7 @@ define(['app'], function (app) {
 				}
 				var location = $("#hardwarecontent #divopenweathermap #location").val();
 				if (location == "") {
-					ShowNotify($.t('Please enter an Location (or 0 to use Domoticz home location)!'), 2500, true);
+					ShowNotify($.t('Please enter a Location (or 0 to use Domoticz home location)!'), 2500, true);
 					return;
 				}
 				var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
@@ -1006,7 +1006,7 @@ define(['app'], function (app) {
 			else if (text.indexOf("SBFSpot") >= 0) {
 				var configlocation = $("#hardwarecontent #divlocation #location").val();
 				if (configlocation == "") {
-					ShowNotify($.t('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter a Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -1166,7 +1166,7 @@ define(['app'], function (app) {
 				var nrofwinddelen = $("#hardwarecontent #divwinddelen #nrofwinddelen").val();
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(nrofwinddelen)) {
-					ShowNotify($.t('Please enter an Valid Number!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Number!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -1227,12 +1227,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -1268,12 +1268,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -1585,12 +1585,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var extra = "";
@@ -1898,12 +1898,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var extra = "";
@@ -1945,12 +1945,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				if (text.indexOf("Satel Integra") >= 0) {
@@ -2078,12 +2078,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
@@ -2129,12 +2129,12 @@ define(['app'], function (app) {
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
 				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Port!'), 2500, true);
 					return;
 				}
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -2242,7 +2242,7 @@ define(['app'], function (app) {
 				}
 				var location = $("#hardwarecontent #divunderground #location").val();
 				if (location == "") {
-					ShowNotify($.t('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter a Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -2263,7 +2263,7 @@ define(['app'], function (app) {
 			else if(text.indexOf("Meteorologisk") >= 0){
 				var location = $("#hardwarecontent #divmeteorologisk #location").val();
 				if (location == "") {
-					ShowNotify($.t('Please enter an Location specifying Latitude, Longitude (or 0 to use Domoticz home location)!'), 2500, true);
+					ShowNotify($.t('Please enter a Location specifying Latitude, Longitude (or 0 to use Domoticz home location)!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -2289,7 +2289,7 @@ define(['app'], function (app) {
 				}
 				var location = $("#hardwarecontent #divopenweathermap #location").val();
 				if (location == "") {
-					ShowNotify($.t('Please enter an Location (or 0 to use Domoticz own location)!'), 2500, true);
+					ShowNotify($.t('Please enter a Location (or 0 to use Domoticz own location)!'), 2500, true);
 					return;
 				}
 				var adddayforecast = $("#hardwarecontent #divopenweathermap #adddayforecast").prop("checked") ? 1 : 0;
@@ -2342,7 +2342,7 @@ define(['app'], function (app) {
 			else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
 				var url = $("#hardwarecontent #divhttppoller #url").val();
 				if (url == "") {
-					ShowNotify($.t('Please enter an url!'), 2500, true);
+					ShowNotify($.t('Please enter a url!'), 2500, true);
 					return;
 				}
 				var script = $("#hardwarecontent #divhttppoller #script").val();
@@ -2389,7 +2389,7 @@ define(['app'], function (app) {
 			else if (text.indexOf("SBFSpot") >= 0) {
 				var configlocation = $("#hardwarecontent #divlocation #location").val();
 				if (configlocation == "") {
-					ShowNotify($.t('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter a Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -2415,7 +2415,7 @@ define(['app'], function (app) {
 				var nrofwinddelen = $("#hardwarecontent #divwinddelen #nrofwinddelen").val();
 				var intRegex = /^\d+$/;
 				if (!intRegex.test(nrofwinddelen)) {
-					ShowNotify($.t('Please enter an Valid Number!'), 2500, true);
+					ShowNotify($.t('Please enter a Valid Number!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -4373,7 +4373,7 @@ define(['app'], function (app) {
 			}
 			var port = $("#hardwarecontent #divremote #tcpport").val();
 			if (port == "") {
-				ShowNotify($.t('Please enter an Port!'), 2500, true);
+				ShowNotify($.t('Please enter a Port!'), 2500, true);
 				return;
 			}
 			var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
