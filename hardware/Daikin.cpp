@@ -969,6 +969,21 @@ void CDaikin::HTTPSetControlInfo()
 	szURL << "&f_rate=" << m_sci_FRateLevel;
 	szURL << "&f_dir=" << m_sci_FDirLevel;
 
+	/*
+	 * We have to update our internal values here regardless of whether the HTTP request
+	 * succeeds or fails. Otherwise, in the latter case Domoticz elements won't be updated
+	 * to reflect the actual state until another command is sent - i.e. if someone requested
+	 * the heat pump to be off, but the HTTP request fails, the Domoticz switch would show
+	 * as off even though the heat pump never received the command... by updating our values
+	 * here, things will be updated on the next poll.
+	 */
+	m_pow = m_sci_OnOFF;
+	m_mode = m_sci_ModeLevel;
+	m_stemp = m_sci_Temp;
+	m_shum = m_sci_Hum;
+	m_f_rate = m_sci_FRateLevel;
+	m_f_dir = m_sci_FDirLevel;
+
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
@@ -983,11 +998,4 @@ void CDaikin::HTTPSetControlInfo()
 		Log(LOG_ERROR, "Invalid response");
 		return;
 	}
-	// once http sci request is done and OK, update internal values
-	m_pow = m_sci_OnOFF;
-	m_mode = m_sci_ModeLevel;
-	m_stemp = m_sci_Temp;
-	m_shum = m_sci_Hum;
-	m_f_rate = m_sci_FRateLevel;
-	m_f_dir = m_sci_FDirLevel;
 }
