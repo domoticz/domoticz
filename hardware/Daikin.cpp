@@ -148,6 +148,7 @@ void CDaikin::Do_Work()
 			m_force_sci = false;
 			m_last_setcontrolinfo = 0;
 			last_sci_update = current_time;
+			m_sec_counter = Daikin_POLL_INTERVAL - 2; // Force re-reading of values after a set.
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped %s ...", m_szIPAddress.c_str());
