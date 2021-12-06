@@ -995,7 +995,7 @@ void CDaikin::HTTPSetControlInfo()
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		Log(LOG_ERROR, "Invalid response");
+		Log(LOG_ERROR, "Invalid response: %s", sResult.c_str());
 		return;
 	}
 }
