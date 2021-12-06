@@ -2,6 +2,7 @@ define(['app'], function (app) {
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
 
 		$scope.SerialPortStr = [];
+		$scope.calledFetch = 0;
 
 		DeleteHardware = function (idx) {
 			bootbox.confirm($.t("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function (result) {
@@ -25,6 +26,30 @@ define(['app'], function (app) {
 		function hideAndRefreshHardwareTable() {
 			HideNotify();
 			RefreshHardwareTable();
+		}
+		
+		function fetchExtraHTML(fileName, divName, callback, carg) {
+			$scope.calledFetch = 1;
+			if($('#hardwarecontent #extrahw').val() === fileName) {
+				if(callback) {
+					callback(carg);
+				};
+			} else {
+				fetch('app/hardware/extra/' + fileName).then(function (response) {
+					return response.text();
+				}).then(function (html) {
+					var $div = $('#' + divName);
+					var phtml = $.parseHTML(html);
+					$div.empty();
+					$('#hardwarecontent').append('<input type="hidden" name="extrahw" id="extrahw" value="' + fileName + '" />')
+					$div.append(phtml);
+					if(callback) {
+						callback(carg);
+					};
+				}).catch(function (err) {
+					console.warn('Something went wrong.', err);
+				});
+			}
 		}
 		
 		function validateInteger (val, defVal, minVal, maxVal, fldName)  {
@@ -717,8 +742,8 @@ define(['app'], function (app) {
 					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
 				else if ((text.indexOf("Daikin") >= 0)) {
-					Mode1 = $("#hardwarecontent #divdaikin #updatefrequencydaikin").val();
-					if (!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
+					Mode1 = $("#hardwarecontent #divextrahwparams #updatefrequencydaikin").val();
+					if(!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
 						return;
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
@@ -2179,7 +2204,7 @@ define(['app'], function (app) {
 				var Mode2 = "";
 				var Mode3 = "";
 				if (text.indexOf("Daikin") >= 0) {
-					Mode1 = $("#hardwarecontent #divdaikin #updatefrequencydaikin").val();
+					Mode1 = $("#hardwarecontent #divextrahwparams #updatefrequencydaikin").val();
 					if (!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
 						return;
 				}
@@ -4398,13 +4423,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
 							$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
 						}
-						if (data["Type"].indexOf("Daikin") >= 0) {
-							var Pollseconds = parseInt(data["Mode1"]);
-							if ( Pollseconds < 10 ) {
-								Pollseconds = 300;
-							}
-							$("#hardwarecontent #divdaikin #updatefrequencydaikin").val(Pollseconds);
-						}
 					}
 				}
 			});
@@ -4499,6 +4517,12 @@ define(['app'], function (app) {
 		}
 
 		UpdateHardwareParamControls = function () {
+			var oTable = $('#hardwaretable').dataTable();
+			var anSelected = fnGetSelected(oTable);
+			if (anSelected.length !== 0) {
+				var data = oTable.fnGetData(anSelected[0]);
+			}
+			$scope.calledFetch = 0;
 			$("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', false);
@@ -4829,10 +4853,12 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin").show();
 			}
 			if (text.indexOf("Daikin") >= 0) {
-				$("#hardwarecontent #divdaikin").show();
-			}
-			else {
-				$("#hardwarecontent #divdaikin").hide();
+				var Pollseconds = data?parseInt(data["Mode1"]):300;
+				if ( Pollseconds < 10 ) {
+					Pollseconds = 300;
+				}
+				fetchExtraHTML("DaikinParams.html", "divextrahwparams", function(data){
+					$('#hardwarecontent #divextrahwparams #updatefrequencydaikin').val(data); }, Pollseconds);
 			}
 			if (text.indexOf("Rtl433") >= 0) {
 				$("#hardwarecontent #divrtl433").show();
@@ -4856,6 +4882,12 @@ define(['app'], function (app) {
 			}
 			if (text.indexOf("RFPlayer") >= 0) {
 				$("#hardwarecontent #divrfplayerdoc").show();
+			}
+
+			if($scope.calledFetch == 0)
+			{
+				$("#hardwarecontent #extrahw").val("");
+				$("#hardwarecontent #divextrahwparams").empty();
 			}
 		}
 
