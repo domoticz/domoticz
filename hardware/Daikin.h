@@ -5,7 +5,7 @@
 class CDaikin : public CDomoticzHardwareBase
 {
 public:
-	CDaikin(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &username, const std::string &password);
+	CDaikin(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &username, const std::string &password, const int poll);
 	~CDaikin() override = default;
 
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
@@ -46,6 +46,7 @@ private:
 	std::string m_led;
 	std::shared_ptr<std::thread> m_thread;
 	int m_sec_counter;
+	int m_poll;
 	std::string m_dt[8]; // Memorized Temp target for each mode.
 	std::string m_dh[8]; // Memorized Humidity target for each mode.
 	std::string m_sci_Temp;
