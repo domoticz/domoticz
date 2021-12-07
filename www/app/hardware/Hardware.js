@@ -144,6 +144,41 @@ define(['app'], function (app) {
 			return true;
 		}
 		
+		ActionDomoticzHW = function(mode, hardwaretype, logLevel, timeout, enabled, idx) {
+			var idxTxt = "", extraTxt = "";
+			if(mode === "update")
+				idxTxt = "&idx=" + idx;
+			if(!(data = extraHWUpdateParams(validators)))
+				return;
+			if(!GetStdFields(data))
+				return;
+			if(data["extra"])
+				extraTxt = "&extra" + encodeURIComponent(extra);
+			$.ajax({
+				url: "json.htm?type=command&param=" + mode + "hardware&htype=" + hardwaretype +
+				"&loglevel=" + logLevel +
+				"&address=" + data["Address"] +
+				"&port=" + data["Port"] +
+				"&username=" + data["Username"] +
+				"&password=" + data["Password"] +
+				extraTxt +
+				"&name=" + data["Name"] +
+				"&enabled=" + enabled +
+				idxTxt +
+				"&datatimeout=" + timeout +
+				"&Mode1=" + data["Mode1"] + "&Mode2=" + data["Mode2"] + "&Mode3=" + data["Mode3"] + "&Mode4=" + data["Mode4"] + "&Mode5=" + data["Mode5"] + "&Mode6=" + data["Mode6"],
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					RefreshHardwareTable();
+				},
+				error: function () {
+					ShowNotify($.t('Problem updating hardware!'), 2500, true);
+				}
+			});
+			return;
+		}				
+		
 		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var hardwaretype = $("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 			if (typeof hardwaretype == 'undefined') {
@@ -164,37 +199,11 @@ define(['app'], function (app) {
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
-            if($scope.calledFetch)
-            {
-                if(!(data = extraHWUpdateParams(validators)))
-					return;
-                if(!GetStdFields(data))
-					return;
-				$.ajax({
-					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-					"&loglevel=" + logLevel +
-					"&address=" + data["Address"] +
-					"&port=" + data["Port"] +
-					"&username=" + data["Username"] +
-					"&password=" + data["Password"] +
-					"&extra=" + encodeURIComponent(extra) +
-					"&name=" + data["Name"] +
-					"&enabled=" + bEnabled +
-					"&idx=" + idx +
-					"&datatimeout=" + datatimeout +
-					"&Mode1=" + data["Mode1"] + "&Mode2=" + data["Mode2"] + "&Mode3=" + data["Mode3"] + "&Mode4=" + data["Mode4"] + "&Mode5=" + data["Mode5"] + "&Mode6=" + data["Mode6"],
-					async: false,
-					dataType: 'json',
-					success: function (data) {
-						RefreshHardwareTable();
-					},
-					error: function () {
-						ShowNotify($.t('Problem updating hardware!'), 2500, true);
-					}
-				});
+			if($scope.calledFetch) {
+				ActionDomoticzHW("update", hardwaretype, logLevel, datatimeout, bEnabled, idx);
 				return;
-            }
-            
+			}
+			
 			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name == "") {
 				ShowNotify($.t('Please enter a Name!'), 2500, true);
@@ -1599,30 +1608,8 @@ define(['app'], function (app) {
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
             
-			if ($scope.calledFetch) {
-				if(!(data = extraHWUpdateParams(validators)))
-					return;
-				if(!GetStdFields(data))
-					return;
-				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-						"&loglevel=" + logLevel +
-						"&address=" + data["Address"] + "&port=" + data["Port"] +
-						"&username=" + data["Username"] + "&password=" + data["Password"] +
-						"&name=" + data["Name"] +
-						"&enabled=" + bEnabled +
-						"&datatimeout=" + datatimeout +
-						"&extra=" + encodeURIComponent(extra) +
-						"&Mode1=" + data["Mode1"] + "&Mode2=" + data["Mode2"] + "&Mode3=" + data["Mode3"] + "&Mode4=" + data["Mode4"] + "&Mode5=" + data["Mode5"] + "&Mode6=" + data["Mode6"],
-					async: false,
-					dataType: 'json',
-					success: function (data) {
-						RefreshHardwareTable();
-					},
-					error: function () {
-						ShowNotify($.t('Problem adding hardware!'), 2500, true);
-					}
-				});
+			if($scope.calledFetch) {
+				ActionDomoticzHW("add", hardwaretype, logLevel, datatimeout, bEnabled);
 				return;
 			}
 				
