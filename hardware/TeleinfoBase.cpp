@@ -36,6 +36,7 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
+	m_pInjectpower.ID = 4;
 
 	m_bDisableCRC = false;
 	m_bStandardMode = false; // default to historic mode
@@ -48,17 +49,12 @@ void CTeleinfoBase::InitTeleinfo()
 	m_bufferpos = 0;
 	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 	m_counter = 0;
-	m_teleinfo.ISOUSC = 0;
-	m_teleinfo.URMS1 = 0;
-	m_teleinfo.URMS2 = 0;
-	m_teleinfo.URMS3 = 0;
 }
 
 void CTeleinfoBase::ProcessTeleinfo(Teleinfo &teleinfo)
 {
 	ProcessTeleinfo("Teleinfo", 1, teleinfo);
 }
-
 
 // Alert level is 1 up to 80% usage, 2 between 80% and 90%, 3 between 90% and 98%, 4 above
 int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char* text)
@@ -300,6 +296,15 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
+
+			if (teleinfo.EAIT > 0)
+			{
+				m_pInjectpower.usagecurrent = teleinfo.SINSTI;
+				m_pInjectpower.powerusage1 = teleinfo.EAIT;
+				m_pInjectpower.powerusage2 = 0;
+				sDecodeRXMessage(this, (const unsigned char *)&m_pInjectpower, (name + " kWh Total injectés").c_str(), 255, nullptr);
+			}
+
 			if (teleinfo.triphase == false)
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
@@ -601,6 +606,8 @@ void CTeleinfoBase::MatchLine()
 		else if(value == 2)
 		m_teleinfo.PTEC == "HP..";
 	}
+	else if (label == "EAIT") m_teleinfo.EAIT = value;
+	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
 	else if (label == "ADSC")
 	{
 		m_bStandardMode = true;
