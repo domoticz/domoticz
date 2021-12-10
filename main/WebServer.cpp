@@ -17409,12 +17409,15 @@ namespace http
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;
-				double fsumPrevious;
+				double yearSumPrevious[12];
+				int yearPrevious[12];
 				for (const auto &sd : result)
 				{
 					const int year = atoi(sd[0].c_str());
 					const double fsum = atof(sd[1].c_str());
-					const char *trend = firstYearCounting == 0 ? "" : fsumPrevious < fsum ? "up" : fsumPrevious > fsum ? "down" : "equal";
+					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1]-'0'-1 : atoi(sd[2].c_str())-1;
+					const double *sumPrevious = year-1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
+					const char *trend = !sumPrevious ? "" : *sumPrevious < fsum ? "up" : *sumPrevious > fsum ? "down" : "equal";
 					const int ii = root["result"].size();
 					if (firstYearCounting == 0 || year < firstYearCounting)
 					{
@@ -17424,7 +17427,8 @@ namespace http
 					root["result"][ii]["c"] = sgroupby == "year" ? sd[0] : sd[2];
 					root["result"][ii]["s"] = sumToResult(fsum);
 					root["result"][ii]["t"] = trend;
-					fsumPrevious = fsum;
+					yearSumPrevious[previousIndex] = fsum;
+					yearPrevious[previousIndex] = year;
 				}
 				root["firstYear"] = firstYearCounting;
 			}
