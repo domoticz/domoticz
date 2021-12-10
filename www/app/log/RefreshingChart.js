@@ -534,6 +534,8 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
             self.$scope.zoomed = false;
 
+            self.$scope.shortLogHistoryMaxDays = self.$scope.$root.config.FiveMinuteHistoryDays;
+
             self.$scope.zoomLabel = function (label) {
                 const matcher = label.match(/^(?<count>[0-9]+)(?<letter>[HdwM])$/);
                 if (matcher !== null) {
