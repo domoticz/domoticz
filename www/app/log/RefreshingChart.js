@@ -167,14 +167,16 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                         self.chartPoint = event.point;
                                         self.chartPointPosition = self.touchStartPosition || self.mouseDownPosition;
                                         if (event.shiftKey === true) {
-                                            self.domoticzDatapointApi.deletePoint(
-                                                self.device.idx,
-                                                event.point,
-                                                self.dataSupplier.isShortLogChart,
-                                                Intl.DateTimeFormat().resolvedOptions().timeZone
-                                            ).then(function () {
-                                                self.$route.reload();
-                                            });
+                                            if (deletePointIsSupported()) {
+                                                self.domoticzDatapointApi.deletePoint(
+                                                    self.device.idx,
+                                                    event.point,
+                                                    self.dataSupplier.isShortLogChart,
+                                                    Intl.DateTimeFormat().resolvedOptions().timeZone
+                                                ).then(function () {
+                                                    self.$route.reload();
+                                                });
+                                            }
                                         }
                                     }
                                 }
@@ -385,12 +387,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 } else {
                     if (self.touchStartTimestamp + touchDeletePointDelay < e.timeStamp) {
                         if (self.chartPoint !== undefined && self.chartPointPosition === self.touchStartPosition) {
-                            self.consoledebug('Delete point ' + self.chartPoint + ' at ' + self.chartPointPosition);
-                            self.domoticzDatapointApi
-                                .deletePoint(self.device.idx, self.chartPoint, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
-                                .then(function () {
-                                    self.$route.reload();
-                                });
+                            if (deletePointIsSupported()) {
+                                self.consoledebug('Delete point ' + self.chartPoint + ' at ' + self.chartPointPosition);
+                                self.domoticzDatapointApi
+                                    .deletePoint(self.device.idx, self.chartPoint, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
+                                    .then(function () {
+                                        self.$route.reload();
+                                    });
+                            }
                         }
                     }
                 }
@@ -742,6 +746,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 return 'yAxis.title.undefined';
             }
             return yAxis.title.text;
+        }
+
+        function deletePointIsSupported() {
+            return ['day', 'month', 'year'].includes(self.range);
         }
     }
 
