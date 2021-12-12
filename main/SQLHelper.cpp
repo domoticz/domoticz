@@ -4948,14 +4948,14 @@ uint64_t CSQLHelper::UpdateValueInt(
 				float energyUpToInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[1].c_str()));
 				float energyDuringInterval = static_cast<float>(powerDuringInterval * intervalSeconds / 3600);
 				float energyAfterInterval = static_cast<float>(energyUpToInterval + energyDuringInterval);
-				const char* powerAfterInterval = powerAndEnergyBeforeUpdate[0].c_str();
 				std::vector<std::string> powerAndEnergyUpdate;
 				StringSplit(sValue, ";", powerAndEnergyUpdate);
 				if (!powerAndEnergyUpdate.empty())
 				{
-                    char sValueAfterInterval[100];
-                    sprintf(sValueAfterInterval, "%s;%.1f", powerAfterInterval, energyAfterInterval);
-					sValue = sValueAfterInterval;
+					const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
+                    char sValueUpdate[100];
+                    sprintf(sValueUpdate, "%s;%.1f", powerUpdate, energyAfterInterval);
+					sValue = sValueUpdate;
 				}
 				else
 				{
