@@ -17374,13 +17374,13 @@ namespace http
             queryString.append("         and mc1.Date = (");
             queryString.append("             select max(mcm.Date)");
             queryString.append("             from " + dbasetable + " mcm");
-            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0");
+            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") > 0");
             queryString.append("         )");
             queryString.append(" 	where");
             queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
-            queryString.append("         and ("+counter("mc0")+") <> 0");
-            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) <= mc1.Date");
-            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)");
+            queryString.append("         and ("+counter("mc0")+") > 0");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) <= mc1.Date");
+            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0)");
             queryString.append("    union all");
             queryString.append("    select");
             queryString.append("         DeviceRowID,");
@@ -17389,7 +17389,7 @@ namespace http
             queryString.append(" 	from " + dbasetable);
             queryString.append(" 	where");
             queryString.append("         DeviceRowID = %" PRIu64 "");
-            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) = Date");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) = Date");
             queryString.append(" )");
             queryString.append(" group by strftime('%%Y',Date)");
             if (sgroupby == "quarter")
