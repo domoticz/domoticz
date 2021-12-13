@@ -34,6 +34,7 @@ class CDenkoviDevices : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
+    bool dHttpGet(const std::string &url, std::string &response);
 
 	int DenkoviGetIntParameter(std::string tmpstr, const std::string &tmpParameter);
 	std::string DenkoviGetStrParameter(std::string tmpstr, const std::string &tmpParameter);
