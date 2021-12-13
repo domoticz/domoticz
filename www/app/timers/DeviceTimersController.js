@@ -54,6 +54,7 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
                     vm.timerSettings.level = vm.levelOptions[0].value;
                 }
 
+                $( document ).trigger( "timersInitialized", [vm, refreshTimers] );//<===Update for Planning
                 refreshTimers();
             });
 
@@ -65,6 +66,7 @@ define(['app', 'timers/factories', 'timers/components','timers/planning'], funct
             vm.selectedTimerIdx = null;
 
             deviceTimers.getTimers(vm.deviceIdx).then(function (items) {
+                 $( document ).trigger( "timersLoaded", [items] );//<===Update for Planning
                 vm.timers = items;
             });
         }
