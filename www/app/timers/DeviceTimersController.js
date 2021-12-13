@@ -1,4 +1,4 @@
-define(['app', 'timers/factories', 'timers/components'], function (app) {
+define(['app', 'timers/factories', 'timers/components','timers/planning'], function (app) {
 
     app.controller('DeviceTimersController', function ($scope, $routeParams, deviceApi, deviceLightApi, deviceRegularTimersApi, deviceSetpointTimersApi, deviceTimerOptions, deviceTimerConfigUtils, utils) {
         var vm = this;
