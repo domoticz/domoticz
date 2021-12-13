@@ -285,6 +285,7 @@
     <None Include="..\www\css\jquery.uix.multiselect.css" />
     <None Include="..\www\css\remote.css" />
     <None Include="..\www\css\style.css" />
+    <None Include="..\www\css\planning.css" />
     <None Include="..\www\css\ui-darkness\jquery-ui.min.css" />
     <None Include="..\www\eventsframe.html" />
     <None Include="..\www\html5.appcache" />

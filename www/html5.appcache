@@ -19,6 +19,7 @@ css/style.css
 css/ui-darkness/jquery-ui.min.css
 css/ui-grid.min.css
 css/wheelcolorpicker.css
+css/planning.css
 secpanel/css/style.css
 
 # Fonts
@@ -593,6 +594,7 @@ app/timers/components.js
 app/timers/DeviceTimersController.js
 app/timers/factories.js
 app/timers/SceneTimersController.js
+app/timers/planning.js
 
 app/AboutController.js
 app/app.js
