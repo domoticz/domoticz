@@ -4939,21 +4939,23 @@ uint64_t CSQLHelper::UpdateValueInt(
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 			intervalSeconds = difftime(now, lutime);
 
-            std::vector<std::string> parts;
-			StringSplit(sValueBeforeUpdate, ";", parts);
-			if (parts.size() == 2)
+            std::vector<std::string> powerAndEnergyBeforeUpdate;
+			StringSplit(sValueBeforeUpdate, ";", powerAndEnergyBeforeUpdate);
+			if (powerAndEnergyBeforeUpdate.size() == 2)
 			{
 				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
-				float powerDuringInterval = static_cast<float>(atof(parts[0].c_str()));
-				float energyUpToInterval = static_cast<float>(atof(parts[1].c_str()));
-				float energyDuringInterval = static_cast<float>(powerDuringInterval * intervalSeconds / 3600 + energyUpToInterval);
-				const char* powerAfterInterval = parts[0].c_str();
-				StringSplit(sValue, ";", parts);
-				if (!parts.empty())
+				float powerDuringInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[0].c_str()));
+				float energyUpToInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[1].c_str()));
+				float energyDuringInterval = static_cast<float>(powerDuringInterval * intervalSeconds / 3600);
+				float energyAfterInterval = static_cast<float>(energyUpToInterval + energyDuringInterval);
+				std::vector<std::string> powerAndEnergyUpdate;
+				StringSplit(sValue, ";", powerAndEnergyUpdate);
+				if (!powerAndEnergyUpdate.empty())
 				{
-                    char sValueAfterInterval[100];
-                    sprintf(sValueAfterInterval, "%s;%.1f", powerAfterInterval, energyDuringInterval);
-					sValue = sValueAfterInterval;
+					const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
+                    char sValueUpdate[100];
+                    sprintf(sValueUpdate, "%s;%.1f", powerUpdate, energyAfterInterval);
+					sValue = sValueUpdate;
 				}
 				else
 				{

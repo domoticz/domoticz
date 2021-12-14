@@ -81,176 +81,182 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function createChartDefinition(template) {
             return _.merge({
-                        chart: {
-                            type: 'spline',
-                            zoomType: 'x',
-                            marginTop: 45,
-                            panning: true,
-                            panKey: 'shift'
-                        },
-                        xAxis: {
-                            type: 'datetime',
-                            gridLineColor: '#aaaaaa',
-                            gridLineDashStyle: 'dot',
-                            gridLineWidth: .5,
-                            events: {
-                                setExtremes: function (e) {
-                                    const xAxis = self.chart.xAxis[0];
-                                    self.consoledebug(function () {
-                                        return 'xAxis.setExtremes():\n'
-                                            + '    dataMin:' + Base.dateToString(xAxis.dataMin) + ', e.min:' + Base.dateToString(e.min) + '\n'
-                                            + '    dataMax:' + Base.dateToString(xAxis.dataMax) + ', e.max:' + Base.dateToString(e.max);
-                                    });
-                                    if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
-                                        self.isZoomLeftSticky = false;
-                                        self.isZoomRightSticky = false;
-                                        self.isZoomed = false;
-                                        self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
-                                    } else {
-                                        const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
-                                        if (wasMouseDrag) {
-                                            const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
-                                            self.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseDown : self.wasCtrlMouseUp;
-                                            self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
-                                        }
-                                        self.isZoomed = true;
-                                        self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                    chart: {
+                        type: 'spline',
+                        zoomType: 'x',
+                        marginTop: 45,
+                        panning: true,
+                        panKey: 'shift'
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        gridLineColor: '#aaaaaa',
+                        gridLineDashStyle: 'dot',
+                        gridLineWidth: .5,
+                        events: {
+                            setExtremes: function (e) {
+                                const xAxis = self.chart.xAxis[0];
+                                self.consoledebug(function () {
+                                    return 'xAxis.setExtremes():\n'
+                                        + '    dataMin:' + Base.dateToString(xAxis.dataMin) + ', e.min:' + Base.dateToString(e.min) + '\n'
+                                        + '    dataMax:' + Base.dateToString(xAxis.dataMax) + ', e.max:' + Base.dateToString(e.max);
+                                });
+                                if (e.min === null && e.max === null || e.min <= xAxis.dataMin && xAxis.dataMax <= e.max) {
+                                    self.isZoomLeftSticky = false;
+                                    self.isZoomRightSticky = false;
+                                    self.isZoomed = false;
+                                    self.consoledebug('Reset zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                                } else {
+                                    const wasMouseDrag = self.mouseDownPosition !== self.mouseUpPosition;
+                                    if (wasMouseDrag) {
+                                        const wasMouseUpRightOfMouseDown = self.mouseDownPosition < self.mouseUpPosition;
+                                        self.isZoomLeftSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseDown : self.wasCtrlMouseUp;
+                                        self.isZoomRightSticky = wasMouseUpRightOfMouseDown ? self.wasCtrlMouseUp : self.wasCtrlMouseDown;
                                     }
-                                    self.seriesSuppliers.forEach(function (seriesSupplier) {
-                                        if (seriesSupplier.chartZoomLevelChanged !== undefined) {
-                                            seriesSupplier.chartZoomLevelChanged(self.chart,
-                                                e.min !== null ? e.min : xAxis.dataMin, e.max !== null ? e.max : xAxis.dataMax);
-                                        }
-                                    });
+                                    self.isZoomed = true;
+                                    self.consoledebug('Set zoom ' + self + ': left-sticky:' + self.isZoomLeftSticky + ', right-sticky:' + self.isZoomRightSticky);
+                                }
+                                self.seriesSuppliers.forEach(function (seriesSupplier) {
+                                    if (seriesSupplier.chartZoomLevelChanged !== undefined) {
+                                        seriesSupplier.chartZoomLevelChanged(self.chart,
+                                            e.min !== null ? e.min : xAxis.dataMin, e.max !== null ? e.max : xAxis.dataMax);
+                                    }
+                                });
 
-                                    if (self.isMouseDown) {
-                                        self.isSynchronizeYaxesRequired = true;
-                                    } else {
-                                        synchronizeYaxes(true);
-                                    }
-                                    self.$timeout(function () { self.$scope.zoomed = self.isZoomed; }, 0, true);
+                                if (self.isMouseDown) {
+                                    self.isSynchronizeYaxesRequired = true;
+                                } else {
+                                    synchronizeYaxes(true);
                                 }
+                                self.$timeout(function () {
+                                    self.$scope.zoomed = self.isZoomed;
+                                }, 0, true);
                             }
-                        },
-                        yAxis: self.dataSupplier.yAxes.map(function (yAxis) {
-                            return _.merge(
-                                {
-                                    events: {
-                                        setExtremes: function (e) {
-                                            self.consoledebug(function () {
-                                                return 'yAxis(' + yAxisToString(yAxis) + ').setExtremes():\n'
-                                                    + '    dataMin:' + yAxis.dataMin + ', e.min:' + e.min + '\n'
-                                                    + '    dataMax:' + yAxis.dataMax + ', e.max:' + e.max;
-                                            });
-                                        }
-                                    }
-                                },
-                                yAxis
-                            );
-                        }),
-                        tooltip: {
-                            className: 'chart-tooltip-container',
-                            followTouchMove: self.$location.search().followTouchMove !== 'false',
-                            outside: true,
-                            crosshairs: true,
-                            shared: true,
-                            valueSuffix: self.dataSupplier.valueSuffix
-                        },
-                        plotOptions: {
-                            series: {
-                                point: {
-                                    events: {
-                                        click: function (event) {
-                                            self.consoledebug('Chart click: ' + event.point);
-                                            self.chartPoint = event.point;
-                                            self.chartPointPosition = self.touchStartPosition || self.mouseDownPosition;
-                                            if (event.shiftKey !== true) {
-                                                return;
-                                            }
-                                            self.domoticzDatapointApi
-                                                .deletePoint(self.device.idx, event.point, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
-                                                .then(function () {
-                                                    self.$route.reload();
-                                                });
-                                        }
-                                    }
-                                }
-                            },
-                            spline: {
-                                lineWidth: 3,
-                                states: {
-                                    hover: {
-                                        lineWidth: 3
-                                    }
-                                },
-                                marker: {
-                                    enabled: false,
-                                    states: {
-                                        hover: {
-                                            enabled: true,
-                                            symbol: 'circle',
-                                            radius: 5,
-                                            lineWidth: 1
-                                        }
-                                    }
-                                }
-                            },
-                            line: {
-                                lineWidth: 3,
-                                states: {
-                                    hover: {
-                                        lineWidth: 3
-                                    }
-                                },
-                                marker: {
-                                    enabled: false,
-                                    states: {
-                                        hover: {
-                                            enabled: true,
-                                            symbol: 'circle',
-                                            radius: 5,
-                                            lineWidth: 1
-                                        }
-                                    }
-                                }
-                            },
-                            areasplinerange: {
-                                marker: {
-                                    enabled: false
-                                }
-                            },
-                            areaspline: {
-                                lineWidth: 3,
-                                marker: {
-                                    enabled: false
-                                },
-                                states: {
-                                    hover: {
-                                        lineWidth: 3
-                                    }
-                                }
-                            },
-                            column: {
-                                pointPlacement: 'between',
-                                borderWidth: 0,
-                                minPointLength: 2,
-                                pointPadding: 0.1,
-                                groupPadding: 0,
-                                dataLabels: {
-                                    enabled: false,
-                                    color: 'white'
-                                }
-                            }
-                        },
-                        title: false,
-                        series: [],
-                        legend: {
-                            enabled: true
-                        },
-                        time: {
-                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         }
                     },
+                    yAxis: self.dataSupplier.yAxes.map(function (yAxis) {
+                        return _.merge(
+                            {
+                                events: {
+                                    setExtremes: function (e) {
+                                        self.consoledebug(function () {
+                                            return 'yAxis(' + yAxisToString(yAxis) + ').setExtremes():\n'
+                                                + '    dataMin:' + yAxis.dataMin + ', e.min:' + e.min + '\n'
+                                                + '    dataMax:' + yAxis.dataMax + ', e.max:' + e.max;
+                                        });
+                                    }
+                                }
+                            },
+                            yAxis
+                        );
+                    }),
+                    tooltip: {
+                        className: 'chart-tooltip-container',
+                        followTouchMove: self.$location.search().followTouchMove !== 'false',
+                        outside: true,
+                        crosshairs: true,
+                        shared: true,
+                        valueSuffix: self.dataSupplier.valueSuffix
+                    },
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function (event) {
+                                        self.consoledebug('Chart click: ' + event.point);
+                                        self.chartPoint = event.point;
+                                        self.chartPointPosition = self.touchStartPosition || self.mouseDownPosition;
+                                        if (event.shiftKey === true) {
+                                            if (deletePointIsSupported()) {
+                                                self.domoticzDatapointApi.deletePoint(
+                                                    self.device.idx,
+                                                    event.point,
+                                                    self.dataSupplier.isShortLogChart,
+                                                    Intl.DateTimeFormat().resolvedOptions().timeZone
+                                                ).then(function () {
+                                                    self.$route.reload();
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        spline: {
+                            lineWidth: 3,
+                            states: {
+                                hover: {
+                                    lineWidth: 3
+                                }
+                            },
+                            marker: {
+                                enabled: false,
+                                states: {
+                                    hover: {
+                                        enabled: true,
+                                        symbol: 'circle',
+                                        radius: 5,
+                                        lineWidth: 1
+                                    }
+                                }
+                            }
+                        },
+                        line: {
+                            lineWidth: 3,
+                            states: {
+                                hover: {
+                                    lineWidth: 3
+                                }
+                            },
+                            marker: {
+                                enabled: false,
+                                states: {
+                                    hover: {
+                                        enabled: true,
+                                        symbol: 'circle',
+                                        radius: 5,
+                                        lineWidth: 1
+                                    }
+                                }
+                            }
+                        },
+                        areasplinerange: {
+                            marker: {
+                                enabled: false
+                            }
+                        },
+                        areaspline: {
+                            lineWidth: 3,
+                            marker: {
+                                enabled: false
+                            },
+                            states: {
+                                hover: {
+                                    lineWidth: 3
+                                }
+                            }
+                        },
+                        column: {
+                            pointPlacement: 'between',
+                            borderWidth: 0,
+                            minPointLength: 2,
+                            pointPadding: 0.1,
+                            groupPadding: 0,
+                            dataLabels: {
+                                enabled: false,
+                                color: 'white'
+                            }
+                        }
+                    },
+                    title: false,
+                    series: [],
+                    legend: {
+                        enabled: true
+                    },
+                    time: {
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                    }
+                },
                     template
                 );
         }
@@ -381,12 +387,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 } else {
                     if (self.touchStartTimestamp + touchDeletePointDelay < e.timeStamp) {
                         if (self.chartPoint !== undefined && self.chartPointPosition === self.touchStartPosition) {
-                            self.consoledebug('Delete point ' + self.chartPoint + ' at ' + self.chartPointPosition);
-                            self.domoticzDatapointApi
-                                .deletePoint(self.device.idx, self.chartPoint, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
-                                .then(function () {
-                                    self.$route.reload();
-                                });
+                            if (deletePointIsSupported()) {
+                                self.consoledebug('Delete point ' + self.chartPoint + ' at ' + self.chartPointPosition);
+                                self.domoticzDatapointApi
+                                    .deletePoint(self.device.idx, self.chartPoint, self.dataSupplier.isShortLogChart, Intl.DateTimeFormat().resolvedOptions().timeZone)
+                                    .then(function () {
+                                        self.$route.reload();
+                                    });
+                            }
                         }
                     }
                 }
@@ -533,6 +541,8 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomed = false;
+
+            self.$scope.shortLogHistoryMaxDays = self.$scope.$root.config.FiveMinuteHistoryDays;
 
             self.$scope.zoomLabel = function (label) {
                 const matcher = label.match(/^(?<count>[0-9]+)(?<letter>[HdwM])$/);
@@ -736,6 +746,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 return 'yAxis.title.undefined';
             }
             return yAxis.title.text;
+        }
+
+        function deletePointIsSupported() {
+            return ['day', 'month', 'year'].includes(self.range);
         }
     }
 

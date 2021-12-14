@@ -403,6 +403,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                     type: ctrl.device.Type === 'Thermostat' ? 'line' : undefined
                 }
             },
+            ctrl: ctrl,
             range: ctrl.range,
             device: ctrl.device,
             sensorType: ctrl.sensorType,

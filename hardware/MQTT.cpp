@@ -3371,6 +3371,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	{
 		Json::Value root;
 
+		// Change Set Level to Set Color to send color_temp && color info in payload
+		if (command == "Set Level" && color.mode != ColorModeNone)
+			command = "Set Color";
+
 		if (
 			(command == "On")
 			|| (command == "Off"))

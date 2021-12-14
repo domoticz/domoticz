@@ -908,7 +908,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CNetatmo(ID, Username, Password);
 		break;
 	case HTYPE_Daikin:
-		pHardware = new CDaikin(ID, Address, Port, Username, Password);
+		pHardware = new CDaikin(ID, Address, Port, Username, Password, Mode1);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID, Username);
