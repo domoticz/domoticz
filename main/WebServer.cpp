@@ -9891,14 +9891,14 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sValue);
-							uint64_t total_real = total_max - total_min;
+							uint64_t total_first = std::stoull(sd2[0]);
+							uint64_t total_last = std::stoull(sValue);
+							uint64_t total_real = total_last - total_first;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
 							float musage = 0;
@@ -17374,13 +17374,13 @@ namespace http
             queryString.append("         and mc1.Date = (");
             queryString.append("             select max(mcm.Date)");
             queryString.append("             from " + dbasetable + " mcm");
-            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0");
+            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") > 0");
             queryString.append("         )");
             queryString.append(" 	where");
             queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
-            queryString.append("         and ("+counter("mc0")+") <> 0");
-            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) <= mc1.Date");
-            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)");
+            queryString.append("         and ("+counter("mc0")+") > 0");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) <= mc1.Date");
+            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0)");
             queryString.append("    union all");
             queryString.append("    select");
             queryString.append("         DeviceRowID,");
@@ -17389,7 +17389,7 @@ namespace http
             queryString.append(" 	from " + dbasetable);
             queryString.append(" 	where");
             queryString.append("         DeviceRowID = %" PRIu64 "");
-            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0) = Date");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) = Date");
             queryString.append(" )");
             queryString.append(" group by strftime('%%Y',Date)");
             if (sgroupby == "quarter")
@@ -17409,12 +17409,15 @@ namespace http
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;
-				double fsumPrevious;
+				double yearSumPrevious[12];
+				int yearPrevious[12];
 				for (const auto &sd : result)
 				{
 					const int year = atoi(sd[0].c_str());
 					const double fsum = atof(sd[1].c_str());
-					const char *trend = firstYearCounting == 0 ? "" : fsumPrevious < fsum ? "up" : fsumPrevious > fsum ? "down" : "equal";
+					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1]-'0'-1 : atoi(sd[2].c_str())-1;
+					const double *sumPrevious = year-1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
+					const char *trend = !sumPrevious ? "" : *sumPrevious < fsum ? "up" : *sumPrevious > fsum ? "down" : "equal";
 					const int ii = root["result"].size();
 					if (firstYearCounting == 0 || year < firstYearCounting)
 					{
@@ -17424,7 +17427,8 @@ namespace http
 					root["result"][ii]["c"] = sgroupby == "year" ? sd[0] : sd[2];
 					root["result"][ii]["s"] = sumToResult(fsum);
 					root["result"][ii]["t"] = trend;
-					fsumPrevious = fsum;
+					yearSumPrevious[previousIndex] = fsum;
+					yearPrevious[previousIndex] = year;
 				}
 				root["firstYear"] = firstYearCounting;
 			}
