@@ -1443,6 +1443,40 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			return;  
 		}
 		*/
+
+		//Check if we have a base_topic and if so, adjust all payloads
+		if (!root["~"].empty())
+		{
+			std::string base_topic = root["~"].asString();
+
+			for (auto ittPayload : root)
+			{
+				for (const auto ittMember : root.getMemberNames())
+				{
+					std::string szKey = ittMember;
+					if (szKey == "~")
+						continue;
+					if (!root[ittMember].empty())
+					{
+						if (root[ittMember].isString())
+						{
+							std::string szValue = root[ittMember].asString();
+							if (szValue.empty())
+								continue;
+							if (
+								(szValue.find('~') == 0)
+								|| (szValue.find('~') == szValue.size() - 1)
+								)
+							{
+								stdreplace(szValue, "~", base_topic);
+								root[ittMember] = szValue;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		_tMQTTASensor tmpSensor;
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
 		_tMQTTASensor *pSensor = &m_discovered_sensors[sensor_unique_id];
