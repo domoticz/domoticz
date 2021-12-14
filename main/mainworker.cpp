@@ -11437,6 +11437,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	// TODO: Something smarter if level is not valid?
 	level = std::max(level, 0);
 
+	//Special case when color is passed from timer or scene
+	if ((switchcmd == "On") || (switchcmd == "Set Level"))
+	{
+		if (color.mode != ColorModeNone)
+		{
+			switchcmd = "Set Color";
+		}
+	}
+
 	//
 	//	For plugins all the specific logic below is irrelevent
 	//	so just send the full details to the plugin so that it can take appropriate action
@@ -11444,14 +11453,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
 #ifdef ENABLE_PYTHON
-		// Special case when color is passed from timer or scene
-		if ((switchcmd == "On") || (switchcmd == "Set Level"))
-		{
-			if (color.mode != ColorModeNone)
-			{
-				switchcmd = "Set Color";
-			}
-		}
 		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(sd[1], Unit, switchcmd, level, color);
 #endif
 		return true;
@@ -11849,14 +11850,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		level = std::max(0, level);
 		lcmd.value = level;
 
-		//Special case when color is passed from timer or scene
-		if ((switchcmd == "On") || (switchcmd == "Set Level"))
-		{
-			if (color.mode != ColorModeNone)
-			{
-				switchcmd = "Set Color";
-			}
-		}
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.command, options))
 			return false;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tColorSwitch)))
