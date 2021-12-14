@@ -27,6 +27,36 @@ define(['app'], function (app) {
 			RefreshHardwareTable();
 		}
 		
+		function validateInteger (val, defVal, minVal, maxVal, fldName)  {
+			var testno = parseInt(val);
+			var msg = "";
+			var betmsg = "!";
+			if(!fldName)
+				fldName = "number";
+			if(typeof minVal == 'number') {
+				if(typeof maxVal == 'number') {
+					betmsg = " between " + minVal + " and " + maxVal + "!";
+				}
+				else {
+					betmsg = " above " + minVal + "!";
+				}
+			}
+			else if(typeof maxVal == 'number') {
+				betmsg = " below " + maxVal + "!";
+			}
+			if (isNaN(testno)) {
+				msg = 'Please enter a valid ' + fldName + betmsg;
+			}
+			else if(((typeof minVal == 'number')?(testno < minVal):false) || ((typeof maxVal == 'number')?(testno > maxVal):false)) {
+				msg = 'Please enter a ' + fldName + betmsg;
+			}
+			if (msg != "") {
+				ShowNotify($.t(msg), 2500, true);
+				return false;
+			}
+			return true;
+		}
+		
 		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name == "") {
@@ -685,6 +715,11 @@ define(['app'], function (app) {
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
 					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
+				}
+				else if ((text.indexOf("Daikin") >= 0)) {
+					Mode1 = $("#hardwarecontent #divdaikin #updatefrequencydaikin").val();
+					if (!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
+						return;
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -2143,6 +2178,11 @@ define(['app'], function (app) {
 				var Mode1 = "";
 				var Mode2 = "";
 				var Mode3 = "";
+				if (text.indexOf("Daikin") >= 0) {
+					Mode1 = $("#hardwarecontent #divdaikin #updatefrequencydaikin").val();
+					if (!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
+						return;
+				}
 				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 					extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
@@ -4358,6 +4398,13 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
 							$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
 						}
+						if (data["Type"].indexOf("Daikin") >= 0) {
+							var Pollseconds = parseInt(data["Mode1"]);
+							if ( Pollseconds < 10 ) {
+								Pollseconds = 300;
+							}
+							$("#hardwarecontent #divdaikin #updatefrequencydaikin").val(Pollseconds);
+						}
 					}
 				}
 			});
@@ -4780,6 +4827,12 @@ define(['app'], function (app) {
 				(text.indexOf("Razberry") >= 0)
 			) {
 				$("#hardwarecontent #divlogin").show();
+			}
+			if (text.indexOf("Daikin") >= 0) {
+				$("#hardwarecontent #divdaikin").show();
+			}
+			else {
+				$("#hardwarecontent #divdaikin").hide();
 			}
 			if (text.indexOf("Rtl433") >= 0) {
 				$("#hardwarecontent #divrtl433").show();
