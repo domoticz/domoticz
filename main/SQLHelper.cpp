@@ -5167,6 +5167,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 			bool bIsLightSwitchOn = IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
+			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
+			if (pHardware != nullptr)
+				HWtype = pHardware->HwdType;
+
 			if (
 				((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
 				|| (switchtype == STYPE_BlindsPercentage)
@@ -5176,24 +5181,18 @@ uint64_t CSQLHelper::UpdateValueInt(
 				)
 			{
 				if (
-					switchtype == STYPE_BlindsPercentage
+					(pHardware->HwdType != HTYPE_MQTT)
+					&&
+					(switchtype == STYPE_BlindsPercentage
 					|| switchtype == STYPE_BlindsPercentageWithStop
+					|| switchtype == STYPE_BlindsPercentageInverted
+					|| switchtype == STYPE_BlindsPercentageInvertedWithStop)
 					)
 				{
 					if (nValue == light2_sOn)
 						llevel = 100;
 					else if (nValue == light2_sOff)
 						llevel = 0;
-				}
-				if (
-					switchtype == STYPE_BlindsPercentageInverted
-					|| switchtype == STYPE_BlindsPercentageInvertedWithStop
-					)
-				{
-					if (nValue == light2_sOn)
-						llevel = 0;
-					else if (nValue == light2_sOff)
-						llevel = 100;
 				}
 				//update level for device
 				safe_query(
@@ -5281,11 +5280,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 					m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1, scriptname, s_scriptparams.str()));
 				}
 			}
-
-			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
-			if (pHardware != nullptr)
-				HWtype = pHardware->HwdType;
 
 			//Check for notifications
 			if (HWtype != HTYPE_LogitechMediaServer) // Skip notifications for LMS here; is handled by the LMS plug-in
