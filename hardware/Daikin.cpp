@@ -83,7 +83,7 @@ CDaikin::CDaikin(const int ID, const std::string &IPAddress, const unsigned shor
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_bOutputLog = false;
-	m_poll = poll?poll:300;
+	m_poll = poll ? poll : 300;
 	Init();
 }
 
