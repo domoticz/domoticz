@@ -48,7 +48,7 @@ define(['app'], function (app) {
 				msg = 'Please enter a valid ' + fldName + betmsg;
 			}
 			else if(((typeof minVal == 'number')?(testno < minVal):false) || ((typeof maxVal == 'number')?(testno > maxVal):false)) {
-				msg = 'Please enter a' + fldName + betmsg;
+				msg = 'Please enter a ' + fldName + betmsg;
 			}
 			if (msg != "") {
 				ShowNotify($.t(msg), 2500, true);
@@ -718,7 +718,7 @@ define(['app'], function (app) {
 				}
 				else if ((text.indexOf("Daikin") >= 0)) {
 					Mode1 = $("#hardwarecontent #divdaikin #updatefrequencydaikin").val();
-					if(!validateInteger(Mode1, 300, 10, 3600, " Poll Interval"))
+					if (!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
 						return;
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
@@ -2180,7 +2180,7 @@ define(['app'], function (app) {
 				var Mode3 = "";
 				if (text.indexOf("Daikin") >= 0) {
 					Mode1 = $("#hardwarecontent #divdaikin #updatefrequencydaikin").val();
-					if (!validateInteger(Mode1, 300, 10, 3600, " Poll Interval"))
+					if (!validateInteger(Mode1, 300, 10, 3600, "Poll Interval"))
 						return;
 				}
 				if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
