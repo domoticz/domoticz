@@ -36,8 +36,10 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
+	m_pInjectpower.ID = 4;
 
 	m_bDisableCRC = false;
+	m_bStandardMode = false; // default to historic mode
 
 	InitTeleinfo();
 }
@@ -54,34 +56,51 @@ void CTeleinfoBase::ProcessTeleinfo(Teleinfo &teleinfo)
 	ProcessTeleinfo("Teleinfo", 1, teleinfo);
 }
 
-
 // Alert level is 1 up to 80% usage, 2 between 80% and 90%, 3 between 90% and 98%, 4 above
-int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, char* text)
+int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char* text)
 {
-	int level;
-	float flevel;
+	int level = 1;
+	float flevel = 0;
 
-	flevel = (float)(Iinst * 100) / Isousc;
-	level = 1;
-	sprintf(text, " < 80%% de %iA souscrits", Isousc);
+	if (Isousc > 0)
+	{
+		flevel = (float)(Iinst * 100) / Isousc;
+		sprintf(text, " < 80%% de %iA souscrits", Isousc);
+	}
+	else if (Pref > 0)
+	{
+		flevel = (float)(Sinsts * 100) / (Pref * 1000);
+		sprintf(text, " < 80%% de %iKVA souscrits", Pref);
+	}
+	else
+		sprintf(text, "Pas d'info de souscription !", Pref);
+
 	if (flevel > 80)
 	{
 		level = 2;
-		sprintf(text, ">80%% et <90%% de %iA souscrits", Isousc);
+		if(Isousc > 0)
+			sprintf(text, ">80%% et <90%% de %iA souscrits", Isousc);
+		else
+			sprintf(text, ">80%% et <90%% de %iKVA souscrits", Pref);
 	}
 	if (level > 90)
 	{
 		level = 3;
-		sprintf(text, ">90%% et <98%% de %iA souscrits", Isousc);
+		if(Isousc > 0)
+			sprintf(text, ">90%% et <98%% de %iA souscrits", Isousc);
+		else
+			sprintf(text, ">90%% et <98%% de %iKVA souscrits", Pref);
 	}
 	if (level > 98)
 	{
 		level = 3;
-		sprintf(text, ">98%% de %iA souscrits", Isousc);
+		if(Isousc > 0)
+			sprintf(text, ">98%% de %iA souscrits", Isousc);
+		else
+			sprintf(text, ">98%% de %iKVA souscrits", Pref);
 	}
 	return level;
 }
-
 
 void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo)
 {
@@ -277,15 +296,35 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
+
+			if (teleinfo.EAIT > 0)
+			{
+				m_pInjectpower.usagecurrent = teleinfo.SINSTI;
+				m_pInjectpower.powerusage1 = teleinfo.EAIT;
+				m_pInjectpower.powerusage2 = 0;
+				sDecodeRXMessage(this, (const unsigned char *)&m_pInjectpower, (name + " kWh Total injectés").c_str(), 255, nullptr);
+			}
+
 			if (teleinfo.triphase == false)
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
-				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
+				if(teleinfo.URMS1 > 0)
+					SendVoltageSensor(m_HwdID + rank, 0, 255, teleinfo.URMS1, name + " Tension");
+				if(teleinfo.ISOUSC > 0)
+					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
+				else
+					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.PAPP * 100) / float(teleinfo.PREF * 1000), name + " Pourcentage de Charge");
 			}
 			else
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
 					name + " Courant");
+                                if(teleinfo.URMS1 > 0)
+					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, teleinfo.URMS1, name + " Tension phase 1");
+                                if(teleinfo.URMS2 > 0)
+					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, teleinfo.URMS2, name + " Tension phase 2");
+                                if(teleinfo.URMS3 > 0)
+					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, teleinfo.URMS3, name + " Tension phase 3");
 				if (teleinfo.ISOUSC > 0)
 				{
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1 * 100) / float(teleinfo.ISOUSC),
@@ -293,6 +332,15 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.IINST2 * 100) / float(teleinfo.ISOUSC),
 						name + " Charge phase 2");
 					SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.IINST3 * 100) / float(teleinfo.ISOUSC),
+						name + " charge phase 3");
+				}
+				else
+				{
+					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.SINSTS1 * 100) / float(teleinfo.PREF * 1000),
+						name + " Charge phase 1");
+					SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.SINSTS2 * 100) / float(teleinfo.PREF * 1000),
+						name + " Charge phase 2");
+					SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.SINSTS3 * 100) / float(teleinfo.PREF * 1000),
 						name + " charge phase 3");
 				}
 			}
@@ -306,7 +354,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		}
 		if (teleinfo.triphase == false)
 		{
-			alertI1 = AlertLevel(teleinfo.IINST, teleinfo.ISOUSC, szTmp);
+			alertI1 = AlertLevel(teleinfo.IINST, teleinfo.ISOUSC, teleinfo.PAPP, teleinfo.PREF, szTmp);
 			if (alertI1 != teleinfo.pAlertI1)
 			{
 				SendAlertSensor(32 * rank + 4, 255, alertI1, szTmp, name + " Alerte courant");
@@ -315,19 +363,19 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		}
 		else
 		{
-			alertI1 = AlertLevel(teleinfo.IINST1, teleinfo.ISOUSC, szTmp);
+			alertI1 = AlertLevel(teleinfo.IINST1, teleinfo.ISOUSC, teleinfo.PAPP, teleinfo.PREF, szTmp);
 			if (alertI1 != teleinfo.pAlertI1)
 			{
 				SendAlertSensor(32 * rank + 4, 255, alertI1, szTmp, name + " Alerte phase 1");
 				teleinfo.pAlertI1 = alertI1;
 			}
-			alertI2 = AlertLevel(teleinfo.IINST2, teleinfo.ISOUSC, szTmp);
+			alertI2 = AlertLevel(teleinfo.IINST2, teleinfo.ISOUSC, teleinfo.PAPP, teleinfo.PREF, szTmp);
 			if (alertI2 != teleinfo.pAlertI2)
 			{
 				SendAlertSensor(32 * rank + 5, 255, alertI2, szTmp, name + " Alerte phase 2");
 				teleinfo.pAlertI2 = alertI2;
 			}
-			alertI3 = AlertLevel(teleinfo.IINST3, teleinfo.ISOUSC, szTmp);
+			alertI3 = AlertLevel(teleinfo.IINST3, teleinfo.ISOUSC, teleinfo.PAPP, teleinfo.PREF, szTmp);
 			if (alertI3 != teleinfo.pAlertI3)
 			{
 				SendAlertSensor(32 * rank + 6, 255, alertI3, szTmp, name + " Alerte phase 3");
@@ -391,7 +439,7 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 
 	checksum = sLine[sLine.size() - 1];
 	int i = 0;
-	for (int i = 0; i < (int)sLine.size()-2; i++)
+	for (i = 0; i < (int)sLine.size()-2; i++)
 	{
 		mode1 += sLine[i];
 	}
@@ -445,7 +493,10 @@ void CTeleinfoBase::MatchLine()
 	}
 
 	// Extract the elements, return if not enough and line is invalid
-	StringSplit(sline, " ", splitresults);
+	if(m_bStandardMode)
+		StringSplit(sline, "	", splitresults); // standard mode is using TAB (0x09) as delimiter
+	else
+		StringSplit(sline, " ", splitresults); // historic mode is using space (0x20) as delimiter
 	if (splitresults.size() < 3)
 	{
 		Log(LOG_ERROR, "Frame #%s# passed the checksum test but failed analysis", sline.c_str());
@@ -456,6 +507,7 @@ void CTeleinfoBase::MatchLine()
 	vString = splitresults[1];
 	value = atoi(splitresults[1].c_str());
 
+	// Historic mode
 	if (label == "ADCO") m_teleinfo.ADCO = vString;
 	else if (label == "OPTARIF") m_teleinfo.OPTARIF = vString;
 	else if (label == "ISOUSC") m_teleinfo.ISOUSC = value;
@@ -484,11 +536,53 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "PPOT")  m_teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
+	// Standard mode
+	else if (label == "EAST") m_teleinfo.BASE = value;
+	else if (label == "EASF01") m_teleinfo.HCHC = value;
+	else if (label == "EASF02") m_teleinfo.HCHP = value;
+	else if (label == "PREF") m_teleinfo.PREF = value;
+	else if (label == "IRMS1") m_teleinfo.IINST = value;
+	else if (label == "IRMS2")
+	{ // triphase
+		m_teleinfo.IINST1 = m_teleinfo.IINST;
+		m_teleinfo.IINST = 0;
+		m_teleinfo.IINST2 = value;
+	}
+	else if (label == "IRMS3") m_teleinfo.IINST3 = value;
+	else if (label == "NGTF") m_teleinfo.OPTARIF = stdstring_trim(vString);
+	else if (label == "SINSTS")
+	{
+		m_teleinfo.PAPP = value;
+		m_teleinfo.withPAPP = true;
+	}
+	else if (label == "SINSTS1") m_teleinfo.SINSTS1 = value;
+	else if (label == "SINSTS2") m_teleinfo.SINSTS2 = value;
+	else if (label == "SINSTS3") m_teleinfo.SINSTS3 = value;
+	else if (label == "URMS1") m_teleinfo.URMS1 = value;
+	else if (label == "URMS2") m_teleinfo.URMS2 = value;
+	else if (label == "URMS3") m_teleinfo.URMS3 = value;
+	else if (label == "NTARF")
+	{
+		if(value == 1 && m_teleinfo.OPTARIF == "BASE")
+			m_teleinfo.PTEC = "TH..";
+		else if(value == 1)
+			m_teleinfo.PTEC = "HC..";
+		else if(value == 2)
+			m_teleinfo.PTEC == "HP..";
+	}
+	else if (label == "EAIT") m_teleinfo.EAIT = value;
+	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
+	else if (label == "ADSC")
+	{
+		m_bStandardMode = true;
+		m_counter++;
+	}
+
 	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts.
 	if (m_counter >= m_iBaudRate / 600)
 	{
 		m_counter = 0;
-		Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str());
+		Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s, OPTARIF: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str(), m_teleinfo.OPTARIF.c_str());
 		ProcessTeleinfo(m_teleinfo);
 		mytime(&m_LastHeartbeat);// keep heartbeat happy
 	}
@@ -501,6 +595,9 @@ void CTeleinfoBase::ParseTeleinfoData(const char *pData, int Len)
 	{
 		const char c = pData[ii];
 
+		if (c == 0x02 || c == 0x03)
+		  m_bStandardMode = true;  // 0x02/0x03 are used as block start/end in standard mode, not used in historic mode
+		
 		if ((c == 0x0d) || (c == 0x00) || (c == 0x02) || (c == 0x03))
 		{
 			ii++;
@@ -511,8 +608,7 @@ void CTeleinfoBase::ParseTeleinfoData(const char *pData, int Len)
 		if (c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
 		{
 			// discard newline, close string, parse line and clear it.
-			if (m_bufferpos > 0)
-				m_buffer[m_bufferpos] = 0;
+			m_buffer[m_bufferpos] = 0;
 
 			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
 			if ((m_bDisableCRC) || isCheckSumOk(std::string(m_buffer), m_teleinfo.CRCmode1))
