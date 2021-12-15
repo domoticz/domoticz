@@ -277,6 +277,24 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			int devType = atoi(result[0][3].c_str());
 			int subType = atoi(result[0][4].c_str());
 
+			if (root["svalue"].empty() && !root["svalue1"].empty())
+			{
+				// We have svalue[n] notation, conversion is required
+				std::string newSvalue;
+				std::string Query;
+				int sIndex = 1;
+				Query = "svalue" + std::to_string(sIndex);
+				sIndex++;
+				while (!root[Query].empty())
+				{
+					if (sIndex > 2) newSvalue += ";";
+					newSvalue += root[Query].asString();
+					Query = "svalue" + std::to_string(sIndex);
+					sIndex++;
+				}
+				root["svalue"] = newSvalue;
+			}
+
 			bool bnvalue = !root["nvalue"].empty();
 			bool bsvalue = !root["svalue"].empty();
 			bool bParseValue = !root["parse"].empty();
