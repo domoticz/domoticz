@@ -4052,7 +4052,7 @@ bool CEnOceanESP3::manageVldMessage(  uint32_t iSenderID , unsigned char * vldDa
 		{
 			//get position
 			int pos = GetRawValue( vldData,D20500_CMD1 ,  D20500_CMD1_POS  ) ;
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X EEP:D2-05  Reply Position Position:%d%", iSenderID, pos);
+			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X EEP:D2-05  Reply Position Position:%d%%", iSenderID, pos);
 			bool bon = (pos > 0 ? 1 : 0 );
 			if (pos >= 100)	pos = 99;
 
