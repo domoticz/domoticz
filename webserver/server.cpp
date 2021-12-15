@@ -264,7 +264,7 @@ void ssl_server::init_connection() {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}
 	} else {
-		_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters file %s!", settings_.listening_port.c_str(), settings_.certificate_chain_file_path.c_str());
+		_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters file %s!", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 	}
 }
 
