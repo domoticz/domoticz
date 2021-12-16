@@ -3236,29 +3236,29 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else
 				szOnOffValue = "off";
 		}
-	}
-
-	// COVERS: Always recalculate to make level relative to 100 and invert when needed
-	if (pSensor->component_type == "cover") {
-		// ensure the level os correct when we recieve "on"/"off" in the payload
-		if (szOnOffValue == "on")
-			level = pSensor->position_closed;
-		if (szOnOffValue == "off")
-			level = pSensor->position_open;
 
 		// COVERS: Always recalculate to make level relative to 100 and invert when needed
-		if (
-			(sSwitchType == STYPE_BlindsInverted)
-			|| (sSwitchType == STYPE_BlindsPercentageInverted)
-			|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-			)
-		{
-			// invert level for inverted blinds with percentage.
-			level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-		}
-		else
-		{
-			level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+		if (pSensor->component_type == "cover") {
+			// ensure the level is correct when we receive "on"/"off" in the payload
+			if (szOnOffValue == "on")
+				level = pSensor->position_closed;
+			if (szOnOffValue == "off")
+				level = pSensor->position_open;
+
+			// COVERS: Always recalculate to make level relative to 100 and invert when needed
+			if (
+				(sSwitchType == STYPE_BlindsInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+				)
+			{
+				// invert level for inverted blinds with percentage.
+				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+			}
+			else
+			{
+				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+			}
 		}
 	}
 
