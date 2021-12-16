@@ -1045,24 +1045,25 @@ bool CEnOceanESP2::ParseData()
 				uint16_t manID = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 				uint8_t func = pFrame->DATA_BYTE3 >> 2;
 				uint8_t type = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
+
 				Log(LOG_NORM, "4BS Teach-in diagram: Node %08X Manufacturer %02X (%s) Profile %02X Type %02X (%s)",
 					nodeID, manID, GetManufacturerName(manID),
 					func, type, GetEEPLabel(RORG_4BS, func, type));
 
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, nodeID);
+				result = m_sql.safe_query("SELECT ID FROM EnOceanNodes WHERE (HardwareID==%d) AND (NodeID==%u)", m_HwdID, nodeID);
 				if (result.empty())
 				{ // Add it to the database
 					m_sql.safe_query(
-						"INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, Type) VALUES (%d,'%08X',%u,%u,%u)",
-						m_HwdID, nodeID, manID, func, type);
+						"INSERT INTO EnOceanNodes (HardwareID, NodeID, ManufacturerID, RORG, Func, Type) VALUES (%d,%u,%u,%u,%u,%u)",
+						m_HwdID, nodeID, manID, RORG_4BS, func, type);
 				}
 			}
 		}
 		else
 		{ // Following sensors need to have had a teach-in
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, Type FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, nodeID);
+			result = m_sql.safe_query("SELECT ID, ManufacturerID, Func, Type FROM EnOceanNodes WHERE (HardwareID==%d) AND (NodeID==%u)", m_HwdID, nodeID);
 			if (result.empty())
 			{
 				char* pszHumenTxt = enocean_hexToHuman(pFrame);

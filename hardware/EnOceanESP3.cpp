@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <ctime>
+#include <stdarg.h>
 
 #include <boost/exception/diagnostic_information.hpp>
 
@@ -17,8 +18,6 @@
 #include "hardwaretypes.h"
 #include "EnOceanESP3.h"
 #include "EnOceanEepProfil.h"
-#include <stdarg.h>
-
 
 // Enable running SP3 protocol tests
 // They tests are launched when ESP3 worker is started
@@ -234,7 +233,7 @@ enum ESP3_FUNC_RETURN_CODE : uint8_t
 // The following lines are taken from EO300I API header file
 
 // Polynomial G(x) = x8 + x2 + x1 + x0 is used to generate the CRC8 table
-const uint8_t crc8table[256] = {
+static const uint8_t crc8table[256] = {
 	0x00, 0x07, 0x0e, 0x09, 0x1c, 0x1b, 0x12, 0x15,
 	0x38, 0x3f, 0x36, 0x31, 0x24, 0x23, 0x2a, 0x2d,
 	0x70, 0x77, 0x7e, 0x79, 0x6c, 0x6b, 0x62, 0x65,
@@ -279,6 +278,11 @@ const uint8_t crc8table[256] = {
 #define TEACH_NB_REQUESTS 3
 // Maximum delay to receive TEACH_NB_REQUESTS from a node to allow teach-in
 #define TEACH_MAX_DELAY ((time_t) 2000)
+
+// Database Node nValue masks & values
+
+#define TEACHIN_MODE_SHIFT 0
+#define TEACHIN_MODE_MASK 0x03
 
 // UTE Direction response codes
 typedef enum
@@ -345,7 +349,7 @@ void CEnOceanESP3::LoadNodesFromDatabase()
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT ID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors WHERE (HardwareID==%d)", m_HwdID);
+	result = m_sql.safe_query("SELECT ID, NodeID, Name, ManufacturerID, RORG, Func, Type, Description, nValue FROM EnOceanNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.empty())
 		return;
 
@@ -354,17 +358,25 @@ void CEnOceanESP3::LoadNodesFromDatabase()
 		NodeInfo node;
 
 		node.idx = static_cast<uint32_t>(std::stoul(sd[0]));
-		node.nodeID = static_cast<uint32_t>(std::stoul(sd[1], 0, 16));
-		node.manufacturerID = static_cast<uint16_t>(std::stoul(sd[2]));
-		node.RORG = 0x00;
-		node.func = static_cast<uint8_t>(std::stoul(sd[3]));
-		node.type = static_cast<uint8_t>(std::stoul(sd[4]));
-		node.generic = true;
+		node.nodeID = static_cast<uint32_t>(std::stoul(sd[1]));
+		node.name = sd[2];
+		node.manufacturerID = static_cast<uint16_t>(std::stoul(sd[3]));
+		node.RORG = static_cast<uint8_t>(std::stoul(sd[4]));
+		node.func = static_cast<uint8_t>(std::stoul(sd[5]));
+		node.type = static_cast<uint8_t>(std::stoul(sd[6]));
+		node.description = sd[7];
+
+		uint32_t nValue = static_cast<uint32_t>(std::stoul(sd[8]));
+
+		node.teachin_mode = static_cast<TeachinMode>(bitrange(nValue, TEACHIN_MODE_SHIFT, TEACHIN_MODE_MASK));
 /*
-		Debug(DEBUG_NORM, "LoadNodesFromDatabase: Idx %u Node %08X %sEEP %02X-%02X-%02X (%s) Manufacturer %03X (%s)",
-			node.idx, node.nodeID,
-			node.generic ? "Generic " : "", node.RORG, node.func, node.type, GetEEPLabel(node.RORG, node.func, node.type),
-			node.manufacturerID, GetManufacturerName(node.manufacturerID));
+		Debug(DEBUG_NORM, "LoadNodesFromDatabase: Idx %u Node %08X Name '%s'",
+			node.idx, node.nodeID, node.name.c_str());
+		Debug(DEBUG_NORM, "LoadNodesFromDatabase: %sEEP %02X-%02X-%02X (%s)",
+			(node.teachin_mode == GENERIC_NODE) ? "Generic " : ((node.teachin_mode == VIRTUAL_NODE) ? "Virtual " : ""),
+			node.RORG, node.func, node.type, GetEEPLabel(node.RORG, node.func, node.type));
+		Debug(DEBUG_NORM, "LoadNodesFromDatabase: Manufacturer %03X (%s) Description '%s'",
+			node.manufacturerID, GetManufacturerName(node.manufacturerID), node.description.c_str());
 */
 		m_nodes[node.nodeID] = node;
 	}
@@ -380,36 +392,42 @@ CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const uint32_t nodeID)
 	return &(node->second);
 }
 
-void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const bool generic)
+void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID,
+	const uint8_t RORG, const uint8_t func, const uint8_t type,
+	const TeachinMode teachin_mode)
 {
 	Log(LOG_NORM, "Teach-in Node: HwdID %u Node %08X Manufacturer %03X (%s) %sEEP %02X-%02X-%02X (%s)",
 		m_HwdID, nodeID, manID, GetManufacturerName(manID),
-		generic ? "Generic " : "", RORG, func, type, GetEEPLabel(RORG, func, type));
+		(teachin_mode == GENERIC_NODE) ? "Generic " : ((teachin_mode == VIRTUAL_NODE) ? "Virtual " : ""),
+		RORG, func, type, GetEEPLabel(RORG, func, type));
 
-	m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, Type) VALUES (%d,'%08X',%u,%u,%u)",
-		m_HwdID, nodeID, manID, func, type);
+	uint32_t nValue = (teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
+
+	m_sql.safe_query("INSERT INTO EnOceanNodes (HardwareID, NodeID, ManufacturerID, RORG, Func, Type, Description, nValue) VALUES (%d,%u,%u,%u,%u,%u,'%q',%u)",
+		m_HwdID, nodeID, manID, RORG, func, type, GetEEPLabel(RORG, func, type), nValue);
 
 	std::vector<std::vector<std::string>> result;
-	result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) and (DeviceID=='%08X')", m_HwdID, nodeID);
+	result = m_sql.safe_query("SELECT ID, Name, Description FROM EnOceanNodes WHERE (HardwareID==%d) and (NodeID==%u)", m_HwdID, nodeID);
 	if (result.empty())
-	{ // Should never happend: node was just created in the database!
-		Log(LOG_ERROR, "Teach-in Node: Node %08X not created in database?!?!", nodeID);
+	{ // Should never happend since node was just created in the database!
+		Log(LOG_ERROR, "Teach-in Node: problem creating Node %08X in database?!?!", nodeID);
 		LoadNodesFromDatabase();
+		return;
 	}
-	else
-	{
-		NodeInfo node;
 
-		node.idx = static_cast<uint32_t>(std::stoul(result[0][0]));
-		node.nodeID = nodeID;
-		node.manufacturerID = manID;
-		node.RORG = RORG;
-		node.func = func;
-		node.type = type;
-		node.generic = generic;
+	NodeInfo node;
 
-		m_nodes[node.nodeID] = node;
-	}
+	node.idx = static_cast<uint32_t>(std::stoul(result[0][0]));
+	node.nodeID = nodeID;
+	node.name = result[0][1];
+	node.manufacturerID = manID;
+	node.RORG = RORG;
+	node.func = func;
+	node.type = type;
+	node.description = result[0][2];
+	node.teachin_mode = teachin_mode;
+
+	m_nodes[node.nodeID] = node;
 }
 
 void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
@@ -417,18 +435,34 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode == nullptr)
 		return;
 
-	if (pNode->func == 0x00 && pNode->type == 0x00)
+	bool do_update = false;
+
+	if (pNode->RORG != RORG)
+	{
+		Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+			pNode->nodeID,
+			pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+			RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+
+		pNode->RORG = RORG;
+		do_update = true;
+	}
+	if (pNode->teachin_mode == GENERIC_NODE)
+	{
+		Log(LOG_NORM, "Node %08X, update from Generic to Teached-in", pNode->nodeID);
+
+		// TODO : set to VIRTUAL_NODE instead when node is virtual (i.e. created from Domoticz)
+
+		pNode->teachin_mode = TEACHEDIN_NODE;
+		do_update = true;
+	}
+	if (do_update == false)
 		return;
 
-	if (pNode->RORG == RORG)
-		return;
+	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
-	Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
-		pNode->nodeID,
-		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
-		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
-
-	pNode->RORG = RORG;
+	m_sql.safe_query("UPDATE EnOceanNodes SET RORG=%u, nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
+		pNode->RORG, nValue, m_HwdID, pNode->nodeID);
 }
 
 void CEnOceanESP3::Do_Work()
@@ -2128,7 +2162,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, RORG_1BS, node_func, node_type, GetEEPLabel(RORG_1BS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_1BS, node_func, node_type, true);
+					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_1BS, node_func, node_type, GENERIC_NODE);
 					return;
 				}
 				// 1BS data
@@ -2229,7 +2263,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							RORG_4BS, node_func, node_type, GetEEPLabel(RORG_4BS, node_func, node_type));
 					}
 
-					TeachInNode(senderID, node_manID, RORG_4BS, node_func, node_type, (LRN_TYPE == 0));
+					TeachInNode(senderID, node_manID, RORG_4BS, node_func, node_type,
+						(LRN_TYPE == 0) ? GENERIC_NODE : TEACHEDIN_NODE);
 
 					// 4BS EEP requiring teach-in variation 3 response
 					// A5-20-XX, HVAC Components
@@ -3028,7 +3063,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, RORG_RPS, node_func, node_type, GetEEPLabel(RORG_RPS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, node_func, node_type, true);
+					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, node_func, node_type, GENERIC_NODE);
 					return;
 				}
 				// RPS data
@@ -3310,7 +3345,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
 						num_channel, (num_channel > 1) ? "s" : "");
 
-					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, false);
+					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, TEACHEDIN_NODE);
 
 					if (ute_response == 0)
 					{ // Build and send response
