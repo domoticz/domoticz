@@ -73,7 +73,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char*
 		sprintf(text, " < 80%% de %iKVA souscrits", Pref);
 	}
 	else
-		sprintf(text, "Pas d'info de souscription !", Pref);
+		sprintf(text, "Pas d'info de souscription !");
 
 	if (flevel > 80)
 	{
@@ -309,7 +309,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
 				if(teleinfo.URMS1 > 0)
-					SendVoltageSensor(m_HwdID + rank, 0, 255, teleinfo.URMS1, name + " Tension");
+					SendVoltageSensor(m_HwdID + rank, 0, 255, (float)teleinfo.URMS1, name + " Tension");
 				if(teleinfo.ISOUSC > 0)
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
 				else
@@ -320,11 +320,11 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
 					name + " Courant");
                                 if(teleinfo.URMS1 > 0)
-					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, teleinfo.URMS1, name + " Tension phase 1");
+					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, (float)teleinfo.URMS1, name + " Tension phase 1");
                                 if(teleinfo.URMS2 > 0)
-					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, teleinfo.URMS2, name + " Tension phase 2");
+					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, (float)teleinfo.URMS2, name + " Tension phase 2");
                                 if(teleinfo.URMS3 > 0)
-					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, teleinfo.URMS3, name + " Tension phase 3");
+					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, (float)teleinfo.URMS3, name + " Tension phase 3");
 				if (teleinfo.ISOUSC > 0)
 				{
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1 * 100) / float(teleinfo.ISOUSC),
@@ -568,7 +568,7 @@ void CTeleinfoBase::MatchLine()
 		else if(value == 1)
 			m_teleinfo.PTEC = "HC..";
 		else if(value == 2)
-			m_teleinfo.PTEC == "HP..";
+			m_teleinfo.PTEC = "HP..";
 	}
 	else if (label == "EAIT") m_teleinfo.EAIT = value;
 	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
