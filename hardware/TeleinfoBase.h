@@ -127,7 +127,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 	int m_iDataTimeout;
 	unsigned int m_iBaudRate;
 	bool m_bDisableCRC;
-	bool m_bStandardMode; // historic/standard mode
 
       private:
 	int AlertLevel(int Iinst, int Isousc, int Sinsts, int Pcoup, char* text);
