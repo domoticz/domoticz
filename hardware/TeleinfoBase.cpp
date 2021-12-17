@@ -36,7 +36,6 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
-	m_pInjectpower.ID = 4;
 
 	m_bDisableCRC = false;
 	m_bStandardMode = false; // default to historic mode
@@ -49,12 +48,17 @@ void CTeleinfoBase::InitTeleinfo()
 	m_bufferpos = 0;
 	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 	m_counter = 0;
+	m_teleinfo.ISOUSC = 0;
+	m_teleinfo.URMS1 = 0;
+	m_teleinfo.URMS2 = 0;
+	m_teleinfo.URMS3 = 0;
 }
 
 void CTeleinfoBase::ProcessTeleinfo(Teleinfo &teleinfo)
 {
 	ProcessTeleinfo("Teleinfo", 1, teleinfo);
 }
+
 
 // Alert level is 1 up to 80% usage, 2 between 80% and 90%, 3 between 90% and 98%, 4 above
 int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char* text)
@@ -73,7 +77,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char*
 		sprintf(text, " < 80%% de %iKVA souscrits", Pref);
 	}
 	else
-		sprintf(text, "Pas d'info de souscription !");
+		sprintf(text, "Pas d'info de souscription !", Pref);
 
 	if (flevel > 80)
 	{
@@ -296,20 +300,11 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
-
-			if (teleinfo.EAIT > 0)
-			{
-				m_pInjectpower.usagecurrent = teleinfo.SINSTI;
-				m_pInjectpower.powerusage1 = teleinfo.EAIT;
-				m_pInjectpower.powerusage2 = 0;
-				sDecodeRXMessage(this, (const unsigned char *)&m_pInjectpower, (name + " kWh Total injectés").c_str(), 255, nullptr);
-			}
-
 			if (teleinfo.triphase == false)
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
 				if(teleinfo.URMS1 > 0)
-					SendVoltageSensor(m_HwdID + rank, 0, 255, (float)teleinfo.URMS1, name + " Tension");
+					SendVoltageSensor(m_HwdID + rank, 0, 255, teleinfo.URMS1, name + " Tension");
 				if(teleinfo.ISOUSC > 0)
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
 				else
@@ -320,11 +315,11 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
 					name + " Courant");
                                 if(teleinfo.URMS1 > 0)
-					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, (float)teleinfo.URMS1, name + " Tension phase 1");
+					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, teleinfo.URMS1, name + " Tension phase 1");
                                 if(teleinfo.URMS2 > 0)
-					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, (float)teleinfo.URMS2, name + " Tension phase 2");
+					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, teleinfo.URMS2, name + " Tension phase 2");
                                 if(teleinfo.URMS3 > 0)
-					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, (float)teleinfo.URMS3, name + " Tension phase 3");
+					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, teleinfo.URMS3, name + " Tension phase 3");
 				if (teleinfo.ISOUSC > 0)
 				{
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1 * 100) / float(teleinfo.ISOUSC),
@@ -476,6 +471,42 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 	return line_ok;
 }
 
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+    ltrim(s);
+    rtrim(s);
+}
+
+// trim from start (copying)
+static inline std::string ltrim_copy(std::string s) {
+    ltrim(s);
+    return s;
+}
+
+// trim from end (copying)
+static inline std::string rtrim_copy(std::string s) {
+    rtrim(s);
+    return s;
+}
+
+// trim from both ends (copying)
+static inline std::string trim_copy(std::string s) {
+    trim(s);
+    return s;
+}
+
 void CTeleinfoBase::MatchLine()
 {
 	std::string label, vString;
@@ -549,7 +580,7 @@ void CTeleinfoBase::MatchLine()
 		m_teleinfo.IINST2 = value;
 	}
 	else if (label == "IRMS3") m_teleinfo.IINST3 = value;
-	else if (label == "NGTF") m_teleinfo.OPTARIF = stdstring_trim(vString);
+	else if (label == "NGTF") m_teleinfo.OPTARIF = trim_copy(vString);
 	else if (label == "SINSTS")
 	{
 		m_teleinfo.PAPP = value;
@@ -568,10 +599,8 @@ void CTeleinfoBase::MatchLine()
 		else if(value == 1)
 			m_teleinfo.PTEC = "HC..";
 		else if(value == 2)
-			m_teleinfo.PTEC = "HP..";
+		m_teleinfo.PTEC == "HP..";
 	}
-	else if (label == "EAIT") m_teleinfo.EAIT = value;
-	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
 	else if (label == "ADSC")
 	{
 		m_bStandardMode = true;

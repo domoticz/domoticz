@@ -66,8 +66,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		std::string rate;
 		std::string tariff;
 		std::string color;
-
-		// Info relative to standard mode only
 		uint32_t PREF;
 		uint32_t SINSTS1;
 		uint32_t SINSTS2;
@@ -75,9 +73,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		uint32_t URMS1;
 		uint32_t URMS2;
 		uint32_t URMS3;
-		uint32_t EAIT;
-		uint32_t SINSTI;
-
 		time_t last;
 		bool triphase;
 		bool withPAPP; // For meters with no PAPP
@@ -113,15 +108,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			pAlertColor = 10;
 			pAlertEJP = 10;
 			pAlertDemain = 10;
-			PREF = 0;
-			SINSTS1 = 0;
-			SINSTS2 = 0;
-			SINSTS3 = 0;
-			URMS1 = 0;
-			URMS2 = 0;
-			URMS3 = 0;
-			EAIT = 0;
-			SINSTI = 0;
 			last = 0;
 			triphase = false;
 			withPAPP = false;
@@ -145,7 +131,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 
       private:
 	int AlertLevel(int Iinst, int Isousc, int Sinsts, int Pcoup, char* text);
-	P1Power m_p1power, m_p2power, m_p3power, m_pInjectpower;
+	P1Power m_p1power, m_p2power, m_p3power;
 	Teleinfo m_teleinfo;
 	char m_buffer[1024];
 	int m_bufferpos;
