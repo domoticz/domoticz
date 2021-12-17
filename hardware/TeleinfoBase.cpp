@@ -38,7 +38,6 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p3power.ID = 3;
 
 	m_bDisableCRC = false;
-	m_bStandardMode = false; // default to historic mode
 
 	InitTeleinfo();
 }
@@ -77,7 +76,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char*
 		sprintf(text, " < 80%% de %iKVA souscrits", Pref);
 	}
 	else
-		sprintf(text, "Pas d'info de souscription !", Pref);
+		sprintf(text, "Pas d'info de souscription !");
 
 	if (flevel > 80)
 	{
@@ -302,9 +301,9 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			}
 			if (teleinfo.triphase == false)
 			{
-				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
+				SendCurrentSensor(m_HwdID + rank, 255, (float) teleinfo.IINST, 0, 0, name + " Courant");
 				if(teleinfo.URMS1 > 0)
-					SendVoltageSensor(m_HwdID + rank, 0, 255, teleinfo.URMS1, name + " Tension");
+					SendVoltageSensor(m_HwdID + rank, 0, 255, (float) teleinfo.URMS1, name + " Tension");
 				if(teleinfo.ISOUSC > 0)
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST * 100) / float(teleinfo.ISOUSC), name + " Pourcentage de Charge");
 				else
@@ -315,11 +314,11 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
 					name + " Courant");
                                 if(teleinfo.URMS1 > 0)
-					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, teleinfo.URMS1, name + " Tension phase 1");
+					SendVoltageSensor(m_HwdID + rank + 1, 0, 255, (float) teleinfo.URMS1, name + " Tension phase 1");
                                 if(teleinfo.URMS2 > 0)
-					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, teleinfo.URMS2, name + " Tension phase 2");
+					SendVoltageSensor(m_HwdID + rank + 2, 0, 255, (float) teleinfo.URMS2, name + " Tension phase 2");
                                 if(teleinfo.URMS3 > 0)
-					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, teleinfo.URMS3, name + " Tension phase 3");
+					SendVoltageSensor(m_HwdID + rank + 3, 0, 255, (float) teleinfo.URMS3, name + " Tension phase 3");
 				if (teleinfo.ISOUSC > 0)
 				{
 					SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1 * 100) / float(teleinfo.ISOUSC),
@@ -390,7 +389,6 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendAlertSensor(32 * rank + 7, 255, alertPPOT, message, " Alerte Potentiels");
 			}
 		}
-	
 }
 
 //Example of data received from power meter
@@ -524,10 +522,12 @@ void CTeleinfoBase::MatchLine()
 	}
 
 	// Extract the elements, return if not enough and line is invalid
-	if(m_bStandardMode)
-		StringSplit(sline, "	", splitresults); // standard mode is using TAB (0x09) as delimiter
-	else
+	StringSplit(sline, "	", splitresults); // standard mode is using TAB (0x09) as delimiter
+	if (splitresults.size() < 3)
+	{ // Decoding using standard mode failed, fall back using historic mode
+		splitresults.clear();
 		StringSplit(sline, " ", splitresults); // historic mode is using space (0x20) as delimiter
+	}
 	if (splitresults.size() < 3)
 	{
 		Log(LOG_ERROR, "Frame #%s# passed the checksum test but failed analysis", sline.c_str());
@@ -603,7 +603,6 @@ void CTeleinfoBase::MatchLine()
 	}
 	else if (label == "ADSC")
 	{
-		m_bStandardMode = true;
 		m_counter++;
 	}
 
@@ -624,9 +623,6 @@ void CTeleinfoBase::ParseTeleinfoData(const char *pData, int Len)
 	{
 		const char c = pData[ii];
 
-		if (c == 0x02 || c == 0x03)
-		  m_bStandardMode = true;  // 0x02/0x03 are used as block start/end in standard mode, not used in historic mode
-		
 		if ((c == 0x0d) || (c == 0x00) || (c == 0x02) || (c == 0x03))
 		{
 			ii++;
