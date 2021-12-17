@@ -284,13 +284,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				std::string Query;
 				int sIndex = 1;
 				Query = "svalue" + std::to_string(sIndex);
-				sIndex++;
 				while (!root[Query].empty())
 				{
-					if (sIndex > 2) newSvalue += ";";
-					newSvalue += root[Query].asString();
-					Query = "svalue" + std::to_string(sIndex);
-					sIndex++;
+				  newSvalue += root[Query].asString();
+				  if (sIndex > 1) newSvalue += ";";
+				  sIndex++;
+				  Query = "svalue" + std::to_string(sIndex);
 				}
 				root["svalue"] = newSvalue;
 			}
@@ -2056,7 +2055,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 	float AddjMulti = 1.0F;
 
 	if (
-		(szUnit == "°c")
+		(szUnit == "Â°c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
 		|| (pSensor->value_template.find("temperature") != std::string::npos)
@@ -2119,7 +2118,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		subType = sTypeVoltcraft;
 		nValue = atoi(pSensor->last_value.c_str());
 	}
-	else if (szUnit == "µg/m³")
+	else if (szUnit == "Âµg/mÂ³")
 	{
 		devType = pTypeGeneral;
 		subType = sTypeCustom;
