@@ -599,7 +599,7 @@ void CTeleinfoBase::MatchLine()
 		else if(value == 1)
 			m_teleinfo.PTEC = "HC..";
 		else if(value == 2)
-		m_teleinfo.PTEC == "HP..";
+		m_teleinfo.PTEC = "HP..";
 	}
 	else if (label == "ADSC")
 	{
