@@ -36,6 +36,7 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
+	m_pInjectpower.ID = 4;
 
 	m_bDisableCRC = false;
 
@@ -47,17 +48,12 @@ void CTeleinfoBase::InitTeleinfo()
 	m_bufferpos = 0;
 	m_teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 	m_counter = 0;
-	m_teleinfo.ISOUSC = 0;
-	m_teleinfo.URMS1 = 0;
-	m_teleinfo.URMS2 = 0;
-	m_teleinfo.URMS3 = 0;
 }
 
 void CTeleinfoBase::ProcessTeleinfo(Teleinfo &teleinfo)
 {
 	ProcessTeleinfo("Teleinfo", 1, teleinfo);
 }
-
 
 // Alert level is 1 up to 80% usage, 2 between 80% and 90%, 3 between 90% and 98%, 4 above
 int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char* text)
@@ -299,6 +295,15 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
+
+			if (teleinfo.EAIT > 0)
+			{ // Energie Active Injectée Totale
+				m_pInjectpower.usagecurrent = teleinfo.SINSTI;
+				m_pInjectpower.powerusage1 = teleinfo.EAIT;
+				m_pInjectpower.powerusage2 = 0;
+				sDecodeRXMessage(this, (const unsigned char *)&m_pInjectpower, (name + " kWh Total injectés").c_str(), 255, nullptr);
+			}
+
 			if (teleinfo.triphase == false)
 			{
 				SendCurrentSensor(m_HwdID + rank, 255, (float) teleinfo.IINST, 0, 0, name + " Courant");
@@ -389,6 +394,49 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				SendAlertSensor(32 * rank + 7, 255, alertPPOT, message, " Alerte Potentiels");
 			}
 		}
+
+		if(teleinfo.STGE != UINT32_MAX)
+		{ // Process status register if found (Linky standard mode only, refer to Enedis specs for details)
+			if((teleinfo.STGE & 0x1) != (teleinfo.prevSTGE & 0x1) || teleinfo.prevSTGE == UINT32_MAX)
+			{
+				bool bContactState = (teleinfo.STGE & 0x01 != 0)?true:false;
+				SendAlertSensor(32 * rank + 8, 255, bContactState, (bContactState == 0)?"Contact fermé":"Contact ouvert", name + " Contact sec");
+			}
+			if((teleinfo.STGE & 0xE) != (teleinfo.prevSTGE & 0xE) || teleinfo.prevSTGE == UINT32_MAX)
+			{
+				int iValue = (teleinfo.STGE & 0xE) >> 1;
+				const char *sLevelNames[] = { "fermé",
+					"ouvert sur surpuissance",
+					"ouvert sur surtension",
+					"ouvert sur délestage",
+					"ouvert sur ordre CPL ou Euridis",
+					"ouvert sur une surchauffe avec une valeur du courant supérieure au courant de commutation maximal",
+					"ouvert sur une surchauffe avec une valeur de courant inférieure au courant de commutation maximal",
+					"Non défini" };
+				SendAlertSensor(32 * rank + 9, 255, iValue, sLevelNames[iValue], name + " Organe de coupure");
+			}
+			if((teleinfo.STGE & 0x10) != (teleinfo.prevSTGE & 0x10) || teleinfo.prevSTGE == UINT32_MAX)
+			{
+				bool iState = (teleinfo.STGE >> 4) & 0x1;
+				SendAlertSensor(32 * rank + 10, 255, iState, (iState == 0)?"fermé":"ouvert", name + " Cache-bornes");
+			}
+			if((teleinfo.STGE & 0x40) != (teleinfo.prevSTGE & 0x40) || teleinfo.prevSTGE == UINT32_MAX)
+			{
+				int iOvervoltage = (teleinfo.STGE >> 6) & 0x1;
+				SendAlertSensor(32 * rank + 11, 255, iOvervoltage, (iOvervoltage == 0)?"Pas de surtension":"Surtension", name + " Surtension");
+			}
+			if((teleinfo.STGE & 0x80) != (teleinfo.prevSTGE & 0x80) || teleinfo.prevSTGE == UINT32_MAX)
+			{
+				int iOverload = (teleinfo.STGE >> 7) & 0x1;
+				SendAlertSensor(32 * rank + 12, 255, iOverload, (iOverload == 0)?"Pas de dépssament de la puissance de référence":"Dépassement de la puissance de référence", name + " Dépassement puissance");
+			}
+			if((teleinfo.STGE & 0x100) != (teleinfo.prevSTGE & 0x100) || teleinfo.prevSTGE == UINT32_MAX)
+			{
+				int iMode = (teleinfo.STGE >> 8) & 0x1;
+				SendAlertSensor(32 * rank + 13, 255, iMode, (iMode == 0)?"Consommateur":"Producteur", name + " Fonctionnement");
+			}
+			teleinfo.prevSTGE = teleinfo.STGE;
+		}
 }
 
 //Example of data received from power meter
@@ -469,42 +517,6 @@ bool CTeleinfoBase::isCheckSumOk(const std::string &sLine, int &isMode1)
 	return line_ok;
 }
 
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-            std::not1(std::ptr_fun<int, int>(std::isspace))));
-}
-
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(),
-            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-}
-
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-    ltrim(s);
-    rtrim(s);
-}
-
-// trim from start (copying)
-static inline std::string ltrim_copy(std::string s) {
-    ltrim(s);
-    return s;
-}
-
-// trim from end (copying)
-static inline std::string rtrim_copy(std::string s) {
-    rtrim(s);
-    return s;
-}
-
-// trim from both ends (copying)
-static inline std::string trim_copy(std::string s) {
-    trim(s);
-    return s;
-}
-
 void CTeleinfoBase::MatchLine()
 {
 	std::string label, vString;
@@ -580,7 +592,7 @@ void CTeleinfoBase::MatchLine()
 		m_teleinfo.IINST2 = value;
 	}
 	else if (label == "IRMS3") m_teleinfo.IINST3 = value;
-	else if (label == "NGTF") m_teleinfo.OPTARIF = trim_copy(vString);
+	else if (label == "NGTF") m_teleinfo.OPTARIF = stdstring_trim(vString);
 	else if (label == "SINSTS")
 	{
 		m_teleinfo.PAPP = value;
@@ -599,7 +611,13 @@ void CTeleinfoBase::MatchLine()
 		else if(value == 1)
 			m_teleinfo.PTEC = "HC..";
 		else if(value == 2)
-		m_teleinfo.PTEC == "HP..";
+			m_teleinfo.PTEC == "HP..";
+	}
+	else if (label == "EAIT") m_teleinfo.EAIT = value;
+	else if (label == "SINSTI") m_teleinfo.SINSTI = value;
+	else if (label == "STGE")
+	{ // Status register, hexadecimal string (without 0x)
+		m_teleinfo.STGE = strtoul(splitresults[1].c_str(), nullptr, 16);
 	}
 	else if (label == "ADSC")
 	{
