@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 149
+#define DB_VERSION 150
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -480,16 +480,20 @@ constexpr auto sqlCreateFan_Calendar =
 constexpr auto sqlCreateBackupLog =
 "CREATE TABLE IF NOT EXISTS [BackupLog] ("
 "[Key] VARCHAR(50) NOT NULL, "
-"[nValue] INTEGER DEFAULT 0); ";
+"[nValue] INTEGER DEFAULT 0);";
 
-constexpr auto sqlCreateEnoceanSensors =
-"CREATE TABLE IF NOT EXISTS [EnoceanSensors] ("
+constexpr auto sqlCreateEnOceanNodes =
+"CREATE TABLE IF NOT EXISTS [EnOceanNodes] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[HardwareID] INTEGER NOT NULL, "
-"[DeviceID] VARCHAR(25) NOT NULL, "
-"[Manufacturer] INTEGER NOT NULL, "
-"[Profile] INTEGER NOT NULL, "
-"[Type] INTEGER NOT NULL);";
+"[NodeID] INTEGER NOT NULL, "
+"[Name] VARCHAR(100) DEFAULT Unknown, "
+"[ManufacturerID] INTEGER DEFAULT 0, "
+"[RORG] INTEGER DEFAULT 0, "
+"[Func] INTEGER DEFAULT 0, "
+"[Type] INTEGER DEFAULT 0, "
+"[Description] VARCHAR(100) DEFAULT Unknown, "
+"[nValue] INTEGER DEFAULT 0);";
 
 constexpr auto sqlCreatePushLink =
 "CREATE TABLE IF NOT EXISTS [PushLink] ("
@@ -759,7 +763,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFan);
 	query(sqlCreateFan_Calendar);
 	query(sqlCreateBackupLog);
-	query(sqlCreateEnoceanSensors);
+	query(sqlCreateEnOceanNodes);
 	query(sqlCreatePushLink);
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
@@ -2921,6 +2925,21 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID=%s)", Options.c_str(), ID.c_str());
 				}
 			}
+		}
+		if (dbversion < 150)
+		{ // Populate EnOceanNodes table from EnoceanSensors table
+			std::vector<std::vector<std::string>> result;
+
+			result = m_sql.safe_query("SELECT ID, HardwareID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors");
+			if (!result.empty())
+			{
+				for (const auto &sdn : result)
+				{
+					safe_query("INSERT INTO EnOceanNodes (ID, HardwareID, NodeID, ManufacturerID, Func, Type) VALUES ('%q','%q',%u,'%q','%q','%q')",
+						sdn[0].c_str(), sdn[1].c_str(), static_cast<uint32_t>(std::stoul(sdn[2], 0, 16)), sdn[3].c_str(), sdn[4].c_str(), sdn[5].c_str());
+				}
+			}
+			query("DROP TABLE EnoceanSensors");
 		}
 	}
 	else if (bNewInstall)
@@ -7602,10 +7621,10 @@ void CSQLHelper::DeleteHardware(const std::string& idx)
 		DeleteDevices(devs2delete);
 	}
 	//also delete all records in other tables
-	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID== '%q')", idx.c_str());
-	safe_query("DELETE FROM EnoceanSensors WHERE (HardwareID== '%q')", idx.c_str());
-	safe_query("DELETE FROM MySensors WHERE (HardwareID== '%q')", idx.c_str());
-	safe_query("DELETE FROM WOLNodes WHERE (HardwareID == '%q')", idx.c_str());
+	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID=='%q')", idx.c_str());
+	safe_query("DELETE FROM EnOceanNodes WHERE (HardwareID=='%q')", idx.c_str());
+	safe_query("DELETE FROM MySensors WHERE (HardwareID=='%q')", idx.c_str());
+	safe_query("DELETE FROM WOLNodes WHERE (HardwareID=='%q')", idx.c_str());
 }
 
 void CSQLHelper::DeleteCamera(const std::string& idx)

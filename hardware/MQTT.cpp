@@ -3076,11 +3076,19 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						szOnOffValue = "Set Level";
 						// recalculate level to make relative to min/maxpositions
 						if (pSensor->component_type == "cover") {
-							if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+							if (
+								(sSwitchType == STYPE_BlindsInverted)
+								|| (sSwitchType == STYPE_BlindsPercentageInverted)
+								|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+								)
+							{
 								// invert level for inverted blinds with percentage.
 								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+							}
 							else
+							{
 								level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+							}
 						}
 					}
 				}
@@ -3116,11 +3124,19 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				szOnOffValue = "Set Level";
 				// Make level relative to 100.
-				if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+				if (
+					(sSwitchType == STYPE_BlindsInverted)
+					|| (sSwitchType == STYPE_BlindsPercentageInverted)
+					|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+					)
+				{
 					// invert level for inverted blinds with percentage.
 					level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+				}
 				else
+				{
 					level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+				}
 			}
 		}
 		if (!root["color"].empty())
@@ -3189,7 +3205,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			bHaveColorChange = szColorOld != szColorNew;
 		}
 	}
-	else {
+	else
+	{
+		//not json
 		if (is_number(szOnOffValue))
 		{
 			//must be a level
@@ -3211,20 +3229,36 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				if (level != 100)
 				{
 					szOnOffValue = "Set Level";
-					// recalculate level to make relative to min/maxpositions
-					if (pSensor->component_type == "cover") {
-						if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-							// invert level for inverted blinds with percentage.
-							level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-						else
-							level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-					}
 				}
 				else
 					szOnOffValue = "on";
 			}
 			else
 				szOnOffValue = "off";
+		}
+
+		// COVERS: Always recalculate to make level relative to 100 and invert when needed
+		if (pSensor->component_type == "cover") {
+			// ensure the level is correct when we receive "on"/"off" in the payload
+			if (szOnOffValue == "on")
+				level = pSensor->position_closed;
+			if (szOnOffValue == "off")
+				level = pSensor->position_open;
+
+			// COVERS: Always recalculate to make level relative to 100 and invert when needed
+			if (
+				(sSwitchType == STYPE_BlindsInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+				)
+			{
+				// invert level for inverted blinds with percentage.
+				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+			}
+			else
+			{
+				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+			}
 		}
 	}
 
@@ -3557,8 +3591,14 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				if (!result.empty())
 				{
 					_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
-					if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+					if (
+						(sSwitchType == STYPE_BlindsInverted)
+						|| (sSwitchType == STYPE_BlindsPercentageInverted)
+						|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+						)
+					{
 						iValue = pSensor->position_open - iValue;
+					}
 				}
 				
 				if (pSensor->set_position_template.empty())
