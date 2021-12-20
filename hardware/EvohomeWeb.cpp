@@ -1312,7 +1312,7 @@ bool CEvohomeWeb::get_status(int location)
 					// get zone status
 					if ((*j_tcs)["zones"].isArray())
 					{
-						size_t lz = (*j_tcs)["zones"].size();
+						size_t lz = std::min((size_t)(*j_tcs)["zones"].size(), (size_t)m_locations[location].gateways[igw].temperatureControlSystems[itcs].zones.size());
 						for (size_t iz = 0; iz < lz; iz++)
 						{
 							m_locations[location].gateways[igw].temperatureControlSystems[itcs].zones[iz].status = &(*j_tcs)["zones"][(int)(iz)];
