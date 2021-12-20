@@ -25,7 +25,9 @@
   <Manufacturer id="0022" name="A-1 Components"></Manufacturer>
   <Manufacturer id="0117" name="Abilia"></Manufacturer>
   <Manufacturer id="0400" name="Abode"></Manufacturer>
-  <Manufacturer id="0409" name="ABUS August Bremicker Sohne KG"></Manufacturer>
+  <Manufacturer id="0409" name="ABUS August Bremicker Sohne KG">
+    <Product config="abus/cfa3010.xml" id="0003" name="ABUS Z-Wave HomeTec Pro CFA3010 Doorlock" type="0005"/>  
+  </Manufacturer>
   <Manufacturer id="0403" name="ABUS Security-Center GmbH Co. KG">
     <Product config="abus/SHRM10000.xml" id="0003" name="Smart Smoke Sensor SHRM10000" type="0002"/>
   </Manufacturer>
