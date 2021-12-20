@@ -1,0 +1,71 @@
+<Product sourceFile="abus/cfa3010.xml">
+  <MetaData>
+    <MetaDataItem name="ZWProductPage">https://products.z-wavealliance.org/products/3230/</MetaDataItem>
+    <MetaDataItem name="Name">HomeTec Pro CFA3010</MetaDataItem>
+     <MetaDataItem name="InclusionDescription">1. Set the controller in inclusion mode 2. Push the up and down for 3 seconds.  Move in this menu by pushing up while the left led is green. Hit door close button.  Right LED will flash GREEN indicating readiness to include.</MetaDataItem>
+     <MetaDataItem name="ExclusionDescription">1. Set the controller in exclusion mode 2. Push the up and down for 3 seconds.  Move in this menu by pushing up while the left led is green. Hit door close button.  Right LED will flash GREEN indicating readiness to include.</MetaDataItem>
+    <MetaDataItem id="0003" name="Identifier" type="0005">HomeTec Pro CFA3010</MetaDataItem>
+    <MetaDataItem name="ProductManual">https://Products.Z-WaveAlliance.org/ProductManual/File?folder=&amp;filename=MarketCertificationFiles/3230/ABUS_CFA_3010_Z-Wave_Manual_v3.pdf</MetaDataItem>
+    <MetaDataItem id="0003" name="FrequencyName" type="0005">CEPT (Europe)</MetaDataItem>
+     <MetaDataItem name="Description">HomeTec Pro CFA3010: - S0/S2 Z-Wave Security</MetaDataItem>
+  </MetaData>
+  <CommandClass id="112">
+    <Value genre="config" index="1" instance="1" label="Latch Hold Time" max="20" min="1" size="1" type="int" units="seconds" value="3">
+      <Help>Latch Hold Time in seconds 1-20</Help>
+    </Value>
+    <Value genre="config" index="2" instance="1" label="Latch Torque" max="3" min="1" size="1" type="list" value="2">
+      <Help>Torque of the latch is high 1.5nm/medium 1.2nm/low 1.0n</Help>
+      <Item label="Max" value="1"/>
+      <Item label="Medium" value="2"/>
+	  <Item label="Min" value="3"/>
+    </Value>
+	<Value genre="config" index="3" instance="1" label="Acoustic Feedback" max="5" min="1" size="1" type="list" value="3">
+       <Help>1.Acoustic signal is inactive / 2.Acoustic signal only at the beginning of the lock travel / 3.Acoustic signal when reaching the position of the event / 4.Acoustic signal when reaching the position Locked / 5.Acoustic signal when reaching each end position</Help>
+      <Item label="Inactive" value="1"/>
+      <Item label="Startlocking" value="2"/>
+	  <Item label="Reachedevent" value="3"/>
+      <Item label="Locked" value="4"/>
+	  <Item label="End" value="5"/>
+    </Value>
+    <Value genre="config" index="4" instance="1" label="Travel Time" max="3" min="1" size="4" type="list" value="1">
+       <Help>This parameter defines the travel path of the Lock 1.Automatic/Normal / 2.Multiple turns for one Open/Close action / 3.Travel from Tilted Position is turned on</Help>
+	  <Item label="Automatic" value="1"/>
+      <Item label="Multiple" value="2"/>
+	  <Item label="TiltedOn" value="3"/>
+    </Value>
+    <Value genre="config" index="5" instance="1" label="Touch Panel" max="4" min="1" size="1" type="list" value="1">
+      <Help>Touch Panel settings</Help>
+      <Item label="Active" value="1"/>
+      <Item label="OnlyControlButtons" value="2"/>
+      <Item label="Inactive" value="3"/>
+      <Item label="TrapInactive" value="4"/>
+    </Value>
+    <Value genre="config" index="6" instance="1" label="Motor Force" max="2" min="1" size="1" type="list" value="1">
+       <Help>Motor force, when turning the lock</Help>
+	  <Item label="Automatic" value="1"/>
+      <Item label="Maximum" value="2"/>
+    </Value>
+    <Value genre="config" index="250" instance="1" label="Lock Status" read_only="true" type="int">
+      <Help>Lock Status</Help>
+	  <Item label="Unknown2" value="0"/>
+	  <Item label="Open2" value="1"/>
+      <Item label="Unlocked2" value="2"/>
+	  <Item label="1xLocked2" value="3"/>
+      <Item label="2xLocked2" value="4"/>
+	  <Item label="Locked2" value="5"/>
+      <Item label="MultipleLocking2" value="6"/>
+    </Value>
+	<Value genre="config" index="251" instance="1" label="Travel cycles latch" read_only="true" size="3" type="int">
+      <Help>Counter how often latch was actuated</Help>
+    </Value>
+	<Value genre="config" index="252" instance="1" label="Travel cycles unlocked" read_only="true" size="3" type="int">
+      <Help>Counter, how often travel in „Unlocked“ direction</Help>
+    </Value>
+	<Value genre="config" index="253" instance="1" label="Travel cycles locked" read_only="true" size="3" type="int">
+      <Help>Counter, how often travel in „Locked“ direction</Help>
+    </Value>
+	<Value genre="config" index="254" instance="1" label="ABUS firmware version" read_only="true" size="2" type="int">
+      <Help>Display ABUS firmware version, e.g. 1.05</Help>
+    </Value>
+  </CommandClass>
+</Product>
