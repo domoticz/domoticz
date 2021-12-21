@@ -3098,7 +3098,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			if (root["brightness"].empty() && root["position"].empty())
 			{
-				Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
+#ifdef _DEBUG
+				_log.Debug(DEBUG_NORM, "ERROR: Last Payload is missing state field (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
+#endif
 				return;
 			}
 		}
