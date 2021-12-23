@@ -12,8 +12,6 @@
     namespace Plugins {
         #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
-		extern std::mutex PythonMutex;		// only used during startup when multiple threads could use Python
-
 		void*   m_PyInterpreter;
         bool ModuleInitialized = false;
 
@@ -118,7 +116,6 @@
 			return false;
 		}
 
-		std::lock_guard<std::mutex> l(PythonMutex);
 		PyEval_RestoreThread((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
 		m_PyInterpreter = Py_NewInterpreter();
 		if (!m_PyInterpreter)
@@ -155,7 +152,6 @@
 	{
 		if (m_PyInterpreter)
 		{
-			std::lock_guard<std::mutex> l(PythonMutex);
 			PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
 			if (Plugins::Py_IsInitialized())
 				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
@@ -209,7 +205,6 @@
 		if (Plugins::Py_IsInitialized())
 		{
 
-			std::lock_guard<std::mutex> l(PythonMutex);
 			if (m_PyInterpreter)
 				PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
 

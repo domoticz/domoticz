@@ -41,7 +41,77 @@ extern MainWorker m_mainworker;
 
 namespace Plugins
 {
-	std::mutex PythonMutex; // controls access to Python
+	std::mutex		AccessPython::PythonMutex;
+	volatile bool	AccessPython::m_bHasThreadState = false;
+
+	AccessPython::AccessPython(CPlugin* pPlugin, const char* sWhat) : m_Python(NULL)
+	{
+		m_pPlugin = pPlugin;
+		m_Text = sWhat;
+
+		m_Lock = new std::unique_lock<std::mutex>(PythonMutex, std::defer_lock);
+		if (!m_Lock->try_lock())
+		{
+			if (m_pPlugin)
+			{
+				if (m_pPlugin->m_bDebug & PDM_LOCKING)
+				{
+					_log.Log(LOG_NORM, "(%s) Requesting lock for '%s', waiting...", m_pPlugin->m_Name.c_str(), m_Text);
+				}
+			}
+			else _log.Log(LOG_NORM, "Python lock requested for '%s' in use, will wait.", m_Text);
+			m_Lock->lock();
+		}
+
+		if (pPlugin)
+		{
+			if (pPlugin->m_bDebug & PDM_LOCKING)
+			{
+				_log.Log(LOG_NORM, "(%s) Acquiring lock for '%s'", pPlugin->m_Name.c_str(), m_Text);
+			}
+			m_Python = pPlugin->PythonInterpreter();
+			if (m_Python)
+			{
+				PyEval_RestoreThread(m_Python);
+				m_bHasThreadState = true;
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Attempt to aquire the GIL with NULL Interpreter details.");
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Attempt to aquire the GIL with NULL Plugin details.");
+		}
+	}
+
+	AccessPython::~AccessPython()
+	{
+		if (m_Python && m_pPlugin)
+		{
+			if (PyErr_Occurred())
+			{
+				_log.Log(LOG_NORM, "(%s) Python error was set during unlock for '%s'", m_pPlugin->m_Name.c_str(), m_Text);
+				m_pPlugin->LogPythonException();
+				PyErr_Clear();
+			}
+
+			m_bHasThreadState = false;
+			if (m_pPlugin->PythonInterpreter() && !PyEval_SaveThread())
+			{
+				_log.Log(LOG_ERROR, "(%s) Python Save state returned NULL value for '%s'", m_pPlugin->m_Name.c_str(), m_Text);
+			}
+		}
+		if (m_Lock)
+		{
+			if (m_pPlugin && m_pPlugin->m_bDebug & PDM_LOCKING)
+			{
+				_log.Log(LOG_NORM, "(%s) Releasing lock for '%s'", m_pPlugin->m_Name.c_str(), m_Text);
+			}
+			delete m_Lock;
+		}
+	}
 
 	void LogPythonException(CPlugin *pPlugin, const std::string &sHandler)
 	{
@@ -1145,8 +1215,7 @@ namespace Plugins
 				// If we have connections queue disconnects
 				if (!m_Transports.empty())
 				{
-					std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-											  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
+					AccessPython	Guard(this, m_Name.c_str());
 					std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 					for (const auto &pPluginTransport : m_Transports)
 					{
@@ -1255,12 +1324,15 @@ namespace Plugins
 					}
 				}
 				// Free the memory for the message
-				if (Message)
+				if (!m_PyInterpreter)
 				{
-					std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection inside the message
-					RestoreThread();
+					// Can't lock because there is no interpreter to lock
 					delete Message;
-					ReleaseThread();
+				}
+				else
+				{
+					AccessPython	Guard(this, m_Name.c_str());
+					delete Message;
 				}
 			}
 
@@ -1274,8 +1346,6 @@ namespace Plugins
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
 			try
 			{
-				std::lock_guard<std::mutex> lPython(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-										  // TODO: Must take before m_TransportsMutex to avoid deadlock, try to improve to allow only taking when needed
 				std::lock_guard<std::mutex> lTransports(m_TransportsMutex);
 				if (!m_Transports.empty())
 				{
