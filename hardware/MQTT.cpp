@@ -2564,7 +2564,7 @@ void MQTT::handle_auto_discovery_select(_tMQTTASensor* pSensor, const struct mos
 	std::string sValue = result[0][3];
 	std::string sOptions = result[0][4];
 
-	int iActualIndex = 0;
+	int iActualIndex = ((current_mode != "") ? -1 : 0);
 
 	// Build switch options
 	int iValueIndex = 0;
@@ -2578,6 +2578,12 @@ void MQTT::handle_auto_discovery_select(_tMQTTASensor* pSensor, const struct mos
 		tmpOptionString += ittOptions;
 		iValueIndex += 10;
 	}
+
+	if (iActualIndex == -1) {
+		Log(LOG_ERROR, "Select device doesn't have the option for received STATE \"%s\")", current_mode.c_str());
+		iActualIndex = atoi(sValue.c_str());
+	}
+
 	std::map<std::string, std::string> optionsMap;
 	optionsMap["SelectorStyle"] = "0";
 	optionsMap["LevelOffHidden"] = "false";
