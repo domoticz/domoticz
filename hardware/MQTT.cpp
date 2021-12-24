@@ -2518,20 +2518,21 @@ void MQTT::handle_auto_discovery_select(_tMQTTASensor* pSensor, const struct mos
 	std::string current_mode;
 	if (!bIsJSON)
 	{
-		Log(LOG_ERROR, "Select device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
-		return;
-	}
-	if (!pSensor->value_template.empty())
+		// Assume the payload is the new current value
+		current_mode = qMessage;
+	} 
+	else
 	{
-		current_mode = GetValueFromTemplate(root, pSensor->value_template);
-		if ((pSensor->state_topic == topic) && current_mode.empty())
+		if (!pSensor->value_template.empty())
 		{
-			Log(LOG_ERROR, "Select device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
-			return;
+			current_mode = GetValueFromTemplate(root, pSensor->value_template);
+			if ((pSensor->state_topic == topic) && current_mode.empty())
+			{
+				Log(LOG_ERROR, "Select device no idea how to interpretate state values (%s)", pSensor->unique_id.c_str());
+				return;
+			}
 		}
 	}
-	else
-		current_mode = qMessage;
 
 	pSensor->devType = pTypeGeneralSwitch;
 	pSensor->subType = sSwitchGeneralSwitch;
