@@ -270,6 +270,11 @@ int mosquittodz::publish(int *mid, const char *topic, int payloadlen, const void
 {
 	try
 	{
+		if (payloadlen == 0)
+		{
+			const char* pl = "\"trace\":\"Domoticz publish\"";
+			return mosquitto_publish(m_mosq, mid, topic, strlen(pl), pl, qos, retain);
+		}
 		return mosquitto_publish(m_mosq, mid, topic, payloadlen, payload, qos, retain);
 	}
 	catch (const std::exception& e)

@@ -26,6 +26,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string set_position_topic;
 		std::string brightness_command_topic;
 		std::string brightness_state_topic;
+		std::string rgb_command_topic;
+		std::string rgb_state_topic;
 
 		std::string unit_of_measurement;
 
@@ -34,6 +36,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 		std::string position_template;
 		std::string set_position_template;
 		std::string brightness_value_template;
+		std::string rgb_value_template;
+		std::string rgb_command_template;
 
 		std::string icon;
 

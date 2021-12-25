@@ -71,6 +71,13 @@ void _tColor::fromJSON(const Json::Value &root)
 		b = (uint8_t)root.get("b", 0).asInt();
 		cw = (uint8_t)root.get("cw", 0).asInt();
 		ww = (uint8_t)root.get("ww", 0).asInt();
+
+		if (!root["red"].empty())	r = root.get("red", 0).asInt();
+		if (!root["green"].empty())	g = root.get("green", 0).asInt();
+		if (!root["blue"].empty())	b = root.get("blue", 0).asInt();
+		if (!root["warmWhite"].empty()) cw = root.get("warmWhite", 0).asInt();
+		if (!root["coldWhite"].empty()) ww = root.get("coldWhite", 0).asInt();
+
 		//level = root.get("l", 0).asInt();
 	}
 	catch (...) {

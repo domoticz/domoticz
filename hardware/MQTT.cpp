@@ -197,18 +197,31 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (qMessage.empty())
 			return;
 
+		if (topic.find("currentColor")!=topic.npos)
+			int found = 1;
+		if (topic == "zwave/EZ/12/51/0/currentColor/2")
+			int found = 1;
+
+
 		if (topic != m_TopicIn)
 		{
 			if (topic.find(m_TopicDiscoveryPrefix) == 0)
 			{
+				// Handle all messages sent to the AD topic 
 				on_auto_discovery_message(message);
 				return;
 			}
-			if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())
+
+			if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())		
 			{
+				// Handle all messages from sensors which were aklready autodiscovered.
+				if (topic.find("currentColor") != topic.npos)
+					int found = 1;
 				handle_auto_discovery_sensor_message(message);
 				return;
 			}
+
+			// Not a topic we are interested in!
 			return;
 		}
 	}
@@ -217,6 +230,11 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		Log(LOG_ERROR, "Exception: %s!", e.what());
 		return;
 	}
+
+	// From here on topics only, which are subscribed by using the domoticz prefix, 
+	// nothing which was autodiscovered already, but there maybe new sensors which 
+	// will be discovered here, when they are detected for the first time!
+	// Check truth!
 
 	Json::Value root;
 	std::string szCommand = "udevice";
@@ -230,10 +248,15 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		goto mqttinvaliddata;
 	try
 	{
-		if (!root["command"].empty())
+		if (root["command"].empty())
 		{
-			szCommand = root["command"].asString();
+			// For currentColor topic, set szCommand = "setcolbrightnessvalue" (required for e.g. Fibaro FGRGBW dimmer)
+			std::vector<std::string> topicArray;
+			StringSplit(topic, ";", topicArray);
+			if (topicArray.back() == "currentColor")
+				szCommand = "setcolbrightnessvalue";
 		}
+		else szCommand = root["command"].asString();
 
 		// Checks
 		if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))
@@ -433,6 +456,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 						color = _tColor(r, g, b, cw, ww, ColorModeCustom);
 						break;
 				}
+
 				if (iswhite == "true")
 					color.mode = ColorModeWhite;
 				// Debug(DEBUG_NORM, "setcolbrightnessvalue: trgbww: %02x%02x%02x%02x%02x, color: '%s'", r, g, b, cw, ww, color.toString().c_str());
@@ -452,6 +476,33 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				if (iswhite == "true")
 					color.mode = ColorModeWhite;
 				// Debug(DEBUG_NORM, "setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
+			}
+
+			else if (!root["value"].empty())
+			{
+				// Some devices (e.g. Fibaro FGRGBW) use red, green, blue instead of r, g, b
+				// This could also be a "preprocessor" to if (!root["color"].empty()) above.
+				// The FGRGBW does provide a template which could be used to construct the proper format, 
+				// but it is rgb only and white is missing.
+				//if (!root["value"]["red"].empty())	root["value"]["r"] = root["value"]["red"];
+				//if (!root["value"]["green"].empty())	root["value"]["g"] = root["value"]["green"];
+				//if (!root["value"]["blue"].empty())	root["value"]["b"] = root["value"]["blue"];
+				//if (!root["value"]["warmWhite"].empty()) root["value"]["ww"] = root["value"]["warmWhite"];
+				//if (!root["value"]["coldWhite"].empty()) root["value"]["cw"] = root["value"]["coldWhite"];
+				color = _tColor(root["value"]);
+				if (color.mode == ColorModeRGB)
+				{
+					// Normalize RGB to full brightness
+					float hsb[3];
+					int r, g, b;
+					rgb2hsb(color.r, color.g, color.b, hsb);
+					hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, r, g, b, 255);
+					color.r = (uint8_t)r;
+					color.g = (uint8_t)g;
+					color.b = (uint8_t)b;
+					brightnessAdj = hsb[2];
+				}
+				// Debug(DEBUG_NORM, "setcolbrightnessvalue: color: '%s', bri: '%s'", color.toString().c_str(), brightness.c_str());
 			}
 
 			if (color.mode == ColorModeNone)
@@ -1263,6 +1314,10 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		return;
 	}
 
+	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
+	// light/EZ-RBGW1/rgb_dimmer/config
+	// component  node-id object_id   action
+
 	if (!((strarray.size() == 3) || (strarray.size() == 4) || (strarray.size() == 5) || (strarray.size() == 6)))
 		goto disovery_invaliddata;
 
@@ -1425,6 +1480,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 					pDevice->keys[ittMember] = root["device"][ittMember].asString();
 			}
 		}
+
 		for (const auto ittMember : root["dev"].getMemberNames())
 		{
 			if (!root["dev"][ittMember].empty())
@@ -1475,6 +1531,17 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 					}
 				}
 			}
+		}
+
+		// if object_id is "rgb_dimmer", we need to tweak the color capabilities
+		// It would be better to have access to the nodeinfo, which contains the "compat" flags.
+		if (object_id == "rgb_dimmer" && pDevice->model=="RGBW Controller (FGRGBW)")
+		{
+			root["color_mode"] = "True";
+			root["supported_color_modes"][0] = "rgbw";
+			root["command_topic"] = root["rgb_command_topic"];
+			root["state_topic"] = root["rgb_state_topic"];
+			root["brightness_value_template"] = "";
 		}
 
 		_tMQTTASensor tmpSensor;
@@ -1654,6 +1721,15 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 
 		if (!root["brightness"].empty())
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
+
+		if (!root["rgb_value_template"].empty())
+			pSensor->rgb_value_template = root["rgb_value_template"].asString();
+		if (!root["rgb_command_template"].empty())
+			pSensor->rgb_command_template = root["rgb_command_template"].asString();
+		if (!root["rgb_command_topic"].empty())
+			pSensor->rgb_command_topic = root["rgb_command_topic"].asString();
+		if (!root["rgb_state_topic"].empty())
+			pSensor->rgb_state_topic = root["rgb_state_topic"].asString();
 
 		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
 			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
@@ -3029,6 +3105,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	bool bOn = false;
 
+	//!!! pSensor->last_value enthält keinen "state"!!
+
 	bool bIsJSON = false;
 	Json::Value root;
 	bool ret = ParseJSon(pSensor->last_value, root);
@@ -3045,6 +3123,13 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	if (bIsJSON)
 	{
+		if (root["value"].isObject() && !root["value"]["red"].empty())
+		{
+			// Color format seems hidden in value object (Fibaro FGRGBW)
+			root["color"] = root["value"];
+			root.removeMember("value");
+		}
+
 		if (!root["state"].empty())
 			szOnOffValue = root["state"].asString();
 		else if (!root["value"].empty())
@@ -3076,19 +3161,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						szOnOffValue = "Set Level";
 						// recalculate level to make relative to min/maxpositions
 						if (pSensor->component_type == "cover") {
-							if (
-								(sSwitchType == STYPE_BlindsInverted)
-								|| (sSwitchType == STYPE_BlindsPercentageInverted)
-								|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-								)
-							{
+							if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
 								// invert level for inverted blinds with percentage.
 								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-							}
 							else
-							{
 								level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-							}
 						}
 					}
 				}
@@ -3098,12 +3175,12 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			if (root["brightness"].empty() && root["position"].empty())
 			{
-#ifdef _DEBUG
-				_log.Debug(DEBUG_NORM, "ERROR: Last Payload is missing state field (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
-#endif
+				Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
 				return;
 			}
 		}
+
+
 		if (!root["brightness"].empty())
 		{
 			double dLevel = (100.0 / 255.0) * root["brightness"].asInt();
@@ -3126,19 +3203,11 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				szOnOffValue = "Set Level";
 				// Make level relative to 100.
-				if (
-					(sSwitchType == STYPE_BlindsInverted)
-					|| (sSwitchType == STYPE_BlindsPercentageInverted)
-					|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-					)
-				{
+				if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
 					// invert level for inverted blinds with percentage.
 					level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-				}
 				else
-				{
 					level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-				}
 			}
 		}
 		if (!root["color"].empty())
@@ -3160,14 +3229,29 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			if (!root["color"]["b"].empty())
 				color_new.b = root["color"]["b"].asInt();
 			if (!root["color"]["c"].empty())
-				color_new.cw = root["color"]["c"].asInt();
+				color_new.cw = root["color"]["c"].asInt();		
 			if (!root["color"]["w"].empty())
 				color_new.ww = root["color"]["w"].asInt();
+
+			if (!root["color"]["red"].empty())
+				color_new.r = root["color"]["red"].asInt();
+			if (!root["color"]["green"].empty())
+				color_new.g = root["color"]["green"].asInt();
+			if (!root["color"]["blue"].empty())
+				color_new.b = root["color"]["blue"].asInt();
+			if (!root["color"]["coldWhite"].empty())
+				color_new.cw = root["color"]["coldWhite"].asInt();
+			else color_new.cw = 0;
+			if (!root["color"]["warmWhite"].empty())
+				color_new.ww = root["color"]["warmWhite"].asInt();
+			else color_new.ww = 0;
 
 			if ((!root["color"]["x"].empty()) && (!root["color"]["y"].empty()))
 			{
 				// convert xy to rgb
 				_tColor::RgbFromXY(root["color"]["x"].asDouble(), root["color"]["y"].asDouble(), color_new.r, color_new.g, color_new.b);
+				color_new.cw = 0;
+				color_new.ww = 0;
 			}
 			if ((!root["color"]["h"].empty()) && (!root["color"]["s"].empty()))
 			{
@@ -3181,6 +3265,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				color_new.r = (uint8_t)r;
 				color_new.g = (uint8_t)g;
 				color_new.b = (uint8_t)b;
+				color_new.cw = 0;
+				color_new.ww = 0;
 			}
 
 			if (!root["color_temp"].empty())
@@ -3206,10 +3292,17 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
 		}
+
+		// If the switch state was not handled so far, it must be guessed from the color levels
+		if (bHaveColorChange && root["state"].empty() && root["value"].empty() && root["brightness"].empty() && root["position"].empty())
+		{
+			if (color_new.r == 0 && color_new.g == 0 && color_new.b == 0 && color_new.ww == 0 && color_new.cw == 0)
+			{
+				szOnOffValue = "off";
+			}
+		}
 	}
-	else
-	{
-		//not json
+	else {
 		if (is_number(szOnOffValue))
 		{
 			//must be a level
@@ -3231,36 +3324,20 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				if (level != 100)
 				{
 					szOnOffValue = "Set Level";
+					// recalculate level to make relative to min/maxpositions
+					if (pSensor->component_type == "cover") {
+						if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+							// invert level for inverted blinds with percentage.
+							level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+						else
+							level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+					}
 				}
 				else
 					szOnOffValue = "on";
 			}
 			else
 				szOnOffValue = "off";
-		}
-
-		// COVERS: Always recalculate to make level relative to 100 and invert when needed
-		if (pSensor->component_type == "cover") {
-			// ensure the level is correct when we receive "on"/"off" in the payload
-			if (szOnOffValue == "on")
-				level = pSensor->position_closed;
-			if (szOnOffValue == "off")
-				level = pSensor->position_open;
-
-			// COVERS: Always recalculate to make level relative to 100 and invert when needed
-			if (
-				(sSwitchType == STYPE_BlindsInverted)
-				|| (sSwitchType == STYPE_BlindsPercentageInverted)
-				|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-				)
-			{
-				// invert level for inverted blinds with percentage.
-				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-			}
-			else
-			{
-				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-			}
 		}
 	}
 
@@ -3270,7 +3347,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	int slevel = atoi(sValue.c_str());
 	bool bHaveLevelChange = (slevel != level);
 
-
+//!!! Onoff is not set, pSensor->payload_on="ON"!!
 	if (szOnOffValue == pSensor->payload_on)
 		bOn = true;
 	else if (szOnOffValue == pSensor->payload_off)
@@ -3406,6 +3483,11 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	else if (pSensor->component_type == "light")
 	{
 		Json::Value root;
+		root["trace"] = "Domoticz SendSwitchCommand() CompType=light";
+
+		// Change Set Level to Set Color to send color_temp && color info in payload
+		if (command == "Set Level" && color.mode != ColorModeNone)
+			command = "Set Color";
 
 		if (
 			(command == "On")
@@ -3470,40 +3552,63 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				|| (color.mode == ColorModeCustom)
 				)
 			{
-				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
+
+				// A better way to identify the FGRGBW sensor would be nice, but there is no simple access to device->model here.
+				// Generally it would be better to detect the correct format through the templates, but I am afraid this doesn't work for the specific dimmer.
+				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("{'red': red,")!= pSensor->rgb_command_template.npos) //pSensor->object_id == "rgb_dimmer" /* pDevice->model == "RGBW Controller (FGRGBW)"*/)
 				{
-					double Y, x, y;
-					_tColor::XYFromRGB(color.r, color.g, color.b, x, y, Y);
-					root["color"]["x"] = x;
-					root["color"]["y"] = y;
+					// Special treatment for Fibaro FGRGBW dimmer:
+					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
+					//  -> variables are red, green and blue, but white is missing entirely.
+					// 
+					//	"rgb_value_template": "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }}",
+					// --> Note, these templates are redundant and not in line with reality, which also requires warmWhite!!
+					//... but I don't see, how this could be reasonably writen in a generic form in an case.
+					Json::Value colorDef;
+					root["value"] = colorDef;
+					root["value"]["red"] = color.r;
+					root["value"]["green"] = color.g;
+					root["value"]["blue"] = color.b;
+					root["value"]["warmWhite"] = color.cw;		// In Domoticz cw is set for RGB_W dimmers, but Zwavejs2mqtt requires warmWhite
 				}
-				else if (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
+				else
 				{
-					float hsb[3];
-					rgb2hsb(color.r, color.g, color.b, hsb);
-					root["color"]["h"] = hsb[0];
-					root["color"]["s"] = hsb[1];
-					root["brightness"] = hsb[1] * 255.0F;
+					if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
+					{
+						double Y, x, y;
+						_tColor::XYFromRGB(color.r, color.g, color.b, x, y, Y);
+						root["color"]["x"] = x;
+						root["color"]["y"] = y;
+					}
+					else if (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
+					{
+						float hsb[3];
+						rgb2hsb(color.r, color.g, color.b, hsb);
+						root["color"]["h"] = hsb[0];
+						root["color"]["s"] = hsb[1];
+						root["brightness"] = hsb[1] * 255.0F;
+					}
+					else if (
+						(pSensor->bColor_mode)
+						|| (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
+						|| (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
+						|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
+						|| (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
+						)
+					{
+						root["color"]["r"] = color.r;
+						root["color"]["g"] = color.g;
+						root["color"]["b"] = color.b;
+					}
+					if (
+						(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
+						|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
+						)
+						root["color"]["c"] = color.cw;
+					if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
+						root["color"]["w"] = color.ww;
+
 				}
-				else if (
-					(pSensor->bColor_mode)
-					|| (pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
-					|| (pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
-					|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
-					|| (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
-					)
-				{
-					root["color"]["r"] = color.r;
-					root["color"]["g"] = color.g;
-					root["color"]["b"] = color.b;
-				}
-				if (
-					(pSensor->supported_color_modes.find("rgbw") != pSensor->supported_color_modes.end())
-					|| (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
-					)
-					root["color"]["c"] = color.cw;
-				if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
-					root["color"]["w"] = color.ww;
 			}
 
 			if (
@@ -3593,14 +3698,8 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				if (!result.empty())
 				{
 					_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
-					if (
-						(sSwitchType == STYPE_BlindsInverted)
-						|| (sSwitchType == STYPE_BlindsPercentageInverted)
-						|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-						)
-					{
+					if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
 						iValue = pSensor->position_open - iValue;
-					}
 				}
 				
 				if (pSensor->set_position_template.empty())
