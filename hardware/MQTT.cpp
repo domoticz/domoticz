@@ -467,24 +467,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				// Debug(DEBUG_NORM, "setcolbrightnessvalue2: hue: %f, rgb: %02x%02x%02x, color: '%s'", iHue, r, g, b, color.toString().c_str());
 			}
 
-			else if (!root["value"].empty())
-			{
-				color = _tColor(root["value"]);
-				if (color.mode == ColorModeRGB)
-				{
-					// Normalize RGB to full brightness
-					float hsb[3];
-					int r, g, b;
-					rgb2hsb(color.r, color.g, color.b, hsb);
-					hsb2rgb(hsb[0] * 360.0F, hsb[1], 1.0F, r, g, b, 255);
-					color.r = (uint8_t)r;
-					color.g = (uint8_t)g;
-					color.b = (uint8_t)b;
-					brightnessAdj = hsb[2];
-				}
-				// Debug(DEBUG_NORM, "setcolbrightnessvalue: color: '%s', bri: '%s'", color.toString().c_str(), brightness.c_str());
-			}
-
 			if (color.mode == ColorModeNone)
 			{
 				goto mqttinvaliddata;
@@ -1294,10 +1276,6 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		return;
 	}
 
-	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
-	// light/EZ-RBGW1/rgb_dimmer/config
-	// component  node-id object_id   action
-
 	if (!((strarray.size() == 3) || (strarray.size() == 4) || (strarray.size() == 5) || (strarray.size() == 6)))
 		goto disovery_invaliddata;
 
@@ -1519,7 +1497,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		{
 			root["color_mode"] = "True";
 			root["supported_color_modes"][0] = "rgbw";
-//			root["command_topic"] = root["rgb_command_topic"];
+
 			root["brightness_value_template"] = "";
 			root["payload_on"] = "99";
 			root["payload_off"] = "0";
@@ -3544,8 +3522,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				)
 			{
 
-				// A better way to identify the FGRGBW sensor would be nice, but there is no simple access to device->model here.
-				// Generally it would be better to detect the correct format through the templates, but I am afraid this doesn't work for the specific dimmer.
+				// A better way to identify the FGRGBW dimmer would be nice, but there is no simple access to device->model here.
 				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("{'red': red,")!= pSensor->rgb_command_template.npos) //pSensor->object_id == "rgb_dimmer" /* pDevice->model == "RGBW Controller (FGRGBW)"*/)
 				{
 					// Special treatment for Fibaro FGRGBW dimmer:
