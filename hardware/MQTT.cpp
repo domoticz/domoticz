@@ -208,9 +208,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())		
 			{
-				// Handle all messages from sensors which were already autodiscovered.
-				if (topic.find("currentColor") != topic.npos)
-					int found = 1;
 				handle_auto_discovery_sensor_message(message);
 				return;
 			}
