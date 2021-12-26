@@ -3471,7 +3471,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				else
 				{
 					root["state"] = szSendValue;
-					if (is_non_negative_number)
+					if (is_non_negative_number(szSendValue))
 						root["value"] = szSendValue;	// Required for e.g. FGRGBW color dimmer
 				}
 			}
