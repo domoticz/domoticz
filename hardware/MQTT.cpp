@@ -197,12 +197,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (qMessage.empty())
 			return;
 
-		if (topic.find("currentColor")!=topic.npos)
-			int found = 1;
-		if (topic == "zwave/EZ/12/51/0/currentColor/2")
-			int found = 1;
-
-
 		if (topic != m_TopicIn)
 		{
 			if (topic.find(m_TopicDiscoveryPrefix) == 0)
@@ -214,7 +208,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())		
 			{
-				// Handle all messages from sensors which were aklready autodiscovered.
+				// Handle all messages from sensors which were already autodiscovered.
 				if (topic.find("currentColor") != topic.npos)
 					int found = 1;
 				handle_auto_discovery_sensor_message(message);
@@ -231,10 +225,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		return;
 	}
 
-	// From here on topics only, which are subscribed by using the domoticz prefix, 
-	// nothing which was autodiscovered already, but there maybe new sensors which 
-	// will be discovered here, when they are detected for the first time!
-	// Check truth!
+	// If AD is used, we should never get beyond this line!!
 
 	Json::Value root;
 	std::string szCommand = "udevice";
@@ -248,25 +239,26 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		goto mqttinvaliddata;
 	try
 	{
-		if (root["command"].empty())
-		{
-			// For currentColor topic, set szCommand = "setcolbrightnessvalue" (required for e.g. Fibaro FGRGBW dimmer)
-			std::vector<std::string> topicArray;
-			StringSplit(topic, ";", topicArray);
-			if (topicArray.back() == "currentColor")
-				szCommand = "setcolbrightnessvalue";
-		}
-		else szCommand = root["command"].asString();
+		if (!root["command"].empty())
+			szCommand = root["command"].asString();
 
 		// Checks
 		if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))
 		{
-			idx = (uint64_t)root["idx"].asInt64();
-			// Get the raw device parameters
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
-			if (result.empty())
+			if (!root["idx"].empty())
 			{
-				Log(LOG_ERROR, "unknown idx received! (idx %" PRIu64 ")", idx);
+				idx = (uint64_t)root["idx"].asInt64();
+				// Get the raw device parameters
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+				if (result.empty())
+				{
+					Log(LOG_ERROR, "unknown idx received! (idx %" PRIu64 ")", idx);
+					return;
+				}
+			}
+			else
+			{
+				Log(LOG_ERROR, "received message without device idx!");
 				return;
 			}
 		}
@@ -480,15 +472,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			else if (!root["value"].empty())
 			{
-				// Some devices (e.g. Fibaro FGRGBW) use red, green, blue instead of r, g, b
-				// This could also be a "preprocessor" to if (!root["color"].empty()) above.
-				// The FGRGBW does provide a template which could be used to construct the proper format, 
-				// but it is rgb only and white is missing.
-				//if (!root["value"]["red"].empty())	root["value"]["r"] = root["value"]["red"];
-				//if (!root["value"]["green"].empty())	root["value"]["g"] = root["value"]["green"];
-				//if (!root["value"]["blue"].empty())	root["value"]["b"] = root["value"]["blue"];
-				//if (!root["value"]["warmWhite"].empty()) root["value"]["ww"] = root["value"]["warmWhite"];
-				//if (!root["value"]["coldWhite"].empty()) root["value"]["cw"] = root["value"]["coldWhite"];
 				color = _tColor(root["value"]);
 				if (color.mode == ColorModeRGB)
 				{
@@ -1539,9 +1522,10 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 		{
 			root["color_mode"] = "True";
 			root["supported_color_modes"][0] = "rgbw";
-			root["command_topic"] = root["rgb_command_topic"];
-			root["state_topic"] = root["rgb_state_topic"];
+//			root["command_topic"] = root["rgb_command_topic"];
 			root["brightness_value_template"] = "";
+			root["payload_on"] = "99";
+			root["payload_off"] = "0";
 		}
 
 		_tMQTTASensor tmpSensor;
@@ -1930,6 +1914,7 @@ void MQTT::on_auto_discovery_message(const struct mosquitto_message *message)
 			SubscribeTopic(pSensor->temperature_state_template, pSensor->qos);
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
 			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->rgb_state_topic, pSensor->qos);
 		}
 	}
 	catch (const std::exception &e)
@@ -1970,10 +1955,10 @@ void MQTT::handle_auto_discovery_sensor_message(const struct mosquitto_message *
 			(pSensor->state_topic == topic)
 			|| (pSensor->position_topic == topic)
 			|| (pSensor->brightness_state_topic == topic)
+			|| (pSensor->rgb_state_topic == topic)
 			|| (pSensor->mode_state_topic == topic)
 			|| (pSensor->temperature_state_topic == topic)
 			|| (pSensor->current_temperature_topic == topic)
-			
 			)
 		{
 			bool bIsJSON = false;
@@ -3105,8 +3090,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	bool bOn = false;
 
-	//!!! pSensor->last_value enthält keinen "state"!!
-
 	bool bIsJSON = false;
 	Json::Value root;
 	bool ret = ParseJSon(pSensor->last_value, root);
@@ -3128,6 +3111,21 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			// Color format seems hidden in value object (Fibaro FGRGBW)
 			root["color"] = root["value"];
 			root.removeMember("value");
+
+			// For the Fibaro FGRGBW, the on/off state is omitted too, so guess it from the color components
+			if (root["color"].isObject())
+			{
+				int r = root["color"]["red"].asInt();
+				int g = root["color"]["green"].asInt();
+				int b = root["color"]["blue"].asInt();
+				int w = root["color"]["warmWhite"].asInt();
+				int c = root["color"]["coldWhite"].asInt();
+				if (r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
+				{
+					root["state"] = "off";
+				}
+				else root["state"] = "on";
+			}
 		}
 
 		if (!root["state"].empty())
@@ -3215,12 +3213,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			Json::Value root_color;
 			bool ret = ParseJSon(sColor, root_color);
 			if (ret)
-			{
 				if (root_color.isObject())
-				{
 					color_old.fromJSON(root_color);
-				}
-			}
 
 			if (!root["color"]["r"].empty())
 				color_new.r = root["color"]["r"].asInt();
@@ -3292,15 +3286,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
 		}
-
-		// If the switch state was not handled so far, it must be guessed from the color levels
-		if (bHaveColorChange && root["state"].empty() && root["value"].empty() && root["brightness"].empty() && root["position"].empty())
-		{
-			if (color_new.r == 0 && color_new.g == 0 && color_new.b == 0 && color_new.ww == 0 && color_new.cw == 0)
-			{
-				szOnOffValue = "off";
-			}
-		}
 	}
 	else {
 		if (is_number(szOnOffValue))
@@ -3347,7 +3332,6 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	int slevel = atoi(sValue.c_str());
 	bool bHaveLevelChange = (slevel != level);
 
-//!!! Onoff is not set, pSensor->payload_on="ON"!!
 	if (szOnOffValue == pSensor->payload_on)
 		bOn = true;
 	else if (szOnOffValue == pSensor->payload_off)
@@ -3418,6 +3402,13 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		m_sql.UpdateDeviceValue("LastLevel", level, szIdx);
 }
 
+// Return true if the string represents a non-negative integer number.
+bool is_non_negative_number(const std::string& s) 
+{
+	return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+
 bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &DeviceName, int Unit, std::string command, int level, _tColor color)
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
@@ -3441,7 +3432,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	}
 
 	std::string szSendValue;
-
+	std::string command_topic = pSensor->command_topic;
 	if (
 		(pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
@@ -3483,7 +3474,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	else if (pSensor->component_type == "light")
 	{
 		Json::Value root;
-		root["trace"] = "Domoticz SendSwitchCommand() CompType=light";
 
 		// Change Set Level to Set Color to send color_temp && color info in payload
 		if (command == "Set Level" && color.mode != ColorModeNone)
@@ -3504,7 +3494,11 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				else if (szSendValue == "false")
 					root["state"] = false;
 				else
+				{
 					root["state"] = szSendValue;
+					if (is_non_negative_number)
+						root["value"] = szSendValue;	// Required for e.g. FGRGBW color dimmer
+				}
 			}
 		}
 		else if (command == "Set Level")
@@ -3559,17 +3553,14 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				{
 					// Special treatment for Fibaro FGRGBW dimmer:
 					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
-					//  -> variables are red, green and blue, but white is missing entirely.
-					// 
 					//	"rgb_value_template": "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }}",
-					// --> Note, these templates are redundant and not in line with reality, which also requires warmWhite!!
-					//... but I don't see, how this could be reasonably writen in a generic form in an case.
+					//  -> variables are red, green and blue, but white is missing entirely, so template can't be used.
 					Json::Value colorDef;
 					root["value"] = colorDef;
 					root["value"]["red"] = color.r;
 					root["value"]["green"] = color.g;
 					root["value"]["blue"] = color.b;
-					root["value"]["warmWhite"] = color.cw;		// In Domoticz cw is set for RGB_W dimmers, but Zwavejs2mqtt requires warmWhite
+					root["value"]["warmWhite"] = color.cw;		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs2mqtt requires warmWhite
 				}
 				else
 				{
@@ -3645,6 +3636,9 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				else
 					root["brightness"] = slevel;
 			}
+
+			if (!pSensor->rgb_command_topic.empty())
+				command_topic = pSensor->rgb_command_topic;
 		}
 		else
 		{
@@ -3836,7 +3830,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 		}
 	}
 
-	SendMessage(pSensor->command_topic, szSendValue);
+	SendMessage(command_topic, szSendValue);
 	return true;
 }
 
