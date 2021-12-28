@@ -251,10 +251,14 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			// Determine the file extension.
 			std::size_t last_slash_pos = full_path.find_last_of('/');
 			std::size_t last_dot_pos = full_path.find_last_of('.');
-			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+			if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos && last_dot_pos < full_path.length()-1)
 			{
 				extension = full_path.substr(last_dot_pos + 1);
 				bValidUri = true;
+			}
+			else if((last_dot_pos == std::string::npos) && (iStat == 0) && ((sb.st_mode & S_IFREG) == S_IFREG))
+			{
+				bValidUri = true; // no extension found, but the sourcefile does exist and is a of regular file type so serve it also
 			}
 			else
 			{
