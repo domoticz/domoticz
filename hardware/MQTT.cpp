@@ -2130,7 +2130,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
-		sValue = pSensor->last_value;
+		sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
 	else if (szUnit == "kwh")
 	{
