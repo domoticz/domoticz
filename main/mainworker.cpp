@@ -3217,7 +3217,8 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 	char szTmp[300];
 	uint8_t devType = pTypeWIND;
 	uint8_t subType = pResponse->WIND.subtype;
-	uint16_t windID = (pResponse->WIND.id1 * 256) + pResponse->WIND.id2;
+	// uint16_t windID = (pResponse->WIND.id1 * 256) + pResponse->WIND.id2;
+	uint16_t windID = 0;
 	sprintf(szTmp, "%d", windID);
 	std::string ID = szTmp;
 	uint8_t Unit = 0;
