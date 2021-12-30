@@ -855,10 +855,11 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 			auto iPort = std::stoi(wwwport);
-			if ((iPort < 1) || (iPort > 65535))
+			if ((iPort < 0) || (iPort > 65535))
 			{
 				_log.Log(LOG_ERROR,
-                 "Please specify a valid sslwww port between 1 and 65535");
+                 "Please specify a valid sslwww port between 1 and 65535"
+                 " or 0 to disable");
 				return 1;
 			}
 			secure_webserver_settings.listening_port = wwwport;
