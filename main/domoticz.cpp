@@ -42,7 +42,7 @@
 	#include <syslog.h>
 	#include <errno.h>
 	#include <fcntl.h>
-	#include <string.h> 
+	#include <string.h>
 #endif
 
 namespace
@@ -854,10 +854,11 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
-			int iPort = (int)atoi(wwwport.c_str());
-			if ((iPort < 0) || (iPort > 32767))
+			auto iPort = std::stoi(wwwport);
+			if ((iPort < 1) || (iPort > 65535))
 			{
-				_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
+				_log.Log(LOG_ERROR,
+                 "Please specify a valid sslwww port between 1 and 65535");
 				return 1;
 			}
 			secure_webserver_settings.listening_port = wwwport;
