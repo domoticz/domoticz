@@ -202,6 +202,9 @@ void ssl_server::init_connection() {
 	SSL_CTX_set_cipher_list(context_.native_handle(), cipher_list);
 	_log.Debug(DEBUG_WEBSERVER, "[web:%s] Enabled ciphers (TLSv1.2) %s", settings_.listening_port.c_str(), settings_.cipher_list.c_str());
 
+	SSL_CTX_set_min_proto_version(context_.native_handle(), TLS1_2_VERSION);
+	SSL_CTX_set_options(context_.native_handle(), SSL_OP_CIPHER_SERVER_PREFERENCE);
+
 	struct stat st;
 	if (settings_.certificate_chain_file_path.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL certificate chain file parameter !", settings_.listening_port.c_str());
