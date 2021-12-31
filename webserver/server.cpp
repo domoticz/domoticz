@@ -196,8 +196,11 @@ void ssl_server::init_connection() {
 	} else {
 		context_.set_options(settings_.get_ssl_options());
 	}
-	char cipher_list[] = "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:!aNULL:!MD5:!DSS";
+
+	char cipher_list[settings_.cipher_list.size()+1];
+	strcpy(cipher_list, settings_.cipher_list.c_str());
 	SSL_CTX_set_cipher_list(context_.native_handle(), cipher_list);
+	_log.Debug(DEBUG_WEBSERVER, "[web:%s] Enabled ciphers (TLSv1.2) %s", settings_.listening_port.c_str(), settings_.cipher_list.c_str());
 
 	struct stat st;
 	if (settings_.certificate_chain_file_path.empty()) {
@@ -217,7 +220,6 @@ void ssl_server::init_connection() {
 	} else {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL certificate file %s!", settings_.listening_port.c_str(), settings_.cert_file_path.c_str());
 	}
-
 
 	if (settings_.private_key_file_path.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL private key file parameter !", settings_.listening_port.c_str());
@@ -248,6 +250,7 @@ void ssl_server::init_connection() {
 			context_.set_verify_mode(verify_mode);
 		}
 	}
+
 	// Load DH parameters
 	if (settings_.tmp_dh_file_path.empty()) {
 		_log.Log(LOG_ERROR, "[web:%s] missing SSL DH file parameter", settings_.listening_port.c_str());
@@ -259,7 +262,7 @@ void ssl_server::init_connection() {
 				(std::istreambuf_iterator<char>()));
 		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
-			//_log.DEBUG(DEBUG_WEBSERVER, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		} else {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}

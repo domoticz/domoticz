@@ -216,17 +216,18 @@ MainWorker::MainWorker()
 #ifdef WWW_ENABLE_SSL
 	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_secure_webserver_settings.listening_port = "443";
-	m_secure_webserver_settings.ssl_method = "sslv23";
+	m_secure_webserver_settings.ssl_method = "tls";
 	m_secure_webserver_settings.certificate_chain_file_path = "./server_cert.pem";
 	m_secure_webserver_settings.ca_cert_file_path = m_secure_webserver_settings.certificate_chain_file_path; // not used
 	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_pass_phrase = "";
-	m_secure_webserver_settings.ssl_options = "default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use";
+	m_secure_webserver_settings.ssl_options = "single_dh_use";
 	m_secure_webserver_settings.tmp_dh_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.verify_peer = false;
 	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
 	m_secure_webserver_settings.verify_file_path = "";
+	m_secure_webserver_settings.cipher_list = "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
 #endif
 	m_bIgnoreUsernamePassword = false;
 
