@@ -204,6 +204,7 @@ void ssl_server::init_connection() {
 
 	SSL_CTX_set_min_proto_version(context_.native_handle(), TLS1_2_VERSION);
 	SSL_CTX_set_options(context_.native_handle(), SSL_OP_CIPHER_SERVER_PREFERENCE);
+	SSL_CTX_set_options(context_.native_handle(), SSL_OP_NO_RENEGOTIATION);
 
 	struct stat st;
 	if (settings_.certificate_chain_file_path.empty()) {
