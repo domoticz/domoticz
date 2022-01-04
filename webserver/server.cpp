@@ -197,8 +197,7 @@ void ssl_server::init_connection() {
 		context_.set_options(settings_.get_ssl_options());
 	}
 
-	char cipher_list[settings_.cipher_list.size()+1];
-	strcpy(cipher_list, settings_.cipher_list.c_str());
+	const char* cipher_list = &settings_.cipher_list[0];
 	SSL_CTX_set_cipher_list(context_.native_handle(), cipher_list);
 	_log.Debug(DEBUG_WEBSERVER, "[web:%s] Enabled ciphers (TLSv1.2) %s", settings_.listening_port.c_str(), settings_.cipher_list.c_str());
 
