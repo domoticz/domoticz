@@ -908,7 +908,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CNetatmo(ID, Username, Password);
 		break;
 	case HTYPE_Daikin:
-		pHardware = new CDaikin(ID, Address, Port, Username, Password);
+		pHardware = new CDaikin(ID, Address, Port, Username, Password, Mode1);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID, Username);
@@ -11457,7 +11457,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_MQTT)
-		return ((MQTT *)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
+	{
+		// Special case when color is passed from timer or scene
+		if ((switchcmd == "Set Level") && (color.mode != ColorModeNone))
+		{
+			switchcmd = "Set Color";
+		}
+		return ((MQTT*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
+	}
 
 	switch (dType)
 	{
@@ -13415,7 +13422,7 @@ void MainWorker::ForceLogNotificationCheck()
 
 void MainWorker::HandleLogNotifications()
 {
-	auto _loglines = _log.GetNotificationLogs();
+	std::list<CLogger::_tLogLineStruct> _loglines = _log.GetNotificationLogs();
 	if (_loglines.empty())
 		return;
 	//Assemble notification message

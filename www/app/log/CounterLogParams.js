@@ -36,6 +36,7 @@ define(['app', 'log/Chart'], function (app) {
                             }
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
@@ -75,6 +76,7 @@ define(['app', 'log/Chart'], function (app) {
                             crosshairs: false
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
@@ -105,6 +107,7 @@ define(['app', 'log/Chart'], function (app) {
                             crosshairs: false
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',

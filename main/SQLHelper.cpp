@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 149
+#define DB_VERSION 150
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -480,16 +480,20 @@ constexpr auto sqlCreateFan_Calendar =
 constexpr auto sqlCreateBackupLog =
 "CREATE TABLE IF NOT EXISTS [BackupLog] ("
 "[Key] VARCHAR(50) NOT NULL, "
-"[nValue] INTEGER DEFAULT 0); ";
+"[nValue] INTEGER DEFAULT 0);";
 
-constexpr auto sqlCreateEnoceanSensors =
-"CREATE TABLE IF NOT EXISTS [EnoceanSensors] ("
+constexpr auto sqlCreateEnOceanNodes =
+"CREATE TABLE IF NOT EXISTS [EnOceanNodes] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[HardwareID] INTEGER NOT NULL, "
-"[DeviceID] VARCHAR(25) NOT NULL, "
-"[Manufacturer] INTEGER NOT NULL, "
-"[Profile] INTEGER NOT NULL, "
-"[Type] INTEGER NOT NULL);";
+"[NodeID] INTEGER NOT NULL, "
+"[Name] VARCHAR(100) DEFAULT Unknown, "
+"[ManufacturerID] INTEGER DEFAULT 0, "
+"[RORG] INTEGER DEFAULT 0, "
+"[Func] INTEGER DEFAULT 0, "
+"[Type] INTEGER DEFAULT 0, "
+"[Description] VARCHAR(100) DEFAULT Unknown, "
+"[nValue] INTEGER DEFAULT 0);";
 
 constexpr auto sqlCreatePushLink =
 "CREATE TABLE IF NOT EXISTS [PushLink] ("
@@ -759,7 +763,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFan);
 	query(sqlCreateFan_Calendar);
 	query(sqlCreateBackupLog);
-	query(sqlCreateEnoceanSensors);
+	query(sqlCreateEnOceanNodes);
 	query(sqlCreatePushLink);
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
@@ -2922,6 +2926,21 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 150)
+		{ // Populate EnOceanNodes table from EnoceanSensors table
+			std::vector<std::vector<std::string>> result;
+
+			result = m_sql.safe_query("SELECT ID, HardwareID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors");
+			if (!result.empty())
+			{
+				for (const auto &sdn : result)
+				{
+					safe_query("INSERT INTO EnOceanNodes (ID, HardwareID, NodeID, ManufacturerID, Func, Type) VALUES ('%q','%q',%u,'%q','%q','%q')",
+						sdn[0].c_str(), sdn[1].c_str(), static_cast<uint32_t>(std::stoul(sdn[2], 0, 16)), sdn[3].c_str(), sdn[4].c_str(), sdn[5].c_str());
+				}
+			}
+			query("DROP TABLE EnoceanSensors");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -4939,21 +4958,23 @@ uint64_t CSQLHelper::UpdateValueInt(
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 			intervalSeconds = difftime(now, lutime);
 
-            std::vector<std::string> parts;
-			StringSplit(sValueBeforeUpdate, ";", parts);
-			if (parts.size() == 2)
+            std::vector<std::string> powerAndEnergyBeforeUpdate;
+			StringSplit(sValueBeforeUpdate, ";", powerAndEnergyBeforeUpdate);
+			if (powerAndEnergyBeforeUpdate.size() == 2)
 			{
 				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
-				float powerDuringInterval = static_cast<float>(atof(parts[0].c_str()));
-				float energyUpToInterval = atof(parts[1].c_str());
-				float energyDuringInterval = powerDuringInterval * intervalSeconds / 3600 + energyUpToInterval;
-				const char* powerAfterInterval = parts[0].c_str();
-				StringSplit(sValue, ";", parts);
-				if (!parts.empty())
+				float powerDuringInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[0].c_str()));
+				float energyUpToInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[1].c_str()));
+				float energyDuringInterval = static_cast<float>(powerDuringInterval * intervalSeconds / 3600);
+				float energyAfterInterval = static_cast<float>(energyUpToInterval + energyDuringInterval);
+				std::vector<std::string> powerAndEnergyUpdate;
+				StringSplit(sValue, ";", powerAndEnergyUpdate);
+				if (!powerAndEnergyUpdate.empty())
 				{
-                    char sValueAfterInterval[100];
-                    sprintf(sValueAfterInterval, "%s;%.1f", powerAfterInterval, energyDuringInterval);
-					sValue = sValueAfterInterval;
+					const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
+                    char sValueUpdate[100];
+                    sprintf(sValueUpdate, "%s;%.1f", powerUpdate, energyAfterInterval);
+					sValue = sValueUpdate;
 				}
 				else
 				{
@@ -5165,6 +5186,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 			bool bIsLightSwitchOn = IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
+			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
+			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
+			if (pHardware != nullptr)
+				HWtype = pHardware->HwdType;
+
 			if (
 				((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
 				|| (switchtype == STYPE_BlindsPercentage)
@@ -5174,10 +5200,12 @@ uint64_t CSQLHelper::UpdateValueInt(
 				)
 			{
 				if (
-					switchtype == STYPE_BlindsPercentage
-					|| switchtype == STYPE_BlindsPercentageInverted
+					(pHardware->HwdType != HTYPE_MQTT)
+					&&
+					(switchtype == STYPE_BlindsPercentage
 					|| switchtype == STYPE_BlindsPercentageWithStop
-					|| switchtype == STYPE_BlindsPercentageInvertedWithStop
+					|| switchtype == STYPE_BlindsPercentageInverted
+					|| switchtype == STYPE_BlindsPercentageInvertedWithStop)
 					)
 				{
 					if (nValue == light2_sOn)
@@ -5271,11 +5299,6 @@ uint64_t CSQLHelper::UpdateValueInt(
 					m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1, scriptname, s_scriptparams.str()));
 				}
 			}
-
-			_eHardwareTypes HWtype = HTYPE_Domoticz; //just a value
-			CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
-			if (pHardware != nullptr)
-				HWtype = pHardware->HwdType;
 
 			//Check for notifications
 			if (HWtype != HTYPE_LogitechMediaServer) // Skip notifications for LMS here; is handled by the LMS plug-in
@@ -7598,10 +7621,10 @@ void CSQLHelper::DeleteHardware(const std::string& idx)
 		DeleteDevices(devs2delete);
 	}
 	//also delete all records in other tables
-	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID== '%q')", idx.c_str());
-	safe_query("DELETE FROM EnoceanSensors WHERE (HardwareID== '%q')", idx.c_str());
-	safe_query("DELETE FROM MySensors WHERE (HardwareID== '%q')", idx.c_str());
-	safe_query("DELETE FROM WOLNodes WHERE (HardwareID == '%q')", idx.c_str());
+	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID=='%q')", idx.c_str());
+	safe_query("DELETE FROM EnOceanNodes WHERE (HardwareID=='%q')", idx.c_str());
+	safe_query("DELETE FROM MySensors WHERE (HardwareID=='%q')", idx.c_str());
+	safe_query("DELETE FROM WOLNodes WHERE (HardwareID=='%q')", idx.c_str());
 }
 
 void CSQLHelper::DeleteCamera(const std::string& idx)
@@ -9108,22 +9131,33 @@ std::string CSQLHelper::GetDeviceValue(const char * FieldName, const char *Idx)
 }
 */
 
+void CSQLHelper::SendUpdateInt(const std::string& Idx)
+{
+	auto result = safe_query("SELECT HardwareID, Name From DeviceStatus WHERE (ID == %s )", Idx.c_str());
+	if (result.empty())
+		return;
+	m_mainworker.sOnDeviceReceived(atoi(result[0][0].c_str()), atoll(Idx.c_str()), result[0][1], nullptr);
+}
+
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const std::string& Value, const std::string& Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const int Value, const std::string& Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const float Value, const std::string& Idx)
 {
 	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
-
 void CSQLHelper::UpdateDeviceName(const std::string& Idx, const std::string& Name)
 {
 	safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%s' WHERE (ID == %s )", Name.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	SendUpdateInt(Idx);
 }
 
 bool CSQLHelper::InsertCustomIconFromZip(const std::string& szZip, std::string& ErrorMessage)

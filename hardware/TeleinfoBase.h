@@ -66,6 +66,13 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		std::string rate;
 		std::string tariff;
 		std::string color;
+		uint32_t PREF;
+		uint32_t SINSTS1;
+		uint32_t SINSTS2;
+		uint32_t SINSTS3;
+		uint32_t URMS1;
+		uint32_t URMS2;
+		uint32_t URMS3;
 		time_t last;
 		bool triphase;
 		bool withPAPP; // For meters with no PAPP
@@ -122,7 +129,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 	bool m_bDisableCRC;
 
       private:
-	int AlertLevel(int Iinst, int Isousc, char *text);
+	int AlertLevel(int Iinst, int Isousc, int Sinsts, int Pcoup, char* text);
 	P1Power m_p1power, m_p2power, m_p3power;
 	Teleinfo m_teleinfo;
 	char m_buffer[1024];

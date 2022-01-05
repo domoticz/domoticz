@@ -1,0 +1,25 @@
+{
+  "temp": [
+    "temperature",
+    "ambient_temperature"
+  ],
+  "humidity": [
+    "hum"
+  ],
+  "baro": [
+    "barometer"
+  ],
+  "batterylevel": [
+    "battery_level"
+  ],
+  "gps": [],
+  "luminosity": [],
+  "presense": [],
+  "analog_input": [],
+  "analog_output": [],
+  "digital_output": [],
+  "digital_input": [],
+  "accel": [],
+  "gyro": [],
+  "unixtime": []
+}

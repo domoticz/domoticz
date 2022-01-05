@@ -33,6 +33,7 @@ namespace Plugins {
 		PDM_IMAGE = 32,
 		PDM_MESSAGE = 64,
 		PDM_QUEUE = 128,
+		PDM_LOCKING = 256,
 		PDM_ALL = 65535
 	};
 
@@ -61,7 +62,6 @@ namespace Plugins {
 
 		void Do_Work();
 
-		void LogPythonException();
 		void LogPythonException(const std::string &);
 
 	public:
@@ -74,10 +74,12 @@ namespace Plugins {
 	  bool StartHardware() override;
 	  bool StopHardware() override;
 
+	  void LogPythonException();
 	  void LogTraceback(PyTracebackObject *pTraceback);
 
 	  int PollInterval(int Interval = -1);
 	  PyObject*	PythonModule() { return m_PyModule; };
+	  PyThreadState* PythonInterpreter() { return m_PyInterpreter; };
 	  void Notifier(const std::string &Notifier = "");
 	  void AddConnection(CPluginTransport *);
 	  void RemoveConnection(CPluginTransport *);
@@ -274,4 +276,23 @@ namespace Plugins {
 		PyTypeObject *pDeviceClass;
 		PyTypeObject *pUnitClass;
 	};
+
+	//
+	//	Controls access to Python (single threads it)
+	//
+	class AccessPython
+	{
+	private:
+		static	std::mutex			PythonMutex;
+		static  volatile bool		m_bHasThreadState;
+		std::unique_lock<std::mutex>* m_Lock;
+		PyThreadState* m_Python;
+		CPlugin* m_pPlugin;
+		const char* m_Text;
+
+	public:
+		AccessPython(CPlugin* pPlugin, const char* sWhat);
+		~AccessPython();
+	};
+
 } // namespace Plugins

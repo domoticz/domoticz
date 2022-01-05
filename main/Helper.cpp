@@ -1457,9 +1457,11 @@ const std::string std_format(const char* szFormat, ...)
 std::string utf8_to_string(const std::string& utf8str)
 {
 	std::wstring wstr = utf8_to_wstring(utf8str);
-	std::vector<char> buf(wstr.size());
-	std::use_facet<std::ctype<wchar_t>>(std::locale("")).narrow(wstr.data(), wstr.data() + wstr.size(), '?', buf.data());
-	return std::string(buf.data(), buf.size());
+	std::string str(wstr.length(), 0);
+	std::transform(wstr.begin(), wstr.end(), str.begin(), [](wchar_t c) {
+		return (char)c;
+		});
+	return str;
 }
 
 std::wstring utf8_to_wstring(const std::string& utf8str)

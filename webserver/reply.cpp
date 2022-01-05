@@ -309,13 +309,6 @@ bool reply::set_content_from_file(reply *rep, const std::string &file_path, cons
 		if (last_dot_pos != std::string::npos) {
 			std::string file_extension = attachment.substr(last_dot_pos + 1);
 			std::string mime_type = mime_types::extension_to_type(file_extension);
-			if ((mime_type.find("text/") != std::string::npos) ||
-					(mime_type.find("/xml") != std::string::npos) ||
-					(mime_type.find("/javascript") != std::string::npos) ||
-					(mime_type.find("/json") != std::string::npos)) {
-				// Add charset on text content
-				mime_type += ";charset=UTF-8";
-			}
 			reply::add_header_content_type(rep, mime_type);
 		}
 	}
@@ -349,7 +342,18 @@ sender.
 */
 void reply::add_header_content_type(reply *rep, const std::string & content_type) {
 	if (!content_type.empty())
-		reply::add_header(rep, "Content-Type", content_type);
+	{
+		std::string charset = "";
+		if (((content_type.find("text/") != std::string::npos) ||
+			(content_type.find("/xml") != std::string::npos) ||
+			(content_type.find("/javascript") != std::string::npos) ||
+			(content_type.find("/json") != std::string::npos)) &&
+			(content_type.find("charset") == std::string::npos)) {
+			// Add charset on text content
+			charset = ";charset=UTF-8";
+		}
+		reply::add_header(rep, "Content-Type", content_type + charset);
+	}
 }
 
 } // namespace server

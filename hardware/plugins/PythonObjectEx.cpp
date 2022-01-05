@@ -815,33 +815,22 @@ namespace Plugins {
 			}
 
 			// Need to look up current nValue and sValue and only do triggers if one has changed
-			bool nValueChanged = false;
-			bool sValueChanged = false;
-			std::string	sOnAction;
-			std::string	sOffAction;
 			std::vector<std::vector<std::string>> result;
 
-			Py_BEGIN_ALLOW_THREADS
-
-			result = m_sql.safe_query("SELECT ID, nValue, sValue, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+			if (result.empty())
 			{
-				int oldnValue = atoi(result[0][1].c_str());
-				std::string oldsValue = result[0][2];
-
-				if (nValue != oldnValue)
-				{
-					nValueChanged = true;
-				}
-				if (sValue != oldsValue)
-				{
-					sValueChanged = true;
-				}
-				sOnAction = result[0][3];
-				sOffAction = result[0][4];
+				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed, row not found in database for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				Py_RETURN_NONE;
 			}
 
+			uint64_t	DevRowIdx = std::stoull(result[0][0]);
+			std::string	sOnAction = result[0][1];
+			std::string	sOffAction = result[0][2];
+			int	iRows = 0;
+
 			// Do an atomic update (do not change this to individual field updates!!!!!!!)
+			Py_BEGIN_ALLOW_THREADS
 			std::string sSQL = "UPDATE DeviceStatus "
 							   "SET Name=?, Description=?, Used=?, Type=?, SubType=?, SwitchType=?, nValue=?, sValue=?, LastLevel=?, CustomImage=?, Color=?, SignalLevel=?, BatteryLevel=?, Options=?, LastUpdate=? "
 							   "WHERE (HardwareID==?) AND (DeviceID==?) AND (Unit==?);";
@@ -867,44 +856,48 @@ namespace Plugins {
 			vValues.push_back(std::to_string(self->Unit));
 
 			// Handle any data we get back (this method allows for any special characters in the strings such as ' and ")
-			if (!m_sql.execute_sql(sSQL, &vValues, true))
-			{
-				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-			}
+			iRows = m_sql.execute_sql(sSQL, &vValues, true);
 			Py_END_ALLOW_THREADS
 
+			if (!iRows)
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				Py_RETURN_NONE;
+			}
+
 			// Only trigger notifications if a used value is changed
-			if (self->Used && (nValueChanged || sValueChanged))
+			if (self->Used)
 			{
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
+					Py_BEGIN_ALLOW_THREADS
 					switch (nValue)
 					{
 						case sStatusArmHome:
 						case sStatusArmHomeDelayed:
-							Py_BEGIN_ALLOW_THREADS m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
 							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
-							Py_END_ALLOW_THREADS break;
+							break;
 						case sStatusArmAway:
 						case sStatusArmAwayDelayed:
-							Py_BEGIN_ALLOW_THREADS m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
 							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
-							Py_END_ALLOW_THREADS break;
+							break;
 						case sStatusDisarm:
 						case sStatusNormal:
 						case sStatusNormalDelayed:
 						case sStatusNormalTamper:
 						case sStatusNormalDelayedTamper:
-							Py_BEGIN_ALLOW_THREADS m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
 							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
-							Py_END_ALLOW_THREADS break;
+							break;
 					}
+					Py_END_ALLOW_THREADS
 				}
 
 				// Notify Event system, MQTT and various push mechanisms and notifications
 				Py_BEGIN_ALLOW_THREADS
-				uint64_t	DevRowIdx = std::stoull(result[0][0]);
 				m_mainworker.m_eventsystem.ProcessDevice(pModState->pPlugin->m_HwdID, DevRowIdx, self->Unit, iType, iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str());
 
 				// Standard on/off action handling  If a device has these then make sure they are handled.
@@ -935,9 +928,9 @@ namespace Plugins {
 					bool bHaveGroupCmd;
 					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 					if (self->SwitchType == STYPE_Selector)
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
 					else
-						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sDeviceID, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 				}
 				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
 

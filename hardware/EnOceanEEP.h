@@ -169,3 +169,19 @@ class CEnOceanEEP
 
 	float GetDeviceValue(const uint32_t rawValue, const uint32_t rangeMin, const uint32_t rangeMax, const float scaleMin, const float scaleMax);
 };
+
+//convert id from  buffer[] to unsigned int
+unsigned int DeviceArrayToInt(unsigned char m_buffer[]);
+void         DeviceIntToArray(unsigned int sID, unsigned char buf[]);
+unsigned int DeviceIdStringToUInt(std::string DeviceID);
+void         ProfileToRorgFuncType(int EEP, int & Rorg, int & Func, int & Type);
+int          RorgFuncTypeToProfile(int Rorg, int Func, int Type);
+int          getRorg(int EEP);
+int          getFunc(int EEP);
+int          getType(int EEP);
+
+#define CheckIsGatewayAdress( deviceid) (((deviceid > m_id_base) && (deviceid < m_id_base + 128))? true: false)
+
+std::string GetEnOceanIDToString(unsigned int DeviceID);
+
+void setDestination(unsigned char * opt, unsigned int destID);

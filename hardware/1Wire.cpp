@@ -46,16 +46,16 @@ void C1Wire::DetectSystem()
 	// see http://owfs.org/index.php?page=w1-project.
 	if (m_path.length() != 0)
 	{
-		m_system = std::make_unique<C1WireByOWFS>(m_path);
+		m_system = new C1WireByOWFS(m_path);
 	}
 	else
 	{
 #ifdef WIN32
 		if (C1WireForWindows::IsAvailable())
-			m_system = std::make_unique<C1WireForWindows>();
+			m_system = new C1WireForWindows();
 #else // WIN32
 		if (C1WireByKernel::IsAvailable())
-			m_system = std::make_unique<C1WireByKernel>();
+			m_system = new C1WireByKernel();
 #endif // WIN32
 	}
 }
@@ -104,6 +104,7 @@ bool C1Wire::StopHardware()
 	m_bIsStarted = false;
 	if (m_system)
 	{
+		delete m_system;
 		m_system = nullptr;
 	}
 	StopHeartbeatThread();

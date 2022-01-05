@@ -13,6 +13,8 @@
 
 #define RETRY_DELAY 30
 
+#define TTNMQTT_ALIASSES_FILE "ttnmqtt_aliasses.json"
+
 #ifdef _DEBUG
 //#define DEBUG_TTN_R
 //#define DEBUG_TTN_W
@@ -64,16 +66,9 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 	m_DomLon = 1;
 
 	m_usIPPort = usIPPort;
-	m_TopicIn = Username + "/devices/+/up";
+	m_TopicIn = "v3/" + Username + "/devices/+/up";
 
-#ifdef DEBUG_TTN_R
-	std::string sResult = ReadFile("ttn_mqtt_stringfields.json");
-	mosquitto_message mqtt_msg;
-	mqtt_msg.topic = "ttnmqtt/devices/tektelic_khs/up";
-	mqtt_msg.payload = (void*)sResult.c_str();
-	mqtt_msg.payloadlen = sResult.size();
-	on_message(&mqtt_msg);
-#endif
+	m_AliassesFile = TTNMQTT_ALIASSES_FILE;
 
 	mosqdz::lib_init();
 }
@@ -121,6 +116,58 @@ bool CTTNMQTT::StartHardware()
 		}
 	}
 
+	// Check if there is a Certificate file given to use for TLS encryption
+	std::vector<std::string> strarray;
+	StringSplit(m_CAFilename, ";", strarray);
+
+	if (strarray.size() == 3 || strarray.size() == 4)
+	{
+		m_CAFilename = strarray[0];
+	}
+	else
+	{
+		Log(LOG_STATUS, "Unexpected parameters given! Unable to determine CA Certificate filename (%s)", m_CAFilename.c_str());
+		m_CAFilename = "";
+	}
+
+	// Let's see if we have to load an aliasses file
+	if (!m_AliassesFile.empty())
+	{
+		Json::CharReaderBuilder jBuilder;
+		JSONCPP_STRING jErrors;
+		Json::Value aliassesRoot;
+		std::ifstream ifs;
+
+		ifs.open(m_AliassesFile);
+		if(ifs.is_open())
+		{
+			if(parseFromStream(jBuilder,ifs, &aliassesRoot, &jErrors))
+			{
+				Log(LOG_STATUS, "Using aliassesfile: %s", m_AliassesFile.c_str());
+				Debug(DEBUG_HARDWARE, "Read aliassesfile: %s", aliassesRoot.toStyledString().c_str());
+				m_Aliasses = aliassesRoot;
+			}
+			else
+			{
+				Log(LOG_ERROR, "Error parsing aliassesfile (%s): %s", m_AliassesFile.c_str(), jErrors.c_str());
+			}
+			ifs.close();
+		}
+		else
+		{
+			Log(LOG_STATUS, "Could not find or open aliasses file (%s)", m_AliassesFile.c_str());
+		}
+	}
+
+#ifdef DEBUG_TTN_R
+	std::string sResult = ReadFile("ttn_mqtt_stringfields.json");
+	mosquitto_message mqtt_msg;
+	mqtt_msg.topic = "v3/testuser/devices/tektelic_khs/up";
+	mqtt_msg.payload = (void*)sResult.c_str();
+	mqtt_msg.payloadlen = sResult.size();
+	on_message(&mqtt_msg);
+#endif
+
 	//force connect the next first time
 	m_IsConnected = false;
 
@@ -140,6 +187,8 @@ void CTTNMQTT::StopMQTT()
 
 bool CTTNMQTT::StopHardware()
 {
+	m_Aliasses.clear();
+
 	StopHeartbeatThread();
 	if (m_thread)
 	{
@@ -225,7 +274,7 @@ bool CTTNMQTT::ConnectIntEx()
 			Log(LOG_ERROR, "Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
 			return false;
 		}
-		Log(LOG_STATUS, "Enabled TLS mode");
+		Log(LOG_STATUS, "Enabled TLS mode (CA certificate: '%s')", m_CAFilename.c_str());
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
@@ -390,7 +439,7 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 {
 	int DeviceID = 0;
 	
-	//Debug(DEBUG_NORM, "Looking for Device and Sensor (%d): .%s. , .%s.", m_HwdID, DeviceName.c_str(), MacAddress.c_str());
+	Debug(DEBUG_HARDWARE, "Looking for Device and Sensor (%d): .%s. , .%s.", m_HwdID, DeviceName.c_str(), MacAddress.c_str());
 
 	//Get our internal device_id, if not found, add it
 	std::vector<std::vector<std::string> > result;
@@ -415,29 +464,58 @@ int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &Device
 	return DeviceID;
 }
 
+bool CTTNMQTT::IsSensorTypeOrAlias(const std::string orgString, const std::string sType)
+{
+	bool bIsType = false;
+
+	if (orgString == sType)
+	{
+		bIsType = true;
+	}
+	else
+	{
+		if(!m_Aliasses.empty())
+		{
+			if (!(m_Aliasses[sType].isNull()) && m_Aliasses[sType].isArray())
+			{
+				for (Json::Value::iterator it=m_Aliasses[sType].begin(); it!=m_Aliasses[sType].end(); ++it)
+				{
+					if (orgString == (*it).asString())
+					{
+						bIsType = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return bIsType;
+}
+
 bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string &sValue, const uint8_t channel, const uint8_t index, Json::Value &payload)
 {
 	bool ret = false;
 
-	if (sType == "temp" || sType == "temperature") {
+	if (IsSensorTypeOrAlias(sType, "temp")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "temp";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "hum" || sType == "humidity") {
+	else if (IsSensorTypeOrAlias(sType, "humidity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "humidity";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "baro") {
+	else if (IsSensorTypeOrAlias(sType, "baro")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "baro";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "gps") {
+	else if (IsSensorTypeOrAlias(sType, "gps")) {
 		std::vector<std::string> strarray;
 		StringSplit(sValue, ";", strarray);
 
@@ -451,37 +529,37 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 			ret = true;
 		}
 	}
-	else if (sType == "digital_input") {
+	else if (IsSensorTypeOrAlias(sType, "digital_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "digital_input";
 		payload[index]["value"] = std::stoi(sValue);
 		ret = true;
 	}
-	else if (sType == "digital_output") {
+	else if (IsSensorTypeOrAlias(sType, "digital_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "digital_output";
 		payload[index]["value"] = std::stoi(sValue);
 		ret = true;
 	}
-	else if (sType == "analog_input") {
+	else if (IsSensorTypeOrAlias(sType, "analog_input")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_input";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "analog_output") {
+	else if (IsSensorTypeOrAlias(sType, "analog_output")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "analog_output";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "presense") {
+	else if (IsSensorTypeOrAlias(sType, "presence")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "presence";
 		payload[index]["value"] = std::stof(sValue);
 		ret = true;
 	}
-	else if (sType == "luminosity") {
+	else if (IsSensorTypeOrAlias(sType, "luminosity")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "luminosity";
 		payload[index]["value"] = std::stof(sValue);
@@ -491,7 +569,7 @@ bool CTTNMQTT::ConvertField2Payload(const std::string &sType, const std::string 
 	// The following IS NOT conforming to the CayenneLPP specification
 	// but a 'hack'; When using the TTN External Custom Decoder a payload_fields array is added
 	// and within these fields a 'batterylevel' can be created (integer range between 0 and 100)
-	if (sType == "batterylevel") {
+	if (IsSensorTypeOrAlias(sType, "batterylevel")) {
 		payload[index]["channel"] = channel;
 		payload[index]["type"] = "batterylevel";
 		payload[index]["value"] = std::stoi(sValue);
@@ -508,12 +586,12 @@ bool CTTNMQTT::ConvertFields2Payload(const Json::Value &fields, Json::Value &pay
 
 	if (!fields.empty())
 	{
-		Debug(DEBUG_NORM, "Processing fields payload for %d fields!", fields.size());
+		Debug(DEBUG_RECEIVED, "Processing fields payload for %d fields!", fields.size());
 		for (const auto &id : fields.getMemberNames())
 		{
-			if (!(fields[id].isNull()) && ConvertField2Payload(id, fields[id].asString(), index + 1, index, payload))
+			if (!(fields[id].isNull()) && !(fields[id].isObject()) && ConvertField2Payload(id, fields[id].asString(), index + 1, index, payload))
 			{
-				Debug(DEBUG_NORM, "Converted field %s !", id.c_str());
+				Debug(DEBUG_RECEIVED, "Converted field %s !", id.c_str());
 				index++;
 				ret = true;
 			}
@@ -593,7 +671,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		//Get device name from MQTT topic
 		std::vector<std::string> strarray;
 		StringSplit(topic, "/", strarray);
-		std::string MQTTDeviceName = strarray[2];
+		std::string MQTTDeviceName = strarray[3];
 
 		//Check if we received a JSON object with payload_raw
 		Json::Value root;
@@ -603,18 +681,23 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			Log(LOG_ERROR, "Invalid data received from %s ! Unable to parse JSON!", MQTTDeviceName.c_str());
 			return;
 		}
-		if (root["payload_raw"].empty())
+		if (root["uplink_message"].empty() || root["end_device_ids"].empty())
 		{
-			Log(LOG_ERROR, "Invalid data received from %s ! No payload_raw found in JSON data!", MQTTDeviceName.c_str());
+			Log(LOG_ERROR, "Invalid data received from %s ! No uplink_message found in JSON data!", MQTTDeviceName.c_str());
 			return;
 		}
 
+		Json::Value uplinkMessage = root["uplink_message"];
+		Json::Value endDeviceIds = root["end_device_ids"];
+		Json::Value applicationIds = endDeviceIds["application_ids"];
+
 		//Get data from message
-		std::string DeviceName = root["dev_id"].asString();
-		std::string AppId = root["app_id"].asString();
-		std::string DeviceSerial = root["hardware_serial"].asString();
-		uint8_t MessagePort = root["port"].asInt();
-		std::string lpp = base64_decode(root["payload_raw"].asString());
+		std::string DeviceName = endDeviceIds["device_id"].asString();
+		std::string DeviceSerial = endDeviceIds["dev_eui"].asString();
+		std::string DeviceSessionSerial = endDeviceIds["dev_addr"].asString();
+		std::string AppSerial = endDeviceIds["join_eui"].asString();
+		std::string AppId = applicationIds["application_id"].asString();
+		uint8_t MessagePort = uplinkMessage["f_port"].asInt();
 
 		//Check if the payload_raw contains valid CayenneLPP structured data
 		//TO-DO: The current CayenneLPP Decoder assumes Dynamic Sensor Payload structure and not other possible Sensor payload structures like Packed
@@ -638,23 +721,26 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 				break;
 			case 1:
 			default:
-				if(CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
-				{
-					Decoded = true;
+				if (!uplinkMessage["frm_payload"].empty()) {
+					std::string lpp = base64_decode(uplinkMessage["frm_payload"].asString());
+					if(CayenneLPPDec::ParseLPP((const uint8_t*)lpp.c_str(), lpp.size(), payload))
+					{
+						Decoded = true;
+					}
 				}
 		}
 
 		if (!Decoded)
 		{
-			if (!root["payload_fields"].empty())
+			if (!uplinkMessage["decoded_payload"].empty())
 			{
 				// Maybe we received a pre-decoded message? TTN has the option for custom decoders where the decoding is done by TTN already
-				if (!ConvertFields2Payload(root["payload_fields"], payload))
+				if (!ConvertFields2Payload(uplinkMessage["decoded_payload"], payload))
 				{
-					Log(LOG_ERROR, "Invalid data received! Unable to decode the raw payload and the fields payload does not contain any (valid) data!");
+					Log(LOG_ERROR, "Invalid data received! Unable to decode the raw payload and the decoded payload does not contain any (valid) data!");
 					return;
 				}
-				Log(LOG_STATUS, "Converted payload_fields to regular payload for processing!");
+				Log(LOG_STATUS, "Converted decoded_payload to regular payload for processing!");
 			}
 			else
 			{
@@ -669,7 +755,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, DeviceSerial);
+		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, AppSerial);
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;
@@ -690,53 +776,62 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		int gwrssi = -999;
 		float gwsnr = -999;
 
-		// Let's look at the metadata that TTN also sends when receiving a LoRa message
-		if (!root["metadata"].empty())
+		if (!uplinkMessage["received_at"].empty())
 		{
-			Json::Value MetaData = root["metadata"];
-			if (!MetaData["time"].empty())
-			{
-				// Retrieve the moment the TTN backend receives the (first part of) this packet
-				// So we have a more accurate time when the measurement happened, compared to
-				// the moment we see the message here in Domoticz
-				// TTN time is in ISO8601 format and UTC
-				std::tm t = {};
-				int y,M,d,h,m;
-				float s;
-				const char* UTCttntime;
+			// Retrieve the moment the TTN backend receives the (first part of) this packet
+			// So we have a more accurate time when the measurement happened, compared to
+			// the moment we see the message here in Domoticz
+			// TTN time is in ISO8601 format and UTC
+			std::tm t = {};
+			int y,M,d,h,m;
+			float s;
+			const char* UTCttntime;
 
-				UTCttntime = MetaData["time"].asString().c_str();
-				sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-				constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
-			}
-			if (!(MetaData["latitude"].empty() || MetaData["longitude"].empty()))
+			UTCttntime = uplinkMessage["received_at"].asString().c_str();
+			sscanf(UTCttntime, "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
+			constructTime(msgtime, t, y, M, d, h, m, (int)floor(s));
+		}
+
+		if (!uplinkMessage["locations"].empty())
+		{
+			Json::Value devUserLocation = uplinkMessage["locations"];
+			if (!devUserLocation["user"].empty())
 			{
-				// For this device, Location coordinates are set in the metadata.
-				// Makes sense for non moving sensors without own GPS
-				devlat = MetaData["latitude"].asDouble();
-				devlon = MetaData["longitude"].asDouble();
-				if (!MetaData["altitude"].empty())
+				devUserLocation = devUserLocation["user"];
+				if (!(devUserLocation["latitude"].empty() || devUserLocation["longitude"].empty()))
 				{
-					devalt = MetaData["altitude"].asFloat();
+					// For this device, Location coordinates are set in the metadata.
+					// Makes sense for non moving sensors without own GPS
+					devlat = devUserLocation["latitude"].asDouble();
+					devlon = devUserLocation["longitude"].asDouble();
+					if (!devUserLocation["altitude"].empty())
+					{
+						devalt = devUserLocation["altitude"].asFloat();
+					}
 				}
 			}
+		}
+
+		// Let's look at the metadata that TTN also sends when receiving a LoRa message
+		if (!uplinkMessage["rx_metadata"].empty())
+		{
 			// Let's see if there is metadata from 1 or more gateways that have received this message
-			if (!MetaData["gateways"].empty())
+			if (uplinkMessage["rx_metadata"].isArray())
 			{
-				Json::Value Gateways = MetaData["gateways"];
+				Json::Value MetaData = uplinkMessage["rx_metadata"];
 				// Loop over all gateways and try to find the one with the best signal
 				// and see if the GW has a Geo Location that we could use
 				uint8_t iGW = 0;
 				do
 				{
-					if (!Gateways[iGW].empty())
+					if (!MetaData[iGW].empty())
 					{
-						Json::Value Gateway = Gateways[iGW];
+						Json::Value Gateway = MetaData[iGW];
 
 						int lrssi = Gateway["rssi"].asInt();
 						float lsnr = Gateway["snr"].asFloat();
 						bool bBetter = false;
-						bool bGwGeo = (!(Gateway["latitude"].empty() || Gateway["longitude"].empty()));
+						bool bGwGeo = (!(Gateway["location"].empty()));
 						bool bPrevGwGeo = (!(gwlat == 0 || gwlon == 0));
 
 						// Is this gateway closer to the sensor than the previous one (or is this the first/only one)
@@ -793,11 +888,12 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 							// Let's see if it has Geo Location data
 							if (bGwGeo)
 							{
-								gwlat = Gateway["latitude"].asDouble();
-								gwlon = Gateway["longitude"].asDouble();
-								if (!Gateway["altitude"].empty())
+								Json::Value gwLocation = Gateway["location"];
+								gwlat = gwLocation["latitude"].asDouble();
+								gwlon = gwLocation["longitude"].asDouble();
+								if (!gwLocation["altitude"].empty())
 								{
-									gwalt = Gateway["altitude"].asFloat();
+									gwalt = gwLocation["altitude"].asFloat();
 								}
 							}
 							else if (bPrevGwGeo)
@@ -813,7 +909,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					}
 					iGW++;
 				}
-				while (!Gateways[iGW].empty());
+				while (!MetaData[iGW].empty());
 				rssi = CalcDomoticsRssiFromLora(gwrssi, gwsnr);
 			}
 		}
@@ -987,7 +1083,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		}
 		while (channel < 65);
 
-		//Debug(DEBUG_NORM, "Completed processing of readings!");
+		//Debug(DEBUG_HARDWARE, "Completed processing of readings!");
 
 		// Now we have processed all readings for all channels
 		// If we have not seen any GPS data on any channel in this payload
@@ -1012,14 +1108,14 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		if(iGps == 1 || !(devlat == 0 || devlon == 0))
 		{
 			uint64_t nSsrDistance = static_cast<int>(std::rint(1000 * distanceEarth(m_DomLat, m_DomLon, ssrlat, ssrlon)));
-			SendCustomSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance, DeviceName + " Home Distance", "meters", rssi);
-			Debug(DEBUG_NORM, "Distance between Sensordevice and Domoticz Home is %f meters!", (double)nSsrDistance);
+			SendDistanceSensor(DeviceID, (iGpsChannel + 64), BatteryLevel, (float)nSsrDistance*100, DeviceName + " Home Distance", rssi);
+			Debug(DEBUG_RECEIVED, "Distance between Sensordevice and Domoticz Home is %f meters!", (double)nSsrDistance);
 		}
 
 		// Did we find any Geo Location data from the Gateway with the best reception
 		if (!(gwlat == 0 && gwlon == 0))
 		{
-			Debug(DEBUG_NORM, "Found Geo Location data for the Gateway with the best reception at lat: %f, lon: %f, alt: %f", gwlat, gwlon, gwalt);
+			Debug(DEBUG_RECEIVED, "Found Geo Location data for the Gateway with the best reception at lat: %f, lon: %f, alt: %f", gwlat, gwlon, gwalt);
 			// We have Geo Location data of the sensor AND of the gateway, so we can calculate the distance
 			if (iGps > 1)
 			{
@@ -1028,13 +1124,13 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			else if (!(ssrlat == 0 && ssrlon == 0))
 			{
 				uint64_t nGwDistance = static_cast<int>(std::rint(1000 * distanceEarth(gwlat, gwlon, ssrlat, ssrlon)));
-				SendCustomSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance, DeviceName + " Gateway Distance", "meters", rssi);
-				Debug(DEBUG_NORM, "Distance between Sensordevice and gateway is %f meters!", (double)nGwDistance);
+				SendDistanceSensor(DeviceID, (channel + 128), BatteryLevel, (float)nGwDistance*100, DeviceName + " Gateway Distance", rssi);
+				Debug(DEBUG_RECEIVED, "Distance between Sensordevice and gateway is %f meters!", (double)nGwDistance);
 			}
 		}
 	}
-	catch (...)
+	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Error parsing message!!!");
+		Log(LOG_ERROR, "Error parsing message (%s)!!!", e.what());
 	}
 }

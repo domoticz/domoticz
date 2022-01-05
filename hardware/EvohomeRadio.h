@@ -149,7 +149,7 @@ class CEvohomeRadio : public CEvohomeBase
 	char m_buf[m_nBufSize];
 
 	std::map<unsigned int, fnc_evohome_decode> m_Decoders;
-	std::deque<CEvohomeMsg> m_SendQueue;
+	std::list<CEvohomeMsg> m_SendQueue;
 	std::mutex m_mtxSend;
 	int m_nSendFail;
 

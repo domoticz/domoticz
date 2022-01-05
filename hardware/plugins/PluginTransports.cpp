@@ -139,7 +139,8 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+		CPlugin*		pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleAsyncResolve");
 
 		if (!err)
 		{
@@ -150,7 +151,6 @@ namespace Plugins {
 		{
 			m_bConnecting = false;
 
-			CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 			if (pPlugin)
 			{
 				// Notify plugin of failure and trigger cleanup
@@ -169,8 +169,8 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		CPlugin*		pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleAsyncResolve");
 		if (!pPlugin)
 			return;
 
@@ -229,7 +229,8 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncAccept(boost::asio::ip::tcp::socket* pSocket, const boost::system::error_code& err)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
+		CPlugin*		pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleAsyncAccept");
 		m_tLastSeen = time(nullptr);
 
 		if (!err)
@@ -291,7 +292,6 @@ namespace Plugins {
 		}
 		else
 		{
-			CPlugin *pPlugin = ((CConnection *)m_pConnection)->pPlugin;
 			if (!pPlugin)
 				return;
 
@@ -305,10 +305,10 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
+		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin) return;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleRead");
+
 		if (!e)
 		{
 			pPlugin->MessagePlugin(new ReadEvent(m_pConnection, bytes_transferred, m_Buffer));
@@ -348,6 +348,12 @@ namespace Plugins {
 				{
 					pPlugin->Log(LOG_ERROR, "Async Read Exception (%s:%s): %d, %s", m_IP.c_str(), m_Port.c_str(), e.value(), e.message().c_str());
 				}
+			}
+
+			// Timer events can still trigger even after errors so cancel explicitly
+			if (m_Timer)
+			{
+				m_Timer->cancel();
 			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(m_pConnection));
@@ -474,10 +480,9 @@ namespace Plugins {
 
 	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code &err, const boost::asio::ip::tcp::resolver::iterator &endpoint_iterator)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
+		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin) return;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleAsyncConnect");
 
 		if (!err)
 		{
@@ -553,10 +558,10 @@ namespace Plugins {
 
 	void CPluginTransportTCPSecure::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
+		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin) return;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleRead");
+
 		if (!e)
 		{
 			pPlugin->MessagePlugin(new ReadEvent(m_pConnection, bytes_transferred, m_Buffer));
@@ -667,8 +672,9 @@ namespace Plugins {
 
 	void CPluginTransportUDP::handleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		AccessPython	Guard(pPlugin, "CPluginTransportTCP::handleRead");
+
 		if (!ec)
 		{
 			std::string sAddress = m_remote_endpoint.address().to_string();
@@ -833,8 +839,8 @@ namespace Plugins {
 		}
 		else
 		{
-			std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			AccessPython	Guard(pPlugin, "CPluginTransportICMP::handleAsyncResolve");
 			pPlugin->MessagePlugin(new DisconnectedEvent(m_pConnection));
 		}
 		m_bConnecting = false;
@@ -877,10 +883,9 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleTimeout(const boost::system::error_code& ec)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
+		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin) return;
+		AccessPython	Guard(pPlugin, "CPluginTransportICMP::handleTimeout");
 
 		if (!ec)  // Timeout, no response
 		{
@@ -905,10 +910,9 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleRead(const boost::system::error_code & ec, std::size_t bytes_transferred)
 	{
-		std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-		if (!pPlugin)
-			return;
+		CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		if (!pPlugin) return;
+		AccessPython	Guard(pPlugin, "CPluginTransportICMP::handleRead");
 
 		if (!ec)
 		{
@@ -1116,8 +1120,8 @@ namespace Plugins {
 	{
 		if (bytes_transferred)
 		{
-			std::lock_guard<std::mutex> l(PythonMutex); // Take mutex to guard access to CPluginTransport::m_pConnection
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			CPlugin* pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			AccessPython	Guard(pPlugin, "CPluginTransportSerial::handleRead");
 			pPlugin->MessagePlugin(new ReadEvent(m_pConnection, bytes_transferred, (const unsigned char*)data));
 			configureTimeout();
 			m_tLastSeen = time(nullptr);

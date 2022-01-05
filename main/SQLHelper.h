@@ -563,6 +563,7 @@ class CSQLHelper : public StoppableTask
 	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
+	void SendUpdateInt(const std::string& Idx);
 
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);

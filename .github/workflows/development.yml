@@ -53,7 +53,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           cd ..
-          git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
           cd open-zwave-read-only
           make
           sudo make install >> /dev/null 2>&1
