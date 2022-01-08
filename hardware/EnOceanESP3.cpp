@@ -4155,7 +4155,7 @@ void EnOceanDeleteSensorAssociatedWithDevice(const std::string& ID)
 		std::vector<std::vector<std::string> > result;
         //get DeviceID = DeviceID in EnoceanSensors
 		result = m_sql.safe_query("SELECT DeviceID , HardwareID  FROM DeviceStatus   WHERE (ID==%s) ", (ID).c_str());
-		if (result.size()>0)	{
+		if (result.size() > 0)	{
             SensorDeviceID   = result[0][0];
 			std::string HwID = result[0][1];
 
