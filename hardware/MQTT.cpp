@@ -3133,8 +3133,12 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					{
 						szOnOffValue = "Set Level";
 						// recalculate level to make relative to min/maxpositions
-						if (pSensor->component_type == "cover") {
-							if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+						if (pSensor->component_type == "cover") 
+						{
+							if (sSwitchType == STYPE_BlindsInverted
+								|| sSwitchType == STYPE_BlindsPercentageInverted
+								|| sSwitchType == STYPE_BlindsPercentageInvertedWithStop
+								)
 								// invert level for inverted blinds with percentage.
 								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 							else
@@ -3148,7 +3152,9 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			if (root["brightness"].empty() && root["position"].empty())
 			{
-				Log(LOG_ERROR, "Unhandled state received '%s' (%s/%s)", pSensor->last_value.c_str(), pSensor->unique_id.c_str(), szDeviceName.c_str());
+#ifdef _DEBUG
+				_log.Debug(DEBUG_NORM, "ERROR: Last Payload is missing state field (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
+#endif
 				return;
 			}
 		}
@@ -3176,7 +3182,10 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				szOnOffValue = "Set Level";
 				// Make level relative to 100.
-				if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+				if (sSwitchType == STYPE_BlindsInverted
+					|| sSwitchType == STYPE_BlindsPercentageInverted
+					|| sSwitchType == STYPE_BlindsPercentageInvertedWithStop
+					)
 					// invert level for inverted blinds with percentage.
 					level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 				else
@@ -3187,9 +3196,13 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			Json::Value root_color;
 			bool ret = ParseJSon(sColor, root_color);
-			if (ret)
-				if (root_color.isObject())
+			if(ret)
+			{
+				if(root_color.isObject())
+				{
 					color_old.fromJSON(root_color);
+				}
+			}
 
 			if (!root["color"]["r"].empty())
 				color_new.r = root["color"]["r"].asInt();
@@ -3198,7 +3211,7 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			if (!root["color"]["b"].empty())
 				color_new.b = root["color"]["b"].asInt();
 			if (!root["color"]["c"].empty())
-				color_new.cw = root["color"]["c"].asInt();		
+				color_new.cw = root["color"]["c"].asInt();
 			if (!root["color"]["w"].empty())
 				color_new.ww = root["color"]["w"].asInt();
 
@@ -3262,7 +3275,8 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			bHaveColorChange = szColorOld != szColorNew;
 		}
 	}
-	else {
+	else 
+	{
 		if (is_number(szOnOffValue))
 		{
 			//must be a level
@@ -3285,8 +3299,12 @@ void MQTT::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				{
 					szOnOffValue = "Set Level";
 					// recalculate level to make relative to min/maxpositions
-					if (pSensor->component_type == "cover") {
-						if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+					if (pSensor->component_type == "cover") 
+					{
+						if (sSwitchType == STYPE_BlindsInverted
+							|| sSwitchType == STYPE_BlindsPercentageInverted
+							|| sSwitchType == STYPE_BlindsPercentageInvertedWithStop
+							)
 							// invert level for inverted blinds with percentage.
 							level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 						else
@@ -3521,7 +3539,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				|| (color.mode == ColorModeCustom)
 				)
 			{
-
 				// A better way to identify the FGRGBW dimmer would be nice, but there is no simple access to device->model here.
 				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("{'red': red,")!= pSensor->rgb_command_template.npos) //pSensor->object_id == "rgb_dimmer" /* pDevice->model == "RGBW Controller (FGRGBW)"*/)
 				{
@@ -3572,7 +3589,6 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 						root["color"]["c"] = color.cw;
 					if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
 						root["color"]["w"] = color.ww;
-
 				}
 			}
 
@@ -3666,7 +3682,10 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 				if (!result.empty())
 				{
 					_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
-					if (sSwitchType == STYPE_BlindsInverted || sSwitchType == STYPE_BlindsPercentageInverted || sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+					if (sSwitchType == STYPE_BlindsInverted
+						|| sSwitchType == STYPE_BlindsPercentageInverted
+						|| sSwitchType == STYPE_BlindsPercentageInvertedWithStop
+						)
 						iValue = pSensor->position_open - iValue;
 				}
 				
