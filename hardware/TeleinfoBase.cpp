@@ -398,7 +398,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string& name, int rank, Teleinfo&
 	{ // Process status register if found (Linky standard mode only, refer to Enedis specs for details)
 		if((teleinfo.STGE & 0x1) != (teleinfo.prevSTGE & 0x1) || teleinfo.prevSTGE == UINT32_MAX)
 		{
-			bool bContactState = ((teleinfo.STGE & 0x01) != 0)?true:false;
+			bool bContactState = (teleinfo.STGE & 0x01) ? true : false;
 			SendAlertSensor(32 * rank + 8, 255, bContactState, (bContactState == 0)?"Contact fermé":"Contact ouvert", name + " Contact sec");
 		}
 		if((teleinfo.STGE & 0xE) != (teleinfo.prevSTGE & 0xE) || teleinfo.prevSTGE == UINT32_MAX)
