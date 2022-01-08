@@ -1256,7 +1256,7 @@ namespace Plugins {
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
 		do {
-			std::vector<byte>::iterator it = m_sRetainedData.begin();
+			auto it = m_sRetainedData.begin();
 
 			byte		header = *it++;
 			byte		bResponseType = header & 0xF0;
@@ -1273,7 +1273,7 @@ namespace Plugins {
 				return;
 			}
 
-			std::vector<byte>::iterator pktend = it + iRemainingLength;
+			auto pktend = it + iRemainingLength;
 
 			switch (bResponseType)
 			{

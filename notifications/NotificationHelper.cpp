@@ -29,8 +29,6 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-typedef std::map<std::string, CNotificationBase*>::iterator it_noti_type;
-
 using namespace http::server;
 
 CNotificationHelper::CNotificationHelper()

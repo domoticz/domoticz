@@ -1066,7 +1066,7 @@ namespace http {
 						sitem.TimerID = iTimerIdx;
 						sitem.bIsScene = bIsScene;
 						sitem.bIsThermostat = bIsThermostat;
-						std::vector<tScheduleItem>::iterator it = std::find(schedules.begin(), schedules.end(), sitem);
+						auto it = std::find(schedules.begin(), schedules.end(), sitem);
 						if (it != schedules.end()) {
 							struct tm timeinfo;
 							localtime_r(&it->startTime, &timeinfo);

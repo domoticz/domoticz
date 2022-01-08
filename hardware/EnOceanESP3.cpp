@@ -497,7 +497,7 @@ void CEnOceanESP3::Do_Work()
 		}
 		if (!m_sendqueue.empty())
 		{ // Send first queued telegram
-			std::vector<std::string>::iterator it = m_sendqueue.begin();
+			auto it = m_sendqueue.begin();
 			std::string sBytes = *it;
 
 			Debug(DEBUG_HARDWARE, "Send: %s", DumpESP3Packet(sBytes).c_str());

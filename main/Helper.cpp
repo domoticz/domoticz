@@ -968,9 +968,7 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 
 bool is_number(const std::string& s)
 {
-	std::string::const_iterator it = s.begin();
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00))) ++it;
-	return !s.empty() && it == s.end();
+	return std::any_of(s.begin(), s.end(), [](char c) { return isdigit(c) || (c == '.') || (c == '-') || (c == ' ') || (c == 0x00); });
 }
 
 void padLeft(std::string &str, const size_t num, const char paddingChar)

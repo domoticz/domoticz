@@ -748,7 +748,7 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 
 bool CEvohomeRadio::DecodePayload(CEvohomeMsg& msg)
 {
-	std::map < unsigned int, fnc_evohome_decode >::iterator pf = m_Decoders.find(msg.command);
+	auto pf = m_Decoders.find(msg.command);
 	if (pf != m_Decoders.end())
 	{
 		bool ret = pf->second(msg);

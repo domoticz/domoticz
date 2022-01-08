@@ -6,9 +6,6 @@
 #include "../httpclient/UrlEncode.h"
 #include "../webserver/Base64.h"
 
-typedef std::map<std::string, std::string* >::iterator it_conf_type;
-typedef std::map<std::string, int* >::iterator it_conf_type_int;
-
 using namespace http::server;
 
 CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options)

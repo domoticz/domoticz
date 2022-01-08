@@ -160,7 +160,6 @@ class CEvohomeRadio : public CEvohomeBase
 
 	unsigned int m_UControllerID;
 
-	typedef tmap_relay_check::iterator tmap_relay_check_it;
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 
 	std::array<bool, 2> m_bStartup;

@@ -125,8 +125,8 @@ void CRFLinkSerial::Do_Work()
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
 
-			std::vector<std::string>::iterator itt=m_sendqueue.begin();
-			if (itt!=m_sendqueue.end())
+			auto itt = m_sendqueue.begin();
+			if (itt != m_sendqueue.end())
 			{
 				std::string sBytes=*itt;
 				write(sBytes.c_str(),sBytes.size());

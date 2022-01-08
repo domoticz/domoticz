@@ -362,7 +362,7 @@ std::string CPanasonicNode::handleWriteAndRead(const std::string &pMessageToSend
 	// Get a list of endpoints corresponding to the server name.
 	boost::asio::ip::tcp::resolver resolver(io_service);
 	boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
-	boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
+	auto iter = resolver.resolve(query);
 	boost::asio::ip::tcp::endpoint endpoint = *iter;
 	boost::asio::ip::tcp::resolver::iterator end;
 

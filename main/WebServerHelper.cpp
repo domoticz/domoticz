@@ -5,8 +5,6 @@
 
 namespace http {
 	namespace server {
-
-		typedef std::vector<std::shared_ptr<CWebServer> >::iterator server_iterator;
 #ifndef NOCLOUD
 		extern CProxySharedData sharedData;
 #endif

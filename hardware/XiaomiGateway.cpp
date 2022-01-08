@@ -1022,7 +1022,7 @@ void XiaomiGateway::Do_Work()
 	{
 		boost::asio::ip::udp::resolver resolver(io_service);
 		boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), m_GatewayIp, "");
-		boost::asio::ip::udp::resolver::iterator endpoints = resolver.resolve(query);
+		auto endpoints = resolver.resolve(query);
 		boost::asio::ip::udp::endpoint ep = *endpoints;
 		boost::asio::ip::udp::socket socket(io_service);
 		socket.connect(ep);

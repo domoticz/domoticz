@@ -149,7 +149,7 @@ namespace Plugins {
 
 			PyType_Ready(&CUnitExType);
 			// Create Unit objects and add the Units dictionary with Unit number as the key
-			for (std::vector<std::vector<std::string>>::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+			for (auto itt = result.begin(); itt != result.end(); ++itt)
 			{
 				std::vector<std::string> sd = *itt;
 
