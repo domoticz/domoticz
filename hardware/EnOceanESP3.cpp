@@ -4160,7 +4160,7 @@ void EnOceanDeleteSensorAssociatedWithDevice(const std::string& ID)
 			std::string HwID = result[0][1];
 
             // Check if it is ESP3 hardware
-            CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>( m_mainworker.GetHardwareByIDType(HwID, HTYPE_EnOceanESP3));
+            auto EnoceanHardware = reinterpret_cast<CEnOceanESP3 *>( m_mainworker.GetHardwareByIDType(HwID, HTYPE_EnOceanESP3));
 
             if (pEnoceanHardware != nullptr)
             {
