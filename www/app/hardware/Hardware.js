@@ -40,6 +40,12 @@ define(['app'], function (app) {
 				return false;
 			}
 			return true;
+		}, MQTTTopic:function (val, fldName) {
+			if (val.indexOf("#") >= 0) {
+				ShowNotify(fldName + ': ' + $.t('Cannot contain a "#" symbol!'), 2500, true);
+				return false;
+			}
+			return true;
 		} };
 		
 		DeleteHardware = function (idx) {
