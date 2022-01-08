@@ -2130,7 +2130,19 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 	{
 		devType = pTypeUsage;
 		subType = sTypeElectric;
-		sValue = std_format("%.3f", static_cast<float>(atof(pSensor->last_value.c_str())));
+
+		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
+		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kWh");
+		if (pkWhSensor)
+		{
+			float fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
+			pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+			mosquitto_message xmessage;
+			xmessage.retain = false;
+			// Trigger extra update for the kWh sensor with the new W value
+			handle_auto_discovery_sensor(pkWhSensor, &xmessage);
+		}
+		sValue = std_format("%.3f", fUsage);
 	}
 	else if (szUnit == "kwh")
 	{
@@ -2198,7 +2210,6 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 
 }
 
-//this function is currently only being called to get the Watt value for a kWh device
 MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
 {
 	//Retrieved sensor from same device with specified measurement unit
