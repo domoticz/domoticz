@@ -4172,7 +4172,7 @@ void EnOceanDeleteSensorAssociatedWithDevice(const std::string& ID)
     		    SensorDeviceID = '0' + SensorDeviceID;
             
                 //delete only on the last device
-                if (NbDeviceId==1){
+                if (NbDeviceId == 1) {
                     pEnoceanHardware->DeleteSensor(SensorDeviceID);
                 }
             }
