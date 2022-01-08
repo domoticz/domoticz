@@ -261,7 +261,7 @@ namespace http
 			int tries = 0;
 			bool exception = false;
 
-			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
+			_log.Debug(DEBUG_WEBSERVER, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
 			do
 			{
 				try
