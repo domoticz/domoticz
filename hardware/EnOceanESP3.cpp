@@ -4151,7 +4151,7 @@ void CEnOceanESP3::DeleteSensor(const std::string& sensorId)
 void EnOceanDeleteSensorAssociatedWithDevice(const std::string& ID)
 {
 		//get the number of enocean devices with same DeviceId in order to delete from EnoceanSensors
-		std::string SensorDeviceID="";
+		std::string SensorDeviceID;
 		std::vector<std::vector<std::string> > result;
         //get DeviceID = DeviceID in EnoceanSensors
 		result = m_sql.safe_query("SELECT DeviceID , HardwareID  FROM DeviceStatus   WHERE (ID==%s) ", (ID).c_str());
