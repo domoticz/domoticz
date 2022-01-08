@@ -5,7 +5,8 @@ define(['app'], function (app) {
 	 * This should really be auto-generated.
 	 */
 	let extraHWTable = {
-		'Daikin Airconditioning with LAN (HTTP) interface': 'DaikinParams'
+		'Daikin Airconditioning with LAN (HTTP) interface': 'DaikinParams',
+		'MQTT Client Gateway with LAN interface': 'MQTTParams'
 	};
 	
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
@@ -87,6 +88,7 @@ define(['app'], function (app) {
 					$div.empty();
 					$('#hardwarecontent').append('<input type="hidden" name="extrahw" id="extrahw" value="' + fileName + '" />')
 					$div.append(phtml);
+					$('#hardwarecontent #extrahw').val(fileName);
 					if(callback)
 						callback(carg);
 				}).catch(function (err) {
@@ -104,6 +106,8 @@ define(['app'], function (app) {
                         if (!data)
                             var data = { Mode1: "", Mode2: "", Mode3: "", Mode4: "", Mode5: "", Mode6:"" };
 						extraHWInitParams (data);
+						if(data["Port"])
+							$("#hardwarecontent #divremote #tcpport").val(data["Port"]);
 						extraHWValidateParams (data, validators);
 					});
 			}, data);
@@ -766,7 +770,7 @@ define(['app'], function (app) {
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
-				(text.indexOf("MQTT") >= 0) ||
+				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
@@ -823,30 +827,6 @@ define(['app'], function (app) {
 						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val();
 					}
 					extra = encodeURIComponent(extra);
-				}
-				else if ((text.indexOf("MQTT") >= 0)) {
-					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
-					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
-					var mqttdiscoveryprefix = $("#hardwarecontent #divmqtt #mqttdiscoveryprefix").val().trim();
-					if (mqtttopicin.indexOf("#") >= 0) {
-						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if (mqtttopicout.indexOf("#") >= 0) {
-						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if (mqttdiscoveryprefix.indexOf("#") >= 0) {
-						ShowNotify($.t('Auto Discovery Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					extra = $("#hardwarecontent #divmqtt #filename").val().trim();
-					extra += ";" + mqtttopicin + ";" + mqtttopicout + ";" + mqttdiscoveryprefix;
-					extra = encodeURIComponent(extra);
-					
-					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
-					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -2280,7 +2260,7 @@ define(['app'], function (app) {
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
-				(text.indexOf("MQTT") >= 0) ||
+				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("Logitech Media Server") >= 0) ||
 				(text.indexOf("HEOS by DENON") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
@@ -2340,30 +2320,6 @@ define(['app'], function (app) {
 						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val();
 					}
 					extra = encodeURIComponent(extra);
-				}
-				else if (text.indexOf("MQTT") >= 0) {
-					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
-					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
-					var mqttdiscoveryprefix = $("#hardwarecontent #divmqtt #mqttdiscoveryprefix").val().trim();
-					if (mqtttopicin.indexOf("#") >= 0) {
-						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if (mqtttopicout.indexOf("#") >= 0) {
-						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if (mqttdiscoveryprefix.indexOf("#") >= 0) {
-						ShowNotify($.t('Auto Discovery Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					extra = $("#hardwarecontent #divmqtt #filename").val();
-					extra += ";" + mqtttopicin + ";" + mqtttopicout + ";" + mqttdiscoveryprefix;
-					extra = encodeURIComponent(extra);
-
-					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
-					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
 				else if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -4111,9 +4067,8 @@ define(['app'], function (app) {
 						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
 						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-                        if($scope.calledFetch)
-                            extraHWInitParams(data);
-                        
+						if($scope.calledFetch)
+							extraHWInitParams(data);
 						if (
 							(data["Type"].indexOf("TE923") >= 0) ||
 							(data["Type"].indexOf("Volcraft") >= 0) ||
@@ -4440,27 +4395,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
 						}
-						else if (data["Type"].indexOf("MQTT") >= 0) {
-							$("#hardwarecontent #hardwareparamsmqtt #filename").val("");
-							$("#hardwarecontent #divmqtt #mqtttopicin").val("");
-							$("#hardwarecontent #divmqtt #mqtttopicout").val("");
-							$("#hardwarecontent #divmqtt #mqttdiscoveryprefix").val("");
-
-							// Break out any possible topic prefix pieces.
-							var CAfilenameParts = data["Extra"].split(";");
-							if (CAfilenameParts.length > 0)
-								$("#hardwarecontent #hardwareparamsmqtt #filename").val(CAfilenameParts[0]);
-							if (CAfilenameParts.length > 1)
-								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicin").val(CAfilenameParts[1]);
-							if (CAfilenameParts.length > 2)
-								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicout").val(CAfilenameParts[2]);
-							if (CAfilenameParts.length > 3)
-								$("#hardwarecontent #hardwareparamsmqtt #mqttdiscoveryprefix").val(CAfilenameParts[3]);
-						
-							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
-							$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
-							$("#hardwarecontent #hardwareparamsmqtt #combopreventloop").val(data["Mode3"]);
-						}
 						else if (data["Type"].indexOf("Rtl433") >= 0) {
 							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
 						}
@@ -4483,7 +4417,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Sterbox") >= 0) ||
 							(data["Type"].indexOf("Anna") >= 0) ||
 							(data["Type"].indexOf("KMTronic") >= 0) ||
-							(data["Type"].indexOf("MQTT") >= 0) ||
+							(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
 							(data["Type"].indexOf("Netatmo") >= 0) ||
 							(data["Type"].indexOf("HTTP") >= 0) ||
 							(data["Type"].indexOf("Thermosmart") >= 0) ||
@@ -4697,8 +4631,8 @@ define(['app'], function (app) {
 
 			if (extraHWTable[text]) {
 				loadExtraHWCode(extraHWTable[text], data);
-                return;
-            } else {
+				return;
+			} else {
 				$("#hardwarecontent #extrahw").val("");
 				$("#hardwarecontent #divextrahwparams").empty();
 			}
@@ -4957,7 +4891,7 @@ define(['app'], function (app) {
 				(text.indexOf("ETH8020") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
-				(text.indexOf("MQTT") >= 0) ||
+				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("KMTronic Gateway with LAN") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 			) {
@@ -4970,18 +4904,6 @@ define(['app'], function (app) {
 			}
 			if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 				$("#hardwarecontent #divmysensorsmqtt").show();
-			}
-			else if (text.indexOf("MQTT") >= 0) {
-			    $("#hardwarecontent #divmqtt").show();
-			    if (
-					(text.indexOf("The Things Network (MQTT") >= 0)
-					||(text.indexOf("OctoPrint") >= 0)
-					) {
-			        $("#hardwarecontent #divmqtt #mqtt_publish").hide();
-			    }
-			    else {
-			        $("#hardwarecontent #divmqtt #mqtt_publish").show();
-			    }
 			}
 			if (text.indexOf("RFPlayer") >= 0) {
 				$("#hardwarecontent #divrfplayerdoc").show();
