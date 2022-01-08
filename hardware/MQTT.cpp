@@ -2198,23 +2198,43 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 
 }
 
+//this function is currently only being called to get the Watt value for a kWh device
 MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit)
 {
 	//Retrieved sensor from same device with specified measurement unit
 	_tMQTTADevice* pDevice = &m_discovered_devices[pSensor->device_identifiers];
 	if (pDevice == nullptr)
 		return nullptr; //device not found!?
+	
+	int iUIDMatch = -1;
+	_tMQTTASensor* pDeviceSensor = nullptr;
 
+	// Check for the correct sensor with the largest match in the UID
 	for (const auto ittSensorID : pDevice->sensor_ids)
 	{
 		if (m_discovered_sensors.find(ittSensorID.first) != m_discovered_sensors.end())
 		{
-			_tMQTTASensor* pDeviceSensor = &m_discovered_sensors[ittSensorID.first];
-			if (pDeviceSensor->unit_of_measurement == szMeasurementUnit)
-				return pDeviceSensor;
+			_tMQTTASensor* pTmpDeviceSensor = &m_discovered_sensors[ittSensorID.first];
+			if (pTmpDeviceSensor->unit_of_measurement == szMeasurementUnit)
+			{
+				// Check the "match length" of the UID of the DEVICE with the UID of the SENSOR to get the correct subdevice in case the are multiple
+				for (int i = 1; i < (int)pSensor->unique_id.size(); ++i)
+				{
+					if (strncmp(pSensor->unique_id.c_str(), pTmpDeviceSensor->unique_id.c_str(), i) != 0)
+					{
+						// In case of a longer matching string we assume this is a better sensor to use.
+						if (i > iUIDMatch)
+						{
+							iUIDMatch = i;
+							pDeviceSensor = pTmpDeviceSensor;
+						}
+						break;
+					}
+				}
+			}
 		}
 	}
-	return nullptr;
+	return pDeviceSensor;
 }
 
 MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType, const int devUnit)
