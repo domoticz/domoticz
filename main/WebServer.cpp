@@ -14104,12 +14104,17 @@ namespace http
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
+						float dividerForQuantity = divider; // kWh, m3, l
+						float dividerForRate = divider; // Watt, m3/hour, l/hour
 						if (method != 0)
 						{
 							// realtime graph
 							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								divider /= 100.0F;
+							{
+								dividerForRate /= 100.0F;
+							}
 						}
+
 						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
@@ -14150,20 +14155,21 @@ namespace http
 											}
 											ulFirstRealValue = ulLastValue;
 											float TotalValue = float(ulTotalValue);
+											float dividerHere = method == 1 ? dividerForQuantity : dividerForRate;
 											switch (metertype)
 											{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / dividerHere) * 1000.0F); // from kWh -> Watt
 													break;
 												case MTYPE_GAS:
-													sprintf(szTmp, "%.3f", TotalValue / divider);
+													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
 													break;
 												case MTYPE_WATER:
-													sprintf(szTmp, "%.3f", TotalValue / divider);
+													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%g", TotalValue / divider);
+													sprintf(szTmp, "%g", TotalValue / dividerHere);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14200,16 +14206,16 @@ namespace http
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+											sprintf(szTmp, "%.3f", (TotalValue / dividerForRate) * 1000.0F); // from kWh -> Watt
 											break;
 										case MTYPE_GAS:
-											sprintf(szTmp, "%.2f", TotalValue / divider);
+											sprintf(szTmp, "%.2f", TotalValue / dividerForRate);
 											break;
 										case MTYPE_WATER:
-											sprintf(szTmp, "%.3f", TotalValue / divider);
+											sprintf(szTmp, "%.3f", TotalValue / dividerForRate);
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", TotalValue / divider);
+											sprintf(szTmp, "%g", TotalValue / dividerForRate);
 											break;
 										default:
 											strcpy(szTmp, "0");
