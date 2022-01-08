@@ -153,7 +153,7 @@ define(['app'], function (app) {
 			if(!GetStdFields(data))
 				return;
 			if(data["extra"])
-				extraTxt = "&extra" + encodeURIComponent(extra);
+				extraTxt = "&extra=" + encodeURIComponent(data["extra"]);
 			$.ajax({
 				url: "json.htm?type=command&param=" + mode + "hardware&htype=" + hardwaretype +
 				"&loglevel=" + logLevel +
