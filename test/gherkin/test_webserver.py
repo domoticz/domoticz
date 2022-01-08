@@ -20,6 +20,14 @@ def test_uncompressedout():
 def test_decompressedout():
     pass
 
+@scenario('webserver.feature', 'Get compressed source in compressed form')
+def test_notdecompressedout():
+    pass
+
+@scenario('webserver.feature', 'Get regular file without extension')
+def test_regularfile():
+    pass
+
 @given('Domoticz is running')
 def test_domoticz():
     Domoticz.sBaseURI = "http://localhost"
@@ -43,7 +51,6 @@ def setup_user():
 def setup_request(test_domoticz, gzipsupport):
     if gzipsupport == "supports":
         test_domoticz.oReqHeaders = {"Accept-Encoding": "gzip, deflate"}
-
 
 @when(parsers.parse('I request the URI "{uri}"'))
 def request_uri(test_domoticz,uri):
