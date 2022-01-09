@@ -2961,17 +2961,6 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
-
-			result = m_sql.safe_query("SELECT ID, HardwareID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors");
-			if (!result.empty())
-			{
-				for (const auto& sdn : result)
-				{
-					safe_query("INSERT INTO EnOceanNodes (ID, HardwareID, NodeID, ManufacturerID, Func, Type) VALUES ('%q','%q',%u,'%q','%q','%q')",
-						sdn[0].c_str(), sdn[1].c_str(), static_cast<uint32_t>(std::stoul(sdn[2], 0, 16)), sdn[3].c_str(), sdn[4].c_str(), sdn[5].c_str());
-				}
-			}
-			query("DROP TABLE EnoceanSensors");
 		}
 	}
 	else if (bNewInstall)
