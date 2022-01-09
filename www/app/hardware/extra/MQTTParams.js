@@ -15,13 +15,11 @@ extraHWValidateParams = function (data, validators) {
     if (p.length > 3) {
       topdisc = p[3];
     }
-    if (topdisc=="") {
-      ShowNotify("Please specify a Auto Discovery topic!", 2500, true);
-      return false;
-    }
+    return validators["String"](topdisc, "Auto Discovery Prefix")
+        && validators["MQTTTopic"](topdisc, "Auto Discovery Prefix");
   }
-	return validators["MQTTTopic"](topin, "Topic in Prefix") && validators["MQTTTopic"](topout, "Topic out Prefix") &&
-		validators["MQTTTopic"](topdisc, "Discovery Prefix");
+	return validators["MQTTTopic"](topin, "Topic in Prefix")
+        && validators["MQTTTopic"](topout, "Topic out Prefix");
 }
 
 extraHWInitParams = function(data) {

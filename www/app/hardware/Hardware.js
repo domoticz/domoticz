@@ -45,6 +45,15 @@ define(['app'], function (app) {
 				return false;
 			}
 			return true;
+		}, String:function (val, fldName) {
+      if (
+        (typeof val == 'undefined')
+        || (val=="")
+        ) {
+          ShowNotify(fldName + ': ' + $.t('Cannot be empty!'), 2500, true);
+          return false;
+      }
+      return true;
 		}, MQTTTopic:function (val, fldName) {
 			if (val.indexOf("#") >= 0) {
 				ShowNotify(fldName + ': ' + $.t('Cannot contain a "#" symbol!'), 2500, true);
