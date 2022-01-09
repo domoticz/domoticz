@@ -2041,6 +2041,7 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		(szUnit == "°c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
+		|| (szUnit == "f")
 		|| (pSensor->value_template.find("temperature") != std::string::npos)
 		|| (pSensor->state_topic.find("temperature") != std::string::npos)
 		)
@@ -2048,7 +2049,13 @@ void MQTT::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_t& devType, 
 		devType = pTypeTEMP;
 		subType = sTypeTEMP1;
 
-		float temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+		double temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+		if (szUnit == "f")
+		{
+			// Convert back to Celsius
+			temp = ConvertToCelsius(temp);
+		}
+
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
 		sValue = std_format("%.1f", temp);
@@ -2806,7 +2813,7 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 	// Create/update Temp device for config and update payloads 
 	if (pSensor->current_temperature_topic == topic)
 	{
-		float temp_current = 0;
+		double temp_current = 0;
 		if (bIsJSON)
 		{
 			//Current temperature
@@ -2823,6 +2830,12 @@ void MQTT::handle_auto_discovery_climate(_tMQTTASensor* pSensor, const struct mo
 		}
 		else
 			temp_current = static_cast<float>(atof(qMessage.c_str()));
+
+		if (pSensor->temperature_unit == "F")
+		{
+			// Convert back to Celsius
+			temp_current = ConvertToCelsius(temp_current);
+		}
 
 		pSensor->devType = pTypeTEMP;
 		pSensor->subType = sTypeTEMP1;
