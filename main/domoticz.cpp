@@ -1,7 +1,7 @@
 /*
  Domoticz, Open Source Home Automation System
 
- Copyright (C) 2012,2020 Rob Peters (GizMoCuz)
+ Copyright (C) 2012,2022 Rob Peters (GizMoCuz)
 
  Domoticz is free software: you can redistribute it and/or modify it
  under the terms of the GNU General Public License as published
@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <iostream>
+#include <string>
 #include "CmdLine.h"
 #include "Logger.h"
 #include "Helper.h"
@@ -587,7 +588,7 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		}
 
 		else if (szFlag == "startup_delay") {
-			int DelaySeconds = atoi(sLine.c_str());
+			int DelaySeconds = std::stoi(sLine);
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
 			sleep_seconds(DelaySeconds);
 		}
@@ -792,7 +793,7 @@ int main(int argc, char**argv)
 				_log.Log(LOG_ERROR, "Please specify a startupdelay");
 				return 1;
 			}
-			int DelaySeconds = atoi(cmdLine.GetSafeArgument("-startupdelay", 0, "").c_str());
+			int DelaySeconds = std::stoi(cmdLine.GetSafeArgument("-startupdelay", 0, ""));
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
 			sleep_seconds(DelaySeconds);
 		}
@@ -813,7 +814,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
-			int iPort = (int)atoi(wwwport.c_str());
+			int iPort = std::stoi(wwwport);
 			if ((iPort < 0) || (iPort > 32767))
 			{
 				_log.Log(LOG_ERROR, "Please specify a valid www port");
@@ -1161,7 +1162,7 @@ int main(int argc, char**argv)
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
+	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), std::stoi(m_mainworker.GetWebserverPort()), bStartWebBrowser);
 	MSG Msg;
 	while (!g_bStopApplication)
 	{
