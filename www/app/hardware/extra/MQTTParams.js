@@ -22,19 +22,21 @@ extraHWInitParams = function(data) {
 	$("#hardwarecontent #divextrahwparams #mqtttopicout").val("");
 	$("#hardwarecontent #divextrahwparams #mqttdiscoveryprefix").val("");
 
-	if(!data["Extra"])
-		data["Extra"] = ";domoticz/in;domoticz/out;homeassistant";
-	
-	if(!data["Mode1"])
+	if (!data["Extra"]) {
+		data["Extra"] = ";domoticz/in;domoticz/out";
+		if (window.__hwfnparam == 0)
+			data["Extra"] += ";homeassistant";
+	}
+	if (!data["Mode1"])
 		data["Mode1"] = 1;
 	
-	if(!data["Mode2"])
+	if (!data["Mode2"])
 		data["Mode2"] = 2;
 	
-	if(!data["Mode3"])
+	if (!data["Mode3"])
 		data["Mode3"] = 1;
 	
-	if(!data["Port"])
+	if (!data["Port"])
 		data["Port"] = 1883;
 	
 	// Break out any possible topic prefix pieces.
@@ -53,6 +55,10 @@ extraHWInitParams = function(data) {
 	$("#hardwarecontent #hardwareparamsmqtt #combopreventloop").val(data["Mode3"]);
 	$("#hardwarecontent #divremote").show();
 	$("#hardwarecontent #divlogin").show();
+	if(window.__hwfnparam == 0)
+		$("#hardwarecontent #divextrahwparams #mqtt_publish").show();
+	else
+		$("#hardwarecontent #divextrahwparams #mqtt_publish").hide();
 }
 
 extraHWUpdateParams = function(validators) {

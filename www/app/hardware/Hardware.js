@@ -6,7 +6,9 @@ define(['app'], function (app) {
 	 */
 	let extraHWTable = {
 		'Daikin Airconditioning with LAN (HTTP) interface': 'DaikinParams',
-		'MQTT Client Gateway with LAN interface': 'MQTTParams'
+		'MQTT Client Gateway with LAN interface': ['MQTTParams', 0],
+		'OctoPrint (MQTT/Gina Haussge) with LAN interface': ['MQTTParams', 1],
+		'The Things Network (MQTT/CayenneLPP) with LAN interface': ['MQTTParams', 2],
 	};
 	
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
@@ -97,17 +99,34 @@ define(['app'], function (app) {
 			}
 		}
 		
-		function loadExtraHWCode (baseName, data) {
-                window.__hwdata = data;
+		function loadExtraHWCode (tbRow, data) {
+			var baseName;
+			if(typeof tbRow === 'string') {
+				baseName = tbRow;
+				window.__hwfnparam = "";
+			}
+			else {
+				baseName = tbRow[0];
+				window.__hwfnparam = tbRow[1];
+			}
+			window.__hwdata = data;
 			fetchExtraHTML (baseName + '.html', 'divextrahwparams', function(data) {
 				$.getScript('app/hardware/extra/' + baseName + '.js')
 					.done(function(script, textStatus) {
-                        var data = window.__hwdata;
-                        if (!data)
-                            var data = { Mode1: "", Mode2: "", Mode3: "", Mode4: "", Mode5: "", Mode6:"" };
+						var data = window.__hwdata;
+						if (!data)
+							var data = { Mode1: "", Mode2: "", Mode3: "", Mode4: "", Mode5: "", Mode6:"" };
 						extraHWInitParams (data);
-						if(data["Port"])
-							$("#hardwarecontent #divremote #tcpport").val(data["Port"]);
+						var stdFlds = { Username: '#hardwarecontent #divlogin #username',
+							Password: '#hardwarecontent #divlogin #password',
+							Port: '#hardwarecontent #divremote #tcpport',
+						};
+						for (const fName in stdFlds) {
+							if (data[fName])
+								$(stdFlds[fName]).val(data[fName]);
+							else
+								$(stdFlds[fName]).val("");
+						}
 						extraHWValidateParams (data, validators);
 					});
 			}, data);
