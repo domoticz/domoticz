@@ -854,7 +854,7 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
-			auto iPort = std::stoi(wwwport);
+			int iPort = std::stoi(wwwport);
 			if ((iPort < 0) || (iPort > 65535))
 			{
 				_log.Log(LOG_ERROR,
