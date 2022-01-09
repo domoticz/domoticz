@@ -2228,10 +2228,16 @@ MQTT::_tMQTTASensor* MQTT::get_auto_discovery_sensor_unit(const _tMQTTASensor* p
 			_tMQTTASensor* pTmpDeviceSensor = &m_discovered_sensors[ittSensorID.first];
 			if (pTmpDeviceSensor->unit_of_measurement == szMeasurementUnit)
 			{
+				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
+					return pTmpDeviceSensor;
+
 				// Check the "match length" of the UID of the DEVICE with the UID of the SENSOR to get the correct subdevice in case the are multiple
-				for (int i = 1; i < (int)pSensor->unique_id.size(); ++i)
+				auto ittUnID1 = pSensor->unique_id.begin();
+				auto ittUnID2 = pTmpDeviceSensor->unique_id.begin();
+				int iTlen = (int)(pSensor->unique_id.size() < pTmpDeviceSensor->unique_id.size()) ? pSensor->unique_id.size() : pTmpDeviceSensor->unique_id.size();
+				for (int i = 1; i < iTlen; ++i)
 				{
-					if (strncmp(pSensor->unique_id.c_str(), pTmpDeviceSensor->unique_id.c_str(), i) != 0)
+					if (*++ittUnID1 != *++ittUnID2)
 					{
 						// In case of a longer matching string we assume this is a better sensor to use.
 						if (i > iUIDMatch)
