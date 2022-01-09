@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 150
+#define DB_VERSION 151
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2941,6 +2941,38 @@ bool CSQLHelper::OpenDatabase()
 			}
 			query("DROP TABLE EnoceanSensors");
 		}
+		if (dbversion < 151)
+		{
+			// convert previously MQTT auto discovery hardware to new type
+			std::vector<std::vector<std::string>> result;
+			result = safe_query("SELECT ID, Extra FROM Hardware WHERE Type=%d", HTYPE_MQTT);
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					std::string ID = sd[0];
+					std::string Extra = sd[1];
+
+					std::vector<std::string> strarray;
+					StringSplit(Extra, ";", strarray);
+					if (strarray.size() > 3)
+					{
+						safe_query("UPDATE Hardware SET Type=%d WHERE (ID=%q)", HTYPE_MQTTAutoDiscovery, ID.c_str());
+					}
+				}
+			}
+
+			result = m_sql.safe_query("SELECT ID, HardwareID, DeviceID, Manufacturer, Profile, Type FROM EnoceanSensors");
+			if (!result.empty())
+			{
+				for (const auto& sdn : result)
+				{
+					safe_query("INSERT INTO EnOceanNodes (ID, HardwareID, NodeID, ManufacturerID, Func, Type) VALUES ('%q','%q',%u,'%q','%q','%q')",
+						sdn[0].c_str(), sdn[1].c_str(), static_cast<uint32_t>(std::stoul(sdn[2], 0, 16)), sdn[3].c_str(), sdn[4].c_str(), sdn[5].c_str());
+				}
+			}
+			query("DROP TABLE EnoceanSensors");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -5200,7 +5232,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 				)
 			{
 				if (
-					(pHardware->HwdType != HTYPE_MQTT)
+					(pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
 					&&
 					(switchtype == STYPE_BlindsPercentage
 					|| switchtype == STYPE_BlindsPercentageWithStop

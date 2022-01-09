@@ -1151,7 +1151,7 @@ namespace http
 				if (address.empty() || port == 0)
 					return;
 
-				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT)
+				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT || htype == HTYPE_MQTTAutoDiscovery)
 				{
 					std::string modeqStr = request::findValue(&req, "mode1");
 					if (!modeqStr.empty())
@@ -1535,7 +1535,7 @@ namespace http
 			}
 			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				 (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
-				 (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) ||
+				 (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_MQTTAutoDiscovery) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				 (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) ||
 				 (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
 				 (htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) || (htype == HTYPE_NefitEastLAN) ||

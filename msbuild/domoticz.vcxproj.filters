@@ -2228,6 +2228,9 @@
     <ClInclude Include="..\hardware\EnOceanEEP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MQTTAutoDiscover.h">
+      <Filter>Devices\MQTT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2988,6 +2991,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\EnOceanRawValue.cpp">
       <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MQTTAutoDiscover.cpp">
+      <Filter>Devices\MQTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

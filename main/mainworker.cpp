@@ -76,6 +76,7 @@
 #include "../hardware/MySensorsTCP.h"
 #include "../hardware/MySensorsMQTT.h"
 #include "../hardware/MQTT.h"
+#include "../hardware/MQTTAutoDiscover.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
 #include "../hardware/RFLinkSerial.h"
@@ -1070,6 +1071,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TeleinfoMeterTCP:
 		pHardware = new CTeleinfoTCP(ID, Address, Port, DataTimeout, (Mode2 != 0), Mode3);
+		break;
+	case HTYPE_MQTTAutoDiscovery:
+		pHardware = new MQTTAutoDiscover(ID, Name, Address, Port, Username, Password, Extra, Mode2);
 		break;
 	}
 
@@ -11457,14 +11461,14 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 #endif
 		return true;
 	}
-	if (pHardware->HwdType == HTYPE_MQTT)
+	if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 	{
 		// Special case when color is passed from timer or scene
 		if ((switchcmd == "Set Level") && (color.mode != ColorModeNone))
 		{
 			switchcmd = "Set Color";
 		}
-		return ((MQTT*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
+		return ((MQTTAutoDiscover*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
 	}
 
 	switch (dType)
@@ -12679,7 +12683,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) ||
 		(pHardware->HwdType == HTYPE_OpenWebNetTCP) ||
-		(pHardware->HwdType == HTYPE_MQTT)
+		(pHardware->HwdType == HTYPE_MQTT) ||
+		(pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -12756,9 +12761,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 			COpenWebNetTCP* pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
 			return pGateway->SetSetpoint(ID, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_MQTT)
+		else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		{
-			MQTT *pGateway = reinterpret_cast<MQTT*>(pHardware);
+			MQTTAutoDiscover *pGateway = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
 			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}

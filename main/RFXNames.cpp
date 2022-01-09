@@ -276,6 +276,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_Meteorologisk, "Meteorologisk institutt Norway (Weather Lookup)", "Meteorologisk" },
 	{ HTYPE_AirconWithMe, "AirconWithMe Wifi Airco module", "AirconWithMe" },
 	{ HTYPE_TeleinfoMeterTCP, "Teleinfo EDF with LAN interface", "TeleInfo" },
+	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -3957,6 +3958,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_S0SmartMeterTCP:
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
+	case HTYPE_MQTTAutoDiscovery:
 		return true;
 	default:
 		return false;
