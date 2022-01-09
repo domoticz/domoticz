@@ -10,8 +10,16 @@ extraHWValidateParams = function (data, validators) {
 		topin = p[1];
 	if (p.length > 2)
 		topout = p[2];
-	if (p.length > 3)
-		topdisc = p[3];
+
+	if(window.__hwfnparam == 3) {
+    if (p.length > 3) {
+      topdisc = p[3];
+    }
+    if (topdisc=="") {
+      ShowNotify("Please specify a Auto Discovery topic!", 2500, true);
+      return false;
+    }
+  }
 	return validators["MQTTTopic"](topin, "Topic in Prefix") && validators["MQTTTopic"](topout, "Topic out Prefix") &&
 		validators["MQTTTopic"](topdisc, "Discovery Prefix");
 }
@@ -24,7 +32,7 @@ extraHWInitParams = function(data) {
 
 	if (!data["Extra"]) {
 		data["Extra"] = ";domoticz/in;domoticz/out";
-		if (window.__hwfnparam == 0)
+		if (window.__hwfnparam == 3)
 			data["Extra"] += ";homeassistant";
 	}
 	if (!data["Mode1"])
@@ -47,9 +55,12 @@ extraHWInitParams = function(data) {
 		$("#hardwarecontent #hardwareparamsmqtt #mqtttopicin").val(CAfilenameParts[1]);
 	if (CAfilenameParts.length > 2)
 		$("#hardwarecontent #hardwareparamsmqtt #mqtttopicout").val(CAfilenameParts[2]);
-	if (CAfilenameParts.length > 3)
-		$("#hardwarecontent #hardwareparamsmqtt #mqttdiscoveryprefix").val(CAfilenameParts[3]);
-
+	
+	if(window.__hwfnparam == 3) {	
+    if (CAfilenameParts.length > 3)
+      $("#hardwarecontent #hardwareparamsmqtt #mqttdiscoveryprefix").val(CAfilenameParts[3]);
+  }
+ 
 	$("#hardwarecontent #divextrahwparams #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
 	$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
 	$("#hardwarecontent #hardwareparamsmqtt #combopreventloop").val(data["Mode3"]);
@@ -59,6 +70,17 @@ extraHWInitParams = function(data) {
 		$("#hardwarecontent #divextrahwparams #mqtt_publish").show();
 	else
 		$("#hardwarecontent #divextrahwparams #mqtt_publish").hide();
+
+  if(window.__hwfnparam == 3) {
+    //Auto Discovery
+    $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").hide();
+    $("#hardwarecontent #divextrahwparams #mqtt_preventloop").hide();
+    $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").show();
+  } else {
+    $("#hardwarecontent #divextrahwparams #mqtt_preventloop").show();
+    $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").show();
+    $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").hide();
+  }
 }
 
 extraHWUpdateParams = function(validators) {
@@ -67,7 +89,10 @@ extraHWUpdateParams = function(validators) {
 	var mqtttopicout = $("#hardwarecontent #divextrahwparams #mqtttopicout").val().trim();
 	var mqttdiscoveryprefix = $("#hardwarecontent #divextrahwparams #mqttdiscoveryprefix").val().trim();
 	data["extra"] = $("#hardwarecontent #divextrahwparams #filename").val().trim();
-	data["extra"] += ";" + mqtttopicin + ";" + mqtttopicout + ";" + mqttdiscoveryprefix;
+	data["extra"] += ";" + mqtttopicin + ";" + mqtttopicout;
+	if(window.__hwfnparam == 3) {
+    data["extra"] += ";" + mqttdiscoveryprefix;
+  }
 	data["Mode1"] = $("#hardwarecontent #divextrahwparams #combotopicselect").val();
 	data["Mode2"] = $("#hardwarecontent #divextrahwparams #combotlsversion").val();
 	data["Mode3"] = $("#hardwarecontent #divextrahwparams #combopreventloop").val();

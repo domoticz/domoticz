@@ -9,6 +9,7 @@ define(['app'], function (app) {
 		'MQTT Client Gateway with LAN interface': ['MQTTParams', 0],
 		'OctoPrint (MQTT/Gina Haussge) with LAN interface': ['MQTTParams', 1],
 		'The Things Network (MQTT/CayenneLPP) with LAN interface': ['MQTTParams', 2],
+		'MQTT Auto Discovery Client Gateway with LAN interface': ['MQTTParams', 3],
 	};
 	
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
@@ -17,6 +18,7 @@ define(['app'], function (app) {
 		$scope.calledFetch = 0;
 
 		var validators = { Integer:function (val, minVal, maxVal, fldName)  {
+      //alert("val:" + val + ", minVal:" + minVal + ", maxVal:" + maxVal + ", fldName:" + fldName);
 			var testno = parseInt(val);
 			var msg = "";
 			var betmsg = "!";
