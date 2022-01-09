@@ -85,11 +85,10 @@ define(['app'], function (app) {
 				fetch('app/hardware/extra/' + fileName).then(function (response) {
 					return response.text();
 				}).then(function (html) {
-					var $div = $('#' + divName);
 					var phtml = $.parseHTML(html);
-					$div.empty();
+					var $div = $('#' + divName);
+					$div.html(phtml).i18n();
 					$('#hardwarecontent').append('<input type="hidden" name="extrahw" id="extrahw" value="' + fileName + '" />')
-					$div.append(phtml);
 					$('#hardwarecontent #extrahw').val(fileName);
 					if(callback)
 						callback(carg);
