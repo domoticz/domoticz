@@ -3798,7 +3798,7 @@ bool MQTT::SendSwitchCommand(const std::string &DeviceID, const std::string &Dev
 	return true;
 }
 
-bool MQTT::SetSetpoint(const std::string &DeviceID, const float Temp)
+bool MQTT::SetSetpoint(const std::string &DeviceID, float Temp)
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
 	{
@@ -3808,6 +3808,13 @@ bool MQTT::SetSetpoint(const std::string &DeviceID, const float Temp)
 	if (pSensor->component_type != "climate")
 	{
 		return false;
+	}
+
+	//We might need to convert this to Fahrenheit
+	if (pSensor->temperature_unit == "F")
+	{
+		//Convert to Fahrenheit
+		Temp = (float)ConvertToFahrenheit(Temp);
 	}
 
 	Json::Value root;
