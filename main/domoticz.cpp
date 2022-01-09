@@ -862,6 +862,11 @@ int main(int argc, char**argv)
                  " or 0 to disable");
 				return 1;
 			}
+			else if (iPort >= 49152) {
+				_log.Log(LOG_NORM,
+                 "You are using a dynamic TCP port number (>= 49152)."
+                 " This might cause network conflicts.");
+			}
 			secure_webserver_settings.listening_port = wwwport;
 		}
 		if (!webserver_settings.listening_address.empty()) {
