@@ -15,6 +15,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string unique_id;
 		std::string device_identifiers;
 		std::string name;
+		std::string device_class;
 
 		std::string availability_topic;
 		std::string state_topic;

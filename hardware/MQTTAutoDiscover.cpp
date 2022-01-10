@@ -700,6 +700,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["ic"].empty())
 			pSensor->icon = root["ic"].asString();
 
+		if (!root["device_class"].empty())
+			pSensor->device_class = root["device_class"].asString();
+		else if (!root["dev_cla"].empty())
+			pSensor->device_class = root["dev_cla"].asString();
+
 		if (!root["payload_on"].empty())
 			pSensor->payload_on = root["payload_on"].asString();
 		else if (!root["pl_on"].empty())
@@ -1318,6 +1323,12 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	{
 		devType = pTypeGeneral;
 		subType = sTypeTextStatus;
+		sValue = pSensor->last_value;
+	}
+	else if (pSensor->device_class == "illuminance")
+	{
+		devType = pTypeLux;
+		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
 	else
