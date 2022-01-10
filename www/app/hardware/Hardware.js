@@ -24,10 +24,10 @@ define(['app'], function (app) {
 			var betmsg = "!";
 			if(typeof minVal == 'number') {
 				if(typeof maxVal == 'number') {
-					betmsg = " between " + minVal + " and " + maxVal + "!";
+					betmsg = " " + $.t('between') + " " + minVal + " " + $.t('and') + " " + maxVal + "!";
 				}
 				else {
-					betmsg = " above " + minVal + "!";
+					betmsg = " " + $.t('above') + " " + minVal + "!";
 				}
 			}
 			else if(typeof maxVal == 'number') {
@@ -35,7 +35,7 @@ define(['app'], function (app) {
 			}
 			var intRegex = /^\d+$/;
 			if ((isNaN(testno)) || !intRegex.test(val)) {
-				msg = 'Please enter a valid integer' + betmsg;
+				msg = $.t('Please enter a valid integer') + betmsg;
 			}
 			else if(((typeof minVal == 'number')?(testno < minVal):false) || ((typeof maxVal == 'number')?(testno > maxVal):false)) {
 				msg = 'Please enter an integer' + betmsg;
@@ -56,7 +56,7 @@ define(['app'], function (app) {
       return true;
 		}, MQTTTopic:function (val, fldName) {
 			if (val.indexOf("#") >= 0) {
-				ShowNotify(fldName + ': ' + $.t('Cannot contain a "#" symbol!'), 2500, true);
+				ShowNotify(fldName + ': ' + $.t('Cannot contain a # symbol!'), 2500, true);
 				return false;
 			}
 			return true;
