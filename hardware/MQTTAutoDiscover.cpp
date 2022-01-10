@@ -580,6 +580,17 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			}
 		}
 
+		// if object_id is "rgb_dimmer", we need to tweak the color capabilities
+		// It would be better to have access to the nodeinfo, which contains the "compat" flags.
+		if (object_id == "rgb_dimmer" && pDevice->model=="RGBW Controller (FGRGBW)")
+		{
+			root["color_mode"] = "True";
+			root["supported_color_modes"][0] = "rgbw";
+			root["brightness_value_template"] = "";
+			root["payload_on"] = "99";
+			root["payload_off"] = "0";
+		}
+
 		_tMQTTASensor tmpSensor;
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
 		_tMQTTASensor* pSensor = &m_discovered_sensors[sensor_unique_id];
@@ -770,6 +781,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		if (!root["brightness"].empty())
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
+
+		if (!root["rgb_value_template"].empty())
+			pSensor->rgb_value_template = root["rgb_value_template"].asString();
+		if (!root["rgb_command_template"].empty())
+			pSensor->rgb_command_template = root["rgb_command_template"].asString();
+		if (!root["rgb_command_topic"].empty())
+			pSensor->rgb_command_topic = root["rgb_command_topic"].asString();
+		if (!root["rgb_state_topic"].empty())
+			pSensor->rgb_state_topic = root["rgb_state_topic"].asString();
 
 		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
 			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
@@ -970,6 +990,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->temperature_state_template, pSensor->qos);
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
 			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->rgb_state_topic, pSensor->qos);
 		}
 	}
 	catch (const std::exception& e)
@@ -1010,6 +1031,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			(pSensor->state_topic == topic)
 			|| (pSensor->position_topic == topic)
 			|| (pSensor->brightness_state_topic == topic)
+			|| (pSensor->rgb_state_topic == topic)
 			|| (pSensor->mode_state_topic == topic)
 			|| (pSensor->temperature_state_topic == topic)
 			|| (pSensor->current_temperature_topic == topic)
@@ -1987,6 +2009,16 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 	}
 }
 
+// Rename key src in the Json::value object to dest. 
+void RenameKey(Json::Value& value, const char* src, const char* dest)
+{
+	if(!value[src].empty())
+	{
+		value[dest]=value[src];
+		value.removeMember(src);
+	}
+}
+
 void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
 	pSensor->devUnit = 1;
@@ -2218,6 +2250,38 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 	if (bIsJSON)
 	{
+		if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
+		{
+			// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
+			root["color"] = root["value"];
+			root.removeMember("value");
+		}
+
+		if(root["color"].isObject() && !root["color"]["red"].empty())
+		{
+			// The device uses "red", "green"... to specify the color components, default for domoticz would be "r", "g"... (e.g. Fibaro FGRGBW)
+			RenameKey(root["color"],"red","r");
+			RenameKey(root["color"],"green","g");
+			RenameKey(root["color"],"blue","b");
+			RenameKey(root["color"],"warmWhite","w");
+			RenameKey(root["color"],"coldWhite","c");
+		}
+
+		if(root["state"].empty() && root["color"].isObject())
+		{
+			// The on/off state is omitted in the message, so guess it from the color components (e.g. Fibaro FGRGBW)
+			int r = root["color"]["r"].asInt();
+			int g = root["color"]["g"].asInt();
+			int b = root["color"]["b"].asInt();
+			int w = root["color"]["w"].asInt();
+			int c = root["color"]["c"].asInt();
+			if(r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
+			{
+				root["state"] = "off";
+			}
+			else root["state"] = "on";
+		}
+
 		if (!root["state"].empty())
 			szOnOffValue = root["state"].asString();
 		else if (!root["value"].empty())
@@ -2537,6 +2601,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	}
 
 	std::string szSendValue;
+	std::string command_topic = pSensor->command_topic;
 
 	if (
 		(pSensor->component_type != "climate")
@@ -2580,6 +2645,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	{
 		Json::Value root;
 
+		// Change Set Level to Set Color to send color_temp && color info in payload if the device supports color.
+		if (command == "Set Level" && color.mode != ColorModeNone)
+			command = "Set Color";
+
 		if (
 			(command == "On")
 			|| (command == "Off"))
@@ -2595,7 +2664,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				else if (szSendValue == "false")
 					root["state"] = false;
 				else
+				{
 					root["state"] = szSendValue;
+					if (is_number(szSendValue))
+						root["value"] = szSendValue;	// Required for e.g. FGRGBW color dimmer
+				}
 			}
 		}
 		else if (command == "Set Level")
@@ -2677,6 +2750,22 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["c"] = color.cw;
 				if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
 					root["color"]["w"] = color.ww;
+
+				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
+				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("{'red': red,")!= pSensor->rgb_command_template.npos) 
+				{
+					// For the Fibaro FGRGBW dimmer:
+					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
+					//	"rgb_value_template": "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }}",
+					//  -> variables are red, green and blue, but white is missing entirely, so the template can't be used anyway.
+					Json::Value colorDef;
+					root["value"] = colorDef;
+					root["value"]["red"] = root["color"]["r"];
+					root["value"]["green"] = root["color"]["g"];
+					root["value"]["blue"] = root["color"]["b"];
+					root["value"]["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs2mqtt requires warmWhite
+					root.removeMember("color");
+				}
 			}
 
 			if (
@@ -2713,6 +2802,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				else
 					root["brightness"] = slevel;
 			}
+			if (!pSensor->rgb_command_topic.empty())
+				command_topic = pSensor->rgb_command_topic;
 		}
 		else
 		{
@@ -2910,7 +3001,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		}
 	}
 
-	SendMessage(pSensor->command_topic, szSendValue);
+	SendMessage(command_topic, szSendValue);
 	return true;
 }
 
