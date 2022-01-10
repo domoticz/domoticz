@@ -261,7 +261,6 @@ namespace http {
 		{
 			if (!error && sendfile_.is_open() && !sendfile_.eof())
 			{
-#define FILE_SEND_BUFFER_SIZE 16*1024
 				if (!send_buffer_)
 					send_buffer_ = std::make_unique<std::array<uint8_t, FILE_SEND_BUFFER_SIZE>>();
 				size_t bread = static_cast<size_t>(sendfile_.read((char *)send_buffer_->data(), FILE_SEND_BUFFER_SIZE).gcount());
