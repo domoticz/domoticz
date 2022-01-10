@@ -25,6 +25,7 @@ jobs:
       # Prepare environment
       - name: prepare environment
         run: |
+          sudo timedatectl set-timezone Europe/Amsterdam
           if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
             echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${GITHUB_EVENT_ISSUE_NUMBER})" >> $GITHUB_ENV
@@ -38,9 +39,13 @@ jobs:
       # install dependencies
       - name: dependencies
         run: |
-          sudo apt-get update && sudo apt-get install
+          sudo apt-get update && sudo apt-get --autoremove upgrade
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
+          sudo apt-get install lua5.3 luarocks
+          sudo luarocks install busted
+          sudo luarocks install luacov
+          sudo luarocks install lodash
 
       # get CMake
       - name: cmake-compile
@@ -77,7 +82,15 @@ jobs:
           make
 
       # Run automated tests
-      - name: test domoticz
+      - name: unit-tests domoticz-dzVents
+        run: |
+          cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+          busted --coverage -o TAP *
+          luacov
+          tail -19 luacov.report.out
+        continue-on-error: true
+
+      - name: functional-tests domoticz
         run: |
           cd $GITHUB_WORKSPACE
           ln -s ../test/gherkin/resources/testwebcontent www/test
