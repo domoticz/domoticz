@@ -80,6 +80,7 @@ bool CNotificationHelper::SendMessage(
 	const uint64_t Idx,
 	const std::string &Name,
 	const std::string &Subsystems,
+	const std::string& CustomAction,
 	const std::string &Subject,
 	const std::string &Text,
 	const std::string &ExtraData,
@@ -87,13 +88,14 @@ bool CNotificationHelper::SendMessage(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, -100, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subsystems, CustomAction, Subject, Text, ExtraData, -100, std::string(""), bFromNotification);
 }
 
 bool CNotificationHelper::SendMessageEx(
 	const uint64_t Idx,
 	const std::string& Name,
 	const std::string& Subsystems,
+	const std::string& CustomAction,
 	const std::string& Subject,
 	const std::string& Text,
 	const std::string& ExtraData,
@@ -143,6 +145,45 @@ bool CNotificationHelper::SendMessageEx(
 					bRet |= m_notifier.second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound,
 										 bFromNotification);
 			}
+		}
+	}
+	if (!CustomAction.empty())
+	{
+		std::string Action = CustomAction;
+		stdreplace(Action, "#MESSAGE", Subject);
+
+		if ((Action.find("http://") == 0) || (Action.find("https://") == 0))
+		{
+			m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2F, Action, "Notification"));
+		}
+		else if (Action.find("script://") == 0)
+		{
+			//Execute possible script
+			if (Action.find("../") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "Notification: Invalid script location! '%s'", Action.c_str());
+				return false;
+			}
+
+			std::string scriptname = Action.substr(9);
+#if !defined WIN32
+			if (scriptname.find('/') != 0)
+				scriptname = szUserDataFolder + "scripts/" + scriptname;
+#endif
+			std::string scriptparams;
+			//Add parameters
+			size_t pindex = scriptname.find(' ');
+			if (pindex != std::string::npos)
+			{
+				scriptparams = scriptname.substr(pindex + 1);
+				scriptname = scriptname.substr(0, pindex);
+			}
+			if (file_exist(scriptname.c_str()))
+			{
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2F, scriptname, scriptparams));
+			}
+			else
+				_log.Log(LOG_ERROR, "Notification: Error script not found '%s'", scriptname.c_str());
 		}
 	}
 	return bRet;
@@ -588,7 +629,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			{
 				if (bCustomMessage && !bRecoveryMessage)
 					msg = ParseCustomMessage(custommsg, devicename, notValue);
-				SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				if (!bRecoveryMessage)
 				{
 					TouchNotification(n.ID);
@@ -647,7 +688,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 					notValue = szTmp;
 					if (!n.CustomMessage.empty())
 						msg = ParseCustomMessage(n.CustomMessage, devicename, notValue);
-					SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""),
+					SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""),
 						      true);
 					TouchNotification(n.ID);
 				}
@@ -702,7 +743,7 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 					notValue = szTmp;
 					if (!n.CustomMessage.empty())
 						msg = ParseCustomMessage(n.CustomMessage, DeviceName, notValue);
-					SendMessageEx(Idx, DeviceName, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""),
+					SendMessageEx(Idx, DeviceName, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""),
 						      true);
 					TouchNotification(n.ID);
 				}
@@ -803,7 +844,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			{
 				if (bCustomMessage && !bRecoveryMessage)
 					msg = ParseCustomMessage(custommsg, devicename, notValue);
-				SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				if (!bRecoveryMessage)
 				{
 					TouchNotification(n.ID);
@@ -855,7 +896,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				std::string msg = message;
 				if (!n.CustomMessage.empty())
 					msg = ParseCustomMessage(n.CustomMessage, devicename, notValue);
-				SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				TouchNotification(n.ID);
 			}
 		}
@@ -949,7 +990,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			{
 				if (bCustomMessage && !bRecoveryMessage)
 					msg = ParseCustomMessage(custommsg, devicename, pvalue);
-				SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				if (!bRecoveryMessage)
 				{
 					TouchNotification(n.ID);
@@ -1065,7 +1106,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!n.CustomMessage.empty())
 					msg = ParseCustomMessage(n.CustomMessage, devicename, notValue);
-				SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				TouchNotification(n.ID);
 			}
 		}
@@ -1158,7 +1199,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!n.CustomMessage.empty())
 					msg = ParseCustomMessage(n.CustomMessage, devicename, notValue);
-				SendMessageEx(Idx, devicename, n.ActiveSystems, msg, msg, szExtraData, n.Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, n.ActiveSystems, n.CustomAction, msg, msg, szExtraData, n.Priority, std::string(""), true);
 				TouchNotification(n.ID);
 			}
 		}
@@ -1297,7 +1338,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 
 					if (bCustomMessage && !bRecoveryMessage)
 						msg = ParseCustomMessage(custommsg, n2.DeviceName, "");
-					SendMessageEx(Idx, n2.DeviceName, n2.ActiveSystems, msg, msg, szExtraData, n2.Priority,
+					SendMessageEx(Idx, n2.DeviceName, n2.ActiveSystems, n2.CustomAction, msg, msg, szExtraData, n2.Priority,
 						      std::string(""), true);
 					if (!bRecoveryMessage)
 					{
@@ -1432,7 +1473,8 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 bool CNotificationHelper::AddNotification(
 	const std::string &DevIdx,
 	const std::string &Param,
-	const std::string &CustomMessage,
+	const std::string& CustomMessage,
+	const std::string& CustomAction,
 	const std::string &ActiveSystems,
 	const int Priority,
 	const bool SendAlways
@@ -1447,8 +1489,8 @@ bool CNotificationHelper::AddNotification(
 		return false;//already there!
 
 	int iSendAlways = (SendAlways == true) ? 1 : 0;
-	m_sql.safe_query("INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways) VALUES ('%q','%q','%q','%q',%d,%d)",
-		DevIdx.c_str(), Param.c_str(), CustomMessage.c_str(), ActiveSystems.c_str(), Priority, iSendAlways);
+	m_sql.safe_query("INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, CustomAction, ActiveSystems, Priority, SendAlways) VALUES ('%q','%q','%q','%q','%q',%d,%d)",
+		DevIdx.c_str(), Param.c_str(), CustomMessage.c_str(), CustomAction.c_str(), ActiveSystems.c_str(), Priority, iSendAlways);
 	ReloadNotifications();
 	return true;
 }
@@ -1513,7 +1555,7 @@ void CNotificationHelper::ReloadNotifications()
 	m_sql.GetPreferencesVar("NotificationSensorInterval", m_NotificationSensorInterval);
 	m_sql.GetPreferencesVar("NotificationSwitchInterval", m_NotificationSwitchInterval);
 
-	result = m_sql.safe_query("SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID");
+	result = m_sql.safe_query("SELECT ID, DeviceRowID, Params, CustomMessage, CustomAction, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID");
 	if (result.empty())
 		return;
 
@@ -1543,11 +1585,12 @@ void CNotificationHelper::ReloadNotifications()
 
 		notification.Params = sd[2];
 		notification.CustomMessage = sd[3];
-		notification.ActiveSystems = sd[4];
-		notification.Priority = atoi(sd[5].c_str());
-		notification.SendAlways = (atoi(sd[6].c_str())!=0);
+		notification.CustomAction = CURLEncode::URLDecode(sd[4]);
+		notification.ActiveSystems = sd[5];
+		notification.Priority = atoi(sd[6].c_str());
+		notification.SendAlways = (atoi(sd[7].c_str())!=0);
 
-		std::string stime = sd[7];
+		std::string stime = sd[8];
 		if (stime == "0")
 		{
 			notification.LastSend = 0;

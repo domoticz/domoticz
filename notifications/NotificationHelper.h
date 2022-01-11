@@ -15,6 +15,7 @@ struct _tNotification
 	time_t LastUpdate;
 	std::string DeviceName;
 	std::string CustomMessage;
+	std::string CustomAction;
 	std::string ActiveSystems;
 	bool SendAlways;
 };
@@ -25,9 +26,9 @@ class CNotificationHelper
 	CNotificationHelper();
 	~CNotificationHelper();
 	void Init();
-	bool SendMessage(uint64_t Idx, const std::string &Name, const std::string &Subsystems, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
+	bool SendMessage(uint64_t Idx, const std::string &Name, const std::string &Subsystems, const std::string& CustomAction, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
 			 const std::string &Sound, bool bFromNotification);
-	bool SendMessageEx(uint64_t Idx, const std::string &Name, const std::string &Subsystems, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
+	bool SendMessageEx(uint64_t Idx, const std::string &Name, const std::string &Subsystems, const std::string& CustomAction, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority,
 			   const std::string &Sound, bool bFromNotification);
 	void LoadConfig();
 	void ConfigFromGetvars(const http::server::request &req, bool save);
@@ -36,7 +37,7 @@ class CNotificationHelper
 	// notification functions
 	void CheckAndHandleLastUpdateNotification();
 	void ReloadNotifications();
-	bool AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, int Priority, bool SendAlways);
+	bool AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string& CustomAction, const std::string &ActiveSystems, int Priority, bool SendAlways);
 	bool RemoveDeviceNotifications(const std::string &DevIdx);
 	bool RemoveNotification(const std::string &ID);
 	std::vector<_tNotification> GetNotifications(uint64_t DevIdx);
