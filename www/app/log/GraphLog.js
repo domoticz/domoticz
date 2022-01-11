@@ -135,6 +135,7 @@ define(['app', 'lodash', 'RefreshingChart'],
         }
         function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
             return {
+                ctrl: ctrl,
                 range: ctrl.range,
                 device: ctrl.device,
 				sensorType: domoticzGlobals.sensorTypeForDevice(ctrl.device),

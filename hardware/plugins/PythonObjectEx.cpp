@@ -149,7 +149,7 @@ namespace Plugins {
 
 			PyType_Ready(&CUnitExType);
 			// Create Unit objects and add the Units dictionary with Unit number as the key
-			for (std::vector<std::vector<std::string>>::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+			for (auto itt = result.begin(); itt != result.end(); ++itt)
 			{
 				std::vector<std::string> sd = *itt;
 
@@ -198,24 +198,27 @@ namespace Plugins {
 
 	bool CDeviceEx::isInstance(PyObject *pObject)
 	{
-		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (brModule)
+		if (pObject)
 		{
-			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
-			if (pModState)
+			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			if (brModule)
 			{
-				int isDevice = PyObject_IsInstance(pObject, (PyObject *)pModState->pDeviceClass);
-				if (isDevice == -1)
+				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));
+				if (pModState)
 				{
-					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
-					if (PyErr_Occurred())
+					int isDevice = PyObject_IsInstance(pObject, (PyObject*)pModState->pDeviceClass);
+					if (isDevice == -1)
 					{
-						PyErr_Clear();
+						_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+						if (PyErr_Occurred())
+						{
+							PyErr_Clear();
+						}
 					}
-				}
-				else if (isDevice)
-				{
-					return true;
+					else if (isDevice)
+					{
+						return true;
+					}
 				}
 			}
 		}
@@ -557,6 +560,11 @@ namespace Plugins {
 		if (pModState->pPlugin)
 		{
 			std::string sName = PyBorrowedRef(self->Name);
+			if (!(CDeviceEx*)self->Parent)
+			{
+				_log.Log(LOG_ERROR, "(%s) Unit is not associated with a Device.", __func__);
+				Py_RETURN_NONE;
+			}
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
 			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
 			if (self->ID == -1)
@@ -583,12 +591,38 @@ namespace Plugins {
 						std::string sOptionValue = "";
 
 						// Support weird legacy 'custom' options
-						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						//if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						//{
+						//	PyBorrowedRef pValueDict = PyDict_GetItemString(self->Options, "Custom");
+						//	if (pValueDict)
+						//		sOptionValue = (std::string)pValueDict;
+						//}
+
+						if (PyDict_Size(self->Options) > 0)
 						{
-							PyBorrowedRef pValueDict = PyDict_GetItemString(self->Options, "Custom");
-							if (pValueDict)
-								sOptionValue = (std::string)pValueDict;
+							if (self->SubType != sTypeCustom)
+							{
+								PyBorrowedRef	pKeyDict, pValueDict;
+								Py_ssize_t pos = 0;
+								std::map<std::string, std::string> mpOptions;
+								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict))
+								{
+									std::string sOptionName = pKeyDict;
+									std::string sOptionValue = pValueDict;
+									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+								}
+								sOptionValue = m_sql.FormatDeviceOptions(mpOptions);
+							}
+							else
+							{
+								PyBorrowedRef pValue = PyDict_GetItemString(self->Options, "Custom");
+								if (pValue)
+								{
+									sOptionValue = (std::string)pValue;
+								}
+							}
 						}
+
 
 						std::string sSQL = "INSERT INTO DeviceStatus "
 								   "(HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
@@ -781,31 +815,24 @@ namespace Plugins {
 			}
 
 			// Need to look up current nValue and sValue and only do triggers if one has changed
-			bool nValueChanged = false;
-			bool sValueChanged = false;
 			std::vector<std::vector<std::string>> result;
 
-			Py_BEGIN_ALLOW_THREADS
-
-			result = m_sql.safe_query("SELECT ID, nValue, sValue, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-			if (!result.empty())
+			result = m_sql.safe_query("SELECT ID, StrParam1, StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+			if (result.empty())
 			{
-				int oldnValue = atoi(result[0][1].c_str());
-				std::string oldsValue = result[0][2];
-
-				if (nValue != oldnValue)
-				{
-					nValueChanged = true;
-				}
-				if (sValue != oldsValue)
-				{
-					sValueChanged = true;
-				}
+				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed, row not found in database for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				Py_RETURN_NONE;
 			}
 
+			uint64_t	DevRowIdx = std::stoull(result[0][0]);
+			std::string	sOnAction = result[0][1];
+			std::string	sOffAction = result[0][2];
+			int	iRows = 0;
+
 			// Do an atomic update (do not change this to individual field updates!!!!!!!)
+			Py_BEGIN_ALLOW_THREADS
 			std::string sSQL = "UPDATE DeviceStatus "
-							   "SET Name=?, Description=?, Used=?, Type=?, SubType=?, SwitchType=?, nValue=?, sValue=?, CustomImage=?, Color=?, SignalLevel=?, BatteryLevel=?, Options=?, LastUpdate=? "
+							   "SET Name=?, Description=?, Used=?, Type=?, SubType=?, SwitchType=?, nValue=?, sValue=?, LastLevel=?, CustomImage=?, Color=?, SignalLevel=?, BatteryLevel=?, Options=?, LastUpdate=? "
 							   "WHERE (HardwareID==?) AND (DeviceID==?) AND (Unit==?);";
 			std::vector<std::string> vValues;
 			vValues.push_back(sName);
@@ -816,6 +843,7 @@ namespace Plugins {
 			vValues.push_back(std::to_string(iSwitchType));
 			vValues.push_back(std::to_string(nValue));
 			vValues.push_back(sValue);
+			vValues.push_back(std::to_string(self->LastLevel));
 			vValues.push_back(std::to_string(self->Image));
 			vValues.push_back(sColor);
 			vValues.push_back(std::to_string(self->SignalLevel));
@@ -828,52 +856,82 @@ namespace Plugins {
 			vValues.push_back(std::to_string(self->Unit));
 
 			// Handle any data we get back (this method allows for any special characters in the strings such as ' and ")
-			if (!m_sql.execute_sql(sSQL, &vValues, true))
-			{
-				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
-			}
+			iRows = m_sql.execute_sql(sSQL, &vValues, true);
 			Py_END_ALLOW_THREADS
 
-			// Only trigger notifications if values changed
-			if (nValueChanged || sValueChanged)
+			if (!iRows)
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "Update to 'UnitEx' failed to update any DeviceStatus records for key %d/%s/%d", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+				Py_RETURN_NONE;
+			}
+
+			// Only trigger notifications if a used value is changed
+			if (self->Used)
 			{
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
 				{
+					Py_BEGIN_ALLOW_THREADS
 					switch (nValue)
 					{
 						case sStatusArmHome:
 						case sStatusArmHomeDelayed:
-							Py_BEGIN_ALLOW_THREADS m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
 							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
-							Py_END_ALLOW_THREADS break;
+							break;
 						case sStatusArmAway:
 						case sStatusArmAwayDelayed:
-							Py_BEGIN_ALLOW_THREADS m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
 							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
-							Py_END_ALLOW_THREADS break;
+							break;
 						case sStatusDisarm:
 						case sStatusNormal:
 						case sStatusNormalDelayed:
 						case sStatusNormalTamper:
 						case sStatusNormalDelayedTamper:
-							Py_BEGIN_ALLOW_THREADS m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
 							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
-							Py_END_ALLOW_THREADS break;
+							break;
 					}
+					Py_END_ALLOW_THREADS
 				}
 
 				// Notify Event system, MQTT and various push mechanisms and notifications
 				Py_BEGIN_ALLOW_THREADS
-				uint64_t	DevRowIdx = std::stoull(result[0][0]);
 				m_mainworker.m_eventsystem.ProcessDevice(pModState->pPlugin->m_HwdID, DevRowIdx, self->Unit, iType, iSubType, self->SignalLevel, self->BatteryLevel, nValue, sValue.c_str());
-				if (nValueChanged)
+
+				// Standard on/off action handling  If a device has these then make sure they are handled.
+				if (self->SwitchType == STYPE_Selector)
+				{
+					sOnAction = GetSelectorSwitchLevelAction(m_sql.BuildDeviceOptions(sOptionValue, true), atoi(sValue.c_str()));
+					sOffAction = GetSelectorSwitchLevelAction(m_sql.BuildDeviceOptions(sOptionValue, true), 0);
+				}
+				if (sOnAction.length() || sOffAction.length())
 				{
 					// Handle On & Off actions if they are defined (HandleOnOffAction just returns if they are blank)
-					m_sql.HandleOnOffAction(nValue, result[0][3], result[0][4]);
+					m_sql.HandleOnOffAction(nValue, sOnAction, sOffAction);
 				}
+
 				m_mainworker.sOnDeviceReceived(pModState->pPlugin->m_HwdID, self->ID, pModState->pPlugin->m_Name, NULL);
-				m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+
+				// Notifications
+				if (!IsLightOrSwitch(iType, iSubType))
+				{
+					m_notifications.CheckAndHandleNotification(DevRowIdx, pModState->pPlugin->m_HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+				}
+				else
+				{
+					std::string lstatus;
+					int llevel;
+					bool bHaveDimmer;
+					int maxDimLevel;
+					bool bHaveGroupCmd;
+					GetLightStatus(iType, iSubType, (_eSwitchType)iSwitchType, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					if (self->SwitchType == STYPE_Selector)
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
+					else
+						m_notifications.CheckAndHandleSwitchNotification(DevRowIdx, sName, (IsLightSwitchOn(lstatus)) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+				}
 				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue.c_str(), "Python");
 
 				// Write a log entry if requested
@@ -980,30 +1038,33 @@ namespace Plugins {
 
 	PyObject *CUnitEx_str(CUnitEx *self)
 	{
-		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U'", self->Unit, self->Name, self->nValue, self->sValue);
+		PyObject *pRetVal = PyUnicode_FromFormat("Unit: %d, Name: '%U', nValue: %d, sValue: '%U', LastUpdate: %U", self->Unit, self->Name, self->nValue, self->sValue, self->LastUpdate);
 		return pRetVal;
 	}
 
 	bool CUnitEx::isInstance(PyObject *pObject)
 	{
-		PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
-		if (brModule)
+		if (pObject)
 		{
-			module_state *pModState = ((struct module_state *)PyModule_GetState(brModule));
-			if (pModState)
+			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			if (brModule)
 			{
-				int isUnit = PyObject_IsInstance(pObject, (PyObject *)pModState->pUnitClass);
-				if (isUnit == -1)
+				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));
+				if (pModState)
 				{
-					_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
-					if (PyErr_Occurred())
+					int isUnit = PyObject_IsInstance(pObject, (PyObject*)pModState->pUnitClass);
+					if (isUnit == -1)
 					{
-						PyErr_Clear();
+						_log.Log(LOG_ERROR, "%s: Error determining type of Python object", __func__);
+						if (PyErr_Occurred())
+						{
+							PyErr_Clear();
+						}
 					}
-				}
-				else if (isUnit)
-				{
-					return true;
+					else if (isUnit)
+					{
+						return true;
+					}
 				}
 			}
 		}

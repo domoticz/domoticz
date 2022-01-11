@@ -748,7 +748,7 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 
 bool CEvohomeRadio::DecodePayload(CEvohomeMsg& msg)
 {
-	std::map < unsigned int, fnc_evohome_decode >::iterator pf = m_Decoders.find(msg.command);
+	auto pf = m_Decoders.find(msg.command);
 	if (pf != m_Decoders.end())
 	{
 		bool ret = pf->second(msg);
@@ -1592,23 +1592,33 @@ bool CEvohomeRadio::DecodeActuatorState(CEvohomeMsg& msg)
 		//      A payload of size 1 is normally just 0x00
 		return true;
 	}
-	// The OT Bridge responds to the RQ with a RP with payload size of 6
-	if (msg.payloadsize == 6) {
+	// The R8810A OT Bridge responds to the RQ with a RP with payload size of 6
+	// The R8820A OT Bridge responds to the RQ with a RP with payload side of 9
+	if ((msg.payloadsize == 6) || (msg.payloadsize == 9)) {
 		// msg.payload[1] is the Relative modulation level
 		bool bExists = CheckPercentageSensorExists(17, 1);
 		if ((msg.payload[1] != 0) || (bExists))
 		{
 			SendPercentageSensor(17, 1, 255, static_cast<float>(msg.payload[1]), "Relative modulation level");
 		}
-		// msg.payload[3] is the Flame Status
+		// msg.payload[3] contains the Flame Status as a bit mask on Bit 3
 		bool bFlameOn{ false };
-		if (msg.payload[3] == 0x0A) {
+		if (msg.payload[3] & (1 << 3)) {
 			bFlameOn = true;
 		}
 		// Record the Flame status in the same way that the OTGW hardware device currently does
 		UpdateSwitch(113, bFlameOn, "FlameOn");
 
-		Log(true, LOG_STATUS, "evohome: %s: OT Bridge full payload %02X%02X%02X%02X%02X%02X, packet size: %d", tag, msg.payload[0], msg.payload[1], msg.payload[2], msg.payload[3], msg.payload[4], msg.payload[5], msg.payloadsize);
+		if (msg.payloadsize == 9) {
+			// The CH Setpoint is returned back in the R8820A OT Bridge
+			SendTempSensor(1, 255, msg.payload[7], "Control Setpoint");
+		}
+
+		if (msg.payloadsize == 6)
+			Log(true, LOG_STATUS, "evohome: %s: R8810A OT Bridge full payload %02X%02X%02X%02X%02X%02X, packet size: %d", tag, msg.payload[0], msg.payload[1], msg.payload[2], msg.payload[3], msg.payload[4], msg.payload[5], msg.payloadsize);
+		else if (msg.payloadsize == 9)
+			Log(true, LOG_STATUS, "evohome: %s: R8820A OT Bridge full payload %02X%02X%02X%02X%02X%02X%02X%02X%02X, packet size: %d", tag, msg.payload[0], msg.payload[1], msg.payload[2], msg.payload[3], msg.payload[4], msg.payload[5], msg.payload[6], msg.payload[7], msg.payload[8], msg.payloadsize);
+
 		return true;
 	}
 	// All other relays should have a payload size of 3	
@@ -1778,7 +1788,7 @@ bool CEvohomeRadio::DecodeOpenThermSetpoint(CEvohomeMsg& msg)
 	float fOTSetpoint = static_cast<float>(msg.payload[1] << 8 | msg.payload[2]) / 100.0F;
 
 	SendTempSensor(1, 255, fOTSetpoint, "Control Setpoint");
-	Log(true, LOG_STATUS, "evohome: %s: Boiler Water Temperature = %.2f C", tag, fOTSetpoint);
+	Log(true, LOG_STATUS, "evohome: %s: Boiler Setpoint Temperature = %.2f C", tag, fOTSetpoint);
 
 	return true;
 }

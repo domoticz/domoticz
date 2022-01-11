@@ -76,6 +76,7 @@
 #include "../hardware/MySensorsTCP.h"
 #include "../hardware/MySensorsMQTT.h"
 #include "../hardware/MQTT.h"
+#include "../hardware/MQTTAutoDiscover.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
 #include "../hardware/RFLinkSerial.h"
@@ -216,17 +217,18 @@ MainWorker::MainWorker()
 #ifdef WWW_ENABLE_SSL
 	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_secure_webserver_settings.listening_port = "443";
-	m_secure_webserver_settings.ssl_method = "sslv23";
+	m_secure_webserver_settings.ssl_method = "tls";
 	m_secure_webserver_settings.certificate_chain_file_path = "./server_cert.pem";
 	m_secure_webserver_settings.ca_cert_file_path = m_secure_webserver_settings.certificate_chain_file_path; // not used
 	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_pass_phrase = "";
-	m_secure_webserver_settings.ssl_options = "default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use";
+	m_secure_webserver_settings.ssl_options = "single_dh_use";
 	m_secure_webserver_settings.tmp_dh_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.verify_peer = false;
 	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
 	m_secure_webserver_settings.verify_file_path = "";
+	m_secure_webserver_settings.cipher_list = "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
 #endif
 	m_bIgnoreUsernamePassword = false;
 
@@ -908,7 +910,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CNetatmo(ID, Username, Password);
 		break;
 	case HTYPE_Daikin:
-		pHardware = new CDaikin(ID, Address, Port, Username, Password);
+		pHardware = new CDaikin(ID, Address, Port, Username, Password, Mode1);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID, Username);
@@ -1069,6 +1071,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TeleinfoMeterTCP:
 		pHardware = new CTeleinfoTCP(ID, Address, Port, DataTimeout, (Mode2 != 0), Mode3);
+		break;
+	case HTYPE_MQTTAutoDiscovery:
+		pHardware = new MQTTAutoDiscover(ID, Name, Address, Port, Username, Password, Extra, Mode2);
 		break;
 	}
 
@@ -11452,8 +11457,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 #endif
 		return true;
 	}
-	if (pHardware->HwdType == HTYPE_MQTT)
-		return ((MQTT *)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
+	if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
+	{
+		// Special case when color is passed from timer or scene
+		if ((switchcmd == "Set Level") && (color.mode != ColorModeNone))
+		{
+			switchcmd = "Set Color";
+		}
+		return ((MQTTAutoDiscover*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
+	}
 
 	switch (dType)
 	{
@@ -11549,28 +11561,20 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			level = (level > 15) ? 15 : level;
 
 		lcmd.LIGHTING2.level = (uint8_t)level;
-		//Special Teach-In for EnOcean Dimmers
+
 		if ((pHardware->HwdType == HTYPE_EnOceanESP2) && (IsTesting) && (switchtype == STYPE_Dimmer))
-		{
+		{ // Special Teach-In for EnOcean ESP2 dimmers
 			CEnOceanESP2* pEnocean = reinterpret_cast<CEnOceanESP2*>(pHardware);
 			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
 		}
-		else if ((pHardware->HwdType == HTYPE_EnOceanESP3) && (IsTesting) && (switchtype == STYPE_Dimmer))
-		{
-			CEnOceanESP3* pEnocean = reinterpret_cast<CEnOceanESP3*>(pHardware);
-			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
-		}
-		else
-		{
-			if (switchtype != STYPE_Motion) //dont send actual motion off command
-			{
-				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
-					return false;
-			}
+		else if (switchtype != STYPE_Motion)
+		{ // Don't send actual motion off command
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
+				return false;
 		}
 
-		if (!IsTesting) {
-			//send to internal for now (later we use the ACK)
+		if (!IsTesting)
+		{ //send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t *)&lcmd, nullptr, -1, User.c_str());
 		}
 		return true;
@@ -12675,7 +12679,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) ||
 		(pHardware->HwdType == HTYPE_OpenWebNetTCP) ||
-		(pHardware->HwdType == HTYPE_MQTT)
+		(pHardware->HwdType == HTYPE_MQTT) ||
+		(pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -12752,9 +12757,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 			COpenWebNetTCP* pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
 			return pGateway->SetSetpoint(ID, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_MQTT)
+		else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		{
-			MQTT *pGateway = reinterpret_cast<MQTT*>(pHardware);
+			MQTTAutoDiscover *pGateway = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
 			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}

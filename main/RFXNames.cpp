@@ -276,6 +276,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_Meteorologisk, "Meteorologisk institutt Norway (Weather Lookup)", "Meteorologisk" },
 	{ HTYPE_AirconWithMe, "AirconWithMe Wifi Airco module", "AirconWithMe" },
 	{ HTYPE_TeleinfoMeterTCP, "Teleinfo EDF with LAN interface", "TeleInfo" },
+	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -1635,6 +1636,9 @@ void GetLightStatus(
 		case Color_LedOn:
 			lstatus = "On";
 			break;
+		case Color_LedNight:
+			lstatus = "Night";
+			break;
 		case Color_SetBrightnessLevel:
 			sprintf(szTmp, "Set Level: %d %%", llevel);
 			if (sValue != "0")
@@ -2308,7 +2312,7 @@ void GetLightStatus(
 * Returns a map associating a level value to its name.
 */
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options, std::map<std::string, std::string>& statuses) {
-	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	auto itt = options.find("LevelNames");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
 		std::string sOptions = itt->second;
@@ -2334,7 +2338,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options
 */
 int GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, const std::string& levelName) {
 	int level = -1; // not found
-	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	auto itt = options.find("LevelNames");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
 		std::string sOptions = itt->second;
@@ -2358,7 +2362,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, co
 * Returns the action associated with a level
 */
 std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string>& options, const int level) {
-	std::map< std::string, std::string >::const_iterator itt = options.find("LevelActions");
+	auto itt = options.find("LevelActions");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level action...");
 		std::string sOptions = itt->second;
@@ -3954,6 +3958,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_S0SmartMeterTCP:
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
+	case HTYPE_MQTTAutoDiscovery:
 		return true;
 	default:
 		return false;

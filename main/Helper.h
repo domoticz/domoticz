@@ -11,7 +11,8 @@ enum _eTimeFormat
 	TF_DateTimeMs	// 3
 };
 
-unsigned int Crc32(unsigned int crc, const unsigned char* buf, size_t size);
+uint8_t Crc8(uint8_t crc, const uint8_t* buf, size_t size);
+unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size);
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 uint64_t hexstrtoui64(const std::string &str);
 std::string ToHexString(const uint8_t *pSource, size_t length);
@@ -27,6 +28,24 @@ void stdlower(std::wstring& inoutstring);
 
 std::string utf8_to_string(const std::string &utf8str);
 std::wstring utf8_to_wstring(const std::string &utf8str);
+
+template<class T>
+std::string std_map_to_string(const T m)
+{
+	if (m.empty())
+		return "{ <empty!> }";
+	std::string ret;
+	for (const auto itt : m)
+	{
+		if (ret.empty())
+			ret = "{ ";
+		else
+			ret += ", ";
+		ret += itt.first;
+	}
+	ret += " }";
+	return ret;
+}
 
 template< typename T > inline
 std::string int_to_hex(T i)

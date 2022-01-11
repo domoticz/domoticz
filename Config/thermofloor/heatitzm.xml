@@ -1,0 +1,95 @@
+<Product Revision="2" xmlns="https://github.com/OpenZWave/open-zwave">
+	<MetaData>
+		<MetaDataItem name="Name">Heatit ZM Single Relay 16A</MetaDataItem>
+		<MetaDataItem name="Description">Heatit ZM Single Relay is a high power relay for in-wall installations.
+		The relay allows you to control connected devices either through your Z-Wave network or via a wired switch. The module is equipped with a 16A relay and has a scene controller functionality.
+
+		The device can withstand a load of max 16A /3600W at 230VAC.
+
+		The Heatit ZM Single Relay has a power metering feature that allows you to monitor the power consumption of your connected devices.  </MetaDataItem>
+		<MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/019B:3500:0004</MetaDataItem>
+		<MetaDataItem id="000A" name="ZWProductPage" type="0004">https://products.z-wavealliance.org/products/4062/</MetaDataItem>
+		<MetaDataItem name="ProductPic">images/thermofloor/heatitzm.png</MetaDataItem>
+		<MetaDataItem id="000A" name="Identifier" type="0004">ZM Single Relay 16A</MetaDataItem>
+		<MetaDataItem name="InclusionDescription">Tripple Click the button</MetaDataItem>
+		<MetaDataItem id="000A" name="FrequencyName" type="0004">CEPT (Europe)</MetaDataItem>
+		<MetaDataItem name="ExclusionDescription">Tripple Click the button</MetaDataItem>
+		<MetaDataItem name="ProductManual">https://products.z-wavealliance.org/ProductManual/File?folder=&amp;filename=product_documents/4062/Manual_Heatit%20ZM%20Single%20Relay%2016A_Ver%202020-A_ENG.pdf</MetaDataItem>
+		<MetaDataItem name="ResetDescription">This device allows reset without any involvement of a Z-Wave controller.</MetaDataItem>
+		<ChangeLog>
+			<Entry author="Hans Rune Bue - email@hansrune.net" date="05 Dec 2021" revision="1">Initial version</Entry>
+			<Entry author="Hans Rune Bue - email@hansrune.net" date="06 Dec 2021" revision="2">Multiline help texts revised</Entry>
+		</ChangeLog>
+	</MetaData>
+	<CommandClass id="112">
+		<Value genre="config" index="1" instance="1" label="Load limit" max="16" min="1" size="1" type="byte" units="Ampere" value="16">
+			<Help>Ensures that the device does not draw more current than rated. Immunity for power consumption peaks</Help>
+		</Value>
+		<Value genre="config" index="2" instance="1" label="Power shutdown actions" size="2" min="0" type="short" max="32767" value="20">
+			<Help>
+			Decide how the device should react when the overload/overheating features has turned relay OFF:
+			0 - Disabled and will not retry. User needs to manually turn on afterwards. If temperature overload is on, device will not turn on until device has cooled down
+			>= 1 - After power shut down (param 1) device will try to turn back ON after delay specified here. (Time in minutes)
+			</Help>
+		</Value>
+		<Value genre="config" index="3" instance="1" label="Switch type" size="1" type="list" value="0">
+			<Help>Momentary or toggle switch</Help>
+			<Item label="Momentary" value="0"/>
+			<Item label="Toggle" value="1"/>
+		</Value>
+		<Value genre="config" index="4" instance="1" label="S1/Button operation" size="1" type="list" value="0">
+			<Help>S1 button operation </Help>
+			<Item label="Button turns load on/off and sends Meter report + Relay status" value="0"/>
+			<Item label="Button sends Meter report + Relay status, load can be only controlled wirelessly" value="1"/>
+		</Value>
+		<Value genre="config" index="5" instance="1" label="Scene notifications" size="1" type="list" value="0">
+			<Help>Decides if/what scene controller notifications the device sends to gateway </Help>
+			<Item label="Sends scene controller for S2. S1 disabled" value="0"/>
+			<Item label="Sends scene controller for S1. S2 disabled" value="1"/>
+			<Item label="Sends scene controller for S1 and S2" value="2"/>
+			<Item label="Scene controller deactivated" value="3"/>
+		</Value>
+		<Value genre="config" index="6" instance="1" label="Restore Power Level" size="1" type="list" value="2">
+			<Help>
+			Relay power level after power is restored from power-outage.
+			When device is from factory/factory reset the first state of the device should be OFF
+			</Help>
+			<Item label="Always OFF on restored power" value="0"/>
+			<Item label="Always ON on restored power" value="1"/>
+			<Item label="Restore last state on restored power (Default)" value="2"/>
+		</Value>
+		<Value genre="config" index="7" instance="1" label="Automatic Turn off" size="4" min="0" max="86400" type="int" value="0" units="seconds"> 
+			<Help>
+			0 for auto off disabled (default)
+			1-86400 for auto-off timeout in seconds
+			</Help>
+		</Value>
+		<Value genre="config" index="8" instance="1" label="Automatic Turn on" size="4" min="0" max="86400" type="int" value="0" units="seconds"> 
+			<Help>
+			0 for auto on disabled (default)
+			1-86400 for auto-on timeout in seconds
+			</Help>
+		</Value>
+		<Value genre="config" index="9" instance="1" label="Inverted Output" size="1" type="list" value="0">
+			<Help> Decides if the relay output should be inverted </Help>
+			<Item label="False" value="0"/>
+			<Item label="True" value="1"/>
+		</Value>
+		<Value genre="config" index="10" instance="1" label="Meter report interval" size="2" type="short" min="30" max="32767" value="900" units="seconds"> 
+			<Help>Time interval between consecutive meter reports. Meter reports can also be sent as a result of polling</Help>
+		</Value>
+		<Value genre="config" index="11" instance="1" label="Meter report delta value" size="2" type="short" min="5" max="3600" value="75" units="watts"> 
+			<Help>Meter report delta value</Help>
+		</Value>
+	</CommandClass>
+		<!-- Association Groups -->
+		<CommandClass id="133">
+		<Associations num_groups="5">
+			<Group index="1" label="Lifeline" max_associations="5"/>
+			<Group index="2" label="External Relay Control S1" max_associations="5"/>
+			<Group index="3" label="Control External Start/Stop S2" max_associations="5"/>
+			<Group index="4" label="External Relay Control S2" max_associations="5"/>
+			<Group index="5" label="Control External Start/Stop S2" max_associations="5"/>
+		</Associations>
+	</CommandClass>
+</Product>

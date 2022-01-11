@@ -64,7 +64,7 @@ return {
 
 		if (data.lastUpdate == '' or data.lastUpdate == nil) then
 			if data.baseType ~= 'camera' and data.baseType ~= 'hardware' then
-				utils.log('Discarding device. No last update info found: ' .. utils._.str(data), utils.LOG_DEBUG)
+				utils.log('Discarding device. No last update info found: ' .. utils.toStr(data), utils.LOG_DEBUG)
 			end
 			return nil
 		end

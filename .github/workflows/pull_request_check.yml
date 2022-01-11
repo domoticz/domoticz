@@ -19,12 +19,33 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # Prepare environment
+      - name: prepare environment
+        run: |
+          sudo timedatectl set-timezone Europe/Amsterdam
+          if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
+            echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+            echo "PRNUMBER=$(echo ${GITHUB_EVENT_ISSUE_NUMBER})" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+            echo "PRNUMBER=$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
+          fi
+          buildnr=$(git rev-list HEAD --count)
+          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
 
       # install dependencies
       - name: dependencies
         run: |
-          sudo apt-get update && sudo apt-get install
+          sudo apt-get update && sudo apt-get --autoremove upgrade
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+          sudo apt-get install python3-pytest python3-pytest-bdd
+          sudo apt-get install lua5.3 luarocks
+          sudo luarocks install busted
+          sudo luarocks install luacov
+          sudo luarocks install lodash
 
       # get CMake
       - name: cmake-compile
@@ -48,7 +69,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           cd ..
-          git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
           cd open-zwave-read-only
           make
           sudo make install >> /dev/null 2>&1
@@ -59,3 +80,33 @@ jobs:
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
+
+      # Run automated tests
+      - name: unit-tests domoticz-dzVents
+        run: |
+          cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+          busted --coverage -o TAP *
+          luacov
+          tail -19 luacov.report.out
+        continue-on-error: true
+
+      - name: functional-tests domoticz
+        run: |
+          cd $GITHUB_WORKSPACE
+          ln -s ../test/gherkin/resources/testwebcontent www/test
+          sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+          pytest-3 -rA --tb=no test/gherkin/
+          sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
+        continue-on-error: true
+
+      # Upload artifacts
+      #- uses: actions/upload-artifact@v2
+      #  with:
+      #    name: Domoticz-${{ env.BUILDNR }}-${{ env.BRANCH_NAME }}
+      #    path: |
+      #      domoticz
+      #      appversion.h.txt
+      #      www/
+      #      lib/
+      #      !**/*.tar.gz
+      #    retention-days: 7

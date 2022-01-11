@@ -1,8 +1,8 @@
-<!-- 
+<!--
 Aeotec ZW100 MultiSensor 6
 https://aeotec.freshdesk.com/helpdesk/attachments/6028954764
 V1.10 + V1.11 (12/14/2017)
---><Product Revision="24" xmlns="https://github.com/OpenZWave/open-zwave">
+--><Product Revision="25" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:0064:0102</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw100.png</MetaDataItem>
@@ -25,6 +25,7 @@ V1.10 + V1.11 (12/14/2017)
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="22">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2684/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="23">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2695/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="24">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2714/xml</Entry>
+      <Entry author="Mark Ruys - mark@paracas.nl" date="10 Apr 2021" revision="25">Updated parameter 41 documentation based on https://help.aeotec.com/support/solutions/articles/6000219267-set-parameter-41-in-fibaro-home-center</Entry>
     </ChangeLog>
     <MetaDataItem id="0064" name="ZWProductPage" type="0002">https://products.z-wavealliance.org/products/2714/</MetaDataItem>
     <MetaDataItem id="0064" name="Identifier" type="0002">ZW100-C</MetaDataItem>
@@ -78,22 +79,23 @@ V1.10 + V1.11 (12/14/2017)
 			Value=10 to 50.</Help>
     </Value>
     <Value genre="config" index="40" label="Report Only On Thresholds" max="1" min="0" size="1" type="list" value="0">
-      <Help>Enable/disable the selective reporting only when measurements reach a certain threshold or percentage 
+      <Help>Enable/disable the selective reporting only when measurements reach a certain threshold or percentage
 			set in the threshold settings.  This is used to reduce network
 			traffic.</Help>
       <Item label="Disabled" value="0"/>
       <Item label="Enabled" value="1"/>
     </Value>
-    <Value genre="config" index="41" label="Temperature Reporting Threshold" max="39321" min="0" size="4" type="int" units="C/F" value="20">
-      <Help>Threshold change in temperature to induce an automatic report.  
-			Note: 
-			1. The unit is Fahrenheit for US version, Celsius for EU/AU version.
-			2. The value contains one decimal point. E.g. if the value is set to 20, the threshold value = 2.0 C (EU/AU) or 2.0 F (US). When the temperature has changed by 2.0 (of the appropriate unit), a temperature report will be sent.
-			</Help>
+    <Value genre="config" index="41" label="Temperature Reporting Threshold" min="655616" max="8323584" size="4" type="int" units="C/F" value="1310976">
+      <Help>Threshold change in temperature to induce an automatic report. In hexadecimal, the value should be in the form 0xAABBCCDD (firmware 1.10 and up) or 0xAABBCC (older firmware):
+			1. AA should be 00
+			2. BB contains the temperature threshold with one decimal point. E.g. if the value is set to 0x14 (20 decimal), the threshold value is 2.0 degrees. So when the temperature has changed by 2.0 degrees, a temperature report will be sent.
+			3. CC contains the unit: 01 for Celsius, 02 for Fahrenheit
+			4. DD should be 00
+			Example: decimal 1310976 is hexadecimal 0x140100, so 0x14 is 20 decimal, hence a change of 2.0 degree Celsius will trigger a notification report.</Help>
     </Value>
     <Value genre="config" index="42" label="Humidity Reporting Threshold" max="100" min="0" size="1" type="byte" units="%" value="10">
-      <Help>Threshold change in humidity to induce an automatic report. 
-			Note: 
+      <Help>Threshold change in humidity to induce an automatic report.
+			Note:
 			1. The unit is %.
 			2. The default value is 10, which means that a 10% change in humidity will trigger a report.
 			</Help>
@@ -102,8 +104,8 @@ V1.10 + V1.11 (12/14/2017)
       <Help>Threshold change in luminance to induce an automatic report.</Help>
     </Value>
     <Value genre="config" index="44" label="Battery Reporting Threshold" max="100" min="0" size="1" type="byte" units="%" value="10">
-      <Help>Threshold change in battery level to induce an  automatic report. 
-			Note: 
+      <Help>Threshold change in battery level to induce an  automatic report.
+			Note:
 			1. The unit is %.
 			2. The default value is 10, which means that a 10% change in battery will trigger a report.
 			</Help>
@@ -121,8 +123,8 @@ V1.10 + V1.11 (12/14/2017)
     <Value bitmask="255" genre="config" index="48" label="Enable/disable to send a report on Threshold" size="1" type="bitset" units="" value="0">
       <Help>
 			Enable/disable to send a report when the measurement is more than the upper limit value or less than the lower limit value.
-			Note: 
-			If USB power, the Sensor will check the limit every 10 seconds. If battery power, the Sensor will check the limit when it is waken up. 
+			Note:
+			If USB power, the Sensor will check the limit every 10 seconds. If battery power, the Sensor will check the limit when it is waken up.
 			</Help>
       <Help lang="fr">French Help</Help>
       <Label lang="fr">Enable/disable to send a report on Threshold-fr</Label>
@@ -175,26 +177,24 @@ V1.10 + V1.11 (12/14/2017)
         <Help lang="fr">Upper Ultraviolet Threshold-fr</Help>
       </BitSet>
     </Value>
-    <Value genre="config" index="49" label="Set the upper limit value of temperature sensor" type="int" value="71681">
+    <Value genre="config" index="49" label="Set the upper limit value of temperature sensor" type="int" size="4" value="18350336">
       <Help>
 			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
-			High byte is the upper limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
-			1. When unit is Celsius.
-			Upper limit range: -40.0 to 100.0 C (0xFE70 to 0x03E8).
+			High two bytes is the upper limit value. Low two (firmware 1.10 and up) or single (older firmware) bytes is the unit (0x0100=Celsius, 0x0200=Fahrenheit).
+			1. When unit is Celsius, upper limit rang is from: -40.0 to 100.0 C (0xFE70 to 0x03E8).
 			E.g. The default upper limit of EU/AU version is 28.0 C (0x0118), when the measurement is more than 28.0C, it will be triggered to send out a temperature sensor report.
-			2. When unit is Fahrenheit.
-			Upper limit range: -40.0 to 212.0 F (0xFE70 to 0x0848).
+			2. When unit is Fahrenheit, upper limit range: -40.0 to 212.0 F (0xFE70 to 0x0848).
 			E.g. The default upper limit of US version is 82.4F (0X0338), when the measurement is more than 82.4F, it will be triggered to send out a temperature sensor report.
 			</Help>
     </Value>
-    <Value genre="config" index="50" label="Set the lower limit value of temperature sensor" type="int" value="1">
+    <Value genre="config" index="50" label="Set the lower limit value of temperature sensor" type="int" size="4" value="256">
       <Help>
 			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
-			High byte is the lower limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
+			High two bytes is the lower limit value. Low two (firmware 1.10 and up) or single (older firmware) bytes is the unit (0x0100=Celsius, 0x0200=Fahrenheit).
 			1. When unit is Celsius.
 			Lower limit range: -40.0 to 100.0 C (0xFE70 to 0x03E8).
 			E.g. The default lower limit of EU/AU version is 0 C (0x0000), when the measurement is less than 0C, it will be triggered to send out a temperature sensor report.
-			2. When unit is Fahrenheit. 
+			2. When unit is Fahrenheit.
 			Upper limit range: -40.0 to 212.0 F (0xFE70 to 0x0848).
 			E.g. The default lower limit of US version is 32.0F (0x0140), when the measurement is less than 32.0F, it will be triggered to send out a temperature sensor report.
 			</Help>
@@ -203,35 +203,35 @@ V1.10 + V1.11 (12/14/2017)
       <Help>
 			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
 			Upper limit range: 0 to 100%.
-			E.g. The default upper limit is 60%, when the measurement is more than 60%, it will be triggered to send out a humidity sensor report. 
+			E.g. The default upper limit is 60%, when the measurement is more than 60%, it will be triggered to send out a humidity sensor report.
 			</Help>
     </Value>
     <Value genre="config" index="52" label="Set the lower limit value of humidity sensor" max="100" min="0" type="byte" units="%" value="50">
       <Help>
 			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
 			Lower limit range: 0 to 100%.
-			E.g. The default lower limit is 50%, when the measurement is less than 50%, it will be triggered to send out a humidity sensor report. 
+			E.g. The default lower limit is 50%, when the measurement is less than 50%, it will be triggered to send out a humidity sensor report.
 			</Help>
     </Value>
     <Value genre="config" index="53" label="Set the upper limit value of Lighting sensor" max="30000" min="0" type="short" units="lux" value="1000">
       <Help>
 			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
 			Upper limit range: 0 to 30000 Lux.
-			E.g. The default upper limit is 1000Lux, when the measurement is more than 1000Lux, it will be triggered to send out a Lighting sensor report. 
+			E.g. The default upper limit is 1000Lux, when the measurement is more than 1000Lux, it will be triggered to send out a Lighting sensor report.
 			</Help>
     </Value>
     <Value genre="config" index="54" label="Set the lower limit value of Lighting sensor" max="30000" min="0" type="short" units="lux" value="100">
       <Help>
 			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
 			Lower limit range: 0 to 30000 Lux.
-			E.g. The default lower limit is 100Lux, when the measurement is less than 100Lux, it will be triggered to send out a Lighting sensor report. 			
+			E.g. The default lower limit is 100Lux, when the measurement is less than 100Lux, it will be triggered to send out a Lighting sensor report.
 			</Help>
     </Value>
     <Value genre="config" index="55" label="Set the upper limit value of ultraviolet sensor" max="11" min="1" type="byte" units="UV" value="8">
       <Help>
 			 When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
 			 Upper limit range: 1 to 11.
-			 E.g. The default upper limit is 8, when the measurement is more than 8, it will be triggered to send out a ultraviolet sensor report. 
+			 E.g. The default upper limit is 8, when the measurement is more than 8, it will be triggered to send out a ultraviolet sensor report.
 			</Help>
     </Value>
     <Value genre="config" index="56" label="Set the lower limit value of ultraviolet sensor" max="11" min="1" type="byte" units="UV" value="4">
@@ -244,9 +244,9 @@ V1.10 + V1.11 (12/14/2017)
     <Value genre="config" index="57" label="Set the recover limit value of temperature sensor" type="short" value="5121">
       <Help>
 			Note:
-			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit.
 			After that, the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit.
 			After that, the lower limit report would be disabled again until the measurement greater or equal (Lower limit + Recover limit).
 			3. High byte is the recover limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
 			4. Recover limit range: 1.0 to 25.5 C/ F (0x0101 to 0xFF01 or 0x0102 to 0xFF02).
@@ -256,20 +256,20 @@ V1.10 + V1.11 (12/14/2017)
     <Value genre="config" index="58" label="Set the recover limit value of humidity sensor" max="255" min="1" type="byte" units="%" value="5">
       <Help>
 			 Note:
-			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit.
 			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit.
 			After that the lower limit report would be disabled again until the measurement greater or equal(Lower limit + Recover limit).
 			3. Recover limit range: 1 to 50% (0x01 to 0x32).
-			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
+			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time.
 			</Help>
     </Value>
     <Value genre="config" index="59" label="Set the recover limit value of Lighting sensor" max="255" min="1" type="byte" units="10xlux" value="10">
       <Help>
 			Note:
-			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit.
 			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit.
 			After that the lower limit report would be disabled again until the measurement greater or equal (Lower limit + Recover limit).
 			3. Unit = 10*Recover limit (Lux)
 			4. Recover limit range: 10 to 2550Lux (0x01 to 0xFF).
@@ -279,12 +279,12 @@ V1.10 + V1.11 (12/14/2017)
     <Value genre="config" index="60" label="Set the recover limit value of Ultraviolet sensor" max="5" min="1" type="byte" units="UV" value="2">
       <Help>
 			 Note:
-			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit.
 			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit.
 			After that the lower limit report would be disabled again until the measurement greater or equal(Lower limit + Recover limit).
 			3. Recover limit range: 1 to 50% (0x01 to 0x32).
-			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
+			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time.
 			</Help>
     </Value>
     <Value genre="config" index="61" label="Get the out-of-limit state of the Sensors" max="255" min="0" read_only="true" type="byte" units="" value="0">
@@ -398,10 +398,10 @@ V1.10 + V1.11 (12/14/2017)
       <Help>Temperature calibration (the available value range is [-128,127] or [-12.8C,12.7C]).
 			Note:
 			1. High byte is the calibration value. Low byte is the unit (0x01=Celsius,0x02=Fahrenheit)
-			2. The calibration value (high byte) contains one decimal point. 
+			2. The calibration value (high byte) contains one decimal point.
 			E.g. if the value is set to 20 (0x1401), the calibration value is 2.0C (EU/AU version) or if the value is set to 20 (0x1402), the calibration value is 2.0F (US version)
-			3. The calibration value (high byte) = standard value - measure value. 
-			E.g. If measure value =25.3C and the standard value = 23.2C, so the calibration value= 23.2C - 25.3C= -2.1C (0xEB). 
+			3. The calibration value (high byte) = standard value - measure value.
+			E.g. If measure value =25.3C and the standard value = 23.2C, so the calibration value= 23.2C - 25.3C= -2.1C (0xEB).
 			If the measure value =30.1C and the standard value = 33.2C, so the calibration value= 33.2C - 30.1C=3.1C (0x1F).
 			Default value: 1 for EU/AU version, 2 for US version.
 			</Help>
@@ -410,21 +410,21 @@ V1.10 + V1.11 (12/14/2017)
       <Help>The calibration value = standard value - measure value.
 			(the available value range is [-50, 50]).
 			If measure value =80RH and the standard value = 75RH, so the calibration value= 75RH-80RH = -5RH (0xFB).
-			If the measure value =85RH and the standard value = 90RH, so the calibration value= 90RH-85RH = 5RH (0x05).  
+			If the measure value =85RH and the standard value = 90RH, so the calibration value= 90RH-85RH = 5RH (0x05).
 			</Help>
     </Value>
     <Value genre="config" index="203" label="Luminance Calibration" max="65535" min="0" type="short" value="0">
-      <Help>The calibration value = standard value - measure value. 
+      <Help>The calibration value = standard value - measure value.
 			(the available value range is [-1000, 1000]).
-			If measure value =800Lux and the standard value = 750Lux, so the calibration value= 750-800 = -50 (0xFFCE). 
-			If the measure value =850Lux and the standard value = 900Lux, so the calibration value= 900-850 = 50 (0x0032). 
+			If measure value =800Lux and the standard value = 750Lux, so the calibration value= 750-800 = -50 (0xFFCE).
+			If the measure value =850Lux and the standard value = 900Lux, so the calibration value= 900-850 = 50 (0x0032).
 			</Help>
     </Value>
     <Value genre="config" index="204" label="Ultraviolet Calibration" max="255" min="0" type="byte" value="0">
-      <Help>The calibration value = standard value measure value. 
+      <Help>The calibration value = standard value measure value.
 			(the available value range is [-10, 10]).
-			If measure value =9 and the standard value = 8, so the calibration value= 8-9 = -1 (0xFE). 
-			If the measure value =7 and the standard value = 9, so the calibration value= 9-7 = 2 (0x02).  
+			If measure value =9 and the standard value = 8, so the calibration value= 8-9 = -1 (0xFE).
+			If the measure value =7 and the standard value = 9, so the calibration value= 9-7 = 2 (0x02).
 			</Help>
     </Value>
     <Value genre="config" index="252" label="Enable/disable Lock Configuration" max="1" min="0" size="1" type="list" units="" value="0">

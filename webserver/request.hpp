@@ -64,8 +64,8 @@ public:
 	static std::string print(const request *preq) {
 		std::string buffer;
 		buffer.append("[\n");
-		std::multimap<std::string, std::string>::const_iterator iter;
-		for (iter = preq->parameters.begin(); iter != preq->parameters.end(); ++iter) {
+		for (auto iter = preq->parameters.begin(); iter != preq->parameters.end(); ++iter)
+		{
 			buffer.append((*iter).first);
 			buffer.append(":");
 			buffer.append((*iter).second);
@@ -92,8 +92,7 @@ public:
 			const char* name) {
 		std::string ret;
 		ret = "";
-		std::multimap<std::string, std::string>::const_iterator iter;
-		iter = values->find(name);
+		auto iter = values->find(name);
 		if (iter != values->end()) {
 			try {
 				ret = iter->second;
@@ -105,8 +104,7 @@ public:
 	}
 
 	static bool hasValue(const request *preq, const char* name) {
-		std::multimap<std::string, std::string>::const_iterator iter;
-		iter = preq->parameters.find(name);
+		auto iter = preq->parameters.find(name);
 		return (iter != preq->parameters.end());
 	}
 

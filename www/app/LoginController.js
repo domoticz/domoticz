@@ -12,7 +12,7 @@ define(['app'], function (app) {
 			fd.append('username', musername);
 			fd.append('password', mpassword);
 			fd.append('rememberme', bRememberMe);
-			$http.post('logincheck', fd, {
+			$http.post('json.htm?type=command&param=logincheck', fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {

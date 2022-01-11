@@ -1291,8 +1291,8 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 					m_pManager->GetValueListItems(vID, &vStringList);
 					if (svalue == 255)
 					{
-						// Aeotec DoorBell 6 only
-						if ((pDevice->Manufacturer_id == 0x0371) && (pDevice->Product_id == 0x00a2) && (pDevice->Product_type == 0x0003))
+						// Aeotec DoorBell 6 & Indoor Siren 6 only
+						if ((pDevice->Manufacturer_id == 0x0371) && ((pDevice->Product_id == 0x00a2)|| (pDevice->Product_id == 0x00a4)) && (pDevice->Product_type == 0x0003))
 						{
 							m_pManager->SetValueListSelection(vID, vStringList[31]); //default tone
 							pDevice->intvalue = 255;

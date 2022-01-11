@@ -286,33 +286,32 @@ void CTellstick::ThreadSendCommands()
         std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
         auto nextTime = now + m_repeatInterval;
 
-        for (std::map<int, Command>::iterator it = m_commands.begin();
-             it != m_commands.end();
-             /* no increment */)
-        {
-            if (it->second.repeatTimePoint > now)
-            {
-                ++it;
-                continue;
-            }
+	for (auto it = m_commands.begin(); it != m_commands.end();
+	     /* no increment */)
+	{
+		if (it->second.repeatTimePoint > now)
+		{
+			++it;
+			continue;
+		}
 
-            SendCommand(it->first, it->second.genSwitch);
-            ++it->second.repeat;
-            if (it->second.repeat > m_numRepeats)
-                it = m_commands.erase(it);
-            else
-            {
-                it->second.repeatTimePoint += m_repeatInterval;
-                if (it->second.repeatTimePoint < nextTime)
-                    nextTime = it->second.repeatTimePoint;
-                ++it;
-            }
-        }
+		SendCommand(it->first, it->second.genSwitch);
+		++it->second.repeat;
+		if (it->second.repeat > m_numRepeats)
+			it = m_commands.erase(it);
+		else
+		{
+			it->second.repeatTimePoint += m_repeatInterval;
+			if (it->second.repeatTimePoint < nextTime)
+				nextTime = it->second.repeatTimePoint;
+			++it;
+		}
+	}
 
-        if (m_commands.empty())
-            m_cond.wait(lock);
-        else
-            m_cond.wait_until(lock, nextTime);
+	if (m_commands.empty())
+		m_cond.wait(lock);
+	else
+		m_cond.wait_until(lock, nextTime);
     }
 }
 

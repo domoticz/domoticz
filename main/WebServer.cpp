@@ -261,7 +261,7 @@ namespace http
 			int tries = 0;
 			bool exception = false;
 
-			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
+			_log.Debug(DEBUG_WEBSERVER, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
 			do
 			{
 				try
@@ -337,15 +337,20 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto &&content_part) { DisplayLanguageCombo(content_part); });
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
+			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
+			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
+			m_pWebEm->RegisterPageCode("/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
 			m_pWebEm->RegisterPageCode("/uploadcustomicon", [this](auto &&session, auto &&req, auto &&rep) { Post_UploadCustomIcon(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto &&session, auto &&req, auto &&rep) { GetCameraSnapshot(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/storesettings", [this](auto &&session, auto &&req, auto &&rep) { PostSettings(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", [this](auto &&session, auto &&req, auto &&rep) { GetDatabaseBackup(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", [this](auto &&session, auto &&req, auto &&rep) { GetCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
+			// Maybe handle these differently? (Or remove)
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", [this](auto &&session, auto &&req, auto &&rep) { GetFloorplanImage(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
+			// End of 'Pages' to be moved...
 
-			m_pWebEm->RegisterPageCode("/storesettings", [this](auto &&session, auto &&req, auto &&rep) { PostSettings(session, req, rep); });
 			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
 			m_pWebEm->RegisterActionCode("rfxupgradefirmware", [this](auto &&session, auto &&req, auto &&redirect_uri) { RFXComUpgradeFirmware(session, req, redirect_uri); });
 			RegisterCommandCode(
@@ -370,24 +375,23 @@ namespace http
 			RegisterCommandCode(
 				"getlanguage", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguage(session, req, root); }, true);
 			RegisterCommandCode(
+				"getlanguages", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLanguages(session, req, root); }, true);
+			RegisterCommandCode(
 				"getthemes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetThemes(session, req, root); }, true);
 			RegisterCommandCode(
 				"gettitle", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetTitle(session, req, root); }, true);
-
 			RegisterCommandCode(
 				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
-			m_pWebEm->RegisterPageCode(
-				"/logincheck", [this](auto &&session, auto &&req, auto &&rep) { PostLoginCheck(session, req, rep); }, true);
-
 			RegisterCommandCode(
 				"getversion", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetVersion(session, req, root); }, true);
-			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
-			RegisterCommandCode("clearlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearLog(session, req, root); });
 			RegisterCommandCode(
 				"getauth", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetAuth(session, req, root); }, true);
 			RegisterCommandCode(
 				"getuptime", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetUptime(session, req, root); }, true);
 
+			RegisterCommandCode("storesettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_PostSettings(session, req, root); });
+			RegisterCommandCode("getlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLog(session, req, root); });
+			RegisterCommandCode("clearlog", [this](auto &&session, auto &&req, auto &&root) { Cmd_ClearLog(session, req, root); });
 			RegisterCommandCode("gethardwaretypes", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetHardwareTypes(session, req, root); });
 			RegisterCommandCode("addhardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddHardware(session, req, root); });
 			RegisterCommandCode("updatehardware", [this](auto &&session, auto &&req, auto &&root) { Cmd_UpdateHardware(session, req, root); });
@@ -508,8 +512,7 @@ namespace http
 			RegisterCommandCode("getactualhistory", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetActualHistory(session, req, root); });
 			RegisterCommandCode("getnewhistory", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetNewHistory(session, req, root); });
 
-			RegisterCommandCode(
-				"getconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetConfig(session, req, root); }, true);
+			RegisterCommandCode("getconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetConfig(session, req, root); }, true);
 			RegisterCommandCode("getlocation", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetLocation(session, req, root); });
 			RegisterCommandCode("getforecastconfig", [this](auto &&session, auto &&req, auto &&root) { Cmd_GetForecastConfig(session, req, root); });
 			RegisterCommandCode("sendnotification", [this](auto &&session, auto &&req, auto &&root) { Cmd_SendNotification(session, req, root); });
@@ -582,6 +585,8 @@ namespace http
 
 			RegisterCommandCode("addArilux", [this](auto &&session, auto &&req, auto &&root) { Cmd_AddArilux(session, req, root); });
 
+			RegisterCommandCode("tellstickApplySettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_TellstickApplySettings(session, req, root); });
+
 			RegisterRType("graph", [this](auto &&session, auto &&req, auto &&root) { RType_HandleGraph(session, req, root); });
 			RegisterRType("lightlog", [this](auto &&session, auto &&req, auto &&root) { RType_LightLog(session, req, root); });
 			RegisterRType("textlog", [this](auto &&session, auto &&req, auto &&root) { RType_TextLog(session, req, root); });
@@ -622,6 +627,7 @@ namespace http
 			RegisterRType("custom_light_icons", [this](auto &&session, auto &&req, auto &&root) { RType_CustomLightIcons(session, req, root); });
 			RegisterRType("plans", [this](auto &&session, auto &&req, auto &&root) { RType_Plans(session, req, root); });
 			RegisterRType("floorplans", [this](auto &&session, auto &&req, auto &&root) { RType_FloorPlans(session, req, root); });
+
 #ifdef WITH_OPENZWAVE
 			// ZWave
 			RegisterCommandCode("updatezwavenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_ZWaveUpdateNode(session, req, root); });
@@ -677,7 +683,6 @@ namespace http
 			// pollpost.html
 			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
-			RegisterCommandCode("tellstickApplySettings", [this](auto &&session, auto &&req, auto &&root) { Cmd_TellstickApplySettings(session, req, root); });
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
@@ -812,7 +817,6 @@ namespace http
 							for (const auto &file : _ThemeFiles)
 							{
 								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
-								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + '\n';
 							}
 							continue;
@@ -903,6 +907,16 @@ namespace http
 			}
 		}
 
+		void CWebServer::Cmd_GetLanguages(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			root["title"] = "GetLanguages";
+			for (auto &lang : guiLanguage)
+			{
+				root["result"][lang.first] = lang.second;
+			}
+			root["status"] = "OK";
+		}
+
 		void CWebServer::Cmd_GetThemes(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -927,9 +941,11 @@ namespace http
 				root["Title"] = "Domoticz";
 		}
 
-		// PostSettings
+		// Depricated : This 'page' should not be used anymore. Use command instead
 		void CWebServer::PostLoginCheck(WebEmSession &session, const request &req, reply &rep)
 		{
+			_log.Log(LOG_NORM, "Depricated: Page LoginCheck! Use command instead!");
+
 			Json::Value root;
 			Cmd_LoginCheck(session, req, root);
 
@@ -1135,7 +1151,7 @@ namespace http
 				if (address.empty() || port == 0)
 					return;
 
-				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT)
+				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT || htype == HTYPE_MQTTAutoDiscovery)
 				{
 					std::string modeqStr = request::findValue(&req, "mode1");
 					if (!modeqStr.empty())
@@ -1519,7 +1535,7 @@ namespace http
 			}
 			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				 (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
-				 (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) ||
+				 (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_MQTTAutoDiscovery) || (htype == HTYPE_TTN_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				 (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) ||
 				 (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
 				 (htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) || (htype == HTYPE_NefitEastLAN) ||
@@ -2937,7 +2953,7 @@ namespace http
 			if (subsystem.empty())
 				subsystem = NOTIFYALL;
 			// Add to queue
-			if (m_notifications.SendMessage(0, std::string(""), subsystem, subject, body, std::string(""), 1, std::string(""), false))
+			if (m_notifications.SendMessage(0, std::string(""), subsystem, std::string(""), subject, body, std::string(""), 1, std::string(""), false))
 			{
 				root["status"] = "OK";
 			}
@@ -4246,11 +4262,12 @@ namespace http
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
-
 				std::string extraData = request::findValue(&req, "extradata");
 
+				std::string scustomaction = base64_decode(request::findValue(&req, "taction"));
+
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, extraData, 1, std::string(""), false))
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, scustomaction, notification_Title, notification_Message, extraData, 1, std::string(""), false))
 				{
 					root["status"] = "OK";
 				}
@@ -4280,52 +4297,46 @@ namespace http
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
+
 				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != nullptr && !pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
 				{
 					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
 				}
-				else if (lighttype == 70)
+				else if (lighttype < 20)
 				{
-					// EnOcean (Lighting2 with Base_ID offset)
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
+					dtype = pTypeLighting1;
+					subtype = lighttype;
+					std::string shousecode = request::findValue(&req, "housecode");
 					sunitcode = request::findValue(&req, "unitcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+					if ((shousecode.empty()) || (sunitcode.empty()))
 						return;
-					sunitcode = sgroupcode; // Button A or B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == nullptr)
+					devid = shousecode;
+				}
+				else if (lighttype < 30)
+				{
+					dtype = pTypeLighting2;
+					subtype = lighttype - 20;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) && (pBaseHardware->HwdType != HTYPE_USBtinGateway))
+					devid = id;
+				}
+				else if (lighttype < 68)
+				{
+					dtype = pTypeLighting5;
+					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					unsigned long rID = 0;
-					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
-					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
-					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
-					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
-						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
-						// for exemple see MultiblocV8 layer...
-						rID = pUSBtinHardware->switch_id_base;
-						std::stringstream ssunitcode;
-						ssunitcode << iUnitTest;
-						sunitcode = ssunitcode.str();
-					}
-					// convert to hex, and we have our ID
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << rID;
-					devid = s_strid.str();
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
+						devid = "00" + id;
+					else
+						devid = id;
 				}
 				else if (lighttype == 68)
 				{
@@ -4419,405 +4430,409 @@ namespace http
 					return;
 #endif
 				}
-				else if (lighttype < 20)
+				else if (lighttype == 70)
 				{
-					dtype = pTypeLighting1;
-					subtype = lighttype;
+					// EnOcean (Lighting2 with Base_ID offset)
+					dtype = pTypeLighting2;
+					subtype = sTypeAC;
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					int iUnitTest = atoi(sunitcode.c_str()); // only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+						return;
+					sunitcode = sgroupcode; // Button A or B
+					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					if (pBaseHardware == nullptr)
+						return;
+					unsigned long rID = 0;
+					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
+					{
+						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
+					{
+						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
+					{
+						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
+						// for exemple see MultiblocV8 layer...
+						rID = pUSBtinHardware->switch_id_base;
+						std::stringstream ssunitcode;
+						ssunitcode << iUnitTest;
+						sunitcode = ssunitcode.str();
+					}
+					else
+						return;
+					// convert to hex, and we have our ID
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << rID;
+					devid = s_strid.str();
+				}
+				else if (lighttype == 100)
+				{
+					// Chime/ByronSX
+					dtype = pTypeChime;
+					subtype = sTypeByronSX;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str()) - 1;
+					switch (iUnitCode)
+					{
+						case 0:
+							iUnitCode = chime_sound0;
+							break;
+						case 1:
+							iUnitCode = chime_sound1;
+							break;
+						case 2:
+							iUnitCode = chime_sound2;
+							break;
+						case 3:
+							iUnitCode = chime_sound3;
+							break;
+						case 4:
+							iUnitCode = chime_sound4;
+							break;
+						case 5:
+							iUnitCode = chime_sound5;
+							break;
+						case 6:
+							iUnitCode = chime_sound6;
+							break;
+						case 7:
+							iUnitCode = chime_sound7;
+							break;
+					}
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
+				}
+				else if (lighttype == 101)
+				{
+					// Curtain Harrison
+					dtype = pTypeCurtain;
+					subtype = sTypeHarrison;
 					std::string shousecode = request::findValue(&req, "housecode");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((shousecode.empty()) || (sunitcode.empty()))
 						return;
 					devid = shousecode;
 				}
-				else if (lighttype < 30)
+				else if (lighttype == 102)
 				{
-					dtype = pTypeLighting2;
-					subtype = lighttype - 20;
+					// RFY
+					dtype = pTypeRFY;
+					subtype = sTypeRFY;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return;
 					devid = id;
 				}
-				else if (lighttype < 70)
+				else if (lighttype == 103)
 				{
-					dtype = pTypeLighting5;
-					subtype = lighttype - 50;
-					if (lighttype == 59)
-						subtype = sTypeIT;
+					// Meiantech
+					dtype = pTypeSecurity1;
+					subtype = sTypeMeiantech;
+					std::string id = request::findValue(&req, "id");
+					if ((id.empty()))
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 104)
+				{
+					// HE105
+					dtype = pTypeThermostat2;
+					subtype = sTypeHE105;
+					sunitcode = request::findValue(&req, "unitcode");
+					if (sunitcode.empty())
+						return;
+					// convert to hex, and we have our Unit Code
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << sunitcode;
+					int iUnitCode;
+					s_strid >> iUnitCode;
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = "1";
+				}
+				else if (lighttype == 105)
+				{
+					// ASA
+					dtype = pTypeRFY;
+					subtype = sTypeASA;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
-						devid = "00" + id;
-					else
-						devid = id;
+					devid = id;
 				}
-				else
+				else if (lighttype == 106)
 				{
-					if (lighttype == 100)
-					{
-						// Chime/ByronSX
-						dtype = pTypeChime;
-						subtype = sTypeByronSX;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str()) - 1;
-						switch (iUnitCode)
-						{
-							case 0:
-								iUnitCode = chime_sound0;
-								break;
-							case 1:
-								iUnitCode = chime_sound1;
-								break;
-							case 2:
-								iUnitCode = chime_sound2;
-								break;
-							case 3:
-								iUnitCode = chime_sound3;
-								break;
-							case 4:
-								iUnitCode = chime_sound4;
-								break;
-							case 5:
-								iUnitCode = chime_sound5;
-								break;
-							case 6:
-								iUnitCode = chime_sound6;
-								break;
-							case 7:
-								iUnitCode = chime_sound7;
-								break;
-						}
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if (lighttype == 101)
-					{
-						// Curtain Harrison
-						dtype = pTypeCurtain;
-						subtype = sTypeHarrison;
-						std::string shousecode = request::findValue(&req, "housecode");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((shousecode.empty()) || (sunitcode.empty()))
-							return;
-						devid = shousecode;
-					}
-					else if (lighttype == 102)
-					{
-						// RFY
-						dtype = pTypeRFY;
-						subtype = sTypeRFY;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 103)
-					{
-						// Meiantech
-						dtype = pTypeSecurity1;
-						subtype = sTypeMeiantech;
-						std::string id = request::findValue(&req, "id");
-						if ((id.empty()))
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 104)
-					{
-						// HE105
-						dtype = pTypeThermostat2;
-						subtype = sTypeHE105;
-						sunitcode = request::findValue(&req, "unitcode");
-						if (sunitcode.empty())
-							return;
-						// convert to hex, and we have our Unit Code
-						std::stringstream s_strid;
-						s_strid << std::hex << std::uppercase << sunitcode;
-						int iUnitCode;
-						s_strid >> iUnitCode;
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = "1";
-					}
-					else if (lighttype == 105)
-					{
-						// ASA
-						dtype = pTypeRFY;
-						subtype = sTypeASA;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 106)
-					{
-						// Blyss
-						dtype = pTypeLighting6;
-						subtype = sTypeBlyss;
-						std::string sgroupcode = request::findValue(&req, "groupcode");
-						sunitcode = request::findValue(&req, "unitcode");
-						std::string id = request::findValue(&req, "id");
-						if ((sgroupcode.empty()) || (sunitcode.empty()) || (id.empty()))
-							return;
-						devid = id + sgroupcode;
-					}
-					else if (lighttype == 107)
-					{
-						// RFY2
-						dtype = pTypeRFY;
-						subtype = sTypeRFY2;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if ((lighttype >= 200) && (lighttype < 300))
-					{
-						dtype = pTypeBlinds;
-						subtype = lighttype - 200;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if (lighttype == 301)
-					{
-						// Smartwares Radiator
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwaresSwitchRadiator;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 302)
-					{
-						// Home Confort
-						dtype = pTypeHomeConfort;
-						subtype = sTypeHomeConfortTEL010;
-						std::string id = request::findValue(&req, "id");
+					// Blyss
+					dtype = pTypeLighting6;
+					subtype = sTypeBlyss;
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					if ((sgroupcode.empty()) || (sunitcode.empty()) || (id.empty()))
+						return;
+					devid = id + sgroupcode;
+				}
+				else if (lighttype == 107)
+				{
+					// RFY2
+					dtype = pTypeRFY;
+					subtype = sTypeRFY2;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if ((lighttype >= 200) && (lighttype < 300))
+				{
+					dtype = pTypeBlinds;
+					subtype = lighttype - 200;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
+				}
+				else if (lighttype == 301)
+				{
+					// Smartwares Radiator
+					dtype = pTypeRadiator1;
+					subtype = sTypeSmartwaresSwitchRadiator;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 302)
+				{
+					// Home Confort
+					dtype = pTypeHomeConfort;
+					subtype = sTypeHomeConfortTEL010;
+					std::string id = request::findValue(&req, "id");
 
-						std::string shousecode = request::findValue(&req, "housecode");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
-							return;
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
+						return;
 
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
-						shousecode = szTmp;
-						devid = id + shousecode;
-					}
-					else if (lighttype == 303)
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+					shousecode = szTmp;
+					devid = id + shousecode;
+				}
+				else if (lighttype == 303)
+				{
+					// Selector Switch
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeSelector;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 304)
+				{
+					// Itho CVE RFT
+					dtype = pTypeFan;
+					subtype = sTypeItho;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 305)
+				{
+					// Lucci Air/DC
+					dtype = pTypeFan;
+					subtype = sTypeLucciAir;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 306)
+				{
+					// Lucci Air DC
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDC;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 307)
+				{
+					// Westinghouse
+					dtype = pTypeFan;
+					subtype = sTypeWestinghouse;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 308)
+				{
+					// Casafan
+					dtype = pTypeFan;
+					subtype = sTypeCasafan;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 309)
+				{
+					// FT1211R
+					dtype = pTypeFan;
+					subtype = sTypeFT1211R;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 310)
+				{
+					// Falmec
+					dtype = pTypeFan;
+					subtype = sTypeFalmec;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 311)
+				{
+					// Lucci Air DC II
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDCII;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 312)
+				{
+					// Itho ECO
+					dtype = pTypeFan;
+					subtype = sTypeIthoECO;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 313)
+				{
+					// Novy
+					dtype = pTypeFan;
+					subtype = sTypeNovy;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 400)
+				{
+					// Openwebnet Bus Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 401)
+				{
+					// Openwebnet Bus Lights
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 402)
+				{
+					// Openwebnet Bus Auxiliary
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 403)
+				{
+					// Openwebnet Zigbee Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchBlindsT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 404)
+				{
+					// Light Openwebnet Zigbee
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchLightT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if ((lighttype == 405) || (lighttype == 406))
+				{
+					// Openwebnet Dry Contact / IR Detection
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchContactT1;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 407)
+				{
+					// Openwebnet Bus Custom
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string StrParam1 = request::findValue(&req, "StrParam1");
+					if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
 					{
-						// Selector Switch
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeSelector;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 304)
-					{
-						// Itho CVE RFT
-						dtype = pTypeFan;
-						subtype = sTypeItho;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 305)
-					{
-						// Lucci Air/DC
-						dtype = pTypeFan;
-						subtype = sTypeLucciAir;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 306)
-					{
-						// Lucci Air DC
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDC;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 307)
-					{
-						// Westinghouse
-						dtype = pTypeFan;
-						subtype = sTypeWestinghouse;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 308)
-					{
-						// Casafan
-						dtype = pTypeFan;
-						subtype = sTypeCasafan;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 309)
-					{
-						// FT1211R
-						dtype = pTypeFan;
-						subtype = sTypeFT1211R;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 310)
-					{
-						// Falmec
-						dtype = pTypeFan;
-						subtype = sTypeFalmec;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 311)
-					{
-						// Lucci Air DC II
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDCII;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 312)
-					{
-						// Itho ECO
-						dtype = pTypeFan;
-						subtype = sTypeIthoECO;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 313)
-					{
-						// Novy
-						dtype = pTypeFan;
-						subtype = sTypeNovy;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 400)
-					{
-						// Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 401)
-					{
-						// Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 402)
-					{
-						// Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 403)
-					{
-						// Openwebnet Zigbee Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 404)
-					{
-						// Light Openwebnet Zigbee
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if ((lighttype == 405) || (lighttype == 406))
-					{
-						// Openwebnet Dry Contact / IR Detection
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchContactT1;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 407)
-					{
-						// Openwebnet Bus Custom
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						std::string StrParam1 = request::findValue(&req, "StrParam1");
-						if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
-						{
-							root["message"] = "Some field empty or not valid.";
-							return;
-						}
+						root["message"] = "Some field empty or not valid.";
+						return;
 					}
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
@@ -4971,55 +4986,41 @@ namespace http
 				}
 #endif
 
-				if (lighttype == 70)
+				if (lighttype < 20)
 				{
-					// EnOcean (Lighting2 with Base_ID offset)
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
+					dtype = pTypeLighting1;
+					subtype = lighttype;
+					std::string shousecode = request::findValue(&req, "housecode");
 					sunitcode = request::findValue(&req, "unitcode");
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+					if ((shousecode.empty()) || (sunitcode.empty()))
 						return;
-					sunitcode = sgroupcode; // Button A/B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == nullptr)
+					devid = shousecode;
+				}
+				else if (lighttype < 30)
+				{
+					dtype = pTypeLighting2;
+					subtype = lighttype - 20;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) && (pBaseHardware->HwdType != HTYPE_USBtinGateway))
+					devid = id;
+				}
+				else if (lighttype < 68)
+				{
+					dtype = pTypeLighting5;
+					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					unsigned long rID = 0;
-					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
-					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
-						if (pEnoceanHardware->m_id_base == 0)
-						{
-							root["message"] = "BaseID not found, is the hardware running?";
-							return;
-						}
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
-					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
-						if (pEnoceanHardware->m_id_base == 0)
-						{
-							root["message"] = "BaseID not found, is the hardware running?";
-							return;
-						}
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
-					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
-						rID = pUSBtinHardware->switch_id_base;
-						std::stringstream ssunitcode;
-						ssunitcode << iUnitTest;
-						sunitcode = ssunitcode.str();
-					}
-					// convert to hex, and we have our ID
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << rID;
-					devid = s_strid.str();
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) &&
+					    (subtype != sTypeIT))
+						devid = "00" + id;
+					else
+						devid = id;
 				}
 				else if (lighttype == 68)
 				{
@@ -5080,41 +5081,98 @@ namespace http
 					return;
 #endif
 				}
-				else if (lighttype < 20)
+				else if (lighttype == 70)
 				{
-					dtype = pTypeLighting1;
-					subtype = lighttype;
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((shousecode.empty()) || (sunitcode.empty()))
-						return;
-					devid = shousecode;
-				}
-				else if (lighttype < 30)
-				{
+					// EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
-					subtype = lighttype - 20;
-					std::string id = request::findValue(&req, "id");
+					subtype = sTypeAC;
 					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					int iUnitTest = atoi(sunitcode.c_str()); // gives us 128 devices we can control, should be enough!
+					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
 						return;
-					devid = id;
-				}
-				else if (lighttype < 70)
-				{
-					dtype = pTypeLighting5;
-					subtype = lighttype - 50;
-					if (lighttype == 59)
-						subtype = sTypeIT;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
+					sunitcode = sgroupcode; // Button A/B
+					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					if (pBaseHardware == nullptr)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) &&
-					    (subtype != sTypeIT))
-						devid = "00" + id;
+					unsigned long rID = 0;
+					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
+					{
+						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						if (pEnoceanHardware->m_id_base == 0)
+						{
+							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
+							root["message"] = szTmp;
+							return;
+						}
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
+					{
+						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						if (pEnoceanHardware->m_id_base == 0)
+						{
+							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
+							root["message"] = szTmp;
+							return;
+						}
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
+					{
+						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						rID = pUSBtinHardware->switch_id_base;
+						std::stringstream ssunitcode;
+						ssunitcode << iUnitTest;
+						sunitcode = ssunitcode.str();
+					}
 					else
-						devid = id;
+						return;
+					// convert to hex, and we have our ID
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << rID;
+					devid = s_strid.str();
+				}
+				else if (lighttype == 100)
+				{
+					// Chime/ByronSX
+					dtype = pTypeChime;
+					subtype = sTypeByronSX;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str()) - 1;
+					switch (iUnitCode)
+					{
+						case 0:
+							iUnitCode = chime_sound0;
+							break;
+						case 1:
+							iUnitCode = chime_sound1;
+							break;
+						case 2:
+							iUnitCode = chime_sound2;
+							break;
+						case 3:
+							iUnitCode = chime_sound3;
+							break;
+						case 4:
+							iUnitCode = chime_sound4;
+							break;
+						case 5:
+							iUnitCode = chime_sound5;
+							break;
+						case 6:
+							iUnitCode = chime_sound6;
+							break;
+						case 7:
+							iUnitCode = chime_sound7;
+							break;
+					}
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
 				}
 				else if (lighttype == 101)
 				{
@@ -5200,329 +5258,284 @@ namespace http
 						return;
 					devid = id;
 				}
-				else
+				else if ((lighttype >= 200) && (lighttype < 300))
 				{
-					if (lighttype == 100)
-					{
-						// Chime/ByronSX
-						dtype = pTypeChime;
-						subtype = sTypeByronSX;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str()) - 1;
-						switch (iUnitCode)
-						{
-							case 0:
-								iUnitCode = chime_sound0;
-								break;
-							case 1:
-								iUnitCode = chime_sound1;
-								break;
-							case 2:
-								iUnitCode = chime_sound2;
-								break;
-							case 3:
-								iUnitCode = chime_sound3;
-								break;
-							case 4:
-								iUnitCode = chime_sound4;
-								break;
-							case 5:
-								iUnitCode = chime_sound5;
-								break;
-							case 6:
-								iUnitCode = chime_sound6;
-								break;
-							case 7:
-								iUnitCode = chime_sound7;
-								break;
-						}
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if ((lighttype >= 200) && (lighttype < 300))
-					{
-						dtype = pTypeBlinds;
-						subtype = lighttype - 200;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if (lighttype == 301)
-					{
-						// Smartwares Radiator
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
+					dtype = pTypeBlinds;
+					subtype = lighttype - 200;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
+				}
+				else if (lighttype == 301)
+				{
+					// Smartwares Radiator
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
 
-						// For this device, we will also need to add a Radiator type, do that first
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwares;
+					// For this device, we will also need to add a Radiator type, do that first
+					dtype = pTypeRadiator1;
+					subtype = sTypeSmartwares;
 
-						// check if switch is unique
-						result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-									  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-						if (!result.empty())
-						{
-							root["message"] = "Switch already exists!";
-							return;
-						}
-						bool bActEnabledState = m_sql.m_bAcceptNewHardware;
-						m_sql.m_bAcceptNewHardware = true;
-						std::string devname;
-						m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
-						m_sql.m_bAcceptNewHardware = bActEnabledState;
+					// check if switch is unique
+					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
+									hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+					if (!result.empty())
+					{
+						root["message"] = "Switch already exists!";
+						return;
+					}
+					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
+					m_sql.m_bAcceptNewHardware = true;
+					std::string devname;
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
+					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
-						// set name and switchtype
-						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-									  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-						if (result.empty())
-						{
-							root["message"] = "Error finding switch in Database!?!?";
-							return;
-						}
-						std::string ID = result[0][0];
+					// set name and switchtype
+					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
+									hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+					if (result.empty())
+					{
+						root["message"] = "Error finding switch in Database!?!?";
+						return;
+					}
+					std::string ID = result[0][0];
 
-						m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
 
-						// Now continue to insert the switch
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwaresSwitchRadiator;
-					}
-					else if (lighttype == 302)
-					{
-						// Home Confort
-						dtype = pTypeHomeConfort;
-						subtype = sTypeHomeConfortTEL010;
-						std::string id = request::findValue(&req, "id");
+					// Now continue to insert the switch
+					dtype = pTypeRadiator1;
+					subtype = sTypeSmartwaresSwitchRadiator;
+				}
+				else if (lighttype == 302)
+				{
+					// Home Confort
+					dtype = pTypeHomeConfort;
+					subtype = sTypeHomeConfortTEL010;
+					std::string id = request::findValue(&req, "id");
 
-						std::string shousecode = request::findValue(&req, "housecode");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
-							return;
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
+						return;
 
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
-						shousecode = szTmp;
-						devid = id + shousecode;
-					}
-					else if (lighttype == 303)
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+					shousecode = szTmp;
+					devid = id + shousecode;
+				}
+				else if (lighttype == 303)
+				{
+					// Selector Switch
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeSelector;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = "0" + id;
+					switchtype = STYPE_Selector;
+					if (!deviceoptions.empty())
 					{
-						// Selector Switch
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeSelector;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = "0" + id;
-						switchtype = STYPE_Selector;
-						if (!deviceoptions.empty())
-						{
-							deviceoptions.append(";");
-						}
-						deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
+						deviceoptions.append(";");
 					}
-					else if (lighttype == 304)
+					deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
+				}
+				else if (lighttype == 304)
+				{
+					// Itho CVE RFT
+					dtype = pTypeFan;
+					subtype = sTypeItho;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 305)
+				{
+					// Lucci Air
+					dtype = pTypeFan;
+					subtype = sTypeLucciAir;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 306)
+				{
+					// Lucci Air DC
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDC;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 307)
+				{
+					// Westinghouse
+					dtype = pTypeFan;
+					subtype = sTypeWestinghouse;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 308)
+				{
+					// Casafan
+					dtype = pTypeFan;
+					subtype = sTypeCasafan;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 309)
+				{
+					// FT1211R
+					dtype = pTypeFan;
+					subtype = sTypeFT1211R;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 310)
+				{
+					// Falmec
+					dtype = pTypeFan;
+					subtype = sTypeFalmec;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 311)
+				{
+					// Lucci Air DC II
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDCII;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 312)
+				{
+					// Itho ECO
+					dtype = pTypeFan;
+					subtype = sTypeIthoECO;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 313)
+				{
+					// Novy
+					dtype = pTypeFan;
+					subtype = sTypeNovy;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 400)
+				{
+					// Openwebnet Bus Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 401)
+				{
+					// Openwebnet Bus Lights
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 402)
+				{
+					// Openwebnet Bus Auxiliary
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 403)
+				{
+					// Openwebnet Zigbee Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchBlindsT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 404)
+				{
+					// Openwebnet Zigbee Lights
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchLightT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if ((lighttype == 405) || (lighttype == 406))
+				{
+					// Openwebnet Dry Contact / IR Detection
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchContactT1;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 407)
+				{
+					// Openwebnet Bus Custom
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					StrParam1 = request::findValue(&req, "StrParam1");
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
+					if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
 					{
-						// Itho CVE RFT
-						dtype = pTypeFan;
-						subtype = sTypeItho;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 305)
-					{
-						// Lucci Air
-						dtype = pTypeFan;
-						subtype = sTypeLucciAir;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 306)
-					{
-						// Lucci Air DC
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDC;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 307)
-					{
-						// Westinghouse
-						dtype = pTypeFan;
-						subtype = sTypeWestinghouse;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 308)
-					{
-						// Casafan
-						dtype = pTypeFan;
-						subtype = sTypeCasafan;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 309)
-					{
-						// FT1211R
-						dtype = pTypeFan;
-						subtype = sTypeFT1211R;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 310)
-					{
-						// Falmec
-						dtype = pTypeFan;
-						subtype = sTypeFalmec;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 311)
-					{
-						// Lucci Air DC II
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDCII;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 312)
-					{
-						// Itho ECO
-						dtype = pTypeFan;
-						subtype = sTypeIthoECO;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 313)
-					{
-						// Novy
-						dtype = pTypeFan;
-						subtype = sTypeNovy;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 400)
-					{
-						// Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 401)
-					{
-						// Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 402)
-					{
-						// Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 403)
-					{
-						// Openwebnet Zigbee Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 404)
-					{
-						// Openwebnet Zigbee Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if ((lighttype == 405) || (lighttype == 406))
-					{
-						// Openwebnet Dry Contact / IR Detection
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchContactT1;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 407)
-					{
-						// Openwebnet Bus Custom
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						StrParam1 = request::findValue(&req, "StrParam1");
-						_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
-						if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
-						{
-							root["message"] = "Some field empty or not valid.";
-							return;
-						}
+						root["message"] = "Some field empty or not valid.";
+						return;
 					}
 				}
-
-				// check if switch is unique
+				// Check if switch is unique
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
 							  devid.c_str(), sunitcode.c_str(), dtype, subtype);
 				if (!result.empty())
@@ -6029,6 +6042,7 @@ namespace http
 				std::string swhen = request::findValue(&req, "twhen");
 				std::string svalue = request::findValue(&req, "tvalue");
 				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
 				std::string sactivesystems = request::findValue(&req, "tsystems");
 				std::string spriority = request::findValue(&req, "tpriority");
 				std::string ssendalways = request::findValue(&req, "tsendalways");
@@ -6067,7 +6081,7 @@ namespace http
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 				if (bOK)
 				{
 					root["status"] = "OK";
@@ -6091,6 +6105,7 @@ namespace http
 				std::string swhen = request::findValue(&req, "twhen");
 				std::string svalue = request::findValue(&req, "tvalue");
 				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
 				std::string sactivesystems = request::findValue(&req, "tsystems");
 				std::string spriority = request::findValue(&req, "tpriority");
 				std::string ssendalways = request::findValue(&req, "tsendalways");
@@ -6140,7 +6155,7 @@ namespace http
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				m_notifications.AddNotification(devidx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -7805,396 +7820,13 @@ namespace http
 			return std::any_of(m_users.begin(), m_users.end(), [](const _tWebUserPassword &user) { return user.userrights == URIGHTS_ADMIN; });
 		}
 
+		// Depricated : This 'page' should not be used anymore. Use command instead
 		void CWebServer::PostSettings(WebEmSession &session, const request &req, reply &rep)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
-			std::string Latitude = request::findValue(&req, "Latitude");
-			std::string Longitude = request::findValue(&req, "Longitude");
-			if ((!Latitude.empty()) && (!Longitude.empty()))
-			{
-				std::string LatLong = Latitude + ";" + Longitude;
-				m_sql.UpdatePreferencesVar("Location", LatLong);
-				m_mainworker.GetSunSettings();
-			}
-			m_notifications.ConfigFromGetvars(req, true);
-			std::string DashboardType = request::findValue(&req, "DashboardType");
-			m_sql.UpdatePreferencesVar("DashboardType", atoi(DashboardType.c_str()));
-			std::string MobileType = request::findValue(&req, "MobileType");
-			m_sql.UpdatePreferencesVar("MobileType", atoi(MobileType.c_str()));
-
-			int nUnit = atoi(request::findValue(&req, "WindUnit").c_str());
-			m_sql.UpdatePreferencesVar("WindUnit", nUnit);
-			m_sql.m_windunit = (_eWindUnit)nUnit;
-
-			nUnit = atoi(request::findValue(&req, "TempUnit").c_str());
-			m_sql.UpdatePreferencesVar("TempUnit", nUnit);
-			m_sql.m_tempunit = (_eTempUnit)nUnit;
-
-			nUnit = atoi(request::findValue(&req, "WeightUnit").c_str());
-			m_sql.UpdatePreferencesVar("WeightUnit", nUnit);
-			m_sql.m_weightunit = (_eWeightUnit)nUnit;
-
-			m_sql.SetUnitsAndScale();
-
-			std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
-			_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
-			m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
-			m_pWebEm->SetAuthenticationMethod(amethod);
-
-			std::string ReleaseChannel = request::findValue(&req, "ReleaseChannel");
-			m_sql.UpdatePreferencesVar("ReleaseChannel", atoi(ReleaseChannel.c_str()));
-
-			std::string LightHistoryDays = request::findValue(&req, "LightHistoryDays");
-			m_sql.UpdatePreferencesVar("LightHistoryDays", atoi(LightHistoryDays.c_str()));
-
-			std::string s5MinuteHistoryDays = request::findValue(&req, "ShortLogDays");
-			m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(s5MinuteHistoryDays.c_str()));
-
-			int iShortLogInterval = atoi(request::findValue(&req, "ShortLogInterval").c_str());
-			if (iShortLogInterval < 1)
-				iShortLogInterval = 5;
-			m_sql.UpdatePreferencesVar("ShortLogInterval", iShortLogInterval);
-			m_sql.m_ShortLogInterval = iShortLogInterval;
-
-			std::string sElectricVoltage = request::findValue(&req, "ElectricVoltage");
-			m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(sElectricVoltage.c_str()));
-
-			std::string sCM113DisplayType = request::findValue(&req, "CM113DisplayType");
-			m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(sCM113DisplayType.c_str()));
-
-			std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
-			std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
-
-			// Get old username/password
-			std::string sOldWebLogin;
-			std::string sOldWebPassword;
-			m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
-			m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
-
-			bool bHaveAdminUserPasswordChange = false;
-
-			if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
-			{
-				// All is OK, no changes
-			}
-			else if (WebUserName.empty() || WebPassword.empty())
-			{
-				// If no Admin User/Password is specified, we clear them
-				if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
-					bHaveAdminUserPasswordChange = true;
-				WebUserName = "";
-				WebPassword = "";
-			}
-			else
-			{
-				if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
-				{
-					bHaveAdminUserPasswordChange = true;
-				}
-			}
-
-			// Invalid sessions of WebUser when the username or password has been changed
-			if (bHaveAdminUserPasswordChange)
-			{
-				if (!sOldWebLogin.empty())
-					RemoveUsersSessions(sOldWebLogin, session);
-				m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
-				m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
-			}
-			m_webservers.LoadUsers();
-
-			std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
-			std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
-			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
-			m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
-
-			m_webservers.ReloadLocalNetworksAndProxyIPs();
-
-			if (session.username.empty())
-			{
-				// Local network could be changed so lets for a check here
-				session.rights = -1;
-			}
-
-			std::string SecPassword = request::findValue(&req, "SecPassword");
-			SecPassword = CURLEncode::URLDecode(SecPassword);
-			if (SecPassword.size() != 32)
-			{
-				SecPassword = GenerateMD5Hash(SecPassword);
-			}
-			m_sql.UpdatePreferencesVar("SecPassword", SecPassword);
-
-			std::string ProtectionPassword = request::findValue(&req, "ProtectionPassword");
-			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
-			if (ProtectionPassword.size() != 32)
-			{
-				ProtectionPassword = GenerateMD5Hash(ProtectionPassword);
-			}
-			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword);
-
-			int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
-			int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
-			int WaterDivider = atoi(request::findValue(&req, "WaterDivider").c_str());
-			if (EnergyDivider < 1)
-				EnergyDivider = 1000;
-			if (GasDivider < 1)
-				GasDivider = 100;
-			if (WaterDivider < 1)
-				WaterDivider = 100;
-			m_sql.UpdatePreferencesVar("MeterDividerEnergy", EnergyDivider);
-			m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider);
-			m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider);
-
-			int EnergyMaxPower = atoi(request::findValue(&req, "MaxElectricPower").c_str());
-			m_sql.UpdatePreferencesVar("MaxElectricPower", EnergyMaxPower);
-
-			std::string scheckforupdates = request::findValue(&req, "checkforupdates");
-			m_sql.UpdatePreferencesVar("UseAutoUpdate", (scheckforupdates == "on" ? 1 : 0));
-
-			std::string senableautobackup = request::findValue(&req, "enableautobackup");
-			m_sql.UpdatePreferencesVar("UseAutoBackup", (senableautobackup == "on" ? 1 : 0));
-
-			float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
-			float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
-			float CostEnergyR1 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR1").c_str()));
-			float CostEnergyR2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR2").c_str()));
-			float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
-			float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
-			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy * 10000.0F));
-			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2 * 10000.0F));
-			m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1 * 10000.0F));
-			m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2 * 10000.0F));
-			m_sql.UpdatePreferencesVar("CostGas", int(CostGas * 10000.0F));
-			m_sql.UpdatePreferencesVar("CostWater", int(CostWater * 10000.0F));
-
-			int rnOldvalue = 0;
-			int rnvalue = 0;
-
-			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
-			if (rnOldvalue != rnvalue)
-			{
-				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
-				m_sql.m_ActiveTimerPlan = rnvalue;
-				m_mainworker.m_scheduler.ReloadSchedules();
-			}
-			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str()));
-			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str()));
-
-			std::string EnableTabFloorplans = request::findValue(&req, "EnableTabFloorplans");
-			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
-			std::string EnableTabLights = request::findValue(&req, "EnableTabLights");
-			m_sql.UpdatePreferencesVar("EnableTabLights", (EnableTabLights == "on" ? 1 : 0));
-			std::string EnableTabTemp = request::findValue(&req, "EnableTabTemp");
-			m_sql.UpdatePreferencesVar("EnableTabTemp", (EnableTabTemp == "on" ? 1 : 0));
-			std::string EnableTabWeather = request::findValue(&req, "EnableTabWeather");
-			m_sql.UpdatePreferencesVar("EnableTabWeather", (EnableTabWeather == "on" ? 1 : 0));
-			std::string EnableTabUtility = request::findValue(&req, "EnableTabUtility");
-			m_sql.UpdatePreferencesVar("EnableTabUtility", (EnableTabUtility == "on" ? 1 : 0));
-			std::string EnableTabScenes = request::findValue(&req, "EnableTabScenes");
-			m_sql.UpdatePreferencesVar("EnableTabScenes", (EnableTabScenes == "on" ? 1 : 0));
-			std::string EnableTabCustom = request::findValue(&req, "EnableTabCustom");
-			m_sql.UpdatePreferencesVar("EnableTabCustom", (EnableTabCustom == "on" ? 1 : 0));
-
-			m_sql.GetPreferencesVar("NotificationSensorInterval", rnOldvalue);
-			rnvalue = atoi(request::findValue(&req, "NotificationSensorInterval").c_str());
-			if (rnOldvalue != rnvalue)
-			{
-				m_sql.UpdatePreferencesVar("NotificationSensorInterval", rnvalue);
-				m_notifications.ReloadNotifications();
-			}
-			m_sql.GetPreferencesVar("NotificationSwitchInterval", rnOldvalue);
-			rnvalue = atoi(request::findValue(&req, "NotificationSwitchInterval").c_str());
-			if (rnOldvalue != rnvalue)
-			{
-				m_sql.UpdatePreferencesVar("NotificationSwitchInterval", rnvalue);
-				m_notifications.ReloadNotifications();
-			}
-			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
-			if (!RaspCamParams.empty())
-			{
-				if (IsArgumentSecure(RaspCamParams))
-					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams);
-			}
-
-			std::string UVCParams = request::findValue(&req, "UVCParams");
-			if (!UVCParams.empty())
-			{
-				if (IsArgumentSecure(UVCParams))
-					m_sql.UpdatePreferencesVar("UVCParams", UVCParams);
-			}
-
-			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
-			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("AcceptNewHardware", iEnableNewHardware);
-			m_sql.m_bAcceptNewHardware = (iEnableNewHardware == 1);
-
-			std::string HideDisabledHardwareSensors = request::findValue(&req, "HideDisabledHardwareSensors");
-			int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
-
-			std::string ShowUpdateEffect = request::findValue(&req, "ShowUpdateEffect");
-			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
-
-			std::string SendErrorsAsNotification = request::findValue(&req, "SendErrorsAsNotification");
-			int iSendErrorsAsNotification = (SendErrorsAsNotification == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("SendErrorsAsNotification", iSendErrorsAsNotification);
-			_log.ForwardErrorsToNotificationSystem(iSendErrorsAsNotification != 0);
-
-			std::string DegreeDaysBaseTemperature = request::findValue(&req, "DegreeDaysBaseTemperature");
-			m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", DegreeDaysBaseTemperature);
-
-			rnOldvalue = 0;
-			m_sql.GetPreferencesVar("EnableEventScriptSystem", rnOldvalue);
-			std::string EnableEventScriptSystem = request::findValue(&req, "EnableEventScriptSystem");
-			int iEnableEventScriptSystem = (EnableEventScriptSystem == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("EnableEventScriptSystem", iEnableEventScriptSystem);
-			m_sql.m_bEnableEventSystem = (iEnableEventScriptSystem == 1);
-			if (iEnableEventScriptSystem != rnOldvalue)
-			{
-				m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
-				m_mainworker.m_eventsystem.StartEventSystem();
-			}
-			std::string EnableEventSystemFullURLLog = request::findValue(&req, "EventSystemLogFullURL");
-			m_sql.m_bEnableEventSystemFullURLLog = EnableEventSystemFullURLLog == "on" ? true : false;
-			m_sql.UpdatePreferencesVar("EventSystemLogFullURL", (int)m_sql.m_bEnableEventSystemFullURLLog);
-
-			rnOldvalue = 0;
-			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
-			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
-			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
-			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
-			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
-			if (m_sql.m_bEnableEventSystem && !iDisableDzVentsSystem && iDisableDzVentsSystem != rnOldvalue)
-			{
-				m_mainworker.m_eventsystem.LoadEvents();
-				m_mainworker.m_eventsystem.GetCurrentStates();
-			}
-			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
-
-			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
-			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger);
-
-			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
-			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
-			m_sql.m_bAllowWidgetOrdering = (iEnableAllowWidgetOrdering == 1);
-
-			rnOldvalue = 0;
-			m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
-
-			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(request::findValue(&req, "RemoteSharedPort").c_str()));
-
-			rnvalue = 0;
-			m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
-
-			if (rnvalue != rnOldvalue)
-			{
-				m_mainworker.m_sharedserver.StopServer();
-				if (rnvalue != 0)
-				{
-					char szPort[100];
-					sprintf(szPort, "%d", rnvalue);
-					m_mainworker.m_sharedserver.StartServer("::", szPort);
-					m_mainworker.LoadSharedUsers();
-				}
-			}
-
-			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language"));
-			std::string SelectedTheme = request::findValue(&req, "Themes");
-			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme);
-			m_pWebEm->SetWebTheme(SelectedTheme);
-			std::string Title = request::findValue(&req, "Title");
-			m_sql.UpdatePreferencesVar("Title", (Title.empty()) ? "Domoticz" : Title);
-
-			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
-			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
-			if (rnOldvalue != rnvalue)
-			{
-				m_sql.UpdatePreferencesVar("RandomTimerFrame", rnvalue);
-				m_mainworker.m_scheduler.ReloadSchedules();
-			}
-
-			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(request::findValue(&req, "SecOnDelay").c_str()));
-
-			int sensortimeout = atoi(request::findValue(&req, "SensorTimeout").c_str());
-			if (sensortimeout < 10)
-				sensortimeout = 10;
-			m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout);
-
-			int batterylowlevel = atoi(request::findValue(&req, "BatterLowLevel").c_str());
-			if (batterylowlevel > 100)
-				batterylowlevel = 100;
-			m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
-			m_sql.UpdatePreferencesVar("BatteryLowNotification", batterylowlevel);
-			if ((rnOldvalue != batterylowlevel) && (batterylowlevel != 0))
-				m_sql.CheckBatteryLow();
-
-			int nValue = 0;
-			nValue = atoi(request::findValue(&req, "FloorplanPopupDelay").c_str());
-			m_sql.UpdatePreferencesVar("FloorplanPopupDelay", nValue);
-			std::string FloorplanFullscreenMode = request::findValue(&req, "FloorplanFullscreenMode");
-			m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (FloorplanFullscreenMode == "on" ? 1 : 0));
-			std::string FloorplanAnimateZoom = request::findValue(&req, "FloorplanAnimateZoom");
-			m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (FloorplanAnimateZoom == "on" ? 1 : 0));
-			std::string FloorplanShowSensorValues = request::findValue(&req, "FloorplanShowSensorValues");
-			m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (FloorplanShowSensorValues == "on" ? 1 : 0));
-			std::string FloorplanShowSwitchValues = request::findValue(&req, "FloorplanShowSwitchValues");
-			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
-			std::string FloorplanShowSceneNames = request::findValue(&req, "FloorplanShowSceneNames");
-			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
-			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour")));
-			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
-			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
-
-#ifndef NOCLOUD
-			std::string md_userid, md_password, pf_userid, pf_password;
-			int md_subsystems, pf_subsystems;
-			m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
-			m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
-			m_sql.GetPreferencesVar("MyDomoticzSubsystems", pf_subsystems);
-			md_userid = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzUserId"));
-			md_password = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzPassword"));
-			md_subsystems = (request::findValue(&req, "SubsystemHttp").empty() ? 0 : 1) + (request::findValue(&req, "SubsystemShared").empty() ? 0 : 2) +
-					(request::findValue(&req, "SubsystemApps").empty() ? 0 : 4);
-			if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems)
-			{
-				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
-				if (md_password != pf_password)
-				{
-					md_password = base64_encode(md_password);
-					m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
-				}
-				m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
-				m_webservers.RestartProxy();
-			}
-#endif
-
-			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
-			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
-
-			std::string IFTTTEnabled = request::findValue(&req, "IFTTTEnabled");
-			int iIFTTTEnabled = (IFTTTEnabled == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("IFTTTEnabled", iIFTTTEnabled);
-			std::string szKey = request::findValue(&req, "IFTTTAPI");
-			m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode(szKey));
-
-			m_notifications.LoadConfig();
-#ifdef ENABLE_PYTHON
-			// Signal plugins to update Settings dictionary
-			PluginLoadConfig();
-#endif
+			_log.Log(LOG_NORM, "Depricated: Page StoreSettings! Use command instead!");
 
 			Json::Value root;
-			root["status"] = "OK";
-			root["title"] = "StoreSettings";
+			Cmd_PostSettings(session, req, root);
 
 			std::string jcallback = request::findValue(&req, "jsoncallback");
 			if (jcallback.empty())
@@ -8203,6 +7835,410 @@ namespace http
 				return;
 			}
 			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+		}
+
+		// PostSettings
+		void CWebServer::Cmd_PostSettings(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			root["title"] = "StoreSettings";
+			root["status"] = "ERR";
+
+			uint16_t cntSettings = 0;
+
+			try {
+
+				/* Start processing the simple ones */
+				/* -------------------------------- */
+
+				m_sql.UpdatePreferencesVar("DashboardType", atoi(request::findValue(&req, "DashboardType").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("MobileType", atoi(request::findValue(&req, "MobileType").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("ReleaseChannel", atoi(request::findValue(&req, "ReleaseChannel").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("LightHistoryDays", atoi(request::findValue(&req, "LightHistoryDays").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(request::findValue(&req, "ShortLogDays").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(request::findValue(&req, "ElectricVoltage").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(request::findValue(&req, "CM113DisplayType").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("MaxElectricPower", atoi(request::findValue(&req, "MaxElectricPower").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("SecOnDelay", atoi(request::findValue(&req, "SecOnDelay").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanPopupDelay", atoi(request::findValue(&req, "FloorplanPopupDelay").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str())); cntSettings++;
+				m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str())); cntSettings++;
+
+				m_sql.UpdatePreferencesVar("UseAutoUpdate", (request::findValue(&req, "checkforupdates") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("UseAutoBackup", (request::findValue(&req, "enableautobackup") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabFloorplans", (request::findValue(&req, "EnableTabFloorplans") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabLights", (request::findValue(&req, "EnableTabLights") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabTemp", (request::findValue(&req, "EnableTabTemp") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabWeather", (request::findValue(&req, "EnableTabWeather") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabUtility", (request::findValue(&req, "EnableTabUtility") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabScenes", (request::findValue(&req, "EnableTabScenes") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("EnableTabCustom", (request::findValue(&req, "EnableTabCustom") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", (request::findValue(&req, "HideDisabledHardwareSensors") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("ShowUpdateEffect", (request::findValue(&req, "ShowUpdateEffect") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (request::findValue(&req, "FloorplanFullscreenMode") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (request::findValue(&req, "FloorplanAnimateZoom") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (request::findValue(&req, "FloorplanShowSensorValues") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (request::findValue(&req, "FloorplanShowSwitchValues") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (request::findValue(&req, "FloorplanShowSwitchValues") == "on" ? 1 : 0)); cntSettings++;
+				m_sql.UpdatePreferencesVar("IFTTTEnabled", (request::findValue(&req, "IFTTTEnabled") == "on" ? 1 : 0)); cntSettings++;
+
+				m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language")); cntSettings++;
+				m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", request::findValue(&req, "DegreeDaysBaseTemperature")); cntSettings++;
+
+				m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour"))); cntSettings++;
+				m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode(request::findValue(&req, "IFTTTAPI"))); cntSettings++;
+
+				m_sql.UpdatePreferencesVar("Title", (request::findValue(&req, "Title").empty()) ? "Domoticz" : request::findValue(&req, "Title")); cntSettings++;
+
+				/* More complex ones that need additional processing */
+				/* ------------------------------------------------- */
+
+				float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
+				m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy * 10000.0F)); cntSettings++;
+				float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
+				m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2 * 10000.0F)); cntSettings++;
+				float CostEnergyR1 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR1").c_str()));
+				m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1 * 10000.0F)); cntSettings++;
+				float CostEnergyR2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR2").c_str()));
+				m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2 * 10000.0F)); cntSettings++;
+				float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
+				m_sql.UpdatePreferencesVar("CostGas", int(CostGas * 10000.0F)); cntSettings++;
+				float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
+				m_sql.UpdatePreferencesVar("CostWater", int(CostWater * 10000.0F)); cntSettings++;
+
+				int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
+				if (EnergyDivider < 1)
+					EnergyDivider = 1000;
+				m_sql.UpdatePreferencesVar("MeterDividerEnergy", EnergyDivider); cntSettings++;
+				int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
+				if (GasDivider < 1)
+					GasDivider = 100;
+				m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider); cntSettings++;
+				int WaterDivider = atoi(request::findValue(&req, "WaterDivider").c_str());
+				if (WaterDivider < 1)
+					WaterDivider = 100;
+				m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider); cntSettings++;
+
+				int sensortimeout = atoi(request::findValue(&req, "SensorTimeout").c_str());
+				if (sensortimeout < 10)
+					sensortimeout = 10;
+				m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout); cntSettings++;
+
+				std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
+				if ((!RaspCamParams.empty()) && (IsArgumentSecure(RaspCamParams)))
+					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams);
+				cntSettings++;
+
+				std::string UVCParams = request::findValue(&req, "UVCParams");
+				if ((!UVCParams.empty()) && (IsArgumentSecure(UVCParams)))
+					m_sql.UpdatePreferencesVar("UVCParams", UVCParams);
+				cntSettings++;
+
+				/* Also update m_sql.variables */
+				/* --------------------------- */
+
+				int iShortLogInterval = atoi(request::findValue(&req, "ShortLogInterval").c_str());
+				if (iShortLogInterval < 1)
+					iShortLogInterval = 5;
+				m_sql.m_ShortLogInterval = iShortLogInterval;
+				m_sql.UpdatePreferencesVar("ShortLogInterval", m_sql.m_ShortLogInterval); cntSettings++;
+
+				m_sql.m_bLogEventScriptTrigger = (request::findValue(&req, "LogEventScriptTrigger") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger); cntSettings++;
+
+				m_sql.m_bAllowWidgetOrdering = (request::findValue(&req, "AllowWidgetOrdering") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("AllowWidgetOrdering", m_sql.m_bAllowWidgetOrdering); cntSettings++;
+
+				int iEnableNewHardware = (request::findValue(&req, "AcceptNewHardware") == "on" ? 1 : 0);
+				m_sql.m_bAcceptNewHardware = (iEnableNewHardware == 1);
+				m_sql.UpdatePreferencesVar("AcceptNewHardware", m_sql.m_bAcceptNewHardware); cntSettings++;
+
+				int nUnit = atoi(request::findValue(&req, "WindUnit").c_str());
+				m_sql.m_windunit = (_eWindUnit)nUnit;
+				m_sql.UpdatePreferencesVar("WindUnit", m_sql.m_windunit); cntSettings++;
+
+				nUnit = atoi(request::findValue(&req, "TempUnit").c_str());
+				m_sql.m_tempunit = (_eTempUnit)nUnit;
+				m_sql.UpdatePreferencesVar("TempUnit", m_sql.m_tempunit); cntSettings++;
+
+				nUnit = atoi(request::findValue(&req, "WeightUnit").c_str());
+				m_sql.m_weightunit = (_eWeightUnit)nUnit;
+				m_sql.UpdatePreferencesVar("WeightUnit", m_sql.m_weightunit); cntSettings++;
+
+				m_sql.SetUnitsAndScale();
+
+				/* Update Preferences and call other functions as well due to changes */
+				/* ------------------------------------------------------------------ */
+
+				std::string Latitude = request::findValue(&req, "Latitude");
+				std::string Longitude = request::findValue(&req, "Longitude");
+				if ((!Latitude.empty()) && (!Longitude.empty()))
+				{
+					std::string LatLong = Latitude + ";" + Longitude;
+					m_sql.UpdatePreferencesVar("Location", LatLong);
+					m_mainworker.GetSunSettings();
+				}
+				cntSettings++;
+
+				std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
+				_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
+				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
+				m_pWebEm->SetAuthenticationMethod(amethod);
+				cntSettings++;
+
+				// Check new and get old username/password
+				std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
+				std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
+
+				std::string sOldWebLogin;
+				std::string sOldWebPassword;
+				m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
+				m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
+
+				bool bHaveAdminUserPasswordChange = false;
+
+				if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
+				{
+					// All is OK, no changes
+				}
+				else if (WebUserName.empty() || WebPassword.empty())
+				{
+					// If no Admin User/Password is specified, we clear them
+					if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
+						bHaveAdminUserPasswordChange = true;
+					WebUserName = "";
+					WebPassword = "";
+				}
+				else
+				{
+					if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
+					{
+						bHaveAdminUserPasswordChange = true;
+					}
+				}
+
+				// Invalid sessions of WebUser when the username or password has been changed
+				if (bHaveAdminUserPasswordChange)
+				{
+					if (!sOldWebLogin.empty())
+						RemoveUsersSessions(sOldWebLogin, session);
+					m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
+					m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
+				}
+				m_webservers.LoadUsers();
+				cntSettings++;
+				cntSettings++;
+
+				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
+				std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
+				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
+				m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
+
+				m_webservers.ReloadLocalNetworksAndProxyIPs();
+				cntSettings++;
+				cntSettings++;
+
+				if (session.username.empty())
+				{
+					// Local network could be changed so lets force a check here
+					session.rights = -1;
+				}
+
+				std::string SecPassword = request::findValue(&req, "SecPassword");
+				SecPassword = CURLEncode::URLDecode(SecPassword);
+				if (SecPassword.size() != 32)
+				{
+					SecPassword = GenerateMD5Hash(SecPassword);
+				}
+				m_sql.UpdatePreferencesVar("SecPassword", SecPassword);
+				cntSettings++;
+
+				std::string ProtectionPassword = request::findValue(&req, "ProtectionPassword");
+				ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
+				if (ProtectionPassword.size() != 32)
+				{
+					ProtectionPassword = GenerateMD5Hash(ProtectionPassword);
+				}
+				m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword);
+				cntSettings++;
+
+				std::string SendErrorsAsNotification = request::findValue(&req, "SendErrorsAsNotification");
+				int iSendErrorsAsNotification = (SendErrorsAsNotification == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("SendErrorsAsNotification", iSendErrorsAsNotification);
+				_log.ForwardErrorsToNotificationSystem(iSendErrorsAsNotification != 0);
+				cntSettings++;
+
+				int rnOldvalue = 0;
+				int rnvalue = 0;
+
+				m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
+				rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
+				if (rnOldvalue != rnvalue)
+				{
+					m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
+					m_sql.m_ActiveTimerPlan = rnvalue;
+					m_mainworker.m_scheduler.ReloadSchedules();
+				}
+				cntSettings++;
+
+				rnOldvalue = 0;
+				m_sql.GetPreferencesVar("NotificationSensorInterval", rnOldvalue);
+				rnvalue = atoi(request::findValue(&req, "NotificationSensorInterval").c_str());
+				if (rnOldvalue != rnvalue)
+				{
+					m_sql.UpdatePreferencesVar("NotificationSensorInterval", rnvalue);
+					m_notifications.ReloadNotifications();
+				}
+				cntSettings++;
+
+				rnOldvalue = 0;
+				m_sql.GetPreferencesVar("NotificationSwitchInterval", rnOldvalue);
+				rnvalue = atoi(request::findValue(&req, "NotificationSwitchInterval").c_str());
+				if (rnOldvalue != rnvalue)
+				{
+					m_sql.UpdatePreferencesVar("NotificationSwitchInterval", rnvalue);
+					m_notifications.ReloadNotifications();
+				}
+				cntSettings++;
+
+				rnOldvalue = 0;
+				m_sql.GetPreferencesVar("EnableEventScriptSystem", rnOldvalue);
+				std::string EnableEventScriptSystem = request::findValue(&req, "EnableEventScriptSystem");
+				int iEnableEventScriptSystem = (EnableEventScriptSystem == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("EnableEventScriptSystem", iEnableEventScriptSystem);
+				m_sql.m_bEnableEventSystem = (iEnableEventScriptSystem == 1);
+				if (iEnableEventScriptSystem != rnOldvalue)
+				{
+					m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
+					m_mainworker.m_eventsystem.StartEventSystem();
+				}
+				cntSettings++;
+
+				std::string EnableEventSystemFullURLLog = request::findValue(&req, "EventSystemLogFullURL");
+				m_sql.m_bEnableEventSystemFullURLLog = EnableEventSystemFullURLLog == "on" ? true : false;
+				m_sql.UpdatePreferencesVar("EventSystemLogFullURL", (int)m_sql.m_bEnableEventSystemFullURLLog);
+				cntSettings++;
+
+				rnOldvalue = 0;
+				m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
+				std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
+				int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
+				m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
+				m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
+				if (m_sql.m_bEnableEventSystem && !iDisableDzVentsSystem && iDisableDzVentsSystem != rnOldvalue)
+				{
+					m_mainworker.m_eventsystem.LoadEvents();
+					m_mainworker.m_eventsystem.GetCurrentStates();
+				}
+				cntSettings++;
+				m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
+				cntSettings++;
+
+				rnOldvalue = 0;
+				m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
+				m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(request::findValue(&req, "RemoteSharedPort").c_str()));
+				m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
+
+				if (rnvalue != rnOldvalue)
+				{
+					m_mainworker.m_sharedserver.StopServer();
+					if (rnvalue != 0)
+					{
+						char szPort[100];
+						sprintf(szPort, "%d", rnvalue);
+						m_mainworker.m_sharedserver.StartServer("::", szPort);
+						m_mainworker.LoadSharedUsers();
+					}
+				}
+				cntSettings++;
+
+				rnOldvalue = 0;
+				m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
+				rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
+				if (rnOldvalue != rnvalue)
+				{
+					m_sql.UpdatePreferencesVar("RandomTimerFrame", rnvalue);
+					m_mainworker.m_scheduler.ReloadSchedules();
+				}
+				cntSettings++;
+
+				rnOldvalue = 0;
+				int batterylowlevel = atoi(request::findValue(&req, "BatterLowLevel").c_str());
+				if (batterylowlevel > 100)
+					batterylowlevel = 100;
+				m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
+				m_sql.UpdatePreferencesVar("BatteryLowNotification", batterylowlevel);
+				if ((rnOldvalue != batterylowlevel) && (batterylowlevel != 0))
+					m_sql.CheckBatteryLow();
+				cntSettings++;
+
+				/* Update the Theme */
+
+				std::string SelectedTheme = request::findValue(&req, "Themes");
+				m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme);
+				m_pWebEm->SetWebTheme(SelectedTheme);
+				cntSettings++;
+
+#ifndef NOCLOUD
+				std::string md_userid, md_password, pf_userid, pf_password;
+				int md_subsystems, pf_subsystems;
+				m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
+				m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
+				m_sql.GetPreferencesVar("MyDomoticzSubsystems", pf_subsystems);
+				md_userid = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzUserId"));
+				md_password = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzPassword"));
+				md_subsystems = (request::findValue(&req, "SubsystemHttp").empty() ? 0 : 1) + (request::findValue(&req, "SubsystemShared").empty() ? 0 : 2) +
+						(request::findValue(&req, "SubsystemApps").empty() ? 0 : 4);
+				if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems)
+				{
+					m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
+					if (md_password != pf_password)
+					{
+						md_password = base64_encode(md_password);
+						m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+					}
+					m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
+					m_webservers.RestartProxy();
+				}
+				cntSettings++;
+				cntSettings++;
+				cntSettings++;
+#endif
+				/* To wrap up everything */
+				m_notifications.ConfigFromGetvars(req, true);
+				m_notifications.LoadConfig();
+
+#ifdef ENABLE_PYTHON
+				// Signal plugins to update Settings dictionary
+				PluginLoadConfig();
+#endif
+				root["status"] = "OK";
+			}
+			catch(const std::exception &e)
+			{
+				std::stringstream errmsg;
+				errmsg << "Error occured during processing of POSTed settings (" << e.what() << ") after processing " << cntSettings << " settings!";
+				root["errmsg"] = errmsg.str();
+				_log.Log(LOG_ERROR, errmsg.str());
+			}
+			catch(...)
+			{
+				std::stringstream errmsg;
+				errmsg << "Error occured during processing of POSTed settings after processing " << cntSettings << " settings!";
+				root["errmsg"] = errmsg.str();
+				_log.Log(LOG_ERROR, errmsg.str());
+			}
+			std::string msg = "Processed " + std::to_string(cntSettings) + " settings!";
+			root["msg"] = msg;
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession &session, const request &req, std::string &redirect_uri)
@@ -9285,13 +9321,20 @@ namespace http
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
+/*
+							if ((iLevel > 0) && (iLevel < maxDimLevel))
+							{
+								lstatus = std_format("%d %%", iLevel);
+							}
+							else if (lstatus == "On")
+*/
 							if (lstatus == "On")
 							{
-								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Closed" : "Open";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = (switchtype == STYPE_BlindsPercentage) ? "Open" : "Closed";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Open" : "Closed";
 							}
 							else if (lstatus == "Stop")
 							{
@@ -9927,14 +9970,14 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sValue);
-							uint64_t total_real = total_max - total_min;
+							uint64_t total_first = std::stoull(sd2[0]);
+							uint64_t total_last = std::stoull(sValue);
+							uint64_t total_real = total_last - total_first;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
 							float musage = 0;
@@ -11565,7 +11608,6 @@ namespace http
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
 
-					// Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != nullptr)
 					{
@@ -11594,17 +11636,14 @@ namespace http
 							CRFLinkBase *pMyHardware = reinterpret_cast<CRFLinkBase *>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
-						else
-						{
 #ifdef WITH_OPENZWAVE
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
-								root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
-								root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
-							}
-#endif
+						else if (pHardware->HwdType == HTYPE_OpenZWave)
+						{ // Special case for openzwave (status for nodes queried)
+							COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
+							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
+							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
 						}
+#endif
 					}
 					ii++;
 				}
@@ -12479,6 +12518,7 @@ namespace http
 					root["result"][ii]["Priority"] = n.Priority;
 					root["result"][ii]["SendAlways"] = n.SendAlways;
 					root["result"][ii]["CustomMessage"] = n.CustomMessage;
+					root["result"][ii]["CustomAction"] = CURLEncode::URLEncode(n.CustomAction);
 					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
 					ii++;
 				}
@@ -13346,12 +13386,14 @@ namespace http
 							ldata = (ldata == "On") ? "Open" : "Closed";
 							break;
 						case STYPE_BlindsPercentage:
+						case STYPE_BlindsPercentageWithStop:
 							if ((ldata == "On") || (ldata == "Off"))
 							{
 								ldata = (ldata == "On") ? "Closed" : "Open";
 							}
 							break;
 						case STYPE_BlindsPercentageInverted:
+						case STYPE_BlindsPercentageInvertedWithStop:
 							if ((ldata == "On") || (ldata == "Off"))
 							{
 								ldata = (ldata == "On") ? "Open" : "Closed";
@@ -13519,17 +13561,30 @@ namespace http
 					dbasetable = "Fan_Calendar";
 				else if (sensor == "counter")
 				{
-					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || (dType == pTypeAirQuality) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) || ((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) || ((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness)) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD)) ||
-					    ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt)) || ((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) || ((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-					    ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) || (dType == pTypeLux) || (dType == pTypeWEIGHT) || (dType == pTypeUsage))
-						dbasetable = "MultiMeter_Calendar";
-					else
-						dbasetable = "Meter_Calendar";
-				}
+                    if (dType == pTypeP1Power
+                        || dType == pTypeCURRENT
+                        || dType == pTypeCURRENTENERGY
+                        || dType == pTypeAirQuality
+                        || dType == pTypeLux
+                        || dType == pTypeWEIGHT
+                        || dType == pTypeUsage
+                        || dType == pTypeGeneral && dSubType == sTypeVisibility
+                        || dType == pTypeGeneral && dSubType == sTypeDistance
+                        || dType == pTypeGeneral && dSubType == sTypeSolarRadiation
+                        || dType == pTypeGeneral && dSubType == sTypeSoilMoisture
+                        || dType == pTypeGeneral && dSubType == sTypeLeafWetness
+                        || dType == pTypeGeneral && dSubType == sTypeVoltage
+                        || dType == pTypeGeneral && dSubType == sTypeCurrent
+                        || dType == pTypeGeneral && dSubType == sTypePressure
+                        || dType == pTypeGeneral && dSubType == sTypeSoundLevel
+                        || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorAD
+                        || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorVolt
+                    ) {
+                        dbasetable = "MultiMeter_Calendar";
+                    } else {
+                        dbasetable = "Meter_Calendar";
+                    }
+                }
 				else if ((sensor == "wind") || (sensor == "winddir"))
 					dbasetable = "Wind_Calendar";
 				else if (sensor == "uv")
@@ -13555,11 +13610,22 @@ namespace http
 						for (const auto &sd : result)
 						{
 							root["result"][ii]["d"] = sd[4].substr(0, 16);
-							if ((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) ||
-							    (dType == pTypeTEMP_BARO) || ((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
-							    (dType == pTypeThermostat1) || (dType == pTypeRadiator1) || ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
-							    ((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) || ((dType == pTypeGeneral) && (dSubType == sTypeBaro)) ||
-							    ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) || (dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+							if (dType == pTypeRego6XXTemp
+                                || dType == pTypeTEMP
+                                || dType == pTypeTEMP_HUM
+                                || dType == pTypeTEMP_HUM_BARO
+                                || dType == pTypeTEMP_BARO
+                                || dType == pTypeWIND && dSubType == sTypeWIND4
+                                || dType == pTypeUV && dSubType == sTypeUV3
+                                || dType == pTypeThermostat1
+                                || dType == pTypeRadiator1
+                                || dType == pTypeRFXSensor && dSubType == sTypeRFXSensorTemp
+                                || dType == pTypeGeneral && dSubType == sTypeSystemTemp
+                                || dType == pTypeGeneral && dSubType == sTypeBaro
+                                || dType == pTypeThermostat && dSubType == sTypeThermSetpoint
+                                || dType == pTypeEvohomeZone
+                                || dType == pTypeEvohomeWater
+                            )
 							{
 								double tvalue = ConvertTemperature(atof(sd[0].c_str()), tempsign);
 								root["result"][ii]["te"] = tvalue;
@@ -14114,12 +14180,17 @@ namespace http
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
+						float dividerForQuantity = divider; // kWh, m3, l
+						float dividerForRate = divider; // Watt, m3/hour, l/hour
 						if (method != 0)
 						{
 							// realtime graph
 							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								divider /= 100.0F;
+							{
+								dividerForRate /= 100.0F;
+							}
 						}
+
 						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
@@ -14160,20 +14231,21 @@ namespace http
 											}
 											ulFirstRealValue = ulLastValue;
 											float TotalValue = float(ulTotalValue);
+											float dividerHere = method == 1 ? dividerForQuantity : dividerForRate;
 											switch (metertype)
 											{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / dividerHere) * 1000.0F); // from kWh -> Watt
 													break;
 												case MTYPE_GAS:
-													sprintf(szTmp, "%.3f", TotalValue / divider);
+													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
 													break;
 												case MTYPE_WATER:
-													sprintf(szTmp, "%.3f", TotalValue / divider);
+													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%g", TotalValue / divider);
+													sprintf(szTmp, "%g", TotalValue / dividerHere);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14210,16 +14282,16 @@ namespace http
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+											sprintf(szTmp, "%.3f", (TotalValue / dividerForRate) * 1000.0F); // from kWh -> Watt
 											break;
 										case MTYPE_GAS:
-											sprintf(szTmp, "%.2f", TotalValue / divider);
+											sprintf(szTmp, "%.2f", TotalValue / dividerForRate);
 											break;
 										case MTYPE_WATER:
-											sprintf(szTmp, "%.3f", TotalValue / divider);
+											sprintf(szTmp, "%.3f", TotalValue / dividerForRate);
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", TotalValue / divider);
+											sprintf(szTmp, "%g", TotalValue / dividerForRate);
 											break;
 										default:
 											strcpy(szTmp, "0");
@@ -15549,13 +15621,12 @@ namespace http
 					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
-						if (!sgroupby.empty())
-						{
-							if (sensorarea.empty())
-							{
+                        if (!sgroupby.empty()) {
+                            if (sensorarea.empty())
+                            {
 								_log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby.c_str());
-								return;
-							}
+                                return;
+                            }
 							std::function<std::string(const char *, char *, char *, char *, char *)> sensorareaExpr =
 								[sensorarea, this](const char *expr, char *usageLow, char *usageNormal, char *deliveryLow, char *deliveryNormal) {
 									if (sensorarea == "usage")
@@ -16159,13 +16230,13 @@ namespace http
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_GAS:
-											return std_format("%.2f", AddjValue + sum / divider);
+											return std_format("%.2f", sum / divider);
 										case MTYPE_WATER:
-											return std_format("%.3f", AddjValue + sum / divider);
+											return std_format("%.3f", sum / divider);
 										case MTYPE_COUNTER:
-											return std_format("%g", AddjValue + sum / divider);
+											return std_format("%g", sum / divider);
 									}
 									return std::string("");
 								});
@@ -17347,46 +17418,88 @@ namespace http
 			 * This query selects all records (in mc0) that belong to DeviceRowID, each with the record before it (in mc1), and calculates for each record
 			 * the "usage" by subtracting the previous counter from its counter.
 			 * - It does not take into account records that have a 0-valued counter, to prevent one falling between two categories, which would cause the
-			 *   value for one category to be extremely low and the value for the other extremely high.
+             *   value for one category to be extremely low and the value for the other extremely high.
 			 * - When the previous counter is greater than its counter, assumed is that a meter change has taken place; the previous counter is ignored
 			 *   and the value of the record is taken as the "usage" (hoping for the best as the value is not always reliable.)
 			 * - The reason why not simply the record values are summed, but instead the differences between all the individual counters are summed, is that
 			 *   records for some days are not recorded or sometimes disappear, hence values would be missing and that would result in an incomplete total.
 			 *   Plus it seems that the value is not always the same as the difference between the counters. Counters are more often reliable.
 			 */
-			std::vector<std::vector<std::string>> result = m_sql.safe_query(
-				(std::string("") + " select" + "  strftime('%%Y',Date) as Year," + "  sum(Difference) as Sum" +
-				 (sgroupby == "quarter" ? std::string("") + ",case" + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'" +
-								  "                                                              else 'Q4'" + "   end as Quarter"
-				  : sgroupby == "month" ? ",strftime('%%m',Date) as Month"
-							: "") +
-				 " from (" + " 	select" + "         mc0.DeviceRowID," + "         date(mc0.Date) as Date," + "         case when (" + counter("mc1") + ") <= (" + counter("mc0") +
-				 ") then (" + counter("mc0") + ") - (" + counter("mc1") + ") else (" + value("mc0") + ") end as Difference" + " 	from " + dbasetable + " mc0" + " 	inner join " +
-				 dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID" + "         and mc1.Date = (select max(mcm.Date) from " + dbasetable +
-				 " mcm where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") <> 0)" + " 	where" + "         mc0.DeviceRowID = %" PRIu64 "" +
-				 "         and (" + counter("mc0") + ") <> 0" + "         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") +
-				 ") <> 0) <= mc1.Date" + "         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") <> 0)" + " )" +
-				 " group by strftime('%%Y',Date)" +
-				 (sgroupby == "quarter" ? std::string("") + ",case" + "   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'" +
-								  "   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'" +
-								  "                                                              else 'Q4'" + "   end"
-				  : sgroupby == "month" ? ",strftime('%%m',Date)"
-							: "") +
-				 " order by 1 asc" + (sgroupby == "quarter" || sgroupby == "month" ? ", 3 asc" : ""))
-					.c_str(),
-				idx, idx, idx);
+			std::string queryString;
+            queryString.append(" select");
+            queryString.append("  strftime('%%Y',Date) as Year,");
+            queryString.append("  sum(Difference) as Sum");
+            if (sgroupby == "quarter")
+            {
+                queryString.append(",case");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                queryString.append("                                                              else 'Q4'");
+                queryString.append("   end as Quarter");
+            }
+            else if (sgroupby == "month")
+            {
+                queryString.append(",strftime('%%m',Date) as Month");
+            }
+            queryString.append(" from (");
+            queryString.append(" 	select");
+            queryString.append("         mc0.DeviceRowID,");
+            queryString.append("         date(mc0.Date) as Date,");
+            queryString.append("         case");
+            queryString.append("            when (" + counter("mc1") + ") <= (" + counter("mc0") + ")");
+            queryString.append("            then (" + counter("mc0") + ") - (" + counter("mc1") + ")");
+            queryString.append("            else (" + value("mc0") + ")");
+            queryString.append("         end as Difference");
+            queryString.append(" 	from " + dbasetable + " mc0");
+            queryString.append(" 	inner join " + dbasetable + " mc1 on mc1.DeviceRowID = mc0.DeviceRowID");
+            queryString.append("         and mc1.Date = (");
+            queryString.append("             select max(mcm.Date)");
+            queryString.append("             from " + dbasetable + " mcm");
+            queryString.append("             where mcm.DeviceRowID = mc0.DeviceRowID and mcm.Date < mc0.Date and (" + counter("mcm") + ") > 0");
+            queryString.append("         )");
+            queryString.append(" 	where");
+            queryString.append("         mc0.DeviceRowID = %" PRIu64 "");
+            queryString.append("         and ("+counter("mc0")+") > 0");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) <= mc1.Date");
+            queryString.append("         and mc0.Date <= (select max(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0)");
+            queryString.append("    union all");
+            queryString.append("    select");
+            queryString.append("         DeviceRowID,");
+            queryString.append("         date(Date) as Date,");
+            queryString.append("         " + value(""));
+            queryString.append(" 	from " + dbasetable);
+            queryString.append(" 	where");
+            queryString.append("         DeviceRowID = %" PRIu64 "");
+            queryString.append("         and (select min(Date) from " + dbasetable + " where DeviceRowID = %" PRIu64 " and (" + counter("") + ") > 0) = Date");
+            queryString.append(" )");
+            queryString.append(" group by strftime('%%Y',Date)");
+            if (sgroupby == "quarter")
+            {
+                queryString.append(",case");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 1 and 3 then 'Q1'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 4 and 6 then 'Q2'");
+                queryString.append("   when cast(strftime('%%m',Date) as integer) between 7 and 9 then 'Q3'");
+                queryString.append("                                                              else 'Q4'");
+                queryString.append("   end");
+            }
+            else if (sgroupby == "month")
+            {
+                queryString.append(",strftime('%%m',Date)");
+            }
+			std::vector<std::vector<std::string>> result = m_sql.safe_query(queryString.c_str(), idx, idx, idx, idx, idx);
 			if (!result.empty())
 			{
 				int firstYearCounting = 0;
-				double fsumPrevious;
+				double yearSumPrevious[12];
+				int yearPrevious[12];
 				for (const auto &sd : result)
 				{
 					const int year = atoi(sd[0].c_str());
 					const double fsum = atof(sd[1].c_str());
-					const char *trend = firstYearCounting == 0 ? "" : fsumPrevious < fsum ? "up" : fsumPrevious > fsum ? "down" : "equal";
+					const int previousIndex = sgroupby == "year" ? 0 : sgroupby == "quarter" ? sd[2][1]-'0'-1 : atoi(sd[2].c_str())-1;
+					const double *sumPrevious = year-1 != yearPrevious[previousIndex] ? NULL : &yearSumPrevious[previousIndex];
+					const char *trend = !sumPrevious ? "" : *sumPrevious < fsum ? "up" : *sumPrevious > fsum ? "down" : "equal";
 					const int ii = root["result"].size();
 					if (firstYearCounting == 0 || year < firstYearCounting)
 					{
@@ -17396,7 +17509,8 @@ namespace http
 					root["result"][ii]["c"] = sgroupby == "year" ? sd[0] : sd[2];
 					root["result"][ii]["s"] = sumToResult(fsum);
 					root["result"][ii]["t"] = trend;
-					fsumPrevious = fsum;
+					yearSumPrevious[previousIndex] = fsum;
+					yearPrevious[previousIndex] = year;
 				}
 				root["firstYear"] = firstYearCounting;
 			}
@@ -17404,7 +17518,7 @@ namespace http
 
 		/*
 		 * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
-		 * respective category with todayValue.
+		 * respective category with todayValue. If root["firstYear"] is missing, the today's year is set in it's place.
 		 */
 		void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString)
 		{
@@ -17455,7 +17569,11 @@ namespace http
 			char szTmp[30];
 			sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
 			root["result"][todayResultIndex]["s"] = szTmp;
-		}
+
+            if (!root.isMember("firstYear")) {
+                root["firstYear"] = todayYear.c_str();
+            }
+        }
 
 		/**
 		 * Save user session.

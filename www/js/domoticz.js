@@ -5913,9 +5913,6 @@ function SetpointDown() {
 	var curValue = parseFloat($('#setpoint_popup #popup_setpoint').val());
 	curValue -= 0.5;
 	curValue = Math.round(curValue / 0.5) * 0.5;
-	if (curValue < 0) {
-		curValue = 0;
-	}
 	var curValueStr = curValue.toFixed(1);
 	$('#setpoint_popup #popup_setpoint').val(curValueStr);
 }
@@ -6268,4 +6265,14 @@ function MakeDatatableTranslations() {
 	$.DataTableLanguage["paginate"]["previous"] = $.t("Previous");
 	$.DataTableLanguage["paginate"]["next"] = $.t("Next");
 	$.DataTableLanguage["paginate"]["last"] = $.t("Last");
+}
+
+function fromInstanceOrFunction(functionTemplate = f => f()) {
+	return function (instanceOrFunction) {
+		if (typeof instanceOrFunction === 'function') {
+			return functionTemplate(instanceOrFunction);
+		} else {
+			return instanceOrFunction;
+		}
+	}
 }

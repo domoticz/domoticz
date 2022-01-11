@@ -23,7 +23,7 @@ define(['lodash'], function (_) {
             const seriesShown = {};
             seriesSuppliers.forEach(function (seriesSupplier) {
                 const chartSeries = chart.get(seriesSupplier.id);
-                if (seriesSupplier.datapoints !== undefined && seriesSupplier.datapoints.length !== 0) {
+                if (seriesSupplier.datapoints !== undefined && seriesSupplier.datapoints.length !== 0 || seriesSupplier.showWithoutDatapoints) {
                     if (chartSeries === undefined) {
                         const series =
                             _.merge(
@@ -32,7 +32,7 @@ define(['lodash'], function (_) {
                                     data: seriesSupplier.datapoints,
                                     color: seriesSupplier.colorIndex !== undefined ? Highcharts.getOptions().colors[seriesSupplier.colorIndex] : undefined
                                 },
-                                typeof seriesSupplier.template === 'function' ? seriesSupplier.template(seriesSupplier) : seriesSupplier.template
+                                fromInstanceOrFunction(f => f(seriesSupplier))(seriesSupplier.template)
                             );
                         if (self.extendSeriesNameWithLabel && seriesSupplier.label !== undefined) {
                             series.name = '[' + seriesSupplier.label + '] ' + series.name;

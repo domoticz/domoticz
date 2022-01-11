@@ -91,6 +91,7 @@ namespace Plugins {
 		bool			m_bErrored;
 	public:
 		CPluginProtocolMQTT(bool Secure) : m_PacketID(1), m_bErrored(false) { m_Secure = Secure; };
+		long MQTTDecodeVariableByte(std::vector<byte>::iterator& pIt);
 		void ProcessInbound(const ReadEvent *Message) override;
 		std::vector<byte> ProcessOutbound(const WriteDirective *WriteMessage) override;
 	};

@@ -10,9 +10,12 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
         vm.isCounterLog = isCounterLog;
+        vm.isEnergyUsedDevice = isEnergyUsedDevice;
         vm.isGasDevice = isGasDevice;
         vm.isWaterDevice = isWaterDevice;
         vm.isCounterDevice = isCounterDevice;
+        vm.isEnergyGeneratedDevice = isEnergyGeneratedDevice;
+        vm.isTimeDevice = isTimeDevice;
 
         init();
 
@@ -45,7 +48,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             }
 
             if (vm.device.Type === 'Heating') {
-                return ((vm.device.SubType != 'Zone') && (vm.device.SubType != 'Hot Water'));
+                return ((vm.device.SubType !== 'Zone') && (vm.device.SubType !== 'Hot Water'));
             }
 
             var isLightType = [
@@ -94,7 +97,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
                 return undefined;
             }
 
-            return (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Energy')
+            return (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType === 'Energy')
         }
 
         function isCounterLog() {
@@ -109,8 +112,12 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             }
 
             return vm.device.Type === 'RFXMeter'
-                || (vm.device.Type == 'P1 Smart Meter' && vm.device.SubType == 'Gas')
+                || (vm.device.Type === 'P1 Smart Meter' && vm.device.SubType === 'Gas')
                 || (typeof vm.device.Counter != 'undefined' && !isInstantAndCounterLog());
+        }
+
+        function isEnergyUsedDevice() {
+            return vm.device.SwitchTypeVal === chart.deviceTypes.EnergyUsed;
         }
 
         function isGasDevice() {
@@ -125,6 +132,14 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             return vm.device.SwitchTypeVal === chart.deviceTypes.Counter;
         }
 
+        function isEnergyGeneratedDevice() {
+            return vm.device.SwitchTypeVal === chart.deviceTypes.EnergyGenerated;
+        }
+
+        function isTimeDevice() {
+            return vm.device.SwitchTypeVal === chart.deviceTypes.Time;
+        }
+
         function isInstantAndCounterLog() {
             if (!vm.device) {
                 return undefined;
@@ -135,7 +150,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 
             return ['Power', 'Energy'].includes(vm.device.Type)
                 || ['kWh'].includes(vm.device.SubType)
-                || (vm.device.Type == 'YouLess Meter' && [0, 4].includes(vm.device.SwitchTypeVal));
+                || (vm.device.Type === 'YouLess Meter' && [0, 4].includes(vm.device.SwitchTypeVal));
         }
 
         function isReportAvailable() {

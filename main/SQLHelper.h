@@ -520,7 +520,7 @@ class CSQLHelper : public StoppableTask
 	void StopThread();
 	void Do_Work();
 #ifndef WIN32
-	void ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
+	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif
 	void PerformThreadedAction(const _tTaskItem tItem);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
@@ -563,6 +563,7 @@ class CSQLHelper : public StoppableTask
 	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
+	void SendUpdateInt(const std::string& Idx);
 
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);

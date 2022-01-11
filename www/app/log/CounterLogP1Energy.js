@@ -57,6 +57,9 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         },
                         chartNameIsToggling: function () {
                             return ctrl.dataContainsDelivery;
+                        },
+                        trendValuationIsReversed: function () {
+                            return ctrl.dataContainsDelivery && ctrl.sensorarea === 'delivery';
                         }
                     }
                 );

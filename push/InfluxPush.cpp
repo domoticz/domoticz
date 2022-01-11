@@ -174,7 +174,7 @@ void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
 		if (targetType == 0)
 		{
 			// Only send on change
-			std::map<std::string, _tPushItem>::iterator itt = m_PushedItems.find(szKey);
+			auto itt = m_PushedItems.find(szKey);
 			if (itt != m_PushedItems.end())
 			{
 				if (sendValue == itt->second.svalue)

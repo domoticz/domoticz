@@ -422,7 +422,7 @@ void CNest::GetMeterDetails()
 			return;
 		}
 		int SwitchIndex = 1;
-		for (Json::Value::iterator itDevice = root["topaz"].begin(); itDevice != root["topaz"].end(); ++itDevice)
+		for (auto itDevice = root["topaz"].begin(); itDevice != root["topaz"].end(); ++itDevice)
 		{
 			Json::Value device = *itDevice;
 			std::string devstring = itDevice.key().asString();
@@ -536,7 +536,7 @@ void CNest::GetMeterDetails()
 	}
 
 	size_t iThermostat = 0;
-	for (Json::Value::iterator ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
+	for (auto ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
 		Json::Value nstructure = *ittStructure;
 		if (!nstructure.isObject())
