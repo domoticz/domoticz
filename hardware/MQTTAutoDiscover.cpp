@@ -1263,12 +1263,15 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kWh");
 		if (pkWhSensor)
 		{
-			float fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
-			pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
-			mosquitto_message xmessage;
-			xmessage.retain = false;
-			// Trigger extra update for the kWh sensor with the new W value
-			handle_auto_discovery_sensor(pkWhSensor, &xmessage);
+			if (pkWhSensor->last_received != 0)
+			{
+				float fkWh = static_cast<float>(atof(pkWhSensor->last_value.c_str())) * 1000.0F;
+				pkWhSensor->sValue = std_format("%.3f;%.3f", fUsage, fkWh);
+				mosquitto_message xmessage;
+				xmessage.retain = false;
+				// Trigger extra update for the kWh sensor with the new W value
+				handle_auto_discovery_sensor(pkWhSensor, &xmessage);
+			}
 		}
 		sValue = std_format("%.3f", fUsage);
 	}
@@ -1279,6 +1282,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
+
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "W");
 		if (pWattSensor)
 		{
