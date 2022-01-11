@@ -2009,16 +2009,6 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 	}
 }
 
-// Rename key src in the Json::value object to dest. 
-void RenameKey(Json::Value& value, const char* src, const char* dest)
-{
-	if(!value[src].empty())
-	{
-		value[dest]=value[src];
-		value.removeMember(src);
-	}
-}
-
 void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
 	pSensor->devUnit = 1;
@@ -2260,11 +2250,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		if(root["color"].isObject() && !root["color"]["red"].empty())
 		{
 			// The device uses "red", "green"... to specify the color components, default for domoticz would be "r", "g"... (e.g. Fibaro FGRGBW)
-			RenameKey(root["color"],"red","r");
-			RenameKey(root["color"],"green","g");
-			RenameKey(root["color"],"blue","b");
-			RenameKey(root["color"],"warmWhite","w");
-			RenameKey(root["color"],"coldWhite","c");
+			JSonRenameKey(root["color"],"red","r");
+			JSonRenameKey(root["color"],"green","g");
+			JSonRenameKey(root["color"],"blue","b");
+			JSonRenameKey(root["color"],"warmWhite","w");
+			JSonRenameKey(root["color"],"coldWhite","c");
 		}
 
 		if(root["state"].empty() && root["color"].isObject())

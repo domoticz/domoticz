@@ -42,3 +42,13 @@ std::string JSonToRawString(const Json::Value& json_input)
 	std::string sresult = Json::writeString(jsonWriter, json_input);
 	return sresult;
 }
+
+bool JSonRenameKey(Json::Value& value, const std::string& srcKey, const std::string& destKey)
+{
+	if (value[srcKey].empty())
+		return false;
+
+	value[destKey]=value[srcKey];
+	value.removeMember(srcKey);
+	return true;
+}
