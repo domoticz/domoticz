@@ -2953,7 +2953,7 @@ namespace http
 			if (subsystem.empty())
 				subsystem = NOTIFYALL;
 			// Add to queue
-			if (m_notifications.SendMessage(0, std::string(""), subsystem, subject, body, std::string(""), 1, std::string(""), false))
+			if (m_notifications.SendMessage(0, std::string(""), subsystem, std::string(""), subject, body, std::string(""), 1, std::string(""), false))
 			{
 				root["status"] = "OK";
 			}
@@ -4251,11 +4251,12 @@ namespace http
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
-
 				std::string extraData = request::findValue(&req, "extradata");
 
+				std::string scustomaction = base64_decode(request::findValue(&req, "taction"));
+
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, extraData, 1, std::string(""), false))
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, scustomaction, notification_Title, notification_Message, extraData, 1, std::string(""), false))
 				{
 					root["status"] = "OK";
 				}
@@ -5960,6 +5961,7 @@ namespace http
 				std::string swhen = request::findValue(&req, "twhen");
 				std::string svalue = request::findValue(&req, "tvalue");
 				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
 				std::string sactivesystems = request::findValue(&req, "tsystems");
 				std::string spriority = request::findValue(&req, "tpriority");
 				std::string ssendalways = request::findValue(&req, "tsendalways");
@@ -5998,7 +6000,7 @@ namespace http
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 				if (bOK)
 				{
 					root["status"] = "OK";
@@ -6022,6 +6024,7 @@ namespace http
 				std::string swhen = request::findValue(&req, "twhen");
 				std::string svalue = request::findValue(&req, "tvalue");
 				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
 				std::string sactivesystems = request::findValue(&req, "tsystems");
 				std::string spriority = request::findValue(&req, "tpriority");
 				std::string ssendalways = request::findValue(&req, "tsendalways");
@@ -6071,7 +6074,7 @@ namespace http
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				m_notifications.AddNotification(devidx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -12434,6 +12437,7 @@ namespace http
 					root["result"][ii]["Priority"] = n.Priority;
 					root["result"][ii]["SendAlways"] = n.SendAlways;
 					root["result"][ii]["CustomMessage"] = n.CustomMessage;
+					root["result"][ii]["CustomAction"] = CURLEncode::URLEncode(n.CustomAction);
 					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
 					ii++;
 				}
