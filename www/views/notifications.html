@@ -176,7 +176,22 @@
                 <span>{{:: '(Optional)' | translate}}</span>
             </td>
         </tr>
-
+        <tr style="vertical-align:top">
+            <td>
+                <label for="custommessage">{{:: 'Action' | translate }}:</label>
+            </td>
+            <td>
+                <textarea id="customaction"
+                          rows="4"
+                          class="text ui-widget-content ui-corner-all"
+                          style="width: 356px; padding: .2em;"
+                          ng-model="$ctrl.notification.customAction"
+                          ng-change="$ctrl.updateViewValue()"
+                          >
+                </textarea>&nbsp;<span>{{:: '(Optional)' | translate}}</span><br>
+                <span>{{:: '(Should start with http:// or script://)' | translate}} #MESSAGE</span>
+            </td>
+        </tr>
         <tr>
             <td>
                 <label>{{:: 'Active Systems' | translate }}:</label>
