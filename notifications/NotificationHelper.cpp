@@ -29,6 +29,8 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
+extern std::string szUserDataFolder;
+
 using namespace http::server;
 
 CNotificationHelper::CNotificationHelper()
