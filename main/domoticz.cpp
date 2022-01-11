@@ -815,9 +815,11 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
 			int iPort = std::stoi(wwwport);
-			if ((iPort < 0) || (iPort > 32767))
+			if ((iPort < 0) || (iPort > 49151))
 			{
-				_log.Log(LOG_ERROR, "Please specify a valid www port");
+				_log.Log(LOG_ERROR,
+                 "Please specify a valid www port between 1 and 49151"
+                 " or 0 to disable");
 				return 1;
 			}
 			webserver_settings.listening_port = wwwport;
@@ -856,17 +858,12 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 			int iPort = std::stoi(wwwport);
-			if ((iPort < 0) || (iPort > 65535))
+			if ((iPort < 0) || (iPort > 49151))
 			{
 				_log.Log(LOG_ERROR,
-                 "Please specify a valid sslwww port between 1 and 65535"
+                 "Please specify a valid sslwww port between 1 and 49151"
                  " or 0 to disable");
 				return 1;
-			}
-			else if (iPort >= 49152) {
-				_log.Log(LOG_NORM,
-                 "You are using a dynamic TCP port number (>= 49152)."
-                 " This might cause network conflicts.");
 			}
 			secure_webserver_settings.listening_port = wwwport;
 		}
