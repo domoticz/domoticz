@@ -1919,6 +1919,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 			}
 			else
 				temp_setpoint = static_cast<float>(atof(qMessage.c_str()));
+			bHaveReceiveValue = true;
 		}
 		if (bValid)
 		{
