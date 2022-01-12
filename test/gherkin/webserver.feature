@@ -42,9 +42,14 @@ Feature: Webserver handling
 
     Scenario: Get regular file without extension
         Given I am a normal Domoticz user
-        And my browser supports receiving compressed data
         When I request the URI "/test/test2"
         Then the HTTP-return code should be "200"
         And I should receive the content saying "A regular file without extension!"
         And the HTTP-header "Content-Length" should contain "34"
         And the HTTP-header "Content-Type" should be absent
+
+    Scenario: Validate standard Not Found reply
+        Given I am a normal Domoticz user
+        When I request the URI "/idonotexist.png"
+        Then the HTTP-return code should be "404"
+        And the HTTP-header "Content-Type" should contain "text/html;charset=UTF-8"
