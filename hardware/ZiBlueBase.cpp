@@ -224,24 +224,24 @@ void CZiBlueBase::Init()
 	memset(&m_rfbuffer, 0, sizeof(m_rfbuffer));
 }
 
-static std::string jsonConfig="["
-	       "{\"idx\":\"1\",\"name\":\"Visonic 433MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"2\",\"name\":\"Visonic 868MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"3\",\"name\":\"Chacon\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"4\",\"name\":\"Domia\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"5\",\"name\":\"X10\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"6\",\"name\":\"X2D 433MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"7\",\"name\":\"X2D 868MHz\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"8\",\"name\":\"X2D SHUTTER\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit  Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"9\",\"name\":\"X2D ELEC\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"10\",\"name\":\"X2D GAS\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"11\",\"name\":\"RTS\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"},{\"name\":\"qualifier\",\"display\":\"Qualifier\",\"type\":\"bool\"}]},"
-	       "{\"idx\":\"12\",\"name\":\"Blyss\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"13\",\"name\":\"Parrot\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"16\",\"name\":\"KD101\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"22\",\"name\":\"FS20 868\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]},"
-	       "{\"idx\":\"23\",\"name\":\"EDISIO\",\"parameters\":[{\"name\":\"housecode\",\"display\":\"House Code\",\"type\":\"housecode16\"},{\"name\":\"unitcode\",\"display\":\"Unit Code\",\"type\":\"unitcode16\"}]}"
-			"]";
+static std::string jsonConfig=R"([
+	{"idx":"1","name":"Visonic 433MHz","parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"2","name":"Visonic 868MHz","parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"3","name":"Chacon",        "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"4","name":"Domia",         "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"5","name":"X10",           "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"6","name":"X2D 433MHz",    "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"7","name":"X2D 868MHz",    "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"8","name":"X2D SHUTTER",   "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"9","name":"X2D ELEC",      "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"10","name":"X2D GAS",      "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"11","name":"RTS",          "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"},{"name":"qualifier","display":"Qualifier","type":"bool"}]},
+	{"idx":"12","name":"Blyss",        "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"13","name":"Parrot",       "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"16","name":"KD101",        "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"22","name":"FS20 868",     "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
+	{"idx":"23","name":"EDISIO",       "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]}
+	])";
 const std::string &CZiBlueBase::GetManualSwitchesJsonConfiguration() const
 {
 	return jsonConfig;
