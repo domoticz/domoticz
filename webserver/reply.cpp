@@ -236,7 +236,7 @@ reply reply::stock_reply(reply::status_type status)
 		rep.headers[0].name = "Content-Length";
 		rep.headers[0].value = std::to_string(rep.content.size());
 		rep.headers[1].name = "Content-Type";
-		rep.headers[1].value = "text/html";
+		rep.headers[1].value = "text/html;charset=UTF-8";
 	}
 	return rep;
 }
