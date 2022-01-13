@@ -842,11 +842,25 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				}
 			}
 
-			// If there is an rgb_command_topic, set to RGB colormode
+			// If there is an rgb_command_topic, add RGB colormode
 			if (!root["rgb_command_topic"].empty() || !root["rgb_cmd_t"].empty())
 			{
 				// Note: there is currently no distinction between RGB and RGBW. All will be treated as RGBW devices!
 				pSensor->supported_color_modes["rgbw"] = 1;
+				pSensor->bColor_mode = true;
+			}		
+
+			// If there is an hs_command_topic, add HS colormode
+			if (!root["hs_command_topic"].empty() || !root["hs_cmd_t"].empty())
+			{
+				pSensor->supported_color_modes["hs"] = 1;
+				pSensor->bColor_mode = true;
+			}		
+
+			// If there is a color_temp_command_topic, add color temperature colormode
+			if (!root["color_temp_command_topic"].empty() || !root["clr_temp_cmd_t"].empty())
+			{
+				pSensor->supported_color_modes["color temp"] = 1;
 				pSensor->bColor_mode = true;
 			}		
 		}
@@ -2814,7 +2828,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else
 					{
-						Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+						Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
 						return false;
 					}
 				}
