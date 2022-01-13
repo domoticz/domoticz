@@ -1329,17 +1329,37 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeTextStatus;
 		sValue = pSensor->last_value;
 	}
+	else if (
+		(szUnit == "m³")
+		|| (szUnit == "cubic meters")
+		)
+	{
+		if (pSensor->icon.find("water"))
+		{
+			devType = pTypeRAIN;
+			subType = sTypeRAIN3;
+			float TotalRain = static_cast<float>(atof(pSensor->last_value.c_str()));
+			int Rainrate = 0;
+			sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
+		}
+		else if (pSensor->icon.find("gas"))
+		{
+			devType = pTypeP1Gas;
+			subType = sTypeP1Gas;
+			float TotalGas = static_cast<float>(atof(pSensor->last_value.c_str()));
+			sValue = std_format("%.0f", TotalGas * 1000.0F);
+		}
+		else
+		{
+			devType = pTypeRFXMeter;
+			subType = sTypeRFXMeterCount;
+			sValue = pSensor->last_value;
+		}
+	}
 	else if (pSensor->device_class == "illuminance")
 	{
 		devType = pTypeLux;
 		subType = sTypeLux;
-		sValue = pSensor->last_value;
-	}
-	else
-	{
-		devType = pTypeGeneral;
-		subType = sTypeCustom;
-		szOptions = pSensor->unit_of_measurement;
 		sValue = pSensor->last_value;
 	}
 
