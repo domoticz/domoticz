@@ -586,8 +586,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			root["color_mode"] = "True";
 			root["supported_color_modes"][0] = "rgbw";
-			root["payload_on"] = "99";
-			root["payload_off"] = "0";
 		}
 
 		_tMQTTASensor tmpSensor;
@@ -722,6 +720,18 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->payload_off = root["payload_off"].asString();
 		else if (!root["pl_off"].empty())
 			pSensor->payload_off = root["pl_off"].asString();
+
+		// E.g. Fibaro FGRGBW uses 99 and 0 as payloads. If nothing was set otherwise, we try this here.
+		if (pSensor->payload_on.empty() && (root["on_command_type"]=="brightness" || root["on_cmd_type"]=="brightness"))
+		{
+			if (!root["brightness_scale"].empty())
+				pSensor->payload_on  = root["brightness_scale"].asInt();
+			if (!root["bri_scl"].empty())
+				pSensor->payload_on  = root["bri_scl"].asInt();
+		}
+
+		if (pSensor->payload_off.empty() && (root["on_command_type"]=="brightness" || root["on_cmd_type"]=="brightness"))
+			pSensor->payload_off  = "0";
 
 		if (!root["payload_open"].empty())
 			pSensor->payload_open = root["payload_open"].asString();
