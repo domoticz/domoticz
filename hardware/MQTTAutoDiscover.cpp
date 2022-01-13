@@ -2766,7 +2766,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["w"] = color.ww;
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
-				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red")!= pSensor->rgb_command_template.npos) 
+				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red") != std::string::npos) 
 				{
 					// For the Fibaro FGRGBW dimmer:
 					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
