@@ -1198,7 +1198,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		else
 		{
 			devType = pTypeGeneral;
-			subType = sTypeCustom;
+			subType = sTypePercentage;
 			szOptions = pSensor->unit_of_measurement;
 			sValue = pSensor->last_value;
 		}
