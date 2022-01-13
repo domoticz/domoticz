@@ -580,13 +580,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			}
 		}
 
-		// if object_id is "rgb_dimmer", we need to tweak the color capabilities
-		// It would be better to have access to the nodeinfo, which contains the "compat" flags.
+#if 0
+		// For the Fibaro FGRGBW dimmer an incomplete template is received in the message. This is corrected here.
+		// Helps also to set a breakpoint when this device is configured...
 		if (object_id == "rgb_dimmer" && pDevice->model=="RGBW Controller (FGRGBW)")
-		{
-			root["color_mode"] = "True";
-			root["supported_color_modes"][0] = "rgbw";
-		}
+			root["rgb_value_template"] = "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }},{{ value_json.value.warmWhite }}";
+#endif
 
 		_tMQTTASensor tmpSensor;
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
@@ -793,12 +792,24 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 		if (!root["rgb_value_template"].empty())
 			pSensor->rgb_value_template = root["rgb_value_template"].asString();
+		if (!root["rgb_val_tpl"].empty())
+			pSensor->rgb_value_template = root["rgb_val_tpl"].asString();
+		CleanValueTemplate(pSensor->rgb_value_template);
+
 		if (!root["rgb_command_template"].empty())
 			pSensor->rgb_command_template = root["rgb_command_template"].asString();
+		if (!root["rgb_cmd_tpl"].empty())
+			pSensor->rgb_command_template = root["rgb_cmd_tpl"].asString();
+		CleanValueTemplate(pSensor->rgb_command_template);
+
 		if (!root["rgb_command_topic"].empty())
 			pSensor->rgb_command_topic = root["rgb_command_topic"].asString();
+		if (!root["rgb_cmd_t"].empty())
+			pSensor->rgb_command_topic = root["rgb_cmd_t"].asString();
 		if (!root["rgb_state_topic"].empty())
 			pSensor->rgb_state_topic = root["rgb_state_topic"].asString();
+		if (!root["rgb_stat_t"].empty())
+			pSensor->rgb_state_topic = root["rgb_stat_t"].asString();
 
 		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
 			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
@@ -830,6 +841,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 					pSensor->supported_color_modes["color_temp"] = 1;
 				}
 			}
+
+			// If there is an rgb_command_topic, set to RGB colormode
+			if (!root["rgb_command_topic"].empty() || !root["rgb_cmd_t"].empty())
+			{
+				// Note: there is currently no distinction between RGB and RGBW. All will be treated as RGBW devices!
+				pSensor->supported_color_modes["rgbw"] = 1;
+				pSensor->bColor_mode = true;
+			}		
 		}
 
 		if (!root["min_mireds"].empty())
@@ -2644,10 +2663,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	{
 		Json::Value root;
 
-		// Change Set Level to Set Color to send color_temp && color info in payload if the device supports color.
-		if (command == "Set Level" && color.mode != ColorModeNone)
-			command = "Set Color";
-
 		if (
 			(command == "On")
 			|| (command == "Off"))
@@ -2751,12 +2766,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["w"] = color.ww;
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
-				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("{'red': red,")!= pSensor->rgb_command_template.npos) 
+				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red")!= pSensor->rgb_command_template.npos) 
 				{
 					// For the Fibaro FGRGBW dimmer:
 					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
 					//	"rgb_value_template": "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }}",
-					//  -> variables are red, green and blue, but white is missing entirely, so the template can't be used anyway.
+					//  -> variables are red, green and blue, but white is missing entirely, so the template can't be used as is.
 					Json::Value colorDef;
 					root["value"] = colorDef;
 					root["value"]["red"] = root["color"]["r"];
