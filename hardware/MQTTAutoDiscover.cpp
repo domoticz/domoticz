@@ -1142,7 +1142,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	sValue = "";
 
 	std::string szUnit = utf8_to_string(pSensor->unit_of_measurement);
-
 	stdlower(szUnit);
 
 	if (szUnit.empty())
@@ -1260,7 +1259,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeElectric;
 
 		float fUsage = static_cast<float>(atof(pSensor->last_value.c_str()));
-		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kWh");
+		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
 		if (pkWhSensor)
 		{
 			if (pkWhSensor->last_received != 0)
@@ -1283,7 +1282,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
 
-		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "W");
+		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "w");
 		if (pWattSensor)
 		{
 			fUsage = static_cast<float>(atof(pWattSensor->last_value.c_str()));
@@ -1340,6 +1339,16 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			subType = sTypeRAIN3;
 			float TotalRain = static_cast<float>(atof(pSensor->last_value.c_str()));
 			int Rainrate = 0;
+
+			_tMQTTASensor* pRainRateSensor = get_auto_discovery_sensor_unit(pSensor, "mm/h");
+			if (pRainRateSensor)
+			{
+				if (pRainRateSensor->last_received != 0)
+				{
+					Rainrate = atoi(pRainRateSensor->last_value.c_str());
+				}
+			}
+
 			sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 		}
 		else if (pSensor->icon.find("gas"))
@@ -1355,6 +1364,30 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			subType = sTypeRFXMeterCount;
 			sValue = pSensor->last_value;
 		}
+	}
+	else if (szUnit == "mm/h")
+	{
+		_tMQTTASensor* pRainSensor = get_auto_discovery_sensor_unit(pSensor, "cubic meters");
+		if (!pRainSensor)
+			pRainSensor = get_auto_discovery_sensor_unit(pSensor, "m³");
+		if (pRainSensor)
+		{
+			if (pRainSensor->last_received != 0)
+			{
+				float TotalRain = static_cast<float>(atof(pRainSensor->last_value.c_str()));
+				int Rainrate = atoi(pSensor->last_value.c_str());
+
+				pRainSensor->sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
+				mosquitto_message xmessage;
+				xmessage.retain = false;
+				// Trigger extra update for the kWh sensor with the new W value
+				handle_auto_discovery_sensor(pRainSensor, &xmessage);
+			}
+		}
+		devType = pTypeGeneral;
+		subType = sTypeCustom;
+		szOptions = pSensor->unit_of_measurement;
+		sValue = pSensor->last_value;
 	}
 	else if (pSensor->device_class == "illuminance")
 	{
@@ -1384,7 +1417,11 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 		if (m_discovered_sensors.find(ittSensorID.first) != m_discovered_sensors.end())
 		{
 			_tMQTTASensor* pTmpDeviceSensor = &m_discovered_sensors[ittSensorID.first];
-			if (pTmpDeviceSensor->unit_of_measurement == szMeasurementUnit)
+
+			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
+			stdlower(szUnit);
+
+			if (szUnit == szMeasurementUnit)
 			{
 				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
 					return pTmpDeviceSensor;
