@@ -586,7 +586,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			root["color_mode"] = "True";
 			root["supported_color_modes"][0] = "rgbw";
-			root["brightness_value_template"] = "";
 			root["payload_on"] = "99";
 			root["payload_off"] = "0";
 		}
@@ -2782,7 +2781,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				{
 					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
 					if (!szKey.empty())
-						root[szKey] = slevel;
+					{
+						// Avoid that a brightness value overwrites an already set color value. Happens for e.g. Fibaro FGRGBW color dimmer.
+						// If such a conflict exists, color has priority and brightness will not be set in the message.
+						if (!root[szKey].isObject() && root[szKey].empty())
+							root[szKey] = slevel;
+					}
 					else
 					{
 						Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
