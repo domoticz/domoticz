@@ -814,9 +814,9 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
 			int iPort = (int)atoi(wwwport.c_str());
-			if ((iPort < 0) || (iPort > 32767))
+			if ((iPort < 0) || (iPort > 49151))
 			{
-				_log.Log(LOG_ERROR, "Please specify a valid www port");
+				_log.Log(LOG_ERROR, "Please specify a valid www port (1 - 49151, or 0 to disable)");
 				return 1;
 			}
 			webserver_settings.listening_port = wwwport;
@@ -855,9 +855,9 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 			int iPort = (int)atoi(wwwport.c_str());
-			if ((iPort < 0) || (iPort > 32767))
+			if ((iPort < 0) || (iPort > 49151))
 			{
-				_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
+				_log.Log(LOG_ERROR, "Please specify a valid sslwww port (1 - 49151)");
 				return 1;
 			}
 			secure_webserver_settings.listening_port = wwwport;
