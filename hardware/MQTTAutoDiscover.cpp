@@ -1919,7 +1919,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 	bValid = true;
 	if (!pSensor->temperature_command_topic.empty())
 	{
-		float temp_setpoint = 18;
+		double temp_setpoint = 18;
 		bool bHaveReceiveValue = false;
 		if (pSensor->temperature_state_topic == topic)
 		{
@@ -1934,15 +1934,21 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 						Log(LOG_ERROR, "Climate device unhandled temperature_state_template (%s)", pSensor->unique_id.c_str());
 						bValid = false;
 					}
-					temp_setpoint = static_cast<float>(atof(tstring.c_str()));
+					temp_setpoint = static_cast<double>(atof(tstring.c_str()));
 				}
 			}
 			else
-				temp_setpoint = static_cast<float>(atof(qMessage.c_str()));
+				temp_setpoint = static_cast<double>(atof(qMessage.c_str()));
 			bHaveReceiveValue = true;
 		}
 		if (bValid)
 		{
+			if (pSensor->temperature_unit == "F")
+			{
+				// Convert back to Celsius
+				temp_setpoint = ConvertToCelsius(temp_setpoint);
+			}
+
 			pSensor->nValue = 0;
 			pSensor->sValue = std_format("%.2f", temp_setpoint);
 			pSensor->devType = pTypeThermostat;
@@ -1988,11 +1994,11 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					Log(LOG_ERROR, "Climate device unhandled current_temperature_template (%s)", pSensor->unique_id.c_str());
 					bValid = false;
 				}
-				temp_current = static_cast<float>(atof(tstring.c_str()));
+				temp_current = static_cast<double>(atof(tstring.c_str()));
 			}
 		}
 		else
-			temp_current = static_cast<float>(atof(qMessage.c_str()));
+			temp_current = static_cast<double>(atof(qMessage.c_str()));
 
 		if (bValid)
 		{
