@@ -3481,23 +3481,24 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 	float temp;
 	if (!pResponse->TEMP.tempsign)
 	{
-		temp = float((pResponse->TEMP.temperatureh * 256) + pResponse->TEMP.temperaturel) / 100.0F;
+		temp = float((pResponse->TEMP.temperatureh * 256) + pResponse->TEMP.temperaturel) / 10.0F;
 	}
 	else
 	{
-		temp = -(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 100.0F);
+		temp = -(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0F);
 	}
 	if ((temp < -200) || (temp > 380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
 	}
+
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 	temp += AddjValue;
 
-	sprintf(szTmp, "%.2f", temp);
+	sprintf(szTmp, "%.1f", temp);
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == (uint64_t)-1)
 		return;
@@ -10194,7 +10195,7 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 	}
 	else if (subType == sTypePressure)
 	{
-		sprintf(szTmp, "%.2f", pMeter->floatval1);
+		sprintf(szTmp, "%.1f", pMeter->floatval1);
 		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == (uint64_t)-1)
 			return;
@@ -10526,10 +10527,10 @@ void MainWorker::decode_BBQ(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	tsen.TEMP.id2 = 1;
 
 	tsen.TEMP.tempsign = (temp1 >= 0) ? 0 : 1;
-	int at100 = round(std::abs(temp1 * 100.0F));
-	tsen.TEMP.temperatureh = (BYTE)(at100 / 256);
-	at100 -= (tsen.TEMP.temperatureh * 256);
-	tsen.TEMP.temperaturel = (BYTE)(at100);
+	int at10 = round(std::abs(temp1 * 10.0F));
+	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.TEMP.temperaturel = (BYTE)(at10);
 	_tRxMessageProcessingResult tmpProcResult1;
 	tmpProcResult1.DeviceName = "";
 	tmpProcResult1.DeviceRowIdx = -1;
@@ -10539,10 +10540,10 @@ void MainWorker::decode_BBQ(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	tsen.TEMP.id2 = 2;
 
 	tsen.TEMP.tempsign = (temp2 >= 0) ? 0 : 1;
-	at100 = round(std::abs(temp2 * 100.0F));
-	tsen.TEMP.temperatureh = (BYTE)(at100 / 256);
-	at100 -= (tsen.TEMP.temperatureh * 256);
-	tsen.TEMP.temperaturel = (BYTE)(at100);
+	at10 = round(std::abs(temp2 * 10.0F));
+	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.TEMP.temperaturel = (BYTE)(at10);
 	_tRxMessageProcessingResult tmpProcResult2;
 	tmpProcResult2.DeviceName = "";
 	tmpProcResult2.DeviceRowIdx = -1;
