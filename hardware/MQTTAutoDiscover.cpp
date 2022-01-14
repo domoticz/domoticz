@@ -2450,6 +2450,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				color_new.ww = color_CT.ww;
 			}
 
+			std::vector<std::vector<std::string>> lastLevelResult;
+			lastLevelResult = m_sql.safe_query("SELECT LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+			if (!lastLevelResult.empty())
+				level = atoi(lastLevelResult[0][0].c_str());
+			else
+				level = 0;
+
 			std::string szColorOld = color_old.toJSONString();
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
