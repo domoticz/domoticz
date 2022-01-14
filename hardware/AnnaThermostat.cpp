@@ -759,8 +759,8 @@ void CAnnaThermostat::GetMeterDetails()
                     SendTempSensor(sAnnaHotWaterTemperature, 255, temperature, sname);
                 }
             }
-		}
-		pAppliance = pAppliance->NextSiblingElement("appliance");
+        }
+        pAppliance = pAppliance->NextSiblingElement("appliance");
 	}
 }
 
