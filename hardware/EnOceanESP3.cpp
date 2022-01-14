@@ -3559,7 +3559,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (FTMP8 >= 0) ? 0 : 1;
-						int at10 = round(std::abs(FTMP8 * 100.0F));
+						int at100 = round(std::abs(FTMP8 * 100.0F));
 						tsen.TEMP.temperatureh = (BYTE) (at100 / 256);
 						at100 -= (tsen.TEMP.temperatureh * 256);
 						tsen.TEMP.temperaturel = (BYTE) at100;
