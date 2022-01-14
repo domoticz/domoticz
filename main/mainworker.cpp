@@ -81,6 +81,7 @@
 #include "../hardware/ETH8020.h"
 #include "../hardware/RFLinkSerial.h"
 #include "../hardware/RFLinkTCP.h"
+#include "../hardware/RFLinkMQTT.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
 #include "../hardware/KMTronicUDP.h"
@@ -708,6 +709,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
+		break;
+	case HTYPE_RFLINKMQTT:
+		pHardware = new CRFLinkMQTT(ID, Address , Port , Username , Password , Extra, Mode2, Mode1, Mode3 != 0 );
 		break;
 	case HTYPE_ZIBLUEUSB:
 		pHardware = new CZiBlueSerial(ID, SerialPort);

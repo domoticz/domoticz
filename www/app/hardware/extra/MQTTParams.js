@@ -69,16 +69,21 @@ extraHWInitParams = function(data) {
 	else
 		$("#hardwarecontent #divextrahwparams #mqtt_publish").hide();
 
-  if(window.__hwfnparam == 3) {
-    //Auto Discovery
-    $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").hide();
-    $("#hardwarecontent #divextrahwparams #mqtt_preventloop").hide();
-    $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").show();
-  } else {
-    $("#hardwarecontent #divextrahwparams #mqtt_preventloop").show();
-    $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").show();
-    $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").hide();
-  }
+	if(window.__hwfnparam == 3) {
+	  //Auto Discovery
+	  $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").hide();
+	  $("#hardwarecontent #divextrahwparams #mqtt_preventloop").hide();
+	  $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").show();
+     } else if( window.__hwfnparam == 4 ) {
+	  // RFLink Gateway MQTT
+	  $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").hide();
+	  $("#hardwarecontent #divextrahwparams #mqtt_preventloop").hide();
+	  $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").hide();
+	} else {
+	  $("#hardwarecontent #divextrahwparams #mqtt_preventloop").show();
+	  $("#hardwarecontent #divextrahwparams #mqtt_topic_in_out").show();
+	  $("#hardwarecontent #divextrahwparams #mqtt_auto_dicovery").hide();
+    }
 }
 
 extraHWUpdateParams = function(validators) {

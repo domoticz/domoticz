@@ -197,6 +197,7 @@ CRFLinkBase::CRFLinkBase()
 	memset(&m_rfbuffer,0,sizeof(m_rfbuffer));
 	m_rfbufferpos = 0;
 	m_retrycntr = RFLINK_RETRY_DELAY;
+	m_cmdacktimeout = 3;      // command ack wait timeout
 	/*
 	ParseLine("20;4F;LIVCOL;ID=1a2b3c4;SWITCH=00;RGBW=ec5a;CMD=ON;");
 	ParseLine("20;08;NewKaku;ID=31c42a;SWITCH=2;CMD=OFF;");
@@ -310,14 +311,14 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
         // check setlevel command
         if (pSwitch->cmnd == gswitch_sSetLevel) {
            // Get device level to set
-	   float fvalue = (15.0F / 100.0F) * float(pSwitch->level);
-	   if (fvalue > 15.0F)
-		   fvalue = 15.0F; // 99 is fully on
-	   int svalue = round(fvalue);
-	   //Log(LOG_ERROR, "level: %d", svalue);
-	   char buffer[50] = { 0 };
-	   sprintf(buffer, "%d", svalue);
-	   switchcmnd = buffer;
+		   float fvalue = (15.0F / 100.0F) * float(pSwitch->level);
+		   if (fvalue > 15.0F)
+			   fvalue = 15.0F; // 99 is fully on
+		   int svalue = round(fvalue);
+		   //Log(LOG_ERROR, "level: %d", svalue);
+		   char buffer[50] = { 0 };
+		   sprintf(buffer, "%d", svalue);
+		   switchcmnd = buffer;
 	    }
 
 		if (switchcmnd.empty()) {
@@ -354,10 +355,12 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
-			if (difftime(btime,atime) > 4) {
-				Log(LOG_ERROR, "TX time out...");
+			int diff = difftime(btime,atime);
+			if ( diff > m_cmdacktimeout ) {
+				_log.Log(LOG_ERROR, "RFLink: TX time out (%d sec)..." , diff );
 				return false;
 			}
+			sleep_milliseconds(100);
 			btime = mytime(nullptr);
 		}
 		return true;

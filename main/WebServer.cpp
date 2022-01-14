@@ -1540,7 +1540,8 @@ namespace http
 				 (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
 				 (htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) || (htype == HTYPE_NefitEastLAN) ||
 				 (htype == HTYPE_DenkoviHTTPDevices) || (htype == HTYPE_DenkoviTCPDevices) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) ||
-				 (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP) || (htype == HTYPE_OctoPrint) || (htype == HTYPE_TeleinfoMeterTCP))
+				 (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP) || (htype == HTYPE_OctoPrint) || (htype == HTYPE_TeleinfoMeterTCP) ||
+				 (htype == HTYPE_RFLINKMQTT))
 			{
 				// Lan
 				if (address.empty())
@@ -1760,6 +1761,10 @@ namespace http
 			else if (htype == HTYPE_AirconWithMe)
 			{
 				// all fine here!
+			}
+			else if (htype == HTYPE_RFLINKMQTT)
+			{
+				//all fine here!
 			}
 			else
 				return;

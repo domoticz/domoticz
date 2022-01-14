@@ -10,6 +10,7 @@ define(['app'], function (app) {
 		'OctoPrint (MQTT/Gina Haussge) with LAN interface': ['MQTTParams', 1],
 		'The Things Network (MQTT/CayenneLPP) with LAN interface': ['MQTTParams', 2],
 		'MQTT Auto Discovery Client Gateway with LAN interface': ['MQTTParams', 3],
+		'RFLink Gateway MQTT': ['MQTTParams', 4],
 	};
 	
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
@@ -3916,7 +3917,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("HTTP/HTTPS") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
 							}
-							else if (HwTypeStr.indexOf("RFLink") >= 0) {
+							else if( (HwTypeStr.indexOf("RFLink") >= 0 &&
+									HwTypeStr.indexOf("MQTT") == -1 ) ||
+									HwTypeStr.indexOf("RFLink Gateway MQTT") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
 							}
@@ -4178,7 +4181,9 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
                             }
 						}
-						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
+						 		(data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) &&
+								(data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
