@@ -35,6 +35,8 @@
 #define sAnnaFailedBurnerStarts             17
 #define sAnnaBurnerOperationTime            18
 #define sAnnaHotWaterBurnerOperationTime    19
+#define sAnnaHotWaterFlow                   20
+#define sAnnaHotWaterTemperature            21
 
 const std::string ANNA_VERSION       = "1.0.1";
 const std::string ANNA_GET_STATUS    = "/core/appliances";
@@ -737,6 +739,24 @@ void CAnnaThermostat::GetMeterDetails()
                 {
                     float hour = (float)atof(tmpstr.c_str());
                     SendCustomSensor(sAnnaHotWaterBurnerOperationTime, 1, 255, hour, sname, "Hour(s)");
+                }
+            }
+            else if (sname == "domestic_hot_water_flow")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float flow = (float)atof(tmpstr.c_str());
+                    SendWaterflowSensor(sAnnaHotWaterFlow, 1, 255, flow, sname);
+                }
+            }
+            else if (sname == "domestic_hot_water_temperature")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float temperature = (float)atof(tmpstr.c_str());
+                    SendTempSensor(sAnnaHotWaterTemperature, 255, temperature, sname);
                 }
             }
 		}
