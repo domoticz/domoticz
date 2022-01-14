@@ -1306,12 +1306,12 @@ bool CEnOceanESP2::ParseData()
 				tsen.TEMP.battery_level = bitrange(pFrame->ID_BYTE0, 0, 0x0F);
 				tsen.TEMP.rssi = bitrange(pFrame->ID_BYTE0, 4, 0x0F);
 				tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
-				int at10 = round(std::abs(TMP * 10.0F));
-				tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
-				at10 -= tsen.TEMP.temperatureh * 256;
-				tsen.TEMP.temperaturel = (BYTE) at10;
+				int at100 = round(std::abs(TMP * 100.0F));
+				tsen.TEMP.temperatureh = (BYTE) (at100 / 256);
+				at100 -= tsen.TEMP.temperatureh * 256;
+				tsen.TEMP.temperaturel = (BYTE) at100;
 
-				Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
+				Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.2F°C", nodeID, TMP);
 
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 			}
@@ -1449,12 +1449,12 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
-					int at10 = round(std::abs(TMP * 10.0F));
-					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
-					at10 -= (tsen.TEMP.temperatureh * 256);
-					tsen.TEMP.temperaturel = (BYTE) at10;
+					int at100 = round(std::abs(TMP * 100.0F));
+					tsen.TEMP.temperatureh = (BYTE) (at100 / 256);
+					at100 -= (tsen.TEMP.temperatureh * 256);
+					tsen.TEMP.temperaturel = (BYTE) at100;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.2F°C", nodeID, TMP);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
@@ -1736,12 +1736,12 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.battery_level = pFrame->ID_BYTE0 & 0x0F;
 					tsen.TEMP.rssi = (pFrame->ID_BYTE0 & 0xF0) >> 4;
 					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
-					int at10 = round(std::abs(TMP * 10.0F));
-					tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
-					at10 -= (tsen.TEMP.temperatureh * 256);
-					tsen.TEMP.temperaturel = (BYTE) at10;
+					int at100 = round(std::abs(TMP * 100.0F));
+					tsen.TEMP.temperatureh = (BYTE) (at100 / 256);
+					at100 -= (tsen.TEMP.temperatureh * 256);
+					tsen.TEMP.temperaturel = (BYTE) at100;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", nodeID, TMP);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.2F°C", nodeID, TMP);
 
 					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(RORG_4BS, Profile, iType), -1, m_Name.c_str());
 				}
