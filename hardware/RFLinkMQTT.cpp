@@ -27,10 +27,10 @@
 #include "../main/mainworker.h"
 #include "../main/localtime_r.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
 #include <inttypes.h>
+#include <json/json.h>
 
 // -----------------------------------------------------------------------------
 // TODO: Add to doumentetion
