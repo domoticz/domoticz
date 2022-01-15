@@ -806,6 +806,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 					pSensor->supported_color_modes["color_temp"] = 1;
 				}
 			}
+			
+			if (
+				(!root["color_temp_command_topic"].empty())
+				|| (!root["clr_temp_cmd_t"].empty())
+				)
+			{
+				pSensor->supported_color_modes["color_temp"] = 1;
+			}
 		}
 
 		if (!root["min_mireds"].empty())
@@ -816,6 +824,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->max_mireds = root["max_mireds"].asInt();
 		if (!root["max_mirs"].empty())
 			pSensor->max_mireds = root["max_mirs"].asInt();
+
+		if (!root["color_temp_value_template"].empty())
+			pSensor->color_temp_value_template = root["color_temp_value_template"].asString();
+		else if (!root["clr_temp_val_tpl"].empty())
+			pSensor->color_temp_value_template = root["clr_temp_val_tpl"].asString();
+		CleanValueTemplate(pSensor->color_temp_value_template);
+
 
 		//Select
 		if (!root["options"].empty())
@@ -2781,7 +2796,20 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				{
 					//color.cw color.ww t
 					float iCt = pSensor->min_mireds + ((static_cast<float>(pSensor->max_mireds - pSensor->min_mireds) / 255.0F) * color.t);
-					root["color_temp"] = (int)round(iCt);
+					int iCT = (int)round(iCt);
+					if (!pSensor->color_temp_value_template.empty())
+					{
+						std::string szKey = GetValueTemplateKey(pSensor->color_temp_value_template);
+						if (!szKey.empty())
+							root[szKey] = iCT;
+						else
+						{
+							Log(LOG_ERROR, "Color device unhandled color_temp_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+							return false;
+						}
+					}
+					else
+						root["color_temp"] = iCT;
 				}
 			}
 
