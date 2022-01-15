@@ -12359,20 +12359,39 @@ namespace http
 
 			std::vector<std::vector<std::string>> result;
 
-			// Check which device is newer
+			root["status"] = "OK";
+			root["title"] = "TransferDevice";
 
-			time_t now = mytime(nullptr);
-			struct tm tm1;
-			localtime_r(&now, &tm1);
-			struct tm LastUpdateTime_A;
-			struct tm LastUpdateTime_B;
-
-			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
+			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate, B.HardwareID, B.DeviceID, B.Unit, B.Type, B.SubType FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
 			if (result.empty())
 				return;
 
 			std::string sLastUpdate_A = result[0][0];
 			std::string sLastUpdate_B = result[0][1];
+
+			int newHardwareID = std::stoi(result[0][2]);
+			std::string newDeviceID = result[0][3];
+			int newUnit = std::stoi(result[0][4]);
+			int devType = std::stoi(result[0][5]);
+			int subType = std::stoi(result[0][6]);
+
+			if (IsLightOrSwitch(devType, subType))
+			{
+				//For Lights/Switches we just transfer the new HardwareID,DeviceID/Unit from the new device to the old device
+				//After this we delete the new device
+				//This makes sure everything stays like it was before (idx,scripts,notifications etc)
+				//GizMoCuz: make this standard for everything else as well ?
+				m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, sidx.c_str());
+				m_sql.safe_query("DELETE FROM DeviceStatus WHERE ID == '%q'", newidx.c_str());
+				return;
+			}
+
+			// Check which device is newer
+			time_t now = mytime(nullptr);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			struct tm LastUpdateTime_A;
+			struct tm LastUpdateTime_B;
 
 			time_t timeA, timeB;
 			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
@@ -12383,14 +12402,6 @@ namespace http
 				// Swap idx with newidx
 				sidx.swap(newidx);
 			}
-
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue FROM DeviceStatus WHERE (ID == '%q')",
-						  newidx.c_str());
-			if (result.empty())
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "TransferDevice";
 
 			// transfer device logs (new to old)
 			m_sql.TransferDevice(newidx, sidx);
