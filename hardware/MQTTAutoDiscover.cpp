@@ -1242,13 +1242,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeVoltcraft;
 		nValue = atoi(pSensor->last_value.c_str());
 	}
-	else if (szUnit == "µg/m³")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeCustom;
-		szOptions = pSensor->unit_of_measurement;
-		sValue = pSensor->last_value;
-	}
 	else if (szUnit == "v")
 	{
 		devType = pTypeGeneral;
@@ -1409,6 +1402,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
+	else
+	{
+		devType = pTypeGeneral;
+		subType = sTypeCustom;
+		szOptions = pSensor->unit_of_measurement;
+		sValue = pSensor->last_value;
+	 }
 
 	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
 		szOptions = "??";
