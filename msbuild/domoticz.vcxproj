@@ -671,6 +671,7 @@
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
     <ClInclude Include="..\hardware\RelayNet.h" />
     <ClInclude Include="..\hardware\RFLinkBase.h" />
+    <ClInclude Include="..\hardware\RFLinkMQTT.h" />
     <ClInclude Include="..\hardware\RFLinkSerial.h" />
     <ClInclude Include="..\hardware\RFLinkTCP.h" />
     <ClInclude Include="..\hardware\RFXBase.h" />
@@ -980,6 +981,7 @@
     <ClCompile Include="..\hardware\RAVEn.cpp" />
     <ClCompile Include="..\hardware\RelayNet.cpp" />
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
+    <ClCompile Include="..\hardware\RFLinkMQTT.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
     <ClCompile Include="..\hardware\RFLinkTCP.cpp" />
     <ClCompile Include="..\hardware\RFXBase.cpp" />

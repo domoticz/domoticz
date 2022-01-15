@@ -355,9 +355,9 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
-			int diff = difftime(btime,atime);
-			if ( diff > m_cmdacktimeout ) {
-				_log.Log(LOG_ERROR, "RFLink: TX time out (%d sec)..." , diff );
+			double diff = difftime(btime,atime);
+			if ( diff > (double)m_cmdacktimeout ) {
+				_log.Log(LOG_ERROR, "RFLink: TX time out (%f sec)..." , diff );
 				return false;
 			}
 			sleep_milliseconds(100);
