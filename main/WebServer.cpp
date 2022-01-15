@@ -4298,7 +4298,7 @@ namespace http
 				std::string sunitcode;
 				std::string devid;
 
-				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != nullptr && !pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
 				{
 					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);

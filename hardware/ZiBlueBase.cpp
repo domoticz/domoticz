@@ -246,82 +246,82 @@ const std::string &CZiBlueBase::GetManualSwitchesJsonConfiguration() const
 {
 	return jsonConfig;
 }
-void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> &parameters, _eSwitchType &switchtypeInOut, int &lighttypeInOut, 
-										int &dtypeOut, int &dsubTypeOut, std::string &devidOut, std::string &sunitOut) const
+void CZiBlueBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> &Parameters, _eSwitchType & SwitchTypeInOut, int & LightTypeInOut,
+										int & dTypeOut, int &dSubTypeOut, std::string &devIDOut, std::string &sUnitOut) const
 {
-	dtypeOut = pTypeGeneralSwitch;
-	switch (lighttypeInOut)
+	dTypeOut = pTypeGeneralSwitch;
+	switch (LightTypeInOut)
 	{
 		case SEND_VISONIC_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeVisonic433;
+			dSubTypeOut = sSwitchTypeVisonic433;
 			break;
 		case SEND_VISONIC_PROTOCOL_868:
-			dsubTypeOut = sSwitchTypeVisonic868;
+			dSubTypeOut = sSwitchTypeVisonic868;
 			break;
 		case SEND_CHACON_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeAC;
+			dSubTypeOut = sSwitchTypeAC;
 			break;
 		case SEND_DOMIA_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeARC;
+			dSubTypeOut = sSwitchTypeARC;
 			break;
 		case SEND_X10_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeX10;
+			dSubTypeOut = sSwitchTypeX10;
 			break;
 		case SEND_X2D_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeX2D433;
+			dSubTypeOut = sSwitchTypeX2D433;
 			break;
 		case SEND_X2D_PROTOCOL_868:
-			dsubTypeOut = sSwitchTypeX2D868;
+			dSubTypeOut = sSwitchTypeX2D868;
 			break;
 		case SEND_X2D_SHUTTER_PROTOCOL_868:
-			dsubTypeOut = sSwitchTypeX2DShutter;
+			dSubTypeOut = sSwitchTypeX2DShutter;
 			break;
 		case SEND_X2D_HA_ELEC_PROTOCOL_868:
-			dsubTypeOut = sSwitchTypeX2DElec;
+			dSubTypeOut = sSwitchTypeX2DElec;
 			break;
 		case SEND_X2D_HA_GASOIL_PROTOCOL_868:
-			dsubTypeOut = sSwitchTypeX2DGas;
+			dSubTypeOut = sSwitchTypeX2DGas;
 			break;
 		case SEND_SOMFY_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeRTS;
+			dSubTypeOut = sSwitchTypeRTS;
 			break;
 		case SEND_BLYSS_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeBlyss;
+			dSubTypeOut = sSwitchTypeBlyss;
 			break;
 		case SEND_PARROT:
-			dsubTypeOut = sSwitchTypeParrot;
+			dSubTypeOut = sSwitchTypeParrot;
 			break;
 		case SEND_KD101_PROTOCOL_433:
-			dsubTypeOut = sSwitchTypeKD101;
+			dSubTypeOut = sSwitchTypeKD101;
 			break;
 		case SEND_FS20_868:
-			dsubTypeOut = sSwitchTypeFS20;
+			dSubTypeOut = sSwitchTypeFS20;
 			break;
 	}
-	auto it = parameters.find("housecode");
-	if (it != parameters.end())
+	auto it = Parameters.find("housecode");
+	if (it != Parameters.end())
 	{
 		int ID = atoi(it->second.c_str());
 		std::stringstream s_strid;
 		s_strid << std::hex << std::setfill('0') << std::setw(8) << ID;
-		devidOut = s_strid.str();
+		devIDOut = s_strid.str();
 	}
-	it = parameters.find("unitcode");
-	if (it != parameters.end())
+	it = Parameters.find("unitcode");
+	if (it != Parameters.end())
 	{
-		sunitOut = it->second;
+		sUnitOut = it->second;
 	}
-	if (lighttypeInOut == SEND_SOMFY_PROTOCOL_433)
+	if (LightTypeInOut == SEND_SOMFY_PROTOCOL_433)
 	{
-		it = parameters.find("qualifier");
-		if (it != parameters.end())
+		it = Parameters.find("qualifier");
+		if (it != Parameters.end())
 		{
-			int id = atoi(devidOut.c_str());
+			int id = atoi(devIDOut.c_str());
 			int qualifier = it->second == "true" ? 1 : 0; 
 			id |= qualifier << 16;
 			std::stringstream temp;
 			temp << std::setfill('0') << std::setw(8) << id;
-			devidOut = temp.str();
+			devIDOut = temp.str();
 		}
 	}
 }

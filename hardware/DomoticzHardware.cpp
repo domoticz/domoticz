@@ -28,8 +28,8 @@ const std::string& CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration() c
 	return "";
 }
 
-void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> & /*parameters*/, _eSwitchType & /*switchtypeInOut*/, int & /*lighttypeInOut*/, 
-	 int & /*dtypeOut*/, int &dsubTypeOut, std::string & /*devidOut*/, std::string & /*sunitOut*/) const
+void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> & /*Parameters*/, _eSwitchType & /*SwitchTypeInOut*/, int & /*LightTypeInOut*/,
+	 int & /*dTypeOut*/, int &dSubTypeOut, std::string & /*devIDOut*/, std::string & /*sUnitOut*/) const
 {
 }
 
