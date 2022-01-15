@@ -57,7 +57,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception: %s!", e.what());
+		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s/message: %s)", e.what(), topic.c_str(), qMessage.c_str());
 		return;
 	}
 }
@@ -268,7 +268,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception: %s!", e.what());
+		Log(LOG_ERROR, "Exception (GetValueFromTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
 	}
 	return "";
 }
@@ -323,7 +323,7 @@ bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szVal
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception: %s!", e.what());
+		Log(LOG_ERROR, "Exception (SetValueWithTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
 	}
 	return false;
 }
@@ -994,8 +994,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "MQTT_Discovery: Error: %s!", e.what());
-		goto disovery_invaliddata;
+		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s/message: %s", e.what(), topic.c_str(), qMessage.c_str());
 	}
 	return;
 disovery_invaliddata:
