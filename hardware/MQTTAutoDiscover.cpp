@@ -580,13 +580,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			}
 		}
 
-#if 0
-		// For the Fibaro FGRGBW dimmer an incomplete template is received in the message. This is corrected here.
-		// Helps also to set a breakpoint when this device is configured...
-		if (object_id == "rgb_dimmer" && pDevice->model=="RGBW Controller (FGRGBW)")
-			root["rgb_value_template"] = "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }},{{ value_json.value.warmWhite }}";
-#endif
-
 		_tMQTTASensor tmpSensor;
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
 		_tMQTTASensor* pSensor = &m_discovered_sensors[sensor_unique_id];
