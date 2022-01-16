@@ -2953,7 +2953,7 @@ namespace http
 			if (subsystem.empty())
 				subsystem = NOTIFYALL;
 			// Add to queue
-			if (m_notifications.SendMessage(0, std::string(""), subsystem, subject, body, std::string(""), 1, std::string(""), false))
+			if (m_notifications.SendMessage(0, std::string(""), subsystem, std::string(""), subject, body, std::string(""), 1, std::string(""), false))
 			{
 				root["status"] = "OK";
 			}
@@ -4251,11 +4251,12 @@ namespace http
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
-
 				std::string extraData = request::findValue(&req, "extradata");
 
+				std::string scustomaction = base64_decode(request::findValue(&req, "taction"));
+
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, extraData, 1, std::string(""), false))
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, scustomaction, notification_Title, notification_Message, extraData, 1, std::string(""), false))
 				{
 					root["status"] = "OK";
 				}
@@ -4286,47 +4287,40 @@ namespace http
 				std::string sunitcode;
 				std::string devid;
 
-				if (lighttype == 70)
+				if (lighttype < 20)
 				{
-					// EnOcean (Lighting2 with Base_ID offset)
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
+					dtype = pTypeLighting1;
+					subtype = lighttype;
+					std::string shousecode = request::findValue(&req, "housecode");
 					sunitcode = request::findValue(&req, "unitcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+					if ((shousecode.empty()) || (sunitcode.empty()))
 						return;
-					sunitcode = sgroupcode; // Button A or B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == nullptr)
+					devid = shousecode;
+				}
+				else if (lighttype < 30)
+				{
+					dtype = pTypeLighting2;
+					subtype = lighttype - 20;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) && (pBaseHardware->HwdType != HTYPE_USBtinGateway))
+					devid = id;
+				}
+				else if (lighttype < 68)
+				{
+					dtype = pTypeLighting5;
+					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					unsigned long rID = 0;
-					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
-					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
-					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
-					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
-						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
-						// for exemple see MultiblocV8 layer...
-						rID = pUSBtinHardware->switch_id_base;
-						std::stringstream ssunitcode;
-						ssunitcode << iUnitTest;
-						sunitcode = ssunitcode.str();
-					}
-					// convert to hex, and we have our ID
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << rID;
-					devid = s_strid.str();
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
+						devid = "00" + id;
+					else
+						devid = id;
 				}
 				else if (lighttype == 68)
 				{
@@ -4420,405 +4414,409 @@ namespace http
 					return;
 #endif
 				}
-				else if (lighttype < 20)
+				else if (lighttype == 70)
 				{
-					dtype = pTypeLighting1;
-					subtype = lighttype;
+					// EnOcean (Lighting2 with Base_ID offset)
+					dtype = pTypeLighting2;
+					subtype = sTypeAC;
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					int iUnitTest = atoi(sunitcode.c_str()); // only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
+					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+						return;
+					sunitcode = sgroupcode; // Button A or B
+					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					if (pBaseHardware == nullptr)
+						return;
+					unsigned long rID = 0;
+					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
+					{
+						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
+					{
+						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
+					{
+						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
+						// for exemple see MultiblocV8 layer...
+						rID = pUSBtinHardware->switch_id_base;
+						std::stringstream ssunitcode;
+						ssunitcode << iUnitTest;
+						sunitcode = ssunitcode.str();
+					}
+					else
+						return;
+					// convert to hex, and we have our ID
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << rID;
+					devid = s_strid.str();
+				}
+				else if (lighttype == 100)
+				{
+					// Chime/ByronSX
+					dtype = pTypeChime;
+					subtype = sTypeByronSX;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str()) - 1;
+					switch (iUnitCode)
+					{
+						case 0:
+							iUnitCode = chime_sound0;
+							break;
+						case 1:
+							iUnitCode = chime_sound1;
+							break;
+						case 2:
+							iUnitCode = chime_sound2;
+							break;
+						case 3:
+							iUnitCode = chime_sound3;
+							break;
+						case 4:
+							iUnitCode = chime_sound4;
+							break;
+						case 5:
+							iUnitCode = chime_sound5;
+							break;
+						case 6:
+							iUnitCode = chime_sound6;
+							break;
+						case 7:
+							iUnitCode = chime_sound7;
+							break;
+					}
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
+				}
+				else if (lighttype == 101)
+				{
+					// Curtain Harrison
+					dtype = pTypeCurtain;
+					subtype = sTypeHarrison;
 					std::string shousecode = request::findValue(&req, "housecode");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((shousecode.empty()) || (sunitcode.empty()))
 						return;
 					devid = shousecode;
 				}
-				else if (lighttype < 30)
+				else if (lighttype == 102)
 				{
-					dtype = pTypeLighting2;
-					subtype = lighttype - 20;
+					// RFY
+					dtype = pTypeRFY;
+					subtype = sTypeRFY;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return;
 					devid = id;
 				}
-				else if (lighttype < 70)
+				else if (lighttype == 103)
 				{
-					dtype = pTypeLighting5;
-					subtype = lighttype - 50;
-					if (lighttype == 59)
-						subtype = sTypeIT;
+					// Meiantech
+					dtype = pTypeSecurity1;
+					subtype = sTypeMeiantech;
+					std::string id = request::findValue(&req, "id");
+					if ((id.empty()))
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 104)
+				{
+					// HE105
+					dtype = pTypeThermostat2;
+					subtype = sTypeHE105;
+					sunitcode = request::findValue(&req, "unitcode");
+					if (sunitcode.empty())
+						return;
+					// convert to hex, and we have our Unit Code
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << sunitcode;
+					int iUnitCode;
+					s_strid >> iUnitCode;
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = "1";
+				}
+				else if (lighttype == 105)
+				{
+					// ASA
+					dtype = pTypeRFY;
+					subtype = sTypeASA;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
-						devid = "00" + id;
-					else
-						devid = id;
+					devid = id;
 				}
-				else
+				else if (lighttype == 106)
 				{
-					if (lighttype == 100)
-					{
-						// Chime/ByronSX
-						dtype = pTypeChime;
-						subtype = sTypeByronSX;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str()) - 1;
-						switch (iUnitCode)
-						{
-							case 0:
-								iUnitCode = chime_sound0;
-								break;
-							case 1:
-								iUnitCode = chime_sound1;
-								break;
-							case 2:
-								iUnitCode = chime_sound2;
-								break;
-							case 3:
-								iUnitCode = chime_sound3;
-								break;
-							case 4:
-								iUnitCode = chime_sound4;
-								break;
-							case 5:
-								iUnitCode = chime_sound5;
-								break;
-							case 6:
-								iUnitCode = chime_sound6;
-								break;
-							case 7:
-								iUnitCode = chime_sound7;
-								break;
-						}
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if (lighttype == 101)
-					{
-						// Curtain Harrison
-						dtype = pTypeCurtain;
-						subtype = sTypeHarrison;
-						std::string shousecode = request::findValue(&req, "housecode");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((shousecode.empty()) || (sunitcode.empty()))
-							return;
-						devid = shousecode;
-					}
-					else if (lighttype == 102)
-					{
-						// RFY
-						dtype = pTypeRFY;
-						subtype = sTypeRFY;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 103)
-					{
-						// Meiantech
-						dtype = pTypeSecurity1;
-						subtype = sTypeMeiantech;
-						std::string id = request::findValue(&req, "id");
-						if ((id.empty()))
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 104)
-					{
-						// HE105
-						dtype = pTypeThermostat2;
-						subtype = sTypeHE105;
-						sunitcode = request::findValue(&req, "unitcode");
-						if (sunitcode.empty())
-							return;
-						// convert to hex, and we have our Unit Code
-						std::stringstream s_strid;
-						s_strid << std::hex << std::uppercase << sunitcode;
-						int iUnitCode;
-						s_strid >> iUnitCode;
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = "1";
-					}
-					else if (lighttype == 105)
-					{
-						// ASA
-						dtype = pTypeRFY;
-						subtype = sTypeASA;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 106)
-					{
-						// Blyss
-						dtype = pTypeLighting6;
-						subtype = sTypeBlyss;
-						std::string sgroupcode = request::findValue(&req, "groupcode");
-						sunitcode = request::findValue(&req, "unitcode");
-						std::string id = request::findValue(&req, "id");
-						if ((sgroupcode.empty()) || (sunitcode.empty()) || (id.empty()))
-							return;
-						devid = id + sgroupcode;
-					}
-					else if (lighttype == 107)
-					{
-						// RFY2
-						dtype = pTypeRFY;
-						subtype = sTypeRFY2;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if ((lighttype >= 200) && (lighttype < 300))
-					{
-						dtype = pTypeBlinds;
-						subtype = lighttype - 200;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if (lighttype == 301)
-					{
-						// Smartwares Radiator
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwaresSwitchRadiator;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 302)
-					{
-						// Home Confort
-						dtype = pTypeHomeConfort;
-						subtype = sTypeHomeConfortTEL010;
-						std::string id = request::findValue(&req, "id");
+					// Blyss
+					dtype = pTypeLighting6;
+					subtype = sTypeBlyss;
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					if ((sgroupcode.empty()) || (sunitcode.empty()) || (id.empty()))
+						return;
+					devid = id + sgroupcode;
+				}
+				else if (lighttype == 107)
+				{
+					// RFY2
+					dtype = pTypeRFY;
+					subtype = sTypeRFY2;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if ((lighttype >= 200) && (lighttype < 300))
+				{
+					dtype = pTypeBlinds;
+					subtype = lighttype - 200;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
+				}
+				else if (lighttype == 301)
+				{
+					// Smartwares Radiator
+					dtype = pTypeRadiator1;
+					subtype = sTypeSmartwaresSwitchRadiator;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 302)
+				{
+					// Home Confort
+					dtype = pTypeHomeConfort;
+					subtype = sTypeHomeConfortTEL010;
+					std::string id = request::findValue(&req, "id");
 
-						std::string shousecode = request::findValue(&req, "housecode");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
-							return;
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
+						return;
 
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
-						shousecode = szTmp;
-						devid = id + shousecode;
-					}
-					else if (lighttype == 303)
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+					shousecode = szTmp;
+					devid = id + shousecode;
+				}
+				else if (lighttype == 303)
+				{
+					// Selector Switch
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeSelector;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
+				}
+				else if (lighttype == 304)
+				{
+					// Itho CVE RFT
+					dtype = pTypeFan;
+					subtype = sTypeItho;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 305)
+				{
+					// Lucci Air/DC
+					dtype = pTypeFan;
+					subtype = sTypeLucciAir;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 306)
+				{
+					// Lucci Air DC
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDC;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 307)
+				{
+					// Westinghouse
+					dtype = pTypeFan;
+					subtype = sTypeWestinghouse;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 308)
+				{
+					// Casafan
+					dtype = pTypeFan;
+					subtype = sTypeCasafan;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 309)
+				{
+					// FT1211R
+					dtype = pTypeFan;
+					subtype = sTypeFT1211R;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 310)
+				{
+					// Falmec
+					dtype = pTypeFan;
+					subtype = sTypeFalmec;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 311)
+				{
+					// Lucci Air DC II
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDCII;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 312)
+				{
+					// Itho ECO
+					dtype = pTypeFan;
+					subtype = sTypeIthoECO;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 313)
+				{
+					// Novy
+					dtype = pTypeFan;
+					subtype = sTypeNovy;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 400)
+				{
+					// Openwebnet Bus Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 401)
+				{
+					// Openwebnet Bus Lights
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 402)
+				{
+					// Openwebnet Bus Auxiliary
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 403)
+				{
+					// Openwebnet Zigbee Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchBlindsT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 404)
+				{
+					// Light Openwebnet Zigbee
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchLightT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if ((lighttype == 405) || (lighttype == 406))
+				{
+					// Openwebnet Dry Contact / IR Detection
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchContactT1;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 407)
+				{
+					// Openwebnet Bus Custom
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string StrParam1 = request::findValue(&req, "StrParam1");
+					if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
 					{
-						// Selector Switch
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeSelector;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
-					}
-					else if (lighttype == 304)
-					{
-						// Itho CVE RFT
-						dtype = pTypeFan;
-						subtype = sTypeItho;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 305)
-					{
-						// Lucci Air/DC
-						dtype = pTypeFan;
-						subtype = sTypeLucciAir;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 306)
-					{
-						// Lucci Air DC
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDC;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 307)
-					{
-						// Westinghouse
-						dtype = pTypeFan;
-						subtype = sTypeWestinghouse;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 308)
-					{
-						// Casafan
-						dtype = pTypeFan;
-						subtype = sTypeCasafan;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 309)
-					{
-						// FT1211R
-						dtype = pTypeFan;
-						subtype = sTypeFT1211R;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 310)
-					{
-						// Falmec
-						dtype = pTypeFan;
-						subtype = sTypeFalmec;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 311)
-					{
-						// Lucci Air DC II
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDCII;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 312)
-					{
-						// Itho ECO
-						dtype = pTypeFan;
-						subtype = sTypeIthoECO;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 313)
-					{
-						// Novy
-						dtype = pTypeFan;
-						subtype = sTypeNovy;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 400)
-					{
-						// Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 401)
-					{
-						// Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 402)
-					{
-						// Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 403)
-					{
-						// Openwebnet Zigbee Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 404)
-					{
-						// Light Openwebnet Zigbee
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if ((lighttype == 405) || (lighttype == 406))
-					{
-						// Openwebnet Dry Contact / IR Detection
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchContactT1;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 407)
-					{
-						// Openwebnet Bus Custom
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						std::string StrParam1 = request::findValue(&req, "StrParam1");
-						if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
-						{
-							root["message"] = "Some field empty or not valid.";
-							return;
-						}
+						root["message"] = "Some field empty or not valid.";
+						return;
 					}
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
@@ -4907,55 +4905,41 @@ namespace http
 				}
 #endif
 
-				if (lighttype == 70)
+				if (lighttype < 20)
 				{
-					// EnOcean (Lighting2 with Base_ID offset)
-					dtype = pTypeLighting2;
-					subtype = sTypeAC;
+					dtype = pTypeLighting1;
+					subtype = lighttype;
+					std::string shousecode = request::findValue(&req, "housecode");
 					sunitcode = request::findValue(&req, "unitcode");
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+					if ((shousecode.empty()) || (sunitcode.empty()))
 						return;
-					sunitcode = sgroupcode; // Button A/B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-					if (pBaseHardware == nullptr)
+					devid = shousecode;
+				}
+				else if (lighttype < 30)
+				{
+					dtype = pTypeLighting2;
+					subtype = lighttype - 20;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) && (pBaseHardware->HwdType != HTYPE_USBtinGateway))
+					devid = id;
+				}
+				else if (lighttype < 68)
+				{
+					dtype = pTypeLighting5;
+					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
 						return;
-					unsigned long rID = 0;
-					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
-					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
-						if (pEnoceanHardware->m_id_base == 0)
-						{
-							root["message"] = "BaseID not found, is the hardware running?";
-							return;
-						}
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
-					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
-						if (pEnoceanHardware->m_id_base == 0)
-						{
-							root["message"] = "BaseID not found, is the hardware running?";
-							return;
-						}
-						rID = pEnoceanHardware->m_id_base + iUnitTest;
-					}
-					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
-					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
-						rID = pUSBtinHardware->switch_id_base;
-						std::stringstream ssunitcode;
-						ssunitcode << iUnitTest;
-						sunitcode = ssunitcode.str();
-					}
-					// convert to hex, and we have our ID
-					std::stringstream s_strid;
-					s_strid << std::hex << std::uppercase << rID;
-					devid = s_strid.str();
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) &&
+					    (subtype != sTypeIT))
+						devid = "00" + id;
+					else
+						devid = id;
 				}
 				else if (lighttype == 68)
 				{
@@ -5016,41 +5000,98 @@ namespace http
 					return;
 #endif
 				}
-				else if (lighttype < 20)
+				else if (lighttype == 70)
 				{
-					dtype = pTypeLighting1;
-					subtype = lighttype;
-					std::string shousecode = request::findValue(&req, "housecode");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((shousecode.empty()) || (sunitcode.empty()))
-						return;
-					devid = shousecode;
-				}
-				else if (lighttype < 30)
-				{
+					// EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
-					subtype = lighttype - 20;
-					std::string id = request::findValue(&req, "id");
+					subtype = sTypeAC;
 					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					int iUnitTest = atoi(sunitcode.c_str()); // gives us 128 devices we can control, should be enough!
+					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
 						return;
-					devid = id;
-				}
-				else if (lighttype < 70)
-				{
-					dtype = pTypeLighting5;
-					subtype = lighttype - 50;
-					if (lighttype == 59)
-						subtype = sTypeIT;
-					std::string id = request::findValue(&req, "id");
-					sunitcode = request::findValue(&req, "unitcode");
-					if ((id.empty()) || (sunitcode.empty()))
+					sunitcode = sgroupcode; // Button A/B
+					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					if (pBaseHardware == nullptr)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivolo1to10) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) &&
-					    (subtype != sTypeIT))
-						devid = "00" + id;
+					unsigned long rID = 0;
+					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
+					{
+						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						if (pEnoceanHardware->m_id_base == 0)
+						{
+							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
+							root["message"] = szTmp;
+							return;
+						}
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
+					{
+						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						if (pEnoceanHardware->m_id_base == 0)
+						{
+							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
+							root["message"] = szTmp;
+							return;
+						}
+						rID = pEnoceanHardware->m_id_base + iUnitTest;
+					}
+					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
+					{
+						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						rID = pUSBtinHardware->switch_id_base;
+						std::stringstream ssunitcode;
+						ssunitcode << iUnitTest;
+						sunitcode = ssunitcode.str();
+					}
 					else
-						devid = id;
+						return;
+					// convert to hex, and we have our ID
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << rID;
+					devid = s_strid.str();
+				}
+				else if (lighttype == 100)
+				{
+					// Chime/ByronSX
+					dtype = pTypeChime;
+					subtype = sTypeByronSX;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str()) - 1;
+					switch (iUnitCode)
+					{
+						case 0:
+							iUnitCode = chime_sound0;
+							break;
+						case 1:
+							iUnitCode = chime_sound1;
+							break;
+						case 2:
+							iUnitCode = chime_sound2;
+							break;
+						case 3:
+							iUnitCode = chime_sound3;
+							break;
+						case 4:
+							iUnitCode = chime_sound4;
+							break;
+						case 5:
+							iUnitCode = chime_sound5;
+							break;
+						case 6:
+							iUnitCode = chime_sound6;
+							break;
+						case 7:
+							iUnitCode = chime_sound7;
+							break;
+					}
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
 				}
 				else if (lighttype == 101)
 				{
@@ -5136,329 +5177,284 @@ namespace http
 						return;
 					devid = id;
 				}
-				else
+				else if ((lighttype >= 200) && (lighttype < 300))
 				{
-					if (lighttype == 100)
-					{
-						// Chime/ByronSX
-						dtype = pTypeChime;
-						subtype = sTypeByronSX;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str()) - 1;
-						switch (iUnitCode)
-						{
-							case 0:
-								iUnitCode = chime_sound0;
-								break;
-							case 1:
-								iUnitCode = chime_sound1;
-								break;
-							case 2:
-								iUnitCode = chime_sound2;
-								break;
-							case 3:
-								iUnitCode = chime_sound3;
-								break;
-							case 4:
-								iUnitCode = chime_sound4;
-								break;
-							case 5:
-								iUnitCode = chime_sound5;
-								break;
-							case 6:
-								iUnitCode = chime_sound6;
-								break;
-							case 7:
-								iUnitCode = chime_sound7;
-								break;
-						}
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if ((lighttype >= 200) && (lighttype < 300))
-					{
-						dtype = pTypeBlinds;
-						subtype = lighttype - 200;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = id;
-					}
-					else if (lighttype == 301)
-					{
-						// Smartwares Radiator
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = id;
+					dtype = pTypeBlinds;
+					subtype = lighttype - 200;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = id;
+				}
+				else if (lighttype == 301)
+				{
+					// Smartwares Radiator
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = id;
 
-						// For this device, we will also need to add a Radiator type, do that first
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwares;
+					// For this device, we will also need to add a Radiator type, do that first
+					dtype = pTypeRadiator1;
+					subtype = sTypeSmartwares;
 
-						// check if switch is unique
-						result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-									  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-						if (!result.empty())
-						{
-							root["message"] = "Switch already exists!";
-							return;
-						}
-						bool bActEnabledState = m_sql.m_bAcceptNewHardware;
-						m_sql.m_bAcceptNewHardware = true;
-						std::string devname;
-						m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
-						m_sql.m_bAcceptNewHardware = bActEnabledState;
+					// check if switch is unique
+					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
+									hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+					if (!result.empty())
+					{
+						root["message"] = "Switch already exists!";
+						return;
+					}
+					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
+					m_sql.m_bAcceptNewHardware = true;
+					std::string devname;
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
+					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
-						// set name and switchtype
-						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-									  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
-						if (result.empty())
-						{
-							root["message"] = "Error finding switch in Database!?!?";
-							return;
-						}
-						std::string ID = result[0][0];
+					// set name and switchtype
+					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
+									hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+					if (result.empty())
+					{
+						root["message"] = "Error finding switch in Database!?!?";
+						return;
+					}
+					std::string ID = result[0][0];
 
-						m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
 
-						// Now continue to insert the switch
-						dtype = pTypeRadiator1;
-						subtype = sTypeSmartwaresSwitchRadiator;
-					}
-					else if (lighttype == 302)
-					{
-						// Home Confort
-						dtype = pTypeHomeConfort;
-						subtype = sTypeHomeConfortTEL010;
-						std::string id = request::findValue(&req, "id");
+					// Now continue to insert the switch
+					dtype = pTypeRadiator1;
+					subtype = sTypeSmartwaresSwitchRadiator;
+				}
+				else if (lighttype == 302)
+				{
+					// Home Confort
+					dtype = pTypeHomeConfort;
+					subtype = sTypeHomeConfortTEL010;
+					std::string id = request::findValue(&req, "id");
 
-						std::string shousecode = request::findValue(&req, "housecode");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
-							return;
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (shousecode.empty()) || (sunitcode.empty()))
+						return;
 
-						int iUnitCode = atoi(sunitcode.c_str());
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
-						shousecode = szTmp;
-						devid = id + shousecode;
-					}
-					else if (lighttype == 303)
+					int iUnitCode = atoi(sunitcode.c_str());
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+					shousecode = szTmp;
+					devid = id + shousecode;
+				}
+				else if (lighttype == 303)
+				{
+					// Selector Switch
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeSelector;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((id.empty()) || (sunitcode.empty()))
+						return;
+					devid = "0" + id;
+					switchtype = STYPE_Selector;
+					if (!deviceoptions.empty())
 					{
-						// Selector Switch
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeSelector;
-						std::string id = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((id.empty()) || (sunitcode.empty()))
-							return;
-						devid = "0" + id;
-						switchtype = STYPE_Selector;
-						if (!deviceoptions.empty())
-						{
-							deviceoptions.append(";");
-						}
-						deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
+						deviceoptions.append(";");
 					}
-					else if (lighttype == 304)
+					deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
+				}
+				else if (lighttype == 304)
+				{
+					// Itho CVE RFT
+					dtype = pTypeFan;
+					subtype = sTypeItho;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 305)
+				{
+					// Lucci Air
+					dtype = pTypeFan;
+					subtype = sTypeLucciAir;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 306)
+				{
+					// Lucci Air DC
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDC;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 307)
+				{
+					// Westinghouse
+					dtype = pTypeFan;
+					subtype = sTypeWestinghouse;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 308)
+				{
+					// Casafan
+					dtype = pTypeFan;
+					subtype = sTypeCasafan;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 309)
+				{
+					// FT1211R
+					dtype = pTypeFan;
+					subtype = sTypeFT1211R;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 310)
+				{
+					// Falmec
+					dtype = pTypeFan;
+					subtype = sTypeFalmec;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 311)
+				{
+					// Lucci Air DC II
+					dtype = pTypeFan;
+					subtype = sTypeLucciAirDCII;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 312)
+				{
+					// Itho ECO
+					dtype = pTypeFan;
+					subtype = sTypeIthoECO;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 313)
+				{
+					// Novy
+					dtype = pTypeFan;
+					subtype = sTypeNovy;
+					std::string id = request::findValue(&req, "id");
+					if (id.empty())
+						return;
+					devid = id;
+					sunitcode = "0";
+				}
+				else if (lighttype == 400)
+				{
+					// Openwebnet Bus Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 401)
+				{
+					// Openwebnet Bus Lights
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 402)
+				{
+					// Openwebnet Bus Auxiliary
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 403)
+				{
+					// Openwebnet Zigbee Blinds
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchBlindsT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 404)
+				{
+					// Openwebnet Zigbee Lights
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchLightT2;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if ((lighttype == 405) || (lighttype == 406))
+				{
+					// Openwebnet Dry Contact / IR Detection
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchContactT1;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if ((devid.empty()) || (sunitcode.empty()))
+						return;
+				}
+				else if (lighttype == 407)
+				{
+					// Openwebnet Bus Custom
+					dtype = pTypeGeneralSwitch;
+					subtype = sSwitchTypeAC;
+					devid = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					StrParam1 = request::findValue(&req, "StrParam1");
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
+					if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
 					{
-						// Itho CVE RFT
-						dtype = pTypeFan;
-						subtype = sTypeItho;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 305)
-					{
-						// Lucci Air
-						dtype = pTypeFan;
-						subtype = sTypeLucciAir;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 306)
-					{
-						// Lucci Air DC
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDC;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 307)
-					{
-						// Westinghouse
-						dtype = pTypeFan;
-						subtype = sTypeWestinghouse;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 308)
-					{
-						// Casafan
-						dtype = pTypeFan;
-						subtype = sTypeCasafan;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 309)
-					{
-						// FT1211R
-						dtype = pTypeFan;
-						subtype = sTypeFT1211R;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 310)
-					{
-						// Falmec
-						dtype = pTypeFan;
-						subtype = sTypeFalmec;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 311)
-					{
-						// Lucci Air DC II
-						dtype = pTypeFan;
-						subtype = sTypeLucciAirDCII;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 312)
-					{
-						// Itho ECO
-						dtype = pTypeFan;
-						subtype = sTypeIthoECO;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 313)
-					{
-						// Novy
-						dtype = pTypeFan;
-						subtype = sTypeNovy;
-						std::string id = request::findValue(&req, "id");
-						if (id.empty())
-							return;
-						devid = id;
-						sunitcode = "0";
-					}
-					else if (lighttype == 400)
-					{
-						// Openwebnet Bus Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 401)
-					{
-						// Openwebnet Bus Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 402)
-					{
-						// Openwebnet Bus Auxiliary
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 403)
-					{
-						// Openwebnet Zigbee Blinds
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchBlindsT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 404)
-					{
-						// Openwebnet Zigbee Lights
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchLightT2;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if ((lighttype == 405) || (lighttype == 406))
-					{
-						// Openwebnet Dry Contact / IR Detection
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchContactT1;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						if ((devid.empty()) || (sunitcode.empty()))
-							return;
-					}
-					else if (lighttype == 407)
-					{
-						// Openwebnet Bus Custom
-						dtype = pTypeGeneralSwitch;
-						subtype = sSwitchTypeAC;
-						devid = request::findValue(&req, "id");
-						sunitcode = request::findValue(&req, "unitcode");
-						StrParam1 = request::findValue(&req, "StrParam1");
-						_log.Log(LOG_STATUS, "COpenWebNetTCP: custom command: '%s'", StrParam1.c_str());
-						if ((devid.empty()) || (sunitcode.empty()) || (StrParam1.empty()))
-						{
-							root["message"] = "Some field empty or not valid.";
-							return;
-						}
+						root["message"] = "Some field empty or not valid.";
+						return;
 					}
 				}
-
-				// check if switch is unique
+				// Check if switch is unique
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
 							  devid.c_str(), sunitcode.c_str(), dtype, subtype);
 				if (!result.empty())
@@ -5965,6 +5961,7 @@ namespace http
 				std::string swhen = request::findValue(&req, "twhen");
 				std::string svalue = request::findValue(&req, "tvalue");
 				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
 				std::string sactivesystems = request::findValue(&req, "tsystems");
 				std::string spriority = request::findValue(&req, "tpriority");
 				std::string ssendalways = request::findValue(&req, "tsendalways");
@@ -6003,7 +6000,7 @@ namespace http
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 				if (bOK)
 				{
 					root["status"] = "OK";
@@ -6027,6 +6024,7 @@ namespace http
 				std::string swhen = request::findValue(&req, "twhen");
 				std::string svalue = request::findValue(&req, "tvalue");
 				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string scustomaction = CURLEncode::URLDecode(request::findValue(&req, "taction"));
 				std::string sactivesystems = request::findValue(&req, "tsystems");
 				std::string spriority = request::findValue(&req, "tpriority");
 				std::string ssendalways = request::findValue(&req, "tsendalways");
@@ -6076,7 +6074,7 @@ namespace http
 					sprintf(szTmp, "%s;%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str(), srecovery.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
+				m_notifications.AddNotification(devidx, szTmp, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -11529,7 +11527,6 @@ namespace http
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
 
-					// Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != nullptr)
 					{
@@ -11558,17 +11555,14 @@ namespace http
 							CRFLinkBase *pMyHardware = reinterpret_cast<CRFLinkBase *>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
-						else
-						{
 #ifdef WITH_OPENZWAVE
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
-								root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
-								root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
-							}
-#endif
+						else if (pHardware->HwdType == HTYPE_OpenZWave)
+						{ // Special case for openzwave (status for nodes queried)
+							COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
+							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
+							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
 						}
+#endif
 					}
 					ii++;
 				}
@@ -12365,20 +12359,39 @@ namespace http
 
 			std::vector<std::vector<std::string>> result;
 
-			// Check which device is newer
+			root["status"] = "OK";
+			root["title"] = "TransferDevice";
 
-			time_t now = mytime(nullptr);
-			struct tm tm1;
-			localtime_r(&now, &tm1);
-			struct tm LastUpdateTime_A;
-			struct tm LastUpdateTime_B;
-
-			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
+			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate, B.HardwareID, B.DeviceID, B.Unit, B.Type, B.SubType FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
 			if (result.empty())
 				return;
 
 			std::string sLastUpdate_A = result[0][0];
 			std::string sLastUpdate_B = result[0][1];
+
+			int newHardwareID = std::stoi(result[0][2]);
+			std::string newDeviceID = result[0][3];
+			int newUnit = std::stoi(result[0][4]);
+			int devType = std::stoi(result[0][5]);
+			int subType = std::stoi(result[0][6]);
+
+			if (IsLightOrSwitch(devType, subType))
+			{
+				//For Lights/Switches we just transfer the new HardwareID,DeviceID/Unit from the new device to the old device
+				//After this we delete the new device
+				//This makes sure everything stays like it was before (idx,scripts,notifications etc)
+				//GizMoCuz: make this standard for everything else as well ?
+				m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, sidx.c_str());
+				m_sql.safe_query("DELETE FROM DeviceStatus WHERE ID == '%q'", newidx.c_str());
+				return;
+			}
+
+			// Check which device is newer
+			time_t now = mytime(nullptr);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			struct tm LastUpdateTime_A;
+			struct tm LastUpdateTime_B;
 
 			time_t timeA, timeB;
 			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
@@ -12389,14 +12402,6 @@ namespace http
 				// Swap idx with newidx
 				sidx.swap(newidx);
 			}
-
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue FROM DeviceStatus WHERE (ID == '%q')",
-						  newidx.c_str());
-			if (result.empty())
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "TransferDevice";
 
 			// transfer device logs (new to old)
 			m_sql.TransferDevice(newidx, sidx);
@@ -12443,6 +12448,7 @@ namespace http
 					root["result"][ii]["Priority"] = n.Priority;
 					root["result"][ii]["SendAlways"] = n.SendAlways;
 					root["result"][ii]["CustomMessage"] = n.CustomMessage;
+					root["result"][ii]["CustomAction"] = CURLEncode::URLEncode(n.CustomAction);
 					root["result"][ii]["ActiveSystems"] = n.ActiveSystems;
 					ii++;
 				}
@@ -15547,7 +15553,7 @@ namespace http
 					{
                         if (!sgroupby.empty()) {
                             if (sensorarea.empty())
-                                {
+                            {
 								_log.Log(LOG_ERROR, "Parameter sensorarea missing with groupby '%s'", sgroupby.c_str());
                                 return;
                             }

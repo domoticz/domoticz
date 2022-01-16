@@ -532,7 +532,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			{
 				bfromnotification = root["bfromnotification"].asBool();
 			}
-			m_notifications.SendMessageEx(idx, name, subsystems, subject, body, extradata, priority, sound, bfromnotification);
+			m_notifications.SendMessageEx(idx, name, subsystems, std::string(""), subject, body, extradata, priority, sound, bfromnotification);
 		}
 		else if (szCommand == "getdeviceinfo")
 		{

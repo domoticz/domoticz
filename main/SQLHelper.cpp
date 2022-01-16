@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 151
+#define DB_VERSION 152
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -222,6 +222,7 @@ constexpr auto sqlCreateNotifications =
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Params] VARCHAR(100), "
 "[CustomMessage] VARCHAR(300) DEFAULT (''), "
+"[CustomAction] VARCHAR(200) DEFAULT '', "
 "[ActiveSystems] VARCHAR(200) DEFAULT (''), "
 "[Priority] INTEGER default 0, "
 "[SendAlways] INTEGER default 0, "
@@ -2962,6 +2963,10 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 152)
+		{
+			query("ALTER TABLE Notifications ADD COLUMN [CustomAction] VARCHAR(200) DEFAULT ''");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3859,7 +3864,7 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 	}
 	else if (tItem._ItemType == TITEM_SEND_SMS)
 	{
-		m_notifications.SendMessage(0, std::string(""), "clickatell", tItem._ID, tItem._ID, std::string(""), 1, std::string(""), false);
+		m_notifications.SendMessage(0, std::string(""), "clickatell", std::string(""), tItem._ID, tItem._ID, std::string(""), 1, std::string(""), false);
 	}
 	else if (tItem._ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 	{
@@ -4063,7 +4068,7 @@ void CSQLHelper::Do_Work()
 						_log.Log(LOG_STATUS, "Deprecated Notification system specified (gcm), change this to 'fcm'!");
 						subsystem = "fcm";
 					}
-					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt._idx), splitresults[3], true);
+					m_notifications.SendMessageEx(0, std::string(""), subsystem, std::string(""), splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt._idx), splitresults[3], true);
 				}
 			}
 			else if (itt._ItemType == TITEM_SEND_IFTTT_TRIGGER)
@@ -8563,7 +8568,7 @@ void CSQLHelper::CheckBatteryLow()
 				sprintf(szTmp, "Battery Low: %s (Level: Low)", sd[1].c_str());
 			else
 				sprintf(szTmp, "Battery Low: %s (Level: %d %%)", sd[1].c_str(), batlevel);
-			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string(""), szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_batterylowlastsend[ulID] = stoday.tm_mday;
 		}
 	}
@@ -8638,7 +8643,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		{
 			char szTmp[300];
 			sprintf(szTmp, "Sensor Timeout: %s, Last Received: %s", sd[1].c_str(), sd[2].c_str());
-			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string(""), szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_timeoutlastsend[ulID] = stoday.tm_mday;
 		}
 	}

@@ -1666,7 +1666,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 						body << frame_dt;
 						body << " - Delta:";
 						body << delta;
-						m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string("OWN Date/Time Change"), body.str(), std::string(""), 0, std::string(""), true);
+						m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string(""), std::string("OWN Date/Time Change"), body.str(), std::string(""), 0, std::string(""), true);
 						/************* notification ************/						
 					}
 					else

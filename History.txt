@@ -1,10 +1,35 @@
-Version 2021.xxxxx (xxxx)
+Version 2022.xxxxx (xxxx)
+- Implemented: Added Irrigation icon (also thanks to dbemowsk)
+- Implemented: Build system, implemented unit tests
 - Implemented: Device support for Xiaomi Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM | relay.c2acn01
+- Implemented: EnOcean, added more hardware support
+- Implemented: EvoHome, Now supports the latest version of the OT Bridge messages
 - Implemented: InfluxDB Data push, Influx 2.0 support
+- Implemented: InfluxDB, Alert and Current devices data push to influxdb
+- Implemented: MQTT Auto Discovery hardware (for Zigbee2MQTT/ZWaveJS2MQTT and others)
+- Implemented: New widgets for Blinds (percentage) + Stop and Blinds (percentage) Inverted + Stop
+- Implemented: Notifications, Extra security checks for HTTP actions
+- Implemented: Notifications, Optional action to execute (http/script) per notificaton
+- Implemented: RTL433, add support for light_klx field (SendLuxSensor)
+- Implemented: Teleinfo, Add support for EAIT/SINSTI/STGE (Linky standard mode)
+- Implemented: Teleinfo. more permissive detection between historic/standard mode
+- Implemented: The Things Network (TTN), Switch to new V3 stack
+- Implemented: Webserver, Increased range of www/ssl port to 49151
+- Implemented: Webserver, Improve webserver security
+- Implemented: Webserver, Improved robustness of processing Settings update
 - Implemented: Wind Meter, Angle rotation
-- Updated: dzVents; version 3.1.8 ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
-- Updated: OpenZWave; Added Electric pulse sensor
+- Updated: dzVents ( https://www.domoticz.com/wiki/DzVents:_next_generation_LUA_scripting )
+- Updated: Denkovi, Improved http communication
+- Updated: OpenZWave; Added support for Electric pulse sensor, Heatit ZM Single Relay ZW164 Indoor Siren 6+
+- Updated: Python Plugin code and framework robustness
+- Updated: RFXCom, Updated RFXCom SDK version to 9.31
+- Updated: Translations
 - Changed: default journal mode for windows now WAL (write ahead) add command line option to override
+- Changed: Webserver, updated internals
+- Fixed: Charts, changes, bug fixes, Computed kWh, usage calculation, zoom
+- Fixed: EvoHome, Fix Web API crash when a new zone wass added
+- Fixed: Notifications, Email notification fix jpeg inline attachment handling for K9 mail
+- Fixed: OpenWeatherMap, Fix to resolve OWM City for default location. Used by OWM based forecast screen
 - For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
 
 Version 2021.1 (April 17 2021)
