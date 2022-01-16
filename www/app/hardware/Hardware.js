@@ -3917,9 +3917,7 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("HTTP/HTTPS") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
 							}
-							else if( (HwTypeStr.indexOf("RFLink") >= 0 &&
-									HwTypeStr.indexOf("MQTT") == -1 ) ||
-									HwTypeStr.indexOf("RFLink Gateway MQTT") >= 0) {
+							else if (HwTypeStr.indexOf("HTTP/HTTPS") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
 							}
