@@ -212,6 +212,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					return ""; //key not found!
 				root = root[szKey];
 			}
+			if (root.isObject())
+				return "";
 			std::string retVal = root.asString();
 			if (value_options_.find(retVal) != value_options_.end())
 			{
