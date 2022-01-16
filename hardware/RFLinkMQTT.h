@@ -13,7 +13,6 @@
 // #endif
 // #endif
 
-// class CRFLinkMQTT: public CRFLinkBase, mosqpp::mosquittopp
 class CRFLinkMQTT: public CRFLinkBase, mosqdz::mosquittodz
 {
 public:
@@ -52,6 +51,5 @@ protected:
 	virtual void SendHeartbeat();
 	void StopMQTT();
 	std::shared_ptr<std::thread> m_thread;
-	volatile bool m_stoprequested;
 	bool m_bPreventLoop = false;
 };

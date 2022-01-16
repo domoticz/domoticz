@@ -79,15 +79,12 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
-	m_stoprequested = false;
-	//m_usIPPort = usIPPort;
 	m_IsConnected = false;
 	m_bDoReconnect = false;
-	selectNextIPAdress();
 	m_TopicIn = TOPIC_IN;
 	m_TopicOut = TOPIC_OUT;
     m_cmdacktimeout = 2;      // override m_bTXokay wait timeout
-	m_usIPPort = usIPPort;
+	m_retrycntr = RFLINK_RETRY_DELAY;
     m_syncid = (unsigned long)rand();
 
 	std::vector<std::string> strarray;
@@ -98,11 +95,14 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 	}
 
 	// _log.Log(LOG_DEBUG, ">>> RFLINK MQTT: user: %s password: %s extra: %s" , m_UserName.c_str() , m_Password.c_str() , m_CAFilename.c_str() );
-
 	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; // see szTLSVersions
+
+	selectNextIPAdress();
 
 	// Init MQTT
 	mosqdz::lib_init();
+
+	threaded_set(true);
 
 	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: Device initiated...");
 }
@@ -151,26 +151,24 @@ bool CRFLinkMQTT::StartHardware()
 {
 	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: StartHardware started");
 
-	StartHeartbeatThread();
+	RequestStart();
 
-	m_stoprequested=false;
-	m_bDoRestart=false;
+	// force connect the next first time
 	m_IsConnected = false;
-
-	//force connect the next first time
-	m_retrycntr = RFLINK_RETRY_DELAY;
 	m_bIsStarted=true;
 
-	//Start worker thread
+	// Start worker thread
 	m_thread = std::make_shared<std::thread>(&CRFLinkMQTT::Do_Work, this);
+	SetThreadNameInt(m_thread->native_handle());
+	StartHeartbeatThread();
 	return (m_thread != nullptr);
 }
 
 void CRFLinkMQTT::StopMQTT()
 {
-	// mosqpp::mosquittopp::disconnect();
 	disconnect();
 	m_bIsStarted = false;
+	// class MQTT:: do not set this...
 	m_IsConnected = false;
 }
 
@@ -180,10 +178,10 @@ bool CRFLinkMQTT::StopHardware()
 	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: StopHardware started");
 
 	StopHeartbeatThread();
-	m_stoprequested=true;
 	try {
 		if (m_thread)
 		{
+			RequestStop();
 			m_thread->join();
 			m_thread.reset();
 		}
@@ -191,11 +189,15 @@ bool CRFLinkMQTT::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+		_log.Log(LOG_ERROR, ">>> RFLINK MQTT: StopHardware failed...");
 	}
+
 	if (m_sDeviceReceivedConnection.connected())
 		m_sDeviceReceivedConnection.disconnect();
 	if (m_sSwitchSceneConnection.connected())
 		m_sSwitchSceneConnection.disconnect();
+
+	m_IsConnected = false;
 	m_bIsStarted=false;
 	return true;
 }
@@ -216,17 +218,23 @@ void CRFLinkMQTT::on_connect(int rc)
 	*/
 
 	m_rfbufferpos = 0;
-	// 	write("10;PING;\n");
 
-	if (rc == 0){
-		if (m_IsConnected) {
+	if (rc == 0)
+	{
+		if (m_IsConnected)
+		{
 			_log.Log(LOG_STATUS, ">>> RFLINK MQTT: re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-		} else {
+		}
+		else
+		{
 			_log.Log(LOG_STATUS, ">>> RFLINK MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
 		}
-		subscribe(NULL, m_TopicIn.c_str());
+		if (!m_TopicIn.empty())
+		{
+			subscribe(NULL, m_TopicIn.c_str());
+		}
 	}
 	else {
 		_log.Log(LOG_ERROR, ">>> RFLINK MQTT: Connection failed!, restarting (rc=%d)",rc);
@@ -265,28 +273,32 @@ void CRFLinkMQTT::on_disconnect(int rc)
 {
 	if (rc != 0)
 	{
-		if (!m_stoprequested)
+		if (!IsStopRequested(0))
 		{
-			if (rc == 5)
+			// MOSQ_ERR_CONN_REFUSED = 5
+			if( rc == MOSQ_ERR_CONN_REFUSED )
 			{
 				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, Invalid Username/Password (rc=%d)", rc);
 			}
 			else if( rc == MOSQ_ERR_ERRNO )
 			{
-				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, !!! 4.11554 workaround !!! ERRNO: %d)", errno );
-				// WORKAROUND
-				// 2019.12.08. After MQTT replaced in domoticz I experienced
-				// this error very frequently. This error is causing miss behave of devices!
-				// If in this case do nothing DOMOTICZ will quickly recconect
-				// and looks like everything work perfectly
-				return;
-				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				// // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				// _log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, !!! 4.11554 workaround !!! ERRNO: %d)", errno );
+				// // WORKAROUND
+				// // 2019.12.08. After MQTT replaced in domoticz I experienced
+				// // this error very frequently. This error is causing miss behave of devices!
+				// // If in this case do nothing DOMOTICZ will quickly recconect
+				// // and looks like everything work perfectly
+				// return;
+				// // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: MOSQ_ERR_ERRNO detected with value: %d)", errno );
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, ">>> RFLINK MQTT: disconnected, restarting (rc=%d)", rc);
 			}
+			// m_subscribed_topics.clear(); // class MQTT
 			m_bDoReconnect = true;
 		}
 	}
@@ -320,7 +332,6 @@ bool CRFLinkMQTT::ConnectIntEx()
 	}
 
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
-	// rc = mosqpp::mosquittopp::connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
 
 	if ( rc != MOSQ_ERR_SUCCESS)
@@ -340,22 +351,37 @@ void CRFLinkMQTT::Do_Work()
 	int msec_counter = 0;
 	int sec_counter = 0;
 	_log.Log(LOG_STATUS, ">>> RFLINK MQTT: main loop started");
-	while (!m_stoprequested)
+
+	while (!IsStopRequested(100))
 	{
-		sleep_milliseconds(100);
 		if (!bFirstTime)
 		{
-			int rc = loop();
-			if (rc) {
-				if (rc != MOSQ_ERR_NO_CONN)
+			// Implemetation based on MQTT.CPP
+			try
+			{
+				int rc = loop();
+				if (rc)
 				{
-					if (!m_stoprequested)
+					if (rc != MOSQ_ERR_NO_CONN)
 					{
-						if (!m_bDoReconnect)
+						if (!IsStopRequested(0))
 						{
-							_log.Log(LOG_STATUS, ">>> RFLINK MQTT: trying to reconnect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-							reconnect();
+							if (!m_bDoReconnect)
+							{
+								_log.Log(LOG_STATUS, ">>> RFLINK MQTT: trying to reconnect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+								reconnect();
+							}
 						}
+					}
+				}
+			}
+			catch (const std::exception &)
+			{
+				if (!IsStopRequested(0))
+				{
+					if (!m_bDoReconnect)
+					{
+						reconnect();
 					}
 				}
 			}
@@ -369,7 +395,7 @@ void CRFLinkMQTT::Do_Work()
 
 			if (sec_counter % 12 == 0)
 			{
-				m_LastHeartbeat=mytime(NULL);
+				m_LastHeartbeat=mytime(nullptr);
 			}
 
 			if (bFirstTime)
