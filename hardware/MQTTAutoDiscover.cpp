@@ -1212,6 +1212,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 	if (
 		(szUnit == "°c")
+		|| (szUnit == "\xB0" "c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
 		|| (szUnit == "f")
@@ -1376,6 +1377,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	}
 	else if (
 		(szUnit == "m³")
+		|| (szUnit == "m\xB3")
 		|| (szUnit == "cubic meters")
 		)
 	{
