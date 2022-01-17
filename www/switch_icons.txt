@@ -20,3 +20,4 @@ Phone;Phone;Mobile Phone
 Sun;Sun;Sun
 Rain;Rain;Rain
 clock;Clock;Chronological device
+Irrigation;Irrigation;Irrigation Zone

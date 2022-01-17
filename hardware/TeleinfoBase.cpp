@@ -73,16 +73,16 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char*
 	}
 	else
 		sprintf(text, "Pas d'info de souscription !");
-
-	if (flevel > 80)
+	
+	if (flevel > 98)
 	{
-		level = 2;
+		level = 4;
 		if (Isousc > 0)
-			sprintf(text, ">80%% et <90%% de %iA souscrits", Isousc);
+			sprintf(text, ">98%% de %iA souscrits", Isousc);
 		else
-			sprintf(text, ">80%% et <90%% de %iKVA souscrits", Pref);
+			sprintf(text, ">98%% de %iKVA souscrits", Pref);
 	}
-	if (level > 90)
+	else if (flevel > 90)
 	{
 		level = 3;
 		if (Isousc > 0)
@@ -90,13 +90,13 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, int Sinsts, int Pref, char*
 		else
 			sprintf(text, ">90%% et <98%% de %iKVA souscrits", Pref);
 	}
-	if (level > 98)
+	else if (flevel > 80)
 	{
-		level = 3;
+		level = 2;
 		if (Isousc > 0)
-			sprintf(text, ">98%% de %iA souscrits", Isousc);
+			sprintf(text, ">80%% et <90%% de %iA souscrits", Isousc);
 		else
-			sprintf(text, ">98%% de %iKVA souscrits", Pref);
+			sprintf(text, ">80%% et <90%% de %iKVA souscrits", Pref);
 	}
 	return level;
 }

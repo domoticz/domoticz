@@ -242,7 +242,8 @@ static std::string jsonConfig=R"([
 	{"idx":"22","name":"FS20 868",     "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]},
 	{"idx":"23","name":"EDISIO",       "parameters":[{"name":"housecode","display":"House Code","type":"housecode16"},{"name":"unitcode","display":"Unit Code","type":"unitcode16"}]}
 	])";
-const std::string &CZiBlueBase::GetManualSwitchesJsonConfiguration() const
+
+std::string CZiBlueBase::GetManualSwitchesJsonConfiguration() const
 {
 	return jsonConfig;
 }

@@ -23,9 +23,9 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 	return false;
 }
 
-const std::string& CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration() const
+std::string CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration() const
 {
-	return "";
+	return std::string("");
 }
 
 void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> & /*Parameters*/, _eSwitchType & /*SwitchTypeInOut*/, int & /*LightTypeInOut*/,

@@ -24,6 +24,8 @@ class MQTTAutoDiscover : public MQTT
 		std::string set_position_topic;
 		std::string brightness_command_topic;
 		std::string brightness_state_topic;
+		std::string rgb_command_topic;
+		std::string rgb_state_topic;
 
 		std::string unit_of_measurement;
 
@@ -32,6 +34,8 @@ class MQTTAutoDiscover : public MQTT
 		std::string position_template;
 		std::string set_position_template;
 		std::string brightness_value_template;
+		std::string rgb_value_template;
+		std::string rgb_command_template;
 
 		std::string icon;
 
@@ -53,8 +57,10 @@ class MQTTAutoDiscover : public MQTT
 
 		bool bColor_mode = false;
 		std::map<std::string, uint8_t> supported_color_modes;
+		std::string color_temp_value_template = "color_temp";
+		std::string hs_value_template;
 
-		int min_mireds = 154;
+		int min_mireds = 153;
 		int max_mireds = 500;
 
 		//Select

@@ -89,6 +89,14 @@ bool CNotificationHTTP::SendMessageImplementation(
 	else if (destURL.find("script://") == 0)
 	{
 		//Script
+
+		//Check if it is secure
+		if (!IsArgumentSecure(destURL))
+		{
+			_log.Log(LOG_ERROR, "HTTP: Insecure script command!");
+			return false;
+		}
+
 		stdreplace(destURL, "#FIELD1", _HTTPField1);
 		stdreplace(destURL, "#FIELD2", _HTTPField2);
 		stdreplace(destURL, "#FIELD3", _HTTPField3);
