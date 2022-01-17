@@ -3835,7 +3835,7 @@ namespace http
 						CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
 						Json::Value proot;
 						Json::Reader reader;
-						auto jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+						std::string jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
 						bool res = reader.parse(jsonConfiguration, proot);
 						if (!jsonConfiguration.empty() && res)
 						{
