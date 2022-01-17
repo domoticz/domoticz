@@ -3837,8 +3837,19 @@ namespace http
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-
-						if ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
+						CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
+						Json::Value proot;
+						Json::Reader reader;
+						auto jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+						bool res = reader.parse(jsonConfiguration, proot);
+						if (!jsonConfiguration.empty() && res)
+						{
+							root["result"][ii]["idx"] = ID;
+							root["result"][ii]["Name"] = Name;
+							root["result"][ii]["config"] = proot;
+							ii++;
+						}
+						else if ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
 						    (Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
 						    (Type == HTYPE_EVOHOME_SERIAL) || (Type == HTYPE_EVOHOME_WEB) || (Type == HTYPE_EVOHOME_TCP) || (Type == HTYPE_RaspberryGPIO) ||
 						    (Type == HTYPE_RFLINKUSB) || (Type == HTYPE_RFLINKTCP) || (Type == HTYPE_ZIBLUEUSB) || (Type == HTYPE_ZIBLUETCP) || (Type == HTYPE_OpenWebNetTCP) ||
@@ -4292,7 +4303,12 @@ namespace http
 				std::string sunitcode;
 				std::string devid;
 
-				if (lighttype < 20)
+				CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				if (pBaseHardware != nullptr && !pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
+				{
+					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
+				}
+				else if (lighttype < 20)
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
@@ -4825,7 +4841,6 @@ namespace http
 					}
 				}
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 				if (pBaseHardware != nullptr)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
@@ -4890,7 +4905,73 @@ namespace http
 				std::string sunitcode;
 				std::string devid;
 				std::string StrParam1;
+				
+				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				if (pBaseHardware == nullptr)
+				{
+					root["message"] = "Hardware does not exists!";
+					return;
+				}
+				if (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
+				{
+					pBaseHardware->GetManualSwitchParameters(req.parameters,switchtype, lighttype,  dtype, subtype, devid, sunitcode);
+					// check if switch is unique
+					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
+								  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+					if (!result.empty())
+					{
+						root["message"] = "Switch already exists!";
+						return;
+					}
 
+					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
+					m_sql.m_bAcceptNewHardware = true;
+					std::string devname;
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname);
+					m_sql.m_bAcceptNewHardware = bActEnabledState;
+
+					// set name and switchtype
+					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
+								  devid.c_str(), sunitcode.c_str(), dtype, subtype);
+					if (result.empty())
+					{
+						root["message"] = "Error finding switch in Database!?!?";
+						return;
+					}
+					std::string ID = result[0][0];
+
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')", name.c_str(), switchtype, ID.c_str());
+
+					if (lighttype == 407)
+					{
+						// Openwebnet Bus Custom
+						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='%s' WHERE (ID == '%q')", StrParam1.c_str(), ID.c_str());
+					}
+
+					m_mainworker.m_eventsystem.GetCurrentStates();
+
+					// Set device options
+					m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
+
+					if (!maindeviceidx.empty())
+					{
+						if (maindeviceidx != ID)
+						{
+							// this is a sub device for another light/switch
+							// first check if it is not already a sub device
+							result = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (ParentID =='%q')", ID.c_str(), maindeviceidx.c_str());
+							if (result.empty())
+							{
+								// no it is not, add it
+								result = m_sql.safe_query("INSERT INTO LightSubDevices (DeviceRowID, ParentID) VALUES ('%q','%q')", ID.c_str(), maindeviceidx.c_str());
+							}
+						}
+					}
+
+					root["status"] = "OK";
+					root["title"] = "AddSwitch";
+					return;
+				}
 #ifdef ENABLE_PYTHON
 				// check if HW is plugin
 				{
@@ -5469,7 +5550,7 @@ namespace http
 				}
 
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				//CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != nullptr)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
@@ -12364,20 +12445,39 @@ namespace http
 
 			std::vector<std::vector<std::string>> result;
 
-			// Check which device is newer
+			root["status"] = "OK";
+			root["title"] = "TransferDevice";
 
-			time_t now = mytime(nullptr);
-			struct tm tm1;
-			localtime_r(&now, &tm1);
-			struct tm LastUpdateTime_A;
-			struct tm LastUpdateTime_B;
-
-			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
+			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate, B.HardwareID, B.DeviceID, B.Unit, B.Type, B.SubType FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
 			if (result.empty())
 				return;
 
 			std::string sLastUpdate_A = result[0][0];
 			std::string sLastUpdate_B = result[0][1];
+
+			int newHardwareID = std::stoi(result[0][2]);
+			std::string newDeviceID = result[0][3];
+			int newUnit = std::stoi(result[0][4]);
+			int devType = std::stoi(result[0][5]);
+			int subType = std::stoi(result[0][6]);
+
+			if (IsLightOrSwitch(devType, subType))
+			{
+				//For Lights/Switches we just transfer the new HardwareID,DeviceID/Unit from the new device to the old device
+				//After this we delete the new device
+				//This makes sure everything stays like it was before (idx,scripts,notifications etc)
+				//GizMoCuz: make this standard for everything else as well ?
+				m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, sidx.c_str());
+				m_sql.safe_query("DELETE FROM DeviceStatus WHERE ID == '%q'", newidx.c_str());
+				return;
+			}
+
+			// Check which device is newer
+			time_t now = mytime(nullptr);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			struct tm LastUpdateTime_A;
+			struct tm LastUpdateTime_B;
 
 			time_t timeA, timeB;
 			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
@@ -12388,14 +12488,6 @@ namespace http
 				// Swap idx with newidx
 				sidx.swap(newidx);
 			}
-
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Name, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue FROM DeviceStatus WHERE (ID == '%q')",
-						  newidx.c_str());
-			if (result.empty())
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "TransferDevice";
 
 			// transfer device logs (new to old)
 			m_sql.TransferDevice(newidx, sidx);

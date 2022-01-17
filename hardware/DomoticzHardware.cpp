@@ -23,6 +23,16 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 	return false;
 }
 
+const std::string& CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration() const
+{
+	return "";
+}
+
+void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> & /*Parameters*/, _eSwitchType & /*SwitchTypeInOut*/, int & /*LightTypeInOut*/,
+	 int & /*dTypeOut*/, int &dSubTypeOut, std::string & /*devIDOut*/, std::string & /*sUnitOut*/) const
+{
+}
+
 bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;

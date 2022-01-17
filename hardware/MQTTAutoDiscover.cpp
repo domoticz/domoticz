@@ -57,7 +57,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception: %s!", e.what());
+		Log(LOG_ERROR, "Exception (on_message): %s! (topic: %s/message: %s)", e.what(), topic.c_str(), qMessage.c_str());
 		return;
 	}
 }
@@ -212,6 +212,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					return ""; //key not found!
 				root = root[szKey];
 			}
+			if (root.isObject())
+				return "";
 			std::string retVal = root.asString();
 			if (value_options_.find(retVal) != value_options_.end())
 			{
@@ -268,7 +270,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception: %s!", e.what());
+		Log(LOG_ERROR, "Exception (GetValueFromTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
 	}
 	return "";
 }
@@ -323,7 +325,7 @@ bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szVal
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "Exception: %s!", e.what());
+		Log(LOG_ERROR, "Exception (SetValueWithTemplate): %s! (Template: %s)", e.what(), szValueTemplate.c_str());
 	}
 	return false;
 }
@@ -776,6 +778,27 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["brightness"].empty())
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
 
+		if (!root["rgb_value_template"].empty())
+			pSensor->rgb_value_template = root["rgb_value_template"].asString();
+		if (!root["rgb_val_tpl"].empty())
+			pSensor->rgb_value_template = root["rgb_val_tpl"].asString();
+		CleanValueTemplate(pSensor->rgb_value_template);
+
+		if (!root["rgb_command_template"].empty())
+			pSensor->rgb_command_template = root["rgb_command_template"].asString();
+		if (!root["rgb_cmd_tpl"].empty())
+			pSensor->rgb_command_template = root["rgb_cmd_tpl"].asString();
+		CleanValueTemplate(pSensor->rgb_command_template);
+
+		if (!root["rgb_command_topic"].empty())
+			pSensor->rgb_command_topic = root["rgb_command_topic"].asString();
+		if (!root["rgb_cmd_t"].empty())
+			pSensor->rgb_command_topic = root["rgb_cmd_t"].asString();
+		if (!root["rgb_state_topic"].empty())
+			pSensor->rgb_state_topic = root["rgb_state_topic"].asString();
+		if (!root["rgb_stat_t"].empty())
+			pSensor->rgb_state_topic = root["rgb_stat_t"].asString();
+
 		if (!root["color_mode"].empty()) // documentation is a bit unclear, color_mode = true, hs, rgb
 			pSensor->bColor_mode = (root["color_mode"].asString() != "false");
 		if (!root["supported_color_modes"].empty())
@@ -806,6 +829,28 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 					pSensor->supported_color_modes["color_temp"] = 1;
 				}
 			}
+
+			// If there is an rgb_command_topic, add RGB colormode
+			if (!root["rgb_command_topic"].empty() || !root["rgb_cmd_t"].empty())
+			{
+				// Note: there is currently no distinction between RGB and RGBW. All will be treated as RGBW devices!
+				pSensor->supported_color_modes["rgbw"] = 1;
+				pSensor->bColor_mode = true;
+			}		
+
+			// If there is an hs_command_topic, add HS colormode
+			if (!root["hs_command_topic"].empty() || !root["hs_cmd_t"].empty())
+			{
+				pSensor->supported_color_modes["hs"] = 1;
+				pSensor->bColor_mode = true;
+			}		
+
+			// If there is a color_temp_command_topic, add color temperature colormode
+			if (!root["color_temp_command_topic"].empty() || !root["clr_temp_cmd_t"].empty())
+			{
+				pSensor->supported_color_modes["color temp"] = 1;
+				pSensor->bColor_mode = true;
+			}		
 		}
 
 		if (!root["min_mireds"].empty())
@@ -816,6 +861,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->max_mireds = root["max_mireds"].asInt();
 		if (!root["max_mirs"].empty())
 			pSensor->max_mireds = root["max_mirs"].asInt();
+
+		if (!root["color_temp_value_template"].empty())
+			pSensor->color_temp_value_template = root["color_temp_value_template"].asString();
+		else if (!root["clr_temp_val_tpl"].empty())
+			pSensor->color_temp_value_template = root["clr_temp_val_tpl"].asString();
+		CleanValueTemplate(pSensor->color_temp_value_template);
+
 
 		//Select
 		if (!root["options"].empty())
@@ -975,12 +1027,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->temperature_state_template, pSensor->qos);
 			SubscribeTopic(pSensor->current_temperature_topic, pSensor->qos);
 			SubscribeTopic(pSensor->temperature_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->rgb_state_topic, pSensor->qos);
 		}
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "MQTT_Discovery: Error: %s!", e.what());
-		goto disovery_invaliddata;
+		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s/message: %s", e.what(), topic.c_str(), qMessage.c_str());
 	}
 	return;
 disovery_invaliddata:
@@ -1015,6 +1067,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			(pSensor->state_topic == topic)
 			|| (pSensor->position_topic == topic)
 			|| (pSensor->brightness_state_topic == topic)
+			|| (pSensor->rgb_state_topic == topic)
 			|| (pSensor->mode_state_topic == topic)
 			|| (pSensor->temperature_state_topic == topic)
 			|| (pSensor->current_temperature_topic == topic)
@@ -1158,7 +1211,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	float AddjMulti = 1.0F;
 
 	if (
-		(szUnit == "°c")
+		(szUnit == "Â°c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
 		|| (szUnit == "f")
@@ -1227,13 +1280,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		devType = pTypeAirQuality;
 		subType = sTypeVoltcraft;
 		nValue = atoi(pSensor->last_value.c_str());
-	}
-	else if (szUnit == "µg/m³")
-	{
-		devType = pTypeGeneral;
-		subType = sTypeCustom;
-		szOptions = pSensor->unit_of_measurement;
-		sValue = pSensor->last_value;
 	}
 	else if (szUnit == "v")
 	{
@@ -1329,7 +1375,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		sValue = pSensor->last_value;
 	}
 	else if (
-		(szUnit == "m³")
+		(szUnit == "mÂ³")
 		|| (szUnit == "cubic meters")
 		)
 	{
@@ -1369,7 +1415,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	{
 		_tMQTTASensor* pRainSensor = get_auto_discovery_sensor_unit(pSensor, "cubic meters");
 		if (!pRainSensor)
-			pRainSensor = get_auto_discovery_sensor_unit(pSensor, "m³");
+			pRainSensor = get_auto_discovery_sensor_unit(pSensor, "mÂ³");
 		if (pRainSensor)
 		{
 			if (pRainSensor->last_received != 0)
@@ -1395,6 +1441,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
+	else
+	{
+		devType = pTypeGeneral;
+		subType = sTypeCustom;
+		szOptions = pSensor->unit_of_measurement;
+		sValue = pSensor->last_value;
+	 }
 
 	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
 		szOptions = "??";
@@ -2308,9 +2361,42 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	color_old.mode = ColorModeCustom;
 	color_new.mode = ColorModeCustom;
 	bool bHaveColorChange = false;
+	bool bDoNotUpdateLevel=false;
 
 	if (bIsJSON)
 	{
+		if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
+		{
+			// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
+			root["color"] = root["value"];
+			root.removeMember("value");
+		}
+
+		if(root["color"].isObject() && !root["color"]["red"].empty())
+		{
+			// The device uses "red", "green"... to specify the color components, default for domoticz would be "r", "g"... (e.g. Fibaro FGRGBW)
+			JSonRenameKey(root["color"],"red","r");
+			JSonRenameKey(root["color"],"green","g");
+			JSonRenameKey(root["color"],"blue","b");
+			JSonRenameKey(root["color"],"warmWhite","w");
+			JSonRenameKey(root["color"],"coldWhite","c");
+		}
+
+		if(root["state"].empty() && root["color"].isObject())
+		{
+			// The on/off state is omitted in the message, so guess it from the color components (e.g. Fibaro FGRGBW)
+			int r = root["color"]["r"].asInt();
+			int g = root["color"]["g"].asInt();
+			int b = root["color"]["b"].asInt();
+			int w = root["color"]["w"].asInt();
+			int c = root["color"]["c"].asInt();
+			if(r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
+			{
+				root["state"] = "OFF";
+			}
+			else root["state"] = "ON";
+		}
+
 		if (!root["state"].empty())
 			szOnOffValue = root["state"].asString();
 		else if (!root["value"].empty())
@@ -2462,6 +2548,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			std::string szColorOld = color_old.toJSONString();
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
+			bDoNotUpdateLevel = true;
 		}
 		else if (!root["color_temp"].empty())
 		{
@@ -2471,6 +2558,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			std::string szColorOld = color_old.toJSONString();
 			std::string szColorNew = color_new.toJSONString();
 			bHaveColorChange = szColorOld != szColorNew;
+			bDoNotUpdateLevel = true;
 		}
 	}
 	else
@@ -2603,7 +2691,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		szDeviceName);
 	if (bHaveColorChange)
 		m_sql.UpdateDeviceValue("Color", color_new.toJSONString(), szIdx);
-	if (bHaveLevelChange)
+	if (bHaveLevelChange && !bDoNotUpdateLevel)
 		m_sql.UpdateDeviceValue("LastLevel", level, szIdx);
 }
 
@@ -2630,6 +2718,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	}
 
 	std::string szSendValue;
+	std::string command_topic = pSensor->command_topic;
 
 	if (
 		(pSensor->component_type != "climate")
@@ -2682,13 +2771,18 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				SendMessage(pSensor->command_topic, szSendValue);
 				return true;
 			}
-			else {
+			else 
+			{
 				if (szSendValue == "true")
 					root["state"] = true;
 				else if (szSendValue == "false")
 					root["state"] = false;
 				else
+				{
 					root["state"] = szSendValue;
+					if (is_number(szSendValue))
+						root["value"] = szSendValue;	// Required for e.g. FGRGBW color dimmer
+				}
 			}
 		}
 		else if (command == "Set Level")
@@ -2770,6 +2864,22 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["c"] = color.cw;
 				if (pSensor->supported_color_modes.find("rgbww") != pSensor->supported_color_modes.end())
 					root["color"]["w"] = color.ww;
+
+				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
+				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red") != std::string::npos) 
+				{
+					// For the Fibaro FGRGBW dimmer:
+					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
+					//	"rgb_value_template": "{{ value_json.value.red }},{{ value_json.value.green }},{{ value_json.value.blue }}",
+					//  -> variables are red, green and blue, but white is missing entirely, so the template can't be used as is.
+					Json::Value colorDef;
+					root["value"] = colorDef;
+					root["value"]["red"] = root["color"]["r"];
+					root["value"]["green"] = root["color"]["g"];
+					root["value"]["blue"] = root["color"]["b"];
+					root["value"]["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs2mqtt requires warmWhite
+					root.removeMember("color");
+				}
 			}
 
 			if (
@@ -2781,7 +2891,20 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				{
 					//color.cw color.ww t
 					float iCt = pSensor->min_mireds + ((static_cast<float>(pSensor->max_mireds - pSensor->min_mireds) / 255.0F) * color.t);
-					root["color_temp"] = (int)round(iCt);
+					int iCT = (int)round(iCt);
+					if (!pSensor->color_temp_value_template.empty())
+					{
+						std::string szKey = GetValueTemplateKey(pSensor->color_temp_value_template);
+						if (!szKey.empty())
+							root[szKey] = iCT;
+						else
+						{
+							Log(LOG_ERROR, "Color device unhandled color_temp_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+							return false;
+						}
+					}
+					else
+						root["color_temp"] = iCT;
 				}
 			}
 
@@ -2796,16 +2919,23 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				{
 					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
 					if (!szKey.empty())
-						root[szKey] = slevel;
+					{
+						// Avoid that a brightness value overwrites an already set color value. Happens for e.g. Fibaro FGRGBW color dimmer.
+						// If such a conflict exists, color has priority and brightness will not be set in the message.
+						if (!root[szKey].isObject() && root[szKey].empty())
+							root[szKey] = slevel;
+					}
 					else
 					{
-						Log(LOG_ERROR, "Cover device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+						Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
 						return false;
 					}
 				}
 				else
 					root["brightness"] = slevel;
 			}
+			if (!pSensor->rgb_command_topic.empty())
+				command_topic = pSensor->rgb_command_topic;
 		}
 		else
 		{
@@ -3003,7 +3133,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		}
 	}
 
-	SendMessage(pSensor->command_topic, szSendValue);
+	SendMessage(command_topic, szSendValue);
 	return true;
 }
 

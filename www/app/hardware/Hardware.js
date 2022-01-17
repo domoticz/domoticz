@@ -4649,7 +4649,6 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
-			$("#hardwarecontent #divrfplayerdoc").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -4937,8 +4936,17 @@ define(['app'], function (app) {
 			if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 				$("#hardwarecontent #divmysensorsmqtt").show();
 			}
-			if (text.indexOf("RFPlayer") >= 0) {
-				$("#hardwarecontent #divrfplayerdoc").show();
+			else if (text.indexOf("MQTT") >= 0) {
+			    $("#hardwarecontent #divmqtt").show();
+			    if (
+					(text.indexOf("The Things Network (MQTT") >= 0)
+					||(text.indexOf("OctoPrint") >= 0)
+					) {
+			        $("#hardwarecontent #divmqtt #mqtt_publish").hide();
+			    }
+			    else {
+			        $("#hardwarecontent #divmqtt #mqtt_publish").show();
+			    }
 			}
 		}
 

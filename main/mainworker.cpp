@@ -11381,10 +11381,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	int dType = atoi(sd[3].c_str());
 	int dSubType = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-	if (pHardware->HwdType == HTYPE_ZIBLUEUSB || pHardware->HwdType == HTYPE_ZIBLUETCP)
-	{
-		CZiBlueBase::ConvertToGeneralSwitchType(deviceID, dType, dSubType);
-	}
 
 	m_szLastSwitchUser = User;
 
