@@ -238,9 +238,28 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				szKey = itt;
 				stdreplace(szKey, "[", "");
 				stdreplace(szKey, "]", "");
-				if (root[szKey].empty())
-					return ""; //key not found!
-				root = root[szKey];
+				if (
+					(is_number(szKey)
+					&& (root.isArray()))
+					)
+				{
+					int iNumber = std::stoi(szKey);
+					size_t object_size = root.size();
+					if (iNumber < object_size)
+					{
+						root = root[iNumber];
+					}
+					else
+					{
+						Log(LOG_ERROR, "Exception (GetValueFromTemplate): Array out of bound! (Template: %s)", szValueTemplate.c_str());
+					}
+				}
+				else
+				{
+					if (root[szKey].empty())
+						return ""; //key not found!
+					root = root[szKey];
+				}
 			}
 			if (suffix.empty())
 				return root.asString();
