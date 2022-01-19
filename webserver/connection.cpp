@@ -179,7 +179,7 @@ namespace http {
 				}
 				else
 				{
-					// _log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
+					_log.Debug(DEBUG_WEBSERVER, "connection::handle_handshake Error: %s", error.message().c_str());
 					connection_manager_.stop(shared_from_this());
 				}
 			}
@@ -388,6 +388,35 @@ namespace http {
 							request_.host_address = request_.host_address.substr(7);
 						}
 						request_handler_.handle_request(request_, reply_);
+
+						// Generate webserver logentry
+						// Follow Apache's Combined Log Format, allows easy processing by 3rd party tools
+						// LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
+						// 127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://www.example.com/start.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
+						std::string wlHost = request_.host_address;
+						std::string wlUser = "-";
+						std::string wlReqUri = request_.method + " " + request_.uri + " HTTP/" + std::to_string(request_.http_version_major) + (request_.http_version_minor ? "." + std::to_string(request_.http_version_minor): "");
+						std::string wlReqRef = "-";
+						if (request_.get_req_header(&request_, "Referer") != nullptr)
+						{
+							std::string shdr = request_.get_req_header(&request_, "Referer");
+							wlReqRef = "\"" + shdr + "\"";
+						}
+						std::string wlBrowser = "-";
+						if (request_.get_req_header(&request_, "User-Agent") != nullptr)
+						{
+							std::string shdr = request_.get_req_header(&request_, "User-Agent");
+							wlBrowser = "\"" + shdr + "\"";
+						}
+						int wlResCode = (int)reply_.status;
+						int wlContentSize = (int)reply_.content.length();
+
+						char wlReqTime[256];
+						std::time_t newt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+						std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S. %z", std::localtime(&newt));
+						wlReqTime[sizeof(wlReqTime) - 1] = '\0';
+
+						_log.Debug(DEBUG_WEBSERVER,"Apache Combined Log: %s - %s [%s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
 
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request
