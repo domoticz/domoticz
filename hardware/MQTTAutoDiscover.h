@@ -58,6 +58,7 @@ class MQTTAutoDiscover : public MQTT
 		bool bColor_mode = false;
 		std::map<std::string, uint8_t> supported_color_modes;
 		std::string color_temp_value_template = "color_temp";
+		std::string hs_value_template;
 
 		int min_mireds = 153;
 		int max_mireds = 500;

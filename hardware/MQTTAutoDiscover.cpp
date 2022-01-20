@@ -43,7 +43,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		if (qMessage.empty())
 			return;
 
-		if (topic.find(m_TopicDiscoveryPrefix) == 0)
+		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
 		{
 			on_auto_discovery_message(message);
 			return;
@@ -115,11 +115,10 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 	stdreplace(szValueTemplate, "}", "");
 	stdreplace(szValueTemplate, "'", "");
 	stdreplace(szValueTemplate, "\"", "");
-	size_t tpos = szValueTemplate.find("|");
-	if (tpos != std::string::npos)
-	{
-		szValueTemplate = szValueTemplate.substr(0, tpos);
-	}
+
+	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("|"));
+	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(".split("));
+
 	stdstring_trim(szValueTemplate);
 
 	//Strip if/endif mombojumbo (until we are going to support it)
@@ -239,9 +238,28 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				szKey = itt;
 				stdreplace(szKey, "[", "");
 				stdreplace(szKey, "]", "");
-				if (root[szKey].empty())
-					return ""; //key not found!
-				root = root[szKey];
+				if (
+					(is_number(szKey)
+					&& (root.isArray()))
+					)
+				{
+					int iNumber = std::stoi(szKey);
+					size_t object_size = root.size();
+					if (iNumber < object_size)
+					{
+						root = root[iNumber];
+					}
+					else
+					{
+						Log(LOG_ERROR, "Exception (GetValueFromTemplate): Array out of bound! (Template: %s)", szValueTemplate.c_str());
+					}
+				}
+				else
+				{
+					if (root[szKey].empty())
+						return ""; //key not found!
+					root = root[szKey];
+				}
 			}
 			if (suffix.empty())
 				return root.asString();
@@ -843,7 +861,19 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			{
 				pSensor->supported_color_modes["hs"] = 1;
 				pSensor->bColor_mode = true;
-			}		
+
+				if (!root["hs_value_template"].empty())
+					pSensor->hs_value_template = root["hs_value_template"].asString();
+				else if (!root["hs_val_tpl"].empty())
+					pSensor->hs_value_template = root["hs_val_tpl"].asString();
+				CleanValueTemplate(pSensor->hs_value_template);
+
+				if (!root["hs_command_topic"].empty())
+					pSensor->rgb_command_topic = root["hs_command_topic"].asString();
+				else if (!root["hs_cmd_t"].empty())
+					pSensor->rgb_command_topic = root["hs_cmd_t"].asString();
+
+			}
 
 			// If there is a color_temp_command_topic, add color temperature colormode
 			if (!root["color_temp_command_topic"].empty() || !root["clr_temp_cmd_t"].empty())
@@ -1212,6 +1242,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 	if (
 		(szUnit == "°c")
+		|| (szUnit == "\xB0" "c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
 		|| (szUnit == "f")
@@ -1376,6 +1407,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	}
 	else if (
 		(szUnit == "m³")
+		|| (szUnit == "m\xB3")
 		|| (szUnit == "cubic meters")
 		)
 	{
@@ -2841,9 +2873,27 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				{
 					float hsb[3];
 					rgb2hsb(color.r, color.g, color.b, hsb);
-					root["color"]["h"] = hsb[0];
-					root["color"]["s"] = hsb[1];
-					root["brightness"] = hsb[1] * 255.0F;
+
+					if (!pSensor->hs_value_template.empty())
+					{
+						std::string szKey = GetValueTemplateKey(pSensor->hs_value_template);
+						if (!szKey.empty())
+						{
+							std::string hsbColor = std_format("%.0f,%.0f,%.0f", hsb[0] * 360.0F, hsb[1] * 100.0F, hsb[2] * pSensor->brightness_scale);
+							root[szKey] = hsbColor;
+						}
+						else
+						{
+							Log(LOG_ERROR, "Color device unhandled hs_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+							return false;
+						}
+					}
+					else
+					{
+						root["color"]["h"] = hsb[0];
+						root["color"]["s"] = hsb[1];
+						root["brightness"] = hsb[2] * pSensor->brightness_scale;
+					}
 				}
 				else if (
 					(pSensor->bColor_mode)

@@ -519,6 +519,10 @@ app/hardware/Hardware.html
 app/hardware/Hardware.js
 app/hardware/HardwareSetup.html
 app/hardware/HardwareSetup.js
+app/hardware/extra/DaikinParams.js
+app/hardware/extra/DaikinParams.html
+app/hardware/extra/MQTTParams.js
+app/hardware/extra/MQTTParams.html
 app/hardware/setup/BleBox.html
 app/hardware/setup/BleBox.js
 app/hardware/setup/Kodi.html

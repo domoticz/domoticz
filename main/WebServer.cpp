@@ -3838,16 +3838,20 @@ namespace http
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
 						CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
+
 						Json::Value proot;
-						Json::Reader reader;
-						auto jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
-						bool res = reader.parse(jsonConfiguration, proot);
-						if (!jsonConfiguration.empty() && res)
+						std::string jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+						if (!jsonConfiguration.empty())
 						{
-							root["result"][ii]["idx"] = ID;
-							root["result"][ii]["Name"] = Name;
-							root["result"][ii]["config"] = proot;
-							ii++;
+							bool res = ParseJSon(jsonConfiguration, proot);
+
+							if (res)
+							{
+								root["result"][ii]["idx"] = ID;
+								root["result"][ii]["Name"] = Name;
+								root["result"][ii]["config"] = proot;
+								ii++;
+							}
 						}
 						else if ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
 						    (Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
