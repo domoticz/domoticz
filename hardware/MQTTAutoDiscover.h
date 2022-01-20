@@ -38,6 +38,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string rgb_command_template;
 
 		std::string icon;
+		std::string state_class;
 
 		std::string payload_on = "ON";
 		std::string payload_off = "OFF";

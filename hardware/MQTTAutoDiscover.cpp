@@ -720,6 +720,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["ic"].empty())
 			pSensor->icon = root["ic"].asString();
 
+		if (!root["state_class"].empty())
+			pSensor->state_class = root["state_class"].asString();
+		else if (!root["stat_cla"].empty())
+			pSensor->state_class = root["stat_cla"].asString();		
+
 		if (!root["device_class"].empty())
 			pSensor->device_class = root["device_class"].asString();
 		else if (!root["dev_cla"].empty())
@@ -1409,9 +1414,10 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		(szUnit == "m³")
 		|| (szUnit == "m\xB3")
 		|| (szUnit == "cubic meters")
+		|| (pSensor->state_class == "total_increasing")
 		)
 	{
-		if (pSensor->icon.find("water"))
+		if (pSensor->icon.find("water") != std::string::npos)
 		{
 			devType = pTypeRAIN;
 			subType = sTypeRAIN3;
@@ -1429,7 +1435,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 			sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 		}
-		else if (pSensor->icon.find("gas"))
+		else if (pSensor->icon.find("gas") != std::string::npos)
 		{
 			devType = pTypeP1Gas;
 			subType = sTypeP1Gas;
