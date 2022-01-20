@@ -1404,6 +1404,15 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeWaterflow;
 		sValue = std_format("%.2f", static_cast<float>(atof(pSensor->last_value.c_str())) / 60.0F);
 	}
+	else if (
+		(szUnit == "db")
+		|| (szUnit == "dba")
+		)
+	{
+		devType = pTypeGeneral;
+		subType = sTypeSoundLevel;
+		sValue = std_format("%d", atoi(pSensor->last_value.c_str()));
+	}
 	else if (szUnit == "text")
 	{
 		devType = pTypeGeneral;
@@ -1448,7 +1457,10 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			sValue = pSensor->last_value;
 		}
 	}
-	else if (szUnit == "mm/h")
+	else if (
+		(szUnit == "mm/h")
+		|| ((szUnit == "mm") && (pSensor->icon == "mdi:weather-rainy"))
+		)
 	{
 		_tMQTTASensor* pRainSensor = get_auto_discovery_sensor_unit(pSensor, "cubic meters");
 		if (!pRainSensor)
