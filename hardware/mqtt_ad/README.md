@@ -8,6 +8,7 @@ When you are asked to supply a copy of all MQTT messages for a device used by MQ
    1. [Download mqtt_ad_record.sh](mqtt_ad_record.sh) to your MQTT or Domoticz server.
    2. Run the script as shown in the examples below with the appropriate parameters. This will capture all MQTT packages in scope of the defined parametres.
    3. Provide us with the **mqtt_ad_record_*XXX*.log** file containing all records.
+   4. Press Ctrl+c when you want to stop the capture process before the timer ends.
 
 ## mqtt_ad_record.sh
 
