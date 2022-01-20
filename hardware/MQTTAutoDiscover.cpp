@@ -1414,7 +1414,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		(szUnit == "m³")
 		|| (szUnit == "m\xB3")
 		|| (szUnit == "cubic meters")
-		|| (pSensor->state_class == "total_increasing")
 		)
 	{
 		if (pSensor->icon.find("water") != std::string::npos)
@@ -1479,6 +1478,14 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
+/*
+	else if (pSensor->state_class == "total_increasing")
+	{
+		devType = pTypeRFXMeter;
+		subType = sTypeRFXMeterCount;
+		sValue = pSensor->last_value;
+	}
+*/
 	else
 	{
 		devType = pTypeGeneral;
