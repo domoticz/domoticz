@@ -293,6 +293,7 @@ hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp
+hardware/RFLinkMQTT.cpp
 hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp

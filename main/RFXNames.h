@@ -222,6 +222,7 @@ enum _eHardwareTypes {
 	HTYPE_AirconWithMe,         //123
 	HTYPE_TeleinfoMeterTCP,		//124
 	HTYPE_MQTTAutoDiscovery,	//125
+	HTYPE_RFLINKMQTT,			//126
 	HTYPE_END
 };
 

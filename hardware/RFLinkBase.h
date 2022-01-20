@@ -29,5 +29,6 @@ class CRFLinkBase : public CDomoticzHardwareBase
 	unsigned char m_rfbuffer[RFLINK_READ_BUFFER_SIZE];
 	int m_rfbufferpos;
 	int m_retrycntr;
+	unsigned int m_cmdacktimeout;
 	time_t m_LastReceivedTime;
 };

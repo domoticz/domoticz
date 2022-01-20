@@ -277,6 +277,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_AirconWithMe, "AirconWithMe Wifi Airco module", "AirconWithMe" },
 	{ HTYPE_TeleinfoMeterTCP, "Teleinfo EDF with LAN interface", "TeleInfo" },
 	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
+	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT",	"RFLink" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -3934,6 +3935,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_MySensorsTCP:
 	case HTYPE_MySensorsMQTT:
 	case HTYPE_MQTT:
+	case HTYPE_RFLINKMQTT:
 	case HTYPE_FRITZBOX:
 	case HTYPE_ETH8020:
 	case HTYPE_RelayNet:

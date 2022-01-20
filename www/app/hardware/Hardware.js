@@ -10,6 +10,7 @@ define(['app'], function (app) {
 		'OctoPrint (MQTT/Gina Haussge) with LAN interface': ['MQTTParams', 1],
 		'The Things Network (MQTT/CayenneLPP) with LAN interface': ['MQTTParams', 2],
 		'MQTT Auto Discovery Client Gateway with LAN interface': ['MQTTParams', 3],
+		'RFLink Gateway MQTT': ['MQTTParams', 4],
 	};
 	
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
@@ -4178,7 +4179,9 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
                             }
 						}
-						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
+						 		(data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) &&
+								(data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
