@@ -2509,20 +2509,20 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else
 			{
 				szOnOffValue = "Set Level";
-				// Make level relative to 100.
-				if (
-					(sSwitchType == STYPE_BlindsInverted)
-					|| (sSwitchType == STYPE_BlindsPercentageInverted)
-					|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-					)
-				{
-					// invert level for inverted blinds with percentage.
-					level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-				}
-				else
-				{
-					level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-				}
+			}
+			// Make level relative to 100.
+			if (
+				(sSwitchType == STYPE_BlindsInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+				)
+			{
+				// invert level for inverted blinds with percentage.
+				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+			}
+			else
+			{
+				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
 		}
 		if (!root["color"].empty())
