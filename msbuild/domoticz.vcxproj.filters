@@ -2198,9 +2198,6 @@
     <ClInclude Include="..\hardware\eVehicles\TestcarApi.h">
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoTCP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
@@ -2225,11 +2222,17 @@
     <ClInclude Include="..\hardware\plugins\DelayedLink.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\EnOceanEEP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\MQTTAutoDiscover.h">
       <Filter>Devices\MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkMQTT.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EnOceanEEP.h">
+      <Filter>Devices\EnOcean</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoTCP.h">
+      <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2962,9 +2965,6 @@
     <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp">
       <Filter>Devices\eVehicles</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoTCP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>Plugin Framework</Filter>
     </ClCompile>
@@ -2986,14 +2986,20 @@
     <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
       <Filter>Plugin Framework</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\EnOceanEEP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\EnOceanRawValue.cpp">
       <Filter>Devices\EnOcean</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MQTTAutoDiscover.cpp">
       <Filter>Devices\MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkMQTT.cpp">
+      <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnOceanEEP.cpp">
+      <Filter>Devices\EnOcean</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoTCP.cpp">
+      <Filter>Devices\Teleinfo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
