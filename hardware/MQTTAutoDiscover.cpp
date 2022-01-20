@@ -245,7 +245,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				{
 					int iNumber = std::stoi(szKey);
 					size_t object_size = root.size();
-					if (iNumber < object_size)
+					if (iNumber < (int)object_size)
 					{
 						root = root[iNumber];
 					}
