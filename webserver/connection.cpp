@@ -376,6 +376,7 @@ namespace http {
 					}
 
 					if (result) {
+						std::time_t newt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 						size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 						_buf.consume(sizeread);
 						reply_.reset();
@@ -412,8 +413,7 @@ namespace http {
 						int wlContentSize = (int)reply_.content.length();
 
 						char wlReqTime[256];
-						std::time_t newt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-						std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S. %z", std::localtime(&newt));
+						std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S %z", std::localtime(&newt));
 						wlReqTime[sizeof(wlReqTime) - 1] = '\0';
 
 						_log.Debug(DEBUG_WEBSERVER,"Apache Combined Log: %s - %s [%s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
