@@ -1,6 +1,6 @@
 #!/bin/bash
 : '
-# Scriptname mqtt_ad_send.sh     Ver: 20220120-01
+# Scriptname mqtt_ad_send.sh     Ver: 20220121-01
 # Created by JvdZ
 
 Script that sends the captured mqtt records again to a server recorded in HA_Discovery_mqtt.log in dezelfde directory.
@@ -32,8 +32,8 @@ do
     case "${flag}" in
         h) MQTT_IP=${OPTARG};;
         p) MQTT_PORT=${OPTARG};;
-        u) MQTT_Param=${MQTT_Param}' -u "'${OPTARG}'"';;
-        P) MQTT_Param=${MQTT_Param}' -P "'${OPTARG}'"';;
+        u) MQTT_Param=${MQTT_Param}' -u '${OPTARG};;
+        P) MQTT_Param=${MQTT_Param}' -P '${OPTARG};;
         s) sdev=${OPTARG};;
         i) input=${OPTARG};;
         r) retain=${OPTARG};;

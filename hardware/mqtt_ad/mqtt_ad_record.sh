@@ -1,6 +1,6 @@
 #!/bin/bash
 : '
-# Scriptname mqtt_ad_record.sh     Ver: 20220120-01
+# Scriptname mqtt_ad_record.sh     Ver: 20220121-01
 # Created by JvdZ
 
 Script that helps capturing MQTT messages for Homeassistant AD into a file so they can be shared easily with others for debugging.
@@ -57,8 +57,8 @@ do
 	case "${flag}" in
         h) MQTT_IP=${OPTARG};;
         p) MQTT_PORT=${OPTARG};;
-        u) MQTT_Param=${MQTT_Param}' -u "'${OPTARG}'"';;
-        P) MQTT_Param=${MQTT_Param}' -P "'${OPTARG}'"';;
+        u) MQTT_Param=${MQTT_Param}' -u '${OPTARG}'';;
+        P) MQTT_Param=${MQTT_Param}' -P '${OPTARG}'';;
         s) sdev=${OPTARG};;
         t) rtime=${OPTARG};;
     esac
@@ -84,10 +84,10 @@ echo "Search For: '$sdev'";
 
 # Start Capture
 if [[ -z $sdev ]]; then
-	echo "Start Capture for $rtime seconds of all MQTT messages to Console and file: $sdev.log"
+	echo "Start Capture for $rtime seconds of all MQTT messages to Console and file: mqtt_ad_record_all.log"
 	mosquitto_sub $MQTT_Param -h $MQTT_IP -p $MQTT_PORT -t "#" -v -W $rtime -F "%I\t%r\t%t\t%p"| stdbuf -i0 -o0 grep -i -e "\/config\|[_\/]state" | stdbuf -i0 -o0 tee "mqtt_ad_record_all.log"
 else
-	echo "Start Capture for $rtime seconds of MQTT messages containing $sdev to Console and file: $sdev.log"
+	echo "Start Capture for $rtime seconds of MQTT messages containing $sdev to Console and file: mqtt_ad_record_$sdev.log"
 	mosquitto_sub $MQTT_Param -h $MQTT_IP -p $MQTT_PORT -t "#" -v -W $rtime -F "%I\t%r\t%t\t%p"| stdbuf -i0 -o0 grep -i "$sdev" | stdbuf -i0 -o0 tee "mqtt_ad_record_$sdev.log"
 fi
 # Capture Ended
