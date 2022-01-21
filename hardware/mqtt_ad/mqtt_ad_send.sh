@@ -9,6 +9,8 @@ usage:
 bash mqtt_ad_send.sh [-h hostname/ip] [-p port] [-s searchstring] [-i inputfile]
    -h Hostname or Ipaddres of MQTT deamon. default is 127.0.0.1
    -p port for the MQTT deamon. default is 1883
+   -u Userid for MQTT deamon
+   -P Password for MQTT deamon
    -s only send MQTT messages that contain this string in the TOPIC or PAYLOAD. default is all messages
    -i inputfile. default is mqtt_ad_record_all.log
    -r override retain (y/n). defaults to the retain flag in the record
