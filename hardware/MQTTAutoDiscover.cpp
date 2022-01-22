@@ -1904,7 +1904,9 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	std::string szDeviceName = result[0][1];
 	int nValue = atoi(result[0][2].c_str());
 	std::string sValue = result[0][3];
-	std::string sOptions = result[0][4];
+
+	std::string sOldOptions = result[0][4];
+	std::map<std::string, std::string> oldOptionsMap = m_sql.BuildDeviceOptions(sOldOptions);
 
 	int iActualIndex = ((current_mode != "") ? -1 : 0);
 
@@ -1927,12 +1929,39 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	}
 
 	std::map<std::string, std::string> optionsMap;
-	optionsMap["SelectorStyle"] = "0";
-	optionsMap["LevelOffHidden"] = "false";
-	optionsMap["LevelNames"] = tmpOptionString;
+	if (oldOptionsMap.find("SelectorStyle") == oldOptionsMap.end())
+	{
+		optionsMap["SelectorStyle"] = (pSensor->select_options.size() > 5) ? "1" : "0";
+		optionsMap["LevelOffHidden"] = "false";
+	}
+	else
+	{
+		optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+		optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+	}
+
+	std::vector<std::string> strarray;
+	StringSplit(tmpOptionString, "|", strarray);
+
+	size_t totalOptions = strarray.size();
+	size_t totalOldOptions = 0;
+
+	if (oldOptionsMap.find("LevelNames") != oldOptionsMap.end())
+	{
+		StringSplit(tmpOptionString, "|", strarray);
+		totalOldOptions = strarray.size();
+	}
+
+	if (totalOptions != totalOldOptions)
+	{
+		//Avoid renamed level names by user in Domoticz
+		optionsMap["LevelNames"] = tmpOptionString;
+	}
+	else
+		optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
 
 	std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-	if (newOptions != sOptions)
+	if (newOptions != sOldOptions)
 		m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
 	pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
