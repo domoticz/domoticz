@@ -1,6 +1,7 @@
 #!/bin/bash
+sver="20220124-01"
 : '
-# Scriptname mqtt_ad_send.sh     Ver: 20220121-01
+# Scriptname mqtt_ad_send.sh
 # Created by JvdZ
 
 Script that sends the captured mqtt records again to a server recorded in HA_Discovery_mqtt.log in dezelfde directory.
@@ -17,8 +18,8 @@ bash mqtt_ad_send.sh [-h hostname/ip] [-p port] [-s searchstring] [-i inputfile]
    -d When Dry-run when switch is provided, no MQTT messages will be send, just the logging.
 
 example:
-	ALL records     :  bash mqtt_ad_send.sh
-	Selected records:  bash mqtt_ad_send.sh PARTIAL_DEVICE_NAME
+   ALL records     :  bash mqtt_ad_send.sh
+   Selected records:  bash mqtt_ad_send.sh PARTIAL_DEVICE_NAME
 '
 
 MQTT_IP="127.0.0.1"
@@ -31,31 +32,31 @@ dryrun=""
 # process parameters
 while getopts h:p:u:P:s:i:r:d flag
 do
-    case "${flag}" in
-        h) MQTT_IP=${OPTARG};;
-        p) MQTT_PORT=${OPTARG};;
-        u) MQTT_Param=${MQTT_Param}' -u '${OPTARG};;
-        P) MQTT_Param=${MQTT_Param}' -P '${OPTARG};;
-        s) sdev=${OPTARG};;
-        i) input=${OPTARG};;
-        r) retain=${OPTARG};;
-        d) dryrun='y';;
-    esac
+   case "${flag}" in
+      h) MQTT_IP=${OPTARG};;
+      p) MQTT_PORT=${OPTARG};;
+      u) MQTT_Param=${MQTT_Param}' -u '${OPTARG};;
+      P) MQTT_Param=${MQTT_Param}' -P '${OPTARG};;
+      s) sdev=${OPTARG};;
+      i) input=${OPTARG};;
+      r) retain=${OPTARG};;
+      d) dryrun='y';;
+   esac
 done
 
 # Set case insensitive flag for the PARTIAL_DEVICE_NAME tests
 shopt -s nocasematch
 
-echo "================================================================================================================="
+echo "== $sver =============================================================================================================="
 echo "MQTT_IP   : '$MQTT_IP'";
 echo "MQTT_PORT : '$MQTT_PORT'";
 echo "MQTT_Param: '$MQTT_Param'";
 echo "inputfile : '$input'";
 if [[ ! -z "$retain" ]] ; then
-	echo "Retain override with '$retain'";
+   echo "Retain override with '$retain'";
 fi
 if [[ ! -z "$dryrun" ]] ; then
-	echo "### Dry-Run so no MQTT messages are send, just showing the log of the selected messages.###";
+   echo "### Dry-Run so no MQTT messages are send, just showing the log of the selected messages.###";
 fi
 
 srec=0;
@@ -64,38 +65,38 @@ srec=0;
 #   -r option read is to leave backslaches as in the file
 cat "$input" | tr -d "\r" | while IFS=$'\t' read -r itime iretain itopic ipayload;
 do
-	#echo -e "###\nT=$itopic\nP=$ipayload"
-	#skip Comment lines starting with #
-	[[ itime =~ ^#.* ]] && { continue; }
+   #echo -e "###\nT=$itopic\nP=$ipayload"
+   #skip Comment lines starting with #
+   [[ itime =~ ^#.* ]] && { continue; }
 
-	#skip empty lines or only one param is provided
-	[[ -z "$ipayload" ]] && { continue; }
+   #skip empty lines or only one param is provided
+   [[ -z "$ipayload" ]] && { continue; }
 
-	#skip lines that do not contain the selected dev
-	[[ ! $itopic =~ $sdev ]] && {
-		[[ ! $ipayload =~ $sdev ]] && { continue; }
-	}
+   #skip lines that do not contain the selected dev
+   [[ ! $itopic =~ $sdev ]] && {
+      [[ ! $ipayload =~ $sdev ]] && { continue; }
+   }
 
-	## process the selected record
-	srec=$((srec+1))
-	# Set MQTT Options
-	MQTT_Opts=""
-	# Add Retain option when 1 is specified in input or in the override param -r
-	if [[ -z "$retain" ]] ; then
-		[[ "$iretain" == "1" ]] && { MQTT_Opts=" -r";}
-	else
-		[[ "$retain" == "y" ]] && { MQTT_Opts=" -r";}
-	fi
-	if [[ -z "$dryrun" ]] ; then
-		echo -e "== $srec > $MQTT_Opts\nT=$itopic\nP=$ipayload"
-		mosquitto_pub $MQTT_Param $MQTT_Opts -h $MQTT_IP -p $MQTT_PORT -t "$itopic" -m "$ipayload"
-	else
-		echo -e "-- $srec: $MQTT_Opts\nT=$itopic\nP=$ipayload"
-	fi
+   ## process the selected record
+   srec=$((srec+1))
+   # Set MQTT Options
+   MQTT_Opts=""
+   # Add Retain option when 1 is specified in input or in the override param -r
+   if [[ -z "$retain" ]] ; then
+      [[ "$iretain" == "1" ]] && { MQTT_Opts=" -r";}
+   else
+      [[ "$retain" == "y" ]] && { MQTT_Opts=" -r";}
+   fi
+   if [[ -z "$dryrun" ]] ; then
+      echo -e "== $srec > $MQTT_Opts\nT=$itopic\nP=$ipayload"
+      mosquitto_pub $MQTT_Param $MQTT_Opts -h $MQTT_IP -p $MQTT_PORT -t "$itopic" -m "$ipayload"
+   else
+      echo -e "-- $srec: $MQTT_Opts\nT=$itopic\nP=$ipayload"
+   fi
 done
 
 if [[ ! -z "$dryrun" ]] ; then
-	echo "###============================================###";
-	echo "### Dry-Run ended,so no MQTT messages are send.###";
-	echo "###============================================###";
+   echo "###============================================###";
+   echo "### Dry-Run ended,so no MQTT messages are send.###";
+   echo "###============================================###";
 fi

@@ -1,6 +1,7 @@
 #!/bin/bash
+sver="20220124-01"
 : '
-# Scriptname mqtt_ad_record.sh     Ver: 20220121-01
+# Scriptname mqtt_ad_record.sh
 # Created by JvdZ
 
 Script that helps capturing MQTT messages for Homeassistant AD into a file so they can be shared easily with others for debugging.
@@ -39,29 +40,29 @@ MQTT_IP="127.0.0.1"  # Define MQTT Server
 MQTT_PORT="1883"     # Define port
 rtime=600            # Define default Capture time for MQTT messages in seconds.
                      # You can always interrupt the capture process at anytime withCtrl+Break pr Ctrl+C
-MQTT_Param=""      # used for extram mosquitto_sub parameters
+MQTT_Param=""        # used for extram mosquitto_sub parameters
 
 # Check if mosquitto_sub is installed
 if ! command -v mosquitto_sub &> /dev/null; then
-	echo "================================================================================================================="
-	echo "This script can be used to capture MQTT messages for a particular device."
-	echo "Current MQT Server $MQTT_IP port $MQTT_PORT, edit script to change these."
-	echo "!!!! program mosquitto_sub not found, please install that first."
-	echo "RPI install:sudo apt-get install mosquitto-clients"
-	echo "================================================================================================================="
-	exit
+   echo "================================================================================================================="
+   echo "This script can be used to capture MQTT messages for a particular device."
+   echo "Current MQT Server $MQTT_IP port $MQTT_PORT, edit script to change these."
+   echo "!!!! program mosquitto_sub not found, please install that first."
+   echo "RPI install:sudo apt-get install mosquitto-clients"
+   echo "================================================================================================================="
+   exit
 fi
 # process parameters
 while getopts h:p:u:P:s:t: flag
 do
-	case "${flag}" in
-        h) MQTT_IP=${OPTARG};;
-        p) MQTT_PORT=${OPTARG};;
-        u) MQTT_Param=${MQTT_Param}' -u '${OPTARG}'';;
-        P) MQTT_Param=${MQTT_Param}' -P '${OPTARG}'';;
-        s) sdev=${OPTARG};;
-        t) rtime=${OPTARG};;
-    esac
+   case "${flag}" in
+      h) MQTT_IP=${OPTARG};;
+      p) MQTT_PORT=${OPTARG};;
+      u) MQTT_Param=${MQTT_Param}' -u '${OPTARG}'';;
+      P) MQTT_Param=${MQTT_Param}' -P '${OPTARG}'';;
+      s) sdev=${OPTARG};;
+      t) rtime=${OPTARG};;
+   esac
 done
 
 # Set case insensitive flag for the PARTIAL_DEVICE_NAME tests
@@ -71,28 +72,31 @@ shopt -s nocasematch
 trap message INT
 
 function message() {
-        echo "** CTRL-C pressed."
-        # command for clean up e.g. rm and so on goes below
+   echo "** CTRL-C pressed."
+   # command for clean up e.g. rm and so on goes below
 }
 
-echo "================================================================================================================="
+echo "== $sver =============================================================================================================="
 echo "MQTT_IP   : '$MQTT_IP'";
 echo "MQTT_PORT : '$MQTT_PORT'";
 echo "MQTT_Param: '$MQTT_Param'";
 echo "Recordtime: '$rtime'";
 echo "Search For: '$sdev'";
 
+logfile="mqtt_ad_record_all.log"
 # Start Capture
 if [[ -z $sdev ]]; then
-	echo "Start Capture for $rtime seconds of all MQTT messages to Console and file: mqtt_ad_record_all.log"
-	mosquitto_sub $MQTT_Param -h $MQTT_IP -p $MQTT_PORT -t "#" -v -W $rtime -F "%I\t%r\t%t\t%p"| stdbuf -i0 -o0 grep -i -e "\/config\|[_\/]state" | stdbuf -i0 -o0 tee "mqtt_ad_record_all.log"
+   echo "Start Capture for $rtime seconds of all MQTT messages to Console and file: $logfile"
+   mosquitto_sub $MQTT_Param -h $MQTT_IP -p $MQTT_PORT -t "#" -v -W $rtime -F "%I\t%r\t%t\t%p"| stdbuf -i0 -o0 grep -i -e "\/config\|[_\/]state" | stdbuf -i0 -o0 tee "$logfile"
 else
-	echo "Start Capture for $rtime seconds of MQTT messages containing $sdev to Console and file: mqtt_ad_record_$sdev.log"
-	mosquitto_sub $MQTT_Param -h $MQTT_IP -p $MQTT_PORT -t "#" -v -W $rtime -F "%I\t%r\t%t\t%p"| stdbuf -i0 -o0 grep -i "$sdev" | stdbuf -i0 -o0 tee "mqtt_ad_record_$sdev.log"
+   # remove characters in filename that aren't allowed
+   logfile="mqtt_ad_record_"${sdev//[^A-Za-z0-9-_]/}".log"
+   echo "Start Capture for $rtime seconds of MQTT messages containing $sdev to Console and file: $logfile"
+   mosquitto_sub $MQTT_Param -h $MQTT_IP -p $MQTT_PORT -t "#" -v -W $rtime -F "%I\t%r\t%t\t%p"| stdbuf -i0 -o0 grep -i "$sdev" | stdbuf -i0 -o0 tee "$logfile"
 fi
 # Capture Ended
 if [ "$?" -eq "0" ] ; then
-	echo "Capture ended, check file: mqtt_ad_record_$sdev.log"
+    echo "Capture ended, check file: $logfile"
 else
-	echo "Capture interrupted, check file: mqtt_ad_record_$sdev.log"
+    echo "Capture interrupted, check file: $logfile"
 fi
