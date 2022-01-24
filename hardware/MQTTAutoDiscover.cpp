@@ -2985,8 +2985,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root.removeMember("color");
 				}
 			}
-
-			if (
+			else if (
 				(color.mode == ColorModeTemp)
 				|| (color.mode == ColorModeCustom)
 				)
@@ -3010,33 +3009,33 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					else
 						root["color_temp"] = iCT;
 				}
-			}
-
-			if (
-				(pSensor->bBrightness)
-				|| (!pSensor->brightness_value_template.empty())
-				)
-			{
-				int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
-
-				if (!pSensor->brightness_value_template.empty())
+				if (
+					(pSensor->bBrightness)
+					|| (!pSensor->brightness_value_template.empty())
+					)
 				{
-					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
-					if (!szKey.empty())
+					int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
+
+					if (!pSensor->brightness_value_template.empty())
 					{
-						// Avoid that a brightness value overwrites an already set color value. Happens for e.g. Fibaro FGRGBW color dimmer.
-						// If such a conflict exists, color has priority and brightness will not be set in the message.
-						if (!root[szKey].isObject() && root[szKey].empty())
-							root[szKey] = slevel;
+						std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
+						if (!szKey.empty())
+						{
+							// Avoid that a brightness value overwrites an already set color value. Happens for e.g. Fibaro FGRGBW color dimmer.
+							// If such a conflict exists, color has priority and brightness will not be set in the message.
+							if (!root[szKey].isObject() && root[szKey].empty())
+								root[szKey] = slevel;
+						}
+						else
+						{
+							Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+							return false;
+						}
 					}
 					else
-					{
-						Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-						return false;
-					}
+						root["brightness"] = slevel;
 				}
-				else
-					root["brightness"] = slevel;
+
 			}
 			if (!pSensor->rgb_command_topic.empty())
 				command_topic = pSensor->rgb_command_topic;
