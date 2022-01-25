@@ -149,7 +149,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 
       private:
 	int AlertLevel(int Iinst, int Isousc, int Sinsts, int Pcoup, char* text);
-	P1Power m_p1power, m_p2power, m_p3power, m_pInjectpower;
+	P1Power m_p1power, m_p2power, m_p3power;
 	Teleinfo m_teleinfo;
 	char m_buffer[1024];
 	int m_bufferpos;
