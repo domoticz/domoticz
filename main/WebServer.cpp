@@ -4913,17 +4913,12 @@ namespace http
 				std::string StrParam1;
 				
 				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if (pBaseHardware == nullptr)
+				if ((pBaseHardware != nullptr) && (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty()))
 				{
-					root["message"] = "Hardware does not exists!";
-					return;
-				}
-				if (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
-				{
-					pBaseHardware->GetManualSwitchParameters(req.parameters,switchtype, lighttype,  dtype, subtype, devid, sunitcode);
+					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
 					// check if switch is unique
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-								  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+						hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
 					if (!result.empty())
 					{
 						root["message"] = "Switch already exists!";
@@ -4938,7 +4933,7 @@ namespace http
 
 					// set name and switchtype
 					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
-								  devid.c_str(), sunitcode.c_str(), dtype, subtype);
+						devid.c_str(), sunitcode.c_str(), dtype, subtype);
 					if (result.empty())
 					{
 						root["message"] = "Error finding switch in Database!?!?";
