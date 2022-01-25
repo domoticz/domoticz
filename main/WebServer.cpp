@@ -3838,13 +3838,15 @@ namespace http
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
 						CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
-
-						Json::Value proot;
-						std::string jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+						std::string jsonConfiguration;
+						if (pBaseHardware != nullptr)
+						{
+							jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+						}
 						if (!jsonConfiguration.empty())
 						{
+							Json::Value proot;
 							bool res = ParseJSon(jsonConfiguration, proot);
-
 							if (res)
 							{
 								root["result"][ii]["idx"] = ID;
