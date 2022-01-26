@@ -810,30 +810,34 @@ time_t GetClockTicks()
 	return(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
+void CurrentDateTimeMillisecond(tm &timeinfo, timeval &tv)
+{
+#ifdef CLOCK_REALTIME
+	struct timespec ts;
+	if (!clock_gettime(CLOCK_REALTIME, &ts))
+	{
+		tv.tv_sec = ts.tv_sec;
+		tv.tv_usec = ts.tv_nsec / 1000;
+	}
+	else
+#endif
+		gettimeofday(&tv, nullptr);
+
+#ifdef WIN32
+	time_t tv_sec = tv.tv_sec;
+	localtime_r(&tv_sec, &timeinfo);
+#else
+	localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+}
+
 std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
 	if (ltime == nullptr) // current time
-	{
-#ifdef CLOCK_REALTIME
-		struct timespec ts;
-		if (!clock_gettime(CLOCK_REALTIME, &ts))
-		{
-			tv.tv_sec = ts.tv_sec;
-			tv.tv_usec = ts.tv_nsec / 1000;
-		}
-		else
-#endif
-			gettimeofday(&tv, nullptr);
-#ifdef WIN32
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-	}
+		CurrentDateTimeMillisecond(timeinfo, tv);
 	else
 		localtime_r(ltime, &timeinfo);
 
