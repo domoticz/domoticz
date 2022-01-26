@@ -2911,6 +2911,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		{
 			root["state"] = pSensor->payload_on;
 
+			bool bCouldUseBrightness = false;
+
 			if (
 				(color.mode == ColorModeRGB)
 				|| (color.mode == ColorModeCustom)
@@ -2922,6 +2924,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					_tColor::XYFromRGB(color.r, color.g, color.b, x, y, Y);
 					root["color"]["x"] = x;
 					root["color"]["y"] = y;
+					bCouldUseBrightness = true;
 				}
 				else if (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
 				{
@@ -3009,6 +3012,13 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					else
 						root["color_temp"] = iCT;
 				}
+				bCouldUseBrightness = true;
+			}
+			if (!pSensor->rgb_command_topic.empty())
+				command_topic = pSensor->rgb_command_topic;
+
+			if (bCouldUseBrightness)
+			{
 				if (
 					(pSensor->bBrightness)
 					|| (!pSensor->brightness_value_template.empty())
@@ -3021,10 +3031,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 						std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
 						if (!szKey.empty())
 						{
-							// Avoid that a brightness value overwrites an already set color value. Happens for e.g. Fibaro FGRGBW color dimmer.
-							// If such a conflict exists, color has priority and brightness will not be set in the message.
-							if (!root[szKey].isObject() && root[szKey].empty())
-								root[szKey] = slevel;
+							root[szKey] = slevel;
 						}
 						else
 						{
@@ -3035,10 +3042,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					else
 						root["brightness"] = slevel;
 				}
-
 			}
-			if (!pSensor->rgb_command_topic.empty())
-				command_topic = pSensor->rgb_command_topic;
 		}
 		else
 		{
