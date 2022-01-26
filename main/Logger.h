@@ -64,6 +64,7 @@ class CLogger
 		__attribute__((format(printf, 3, 4)))
 #endif
 		;
+	void ACLFlog(const char *logline, ...);
 	void LogSequenceStart();
 	void LogSequenceAdd(const char *logline);
 	void LogSequenceAddNoLF(const char *logline);

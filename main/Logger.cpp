@@ -296,6 +296,18 @@ void CLogger::Debug(const _eDebugLevel level, const std::string &sLogline)
 	Log(LOG_DEBUG_INT, sLogline);
 }
 
+void CLogger::ACLFlog(const char *logline, ...)
+{
+	if (!IsACLFlogEnabled())
+		return;
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+	std::cout << std::string(cbuffer) << std::endl;
+}
+
 bool strhasEnding(std::string const &fullString, std::string const &ending)
 {
 	return fullString.size() >= ending.size() && !fullString.compare(fullString.size() - ending.size(), ending.size(), ending);
