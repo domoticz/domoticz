@@ -376,7 +376,20 @@ namespace http {
 					}
 
 					if (result) {
+						// Record timestamp (with milliseconds) before starting to process
+						struct timeval tv;
+					#ifdef CLOCK_REALTIME
+						struct timespec ts;
+						if (!clock_gettime(CLOCK_REALTIME, &ts))
+						{
+							tv.tv_sec = ts.tv_sec;
+							tv.tv_usec = ts.tv_nsec / 1000;
+						}
+						else
+					#endif
+							gettimeofday(&tv, nullptr);
 						std::time_t newt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
 						size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 						_buf.consume(sizeread);
 						reply_.reset();
@@ -395,7 +408,7 @@ namespace http {
 						// LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
 						// 127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://www.example.com/start.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
 						std::string wlHost = request_.host_address;
-						std::string wlUser = "-";
+						std::string wlUser = "-";	// Maybe we can fill this sometime? Or maybe not so we don't expose sensitive data?
 						std::string wlReqUri = request_.method + " " + request_.uri + " HTTP/" + std::to_string(request_.http_version_major) + (request_.http_version_minor ? "." + std::to_string(request_.http_version_minor): "");
 						std::string wlReqRef = "-";
 						if (request_.get_req_header(&request_, "Referer") != nullptr)
@@ -411,18 +424,6 @@ namespace http {
 						}
 						int wlResCode = (int)reply_.status;
 						int wlContentSize = (int)reply_.content.length();
-
-						struct timeval tv;
-					#ifdef CLOCK_REALTIME
-						struct timespec ts;
-						if (!clock_gettime(CLOCK_REALTIME, &ts))
-						{
-							tv.tv_sec = ts.tv_sec;
-							tv.tv_usec = ts.tv_nsec / 1000;
-						}
-						else
-					#endif
-							gettimeofday(&tv, nullptr);
 
 						std::stringstream sstr;
 						sstr << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
