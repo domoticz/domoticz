@@ -1,11 +1,11 @@
 
-# mqtt autodiscovery tools
+# MQTT AutoDiscovery tools
 
 ## How to supply an MQTT AD messages dump to the developers
 
 When you are asked to supply a copy of all MQTT messages for a device used by MQTT Autodiscovery, you can follow the following steps:
 
-   1. [Download mqtt_ad_record.sh](mqtt_ad_record.sh) to your MQTT or Domoticz server.
+   1. go to subdirecory domoticz/scripts/support/mqtt_ad
    2. Run the script as shown in the examples below with the appropriate parameters. This will capture all MQTT packages in scope of the defined parametres.
    3. Provide us with the **mqtt_ad_record_*XXX*.log** file containing all records.
    4. Press Ctrl+c when you want to stop the capture process before the timer ends.
@@ -49,8 +49,6 @@ The above command will create an **mqtt_ad_record_*XXX*.log** file in the curren
 
 - where ***XXX*** will be ***all*** for the first 2 examples and will be ***TASMOTA_A1*** for the last 2 examples.
 
-[Download mqtt_ad_record.sh](mqtt_ad_record.sh)
-
 ## mqtt_ad_send.sh
 
 Script that sends the captured mqtt records again to a server recorded in HA_Discovery_mqtt.log in dezelfde directory.
@@ -79,5 +77,3 @@ bash mqtt_ad_send.sh [-h hostname/ip] [-p port] [-s searchstring] [-i inputfile]
    #Send selected records from log file:
    bash mqtt_ad_send.sh PARTIAL_DEVICE_NAME
 ```
-
-[Download mqtt_ad_send.sh](mqtt_ad_send.sh)

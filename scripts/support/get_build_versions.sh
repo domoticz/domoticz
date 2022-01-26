@@ -25,7 +25,7 @@ done
 # Get latest commit count
 TCNT=`git rev-list HEAD --count`
 # Version is Commitcount + 2107  use last when not provided as input
-if [[ -z $1 ]]; then
+if [[ -z $IVER ]]; then
    let IVER=TCNT+2107;
 fi
 # Calculate start record
