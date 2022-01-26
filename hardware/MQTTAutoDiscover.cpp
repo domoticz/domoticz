@@ -146,7 +146,7 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemplate)
 {
-	std::string szKey;
+	std::string szKey = szValueTemplate;
 	std::vector<std::string> strarray;
 
 	if (szValueTemplate.find("value_json.") != std::string::npos)
