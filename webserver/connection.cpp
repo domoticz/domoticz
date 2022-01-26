@@ -412,11 +412,31 @@ namespace http {
 						int wlResCode = (int)reply_.status;
 						int wlContentSize = (int)reply_.content.length();
 
-						char wlReqTime[256];
-						std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S %z", std::localtime(&newt));
+						struct timeval tv;
+					#ifdef CLOCK_REALTIME
+						struct timespec ts;
+						if (!clock_gettime(CLOCK_REALTIME, &ts))
+						{
+							tv.tv_sec = ts.tv_sec;
+							tv.tv_usec = ts.tv_nsec / 1000;
+						}
+						else
+					#endif
+							gettimeofday(&tv, nullptr);
+
+						std::stringstream sstr;
+						sstr << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+						std::string wlReqTimeMs = sstr.str();
+
+						char wlReqTime[32];
+						std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S", std::localtime(&newt));
 						wlReqTime[sizeof(wlReqTime) - 1] = '\0';
 
-						_log.Debug(DEBUG_WEBSERVER,"Apache Combined Log: %s - %s [%s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
+						char wlReqTimeZone[16];
+						std::strftime(wlReqTimeZone, sizeof(wlReqTimeZone), "%z", std::localtime(&newt));
+						wlReqTimeZone[sizeof(wlReqTimeZone) - 1] = '\0';
+
+						_log.Debug(DEBUG_WEBSERVER,"Apache Combined Log: %s - %s [%s.%s %s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqTimeMs.c_str(), wlReqTimeZone, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
 
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request
