@@ -36,7 +36,6 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
-	m_pInjectpower.ID = 4;
 
 	m_bDisableCRC = false;
 
@@ -182,6 +181,13 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string& name, int rank, Teleinfo&
 	{
 		teleinfo.last = atime;
 		m_p1power.usagecurrent = teleinfo.PAPP;
+		if (teleinfo.EAIT > 0)
+		{ // Energie Active Injectée Totale
+			m_p1power.delivcurrent = teleinfo.SINSTI;
+			m_p1power.powerdeliv1 = teleinfo.EAIT;
+			m_p1power.powerdeliv2 = 0;
+		}
+
 		if (teleinfo.OPTARIF == "BASE")
 		{
 #ifdef DEBUG_TeleinfoBase
@@ -296,14 +302,6 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string& name, int rank, Teleinfo&
 			}
 		}
 
-		if (teleinfo.EAIT > 0)
-		{ // Energie Active Injectée Totale
-			m_pInjectpower.usagecurrent = teleinfo.SINSTI;
-			m_pInjectpower.powerusage1 = teleinfo.EAIT;
-			m_pInjectpower.powerusage2 = 0;
-			sDecodeRXMessage(this, (const unsigned char *)&m_pInjectpower, (name + " kWh Total injectés").c_str(), 255, nullptr);
-		}
-
 		if (teleinfo.triphase == false)
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
@@ -398,7 +396,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string& name, int rank, Teleinfo&
 	{ // Process status register if found (Linky standard mode only, refer to Enedis specs for details)
 		if((teleinfo.STGE & 0x1) != (teleinfo.prevSTGE & 0x1) || teleinfo.prevSTGE == UINT32_MAX)
 		{
-			bool bContactState = (teleinfo.STGE & 0x01) ? true : false;
+			bool bContactState = teleinfo.STGE & 0x01;
 			SendAlertSensor(32 * rank + 8, 255, bContactState, (bContactState == 0)?"Contact fermé":"Contact ouvert", name + " Contact sec");
 		}
 		if((teleinfo.STGE & 0xE) != (teleinfo.prevSTGE & 0xE) || teleinfo.prevSTGE == UINT32_MAX)
