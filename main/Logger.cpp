@@ -147,6 +147,13 @@ bool CLogger::IsDebugLevelEnabled(const _eDebugLevel level)
 	return (m_debug_flags & level);
 }
 
+bool CLogger::IsACLFlogEnabled()
+{
+	if (!(m_aclf_flags & LOG_ACLF_ENABLED))
+		return false;
+	return true;
+}
+
 void CLogger::SetOutputFile(const char *OutputFile)
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
