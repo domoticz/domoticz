@@ -437,7 +437,7 @@ namespace http {
 						std::strftime(wlReqTimeZone, sizeof(wlReqTimeZone), "%z", std::localtime(&newt));
 						wlReqTimeZone[sizeof(wlReqTimeZone) - 1] = '\0';
 
-						_log.Debug(DEBUG_WEBSERVER,"Apache Combined Log: %s - %s [%s.%s %s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqTimeMs.c_str(), wlReqTimeZone, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
+						_log.ACLFlog("%s - %s [%s.%s %s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqTimeMs.c_str(), wlReqTimeZone, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
 
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request
