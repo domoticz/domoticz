@@ -3827,8 +3827,8 @@ namespace http
 			{
 				// used by Add Manual Light/Switch dialog
 				root["status"] = "OK";
-				root["title"] = "GetHardware";
-				result = m_sql.safe_query("SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC");
+				root["title"] = "GetManualHardware";
+				result = m_sql.safe_query("SELECT ID, Name, Type, Enabled FROM Hardware ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -3837,29 +3837,37 @@ namespace http
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-						CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
-						std::string jsonConfiguration;
-						if (pBaseHardware != nullptr)
+						bool isEnabled = atoi(sd[3].c_str());
+
+						bool supportsManual = ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
+									(Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
+									(Type == HTYPE_EVOHOME_SERIAL) || (Type == HTYPE_EVOHOME_WEB) || (Type == HTYPE_EVOHOME_TCP) || (Type == HTYPE_RaspberryGPIO) ||
+									(Type == HTYPE_RFLINKUSB) || (Type == HTYPE_RFLINKTCP) || (Type == HTYPE_ZIBLUEUSB) || (Type == HTYPE_ZIBLUETCP) || (Type == HTYPE_OpenWebNetTCP) ||
+									(Type == HTYPE_OpenWebNetUSB) || (Type == HTYPE_SysfsGpio) || (Type == HTYPE_USBtinGateway));
+
+						if(isEnabled)
 						{
-							jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
-						}
-						if (!jsonConfiguration.empty())
-						{
-							Json::Value proot;
-							bool res = ParseJSon(jsonConfiguration, proot);
-							if (res)
+							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
+							if (pBaseHardware != nullptr)
 							{
-								root["result"][ii]["idx"] = ID;
-								root["result"][ii]["Name"] = Name;
-								root["result"][ii]["config"] = proot;
-								ii++;
+								std::string jsonConfiguration;
+								jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+								if (!jsonConfiguration.empty())
+								{
+									Json::Value proot;
+									if (ParseJSon(jsonConfiguration, proot))
+									{
+										root["result"][ii]["config"] = proot;
+										supportsManual = true;
+									}
+								}
+							}
+							else
+							{
+								_log.Log(LOG_ERROR, "CWebServer::HandleCommand getmanualhardware: Could not find running hardware thread for %s (%d)", Name.c_str(), Type);
 							}
 						}
-						else if ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
-						    (Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
-						    (Type == HTYPE_EVOHOME_SERIAL) || (Type == HTYPE_EVOHOME_WEB) || (Type == HTYPE_EVOHOME_TCP) || (Type == HTYPE_RaspberryGPIO) ||
-						    (Type == HTYPE_RFLINKUSB) || (Type == HTYPE_RFLINKTCP) || (Type == HTYPE_ZIBLUEUSB) || (Type == HTYPE_ZIBLUETCP) || (Type == HTYPE_OpenWebNetTCP) ||
-						    (Type == HTYPE_OpenWebNetUSB) || (Type == HTYPE_SysfsGpio) || (Type == HTYPE_USBtinGateway))
+						if(supportsManual)
 						{
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
