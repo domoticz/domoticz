@@ -269,6 +269,8 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 	// Filter the duplicated packets
 	if( qMessage.length() > 5 )
 	{
+		// 20;77;EV1527;ID=0f7499;SWITCH=04;CMD=ON;
+		//      ^
 		size_t seqnumend = qMessage.find( ";" , 3 );
 
 		if( seqnumend != std::string::npos && seqnumend > 3 )
@@ -276,11 +278,14 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 			struct timeval tnow;
 			std::string cpofmsg = qMessage;
 
+			// 20;77;EV1527;ID=0f7499;SWITCH=04;CMD=ON;
+			//    ^^^
 			// Remove the sequence number from payload
 			cpofmsg.erase( 3 , seqnumend-3 );
 			// Calculate a CRC value for paylod comparision -- Crc32 defined in Hhelper.cpp
 			unsigned int crc = Crc32( 0 ,(const uint8_t*) cpofmsg.c_str() , cpofmsg.length() );
 
+			// Get time in millisec for sub second comparision
 			gettimeofday(&tnow, nullptr);
 			time_t msecs = (tnow.tv_sec * 1000) + (tnow.tv_usec / 1000);
 
