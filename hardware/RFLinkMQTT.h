@@ -52,4 +52,6 @@ protected:
 	void StopMQTT();
 	std::shared_ptr<std::thread> m_thread;
 	bool m_bPreventLoop = false;
+	unsigned int m_lastmsgCRC = 0;
+	time_t m_lastmsgTime = 0;
 };

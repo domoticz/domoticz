@@ -86,6 +86,7 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
     m_cmdacktimeout = 2;      // override m_bTXokay wait timeout
 	m_retrycntr = RFLINK_RETRY_DELAY;
     m_syncid = (unsigned long)rand();
+	m_lastmsgTime = mytime(nullptr);
 
 	std::vector<std::string> strarray;
 	StringSplit(CAfilenameExtra, ";", strarray);
@@ -259,11 +260,44 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
     filter << "SYNCID=" << std::hex << m_syncid;
 
     //_log.Log(LOG_NORM, ">>> RFLINK MQTT: Checking syncback (%s)", filter.str().c_str());
-    if ( qMessage.find( filter.str() )!=std::string::npos)
+    if ( qMessage.find( filter.str() ) != std::string::npos )
     {
         _log.Log(LOG_NORM, ">>> RFLINK MQTT: Syncback message filtered..." );
         return;
     }
+
+	// Filter the duplicated packets
+	if( qMessage.length() > 5 )
+	{
+		size_t seqnumend = qMessage.find( ";" , 3 );
+
+		if( seqnumend != std::string::npos && seqnumend > 3 )
+		{
+			struct timeval tnow;
+			std::string cpofmsg = qMessage;
+
+			// Remove the sequence number from payload
+			cpofmsg.erase( 3 , seqnumend-3 );
+			// Calculate a CRC value for paylod comparision -- Crc32 defined in Hhelper.cpp
+			unsigned int crc = Crc32( 0 ,(const uint8_t*) cpofmsg.c_str() , cpofmsg.length() );
+
+			gettimeofday(&tnow, nullptr);
+			time_t msecs = (tnow.tv_sec * 1000) + (tnow.tv_usec / 1000);
+
+			// _log.Log(LOG_NORM, ">>> RFLINK MQTT: Message to chksum: %s CRC: %x time diff: %ld" , cpofmsg.c_str() , crc , msecs-m_lastmsgTime );
+
+			if( m_lastmsgCRC == crc && (msecs-m_lastmsgTime) < 420 )
+			{
+				// if the CRC is equal in the allowed period it should be filtered
+				_log.Log(LOG_NORM, ">>> RFLINK MQTT: SKIP duplicated payload!" );
+				return;
+			}
+
+			m_lastmsgCRC = crc;
+			m_lastmsgTime = msecs;
+		}
+	}
+
 	// Parse  payload as RFLINK serial packet
 	ParseData((const char*)qMessage.c_str(),qMessage.length());
 
