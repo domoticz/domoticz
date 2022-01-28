@@ -1363,6 +1363,23 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
+		if (fkWh == 0)
+		{
+			//could be the first every value received.
+			//could also be that this the middleware sends 0 when it has not received it before
+			auto result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+				m_HwdID, pSensor->unique_id.c_str(), devType, subType);
+			if (!result.empty())
+			{
+				std::vector<std::string> strarray;
+				StringSplit(result[0][0], ";", strarray);
+				if (strarray.size() == 2)
+				{
+					fkWh = static_cast<float>(atof(strarray[1].c_str()));
+				}
+			}
+
+		}
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "w");
 		if (pWattSensor)
@@ -1630,7 +1647,10 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		return;
 	}
 
-	if (pSensor->object_id.find("battery") != std::string::npos)
+	if (
+		(pSensor->object_id.find("battery") != std::string::npos)
+		&& is_number(pSensor->last_value)
+		)
 	{
 		handle_auto_discovery_battery(pSensor, message);
 		return;
@@ -3017,31 +3037,25 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			if (!pSensor->rgb_command_topic.empty())
 				command_topic = pSensor->rgb_command_topic;
 
-			if (bCouldUseBrightness)
+			if ((bCouldUseBrightness) && (pSensor->bBrightness))
 			{
-				if (
-					(pSensor->bBrightness)
-					|| (!pSensor->brightness_value_template.empty())
-					)
-				{
-					int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
+				int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
 
-					if (!pSensor->brightness_value_template.empty())
+				if (!pSensor->brightness_value_template.empty())
+				{
+					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
+					if (!szKey.empty())
 					{
-						std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
-						if (!szKey.empty())
-						{
-							root[szKey] = slevel;
-						}
-						else
-						{
-							Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-							return false;
-						}
+						root[szKey] = slevel;
 					}
 					else
-						root["brightness"] = slevel;
+					{
+						Log(LOG_ERROR, "Color device unhandled brightness_value_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
+						return false;
+					}
 				}
+				else
+					root["brightness"] = slevel;
 			}
 		}
 		else
