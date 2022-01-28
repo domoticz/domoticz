@@ -1541,6 +1541,10 @@ define(['app', 'livesocket'], function (app) {
 					}
 				});
 			};
+			dialog_editsetpointdevice_buttons[$.t("Replace")] = function () {
+				$(this).dialog("close");
+				ReplaceDevice($.devIdx, ShowUtilities);
+			};
 			dialog_editsetpointdevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};

@@ -10,7 +10,9 @@ Version 2022.xxxxx (xxxx)
 - Implemented: New widgets for Blinds (percentage) + Stop and Blinds (percentage) Inverted + Stop
 - Implemented: Notifications, Extra security checks for HTTP actions
 - Implemented: Notifications, Optional action to execute (http/script) per notificaton
+- Implemented: Replace device for setpoint types
 - Implemented: RTL433, add support for light_klx field (SendLuxSensor)
+- Implemented: Scenes, Implemented 'Toggle' for switch actions
 - Implemented: Teleinfo, Add support for EAIT/SINSTI/STGE (Linky standard mode)
 - Implemented: Teleinfo. more permissive detection between historic/standard mode
 - Implemented: The Things Network (TTN), Switch to new V3 stack

@@ -3827,8 +3827,8 @@ namespace http
 			{
 				// used by Add Manual Light/Switch dialog
 				root["status"] = "OK";
-				root["title"] = "GetHardware";
-				result = m_sql.safe_query("SELECT ID, Name, Type FROM Hardware ORDER BY ID ASC");
+				root["title"] = "GetManualHardware";
+				result = m_sql.safe_query("SELECT ID, Name, Type, Enabled FROM Hardware ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -3837,27 +3837,37 @@ namespace http
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-						CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
+						bool isEnabled = atoi(sd[3].c_str());
 
-						Json::Value proot;
-						std::string jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
-						if (!jsonConfiguration.empty())
+						bool supportsManual = ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
+									(Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
+									(Type == HTYPE_EVOHOME_SERIAL) || (Type == HTYPE_EVOHOME_WEB) || (Type == HTYPE_EVOHOME_TCP) || (Type == HTYPE_RaspberryGPIO) ||
+									(Type == HTYPE_RFLINKUSB) || (Type == HTYPE_RFLINKTCP) || (Type == HTYPE_ZIBLUEUSB) || (Type == HTYPE_ZIBLUETCP) || (Type == HTYPE_OpenWebNetTCP) ||
+									(Type == HTYPE_OpenWebNetUSB) || (Type == HTYPE_SysfsGpio) || (Type == HTYPE_USBtinGateway));
+
+						if(isEnabled)
 						{
-							bool res = ParseJSon(jsonConfiguration, proot);
-
-							if (res)
+							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
+							if (pBaseHardware != nullptr)
 							{
-								root["result"][ii]["idx"] = ID;
-								root["result"][ii]["Name"] = Name;
-								root["result"][ii]["config"] = proot;
-								ii++;
+								std::string jsonConfiguration;
+								jsonConfiguration = pBaseHardware->GetManualSwitchesJsonConfiguration();
+								if (!jsonConfiguration.empty())
+								{
+									Json::Value proot;
+									if (ParseJSon(jsonConfiguration, proot))
+									{
+										root["result"][ii]["config"] = proot;
+										supportsManual = true;
+									}
+								}
+							}
+							else
+							{
+								_log.Log(LOG_ERROR, "CWebServer::HandleCommand getmanualhardware: Could not find running hardware thread for %s (%d)", Name.c_str(), Type);
 							}
 						}
-						else if ((Type == HTYPE_RFXLAN) || (Type == HTYPE_RFXtrx315) || (Type == HTYPE_RFXtrx433) || (Type == HTYPE_RFXtrx868) || (Type == HTYPE_EnOceanESP2) ||
-						    (Type == HTYPE_EnOceanESP3) || (Type == HTYPE_Dummy) || (Type == HTYPE_Tellstick) || (Type == HTYPE_EVOHOME_SCRIPT) ||
-						    (Type == HTYPE_EVOHOME_SERIAL) || (Type == HTYPE_EVOHOME_WEB) || (Type == HTYPE_EVOHOME_TCP) || (Type == HTYPE_RaspberryGPIO) ||
-						    (Type == HTYPE_RFLINKUSB) || (Type == HTYPE_RFLINKTCP) || (Type == HTYPE_ZIBLUEUSB) || (Type == HTYPE_ZIBLUETCP) || (Type == HTYPE_OpenWebNetTCP) ||
-						    (Type == HTYPE_OpenWebNetUSB) || (Type == HTYPE_SysfsGpio) || (Type == HTYPE_USBtinGateway))
+						if(supportsManual)
 						{
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
@@ -4911,17 +4921,12 @@ namespace http
 				std::string StrParam1;
 				
 				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
-				if (pBaseHardware == nullptr)
+				if ((pBaseHardware != nullptr) && (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty()))
 				{
-					root["message"] = "Hardware does not exists!";
-					return;
-				}
-				if (!pBaseHardware->GetManualSwitchesJsonConfiguration().empty())
-				{
-					pBaseHardware->GetManualSwitchParameters(req.parameters,switchtype, lighttype,  dtype, subtype, devid, sunitcode);
+					pBaseHardware->GetManualSwitchParameters(req.parameters, switchtype, lighttype, dtype, subtype, devid, sunitcode);
 					// check if switch is unique
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
-								  hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
+						hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
 					if (!result.empty())
 					{
 						root["message"] = "Switch already exists!";
@@ -4936,7 +4941,7 @@ namespace http
 
 					// set name and switchtype
 					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)", hwdid.c_str(),
-								  devid.c_str(), sunitcode.c_str(), dtype, subtype);
+						devid.c_str(), sunitcode.c_str(), dtype, subtype);
 					if (result.empty())
 					{
 						root["message"] = "Error finding switch in Database!?!?";
@@ -12452,51 +12457,17 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "TransferDevice";
 
-			result = m_sql.safe_query("SELECT A.LastUpdate, B.LastUpdate, B.HardwareID, B.DeviceID, B.Unit, B.Type, B.SubType FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == '%q') AND (B.ID == '%q')", sidx.c_str(), newidx.c_str());
+			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID == '%q')", newidx.c_str());
 			if (result.empty())
 				return;
 
-			std::string sLastUpdate_A = result[0][0];
-			std::string sLastUpdate_B = result[0][1];
+			int newHardwareID = std::stoi(result[0].at(0));
+			std::string newDeviceID = result[0].at(1);
+			int newUnit = std::stoi(result[0].at(2));
+			int devType = std::stoi(result[0].at(3));
+			int subType = std::stoi(result[0].at(4));
 
-			int newHardwareID = std::stoi(result[0][2]);
-			std::string newDeviceID = result[0][3];
-			int newUnit = std::stoi(result[0][4]);
-			int devType = std::stoi(result[0][5]);
-			int subType = std::stoi(result[0][6]);
-
-			if (IsLightOrSwitch(devType, subType))
-			{
-				//For Lights/Switches we just transfer the new HardwareID,DeviceID/Unit from the new device to the old device
-				//After this we delete the new device
-				//This makes sure everything stays like it was before (idx,scripts,notifications etc)
-				//GizMoCuz: make this standard for everything else as well ?
-				m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, sidx.c_str());
-				m_sql.safe_query("DELETE FROM DeviceStatus WHERE ID == '%q'", newidx.c_str());
-				return;
-			}
-
-			// Check which device is newer
-			time_t now = mytime(nullptr);
-			struct tm tm1;
-			localtime_r(&now, &tm1);
-			struct tm LastUpdateTime_A;
-			struct tm LastUpdateTime_B;
-
-			time_t timeA, timeB;
-			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
-			ParseSQLdatetime(timeB, LastUpdateTime_B, sLastUpdate_B, tm1.tm_isdst);
-
-			if (timeA < timeB)
-			{
-				// Swap idx with newidx
-				sidx.swap(newidx);
-			}
-
-			// transfer device logs (new to old)
-			m_sql.TransferDevice(newidx, sidx);
-
-			// now delete the NEW device
+			m_sql.safe_query("UPDATE DeviceStatus SET HardwareID = %d, DeviceID = '%q', Unit = %d, Type = %d, SubType = %d WHERE ID == '%q'", newHardwareID, newDeviceID.c_str(), newUnit, devType, subType, sidx.c_str());
 			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();

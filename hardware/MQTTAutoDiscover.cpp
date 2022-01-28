@@ -146,7 +146,7 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemplate)
 {
-	std::string szKey;
+	std::string szKey = szValueTemplate;
 	std::vector<std::string> strarray;
 
 	if (szValueTemplate.find("value_json.") != std::string::npos)
@@ -245,7 +245,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				{
 					int iNumber = std::stoi(szKey);
 					size_t object_size = root.size();
-					if (iNumber < object_size)
+					if (iNumber < (int)object_size)
 					{
 						root = root[iNumber];
 					}
@@ -719,6 +719,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->icon = root["icon"].asString();
 		else if (!root["ic"].empty())
 			pSensor->icon = root["ic"].asString();
+
+		if (!root["state_class"].empty())
+			pSensor->state_class = root["state_class"].asString();
+		else if (!root["stat_cla"].empty())
+			pSensor->state_class = root["stat_cla"].asString();		
 
 		if (!root["device_class"].empty())
 			pSensor->device_class = root["device_class"].asString();
@@ -1358,6 +1363,23 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		float fUsage = 0;
 		float fkWh = static_cast<float>(atof(pSensor->last_value.c_str())) * 1000.0F;
+		if (fkWh == 0)
+		{
+			//could be the first every value received.
+			//could also be that this the middleware sends 0 when it has not received it before
+			auto result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+				m_HwdID, pSensor->unique_id.c_str(), devType, subType);
+			if (!result.empty())
+			{
+				std::vector<std::string> strarray;
+				StringSplit(result[0][0], ";", strarray);
+				if (strarray.size() == 2)
+				{
+					fkWh = static_cast<float>(atof(strarray[1].c_str()));
+				}
+			}
+
+		}
 
 		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "w");
 		if (pWattSensor)
@@ -1399,6 +1421,15 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeWaterflow;
 		sValue = std_format("%.2f", static_cast<float>(atof(pSensor->last_value.c_str())) / 60.0F);
 	}
+	else if (
+		(szUnit == "db")
+		|| (szUnit == "dba")
+		)
+	{
+		devType = pTypeGeneral;
+		subType = sTypeSoundLevel;
+		sValue = std_format("%d", atoi(pSensor->last_value.c_str()));
+	}
 	else if (szUnit == "text")
 	{
 		devType = pTypeGeneral;
@@ -1411,7 +1442,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		|| (szUnit == "cubic meters")
 		)
 	{
-		if (pSensor->icon.find("water"))
+		if (pSensor->icon.find("water") != std::string::npos)
 		{
 			devType = pTypeRAIN;
 			subType = sTypeRAIN3;
@@ -1429,7 +1460,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 			sValue = std_format("%d;%.1f", Rainrate, TotalRain * 1000.0F);
 		}
-		else if (pSensor->icon.find("gas"))
+		else if (pSensor->icon.find("gas") != std::string::npos)
 		{
 			devType = pTypeP1Gas;
 			subType = sTypeP1Gas;
@@ -1443,7 +1474,10 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			sValue = pSensor->last_value;
 		}
 	}
-	else if (szUnit == "mm/h")
+	else if (
+		(szUnit == "mm/h")
+		|| ((szUnit == "mm") && (pSensor->icon == "mdi:weather-rainy"))
+		)
 	{
 		_tMQTTASensor* pRainSensor = get_auto_discovery_sensor_unit(pSensor, "cubic meters");
 		if (!pRainSensor)
@@ -1473,6 +1507,14 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
+/*
+	else if (pSensor->state_class == "total_increasing")
+	{
+		devType = pTypeRFXMeter;
+		subType = sTypeRFXMeterCount;
+		sValue = pSensor->last_value;
+	}
+*/
 	else
 	{
 		devType = pTypeGeneral;
@@ -1605,7 +1647,10 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		return;
 	}
 
-	if (pSensor->object_id.find("battery") != std::string::npos)
+	if (
+		(pSensor->object_id.find("battery") != std::string::npos)
+		&& is_number(pSensor->last_value)
+		)
 	{
 		handle_auto_discovery_battery(pSensor, message);
 		return;
@@ -1879,7 +1924,9 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	std::string szDeviceName = result[0][1];
 	int nValue = atoi(result[0][2].c_str());
 	std::string sValue = result[0][3];
-	std::string sOptions = result[0][4];
+
+	std::string sOldOptions = result[0][4];
+	std::map<std::string, std::string> oldOptionsMap = m_sql.BuildDeviceOptions(sOldOptions);
 
 	int iActualIndex = ((current_mode != "") ? -1 : 0);
 
@@ -1902,12 +1949,39 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	}
 
 	std::map<std::string, std::string> optionsMap;
-	optionsMap["SelectorStyle"] = "0";
-	optionsMap["LevelOffHidden"] = "false";
-	optionsMap["LevelNames"] = tmpOptionString;
+	if (oldOptionsMap.find("SelectorStyle") == oldOptionsMap.end())
+	{
+		optionsMap["SelectorStyle"] = (pSensor->select_options.size() > 5) ? "1" : "0";
+		optionsMap["LevelOffHidden"] = "false";
+	}
+	else
+	{
+		optionsMap["SelectorStyle"] = oldOptionsMap["SelectorStyle"];
+		optionsMap["LevelOffHidden"] = oldOptionsMap["LevelOffHidden"];
+	}
+
+	std::vector<std::string> strarray;
+	StringSplit(tmpOptionString, "|", strarray);
+
+	size_t totalOptions = strarray.size();
+	size_t totalOldOptions = 0;
+
+	if (oldOptionsMap.find("LevelNames") != oldOptionsMap.end())
+	{
+		StringSplit(tmpOptionString, "|", strarray);
+		totalOldOptions = strarray.size();
+	}
+
+	if (totalOptions != totalOldOptions)
+	{
+		//Avoid renamed level names by user in Domoticz
+		optionsMap["LevelNames"] = tmpOptionString;
+	}
+	else
+		optionsMap["LevelNames"] = oldOptionsMap["LevelNames"];
 
 	std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
-	if (newOptions != sOptions)
+	if (newOptions != sOldOptions)
 		m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
 
 	pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
@@ -2509,20 +2583,20 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else
 			{
 				szOnOffValue = "Set Level";
-				// Make level relative to 100.
-				if (
-					(sSwitchType == STYPE_BlindsInverted)
-					|| (sSwitchType == STYPE_BlindsPercentageInverted)
-					|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-					)
-				{
-					// invert level for inverted blinds with percentage.
-					level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-				}
-				else
-				{
-					level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-				}
+			}
+			// Make level relative to 100.
+			if (
+				(sSwitchType == STYPE_BlindsInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInverted)
+				|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+				)
+			{
+				// invert level for inverted blinds with percentage.
+				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+			}
+			else
+			{
+				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
 		}
 		if (!root["color"].empty())
@@ -2857,6 +2931,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		{
 			root["state"] = pSensor->payload_on;
 
+			bool bCouldUseBrightness = false;
+
 			if (
 				(color.mode == ColorModeRGB)
 				|| (color.mode == ColorModeCustom)
@@ -2868,6 +2944,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					_tColor::XYFromRGB(color.r, color.g, color.b, x, y, Y);
 					root["color"]["x"] = x;
 					root["color"]["y"] = y;
+					bCouldUseBrightness = true;
 				}
 				else if (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
 				{
@@ -2931,8 +3008,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root.removeMember("color");
 				}
 			}
-
-			if (
+			else if (
 				(color.mode == ColorModeTemp)
 				|| (color.mode == ColorModeCustom)
 				)
@@ -2956,12 +3032,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					else
 						root["color_temp"] = iCT;
 				}
+				bCouldUseBrightness = true;
 			}
+			if (!pSensor->rgb_command_topic.empty())
+				command_topic = pSensor->rgb_command_topic;
 
-			if (
-				(pSensor->bBrightness)
-				|| (!pSensor->brightness_value_template.empty())
-				)
+			if ((bCouldUseBrightness) && (pSensor->bBrightness))
 			{
 				int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
 
@@ -2970,10 +3046,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					std::string szKey = GetValueTemplateKey(pSensor->brightness_value_template);
 					if (!szKey.empty())
 					{
-						// Avoid that a brightness value overwrites an already set color value. Happens for e.g. Fibaro FGRGBW color dimmer.
-						// If such a conflict exists, color has priority and brightness will not be set in the message.
-						if (!root[szKey].isObject() && root[szKey].empty())
-							root[szKey] = slevel;
+						root[szKey] = slevel;
 					}
 					else
 					{
@@ -2984,8 +3057,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				else
 					root["brightness"] = slevel;
 			}
-			if (!pSensor->rgb_command_topic.empty())
-				command_topic = pSensor->rgb_command_topic;
 		}
 		else
 		{

@@ -38,6 +38,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string rgb_command_template;
 
 		std::string icon;
+		std::string state_class;
 
 		std::string payload_on = "ON";
 		std::string payload_off = "OFF";
@@ -57,7 +58,7 @@ class MQTTAutoDiscover : public MQTT
 
 		bool bColor_mode = false;
 		std::map<std::string, uint8_t> supported_color_modes;
-		std::string color_temp_value_template = "color_temp";
+		std::string color_temp_value_template;
 		std::string hs_value_template;
 
 		int min_mireds = 153;

@@ -1061,6 +1061,12 @@ void GetLightStatus(
 	bHaveGroupCmd = false;
 	lstatus = "";
 
+	if (nValue == gswitch_sToggle)
+	{
+		lstatus = "Toggle";
+		return;
+	}
+
 	char szTmp[80];
 	switch (dType)
 	{
@@ -2393,6 +2399,12 @@ bool GetLightCommand(
 {
 	if (switchtype == STYPE_Contact && dType != pTypeGeneralSwitch)
 		return false;	//we can not (or will not) switch this type
+
+	if (switchcmd == "Toggle")
+	{
+		cmd = gswitch_sToggle;
+		return true;
+	}
 
 	switch (dType)
 	{

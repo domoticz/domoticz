@@ -237,6 +237,9 @@
 #define gswitch_sDiscop 0x1a
 #define gswitch_sDiscom 0x1b
 
+//
+#define gswitch_sToggle 0xfe
+
 //--------------
 
 #define pTypeLux 0xF6
