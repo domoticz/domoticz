@@ -86,9 +86,7 @@ define(['app', 'livesocket'], function (app) {
 				strstatus = "Economy";
 			else if (strstatus == "DayOff")//FIXME better way to convert?
 				strstatus = "Day Off";
-			else if (strstatus == "DayOffWithEco")//FIXME better way to convert?
-				strstatus = "Day Off With Eco";
- 			else if (strstatus == "HeatingOff")//FIXME better way to convert?
+			else if (strstatus == "HeatingOff")//FIXME better way to convert?
 				strstatus = "Heating Off";
 			return strstatus;
 		}
