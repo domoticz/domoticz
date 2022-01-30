@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+//deprecated, please switch to zwavejs2mqtt in combination with the MQTT auto discovery hardware
+
 #ifdef WITH_OPENZWAVE
 #include "OpenZWave.h"
 
