@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "EnOceanRawValue.h"
 #include <string>
+#include <string.h>
 
 
 
