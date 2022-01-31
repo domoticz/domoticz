@@ -32,9 +32,11 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesNotContain('eu'), {
                     id: 'counterEnergyUsedOrGenerated',
+                    convertZeroToNull: true,
                     label: 'A',
+                    showWithoutDatapoints: false,
                     series: {
-                        type: 'spline',
+                        type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1)
@@ -53,6 +55,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'counterEnergyUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'B',
+                    showWithoutDatapoints: false,
                     series: {
                         type: 'column',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Energy Usage') : $.t('Energy Generated'),
@@ -89,14 +92,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'counterEnergyUsedOrGeneratedTotalTrendline',
                     dataItemKeys: ['v', 'v2'],
-                    aggregateDatapoints: function (datapoints) {
-                        const trendline = CalculateTrendLine(datapoints);
-                        datapoints.length = 0;
-                        if (trendline !== undefined) {
-                            datapoints.push([trendline.x0, trendline.y0]);
-                            datapoints.push([trendline.x1, trendline.y1]);
-                        }
-                    },
+                    postprocessDatapoints: chart.aggregateTrendline,
                     label: 'D',
                     series: {
                         name: $.t('Trendline') + ' ' + (deviceType === chart.deviceTypes.EnergyUsed ? $.t('Usage') : deviceType === chart.deviceTypes.EnergyGenerated ? $.t('Generated') : $.t('Return')),
@@ -115,6 +111,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'counterEnergyUsedOrGeneratedPrevious',
                     dataItemKeys: ['v', 'v2'],
                     useDataItemsFromPrevious: true,
+                    convertZeroToNull: true,
                     label: 'E',
                     series: {
                         type: 'column',
@@ -135,6 +132,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
+                    convertZeroToNull: true,
                     label: 'F',
                     series: {
                         type: 'column',
@@ -152,6 +150,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('v', new DoesContain('eu'), {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     label: 'G',
+                    showWithoutDatapoints: false,
                     series: {
                         type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
@@ -171,6 +170,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
             return [
                 counterLogSeriesSupplier.dataItemsKeysPredicatedSeriesSupplier('eu', new DoesContain('eu'), {
                     id: 'instantAndCounterEnergyUsedOrGenerated',
+                    convertZeroToNull: true,
                     valueDecimals: 3,
                     label: 'H',
                     series: {
@@ -190,8 +190,9 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'instantAndCounterPowerUsedOrGenerated',
                     valueDecimals: 3,
                     label: 'I',
+                    showWithoutDatapoints: false,
                     series: {
-                        type: 'column',
+                        type: 'spline',
                         name: deviceType === chart.deviceTypes.EnergyUsed ? $.t('Power Usage') : $.t('Power Generated'),
                         zIndex: 10,
                         tooltip: {
@@ -226,6 +227,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 {
                     id: 'p1EnergyGeneratedArea',
                     dataItemKeys: ['eg'],
+                    showWithoutDatapoints: false,
                     label: 'K',
                     template: {
                         type: 'area',
@@ -256,6 +258,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                 {
                     id: 'p1PowerGenerated',
                     dataItemKeys: ['v2'],
+                    showWithoutDatapoints: false,
                     label: 'M',
                     template: {
                         name: $.t('Usage') + ' 2',
@@ -293,6 +296,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     id: 'p1EnergyGeneratedArea',
                     dataItemKeys: ['eg'],
                     valueDecimals: 3,
+                    showWithoutDatapoints: false,
                     label: 'O',
                     template: {
                         type: 'area',
@@ -327,6 +331,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataItemKeys: ['v2'],
                     valueDecimals: 3,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'Q',
                     template: {
                         name: $.t('Usage') + ' 2',
@@ -349,6 +354,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
+                    showWithoutDatapoints: false,
                     label: 'R',
                     template: {
                         name: $.t('Return') + ' 1',
@@ -366,6 +372,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
+                    showWithoutDatapoints: false,
                     label: 'S',
                     template: {
                         name: $.t('Return') + ' 2',
@@ -390,6 +397,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     valueDecimals: 3,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'T',
                     template: {
                         name: $.t('Return') + ' 1',
@@ -409,6 +417,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     valueDecimals: 3,
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'U',
                     template: {
                         name: $.t('Return') + ' 2',
@@ -432,6 +441,7 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     dataItemKeys: ['r1', 'r2'],
                     convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'V',
                     series: {
                         type: 'column',
@@ -451,14 +461,8 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                         return data.delivered === true;
                     },
                     dataItemKeys: ['r1', 'r2'],
-                    aggregateDatapoints: function (datapoints) {
-                        const trendline = CalculateTrendLine(datapoints);
-                        datapoints.length = 0;
-                        if (trendline !== undefined) {
-                            datapoints.push([trendline.x0, trendline.y0]);
-                            datapoints.push([trendline.x1, trendline.y1]);
-                        }
-                    },
+                    postprocessDatapoints: chart.aggregateTrendline,
+                    showWithoutDatapoints: false,
                     label: 'W',
                     series: {
                         name: $.t('Trendline') + ' ' + $.t('Return'),
@@ -480,6 +484,8 @@ define(['app', 'log/Chart', 'log/CounterLogSeriesSupplier'], function (app) {
                     },
                     dataItemKeys: ['r1', 'r2'],
                     useDataItemsFromPrevious: true,
+                    convertZeroToNull: true,
+                    showWithoutDatapoints: false,
                     label: 'X',
                     series: {
                         type: 'column',

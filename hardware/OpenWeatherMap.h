@@ -26,6 +26,8 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 	bool ProcessForecast(Json::Value &forecast, const std::string &period, const std::string &periodname, uint8_t count, int startNodeID);
 
 	bool ResolveLocation(const std::string &Location, double &latitude, double &longitude, uint32_t &cityid, bool IsCityName = true);
+	bool ResolveLonLat(const std::string& Location, double& latitude, double& longitude, uint32_t& cityid);
+	bool ResolveOWMCityLonLat(const std::string sURL, double& latitude, double& longitude, uint32_t& cityid);
 
 	std::string m_APIKey;
 	std::string m_Location;

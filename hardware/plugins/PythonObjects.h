@@ -138,6 +138,7 @@ namespace Plugins {
 		{ "TimedOut", T_INT, offsetof(CDevice, TimedOut), READONLY, "Is the device marked as timed out" },
 		{ "Description", T_OBJECT, offsetof(CDevice, Description), READONLY, "Description" },
 		{ "Color", T_OBJECT, offsetof(CDevice, Color), READONLY, "Color JSON dictionary" },
+		{ "Key", T_INT, offsetof(CDevice, Unit), READONLY, "Device dictionary key" },
 		{ nullptr } /* Sentinel */
 	};
 
@@ -209,7 +210,7 @@ namespace Plugins {
 		CPluginTransport*	pTransport;
 		PyObject*			Protocol;
 		CPluginProtocol*	pProtocol;
-		CConnection *		Parent;
+		PyObject*			Parent;
 	};
 
 	void CConnection_dealloc(CConnection* self);
@@ -227,9 +228,10 @@ namespace Plugins {
 
 	static PyMemberDef CConnection_members[] = {
 		{ "Name", T_OBJECT, offsetof(CConnection, Name), READONLY, "Name" },
-		{ "Address", T_OBJECT, offsetof(CConnection, Address), READONLY, "Address" },
-		{ "Port", T_OBJECT, offsetof(CConnection, Port), READONLY, "Port" },
+		{ "Address", T_OBJECT, offsetof(CConnection, Address), 0, "Address" },
+		{ "Port", T_OBJECT, offsetof(CConnection, Port), 0, "Port" },
 		{ "Baud", T_INT, offsetof(CConnection, Baud), READONLY, "Baud" },
+		{ "Target", T_OBJECT, offsetof(CConnection, Target), 0, "Event target this connection" },
 		{ "Parent", T_OBJECT, offsetof(CConnection, Parent), READONLY, "Parent connection" },
 		{ nullptr } /* Sentinel */
 	};

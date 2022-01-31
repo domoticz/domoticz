@@ -5,8 +5,6 @@
 
 namespace http {
 	namespace server {
-
-		typedef std::vector<std::shared_ptr<CWebServer> >::iterator server_iterator;
 #ifndef NOCLOUD
 		extern CProxySharedData sharedData;
 #endif
@@ -77,10 +75,10 @@ namespace http {
 			proxymanager.Stop();
 			// restart
 #ifdef WWW_ENABLE_SSL
-			cWebem *my_pWebEm = (plainServer_ != nullptr ? plainServer_->m_pWebEm
-								     : (secureServer_ != nullptr ? secureServer_->m_pWebEm : nullptr));
+			cWebem *my_pWebEm = (plainServer_ != nullptr && plainServer_->m_pWebEm != nullptr ? plainServer_->m_pWebEm
+							     : (secureServer_ != nullptr && secureServer_->m_pWebEm != nullptr ? secureServer_->m_pWebEm : nullptr));
 #else
-			cWebem* my_pWebEm = plainServer_ != NULL ? plainServer_->m_pWebEm : NULL;
+			cWebem* my_pWebEm = plainServer_ != nullptr && plainServer_->m_pWebEm != nullptr ? plainServer_->m_pWebEm : nullptr;
 #endif
 			if (my_pWebEm == nullptr)
 			{
@@ -134,11 +132,44 @@ namespace http {
 			proxymanager.SetWebRoot(webRoot);
 		}
 
+		void CWebServerHelper::LoadUsers()
+		{
+			for (auto &it : serverCollection)
+			{
+				it->LoadUsers();
+			}
+		}
+		
 		void CWebServerHelper::ClearUserPasswords()
 		{
 			for (auto &it : serverCollection)
 			{
 				it->ClearUserPasswords();
+			}
+		}
+
+		void CWebServerHelper::ReloadLocalNetworksAndProxyIPs()
+		{
+			std::string WebLocalNetworks, WebRemoteProxyIPs;
+			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			m_sql.GetPreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
+
+			for (auto &it : serverCollection)
+			{
+				it->m_pWebEm->ClearLocalNetworks();
+
+				std::vector<std::string> strarray;
+				StringSplit(WebLocalNetworks, ";", strarray);
+				for (const auto &str : strarray)
+					it->m_pWebEm->AddLocalNetworks(str);
+				// add local hostname
+				it->m_pWebEm->AddLocalNetworks("");
+
+				it->m_pWebEm->ClearRemoteProxyIPs();
+				strarray.clear();
+				StringSplit(WebRemoteProxyIPs, ";", strarray);
+				for (const auto &str : strarray)
+					it->m_pWebEm->AddRemoteProxyIPs(str);
 			}
 		}
 

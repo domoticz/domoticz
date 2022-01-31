@@ -36,7 +36,6 @@ namespace Plugins {
 #else
 		void* shared_lib_;
 #endif
-
 		// Shared library interface begin.
 		DECLARE_PYTHON_SYMBOL(const char*, Py_GetVersion, );
 		DECLARE_PYTHON_SYMBOL(int, Py_IsInitialized, );
@@ -67,13 +66,15 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
-		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyDict_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyDict_Contains, PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyDict_Size, PyObject *);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItemString, PyObject* COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItemString, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItem, PyObject* COMMA PyObject* COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject* COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(int, PyDict_Next, PyObject* COMMA Py_ssize_t* COMMA PyObject** COMMA PyObject**);
+		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject *COMMA PyObject *);
+		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItemString, PyObject *COMMA const char *);
+		DECLARE_PYTHON_SYMBOL(int, PyDict_Next, PyObject *COMMA Py_ssize_t *COMMA PyObject **COMMA PyObject **);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_Items, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_New, Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
@@ -88,13 +89,17 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Fetch, PyObject** COMMA PyObject** COMMA PyObject**);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_NormalizeException, PyObject **COMMA PyObject **COMMA PyObject **);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_ImportModule, const char *);
-		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallObject, PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyObject_RichCompareBool, PyObject* COMMA PyObject* COMMA int);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallObject, PyObject *COMMA PyObject *);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallNoArgs, PyObject *);						// Python 3.9 !!!!
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
 		DECLARE_PYTHON_SYMBOL(int, PyEval_ThreadsInitialized, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Get, );
-		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyEval_SaveThread, void);
-		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(PyThreadState *, PyEval_SaveThread, void);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyEval_GetLocals, void);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyEval_GetGlobals, void);
+		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
@@ -134,6 +139,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(double, PyFloat_AsDouble, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetIter, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyIter_Next, PyObject*);
+		DECLARE_PYTHON_SYMBOL(void, PyErr_SetString, PyObject* COMMA const char*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -141,6 +147,7 @@ namespace Plugins {
 #endif
 		Py_ssize_t		_Py_RefTotal;
 		PyObject		_Py_NoneStruct;
+		PyObject *		dzPy_None;
 
 		SharedLibraryProxy() {
 			shared_lib_ = nullptr;
@@ -206,6 +213,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
+					RESOLVE_PYTHON_SYMBOL(PyDict_Contains);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Clear);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Size);
 					RESOLVE_PYTHON_SYMBOL(PyDict_GetItem);
@@ -213,6 +221,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_DelItem);
+					RESOLVE_PYTHON_SYMBOL(PyDict_DelItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Next);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Items);
 					RESOLVE_PYTHON_SYMBOL(PyList_New);
@@ -228,12 +237,16 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyErr_Fetch);
 					RESOLVE_PYTHON_SYMBOL(PyErr_NormalizeException);
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
+					RESOLVE_PYTHON_SYMBOL(PyObject_RichCompareBool);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
+					RESOLVE_PYTHON_SYMBOL(PyObject_CallNoArgs);
 					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
 					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ThreadsInitialized);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Get);
 					RESOLVE_PYTHON_SYMBOL(PyEval_SaveThread);
+					RESOLVE_PYTHON_SYMBOL(PyEval_GetLocals);
+					RESOLVE_PYTHON_SYMBOL(PyEval_GetGlobals);
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
@@ -277,12 +290,12 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyFloat_AsDouble);
 					RESOLVE_PYTHON_SYMBOL(PyObject_GetIter);
 					RESOLVE_PYTHON_SYMBOL(PyIter_Next);
+					RESOLVE_PYTHON_SYMBOL(PyErr_SetString);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
 		};
 		~SharedLibraryProxy() = default;
-		;
 
 		bool Py_LoadLibrary()
 		{
@@ -346,10 +359,16 @@ namespace Plugins {
 						library = "/Library/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
-					// Finally look for .dylib installed by Homebrew
+					// look for .dylib installed by Homebrew - Intel
 					if (!shared_lib_)
 					{
 						library = "/usr/local/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// look for .dylib installed by Homebrew - Apple Silicon
+					if (!shared_lib_)
+					{
+						library = "/opt/homebrew/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
@@ -393,6 +412,15 @@ namespace Plugins {
 
 extern	SharedLibraryProxy* pythonLib;
 
+// Create local pointer to Py_None, required to work around build complaints
+#ifdef Py_None
+	#undef Py_None
+#endif
+#define Py_None					pythonLib->dzPy_None
+#ifdef Py_RETURN_NONE
+	#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
+#endif
+#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
 #define	Py_LoadLibrary			pythonLib->Py_LoadLibrary
 #define	Py_GetVersion			pythonLib->Py_GetVersion
 #define	Py_IsInitialized		pythonLib->Py_IsInitialized
@@ -423,6 +451,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
+#define PyDict_Contains			pythonLib->PyDict_Contains
 #define PyDict_Clear			pythonLib->PyDict_Clear
 #define PyDict_Size				pythonLib->PyDict_Size
 #define PyDict_GetItem			pythonLib->PyDict_GetItem
@@ -430,7 +459,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_SetItemString	pythonLib->PyDict_SetItemString
 #define PyDict_SetItem			pythonLib->PyDict_SetItem
 #define PyDict_DelItem			pythonLib->PyDict_DelItem
-#define PyDict_Next				pythonLib->PyDict_Next
+#define PyDict_DelItemString	pythonLib->PyDict_DelItemString
+#define PyDict_Next pythonLib->PyDict_Next
 #define PyDict_Items			pythonLib->PyDict_Items
 #define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
@@ -444,13 +474,17 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyErr_Clear				pythonLib->PyErr_Clear
 #define PyErr_Fetch				pythonLib->PyErr_Fetch
 #define PyErr_NormalizeException pythonLib->PyErr_NormalizeException
-#define PyImport_ImportModule pythonLib->PyImport_ImportModule
+#define PyImport_ImportModule	pythonLib->PyImport_ImportModule
+#define PyObject_RichCompareBool pythonLib->PyObject_RichCompareBool
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
+#define PyObject_CallNoArgs		pythonLib->PyObject_CallNoArgs
 #define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
 #define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
 #define	PyEval_ThreadsInitialized	pythonLib->PyEval_ThreadsInitialized
 #define	PyThreadState_Get		pythonLib->PyThreadState_Get
 #define PyEval_SaveThread		pythonLib->PyEval_SaveThread
+#define PyEval_GetLocals		pythonLib->PyEval_GetLocals
+#define PyEval_GetGlobals		pythonLib->PyEval_GetGlobals
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
 #define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
 #define PyThreadState_Swap		pythonLib->PyThreadState_Swap
@@ -497,6 +531,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
 #define	PyObject_GetIter		pythonLib->PyObject_GetIter
 #define	PyIter_Next				pythonLib->PyIter_Next
+#define PyErr_SetString			pythonLib->PyErr_SetString
 
 #ifndef _Py_DEC_REFTOTAL
 /* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by: https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */

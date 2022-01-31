@@ -30,7 +30,7 @@ extern http::server::ssl_server_settings secure_webserver_settings;
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents()
-	: m_version("3.1.7")
+	: m_version("3.1.8")
 {
 	m_bdzVentsExist = false;
 }

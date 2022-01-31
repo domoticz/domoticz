@@ -541,14 +541,14 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 	{
 		for (int i = 1; i <= m_relay_count; i++)
 		{
-			sChkstr = fmt::format("RELAYON {}", i);
+			sChkstr = std_format("RELAYON %d", i);
 
 			if(sDump.find(sChkstr) != std::string::npos)
 			{
 				UpdateDomoticzRelay(i, true);
 			}
 
-			sChkstr = fmt::format("RELAYOFF {}", i);
+			sChkstr = std_format("RELAYOFF %d", i);
 
 			if (sDump.find(sChkstr) != std::string::npos)
 			{
@@ -561,14 +561,14 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 	{
 		for (int i = 1; i <= m_input_count; i++)
 		{
-			sChkstr = fmt::format("IH {}", i);
+			sChkstr = std_format("IH %d", i);
 
 			if (sDump.find(sChkstr) != std::string::npos)
 			{
 				UpdateDomoticzInput(i, true);
 			}
 
-			sChkstr = fmt::format("IL {}", i);
+			sChkstr = std_format("IL %d", i);
 
 			if (sDump.find(sChkstr) != std::string::npos)
 			{

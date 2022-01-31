@@ -16,12 +16,27 @@
 // Plugwise Anna Thermostat
 // Anna Sensors
 // Anna Switches
-
-#define sAnneBoilerState 8
-#define sAnnaFlameState  9
-#define sAnnaProximity   10
-#define sAnnaPresets     11
-#define sAnnaComfort     12
+#define sAnnaTemperature                    1
+#define sAnnaIlluminance                    2
+#define sAnnaThermostat                     3
+#define sAnnaIntendedBoilerTemperature      4
+#define sAnnaReturnWaterTemperature         5
+#define sAnnaBoilerTemperature              6
+#define sAnnaMaxBoilerTemperature           7
+#define sAnnaBoilerState                    8
+#define sAnnaFlameState                     9
+#define sAnnaProximity                      10
+#define sAnnaPresets                        11
+#define sAnnaComfort                        12
+#define sAnnaModulationLevel                13
+#define sAnnaWaterPressure                  14
+#define sAnnaSignalStrength                 15
+#define sAnnaBurnerStarts                   16
+#define sAnnaFailedBurnerStarts             17
+#define sAnnaBurnerOperationTime            18
+#define sAnnaHotWaterBurnerOperationTime    19
+#define sAnnaHotWaterFlow                   20
+#define sAnnaHotWaterTemperature            21
 
 const std::string ANNA_VERSION       = "1.0.1";
 const std::string ANNA_GET_STATUS    = "/core/appliances";
@@ -30,15 +45,13 @@ const std::string ANNA_SET_LOCATION  = "/core/locations";
 const std::string ANNA_LEVEL_NAMES   = "Off|Home|Away|Night|Vacation|Frost";
 const std::string ANNA_LEVEL_ACTIONS = "00|10|20|30|40|50";
 
-
-
 //#define _DEBUG // toggle for reading and writing local files
 #ifdef _DEBUG
 //#define DEBUG_AnnaThermostat
 #define DEBUG_ANNA_APPLIANCE_READ  "/tmp/anna/appliances.xml"
 #define DEBUG_ANNA_WRITE           "/tmp/anna/output.txt"
 #define DEBUG_ANNA_LOCATION_READ   "/tmp/anna/location.xml"
-#define DEBUG_ANNA_CRLF          " \r\n"
+#define DEBUG_ANNA_CRLF            " \r\n"
 #endif
 
 #ifdef DEBUG_AnnaThermostat
@@ -169,7 +182,7 @@ bool CAnnaThermostat::WriteToHardware(const char* pdata, const unsigned char /*l
 	{
 		int node_id = pCmd->LIGHTING2.id4;
 		bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
-		if (node_id == sAnneBoilerState || node_id == sAnnaFlameState)
+		if (node_id == sAnnaBoilerState || node_id == sAnnaFlameState)
 		{
 			return false; // just return Error as these are not supposed to be switches
 		}
@@ -211,7 +224,7 @@ void CAnnaThermostat::SetSetpoint(const int /*idx*/, const float temp)
 
 	sPostData << "<thermostat>";
 	sPostData << "<setpoint>";
-	sPostData << fmt::format("{:.1f}", temp);
+	sPostData << std_format("%.1f", temp);
 	sPostData << "</setpoint>";
 	sPostData << "</thermostat>";
 
@@ -495,7 +508,6 @@ void CAnnaThermostat::GetMeterDetails()
 		}
 		for (pElem; pElem; pElem = pElem->NextSiblingElement())
 		{
-
 			sname = GetElementChildValue(pElem, "type");
 			//tmpstr = GetPeriodMeasurement(pElem);
 			//Log (LOG_NORM,"%s : %s ", sname.c_str(), tmpstr.c_str());
@@ -505,7 +517,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(1, 255, temperature, sname);
+					SendTempSensor(sAnnaTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "illuminance")
@@ -514,7 +526,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float illuminance = (float)atof(tmpstr.c_str());
-					SendLuxSensor(2, 1, 255, illuminance, sname);
+					SendLuxSensor(sAnnaIlluminance, 1, 255, illuminance, sname);
 				}
 			}
 			else if (sname == "thermostat")
@@ -523,7 +535,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendSetPointSensor(3, temperature, sname);
+					SendSetPointSensor(sAnnaThermostat, temperature, sname);
 				}
 			}
 			else if (sname == "intended_boiler_temperature")
@@ -532,7 +544,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(4, 255, temperature, sname);
+					SendTempSensor(sAnnaIntendedBoilerTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "return_water_temperature")
@@ -541,7 +553,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(5, 255, temperature, sname);
+					SendTempSensor(sAnnaReturnWaterTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "boiler_temperature")
@@ -550,7 +562,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(6, 255, temperature, sname);
+					SendTempSensor(sAnnaBoilerTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "maximum_boiler_temperature")
@@ -559,7 +571,7 @@ void CAnnaThermostat::GetMeterDetails()
 				if (!tmpstr.empty())
 				{
 					float temperature = (float)atof(tmpstr.c_str());
-					SendTempSensor(7, 255, temperature, sname);
+					SendTempSensor(sAnnaMaxBoilerTemperature, 255, temperature, sname);
 				}
 			}
 			else if (sname == "boiler_state")
@@ -569,11 +581,11 @@ void CAnnaThermostat::GetMeterDetails()
 				{
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, true, 0, sname, m_Name);
+						SendSwitch(sAnnaBoilerState, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						SendSwitch(sAnneBoilerState, 1, 255, false, 0, sname, m_Name);
+						SendSwitch(sAnnaBoilerState, 1, 255, false, 0, sname, m_Name);
 					}
 				}
 			}
@@ -618,13 +630,12 @@ void CAnnaThermostat::GetMeterDetails()
 				{
 					if (strcmp(tmpstr.c_str(), "on") == 0)
 					{
-						bSwitch = true;
+						SendSwitch(sAnnaProximity, 1, 255, true, 0, sname, m_Name);
 					}
 					else
 					{
-						bSwitch = false;
+						SendSwitch(sAnnaProximity, 1, 255, false, 0, sname, m_Name);
 					}
-					SendSwitch(sAnnaProximity, 1, 255, bSwitch, 0, sname, m_Name);
 				}
 			}
 			else if (sname == "preset_state")
@@ -667,9 +678,90 @@ void CAnnaThermostat::GetMeterDetails()
 				std::string PresetName = "Anna Preset";
 				SendSelectorSwitch(sAnnaPresets, 1, sPreset, PresetName, 16, false, ANNA_LEVEL_NAMES, ANNA_LEVEL_ACTIONS, true, m_Name);
 			}
-		}
-		pAppliance = pAppliance->NextSiblingElement("appliance");
-	}
+            else if (sname == "modulation_level")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float level = (float)atof(tmpstr.c_str());
+                    SendPercentageSensor(sAnnaModulationLevel, 1, 255, level, sname);
+                }
+            }
+            else if (sname == "central_heater_water_pressure")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float pressure = (float)atof(tmpstr.c_str());
+                    SendPressureSensor(sAnnaWaterPressure, 1, 255, pressure, sname);
+                }
+            }
+            else if (sname == "signal_strength")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float dbm = (float)atof(tmpstr.c_str());
+                    SendCustomSensor(sAnnaSignalStrength, 1, 255, dbm, sname, "dBm");
+                }
+            }
+            else if (sname == "burner_starts")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float starts = (float)atof(tmpstr.c_str());
+                    SendCustomSensor(sAnnaBurnerStarts, 1, 255, starts, sname, "");
+                }
+            }
+            else if (sname == "failed_burner_starts")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float starts = (float)atof(tmpstr.c_str());
+                    SendCustomSensor(sAnnaFailedBurnerStarts, 1, 255, starts, sname, "");
+                }
+            }
+            else if (sname == "burner_operation_time")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float hour = (float)atof(tmpstr.c_str());
+                    SendCustomSensor(sAnnaBurnerOperationTime, 1, 255, hour, sname, "Hour(s)");
+                }
+            }
+            else if (sname == "domestic_hot_water_burner_operation_time")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float hour = (float)atof(tmpstr.c_str());
+                    SendCustomSensor(sAnnaHotWaterBurnerOperationTime, 1, 255, hour, sname, "Hour(s)");
+                }
+            }
+            else if (sname == "domestic_hot_water_flow")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float flow = (float)atof(tmpstr.c_str());
+                    SendWaterflowSensor(sAnnaHotWaterFlow, 1, 255, flow, sname);
+                }
+            }
+            else if (sname == "domestic_hot_water_temperature")
+            {
+                tmpstr = GetPeriodMeasurement(pElem);
+                if (!tmpstr.empty())
+                {
+                    float temperature = (float)atof(tmpstr.c_str());
+                    SendTempSensor(sAnnaHotWaterTemperature, 255, temperature, sname);
+                }
+            }
+        }
+        pAppliance = pAppliance->NextSiblingElement("appliance");
+    }
 }
 
 // Checks if the Username and password are filled in

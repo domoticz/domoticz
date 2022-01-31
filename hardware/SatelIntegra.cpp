@@ -748,7 +748,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 	}
 	else
 	{
-		std::string sTmp = fmt::format("{:08X}", Idx);
+		std::string sTmp = std_format("%08X", Idx);
 		std::string devname;
 
 		m_sql.UpdateValue(m_HwdID, sTmp.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, state ? "On" : "Off", devname);
@@ -945,7 +945,7 @@ void SatelIntegra::UpdateZoneName(const int Idx, const unsigned char* name, cons
 {
 	std::vector<std::vector<std::string> > result;
 
-	std::string sTmp = fmt::format("{}", Idx);
+	std::string sTmp = std_format("%d", Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -975,7 +975,7 @@ void SatelIntegra::UpdateTempName(const int Idx, const unsigned char* name, cons
 {
 	std::vector<std::vector<std::string> > result;
 
-	std::string sTmp = fmt::format("{}", Idx);
+	std::string sTmp = std_format("%d", Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -998,7 +998,7 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 {
 	std::vector<std::vector<std::string> > result;
 
-	std::string sTmp = fmt::format("{:08X}", Idx);
+	std::string sTmp = std_format("%08X", Idx);
 
 	std::string shortName((char*)name, 16);
 
@@ -1040,31 +1040,29 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	}
 
 	//Arm
-	for (size_t i = 0; m_isPartitions.size(); ++i)
+	for (const auto &itt : m_isPartitions)
 	{
-		if (m_isPartitions[i])
+		if (itt == 0)
+			continue;
+
+		std::string sTmp = std_format("%08X", itt + 1);
+		result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=2)", m_HwdID, sTmp.c_str(), itt + 1);
+		if (result.empty())
 		{
-			std::string sTmp = fmt::format("{:08X}", i + 1);
-			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=2)", m_HwdID, sTmp.c_str(), i + 1);
-			if (result.empty())
-			{
-				//Assign name for Arm
+			// Assign name for Arm
 #ifdef DEBUG_SatelIntegra
-				Log(LOG_STATUS, "update Arm name to 'Arm %d partition'", i + 1);
+			Log(LOG_STATUS, "update Arm name to 'Arm %d partition'", itt + 1);
 #endif
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i + 1, m_HwdID, sTmp.c_str());
-			}
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", itt + 1, m_HwdID, sTmp.c_str());
 		}
 	}
 }
 
 void expandForSpecialValue(std::list<unsigned char> &result)
 {
-	std::list<unsigned char>::iterator it = result.begin();
-
 	const unsigned char specialValue = 0xFE;
 
-	for (; it != result.end(); it++)
+	for (auto it = result.begin(); it != result.end(); it++)
 	{
 		if (*it == specialValue)
 		{

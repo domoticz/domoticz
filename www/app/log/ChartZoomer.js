@@ -1,4 +1,4 @@
-define(function () {
+define(['Base'], function (Base) {
     function ChartZoomer() {
 
     }
@@ -7,12 +7,18 @@ define(function () {
         return analyseChartEdges(receiver.chart);
 
         function analyseChartEdges(chart) {
+            if (receiver.seriesSuppliers === undefined) {
+                return {
+                    chartEdgeLeft: -1,
+                    chartEdgeRight: -1
+                };
+            }
             const timestamps = seriesSuppliersDatapointsTimestamps(receiver.seriesSuppliers);
             const chartEdgeLeft = timestamps.reduce(min, Infinity);
             const chartEdgeRight = timestamps.reduce(max, -Infinity);
             receiver.consoledebug(
-                'chartEdgeLeft:' + chartEdgeLeft + ' (' + new Date(chartEdgeLeft).toString() + ')'
-                + ', chartEdgeRight:' + chartEdgeRight + ' (' + new Date(chartEdgeRight).toString() + ')');
+                'chartEdgeLeft:' + chartEdgeLeft + ' (' + Base.dateToString(chartEdgeLeft) + ')'
+                + ', chartEdgeRight:' + chartEdgeRight + ' (' + Base.dateToString(chartEdgeRight) + ')');
             return {
                 chartEdgeLeft: chartEdgeLeft,
                 chartEdgeRight: chartEdgeRight
@@ -36,8 +42,8 @@ define(function () {
             zoomEdgeLeft = getZoomEdgeLeft();
             zoomEdgeRight = getZoomEdgeRight();
             receiver.consoledebug(
-                'zoomEdgeLeft:' + zoomEdgeLeft + ' (' + new Date(zoomEdgeLeft).toString() + ')'
-                + ', zoomEdgeRight:' + zoomEdgeRight + ' (' + new Date(zoomEdgeRight).toString() + ')');
+                'zoomEdgeLeft:' + zoomEdgeLeft + ' (' + Base.dateToString(zoomEdgeLeft) + ')'
+                + ', zoomEdgeRight:' + zoomEdgeRight + ' (' + Base.dateToString(zoomEdgeRight) + ')');
 
             function getZoomEdgeLeft() {
                 if (chart.series.length === 0) {
@@ -59,8 +65,8 @@ define(function () {
             dataEdgeLeft = timestamps.reduce(min, Infinity);
             dataEdgeRight = timestamps.reduce(max, -Infinity);
             receiver.consoledebug(
-                'dataEdgeLeft:' + dataEdgeLeft + ' (' + new Date(dataEdgeLeft).toString() + ')'
-                + ', dataEdgeRight:' + dataEdgeRight + ' (' + new Date(dataEdgeRight).toString() + ')');
+                'dataEdgeLeft:' + dataEdgeLeft + ' (' + Base.dateToString(dataEdgeLeft) + ')'
+                + ', dataEdgeRight:' + dataEdgeRight + ' (' + Base.dateToString(dataEdgeRight) + ')');
         }
 
         function applyNewZoomEdges(receiver) {
@@ -74,8 +80,8 @@ define(function () {
                     : (zoomEdgeLeft - zoomEdgeRight) + zoomEdgeRight1;
             if (zoomEdgeLeft1 !== zoomEdgeLeft || zoomEdgeRight1 !== zoomEdgeRight) {
                 receiver.consoledebug(
-                    'zoomEdgeLeft1:' + zoomEdgeLeft1 + ' (' + new Date(zoomEdgeLeft1).toString() + ')'
-                    + ', zoomEdgeRight1:' + zoomEdgeRight1 + ' (' + new Date(zoomEdgeRight1).toString() + ')');
+                    'zoomEdgeLeft1:' + zoomEdgeLeft1 + ' (' + Base.dateToString(zoomEdgeLeft1) + ')'
+                    + ', zoomEdgeRight1:' + zoomEdgeRight1 + ' (' + Base.dateToString(zoomEdgeRight1) + ')');
                 receiver.chart.xAxis[0].setExtremes(zoomEdgeLeft1, zoomEdgeRight1, false);
             }
         }

@@ -196,6 +196,16 @@
 #define sSwitchTypeFaber 0x77
 #define sSwitchTypeDrayton 0x78
 #define sSwitchTypeV2Phoenix 0x79
+#define sSwitchTypeVisonic433 0x80
+#define sSwitchTypeVisonic868 0x81
+#define sSwitchTypeX2D433 0x82
+#define sSwitchTypeX2D868 0x83
+#define sSwitchTypeX2DShutter 0x84
+#define sSwitchTypeX2DElec 0x85
+#define sSwitchTypeX2DGas 0x86
+#define sSwitchTypeParrot 0x87
+#define sSwitchTypeKD101 0x88
+#define sSwitchTypeFS20 0x89
 
 // Switch commands
 #define gswitch_sOff 0x00
@@ -226,6 +236,9 @@
 #define gswitch_sColor 0x19
 #define gswitch_sDiscop 0x1a
 #define gswitch_sDiscom 0x1b
+
+//
+#define gswitch_sToggle 0xfe
 
 //--------------
 

@@ -12,10 +12,8 @@
     namespace Plugins {
         #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
-		extern std::mutex PythonMutex;		// only used during startup when multiple threads could use Python
-
 		void*   m_PyInterpreter;
-        bool ModuleInitalized = false;
+        bool ModuleInitialized = false;
 
         struct eventModule_state {
             PyObject*	error;
@@ -93,13 +91,13 @@
 		// This is called during the import of the plugin module
 		// triggered by the "import Domoticz" statement
 
-		_log.Log(LOG_STATUS, "Python EventSystem: Initalizing event module.");
+		_log.Log(LOG_STATUS, "Python EventSystem: Initializing event module.");
 
 		PyObject *pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
 		return pModule;
 	}
 
-	int PythonEventsInitalized = 0;
+	int PythonEventsInitialized = 0;
 
 	bool PythonEventsInitialize(const std::string &szUserDataFolder)
 	{
@@ -118,7 +116,6 @@
 			return false;
 		}
 
-		std::lock_guard<std::mutex> l(PythonMutex);
 		PyEval_RestoreThread((PyThreadState *)m_mainworker.m_pluginsystem.PythonThread());
 		m_PyInterpreter = Py_NewInterpreter();
 		if (!m_PyInterpreter)
@@ -139,7 +136,7 @@
             sPath += Plugins::Py_GetPath();
             Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
 
-            PythonEventsInitalized = 1;
+            PythonEventsInitialized = 1;
 
             PyObject* pModule = Plugins::PythonEventsGetModule();
 			PyEval_SaveThread();
@@ -147,7 +144,7 @@
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
                 return false;
             }
-            ModuleInitalized = true;
+            ModuleInitialized = true;
             return true;
 	}
 
@@ -155,7 +152,6 @@
 	{
 		if (m_PyInterpreter)
 		{
-			std::lock_guard<std::mutex> l(PythonMutex);
 			PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
 			if (Plugins::Py_IsInitialized())
 				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
@@ -201,7 +197,7 @@
 				       std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet)
 	{
 
-		if (!ModuleInitalized)
+		if (!ModuleInitialized)
 		{
 			return;
 		}
@@ -209,7 +205,6 @@
 		if (Plugins::Py_IsInitialized())
 		{
 
-			std::lock_guard<std::mutex> l(PythonMutex);
 			if (m_PyInterpreter)
 				PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
 
@@ -259,8 +254,7 @@
 				// Mutex
 				// boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 
-				std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
-				for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
+				for (auto it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
 				{
 					CEventSystem::_tDeviceStatus sitem = it_type->second;
 					// object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType,
@@ -379,8 +373,7 @@
 				// This doesn't work
 				// boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
 
-				std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
-				for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
+				for (auto it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
 				{
 					CEventSystem::_tUserVariable uvitem = it_var->second;
 					Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(),
@@ -462,7 +455,7 @@
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Python not initalized");
+			_log.Log(LOG_ERROR, "EventSystem: Python not Initialized");
 		}
 	}
     } // namespace Plugins

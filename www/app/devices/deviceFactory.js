@@ -42,7 +42,7 @@ define(function () {
             this.icon = new DeviceIcon(this);
 
             this.isDimmer = function () {
-                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(this.SwitchType);
+                return ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'Blinds + Stop', 'Blinds Inverted + Stop', 'TPI'].includes(this.SwitchType);
             };
 
             this.isSelector = function () {
@@ -139,6 +139,8 @@ define(function () {
                     return 'kWh';
                 } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 2) {
                     return 'm3';
+                } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 3) {
+                    return this.ValueUnits; //counter
                 } else if (this.Type === 'Usage' && this.SubType === 'Electric') {
                     return 'W';
                 } else if (this.SubType === 'Gas' || this.SubType === 'Water') {
@@ -200,7 +202,7 @@ define(function () {
             };
 
             this.isCustomLog = function () {
-				var deviceTypes = ['Air Quality','UV','Rain','Current'];
+				var deviceTypes = ['Air Quality','UV','Rain','Current','Wind'];
 				var deviceSubTypes = ['Barometer'];
 
 				if (deviceTypes.includes(this.Type)) {

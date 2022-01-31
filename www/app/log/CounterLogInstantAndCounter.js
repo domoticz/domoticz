@@ -1,6 +1,6 @@
-define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], function (app) {
+define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], function (app) {
 
-    app.directive('registerInstantAndCounter', function (counterLogSubtypeRegistry, counterLogEnergySeriesSuppliers) {
+    app.directive('registerInstantAndCounter', function (chart, counterLogSubtypeRegistry, counterLogParams, counterLogEnergySeriesSuppliers, counterLogSeriesSupplier) {
         counterLogSubtypeRegistry.register('instantAndCounter', {
             chartParamsDayTemplate: {
                 highchartTemplate: {
@@ -24,38 +24,56 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
             chartParamsMonthYearTemplate: {
 
             },
+            chartParamsCompareTemplate: function (ctrl) {
+                return counterLogParams.chartParamsCompareTemplate(ctrl, chart.valueUnits.energy(chart.valueMultipliers.m1000));
+            },
             extendDataRequestDay: function (dataRequest) {
                 dataRequest.method = 1;
                 return dataRequest;
             },
-            yAxesDay: [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (Wh)'
-                    }
-                },
-                {
-                    title: {
-                        text: $.t('Power') + ' (Watt)'
+            yAxesDay: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1) + ')'
+                        }
                     },
-                    opposite: true
-                }
-            ],
-            yAxesWeek: [
-                {
-                    maxPadding: 0.2,
-                    title: {
-                        text: $.t('Energy') + ' (kWh)'
+                    {
+                        title: {
+                            text: $.t('Power') + ' (' + chart.valueUnits.power(chart.valueMultipliers.m1) + ')'
+                        },
+                        opposite: true
                     }
-                }
-            ],
-            yAxesMonthYear: [
-                {
-                    title: {
-                        text: $.t('Energy') + ' (kWh)'
+                ];
+            },
+            yAxesWeek: function (deviceType) {
+                return [
+                    {
+                        maxPadding: 0.2,
+                        title: {
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
+                        }
                     }
-                }
-            ],
+                ];
+            },
+            yAxesMonthYear: function (deviceType) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
+                        }
+                    }
+                ];
+            },
+            yAxesCompare: function (deviceTypeIndex) {
+                return [
+                    {
+                        title: {
+                            text: $.t('Energy') + ' (' + chart.valueUnits.energy(chart.valueMultipliers.m1000) + ')'
+                        }
+                    }
+                ];
+            },
             daySeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.instantAndCounterDaySeriesSuppliers(deviceType))
@@ -69,6 +87,12 @@ define(['app', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], f
             monthYearSeriesSuppliers: function (deviceType) {
                 return []
                     .concat(counterLogEnergySeriesSuppliers.counterMonthYearSeriesSuppliers(deviceType));
+            },
+            extendDataRequestCompare: function (dataRequest) {
+                return dataRequest;
+            },
+            compareSeriesSuppliers: function (ctrl) {
+                return counterLogSeriesSupplier.counterCompareSeriesSuppliers(ctrl);
             }
         });
         return {

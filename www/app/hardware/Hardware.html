@@ -683,7 +683,7 @@
 						<option value="115200">115200 (for genuine Honeywell HGI80/HGS80)</option>
 						<option value="76800">76800</option>
 						<option value="57600">57600</option>
- 						<option value="38400">38400</option>
+						<option value="38400">38400</option>
 					</select>
 				</td>
 			</tr>
@@ -858,7 +858,7 @@
 					<input type="text" id="decryptionkey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
 					<br>
 					(<span data-i18n="Use only when your provider encrypts the payload">Use only when your provider encrypts the payload</span>)
-					</td>
+				</td>
 			</tr>
 		</table>
 	</div>
@@ -1028,7 +1028,7 @@
 				<td align="right" style="width:110px">&nbsp;</td>
 				<td><input type="checkbox" id="adddescdev">&nbsp;<label for="adddescdev">&nbsp;Add (3) devices containing forecast description information for each forecasted day and/or hour. Useful if you would like to build your own forecast dashboard.</label></td>
 			</tr>
-			</table>
+		</table>
 	</div>
 	<div id="divbuienradar">
 		<br>
@@ -1140,8 +1140,10 @@
 				<td></td>
 				<td>
 					Two interval types need to be specified:<ul>
-						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br>
-							Note that a too low interval (less than 20 minutes) will prevent the car to sleep.</li>
+						<li>
+							Default interval is used when the car is not at home, or home but not charging or using climate controls<br>
+							Note that a too low interval (less than 20 minutes) will prevent the car to sleep.
+						</li>
 						<li>Active interval is used when the car is home, and charging or using climate controls</li>
 					</ul>
 				</td>
@@ -1197,8 +1199,10 @@
 				<td><input type="hidden" id="comboallowwakeup" value="1"></td>
 				<td>
 					Two interval types need to be specified:<ul>
-						<li>Default interval is used when the car is not at home, or home but not charging or using climate controls<br>
-							Note: Mercedes Me does not support a 'sleep' state, so the default interval can be anything (> 2 minutes to prevent hitting limits).</li>
+						<li>
+							Default interval is used when the car is not at home, or home but not charging or using climate controls<br>
+							Note: Mercedes Me does not support a 'sleep' state, so the default interval can be anything (> 2 minutes to prevent hitting limits).
+						</li>
 						<li>Active interval is used when the car is home, and charging or using climate controls (not implemented at the moment)</li>
 					</ul>
 				</td>
@@ -1359,76 +1363,6 @@
 		</table>
 	</div>
 	<div id="divpythonplugin"></div>
-	<div id="divmqtt">
-		<br>
-		<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
-			<tr id="mqtt_preventloop" valign="top">
-				<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
-				<td>
-					<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
-						<option value="0">False</option>
-						<option value="1" selected>True</option>
-					</select>
-					<br>
-					<span>
-						If 'False' this will cause the MQTT message to be echoed back. <br>
-						In most cases this is a bad scenario and should be avoided.<br>
-				</td>
-			</tr>
-			<tr id="mqtt_publish" valign="top">
-				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
-				<td>
-					<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
-						<option value="1">Flat</option>
-						<option value="2"><Floor>/<Room></option>
-						<option value="3">Flat + <Floor>/<Room></option>
-						<option value="4">Index</option>
-						<option value="8">Name</option>
-						<option value="0">None</option>
-					</select>
-					<br>
-					<span>
-						Select the Topic('s) Domoticz will use to publish outgoing messages. <br>
-						<b>Flat</b> - publish outgoing messagen on topic {domoticz/out}.<br>
-						<b>Hierarchical</b> - publish outgoing messagen on topic {domoticz/out}/${floorplan name}/${plan name}.<br>
-						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br>
-						<b>Index</b> - publish outgoing messagen on topic {domoticz/out}/$idx<br>
-						<b>Name</b> - publish outgoing messagen on topic {domoticz/out}/$name<br>
-						<b>None</b> - disable outgoing messages.<br>
-						<br>
-						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="mqtttopicin"><span data-i18n="Topic In Prefix"></span>:</label></td>
-				<td>
-					<input type="text" id="mqtttopicin" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
-					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b>domoticz/in</b>
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label for="mqtttopicout"><span data-i18n="Topic Out Prefix"></span>:</label></td>
-				<td>
-					<input type="text" id="mqtttopicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
-					&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b>domoticz/out</b>
-				</td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
-				<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
-			</tr>
-			<tr>
-				<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="TLS Version">TLS Version</span>:</label></td>
-				<td>
-					<select id="combotlsversion" style="width:200px" class="combobox ui-corner-all">
-						<option value="0">tlsv1</option>
-						<option value="1">tlsv1.1</option>
-						<option value="2">tlsv1.2</option>
-					</select>
-				</td>
-			</tr>
-		</table>
-	</div>
 	<div id="divrtl433">
 		<br>
 		<table class="display" id="hardwareparamsrtl433" border="0" cellpadding="0" cellspacing="20">
@@ -1445,6 +1379,8 @@
 				</td>
 			</tr>
 		</table>
+	</div>
+	<div id="divextrahwparams">
 	</div>
 	<div id="divmysensorsmqtt">
 		<br>
@@ -1463,21 +1399,21 @@
 						In most cases this is a bad scenario and should be avoided.<br>
 				</td>
 			</tr>
-				<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix Mode"></span>:</label></td>
-				<td>
-					<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
-						<option value="0">MyMQTT (default)</option>
-						<option value="1">Gateway Node Name</option>
-						<option value="2">Custom Topics</option>
-					</select>
-					<span>
-						Select the Topic mode that Domoticz uses to send and receive messages.<br><br>
-						<ul>
-							<li><b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT.</li>
-							<li><b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field above).</li>
-							<li><b>Custom Topics</b> - Enter custom topic prefixes below.</li>
-						</ul>
-				</td>
+			<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix Mode"></span>:</label></td>
+			<td>
+				<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+					<option value="0">MyMQTT (default)</option>
+					<option value="1">Gateway Node Name</option>
+					<option value="2">Custom Topics</option>
+				</select>
+				<span>
+					Select the Topic mode that Domoticz uses to send and receive messages.<br><br>
+					<ul>
+						<li><b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT.</li>
+						<li><b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field above).</li>
+						<li><b>Custom Topics</b> - Enter custom topic prefixes below.</li>
+					</ul>
+			</td>
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label id="lbmqtttopicin" for="name"><span data-i18n="Topic In Prefix"></span>:</label></td>
@@ -1601,11 +1537,11 @@
 						<option value="0xF31F" data-i18n="Custom Sensor">Custom Sensor</option>
 						<option value="0xF31B" data-i18n="Distance">Distance</option>
 						<option value="0xF31D" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
-						<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
 						<option value="0xFB02" data-i18n="Gas">Gas</option>
 						<option value="0x5101" data-i18n="Humidity">Humidity</option>
 						<option value="0xF304" data-i18n="Leaf Wetness">Leaf Wetness</option>
 						<option value="0xF601" data-i18n="Lux">Lux</option>
+						<option value="0xF321" data-i18n="Managed counter">Managed counter</option>
 						<option value="0xFA01" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
 						<option value="0xF306" data-i18n="Percentage">Percentage</option>
 						<option value="0xF309" data-i18n="Pressure (Bar)">Pressure (Bar)</option>

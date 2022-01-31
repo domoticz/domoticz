@@ -333,7 +333,7 @@ std::string SMTPClient::MakeMessage()
 					ret += "Content-Type: image/gif;\r\n";
 				}
 				else if (typ == ".jpg" || typ == "jpeg") { // j-peg format presumably
-					ret += "Content-Type: image/jpg;\r\n";
+					ret += "Content-Type: image/jpeg;\r\n";
 				}
 				else if (typ == ".txt") { // text format presumably
 					ret += "Content-Type: plain/txt;\r\n";

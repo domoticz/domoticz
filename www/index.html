@@ -79,6 +79,8 @@
 		<link rel="stylesheet" href="css/ui-grid.min.css">
 		<link rel="stylesheet" href="css/demo_table_jui.css">
 		<link rel="stylesheet" href="css/jquery.uix.multiselect.css">
+		<link rel="stylesheet" href="font-awesome/css/fontawesome.min.css">
+		<link rel="stylesheet" href="font-awesome/css/solid.min.css">
 		<link rel="stylesheet" href="css/style.css">
 		<link rel="stylesheet" href="css/colpick.css">
 		<link rel="stylesheet" href="css/jquery-ui-timepicker-addon.css">
@@ -88,10 +90,10 @@
 		<link rel="stylesheet" href="js/noty/relax.css">
 		<link rel="stylesheet" href="app/events/Events.css">
 		<link rel="stylesheet" href="app/devices/Devices.css">
-		<link rel="stylesheet" href="acttheme/custom.css">
+		<link rel="stylesheet" href="styles/default/custom.css">
 
 		<script src="js/babel-polyfill-6.26.0.js"></script>
-		<script src="js/jquery-3.5.1.min.js"></script>
+		<script src="js/jquery-3.6.0.min.js"></script>
 		<script src="js/i18next-1.8.0.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
@@ -109,11 +111,11 @@
 		<script charset="utf-8" src="js/data-tables/dataTables.select.min.js"></script>
 		<script charset="utf-8" src="js/ZeroClipboard.js"></script>
 		<script charset="utf-8" src="js/date.format.js"></script>
-		<!-- Temporary fix for highcharts/highcharts#9612 -->
-		<script charset="utf-8" src="js/highcharts/highcharts-8.2.2-patch.9612.src.js"></script>
+		<script charset="utf-8" src="js/highcharts/highcharts.js"></script>
 		<script charset="utf-8" src="js/highcharts/highcharts-more.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/sankey.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/dependency-wheel.js"></script>
+		<script charset="utf-8" src="js/highcharts/modules/no-data-to-display.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/exporting.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/export-data.js"></script>
 		<script charset="utf-8" src="js/highcharts/modules/xrange.js"></script>
@@ -122,7 +124,7 @@
 		<script charset="utf-8" src="js/domoticz.js"></script>
 		<script charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
-		<script charset="utf-8" src="acttheme/custom.js"></script>
+		<script charset="utf-8" src="styles/default/custom.js"></script>
 		<script data-main="app/main" src="js/require.min.js"></script>
 <script charset="utf-8" id="init-code">
 
@@ -460,7 +462,10 @@ $(document).ready(function() {
 
 </script>
 </head>
-<body>
+<body class="noselect">
+    <div id="debugconsole" style="display: none; position: absolute; top: 52px; z-index: 1;">
+		debug console
+	</div>
 	<script type="text/ng-template" id="timesuntemplate">
 		<div id="timesun" ng-show="::$ctrl.data.serverTime">
 			<span ng-hide="::$ctrl.isMobile">{{ $ctrl.data.serverTime }}</span>

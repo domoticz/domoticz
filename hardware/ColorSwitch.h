@@ -50,6 +50,9 @@ struct _tColor
 	std::string toJSONString() const;
 	Json::Value toJSONValue() const;
 	std::string toString() const;
+
+	static void RgbFromXY(const double x, const double y, uint8_t &r8, uint8_t &g8, uint8_t &b8);
+	static void XYFromRGB(const uint8_t r8, const uint8_t g8, const uint8_t b8, double &x, double &y, double &Y);
 };
 
 const _tColor NoColor = _tColor();

@@ -51,7 +51,8 @@ License: Public domain
 
 #define OPENWEBNET_AUTOMATION					"AUTOMATION"
 #define OPENWEBNET_LIGHT						"LIGHT"
-#define OPENWEBNET_TEMPERATURE					"TEMPERATURE"
+#define OPENWEBNET_TEMPERATURE					"TEMPERATURE Z"
+#define OPENWEBNET_TEMPERATURE_STATUS			"TEMPERATURE STATUS Z"
 #define OPENWEBNET_BURGLAR_ALARM_SENSOR			"ALARM SENSOR ZONE"
 #define OPENWEBNET_BURGLAR_ALARM_BATTERY		"ALARM BATTERY"
 #define OPENWEBNET_BURGLAR_ALARM_NETWORK		"ALARM NETWORK"
@@ -623,7 +624,8 @@ void COpenWebNetTCP::MonitorFrames()
 					std::vector<bt_openwebnet> responses;
 					ParseData(data, bread, responses);
 
-					for (std::vector<bt_openwebnet>::iterator iter = responses.begin(); iter != responses.end(); iter++) {
+					for (auto iter = responses.begin(); iter != responses.end(); iter++)
+					{
 						if (iter->IsNormalFrame() || iter->IsMeasureFrame())
 						{
 							Log(LOG_STATUS, "received=%s", bt_openwebnet::frameToString(*iter).c_str());
@@ -662,7 +664,7 @@ void COpenWebNetTCP::UpdateTemp(const int who, const int where, float fval, cons
 				ID is: ((who << 12) & 0xC000) | (iInterface & 0x3c00) (where & 0x3FF)
 	**/
 
-	//zone are max 99,, every zone can have 8 slave sensor. Slave sensor address. YZZ: y as slave address (1-8) ,zz zone number (1-99)
+	//zone are max 99, every zone can have 8 slave sensor. Slave sensor address. YZZ: y as slave address (1-8) ,zz zone number (1-99)
 	// so who is always 4, iInterface is 0-9, where 0x001-0x383 (1 to 899)
 	int cnode = ((who << 12) & 0xC000) | (iInterface & 0x3c00) | (where & 0x3FF);
 	SendTempSensor(cnode, BatteryLevel, fval, devname);
@@ -749,6 +751,41 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 	SendKwhMeter(NodeId, where, BatteryLevel, usage, fval, devname);
 }
 
+/**
+	Update Temperature probe status
+**/
+void COpenWebNetTCP::UpdateTempProbe(const int who, const int where, const int child, const int idx_str, std::string sStatus, const int iInterface, const int BatteryLevel, const char *devname)
+{
+	bool bExists;
+	std::string strvalue, str1, str2;
+	int NodeID = ((who << 12) & 0xC000) | (iInterface & 0x3c00) | (where & 0x3FF);
+	int tChild = (child < 0) ? where : child;
+
+	strvalue = GetTextSensorText(NodeID, tChild, bExists);
+	if (bExists == false) 
+	{
+		str1 = "";
+		str2 = ""; 
+	} 
+	else 
+	{
+		std::stringstream ss(strvalue);
+		std::string token;
+
+		if (std::getline(ss, token, ',')) str1 = token;
+		if (std::getline(ss, token, ',')) str2 = token;
+	}
+
+	if ((idx_str == 0) && (str1 != sStatus) ||
+	    (idx_str == 1) && (str2 != sStatus))
+	{
+			if (idx_str == 0)
+				strvalue = sStatus + "," + str2;
+			else if (idx_str == 1)
+				strvalue = str1 + "," + sStatus;
+			SendTextSensor(NodeID, tChild, BatteryLevel, strvalue, devname);
+	}		
+}
 
 /**
 	Insert/Update Alarm system and sensor
@@ -1156,38 +1193,113 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		}
 		break;
 	case WHO_TEMPERATURE_CONTROL:
-		if (!iter->IsMeasureFrame())
+		if (iter->IsMeasureFrame())
 		{
-			if (iter->IsNormalFrame())
-				Log(LOG_STATUS, "who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
-			else
-				Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
-			return;
+
+			// 4: this is a openwebnet termoregulation update/poll messagge, setup devname
+			devname = OPENWEBNET_TEMPERATURE;
+			devname += where;
+			switch (atoi(dimension.c_str()))
+			{
+				case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:				// 0
+					UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), 255, devname.c_str());
+					break;
+				case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:				// 19
+					devname += " Valves";
+					UpdateSwitch(WHO_TEMPERATURE_CONTROL + 600, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+					break;
+				case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:				// 20
+					devname += " Actuator";
+					UpdateSwitch(WHO_TEMPERATURE_CONTROL + 500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
+					break;
+				case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:		// 12
+					devname += " Setpoint";
+					UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), devname.c_str());
+					break;
+				case TEMPERATURE_CONTROL_DIMENSION_LOCAL_SET_OFFSET:			// 13
+				{
+					devname = OPENWEBNET_TEMPERATURE_STATUS;
+					devname += where;
+					//std::string sStatus = "";
+					std::stringstream sStatus;
+					switch (atoi(value.c_str()))
+					{
+						case TEMPERATURE_SELECTOR_0_NORMAL: // 0
+							sStatus << "No offset";
+							break;
+						case TEMPERATURE_SELECTOR_01:	    // 1
+						case TEMPERATURE_SELECTOR_02:	    // 2
+						case TEMPERATURE_SELECTOR_03:	    // 3
+							sStatus << "Offset +";
+							sStatus << atoi(value.c_str());
+							break;
+						case TEMPERATURE_SELECTOR_11: // 11 -> -1
+						case TEMPERATURE_SELECTOR_12: // 12 -> -2
+						case TEMPERATURE_SELECTOR_13: // 13 -> -3
+							sStatus << "Offset -";
+							sStatus << (atoi(value.c_str()) - 10);
+							break;
+						case TEMPERATURE_SELECTOR_4: // 4
+							sStatus << "Local OFF";
+							break;
+						case TEMPERATURE_SELECTOR_5: // 5
+							sStatus << "Local protection";
+							break;
+						default:
+							break;
+					}
+
+					if (sStatus.str() != "")
+						UpdateTempProbe(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), -1, 1, sStatus.str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				}
+				break;
+				case TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE:		// 14
+					Log(LOG_STATUS, "Setpoint without offset for Zone%s is %s", where.c_str(), value.c_str());
+					break;
+				case TEMPERATURE_CONTROL_DIMENSION_FAN_COIL_SPEED:				// 11				
+				case TEMPERATURE_CONTROL_DIMENSION_SPLIT_CONTROL:				// 22
+				case TEMPERATURE_CONTROL_DIMENSION_END_DATE_HOLIDAY_SCENARIO:	// 30
+				default:
+					Log(LOG_STATUS, "who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+					break;
+			}
 		}
-		// 4: this is a openwebnet termoregulation update/poll messagge, setup devname
-		devname = OPENWEBNET_TEMPERATURE;
-		devname += " " + where;
-		switch (atoi(dimension.c_str()))
+		else if (iter->IsNormalFrame())
 		{
-		case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:
-			UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), 255, devname.c_str());
-			break;
-		case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:
-			devname += " Valves";
-			UpdateSwitch(WHO_TEMPERATURE_CONTROL + 600, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
-			break;
-		case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:
-			devname += " Actuator";
-			UpdateSwitch(WHO_TEMPERATURE_CONTROL + 500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str());
-			break;
-		case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:
-			devname += " Setpoint";
-			UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), atoi(sInterface.c_str()), devname.c_str());
-			break;
-		default:
-			Log(LOG_STATUS, "who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
-			break;
+			devname = OPENWEBNET_TEMPERATURE_STATUS;			
+			devname += " " + where;
+			std::string sStatus = "";
+			switch (atoi(what.c_str()))
+			{
+				case TEMPERATURE_WHAT_MODE_CONDITIONING:		// 0
+					sStatus = "Conditioning";
+					break;
+				case TEMPERATURE_WHAT_MODE_HEATING:				// 1
+					sStatus = "Heating";
+					break;
+				case TEMPERATURE_WHAT_MODE_ANTIFREEZE:			// 102
+					sStatus = "Antifreeze"; 
+					break;
+				case TEMPERATURE_WHAT_MODE_THERMAL_PROTECTION:	// 202
+					sStatus = "Thermal protection";
+					break;
+				case TEMPERATURE_WHAT_MODE_GENERIC_OFF:			// 303
+					sStatus = "Off";
+					break;
+				default:
+					Log(LOG_STATUS, "who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
+					break;
+			}
+
+			if (sStatus != "")
+			{
+				//Log(LOG_STATUS, "Temperature Zone%s in %s", where.c_str(), sStatus.c_str());
+				UpdateTempProbe(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), -1, 0, sStatus, atoi(sInterface.c_str()), 255, devname.c_str());
+			}
 		}
+		else
+			Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
+
 		break;
 
 	case WHO_BURGLAR_ALARM:                         // 5
@@ -1554,7 +1666,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 						body << frame_dt;
 						body << " - Delta:";
 						body << delta;
-						m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string("OWN Date/Time Change"), body.str(), std::string(""), 0, std::string(""), true);
+						m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, std::string(""), std::string("OWN Date/Time Change"), body.str(), std::string(""), 0, std::string(""), true);
 						/************* notification ************/						
 					}
 					else
@@ -2027,9 +2139,9 @@ void COpenWebNetTCP::scan_temperature_control()
 	std::stringstream whoStr;
 	std::stringstream dimensionStr;
 	whoStr << WHO_TEMPERATURE_CONTROL;
-	dimensionStr << 0;
+	dimensionStr << ""; //0;
 
-	for (int where = 1; where < 100; where++)
+	for (int where = 1; where < 10; where++)
 	{
 		std::stringstream whereStr;
 		whereStr << where;
@@ -2199,7 +2311,7 @@ void COpenWebNetTCP::scan_device()
 
 		/** Scanning of temperature sensor is not necessary simply wait an update **/
 		//Log(LOG_STATUS, "scanning temperature control...");
-		//scan_temperature_control();
+		scan_temperature_control();
 
 		// Scan of sound diffusion device 
 		//scan_sound_diffusion();

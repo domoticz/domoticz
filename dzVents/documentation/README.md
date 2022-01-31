@@ -594,7 +594,7 @@ return {
 
 ## *timer* trigger rules
 There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm):
-Keywords recognized are "at, between, every, except, in, on " ( except supported from version <sup>3.0.16</sup> onwards ).
+Keywords recognized are "at, between, every, except, in, on, or" ( except supported from version <sup>3.0.16</sup>, or supported from version <sup>3.1.8</sup> ).
 
 At every place you read <astroMoment> you can use one of:
 sunset, sunrise, solarnoon, midnight *, sunatsouth *, civiltwilightstart, civiltwilightend, astronomicaltwilightstart *, astronomicaltwilightend *, nauticaltwilightstart * or nauticaltwilightend *.
@@ -627,7 +627,7 @@ Full daynames are allowed in dzVents >= 3.1.7
 			'at <astroMoment>',			-- dzVents >= 3.0.16 Uses the times received from Domoticz
 			'at <astroMoment> on sat,sun',
 			'xx minutes before <astroMoment>',	--
-			'xx minutes after <astroMoment>,	-- Please note that these relative times will cross dates
+			'xx minutes after <astroMoment>',	-- Please note that these relative times will cross dates
 			'between aa and bb'			-- aa/bb can be a time stamp like 15:44 (if aa > bb will cross dates)
 										-- aa/bb can be sunrise/sunset/solarnoon ('between sunset and sunrise' and 'between solarnoon and sunrise' will cross dates)
 										-- aa/bb can be 'xx minutes before/after <astroMoment>'
@@ -649,6 +649,7 @@ Full daynames are allowed in dzVents >= 3.1.7
 
 			'at 12:45-21:15 except at 18:00-18:30',	-- between 12:45 and 21:15 but not between 18:00 and 18:30 ( except supported from 3.0.16 onwards )
 			'at daytime except on sun',				-- between sunrise and sunset but not on Sundays
+			'at daytime or at 23:12',				-- between sunrise and sunset and also at 23:12
 
 			-- or if you want to go really wild and combine them:
 				'at nighttime at 21:32-05:44 every 5 minutes on sat, sun except at 04:00', -- except supported from 3.0.16 onwards
@@ -784,7 +785,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **dumpTable(table,[levelIndicator],[osfile]<sup>3.0.0</sup>))**: *Function*: print table structure and contents to log
 	- **fileExists(path)**: *Function*: Returns `true` if the file (with full path) exists.
 	- **fromBase64(string)**: *Function*: Decode a base64 string
-	- **fromJSON(json, fallback, deSerialize)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid. Optional 3rd param deSerialize (boolean) determines if the JSON should be deserialized before converting.
+	- **fromJSON(json, fallback, deSerialize <sup>3.1.8</sup> )**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1. Optional 2nd param fallback will be returned if json is nil or invalid. Optional 3rd param deSerialize (boolean) determines if the JSON should be deserialized before converting.
 	- **fromXML(xml, fallback )**: *Function*: Turns a xml string to a Lua table. Example: `local t = domoticz.utils.fromXML('<testtag>What a nice feature!</testtag>') Followed by: `print( t.texttag)` will print What a nice feature! Optional 2nd param fallback will be returned if xml is nil or invalid.
 	- **fuzzyLookup([string|array of strings], parm)**: *Function*: <sup>3.0.14</sup>. Search fuzzy matching string in parm. If parm is string it returns a number (lower is better match). If parm is array of strings it returns the best matching string.
 	- **groupExists(parm)**: *Function*: returns name when entered with a valid group ^3.0.12^ or groupID and return ID when entered with valid groupName or false when not a group, groupID or groupName of an existing group
@@ -807,6 +808,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	- **round(number, [decimalPlaces])**: *Function*. Helper function to round numbers. Default decimalPlaces is 0.
 	- **sceneExists(parm)**: *Function*: returns name when entered with valid scene ^3.0.12^ or sceneID and return ID when entered with valid sceneName or false when not a scene, sceneID or sceneName of an existing scene
 	- **setLogMarker([marker])**: *Function*: set logMarker to 'marker'. Defaults to scriptname. Can be used to change logMarker based on flow in script
+	- **splitLine(string , splitOnWord ) <sup>3.1.8</sup>)**:*Function*. Helper function to split a line. Return is a table with line-segments.
 	- **stringSplit(string [,separator ] [,convertNumber ][,convertNil ]<sup>3.0.17</sup>)**:*Function*. Helper function to split a line in separate words. Default separator is space. Return is a table with separated words. Default convertNumber is false when set to true it will convert strings to number where possible. Word is ignored when nil, unless convertNil is set; in that case word will be set to the convertNil value.
 	- **stringToSeconds(str)**: *Function*: <sup>3.0.1</sup> Returns number of seconds between now and str.
 	*Examples:*
@@ -1220,6 +1222,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **levelActions**: *String*. |-separated list of url actions for selector switches.
  - **levelName**: *String*. Current level name for selector switches.
  - **levelNames**: *Table*. Table holding the level names for selector switch devices.
+ - **levelVal**: *Number*. Specific for selector switches.
  - **maxDimLevel**: *Number*.
  - **open()**: *Function*. Set device to Open if it supports it. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **quietOn()**: *Function*. Set deviceStatus to on without physically switching it. Subsequent Events are triggered. Supports some [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -2613,6 +2616,11 @@ _.print(_.indexOf({2, 3, 'x', 4}, 'x'))
 Check out the documentation [here](https://htmlpreview.github.io/?https://github.com/rwaaren/lodash.lua/blob/master/doc/index.html).
 
 # History [link to changes in previous versions](https://www.domoticz.com/wiki/DzVents_version_History).
+
+## [3.1.8] ##
+- Add option to deserialize serialized JSON strings
+- Add keyword or in time rules
+- Add utils.splitLine
 
 ## [3.1.7] ##
 - Fix for race condition at midnight when internal scripts are refreshed

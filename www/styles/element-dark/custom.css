@@ -1,4 +1,4 @@
-@import url("../css/legacy.css"); /* Don't remove this line! */
+@import url("../../css/legacy.css"); /* Don't remove this line! */
 
 @font-face {
 	font-family: "OpenSans";
@@ -140,6 +140,14 @@ h2{
 
 .chart h2 {
     padding: 1px;
+}
+@media (max-width: 767px) {
+    .chart-title-center {
+        width: 96%;
+        padding-left: 11px;
+        margin-right: auto;
+        margin: unset;
+    }
 }
 
 body table#itemtablesmall tbody tr,

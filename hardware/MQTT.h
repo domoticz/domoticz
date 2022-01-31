@@ -1,10 +1,14 @@
 #pragma once
 
+#include "DomoticzHardware.h"
+#include "hardwaretypes.h"
 #include "MySensorsBase.h"
 #include "../main/mosquitto_helper.h"
 
 class MQTT : public MySensorsBase, mosqdz::mosquittodz
 {
+	friend class MQTTAutoDiscover;
+
       public:
 	MQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra, int TLS_Version,
 	     int PublishScheme, const std::string &MQTTClientID, bool PreventLoop);
@@ -59,6 +63,7 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	void SendSceneInfo(uint64_t SceneIdx, const std::string &SceneName);
 	void StopMQTT();
 	void Do_Work();
+	void SubscribeTopic(const std::string &szTopic, const int qos = 0);
 	virtual void SendHeartbeat();
 	void WriteInt(const std::string &sendStr) override;
 	std::shared_ptr<std::thread> m_thread;
@@ -66,6 +71,8 @@ class MQTT : public MySensorsBase, mosqdz::mosquittodz
 	boost::signals2::connection m_sSwitchSceneConnection;
 	_ePublishTopics m_publish_scheme;
 	bool m_bPreventLoop = false;
+	bool m_bRetain = false;
 	uint64_t m_LastUpdatedDeviceRowIdx = 0;
 	uint64_t m_LastUpdatedSceneRowIdx = 0;
+	std::map<std::string, bool> m_subscribed_topics;
 };

@@ -768,7 +768,7 @@ describe('Time', function()
 				it('should return true if it is civil day time', function()
 					_G.timeofday = { ['Civildaytime'] = true }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_true(t.matchesRule('at civildaytime'))
+					assert.is_true(t.matchesRule('every minute at civildaytime'))
 				end)
 
 				it('should return false if it is not civil day time', function()
@@ -1013,7 +1013,7 @@ describe('Time', function()
 				it('should return false if it is not day time', function()
 					_G.timeofday = { ['Daytime'] = false }
 					local t = Time('2017-01-01 00:00:00')
-					assert.is_false(t.matchesRule('at daytime'))
+					assert.is_false(t.matchesRule('every minute at daytime'))
 				end)
 
 				it('should detect the rule within a random string', function()
@@ -1134,12 +1134,11 @@ describe('Time', function()
 					assert.is_true(t.matchesRule('2 minutes after sunset'))
 				end)
 
-                it('should return true if it is xx minutes after sunset (crossing dates', function()
+				it('should return true if it is xx minutes after sunset (crossing dates', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
 					local t = Time('2017-01-01 01:02:00')
 					assert.is_true(t.matchesRule('1438 minutes after sunset'))
 				end)
-
 
 				it('should return if it is more less 2 minutes after sunset', function()
 					_G.timeofday = { ['SunsetInMinutes'] = 64 }
@@ -1368,6 +1367,37 @@ describe('Time', function()
 					assert.is_true(t.matchesRule('some random 2 minutes after solarnoon text'))
 				end)
 			end)
+
+			describe('or', function()
+
+			it('should interpret the or statement between two rules', function()
+
+				_G.timeofday = { ['SunriseInMinutes'] = 360, ['SunsetInMinutes'] = 24 }
+				t = Time('2021-04-19 00:24:00')
+
+				assert.is_true(t.matchesRule('at midnight or at sunset'))
+				assert.is_true(t.matchesRule('at midnight or at 00:24'))
+				assert.is_true(t.matchesRule('at midnight or at 00:00-00:30'))
+				assert.is_false(t.matchesRule('at midnight or at 00:00-00:03'))
+				assert.is_true(t.matchesRule('at midnight or at 00:00-00:03 or 336 minutes before sunrise'))
+
+				t = Time('2021-04-19 00:00:00')
+				assert.is_true(t.matchesRule('at midnight or at sunrise'))
+				assert.is_true(t.matchesRule('at sunrise or at midnight'))
+
+				t = Time('2021-04-19 00:24:00')
+				assert.is_false(t.matchesRule('at 7:30-00:00 on mon and at 00:00-00:30 on tue'))
+
+				t = Time('2021-04-20 00:24:00')
+				assert.is_true(t.matchesRule('at 7:30-00:00 on mon') or t.matchesRule('at 00:00-03:00 on tue'))
+
+				t = Time('2021-04-20 00:24:00')
+				assert.is_true(t.matchesRule('at 7:30-00:00 on mon		or				at 00:00-03:00 on tue')) -- do not extra remove tabs
+
+				t = Time('2021-04-20 00:26:00')
+				assert.is_true(t.matchesRule('at nighttime at 21:32-05:44 every 5 minutes on sat, tue except at 04:00 or at nighttime at 21:32-05:44 every 2 minutes on sat, tue except at 04:00 '))
+			end)
+end)
 
 			describe('between', function()
 
@@ -1865,7 +1895,7 @@ describe('Time', function()
 				assert.is_true(t.matchesRule('on Thursday at 19:01 on 30/*,31/*,1/*,2/*,3/*,4/*,5/*'))
 				assert.is_false(t.matchesRule('on thu at 19:02' ))
 				assert.is_false(t.matchesRule('on thursdays at 19:01' ))
-                assert.is_false(t.matchesRule('on sat at 19:01'))
+				assert.is_false(t.matchesRule('on sat at 19:01'))
 				assert.is_false(t.matchesRule('on thu at 19:01 on 30/*,31/*,1/*,2/*,3/*,4/*' ) )
 			end)
 
@@ -2037,8 +2067,8 @@ describe('Time', function()
 				local t = Time('2017-04-21 08:04:00')
 				assert.is_true(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
 
-				t = Time('2017-04-21 07:04:00')
-				assert.is_false(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
+				t = Time('2021-04-19 11:04:00')
+				assert.is_true(t.matchesRule('at 7:30-00:30 on mon'))
 
 			end)
 

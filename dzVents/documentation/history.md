@@ -1,6 +1,11 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## [3.1.8] ##
+- Add option to deserialize serialized JSON strings
+- Add keyword or in time rules
+- Add utils.splitLine
+
 ## [3.1.7] ##
 - Fix for race condition at midnight when internal scripts are refreshed
 - Allow both abbreviated and full names for days in time rules
@@ -13,7 +18,7 @@ astronomical times. (AstronomicalTwilight. NauticalTwilight, CivilTwilight, sunr
 - Suppress error message when application/json return is empty
 
 ## [3.1.5] ##
-- Add two new wsystem-events triggers as option to the on = { ... } section. Scripts can now also be triggered based on these system-events:
+- Add two new system-events triggers as option to the on = { ... } section. Scripts can now also be triggered based on these system-events:
 	 - resetAllDeviceStatus ; when the name, description or used / unused state of a device, variable or scene changes
 	 - resetAllEvents ; When a dzVents script in the internal editor changed
 

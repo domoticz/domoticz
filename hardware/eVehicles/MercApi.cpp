@@ -711,7 +711,7 @@ bool CMercApi::GetAuthToken(const std::string &username, const std::string &pass
 		m_pBase->Log(LOG_ERROR, "No username specified.");
 		return false;
 	}
-	if (!refreshUsingToken && username.empty())
+	if (!refreshUsingToken && password.empty())
 	{
 		m_pBase->Log(LOG_ERROR, "No password specified.");
 		return false;
@@ -865,6 +865,10 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			m_pBase->Log(LOG_STATUS, "Received (Curl) returncode 28.. API request response took too long, timed-out!");
 			return false;
 			break;
+		case 35:
+			m_pBase->Log(LOG_STATUS, "Received (Curl) returncode 35.. Trouble with HTTPS/SSL! (%s)", _ssResponseHeaderString.str().c_str());
+			return false;
+			break;
 		case 200:
 			break; // Ok, continue to process content
 		case 204:
@@ -872,15 +876,18 @@ bool CMercApi::SendToApi(const eApiMethod eMethod, const std::string& sUrl, cons
 			return true; // OK and directly return as there is no content to actually process
 			break;
 		case 400:
+			m_pBase->Log(LOG_STATUS, "Received (400) Bad Request.. Unexpected unless something has changed! (%s)", sResponse.c_str());
+			return false;
+			break;
 		case 401:
 			if(!m_authenticating) 
 			{
-				m_pBase->Log(LOG_STATUS, "Received 400/401.. Let's try to (re)authorize again!");
+				m_pBase->Log(LOG_STATUS, "Received 401.. Let's try to (re)authorize again!");
 				RefreshLogin();
 			}
 			else
 			{
-				m_pBase->Log(LOG_STATUS, "Received 400/401.. During authorisation proces. Aborting!");
+				m_pBase->Log(LOG_STATUS, "Received 401.. During authorisation proces. Aborting!");
 			}			
 			return false;
 			break;

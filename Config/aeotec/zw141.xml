@@ -3,7 +3,7 @@ Aeotec ZW141 Nano Shutter, based on Engineering Spec 8/22/2019
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 
 -->
-<Product Revision="7" xmlns="https://github.com/OpenZWave/open-zwave">
+<Product Revision="8" xmlns="https://github.com/OpenZWave/open-zwave">
   <MetaData>
     <MetaDataItem name="OzwInfoPage">http://www.openzwave.com/device-database/0086:008D:0103</MetaDataItem>
     <MetaDataItem name="ProductPic">images/aeotec/zw141.png</MetaDataItem>
@@ -41,7 +41,8 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
       <Entry author="Justin Hammond - Justin@dynam.ac" date="02 Jun 2019" revision="4">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/2953/xml</Entry>
       <Entry author="Justin Hammond - Justin@dynam.ac" date="03 Jun 2019" revision="5">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/products/3075/xml</Entry>
       <Entry author="Duy Nguyen - dooz127@gmail.com" date="16 Feb 2020" revision="6">Updated Metadata Import from Z-Wave Alliance Database - https://products.z-wavealliance.org/Products/3693/XML</Entry>	    
-      <Entry author="Matej Drobnič - matejdro@gmail.com" date="02 Oct 2020" revision="7">Fixed timing types, Fixed button list types</Entry>	    
+      <Entry author="Matej Drobnič - matejdro@gmail.com" date="02 Oct 2020" revision="7">Fixed timing types, Fixed button list types</Entry>	 
+      <Entry author="Jean-François Auger - nechry@gmail.com" date="14 Apr 2021" revision="8">Add missing list item for param 22</Entry>	
     </ChangeLog>
     <MetaDataItem id="008D" name="FrequencyName" type="0103">U.S. / Canada / Mexico</MetaDataItem>
     <MetaDataItem id="008D" name="Identifier" type="0103">ZW141-A</MetaDataItem>
@@ -56,8 +57,12 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
       <Item label="Move to 99%" value="1" />
       <Item label="Move to 0%" value="2" />
     </Value>	
-    <Value genre="config" index="22" label="Motor direction" size="1" type="list" units="" value="2">
+    <Value genre="config" index="22" label="Motor direction" size="1" type="list" value="0">
       <Help>Set to toggle the motor running direction</Help>
+      <Item label="Shutter/Venetian: Out 1= Up, Out 2= Down" value="0" />
+      <Item label="Shutter: Out 1= Down, Out 2= Up. Venetian: Out 1= Up, Out 2= Down" value="1" />
+      <Item label="Shutter: Out 1= Up, Out 2= Down. Venetian: Out 1= Down, Out 2= Up" value="2" />
+      <Item label="Shutter/Venetian: Out 1= Down, Out 2= Up" value="3" />      
     </Value>
     <Value genre="config" index="34" label="Blade turn time" size="2" max="32767" min="10" type="short" units="0.01 seconds" value="150">
       <Help>Set the blade turn time for Venetian mode. Details can be found in section 4.2 of Advanced information Product Manual.</Help>
@@ -67,9 +72,9 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
     </Value>
     <Value genre="config" index="36" label="Enter/exit calibration mode" size="1" type="list" units="" value="0" write_only="true"> 
       <Help>Set to enter/exit calibration mode</Help>
-      <Item label="Set: Exit calibration mode/Report: Not in calibration mode" value="0" />
-      <Item label="Set: Enter shutter mode calibration/Report: in shutter mode calibration" value="1" />
-      <Item label="Set: Enter Venetian mode calibration/Report: in Venetian mode calibration" value="2" />
+      <Item label="Exit calibration mode/Report: Not in calibration mode" value="0" />
+      <Item label="Enter shutter mode calibration/Report: in shutter mode calibration" value="1" />
+      <Item label="Enter Venetian mode calibration/Report: in Venetian mode calibration" value="2" />
     </Value>
     <Value genre="config" index="37" label="User confirmation for calibration" size="1" type="list" units="" value="0" write_only="true">
       <Help>Set user confirmation for calibration</Help>

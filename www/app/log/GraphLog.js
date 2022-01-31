@@ -34,7 +34,8 @@ define(['app', 'lodash', 'RefreshingChart'],
                         chartParams(
                             domoticzGlobals,
                             self,
-                            true, function (dataItem, yearOffset = 0) {
+                            true,
+                            function (dataItem, yearOffset = 0) {
                                 return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
                             [
@@ -134,6 +135,7 @@ define(['app', 'lodash', 'RefreshingChart'],
         }
         function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
             return {
+                ctrl: ctrl,
                 range: ctrl.range,
                 device: ctrl.device,
 				sensorType: domoticzGlobals.sensorTypeForDevice(ctrl.device),

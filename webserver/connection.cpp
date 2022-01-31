@@ -39,10 +39,7 @@ namespace http {
 			keepalive_ = false;
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
-#ifdef WWW_ENABLE_SSL
-			sslsocket_ = nullptr;
-#endif
-			socket_ = new boost::asio::ip::tcp::socket(io_service);
+			socket_ = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
 		}
 
 #ifdef WWW_ENABLE_SSL
@@ -65,7 +62,7 @@ namespace http {
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
 			socket_ = nullptr;
-			sslsocket_ = new ssl_socket(io_service, context);
+			sslsocket_ = std::make_unique<ssl_socket>(io_service, context);
 		}
 #endif
 
@@ -264,10 +261,9 @@ namespace http {
 		{
 			if (!error && sendfile_.is_open() && !sendfile_.eof())
 			{
-#define FILE_SEND_BUFFER_SIZE 16*1024
 				if (!send_buffer_)
-					send_buffer_ = new uint8_t[FILE_SEND_BUFFER_SIZE];
-				size_t bread = static_cast<size_t>(sendfile_.read((char*)send_buffer_, FILE_SEND_BUFFER_SIZE).gcount());
+					send_buffer_ = std::make_unique<std::array<uint8_t, FILE_SEND_BUFFER_SIZE>>();
+				size_t bread = static_cast<size_t>(sendfile_.read((char *)send_buffer_->data(), FILE_SEND_BUFFER_SIZE).gcount());
 				if (bread <= 0)
 				{
 					//Error reading file!
@@ -275,12 +271,12 @@ namespace http {
 				};
 				if (secure_) {
 #ifdef WWW_ENABLE_SSL
-					boost::asio::async_write(*sslsocket_, boost::asio::buffer(send_buffer_, bread),
+					boost::asio::async_write(*sslsocket_, boost::asio::buffer(*send_buffer_, bread),
 								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 #endif
 				}
 				else {
-					boost::asio::async_write(*socket_, boost::asio::buffer(send_buffer_, bread),
+					boost::asio::async_write(*socket_, boost::asio::buffer(*send_buffer_, bread),
 								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 				}
 				return;
@@ -289,8 +285,7 @@ namespace http {
 			if (sendfile_.is_open())
 				sendfile_.close();
 
-			delete[] send_buffer_;
-			send_buffer_ = nullptr;
+			send_buffer_.release();
 			connection_manager_.stop(shared_from_this());
 		}
 
@@ -323,13 +318,6 @@ namespace http {
 			if (last_dot_pos != std::string::npos) {
 				std::string file_extension = filename.substr(last_dot_pos + 1);
 				std::string mime_type = mime_types::extension_to_type(file_extension);
-				if ((mime_type.find("text/") != std::string::npos) ||
-					(mime_type.find("/xml") != std::string::npos) ||
-					(mime_type.find("/javascript") != std::string::npos) ||
-					(mime_type.find("/json") != std::string::npos)) {
-					// Add charset on text content
-					mime_type += ";charset=UTF-8";
-				}
 				reply::add_header_content_type(&rep, mime_type);
 			}
 			reply::add_header_attachment(&rep, attachment_name);
@@ -535,16 +523,6 @@ namespace http {
 				//Everything has been send. Closing connection.
 				connection_manager_.stop(shared_from_this());
 			}
-		}
-
-		connection::~connection()
-		{
-			// free up resources, delete the socket pointers
-			delete socket_;
-#ifdef WWW_ENABLE_SSL
-			delete sslsocket_;
-#endif
-			delete[] send_buffer_;
 		}
 
 		// schedule read timeout timer

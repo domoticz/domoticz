@@ -240,7 +240,7 @@ namespace http {
 				std::string code = reply.substr(p + 11, q - p - 15);
 
 				// find the function associated with this code
-				std::map < std::string, webem_include_function >::iterator pf = myIncludes.find(code);
+				auto pf = myIncludes.find(code);
 				if (pf != myIncludes.end())
 				{
 					// insert generated text
@@ -259,7 +259,7 @@ namespace http {
 				else
 				{
 					// no function found, look for a wide character fuction
-					std::map < std::string, webem_include_function_w >::iterator pf = myIncludes_w.find(code);
+					auto pf = myIncludes_w.find(code);
 					if (pf != myIncludes_w.end())
 					{
 						// function found
@@ -333,8 +333,7 @@ namespace http {
 			// find function matching action code
 			size_t q = uri.find(".webem");
 			std::string code = uri.substr(1, q - 1);
-			std::map < std::string, webem_action_function >::iterator
-				pfun = myActions.find(code);
+			auto pfun = myActions.find(code);
 			if (pfun == myActions.end())
 				return false;
 
@@ -536,17 +535,12 @@ namespace http {
 				request_path = request_path.substr(0, paramPos);
 			}
 
-			std::map < std::string, webem_page_function >::iterator
-				pfun = myPages.find(request_path);
-
+			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 				return true;
 			//check wchar_t
-			std::map < std::string, webem_page_function >::iterator
-				pfunW = myPages_w.find(request_path);
-			if (pfunW != myPages_w.end())
-				return true;
-			return false;
+			auto pfunW = myPages_w.find(request_path);
+			return pfunW != myPages_w.end();
 		}
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
@@ -749,9 +743,7 @@ namespace http {
 			}
 			std::string strMimeType = mime_types::extension_to_type(extension);
 
-			std::map < std::string, webem_page_function >::iterator
-				pfun = myPages.find(request_path);
-
+			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 			{
 				rep.status = reply::ok;
@@ -786,8 +778,6 @@ namespace http {
 				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 				if (!boost::algorithm::starts_with(strMimeType, "image"))
 				{
-					if (!strMimeType.empty())
-						strMimeType += ";charset=UTF-8";
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
 					reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
@@ -801,8 +791,7 @@ namespace http {
 			}
 
 			//check wchar_t
-			std::map < std::string, webem_page_function >::iterator
-				pfunW = myPages_w.find(request_path);
+			auto pfunW = myPages_w.find(request_path);
 			if (pfunW == myPages_w.end())
 				return false;
 
@@ -817,7 +806,7 @@ namespace http {
 
 			rep.status = reply::ok;
 			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-			reply::add_header(&rep, "Content-Type", strMimeType + "; charset=UTF-8");
+			reply::add_header_content_type(&rep, strMimeType);
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
@@ -862,12 +851,6 @@ namespace http {
 				request_path = m_webRoot + "/";
 			}
 
-			// If path ends in slash (i.e. is a directory) then add "index.html".
-			if (request_path[request_path.size() - 1] == '/')
-			{
-				request_path += "index.html";
-			}
-
 			if (!m_webRoot.empty())
 			{
 				// remove web root if present otherwise
@@ -882,10 +865,6 @@ namespace http {
 				}
 			}
 
-			if (request_path.find("/acttheme/") == 0)
-			{
-				request_path = m_actTheme + request_path.substr(9);
-			}
 			return request_path;
 		}
 
@@ -1889,7 +1868,7 @@ namespace http {
 			WebEmStoredSession storedSession = sstore->GetSession(session.id);
 			if (storedSession.id.empty())
 			{
-				_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : session id not found", session.id.c_str(), session.auth_token.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CheckAuthToken(%s_%s) : session id not found", session.id.c_str(), session.auth_token.c_str());
 				return false;
 			}
 			if (storedSession.auth_token != GenerateMD5Hash(session.auth_token))
@@ -2100,7 +2079,7 @@ namespace http {
 						rep.content = requestCopy.uri;
 						reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
 						reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)), true);
-						reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
+						reply::add_header_content_type(&rep, "application/json");
 						return;
 					}
 				}
@@ -2140,12 +2119,28 @@ namespace http {
 					// do normal handling
 					try
 					{
-						std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
-						if (uri.find("/images/") == 0)
+						if (myWebem->m_actTheme.find("default") == std::string::npos)
 						{
-							std::string theme_images_path = myWebem->m_actTheme + uri;
-							if (file_exist((doc_root_ + theme_images_path).c_str()))
-								requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
+							// A theme is being used (not default) so some theme specific processing might be neccessary
+							std::string uri = myWebem->ExtractRequestPath(requestCopy.uri);
+							if (uri.find("/images/") == 0)
+							{
+								std::string theme_images_path = myWebem->m_actTheme + uri;
+								if (file_exist((doc_root_ + theme_images_path).c_str()))
+								{
+									requestCopy.uri = myWebem->GetWebRoot() + theme_images_path;
+									_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified images request to (%s).", uri.c_str(), requestCopy.uri.c_str());
+								}
+							}
+							else if (uri.find("/styles/") == 0)
+							{
+								std::string theme_styles_path = myWebem->m_actTheme + uri.substr(15);
+								if (file_exist((doc_root_ + theme_styles_path).c_str()))
+								{
+									requestCopy.uri = myWebem->GetWebRoot() + theme_styles_path;
+									_log.Debug(DEBUG_WEBSERVER, "[web:%s] modified request to (%s).", uri.c_str(), requestCopy.uri.c_str());
+								}
+							}
 						}
 
 						request_handler::handle_request(requestCopy, rep, mInfo);
@@ -2154,75 +2149,6 @@ namespace http {
 					{
 						rep = reply::stock_reply(reply::internal_server_error);
 						return;
-					}
-
-					// find content type header
-					std::string content_type;
-					for (auto &header : rep.headers)
-					{
-						if (boost::iequals(header.name, "Content-Type"))
-						{
-							content_type = header.value;
-							break;
-						}
-					}
-
-					if (content_type == "text/html"
-						|| content_type == "text/plain"
-						|| content_type == "text/css"
-						|| content_type == "text/javascript"
-						|| content_type == "application/javascript"
-						)
-					{
-						// check if content is not gzipped, include won't work with non-text content
-						if (!rep.bIsGZIP)
-						{
-							// Find and include any special cWebem strings
-							if (!myWebem->Include(rep.content))
-							{
-								if (mInfo.mtime_support && !mInfo.is_modified)
-								{
-									_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
-									rep = reply::stock_reply(reply::not_modified);
-									return;
-								}
-							}
-
-							// adjust content length header
-							// ( Firefox ignores this, but apparently some browsers truncate display without it.
-							// fix provided by http://www.codeproject.com/Members/jaeheung72 )
-
-							reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-
-							if (!mInfo.mtime_support)
-							{
-								reply::add_header(&rep, "Last-Modified", make_web_time(mytime(nullptr)),
-										  true);
-							}
-
-							//check gzip support if yes, send it back in gzip format
-							CompressWebOutput(req, rep);
-						}
-
-						// tell browser that we are using UTF-8 encoding
-						reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
-					}
-					else if (mInfo.mtime_support && !mInfo.is_modified)
-					{
-						rep = reply::stock_reply(reply::not_modified);
-						_log.Debug(DEBUG_WEBSERVER, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
-						return;
-					}
-					else if (content_type.find("image/") != std::string::npos)
-					{
-						//Cache images
-						reply::add_header(&rep, "Expires",
-								  make_web_time(mytime(nullptr) + 3600 * 24 * 365)); // one year
-					}
-					else
-					{
-						// tell browser that we are using UTF-8 encoding
-						reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 					}
 				}
 			}

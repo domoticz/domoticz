@@ -1,18 +1,23 @@
 # WWW Unit tests
+
 This folder contains the unit tests for components in www.
 
 _Be warned! This is a work in progres._
 
-# Tooling
-## mocha
+## Tooling
+
+### mocha
+
 A tool called 'mocha' is used to drive the tests. The tests are written
 specifically to be used with mocha. See: https://mochajs.org/
 
 It is not written in stone that mocha be used for unit testing. A different
 framework can be used for different kind of tests.
 
-# Setup
-## Installation
+## Setup
+
+### Installation
+
 As the www-components are written in JavaScript, we need a JavaScript 
 engine to run on. For example, Node.js. See https://nodejs.org/en/. Make
 sure you have Node.js installed. Node.js comes with npm, which is the 
@@ -24,15 +29,18 @@ what it says basically is:
 
 `npm install --global mocha`
 
-# Usage
-## Structure
+## Usage
+
+### Structure
+
 main.js - contains the requirejs module configuration. It should register
 all the modules that the components under test use.  
 _path/component.js_ - the files containing the tests should be in the
 same folder structure as the components under test are,
 relative to the 'www' folder.
 
-## Running the test
+### Running the test
+
 Run the tests in a specific file with:
 
 `mocha _path_/test.js`
@@ -58,4 +66,3 @@ It should display something like this:
 
 If the test runs fine, only the test output is displayed.
 If an error occurs, mocha will show the error and complete stacktrace.
- 

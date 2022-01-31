@@ -18,6 +18,8 @@ History :
 
 - 2021-04-14 : Formatted code to default style
 
+- 2021-08-10 : Debug mode is shared with all Can Layer
+
 */
 #include "stdafx.h"
 #include "USBtin.h"
@@ -166,7 +168,7 @@ void USBtin::Do_Work()
 						// Activate the good CAN Layer :
 						if ((Bus_CANType & Multibloc_V8) == Multibloc_V8)
 						{
-							ManageThreadV8(true);
+							ManageThreadV8(true,m_BOOL_USBtinDebug);
 							switch_id_base = m_V8switch_id_base;
 						}
 						OpenCanPort();

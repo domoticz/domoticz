@@ -82,13 +82,14 @@ namespace
 		"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 		"\t-noupdates do not use the internal update functionality\n"
+		"\t-dbase_disable_wal_mode\n"
 #if defined WIN32
 		"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
 		"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
-		"\t-loglevel (combination of: normal,status,error,debug)\n"
-		"\t-debuglevel (combination of: normal,hardware,received,webserver,eventsystem,python,thread_id)\n"
+		"\t-loglevel (combination of: all,normal,status,error,debug)\n"
+		"\t-debuglevel (combination of: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql)\n"
 		"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 		"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
@@ -152,7 +153,7 @@ std::string szAppDate="???";
 std::string szPyVersion="None";
 int ActYear;
 time_t m_StartTime = time(nullptr);
-std::string szRandomUUID = "???";
+std::string journalMode="WAL";
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -504,10 +505,16 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		szFlag = stdstring_trim(szFlag);
 		sLine = stdstring_trim(sLine);
 
-		if (szFlag == "http_port") {
-			webserver_settings.listening_port = sLine;
-		}
+        if (szFlag == "http_address") {
+            webserver_settings.listening_address = sLine;
+        }
+        else if (szFlag == "http_port") {
+            webserver_settings.listening_port = sLine;
+        }
 #ifdef WWW_ENABLE_SSL
+		else if (szFlag == "ssl_address") {
+			secure_webserver_settings.listening_address = sLine;
+		}
 		else if (szFlag == "ssl_port") {
 			secure_webserver_settings.listening_port = sLine;
 		}
@@ -575,6 +582,10 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		else if (szFlag == "dbase_file") {
 			dbasefile = sLine;
 		}
+		else if ( (szFlag == "dbase_disable_wal_mode") && (GetConfigBool(sLine) ) )  {
+			journalMode = "DELETE";
+		}
+
 		else if (szFlag == "startup_delay") {
 			int DelaySeconds = atoi(sLine.c_str());
 			_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
@@ -736,7 +747,6 @@ int main(int argc, char**argv)
 
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
-	szRandomUUID = GenerateUUID();    
 
 	GetAppVersion();
 	DisplayAppVersion();
@@ -804,9 +814,9 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
 			int iPort = (int)atoi(wwwport.c_str());
-			if ((iPort < 0) || (iPort > 32767))
+			if ((iPort < 0) || (iPort > 49151))
 			{
-				_log.Log(LOG_ERROR, "Please specify a valid www port");
+				_log.Log(LOG_ERROR, "Please specify a valid www port (1 - 49151, or 0 to disable)");
 				return 1;
 			}
 			webserver_settings.listening_port = wwwport;
@@ -845,9 +855,9 @@ int main(int argc, char**argv)
 			}
 			std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 			int iPort = (int)atoi(wwwport.c_str());
-			if ((iPort < 0) || (iPort > 32767))
+			if ((iPort < 0) || (iPort > 49151))
 			{
-				_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
+				_log.Log(LOG_ERROR, "Please specify a valid sslwww port (1 - 49151)");
 				return 1;
 			}
 			secure_webserver_settings.listening_port = wwwport;
@@ -988,6 +998,14 @@ int main(int argc, char**argv)
 		}
 	}
 	m_sql.SetDatabaseName(dbasefile);
+
+	if (!bUseConfigFile) {
+		if (cmdLine.HasSwitch("-dbase_disable_wal_mode"))
+		{
+			journalMode = "DELETE";
+		}
+	}
+	m_sql.SetJournalMode(journalMode);
 
 	if (!bUseConfigFile) {
 		if (cmdLine.HasSwitch("-webroot"))

@@ -987,7 +987,7 @@ void CHardwareMonitor::FetchUnixDisk()
 			int ret = sscanf(ittDF.c_str(), "%s\t%lld\t%lld\t%lld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 			{
-				std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
+				auto it = _dmounts_.find(dname);
 				if (it != _dmounts_.end())
 				{
 					if (it->second.length() < strlen(smountpoint))

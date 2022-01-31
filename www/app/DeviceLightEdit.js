@@ -490,7 +490,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
         vm.updateDevice = updateDevice;
         vm.removeDevice = removeDevice;
-		vm.replaceDevice = replaceDevice;
+        vm.replaceDevice = replaceDevice;
         vm.isSecurityDevice = isSecurityDevice;
         vm.isMotionAvailable = isMotionAvailable;
         vm.isOnDelayAvailable = isOnDelayAvailable;
@@ -583,8 +583,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
             });
         }
         function replaceDevice() {
-			ReplaceDevice(vm.deviceIdx, undefined);
-		}
+          ReplaceDevice(vm.deviceIdx, undefined);
+        }
 
         function isSecurityDevice() {
             return vm.device.Type === 'Security';

@@ -11,7 +11,7 @@
 #include "../main/mainworker.h"
 #include <iostream>
 
-#define SE_VOLT_DC 2
+#define SE_VOLT_DC 20
 
 #ifdef _DEBUG
 	//#define DEBUG_SolarEdgeAPIR_SITE

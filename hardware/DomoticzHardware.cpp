@@ -23,6 +23,16 @@ bool CDomoticzHardwareBase::CustomCommand(const uint64_t /*idx*/, const std::str
 	return false;
 }
 
+std::string CDomoticzHardwareBase::GetManualSwitchesJsonConfiguration() const
+{
+	return std::string("");
+}
+
+void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::string, std::string> & /*Parameters*/, _eSwitchType & /*SwitchTypeInOut*/, int & /*LightTypeInOut*/,
+	 int & /*dTypeOut*/, int &dSubTypeOut, std::string & /*devIDOut*/, std::string & /*sUnitOut*/) const
+{
+}
+
 bool CDomoticzHardwareBase::Start()
 {
 	m_iHBCounter = 0;
@@ -353,7 +363,7 @@ void CDomoticzHardwareBase::SendTextSensor(const int NodeID, const int ChildID, 
 std::string CDomoticzHardwareBase::GetTextSensorText(const int NodeID, const int ChildID, bool& bExists)
 {
 	bExists = false;
-	std::string sTmp = fmt::format("{:08X}", (NodeID << 8) | ChildID);
+	std::string sTmp = std_format("%08X", (NodeID << 8) | ChildID);
 
 	std::string ret;
 	std::vector<std::vector<std::string>> result;
@@ -451,7 +461,7 @@ void CDomoticzHardwareBase::SendRainRateSensor(const int NodeID, const int Batte
 
 float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool& bExists)
 {
-	std::string sIdx = fmt::format("{}", NodeID & 0xFFFF);
+	std::string sIdx = std_format("%d", NodeID & 0xFFFF);
 	int Unit = 0;
 
 	std::vector<std::vector<std::string> > results;
@@ -474,7 +484,7 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool& bExists)
 
 bool CDomoticzHardwareBase::GetWindSensorValue(const int NodeID, int& WindDir, float& WindSpeed, float& WindGust, float& WindTemp, float& WindChill, bool bHaveWindTemp, bool& bExists)
 {
-	std::string sIdx = fmt::format("{}", NodeID & 0xFFFF);
+	std::string sIdx = std_format("%d", NodeID & 0xFFFF);
 	int Unit = 0;
 
 	std::vector<std::vector<std::string> > results;
@@ -553,7 +563,7 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool& bExists)
 {
 	int dID = (NodeID << 8) | ChildID;
-	std::string sTmp = fmt::format("{:08X}", dID);
+	std::string sTmp = std_format("%08X", dID);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeKwh));
@@ -625,7 +635,7 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const uint8_
 	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
-	std::string sIdx = fmt::format("{:X}{:02X}{:02X}{:02X}", ID1, ID2, ID3, ID4);
+	std::string sIdx = std_format("%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), ChildID,
@@ -689,7 +699,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
-	std::string sIdx = fmt::format("{:X}{:02X}{:02X}{:02X}", ID1, ID2, ID3, ID4);
+	std::string sIdx = std_format("%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, sIdx.c_str(), ChildID,
 				  int(pTypeLighting2), int(sTypeAC));
@@ -802,7 +812,7 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const uint8_t
 
 bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const int /*ChildID*/)
 {
-	std::string sTmp = fmt::format("{:08X}", NodeID);
+	std::string sTmp = std_format("%08X", NodeID);
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
@@ -841,7 +851,7 @@ void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t Chi
 	gDevice.intval1 = (NodeID << 8) | ChildID;
 	gDevice.floatval1 = CustomValue;
 
-	std::string sTmp = fmt::format("{:08X}", gDevice.intval1);
+	std::string sTmp = std_format("%08X", gDevice.intval1);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, sTmp.c_str(), int(pTypeGeneral), int(sTypeCustom));
@@ -936,6 +946,9 @@ void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int Child
 
 void CDomoticzHardwareBase::SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string& defaultname)
 {
+	if (radiation > 1361)
+		return; //https://en.wikipedia.org/wiki/Solar_irradiance
+
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeSolarRadiation;
 	gdevice.id = NodeID;

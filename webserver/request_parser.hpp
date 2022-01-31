@@ -42,11 +42,11 @@ public:
 		  boost::tribool result = consume(req, begin, end);
 			
 		  if (result || !result) {
-			  return boost::make_tuple(result, begin);
+			  return { result, begin };
 		  }
 	  }
 	  boost::tribool result = boost::indeterminate;
-	  return boost::make_tuple(result, begin);
+	  return { result, begin };
   }
 
 

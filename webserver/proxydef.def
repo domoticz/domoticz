@@ -92,3 +92,8 @@ PROXYPDU(WS_RECEIVE,
 	PDUSTRING(packet_data)
 	PDULONGLONG(requestid)
 )
+
+#undef PDUSTRING
+#undef PDULONG
+#undef PDULONGLONG
+#undef PROXYPDU

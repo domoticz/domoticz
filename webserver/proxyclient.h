@@ -54,9 +54,6 @@ namespace http {
 #define PDULONG(name)
 #define PROXYPDU(name, members) void OnPduReceived(const std::shared_ptr<ProxyPdu_##name> &pdu);
 #include "proxydef.def"
-#undef PDUSTRING
-#undef PDULONG
-#undef PROXYPDU
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);

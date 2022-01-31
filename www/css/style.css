@@ -1550,10 +1550,6 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 	background-image: url("../images/evohome/DayOff.png");
 }
 
-.ui-icon-DayOffWithEco:after {
-	background-image: url("../images/evohome/DayOffWithEco.png");
-}
-
 .ui-icon-HeatingOff:after {
 	background-image: url("../images/evohome/HeatingOff.png");
 }
@@ -2197,13 +2193,21 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	text-align: center;
 	width: 100%;
 }
-@media (max-width: 860px) {
+@media (max-width: 767px) {
 	.chart-title-container {
 		position: relative;
 	}
 	.chart-title-center {
 		width: 70%;
 	}
+}
+.clickable {
+	cursor: pointer;
+}
+.chart-title-active {
+}
+.chart-title-inactive {
+	color: rgb(96, 96, 99)
 }
 .chartarea {
 	position: relative;
@@ -2239,13 +2243,14 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 }
 
 .noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome and Opera */
+  -webkit-touch-callout:         none; /* iOS Safari */
+    -webkit-user-select:         none; /* Safari */
+     -khtml-user-select:         none; /* Konqueror HTML */
+       -moz-user-select:         none; /* Firefox */
+        -ms-user-select:         none; /* Internet Explorer/Edge */
+            user-select:         none; /* Non-prefixed version, currently
+                                          supported by Chrome and Opera */
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 .chart-tooltip-container {

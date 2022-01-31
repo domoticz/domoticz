@@ -1,11 +1,12 @@
 #pragma once
 
+#include "EnOceanEEP.h"
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
 
 #define ENOCEAN2_READ_BUFFER_SIZE 40
 
-class CEnOceanESP2 : public AsyncSerial, public CDomoticzHardwareBase
+class CEnOceanESP2 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHardwareBase
 {
 	enum _eEnOcean_Receive_State
 	{
@@ -21,7 +22,7 @@ class CEnOceanESP2 : public AsyncSerial, public CDomoticzHardwareBase
 	~CEnOceanESP2() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SendDimmerTeachIn(const char *pdata, unsigned char length);
-	unsigned long m_id_base;
+	uint32_t m_id_base;
 
       private:
 	void Init();
@@ -31,7 +32,6 @@ class CEnOceanESP2 : public AsyncSerial, public CDomoticzHardwareBase
 	void Do_Work();
 	bool ParseData();
 	void Add2SendQueue(const char *pData, size_t length);
-	float GetValueRange(float InValue, float ScaleMax, float ScaleMin = 0, float RangeMax = 255, float RangeMin = 0);
 	void readCallback(const char *data, size_t len);
 
       private:

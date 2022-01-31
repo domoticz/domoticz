@@ -1,8 +1,68 @@
 define(['app'], function (app) {
+	
+	/**
+	 * Table of hardware using the new structure.
+	 * This should really be auto-generated.
+	 */
+	let extraHWTable = {
+		'Daikin Airconditioning with LAN (HTTP) interface': 'DaikinParams',
+		'MQTT Client Gateway with LAN interface': ['MQTTParams', 0],
+		'OctoPrint (MQTT/Gina Haussge) with LAN interface': ['MQTTParams', 1],
+		'The Things Network (MQTT/CayenneLPP) with LAN interface': ['MQTTParams', 2],
+		'MQTT Auto Discovery Client Gateway with LAN interface': ['MQTTParams', 3],
+		'RFLink Gateway MQTT': ['MQTTParams', 4],
+	};
+	
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout) {
 
 		$scope.SerialPortStr = [];
+		$scope.calledFetch = 0;
 
+		var validators = { Integer:function (val, minVal, maxVal, fldName)  {
+      //alert("val:" + val + ", minVal:" + minVal + ", maxVal:" + maxVal + ", fldName:" + fldName);
+			var testno = parseInt(val);
+			var msg = "";
+			var betmsg = "!";
+			if(typeof minVal == 'number') {
+				if(typeof maxVal == 'number') {
+					betmsg = " " + $.t('between') + " " + minVal + " " + $.t('and') + " " + maxVal + "!";
+				}
+				else {
+					betmsg = " " + $.t('above') + " " + minVal + "!";
+				}
+			}
+			else if(typeof maxVal == 'number') {
+				betmsg = " below " + maxVal + "!";
+			}
+			var intRegex = /^\d+$/;
+			if ((isNaN(testno)) || !intRegex.test(val)) {
+				msg = $.t('Please enter a valid integer') + betmsg;
+			}
+			else if(((typeof minVal == 'number')?(testno < minVal):false) || ((typeof maxVal == 'number')?(testno > maxVal):false)) {
+				msg = 'Please enter an integer' + betmsg;
+			}
+			if (msg != "") {
+				ShowNotify($.t('Error in ' + fldName + ': ' + msg), 2500, true);
+				return false;
+			}
+			return true;
+		}, String:function (val, fldName) {
+      if (
+        (typeof val == 'undefined')
+        || (val=="")
+        ) {
+          ShowNotify(fldName + ': ' + $.t('Cannot be empty!'), 2500, true);
+          return false;
+      }
+      return true;
+		}, MQTTTopic:function (val, fldName) {
+			if (val.indexOf("#") >= 0) {
+				ShowNotify(fldName + ': ' + $.t('Cannot contain a # symbol!'), 2500, true);
+				return false;
+			}
+			return true;
+		} };
+		
 		DeleteHardware = function (idx) {
 			bootbox.confirm($.t("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function (result) {
 				if (result == true) {
@@ -27,12 +87,139 @@ define(['app'], function (app) {
 			RefreshHardwareTable();
 		}
 		
-		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
-			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
-			if (name == "") {
-				ShowNotify($.t('Please enter a Name!'), 2500, true);
-				return;
+		function fetchExtraHTML (fileName, divName, callback, carg) {
+			$scope.calledFetch = 1;
+			if($('#hardwarecontent #extrahw').val() === fileName) {
+				if(callback) {
+					callback(carg);
+				};
+			} else {
+				fetch('app/hardware/extra/' + fileName).then(function (response) {
+					return response.text();
+				}).then(function (html) {
+					var phtml = $.parseHTML(html);
+					var $div = $('#' + divName);
+					$div.html(phtml).i18n();
+					$('#hardwarecontent').append('<input type="hidden" name="extrahw" id="extrahw" value="' + fileName + '" />')
+					$('#hardwarecontent #extrahw').val(fileName);
+					if(callback)
+						callback(carg);
+				}).catch(function (err) {
+					ShowNotify('Failed to load hardware', 2500, true);
+				});
 			}
+		}
+		
+		function loadExtraHWCode (tbRow, data) {
+			var baseName;
+			if(typeof tbRow === 'string') {
+				baseName = tbRow;
+				window.__hwfnparam = "";
+			}
+			else {
+				baseName = tbRow[0];
+				window.__hwfnparam = tbRow[1];
+			}
+			window.__hwdata = data;
+			fetchExtraHTML (baseName + '.html', 'divextrahwparams', function(data) {
+				$.getScript('app/hardware/extra/' + baseName + '.js')
+					.done(function(script, textStatus) {
+						var data = window.__hwdata;
+						if (!data)
+							var data = { Mode1: "", Mode2: "", Mode3: "", Mode4: "", Mode5: "", Mode6:"" };
+						extraHWInitParams (data);
+						var stdFlds = { Username: '#hardwarecontent #divlogin #username',
+							Password: '#hardwarecontent #divlogin #password',
+							Port: '#hardwarecontent #divremote #tcpport',
+						};
+						for (const fName in stdFlds) {
+							if (data[fName])
+								$(stdFlds[fName]).val(data[fName]);
+							else
+								$(stdFlds[fName]).val("");
+						}
+						extraHWValidateParams (data, validators);
+					});
+			}, data);
+		}
+		
+		GetUserCred = function(data) {
+			if($("#hardwarecontent #divlogin").is(":visible")) {
+				data["Username"] = encodeURIComponent($("#hardwarecontent #divlogin #username").val());
+				data["Password"] = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+			} else {
+				data["Username"] = "";
+				data["Password"] = "";
+			}
+			return true;
+		}
+
+		GetAddressPort = function(data) {
+			if($("#hardwarecontent #divremote").is(":visible")) {
+				data["Address"] = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (data["Address"] == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return false;
+				}
+				data["Port"] = $("#hardwarecontent #divremote #tcpport").val();
+				if(!validators["Integer"](data["Port"], 1, 65535, "Port"))
+					return false;
+			} else {
+				data["Address"] = "";
+				data["Port"] = "";
+			}
+			return true;
+		}
+
+		GetStdFields = function(data) {
+			data["Name"] = encodeURIComponent($("#hardwarecontent #hardwareparamstable #hardwarename").val());
+			if (data["Name"] == "") {
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
+				return false;
+			}
+			if(!GetUserCred(data))
+				return false;
+			if(!GetAddressPort(data))
+				return false;
+			return true;
+		}
+		
+		ActionDomoticzHW = function(mode, hardwaretype, logLevel, timeout, enabled, idx) {
+			var idxTxt = "", extraTxt = "";
+			if(mode === "update")
+				idxTxt = "&idx=" + idx;
+			if(!(data = extraHWUpdateParams(validators)))
+				return;
+			if(!GetStdFields(data))
+				return;
+			if(data["extra"])
+				extraTxt = "&extra=" + encodeURIComponent(data["extra"]);
+			$.ajax({
+				url: "json.htm?type=command&param=" + mode + "hardware&htype=" + hardwaretype +
+				"&loglevel=" + logLevel +
+				"&address=" + data["Address"] +
+				"&port=" + data["Port"] +
+				"&username=" + data["Username"] +
+				"&password=" + data["Password"] +
+				extraTxt +
+				"&name=" + data["Name"] +
+				"&enabled=" + enabled +
+				idxTxt +
+				"&datatimeout=" + timeout +
+				"&Mode1=" + data["Mode1"] + "&Mode2=" + data["Mode2"] + "&Mode3=" + data["Mode3"] + "&Mode4=" + data["Mode4"] + "&Mode5=" + data["Mode5"] + "&Mode6=" + data["Mode6"],
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					RefreshHardwareTable();
+				},
+				error: function () {
+					ShowNotify($.t('Problem updating hardware!'), 2500, true);
+				}
+			});
+			return;
+		}				
+		
+		UpdateHardware = function (idx, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
 			var hardwaretype = $("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 			if (typeof hardwaretype == 'undefined') {
 				ShowNotify($.t('Unknown device selected!'), 2500, true);
@@ -52,6 +239,17 @@ define(['app'], function (app) {
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
+			if($scope.calledFetch) {
+				ActionDomoticzHW("update", hardwaretype, logLevel, datatimeout, bEnabled, idx);
+				return;
+			}
+			
+			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
+			if (name == "") {
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
+				return;
+			}
+			
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			if (!$.isNumeric(hardwaretype)) {
 				var selector = "#hardwarecontent #divpythonplugin #" + hardwaretype;
@@ -330,7 +528,6 @@ define(['app'], function (app) {
 					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("eHouse") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
-					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1 &&
@@ -600,11 +797,10 @@ define(['app'], function (app) {
 				(text.indexOf("Domoticz") >= 0) ||
 				(text.indexOf("Eco Devices") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
-				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
-				(text.indexOf("MQTT") >= 0) ||
+				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
@@ -661,26 +857,6 @@ define(['app'], function (app) {
 						extra += $("#hardwarecontent #divmysensorsmqtt #mqtttopicout").val();
 					}
 					extra = encodeURIComponent(extra);
-				}
-				else if ((text.indexOf("MQTT") >= 0)) {
-					extra = $("#hardwarecontent #divmqtt #filename").val().trim();
-					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
-					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
-					if (mqtttopicin.indexOf("#") >= 0) {
-						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if (mqtttopicout.indexOf("#") >= 0) {
-						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if ((mqtttopicin!="")||(mqtttopicout!="")) {
-						extra += ";" + mqtttopicin + ";" + mqtttopicout;
-					}
-					
-					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
-					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
 				}
 				if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
@@ -1429,12 +1605,6 @@ define(['app'], function (app) {
 		}
 
 		AddHardware = function () {
-			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
-			if (name == "") {
-				ShowNotify($.t('Please enter a Name!'), 2500, true);
-				return false;
-			}
-
 			var hardwaretype = $("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 			if (typeof hardwaretype == 'undefined') {
 				ShowNotify($.t('Unknown device selected!'), 2500, true);
@@ -1453,6 +1623,17 @@ define(['app'], function (app) {
 				logLevel |= 4;
 
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
+            
+			if($scope.calledFetch) {
+				ActionDomoticzHW("add", hardwaretype, logLevel, datatimeout, bEnabled);
+				return;
+			}
+				
+			var name = $("#hardwarecontent #hardwareparamstable #hardwarename").val();
+			if (name == "") {
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
+				return false;
+			}
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			if (!$.isNumeric(hardwaretype)) {
@@ -1557,7 +1738,6 @@ define(['app'], function (app) {
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
-					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1 &&
@@ -1573,7 +1753,6 @@ define(['app'], function (app) {
 				var Mode1 = "";
 				var Mode2 = "";
 				var Mode3 = "";
-			
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
@@ -1875,7 +2054,6 @@ define(['app'], function (app) {
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
-					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1 &&
@@ -2109,11 +2287,10 @@ define(['app'], function (app) {
 				(text.indexOf("Domoticz") >= 0) ||
 				(text.indexOf("Eco Devices") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
-				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
-				(text.indexOf("MQTT") >= 0) ||
+				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("Logitech Media Server") >= 0) ||
 				(text.indexOf("HEOS by DENON") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
@@ -2174,26 +2351,7 @@ define(['app'], function (app) {
 					}
 					extra = encodeURIComponent(extra);
 				}
-				else if (text.indexOf("MQTT") >= 0) {
-					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
-					var mqtttopicin = $("#hardwarecontent #divmqtt #mqtttopicin").val().trim();
-					var mqtttopicout = $("#hardwarecontent #divmqtt #mqtttopicout").val().trim();
-					if (mqtttopicin.indexOf("#") >= 0) {
-						ShowNotify($.t('Publish Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if (mqtttopicout.indexOf("#") >= 0) {
-						ShowNotify($.t('Subscribe Prefix cannot contain a "#" symbol!'), 2500, true);
-						return;
-					}
-					if ((mqtttopicin!="")||(mqtttopicout!="")) {
-						extra += ";" + mqtttopicin + ";" + mqtttopicout;
-					}
-					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-					Mode2 = $("#hardwarecontent #divmqtt #combotlsversion").val();
-					Mode3 = $("#hardwarecontent #divmqtt #combopreventloop").val();
-				}
-				if (text.indexOf("Eco Devices") >= 0) {
+				else if (text.indexOf("Eco Devices") >= 0) {
 					Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
 					var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
 					if (ratelimitp1 == "") {
@@ -3939,6 +4097,8 @@ define(['app'], function (app) {
 						$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
 						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
+						if($scope.calledFetch)
+							extraHWInitParams(data);
 						if (
 							(data["Type"].indexOf("TE923") >= 0) ||
 							(data["Type"].indexOf("Volcraft") >= 0) ||
@@ -4019,7 +4179,9 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divmodeldenkoviusbdevices #combomodeldenkoviusbdevices").val(data["Mode1"]);
                             }
 						}
-						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
+						 		(data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) &&
+								(data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
@@ -4265,24 +4427,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotlsversion").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combopreventloop").val(data["Mode3"]);
 						}
-						else if (data["Type"].indexOf("MQTT") >= 0) {
-							$("#hardwarecontent #hardwareparamsmqtt #filename").val("");
-							$("#hardwarecontent #divmqtt #mqtttopicin").val("");
-							$("#hardwarecontent #divmqtt #mqtttopicout").val("");
-
-							// Break out any possible topic prefix pieces.
-							var CAfilenameParts = data["Extra"].split(";");
-							if (CAfilenameParts.length > 0)
-								$("#hardwarecontent #hardwareparamsmqtt #filename").val(CAfilenameParts[0]);
-							if (CAfilenameParts.length > 1)
-								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicin").val(CAfilenameParts[1]);
-							if (CAfilenameParts.length > 2)
-								$("#hardwarecontent #hardwareparamsmqtt #mqtttopicout").val(CAfilenameParts[2]);
-						
-							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
-							$("#hardwarecontent #hardwareparamsmqtt #combotlsversion").val(data["Mode2"]);
-							$("#hardwarecontent #hardwareparamsmqtt #combopreventloop").val(data["Mode3"]);
-						}
 						else if (data["Type"].indexOf("Rtl433") >= 0) {
 							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
 						}
@@ -4305,7 +4449,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Sterbox") >= 0) ||
 							(data["Type"].indexOf("Anna") >= 0) ||
 							(data["Type"].indexOf("KMTronic") >= 0) ||
-							(data["Type"].indexOf("MQTT") >= 0) ||
+							(data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) ||
 							(data["Type"].indexOf("Netatmo") >= 0) ||
 							(data["Type"].indexOf("HTTP") >= 0) ||
 							(data["Type"].indexOf("Thermosmart") >= 0) ||
@@ -4440,6 +4584,15 @@ define(['app'], function (app) {
 		}
 
 		UpdateHardwareParamControls = function () {
+			var oTable = $('#hardwaretable').dataTable();
+			var anSelected = fnGetSelected(oTable);
+			if (anSelected.length !== 0) {
+				var data = oTable.fnGetData(anSelected[0]);
+			}
+			$scope.calledFetch = false;
+			extraHWInitParams = function() { };
+			extraHWUpdate = function() { };
+			extraHWValidateParams = function() { };
 			$("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', false);
@@ -4505,6 +4658,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });
 				$("#hardwarecontent #divpythonplugin").show();
 				return;
+			}
+
+			if (extraHWTable[text]) {
+				loadExtraHWCode(extraHWTable[text], data);
+				return;
+			} else {
+				$("#hardwarecontent #extrahw").val("");
+				$("#hardwarecontent #divextrahwparams").empty();
 			}
 
 			if (text.indexOf("eHouse") >= 0) {
@@ -4759,10 +4920,9 @@ define(['app'], function (app) {
 			}
 			if (
 				(text.indexOf("ETH8020") >= 0) ||
-				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
-				(text.indexOf("MQTT") >= 0) ||
+				(text.indexOf("MySensors Gateway with MQTT") >= 0) ||
 				(text.indexOf("KMTronic Gateway with LAN") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 			) {
@@ -4932,6 +5092,9 @@ define(['app'], function (app) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
 								}
 								$.each(item.parameters, function (i, param) {
+									if (typeof (param.description) != "undefined") {
+										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
+									}
 									PluginParams += '<tr><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
 									if (typeof (param.options) == "undefined") {
 										if (param.field == "SerialPort") {

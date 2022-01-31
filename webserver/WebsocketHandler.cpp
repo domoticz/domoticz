@@ -33,7 +33,7 @@ namespace http {
 			{
 				// WebSockets only do security during set up so keep pushing the expiry out to stop it being cleaned up
 				WebEmSession session;
-				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sessionid);
+				auto itt = myWebem->m_sessions.find(sessionid);
 				if (itt != myWebem->m_sessions.end())
 				{
 					session = itt->second;

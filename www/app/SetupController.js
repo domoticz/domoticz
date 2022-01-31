@@ -733,7 +733,7 @@ define(['app'], function (app) {
 				}
 			}
 
-			$http.post('storesettings', new FormData(document.querySelector("#settings")), {
+			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
 			}).then(function successCallback(response) {

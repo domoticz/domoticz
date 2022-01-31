@@ -11,6 +11,7 @@
 #define timer_resolution_hz 25
 
 struct sqlite3;
+struct sqlite3_stmt;
 
 enum _eWindUnit
 {
@@ -320,6 +321,27 @@ typedef std::vector<std::string> TSqlRowQuery;
 // result for an sql query : Vector of TSqlRowQuery
 typedef std::vector<TSqlRowQuery> TSqlQueryResult;
 
+class CSQLStatement
+{
+      private:
+	sqlite3 *m_DBase;
+	sqlite3_stmt *m_Statement;
+	int iNextParam;
+	int m_Status;
+	std::string m_ErrorText;
+
+      public:
+	CSQLStatement(sqlite3 *pDBase, const std::string &pSQL);
+	int AddParameter(std::string &pParam);
+	int Execute();
+	bool Error();
+	const char *ErrorText()
+	{
+		return m_ErrorText.c_str();
+	};
+	~CSQLStatement();
+};
+
 class CSQLHelper : public StoppableTask
 {
       public:
@@ -327,6 +349,7 @@ class CSQLHelper : public StoppableTask
 	~CSQLHelper();
 
 	void SetDatabaseName(const std::string &DBName);
+	void SetJournalMode(const std::string &mode);
 
 	bool OpenDatabase();
 	void CloseDatabase();
@@ -393,7 +416,6 @@ class CSQLHelper : public StoppableTask
 	void ClearShortLog();
 	void VacuumDatabase();
 	void OptimizeDatabase(sqlite3 *dbase);
-
 	void DeleteHardware(const std::string &idx);
 
 	void DeleteCamera(const std::string &idx);
@@ -420,6 +442,7 @@ class CSQLHelper : public StoppableTask
 
 	bool HandleOnOffAction(bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
+	int execute_sql(const std::string &sSQL, std::vector<std::string> *pValues, bool bLogError);
 	std::vector<std::vector<std::string>> safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string>> safe_queryBlob(const char *fmt, ...);
 	void safe_exec_no_return(const char *fmt, ...);
@@ -482,6 +505,7 @@ class CSQLHelper : public StoppableTask
 	std::mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;
 	std::string m_dbase_name;
+	std::string m_journal_mode;
 	unsigned char m_sensortimeoutcounter;
 	std::map<uint64_t, int> m_timeoutlastsend;
 	std::map<uint64_t, int> m_batterylowlastsend;
@@ -496,7 +520,7 @@ class CSQLHelper : public StoppableTask
 	void StopThread();
 	void Do_Work();
 #ifndef WIN32
-	void ManageExecuteScriptTimeout(int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
+	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif
 	void PerformThreadedAction(const _tTaskItem tItem);
 	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color, const std::string &User);
@@ -539,6 +563,7 @@ class CSQLHelper : public StoppableTask
 	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
+	void SendUpdateInt(const std::string& Idx);
 
 	std::vector<std::vector<std::string>> query(const std::string &szQuery);
 	std::vector<std::vector<std::string>> queryBlob(const std::string &szQuery);

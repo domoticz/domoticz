@@ -232,7 +232,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		boost::asio::ip::tcp::socket sendSocket(io_service);
 		boost::asio::ip::tcp::resolver resolver(io_service);
 		boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), szTmp, "55443");
-		boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+		auto iterator = resolver.resolve(query);
 		boost::asio::connect(sendSocket, iterator);
 
 		std::string message;

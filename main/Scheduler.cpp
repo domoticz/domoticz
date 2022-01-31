@@ -866,7 +866,12 @@ void CScheduler::CheckSchedules()
 
 							GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 							int ilevel = maxDimLevel;
-							if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+							if (
+								(switchtype == STYPE_BlindsPercentage)
+								|| (switchtype == STYPE_BlindsPercentageInverted)
+								|| (switchtype == STYPE_BlindsPercentageWithStop)
+								|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+								)
 							{
 								if (item.timerCmd == TCMD_ON)
 								{
@@ -1061,7 +1066,7 @@ namespace http {
 						sitem.TimerID = iTimerIdx;
 						sitem.bIsScene = bIsScene;
 						sitem.bIsThermostat = bIsThermostat;
-						std::vector<tScheduleItem>::iterator it = std::find(schedules.begin(), schedules.end(), sitem);
+						auto it = std::find(schedules.begin(), schedules.end(), sitem);
 						if (it != schedules.end()) {
 							struct tm timeinfo;
 							localtime_r(&it->startTime, &timeinfo);

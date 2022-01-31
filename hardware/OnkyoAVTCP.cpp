@@ -367,7 +367,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	if (switch_types[ID].subtype == sSwitchTypeSelector)
 	{
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
-		std::map<std::string, std::string>::const_iterator itt = options.find("LevelActions");
+		auto itt = options.find("LevelActions");
 		if (itt == options.end())
 			return;
 		std::string sOptions = itt->second;

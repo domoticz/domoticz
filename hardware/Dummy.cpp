@@ -235,23 +235,40 @@ namespace http {
 			{
 				nid = atol(result[0][0].c_str()) + 1;
 			}
-			unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
-			nid += 82000;
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			std::string szCreateUser = Username + " (IP: " + session.remote_host + ")";
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions, szCreateUser);
+			unsigned long vs_idx = nid; // keep idx to be returned before masking
 
+			//make sure we created a new device
+			bool bOK = false;
+			while (!bOK)
+			{
+				unsigned long devid = nid + 82000;
+
+				std::string szCreateUser = Username + " (IP: " + session.remote_host + ")";
+
+				std::string newSensorName = ssensorname;
+
+				uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, newSensorName, devid, soptions, szCreateUser);
+				if (DeviceRowIdx == (uint64_t)-1)
+					break; //something went wrong
+				if (DeviceRowIdx == vs_idx)
+				{
+					bOK = true;
+					break;
+				}
+				nid++;
+			}
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
-
-			if (DeviceRowIdx != (uint64_t)-1)
+			if (bOK)
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";
 				root["idx"] = std::to_string(vs_idx);
 			}
+
 		}
 
 	} // namespace server

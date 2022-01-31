@@ -26,8 +26,15 @@ History :
 * Increase max number of blocs
 * New methode to auto generate "release switch code" (old methode was limited to 1 button so risk of override this switch if to client are connected).
 * with this update: increase of the USBtin buffer reception (see usbtin.h)
-* 
+*
 - 2021-04-14 : Formatted code to default style
+
+- 2021-08-03 : V3.00 Update :
+* Add new method to get bloc's name with security (out of table return "UNKNOWN") and complete name (with coding) when first devices creations.
+* Fix error on all methods who use "RefBloc" , old was type char, must be type int !
+* Add support of IBS Frame from Bloc 9 (Intelligent Battery Sensor) up to 6 sensors by bloc (IBS1 to 6) (Bloc 9 must be configured before use)
+* With IBS: management of a "time left before charge/discharge" for each IBS detected
+
 */
 
 #include "stdafx.h"
@@ -46,6 +53,8 @@ History :
 
 #include <bitset> // This is necessary to compile on Windows
 
+#define round(a) (int)(a + .5)
+
 #define MULTIBLOC_V8_VERSION "02.00.00"
 
 #define TIME_1sec 1000
@@ -55,6 +64,7 @@ History :
 #define TIME_50ms 50
 #define TIME_10ms 10
 #define TIME_5ms 5
+#define TIME_2ms 2
 
 #define BLOC_ALIVE 1
 #define BLOC_NOTALIVE 2
@@ -118,6 +128,26 @@ History :
 #define type_CONSO_S_TOR_25_TO_32 287
 #define type_CONSO_S_TOR type_CONSO_S_TOR_1_TO_8
 
+#define type_IBS 768
+#define type_IBS_1_1 769
+#define type_IBS_1_2 770
+#define type_IBS_2_1 771
+#define type_IBS_2_2 772
+#define type_IBS_3_1 773
+#define type_IBS_3_2 774
+#define type_IBS_4_1 775
+#define type_IBS_4_2 776
+#define type_IBS_5_1 777
+#define type_IBS_5_2 778
+#define type_IBS_6_1 779
+#define type_IBS_6_2 780
+#define type_IBS_1_3 781
+#define type_IBS_2_3 782
+#define type_IBS_3_3 783
+#define type_IBS_4_3 784
+#define type_IBS_5_3 785
+#define type_IBS_6_3 786
+
 #define type_SFSP_SWITCH 512
 #define type_SFSP_LED_CMD 513
 #define type_SFSP_CAPTEUR_1BS 514
@@ -135,7 +165,6 @@ History :
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 // REFERENCE INDEX
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
 #define BLOC_DOMOTICZ 0x01
 
 #define BLOC_9 0x0D
@@ -154,7 +183,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"NAVICOLOR_RTC",
 	"BLOC_1",
 	"BLOC_2",
-	"BLOC_4",
+	"BLOC_4", // 10
 	"BLOC_6",
 	"BLOC_7",
 	"BLOC_8",
@@ -164,7 +193,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"BLOC_TF",
 	"BLOC_AC1",
 	"BLOC_X98",
-	"BLOC_RESPIRE",
+	"BLOC_RESPIRE", // 20
 	"BLOC_SFSP_M",
 	"BLOC_SFSP_E",
 	"BLOC_SFSP_A",
@@ -174,7 +203,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"MULTICOM_V2",
 	"INTERFACE_CAN_CAN",
 	"INTERFACE_CAN_CAN_V2",
-	"INTERFACE_BLUETOOTH",
+	"INTERFACE_BLUETOOTH", // 30
 	"INTERFACE_LIN",
 	"NAVICOLOR_GT",
 	"CHARGEUR_CRISTEC",
@@ -184,7 +213,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"BLOC_X10",
 	"AMPLI_ATOLL",
 	"AMPLI_ATOLL_3ZONES",
-	"SERVEUR_WIFI",
+	"SERVEUR_WIFI", // 40
 	"NAVICOLOR_PT",
 	"NAVICOLOR_PT2",
 	"CLIM_DOMETIC",
@@ -194,7 +223,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"INTERFACE_CAN_CAN_CONFIGURABLE",
 	"INTERFACE_CAN_CAN_SD",
 	"TABLEAU_VOILIER",
-	"TABLEAU_COUPE_BATTERIE",
+	"TABLEAU_COUPE_BATTERIE", // 50
 	"COFFRET_COUPE_BATTERIE_MDP",
 	"CLIMATISEUR_WEBASTO",
 	"INTERFACE_CAN_CAN_MULTIRESEAUX",
@@ -204,7 +233,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"NAVICOLOR_GT2",
 	"FACADE_2_4T",
 	"TABLEAU_CATA",
-	"BLOC_EMB",
+	"BLOC_EMB", // 60
 	"WATERMAKER_DESSALATOR",
 	"BATTERIE_EZA",
 	"WATERMAKER_ECO_SISTEMS",
@@ -214,7 +243,7 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"BATTERIE_EPSILOR",
 	"CLIMATISEUR_VENTILO_CONVECTEUR_FRIGOMAR",
 	"BLOC_GALVATEST",
-	"CONVERTISSEUR_CRISTEC",
+	"CONVERTISSEUR_CRISTEC", // 70
 	"MB_BOX",
 	"INTERFACE_CAN_CAN_NMEA2000",
 	"BLOC_9_V3",
@@ -223,6 +252,21 @@ constexpr std::array<const char *, NomRefBloc_MAX_SIZE> NomRefBloc{
 	"INTERFACE_BLE_CAN",
 	"CENTRALE_FROID_FRIGOMAR",
 	"CLIMATISEUR_MONOBLOC_FRIGOMAR",
+};
+
+#define BatteryType_MAX_SIZE 5
+
+constexpr std::array<const char *, BatteryType_MAX_SIZE> BatteryType{
+	"Flooded", "AGM", "Enhanced flooded", "Lithium", "Undefined",
+};
+
+#define IBSType_MAX_SIZE 5
+
+constexpr std::array<const char *, IBSType_MAX_SIZE> IBSType{
+	"Absent/Missing",
+	"IBS_12V",
+	"IBS_24V",
+	"UNDEFINED",
 };
 
 USBtin_MultiblocV8::USBtin_MultiblocV8()
@@ -259,8 +303,11 @@ void USBtin_MultiblocV8::StopThread()
 	ClearingBlocList();
 }
 
-void USBtin_MultiblocV8::ManageThreadV8(bool States)
+void USBtin_MultiblocV8::ManageThreadV8(bool States, bool debugmode)
 {
+	if (debugmode == true)
+		m_BOOL_DebugInMultiblocV8 = true;
+
 	if (States == true)
 		StartThread();
 	else
@@ -363,7 +410,7 @@ void USBtin_MultiblocV8::SendRequest(int sID)
 	szTrameToSend += "8";
 	// Log(LOG_NORM,"MultiblocV8: write frame to Can: #%s# ",szTrameToSend.c_str());
 	writeFrame(szTrameToSend);
-	sleep_milliseconds(TIME_5ms); // wait time to not overrun can bus if many request are send...
+	sleep_milliseconds(TIME_2ms); // wait time to not overrun can bus if many request are send...
 }
 
 void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber, unsigned int rxDLC, unsigned int Buffer_Octets[8])
@@ -371,7 +418,7 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber, unsigned int rx
 	// décomposition de l'identifiant qui contient les informations suivante :
 	// identifier parsing which contains the following information :
 	int FrameType = (IDhexNumber & MSK_TYPE_TRAME) >> SHIFT_TYPE_TRAME;
-	char RefBloc = (IDhexNumber & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
+	int RefBloc = (IDhexNumber & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
 	char Codage = (IDhexNumber & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE;
 	char SsReseau = IDhexNumber & MSK_SRES_MODULE;
 
@@ -409,13 +456,34 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber, unsigned int rx
 				if (rxDLC == 5)
 					Traitement_SFSP_Switch_Recu(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
 				break;
+
+			case type_IBS_1_1:
+			case type_IBS_1_2:
+			case type_IBS_2_1:
+			case type_IBS_2_2:
+			case type_IBS_3_1:
+			case type_IBS_3_2:
+			case type_IBS_4_1:
+			case type_IBS_4_2:
+			case type_IBS_5_1:
+			case type_IBS_5_2:
+			case type_IBS_6_1:
+			case type_IBS_6_2:
+			case type_IBS_1_3:
+			case type_IBS_2_3:
+			case type_IBS_3_3:
+			case type_IBS_4_3:
+			case type_IBS_5_3:
+			case type_IBS_6_3:
+				Traitement_IBS(FrameType, RefBloc, Codage, SsReseau, Buffer_Octets);
+				break;
 		}
 	}
 }
 
 // Traitement trame contenant une info d'un interrupteur SFSP (filaire ou sans fils, EnOcean, etc...)
 // Treatment of Frame containing switch information from wireles or hardware input of a blocs :
-void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameType, const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
 	unsigned long sID = (FrameType << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 	int i = 0;
@@ -425,7 +493,8 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	unsigned int codetouche = bufferdata[4];
 	std::string defaultname = " ";
 
-	Log(LOG_NORM, "MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X", NomRefBloc[RefBloc], Codage, Ssreseau, SwitchId, codetouche);
+	Log(LOG_NORM, "MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X", getBlocnameFromIndex(RefBloc), Codage, Ssreseau, SwitchId,
+	    codetouche);
 
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -469,7 +538,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 }
 
 // For listing of detected blocs :
-void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
 	unsigned long sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 	int i = 0;
@@ -512,7 +581,7 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const cha
 				m_BlocList_CAN[IndexBLoc].CongifurationCrc = (bufferdata[3] << 8) + bufferdata[4];
 				m_BlocList_CAN[IndexBLoc].Status = BLOC_ALIVE;
 				m_BlocList_CAN[IndexBLoc].NbAliveFrameReceived = 1;
-				Log(LOG_NORM, "MultiblocV8: new bloc detected: %s Coding: %d network: %d", NomRefBloc[RefBloc], Codage, Ssreseau);
+				Log(LOG_NORM, "MultiblocV8: new bloc detected: %s Coding: %d network: %d", getBlocnameFromIndex(RefBloc), Codage, Ssreseau);
 
 				// first, when first is detected we creates a general reset switch:
 				unsigned long generalID = type_COMMANDE_ETAT_BLOC << SHIFT_TYPE_TRAME; // creates a unique Reset Switch to restart all presents blocks
@@ -521,10 +590,18 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const cha
 				// checking if we must send request, to refresh the hardware in domoticz devices :
 				switch (RefBloc)
 				{
+					case BLOC_9:
+						// send IBS request...
+						if (m_BOOL_DebugInMultiblocV8 == true)
+						{
+							Log(LOG_NORM, "MultiblocV8: Send IBS request to: %s", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str());
+						}
+						Rqid = (type_IBS << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
+						SendRequest(Rqid);
+
 					// bloc SFSP M / E / 9  1 analog input avec 6 outputs
 					case BLOC_SFSP_M:
 					case BLOC_SFSP_E:
-					case BLOC_9:
 						// requete analogique (tension alim) / analog send request for Power tension of SFSP Blocs
 						Rqid = (type_E_ANA_1_TO_4 << SHIFT_TYPE_TRAME) + m_BlocList_CAN[i].BlocID;
 						SendRequest(Rqid);
@@ -537,7 +614,8 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const cha
 						SendRequest(Rqid);
 
 						// Créates 3 switch for Learning, Learning Exit and Clearing switches store into blocs
-						std::string defaultname = NomRefBloc[RefBloc];
+						// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+						std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
 						std::string defaultnamenormal = defaultname + " LEARN EXIT";
 						std::string defaultnamelearn = defaultname + " LEARN ENTRY";
 						std::string defaultnameclear = defaultname + " CLEAR ALL";
@@ -547,7 +625,6 @@ void USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const cha
 						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING_STOP, defaultnamenormal);
 						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_LEARNING, defaultnamelearn);
 						InsertUpdateControlSwitch(sID_CommandBase, BLOC_STATES_CLEARING, defaultnameclear);
-
 						break;
 				}
 				break;
@@ -608,7 +685,7 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 			{
 				// le bloc a été perdu / bloc lost...
 				// Log(LOG_ERROR,"MultiblocV8: Bloc Lost with ref #%d# ",RefBloc);
-				Log(LOG_ERROR, "MultiblocV8: bloc lost: %s Coding: %d Network: %d", NomRefBloc[RefBloc], Codage, Subnetwork);
+				Log(LOG_ERROR, "MultiblocV8: bloc lost: %s Coding: %d Network: %d", getBlocnameFromIndex(RefBloc), Codage, Subnetwork);
 				m_BlocList_CAN[i].NbAliveFrameReceived = 0;
 			}
 			else
@@ -651,7 +728,7 @@ void USBtin_MultiblocV8::BlocList_CheckBloc()
 }
 
 // traitement sur réception trame de vie / Life frame treatment :
-void USBtin_MultiblocV8::Traitement_Trame_Vie(const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8])
+void USBtin_MultiblocV8::Traitement_Trame_Vie(const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8])
 {
 	// treatment only for a frame of 5 bytes receive !
 	if (rxDLC == 5)
@@ -659,7 +736,7 @@ void USBtin_MultiblocV8::Traitement_Trame_Vie(const unsigned char RefBloc, const
 }
 
 // Traitement trame Etat_Bloc / States_Bloc frame treatement  :
-void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8])
+void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int rxDLC, unsigned int bufferdata[8])
 {
 	int i = 0;
 	int Command = 0;
@@ -803,9 +880,11 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID, int OutputNumber, bo
 	double rlevel = (15.0 / 255) * Level;
 	int level = int(rlevel);
 	// Extract the RefBloc Type
-	uint8_t RefBloc = (uint8_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
-	if (RefBloc >= NomRefBloc.size())
-		return;
+	int RefBloc = (uint16_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+	int Codage = (uint8_t)((sID & MSK_CODAGE_MODULE) >> SHIFT_CODAGE_MODULE);
+	int Ssreseau = (uint8_t)((sID & MSK_SRES_MODULE) >> SHIFT_SRES_MODULE);
+	// if (RefBloc >= NomRefBloc.size())
+	//	return;
 
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -827,7 +906,8 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID, int OutputNumber, bo
 	lcmd.LIGHTING2.filler = 2;
 	lcmd.LIGHTING2.rssi = 12;
 	// default name creation :
-	std::string defaultname = NomRefBloc[RefBloc];
+	// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+	std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
 	defaultname += " output S";
 	std::ostringstream convert; // stream used for the conversion
 	convert << OutputNumber;
@@ -838,11 +918,11 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID, int OutputNumber, bo
 
 // The STOR Frame always contain a maximum of 2 stor States. 4 Low bytes = STOR 1 / 4 high bytes = STOR2
 //( etc... for STOR3-4 ///  5/6  /// 7/8 ...)
-void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType, const unsigned char RefeBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
 	// char Subtype = 0;
 	int level_value = 0;
-	unsigned long sID = (FrameType << SHIFT_TYPE_TRAME) + (RefeBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+	unsigned long sID = (FrameType << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 
 	bool OutputCde;
 	bool IsBlink;
@@ -1012,7 +1092,7 @@ void USBtin_MultiblocV8::SetOutputBlinkInDomoticz(unsigned long sID, int OutputN
 }
 
 // traitement d'une trame info analogique reçue
-void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
 {
 	unsigned long sID = (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
 
@@ -1023,7 +1103,7 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 		case BLOC_9:
 			if (m_BOOL_DebugInMultiblocV8 == true)
 			{
-				Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) %s: D0: %d D1: %d#", NomRefBloc[RefBloc], bufferdata[0], bufferdata[1]);
+				Log(LOG_NORM, "MultiblocV8: receive ANA (alimentation) %s: D0: %d D1: %d#", GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau).c_str(), bufferdata[0], bufferdata[1]);
 			}
 			int VoltageLevel = bufferdata[0];
 			VoltageLevel <<= 8;
@@ -1032,7 +1112,8 @@ void USBtin_MultiblocV8::Traitement_E_ANA_Recu(const unsigned int FrameType, con
 			int percent = ((VoltageLevel * 100) / 125);
 			float voltage = (float)VoltageLevel / 10;
 
-			std::string defaultname = NomRefBloc[RefBloc];
+			// defaultname will contain the bloc adress source (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+			std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
 			defaultname += " Voltage";
 
 			SendVoltageSensor(((sID >> 8) & 0xffff), (sID & 0xff), percent, voltage, defaultname);
@@ -1115,7 +1196,9 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 				szTrameToSend += "4";
 				szTrameToSend += DataToSend;
 				if (m_BOOL_DebugInMultiblocV8 == true)
+				{
 					Log(LOG_NORM, "MultiblocV8: Sending Frame: %s", szTrameToSend.c_str());
+				}
 				writeFrame(szTrameToSend);
 				return true;
 			}
@@ -1206,9 +1289,10 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSen
 	szTrameToSend += "5";	     // DLC always to 5 for SFSP_SWITCH Frame
 	szTrameToSend += "00000001"; // always set to 1 because it's an internal switch (from domoticz)
 	szTrameToSend += DataToSend; // contain data code + send On information
-	// if( m_BOOL_DebugInMultiblocV8 == true )
-	Log(LOG_NORM, "MultiblocV8: Sending Frame: %s", szTrameToSend.c_str());
-
+	if (m_BOOL_DebugInMultiblocV8 == true)
+	{
+		Log(LOG_NORM, "MultiblocV8: Sending Frame: %s", szTrameToSend.c_str());
+	}
 	writeFrame(szTrameToSend);
 }
 
@@ -1224,8 +1308,10 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID
 	szTrameToSend += szDeviceID;
 	szTrameToSend += "1";	     // DLC always to 5 for SFSP_SWITCH Frame
 	szTrameToSend += DataToSend; // contain data code + send On information
-	// if( m_BOOL_DebugInMultiblocV8 == true )
-	Log(LOG_NORM, "MultiblocV8: Sending BlocState command: %s", szTrameToSend.c_str());
+	if (m_BOOL_DebugInMultiblocV8 == true)
+	{
+		Log(LOG_NORM, "MultiblocV8: Sending BlocState command: %s", szTrameToSend.c_str());
+	}
 	writeFrame(szTrameToSend);
 }
 
@@ -1242,8 +1328,10 @@ void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long ba
 	szTrameToSend += szDeviceID;
 	szTrameToSend += "1";	     // DLC always to 1 for this frame
 	szTrameToSend += DataToSend; // contain data code for the bloc state to change
-	// if( m_BOOL_DebugInMultiblocV8 == true )
-	Log(LOG_NORM, "MultiblocV8: Sending SFSP learn command: %s", szTrameToSend.c_str());
+	if (m_BOOL_DebugInMultiblocV8 == true)
+	{
+		Log(LOG_NORM, "MultiblocV8: Sending SFSP learn command: %s", szTrameToSend.c_str());
+	}
 	writeFrame(szTrameToSend);
 	/*
 	char RefBloc = (baseID_ToSend & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE; //retreive the refblock
@@ -1273,4 +1361,347 @@ int USBtin_MultiblocV8::getIndexFromBlocname(std::string blocname)
 		}
 	}
 	return 0;
+}
+
+const char *USBtin_MultiblocV8::getBlocnameFromIndex(int indexreference)
+{
+	if (indexreference >= (int)NomRefBloc.size())
+	{
+		return "UNKNOWN";
+	}
+	else
+	{
+		return NomRefBloc[indexreference];
+	}
+}
+
+// traitement d'une trame info analogique reçue
+void USBtin_MultiblocV8::Traitement_IBS(const unsigned int FrameType, const unsigned int RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8])
+{
+	uint32_t sID = (FrameType << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+	sID <<= 4; // to reserved lowbyte area for id
+
+	uint32_t ChildId = 0;
+	// defaultname will contain the bloc adress source of the IBS (ex: BLOC_9@1_0 for BLOC_9 coding 1 in the subnetwork 0 (base))
+	std::string defaultname = GetCompleteBlocNameSource(RefBloc, Codage, Ssreseau);
+
+	if (FrameType == type_IBS_1_1 || FrameType == type_IBS_1_2 || type_IBS_1_3)
+	{
+		defaultname += " IBS1: ";
+		ChildId = 1;
+	}
+	else if (FrameType == type_IBS_2_1 || FrameType == type_IBS_2_2 || type_IBS_2_3)
+	{
+		defaultname += " IBS2: ";
+		ChildId = 2;
+	}
+	else if (FrameType == type_IBS_3_1 || FrameType == type_IBS_3_2 || type_IBS_3_3)
+	{
+		defaultname += " IBS3: ";
+		ChildId = 3;
+	}
+	else if (FrameType == type_IBS_4_1 || FrameType == type_IBS_4_2 || type_IBS_4_3)
+	{
+		defaultname += " IBS4: ";
+		ChildId = 4;
+	}
+	else if (FrameType == type_IBS_5_1 || FrameType == type_IBS_5_2 || type_IBS_5_3)
+	{
+		defaultname += " IBS5: ";
+		ChildId = 5;
+	}
+	else if (FrameType == type_IBS_6_1 || FrameType == type_IBS_6_2 || type_IBS_6_3)
+	{
+		defaultname += " IBS6: ";
+		ChildId = 6;
+	}
+
+	// Switch to determine data treatement
+	if (FrameType == type_IBS_1_1 || FrameType == type_IBS_2_1 || FrameType == type_IBS_3_1 || FrameType == type_IBS_4_1 || FrameType == type_IBS_5_1 || FrameType == type_IBS_6_1)
+	{
+
+		if( m_BOOL_DebugInMultiblocV8 == true ){
+			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 1 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
+		    	bufferdata[3], bufferdata[4], bufferdata[5]);
+		}
+
+		// frame type 1 contain :
+		// D0+D1 voltage (/100eme volt)
+		// D2+D3 current (/10eme A with offset +20000, so range from -2000.0 to +2000.0 A)
+		// D4 temperature (°C with offset +40, so range from -40 to +60°C)
+		// D5 central tape voltage in case of IBS24V
+		int VoltageLevel = bufferdata[1];
+		VoltageLevel <<= 8;
+		VoltageLevel += bufferdata[0];
+		float voltage = (float)VoltageLevel / 100;
+		std::string voltage_name = defaultname;
+		voltage_name += " Voltage";
+		SendIBSVoltageSensor(sID + ChildId, ChildId, 255, voltage, voltage_name);
+
+		int CurrentValue = bufferdata[3];
+		CurrentValue <<= 8;
+		CurrentValue += bufferdata[2];
+		CurrentValue -= 20000;
+		float current = (float)CurrentValue / 10;
+		std::string current_name = defaultname;
+		current_name += " Current";
+		SendIBSCurrentSensor(sID + ChildId, ChildId, current, current_name);
+
+		int temperature = bufferdata[4];
+		temperature -= 40;
+		std::string temperature_name = defaultname;
+		temperature_name += " Temperature";
+		SendIBTemperatureSensor(((sID >> 16) & 0xFFF0) + (ChildId), ChildId, (float)temperature, temperature_name);
+
+		int ibs24_central_voltage = bufferdata[5];
+		float central_voltage = (float)ibs24_central_voltage / 10;
+		std::string central_volta_name = defaultname;
+		central_volta_name += " Central Volt (IBS24V only)";
+		SendIBSVoltageSensor(sID + ChildId + 1, ChildId + 1, 255, central_voltage, central_volta_name);
+
+		// compute time left with actual current and last AvailableAh and DischargeableAh known
+		ComputeTimeLeft(RefBloc, Codage, Ssreseau, ChildId, defaultname);
+	}
+	else if (FrameType == type_IBS_1_2 || FrameType == type_IBS_2_2 || FrameType == type_IBS_3_2 || FrameType == type_IBS_4_2 || FrameType == type_IBS_5_2 || FrameType == type_IBS_6_2)
+	{
+
+		if( m_BOOL_DebugInMultiblocV8 == true ){
+			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 2 [D0: %02X D1: %02X D2: %02X D3: %02X D4: %02X D5: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2],
+		    	bufferdata[3], bufferdata[4], bufferdata[5]);
+		}
+		int Soc = (int)bufferdata[0];
+		std::string soc_name = defaultname;
+		soc_name += " SoC";
+		SendPercentageSensor(sID + ChildId, ChildId, 255, static_cast<float>(Soc), soc_name);
+
+		int Soh = (int)bufferdata[1];
+		std::string soh_name = defaultname;
+		soh_name += " SoH";
+		SendPercentageSensor(sID + ChildId + 1, ChildId, 255, static_cast<float>(Soh), soh_name);
+
+		int DischargeableAh = bufferdata[2];
+		std::string dAh_name = defaultname;
+		dAh_name += " Dischargeable";
+		SendCustomSensor(((sID + ChildId) >> 8), (sID + ChildId) & 0xff, 255, static_cast<float>(DischargeableAh), dAh_name, "Ah");
+
+		int AvailableAh = bufferdata[3];
+		std::string AAh_name = defaultname;
+		AAh_name += " Available";
+		SendCustomSensor(((sID + ChildId + 1) >> 8), (sID + ChildId + 1) & 0xff, 255, static_cast<float>(AvailableAh), AAh_name, "Ah");
+
+		int FunctionId = bufferdata[5];
+		FunctionId <<= 8;
+		FunctionId += bufferdata[4];
+		std::stringstream stream;
+		stream << std::hex << FunctionId;
+		std::string result(stream.str());
+		std::string functionid_name = defaultname;
+		functionid_name += " Function_Id";
+		SendTextSensor(((sID + ChildId + 1) >> 8), (sID + ChildId + 1) & 0xff, 255, result, functionid_name);
+
+		// compute time left with actual current and last AvailableAh and DischargeableAh known
+		ComputeTimeLeft(RefBloc, Codage, Ssreseau, ChildId, defaultname);
+	}
+	else if (FrameType == type_IBS_1_3 || FrameType == type_IBS_2_3 || FrameType == type_IBS_3_3 || FrameType == type_IBS_4_3 || FrameType == type_IBS_5_3 || FrameType == type_IBS_6_3)
+	{
+
+		if( m_BOOL_DebugInMultiblocV8 == true ){
+			Log(LOG_NORM, "MultiblocV8: %s IBS_Frametype 3 [D0: %02X D1: %02X D2: %02X D3: %02X]", defaultname.c_str(), bufferdata[0], bufferdata[1], bufferdata[2], bufferdata[3]);
+		}
+
+		int NominalCapacity = bufferdata[1];
+		NominalCapacity <<= 8;
+		NominalCapacity += bufferdata[0];
+		std::string settings_name = defaultname;
+		settings_name += "Ibs settings";
+
+		std::string result = "Ibs: " + GetIBSTypeName(bufferdata[3]);
+		result += " / Battery type: " + GetBatteryTypeName(bufferdata[2]);
+		result += " / Nominal Capacity " + std::to_string(NominalCapacity) + " Ah";
+
+		SendTextSensor(((sID + ChildId + 1) >> 8), (sID + ChildId + 1) & 0xff, 255, result, settings_name);
+	}
+}
+
+void USBtin_MultiblocV8::SendIBSVoltageSensor(const int NodeID, const uint32_t ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
+{
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeVoltage;
+	gDevice.id = ChildID;
+	gDevice.intval1 = NodeID;
+	gDevice.floatval1 = Volt;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel, nullptr);
+}
+
+void USBtin_MultiblocV8::SendIBSCurrentSensor(const int NodeID, const uint8_t ChildID, float Amp, const std::string &defaultname)
+{
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeCurrent;
+	gDevice.id = ChildID;
+	gDevice.intval1 = NodeID;
+	gDevice.floatval1 = Amp;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255, nullptr);
+}
+
+void USBtin_MultiblocV8::SendIBTemperatureSensor(const int NodeID, const uint8_t ChildID, float Temp, const std::string &defaultname)
+{
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.TEMP.packettype = pTypeTEMP;
+	tsen.TEMP.subtype = sTypeTEMP5;
+	// tsen.TEMP.battery_level = 9;
+	tsen.TEMP.rssi = (const int)12;
+	tsen.TEMP.id1 = (NodeID & 0xff00) >> 8;
+	tsen.TEMP.id2 = NodeID & 0xff;
+	tsen.TEMP.tempsign = (Temp >= 0) ? 0 : 1;
+	int at10 = round(std::abs(Temp * 10.0F));
+	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.TEMP.temperaturel = (BYTE)(at10);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255, nullptr);
+}
+
+std::string USBtin_MultiblocV8::GetCompleteBlocNameSource(const unsigned int RefBloc, const char Codage, const char Ssreseau)
+{
+	std::string defaultname = getBlocnameFromIndex(RefBloc);
+	defaultname += "@";
+	defaultname += std::to_string(Codage);
+	defaultname += "_";
+	defaultname += std::to_string(Ssreseau);
+	return defaultname;
+}
+
+std::string USBtin_MultiblocV8::GetBatteryTypeName(int index)
+{
+	if (index >= (int)BatteryType.size())
+	{
+		return "UNKNOWN";
+	}
+	else
+	{
+		return BatteryType[index];
+	}
+}
+
+std::string USBtin_MultiblocV8::GetIBSTypeName(int index)
+{
+	if (index >= (int)IBSType.size())
+	{
+		return "UNKNOWN";
+	}
+	else
+	{
+		return IBSType[index];
+	}
+}
+
+void USBtin_MultiblocV8::ComputeTimeLeft(const unsigned int RefBloc, const char Codage, const char Ssreseau, const int ibsindex, const std::string &defaultname)
+{
+	int FrameTypeForRequest = 0;
+
+	if (ibsindex == 1)
+		FrameTypeForRequest = type_IBS_1_1;
+	else if (ibsindex == 2)
+		FrameTypeForRequest = type_IBS_2_1;
+	else if (ibsindex == 3)
+		FrameTypeForRequest = type_IBS_3_1;
+	else if (ibsindex == 4)
+		FrameTypeForRequest = type_IBS_4_1;
+	else if (ibsindex == 5)
+		FrameTypeForRequest = type_IBS_5_1;
+	else if (ibsindex == 6)
+		FrameTypeForRequest = type_IBS_6_1;
+	uint32_t sIDforRequestCurrent = (FrameTypeForRequest << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+	sIDforRequestCurrent <<= 4;
+	float current = GetInformationFromId(((sIDforRequestCurrent) + ibsindex), sTypeCurrent);
+
+	uint32_t sID = sIDforRequestCurrent;
+
+	if (ibsindex == 1)
+		FrameTypeForRequest = type_IBS_1_2;
+	else if (ibsindex == 2)
+		FrameTypeForRequest = type_IBS_2_2;
+	else if (ibsindex == 3)
+		FrameTypeForRequest = type_IBS_3_2;
+	else if (ibsindex == 4)
+		FrameTypeForRequest = type_IBS_4_2;
+	else if (ibsindex == 5)
+		FrameTypeForRequest = type_IBS_5_2;
+	else if (ibsindex == 6)
+		FrameTypeForRequest = type_IBS_6_2;
+	uint32_t sIDforRequest = (FrameTypeForRequest << SHIFT_TYPE_TRAME) + (RefBloc << SHIFT_INDEX_MODULE) + (Codage << SHIFT_CODAGE_MODULE) + Ssreseau;
+	int lastdischargeableah = (int)GetInformationFromId(((sIDforRequest << 4) + ibsindex), sTypeCustom);
+	int lastavailableAh = (int)GetInformationFromId(((sIDforRequest << 4) + ibsindex + 1), sTypeCustom);
+
+	// fordebug
+	// Log(LOG_NORM, "MultiblocV8: ComputeTimeLeft with data Id: %08X",sIDforRequestCurrent);
+	// Log(LOG_NORM, "MultiblocV8: ComputeTimeLeft with: %f Amp, %d DischargeableAh, %d AvailableAh",current,lastdischargeableah,lastavailableAh);
+
+	float timeleft = TimeLeftInMinutes(current, lastdischargeableah, lastavailableAh);
+
+	std::string timeleftD_name = defaultname;
+	timeleftD_name += " Time left before discharge (40%)";
+	std::string timeleftC_name = defaultname;
+	timeleftC_name += " Time left before charge (100%)";
+
+	if (timeleft < 0)
+	{ // negative time indicate consumption, no charge
+		timeleft = std::fabs(timeleft); //to obtain positive value in minute
+		SendCustomSensor(((sID + ibsindex + 3) >> 8), (sID + ibsindex + 3) & 0xff, 255, static_cast<float>(timeleft), timeleftD_name, "minutes");
+		SendCustomSensor(((sID + ibsindex + 4) >> 8), (sID + ibsindex + 4) & 0xff, 255, 0, timeleftC_name, "minutes");
+	}
+	else
+	{ // else positive indicate current is charging
+		SendCustomSensor(((sID + ibsindex + 3) >> 8), (sID + ibsindex + 3) & 0xff, 255, 0, timeleftD_name, "minutes");
+		SendCustomSensor(((sID + ibsindex + 4) >> 8), (sID + ibsindex + 4) & 0xff, 255, static_cast<float>(timeleft), timeleftC_name, "minutes");
+	}
+}
+
+float USBtin_MultiblocV8::TimeLeftInMinutes(float current, int DischargeableAh, int lastavailableAh)
+{
+	float result = 0;
+	if (current < 0)
+	{
+		float timeleft = (float)DischargeableAh;
+		timeleft -= ((float)lastavailableAh * 40 / 100 );
+		timeleft /= current; //timeleft in 1/100 hours so calculate time in minute:
+		int hour = static_cast<int>(timeleft);
+		int minute = static_cast<int>((timeleft - hour) * 60);
+		result = (float)(hour * 60);
+		result += minute;
+		//Log(LOG_NORM, "MultiblocV8: TimeLeftInMinutes (negative) %f",result);
+		return result; //return negative time to indicate time before discharge
+	}
+	else
+	{
+		float timeleft = (float)lastavailableAh - (float)DischargeableAh; // Ah to charge...
+		timeleft /= current;						  // timeleft in 1/100 hours
+		int hour = static_cast<int>(timeleft);
+		int minute = static_cast<int>((timeleft - hour) * 60);
+		result = (float)(hour * 60);
+		result += minute;
+		//Log(LOG_NORM, "MultiblocV8: TimeLeftInMinutes (positive) %f",result);
+		return result;
+	}
+}
+
+float USBtin_MultiblocV8::GetInformationFromId(int NodeId, int sType)
+{
+	float value = 0;
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sType; // sTypeCustom;
+	gDevice.id = NodeId;
+	gDevice.intval1 = NodeId;
+
+	std::string sTmp = std_format("%08X", gDevice.intval1);
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, sTmp.c_str(), int(pTypeGeneral),
+				  int(sType));
+
+	if (!result.empty())
+	{
+		value = static_cast<float>(atof(result[0][2].c_str()));
+	}
+	return value;
 }
