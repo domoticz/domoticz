@@ -1,4 +1,4 @@
-Version 2022.xxxxx (xxxx)
+Version 2022.1 (January 31 2022)
 - Implemented: Added Irrigation icon (also thanks to dbemowsk)
 - Implemented: Build system, implemented unit tests
 - Implemented: Device support for Xiaomi Aqara Wireless Relay Controller (2 Channels) | LLKZMK11LM | relay.c2acn01
