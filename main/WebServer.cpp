@@ -7795,6 +7795,8 @@ namespace http
 
 		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs)
 		{
+			if (m_pWebEm == nullptr)
+				return;
 			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT COUNT(*) FROM SharedDevices WHERE (SharedUserID == '%d')", ID);
 			if (result.empty())
 				return;
@@ -7814,7 +7816,8 @@ namespace http
 		void CWebServer::ClearUserPasswords()
 		{
 			m_users.clear();
-			m_pWebEm->ClearUserPasswords();
+			if (m_pWebEm)
+				m_pWebEm->ClearUserPasswords();
 		}
 
 		int CWebServer::FindUser(const char *szUserName)
@@ -8006,6 +8009,7 @@ namespace http
 				std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
 				_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
 				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
+
 				m_pWebEm->SetAuthenticationMethod(amethod);
 				cntSettings++;
 

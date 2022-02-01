@@ -30,6 +30,7 @@ namespace http {
 
 			our_serverpath = serverpath;
 			plainServer_.reset(new CWebServer());
+
 			serverCollection.push_back(plainServer_);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
 			our_listener_port = web_settings.listening_port;
@@ -156,6 +157,8 @@ namespace http {
 
 			for (auto &it : serverCollection)
 			{
+				if (it->m_pWebEm == nullptr)
+					continue;
 				it->m_pWebEm->ClearLocalNetworks();
 
 				std::vector<std::string> strarray;
