@@ -3213,26 +3213,20 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					uint8_t DT = bitrange(DATA_BYTE0, 2, 0x01); // 0 = cumulative count, 1 = current value / s
 					uint8_t DIV = bitrange(DATA_BYTE0, 0, 0x03);
 					float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
-					uint32_t MR = ground(GetDeviceValue((DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
+					float MR = GetDeviceValue((DATA_BYTE3 << 16) | (DATA_BYTE2 << 8) | DATA_BYTE1, 0, 16777215, 0.0F, scaleMax);
 
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;
-					tsen.RFXMETER.packettype = pTypeRFXMeter;
-					tsen.RFXMETER.subtype = sTypeRFXMeterCount;
-					tsen.RFXMETER.seqnbr = 0;
-					tsen.RFXMETER.id1 = ID_BYTE2;
-					tsen.RFXMETER.id2 = ID_BYTE1;
-					tsen.RFXMETER.count1 = (BYTE) ((MR & 0xFF000000) >> 24);
-					tsen.RFXMETER.count2 = (BYTE) ((MR & 0x00FF0000) >> 16);
-					tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
-					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
-					tsen.RFXMETER.rssi = rssi;
+					if (DT == 0)
+					{ // comulated count
+						SendMeterSensor(senderID, CH, -1, MR, pNode->name.c_str(), rssi);
+					}
+					else
+					{ // instant value
+						SendWattMeter(senderID, CH, -1, MR, pNode->name.c_str(), rssi);
+					}
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID, pNode->name.c_str(), CH, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x01)
