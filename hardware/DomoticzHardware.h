@@ -94,7 +94,7 @@ class CDomoticzHardwareBase : public StoppableTask
 	void SendLuxSensor(uint8_t NodeID, uint8_t ChildID, uint8_t BatteryLevel, float Lux, const std::string &defaultname);
 	void SendAirQualitySensor(uint8_t NodeID, uint8_t ChildID, int BatteryLevel, int AirQuality, const std::string &defaultname);
 	void SendSwitchUnchecked(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);
-	void SendSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);
+	void SendSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12, bool bForceLastUpdate = false);
 	void SendSwitchIfNotExists(int NodeID, uint8_t ChildID, int BatteryLevel, bool bOn, double Level, const std::string &userName, const std::string &defaultname);
 	void SendRGBWSwitch(int NodeID, uint8_t ChildID, int BatteryLevel, int Level, bool bIsRGBW, const std::string &defaultname, const std::string &userName);
 	void SendGeneralSwitch(int NodeID, int ChildID, int BatteryLevel, uint8_t SwitchState, uint8_t Level, const std::string &defaultname, const std::string &userName, int RssiLevel = 12);

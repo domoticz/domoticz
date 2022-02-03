@@ -675,7 +675,7 @@ void CDomoticzHardwareBase::SendSwitchUnchecked(int NodeID, uint8_t ChildID, int
 
 
 void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname, const std::string &userName,
-				       const int RssiLevel /* =12 */)
+				       const int RssiLevel /* =12 */, const bool bForceLastUpdate /* =false */)
 {
 	double rlevel = (16.0 / 100.0) * Level;
 	int level = int(rlevel);
@@ -692,16 +692,26 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const uint8_t ChildID, 
 				  int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
-		//check if we have a change, if not do not update it
+		//check if we have a change, if not only update the LastUpdate field if forceLastUpdate
+		bool bNoChange = false;
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == light2_sOff))
-			return;
+			bNoChange = true;
 		if ((bOn && (nvalue != light2_sOff)))
 		{
 			//Check Level
 			int slevel = atoi(result[0][2].c_str());
 			if (slevel == level)
-				return;
+				bNoChange = true;
+		}
+		if (bNoChange)
+		{
+			if (bForceLastUpdate)
+			{
+				std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+				m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q')", sLastUpdate.c_str(), m_HwdID, sIdx.c_str());
+			}
+			return;
 		}
 	}
 	SendSwitchUnchecked(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname, userName, RssiLevel);
