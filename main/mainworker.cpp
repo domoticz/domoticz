@@ -9469,6 +9469,12 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 		uint8_t SignalLevel = pResponse->RFXMETER.rssi;
 		uint8_t BatteryLevel = 255;
 
+		if ((pHardware->HwdType == HTYPE_EnOceanESP2) || (pHardware->HwdType == HTYPE_EnOceanESP3))
+		{
+			// WARNING
+			// filler field is used here to transmit Channel value from EnOcean device
+			Unit = pResponse->RFXMETER.filler;
+		}
 		unsigned long counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
 		//float RFXPwr = float(counter) / 1000.0f;
 

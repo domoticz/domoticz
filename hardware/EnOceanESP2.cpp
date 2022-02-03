@@ -1086,23 +1086,40 @@ bool CEnOceanESP2::ParseData()
 				float scaleMax = (DIV == 0) ? 16777215.000F : ((DIV == 1) ? 1677721.500F : ((DIV == 2) ? 167772.150F : 16777.215F));
 				uint32_t MR = round(GetDeviceValue((pFrame->DATA_BYTE3 << 16) | (pFrame->DATA_BYTE2 << 8) | pFrame->DATA_BYTE1, 0, 16777215, 0.0F, scaleMax));
 
-				RBUF tsen;
-				memset(&tsen, 0, sizeof(RBUF));
-				tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;
-				tsen.RFXMETER.packettype = pTypeRFXMeter;
-				tsen.RFXMETER.subtype = sTypeRFXMeterCount;
-				tsen.RFXMETER.rssi = 12;
-				tsen.RFXMETER.id1 = pFrame->ID_BYTE2;
-				tsen.RFXMETER.id2 = pFrame->ID_BYTE1;
-				tsen.RFXMETER.count1 = (BYTE) ((MR & 0xFF000000) >> 24);
-				tsen.RFXMETER.count2 = (BYTE) ((MR & 0x00FF0000) >> 16);
-				tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
-				tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
+				if (DT == 0)
+				{ // comulated count
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;
+					tsen.RFXMETER.packettype = pTypeRFXMeter;
+					tsen.RFXMETER.subtype = sTypeRFXMeterCount;
+					tsen.RFXMETER.rssi = 12;
+					tsen.RFXMETER.id1 = pFrame->ID_BYTE2;
+					tsen.RFXMETER.id2 = pFrame->ID_BYTE1;
+					tsen.RFXMETER.count1 = (BYTE) ((MR & 0xFF000000) >> 24);
+					tsen.RFXMETER.count2 = (BYTE) ((MR & 0x00FF0000) >> 16);
+					tsen.RFXMETER.count3 = (BYTE) ((MR & 0x0000FF00) >> 8);
+					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
+					// WARNING
+					// filler field is used here to transmit CH value to decode_RFXMeter in mainworker.cpp
+					tsen.RFXMETER.filler = CH;
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				}
+				else
+				{ // instant value
+					_tUsageMeter umeter;
+					umeter.id1 = (BYTE) pFrame->ID_BYTE3;
+					umeter.id2 = (BYTE) pFrame->ID_BYTE2;
+					umeter.id3 = (BYTE) pFrame->ID_BYTE1;
+					umeter.id4 = (BYTE) pFrame->ID_BYTE0;
+					umeter.dunit = CH;
+					umeter.fusage = MR;
+					umeter.rssi = 12;
+					sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
+				}
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 					nodeID, CH, DT, DIV, scaleMax, MR);
-
-				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x12 && iType == 0x01)
 			{ // A5-12-01, Automated Meter Reading, Electricity
