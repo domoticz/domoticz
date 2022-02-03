@@ -3241,7 +3241,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "RPS msg: Node %08X Smoke alarm %s Energy level %s",
 						senderID, SMO ? "ON" : "OFF", (batterylevel > 5) ? "OK" : "LOW");
 
-					SendSwitch(senderID, 1, batterylevel, SMO, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitchUnchecked(senderID, 1, batterylevel, SMO, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
 					return;
 				}
 				Log(LOG_ERROR, "RPS msg: Node %08X EEP %02X-%02X-%02X (%s) not supported",
