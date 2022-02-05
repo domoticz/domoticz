@@ -1,5 +1,6 @@
 Version 2022.xxxxx (xxxx)
 - Implemented: Blockly, added 'Toggle' set command
+- Implemented: Commandline option '-weblog <weblogfile>' which creates Apache Combined Logformat logs containg all webrequests
 - Fixed: Crash when secure webserver could not start and applying settings
 - Fixed: Notification system, prevent double start
 - For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
