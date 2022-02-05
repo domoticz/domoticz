@@ -539,22 +539,14 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					}
 					return;
 				}
-				//if ((next.templateUrl=="views/dashboard.html")&&(dashboardType==3)) {
-				//	$location.path('/Floorplans');
-				//	return;
-				//}
-
 				if ((!permissions.isAuthenticated()) && (next.templateUrl != "views/login.html")) {
 					$location.path('/Login');
-					//$window.location = '/#Login';
-					//$window.location.reload();
 					return;
 				}
 				else if ((permissions.isAuthenticated()) && (next.templateUrl == "views/login.html")) {
 					$location.path('/Dashboard');
 					return;
 				}
-
 				if (next && next.$$route && next.$$route.permission) {
 					var permission = next.$$route.permission;
 					if (!permissions.hasPermission(permission)) {

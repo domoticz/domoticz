@@ -524,9 +524,6 @@
     <None Include="..\www\eventsframe.html">
       <Filter>www</Filter>
     </None>
-    <None Include="..\www\html5.appcache">
-      <Filter>www</Filter>
-    </None>
     <None Include="..\www\index.html">
       <Filter>www</Filter>
     </None>

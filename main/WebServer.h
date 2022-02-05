@@ -41,7 +41,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void DisplayTimerTypesCombo(std::string & content_part);
 	void DisplayLanguageCombo(std::string & content_part);
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
-	void GetAppCache(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetFloorplanImage(WebEmSession & session, const request& req, reply & rep);

@@ -287,7 +287,6 @@
     <None Include="..\www\css\style.css" />
     <None Include="..\www\css\ui-darkness\jquery-ui.min.css" />
     <None Include="..\www\eventsframe.html" />
-    <None Include="..\www\html5.appcache" />
     <None Include="..\www\i18n\domoticz-ar.json.gz" />
     <None Include="..\www\i18n\domoticz-bg.json.gz" />
     <None Include="..\www\i18n\domoticz-ca.json.gz" />

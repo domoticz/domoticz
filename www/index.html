@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="html5.appcache">
+<html>
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
@@ -127,42 +127,6 @@
 		<script charset="utf-8" src="styles/default/custom.js"></script>
 		<script data-main="app/main" src="js/require.min.js"></script>
 <script charset="utf-8" id="init-code">
-
-function NotifyCacheRefresh()
-{
-	$.cachenoty=generate_noty('information', '<b>' + ($.t !== undefined ?  $.t('Browser Cache is being refreshed') : 'Browser Cache is being refreshed') + '...</b><br>' + ($.t !== undefined ? $.t('Please standby') : 'Please standby') + '...', false);
-	$.cachecount=0
-	$.cachetotal=0
-}
-
-function ClearNotifyCacheRefresh()
-{
-	if (typeof $.cachenoty != 'undefined') {
-		$.cachenoty.close();
-	}
-}
-
-function logEvent(event) {
-	var re = /https:\/\/my.domoticz.com\/.*\/html5.appcache/i;
-	if (event.type == "error") {
-		if (typeof event.url != 'undefined')
-		{
-			if (event.url.match(re) != null) {
-				document.location = "https://my.domoticz.com/mydomoticz/dashboard";
-			}
-		}
-	}
-}
-
-if (window.applicationCache) {
-	window.applicationCache.addEventListener('checking',logEvent,false);
-	window.applicationCache.addEventListener('noupdate',logEvent,false);
-	window.applicationCache.addEventListener('progress',logEvent,false);
-	window.applicationCache.addEventListener('cached',logEvent,false);
-	window.applicationCache.addEventListener('updateready',logEvent,false);
-	window.applicationCache.addEventListener('obsolete',logEvent,false);
-	window.applicationCache.addEventListener('error',logEvent,false);
-}
 
 function WindowsDownloadURL(url)
 {
@@ -325,61 +289,6 @@ $(document).ready(function() {
 		if (bVersion < 10.0) {
 			bootbox.alert($.t('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
-	}
-
-	if (window.applicationCache) {
-			window.applicationCache.addEventListener('downloading', function(e)
-			{
-				NotifyCacheRefresh();
-			}, false);
-
-			window.applicationCache.addEventListener('updateready', function(e)
-			{
-				ClearNotifyCacheRefresh();
-				if (window.applicationCache.status == window.applicationCache.UPDATEREADY)
-				{
-					// Browser downloaded a new app cache.
-					// Swap it in and reload the page to get the new hotness.
-					try {
-						window.applicationCache.swapCache();
-					}
-					catch(error) {
-						console.log(error.code);
-					}
-					window.location.reload();
-				}
-			}, false);
-			window.applicationCache.addEventListener('cached', function(e)
-			{
-				ClearNotifyCacheRefresh();
-				if (window.applicationCache.status == window.applicationCache.UPDATEREADY)
-				{
-					// Browser downloaded a new app cache.
-					// Swap it in and reload the page to get the new hotness.
-					try {
-						window.applicationCache.swapCache();
-					}
-					catch(error) {
-						console.log(error.code);
-					}
-					window.location.reload();
-				}
-			}, false);
-
-			window.applicationCache.addEventListener('error', function(e)
-			{
-				var errText = "Browser Cache refresh failed.";
-				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
-				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
-				ClearNotifyCacheRefresh();
-				$.cachenoty=generate_noty('error', errText, 2000);
-			}, false);
-
-			window.applicationCache.addEventListener('progress', function(e)
-			{
-				$.cachecount=e.loaded
-				$.cachetotal=e.total
-			}, false);
 	}
 
 	$("#appversion").click( function( e ) {
