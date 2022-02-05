@@ -200,7 +200,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface", "MySensors" },
 	{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface", "MySensors" },
 	{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface", "MQTT" },
-	{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface", "Fritzbox" },
+	{ HTYPE_FRITZBOX, "Fritzbox Call/Statistics monitor via LAN interface", "Fritzbox" },
 	{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface", "ETh8020" },
 	{ HTYPE_RFLINKUSB, "RFLink Gateway USB", "RFLink" },
 	{ HTYPE_KMTronicUSB, "KMTronic Gateway USB", "KMTronic" },
