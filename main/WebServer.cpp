@@ -1148,7 +1148,7 @@ namespace http
 			else if (IsNetworkDevice(htype))
 			{
 				// Lan
-				if (address.empty() || port == 0)
+				if (address.empty())
 					return;
 
 				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT || htype == HTYPE_MQTTAutoDiscovery)
