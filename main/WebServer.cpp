@@ -9908,7 +9908,7 @@ namespace http
 									break;
 								case MTYPE_COUNTER:
 									musage = float(total_real) / divider;
-									sprintf(szTmp, "%g", musage);
+									sprintf(szTmp, "%.10g", musage);
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -9951,7 +9951,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
 								root["result"][ii]["ValueQuantity"] = ValueQuantity;
