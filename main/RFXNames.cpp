@@ -328,7 +328,7 @@ const char* Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_ENERGY, "Energy" },
 		{ MTYPE_GAS, "Gas" },
 		{ MTYPE_WATER, "Water" },
-		{ MTYPE_COUNTER, "Counter" },
+		{ MTYPE_COUNTER, "Custom" },
 		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
 		{ MTYPE_TIME, "Time" },
 		{ 0, nullptr, nullptr },
