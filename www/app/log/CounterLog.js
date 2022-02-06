@@ -79,7 +79,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                preprocessData: subtype.preprocesWeeksData,
+                                preprocessData: subtype.preprocessWeekData,
                                 preprocessDataItems: subtype.preprocessWeekDataItems
                             },
                             subtype.weekSeriesSuppliers(self.device.SwitchTypeVal)
