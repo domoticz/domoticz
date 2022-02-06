@@ -76,7 +76,6 @@ namespace
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
-		"\t-nocache (do not return appcache, use only when developing the web pages)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
 #if defined WIN32
 		"\t-nobrowser (do not start web browser (Windows Only)\n"
@@ -168,7 +167,6 @@ std::string weblogfile;
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
-bool g_bDontCacheWWW = false;
 http::server::_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 http::server::server_settings webserver_settings;
@@ -557,9 +555,6 @@ bool ParseConfigFile(const std::string &szConfigFile)
 				_log.Log(LOG_ERROR, "Invalid www_compress_mode value in Configuration file '%s'", szConfigFile.c_str());
 				return false;
 			}
-		}
-		else if (szFlag == "cache") {
-			g_bDontCacheWWW = !GetConfigBool(sLine);
 		}
 		else if (szFlag == "reset_password") {
 			m_mainworker.m_bIgnoreUsernamePassword = GetConfigBool(sLine);
@@ -956,10 +951,6 @@ int main(int argc, char**argv)
 		if (cmdLine.HasSwitch("-nowwwpwd"))
 		{
 			m_mainworker.m_bIgnoreUsernamePassword = true;
-		}
-		if (cmdLine.HasSwitch("-nocache"))
-		{
-			g_bDontCacheWWW = true;
 		}
 		if (cmdLine.HasSwitch("-wwwcompress"))
 		{

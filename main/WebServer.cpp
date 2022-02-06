@@ -84,8 +84,6 @@ extern bool g_bUseUpdater;
 
 extern time_t m_StartTime;
 
-extern bool g_bDontCacheWWW;
-
 struct _tGuiLanguage
 {
 	const char *szShort;
@@ -349,7 +347,8 @@ namespace http
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
 			// Maybe handle these differently? (Or remove)
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", [this](auto &&session, auto &&req, auto &&rep) { GetFloorplanImage(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/service-worker.js", [this](auto&& session, auto&& req, auto&& rep) { GetServiceWorker(session, req, rep); });
+
 			// End of 'Pages' to be moved...
 
 			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
@@ -766,94 +765,6 @@ namespace http
 			{
 				pf->second(session, req, root);
 			}
-		}
-
-		void CWebServer::GetAppCache(WebEmSession &session, const request &req, reply &rep)
-		{
-			std::string response;
-			if (g_bDontCacheWWW)
-			{
-				return;
-			}
-			// Return the appcache file (dynamically generated)
-			std::string sLine;
-			std::string filename = szWWWFolder + "/html5.appcache";
-
-			std::string sWebTheme = "default";
-			m_sql.GetPreferencesVar("WebTheme", sWebTheme);
-
-			// Get Dynamic Theme Files
-			std::map<std::string, int> _ThemeFiles;
-			GetDirFilesRecursive(szWWWFolder + "/styles/" + sWebTheme + "/", _ThemeFiles);
-
-			// Get Dynamic Floorplan Images from database
-			std::map<std::string, int> _FloorplanFiles;
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID FROM Floorplans ORDER BY [Order]");
-			if (!result.empty())
-			{
-				for (const auto &sd : result)
-				{
-					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
-					_FloorplanFiles[ImageURL] = 1;
-				}
-			}
-
-			std::ifstream is(filename.c_str());
-			if (is)
-			{
-				while (!is.eof())
-				{
-					getline(is, sLine);
-					if (!sLine.empty())
-					{
-						if (sLine.find("#BuildHash") != std::string::npos)
-						{
-							stdreplace(sLine, "#BuildHash", szAppHash);
-						}
-						else if (sLine.find("#ThemeFiles") != std::string::npos)
-						{
-							response += "#Theme=" + sWebTheme + '\n';
-							// Add all theme files
-							for (const auto &file : _ThemeFiles)
-							{
-								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
-								response += tfname + '\n';
-							}
-							continue;
-						}
-						else if (sLine.find("#Floorplans") != std::string::npos)
-						{
-							// Add all floorplans
-							for (const auto &file : _FloorplanFiles)
-							{
-								std::string tfname = file.first;
-								response += tfname + '\n';
-							}
-							continue;
-						}
-						else if (sLine.find("#SwitchIcons") != std::string::npos)
-						{
-							// Add database switch icons
-							for (const auto &db : m_custom_light_icons)
-							{
-								if (db.idx >= 100)
-								{
-									std::string IconFile16 = db.RootFile + ".png";
-									std::string IconFile48On = db.RootFile + "48_On.png";
-									std::string IconFile48Off = db.RootFile + "48_Off.png";
-
-									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
-									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
-									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + '\n';
-								}
-							}
-						}
-					}
-					response += sLine + '\n';
-				}
-			}
-			reply::set_content(&rep, response);
 		}
 
 		void CWebServer::GetJSonPage(WebEmSession &session, const request &req, reply &rep)
@@ -11141,6 +11052,33 @@ namespace http
 					root["status"] = "OK";
 			}
 			redirect_uri = root.toStyledString();
+		}
+
+		void CWebServer::GetServiceWorker(WebEmSession& session, const request& req, reply& rep)
+		{
+			// Return the appcache file (dynamically generated)
+			std::string sLine;
+			std::string filename = szWWWFolder + "/service-worker.js";
+
+			std::string response;
+
+			std::ifstream is(filename.c_str());
+			if (is)
+			{
+				while (!is.eof())
+				{
+					getline(is, sLine);
+					if (!sLine.empty())
+					{
+						if (sLine.find("#BuildHash") != std::string::npos)
+						{
+							stdreplace(sLine, "#BuildHash", szAppHash);
+						}
+					}
+					response += sLine + '\n';
+				}
+			}
+			reply::set_content(&rep, response);
 		}
 
 		void CWebServer::GetFloorplanImage(WebEmSession &session, const request &req, reply &rep)
