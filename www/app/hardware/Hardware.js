@@ -3873,6 +3873,9 @@ define(['app'], function (app) {
 									HwTypeStr += ' <a href="#/Hardware/' + item.idx + '" class="label ' + lblStatus + ' btn-link">' + $.t("Setup") + '</a>';
 								}
 							}
+							else if (HwTypeStr.indexOf("EnOcean") >= 0 && HwTypeStr.indexOf("(ESP3)") >= 0) {
+								HwTypeStr += ' ' + hardwareSetupLink;
+							}
 							else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 							}

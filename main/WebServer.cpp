@@ -684,6 +684,25 @@ namespace http
 			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
 
+			// EnOcean helpers cmds
+
+			RegisterCommandCode("enoceangetmanufacturers", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetManufacturers(session, req, root); });
+			RegisterCommandCode("enoceangetrorgs", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetRORGs(session, req, root); });
+			RegisterCommandCode("enoceangetprofiles", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetProfiles(session, req, root); });
+
+			// EnOcean ESP3 cmds
+			RegisterCommandCode("esp3enablelearnmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3EnableLearnMode(session, req, root); });
+			RegisterCommandCode("esp3isnodeteachedin", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3IsNodeTeachedIn(session, req, root); });
+			RegisterCommandCode("esp3cancelteachin", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3CancelTeachIn(session, req, root); });
+
+			RegisterCommandCode("esp3controllerreset", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3ControllerReset(session, req, root); });
+
+			RegisterCommandCode("esp3updatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3UpdateNode(session, req, root); });
+			RegisterCommandCode("esp3deletenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
+
+			// EnOcean ESP3 Rtypes
+			RegisterRType("esp3getnodes", [this](auto &&session, auto &&req, auto &&root) { RType_EnOceanESP3GetNodes(session, req, root); });
+
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
@@ -4454,29 +4473,36 @@ namespace http
 					// EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
 					sunitcode = request::findValue(&req, "unitcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+
+					if (sunitcode.empty() || sgroupcode.empty())
 						return;
+
+					int iUnitTest = stoi(sunitcode);
+
+					// Using only First Rocker_ID, gives us 128 devices we can control, should be enough!
+					if (iUnitTest < 1 || iUnitTest > 128)
+						return;
+
 					sunitcode = sgroupcode; // Button A or B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == nullptr)
 						return;
+
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
 					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
 					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						auto pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
 						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
 						// for exemple see MultiblocV8 layer...
 						rID = pUSBtinHardware->switch_id_base;
@@ -5102,17 +5128,25 @@ namespace http
 					subtype = sTypeAC;
 					sunitcode = request::findValue(&req, "unitcode");
 					std::string sgroupcode = request::findValue(&req, "groupcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+
+					if (sunitcode.empty() || sgroupcode.empty())
 						return;
+
+					int iUnitTest = stoi(sunitcode);
+
+					// Only First Rocker_ID, gives us 128 devices we can control, should be enough!
+					if (iUnitTest < 1 || iUnitTest > 128)
+						return;
+
 					sunitcode = sgroupcode; // Button A/B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+
 					if (pBaseHardware == nullptr)
 						return;
+
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
@@ -5123,7 +5157,7 @@ namespace http
 					}
 					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
 					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
@@ -5131,10 +5165,15 @@ namespace http
 							return;
 						}
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
+
+						// Insert virtual ESP3 switch in EnOceanNodes table with EEP F6-02-01
+						// So it will appear in EnOcean hardware setup screen
+
+						pEnoceanHardware->TeachInVirtualNode(rID, RORG_RPS, 0x02, 0x01);
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
 					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						auto pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
 						rID = pUSBtinHardware->switch_id_base;
 						std::stringstream ssunitcode;
 						ssunitcode << iUnitTest;
@@ -5559,7 +5598,6 @@ namespace http
 				}
 
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-				//CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != nullptr)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))
