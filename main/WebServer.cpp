@@ -75,6 +75,7 @@ extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
 extern std::string szAppVersion;
+extern int iAppRevision;
 extern std::string szAppHash;
 extern std::string szAppDate;
 extern std::string szPyVersion;
@@ -2625,30 +2626,38 @@ namespace http
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 			bool bIsBetaChannel = (nValue != 0);
 
+			utsname my_uname;
+			if (uname(&my_uname) < 0)
+				return;
+
+			std::string systemname = my_uname.sysname;
+			std::string machine = my_uname.machine;
+			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+
+			if (machine == "armv6l")
+			{
+				// Seems like old arm systems can also use the new arm build
+				machine = "armv7l";
+			}
+
 			std::string szHistoryURL = "https://www.domoticz.com/download.php?channel=stable&type=history";
 			if (bIsBetaChannel)
 			{
-				utsname my_uname;
-				if (uname(&my_uname) < 0)
-					return;
-
-				std::string systemname = my_uname.sysname;
-				std::string machine = my_uname.machine;
-				std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-				if (machine == "armv6l")
-				{
-					// Seems like old arm systems can also use the new arm build
-					machine = "armv7l";
-				}
-
 				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64") && (machine != "aarch64")) ||
 				    (strstr(my_uname.release, "ARCH+") != nullptr))
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
 			}
-			if (!HTTPClient::GET(szHistoryURL, historyfile))
+			std::vector<std::string> ExtraHeaders;
+			ExtraHeaders.push_back("Unique_ID: " + m_sql.m_UniqueID);
+			ExtraHeaders.push_back("App_Version: " + szAppVersion);
+			ExtraHeaders.push_back("App_Revision: " + std::to_string(iAppRevision));
+			ExtraHeaders.push_back("System_Name: " + systemname);
+			ExtraHeaders.push_back("Machine: " + machine);
+			ExtraHeaders.push_back("Type: " + (!bIsBetaChannel) ? "Stable" : "Beta");
+
+			if (!HTTPClient::GET(szHistoryURL, ExtraHeaders, historyfile))
 			{
 				historyfile = "Unable to get Online History document !!";
 			}

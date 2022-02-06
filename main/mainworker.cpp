@@ -186,6 +186,7 @@
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
+extern std::string szAppVersion;
 extern int iAppRevision;
 extern std::string szWebRoot;
 extern bool g_bUseUpdater;
@@ -1236,16 +1237,14 @@ bool MainWorker::Stop()
 
 bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 {
-	if (!g_bUseUpdater)
-		return false;
-
+	bool bUseUpdater = g_bUseUpdater;
 	if (!bIsForced)
 	{
 		int nValue = 0;
 		m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 		if (nValue != 1)
 		{
-			return false;
+			bUseUpdater = false;
 		}
 	}
 
@@ -1275,6 +1274,8 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	{
 		if (atime - m_LastUpdateCheck < 12 * 3600)
 		{
+			if (!bUseUpdater)
+				return false;
 			return m_bHaveUpdate;
 		}
 	}
@@ -1300,7 +1301,15 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 
 	std::string revfile;
 
-	if (!HTTPClient::GET(szURL, revfile))
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Unique_ID: " + m_sql.m_UniqueID);
+	ExtraHeaders.push_back("App_Version: " + szAppVersion);
+	ExtraHeaders.push_back("App_Revision: " + std::to_string(iAppRevision));
+	ExtraHeaders.push_back("System_Name: " + m_szSystemName);
+	ExtraHeaders.push_back("Machine: " + machine);
+	ExtraHeaders.push_back("Type: " + (!bIsBetaChannel) ? "Stable" : "Beta");
+
+	if (!HTTPClient::GET(szURL, ExtraHeaders, revfile))
 		return false;
 
 	stdreplace(revfile, "\r\n", "\n");
@@ -1318,6 +1327,9 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 #else
 	m_bHaveUpdate = ((iAppRevision != m_iRevision) && (iAppRevision < m_iRevision));
 #endif
+	if (!bUseUpdater)
+		return false;
+
 	return m_bHaveUpdate;
 }
 
