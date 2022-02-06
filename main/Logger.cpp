@@ -387,10 +387,12 @@ void CLogger::ACLFlog(const char *logline, ...)
 		}
 	}
 
-	if(m_aclf_flags & LOG_ACLF_SYSLOG)
+#ifndef WIN32
+	if(g_bUseSyslog && (m_aclf_flags & LOG_ACLF_SYSLOG))
 	{
 		syslog(LOG_INFO|LOG_LOCAL1,"%s", cbuffer);
 	}
+#endif
 }
 
 bool strhasEnding(std::string const &fullString, std::string const &ending)
