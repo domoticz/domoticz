@@ -85,8 +85,10 @@ namespace
 		"\t-dbase_disable_wal_mode\n"
 #if defined WIN32
 		"\t-log file_path (for example D:\\domoticz.log)\n"
+		"\t-weblog file_path (for example D:\\domoticz_access.log)\n"
 #else
 		"\t-log file_path (for example /var/log/domoticz.log)\n"
+		"\t-weblog file_path (for example /var/log/domoticz_access.log)\n"
 #endif
 		"\t-loglevel (combination of: all,normal,status,error,debug)\n"
 		"\t-debuglevel (combination of: all,normal,hardware,received,webserver,eventsystem,python,thread_id,sql)\n"
@@ -162,6 +164,7 @@ CSQLHelper m_sql;
 CNotificationHelper m_notifications;
 
 std::string logfile;
+std::string weblogfile;
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
@@ -564,6 +567,9 @@ bool ParseConfigFile(const std::string &szConfigFile)
 		else if (szFlag == "log_file") {
 			logfile = sLine;
 		}
+		else if (szFlag == "weblog_file") {
+			weblogfile = sLine;
+		}
 		else if (szFlag == "loglevel") {
 			_log.SetLogFlags(sLine);
 		}
@@ -696,6 +702,15 @@ int main(int argc, char**argv)
 			}
 			logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
 		}
+		if (cmdLine.HasSwitch("-weblog"))
+		{
+			if (cmdLine.GetArgumentCount("-weblog") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify an output weblog file (or syslog:<facility>)");
+				return 1;
+			}
+			weblogfile = cmdLine.GetSafeArgument("-weblog", 0, "domoticz_access.log");
+		}
 		if (cmdLine.HasSwitch("-approot"))
 		{
 			if (cmdLine.GetArgumentCount("-approot") != 1)
@@ -714,6 +729,9 @@ int main(int argc, char**argv)
 
 	if (!logfile.empty())
 		_log.SetOutputFile(logfile.c_str());
+
+	if (!weblogfile.empty())
+		_log.SetACLFOutputFile(weblogfile.c_str());
 
 	if (szStartupFolder.empty())
 	{

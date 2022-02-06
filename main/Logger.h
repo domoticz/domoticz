@@ -27,6 +27,12 @@ enum _eDebugLevel : uint32_t
 	//
 	DEBUG_ALL = 0xFFFFFFF
 };
+enum _eLogACLF : uint8_t
+{
+	LOG_ACLF_ENABLED = 0x01,
+	LOG_ACLF_FILE = 0x02,
+	LOG_ACLF_SYSLOG = 0x04
+};
 
 class CLogger
 {
@@ -50,7 +56,12 @@ class CLogger
 	void SetDebugFlags(const uint32_t iFlags);
 	bool IsDebugLevelEnabled(const _eDebugLevel level);
 
+	void SetACLFlogFlags(const uint8_t iFlags);
+	bool IsACLFlogEnabled();
+
 	void SetOutputFile(const char *OutputFile);
+	void SetACLFOutputFile(const char *OutputFile);
+	void OpenACLFOutputFile();
 
 	void Log(_eLogLevel level, const std::string &sLogline);
 	void Log(_eLogLevel level, const char *logline, ...)
@@ -64,6 +75,12 @@ class CLogger
 		__attribute__((format(printf, 3, 4)))
 #endif
 		;
+	void ACLFlog(const char *logline, ...)
+#ifdef __GNUC__
+		__attribute__((format(printf, 2, 3)))
+#endif
+		;
+
 	void LogSequenceStart();
 	void LogSequenceAdd(const char *logline);
 	void LogSequenceAddNoLF(const char *logline);
@@ -83,9 +100,13 @@ class CLogger
       private:
 	uint32_t m_log_flags;
 	uint32_t m_debug_flags;
+	uint8_t m_aclf_flags;
+	uint32_t m_aclf_loggedlinescnt;
 
 	std::mutex m_mutex;
 	std::ofstream m_outputfile;
+	const char *m_aclflogfile;
+	std::ofstream m_aclfoutputfile;
 	std::map<_eLogLevel, std::deque<_tLogLineStruct>> m_lastlog;
 	std::deque<_tLogLineStruct> m_notification_log;
 	bool m_bInSequenceMode;
