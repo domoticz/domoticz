@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 152
+#define DB_VERSION 153
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2967,6 +2967,10 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Notifications ADD COLUMN [CustomAction] VARCHAR(200) DEFAULT ''");
 		}
+		if (dbversion < 153)
+		{
+			UpdatePreferencesVar("Unique_ID", GenerateUUID());
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2996,6 +3000,12 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("Title", "Domoticz");
 	}
+	if (!GetPreferencesVar("Unique_ID", sValue))
+	{
+		sValue = GenerateUUID();
+		UpdatePreferencesVar("Unique_ID", sValue);
+	}
+	m_UniqueID = sValue;
 	if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
