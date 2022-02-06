@@ -15,6 +15,7 @@
 #include "mime_types.hpp"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 namespace http {
 	namespace server {
