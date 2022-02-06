@@ -26,6 +26,8 @@
 #include <locale>
 #include <codecvt>
 
+#include "uuid_v4.h"
+
 #if defined WIN32
 #include "../msbuild/WindowsHelper.h"
 #endif
@@ -1411,26 +1413,11 @@ bool IsDebuggerPresent()
 }
 #endif
 
-const std::string hexCHARS = "0123456789abcdef";
 std::string GenerateUUID() // DCE/RFC 4122
 {
-	std::string uuid = std::string(36, ' ');
-
-	uuid[8] = '-';
-	uuid[13] = '-';
-	uuid[14] = '4'; //M
-	uuid[18] = '-';
-	//uuid[19] = ' '; //N Variant 1 UUIDs (10xx N=8..b, 2 bits)
-	uuid[23] = '-';
-
-	for (size_t ii = 0; ii < uuid.size(); ii++)
-	{
-		if (uuid[ii] == ' ')
-		{
-			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (std::rand() & 0x03)) : std::rand() & 0x0F];
-		}
-	}
-	return uuid;
+	UUIDv4::UUIDGenerator<std::mt19937_64> uuidGenerator;
+	UUIDv4::UUID uuid = uuidGenerator.getUUID();
+	return uuid.str();
 }
 
 double round_digits(double dIn, const int totDigits)
