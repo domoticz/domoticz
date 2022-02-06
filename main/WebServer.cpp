@@ -10375,8 +10375,14 @@ namespace http
 								unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
 								unsigned long long total_real_usage, total_real_deliv;
 
+								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
+								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
+
 								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+								if (total_real_deliv < 2)
+									total_real_deliv = 0;
 
 								musage = double(total_real_usage) / EnergyDivider;
 								sprintf(szTmp, "%.3f kWh", musage);
