@@ -9859,14 +9859,11 @@ namespace http
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
-						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
+							ValueQuantity = "Custom";
 						}
 
 						// get value of today
@@ -9887,8 +9884,6 @@ namespace http
 							uint64_t total_max = std::stoull(sValue);
 							uint64_t total_real = total_max - total_min;
 							sprintf(szTmp, "%" PRIu64, total_real);
-
-							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 							float musage = 0.0F;
 							switch (metertype)
@@ -9924,11 +9919,10 @@ namespace http
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 
 						double meteroffset = AddjValue;
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 
@@ -9951,17 +9945,18 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								root["result"][ii]["Data"] = "?";
 								root["result"][ii]["Counter"] = "?";
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 						}
 					}
@@ -9971,12 +9966,9 @@ namespace http
 						std::string ValueUnits = options["ValueUnits"];
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
+							ValueQuantity = "Custom";
 						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
-						}
+
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
@@ -10015,7 +10007,7 @@ namespace http
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g", float(total_real) / divider);
+									sprintf(szTmp, "%.10g", float(total_real) / divider);
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -10032,8 +10024,8 @@ namespace http
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 						double meteroffset = AddjValue;
 
@@ -10056,17 +10048,18 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								root["result"][ii]["Data"] = "?";
 								root["result"][ii]["Counter"] = "?";
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 						}
 					}
@@ -10076,12 +10069,9 @@ namespace http
 						std::string ValueUnits = options["ValueUnits"];
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
+							ValueQuantity = "Custom";
 						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
-						}
+
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						std::vector<std::string> splitresults;
@@ -10104,8 +10094,8 @@ namespace http
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 						root["result"][ii]["ShowNotifications"] = false;
 						double meteroffset = AddjValue;
 
@@ -10128,17 +10118,18 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								root["result"][ii]["Data"] = "?";
 								root["result"][ii]["Counter"] = "?";
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 						}
 					}
@@ -10146,15 +10137,12 @@ namespace http
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						float musage = 0;
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
+							ValueQuantity = "Custom";
 						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
-						}
+
+						float musage = 0;
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
@@ -10195,7 +10183,12 @@ namespace http
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g %s", float(total_real) / divider, ValueUnits.c_str());
+									sprintf(szTmp, "%.10g", float(total_real) / divider);
+									if (!ValueUnits.empty())
+									{
+										strcat(szTmp, " ");
+										strcat(szTmp, ValueUnits.c_str());
+									}
 									break;
 								default:
 									strcpy(szTmp, "0");
@@ -10252,15 +10245,21 @@ namespace http
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", float(acounter) / divider, ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", float(acounter) / divider);
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								break;
 							default:
 								strcpy(szTmp, "0");
 								break;
 						}
 						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
+
 						switch (metertype)
 						{
 							case MTYPE_ENERGY:
@@ -10275,8 +10274,6 @@ namespace http
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%s", splitresults[1].c_str());
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								strcpy(szTmp, "0");
