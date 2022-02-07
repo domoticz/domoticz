@@ -2092,35 +2092,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
-	{ // D2-05-00, Blinds Control for Position and Angle 
-		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
-
-		// Build CMD 1 - Go to Position and Angle
-		int channel = tsen->LIGHTING2.unitcode - 1;
-		int cmd = tsen->LIGHTING2.cmnd;
-		int pos;
-
-		if (cmd != gswitch_sStop)
-			pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
-		else
-			pos = LastPosition;
-
-		if (LastPosition == pos)
-		{
-			//send command stop si rappuie
-			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
-			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
-			LastPosition = -1;
-		}
-		else
-		{
-			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X", pos, nodeID);
-			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
-			LastPosition = pos;
-		}
-		return true;
-	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type == 0x0C)
 	{ // D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
 		const char *PilotWireModeStr[] = {"Off", "Comfort", "Eco", "Anti-freeze", "Comfort-1", "Comfort-2", ""};
@@ -2151,6 +2122,35 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X", PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID);
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
 
+		return true;
+	}
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
+	{ // D2-05-00, Blinds Control for Position and Angle 
+		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+
+		// Build CMD 1 - Go to Position and Angle
+		int channel = tsen->LIGHTING2.unitcode - 1;
+		int cmd = tsen->LIGHTING2.cmnd;
+		int pos;
+
+		if (cmd != gswitch_sStop)
+			pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
+		else
+			pos = LastPosition;
+
+		if (LastPosition == pos)
+		{
+			//send command stop si rappuie
+			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
+			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
+			LastPosition = -1;
+		}
+		else
+		{
+			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X", pos, nodeID);
+			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
+			LastPosition = pos;
+		}
 		return true;
 	}
 	Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
@@ -3012,11 +3012,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				if (pNode->func == 0x10 && pNode->type <= 0x0D)
-				{ // A5-10-01..OD, RoomOperatingPanel
+				{ // A5-10-01..0D, RoomOperatingPanel
 					RBUF tsen;
 
 					if (pNode->manufacturerID != ELTAKO)
-					{ // General case for A5-10-01..OD
+					{ // General case for A5-10-01..0D
 						// DATA_BYTE3 is the fan speed
 						// DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
