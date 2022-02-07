@@ -1465,7 +1465,6 @@ namespace http {
 		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const bool noclient)
 		{
 			bool bOk = false;
-
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
 			std::string hashedsecret = clientsecret;
 			if (!(clientsecret.length() == 32 && isHexRepresentation(clientsecret)))	// 2 * MD5_DIGEST_LENGTH
@@ -1480,7 +1479,7 @@ namespace http {
 				{
 					if (my.userrights == URIGHTS_CLIENTID || noclient)	// The 'user' should have CLIENTID rights to be a real Client (and not a normal user) or we skip this check
 					{
-						if (my.Password == hashedsecret)
+						if ((my.Password == hashedsecret) || (my.ActiveTabs == true))	// We 'abuse' the Users ActiveTabs as the Application Public boolean
 						{
 							auto JWT = jwt::create()
 								.set_type("JWT")
