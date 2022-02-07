@@ -75,6 +75,7 @@ extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
 extern std::string szAppVersion;
+extern int iAppRevision;
 extern std::string szAppHash;
 extern std::string szAppDate;
 extern std::string szPyVersion;
@@ -82,8 +83,6 @@ extern std::string szPyVersion;
 extern bool g_bUseUpdater;
 
 extern time_t m_StartTime;
-
-extern bool g_bDontCacheWWW;
 
 struct _tGuiLanguage
 {
@@ -348,7 +347,8 @@ namespace http
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", [this](auto &&session, auto &&req, auto &&rep) { GetInternalCameraSnapshot(session, req, rep); });
 			// Maybe handle these differently? (Or remove)
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", [this](auto &&session, auto &&req, auto &&rep) { GetFloorplanImage(session, req, rep); });
-			m_pWebEm->RegisterPageCode("/html5.appcache", [this](auto &&session, auto &&req, auto &&rep) { GetAppCache(session, req, rep); });
+			m_pWebEm->RegisterPageCode("/service-worker.js", [this](auto&& session, auto&& req, auto&& rep) { GetServiceWorker(session, req, rep); });
+
 			// End of 'Pages' to be moved...
 
 			m_pWebEm->RegisterActionCode("setrfxcommode", [this](auto &&session, auto &&req, auto &&redirect_uri) { SetRFXCOMMode(session, req, redirect_uri); });
@@ -683,7 +683,6 @@ namespace http
 			// pollpost.html
 			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
-
 			// EnOcean helpers cmds
 
 			RegisterCommandCode("enoceangetmanufacturers", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetManufacturers(session, req, root); });
@@ -703,7 +702,7 @@ namespace http
 			// EnOcean ESP3 Rtypes
 			RegisterRType("esp3getnodes", [this](auto &&session, auto &&req, auto &&root) { RType_EnOceanESP3GetNodes(session, req, root); });
 
-			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
+      //Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
 			// Start normal worker thread
@@ -784,94 +783,6 @@ namespace http
 			{
 				pf->second(session, req, root);
 			}
-		}
-
-		void CWebServer::GetAppCache(WebEmSession &session, const request &req, reply &rep)
-		{
-			std::string response;
-			if (g_bDontCacheWWW)
-			{
-				return;
-			}
-			// Return the appcache file (dynamically generated)
-			std::string sLine;
-			std::string filename = szWWWFolder + "/html5.appcache";
-
-			std::string sWebTheme = "default";
-			m_sql.GetPreferencesVar("WebTheme", sWebTheme);
-
-			// Get Dynamic Theme Files
-			std::map<std::string, int> _ThemeFiles;
-			GetDirFilesRecursive(szWWWFolder + "/styles/" + sWebTheme + "/", _ThemeFiles);
-
-			// Get Dynamic Floorplan Images from database
-			std::map<std::string, int> _FloorplanFiles;
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID FROM Floorplans ORDER BY [Order]");
-			if (!result.empty())
-			{
-				for (const auto &sd : result)
-				{
-					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
-					_FloorplanFiles[ImageURL] = 1;
-				}
-			}
-
-			std::ifstream is(filename.c_str());
-			if (is)
-			{
-				while (!is.eof())
-				{
-					getline(is, sLine);
-					if (!sLine.empty())
-					{
-						if (sLine.find("#BuildHash") != std::string::npos)
-						{
-							stdreplace(sLine, "#BuildHash", szAppHash);
-						}
-						else if (sLine.find("#ThemeFiles") != std::string::npos)
-						{
-							response += "#Theme=" + sWebTheme + '\n';
-							// Add all theme files
-							for (const auto &file : _ThemeFiles)
-							{
-								std::string tfname = file.first.substr(szWWWFolder.size() + 1);
-								response += tfname + '\n';
-							}
-							continue;
-						}
-						else if (sLine.find("#Floorplans") != std::string::npos)
-						{
-							// Add all floorplans
-							for (const auto &file : _FloorplanFiles)
-							{
-								std::string tfname = file.first;
-								response += tfname + '\n';
-							}
-							continue;
-						}
-						else if (sLine.find("#SwitchIcons") != std::string::npos)
-						{
-							// Add database switch icons
-							for (const auto &db : m_custom_light_icons)
-							{
-								if (db.idx >= 100)
-								{
-									std::string IconFile16 = db.RootFile + ".png";
-									std::string IconFile48On = db.RootFile + "48_On.png";
-									std::string IconFile48Off = db.RootFile + "48_Off.png";
-
-									response += "images/" + CURLEncode::URLEncode(IconFile16) + '\n';
-									response += "images/" + CURLEncode::URLEncode(IconFile48On) + '\n';
-									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + '\n';
-								}
-							}
-						}
-					}
-					response += sLine + '\n';
-				}
-			}
-			reply::set_content(&rep, response);
 		}
 
 		void CWebServer::GetJSonPage(WebEmSession &session, const request &req, reply &rep)
@@ -1167,7 +1078,7 @@ namespace http
 			else if (IsNetworkDevice(htype))
 			{
 				// Lan
-				if (address.empty() || port == 0)
+				if (address.empty())
 					return;
 
 				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT || htype == HTYPE_MQTTAutoDiscovery)
@@ -2644,30 +2555,38 @@ namespace http
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 			bool bIsBetaChannel = (nValue != 0);
 
+			utsname my_uname;
+			if (uname(&my_uname) < 0)
+				return;
+
+			std::string systemname = my_uname.sysname;
+			std::string machine = my_uname.machine;
+			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+
+			if (machine == "armv6l")
+			{
+				// Seems like old arm systems can also use the new arm build
+				machine = "armv7l";
+			}
+
 			std::string szHistoryURL = "https://www.domoticz.com/download.php?channel=stable&type=history";
 			if (bIsBetaChannel)
 			{
-				utsname my_uname;
-				if (uname(&my_uname) < 0)
-					return;
-
-				std::string systemname = my_uname.sysname;
-				std::string machine = my_uname.machine;
-				std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-				if (machine == "armv6l")
-				{
-					// Seems like old arm systems can also use the new arm build
-					machine = "armv7l";
-				}
-
 				if (((machine != "armv6l") && (machine != "armv7l") && (systemname != "windows") && (machine != "x86_64") && (machine != "aarch64")) ||
 				    (strstr(my_uname.release, "ARCH+") != nullptr))
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "https://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
 			}
-			if (!HTTPClient::GET(szHistoryURL, historyfile))
+			std::vector<std::string> ExtraHeaders;
+			ExtraHeaders.push_back("Unique_ID: " + m_sql.m_UniqueID);
+			ExtraHeaders.push_back("App_Version: " + szAppVersion);
+			ExtraHeaders.push_back("App_Revision: " + std::to_string(iAppRevision));
+			ExtraHeaders.push_back("System_Name: " + systemname);
+			ExtraHeaders.push_back("Machine: " + machine);
+			ExtraHeaders.push_back("Type: " + (!bIsBetaChannel) ? "Stable" : "Beta");
+
+			if (!HTTPClient::GET(szHistoryURL, ExtraHeaders, historyfile))
 			{
 				historyfile = "Unable to get Online History document !!";
 			}
@@ -9897,14 +9816,11 @@ namespace http
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
+						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
-						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
+							ValueQuantity = "Custom";
 						}
 
 						// get value of today
@@ -9926,8 +9842,6 @@ namespace http
 							uint64_t total_real = total_max - total_min;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
-							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
 							float musage = 0.0F;
 							switch (metertype)
 							{
@@ -9946,7 +9860,7 @@ namespace http
 									break;
 								case MTYPE_COUNTER:
 									musage = float(total_real) / divider;
-									sprintf(szTmp, "%g", musage);
+									sprintf(szTmp, "%.10g", musage);
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -9962,11 +9876,10 @@ namespace http
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 
 						double meteroffset = AddjValue;
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 
@@ -9989,17 +9902,18 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								root["result"][ii]["Data"] = "?";
 								root["result"][ii]["Counter"] = "?";
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 						}
 					}
@@ -10009,12 +9923,9 @@ namespace http
 						std::string ValueUnits = options["ValueUnits"];
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
+							ValueQuantity = "Custom";
 						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
-						}
+
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
@@ -10053,7 +9964,7 @@ namespace http
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g", float(total_real) / divider);
+									sprintf(szTmp, "%.10g", float(total_real) / divider);
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -10070,8 +9981,8 @@ namespace http
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 						double meteroffset = AddjValue;
 
@@ -10094,17 +10005,18 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								root["result"][ii]["Data"] = "?";
 								root["result"][ii]["Counter"] = "?";
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 						}
 					}
@@ -10114,12 +10026,9 @@ namespace http
 						std::string ValueUnits = options["ValueUnits"];
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
+							ValueQuantity = "Custom";
 						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
-						}
+
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						std::vector<std::string> splitresults;
@@ -10142,8 +10051,8 @@ namespace http
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "counter";
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
 						root["result"][ii]["ShowNotifications"] = false;
 						double meteroffset = AddjValue;
 
@@ -10166,17 +10075,18 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", meteroffset + (dvalue / divider), ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								root["result"][ii]["Data"] = "?";
 								root["result"][ii]["Counter"] = "?";
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 						}
 					}
@@ -10184,15 +10094,12 @@ namespace http
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
-						float musage = 0;
 						if (ValueQuantity.empty())
 						{
-							ValueQuantity.assign("Count");
+							ValueQuantity = "Custom";
 						}
-						if (ValueUnits.empty())
-						{
-							ValueUnits.assign("");
-						}
+
+						float musage = 0;
 						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
@@ -10233,7 +10140,12 @@ namespace http
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g %s", float(total_real) / divider, ValueUnits.c_str());
+									sprintf(szTmp, "%.10g", float(total_real) / divider);
+									if (!ValueUnits.empty())
+									{
+										strcat(szTmp, " ");
+										strcat(szTmp, ValueUnits.c_str());
+									}
 									break;
 								default:
 									strcpy(szTmp, "0");
@@ -10290,15 +10202,21 @@ namespace http
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g %s", float(acounter) / divider, ValueUnits.c_str());
+								sprintf(szTmp, "%.10g", float(acounter) / divider);
+								if (!ValueUnits.empty())
+								{
+									strcat(szTmp, " ");
+									strcat(szTmp, ValueUnits.c_str());
+								}
 								break;
 							default:
 								strcpy(szTmp, "0");
 								break;
 						}
 						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["ValueQuantity"] = "";
-						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ValueQuantity"] = ValueQuantity;
+						root["result"][ii]["ValueUnits"] = ValueUnits;
+
 						switch (metertype)
 						{
 							case MTYPE_ENERGY:
@@ -10313,8 +10231,6 @@ namespace http
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%s", splitresults[1].c_str());
-								root["result"][ii]["ValueQuantity"] = ValueQuantity;
-								root["result"][ii]["ValueUnits"] = ValueUnits;
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -10407,8 +10323,14 @@ namespace http
 								unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
 								unsigned long long total_real_usage, total_real_deliv;
 
+								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
+								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
+
 								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+								if (total_real_deliv < 2)
+									total_real_deliv = 0;
 
 								musage = double(total_real_usage) / EnergyDivider;
 								sprintf(szTmp, "%.3f kWh", musage);
@@ -11167,6 +11089,33 @@ namespace http
 					root["status"] = "OK";
 			}
 			redirect_uri = root.toStyledString();
+		}
+
+		void CWebServer::GetServiceWorker(WebEmSession& session, const request& req, reply& rep)
+		{
+			// Return the appcache file (dynamically generated)
+			std::string sLine;
+			std::string filename = szWWWFolder + "/service-worker.js";
+
+			std::string response;
+
+			std::ifstream is(filename.c_str());
+			if (is)
+			{
+				while (!is.eof())
+				{
+					getline(is, sLine);
+					if (!sLine.empty())
+					{
+						if (sLine.find("#BuildHash") != std::string::npos)
+						{
+							stdreplace(sLine, "#BuildHash", szAppHash);
+						}
+					}
+					response += sLine + '\n';
+				}
+			}
+			reply::set_content(&rep, response);
 		}
 
 		void CWebServer::GetFloorplanImage(WebEmSession &session, const request &req, reply &rep)

@@ -479,6 +479,7 @@ class CSQLHelper : public StoppableTask
 
       public:
 	std::string m_LastSwitchID; // for learning command
+	std::string m_UniqueID;
 	uint64_t m_LastSwitchRowID;
 	_eWindUnit m_windunit;
 	std::string m_windsign;

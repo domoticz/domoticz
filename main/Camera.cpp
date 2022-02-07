@@ -143,7 +143,10 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	return TakeSnapshot(std::stoull(CamID), camimage);
+	if (is_number(CamID))
+		return TakeSnapshot(std::stoull(CamID), camimage);
+	else
+		return TakeSnapshot(CamID, camimage);
 }
 
 bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
@@ -321,28 +324,35 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	sclient.SetServer(CURLEncode::URLDecode(EmailServer), EmailPort);
 	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
+	bool bHaveCapturedCamera = false;
+
 	for (const auto & camIt : splitresults)
 	{
 		std::vector<unsigned char> camimage;
 
 		if (!TakeSnapshot(camIt, camimage))
-			return false;
+		{
+			bHaveCapturedCamera = true;
 
-		std::vector<char> filedata;
-		filedata.insert(filedata.begin(), camimage.begin(), camimage.end());
-		std::string imgstring;
-		imgstring.insert(imgstring.end(), filedata.begin(), filedata.end());
-		imgstring = base64_encode(imgstring);
-		imgstring = WrapBase64(imgstring);
+			std::vector<char> filedata;
+			filedata.insert(filedata.begin(), camimage.begin(), camimage.end());
+			std::string imgstring;
+			imgstring.insert(imgstring.end(), filedata.begin(), filedata.end());
+			imgstring = base64_encode(imgstring);
+			imgstring = WrapBase64(imgstring);
 
-		htmlMsg +=
-			"<img src=\"data:image/jpeg;base64,";
-		htmlMsg +=
-			imgstring +
-			"\">\r\n";
-		if (EmailAsAttachment != 0)
-			sclient.AddAttachment(imgstring, "snapshot" + camIt + ".jpg");
+			htmlMsg +=
+				"<img src=\"data:image/jpeg;base64,";
+			htmlMsg +=
+				imgstring +
+				"\">\r\n";
+			if (EmailAsAttachment != 0)
+				sclient.AddAttachment(imgstring, "snapshot" + camIt + ".jpg");
+		}
 	}
+	if (!bHaveCapturedCamera)
+		return false;
+
 	if (EmailAsAttachment == 0)
 		sclient.SetHTMLBody(htmlMsg);
 	bool bRet = sclient.SendEmail();

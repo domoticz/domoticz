@@ -15,6 +15,7 @@
 #include "mime_types.hpp"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 namespace http {
 	namespace server {
@@ -179,7 +180,7 @@ namespace http {
 				}
 				else
 				{
-					// _log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
+					_log.Debug(DEBUG_WEBSERVER, "connection::handle_handshake Error: %s", error.message().c_str());
 					connection_manager_.stop(shared_from_this());
 				}
 			}
@@ -376,6 +377,25 @@ namespace http {
 					}
 
 					if (result) {
+						struct timeval tv;
+						std::time_t newt;
+
+						if(_log.IsACLFlogEnabled())
+						{
+							// Record timestamp (with milliseconds) before starting to process
+						#ifdef CLOCK_REALTIME
+							struct timespec ts;
+							if (!clock_gettime(CLOCK_REALTIME, &ts))
+							{
+								tv.tv_sec = ts.tv_sec;
+								tv.tv_usec = ts.tv_nsec / 1000;
+							}
+							else
+						#endif
+								gettimeofday(&tv, nullptr);
+							newt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+						}
+
 						size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 						_buf.consume(sizeread);
 						reply_.reset();
@@ -388,6 +408,45 @@ namespace http {
 							request_.host_address = request_.host_address.substr(7);
 						}
 						request_handler_.handle_request(request_, reply_);
+
+						if(_log.IsACLFlogEnabled())	// Only do this if we are gonna use it, otherwise don't spend the compute power
+						{
+							// Generate webserver logentry
+							// Follow Apache's Combined Log Format, allows easy processing by 3rd party tools
+							// LogFormat "%h %l %u %f \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
+							// 127.0.0.1 - frank [10/Oct/2000:13:55:36.012 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://my.domoticz.local/index.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
+							std::string wlHost = request_.host_address;
+							std::string wlUser = "-";	// Maybe we can fill this sometime? Or maybe not so we don't expose sensitive data?
+							std::string wlReqUri = request_.method + " " + request_.uri + " HTTP/" + std::to_string(request_.http_version_major) + (request_.http_version_minor ? "." + std::to_string(request_.http_version_minor): "");
+							std::string wlReqRef = "-";
+							if (request_.get_req_header(&request_, "Referer") != nullptr)
+							{
+								std::string shdr = request_.get_req_header(&request_, "Referer");
+								wlReqRef = "\"" + shdr + "\"";
+							}
+							std::string wlBrowser = "-";
+							if (request_.get_req_header(&request_, "User-Agent") != nullptr)
+							{
+								std::string shdr = request_.get_req_header(&request_, "User-Agent");
+								wlBrowser = "\"" + shdr + "\"";
+							}
+							int wlResCode = (int)reply_.status;
+							int wlContentSize = (int)reply_.content.length();
+
+							std::stringstream sstr;
+							sstr << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+							std::string wlReqTimeMs = sstr.str();
+
+							char wlReqTime[32];
+							std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S", std::localtime(&newt));
+							wlReqTime[sizeof(wlReqTime) - 1] = '\0';
+
+							char wlReqTimeZone[16];
+							std::strftime(wlReqTimeZone, sizeof(wlReqTimeZone), "%z", std::localtime(&newt));
+							wlReqTimeZone[sizeof(wlReqTimeZone) - 1] = '\0';
+
+							_log.ACLFlog("%s - %s [%s.%s %s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqTimeMs.c_str(), wlReqTimeZone, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
+						}
 
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request

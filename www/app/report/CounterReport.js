@@ -243,7 +243,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         function showUsageChart(data) {
             var chartElement = $element.find('#usagegraph');
             var series = [];
-            var valueQuantity = "Count";
+            var valueQuantity = "Custom";
             if (typeof vm.device.ValueQuantity != 'undefined') {
                     valueQuantity = vm.device.ValueQuantity;
             }

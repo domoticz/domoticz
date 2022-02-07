@@ -25,7 +25,11 @@ class FritzboxTCP : public CDomoticzHardwareBase, ASyncTCP
 	void OnData(const unsigned char *pData, size_t length) override;
 	void OnError(const boost::system::error_code &error) override;
 
-      private:
+private:
+	void GetStatistics();
+	bool GetSoapData(const std::string& endpoint, const std::string& urn, const std::string& Action, std::string &Response);
+	std::string BuildSoapXML(const std::string& urn, const std::string& Action);
+	bool GetValueFromXML(const std::string& xml, const std::string& key, std::string& value);
 	int m_retrycntr;
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

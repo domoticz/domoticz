@@ -12,9 +12,10 @@
 #include <sstream>
 
 #define RETRY_DELAY 30
+#define STATISTICS_INTERVAL 10
 
 /*
-For this to work you have to enable the CallMonitor on your Fritzbox.
+For the call monitor to work, you have to enable the CallMonitor on your Fritzbox.
 
 dial:
 #96*5* Enable
@@ -32,14 +33,16 @@ datum;CONNECT;ConnectionID;Nebenstelle;Nummer;
 Ende der Verbindung:
 datum;DISCONNECT;ConnectionID;dauerInSekunden;
 
+default port for call monitor is 1012
 
+You can leave the port empty/0 and it will only monitor statistics
 */
 
-FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+FritzboxTCP::FritzboxTCP(const int ID, const std::string& IPAddress, const unsigned short usIPPort) :
 	m_szIPAddress(IPAddress)
 {
-	m_HwdID=ID;
-	m_usIPPort=usIPPort;
+	m_HwdID = ID;
+	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_bufferpos = 0;
 }
@@ -49,8 +52,8 @@ bool FritzboxTCP::StartHardware()
 	RequestStart();
 
 	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
-	m_bIsStarted=true;
+	m_retrycntr = RETRY_DELAY;
+	m_bIsStarted = true;
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
@@ -66,44 +69,52 @@ bool FritzboxTCP::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
 void FritzboxTCP::OnConnect()
 {
-	Log(LOG_STATUS,"connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-	m_bIsStarted=true;
-	m_bufferpos=0;
+	Log(LOG_STATUS, "connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	m_bIsStarted = true;
+	m_bufferpos = 0;
 
 	sOnConnected(this);
 }
 
 void FritzboxTCP::OnDisconnect()
 {
-	Log(LOG_STATUS,"disconnected");
+	Log(LOG_STATUS, "disconnected");
 }
 
 void FritzboxTCP::Do_Work()
 {
-	int sec_counter = 0;
-	connect(m_szIPAddress,m_usIPPort);
+	int sec_counter = STATISTICS_INTERVAL - 2;
+	if (m_usIPPort != 0)
+	{
+		connect(m_szIPAddress, m_usIPPort);
+	}
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 
-		if (sec_counter  % 12 == 0) {
+		if (sec_counter % 10 == 0)
+		{
+			GetStatistics();
+		}
+		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
 	}
-	terminate();
+	if (m_usIPPort != 0)
+		terminate();
 
-	Log(LOG_STATUS,"TCP/IP Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
-void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
+void FritzboxTCP::OnData(const unsigned char* pData, size_t length)
 {
-	ParseData(pData,length);
+	ParseData(pData, length);
 }
 
 void FritzboxTCP::OnError(const boost::system::error_code& error)
@@ -129,17 +140,17 @@ void FritzboxTCP::OnError(const boost::system::error_code& error)
 		Log(LOG_ERROR, "%s", error.message().c_str());
 }
 
-bool FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool FritzboxTCP::WriteToHardware(const char* pdata, const unsigned char length)
 {
 	if (!isConnected())
 	{
 		return false;
 	}
-	write((const unsigned char*)pdata,length);
+	write((const unsigned char*)pdata, length);
 	return true;
 }
 
-void FritzboxTCP::WriteInt(const std::string &sendStr)
+void FritzboxTCP::WriteInt(const std::string& sendStr)
 {
 	if (!isConnected())
 	{
@@ -148,7 +159,7 @@ void FritzboxTCP::WriteInt(const std::string &sendStr)
 	write(sendStr);
 }
 
-void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
+void FritzboxTCP::ParseData(const unsigned char* pData, int Len)
 {
 	int ii = 0;
 	while (ii < Len)
@@ -176,9 +187,9 @@ void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, const bool bOn, const double Level, const std::string& defaultname)
 {
-	double rlevel = (15.0 / 100)*Level;
+	double rlevel = (15.0 / 100) * Level;
 	uint8_t level = (uint8_t)(rlevel);
 
 	char szIdx[10];
@@ -222,7 +233,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const uint8_t SubUnit, c
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
+	sDecodeRXMessage(this, (const unsigned char*)&lcmd.LIGHTING2, defaultname.c_str(), 255, m_Name.c_str());
 }
 
 void FritzboxTCP::ParseLine()
@@ -284,3 +295,100 @@ void FritzboxTCP::ParseLine()
 		SendTextSensor(1, 1, 255, sstr.str(), devname);
 	}
 }
+
+std::string FritzboxTCP::BuildSoapXML(const std::string& urn, const std::string& Action)
+{
+	return std_format(
+		"<?xml version='1.0' encoding='utf-8'?>"
+		"<s:Envelope s:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/' xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>"
+		"<s:Body>"
+		"<u:%s xmlns:u='%s'/>"
+		"</s:Body>"
+		"</s:Envelope>",
+		Action.c_str(), urn.c_str());
+}
+
+bool FritzboxTCP::GetSoapData(const std::string& endpoint, const std::string& urn, const std::string& Action, std::string& Response)
+{
+	std::string sURL = "http://" + m_szIPAddress + ":49000/" + endpoint;
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Content-type: text/xml");
+	ExtraHeaders.push_back("charset: utf-8");
+	ExtraHeaders.push_back("SOAPAction: " + urn + "#" + Action);
+
+	if (!HTTPClient::POST(sURL, BuildSoapXML(urn, Action), ExtraHeaders, Response))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool FritzboxTCP::GetValueFromXML(const std::string& xml, const std::string& key, std::string& value)
+{
+	std::string tkey = "<" + key + ">";
+	size_t pos = xml.find(tkey);
+	if (pos == std::string::npos)
+		return false;
+	std::string tvalue = xml.substr(pos + tkey.size());
+	tkey = "</" + key + ">";
+	pos = tvalue.find(tkey);
+	if (pos == std::string::npos)
+		return false;
+	value = tvalue.substr(0, pos);
+	return true;
+}
+
+void FritzboxTCP::GetStatistics()
+{
+	std::string Response;
+	if (!GetSoapData("igdupnp/control/WANCommonIFC1", "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1", "GetAddonInfos", Response))
+	{
+		Log(LOG_ERROR, "Can't get statistics from %s, make sure UPNP is enabled!", m_szIPAddress.c_str());
+		return;
+	}
+	std::string tempValue;
+	if (!GetValueFromXML(Response, "NewX_AVM_DE_TotalBytesSent64", tempValue))
+	{
+		if (!GetValueFromXML(Response, "NewTotalBytesSent", tempValue))
+		{
+			Log(LOG_ERROR, "Invalid data response received!");
+			return;
+		}
+	}
+	uint64_t BytesSend = std::stoull(tempValue);
+
+	if (!GetValueFromXML(Response, "NewX_AVM_DE_TotalBytesReceived64", tempValue))
+	{
+		if (!GetValueFromXML(Response, "NewTotalBytesReceived", tempValue))
+		{
+			Log(LOG_ERROR, "Invalid data response received!");
+			return;
+		}
+	}
+	uint64_t BytesReceived = std::stoull(tempValue);
+
+	SendMeterSensor(1, 1, 255, static_cast<float>(BytesSend) / (1024.0F * 1024.0F), "Bytes Send (MB)");
+	SendMeterSensor(1, 2, 255, static_cast<float>(BytesReceived) / (1024.0F * 1024.0F), "Bytes Received (MB)");
+
+	if (!GetValueFromXML(Response, "NewByteSendRate", tempValue))
+	{
+		Log(LOG_ERROR, "Invalid data response received!");
+		return;
+	}
+	uint64_t NewByteSendRate = std::stoull(tempValue) * 8;
+
+	if (!GetValueFromXML(Response, "NewByteReceiveRate", tempValue))
+	{
+		Log(LOG_ERROR, "Invalid data response received!");
+		return;
+	}
+	uint64_t NewByteReceiveRate = std::stoull(tempValue) * 8;
+
+	float send_bps = static_cast<float>(NewByteSendRate) / (1024.0F * 1024.0F);
+	float received_bps = static_cast<float>(NewByteReceiveRate) / (1024.0F * 1024.0F);
+
+	SendCustomSensor(1, 1, 255, send_bps, "TX mbps", "mbps");
+	SendCustomSensor(1, 2, 255, received_bps, "RX mbps", "mbps");
+}
+
