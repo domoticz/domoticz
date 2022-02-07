@@ -6,7 +6,11 @@
 			<td style="width:320px">
 				<table class="display" id="cameraparamstable" border="0" cellpadding="0" cellspacing="20">
 					<tr>
-						<td align="right" style="width:120px"><span data-i18n="Enabled">Enabled</span>:</td>
+						<td align="right" style="width:120px"><label>Idx:</label></td>
+						<td><span id="cameraidx"></span></td>
+					</tr>
+					<tr>
+						<td align="right"><span data-i18n="Enabled">Enabled</span>:</td>
 						<td><input type="checkbox" id="enabled" checked><label for="enabled"></td>
 					</tr>
 					<tr>
@@ -67,6 +71,7 @@
 	<table class="display" id="cameratable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
 			<tr valign="middle">
+				<th width="30">Idx</th>
 				<th width="70" align="left" data-i18n="Preview">Preview</th>
 				<th align="left" data-i18n="Name">Name</th>
 				<th width="48" align="left"></th>
@@ -166,6 +171,7 @@
 
 	function AddCameraDevice() {
 		$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+		$("#dialog-add-edit-camera #cameraparamstable #cameraidx").html("");
 		$.count = 0;
 		$.testcamfeed = "";
 		$("#dialog-add-edit-camera").i18n();
@@ -175,7 +181,7 @@
 		$("#dialog-add-edit-camera").dialog({
 			resizable: false,
 			width: 720,
-			height: 480,
+			height: 500,
 			modal: true,
 			title: $.t('Add New Camera'),
 			buttons: {
@@ -210,7 +216,7 @@
 		$("#dialog-add-edit-camera").dialog({
 			resizable: false,
 			width: 720,
-			height: 480,
+			height: 500,
 			modal: true,
 			title: 'Edit Camera',
 			buttons: {
@@ -414,15 +420,16 @@
 							"Enabled": item.Enabled,
 							"Protocol": item.Protocol,
 							"IntPort": item.Port,
-							"0": previewimg,
-							"1": item.Name,
-							"2": captureurl,
-							"3": streamurl,
-							"4": enabledstr,
-							"5": protocol,
-							"6": item.Address,
-							"7": item.Port,
-							"8": item.ImageURL
+							"0": item.idx,
+							"1": previewimg,
+							"2": item.Name,
+							"3": captureurl,
+							"4": streamurl,
+							"5": enabledstr,
+							"6": protocol,
+							"7": item.Address,
+							"8": item.Port,
+							"9": item.ImageURL
 						});
 					});
 				}
@@ -438,6 +445,7 @@
 				$(this).removeClass('row_selected');
 				$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
 				$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraidx").html("");
 				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
 				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
 				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
@@ -460,6 +468,7 @@
 					$.devIdx = idx;
 					$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
 					$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
+					$("#dialog-add-edit-camera #cameraparamstable #cameraidx").html(idx);
 					$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
 					$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
 					$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
