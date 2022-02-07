@@ -1874,8 +1874,8 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	if (!isOpen())
 		return false;
 
-	RBUF *tsen = (RBUF *) pdata;
-    auto xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	auto tsen = reinterpret_cast<const RBUF *>(pdata);
+	auto xcmd = reinterpret_cast<const _tGeneralSwitch *>(pdata);
 	uint32_t nodeID;
 
 	if (tsen->RAW.packettype == pTypeLighting2)
@@ -4456,7 +4456,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			std::string minutesStr = request::findValue(&req, "minutes");
 			if (minutesStr.empty())
@@ -4486,7 +4486,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			int rc = pESP3Hardware->IsNodeTeachedInJSON(root);
 
@@ -4510,7 +4510,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3CancelTeachIn");
 
@@ -4540,7 +4540,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3ControllerReset");
 
@@ -4570,7 +4570,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			std::string nodeIDStr = request::findValue(&req, "nodeid");
 			if (nodeIDStr.empty())
@@ -4635,7 +4635,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			std::string nodeIDStr = request::findValue(&req, "nodeid");
 			if (nodeIDStr.empty())
@@ -4665,7 +4665,7 @@ namespace http
 			if (pHardware->HwdType != HTYPE_EnOceanESP3)
 				return;
 
-			auto pESP3Hardware = reinterpret_cast<CEnOceanESP3 *>(pHardware);
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
 
 			pESP3Hardware->Debug(DEBUG_NORM, "RType_EnOceanESP3GetNodes");
 

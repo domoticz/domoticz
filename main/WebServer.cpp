@@ -4411,17 +4411,17 @@ namespace http
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						auto pEnoceanHardware = dynamic_cast<CEnOceanESP2 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
 					{
-						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						auto pEnoceanHardware = dynamic_cast<CEnOceanESP3 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
 					{
-						auto pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						auto pUSBtinHardware = dynamic_cast<USBtin *>(pBaseHardware);
 						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
 						// for exemple see MultiblocV8 layer...
 						rID = pUSBtinHardware->switch_id_base;
@@ -5065,7 +5065,7 @@ namespace http
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						auto pEnoceanHardware = dynamic_cast<CEnOceanESP2 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
@@ -5076,7 +5076,7 @@ namespace http
 					}
 					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
 					{
-						auto pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						auto pEnoceanHardware = dynamic_cast<CEnOceanESP3 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
@@ -5092,7 +5092,7 @@ namespace http
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
 					{
-						auto pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						auto pUSBtinHardware = dynamic_cast<USBtin *>(pBaseHardware);
 						rID = pUSBtinHardware->switch_id_base;
 						std::stringstream ssunitcode;
 						ssunitcode << iUnitTest;
