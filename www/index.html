@@ -146,28 +146,6 @@ function ClearNotifyCacheRefresh()
 	}
 }
 
-function logEvent(event) {
-	var re = /https:\/\/my.domoticz.com\/.*\/html5.appcache/i;
-	if (event.type == "error") {
-		if (typeof event.url != 'undefined')
-		{
-			if (event.url.match(re) != null) {
-				document.location = "https://my.domoticz.com/mydomoticz/dashboard";
-			}
-		}
-	}
-}
-
-if (window.applicationCache) {
-	window.applicationCache.addEventListener('checking',logEvent,false);
-	window.applicationCache.addEventListener('noupdate',logEvent,false);
-	window.applicationCache.addEventListener('progress',logEvent,false);
-	window.applicationCache.addEventListener('cached',logEvent,false);
-	window.applicationCache.addEventListener('updateready',logEvent,false);
-	window.applicationCache.addEventListener('obsolete',logEvent,false);
-	window.applicationCache.addEventListener('error',logEvent,false);
-}
-
 function WindowsDownloadURL(url)
 {
 	window.location.href = url;

@@ -524,9 +524,6 @@
     <None Include="..\www\eventsframe.html">
       <Filter>www</Filter>
     </None>
-    <None Include="..\www\html5.appcache">
-      <Filter>www</Filter>
-    </None>
     <None Include="..\www\index.html">
       <Filter>www</Filter>
     </None>
@@ -1443,6 +1440,15 @@
       <Filter>www\app\devices</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="..\www\manifest.json">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\service-worker.js">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\js\sw-toolbox.js">
+      <Filter>www\js</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

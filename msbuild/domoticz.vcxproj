@@ -287,7 +287,6 @@
     <None Include="..\www\css\style.css" />
     <None Include="..\www\css\ui-darkness\jquery-ui.min.css" />
     <None Include="..\www\eventsframe.html" />
-    <None Include="..\www\html5.appcache" />
     <None Include="..\www\i18n\domoticz-ar.json.gz" />
     <None Include="..\www\i18n\domoticz-bg.json.gz" />
     <None Include="..\www\i18n\domoticz-ca.json.gz" />
@@ -444,6 +443,7 @@
     <None Include="..\www\js\noty\themes\default.js.gz" />
     <None Include="..\www\js\require.js.gz" />
     <None Include="..\www\js\respond.min.js.gz" />
+    <None Include="..\www\js\sw-toolbox.js" />
     <None Include="..\www\js\themes\dark-blue.js.gz" />
     <None Include="..\www\js\themes\dark-green.js.gz" />
     <None Include="..\www\js\themes\gray.js.gz" />
@@ -452,6 +452,7 @@
     <None Include="..\www\js\ui-bootstrap.min.js.gz" />
     <None Include="..\www\js\wow.min.js.gz" />
     <None Include="..\www\js\ZeroClipboard.js.gz" />
+    <None Include="..\www\manifest.json" />
     <None Include="..\www\media\handclosed.cur" />
     <None Include="..\www\media\handopen.cur" />
     <None Include="..\www\media\swf\copy_csv_xls.swf" />
@@ -461,6 +462,7 @@
     <None Include="..\www\ozwcp\ozwcp.html" />
     <None Include="..\www\secpanel\css\style.css" />
     <None Include="..\www\secpanel\index.html" />
+    <None Include="..\www\service-worker.js" />
     <None Include="..\www\styles\default\base.css" />
     <None Include="..\www\styles\default\custom.css" />
     <None Include="..\www\styles\default\custom.js" />

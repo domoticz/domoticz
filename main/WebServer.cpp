@@ -683,8 +683,6 @@ namespace http
 			// pollpost.html
 			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
-
-			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
 			// Start normal worker thread
