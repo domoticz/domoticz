@@ -29,7 +29,7 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter a Applicationname!'), 2500, true);
 				return;
 			}
-			csettings.bPublic = $('#applicationcontent #applicationparamstable #public').is(":checked");
+			csettings.bPublic = $('#applicationcontent #applicationparamstable #applicationpublic').is(":checked");
 			csettings.secret = $("#applicationcontent #applicationparamstable #applicationsecret").val();
 			if ((csettings.bPublic == false) && (csettings.secret == "")) {
 				ShowNotify($.t('Please enter a Secret!'), 2500, true);
@@ -164,7 +164,7 @@ define(['app'], function (app) {
 						$('#applicationcontent #applicationparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
 						$("#applicationcontent #applicationparamstable #applicationname").val(data["Applicationname"]);
 						$("#applicationcontent #applicationparamstable #applicationsecret").val(data["Applicationsecret"]);
-						$('#applicationcontent #applicationparamstable #public').prop('checked', (data["Public"] == "true"));
+						$('#applicationcontent #applicationparamstable #applicationpublic').prop('checked', (data["Public"] == "true"));
 					}
 				}
 			});
