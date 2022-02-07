@@ -755,7 +755,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 
-		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, AppSerial);
+		int DeviceID = GetAddDeviceAndSensor(m_HwdID, DeviceName, DeviceSerial);
 		if (DeviceID == 0) // Unable to find the Device and/or Add the new Device
 		{
 			return;
