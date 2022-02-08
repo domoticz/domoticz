@@ -912,7 +912,7 @@ namespace http {
 				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
-				RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
+				RFXComSerial *pRFXComSerial = dynamic_cast<RFXComSerial *>(pHardware);
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
 		}
@@ -987,7 +987,7 @@ namespace http {
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 				if (pHardware)
 				{
-					CRFXBase *pBase = reinterpret_cast<CRFXBase *>(pHardware);
+					CRFXBase *pBase = dynamic_cast<CRFXBase *>(pHardware);
 					pBase->SetRFXCOMHardwaremodes(Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 
 					if (pBase->m_Version.find("Pro XL") != std::string::npos)
@@ -1034,7 +1034,7 @@ namespace http {
 					(pHardware->HwdType == HTYPE_RFXtrx868)
 					)
 				{
-					RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
+					RFXComSerial *pRFXComSerial = dynamic_cast<RFXComSerial *>(pHardware);
 					root["status"] = "OK";
 					root["percentage"] = pRFXComSerial->GetUploadPercentage();
 					root["message"] = pRFXComSerial->GetUploadMessage();

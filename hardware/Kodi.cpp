@@ -1287,7 +1287,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiSetMode";
@@ -1320,7 +1320,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiAddNode";
@@ -1348,7 +1348,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1374,7 +1374,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1399,7 +1399,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiClearNodes";

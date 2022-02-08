@@ -299,7 +299,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
+			CWOL *pHardware = dynamic_cast<CWOL*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "WOLAddNode";
@@ -326,7 +326,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
+			CWOL *pHardware = dynamic_cast<CWOL*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -352,7 +352,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
+			CWOL *pHardware = dynamic_cast<CWOL*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -377,7 +377,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
+			CWOL *pHardware = dynamic_cast<CWOL*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "WOLClearNodes";

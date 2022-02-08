@@ -809,7 +809,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
-			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+			CLogitechMediaServer *pHardware = dynamic_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "LMSSetMode";
@@ -887,7 +887,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
-			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+			CLogitechMediaServer *pHardware = dynamic_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "LMSGetPlaylists";

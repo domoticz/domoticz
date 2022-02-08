@@ -1178,7 +1178,7 @@ namespace http {
 			#endif
 
 			bool bCreated = false;						// flag to know if the command was a success
-			CRFLinkBase *pRFLINK = reinterpret_cast<CRFLinkBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
+			CRFLinkBase *pRFLINK = dynamic_cast<CRFLinkBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
 			if (pRFLINK == nullptr)
 				return;
 
