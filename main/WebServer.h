@@ -378,6 +378,24 @@ private:
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;
 #endif
+	//EnOcean helpers cmds
+	void Cmd_EnOceanGetManufacturers(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanGetRORGs(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanGetProfiles(WebEmSession & session, const request& req, Json::Value &root);
+
+	//EnOcean ESP3 cmds
+	void Cmd_EnOceanESP3EnableLearnMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3IsNodeTeachedIn(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3CancelTeachIn(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_EnOceanESP3ControllerReset(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_EnOceanESP3UpdateNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3DeleteNode(WebEmSession & session, const request& req, Json::Value &root);
+
+	//EnOcean ESP3 Rtypes
+	void RType_EnOceanESP3GetNodes(WebEmSession & session, const request& req, Json::Value &root);
+
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 	std::shared_ptr<std::thread> m_thread;
 

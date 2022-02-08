@@ -1178,11 +1178,11 @@ bool CEnOceanESP2::ParseData()
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x10 && iType <= 0x0D)
-			{ // A5-10-01..OD, Room Operating Panel
+			{ // A5-10-01..0D, Room Operating Panel
 				RBUF tsen;
 
 				if (Manufacturer != ELTAKO)
-				{ // General case for A5-10-01..OD
+				{ // General case for A5-10-01..0D
 					// pFrame->DATA_BYTE3 is the fan speed
 					// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
 					// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C

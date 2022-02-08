@@ -683,6 +683,26 @@ namespace http
 			// pollpost.html
 			RegisterRType("openzwavenodes", [this](auto &&session, auto &&req, auto &&root) { RType_OpenZWaveNodes(session, req, root); });
 #endif
+			// EnOcean helpers cmds
+
+			RegisterCommandCode("enoceangetmanufacturers", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetManufacturers(session, req, root); });
+			RegisterCommandCode("enoceangetrorgs", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetRORGs(session, req, root); });
+			RegisterCommandCode("enoceangetprofiles", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanGetProfiles(session, req, root); });
+
+			// EnOcean ESP3 cmds
+			RegisterCommandCode("esp3enablelearnmode", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3EnableLearnMode(session, req, root); });
+			RegisterCommandCode("esp3isnodeteachedin", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3IsNodeTeachedIn(session, req, root); });
+			RegisterCommandCode("esp3cancelteachin", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3CancelTeachIn(session, req, root); });
+
+			RegisterCommandCode("esp3controllerreset", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3ControllerReset(session, req, root); });
+
+			RegisterCommandCode("esp3updatenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3UpdateNode(session, req, root); });
+			RegisterCommandCode("esp3deletenode", [this](auto &&session, auto &&req, auto &&root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
+
+			// EnOcean ESP3 Rtypes
+			RegisterRType("esp3getnodes", [this](auto &&session, auto &&req, auto &&root) { RType_EnOceanESP3GetNodes(session, req, root); });
+
+      //Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 
 			// Start normal worker thread
@@ -4347,7 +4367,6 @@ namespace http
 					}
 
 					CSysfsGpio *pSysfsGpio = dynamic_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-
 					if (pSysfsGpio == nullptr)
 					{
 						root["status"] = "ERROR";
@@ -4372,15 +4391,23 @@ namespace http
 					// EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
 					sunitcode = request::findValue(&req, "unitcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+
+					if (sunitcode.empty() || sgroupcode.empty())
 						return;
+
+					int iUnitTest = stoi(sunitcode);
+
+					// Using only First Rocker_ID, gives us 128 devices we can control, should be enough!
+					if (iUnitTest < 1 || iUnitTest > 128)
+						return;
+
 					sunitcode = sgroupcode; // Button A or B
-					CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+
 					if (pBaseHardware == nullptr)
 						return;
+
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
@@ -5004,7 +5031,6 @@ namespace http
 					devid = id;
 
 					CSysfsGpio *pSysfsGpio = dynamic_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
-
 					if ((pSysfsGpio == nullptr) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
 					{
 						return;
@@ -5020,13 +5046,21 @@ namespace http
 					subtype = sTypeAC;
 					sunitcode = request::findValue(&req, "unitcode");
 					std::string sgroupcode = request::findValue(&req, "groupcode");
-					int iUnitTest = atoi(sunitcode.c_str()); // gives us 128 devices we can control, should be enough!
-					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
+
+					if (sunitcode.empty() || sgroupcode.empty())
 						return;
+
+					int iUnitTest = stoi(sunitcode);
+
+					// Only First Rocker_ID, gives us 128 devices we can control, should be enough!
+					if (iUnitTest < 1 || iUnitTest > 128)
+						return;
+
 					sunitcode = sgroupcode; // Button A/B
-					CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+
 					if (pBaseHardware == nullptr)
 						return;
+
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
@@ -5049,6 +5083,11 @@ namespace http
 							return;
 						}
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
+
+						// Insert virtual ESP3 switch in EnOceanNodes table with EEP F6-02-01
+						// So it will appear in EnOcean hardware setup screen
+
+						pEnoceanHardware->TeachInVirtualNode(rID, RORG_RPS, 0x02, 0x01);
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
 					{
@@ -5477,7 +5516,6 @@ namespace http
 				}
 
 				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-				//CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != nullptr)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP))

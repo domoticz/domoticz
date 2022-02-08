@@ -39,12 +39,25 @@ public:
 
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
+	void ResetHardware();
+
+	void GetNodesJSON(Json::Value &root);
+
+	void EnableLearnMode(const uint32_t minutes);
+	void DisableLearnMode();
+	bool IsLearnModeEnabled();
+	int IsNodeTeachedInJSON(Json::Value &root);
+
 	NodeInfo *GetNodeInfo(const uint32_t nodeID);
 
 	void TeachInNode(const uint32_t nodeID, const uint16_t manID,
 		const uint8_t RORG, const uint8_t func, const uint8_t type,
 		const TeachinMode teachin_mode);
+	void TeachInVirtualNode(const uint32_t nodeID, const uint8_t RORG, const uint8_t func, const uint8_t type);
 	void CheckAndUpdateNodeRORG(NodeInfo *pNode, const uint8_t RORG);
+	void UpdateNode(const uint32_t nodeID, const std::string &name, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const std::string &description);
+	void DeleteNode(const uint32_t nodeID);
+	std::string GetNodeState(const uint32_t nodeID);
 
 	uint32_t m_id_base;
 	uint32_t m_id_chip;
@@ -117,6 +130,8 @@ private:
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
 
+	bool m_learn_mode_enabled;
+	uint32_t m_last_teachedin_nodeID;
 	uint32_t m_RPS_teachin_nodeID;
 	uint8_t m_RPS_teachin_DATA;
 	uint8_t m_RPS_teachin_STATUS;
