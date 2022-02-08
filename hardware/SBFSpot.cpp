@@ -649,7 +649,7 @@ namespace http {
 			{
 				if (pHardware->HwdType == HTYPE_SBFSpot)
 				{
-					CSBFSpot *pSBFSpot = reinterpret_cast<CSBFSpot *>(pHardware);
+					CSBFSpot *pSBFSpot = dynamic_cast<CSBFSpot *>(pHardware);
 					pSBFSpot->ImportOldMonthData();
 				}
 			}

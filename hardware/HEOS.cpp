@@ -834,7 +834,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_HEOS)
 				return;
-			CHEOS *pHardware = reinterpret_cast<CHEOS*>(pBaseHardware);
+			CHEOS *pHardware = dynamic_cast<CHEOS*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "HEOSSetMode";
@@ -874,7 +874,7 @@ namespace http {
 						CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_HEOS);
 						if (pBaseHardware == nullptr)
 							return;
-						CHEOS *pHEOS = reinterpret_cast<CHEOS*>(pBaseHardware);
+						CHEOS *pHEOS = dynamic_cast<CHEOS*>(pBaseHardware);
 
 						pHEOS->SendCommand(sAction, PlayerID);
 						break;

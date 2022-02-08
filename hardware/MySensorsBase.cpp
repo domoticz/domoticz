@@ -2377,7 +2377,7 @@ namespace http {
 				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
+			MySensorsBase *pMySensorsHardware = dynamic_cast<MySensorsBase*>(pHardware);
 
 			root["status"] = "OK";
 			root["title"] = "MySensorsGetNodes";
@@ -2450,7 +2450,7 @@ namespace http {
 				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
+			MySensorsBase *pMySensorsHardware = dynamic_cast<MySensorsBase*>(pHardware);
 
 			root["status"] = "OK";
 			root["title"] = "MySensorsGetChilds";
@@ -2528,7 +2528,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
+			MySensorsBase *pMySensorsHardware = dynamic_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsUpdateNode";
@@ -2556,7 +2556,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
+			MySensorsBase *pMySensorsHardware = dynamic_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsRemoveNode";
@@ -2585,7 +2585,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
+			MySensorsBase *pMySensorsHardware = dynamic_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";
@@ -2623,7 +2623,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
+			MySensorsBase *pMySensorsHardware = dynamic_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";

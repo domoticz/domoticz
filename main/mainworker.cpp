@@ -1740,7 +1740,7 @@ void MainWorker::Do_Work()
 					{
 						if (pHardware->HwdType == HTYPE_OpenZWave)
 						{
-							COpenZWave* pZWave = reinterpret_cast<COpenZWave*>(pHardware);
+							COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
 							pZWave->NightlyNodeHeal();
 						}
 					}
@@ -11079,10 +11079,6 @@ void MainWorker::decode_Weather(const CDomoticzHardwareBase* pHardware, const tR
 	if (subType == sTypeWEATHER2)
 	{
 		int Humidity = (int)pResponse->WEATHER.humidity;
-		//uint8_t HumidityStatus = pResponse->WEATHER.humidity_status;
-
-		//MySensorsBase *pMySensorDevice = reinterpret_cast<MySensorsBase*>(pHardware);
-
 		pRFXDevice->SendTempHumSensor(windID, BatteryLevel, temp, Humidity, procResult.DeviceName, SignalLevel);
 	}
 
@@ -11580,7 +11576,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 		if ((pHardware->HwdType == HTYPE_EnOceanESP2) && (IsTesting) && (switchtype == STYPE_Dimmer))
 		{ // Special Teach-In for EnOcean ESP2 dimmers
-			CEnOceanESP2* pEnocean = reinterpret_cast<CEnOceanESP2*>(pHardware);
+			CEnOceanESP2* pEnocean = dynamic_cast<CEnOceanESP2*>(pHardware);
 			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
 		}
 		else if (switchtype != STYPE_Motion)
@@ -12699,62 +12695,62 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
 		{
-			OTGWSerial* pGateway = reinterpret_cast<OTGWSerial*>(pHardware);
+			OTGWSerial* pGateway = dynamic_cast<OTGWSerial*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_OpenThermGatewayTCP)
 		{
-			OTGWTCP* pGateway = reinterpret_cast<OTGWTCP*>(pHardware);
+			OTGWTCP* pGateway = dynamic_cast<OTGWTCP*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_ICYTHERMOSTAT)
 		{
-			CICYThermostat* pGateway = reinterpret_cast<CICYThermostat*>(pHardware);
+			CICYThermostat* pGateway = dynamic_cast<CICYThermostat*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
 		{
-			CToonThermostat* pGateway = reinterpret_cast<CToonThermostat*>(pHardware);
+			CToonThermostat* pGateway = dynamic_cast<CToonThermostat*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_AtagOne)
 		{
-			CAtagOne* pGateway = reinterpret_cast<CAtagOne*>(pHardware);
+			CAtagOne* pGateway = dynamic_cast<CAtagOne*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_NEST)
 		{
-			CNest* pGateway = reinterpret_cast<CNest*>(pHardware);
+			CNest* pGateway = dynamic_cast<CNest*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 		{
-			CNestOAuthAPI* pGateway = reinterpret_cast<CNestOAuthAPI*>(pHardware);
+			CNestOAuthAPI* pGateway = dynamic_cast<CNestOAuthAPI*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 		{
-			CAnnaThermostat* pGateway = reinterpret_cast<CAnnaThermostat*>(pHardware);
+			CAnnaThermostat* pGateway = dynamic_cast<CAnnaThermostat*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_THERMOSMART)
 		{
-			CThermosmart* pGateway = reinterpret_cast<CThermosmart*>(pHardware);
+			CThermosmart* pGateway = dynamic_cast<CThermosmart*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Tado)
 		{
-			CTado* pGateway = reinterpret_cast<CTado*>(pHardware);
+			CTado* pGateway = dynamic_cast<CTado*>(pHardware);
 			pGateway->SetSetpoint(ID2, ID3, ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
-			CNetatmo* pGateway = reinterpret_cast<CNetatmo*>(pHardware);
+			CNetatmo* pGateway = dynamic_cast<CNetatmo*>(pHardware);
 			pGateway->SetSetpoint(ID, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_NefitEastLAN)
 		{
-			CNefitEasy* pGateway = reinterpret_cast<CNefitEasy*>(pHardware);
+			CNefitEasy* pGateway = dynamic_cast<CNefitEasy*>(pHardware);
 			pGateway->SetSetpoint(ID2, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
@@ -12763,17 +12759,17 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		}
 		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		{
-			CInComfort* pGateway = reinterpret_cast<CInComfort*>(pHardware);
+			CInComfort* pGateway = dynamic_cast<CInComfort*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_OpenWebNetTCP)
 		{
-			COpenWebNetTCP* pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
+			COpenWebNetTCP* pGateway = dynamic_cast<COpenWebNetTCP*>(pHardware);
 			return pGateway->SetSetpoint(ID, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		{
-			MQTTAutoDiscover *pGateway = reinterpret_cast<MQTTAutoDiscover*>(pHardware);
+			MQTTAutoDiscover *pGateway = dynamic_cast<MQTTAutoDiscover*>(pHardware);
 			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}
@@ -12988,50 +12984,50 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		return false;
 	if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
 	{
-		CToonThermostat* pGateway = reinterpret_cast<CToonThermostat*>(pHardware);
+		CToonThermostat* pGateway = dynamic_cast<CToonThermostat*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_AtagOne)
 	{
-		//CAtagOne *pGateway = reinterpret_cast<CAtagOne*>(pHardware);
+		//CAtagOne *pGateway = dynamic_cast<CAtagOne*>(pHardware);
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_NEST)
 	{
-		CNest* pGateway = reinterpret_cast<CNest*>(pHardware);
+		CNest* pGateway = dynamic_cast<CNest*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
 	{
-		CNestOAuthAPI* pGateway = reinterpret_cast<CNestOAuthAPI*>(pHardware);
+		CNestOAuthAPI* pGateway = dynamic_cast<CNestOAuthAPI*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 	{
-		CAnnaThermostat* pGateway = reinterpret_cast<CAnnaThermostat*>(pHardware);
+		CAnnaThermostat* pGateway = dynamic_cast<CAnnaThermostat*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_THERMOSMART)
 	{
-		//CThermosmart *pGateway = reinterpret_cast<CThermosmart *>(pHardware);
+		//CThermosmart *pGateway = dynamic_cast<CThermosmart *>(pHardware);
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_Netatmo)
 	{
-		CNetatmo* pGateway = reinterpret_cast<CNetatmo*>(pHardware);
+		CNetatmo* pGateway = dynamic_cast<CNetatmo*>(pHardware);
 		int tIndex = atoi(idx.c_str());
 		pGateway->SetProgramState(tIndex, newState);
 		return true;
 	}
 	if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 	{
-		CInComfort* pGateway = reinterpret_cast<CInComfort*>(pHardware);
+		CInComfort* pGateway = dynamic_cast<CInComfort*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
@@ -13774,7 +13770,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				uint8_t NodeID = (uint8_t)((ID & 0x0000FF00) >> 8);
 				uint8_t ChildID = (uint8_t)((ID & 0x000000FF));
 
-				MySensorsBase *pMySensorDevice = reinterpret_cast<MySensorsBase *>(pHardware);
+				MySensorsBase *pMySensorDevice = dynamic_cast<MySensorsBase *>(pHardware);
 				pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
 			}
 		}

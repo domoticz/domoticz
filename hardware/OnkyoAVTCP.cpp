@@ -711,7 +711,7 @@ namespace http
 						CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_OnkyoAVTCP);
 						if (pBaseHardware == nullptr)
 							return;
-						OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP *>(pBaseHardware);
+						OnkyoAVTCP *pOnkyoAVTCP = dynamic_cast<OnkyoAVTCP *>(pBaseHardware);
 
 						pOnkyoAVTCP->SendPacket(sAction.c_str());
 						root["status"] = "OK";

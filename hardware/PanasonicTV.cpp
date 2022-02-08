@@ -622,7 +622,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			return;
 		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 			return;
-		CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+		CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 		if (pHardware->m_bTryIfOff) {
 			_log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Device is Off, but with TryIfOff option, so trying anyway.", m_Name.c_str());
 		} else {
@@ -771,7 +771,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 			return;
 		if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 			return;
-		CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+		CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 		if (pHardware->m_bUnknownCommandAllowed) {
 			// Sanitize command : keep only alphanumeric characters
 			std::string sanityze = command;
@@ -1198,7 +1198,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicSetMode";
@@ -1234,7 +1234,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicAddNode";
@@ -1262,7 +1262,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1288,7 +1288,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1313,7 +1313,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
+			CPanasonic *pHardware = dynamic_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicClearNodes";

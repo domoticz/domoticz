@@ -611,7 +611,7 @@ namespace http {
 			stdupper(rcmnd);
 			cmnd = rcmnd + rdata;
 
-			OTGWBase *pOTGW = reinterpret_cast<OTGWBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
+			OTGWBase *pOTGW = dynamic_cast<OTGWBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
 			if (pOTGW == nullptr)
 				return;
 

@@ -2814,7 +2814,7 @@ namespace http
 					if (pHardware->HwdType == HTYPE_OpenWeatherMap)
 					{
 						root["Forecasthardwaretype"] = HTYPE_OpenWeatherMap;
-						COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap *>(pHardware);
+						COpenWeatherMap *pWHardware = dynamic_cast<COpenWeatherMap *>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
 						if (!forecast_url.empty())
 						{
@@ -2830,7 +2830,7 @@ namespace http
 					else if (pHardware->HwdType == HTYPE_BuienRadar)
 					{
 						root["Forecasthardwaretype"] = HTYPE_BuienRadar;
-						CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar *>(pHardware);
+						CBuienRadar *pWHardware = dynamic_cast<CBuienRadar *>(pHardware);
 						forecast_url = pWHardware->GetForecastURL();
 						if (!forecast_url.empty())
 						{
@@ -3765,7 +3765,7 @@ namespace http
 
 						if(isEnabled)
 						{
-							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
+							CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(ID));
 							if (pBaseHardware != nullptr)
 							{
 								std::string jsonConfiguration;
@@ -4289,7 +4289,7 @@ namespace http
 						root["message"] = "No GPIO number given";
 						return;
 					}
-					CGpio *pGpio = reinterpret_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CGpio *pGpio = dynamic_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pGpio == nullptr)
 					{
 						root["status"] = "ERROR";
@@ -4346,7 +4346,7 @@ namespace http
 						return;
 					}
 
-					CSysfsGpio *pSysfsGpio = reinterpret_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CSysfsGpio *pSysfsGpio = dynamic_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 
 					if (pSysfsGpio == nullptr)
 					{
@@ -4378,23 +4378,23 @@ namespace http
 					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
 						return;
 					sunitcode = sgroupcode; // Button A or B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == nullptr)
 						return;
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						CEnOceanESP2 *pEnoceanHardware = dynamic_cast<CEnOceanESP2 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
 					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						CEnOceanESP3 *pEnoceanHardware = dynamic_cast<CEnOceanESP3 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway) // Like EnOcean (Lighting2 with Base_ID offset)
 					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						USBtin *pUSBtinHardware = dynamic_cast<USBtin *>(pBaseHardware);
 						// base ID calculate in the USBtinharwade dependant of the CAN Layer !
 						// for exemple see MultiblocV8 layer...
 						rID = pUSBtinHardware->switch_id_base;
@@ -4966,7 +4966,7 @@ namespace http
 					{
 						return;
 					}
-					CGpio *pGpio = reinterpret_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CGpio *pGpio = dynamic_cast<CGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pGpio == nullptr)
 					{
 						return;
@@ -5003,7 +5003,7 @@ namespace http
 					}
 					devid = id;
 
-					CSysfsGpio *pSysfsGpio = reinterpret_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CSysfsGpio *pSysfsGpio = dynamic_cast<CSysfsGpio *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 
 					if ((pSysfsGpio == nullptr) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
 					{
@@ -5024,13 +5024,13 @@ namespace http
 					if ((sunitcode.empty()) || (sgroupcode.empty()) || ((iUnitTest < 1) || (iUnitTest > 128)))
 						return;
 					sunitcode = sgroupcode; // Button A/B
-					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+					CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == nullptr)
 						return;
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
+						CEnOceanESP2 *pEnoceanHardware = dynamic_cast<CEnOceanESP2 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
@@ -5041,7 +5041,7 @@ namespace http
 					}
 					else if (pBaseHardware->HwdType == HTYPE_EnOceanESP3)
 					{
-						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
+						CEnOceanESP3 *pEnoceanHardware = dynamic_cast<CEnOceanESP3 *>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							sprintf(szTmp, "%s: BaseID not found, is the hardware running?", pEnoceanHardware->m_Name.c_str());
@@ -5052,7 +5052,7 @@ namespace http
 					}
 					else if (pBaseHardware->HwdType == HTYPE_USBtinGateway)
 					{
-						USBtin *pUSBtinHardware = reinterpret_cast<USBtin *>(pBaseHardware);
+						USBtin *pUSBtinHardware = dynamic_cast<USBtin *>(pBaseHardware);
 						rID = pUSBtinHardware->switch_id_base;
 						std::stringstream ssunitcode;
 						ssunitcode << iUnitTest;
@@ -5585,7 +5585,7 @@ namespace http
 						if (!result.empty())
 						{
 							std::string hdwid = result[0][0];
-							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
+							CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
 							if (pBaseHardware != nullptr)
 							{
 								_eHardwareTypes type = pBaseHardware->HwdType;
@@ -8877,7 +8877,7 @@ namespace http
 						}
 						else if (pHardware->HwdType == HTYPE_Wunderground)
 						{
-							CWunderground *pWHardware = reinterpret_cast<CWunderground *>(pHardware);
+							CWunderground *pWHardware = dynamic_cast<CWunderground *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
@@ -8886,7 +8886,7 @@ namespace http
 						}
 						else if (pHardware->HwdType == HTYPE_DarkSky)
 						{
-							CDarkSky *pWHardware = reinterpret_cast<CDarkSky *>(pHardware);
+							CDarkSky *pWHardware = dynamic_cast<CDarkSky *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
@@ -8895,7 +8895,7 @@ namespace http
 						}
 						else if (pHardware->HwdType == HTYPE_AccuWeather)
 						{
-							CAccuWeather *pWHardware = reinterpret_cast<CAccuWeather *>(pHardware);
+							CAccuWeather *pWHardware = dynamic_cast<CAccuWeather *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
@@ -8904,7 +8904,7 @@ namespace http
 						}
 						else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
 						{
-							COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap *>(pHardware);
+							COpenWeatherMap *pWHardware = dynamic_cast<COpenWeatherMap *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
@@ -8913,7 +8913,7 @@ namespace http
 						}
 						else if (pHardware->HwdType == HTYPE_BuienRadar)
 						{
-							CBuienRadar *pWHardware = reinterpret_cast<CBuienRadar *>(pHardware);
+							CBuienRadar *pWHardware = dynamic_cast<CBuienRadar *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
@@ -8922,7 +8922,7 @@ namespace http
 						}
 						else if (pHardware->HwdType == HTYPE_Meteorologisk)
 						{
-							CMeteorologisk *pWHardware = reinterpret_cast<CMeteorologisk *>(pHardware);
+							CMeteorologisk *pWHardware = dynamic_cast<CMeteorologisk *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (!forecast_url.empty())
 							{
@@ -9003,7 +9003,7 @@ namespace http
 						{
 							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
-								COpenZWave *pZWave = reinterpret_cast<COpenZWave *>(pHardware);
+								COpenZWave *pZWave = dynamic_cast<COpenZWave *>(pHardware);
 								unsigned long ID;
 								std::stringstream s_strid;
 								s_strid << std::hex << sd[1];
@@ -10784,7 +10784,7 @@ namespace http
 							{
 								if (pHardware->HwdType == HTYPE_OpenZWave)
 								{
-									COpenZWave *pZWave = reinterpret_cast<COpenZWave *>(pHardware);
+									COpenZWave *pZWave = dynamic_cast<COpenZWave *>(pHardware);
 									unsigned long ID;
 									std::stringstream s_strid;
 									s_strid << std::hex << sd[1];
@@ -10829,7 +10829,7 @@ namespace http
 							{
 								if (pHardware->HwdType == HTYPE_OpenZWave)
 								{
-									COpenZWave *pZWave = reinterpret_cast<COpenZWave *>(pHardware);
+									COpenZWave *pZWave = dynamic_cast<COpenZWave *>(pHardware);
 									unsigned long ID;
 									std::stringstream s_strid;
 									s_strid << std::hex << sd[1];
@@ -11580,7 +11580,7 @@ namespace http
 						if ((pHardware->HwdType == HTYPE_RFXtrx315) || (pHardware->HwdType == HTYPE_RFXtrx433) || (pHardware->HwdType == HTYPE_RFXtrx868) ||
 						    (pHardware->HwdType == HTYPE_RFXLAN))
 						{
-							CRFXBase *pMyHardware = reinterpret_cast<CRFXBase *>(pHardware);
+							CRFXBase *pMyHardware = dynamic_cast<CRFXBase *>(pHardware);
 							if (!pMyHardware->m_Version.empty())
 								root["result"][ii]["version"] = pMyHardware->m_Version;
 							else
@@ -11589,23 +11589,23 @@ namespace http
 						}
 						else if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP) || (pHardware->HwdType == HTYPE_MySensorsMQTT))
 						{
-							MySensorsBase *pMyHardware = reinterpret_cast<MySensorsBase *>(pHardware);
+							MySensorsBase *pMyHardware = dynamic_cast<MySensorsBase *>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->GetGatewayVersion();
 						}
 						else if ((pHardware->HwdType == HTYPE_OpenThermGateway) || (pHardware->HwdType == HTYPE_OpenThermGatewayTCP))
 						{
-							OTGWBase *pMyHardware = reinterpret_cast<OTGWBase *>(pHardware);
+							OTGWBase *pMyHardware = dynamic_cast<OTGWBase *>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
 						else if ((pHardware->HwdType == HTYPE_RFLINKUSB) || (pHardware->HwdType == HTYPE_RFLINKTCP))
 						{
-							CRFLinkBase *pMyHardware = reinterpret_cast<CRFLinkBase *>(pHardware);
+							CRFLinkBase *pMyHardware = dynamic_cast<CRFLinkBase *>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
 #ifdef WITH_OPENZWAVE
 						else if (pHardware->HwdType == HTYPE_OpenZWave)
 						{ // Special case for openzwave (status for nodes queried)
-							COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave *>(pHardware);
+							COpenZWave *pOZWHardware = dynamic_cast<COpenZWave *>(pHardware);
 							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
 							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
 						}
