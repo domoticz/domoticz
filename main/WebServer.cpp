@@ -4404,7 +4404,7 @@ namespace http
 						return;
 
 					sunitcode = sgroupcode; // Button A or B
-					CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
+
 					if (pBaseHardware == nullptr)
 						return;
 
@@ -5058,7 +5058,6 @@ namespace http
 
 					sunitcode = sgroupcode; // Button A/B
 
-          CDomoticzHardwareBase *pBaseHardware = dynamic_cast<CDomoticzHardwareBase *>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == nullptr)
 						return;
 
