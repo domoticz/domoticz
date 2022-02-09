@@ -50,6 +50,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 
 	void GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep);
 	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
+	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
 
 	void PostSettings(WebEmSession& session, const request& req, reply& rep);
 	void PostLoginCheck(WebEmSession& session, const request& req, reply& rep);

@@ -70,6 +70,9 @@
 
 #define round(a) (int)(a + .5)
 
+#define OAUTH2_AUTH_URL "/oauth2/v1/authorize"
+#define OAUTH2_TOKEN_URL "/oauth2/v1/token"
+
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -324,9 +327,11 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
 			m_pWebEm->RegisterPageCode(
-				"/oauth2/v1/authorize", [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
+				OAUTH2_AUTH_URL, [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
 			m_pWebEm->RegisterPageCode(
-				"/oauth2/v1/token", [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+				OAUTH2_TOKEN_URL, [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+			m_pWebEm->RegisterPageCode(
+				"/.well-known/openid-configuration", [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
@@ -1346,6 +1351,29 @@ namespace http
 				_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Received invalid request method .%s.", req.method.c_str());
 			}
 
+			reply::set_content(&rep, root.toStyledString());
+		}
+
+		void CWebServer::GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root, jaRTS(Json::arrayValue), jaROSAVS(Json::arrayValue);
+
+			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
+			rep.status = reply::bad_request;
+
+			std::string base_url = "https://localhost:8443";
+
+			root["issuer"] = base_url + "/";
+			root["authorization_endpoint"] = base_url + OAUTH2_AUTH_URL;
+			root["token_endpoint"] = base_url + OAUTH2_TOKEN_URL;
+			jaRTS.append("code");
+			root["response_types_supported"] = jaRTS;
+			jaROSAVS.append("HS256");
+			jaROSAVS.append("HS384");
+			jaROSAVS.append("HS512");
+			root["request_object_signing_alg_values_supported"] = jaROSAVS;
+
+			rep.status = reply::ok;
 			reply::set_content(&rep, root.toStyledString());
 		}
 
