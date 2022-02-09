@@ -224,7 +224,7 @@ bool P1MeterBase::MatchLine()
 	uint8_t i;
 	bool found = false;
 	const P1Match *t;
-	char value[20] = "";
+	char value[100] = "";
 	std::string vString;
 
 	for (i = 0; i < p1_matchlist.size(); ++i)
@@ -412,7 +412,7 @@ bool P1MeterBase::MatchLine()
 				return false;
 			}
 
-			if (ePos > 19)
+			if (ePos > sizeof(value) - 1)
 			{
 				// invalid message: line too long
 				Log(LOG_NORM, "Dismiss incoming - value in line \"%s\" is oversized", l_buffer);
