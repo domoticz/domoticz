@@ -24,9 +24,9 @@ table, tr, td {
 									<span class="caret"></span>
 								</button>
 								<ul class="dropdown-menu pull-right text-right" role="menu" aria-labelledby="dropdownMenu1">
-									<li><a href="javascript:EnableLearnMode();"><button type="button" data-i18n="Enable learn mode" class="btn btn-primary">Enable learn mode</button></a></li>
+									<li><a href="javascript:EnableLearnMode();"><button type="button" data-i18n="Include node" class="btn btn-primary">Include node</button></a></li>
 									<li role="presentation" class="divider"></li>
-									<li><a href="javascript:ResetController();"><button type="button" data-i18n="Reset controller" class="btn btn-danger">Reset controller</button></a></li>
+									<li><a href="javascript:ResetController();"><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
 								</ul>
 							</div>
 						</td>
@@ -42,7 +42,7 @@ table, tr, td {
 								<th width="85" align="center" data-i18n="Type">Type</th>
 								<th width="150" align="left" data-i18n="Name">Name</th>
 								<th width="120" align="left" data-i18n="Manufacturer">Manufacturer</th>
-								<th width="70" align="center" data-i18n="Profile">Profile</th>
+								<th width="75" align="center" data-i18n="Profile">Profile</th>
 								<th align="left" data-i18n="Description">Description</th>
 								<th width="30" align="center"><img src="images/air_signal.png" data-i18n="[title]RF Signal Level"></th>
 								<th width="30" align="center"><img src="images/battery.png" style="transform:rotate(180deg);" data-i18n="[title]Battery Level"></th>
@@ -65,25 +65,25 @@ table, tr, td {
 					<br>
 					<table class="display" id="nodeparameters" border="0" cellpadding="0" cellspacing="0">
 						<tr>
-							<td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name">Name</span> :</label></td>
+							<td align="right" style="width:115px"><label for="nodename"><span data-i18n="Name">Name</span>:</label></td>
 							<td><input type="text" id="nodename" name="nodename" style="width:385px;" class="text ui-widget-content ui-corner-all"></td>
 						</tr>
 						<tr>
-							<td align="right" style="width:110px"><label for="nodemanufacturer"><span data-i18n="Manufacturer">Manufacturer</span> : </label></td>
+							<td align="right" style="width:115px"><label for="nodemanufacturer"><span data-i18n="Manufacturer">Manufacturer</span>:</label></td>
 							<td><select id="nodemanufacturer" ng-model="data.singleselect" style="width:405px;" class="combobox ui-corner-all"></select></td>
 						</tr>
 						<tr>
-							<td align="right" style="width:110px"><span data-i18n="EnOcean Profile">EnOcean Profile : </span></td>
+							<td align="right" style="width:115px"><span data-i18n="EnOcean Profile">EnOcean Profile</span>:</td>
 							<td>
-								<label for="noderorg"><span data-i18n="RORG">RORG</span> : </label>
-								<select id="noderorg" onChange="OnChangeNodeRORG(this);" style="width:80px; margin-right:1em;" class="combobox ui-corner-all"></select>
-								<label for="nodeeep"><span data-i18n="EEP">EEP</span> : </label>
-								<select id="nodeeep" onChange="OnChangeNodeEEP(this);" style="width:80px; margin-right:1em;" class="combobox ui-corner-all"></select>
+								<label for="noderorg"><span data-i18n="RORG">RORG</span>: </label>
+								<select id="noderorg" onChange="OnChangeNodeRORG(this);" style="width:90px; margin-right:1em;" class="combobox ui-corner-all"></select>
+								<label for="nodeeep"><span data-i18n="EEP">EEP</span>: </label>
+								<select id="nodeeep" onChange="OnChangeNodeEEP(this);" style="width:90px; margin-right:1em;" class="combobox ui-corner-all"></select>
 								<span id="nodeeepdesc"></span>
 							</td>
 						</tr>
 						<tr>	
-							<td align="right" style="width:110px"><label for="nodedescription"><span data-i18n="Description"></span> :</label></td>
+							<td align="right" style="width:115px"><label for="nodedescription"><span data-i18n="Description"></span>:</label></td>
 							<td><input type="text" id="nodedescription" name="nodedescription" style="width:385px;" class="text ui-widget-content ui-corner-all"></td>
 						</tr>
 					</table>
@@ -102,7 +102,7 @@ table, tr, td {
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h3 class="modal-title" id="esp3lmdtitle" data-i18n="EnOcean learn mode enabled">EnOcean learn mode enabled</h3>
+				<h3 class="modal-title" id="esp3lmdtitle" data-i18n="EnOcean learn mode">EnOcean learn mode</h3>
 			</div>
 			<div class="modal-body">
 				<form class="form-horizontal" name="modalForm">
@@ -126,12 +126,12 @@ table, tr, td {
 									<div class="sk-circle12 sk-circle"></div>
 								</div>
 								<br><br>
-								<button type="button" onclick="OnCancelTeachIn()" class="btn btn-info" data-dismiss="modal">Cancel</button><br>
+								<button type="button" onclick="OnCancelTeachIn()" class="btn btn-info" data-dismiss="modal"><span data-i18n="Cancel">Cancel</span></button><br>
 							</div>
 							<div id="esp3lmdteachedin" style="display:none;">
-								<b><span data-i18n="New EnOcean node teached-in">New EnOcean node teached-in</span> : </b>
+								<b><span data-i18n="New EnOcean node teached-in">New EnOcean node teached-in</span> :</b>
 								<br><br>
-								<b><span data-i18n="Node ID">Node ID</span> : {{esp3_nodeid}}</b><br>
+								<b><span data-i18n="NodeID">NodeID</span> : {{esp3_nodeid}}</b><br>
 								<b><span data-i18n="Manufacturer">Manufacturer</span> : {{esp3_manufacturername}}</b><br>
 								<b><span data-i18n="EEP">EEP</span> : {{esp3_eep}} ({{esp3_description}})</b><br>
 								<br><br>
