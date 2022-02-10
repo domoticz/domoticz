@@ -282,7 +282,7 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 			//    ^^^
 			// Remove the sequence number from payload
 			cpofmsg.erase( 3 , seqnumend-3 );
-			// Calculate a CRC value for paylod comparision -- Crc32 defined in Hhelper.cpp
+			// Calculate a CRC value for payload comparision -- Crc32 defined in Hhelper.cpp
 			unsigned int crc = Crc32( 0 ,(const uint8_t*) cpofmsg.c_str() , cpofmsg.length() );
 
 			// Get time in millisec for sub second comparision
@@ -293,7 +293,7 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 
 			if( m_lastmsgCRC == crc && (msecs-m_lastmsgTime) < 420 )
 			{
-				// if the CRC is equal in the allowed period it should be filtered
+				// if the CRC is equal in the specified period it should be ignored
 				_log.Log(LOG_NORM, ">>> RFLINK MQTT: SKIP duplicated payload!" );
 				return;
 			}
