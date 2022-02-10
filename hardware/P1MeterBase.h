@@ -34,7 +34,7 @@ class P1MeterBase : public CDomoticzHardwareBase
 	unsigned char m_linecount;
 	unsigned char m_CRfound;
 
-	unsigned char l_buffer[128];
+	char l_buffer[128];
 	int l_bufferpos;
 	unsigned char l_exclmarkfound;
 
