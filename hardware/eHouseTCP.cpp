@@ -368,11 +368,11 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, i
 				_state = 2;
 				sprintf(state, "%d", static_cast<uint8_t>((nValue * 15) / 100));
 			}
-			result = m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", _state, state,
+			result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", _state, state,
 						  lastlevel, szLastUpdate, m_HwdID, IDX);
 			break;
 		default:
-			result = m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%s', LastUpdate='%q'  WHERE (HardwareID==%d) AND (DeviceID=='%q')", nValue, sValue, szLastUpdate,
+			result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%q'  WHERE (HardwareID==%d) AND (DeviceID=='%q')", nValue, sValue, szLastUpdate,
 						  m_HwdID, IDX);
 			break;
 	}
