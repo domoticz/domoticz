@@ -457,7 +457,7 @@ define(['app'], function (app) {
 				return;
 			}
 			var nodeidStr = addLeadingZeros(parseInt(nodeid).toString(16).toUpperCase(), 8);
-			bootbox.confirm($.t("Are you sure you want to update node \'" + nodeidStr + "\'?"), function (confirmed) {
+			bootbox.confirm($.t("Are you sure you want to update node") + " \'"+ nodeidStr + "\'?", function (confirmed) {
 				if (confirmed) {
 					$.ajax({
 						url: "json.htm?type=command&param=esp3updatenode" +
@@ -473,7 +473,7 @@ define(['app'], function (app) {
 							RefreshNodesTable();
 						},
 						error: function (result, status, error) {
-							ShowNotify($.t("Problem updating node \'" + nodeidStr + "\'!"), 2500, true);
+							ShowNotify($.t("Problem updating node") + " \'" + nodeidStr + "\'!", 2500, true);
 						},
 					});
 				}
@@ -485,7 +485,7 @@ define(['app'], function (app) {
 				return;
 
 			var nodeidStr = addLeadingZeros(parseInt(nodeid).toString(16).toUpperCase(), 8);
-			bootbox.confirm($.t("Are you sure you want to delete node \'" + nodeidStr + "\' and all associated devices ?"), function (confirmed) {
+			bootbox.confirm($.t("Are you sure you want to delete node") + " \'" + nodeidStr + "\' " + $.t("and all it's devices ?"), function (confirmed) {
 				if (confirmed) {
 					$.ajax({
 						url: "json.htm?type=command&param=esp3deletenode" +
@@ -497,7 +497,7 @@ define(['app'], function (app) {
 							RefreshNodesTable();
 						},
 						error: function (result, status, error) {
-							ShowNotify($.t("Problem deleting node \'" + nodeidStr + "\'!"), 2500, true);
+							ShowNotify($.t("Problem deleting node") + " \'" + nodeidStr + "\'!", 2500, true);
 						},
 					});
 				}
