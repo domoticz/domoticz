@@ -333,11 +333,7 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, i
 {
 	char IDX[20];
 	char state[5] = "";
-	char szLastUpdate[40];
-	time_t now = time(nullptr);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);
 	int lastlevel = 0;
 	int _state;
@@ -369,10 +365,10 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int /*devtype*/, int code, i
 				sprintf(state, "%d", static_cast<uint8_t>((nValue * 15) / 100));
 			}
 			result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", _state, state,
-						  lastlevel, szLastUpdate, m_HwdID, IDX);
+						  lastlevel, sLastUpdate.c_str(), m_HwdID, IDX);
 			break;
 		default:
-			result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%q'  WHERE (HardwareID==%d) AND (DeviceID=='%q')", nValue, sValue, szLastUpdate,
+			result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%s', LastUpdate='%q'  WHERE (HardwareID==%d) AND (DeviceID=='%q')", nValue, sValue, sLastUpdate.c_str(),
 						  m_HwdID, IDX);
 			break;
 	}

@@ -411,7 +411,7 @@ void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &s
 
 void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	int ID;
 
@@ -428,11 +428,11 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 	else
 	{
 		ID = atoi(result[0][0].c_str());
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), szLastUpdate.c_str(), ID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), sLastUpdate.c_str(), ID);
 	}
 
 	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, szLastUpdate);
+	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, sLastUpdate);
 }
 
 int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &DeviceName, const std::string &MacAddress)

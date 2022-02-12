@@ -95,7 +95,7 @@ CMercApi::CMercApi(const std::string &username, const std::string &password, con
 bool CMercApi::Login()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	if (m_refreshtoken.empty() || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
@@ -106,7 +106,7 @@ bool CMercApi::Login()
 		if (GetAuthToken(m_username, m_authtoken, false))
 		{
 			m_pBase->Log(LOG_NORM, "Login successful.");
-			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), sLastUpdate.c_str(), m_uservar_refreshtoken_idx);
 			bSuccess = true;
 		}
 		else
@@ -128,7 +128,7 @@ bool CMercApi::Login()
 bool CMercApi::RefreshLogin()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	m_pBase->Debug(DEBUG_NORM, "Refreshing login credentials.");
 	m_authenticating = true;
@@ -149,7 +149,7 @@ bool CMercApi::RefreshLogin()
 	}
 
 	m_authenticating = false;
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), sLastUpdate.c_str(), m_uservar_refreshtoken_idx);
 
 	return bSuccess;
 }

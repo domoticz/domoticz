@@ -539,11 +539,9 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
-			time_t now = mytime(nullptr);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
+			std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', StrParam1='' WHERE HardwareID=%d AND DeviceID='%s'", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%q', StrParam1='' WHERE HardwareID=%d AND DeviceID='%s'", devname.c_str(), sLastUpdate.c_str(), this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }

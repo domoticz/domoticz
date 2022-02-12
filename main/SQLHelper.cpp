@@ -4669,10 +4669,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 		return devRowID; //should never happen, because it was previously inserted if non-existent
 
 	std::string idx = result[0][0];
-
-	time_t now = time(nullptr);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 	result = safe_query("SELECT A.ParentID, B.Name, B.HardwareID, B.[Type], B.[SubType], B.Unit FROM LightSubDevices as A, DeviceStatus as B WHERE (A.DeviceRowID=='%q') AND (A.DeviceRowID!=A.ParentID) AND (B.[ID] == A.ParentID)", idx.c_str());
@@ -4683,10 +4680,10 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 		for (const auto &sd : result)
 		{
 			safe_query(
-				"UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
+				"UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (ID == '%q')",
 				nValue,
 				sValue,
-				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				sLastUpdate.c_str(),
 				sd[0].c_str()
 			);
 
@@ -4777,10 +4774,10 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 						continue;
 					}
 					safe_query(
-						"UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
+						"UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (ID == '%q')",
 						newnValue,
 						"",
-						ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+						sLastUpdate.c_str(),
 						sd[0].c_str()
 					);
 					m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
@@ -4866,10 +4863,10 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 				continue;
 			}
 			safe_query(
-				"UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
+				"UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (ID == '%q')",
 				newnValue,
 				"",
-				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				sLastUpdate.c_str(),
 				sd[0].c_str()
 			);
 			m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
@@ -4980,9 +4977,9 @@ uint64_t CSQLHelper::UpdateValueInt(
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
 		nValueBeforeUpdate = atoi(result[0][4].c_str());
 		sValueBeforeUpdate = result[0][5];
-		time_t now = time(nullptr);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
+
+		std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+
 		//Commit: If Option 1: energy is computed as usage*time
 		//Default is option 0, read from device
 		if (options["EnergyMeterMode"] == "1" && devType == pTypeGeneral && subType == sTypeKwh)
@@ -4990,6 +4987,11 @@ uint64_t CSQLHelper::UpdateValueInt(
             double intervalSeconds;
             struct tm ntime;
 			std::string sLastUpdate = result[0][6];
+
+			time_t now = time(nullptr);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
 			time_t lutime;
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 			intervalSeconds = difftime(now, lutime);
@@ -5026,11 +5028,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
 		{
 			result = safe_query(
-				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
+				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%q' "
 				"WHERE (ID = %" PRIu64 ")",
 				signallevel, batterylevel,
 				nValue, sValue,
-				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				sLastUpdate.c_str(),
 				ulID);
 		}
 		else
@@ -5128,11 +5130,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 			}
 
 			result = safe_query(
-				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
+				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%q', LastUpdate='%q' "
 				"WHERE (ID = %" PRIu64 ")",
 				signallevel, batterylevel,
 				nValue, sValue,
-				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				sLastUpdate.c_str(),
 				ulID);
 		}
 	}
@@ -8343,14 +8345,11 @@ uint64_t CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const ch
 
 void CSQLHelper::Lighting2GroupCmd(const std::string& ID, const unsigned char subType, const unsigned char GroupCmd)
 {
-	time_t now = mytime(nullptr);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-
-	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%q', LastUpdate='%q' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
-		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		sLastUpdate.c_str(),
 		ID.c_str(),
 		pTypeLighting2,
 		subType,
@@ -8386,14 +8385,11 @@ uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const 
 
 void CSQLHelper::HomeConfortGroupCmd(const std::string& ID, const unsigned char subType, const unsigned char GroupCmd)
 {
-	time_t now = mytime(nullptr);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-
-	safe_query("UPDATE DeviceStatus SET nValue='%s', sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+	safe_query("UPDATE DeviceStatus SET nValue='%s', sValue='%q', LastUpdate='%q' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
-		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		sLastUpdate.c_str(),
 		ID.c_str(),
 		pTypeHomeConfort,
 		subType,
@@ -8969,14 +8965,14 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 	if (!CheckUserVariable(eVartype, varvalue, errorMessage))
 		return false;
 
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue);
 	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%q' WHERE (ID == '%q')",
 		varname.c_str(),
 		eVartype,
 		szVarValue.c_str(),
-		szLastUpdate.c_str(),
+		sLastUpdate.c_str(),
 		idx.c_str()
 	);
 	if (m_bEnableEventSystem)
@@ -8984,7 +8980,7 @@ bool CSQLHelper::UpdateUserVariable(const std::string& idx, const std::string& v
 		uint64_t vId = std::stoull(idx);
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, szLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, szVarValue, sLastUpdate);
 	}
 	return true;
 }
@@ -9177,22 +9173,22 @@ void CSQLHelper::SendUpdateInt(const std::string& Idx)
 
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const std::string& Value, const std::string& Idx)
 {
-	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const int Value, const std::string& Idx)
 {
-	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const float Value, const std::string& Idx)
 {
-	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value, TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceName(const std::string& Idx, const std::string& Name)
 {
-	safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%s' WHERE (ID == %s )", Name.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%q' WHERE (ID == %s )", Name.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 	SendUpdateInt(Idx);
 }
 

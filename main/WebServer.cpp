@@ -12336,11 +12336,9 @@ namespace http
 			else
 			{
 				// Update
-				time_t now = mytime(nullptr);
-				struct tm ltime;
-				localtime_r(&now, &ltime);
-				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')", iActive, ssenderid.c_str(),
-						 ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, suuid.c_str());
+				std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%q' WHERE (UUID == '%q')", iActive, ssenderid.c_str(),
+						 sLastUpdate.c_str(), suuid.c_str());
 
 				std::string dname = result[0][1];
 				std::string ddevtype = result[0][2];
