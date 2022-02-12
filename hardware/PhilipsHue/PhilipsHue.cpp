@@ -577,7 +577,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		if (result.empty())
 		{
 			//Set SwitchType to STYPE_Dimmer
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID == %d) AND (DeviceID == '%q')",
 				int(STYPE_Dimmer), m_HwdID, szID);
 		}
 	}
@@ -628,7 +628,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		if (result.empty())
 		{
 			//Set SwitchType to STYPE_PushOn
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID == %d) AND (DeviceID == '%q')",
 				int(STYPE_Dimmer), m_HwdID, szID);
 		}
 	}
@@ -691,7 +691,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		if (result.empty())
 		{
 			//Set SwitchType
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID == %d) AND (DeviceID == '%q')",
 				int(LType == HLTYPE_DIM ? STYPE_Dimmer : STYPE_OnOff), m_HwdID, szID);
 		}
 	}
@@ -1185,7 +1185,7 @@ bool CPhilipsHue::InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Uni
 	if (result.empty())
 	{
 		//Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", Name.c_str(), (STYPE_Selector), 0, m_HwdID, NodeID, xcmd.unitcode);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE (HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", Name.c_str(), (STYPE_Selector), 0, m_HwdID, NodeID, xcmd.unitcode);
 		return true;
 	}
 	return false;
@@ -1213,7 +1213,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 	if (result.empty())
 	{
 		//Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", Name.c_str(), (SType), 0, m_HwdID, NodeID, xcmd.unitcode);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE (HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", Name.c_str(), (SType), 0, m_HwdID, NodeID, xcmd.unitcode);
 	}
 }
 

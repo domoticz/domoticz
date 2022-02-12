@@ -325,7 +325,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 		if (bNoChange)
 		{
 			std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')", sLastUpdate.c_str(), m_HwdID, szIdx);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q')", sLastUpdate.c_str(), m_HwdID, szIdx);
 			return;
 		}
 	}

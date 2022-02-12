@@ -1120,7 +1120,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 			build_str << "false";
 		build_str << ";LevelActions:" << LevelActions.c_str();
 		std::string options_str = m_sql.FormatDeviceOptions(m_sql.BuildDeviceOptions( build_str.str(), false));
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', sValue=%i, SwitchType=%d, CustomImage=%i,options='%q' WHERE(HardwareID == %d) AND (DeviceID=='%08X') AND (Unit == '%d')", defaultname.c_str(), xcmd.level, (switchtype), customImage, options_str.c_str(), m_HwdID, NodeID, xcmd.unitcode);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', sValue=%i, SwitchType=%d, CustomImage=%i,options='%q' WHERE (HardwareID == %d) AND (DeviceID=='%08X') AND (Unit == '%d')", defaultname.c_str(), xcmd.level, (switchtype), customImage, options_str.c_str(), m_HwdID, NodeID, xcmd.unitcode);
         // The Selector switch has been created
 	}
 	else

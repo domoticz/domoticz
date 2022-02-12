@@ -1295,7 +1295,7 @@ bool CSQLHelper::OpenDatabase()
 			//S0 Meter patch
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, Mode1, Mode2, Mode3, Mode4 FROM HARDWARE WHERE([Type]==" << HTYPE_S0SmartMeterUSB << ")";
+			szQuery2 << "SELECT ID, Mode1, Mode2, Mode3, Mode4 FROM HARDWARE WHERE ([Type]==" << HTYPE_S0SmartMeterUSB << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -1370,7 +1370,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result;
 			std::vector<std::vector<std::string> > result2;
 			std::vector<std::vector<std::string> > result3;
-			szQuery << "SELECT ID FROM HARDWARE WHERE([Type]==" << HTYPE_TOONTHERMOSTAT << ")";
+			szQuery << "SELECT ID FROM HARDWARE WHERE ([Type]==" << HTYPE_TOONTHERMOSTAT << ")";
 			result = query(szQuery.str());
 			for (const auto &sd : result)
 			{
@@ -1628,7 +1628,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 85)
 		{
 			//MySensors, default use ACK for Childs
-			safe_query("UPDATE MySensorsChilds SET[UseAck] = 1 WHERE(ChildID != 255)");
+			safe_query("UPDATE MySensorsChilds SET[UseAck] = 1 WHERE (ChildID != 255)");
 		}
 		if (dbversion < 86)
 		{
@@ -2028,7 +2028,7 @@ bool CSQLHelper::OpenDatabase()
 			//S0 Meter patch
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, Address FROM Hardware WHERE([Type]==" << HTYPE_S0SmartMeterUSB << ")";
+			szQuery2 << "SELECT ID, Address FROM Hardware WHERE ([Type]==" << HTYPE_S0SmartMeterUSB << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2053,7 +2053,7 @@ bool CSQLHelper::OpenDatabase()
 			//Adjust Limited device id's to uppercase HEX
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE([Type]==" << pTypeColorSwitch << ")";
+			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]==" << pTypeColorSwitch << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2128,7 +2128,7 @@ bool CSQLHelper::OpenDatabase()
 			//SolarEdge API, no need for Serial Number anymore
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, Password FROM Hardware WHERE([Type]==" << HTYPE_SolarEdgeAPI << ")";
+			szQuery2 << "SELECT ID, Password FROM Hardware WHERE ([Type]==" << HTYPE_SolarEdgeAPI << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2161,7 +2161,7 @@ bool CSQLHelper::OpenDatabase()
 			//Patch for new 1-Wire subtypes
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_1WIRE << ")";
+			szQuery2 << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_1WIRE << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2189,7 +2189,7 @@ bool CSQLHelper::OpenDatabase()
 			//Patch for Evohome Web
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, Name, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			szQuery2 << "SELECT ID, Name, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE ([Type]==" << HTYPE_EVOHOME_WEB << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2274,7 +2274,7 @@ bool CSQLHelper::OpenDatabase()
 			// incorrect call to hardware class from mainworker: move Evohome installation parameters from Mode5 to unused Mode3
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			szQuery2 << "SELECT ID, Mode5 FROM Hardware WHERE ([Type]==" << HTYPE_EVOHOME_WEB << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2291,7 +2291,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result;
 			std::vector<std::vector<std::string> > result2;
 			std::vector<std::vector<std::string> > result3;
-			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_DarkSky << ")";
+			szQuery2 << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_DarkSky << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2363,7 +2363,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result2;
 
 			//Convert stored Hue in Timers to color
-			result = query("SELECT ID, Hue FROM Timers WHERE(Hue!=0)");
+			result = query("SELECT ID, Hue FROM Timers WHERE (Hue!=0)");
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -2383,7 +2383,7 @@ bool CSQLHelper::OpenDatabase()
 			}
 
 			//Convert stored Hue in SceneDevices to color
-			result = query("SELECT ID, Hue FROM SceneDevices WHERE(Hue!=0)");
+			result = query("SELECT ID, Hue FROM SceneDevices WHERE (Hue!=0)");
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -2405,7 +2405,7 @@ bool CSQLHelper::OpenDatabase()
 			//Patch for ZWave, change device type from sTypeColor_RGB_W to sTypeColor_RGB_W_Z
 			szQuery2.clear();
 			szQuery2.str("");
-			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenZWave << ")";
+			szQuery2 << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_OpenZWave << ")";
 			result = query(szQuery2.str());
 			if (!result.empty())
 			{
@@ -2577,7 +2577,7 @@ bool CSQLHelper::OpenDatabase()
 			std::vector<std::vector<std::string> > result, result2;
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_Philips_Hue << ")";
+			szQuery << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_Philips_Hue << ")";
 			result = query(szQuery.str());
 			if (!result.empty())
 			{
@@ -2628,7 +2628,7 @@ bool CSQLHelper::OpenDatabase()
 			//SolarEdge WEB API Frequency sensor change from Percentage to Custom type
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > hwResult, dsResult;
-			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_SolarEdgeAPI << ")";
+			szQuery << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_SolarEdgeAPI << ")";
 			hwResult = query(szQuery.str());
 			if (!hwResult.empty())
 			{
@@ -2660,7 +2660,7 @@ bool CSQLHelper::OpenDatabase()
 			// Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result, result2;
-			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenWebNetTCP << ")";
+			szQuery << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_OpenWebNetTCP << ")";
 			result = query(szQuery.str());
 			if (!result.empty())
 			{
@@ -2766,7 +2766,7 @@ bool CSQLHelper::OpenDatabase()
 			// Patch for OpenWebNetTCP: update unit and deviceID for Alert devices, update subtype for GeneralSwitch devices
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenWebNetTCP << ")";
+			szQuery << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_OpenWebNetTCP << ")";
 			result = query(szQuery.str());
 			if (!result.empty())
 			{
@@ -2802,7 +2802,7 @@ bool CSQLHelper::OpenDatabase()
 			// Patch for OpenWebNetTCP: update deviceID for Area devices
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result, result2;
-			szQuery << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenWebNetTCP << ")";
+			szQuery << "SELECT ID FROM Hardware WHERE ([Type]==" << HTYPE_OpenWebNetTCP << ")";
 			result = query(szQuery.str());
 			if (!result.empty())
 			{
@@ -2873,7 +2873,7 @@ bool CSQLHelper::OpenDatabase()
 			// Patch for MQTT: adding default in/ouput topics
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string>> result;
-			szQuery << "SELECT ID, Extra FROM Hardware WHERE([Type]==" << HTYPE_MQTT << ")";
+			szQuery << "SELECT ID, Extra FROM Hardware WHERE ([Type]==" << HTYPE_MQTT << ")";
 			result = query(szQuery.str());
 			if (!result.empty())
 			{
