@@ -1120,6 +1120,10 @@ define(['app', 'livesocket'], function (app) {
 						var status = "";
 						var bHaveBefore = false;
 						if (typeof item.Temp != 'undefined') {
+              if ($rootScope.DisplayTrend(item.trend))
+              {
+                status += '<img src="images/arrow_' + $rootScope.TrendState(2) + '.png" width="14" height="15">';
+              }
 							status += item.Temp + '&deg; ' + $scope.config.TempSign;
 							bHaveBefore = true;
 						}
@@ -2924,6 +2928,10 @@ define(['app', 'livesocket'], function (app) {
 									var status = "";
 									var bHaveBefore = false;
 									if (typeof item.Temp != 'undefined') {
+                    if ($rootScope.DisplayTrend(item.trend))
+                    {
+                      status += '<img src="images/arrow_' + $rootScope.TrendState(2) + '.png" width="14" height="15">';
+                    }
 										status += item.Temp + '&deg; ' + $scope.config.TempSign;
 										bHaveBefore = true;
 									}
@@ -2964,7 +2972,11 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = "";
 									if (typeof item.Temp != 'undefined') {
-										bigtext = item.Temp + '\u00B0 ' + $scope.config.TempSign;
+                    if ($rootScope.DisplayTrend(item.trend))
+                    {
+                      bigtext += '<img src="images/arrow_' + $rootScope.TrendState(2) + '.png" width="14" height="15">';
+                    }
+										bigtext += item.Temp + '\u00B0 ' + $scope.config.TempSign;
 									}
 									if (typeof item.Humidity != 'undefined') {
 										if (bigtext != "") {

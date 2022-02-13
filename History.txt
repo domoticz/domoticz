@@ -4,6 +4,8 @@ Version 2022.xxxxx (xxxx)
 - Implemented: Commandline option '-weblog <weblogfile>' which creates Apache Combined Logformat logs containg all webrequests
 - Implemented: Fritzbox, up/download statistics
 - Implemented: Service Worker, only when using https and a valid SSL certificate
+- Implemented: Temperature Trend indication on dashboard
+
 - Removed: AppCache
 - Fixed: Crash when secure webserver could not start and applying settings
 - Fixed: Notification system, prevent double start
