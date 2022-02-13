@@ -1292,6 +1292,7 @@ namespace http {
 
 						std::string clientsecret;
 						std::string client_key_id;
+						bool clientispublic = false;
 						// Check if the audience has been registered as a User (type CLIENTID)
 						for (const auto &my : myWebem->m_userpasswords)
 						{
@@ -1301,10 +1302,12 @@ namespace http {
 								{
 									clientsecret = my.Password;
 									client_key_id = std::to_string(my.ID);
+									clientispublic = my.ActiveTabs;
+									break;
 								}
 							}
 						}
-						if (clientsecret.empty())
+						if (client_key_id.empty() || clientsecret.empty())
 						{
 							_log.Debug(DEBUG_AUTH, "Unable to verify token as no ClientID for the audience has been found!");
 							return 0;
