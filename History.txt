@@ -1,5 +1,6 @@
 Version 2022.xxxxx (xxxx)
 - Implemented: Blockly, added 'Toggle' set command
+- Implemented: Camera Aspect Ratio
 - Implemented: Commandline option '-weblog <weblogfile>' which creates Apache Combined Logformat logs containg all webrequests
 - Implemented: Fritzbox, up/download statistics
 - Implemented: Service Worker, only when using https and a valid SSL certificate

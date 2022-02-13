@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 153
+#define DB_VERSION 154
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -288,6 +288,7 @@ constexpr auto sqlCreateCameras =
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
 "[Protocol] INTEGER DEFAULT 0, "
+"[AspectRatio] INTEGER DEFAULT 0, " //0=4:3, 1=16:9
 "[Username] VARCHAR(100) DEFAULT (''), "
 "[Password] VARCHAR(100) DEFAULT (''), "
 "[ImageURL] VARCHAR(200) DEFAULT (''));";
@@ -2970,6 +2971,10 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 153)
 		{
 			UpdatePreferencesVar("Unique_ID", GenerateUUID());
+		}
+		if (dbversion < 154)
+		{
+			query("ALTER TABLE Cameras ADD COLUMN [AspectRatio] INTEGER DEFAULT 0");
 		}
 	}
 	else if (bNewInstall)

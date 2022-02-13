@@ -30,7 +30,7 @@ void CCameraHandler::ReloadCameras()
 	m_cameradevices.clear();
 	std::vector<std::vector<std::string> > result;
 
-	result = m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
+	result = m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL, Protocol, AspectRatio FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
 	if (!result.empty())
 	{
 		_log.Log(LOG_STATUS, "Camera: settings (re)loaded");
@@ -45,6 +45,7 @@ void CCameraHandler::ReloadCameras()
 			citem.Password = base64_decode(sd[5]);
 			citem.ImageURL = sd[6];
 			citem.Protocol = (eCameraProtocol)atoi(sd[7].c_str());
+			citem.AspectRatio = (uint8_t)atoi(sd[8].c_str());
 			m_cameradevices.push_back(citem);
 			_AddedCameras.push_back(sd[0]);
 		}
@@ -64,7 +65,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 		return;
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
+	result = m_sql.safe_query("SELECT A.ID, A.DevSceneType, A.DevSceneRowID, B.AspectRatio FROM CamerasActiveDevices AS A, Cameras as B WHERE (A.CameraRowID=='%q') AND (B.ID=='%q') ORDER BY A.ID", CamID.c_str(), CamID.c_str());
 	if (!result.empty())
 	{
 		for (const auto &sd : result)
@@ -73,6 +74,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 			aDevice.ID = std::stoull(sd[0]);
 			aDevice.DevSceneType = (unsigned char)atoi(sd[1].c_str());
 			aDevice.DevSceneRowID = std::stoull(sd[2]);
+			aDevice.AspectRatio = std::stoi(sd[3]);
 			pCamera->mActiveDevices.push_back(aDevice);
 		}
 	}
@@ -87,11 +89,16 @@ uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, co
 uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	std::lock_guard<std::mutex> l(m_mutex);
-	for (const auto &sd : m_cameradevices)
-		for (const auto &sd2 : sd.mActiveDevices)
+	for (const auto& sd : m_cameradevices)
+	{
+		for (const auto& sd2 : sd.mActiveDevices)
+		{
 			if ((sd2.DevSceneType == DevSceneType) && (sd2.DevSceneRowID == DevSceneID))
+			{
 				return sd.ID;
-
+			}
+		}
+	}
 	return 0;
 }
 
@@ -139,6 +146,21 @@ CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 			return &m;
 	}
 	return nullptr;
+}
+
+int CCameraHandler::GetCameraAspectRatio(const std::string& CamIdx)
+{
+	return GetCameraAspectRatio(std::stoull(CamIdx));
+}
+
+int CCameraHandler::GetCameraAspectRatio(const uint64_t CamID)
+{
+	for (auto& m : m_cameradevices)
+	{
+		if (m.ID == CamID)
+			return m.AspectRatio;
+	}
+	return 0;
 }
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
@@ -377,10 +399,10 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			if (rused == "true") {
-				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol, AspectRatio FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
 			}
 			else {
-				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol, AspectRatio FROM Cameras ORDER BY ID ASC");
 			}
 			if (!result.empty())
 			{
@@ -396,6 +418,7 @@ namespace http {
 					root["result"][ii]["Password"] = base64_decode(sd[6]);
 					root["result"][ii]["ImageURL"] = sd[7];
 					root["result"][ii]["Protocol"] = atoi(sd[8].c_str());
+					root["result"][ii]["AspectRatio"] = atoi(sd[9].c_str());
 					ii++;
 				}
 			}
@@ -471,6 +494,7 @@ namespace http {
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
+			int aspectratio = atoi(request::findValue(&req, "aspectratio").c_str());
 			if ((name.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
@@ -483,7 +507,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "AddCamera";
 				m_sql.safe_query(
-					"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol) VALUES ('%q',%d,'%q',%d,'%q','%q','%q',%d)",
+					"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol, AspectRatio) VALUES ('%q',%d,'%q',%d,'%q','%q','%q',%d,%d)",
 					name.c_str(),
 					(senabled == "true") ? 1 : 0,
 					address.c_str(),
@@ -491,7 +515,8 @@ namespace http {
 					base64_encode(username).c_str(),
 					base64_encode(password).c_str(),
 					imageurl.c_str(),
-					cprotocol
+					cprotocol,
+					aspectratio
 				);
 				m_mainworker.m_cameras.ReloadCameras();
 			}
@@ -516,6 +541,7 @@ namespace http {
 			std::string password = request::findValue(&req, "password");
 			std::string timageurl = HTMLSanitizer::Sanitize(request::findValue(&req, "imageurl"));
 			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
+			int aspectratio = atoi(request::findValue(&req, "aspectratio").c_str());
 			if ((name.empty()) || (senabled.empty()) || (address.empty()) || (timageurl.empty()))
 				return;
 
@@ -530,7 +556,7 @@ namespace http {
 				root["title"] = "UpdateCamera";
 
 				m_sql.safe_query(
-					"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q', Protocol=%d WHERE (ID == '%q')",
+					"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q', Protocol=%d, AspectRatio=%d WHERE (ID == '%q')",
 					name.c_str(),
 					(senabled == "true") ? 1 : 0,
 					address.c_str(),
@@ -539,6 +565,7 @@ namespace http {
 					base64_encode(password).c_str(),
 					imageurl.c_str(),
 					cprotocol,
+					aspectratio,
 					idx.c_str()
 				);
 				m_mainworker.m_cameras.ReloadCameras();

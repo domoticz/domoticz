@@ -15,6 +15,7 @@ class CCameraHandler
 		uint64_t ID;
 		uint64_t DevSceneRowID;
 		unsigned char DevSceneType;
+		uint8_t AspectRatio;
 	};
 
 	struct cameraDevice
@@ -25,6 +26,7 @@ class CCameraHandler
 		std::string Username;
 		std::string Password;
 		eCameraProtocol Protocol;
+		uint8_t AspectRatio;
 		int Port;
 		std::string ImageURL;
 		std::vector<cameraActiveDevice> mActiveDevices;
@@ -48,6 +50,8 @@ public:
   std::string GetCameraURL(cameraDevice *pCamera);
   std::string GetCameraURL(const std::string &CamID);
   std::string GetCameraURL(const uint64_t CamID);
+  int GetCameraAspectRatio(const std::string& CamIdx);
+  int GetCameraAspectRatio(const uint64_t CamID);
 
 private:
 	void ReloadCameraActiveDevices(const std::string &CamID);

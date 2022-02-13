@@ -368,6 +368,7 @@ function Device(item) {
         this.haveTimeout = (typeof item.HaveTimeout != 'undefined') ? item.HaveTimeout : false;
         this.haveCamera = ((typeof item.UsedByCamera != 'undefined') && (typeof item.CameraIdx != 'undefined')) ? item.UsedByCamera : false;
         this.cameraIdx = (typeof item.CameraIdx != 'undefined') ? item.CameraIdx : 0;
+        this.cameraAspect = (typeof item.CameraAspect != 'undefined') ? item.CameraAspect : 0;
         this.haveDimmer = false;  // data from server is unreliable so inheriting classes will need to force true
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
@@ -1156,7 +1157,7 @@ function Sensor(item) {
         this.imagetext = "Show graph";
         this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
 
-        if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "','" + this.cameraIdx + "')";
+        if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "'," + this.cameraIdx + "," + this.cameraAspect + ")";
         this.showStatus = (Device.showSensorValues == true);
     }
 }

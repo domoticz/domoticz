@@ -8486,6 +8486,7 @@ namespace http
 								std::stringstream scidx;
 								scidx << camIDX;
 								root["result"][ii]["CameraIdx"] = scidx.str();
+								root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 							}
 							root["result"][ii]["XOffset"] = atoi(sd[7].c_str());
 							root["result"][ii]["YOffset"] = atoi(sd[8].c_str());
@@ -9128,6 +9129,7 @@ namespace http
 							std::stringstream scidx;
 							scidx << camIDX;
 							root["result"][ii]["CameraIdx"] = scidx.str();
+							root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 						}
 
 						bool bIsSubDevice = false;
@@ -10997,6 +10999,7 @@ namespace http
 									std::stringstream scidx;
 									scidx << camIDX;
 									root["result"][ii]["CameraIdx"] = scidx.str();
+									root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 								}
 
 								root["result"][ii]["Level"] = 0;
@@ -11532,6 +11535,7 @@ namespace http
 						std::stringstream scidx;
 						scidx << camIDX;
 						root["result"][ii]["CameraIdx"] = scidx.str();
+						root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 					}
 					ii++;
 				}
