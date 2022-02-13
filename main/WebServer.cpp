@@ -1356,7 +1356,7 @@ namespace http
 
 		void CWebServer::GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep)
 		{
-			Json::Value root, jaRTS(Json::arrayValue), jaROSAVS(Json::arrayValue);
+			Json::Value root, jaRTS(Json::arrayValue), jaTEASAVS(Json::arrayValue), jaGTS(Json::arrayValue), jaCCMS(Json::arrayValue), jaTEAMS(Json::arrayValue);
 
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
@@ -1368,10 +1368,18 @@ namespace http
 			root["token_endpoint"] = base_url + OAUTH2_TOKEN_URL;
 			jaRTS.append("code");
 			root["response_types_supported"] = jaRTS;
-			jaROSAVS.append("HS256");
-			jaROSAVS.append("HS384");
-			jaROSAVS.append("HS512");
-			root["request_object_signing_alg_values_supported"] = jaROSAVS;
+			jaTEASAVS.append("HS256");
+			jaTEASAVS.append("HS384");
+			jaTEASAVS.append("HS512");
+			root["token_endpoint_auth_signing_alg_values_supported"] = jaTEASAVS;
+			jaGTS.append("authorization_code");
+			jaGTS.append("password");
+			jaGTS.append("refresh_token");
+			root["grant_types_supported"] = jaGTS;
+			jaCCMS.append("S256");
+			root["code_challenge_methods_supported"] = jaCCMS;
+			jaTEAMS.append("client_secret_basic");
+			root["token_endpoint_auth_methods_supported"] = jaTEAMS;
 
 			rep.status = reply::ok;
 			reply::set_content(&rep, root.toStyledString());
