@@ -9280,9 +9280,13 @@ namespace http
 							{
 								lstatus = "Open";
 							}
-							else
+							else if (lstatus == "Off")
 							{
 								lstatus = "Closed";
+							}
+							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
+							{
+								lstatus = "Stopped";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
