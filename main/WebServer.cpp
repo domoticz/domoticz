@@ -10175,7 +10175,7 @@ namespace http
 								sprintf(szTmp, "%.03f", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g", float(total_actual) / divider);
+								sprintf(szTmp, "%.10g", float(total_actual) / divider);
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -14228,7 +14228,7 @@ namespace http
 													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%g", TotalValue / dividerHere);
+													sprintf(szTmp, "%.10g", TotalValue / dividerHere);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14274,7 +14274,7 @@ namespace http
 											sprintf(szTmp, "%.3f", TotalValue / dividerForRate);
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", TotalValue / dividerForRate);
+											sprintf(szTmp, "%.10g", TotalValue / dividerForRate);
 											break;
 										default:
 											strcpy(szTmp, "0");
@@ -14366,7 +14366,7 @@ namespace http
 														sprintf(szTmp, "%.3f", TotalValue / divider);
 														break;
 													case MTYPE_COUNTER:
-														sprintf(szTmp, "%g", TotalValue / divider);
+														sprintf(szTmp, "%.10g", TotalValue / divider);
 														break;
 													default:
 														strcpy(szTmp, "0");
@@ -14427,7 +14427,7 @@ namespace http
 													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%g", TotalValue / divider);
+													sprintf(szTmp, "%.10g", TotalValue / divider);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14471,7 +14471,7 @@ namespace http
 										sprintf(szTmp, "%.3f", TotalValue / divider);
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%g", TotalValue / divider);
+										sprintf(szTmp, "%.10g", TotalValue / divider);
 										break;
 									default:
 										strcpy(szTmp, "0");
@@ -14985,7 +14985,7 @@ namespace http
 										szValue = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 										szValue = szTmp;
 										break;
 									default:
@@ -15094,7 +15094,7 @@ namespace http
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								default:
@@ -15586,14 +15586,12 @@ namespace http
 					root["ValueUnits"] = options["ValueUnits"];
 
 					// int nValue = 0;
-					std::string sValue;
+					std::string sValue; //Counter
 
-					result = m_sql.safe_query("SELECT nValue, sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+					result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 					if (!result.empty())
 					{
-						std::vector<std::string> sd = result[0];
-						// nValue = atoi(sd[0].c_str());
-						sValue = sd[1];
+						sValue = result[0][0];
 					}
 
 					std::function<std::string(std::string, std::string)> tableColumn = [](std::string table, std::string expr) {
@@ -16156,6 +16154,9 @@ namespace http
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
 									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.10g", fvalue);
+									break;
 								default:
 									strcpy(szTmp, "");
 									break;
@@ -16181,6 +16182,9 @@ namespace http
 										break;
 									case MTYPE_WATER:
 										sprintf(szTmp, "%.3f", fvalue / divider);
+										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.10g", fvalue);
 										break;
 									default:
 										strcpy(szTmp, "");
@@ -16219,7 +16223,7 @@ namespace http
 										case MTYPE_WATER:
 											return std_format("%.3f", sum / divider);
 										case MTYPE_COUNTER:
-											return std_format("%g", sum / divider);
+											return std_format("%.10g", sum / divider);
 									}
 									return std::string("");
 								});
@@ -16272,10 +16276,10 @@ namespace http
 											root["result"][ii]["c"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
 											if (fcounter != 0)
-												sprintf(szTmp, "%g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.10g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 											else
 												strcpy(szTmp, "0");
 											root["result"][ii]["c"] = szTmp;
@@ -16312,7 +16316,7 @@ namespace http
 											root["resultprev"][iPrev]["v"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["resultprev"][iPrev]["v"] = szTmp;
 											break;
 									}
@@ -16590,7 +16594,7 @@ namespace http
 											formatString = "%.3f";
 											break;
 										case MTYPE_COUNTER:
-											formatString = "%g";
+											formatString = "%.10g";
 											break;
 									}
 									AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, formatString);
@@ -16632,9 +16636,9 @@ namespace http
 											root["result"][ii]["c"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
-											sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.10g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 											root["result"][ii]["c"] = szTmp;
 											break;
 									}
@@ -17178,6 +17182,11 @@ namespace http
 										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 										szValue = szTmp;
 										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+										szValue = szTmp;
+										break;
+
 								}
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = szValue;
@@ -17271,6 +17280,10 @@ namespace http
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									szValue = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 							}
