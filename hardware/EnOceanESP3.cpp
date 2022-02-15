@@ -2097,10 +2097,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
-		if (tsen->LIGHTING2.packettype == pTypeGeneralSwitch)
-			level = xcmd->level;
-		else
-			level = tsen->LIGHTING2.level;
+		level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
 		if (level > 50)
 		{
 			Log(LOG_ERROR,"Node %08X, Invalid PiloteWire level %d", nodeID, level);
