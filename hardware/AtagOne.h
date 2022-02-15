@@ -16,7 +16,6 @@ private:
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	void SendOutsideTemperature();
 	bool Login();
-	void Logout();
 	std::string GetRequestVerificationToken(const std::string &url);
 	void Init();
 	void SetModes(int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);

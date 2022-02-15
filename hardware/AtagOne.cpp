@@ -347,13 +347,9 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 
 bool CAtagOne::Login()
 {
-	if (!m_ThermostatID.empty())
-	{
-		Logout();
-	}
+	Init();
 	if (m_UserName.empty())
 		return false;
-	m_ThermostatID = "";
 
 	std::string sResult;
 
@@ -392,7 +388,7 @@ bool CAtagOne::Login()
 	}
 
 #ifdef DEBUG_AtagOneThermostat
-	SaveString2Disk(sResult, "E:\\AtagOne1.txt");
+	SaveString2Disk(sResult, "E:\\AtagOne1_login.txt");
 #endif
 #endif
 	//# 2. Extract DeviceID
@@ -405,14 +401,6 @@ bool CAtagOne::Login()
 	}
 	m_bDoLogin = false;
 	return true;
-}
-
-void CAtagOne::Logout()
-{
-	if (m_bDoLogin)
-		return; //we are not logged in
-	m_ThermostatID = "";
-	m_bDoLogin = true;
 }
 
 bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
