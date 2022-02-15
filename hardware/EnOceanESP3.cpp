@@ -4285,7 +4285,7 @@ uint32_t CEnOceanESP3::sendDataVld(unsigned int srcID, unsigned int destID, T_DA
 	return DataSize;
 }
 
-bool updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
+bool CEnOceanESP3::updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
 {
 	std::vector<std::vector<std::string>> result;
 
@@ -4415,7 +4415,7 @@ bool CEnOceanESP3::manageVldMessage(uint32_t iSenderID, unsigned char *vldData, 
 }
 
 //return position 0..100% from command / level
-int getPositionFromCommandLevel(int cmnd, int pos)
+int CEnOceanESP3::getPositionFromCommandLevel(int cmnd, int pos)
 {
 	if (cmnd == light2_sOn)
 		pos = 100;
