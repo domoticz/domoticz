@@ -2119,7 +2119,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X", PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID);
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
-
 		return true;
 	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
@@ -2397,7 +2396,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t LRN = bitrange(DATA, 3, 0x01);
 
 				if (LRN == 0)
-				{ 	// 1BS teach-in
+				{ // 1BS teach-in
 					Log(LOG_NORM, "1BS teach-in request from Node %08X", senderID);
 
 					if (pNode != nullptr)
@@ -4271,7 +4270,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 	return DataSize;
 }
 
-uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
+uint32_t CEnOceanESP3::sendDataVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
 {
 	uint8_t data[256 + 2];
 
@@ -4281,7 +4280,7 @@ uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID, unsigned int destID, T_DA
 	if (DataSize)
 		sendVld(srcID, destID, data, DataSize);
 	else
-		Log(LOG_ERROR, " Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		Log(LOG_ERROR, "Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 
 	return DataSize;
 }

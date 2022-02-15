@@ -146,7 +146,7 @@ private:
     void sendVld    (unsigned int sID , unsigned int destID , int channel, int value);
 	void sendVld    (unsigned int sID , unsigned int destID , unsigned char *data, int DataLen );
 	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD * OffsetDes,  ...);
-	uint32_t senDatadVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD* OffsetDes, int* values, int NbValues);
+	uint32_t sendDataVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD* OffsetDes, int* values, int NbValues);
 };
 
 int getPositionFromCommandLevel(int cmnd, int pos);
