@@ -625,34 +625,32 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode == nullptr)
 		return;
 
-	bool do_update = false;
+	if (pNode->RORG == RORG)
+		return;
 
-	if (pNode->RORG != RORG)
-	{
-		Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
-			pNode->nodeID,
-			pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
-			RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+	Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+		pNode->nodeID,
+		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
 
-		pNode->RORG = RORG;
-		do_update = true;
+	if (pNode->name == "" || pNode->name == "Unknown")
+		pNode->name = GetEEPLabel(RORG, pNode->func, pNode->type);		
 
-		// TODO : update name & description if need be
-	}
+	pNode->RORG = RORG;
+
+	if (pNode->description == "" || pNode->description == "Unknown")
+		pNode->description = GetEEPDescription(RORG, pNode->func, pNode->type);
+
 	if (pNode->teachin_mode == GENERIC_NODE)
 	{
 		Log(LOG_NORM, "Node %08X, update from Generic to Teached-in", pNode->nodeID);
 
 		pNode->teachin_mode = TEACHEDIN_NODE;
-		do_update = true;
 	}
-	if (do_update == false)
-		return;
-
 	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
-	m_sql.safe_query("UPDATE EnOceanNodes SET RORG=%u, nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
-		pNode->RORG, nValue, m_HwdID, pNode->nodeID);
+	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', RORG=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
+		pNode->name.c_str(), pNode->RORG, pNode->description.c_str(), nValue, m_HwdID, pNode->nodeID);
 }
 
 void CEnOceanESP3::DeleteNode(const uint32_t nodeID)
