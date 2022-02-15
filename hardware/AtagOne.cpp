@@ -27,7 +27,7 @@ extern http::server::CWebServerHelper m_webservers;
 #define ATAGONE_TEMPERATURE_MAX 27
 
 #ifdef _DEBUG
-	//#define DEBUG_AtagOneThermostat
+//	#define DEBUG_AtagOneThermostat
 #endif
 
 #ifdef DEBUG_AtagOneThermostat
@@ -110,6 +110,177 @@ bool CAtagOne::StopHardware()
 	}
     m_bIsStarted=false;
     return true;
+}
+
+#define AtagOne_POLL_INTERVAL 60
+
+void CAtagOne::Do_Work()
+{
+	Log(LOG_STATUS, "Worker started...");
+	int sec_counter = AtagOne_POLL_INTERVAL - 3;
+	while (!IsStopRequested(1000))
+	{
+		sec_counter++;
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(nullptr);
+		}
+
+		if (sec_counter % 3600 == 0)
+		{
+			//Force re-login
+			Init();
+		}
+
+		if (sec_counter % AtagOne_POLL_INTERVAL == 0)
+		{
+			//SendOutsideTemperature();
+			GetMeterDetails();
+		}
+	}
+	Log(LOG_STATUS, "Worker stopped...");
+}
+
+void CAtagOne::GetMeterDetails()
+{
+	if (m_UserName.empty() || m_Password.empty())
+		return;
+
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
+
+	std::string sResult;
+#ifdef DEBUG_AtagOneThermostat_read
+	sResult = ReadFile("E:\\AtagOne_getdiag.txt");
+#else
+	std::string sURL = std::string(ATAGONE_URL_DIAGNOSTICS) + "?deviceId=" + CURLEncode::URLEncode(m_ThermostatID);
+	if (!HTTPClient::GET(sURL, sResult))
+	{
+		Log(LOG_ERROR, "Error getting thermostat data!");
+		m_bDoLogin = true;
+		return;
+	}
+
+#ifdef DEBUG_AtagOneThermostat
+	SaveString2Disk(sResult, "E:\\AtagOne_getdiag.txt");
+#endif
+#endif
+	//Extract all values from the HTML page, and put them in a json array
+	Json::Value root;
+	std::string sret;
+	sret = GetHTMLPageValue(sResult, "Kamertemperatuur", "Room temperature", true);
+	if (sret.empty())
+	{
+		Log(LOG_ERROR, "Invalid/no data received...");
+		return;
+	}
+	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
+	root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias", "Device alias", false);
+	root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd", "Latest report time", false);
+	root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met", "Connected to", false);
+	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren", "Burning hours", true).c_str()));
+	root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor", "Boiler heating for", false);
+	sret = GetHTMLPageValue(sResult, "Brander status", "Flame status", false);
+	root["flameStatus"] = ((sret == "Aan") || (sret == "On")) ? true : false;
+	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur", "Outside temperature", true).c_str()));
+	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater", "DHW setpoint", true).c_str()));
+	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur", "DHW water temperature", true).c_str()));
+	root["chSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint cv", "CH setpoint", true).c_str()));
+	root["chWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur", "CH water temperature", true).c_str()));
+	root["chWaterPressure"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-waterdruk", "CH water pressure", true).c_str()));
+	root["chReturnTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur", "CH return temperature", true).c_str()));
+
+#ifdef DEBUG_AtagOneThermostat_read
+	sResult = ReadFile("E:\\AtagOne_gettargetsetpoint.txt");
+#else
+	// We have to do an extra call to get the target temperature.
+	sURL = ATAGONE_URL_UPDATE_DEVICE_CONTROL;
+	stdreplace(sURL, "{0}", CURLEncode::URLEncode(m_ThermostatID));
+	if (!HTTPClient::GET(sURL, sResult))
+	{
+		Log(LOG_ERROR, "Error getting target setpoint data!");
+		m_bDoLogin = true;
+		return;
+	}
+#ifdef DEBUG_AtagOneThermostat
+	SaveString2Disk(sResult, "E:\\AtagOne_gettargetsetpoint.txt");
+#endif
+#endif
+	Json::Value root2;
+	bool ret = ParseJSon(sResult, root2);
+	if ((!ret) || (!root2.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid/no data received...");
+		return;
+	}
+	if (root2["targetTemp"].empty())
+	{
+		Log(LOG_ERROR, "Invalid/no data received...");
+		return;
+	}
+	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
+	root["currentMode"] = root2["currentMode"].asString();
+	root["vacationPlanned"] = root2["vacationPlanned"].asBool();
+
+	//Handle the Values
+	float temperature;
+	temperature = (float)root["targetTemperature"].asFloat();
+	SendSetPointSensor(0, 0, 1, temperature, "Room Setpoint");
+
+	temperature = (float)root["roomTemperature"].asFloat();
+	SendTempSensor(2, 255, temperature, "room Temperature");
+
+	if (!root["outsideTemperature"].empty())
+	{
+		temperature = (float)root["outsideTemperature"].asFloat();
+		SendTempSensor(3, 255, temperature, "outside Temperature");
+	}
+
+	//DHW
+	if (!root["dhwSetpoint"].empty())
+	{
+		temperature = (float)root["dhwSetpoint"].asFloat();
+		SendSetPointSensor(0, 0, 2, temperature, "DHW Setpoint");
+	}
+	if (!root["dhwWaterTemperature"].empty())
+	{
+		temperature = (float)root["dhwWaterTemperature"].asFloat();
+		SendTempSensor(4, 255, temperature, "DHW Temperature");
+	}
+	//CH
+	if (!root["chSetpoint"].empty())
+	{
+		temperature = (float)root["chSetpoint"].asFloat();
+		SendSetPointSensor(0, 0, 3, temperature, "CH Setpoint");
+	}
+	if (!root["chWaterTemperature"].empty())
+	{
+		temperature = (float)root["chWaterTemperature"].asFloat();
+		SendTempSensor(5, 255, temperature, "CH Temperature");
+	}
+	if (!root["chWaterPressure"].empty())
+	{
+		float pressure = (float)root["chWaterPressure"].asFloat();
+		SendPressureSensor(1, 1, 255, pressure, "Pressure");
+	}
+	if (!root["chReturnTemperature"].empty())
+	{
+		temperature = (float)root["chReturnTemperature"].asFloat();
+		SendTempSensor(6, 255, temperature, "CH Return Temperature");
+	}
+
+	if (!root["currentMode"].empty())
+	{
+		std::string actSource = root["currentMode"].asString();
+		bool bIsScheduleMode = (actSource == "schedule_active");
+		SendSwitch(1, 1, 255, bIsScheduleMode, 0, "Thermostat Schedule Mode", m_Name);
+	}
+	if (!root["flameStatus"].empty())
+	{
+		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status", m_Name);
+	}
 }
 
 std::string GetFirstDeviceID(const std::string &shtml)
@@ -244,28 +415,6 @@ void CAtagOne::Logout()
 	m_bDoLogin = true;
 }
 
-
-#define AtagOne_POLL_INTERVAL 60
-
-void CAtagOne::Do_Work()
-{
-	Log(LOG_STATUS,"Worker started...");
-	int sec_counter = AtagOne_POLL_INTERVAL-5;
-	while (!IsStopRequested(1000))
-	{
-		sec_counter++;
-		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(nullptr);
-		}
-		if (sec_counter % AtagOne_POLL_INTERVAL == 0)
-		{
-			//SendOutsideTemperature();
-			GetMeterDetails();
-		}
-	}
-	Log(LOG_STATUS,"Worker stopped...");
-}
-
 bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 {
 	if (m_OutsideTemperatureIdx == 0)
@@ -309,7 +458,7 @@ bool CAtagOne::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	return false;
 }
 
-static std::string GetHTMLPageValue(const std::string &hpage, const std::string &svalueLng1, const std::string &svalueLng2, const bool asFloat)
+std::string CAtagOne::GetHTMLPageValue(const std::string &hpage, const std::string &svalueLng1, const std::string &svalueLng2, const bool asFloat)
 {
 	std::vector<std::string > m_labels;
 	if (!svalueLng1.empty())
@@ -348,150 +497,6 @@ static std::string GetHTMLPageValue(const std::string &hpage, const std::string 
 		return sresult;
 	}
 	return "";
-}
-
-void CAtagOne::GetMeterDetails()
-{
-	if (m_UserName.empty() || m_Password.empty() )
-		return;
-
-	if (m_bDoLogin)
-	{
-		if (!Login())
-			return;
-	}
-
-	std::string sResult;
-#ifdef DEBUG_AtagOneThermostat_read
-	sResult = ReadFile("E:\\AtagOne_getdiag.txt");
-#else
-	std::string sURL = std::string(ATAGONE_URL_DIAGNOSTICS) + "?deviceId=" + CURLEncode::URLEncode(m_ThermostatID);
-	if (!HTTPClient::GET(sURL, sResult))
-	{
-		Log(LOG_ERROR, "Error getting thermostat data!");
-		m_bDoLogin = true;
-		return;
-	}
-
-#ifdef DEBUG_AtagOneThermostat
-	SaveString2Disk(sResult, "E:\\AtagOne_getdiag.txt");
-#endif
-#endif
-	//Extract all values from the HTML page, and put them in a json array
-	Json::Value root;
-	std::string sret;
-	sret = GetHTMLPageValue(sResult, "Kamertemperatuur", "Room temperature", true);
-	if (sret.empty())
-	{
-		Log(LOG_ERROR, "Invalid/no data received...");
-		return;
-	}
-	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
-	root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias", "Device alias", false);
-	root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd", "Latest report time", false);
-	root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met", "Connected to", false);
-	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren", "Burning hours", true).c_str()));
-	root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor", "Boiler heating for", false);
-	sret= GetHTMLPageValue(sResult, "Brander status", "Flame status", false);
-	root["flameStatus"] = ((sret == "Aan") || (sret == "On")) ? true : false;
-	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur", "Outside temperature", true).c_str()));
-	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater", "DHW setpoint", true).c_str()));
-	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur", "DHW water temperature", true).c_str()));
-	root["chSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint cv", "CH setpoint", true).c_str()));
-	root["chWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur", "CH water temperature", true).c_str()));
-	root["chWaterPressure"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-waterdruk", "CH water pressure", true).c_str()));
-	root["chReturnTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur", "CH return temperature", true).c_str()));
-
-#ifdef DEBUG_AtagOneThermostat_read
-	sResult = ReadFile("E:\\AtagOne_gettargetsetpoint.txt");
-#else
-	// We have to do an extra call to get the target temperature.
-	sURL = ATAGONE_URL_UPDATE_DEVICE_CONTROL;
-	stdreplace(sURL, "{0}", CURLEncode::URLEncode(m_ThermostatID));
-	if (!HTTPClient::GET(sURL, sResult))
-	{
-		Log(LOG_ERROR, "Error getting target setpoint data!");
-		m_bDoLogin = true;
-		return;
-	}
-#ifdef DEBUG_AtagOneThermostat
-	SaveString2Disk(sResult, "E:\\AtagOne_gettargetsetpoint.txt");
-#endif
-#endif
-	Json::Value root2;
-	bool ret = ParseJSon(sResult, root2);
-	if ((!ret) || (!root2.isObject()))
-	{
-		Log(LOG_ERROR, "Invalid/no data received...");
-		return;
-	}
-	if (root2["targetTemp"].empty())
-	{
-		Log(LOG_ERROR, "Invalid/no data received...");
-		return;
-	}
-	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
-	root["currentMode"] = root2["currentMode"].asString();
-	root["vacationPlanned"] = root2["vacationPlanned"].asBool();
-
-	//Handle the Values
-	float temperature;
-	temperature = (float)root["targetTemperature"].asFloat();
-	SendSetPointSensor(0, 0, 1, temperature, "Room Setpoint");
-
-	temperature = (float)root["roomTemperature"].asFloat();
-	SendTempSensor(2, 255, temperature, "room Temperature");
-
-	if (!root["outsideTemperature"].empty())
-	{
-		temperature = (float)root["outsideTemperature"].asFloat();
-		SendTempSensor(3, 255, temperature, "outside Temperature");
-	}
-
-	//DHW
-	if (!root["dhwSetpoint"].empty())
-	{
-		temperature = (float)root["dhwSetpoint"].asFloat();
-		SendSetPointSensor(0, 0, 2, temperature, "DHW Setpoint");
-	}
-	if (!root["dhwWaterTemperature"].empty())
-	{
-		temperature = (float)root["dhwWaterTemperature"].asFloat();
-		SendTempSensor(4, 255, temperature, "DHW Temperature");
-	}
-	//CH
-	if (!root["chSetpoint"].empty())
-	{
-		temperature = (float)root["chSetpoint"].asFloat();
-		SendSetPointSensor(0, 0, 3, temperature, "CH Setpoint");
-	}
-	if (!root["chWaterTemperature"].empty())
-	{
-		temperature = (float)root["chWaterTemperature"].asFloat();
-		SendTempSensor(5, 255, temperature, "CH Temperature");
-	}
-	if (!root["chWaterPressure"].empty())
-	{
-		float pressure = (float)root["chWaterPressure"].asFloat();
-		SendPressureSensor(1, 1, 255, pressure, "Pressure");
-	}
-	if (!root["chReturnTemperature"].empty())
-	{
-		temperature = (float)root["chReturnTemperature"].asFloat();
-		SendTempSensor(6, 255, temperature, "CH Return Temperature");
-	}
-
-	if (!root["currentMode"].empty())
-	{
-		std::string actSource = root["currentMode"].asString();
-		bool bIsScheduleMode = (actSource == "schedule_active");
-		SendSwitch(1, 1, 255, bIsScheduleMode, 0, "Thermostat Schedule Mode", m_Name);
-	}
-	if (!root["flameStatus"].empty())
-	{
-		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status", m_Name);
-	}
-
 }
 
 void CAtagOne::SetSetpoint(const int idx, const float temp)

@@ -4,13 +4,13 @@
 
 class CAtagOne : public CDomoticzHardwareBase
 {
-      public:
+public:
 	CAtagOne(int ID, const std::string &Username, const std::string &Password, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
 	~CAtagOne() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SetSetpoint(int idx, float temp);
 
-      private:
+private:
 	void SetPauseStatus(bool bIsPause);
 	void SetOutsideTemp(float temp);
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
@@ -25,7 +25,9 @@ class CAtagOne : public CDomoticzHardwareBase
 	void Do_Work();
 	void GetMeterDetails();
 
-      private:
+private:
+	std::string GetHTMLPageValue(const std::string& hpage, const std::string& svalueLng1, const std::string& svalueLng2, const bool asFloat);
+
 	std::string m_UserName;
 	std::string m_Password;
 
