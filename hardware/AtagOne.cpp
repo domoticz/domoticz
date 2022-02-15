@@ -173,7 +173,7 @@ void CAtagOne::GetMeterDetails()
 	sret = GetHTMLPageValue(sResult, "Kamertemperatuur", "Room temperature", true);
 	if (sret.empty())
 	{
-		Log(LOG_ERROR, "Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received (1)...");
 		return;
 	}
 	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
@@ -212,12 +212,12 @@ void CAtagOne::GetMeterDetails()
 	bool ret = ParseJSon(sResult, root2);
 	if ((!ret) || (!root2.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received (2)...");
 		return;
 	}
 	if (root2["targetTemp"].empty())
 	{
-		Log(LOG_ERROR, "Invalid/no data received...");
+		Log(LOG_ERROR, "Invalid/no data received (3)...");
 		return;
 	}
 	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
