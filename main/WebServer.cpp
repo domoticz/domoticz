@@ -4842,6 +4842,11 @@ namespace http
 			}
 			else if (cparam == "addswitch")
 			{
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -4881,7 +4886,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname);
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -5266,7 +5271,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -5528,7 +5533,7 @@ namespace http
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 				m_sql.m_bAcceptNewHardware = true;
 				std::string devname;
-				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname);
+				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 				m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 				// set name and switchtype
@@ -6837,6 +6842,11 @@ namespace http
 			}
 			else if (cparam == "setsecstatus")
 			{
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
 				std::string ssecstatus = request::findValue(&req, "secstatus");
 				std::string seccode = request::findValue(&req, "seccode");
 				if ((ssecstatus.empty()) || (seccode.empty()))
@@ -6856,7 +6866,7 @@ namespace http
 				}
 				root["status"] = "OK";
 				int iSecStatus = atoi(ssecstatus.c_str());
-				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus);
+				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus, szSwitchUser);
 			}
 			else if (cparam == "setcolbrightnessvalue")
 			{
