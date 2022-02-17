@@ -352,7 +352,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	{
 		std::vector<unsigned char> camimage;
 
-		if (!TakeSnapshot(camIt, camimage))
+		if (TakeSnapshot(camIt, camimage))
 		{
 			bHaveCapturedCamera = true;
 
