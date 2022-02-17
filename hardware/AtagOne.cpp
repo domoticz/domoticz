@@ -17,9 +17,10 @@ extern http::server::CWebServerHelper m_webservers;
 
 #define ATAGONE_URL_LOGIN "https://portal.atag-one.com/Account/Login"
 #define ATAGONE_URL_DEVICE_HOME "https://portal.atag-one.com/Home/Index/{0}"
-#define ATAGONE_URL_DIAGNOSTICS "https://portal.atag-one.com/Device/LatestReport"
+#define ATAGONE_URL_DIAGNOSTICS "https://portal.atag-one.com/Device/Diagnostics/{0}"
+#define ATAGONE_URL_LATEST_REPORT "https://portal.atag-one.com/Device/LatestReport?deviceId={0}"
 #define ATAGONE_URL_UPDATE_DEVICE_CONTROL "https://portal.atag-one.com/Home/UpdateDeviceControl/?deviceId={0}"
-#define ATAGONE_URL_DEVICE_SET_SETPOINT "https://portal.atag-one.com/Home/DeviceSetSetpoint"
+#define ATAGONE_URL_DEVICE_SET_SETPOINT "https://portal.atag-one.com/Home/DeviceSetSetpoint/{0}?temperature={1}"
 #define ATAGONE_URL_AUTOMATICMODE_CONTROL "https://portal.atag-one.com/Home/AutomaticMode/?deviceId={0}"
 #define ATAGONE_URL_DEVICE_CONTROL "https://portal.atag-one.com/Home/DeviceControl/{0}"
 
@@ -27,7 +28,7 @@ extern http::server::CWebServerHelper m_webservers;
 #define ATAGONE_TEMPERATURE_MAX 27
 
 #ifdef _DEBUG
-//	#define DEBUG_AtagOneThermostat
+	#define DEBUG_AtagOneThermostat
 #endif
 
 #ifdef DEBUG_AtagOneThermostat
@@ -69,7 +70,6 @@ m_Password(Password)
 	m_HwdID=ID;
 	m_OutsideTemperatureIdx = 0; //use build in
 	m_LastMinute = -1;
-	m_ThermostatID = "";
 	SetModes(Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 	Init();
 }
@@ -81,7 +81,7 @@ void CAtagOne::SetModes(const int Mode1, const int /*Mode2*/, const int /*Mode3*
 
 void CAtagOne::Init()
 {
-	m_ThermostatID = "";
+	m_Thermostats.clear();
 	m_bDoLogin = true;
 }
 
@@ -112,7 +112,7 @@ bool CAtagOne::StopHardware()
     return true;
 }
 
-#define AtagOne_POLL_INTERVAL 60
+#define AtagOne_POLL_INTERVAL 300
 
 void CAtagOne::Do_Work()
 {
@@ -150,59 +150,85 @@ void CAtagOne::GetMeterDetails()
 		if (!Login())
 			return;
 	}
+	if (m_Thermostats.empty())
+		return;
 
+	//Can only process 1 thermostat at the momement because of poorly choosen sensor Node/Child id's
+	int iActThermostat = 0;
+	GetDeviceDetails(m_Thermostats[iActThermostat]);
+}
+
+bool CAtagOne::GetDeviceDetails(const std::string& ThermostatID)
+{
 	std::string sResult;
 #ifdef DEBUG_AtagOneThermostat_read
 	sResult = ReadFile("E:\\AtagOne_getdiag.txt");
 #else
-	std::string sURL = std::string(ATAGONE_URL_DIAGNOSTICS) + "?deviceId=" + CURLEncode::URLEncode(m_ThermostatID);
+
+	std::string sURL;
+/*
+	sURL = ATAGONE_URL_DIAGNOSTICS;
+	stdreplace(sURL, "{0}", CURLEncode::URLEncode(ThermostatID));
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		Log(LOG_ERROR, "Error getting thermostat data!");
 		m_bDoLogin = true;
-		return;
+		return false;
+	}
+#ifdef DEBUG_AtagOneThermostat
+	SaveString2Disk(sResult, "E:\\AtagOne_diagnostics.txt");
+#endif
+*/
+	sURL = ATAGONE_URL_LATEST_REPORT;
+	stdreplace(sURL, "{0}", CURLEncode::URLEncode(ThermostatID));
+
+	if (!HTTPClient::GET(sURL, sResult))
+	{
+		Log(LOG_ERROR, "Error getting thermostat data!");
+		m_bDoLogin = true;
+		return false;
 	}
 
 #ifdef DEBUG_AtagOneThermostat
-	SaveString2Disk(sResult, "E:\\AtagOne_getdiag.txt");
+	SaveString2Disk(sResult, "E:\\AtagOne_latest_report.txt");
 #endif
 #endif
 	//Extract all values from the HTML page, and put them in a json array
 	Json::Value root;
 	std::string sret;
-	sret = GetHTMLPageValue(sResult, "Kamertemperatuur", "Room temperature", true);
+	sret = GetHTMLPageValue(sResult, "Kamertemperatuur|Room temperature|Raumtemperatur", true);
 	if (sret.empty())
 	{
 		Log(LOG_ERROR, "Invalid/no data received (1)...");
-		return;
+		return false;
 	}
 	root["roomTemperature"] = static_cast<float>(atof(sret.c_str()));
-	root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias", "Device alias", false);
-	root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd", "Latest report time", false);
-	root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met", "Connected to", false);
-	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren", "Burning hours", true).c_str()));
-	root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor", "Boiler heating for", false);
-	sret = GetHTMLPageValue(sResult, "Brander status", "Flame status", false);
-	root["flameStatus"] = ((sret == "Aan") || (sret == "On")) ? true : false;
-	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur", "Outside temperature", true).c_str()));
-	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater", "DHW setpoint", true).c_str()));
-	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur", "DHW water temperature", true).c_str()));
-	root["chSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint cv", "CH setpoint", true).c_str()));
-	root["chWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur", "CH water temperature", true).c_str()));
-	root["chWaterPressure"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-waterdruk", "CH water pressure", true).c_str()));
-	root["chReturnTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur", "CH return temperature", true).c_str()));
+	//root["deviceAlias"] = GetHTMLPageValue(sResult, "Apparaat alias|Device alias", false);
+	//root["latestReportTime"] = GetHTMLPageValue(sResult, "Laatste rapportagetijd|Latest report time", false);
+	//root["connectedTo"] = GetHTMLPageValue(sResult, "Verbonden met|Connected to", false);
+	root["burningHours"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Branduren|Burning hours", true).c_str()));
+	//root["boilerHeatingFor"] = GetHTMLPageValue(sResult, "Ketel in bedrijf voor|Boiler heating for", false);
+	sret = GetHTMLPageValue(sResult, "Brander status|Flame status|Brennerstatus", false);
+	root["flameStatus"] = ((sret == "Aan") || (sret == "On") || (sret == "An")) ? true : false;
+	root["outsideTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Buitentemperatuur|Outside temperature|Au&#223;entemperatur", true).c_str()));
+	root["dhwSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint warmwater|DHW setpoint", true).c_str()));
+	root["dhwWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Warmwatertemperatuur|DHW water temperature|Warmwassertemperatur", true).c_str()));
+	root["chSetpoint"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "Setpoint cv|CH setpoint", true).c_str()));
+	root["chWaterTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-aanvoertemperatuur|CH water temperature", true).c_str()));
+	root["chWaterPressure"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV-waterdruk|CH water pressure|Anlagendruck", true).c_str()));
+	root["chReturnTemperature"] = static_cast<float>(atof(GetHTMLPageValue(sResult, "CV retourtemperatuur|CH return temperature|HZ R&#252;cklauftemperatur", true).c_str()));
 
 #ifdef DEBUG_AtagOneThermostat_read
 	sResult = ReadFile("E:\\AtagOne_gettargetsetpoint.txt");
 #else
 	// We have to do an extra call to get the target temperature.
 	sURL = ATAGONE_URL_UPDATE_DEVICE_CONTROL;
-	stdreplace(sURL, "{0}", CURLEncode::URLEncode(m_ThermostatID));
+	stdreplace(sURL, "{0}", CURLEncode::URLEncode(ThermostatID));
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		Log(LOG_ERROR, "Error getting target setpoint data!");
 		m_bDoLogin = true;
-		return;
+		return false;
 	}
 #ifdef DEBUG_AtagOneThermostat
 	SaveString2Disk(sResult, "E:\\AtagOne_gettargetsetpoint.txt");
@@ -213,12 +239,12 @@ void CAtagOne::GetMeterDetails()
 	if ((!ret) || (!root2.isObject()))
 	{
 		Log(LOG_ERROR, "Invalid/no data received (2)...");
-		return;
+		return false;
 	}
 	if (root2["targetTemp"].empty())
 	{
 		Log(LOG_ERROR, "Invalid/no data received (3)...");
-		return;
+		return false;
 	}
 	root["targetTemperature"] = static_cast<float>(atof(root2["targetTemp"].asString().c_str()));
 	root["currentMode"] = root2["currentMode"].asString();
@@ -281,37 +307,58 @@ void CAtagOne::GetMeterDetails()
 	{
 		SendSwitch(2, 1, 255, root["flameStatus"].asBool(), 0, "Flame Status", m_Name);
 	}
+	return true;
 }
 
-std::string GetFirstDeviceID(const std::string &shtml)
+bool CAtagOne::GetThermostats(const std::string &shtml)
 {
-	std::string sResult = shtml;
+	m_Thermostats.clear();
+
 	// Evsdd - Updated string due to webpage change
 	// Original format: <tr onclick="javascript:changeDeviceAndRedirect('/Home/Index/{0}','6808-1401-3109_15-30-001-544');">
 	// New format: "/Home/Index/6808-1401-3109_15-30-001-544"
-	size_t tpos = sResult.find("/Home/Index");
-	if (tpos == std::string::npos)
-		return "";
-	sResult = sResult.substr(tpos);
-	tpos = sResult.find("x/");
-	if (tpos == std::string::npos)
-		return "";
-	sResult = sResult.substr(tpos + 2);
-	tpos = sResult.find('"');
-	if (tpos == std::string::npos)
-		return "";
-	sResult = sResult.substr(0, tpos);
-	return sResult;
+	std::string sResult = shtml;
+	while (1 == 1)
+	{
+		size_t tpos = sResult.find("/Home/Index");
+		if (tpos == std::string::npos)
+			return (m_Thermostats.size() != 0);
+		sResult = sResult.substr(tpos);
+		tpos = sResult.find("x/");
+		if (tpos == std::string::npos)
+			return (m_Thermostats.size() != 0);
+
+		sResult = sResult.substr(tpos + 2);
+
+		std::string tstring = sResult;
+		tpos = tstring.find('"');
+		if (tpos == std::string::npos)
+			return (m_Thermostats.size() != 0);
+		tstring = tstring.substr(0, tpos);
+
+		std::vector<std::string> strarray;
+		StringSplit(tstring, ",", strarray);
+		if (strarray.size() == 2)
+		{
+			tstring = strarray.at(1);
+		}
+		stdreplace(tstring, "'", "");
+		size_t pos = tstring.find(')');
+		if (pos != std::string::npos)
+			tstring = tstring.substr(0, pos);
+		m_Thermostats.push_back(tstring);
+	}
+	return (m_Thermostats.size() != 0);
 }
 
-std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
+std::string CAtagOne::GetRequestVerificationToken(const std::string &url, const std::string& ThermostatID)
 {
 	std::string sResult;
 #ifdef DEBUG_AtagOneThermostat_read
 	sResult = ReadFile("E:\\AtagOne_requesttoken.txt");
 #else
 	std::string sURL = url;
-	stdreplace(sURL,"{0}", m_ThermostatID);
+	stdreplace(sURL,"{0}", ThermostatID);
 
 	if (!HTTPClient::GET(sURL, sResult))
 	{
@@ -329,7 +376,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 		tpos = sResult.find("changeDeviceAndRedirect");
 		if (tpos != std::string::npos)
 		{
-			m_ThermostatID = GetFirstDeviceID(sResult);
+			GetThermostats(sResult);
 		}
 		return "";
 	}
@@ -354,10 +401,10 @@ bool CAtagOne::Login()
 	std::string sResult;
 
 	// We need a session (cookie) and a verification token, get them first.
-	std::string requestVerificationToken = GetRequestVerificationToken(ATAGONE_URL_LOGIN);
+	std::string requestVerificationToken = GetRequestVerificationToken(ATAGONE_URL_LOGIN, "");
 	if (requestVerificationToken.empty())
 	{
-		if (!m_ThermostatID.empty())
+		if (!m_Thermostats.empty())
 		{
 			m_bDoLogin = false;
 			return true;
@@ -393,12 +440,13 @@ bool CAtagOne::Login()
 #endif
 	//# 2. Extract DeviceID
 	// <tr onclick="javascript:changeDeviceAndRedirect('/Home/Index/{0}','6808-1401-3109_15-30-001-544');">
-	m_ThermostatID = GetFirstDeviceID(sResult);
-	if (m_ThermostatID.empty())
+	GetThermostats(sResult);
+	if (m_Thermostats.empty())
 	{
 		Log(LOG_ERROR, "Error getting device_id!");
 		return false;
 	}
+
 	m_bDoLogin = false;
 	return true;
 }
@@ -446,25 +494,31 @@ bool CAtagOne::WriteToHardware(const char *pdata, const unsigned char /*length*/
 	return false;
 }
 
-std::string CAtagOne::GetHTMLPageValue(const std::string &hpage, const std::string &svalueLng1, const std::string &svalueLng2, const bool asFloat)
+std::string CAtagOne::GetHTMLPageValue(const std::string &hpage, const std::string &svalueLng, const bool asFloat)
 {
-	std::vector<std::string > m_labels;
-	if (!svalueLng1.empty())
-		m_labels.push_back(svalueLng1);
-	if (!svalueLng2.empty())
-		m_labels.push_back(svalueLng2);
+	std::vector<std::string > labels_;
+	StringSplit(svalueLng, "|", labels_);
+
 	// HTML structure of values in page.
 	//     <label class="col-xs-6 control-label">Apparaat alias</label>
 	//     <div class="col-xs-6">
 	//         <p class="form-control-static">CV-ketel</p>
 	//     </div>
-	for (const auto &label : m_labels)
+	for (const auto &label : labels_)
 	{
 		std::string sresult = hpage;
 		std::string sstring = ">" + label + "</label>";
 		size_t tpos = sresult.find(sstring);
-		if (tpos==std::string::npos)
-			continue;
+		if (tpos == std::string::npos)
+		{
+			//Sometimes we see a space behind the label!??
+			sstring = ">" + label + " </label>";
+			tpos = sresult.find(sstring);
+			if (tpos == std::string::npos)
+			{
+				continue;
+			}
+		}
 		sresult = sresult.substr(tpos + sstring.size());
 		tpos = sresult.find("<p");
 		if (tpos == std::string::npos)
@@ -479,6 +533,14 @@ std::string CAtagOne::GetHTMLPageValue(const std::string &hpage, const std::stri
 			continue;
 		sresult = sresult.substr(0,tpos);
 		stdstring_trim(sresult);
+
+		tpos = sresult.find("&#");
+		if (tpos != std::string::npos)
+		{
+			sresult = sresult.substr(0, tpos);
+		}
+
+		stdreplace(sresult, "\r\n", "");
 
 		if (asFloat)
 			stdreplace(sresult, ",", ".");
@@ -495,6 +557,9 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 		return;
 	}
 
+	int iActThermostat = 0; //(idx-1)
+	std::string szThermostat = m_Thermostats[iActThermostat];
+
 	int rtemp = int(temp * 2.0F);
 	float dtemp = float(rtemp) / 2.0F;
 	if (
@@ -510,10 +575,13 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 	std::string sTemp = szTemp;
 
 	// Get updated request verification token first.
-	std::string  requestVerificationToken = GetRequestVerificationToken(ATAGONE_URL_DEVICE_HOME);
+	std::string  requestVerificationToken = GetRequestVerificationToken(ATAGONE_URL_DEVICE_HOME, szThermostat);
 
 	// https://portal.atag-one.com/Home/DeviceSetSetpoint/6808-1401-3109_15-30-001-544?temperature=18.5
-	std::string sURL = std::string(ATAGONE_URL_DEVICE_SET_SETPOINT) + "/" + m_ThermostatID + "?temperature=" + sTemp;
+	std::string sURL;
+	sURL = ATAGONE_URL_DEVICE_SET_SETPOINT;
+	stdreplace(sURL, "{0}", CURLEncode::URLEncode(szThermostat));
+	stdreplace(sURL, "{1}", sTemp);
 
 	std::stringstream sstr;
 	if (!requestVerificationToken.empty())

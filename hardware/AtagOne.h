@@ -16,7 +16,6 @@ private:
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	void SendOutsideTemperature();
 	bool Login();
-	std::string GetRequestVerificationToken(const std::string &url);
 	void Init();
 	void SetModes(int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
 	bool StartHardware() override;
@@ -25,12 +24,15 @@ private:
 	void GetMeterDetails();
 
 private:
-	std::string GetHTMLPageValue(const std::string& hpage, const std::string& svalueLng1, const std::string& svalueLng2, const bool asFloat);
+	bool GetDeviceDetails(const std::string& ThermostatID);
+	std::string GetHTMLPageValue(const std::string& hpage, const std::string& svalueLng, const bool asFloat);
+	bool GetThermostats(const std::string& shtml);
+	std::string GetRequestVerificationToken(const std::string& url, const std::string& ThermostatID);
 
 	std::string m_UserName;
 	std::string m_Password;
 
-	std::string m_ThermostatID;
+	std::vector<std::string> m_Thermostats;
 
 	bool m_bDoLogin;
 
