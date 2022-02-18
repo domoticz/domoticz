@@ -28,7 +28,7 @@ extern http::server::CWebServerHelper m_webservers;
 #define ATAGONE_TEMPERATURE_MAX 27
 
 #ifdef _DEBUG
-	#define DEBUG_AtagOneThermostat
+	//#define DEBUG_AtagOneThermostat
 #endif
 
 #ifdef DEBUG_AtagOneThermostat
@@ -123,12 +123,6 @@ void CAtagOne::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
-		}
-
-		if (sec_counter % 3600 == 0)
-		{
-			//Force re-login
-			Init();
 		}
 
 		if (sec_counter % AtagOne_POLL_INTERVAL == 0)
