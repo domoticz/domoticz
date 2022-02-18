@@ -112,7 +112,7 @@ bool CAtagOne::StopHardware()
     return true;
 }
 
-#define AtagOne_POLL_INTERVAL 300
+#define AtagOne_POLL_INTERVAL 60
 
 void CAtagOne::Do_Work()
 {
