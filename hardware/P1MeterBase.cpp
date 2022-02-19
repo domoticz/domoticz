@@ -89,37 +89,38 @@ using P1Match = struct
 	_eP1Type type;
 	const char* key;
 	const char* topic;
-	int start;
-	int width;
+	uint8_t start;
+	uint8_t width;
 };
 
 constexpr std::array<P1Match, 24> p1_matchlist{
 	{
-		{ _eP1MatchType::ID, P1TYPE_SMID, P1SMID, "", 0, 0 },				      //
-		{ _eP1MatchType::EXCLMARK, P1TYPE_END, P1EOT, "", 0, 0 },			      //
-		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VER, "version", 10, 2 },		      //
-		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VERBE, "versionBE", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSAGE, P1PUSG, "powerusage", 10, 9 },		      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELIV, P1PDLV, "powerdeliv", 10, 9 },		      //
-		{ _eP1MatchType::STD, P1TYPE_USAGECURRENT, P1PUC, "powerusagec", 10, 7 },	      //
-		{ _eP1MatchType::STD, P1TYPE_DELIVCURRENT, P1PDC, "powerdelivc", 10, 7 },	      //
-		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL1, P1VOLTL1, "voltagel1", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL2, P1VOLTL2, "voltagel2", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL3, P1VOLTL3, "voltagel3", 11, 5 },		      //
-		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL1, P1AMPEREL1, "amperagel1", 11, 3 },	      //
-		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL2, P1AMPEREL2, "amperagel2", 11, 3 },	      //
-		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL3, P1AMPEREL3, "amperagel3", 11, 3 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSEL1, P1POWUSL1, "powerusel1", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSEL2, P1POWUSL2, "powerusel2", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERUSEL3, P1POWUSL3, "powerusel3", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELL1, P1POWDLL1, "powerdell1", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELL2, P1POWDLL2, "powerdell2", 11, 6 },	      //
-		{ _eP1MatchType::STD, P1TYPE_POWERDELL3, P1POWDLL3, "powerdell3", 11, 6 },	      //
-		{ _eP1MatchType::DEVTYPE, P1TYPE_MBUSDEVICETYPE, P1MBTYPE, "mbusdevicetype", 11, 3 }, //
-		{ _eP1MatchType::GAS, P1TYPE_GASUSAGEDSMR4, P1GUDSMR4, "gasusage", 26, 8 },	      //
-		{ _eP1MatchType::LINE17, P1TYPE_GASTIMESTAMP, P1GTS, "gastimestamp", 11, 12 },	      //
-		{ _eP1MatchType::LINE18, P1TYPE_GASUSAGE, P1GUDSMR2, "gasusage", 1, 9 },	      //
-	}											      // must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
+		{ _eP1MatchType::ID, P1TYPE_SMID, P1SMID, "", 0, 0 },
+		{ _eP1MatchType::EXCLMARK, P1TYPE_END, P1EOT, "", 0, 0 },
+		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VER, "version", 10, 2 },
+		{ _eP1MatchType::STD, P1TYPE_VERSION, P1VERBE, "versionBE", 11, 5 },
+		{ _eP1MatchType::STD, P1TYPE_POWERUSAGE, P1PUSG, "powerusage", 10, 9 },
+		{ _eP1MatchType::STD, P1TYPE_POWERDELIV, P1PDLV, "powerdeliv", 10, 9 },
+		{ _eP1MatchType::STD, P1TYPE_USAGECURRENT, P1PUC, "powerusagec", 10, 7 },
+		{ _eP1MatchType::STD, P1TYPE_DELIVCURRENT, P1PDC, "powerdelivc", 10, 7 },
+		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL1, P1VOLTL1, "voltagel1", 11, 5 },
+		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL2, P1VOLTL2, "voltagel2", 11, 5 },
+		{ _eP1MatchType::STD, P1TYPE_VOLTAGEL3, P1VOLTL3, "voltagel3", 11, 5 },
+		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL1, P1AMPEREL1, "amperagel1", 11, 3 },
+		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL2, P1AMPEREL2, "amperagel2", 11, 3 },
+		{ _eP1MatchType::STD, P1TYPE_AMPERAGEL3, P1AMPEREL3, "amperagel3", 11, 3 },
+		{ _eP1MatchType::STD, P1TYPE_POWERUSEL1, P1POWUSL1, "powerusel1", 11, 6 },
+		{ _eP1MatchType::STD, P1TYPE_POWERUSEL2, P1POWUSL2, "powerusel2", 11, 6 },
+		{ _eP1MatchType::STD, P1TYPE_POWERUSEL3, P1POWUSL3, "powerusel3", 11, 6 },
+		{ _eP1MatchType::STD, P1TYPE_POWERDELL1, P1POWDLL1, "powerdell1", 11, 6 },
+		{ _eP1MatchType::STD, P1TYPE_POWERDELL2, P1POWDLL2, "powerdell2", 11, 6 },
+		{ _eP1MatchType::STD, P1TYPE_POWERDELL3, P1POWDLL3, "powerdell3", 11, 6 },
+		{ _eP1MatchType::DEVTYPE, P1TYPE_MBUSDEVICETYPE, P1MBTYPE, "mbusdevicetype", 11, 3 },
+		{ _eP1MatchType::GAS, P1TYPE_GASUSAGEDSMR4, P1GUDSMR4, "gasusage", 26, 8 },
+		// must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
+		{ _eP1MatchType::LINE17, P1TYPE_GASTIMESTAMP, P1GTS, "gastimestamp", 11, 12 },
+		{ _eP1MatchType::LINE18, P1TYPE_GASUSAGE, P1GUDSMR2, "gasusage", 1, 9 },
+	}
 };
 
 P1MeterBase::P1MeterBase()
@@ -219,79 +220,76 @@ void P1MeterBase::InitP1EncryptionState()
 
 bool P1MeterBase::MatchLine()
 {
-	if ((strlen((const char*)&l_buffer) < 1) || (l_buffer[0] == 0x0a))
+	if ((strlen(l_buffer) < 1) || (l_buffer[0] == 0x0a))
 		return true; //null value (startup)
-	uint8_t i;
-	bool found = false;
-	const P1Match *t;
-	char value[20] = "";
-	std::string vString;
 
-	for (i = 0; i < p1_matchlist.size(); ++i)
+	bool bFound = false;
+
+	for (size_t i = 0; i < p1_matchlist.size(); ++i)
 	{
-		if (found)
-		{
+		if (bFound)
 			break;
-		}
 
-		t = &p1_matchlist[i];
+		std::string sValue;
+
+		const P1Match* t = &p1_matchlist[i];
 		switch (t->matchtype)
 		{
 		case _eP1MatchType::ID:
 			// start of data
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 1;
-				found = true;
+				bFound = true;
 			}
 			continue; // we do not process anything else on this line
 			break;
 		case _eP1MatchType::EXCLMARK:
 			// end of data
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp(t->key, l_buffer, strlen(t->key)) == 0)
 			{
 				l_exclmarkfound = 1;
-				found = true;
+				bFound = true;
 			}
 			break;
 		case _eP1MatchType::STD:
-			if (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0)
-				found = true;
+			if (strncmp(t->key, l_buffer, strlen(t->key)) == 0)
+				bFound = true;
 			break;
 		case _eP1MatchType::DEVTYPE:
 			if (m_gasmbuschannel == 0)
 			{
-				vString = (const char*)t->key + 3;
-				if (strncmp(vString.c_str(), (const char*)&l_buffer + 3, strlen(t->key) - 3) == 0)
-					found = true;
+				const char* pValue = t->key + 3;
+				if (strncmp(pValue, l_buffer + 3, strlen(t->key) - 3) == 0)
+					bFound = true;
 				else
 					i += 100; // skip matches with any other gas lines - we need to find the M0-Bus channel first
 			}
 			break;
 		case _eP1MatchType::GAS:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), l_buffer, strlen(t->key)) == 0)
 			{
 				// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
 				if ((l_buffer[9] & 0xFD) == 0x31)
-					found = true;
+					bFound = true;
 			}
 			if (m_p1version >= 4)
 				i += 100; // skip matches with any DSMR v2 gas lines
 			break;
 		case _eP1MatchType::LINE17:
-			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0)
+			if (strncmp((m_gasprefix + (t->key + 3)).c_str(), l_buffer, strlen(t->key)) == 0)
 			{
 				m_linecount = 17;
-				found = true;
+				bFound = true;
 			}
 			break;
 		case _eP1MatchType::LINE18:
-			if ((m_linecount == 18) && (strncmp(t->key, (const char*)&l_buffer, strlen(t->key)) == 0))
-				found = true;
+			if ((m_linecount == 18) && (strncmp(t->key, l_buffer, strlen(t->key)) == 0))
+				bFound = true;
 			break;
 		} //switch
 
-		if (!found)
+		if (!bFound)
 			continue;
 
 		if (l_exclmarkfound)
@@ -305,7 +303,7 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 			{
 				m_lastUpdateTime = atime;
-				sDecodeRXMessage(this, (const unsigned char *)&m_power, "Power", 255, nullptr);
+				sDecodeRXMessage(this, (const unsigned char*)&m_power, "Power", 255, nullptr);
 				if (m_voltagel1 != -1) {
 					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
 				}
@@ -349,7 +347,7 @@ bool P1MeterBase::MatchLine()
 						// just accept it - we cannot sync to our clock
 						m_lastSharedSendGas = atime;
 						m_lastgasusage = m_gas.gasusage;
-						sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255, nullptr);
+						sDecodeRXMessage(this, (const unsigned char*)&m_gas, "Gas", 255, nullptr);
 					}
 					else if (atime >= m_gasoktime)
 					{
@@ -359,12 +357,12 @@ bool P1MeterBase::MatchLine()
 						sprintf(myts, "%02d%02d%02d%02d%02d%02dW", ltime.tm_year % 100, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 						if (ltime.tm_isdst)
 							myts[12] = 'S';
-						if ((m_gastimestamp.length() > 13) || (strncmp((const char*)&myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
+						if ((m_gastimestamp.length() > 13) || (strncmp(myts, m_gastimestamp.c_str(), m_gastimestamp.length()) >= 0))
 						{
 							m_lastSharedSendGas = atime;
 							m_lastgasusage = m_gas.gasusage;
 							m_gasoktime += 300;
-							sDecodeRXMessage(this, (const unsigned char *)&m_gas, "Gas", 255, nullptr);
+							sDecodeRXMessage(this, (const unsigned char*)&m_gas, "Gas", 255, nullptr);
 						}
 						else // gas clock is ahead
 						{
@@ -401,10 +399,9 @@ bool P1MeterBase::MatchLine()
 		}
 		else
 		{
-			vString = (const char*)&l_buffer + t->start;
-			size_t ePos = t->width;
-			ePos = vString.find_first_of("*)");
+			std::string vString = l_buffer + t->start;
 
+			size_t ePos = vString.find_first_of("*)");
 			if (ePos == std::string::npos)
 			{
 				// invalid message: value not delimited
@@ -412,18 +409,11 @@ bool P1MeterBase::MatchLine()
 				return false;
 			}
 
-			if (ePos > 19)
-			{
-				// invalid message: line too long
-				Log(LOG_NORM, "Dismiss incoming - value in line \"%s\" is oversized", l_buffer);
-				return false;
-			}
-
 			if (ePos > 0)
 			{
-				strcpy(value, vString.substr(0, ePos).c_str());
+				sValue = vString.substr(0, ePos);
 #ifdef _DEBUG
-				Log(LOG_NORM, "Key: %s, Value: %s", t->topic, value);
+				Log(LOG_NORM, "Key: %s, Value: %s", t->topic, sValue.c_str());
 #endif
 			}
 
@@ -431,24 +421,23 @@ bool P1MeterBase::MatchLine()
 			float temp_volt = 0;
 			float temp_ampere = 0;
 			float temp_power = 0;
-			char* validate = value + ePos;
 
 			switch (t->type)
 			{
 			case P1TYPE_VERSION:
 				if (m_p1version == 0)
 				{
-					m_p1version = value[0] - 0x30;
+					m_p1version = sValue.at(0) - 0x30;
 					char szVersion[12];
 					if (t->width == 5)
 					{
 						// Belgian meter
-						sprintf(szVersion, "ESMR %c.%c.%c", value[0], value[1], value[2]);
+						sprintf(szVersion, "ESMR %c.%c.%c", sValue.at(0), sValue.at(1), sValue.at(2));
 					}
 					else // if (t->width == 2)
 					{
 						// Dutch meter
-						sprintf(szVersion, "ESMR %c.%c", value[0], value[1]);
+						sprintf(szVersion, "ESMR %c.%c", sValue.at(0), sValue.at(1));
 						if (m_p1version < 5)
 							szVersion[0] = 'D';
 					}
@@ -456,7 +445,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_MBUSDEVICETYPE:
-				temp_usage = (unsigned long)(strtod(value, &validate));
+				temp_usage = std::stoul(sValue);
 				if (temp_usage == 3)
 				{
 					m_gasmbuschannel = (char)l_buffer[2];
@@ -465,7 +454,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERUSAGE:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F);
+				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
 				if ((l_buffer[8] & 0xFE) == 0x30)
 				{
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
@@ -483,7 +472,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERDELIV:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F);
+				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
 				if ((l_buffer[8] & 0xFE) == 0x30)
 				{
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
@@ -501,32 +490,32 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_USAGECURRENT:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F); // Watt
-				if (temp_usage < 17250)
+				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt
+				if (temp_usage < 55200) // max 80A fuse 3fase 230V
 					m_power.usagecurrent = temp_usage;
 				break;
 			case P1TYPE_DELIVCURRENT:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F); // Watt;
-				if (temp_usage < 17250)
+				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt;
+				if (temp_usage < 55200) // max 80A fuse 3fase 230V
 					m_power.delivcurrent = temp_usage;
 				break;
 			case P1TYPE_VOLTAGEL1:
-				temp_volt = strtof(value, &validate);
+				temp_volt = std::stof(sValue);
 				if (temp_volt < 300)
 					m_voltagel1 = temp_volt; //Voltage L1;
 				break;
 			case P1TYPE_VOLTAGEL2:
-				temp_volt = strtof(value, &validate);
+				temp_volt = std::stof(sValue);
 				if (temp_volt < 300)
 					m_voltagel2 = temp_volt; //Voltage L2;
 				break;
 			case P1TYPE_VOLTAGEL3:
-				temp_volt = strtof(value, &validate);
+				temp_volt = std::stof(sValue);
 				if (temp_volt < 300)
 					m_voltagel3 = temp_volt; //Voltage L3;
 				break;
 			case P1TYPE_AMPERAGEL1:
-				temp_ampere = strtof(value, &validate);
+				temp_ampere = std::stof(sValue);
 				if (temp_ampere < 100)
 				{
 					m_amperagel1 = temp_ampere; //Amperage L1;
@@ -534,7 +523,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_AMPERAGEL2:
-				temp_ampere = strtof(value, &validate);
+				temp_ampere = std::stof(sValue);
 				if (temp_ampere < 100)
 				{
 					m_amperagel2 = temp_ampere; //Amperage L2;
@@ -542,7 +531,7 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_AMPERAGEL3:
-				temp_ampere = strtof(value, &validate);
+				temp_ampere = std::stof(sValue);
 				if (temp_ampere < 100)
 				{
 					m_amperagel3 = temp_ampere; //Amperage L3;
@@ -550,49 +539,48 @@ bool P1MeterBase::MatchLine()
 				}
 				break;
 			case P1TYPE_POWERUSEL1:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
-				if (temp_power < 10000)
+				temp_power = std::stof(sValue) * 1000.0F;
+				if (temp_power < 18400)
 					m_powerusel1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERUSEL2:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
-				if (temp_power < 10000)
+				temp_power = std::stof(sValue) * 1000.0F;
+				if (temp_power < 18400)
 					m_powerusel2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERUSEL3:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
-				if (temp_power < 10000)
+				temp_power = std::stof(sValue) * 1000.0F;
+				if (temp_power < 18400)
 					m_powerusel3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_POWERDELL1:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
-				if (temp_power < 10000)
+				temp_power = std::stof(sValue) * 1000.0F;
+				if (temp_power < 18400)
 					m_powerdell1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERDELL2:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
-				if (temp_power < 10000)
+				temp_power = std::stof(sValue) * 1000.0F;
+				if (temp_power < 18400)
 					m_powerdell2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERDELL3:
-				temp_power = static_cast<float>(strtod(value, &validate) * 1000.0F);
-				if (temp_power < 10000)
+				temp_power = std::stof(sValue) * 1000.0F;
+				if (temp_power < 18400)
 					m_powerdell3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_GASTIMESTAMP:
-				m_gastimestamp = std::string(value);
+				m_gastimestamp = sValue;
 				break;
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMR4:
-				temp_usage = (unsigned long)(strtod(value, &validate) * 1000.0F);
+				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
 				if (!m_gas.gasusage || m_p1version >= 4)
 					m_gas.gasusage = temp_usage;
 				else if (temp_usage - m_gas.gasusage < 20000)
 					m_gas.gasusage = temp_usage;
 				break;
 			}
-
-			if (ePos > 0 && ((validate - value) != ePos))
+			if (ePos > 0 && (sValue.size() != ePos))
 			{
 				// invalid message: value is not a number
 				Log(LOG_NORM, "Dismiss incoming - value in line \"%s\" is not a number", l_buffer);
@@ -602,7 +590,7 @@ bool P1MeterBase::MatchLine()
 			if (t->type == P1TYPE_GASUSAGEDSMR4)
 			{
 				// need to get timestamp from this line as well
-				vString = (const char*)&l_buffer + 11;
+				vString = l_buffer + 11;
 				m_gastimestamp = vString.substr(0, 13);
 #ifdef _DEBUG
 				Log(LOG_NORM, "Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
@@ -650,7 +638,7 @@ bool P1MeterBase::CheckCRC()
 
 	// retrieve CRC from the current line
 	char crc_str[5];
-	strncpy(crc_str, (const char*)&l_buffer + 1, 4);
+	strncpy(crc_str, l_buffer + 1, 4);
 	crc_str[4] = 0;
 	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, nullptr, 16);
 
@@ -840,8 +828,8 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					EVP_DecryptInit_ex(ctx, EVP_aes_128_gcm(), nullptr, nullptr, nullptr);
 					EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, iv.size(), nullptr);
 
-					EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char *)m_szHexKey.data(),
-							   (const unsigned char *)iv.c_str());
+					EVP_DecryptInit_ex(ctx, nullptr, nullptr, (const unsigned char*)m_szHexKey.data(),
+						(const unsigned char*)iv.c_str());
 
 					int outlen = 0;
 					// std::vector<char> m_szDecodeAdd = HexToBytes(_szDecodeAdd);
@@ -851,11 +839,11 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 					EVP_CIPHER_CTX_free(ctx);
 					if (outlen <= 0)
 						return;
-/*
-					CryptoPP::GCM< CryptoPP::AES >::Decryption decryptor;
-					decryptor.SetKeyWithIV((uint8_t*)m_szHexKey.data(), 16, (uint8_t*)iv.c_str(), 12);
-					decryptor.ProcessData(m_pDecryptBuffer, (uint8_t*)cipherText.c_str(), cipherText.size());
-*/
+					/*
+										CryptoPP::GCM< CryptoPP::AES >::Decryption decryptor;
+										decryptor.SetKeyWithIV((uint8_t*)m_szHexKey.data(), 16, (uint8_t*)iv.c_str(), 12);
+										decryptor.ProcessData(m_pDecryptBuffer, (uint8_t*)cipherText.c_str(), cipherText.size());
+					*/
 					pData = m_pDecryptBuffer;
 					Len = static_cast<int>(strlen((const char*)m_pDecryptBuffer));
 				}

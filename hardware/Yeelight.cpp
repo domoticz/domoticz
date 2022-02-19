@@ -160,7 +160,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		ycmd.command = cmd;
 		// TODO: Update color
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE (HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
 		// Make sure subtype is correct

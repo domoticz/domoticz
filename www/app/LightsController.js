@@ -326,7 +326,7 @@ define(['app', 'livesocket'], function (app) {
 			var bigtext = TranslateStatusShort(item.Status);
 			if (item.UsedByCamera == true) {
 				var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-				var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+				var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
 				bigtext += "&nbsp;" + streamurl;
 			}
 
@@ -946,7 +946,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+								var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
 								bigtext += "&nbsp;" + streamurl;
 							}
 							if (permissions.hasPermission("Admin")) {

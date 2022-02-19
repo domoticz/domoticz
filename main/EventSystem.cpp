@@ -196,7 +196,7 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
-	std::string dzv_Dir, s;
+	std::string dzv_Dir;
 	CdzVents* dzvents = CdzVents::GetInstance();
 	dzvents->m_bdzVentsExist = false;
 
@@ -239,16 +239,14 @@ void CEventSystem::LoadEvents()
 		}
 	}
 
-	std::vector<std::string> FileEntries;
-	std::string filename;
-
 	// Remove dzVents DB files from disk
+	std::vector<std::string> FileEntries;
 	DirectoryListing(FileEntries, dzv_Dir, false, true);
 	for (const auto &file : FileEntries)
 	{
-		filename = dzv_Dir + file;
-		if (filename.find("README.md") == std::string::npos)
-			std::remove(filename.c_str());
+		if (file.find("README.md") != std::string::npos)
+			continue;
+		std::remove((dzv_Dir + file).c_str());
 	}
 
 	result = m_sql.safe_query(
@@ -273,9 +271,9 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				s = dzv_Dir + eitem.Name + ".lua";
-				_log.Log(LOG_STATUS, "dzVents: Write file: %s", s.c_str());
-				FILE *fOut = fopen(s.c_str(), "wb+");
+				std::string sFile = dzv_Dir + eitem.Name + ".lua";
+				_log.Log(LOG_STATUS, "dzVents: Write file: %s", sFile.c_str());
+				FILE *fOut = fopen(sFile.c_str(), "wb+");
 				if (fOut)
 				{
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
@@ -284,7 +282,7 @@ void CEventSystem::LoadEvents()
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s",  s.c_str());
+					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s", sFile.c_str());
 				}
 			}
 		}

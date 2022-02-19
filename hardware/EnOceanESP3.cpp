@@ -625,34 +625,32 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode == nullptr)
 		return;
 
-	bool do_update = false;
+	if (pNode->RORG == RORG)
+		return;
 
-	if (pNode->RORG != RORG)
-	{
-		Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
-			pNode->nodeID,
-			pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
-			RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+	Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+		pNode->nodeID,
+		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
 
-		pNode->RORG = RORG;
-		do_update = true;
+	if (pNode->name == "" || pNode->name == "Unknown")
+		pNode->name = GetEEPLabel(RORG, pNode->func, pNode->type);		
 
-		// TODO : update name & description if need be
-	}
+	pNode->RORG = RORG;
+
+	if (pNode->description == "" || pNode->description == "Unknown")
+		pNode->description = GetEEPDescription(RORG, pNode->func, pNode->type);
+
 	if (pNode->teachin_mode == GENERIC_NODE)
 	{
 		Log(LOG_NORM, "Node %08X, update from Generic to Teached-in", pNode->nodeID);
 
 		pNode->teachin_mode = TEACHEDIN_NODE;
-		do_update = true;
 	}
-	if (do_update == false)
-		return;
-
 	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
-	m_sql.safe_query("UPDATE EnOceanNodes SET RORG=%u, nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
-		pNode->RORG, nValue, m_HwdID, pNode->nodeID);
+	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', RORG=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
+		pNode->name.c_str(), pNode->RORG, pNode->description.c_str(), nValue, m_HwdID, pNode->nodeID);
 }
 
 void CEnOceanESP3::DeleteNode(const uint32_t nodeID)
@@ -2099,10 +2097,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
-		if (tsen->LIGHTING2.packettype == pTypeGeneralSwitch)
-			level = xcmd->level;
-		else
-			level = tsen->LIGHTING2.level;
+		level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
 		if (level > 50)
 		{
 			Log(LOG_ERROR,"Node %08X, Invalid PiloteWire level %d", nodeID, level);
@@ -2121,7 +2116,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X", PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID);
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
-
 		return true;
 	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
@@ -2399,7 +2393,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t LRN = bitrange(DATA, 3, 0x01);
 
 				if (LRN == 0)
-				{ 	// 1BS teach-in
+				{ // 1BS teach-in
 					Log(LOG_NORM, "1BS teach-in request from Node %08X", senderID);
 
 					if (pNode != nullptr)
@@ -4273,7 +4267,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 	return DataSize;
 }
 
-uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
+uint32_t CEnOceanESP3::sendDataVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
 {
 	uint8_t data[256 + 2];
 
@@ -4283,12 +4277,12 @@ uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID, unsigned int destID, T_DA
 	if (DataSize)
 		sendVld(srcID, destID, data, DataSize);
 	else
-		Log(LOG_ERROR, " Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		Log(LOG_ERROR, "Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 
 	return DataSize;
 }
 
-bool updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
+bool CEnOceanESP3::updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
 {
 	std::vector<std::vector<std::string>> result;
 
@@ -4418,7 +4412,7 @@ bool CEnOceanESP3::manageVldMessage(uint32_t iSenderID, unsigned char *vldData, 
 }
 
 //return position 0..100% from command / level
-int getPositionFromCommandLevel(int cmnd, int pos)
+int CEnOceanESP3::getPositionFromCommandLevel(int cmnd, int pos)
 {
 	if (cmnd == light2_sOn)
 		pos = 100;

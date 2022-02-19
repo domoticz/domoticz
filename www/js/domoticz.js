@@ -1298,7 +1298,7 @@ function reload_cam_image() {
 	$('#dialog-camera-live #camfeed').attr("src", xx.src);
 }
 
-function ShowCameraLiveStream(Name, camIdx) {
+function ShowCameraLiveStream(Name, camIdx, AspectRatio) {
 	$.count = 0;
 	$.camfeed = "camsnapshot.jpg?idx=" + camIdx;
 
@@ -1308,7 +1308,7 @@ function ShowCameraLiveStream(Name, camIdx) {
 	var windowWidth = $(window).width() - 20;
 	var windowHeight = $(window).height() - 150;
 
-	var AspectSource = 4 / 3;
+	var AspectSource = (AspectRatio == 0) ? (4/3) : (16/9);
 
 	var height = windowHeight;
 	var width = Math.round(height * AspectSource) & ~1;

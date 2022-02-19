@@ -1005,13 +1005,11 @@ namespace Plugins {
 						sOptionValue = PyUnicode_AsUTF8(pValue);
 					}
 
-					time_t now = time(nullptr);
-					struct tm ltime;
-					localtime_r(&now, &ltime);
+					std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 					Py_BEGIN_ALLOW_THREADS
 					m_sql.UpdateDeviceValue("Options", iUsed, sID);
-					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
-						sOptionValue.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
+						sOptionValue.c_str(), sLastUpdate.c_str(), self->HwdID, self->Unit);
 					Py_END_ALLOW_THREADS
 				}
 			}
@@ -1041,14 +1039,14 @@ namespace Plugins {
 					case sStatusArmHomeDelayed:
 						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
-						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
 						Py_END_ALLOW_THREADS
 						break;
 					case sStatusArmAway:
 					case sStatusArmAwayDelayed:
 						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
-						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
 						Py_END_ALLOW_THREADS
 						break;
 					case sStatusDisarm:
@@ -1058,7 +1056,7 @@ namespace Plugins {
 					case sStatusNormalDelayedTamper:
 						Py_BEGIN_ALLOW_THREADS
 						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
-						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
 						Py_END_ALLOW_THREADS
 						break;
 					}
@@ -1136,7 +1134,7 @@ namespace Plugins {
 		{
 			self->pPlugin->SetHeartbeatReceived();
 			std::string sID = std::to_string(self->ID);
-			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%s' WHERE (ID == %s )",
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID == %s )",
 					 TimeToString(nullptr, TF_DateTime).c_str(), sID.c_str());
 		}
 		else

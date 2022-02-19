@@ -411,7 +411,7 @@ void CTTNMQTT::FlagSensorWithChannelUsed(Json::Value &root, const std::string &s
 
 void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	int ID;
 
@@ -428,11 +428,11 @@ void CTTNMQTT::UpdateUserVariable(const std::string &varName, const std::string 
 	else
 	{
 		ID = atoi(result[0][0].c_str());
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), szLastUpdate.c_str(), ID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), sLastUpdate.c_str(), ID);
 	}
 
 	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, szLastUpdate);
+	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, sLastUpdate);
 }
 
 int CTTNMQTT::GetAddDeviceAndSensor(const int m_HwdID, const std::string &DeviceName, const std::string &MacAddress)
@@ -691,6 +691,11 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		Json::Value endDeviceIds = root["end_device_ids"];
 		Json::Value applicationIds = endDeviceIds["application_ids"];
 
+		if (uplinkMessage["frm_payload"].empty())
+		{
+			return;		// When there is no frm_payload, there is no data. Not even from a payload decoder.
+		}
+
 		//Get data from message
 		std::string DeviceName = endDeviceIds["device_id"].asString();
 		std::string DeviceSerial = endDeviceIds["dev_eui"].asString();
@@ -707,6 +712,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 		bool Decoded = false;
 
 		switch (MessagePort) {
+			case 0:
+				Decoded = true;	// Only MAC commands and no payload data when using this port
+				break;
 			case 2:
 				if (false) //if (CayenneLPPDec::ParseLPP_Packed((const uint8_t*)lpp.c_str(), lpp.size(), payload))
 				{
@@ -740,7 +748,7 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 					Log(LOG_ERROR, "Invalid data received! Unable to decode the raw payload and the decoded payload does not contain any (valid) data!");
 					return;
 				}
-				Log(LOG_STATUS, "Converted decoded_payload to regular payload for processing!");
+				Log(LOG_NORM, "Converted decoded_payload to regular payload for processing!");
 			}
 			else
 			{

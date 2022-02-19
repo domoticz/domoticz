@@ -38,6 +38,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return {
                     cost: source.cost,
                     usage: source.usage,
+                    decimals: (device.SwitchTypeVal === 3) ? 0 : 3,
                     counter: month ? source.counter : parseFloat(stats.counter),
                     items: month ? source.days : source.months
                 };
@@ -147,11 +148,12 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
         function init() {
             vm.unit = vm.device.getUnit();
+            vm.decimals = (vm.device.SwitchTypeVal == 3) ? 0 : 3;
             vm.isMonthView = vm.selectedMonth > 0;
 
             getData();
         }
-
+        
         function getData() {
             DeviceCounterReportData
                 .fetch(vm.device, vm.selectedYear, vm.selectedMonth)
@@ -171,8 +173,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var table = $element.find('#reporttable');
             var columns = [];
 
-            var counterRenderer = function (data) {
+            var counterRendererDecimals = function (data) {
                 return data.toFixed(3);
+            };
+            var counterRenderer = function (data) {
+                return data;
             };
 
             var costRenderer = function (data) {
@@ -208,10 +213,10 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             }
 
             if (vm.isMonthView && !vm.isOnlyUsage) {
-                columns.push({ title: $.t('Counter'), data: 'counter', render: counterRenderer });
+                columns.push({ title: $.t('Counter'), data: 'counter', render: (vm.device.SwitchTypeVal === 3) ? counterRenderer : counterRendererDecimals });
             }
 
-            columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'), data: 'usage', render: counterRenderer });
+            columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'), data: 'usage', render: (vm.device.SwitchTypeVal === 3) ? counterRenderer : counterRendererDecimals });
 
             if (!['Counter Incremental'].includes(vm.device.SubType) && (vm.device.SwitchTypeVal != 3))
                 columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Earnings') : $.t('Costs'), data: 'cost', render: costRenderer });
@@ -221,9 +226,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 orderable: false,
                 data: 'trend',
                 render: function (data) {
-					var ret='<img src="images/';
-					if (vm.device.SwitchTypeVal === 4) ret+="g";
-					ret+=data + '.png">';
+                    var ret='<img src="images/';
+                    if (vm.device.SwitchTypeVal === 4) ret+="g";
+                    ret+=data + '.png">';
                     return ret;
                 }
             });
@@ -259,7 +264,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 data: data.items.map(function (item) {
                     return {
                         x: +(new Date(item.date)),
-                        y: parseFloat(item.usage.toFixed(3))
+                        y: parseFloat(item.usage.toFixed(vm.decimals))
                     }
                 })
             });
@@ -283,7 +288,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 },
                 tooltip: {
                     valueSuffix: ' ' + vm.unit,
-                    valueDecimals: 3
+                    valueDecimals: vm.decimals
                 },
                 plotOptions: {
                     column: {

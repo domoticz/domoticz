@@ -306,17 +306,17 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, undefined));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, undefined));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
             },
             monthYearSeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, undefined))
-                    .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, undefined))
-                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, undefined, undefined));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0))
+                    .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0))
+                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;

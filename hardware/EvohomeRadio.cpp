@@ -2195,7 +2195,7 @@ namespace http {
 				if (result.empty())
 				{
 					std::string devname = "Zone Temp";
-					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname, true, "");
 				}
 				root["status"] = "OK";
 				root["title"] = "CreateEvohomeSensor";
@@ -2247,7 +2247,7 @@ namespace http {
 				}
 
 				std::string devname;
-				m_sql.UpdateValue(HwdID, devid.c_str(), (uint8_t)nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname);
+				m_sql.UpdateValue(HwdID, devid.c_str(), (uint8_t)nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname, true, "");
 				pEvoHW->SetRelayHeatDemand((uint8_t)nDevNo, 0);//initialize heat demand
 			}
 			else if (type == "ZoneSensor")
@@ -2267,7 +2267,7 @@ namespace http {
 				}
 
 				std::string devname; // = "Zone Temp";
-				m_sql.UpdateValue(HwdID, ID, (const unsigned char)nDevNo, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+				m_sql.UpdateValue(HwdID, ID, (const unsigned char)nDevNo, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname, true, "");
 			}
 			root["status"] = "OK";
 			root["title"] = "BindEvohome";

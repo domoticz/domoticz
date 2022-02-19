@@ -1188,7 +1188,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 uint64_t MQTTAutoDiscover::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 	const char* sValue, std::string& devname, bool bUseOnOffAction)
 {
-	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, m_Name.c_str());
 	if (DeviceRowIdx == (uint64_t)-1)
 		return -1;
 	if (m_bOutputLog)
@@ -2894,7 +2894,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if (command == "Set Level")
 		{
 			//root["state"] = pSensor->payload_on;
-			int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
+			int slevel = (int)round((pSensor->brightness_scale / 100.0F) * level);
 
 			if (!pSensor->brightness_value_template.empty())
 			{
@@ -3039,7 +3039,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			if ((bCouldUseBrightness) && (pSensor->bBrightness))
 			{
-				int slevel = (int)((pSensor->brightness_scale / 100.0F) * level);
+				int slevel = (int)round((pSensor->brightness_scale / 100.0F) * level);
 
 				if (!pSensor->brightness_value_template.empty())
 				{
@@ -3103,7 +3103,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			szValue = std::to_string(level);
 			if (!pSensor->set_position_topic.empty())
 			{
-				int iValue = (int)(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
+				int iValue = (int)round(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
 				// invert level for inverted blinds with percentage.
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());

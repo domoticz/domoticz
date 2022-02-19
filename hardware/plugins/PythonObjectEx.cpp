@@ -877,12 +877,12 @@ namespace Plugins {
 						case sStatusArmHome:
 						case sStatusArmHomeDelayed:
 							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
 							break;
 						case sStatusArmAway:
 						case sStatusArmAwayDelayed:
 							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
 							break;
 						case sStatusDisarm:
 						case sStatusNormal:
@@ -890,7 +890,7 @@ namespace Plugins {
 						case sStatusNormalTamper:
 						case sStatusNormalDelayedTamper:
 							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
 							break;
 					}
 					Py_END_ALLOW_THREADS

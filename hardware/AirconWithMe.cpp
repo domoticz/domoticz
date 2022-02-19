@@ -395,7 +395,7 @@ void CAirconWithMe::UpdateSelectorSwitch(const int32_t uid, const int32_t value,
 	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, valueInfo.mDefaultName.c_str(), xcmd.battery_level, m_Name.c_str());
 	if (result.empty())
 	{
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", valueInfo.mDefaultName.c_str(), (STYPE_Selector), 0, m_HwdID, xcmd.id, xcmd.unitcode);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE (HardwareID == %d) AND (DeviceID == '%08X') AND (Unit == '%d')", valueInfo.mDefaultName.c_str(), (STYPE_Selector), 0, m_HwdID, xcmd.id, xcmd.unitcode);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, xcmd.id, xcmd.unitcode);
 		if (!result.empty())
 		{

@@ -681,7 +681,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string &nodeid, const std:
 		ycmd.value = brightness;
 		ycmd.command = cmd;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, nullptr, -1, m_Name.c_str());
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer),
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE (HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer),
 				 brightness, m_HwdID, szDeviceID, pTypeColorSwitch);
 	}
 	else
@@ -788,7 +788,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q') AND (Unit == '%d')", Name.c_str(), (switchtype),
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == '%d')", Name.c_str(), (switchtype),
 				 customimage, m_HwdID, ID.c_str(), xcmd.unitcode);
 
 		if (switchtype == STYPE_Selector)
@@ -878,7 +878,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			if (battery != 255)
 			{
 				BatteryLevel = battery;
-				m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q') AND (Unit == '%d')", BatteryLevel, m_HwdID, ID.c_str(),
+				m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == '%d')", BatteryLevel, m_HwdID, ID.c_str(),
 						 xcmd.unitcode);
 			}
 		}

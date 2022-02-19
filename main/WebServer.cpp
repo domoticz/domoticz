@@ -4842,6 +4842,11 @@ namespace http
 			}
 			else if (cparam == "addswitch")
 			{
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -4881,7 +4886,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname);
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -5266,7 +5271,7 @@ namespace http
 					bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 					m_sql.m_bAcceptNewHardware = true;
 					std::string devname;
-					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname);
+					m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, "20.5", devname, true, szSwitchUser.c_str());
 					m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 					// set name and switchtype
@@ -5528,7 +5533,7 @@ namespace http
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 				m_sql.m_bAcceptNewHardware = true;
 				std::string devname;
-				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname);
+				m_sql.UpdateValue(atoi(hwdid.c_str()), devid.c_str(), atoi(sunitcode.c_str()), dtype, subtype, 0, -1, 0, devname, true, szSwitchUser.c_str());
 				m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 				// set name and switchtype
@@ -6837,6 +6842,11 @@ namespace http
 			}
 			else if (cparam == "setsecstatus")
 			{
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
+				std::string szSwitchUser = Username + " (IP: " + session.remote_host + ")";
+
 				std::string ssecstatus = request::findValue(&req, "secstatus");
 				std::string seccode = request::findValue(&req, "seccode");
 				if ((ssecstatus.empty()) || (seccode.empty()))
@@ -6856,7 +6866,7 @@ namespace http
 				}
 				root["status"] = "OK";
 				int iSecStatus = atoi(ssecstatus.c_str());
-				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus);
+				m_mainworker.UpdateDomoticzSecurityStatus(iSecStatus, szSwitchUser);
 			}
 			else if (cparam == "setcolbrightnessvalue")
 			{
@@ -8486,6 +8496,7 @@ namespace http
 								std::stringstream scidx;
 								scidx << camIDX;
 								root["result"][ii]["CameraIdx"] = scidx.str();
+								root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 							}
 							root["result"][ii]["XOffset"] = atoi(sd[7].c_str());
 							root["result"][ii]["YOffset"] = atoi(sd[8].c_str());
@@ -9128,6 +9139,7 @@ namespace http
 							std::stringstream scidx;
 							scidx << camIDX;
 							root["result"][ii]["CameraIdx"] = scidx.str();
+							root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 						}
 
 						bool bIsSubDevice = false;
@@ -9278,9 +9290,13 @@ namespace http
 							{
 								lstatus = "Open";
 							}
-							else
+							else if (lstatus == "Off")
 							{
 								lstatus = "Closed";
+							}
+							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
+							{
+								lstatus = "Stopped";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
@@ -10173,7 +10189,7 @@ namespace http
 								sprintf(szTmp, "%.03f", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%g", float(total_actual) / divider);
+								sprintf(szTmp, "%.10g", float(total_actual) / divider);
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -10997,6 +11013,7 @@ namespace http
 									std::stringstream scidx;
 									scidx << camIDX;
 									root["result"][ii]["CameraIdx"] = scidx.str();
+									root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 								}
 
 								root["result"][ii]["Level"] = 0;
@@ -11532,6 +11549,7 @@ namespace http
 						std::stringstream scidx;
 						scidx << camIDX;
 						root["result"][ii]["CameraIdx"] = scidx.str();
+						root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 					}
 					ii++;
 				}
@@ -12336,11 +12354,9 @@ namespace http
 			else
 			{
 				// Update
-				time_t now = mytime(nullptr);
-				struct tm ltime;
-				localtime_r(&now, &ltime);
-				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')", iActive, ssenderid.c_str(),
-						 ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, suuid.c_str());
+				std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%q' WHERE (UUID == '%q')", iActive, ssenderid.c_str(),
+						 sLastUpdate.c_str(), suuid.c_str());
 
 				std::string dname = result[0][1];
 				std::string ddevtype = result[0][2];
@@ -14226,7 +14242,7 @@ namespace http
 													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%g", TotalValue / dividerHere);
+													sprintf(szTmp, "%.10g", TotalValue / dividerHere);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14272,7 +14288,7 @@ namespace http
 											sprintf(szTmp, "%.3f", TotalValue / dividerForRate);
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", TotalValue / dividerForRate);
+											sprintf(szTmp, "%.10g", TotalValue / dividerForRate);
 											break;
 										default:
 											strcpy(szTmp, "0");
@@ -14364,7 +14380,7 @@ namespace http
 														sprintf(szTmp, "%.3f", TotalValue / divider);
 														break;
 													case MTYPE_COUNTER:
-														sprintf(szTmp, "%g", TotalValue / divider);
+														sprintf(szTmp, "%.10g", TotalValue / divider);
 														break;
 													default:
 														strcpy(szTmp, "0");
@@ -14425,7 +14441,7 @@ namespace http
 													sprintf(szTmp, "%.3f", TotalValue / divider);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%g", TotalValue / divider);
+													sprintf(szTmp, "%.10g", TotalValue / divider);
 													break;
 												default:
 													strcpy(szTmp, "0");
@@ -14469,7 +14485,7 @@ namespace http
 										sprintf(szTmp, "%.3f", TotalValue / divider);
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%g", TotalValue / divider);
+										sprintf(szTmp, "%.10g", TotalValue / divider);
 										break;
 									default:
 										strcpy(szTmp, "0");
@@ -14983,7 +14999,7 @@ namespace http
 										szValue = szTmp;
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 										szValue = szTmp;
 										break;
 									default:
@@ -15092,7 +15108,7 @@ namespace http
 									szValue = szTmp;
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+									sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 								default:
@@ -15584,14 +15600,12 @@ namespace http
 					root["ValueUnits"] = options["ValueUnits"];
 
 					// int nValue = 0;
-					std::string sValue;
+					std::string sValue; //Counter
 
-					result = m_sql.safe_query("SELECT nValue, sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+					result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
 					if (!result.empty())
 					{
-						std::vector<std::string> sd = result[0];
-						// nValue = atoi(sd[0].c_str());
-						sValue = sd[1];
+						sValue = result[0][0];
 					}
 
 					std::function<std::string(std::string, std::string)> tableColumn = [](std::string table, std::string expr) {
@@ -16154,6 +16168,9 @@ namespace http
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
 									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.10g", fvalue);
+									break;
 								default:
 									strcpy(szTmp, "");
 									break;
@@ -16179,6 +16196,9 @@ namespace http
 										break;
 									case MTYPE_WATER:
 										sprintf(szTmp, "%.3f", fvalue / divider);
+										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.10g", fvalue);
 										break;
 									default:
 										strcpy(szTmp, "");
@@ -16217,7 +16237,7 @@ namespace http
 										case MTYPE_WATER:
 											return std_format("%.3f", sum / divider);
 										case MTYPE_COUNTER:
-											return std_format("%g", sum / divider);
+											return std_format("%.10g", sum / divider);
 									}
 									return std::string("");
 								});
@@ -16270,10 +16290,10 @@ namespace http
 											root["result"][ii]["c"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
 											if (fcounter != 0)
-												sprintf(szTmp, "%g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.10g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
 											else
 												strcpy(szTmp, "0");
 											root["result"][ii]["c"] = szTmp;
@@ -16310,7 +16330,7 @@ namespace http
 											root["resultprev"][iPrev]["v"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["resultprev"][iPrev]["v"] = szTmp;
 											break;
 									}
@@ -16588,7 +16608,7 @@ namespace http
 											formatString = "%.3f";
 											break;
 										case MTYPE_COUNTER:
-											formatString = "%g";
+											formatString = "%.10g";
 											break;
 									}
 									AddTodayValueToResult(root, sgroupby, std::string(szDateEnd), todayValue, formatString);
@@ -16630,9 +16650,9 @@ namespace http
 											root["result"][ii]["c"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
-											sprintf(szTmp, "%g", atof(szValue.c_str()) / divider);
+											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
-											sprintf(szTmp, "%g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.10g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 											root["result"][ii]["c"] = szTmp;
 											break;
 									}
@@ -17176,6 +17196,11 @@ namespace http
 										sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 										szValue = szTmp;
 										break;
+									case MTYPE_COUNTER:
+										sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
+										szValue = szTmp;
+										break;
+
 								}
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = szValue;
@@ -17269,6 +17294,10 @@ namespace http
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
+									szValue = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 									szValue = szTmp;
 									break;
 							}

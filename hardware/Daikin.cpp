@@ -745,7 +745,7 @@ void CDaikin::InsertUpdateSwitchSelector(uint32_t Idx, const bool bIsOn, const i
 				customimage = 7;
 			}
 		}
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '0000000%d') AND (Unit == '%d')", defaultname.c_str(),
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE (HardwareID == %d) AND (DeviceID == '0000000%d') AND (Unit == '%d')", defaultname.c_str(),
 				 (switchtype), customimage, m_HwdID, Idx, xcmd.unitcode);
 
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, Idx, xcmd.type, xcmd.unitcode);

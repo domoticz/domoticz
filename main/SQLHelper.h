@@ -359,15 +359,15 @@ class CSQLHelper : public StoppableTask
 
 	// Returns DeviceRowID
 	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-			     std::string &devname, bool bUseOnOffAction = true);
+			     std::string &devname, const bool bUseOnOffAction, const char *User = nullptr);
 	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
-			     const char *sValue, std::string &devname, bool bUseOnOffAction = true);
+			     const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-			     const char *sValue, std::string &devname, bool bUseOnOffAction = true);
+			     const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValueLighting2GroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
-					      int nValue, const char *sValue, std::string &devname, bool bUseOnOffAction = true);
+					      int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 	uint64_t UpdateValueHomeConfortGroupCmd(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel,
-						int nValue, const char *sValue, std::string &devname, bool bUseOnOffAction = true);
+						int nValue, const char *sValue, std::string &devname, const bool bUseOnOffAction, const char* User = nullptr);
 
 	uint64_t GetDeviceIndex(int HardwareID, const std::string &ID, unsigned char unit, unsigned char devType, unsigned char subType, std::string &devname);
 
@@ -532,7 +532,7 @@ class CSQLHelper : public StoppableTask
 
 	// Returns DeviceRowID
 	uint64_t UpdateValueInt(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-				const char *sValue, std::string &devname, bool bUseOnOffAction);
+				const char *sValue, std::string &devname, bool bUseOnOffAction, const char* User = nullptr);
 
 	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,
 				 long long value1 = 0, long long value2 = 0, long long value3 = 0, long long value4 = 0, long long value5 = 0, long long value6 = 0, long long counter1 = 0,
