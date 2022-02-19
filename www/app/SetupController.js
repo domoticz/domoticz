@@ -414,7 +414,7 @@ define(['app'], function (app) {
 						$scope.OldAdminUser=data.WebUserName;
 						$("#webtable #WebUserName").val(data.WebUserName);
 					}
-					$("#webtable #WebPassword").val(md5.createHash("bogus"));
+					//$("#webtable #WebPassword").val(md5.createHash("bogus"));
 					if (typeof data.SecPassword != 'undefined') {
 						$("#sectable #SecPassword").val(data.SecPassword);
 					}
