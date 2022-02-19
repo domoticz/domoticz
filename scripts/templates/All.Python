@@ -51,8 +51,6 @@ other useful details are contained in the following global variables:
  * sunset_in_minutes
  * (TODO) security
 
-TODO: wiki page
-
 Compare to Lua, instead of filling a commandArray, you change the status of a
 device by calling device.on() or device.off()
 
