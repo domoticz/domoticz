@@ -177,7 +177,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return data.toFixed(3);
             };
             var counterRenderer = function (data) {
-                return data;
+                return +data.toFixed(3);
             };
 
             var costRenderer = function (data) {
