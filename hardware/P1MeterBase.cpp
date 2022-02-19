@@ -491,12 +491,12 @@ bool P1MeterBase::MatchLine()
 				break;
 			case P1TYPE_USAGECURRENT:
 				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt
-				if (temp_usage < 17250)
+				if (temp_usage < 55200) // max 80A fuse 3fase 230V
 					m_power.usagecurrent = temp_usage;
 				break;
 			case P1TYPE_DELIVCURRENT:
 				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt;
-				if (temp_usage < 17250)
+				if (temp_usage < 55200) // max 80A fuse 3fase 230V
 					m_power.delivcurrent = temp_usage;
 				break;
 			case P1TYPE_VOLTAGEL1:
