@@ -20,6 +20,7 @@
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
+#include "../webserver/cWebem.h"
 #include "clx_unzip.h"
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
@@ -38,7 +39,10 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 156
+#define DB_VERSION 157
+
+#define DEFAULT_ADMINUSER "admin"
+#define DEFAULT_ADMINPWD "domoticz"
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -3018,13 +3022,44 @@ bool CSQLHelper::OpenDatabase()
 			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentage, 16); //STYPE_BlindsPercentageInverted
 			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentageWithStop, 22); //STYPE_BlindsPercentageInvertedWithStop
 		}
+		if (dbversion < 157)
+		{
+			std::string WebUserName, WebPassword;
+			int nValue;
+			if (GetPreferencesVar("WebUserName", nValue, WebUserName))
+			{
+				if (GetPreferencesVar("WebPassword", nValue, WebPassword))
+				{
+					if (!WebUserName.empty() && !WebPassword.empty())
+					{
+						// Add this User to the Users table
+						safe_query("INSERT INTO Users (Active, Username, Password, Rights) VALUES (1, '%s', '%s', %d)", WebUserName.c_str(), WebPassword.c_str(), http::server::URIGHTS_ADMIN);
+					}
+				}
+				// Remove these Pref vars as we do not use them anymore
+				DeletePreferencesVar("WebPassword");
+				DeletePreferencesVar("WebUsername");
+			}
+			result = safe_query("SELECT COUNT(*) FROM Users WHERE Rights=%d", http::server::URIGHTS_ADMIN);
+			if(!result.empty())
+			{
+				nValue = atoi(result[0][0].c_str());
+				if (nValue == 0)
+				{
+					// Add a default User as no users exist
+					safe_query("INSERT INTO Users (Active, Username, Password, Rights) VALUES (1, '%s', '%s', %d)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+					_log.Log(LOG_STATUS, "A default admin User called 'admin' has been added with a default password!");
+				}
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		// Add hardware for internal use
-		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
+		safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
+		safe_query("INSERT INTO Users (Active, Username, Password, Rights) VALUES (1, '%s', '%s', %d)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 
@@ -3038,6 +3073,16 @@ bool CSQLHelper::OpenDatabase()
 		}
 		_log.Log(LOG_STATUS, "Empty extreme sized sValue(s) in Preferences table to prevent future issues" );
 		safe_query("UPDATE Preferences SET sValue ='' WHERE LENGTH(sValue) > 1000");
+	}
+
+	// Check if the default admin User password has been changed
+	result = safe_query("SELECT Password FROM Users WHERE Username='%s'", base64_encode(DEFAULT_ADMINUSER).c_str());
+	if (!result.empty())
+	{
+		if (result[0][0] == GenerateMD5Hash(DEFAULT_ADMINPWD))
+		{
+			_log.Log(LOG_ERROR, "Default admin password has NOT been changed! Change it asap!");
+		}
 	}
 
 	//Make sure we have some default preferences
