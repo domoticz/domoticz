@@ -540,32 +540,32 @@ bool P1MeterBase::MatchLine()
 				break;
 			case P1TYPE_POWERUSEL1:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 10000)
+				if (temp_power < 18400)
 					m_powerusel1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERUSEL2:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 10000)
+				if (temp_power < 18400)
 					m_powerusel2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERUSEL3:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 10000)
+				if (temp_power < 18400)
 					m_powerusel3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_POWERDELL1:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 10000)
+				if (temp_power < 18400)
 					m_powerdell1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERDELL2:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 10000)
+				if (temp_power < 18400)
 					m_powerdell2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERDELL3:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 10000)
+				if (temp_power < 18400)
 					m_powerdell3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_GASTIMESTAMP:
