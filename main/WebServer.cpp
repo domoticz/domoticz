@@ -8286,20 +8286,6 @@ namespace http
 		void CWebServer::LoadUsers()
 		{
 			ClearUserPasswords();
-			// For backwards compatibility (should be removed sometime), add the user from the Settings Website protection
-			std::string WebUserName, WebPassword;
-			int nValue = 0;
-			if (m_sql.GetPreferencesVar("WebUserName", nValue, WebUserName))
-			{
-				if (m_sql.GetPreferencesVar("WebPassword", nValue, WebPassword))
-				{
-					if ((!WebUserName.empty()) && (!WebPassword.empty()))
-					{
-						WebUserName = base64_decode(WebUserName);
-						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
-					}
-				}
-			}
 			// Add Users
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
@@ -8576,49 +8562,6 @@ namespace http
 				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
 
 				m_pWebEm->SetAuthenticationMethod(amethod);
-				cntSettings++;
-
-				// Check new and get old username/password
-				std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
-				std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
-
-				std::string sOldWebLogin;
-				std::string sOldWebPassword;
-				m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
-				m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
-
-				bool bHaveAdminUserPasswordChange = false;
-
-				if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
-				{
-					// All is OK, no changes
-				}
-				else if (WebUserName.empty() || WebPassword.empty())
-				{
-					// If no Admin User/Password is specified, we clear them
-					if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
-						bHaveAdminUserPasswordChange = true;
-					WebUserName = "";
-					WebPassword = "";
-				}
-				else
-				{
-					if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
-					{
-						bHaveAdminUserPasswordChange = true;
-					}
-				}
-
-				// Invalid sessions of WebUser when the username or password has been changed
-				if (bHaveAdminUserPasswordChange)
-				{
-					if (!sOldWebLogin.empty())
-						RemoveUsersSessions(sOldWebLogin, session);
-					m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
-					m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
-				}
-				m_webservers.LoadUsers();
-				cntSettings++;
 				cntSettings++;
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
@@ -13529,14 +13472,6 @@ namespace http
 				{
 					root["ShortLogInterval"] = nValue;
 				}
-				else if (Key == "WebUserName")
-				{
-					root["WebUserName"] = base64_decode(sValue);
-				}
-				// else if (Key == "WebPassword")
-				//{
-				//	root["WebPassword"] = sValue;
-				//}
 				else if (Key == "SecPassword")
 				{
 					root["SecPassword"] = sValue;
@@ -18256,9 +18191,6 @@ namespace http
 		/**
 		 * Delete all user's session, except the session used to modify the username or password.
 		 * username must have been hashed
-		 *
-		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
-		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
 		 */
 		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession& exceptSession)
 		{
