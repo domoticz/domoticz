@@ -7,6 +7,15 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         function fetch(device, year, month) {
             var costs = domoticzApi.sendCommand('getcosts', { idx: device.idx });
 
+            function countDecimals(value) {
+                if (value == 0) return 0;
+                var value = 1/value;
+                if(Math.floor(value) === value) return 0;
+                var decimals = value.toString().split(".")[1].length || 0; 
+                if (decimals > 5) decimals = 5;
+                return decimals;
+            }
+
             var stats = domoticzApi.sendRequest({
                 type: 'graph',
                 sensor: 'counter',
@@ -38,7 +47,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return {
                     cost: source.cost,
                     usage: source.usage,
-                    decimals: (device.SwitchTypeVal === 3) ? 0 : 3,
+                    decimals: (device.SwitchTypeVal === 3) ? countDecimals(device.Divider) : 3,
                     counter: month ? source.counter : parseFloat(stats.counter),
                     items: month ? source.days : source.months
                 };
@@ -146,14 +155,24 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         var vm = this;
         vm.$onInit = init;
 
+        function countDecimals(value) {
+            if (value == 0) return 0;
+            var value = 1/value;
+            if(Math.floor(value) === value) return 0;
+            var decimals = value.toString().split(".")[1].length || 0; 
+            if (decimals > 5) decimals = 5;
+            return decimals;
+        }
+
         function init() {
             vm.unit = vm.device.getUnit();
-            vm.decimals = (vm.device.SwitchTypeVal == 3) ? 0 : 3;
+            vm.decimals = (vm.device.SwitchTypeVal == 3) ? countDecimals(vm.device.Divider) : 3;
             vm.isMonthView = vm.selectedMonth > 0;
 
             getData();
         }
         
+       
         function getData() {
             DeviceCounterReportData
                 .fetch(vm.device, vm.selectedYear, vm.selectedMonth)
@@ -177,7 +196,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return data.toFixed(3);
             };
             var counterRenderer = function (data) {
-                return data;
+                return data.toFixed(countDecimals(vm.device.Divider));
             };
 
             var costRenderer = function (data) {

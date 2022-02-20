@@ -9893,6 +9893,7 @@ namespace http
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["ValueQuantity"] = ValueQuantity;
 						root["result"][ii]["ValueUnits"] = ValueUnits;
+						root["result"][ii]["Divider"] = divider;
 
 						double meteroffset = AddjValue;
 
@@ -9998,6 +9999,8 @@ namespace http
 						root["result"][ii]["TypeImg"] = "counter";
 						root["result"][ii]["ValueQuantity"] = ValueQuantity;
 						root["result"][ii]["ValueUnits"] = ValueUnits;
+						root["result"][ii]["Divider"] = divider;
+
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 						double meteroffset = AddjValue;
 
@@ -10068,6 +10071,7 @@ namespace http
 						root["result"][ii]["TypeImg"] = "counter";
 						root["result"][ii]["ValueQuantity"] = ValueQuantity;
 						root["result"][ii]["ValueUnits"] = ValueUnits;
+						root["result"][ii]["Divider"] = divider;
 						root["result"][ii]["ShowNotifications"] = false;
 						double meteroffset = AddjValue;
 
@@ -10231,6 +10235,7 @@ namespace http
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["ValueQuantity"] = ValueQuantity;
 						root["result"][ii]["ValueUnits"] = ValueUnits;
+						root["result"][ii]["Divider"] = divider;
 
 						switch (metertype)
 						{
