@@ -30,6 +30,9 @@ enum class _eP1MatchType {
 	LINE18
 };
 
+#define P1MAXTOTALPOWER 55200       // Define Max total Power possible (80A * 3fase * 230V)
+#define P1MAXPHASEPOWER 18400       // Define Max phase Power possible (80A * 3fase * 230V)
+
 #define P1SMID		"/"				// Smart Meter ID. Used to detect start of telegram.
 #define P1VER		"1-3:0.2.8"		// P1 version
 #define P1VERBE		"0-0:96.1.4"	// P1 version + e-MUCS version (Belgium)
@@ -460,14 +463,14 @@ bool P1MeterBase::MatchLine()
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerusage1
 					if (!m_power.powerusage1 || m_p1version >= 4)
 						m_power.powerusage1 = temp_usage;
-					else if (temp_usage - m_power.powerusage1 < 10000)
+					else if (temp_usage - m_power.powerusage1 < P1MAXPHASEPOWER)
 						m_power.powerusage1 = temp_usage;
 				}
 				else if (l_buffer[8] == 0x32)
 				{
 					if (!m_power.powerusage2 || m_p1version >= 4)
 						m_power.powerusage2 = temp_usage;
-					else if (temp_usage - m_power.powerusage2 < 10000)
+					else if (temp_usage - m_power.powerusage2 < P1MAXPHASEPOWER)
 						m_power.powerusage2 = temp_usage;
 				}
 				break;
@@ -478,25 +481,25 @@ bool P1MeterBase::MatchLine()
 					// map tariff IDs 0 (Lux) and 1 (Bel, Nld) both to powerdeliv1
 					if (!m_power.powerdeliv1 || m_p1version >= 4)
 						m_power.powerdeliv1 = temp_usage;
-					else if (temp_usage - m_power.powerdeliv1 < 10000)
+					else if (temp_usage - m_power.powerdeliv1 < P1MAXPHASEPOWER)
 						m_power.powerdeliv1 = temp_usage;
 				}
 				else if (l_buffer[8] == 0x32)
 				{
 					if (!m_power.powerdeliv2 || m_p1version >= 4)
 						m_power.powerdeliv2 = temp_usage;
-					else if (temp_usage - m_power.powerdeliv2 < 10000)
+					else if (temp_usage - m_power.powerdeliv2 < P1MAXPHASEPOWER)
 						m_power.powerdeliv2 = temp_usage;
 				}
 				break;
 			case P1TYPE_USAGECURRENT:
 				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt
-				if (temp_usage < 55200) // max 80A fuse 3fase 230V
+				if (temp_usage < P1MAXTOTALPOWER) 
 					m_power.usagecurrent = temp_usage;
 				break;
 			case P1TYPE_DELIVCURRENT:
 				temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt;
-				if (temp_usage < 55200) // max 80A fuse 3fase 230V
+				if (temp_usage < P1MAXTOTALPOWER) 
 					m_power.delivcurrent = temp_usage;
 				break;
 			case P1TYPE_VOLTAGEL1:
@@ -540,32 +543,32 @@ bool P1MeterBase::MatchLine()
 				break;
 			case P1TYPE_POWERUSEL1:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 18400)
+				if (temp_power < P1MAXPHASEPOWER)
 					m_powerusel1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERUSEL2:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 18400)
+				if (temp_power < P1MAXPHASEPOWER)
 					m_powerusel2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERUSEL3:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 18400)
+				if (temp_power < P1MAXPHASEPOWER)
 					m_powerusel3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_POWERDELL1:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 18400)
+				if (temp_power < P1MAXPHASEPOWER)
 					m_powerdell1 = temp_power; //Power Used L1;
 				break;
 			case P1TYPE_POWERDELL2:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 18400)
+				if (temp_power < P1MAXPHASEPOWER)
 					m_powerdell2 = temp_power; //Power Used L2;
 				break;
 			case P1TYPE_POWERDELL3:
 				temp_power = std::stof(sValue) * 1000.0F;
-				if (temp_power < 18400)
+				if (temp_power < P1MAXPHASEPOWER)
 					m_powerdell3 = temp_power; //Power Used L3;
 				break;
 			case P1TYPE_GASTIMESTAMP:
