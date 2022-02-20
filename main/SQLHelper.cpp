@@ -5239,7 +5239,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 				)
 			{
 				if (
-					(pHardware->HwdType != HTYPE_MQTTAutoDiscovery)
+					(HWtype != HTYPE_MQTTAutoDiscovery)
 					&&
 					(switchtype == STYPE_BlindsPercentage
 					|| switchtype == STYPE_BlindsPercentageWithStop

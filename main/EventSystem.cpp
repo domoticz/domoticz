@@ -42,7 +42,6 @@ extern http::server::CWebServerHelper m_webservers;
 #include "../hardware/plugins/PluginMessages.h"
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
-extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
 // Helper table for Blockly and SQL name mapping
@@ -273,7 +272,7 @@ void CEventSystem::LoadEvents()
 			{
 				std::string sFile = dzv_Dir + eitem.Name + ".lua";
 				_log.Log(LOG_STATUS, "dzVents: Write file: %s", sFile.c_str());
-				FILE *fOut = fopen(sFile.c_str(), "wb+");
+				FILE* fOut = fopen(sFile.c_str(), "wb+");
 				if (fOut)
 				{
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);

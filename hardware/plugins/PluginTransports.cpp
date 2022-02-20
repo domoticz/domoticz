@@ -15,6 +15,8 @@
 
 namespace Plugins {
 
+	extern PyTypeObject* CConnectionType;
+
 	void CPluginTransport::configureTimeout()
 	{
 		if (m_pConnection->Timeout)
@@ -198,8 +200,6 @@ namespace Plugins {
 	{
 		try
 		{
-			PyType_Ready(&CConnectionType);
-
 			if (!m_Socket)
 			{
 				if (!m_Acceptor)
@@ -239,8 +239,21 @@ namespace Plugins {
 			std::string sAddress = remote_ep.address().to_string();
 			std::string sPort = std::to_string(remote_ep.port());
 
-			CConnection *pConnection
-				= (CConnection *)CConnection_new(&CConnectionType, (PyObject *)nullptr, (PyObject *)nullptr);
+			PyNewRef nrArgList = Py_BuildValue("(sssss)",
+				std::string(sAddress+":"+sPort).c_str(),
+				PyUnicode_AsUTF8(((CConnection*)m_pConnection)->Transport),
+				PyUnicode_AsUTF8(((CConnection*)m_pConnection)->Protocol),
+				sAddress.c_str(),
+				sPort.c_str());
+			if (!nrArgList)
+			{
+				pPlugin->Log(LOG_ERROR, "Building connection argument list failed for TCP %s:%s.", sAddress.c_str(), sPort.c_str());
+			}
+			CConnection* pConnection = (CConnection*)PyObject_CallObject((PyObject*)CConnectionType, nrArgList);
+			if (!pConnection)
+			{
+				pPlugin->Log(LOG_ERROR, "Connection object creation failed for TCP %s:%s.", sAddress.c_str(), sPort.c_str());
+			}
 			CPluginTransportTCP* pTcpTransport = new CPluginTransportTCP(m_HwdID, pConnection, sAddress, sPort);
 			Py_DECREF(pConnection);
 
@@ -252,20 +265,10 @@ namespace Plugins {
 
 			// Configure Python Connection object
 			pConnection->pTransport = pTcpTransport;
-			Py_XDECREF(pConnection->Name);
-			pConnection->Name = PyUnicode_FromString(std::string(sAddress+":"+sPort).c_str());
-			Py_XDECREF(pConnection->Address);
-			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
-			Py_XDECREF(pConnection->Port);
-			pConnection->Port = PyUnicode_FromString(sPort.c_str());
 
 			Py_XDECREF(pConnection->Parent);
 			pConnection->Parent = (PyObject*)m_pConnection;
 			Py_INCREF(m_pConnection);
-			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
-			Py_INCREF(pConnection->Transport);
-			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
-			Py_INCREF(pConnection->Protocol);
 			pConnection->Target = ((CConnection *)m_pConnection)->Target;
 			if (pConnection->Target)
 				Py_INCREF(pConnection->Target);
@@ -626,8 +629,6 @@ namespace Plugins {
 	{
 		try
 		{
-			PyType_Ready(&CConnectionType);
-
 			if (!m_Socket)
 			{
 				boost::system::error_code ec;
@@ -680,21 +681,22 @@ namespace Plugins {
 			std::string sAddress = m_remote_endpoint.address().to_string();
 			std::string sPort = std::to_string(m_remote_endpoint.port());
 
-			CConnection *pConnection
-				= (CConnection *)CConnection_new(&CConnectionType, (PyObject *)nullptr, (PyObject *)nullptr);
+			PyNewRef nrArgList = Py_BuildValue("(sssss)", 
+												PyUnicode_AsUTF8(((CConnection*)m_pConnection)->Name), 
+												PyUnicode_AsUTF8(((CConnection*)m_pConnection)->Transport),
+												PyUnicode_AsUTF8(((CConnection*)m_pConnection)->Protocol),
+												sAddress.c_str(),
+												sPort.c_str());
+			if (!nrArgList)
+			{
+				pPlugin->Log(LOG_ERROR, "Building connection argument list failed for UDP %s:%s.", sAddress.c_str(), sPort.c_str());
+			}
+			CConnection* pConnection = (CConnection*)PyObject_CallObject((PyObject*)CConnectionType, nrArgList);
+			if (!pConnection)
+			{
+				pPlugin->Log(LOG_ERROR, "Connection object creation failed for UDP %s:%s.", sAddress.c_str(), sPort.c_str());
+			}
 
-			// Configure temporary Python Connection object
-			Py_XDECREF(pConnection->Name);
-			pConnection->Name = ((CConnection*)m_pConnection)->Name;
-			Py_INCREF(pConnection->Name);
-			Py_XDECREF(pConnection->Address);
-			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
-			Py_XDECREF(pConnection->Port);
-			pConnection->Port = PyUnicode_FromString(sPort.c_str());
-			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
-			Py_INCREF(pConnection->Transport);
-			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
-			Py_INCREF(pConnection->Protocol);
 			pConnection->Target = ((CConnection *)m_pConnection)->Target;
 			if (pConnection->Target)
 				Py_INCREF(pConnection->Target);
