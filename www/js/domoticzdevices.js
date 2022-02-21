@@ -1,7 +1,3 @@
-/*
-//    (c)  Kendel Boul - 2014
-*/
-
 String.prototype.setCharAt = function (idx, chr) {
     if (idx > this.length - 1) {
         return this.toString();
@@ -9,6 +5,26 @@ String.prototype.setCharAt = function (idx, chr) {
         return this.substr(0, idx) + chr + this.substr(idx + 1);
     }
 };
+
+function decimalPlaces(n) {
+  let result= /^-?[0-9]+\.([0-9]+)$/.exec(n);
+  return result === null ? 0 : result[1].length;
+}
+
+function decimalPlacesDiv1(n) {
+  n = 1.0 / n;
+  let result= /^-?[0-9]+\.([0-9]+)$/.exec(n);
+  return result === null ? 0 : result[1].length;
+}
+
+
+// Augmenting Number proto.
+Number.prototype.numDecimals = function () {
+  return decimalPlaces(this);
+}
+Number.prototype.numDecimalsDiv1 = function () {
+  return decimalPlaces(1.0/this);
+}
 
 function getSVGnode() {
     var divFloors = $(".imageparent");

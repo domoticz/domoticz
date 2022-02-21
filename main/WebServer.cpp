@@ -14154,6 +14154,7 @@ namespace http
 						root["title"] = "Graph " + sensor + " " + srange;
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
+						root["Divider"] = divider;
 
 						// First check if we had any usage in the short log, if not, its probably a meter without usage
 						bool bHaveUsage = true;
@@ -14311,6 +14312,7 @@ namespace http
 						root["title"] = "Graph " + sensor + " " + srange;
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
+						root["Divider"] = divider;
 
 						int ii = 0;
 
@@ -14924,6 +14926,7 @@ namespace http
 					root["title"] = "Graph " + sensor + " " + srange;
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
+					root["Divider"] = divider;
 
 					char szDateStart[40];
 					char szDateEnd[40];
@@ -15603,6 +15606,7 @@ namespace http
 					root["title"] = sgroupby.empty() ? "Graph " + sensor + " " + srange : "Comparing " + sensor;
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
+					root["Divider"] = divider;
 
 					// int nValue = 0;
 					std::string sValue; //Counter
@@ -17140,6 +17144,7 @@ namespace http
 					root["title"] = "Graph " + sensor + " " + srange;
 					root["ValueQuantity"] = options["ValueQuantity"];
 					root["ValueUnits"] = options["ValueUnits"];
+					root["Divider"] = divider;
 
 					int ii = 0;
 					if (dType == pTypeP1Power)

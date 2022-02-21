@@ -60,7 +60,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, no0));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
@@ -304,19 +304,19 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     }
                 ];
             },
-            daySeriesSuppliers: function (deviceTypeIndex) {
+            daySeriesSuppliers: function (deviceTypeIndex, divider) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
             },
-            weekSeriesSuppliers: function (deviceTypeIndex) {
+            weekSeriesSuppliers: function (deviceTypeIndex, divider) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
             },
-            monthYearSeriesSuppliers: function (deviceTypeIndex) {
+            monthYearSeriesSuppliers: function (deviceTypeIndex, divider) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0))
-                    .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0))
-                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)))
+                    .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)))
+                    .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
@@ -385,7 +385,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, 0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, chart.valueMultipliers.m1000));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
@@ -410,6 +410,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
         };
 
         function preprocessData(data) {
+            this.Divider = data.Divider ? data.Divider : 1;
             this.deviceCounterName = data.ValueQuantity ? data.ValueQuantity : undefined;
             this.deviceValueUnit = data.ValueUnits ? data.ValueUnits : undefined;
         }

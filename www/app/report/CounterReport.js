@@ -7,15 +7,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         function fetch(device, year, month) {
             var costs = domoticzApi.sendCommand('getcosts', { idx: device.idx });
 
-            function countDecimals(value) {
-                if (value == 0) return 0;
-                var value = 1/value;
-                if(Math.floor(value) === value) return 0;
-                var decimals = value.toString().split(".")[1].length || 0; 
-                if (decimals > 5) decimals = 5;
-                return decimals;
-            }
-
             var stats = domoticzApi.sendRequest({
                 type: 'graph',
                 sensor: 'counter',
@@ -47,7 +38,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return {
                     cost: source.cost,
                     usage: source.usage,
-                    decimals: (device.SwitchTypeVal === 3) ? countDecimals(device.Divider) : 3,
+                    decimals: (device.SwitchTypeVal === 3) ? device.Divider.numDecimalsDiv1() : 3,
                     counter: month ? source.counter : parseFloat(stats.counter),
                     items: month ? source.days : source.months
                 };
@@ -155,18 +146,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         var vm = this;
         vm.$onInit = init;
 
-        function countDecimals(value) {
-            if (value == 0) return 0;
-            var value = 1/value;
-            if(Math.floor(value) === value) return 0;
-            var decimals = value.toString().split(".")[1].length || 0; 
-            if (decimals > 5) decimals = 5;
-            return decimals;
-        }
-
         function init() {
             vm.unit = vm.device.getUnit();
-            vm.decimals = (vm.device.SwitchTypeVal == 3) ? countDecimals(vm.device.Divider) : 3;
+            vm.decimals = (vm.device.SwitchTypeVal == 3) ? vm.device.Divider.numDecimalsDiv1() : 3;
             vm.isMonthView = vm.selectedMonth > 0;
 
             getData();
@@ -196,7 +178,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 return data.toFixed(3);
             };
             var counterRenderer = function (data) {
-                return data.toFixed(countDecimals(vm.device.Divider));
+                return data.toFixed(vm.device.Divider.numDecimalsDiv1());
             };
 
             var costRenderer = function (data) {

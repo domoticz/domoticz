@@ -167,7 +167,6 @@ define(['app', 'livesocket'], function (app) {
 			});
 			//find our custom image index and select it
 			$.each($.ddData, function (i, item) {
-				console.log(item.value+" "+customimage)
 				if (item.value == customimage) {
 					$('#dialog-editmeterdevice #combosensoricon').ddslick('select', { index: i });
 				}
