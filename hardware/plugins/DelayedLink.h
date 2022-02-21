@@ -9,10 +9,19 @@
 #ifdef WITH_THREAD
 #    undefine WITH_THREAD
 #endif
+
+#pragma push_macro("_DEBUG")
+#ifdef _DEBUG
+#    undef _DEBUG   // Not compatible with Py_LIMITED_API
+#endif
+#define Py_LIMITED_API 0x03040000 
 #include <Python.h>
 #include <structmember.h>
-#include <frameobject.h>
-#include "../../main/Helper.h"
+#include "../../main/Logger.h"
+
+#ifndef WIN32
+#	include "../../main/Helper.h"
+#endif
 
 namespace Plugins {
 
@@ -29,6 +38,8 @@ namespace Plugins {
 #define DECLARE_PYTHON_SYMBOL(type, symbol, params)	typedef type (PYTHON_CALL symbol##_t)(params); symbol##_t  symbol
 #define RESOLVE_PYTHON_SYMBOL(symbol)  symbol = (symbol##_t)RESOLVE_SYMBOL(shared_lib_, #symbol)
 
+#undef Py_None
+
 	struct SharedLibraryProxy
 	{
 #ifdef WIN32
@@ -36,6 +47,8 @@ namespace Plugins {
 #else
 		void* shared_lib_;
 #endif
+		PyObject* Py_None;
+			
 		// Shared library interface begin.
 		DECLARE_PYTHON_SYMBOL(const char*, Py_GetVersion, );
 		DECLARE_PYTHON_SYMBOL(int, Py_IsInitialized, );
@@ -50,6 +63,9 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
 		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
 		DECLARE_PYTHON_SYMBOL(int, PyType_Ready, PyTypeObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Type, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyType_FromSpec, PyType_Spec*);
+		DECLARE_PYTHON_SYMBOL(void*, PyType_GetSlot, PyTypeObject* COMMA int);
 		DECLARE_PYTHON_SYMBOL(int, PyCallable_Check, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetAttrString, PyObject* pObj COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_HasAttrString, PyObject* COMMA const char *);
@@ -60,7 +76,6 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(wchar_t*, PyUnicode_AsWideCharString, PyObject* COMMA Py_ssize_t*);
 		DECLARE_PYTHON_SYMBOL(const char*, PyUnicode_AsUTF8, PyObject*);
 		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
-		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromKindAndData, int COMMA const void* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
@@ -91,8 +106,6 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_ImportModule, const char *);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_RichCompareBool, PyObject* COMMA PyObject* COMMA int);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallObject, PyObject *COMMA PyObject *);
-		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallNoArgs, PyObject *);						// Python 3.9 !!!!
-		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
 		DECLARE_PYTHON_SYMBOL(int, PyEval_ThreadsInitialized, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Get, );
@@ -102,17 +115,12 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
-		DECLARE_PYTHON_SYMBOL(int, PyGILState_Check, );
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, _PyObject_New, PyTypeObject *);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsInstance, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsSubclass, PyObject *COMMA PyObject *);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_Dir, PyObject *);
-#ifdef _DEBUG
-		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2TraceRefs, struct PyModuleDef* COMMA int);
-#else
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2, struct PyModuleDef* COMMA int);
-#endif
 		DECLARE_PYTHON_SYMBOL(int, PyModule_AddObject, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTuple, PyObject* COMMA const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA ...);
@@ -120,8 +128,6 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyBool_FromLong, long);
-        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleStringFlags, const char* COMMA PyCompilerFlags*);
-        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFileExFlags, FILE* COMMA const char* COMMA int COMMA PyCompilerFlags*);
 		DECLARE_PYTHON_SYMBOL(void*, PyCapsule_Import, const char *name COMMA int);
 		DECLARE_PYTHON_SYMBOL(void*, PyType_GenericAlloc, const PyTypeObject * COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_DecodeUTF8, const char * COMMA Py_ssize_t COMMA const char *);
@@ -132,44 +138,32 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(long, PyLong_AsLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsUTF8String, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_AddModule, const char*);
-		DECLARE_PYTHON_SYMBOL(void, PyEval_SetProfile, Py_tracefunc COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(void, PyEval_SetTrace, Py_tracefunc COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Str, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsTrue, PyObject*);
 		DECLARE_PYTHON_SYMBOL(double, PyFloat_AsDouble, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetIter, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyIter_Next, PyObject*);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_SetString, PyObject* COMMA const char*);
-
-#ifdef _DEBUG
-		// In a debug build dealloc is a function but for release builds its a macro
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallFunctionObjArgs, PyObject* COMMA ...);
+		DECLARE_PYTHON_SYMBOL(PyObject*, Py_CompileString, const char* COMMA const char* COMMA int);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyEval_EvalCode, PyObject* COMMA PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(long, PyType_GetFlags, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
-#endif
-		Py_ssize_t		_Py_RefTotal;
-		PyObject		_Py_NoneStruct;
-		PyObject *		dzPy_None;
 
 		SharedLibraryProxy() {
+			Py_None = nullptr;
 			shared_lib_ = nullptr;
-			_Py_RefTotal = 0;
 			if (!shared_lib_) {
 #ifdef WIN32
-#	ifdef _DEBUG
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python39_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python38_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
-#	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python310.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python39.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python38.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
-#	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.10", true);
 				if (!shared_lib_) FindLibrary("python3.9", true);
 				if (!shared_lib_) FindLibrary("python3.8", true);
 				if (!shared_lib_) FindLibrary("python3.7", true);
@@ -198,6 +192,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(Py_GetProgramFullPath);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AppendInittab);
 					RESOLVE_PYTHON_SYMBOL(PyType_Ready);
+					RESOLVE_PYTHON_SYMBOL(PyObject_Type);
+					RESOLVE_PYTHON_SYMBOL(PyType_FromSpec);
+					RESOLVE_PYTHON_SYMBOL(PyType_GetSlot);
 					RESOLVE_PYTHON_SYMBOL(PyCallable_Check);
 					RESOLVE_PYTHON_SYMBOL(PyObject_GetAttrString);
 					RESOLVE_PYTHON_SYMBOL(PyObject_HasAttrString);
@@ -208,7 +205,6 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsWideCharString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8);
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
-					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromKindAndData);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
@@ -239,8 +235,6 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
 					RESOLVE_PYTHON_SYMBOL(PyObject_RichCompareBool);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
-					RESOLVE_PYTHON_SYMBOL(PyObject_CallNoArgs);
-					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
 					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ThreadsInitialized);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Get);
@@ -250,28 +244,18 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
-					RESOLVE_PYTHON_SYMBOL(PyGILState_Check);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsInstance);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsSubclass);
 					RESOLVE_PYTHON_SYMBOL(PyObject_Dir);
-#ifdef _DEBUG
-					RESOLVE_PYTHON_SYMBOL(PyModule_Create2TraceRefs);
-#else
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2);
-#endif
 					RESOLVE_PYTHON_SYMBOL(PyModule_AddObject);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTuple);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTupleAndKeywords);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromFormat);
 					RESOLVE_PYTHON_SYMBOL(Py_BuildValue);
 					RESOLVE_PYTHON_SYMBOL(PyMem_Free);
-#ifdef _DEBUG
-					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
-#endif
-                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleFileExFlags);
-                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleStringFlags);
 					RESOLVE_PYTHON_SYMBOL(PyBool_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyCapsule_Import);
 					RESOLVE_PYTHON_SYMBOL(PyType_GenericAlloc);
@@ -283,17 +267,19 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLong);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8String);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AddModule);
-					RESOLVE_PYTHON_SYMBOL(PyEval_SetProfile);
-					RESOLVE_PYTHON_SYMBOL(PyEval_SetTrace);
 					RESOLVE_PYTHON_SYMBOL(PyObject_Str);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsTrue);
 					RESOLVE_PYTHON_SYMBOL(PyFloat_AsDouble);
 					RESOLVE_PYTHON_SYMBOL(PyObject_GetIter);
 					RESOLVE_PYTHON_SYMBOL(PyIter_Next);
 					RESOLVE_PYTHON_SYMBOL(PyErr_SetString);
+					RESOLVE_PYTHON_SYMBOL(PyObject_CallFunctionObjArgs);
+					RESOLVE_PYTHON_SYMBOL(Py_CompileString);
+					RESOLVE_PYTHON_SYMBOL(PyEval_EvalCode);
+					RESOLVE_PYTHON_SYMBOL(PyType_GetFlags);
+					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 				}
 			}
-			_Py_NoneStruct.ob_refcnt = 1;
 		};
 		~SharedLibraryProxy() = default;
 
@@ -412,15 +398,7 @@ namespace Plugins {
 
 extern	SharedLibraryProxy* pythonLib;
 
-// Create local pointer to Py_None, required to work around build complaints
-#ifdef Py_None
-	#undef Py_None
-#endif
-#define Py_None					pythonLib->dzPy_None
-#ifdef Py_RETURN_NONE
-	#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
-#endif
-#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
+#define	Py_None					pythonLib->Py_None
 #define	Py_LoadLibrary			pythonLib->Py_LoadLibrary
 #define	Py_GetVersion			pythonLib->Py_GetVersion
 #define	Py_IsInitialized		pythonLib->Py_IsInitialized
@@ -435,6 +413,9 @@ extern	SharedLibraryProxy* pythonLib;
 #define	Py_GetProgramFullPath	pythonLib->Py_GetProgramFullPath
 #define	PyImport_AppendInittab	pythonLib->PyImport_AppendInittab
 #define	PyType_Ready			pythonLib->PyType_Ready
+#define	PyObject_Type			pythonLib->PyObject_Type
+#define	PyType_FromSpec			pythonLib->PyType_FromSpec
+#define	PyType_GetSlot			pythonLib->PyType_GetSlot
 #define	PyCallable_Check		pythonLib->PyCallable_Check
 #define	PyObject_GetAttrString	pythonLib->PyObject_GetAttrString
 #define	PyObject_HasAttrString	pythonLib->PyObject_HasAttrString
@@ -446,7 +427,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyUnicode_AsWideCharString	pythonLib->PyUnicode_AsWideCharString
 #define PyUnicode_AsUTF8		pythonLib->PyUnicode_AsUTF8
 #define PyByteArray_AsString	pythonLib->PyByteArray_AsString
-#define PyUnicode_FromKindAndData  pythonLib->PyUnicode_FromKindAndData
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
@@ -460,7 +440,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_SetItem			pythonLib->PyDict_SetItem
 #define PyDict_DelItem			pythonLib->PyDict_DelItem
 #define PyDict_DelItemString	pythonLib->PyDict_DelItemString
-#define PyDict_Next pythonLib->PyDict_Next
+#define PyDict_Next				pythonLib->PyDict_Next
 #define PyDict_Items			pythonLib->PyDict_Items
 #define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
@@ -477,8 +457,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyImport_ImportModule	pythonLib->PyImport_ImportModule
 #define PyObject_RichCompareBool pythonLib->PyObject_RichCompareBool
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
-#define PyObject_CallNoArgs		pythonLib->PyObject_CallNoArgs
-#define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
 #define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
 #define	PyEval_ThreadsInitialized	pythonLib->PyEval_ThreadsInitialized
 #define	PyThreadState_Get		pythonLib->PyThreadState_Get
@@ -488,7 +466,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
 #define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
 #define PyThreadState_Swap		pythonLib->PyThreadState_Swap
-#define PyGILState_Check		pythonLib->PyGILState_Check
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
 #define PyObject_IsInstance		pythonLib->PyObject_IsInstance
@@ -497,22 +474,10 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
-#ifdef _DEBUG
-#	define PyModule_Create2TraceRefs pythonLib->PyModule_Create2TraceRefs
-#else
-#	define PyModule_Create2		pythonLib->PyModule_Create2
-#endif
+#define PyModule_Create2		pythonLib->PyModule_Create2
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
-
-#ifdef _DEBUG
-#	define _Py_Dealloc			pythonLib->_Py_Dealloc
-#endif
-
 #define _Py_RefTotal			pythonLib->_Py_RefTotal
-#define _Py_NoneStruct			pythonLib->_Py_NoneStruct
-#define PyRun_SimpleStringFlags pythonLib->PyRun_SimpleStringFlags
-#define PyRun_SimpleFileExFlags pythonLib->PyRun_SimpleFileExFlags
 #define PyBool_FromLong			pythonLib->PyBool_FromLong
 #define PyCapsule_Import		pythonLib->PyCapsule_Import
 #define PyType_GenericAlloc		pythonLib->PyType_GenericAlloc
@@ -524,80 +489,88 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyLong_AsLong			pythonLib->PyLong_AsLong
 #define PyUnicode_AsUTF8String	pythonLib->PyUnicode_AsUTF8String
 #define PyImport_AddModule		pythonLib->PyImport_AddModule
-#define PyEval_SetProfile		pythonLib->PyEval_SetProfile
-#define PyEval_SetTrace			pythonLib->PyEval_SetTrace
 #define PyObject_Str			pythonLib->PyObject_Str
 #define	PyObject_IsTrue			pythonLib->PyObject_IsTrue
 #define PyFloat_AsDouble		pythonLib->PyFloat_AsDouble
 #define	PyObject_GetIter		pythonLib->PyObject_GetIter
 #define	PyIter_Next				pythonLib->PyIter_Next
 #define PyErr_SetString			pythonLib->PyErr_SetString
-
-#ifndef _Py_DEC_REFTOTAL
-/* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by: https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
-#ifdef Py_REF_DEBUG
-#define _Py_DEC_REFTOTAL _Py_RefTotal--
+#define	PyObject_CallFunctionObjArgs	pythonLib->PyObject_CallFunctionObjArgs
+#define	Py_CompileString		pythonLib->Py_CompileString
+#define	PyEval_EvalCode			pythonLib->PyEval_EvalCode
+#define	PyType_GetFlags			pythonLib->PyType_GetFlags
+#ifdef WIN32  
+#	define	_Py_Dealloc				pythonLib->_Py_Dealloc		// Builds against a low Python version
+#elif PY_VERSION_HEX < 0x03090000
+#	define	_Py_Dealloc				pythonLib->_Py_Dealloc
 #else
-#define _Py_DEC_REFTOTAL
-#define _Py_Dealloc
-#endif
+#	ifndef _Py_DEC_REFTOTAL
+	/* _Py_DEC_REFTOTAL macro has been removed from Python 3.9 by: https://github.com/python/cpython/commit/49932fec62c616ec88da52642339d83ae719e924 */
+#		ifdef Py_REF_DEBUG
+#			define _Py_DEC_REFTOTAL _Py_RefTotal--
+#		else
+#			define _Py_DEC_REFTOTAL
+#			define _Py_Dealloc
+#		endif
+#	endif
 #endif
 
 #if PY_VERSION_HEX >= 0x030800f0
-	static inline void py3__Py_INCREF(PyObject *op)
-	{
+static inline void py3__Py_INCREF(PyObject* op)
+{
 #ifdef Py_REF_DEBUG
-		_Py_RefTotal++;
+	_Py_RefTotal++;
 #endif
-		op->ob_refcnt++;
-	}
+	op->ob_refcnt++;
+}
 
 #undef Py_INCREF
 #define Py_INCREF(op) py3__Py_INCREF(_PyObject_CAST(op))
 
-	static inline void py3__Py_XINCREF(PyObject *op)
+static inline void py3__Py_XINCREF(PyObject* op)
+{
+	if (op != NULL)
 	{
-		if (op != NULL)
-		{
-			Py_INCREF(op);
-		}
+		Py_INCREF(op);
 	}
+}
 
 #undef Py_XINCREF
 #define Py_XINCREF(op) py3__Py_XINCREF(_PyObject_CAST(op))
 
-	static inline void py3__Py_DECREF(const char *filename, int lineno, PyObject *op)
+static inline void py3__Py_DECREF(const char* filename, int lineno, PyObject* op)
+{
+	(void)filename; /* may be unused, shut up -Wunused-parameter */
+	(void)lineno;	/* may be unused, shut up -Wunused-parameter */
+	_Py_DEC_REFTOTAL;
+	if (--op->ob_refcnt != 0)
 	{
-		(void)filename; /* may be unused, shut up -Wunused-parameter */
-		(void)lineno;	/* may be unused, shut up -Wunused-parameter */
-		_Py_DEC_REFTOTAL;
-		if (--op->ob_refcnt != 0)
-		{
 #ifdef Py_REF_DEBUG
-			if (op->ob_refcnt < 0)
-			{
-				_Py_NegativeRefcount(filename, lineno, op);
-			}
-#endif
-		}
-		else
+		if (op->ob_refcnt < 0)
 		{
-			_Py_Dealloc(op);
+			_Py_NegativeRefcount(filename, lineno, op);
 		}
+#endif
 	}
+	else
+	{
+		_Py_Dealloc(op);
+	}
+}
 
 #undef Py_DECREF
 #define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
 
-	static inline void py3__Py_XDECREF(PyObject *op)
+static inline void py3__Py_XDECREF(PyObject* op)
+{
+	if (op != nullptr)
 	{
-		if (op != nullptr)
-		{
-			Py_DECREF(op);
-		}
+		Py_DECREF(op);
 	}
+}
 
 #undef Py_XDECREF
 #define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
 #endif
+#pragma pop_macro("_DEBUG")
 } // namespace Plugins

@@ -62,8 +62,6 @@ namespace Plugins {
 
 		void Do_Work();
 
-		void LogPythonException(const std::string &);
-
 	public:
 	  CPlugin(int HwdID, const std::string &Name, const std::string &PluginKey);
 	  ~CPlugin() override;
@@ -75,7 +73,7 @@ namespace Plugins {
 	  bool StopHardware() override;
 
 	  void LogPythonException();
-	  void LogTraceback(PyTracebackObject *pTraceback);
+	  void LogPythonException(const std::string&);
 
 	  int PollInterval(int Interval = -1);
 	  PyObject*	PythonModule() { return m_PyModule; };
@@ -119,9 +117,9 @@ namespace Plugins {
 	  PyBorrowedRef	FindUnitInDevice(const std::string &deviceKey, const int unitKey);
 
 	  std::string m_PluginKey;
-	  PyDictObject*	m_DeviceDict;
-	  PyDictObject* m_ImageDict;
-	  PyDictObject* m_SettingsDict;
+	  PyObject*	m_DeviceDict;
+	  PyObject* m_ImageDict;
+	  PyObject* m_SettingsDict;
 	  std::string m_HomeFolder;
 	  PluginDebugMask m_bDebug;
 	  bool m_bTracing;
@@ -147,16 +145,29 @@ namespace Plugins {
 	//
 	class PyBorrowedRef
 	{
-	      protected:
+	protected:
 		PyObject *m_pObject;
+		bool		TypeCheck(long);
 
-	      public:
+	public:
 		PyBorrowedRef()
 			: m_pObject(NULL){};
 		PyBorrowedRef(PyObject *pObject)
 		{
 			m_pObject = pObject;
 		};
+		std::string	Attribute(const char* name);
+		std::string	Type();
+		bool		IsDict() { return TypeCheck(Py_TPFLAGS_DICT_SUBCLASS); };
+		bool		IsList() { return TypeCheck(Py_TPFLAGS_LIST_SUBCLASS); };
+		bool		IsLong() { return TypeCheck(Py_TPFLAGS_LONG_SUBCLASS); };
+		bool		IsTuple() { return TypeCheck(Py_TPFLAGS_TUPLE_SUBCLASS); };
+		bool		IsString() { return TypeCheck(Py_TPFLAGS_UNICODE_SUBCLASS); };
+		bool		IsBytes() { return TypeCheck(Py_TPFLAGS_BYTES_SUBCLASS); };
+		bool		IsByteArray() { return Type() == "bytearray"; };
+		bool		IsFloat() { return Type() == "float"; };
+		bool		IsBool() { return Type() == "bool"; };
+		bool		IsNone() { return m_pObject && (m_pObject == Py_None); };
 		operator PyObject *() const
 		{
 			return m_pObject;
@@ -164,10 +175,6 @@ namespace Plugins {
 		operator PyTypeObject *() const
 		{
 			return (PyTypeObject *)m_pObject;
-		}
-		operator PyBytesObject *() const
-		{
-			return (PyBytesObject *)m_pObject;
 		}
 		operator bool() const
 		{
@@ -283,12 +290,8 @@ namespace Plugins {
 	class AccessPython
 	{
 	private:
-		static	std::mutex			PythonMutex;
-		static  volatile bool		m_bHasThreadState;
-		std::unique_lock<std::mutex>* m_Lock;
-		PyThreadState* m_Python;
 		CPlugin* m_pPlugin;
-		const char* m_Text;
+		std::string m_Text;
 
 	public:
 		AccessPython(CPlugin* pPlugin, const char* sWhat);

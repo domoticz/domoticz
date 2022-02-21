@@ -12,7 +12,7 @@ namespace Plugins {
 		PyObject_HEAD
 		PyObject*		DeviceID;
 		int				TimedOut;
-		PyDictObject*	m_UnitDict;
+		PyObject*		m_UnitDict;
 
 		static bool isInstance(PyObject *pObject);
 	};
@@ -34,46 +34,6 @@ namespace Plugins {
 	static PyMethodDef CDeviceEx_methods[] = {
 		{ "Refresh", (PyCFunction)CDeviceEx_refresh, METH_NOARGS, "Refresh the device and it's units" },
 		{ nullptr } /* Sentinel */
-	};
-
-	static PyTypeObject CDeviceExType = {
-		PyVarObject_HEAD_INIT(nullptr, 0) "DomoticzEx.Device", /* tp_name */
-		sizeof(CDeviceEx),				/* tp_basicsize */
-		0,								/* tp_itemsize */
-		(destructor)CDeviceEx_dealloc,	/* tp_dealloc */
-		0,								/* tp_print */
-		nullptr,					    /* tp_getattr */
-		nullptr,					    /* tp_setattr */
-		nullptr,					    /* tp_reserved */
-		nullptr,					    /* tp_repr */
-		nullptr,					    /* tp_as_number */
-		nullptr,					    /* tp_as_sequence */
-		nullptr,					    /* tp_as_mapping */
-		nullptr,					    /* tp_hash  */
-		nullptr,					    /* tp_call */
-		(reprfunc)CDeviceEx_str,		/* tp_str */
-		nullptr,					    /* tp_getattro */
-		nullptr,					    /* tp_setattro */
-		nullptr,					    /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	     /* tp_flags */
-		"DomoticzEx Device",			/* tp_doc */
-		nullptr,					    /* tp_traverse */
-		nullptr,					    /* tp_clear */
-		nullptr,					    /* tp_richcompare */
-		0,								/* tp_weaklistoffset */
-		nullptr,					    /* tp_iter */
-		nullptr,					    /* tp_iternext */
-		CDeviceEx_methods,				/* tp_methods */
-		CDeviceEx_members,				/* tp_members */
-		nullptr,					    /* tp_getset */
-		nullptr,					    /* tp_base */
-		nullptr,					    /* tp_dict */
-		nullptr,					    /* tp_descr_get */
-		nullptr,					    /* tp_descr_set */
-		0,								/* tp_dictoffset */
-		(initproc)CDeviceEx_init,		/* tp_init */
-		nullptr,					    /* tp_alloc */
-		CDeviceEx_new					/* tp_new */
 	};
 
 	class CUnitEx
@@ -146,44 +106,5 @@ namespace Plugins {
 		{ "Touch", (PyCFunction)CUnitEx_touch, METH_NOARGS, "Notify Domoticz that device has been seen." },
 		{ nullptr } /* Sentinel */
 	};
-
-	static PyTypeObject CUnitExType = {
-		PyVarObject_HEAD_INIT(nullptr, 0) "DomoticzEx.Unit", /* tp_name */
-		sizeof(CUnitEx),				/* tp_basicsize */
-		0,								/* tp_itemsize */
-		(destructor)CUnitEx_dealloc,	/* tp_dealloc */
-		0,								/* tp_print */
-		nullptr,					    /* tp_getattr */
-		nullptr,					    /* tp_setattr */
-		nullptr,					    /* tp_reserved */
-		nullptr,					    /* tp_repr */
-		nullptr,					    /* tp_as_number */
-		nullptr,					    /* tp_as_sequence */
-		nullptr,					    /* tp_as_mapping */
-		nullptr,					    /* tp_hash  */
-		nullptr,					    /* tp_call */
-		(reprfunc)CUnitEx_str,			/* tp_str */
-		nullptr,					    /* tp_getattro */
-		nullptr,					    /* tp_setattro */
-		nullptr,					    /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	     /* tp_flags */
-		"DomoticzEx Unit",				/* tp_doc */
-		nullptr,					    /* tp_traverse */
-		nullptr,					    /* tp_clear */
-		nullptr,					    /* tp_richcompare */
-		0,								/* tp_weaklistoffset */
-		nullptr,					    /* tp_iter */
-		nullptr,					    /* tp_iternext */
-		CUnitEx_methods,				/* tp_methods */
-		CUnitEx_members,				/* tp_members */
-		nullptr,					    /* tp_getset */
-		nullptr,					    /* tp_base */
-		nullptr,					    /* tp_dict */
-		nullptr,					    /* tp_descr_get */
-		nullptr,					    /* tp_descr_set */
-		0,								/* tp_dictoffset */
-		(initproc)CUnitEx_init,			/* tp_init */
-		nullptr,					    /* tp_alloc */
-		CUnitEx_new					    /* tp_new */
-	};
+	
 } // namespace Plugins

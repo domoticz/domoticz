@@ -60,7 +60,6 @@ namespace Plugins {
 		InitializeMessage() : CPluginMessageBase() { m_Name = __func__; };
 		void Process(CPlugin* pPlugin) override
 		{
-			//std::lock_guard<std::mutex> l(PythonMutex);
 			pPlugin->Initialise();
 		};
 		void ProcessLocked(CPlugin* pPlugin) override{};

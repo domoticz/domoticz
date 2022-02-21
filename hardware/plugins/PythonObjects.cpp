@@ -8,7 +8,6 @@
 #include "../../main/Logger.h"
 #include "../../main/SQLHelper.h"
 #include "../../hardware/hardwaretypes.h"
-#include "../../main/localtime_r.h"
 #include "../../main/mainstructs.h"
 #include "../../main/mainworker.h"
 #include "../../main/EventSystem.h"
@@ -22,21 +21,28 @@
 
 namespace Plugins {
 
+	PyTypeObject* CDeviceType = nullptr;
+	PyTypeObject* CConnectionType = nullptr;
+	PyTypeObject* CImageType = nullptr;
+
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern struct PyModuleDef DomoticzExModuleDef;
-	extern void LogPythonException(CPlugin *pPlugin, const std::string &sHandler);
 
 	void CImage_dealloc(CImage* self)
 	{
 		Py_XDECREF(self->Base);
 		Py_XDECREF(self->Name);
 		Py_XDECREF(self->Description);
-		Py_TYPE(self)->tp_free((PyObject*)self);
+
+		PyNewRef	pType = PyObject_Type((PyObject*)self);
+		freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
+		pFree((PyObject*)self);
 	}
 
 	PyObject* CImage_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	{
-		CImage *self = (CImage *)type->tp_alloc(type, 0);
+		allocfunc pAlloc = (allocfunc)PyType_GetSlot(type, Py_tp_alloc);
+		CImage *self = (CImage *)pAlloc(type, 0);
 
 		try
 		{
@@ -130,10 +136,8 @@ namespace Plugins {
 			}
 			else
 			{
-				CPlugin *pPlugin = nullptr;
-				if (pModState) pPlugin = pModState->pPlugin;
-				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\")");
-				LogPythonException(pPlugin, __func__);
+				pModState->pPlugin->Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\")");
+				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}
 		catch (std::exception *e)
@@ -177,11 +181,10 @@ namespace Plugins {
 						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT max(ID), Base, Name, Description FROM CustomImages");
 						if (!result.empty())
 						{
-							PyType_Ready(&CImageType);
 							// Add image objects into the image dictionary with ID as the key
 							for (const auto &sd : result)
 							{
-								CImage *pImage = (CImage *)CImage_new(&CImageType, (PyObject *)nullptr,
+								CImage *pImage = (CImage *)CImage_new(CImageType, (PyObject *)nullptr,
 												      (PyObject *)nullptr);
 
 								PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
@@ -226,7 +229,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_IMAGE)
 				{
-					_log.Log(LOG_NORM, "(%s) Deleting Image '%s'.", self->pPlugin->m_Name.c_str(), sName.c_str());
+					_log.Log(LOG_NORM, "Deleting Image '%s'.", sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -238,19 +241,18 @@ namespace Plugins {
 					PyNewRef	pKey = PyLong_FromLong(self->ImageID);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_ImageDict, pKey) == -1)
 					{
-						_log.Log(LOG_ERROR, "(%s) failed to delete image '%d' from images dictionary.", self->pPlugin->m_Name.c_str(), self->ImageID);
-						Py_INCREF(Py_None);
-						return Py_None;
+						self->pPlugin->Log(LOG_ERROR, "Failed to delete image '%d' from images dictionary.", self->ImageID);
+						Py_RETURN_NONE;
 					}
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) Image deletion failed, Image %d not found in Domoticz.", self->pPlugin->m_Name.c_str(), self->ImageID);
+					self->pPlugin->Log(LOG_ERROR, "Image deletion failed, Image %d not found in Domoticz.", self->ImageID);
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Image deletion failed, '%s' does not represent a Image in Domoticz.", self->pPlugin->m_Name.c_str(), sName.c_str());
+				self->pPlugin->Log(LOG_ERROR, "Image deletion failed, '%s' does not represent a Image in Domoticz.", sName.c_str());
 			}
 		}
 		else
@@ -278,12 +280,16 @@ namespace Plugins {
 		PyDict_Clear(self->Options);
 		Py_XDECREF(self->Options);
 		Py_XDECREF(self->Color);
-		Py_TYPE(self)->tp_free((PyObject*)self);
+
+		PyNewRef	pType = PyObject_Type((PyObject*)self);
+		freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
+		pFree((PyObject*)self);
 	}
 
 	PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	{
-		CDevice *self = (CDevice *)type->tp_alloc(type, 0);
+		allocfunc pAlloc = (allocfunc)PyType_GetSlot(type, Py_tp_alloc);
+		CDevice *self = (CDevice*)pAlloc(type, 0);
 
 		try
 		{
@@ -473,7 +479,7 @@ namespace Plugins {
 		}
 		else if (sTypeName == "Selector Switch")
 		{
-			if (!OptionsIn || !PyDict_Check(OptionsIn)) {
+			if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict()) {
 				PyDict_Clear(OptionsOut);
 				PyDict_SetItemString(OptionsOut, "LevelActions", PyUnicode_FromString("|||"));
 				PyDict_SetItemString(OptionsOut, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));
@@ -517,7 +523,7 @@ namespace Plugins {
 		else if (sTypeName == "Custom")
 		{
 			SubType = sTypeCustom;
-			if (!OptionsIn || !PyDict_Check(OptionsIn)) {
+			if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict()) {
 				PyDict_Clear(OptionsOut);
 				PyDict_SetItemString(OptionsOut, "Custom", PyUnicode_FromString("1"));
 			}
@@ -615,42 +621,39 @@ namespace Plugins {
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
 				if (Used == 1) self->Used = Used;
-				if (Options && PyDict_Check(Options) && PyDict_Size(Options) > 0) {
+				if (Options && PyBorrowedRef(Options).IsDict() && PyDict_Size(Options) > 0) {
 					PyObject *pKey, *pValue;
 					Py_ssize_t pos = 0;
 					PyDict_Clear(self->Options);
-					while(PyDict_Next(Options, &pos, &pKey, &pValue))
+					while (PyDict_Next(Options, &pos, &pKey, &pValue))
 					{
-						if (PyUnicode_Check(pValue))
+						PyNewRef	pKeyDict = PyObject_Str(pKey);
+						PyNewRef	pValueDict = PyObject_Str(pValue);
+
+						if (pKeyDict && pValueDict)
 						{
-							PyObject *pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
-							PyObject *pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
 							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
 							{
-								_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);
-								Py_XDECREF(pKeyDict);
-								Py_XDECREF(pValueDict);
+								pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
+									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
 								break;
 							}
-							Py_XDECREF(pKeyDict);
-							Py_XDECREF(pValueDict);
 						}
 						else
 						{
-							_log.Log(
+							PyNewRef	pName = PyObject_GetAttrString((PyObject*)pValue->ob_type, "__name__");
+							pModState->pPlugin->Log(
 								LOG_ERROR,
-								R"((%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d): Only "string" type dictionary entries supported, but entry has type "%s")",
-								self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit, pValue->ob_type->tp_name);
+								"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
+								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
 						}
 					}
 				}
 			}
 			else
 			{
-				CPlugin *pPlugin = nullptr;
-				if (pModState) pPlugin = pModState->pPlugin;
-				_log.Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1))");
-				LogPythonException(pPlugin, __func__);
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1))");
+				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}
 		catch (std::exception *e)
@@ -745,12 +748,12 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->m_Name.c_str(), sName.c_str());
+					self->pPlugin->Log(LOG_NORM, "Creating device '%s'.", sName.c_str());
 				}
 
 				if (!m_sql.m_bAcceptNewHardware)
 				{
-					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->m_Name.c_str());
+					self->pPlugin->Log(LOG_ERROR, "Device creation failed, Domoticz settings prevent accepting new devices.");
 				}
 				else
 				{
@@ -792,9 +795,8 @@ namespace Plugins {
 							PyNewRef	pKey = PyLong_FromLong(self->Unit);
 							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
 							{
-								_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
-								Py_INCREF(Py_None);
-								return Py_None;
+								self->pPlugin->Log(LOG_ERROR, "Failed to add unit '%d' to device dictionary.", self->Unit);
+								Py_RETURN_NONE;
 							}
 
 							// Device successfully created, now set the options when supplied
@@ -817,18 +819,18 @@ namespace Plugins {
 						}
 						else
 						{
-							_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);
+							self->pPlugin->Log(LOG_ERROR, "Device creation failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->HwdID, self->Unit);
 						}
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);
+						self->pPlugin->Log(LOG_ERROR, "Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->HwdID, self->Unit);
 					}
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Device creation failed, '%s' already exists in Domoticz with Device ID '%d'.", self->pPlugin->m_Name.c_str(), sName.c_str(), self->ID);
+				self->pPlugin->Log(LOG_ERROR, "Device creation failed, '%s' already exists in Domoticz with Device ID '%d'.", sName.c_str(), self->ID);
 			}
 		}
 		else
@@ -874,11 +876,10 @@ namespace Plugins {
 
 			// Try to extract parameters needed to update device settings
 			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
-				{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
-				LogPythonException(self->pPlugin, __func__);
-				Py_INCREF(Py_None);
-				return Py_None;
+			{
+				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
+				self->pPlugin->LogPythonException(__func__);
+				Py_RETURN_NONE;
 			}
 
 			std::string sID = std::to_string(self->ID);
@@ -979,7 +980,7 @@ namespace Plugins {
 			}
 
 			// Options provided, assume change
-			if (pOptionsDict && PyDict_Check(pOptionsDict))
+			if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
 			{
 				if (self->SubType != sTypeCustom)
 				{
@@ -1092,7 +1093,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->m_Name.c_str(), sName.c_str());
+					self->pPlugin->Log(LOG_NORM, "Deleting device '%s'.", sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -1104,19 +1105,18 @@ namespace Plugins {
 					PyNewRef	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
 					{
-						_log.Log(LOG_ERROR, "(%s) failed to delete unit '%d' from device dictionary.", self->pPlugin->m_Name.c_str(), self->Unit);
-						Py_INCREF(Py_None);
-						return Py_None;
+						self->pPlugin->Log(LOG_ERROR, "Failed to delete unit '%d' from device dictionary.", self->Unit);
+						Py_RETURN_NONE;
 					}
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) Device deletion failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->m_Name.c_str(), self->HwdID, self->Unit);
+					self->pPlugin->Log(LOG_ERROR, "Device deletion failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->HwdID, self->Unit);
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Device deletion failed, '%s' does not represent a device in Domoticz.", self->pPlugin->m_Name.c_str(), sName.c_str());
+				self->pPlugin->Log(LOG_ERROR, "Device deletion failed, '%s' does not represent a device in Domoticz.", sName.c_str());
 			}
 		}
 		else
@@ -1153,10 +1153,14 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		CPlugin *pPlugin = CPlugin::FindPlugin();
+		CPlugin *pPlugin = self->pPlugin;
+		if (!pPlugin)
+		{
+			pPlugin = CPlugin::FindPlugin();
+		}
 		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
 		{
-			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", pPlugin->m_Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			pPlugin->Log(LOG_NORM, "Deallocating connection object '%s' (%s:%s).", PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Target);
@@ -1178,22 +1182,15 @@ namespace Plugins {
 			self->pProtocol = nullptr;
 		}
 
-		Py_TYPE(self)->tp_free((PyObject*)self);
+		PyNewRef	pType = PyObject_Type((PyObject*)self);
+		freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
+		pFree((PyObject*)self);
 	}
 
 	PyObject * CConnection_new(PyTypeObject * type, PyObject * args, PyObject * kwds)
 	{
-		CConnection *self = nullptr;
-		if ((CConnection *)type->tp_alloc)
-		{
-			self = (CConnection *)type->tp_alloc(type, 0);
-		}
-		else
-		{
-			//!Giz: self = NULL here!!
-			//_log.Log(LOG_ERROR, "(%s) CConnection Type is not ready.", self->pPlugin->m_Name.c_str());
-			_log.Log(LOG_ERROR, "(Python plugin) CConnection Type is not ready!");
-		}
+		allocfunc pAlloc = (allocfunc)PyType_GetSlot(type, Py_tp_alloc);
+		CConnection *self = (CConnection*)pAlloc(type, 0);
 
 		try
 		{
@@ -1333,19 +1330,19 @@ namespace Plugins {
 		if (pPlugin->IsStopRequested(0))
 		{
 			pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnecting())
 		{
 			pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			Py_RETURN_NONE;
 		}
 
 		if (self->pTransport && self->pTransport->IsConnected())
 		{
 			pPlugin->Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->m_Name.c_str());
-			return Py_None;
+			Py_RETURN_NONE;
 		}
 
 		PyObject *pTarget = NULL;
@@ -1455,7 +1452,7 @@ namespace Plugins {
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
 				pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", pPlugin->m_Name.c_str());
-				LogPythonException(pPlugin, std::string(__func__));
+				pPlugin->LogPythonException(__func__);
 			}
 			else
 			{
