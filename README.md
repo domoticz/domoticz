@@ -19,6 +19,12 @@ Some Information
 
 ## Support
 
+By default Domoticz is protected by a username (admin) and password (domoticz).
+
+Please either change the password as soon as possible or create a different admin user and remove the default (admin) user.
+
+More information on securing your Domoticz setup can be found in the [SECURITY](SECURITY.md) documentation.
+
 Your first place for support is the [Domoticz Forum](http://www.domoticz.com/forum)
 
 The Github issue tracker is NOT for end-user support.
