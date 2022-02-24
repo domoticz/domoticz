@@ -40,6 +40,9 @@ namespace http
 		{
 			std::string id;
 			std::string remote_host;
+			std::string local_host;
+			std::string remote_port;
+			std::string local_port;
 			std::string auth_token;
 			std::string username;
 			int reply_status = 0;

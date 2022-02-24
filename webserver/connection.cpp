@@ -87,7 +87,7 @@ namespace http {
 		void connection::start()
 		{
 			boost::system::error_code ec;
-			boost::asio::ip::tcp::endpoint endpoint = socket().remote_endpoint(ec);
+			boost::asio::ip::tcp::endpoint remote_endpoint = socket().remote_endpoint(ec);
 			if (ec) {
 				// Prevent the exception to be thrown to run to avoid the server to be locked (still listening but no more connection or stop).
 				// If the exception returns to WebServer to also create a exception loop.
@@ -95,10 +95,19 @@ namespace http {
 				connection_manager_.stop(shared_from_this());
 				return;
 			}
-			host_endpoint_address_ = endpoint.address().to_string();
-			//std::stringstream sstr;
-			//sstr << endpoint.port();
-			//sstr >> host_endpoint_port_;
+			host_remote_endpoint_address_ = remote_endpoint.address().to_string();
+			host_remote_endpoint_port_ = std::to_string(remote_endpoint.port());
+
+			boost::asio::ip::tcp::endpoint local_endpoint = socket().local_endpoint(ec);
+			if (ec) {
+				// Prevent the exception to be thrown to run to avoid the server to be locked (still listening but no more connection or stop).
+				// If the exception returns to WebServer to also create a exception loop.
+				_log.Log(LOG_ERROR, "Getting error '%s' while getting local_endpoint in connection::start", ec.message().c_str());
+				connection_manager_.stop(shared_from_this());
+				return;
+			}
+			host_local_endpoint_address_ = local_endpoint.address().to_string();
+			host_local_endpoint_port_ = std::to_string(local_endpoint.port());
 
 			set_abandoned_timeout();
 
@@ -158,7 +167,7 @@ namespace http {
 						socket().close(ignored_ec);
 					}
 					catch (...) {
-						_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_address_.c_str());
+						_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_remote_endpoint_address_.c_str());
 					}
 					break;
 				case ConnectionType::connection_websocket:
@@ -373,7 +382,7 @@ namespace http {
 					}
 					catch (...)
 					{
-						_log.Log(LOG_ERROR, "Exception parsing HTTP. Address: %s", host_endpoint_address_.c_str());
+						_log.Log(LOG_ERROR, "Exception parsing HTTP. Address: %s", host_remote_endpoint_address_.c_str());
 					}
 
 					if (result) {
@@ -402,11 +411,16 @@ namespace http {
 						const char* pConnection = request_.get_req_header(&request_, "Connection");
 						keepalive_ = pConnection != nullptr && boost::iequals(pConnection, "Keep-Alive");
 						request_.keep_alive = keepalive_;
-						request_.host_address = host_endpoint_address_;
-						request_.host_port = host_endpoint_port_;
-						if (request_.host_address.substr(0, 7) == "::ffff:") {
-							request_.host_address = request_.host_address.substr(7);
+						request_.host_remote_address = host_remote_endpoint_address_;
+						request_.host_local_address = host_local_endpoint_address_;
+						if (request_.host_remote_address.substr(0, 7) == "::ffff:") {
+							request_.host_remote_address = request_.host_remote_address.substr(7);
 						}
+						if (request_.host_local_address.substr(0, 7) == "::ffff:") {
+							request_.host_local_address = request_.host_local_address.substr(7);
+						}
+						request_.host_remote_port = host_remote_endpoint_port_;
+						request_.host_local_port = host_local_endpoint_port_;
 						request_handler_.handle_request(request_, reply_);
 
 						if(_log.IsACLFlogEnabled())	// Only do this if we are gonna use it, otherwise don't spend the compute power
@@ -415,7 +429,7 @@ namespace http {
 							// Follow Apache's Combined Log Format, allows easy processing by 3rd party tools
 							// LogFormat "%h %l %u %f \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
 							// 127.0.0.1 - frank [10/Oct/2000:13:55:36.012 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://my.domoticz.local/index.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
-							std::string wlHost = request_.host_address;
+							std::string wlHost = request_.host_remote_address;
 							std::string wlUser = "-";	// Maybe we can fill this sometime? Or maybe not so we don't expose sensitive data?
 							std::string wlReqUri = request_.method + " " + request_.uri + " HTTP/" + std::to_string(request_.http_version_major) + (request_.http_version_minor ? "." + std::to_string(request_.http_version_minor): "");
 							std::string wlReqRef = "-";
@@ -494,7 +508,7 @@ namespace http {
 					}
 					else if (!result)
 					{
-						_log.Log(LOG_ERROR, "Error parsing http request address: %s", host_endpoint_address_.c_str());
+						_log.Log(LOG_ERROR, "Error parsing http request address: %s", host_remote_endpoint_address_.c_str());
 						keepalive_ = false;
 						reply_ = reply::stock_reply(reply::bad_request);
 						MyWrite(reply_.to_string(request_.method));
@@ -596,11 +610,11 @@ namespace http {
 				boost::system::error_code ignored_ec;
 				read_timer_.cancel(ignored_ec);
 				if (ignored_ec) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
+					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_remote_endpoint_address_.c_str(), ignored_ec.message().c_str());
 				}
 			}
 			catch (...) {
-				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_address_.c_str());
+				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_remote_endpoint_address_.c_str());
 			}
 		}
 
@@ -639,11 +653,11 @@ namespace http {
 				boost::system::error_code ignored_ec;
 				abandoned_timer_.cancel(ignored_ec);
 				if (ignored_ec) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
+					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_remote_endpoint_address_.c_str(), ignored_ec.message().c_str());
 				}
 			}
 			catch (...) {
-				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_address_.c_str());
+				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_remote_endpoint_address_.c_str());
 			}
 		}
 
@@ -656,7 +670,7 @@ namespace http {
 		/// stop connection on abandoned timeout
 		void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
 			if (error != boost::asio::error::operation_aborted) {
-				_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_address_.c_str(), status_);
+				_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_remote_endpoint_address_.c_str(), status_);
 				connection_manager_.stop(shared_from_this());
 			}
 		}

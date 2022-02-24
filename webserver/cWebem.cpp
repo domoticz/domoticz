@@ -1429,6 +1429,9 @@ namespace http {
 				storedSession.username = session.username;
 				storedSession.expires = session.expires;
 				storedSession.remote_host = session.remote_host; // to trace host
+				storedSession.local_host = session.local_host; // to trace host
+				storedSession.remote_port = session.remote_port; // to trace host
+				storedSession.local_port = session.local_port; // to trace host
 				sstore->StoreSession(storedSession); // only one place to do that
 			}
 
@@ -1953,11 +1956,14 @@ namespace http {
 
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_remote_address.c_str(), req.uri.c_str());
 
 			// Initialize session
 			WebEmSession session;
-			session.remote_host = req.host_address;
+			session.remote_host = req.host_remote_address;
+			session.local_host = req.host_local_address;
+			session.remote_port = req.host_remote_port;
+			session.local_port = req.host_local_port;
 
 			if (!myWebem->myRemoteProxyIPs.empty())
 			{

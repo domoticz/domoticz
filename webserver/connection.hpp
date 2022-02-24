@@ -106,9 +106,12 @@ namespace http {
 
 			/// Socket for the (PLAIN) connection.
 			std::unique_ptr<boost::asio::ip::tcp::socket> socket_;
-			//Host EndPoint
-			std::string host_endpoint_address_;
-			std::string host_endpoint_port_;
+			//Host EndPoints
+			std::string host_remote_endpoint_address_;
+			std::string host_remote_endpoint_port_;
+			std::string host_local_endpoint_address_;
+			std::string host_local_endpoint_port_;
+
 
 			/// If this is a keep-alive connection or not
 			bool keepalive_;
