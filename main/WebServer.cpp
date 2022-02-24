@@ -8356,7 +8356,9 @@ namespace http
 				std::string sErr = "";
 				std::ifstream ifs;
 
-				ifs.open(pemfile);
+				std::string szTmpFile = szUserDataFolder + pemfile;
+
+				ifs.open(szTmpFile);
 				if(ifs.is_open())
 				{
 					std::string sLine = "";
@@ -8367,8 +8369,7 @@ namespace http
 					bool bPubFound = false;
 					while (std::getline(ifs, sLine))
 					{
-						//sLine.erase(std::remove(sLine.begin(), sLine.end(), '\n'), sLine.end());
-						sLine += '\n';
+						sLine += '\n';	// Newlines need to be added so the SSL library understands the Public/Private keys
 						if (sLine.find("-----BEGIN PUBLIC KEY") != std::string::npos)
 						{
 							bPub = true;
@@ -8395,9 +8396,7 @@ namespace http
 						}
 						i++;
 					}
-					_log.Debug(DEBUG_AUTH, "Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", pemfile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
-					_log.Debug(DEBUG_AUTH, "PubKey : %s", pubkey.c_str());
-					_log.Debug(DEBUG_AUTH, "PrivKey: %s", privkey.c_str());
+					_log.Debug(DEBUG_AUTH, "Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", szTmpFile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
 					ifs.close();
 					if (!bPrivFound || !bPubFound)
 						sErr = "Unable to find both a Private and Public key within the PEMfile";
@@ -8407,7 +8406,7 @@ namespace http
 
 				if(!sErr.empty())
 				{
-					_log.Log(LOG_STATUS,"Unable to load and process given PEMfile (%s) (%s)!", pemfile.c_str(), sErr.c_str());
+					_log.Log(LOG_STATUS,"Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
 					return;
 				}
 			}
