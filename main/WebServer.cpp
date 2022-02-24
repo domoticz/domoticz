@@ -1368,6 +1368,8 @@ namespace http
 			root["token_endpoint"] = base_url + OAUTH2_TOKEN_URL;
 			jaRTS.append("code");
 			root["response_types_supported"] = jaRTS;
+			jaTEASAVS.append("PS256");
+			jaTEASAVS.append("RS256");
 			jaTEASAVS.append("HS256");
 			jaTEASAVS.append("HS384");
 			jaTEASAVS.append("HS512");
@@ -6886,7 +6888,7 @@ namespace http
 				{
 					root["title"] = "GetApplications";
 					std::vector<std::vector<std::string>> result;
-					result = m_sql.safe_query("SELECT ID, Active, Applicationname, Secret, Public, LastSeen FROM Applications ORDER BY ID ASC");
+					result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
 					if (!result.empty())
 					{
 						int ii = 0;
@@ -6894,10 +6896,11 @@ namespace http
 						{
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
-							root["result"][ii]["Applicationname"] = sd[2];
-							root["result"][ii]["Secret"] = sd[3];
-							root["result"][ii]["Public"] = (sd[4] == "1") ? "true" : "false";
-							root["result"][ii]["LastSeen"] = sd[5];
+							root["result"][ii]["Public"] = (sd[2] == "1") ? "true" : "false";
+							root["result"][ii]["Applicationname"] = sd[3];
+							root["result"][ii]["Secret"] = sd[4];
+							root["result"][ii]["Pemfile"] = sd[5];
+							root["result"][ii]["LastSeen"] = sd[6];
 							ii++;
 						}
 					}
@@ -6906,11 +6909,12 @@ namespace http
 				{
 					root["title"] = "AddUpdateApplication";
 					std::string senabled = request::findValue(&req, "enabled");
+					std::string spublic = request::findValue(&req, "public");
 					std::string applicationname = request::findValue(&req, "applicationname");
 					std::string secret = request::findValue(&req, "secret");
-					std::string spublic = request::findValue(&req, "public");
+					std::string pemfile = request::findValue(&req, "pemfile");
 					std::string idx = request::findValue(&req, "idx");
-					if ((senabled.empty()) || (applicationname.empty())|| (spublic.empty()))
+					if (senabled.empty() || applicationname.empty() || spublic.empty())
 					{
 						session.reply_status = reply::bad_request;
 						return;
@@ -6918,6 +6922,11 @@ namespace http
 					if ((spublic != "true") && secret.empty())
 					{
 						root["statustext"] = "Secret's can only be empty for Public Clients!";
+						return;
+					}
+					if ((spublic == "true") && pemfile.empty())
+					{
+						root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
 						return;
 					}
 					// Check for duplicate application name
@@ -6934,8 +6943,8 @@ namespace http
 					if (cparam == "addapplication")
 					{
 						root["title"] = "AddApplication";
-						m_sql.safe_query("INSERT INTO Applications (Active, Applicationname, Secret, Public) VALUES (%d,'%q','%q',%d)",
-								(senabled == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(),(spublic == "true") ? 1 : 0);
+						m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
+								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
 					}
 					else if (cparam == "updateapplication")
 					{
@@ -6945,8 +6954,8 @@ namespace http
 							session.reply_status = reply::bad_request;
 							return;
 						}
-						m_sql.safe_query("UPDATE Applications SET Active=%d, Applicationname='%q', Secret='%q', Public=%d WHERE (ID == '%q')",
-								(senabled == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), (spublic == "true") ? 1 : 0, idx.c_str());
+						m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
 					}
 				}
 				else if (cparam == "deleteapplication")
@@ -8310,7 +8319,7 @@ namespace http
 			}
 			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
 			result.clear();
-			result = m_sql.safe_query("SELECT ID, Active, Applicationname, Secret, Public FROM Applications");
+			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile FROM Applications");
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -8319,10 +8328,11 @@ namespace http
 					if (bIsActive)
 					{
 						unsigned long ID = 20000 + (unsigned long)atol(sd[0].c_str());
-						std::string applicationname = sd[2];
-						std::string secret = sd[3];
-						int bPublic = static_cast<int>(atoi(sd[4].c_str()));
-						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic);
+						int bPublic = static_cast<int>(atoi(sd[2].c_str()));
+						std::string applicationname = sd[3];
+						std::string secret = sd[4];
+						std::string pemfile = sd[5];
+						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
 					}
 				}
 			}
@@ -8330,7 +8340,7 @@ namespace http
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const int userrights, const int activetabs)
+		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs, const std::string &pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -8338,10 +8348,76 @@ namespace http
 			if (result.empty())
 				return;
 
+			// Let's see if we can load the public/private keyfile for this user/client
+			std::string privkey = "";
+			std::string pubkey = "";
+			if (!pemfile.empty())
+			{
+				std::string sErr = "";
+				std::ifstream ifs;
+
+				ifs.open(pemfile);
+				if(ifs.is_open())
+				{
+					std::string sLine = "";
+					int i = 0;
+					bool bPriv = false;
+					bool bPrivFound = false;
+					bool bPub = false;
+					bool bPubFound = false;
+					while (std::getline(ifs, sLine))
+					{
+						//sLine.erase(std::remove(sLine.begin(), sLine.end(), '\n'), sLine.end());
+						sLine += '\n';
+						if (sLine.find("-----BEGIN PUBLIC KEY") != std::string::npos)
+						{
+							bPub = true;
+						}
+						if (sLine.find("-----BEGIN PRIVATE KEY") != std::string::npos)
+						{
+							bPriv = true;
+						}
+						if (bPriv)
+							privkey += sLine;
+						if (bPub)
+							pubkey += sLine;
+						if (sLine.find("-----END PUBLIC KEY") != std::string::npos)
+						{
+							if(bPub)
+								bPubFound = true;
+							bPub = false;
+						}
+						if (sLine.find("-----END PRIVATE KEY") != std::string::npos)
+						{
+							if(bPriv)
+								bPrivFound = true;
+							bPriv = false;
+						}
+						i++;
+					}
+					_log.Debug(DEBUG_AUTH, "Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", pemfile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
+					_log.Debug(DEBUG_AUTH, "PubKey : %s", pubkey.c_str());
+					_log.Debug(DEBUG_AUTH, "PrivKey: %s", privkey.c_str());
+					ifs.close();
+					if (!bPrivFound || !bPubFound)
+						sErr = "Unable to find both a Private and Public key within the PEMfile";
+				}
+				else
+					sErr = "Unable to find/open file";
+
+				if(!sErr.empty())
+				{
+					_log.Log(LOG_STATUS,"Unable to load and process given PEMfile (%s) (%s)!", pemfile.c_str(), sErr.c_str());
+					return;
+				}
+			}
+
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.PrivKey = privkey;
+			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
 			wtmp.ActiveTabs = activetabs;
 			wtmp.TotSensors = atoi(result[0][0].c_str());
@@ -8357,7 +8433,7 @@ namespace http
 			utmp.RedirectUri = "";
 			m_accesscodes.push_back(utmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs);
+			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs, privkey, pubkey);
 		}
 
 		void CWebServer::ClearUserPasswords()

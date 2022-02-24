@@ -898,12 +898,14 @@ namespace http {
 			return false;
 		}
 
-		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)
+		void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs, const std::string &privkey, const std::string &pubkey)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.PrivKey = privkey;
+			wtmp.PubKey = pubkey;
 			wtmp.userrights = userrights;
 			wtmp.ActiveTabs = activetabs;
 			wtmp.TotSensors = 0;
@@ -1291,6 +1293,7 @@ namespace http {
 						_log.Debug(DEBUG_AUTH,"JWT Token audience : %s", clientid.c_str());
 
 						std::string clientsecret;
+						std::string clientpubkey;
 						std::string client_key_id;
 						bool clientispublic = false;
 						// Check if the audience has been registered as a User (type CLIENTID)
@@ -1301,13 +1304,14 @@ namespace http {
 								if (my.userrights == URIGHTS_CLIENTID || clientid.compare(JWTsubject) == 0)
 								{
 									clientsecret = my.Password;
+									clientpubkey = my.PubKey;
 									client_key_id = std::to_string(my.ID);
 									clientispublic = my.ActiveTabs;
 									break;
 								}
 							}
 						}
-						if (client_key_id.empty() || clientsecret.empty())
+						if (client_key_id.empty() || (clientsecret.empty() && clientpubkey.empty()))
 						{
 							_log.Debug(DEBUG_AUTH, "Unable to verify token as no ClientID for the audience has been found!");
 							return 0;
@@ -1327,6 +1331,14 @@ namespace http {
 						else if (JWTalgo.compare("HS512") == 0)
 						{
 							JWTverifyer.allow_algorithm(jwt::algorithm::hs512{ clientsecret });
+						}
+						if (JWTalgo.compare("RS256") == 0)
+						{
+							JWTverifyer.allow_algorithm(jwt::algorithm::rs256{ clientpubkey });
+						}
+						if (JWTalgo.compare("PS256") == 0)
+						{
+							JWTverifyer.allow_algorithm(jwt::algorithm::ps256{ clientpubkey });
 						}
 						else
 						{
@@ -1484,17 +1496,35 @@ namespace http {
 					{
 						if ((my.Password == hashedsecret) || (my.ActiveTabs == true))	// We 'abuse' the Users ActiveTabs as the Application Public boolean
 						{
-							auto JWT = jwt::create()
-								.set_type("JWT")
-								.set_key_id(std::to_string(my.ID))
-								.set_issuer(m_DigistRealm)
-								.set_issued_at(std::chrono::system_clock::now())
-								.set_not_before(std::chrono::system_clock::now())
-								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
-								.set_audience(clientid)
-								.set_subject(user)
-								.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
-							jwttoken = JWT;
+							if (my.ActiveTabs)
+							{
+								_log.Debug(DEBUG_AUTH, "Generate JWT Token for %s using clientid %s and PrivKey (%s)", user.c_str(), clientid.c_str(), my.PrivKey.c_str());
+								auto JWT = jwt::create()
+									.set_type("JWT")
+									.set_key_id(std::to_string(my.ID))
+									.set_issuer(m_DigistRealm)
+									.set_issued_at(std::chrono::system_clock::now())
+									.set_not_before(std::chrono::system_clock::now())
+									.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
+									.set_audience(clientid)
+									.set_subject(user)
+									.sign(jwt::algorithm::ps256{"", my.PrivKey, "", ""}, &base64url_encode);
+								jwttoken = JWT;
+							}
+							else
+							{
+								auto JWT = jwt::create()
+									.set_type("JWT")
+									.set_key_id(std::to_string(my.ID))
+									.set_issuer(m_DigistRealm)
+									.set_issued_at(std::chrono::system_clock::now())
+									.set_not_before(std::chrono::system_clock::now())
+									.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
+									.set_audience(clientid)
+									.set_subject(user)
+									.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
+								jwttoken = JWT;
+							}
 							bOk = true;
 						}
 					}

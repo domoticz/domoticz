@@ -32,6 +32,8 @@ namespace http
 			unsigned long ID;
 			std::string Username;
 			std::string Password;
+			std::string PrivKey;
+			std::string PubKey;
 			_eUserRights userrights = URIGHTS_VIEWER;
 			int TotSensors = 0;
 			int ActiveTabs = 0;
@@ -187,7 +189,7 @@ namespace http
 			void SetAuthenticationMethod(_eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
-			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, _eUserRights userrights, int activetabs);
+			void AddUserPassword(unsigned long ID, const std::string &username, const std::string &password, _eUserRights userrights, int activetabs, const std::string &privkey = "", const std::string &pubkey = "");
 			std::string ExtractRequestPath(const std::string &original_request_path);
 			bool IsBadRequestPath(const std::string &original_request_path);
 
