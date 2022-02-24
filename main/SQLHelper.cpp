@@ -602,9 +602,10 @@ constexpr auto sqlCreateApplications =
 "CREATE TABLE IF NOT EXISTS [Applications]("
 "[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN NOT NULL DEFAULT false, "
+"[Public] BOOLEAN NOT NULL DEFAULT false, "
 "[Applicationname] VARCHAR(100) DEFAULT '',"
 "[Secret] VARCHAR(100) DEFAULT '',"
-"[Public] BOOLEAN NOT NULL DEFAULT false, "
+"[Pemfile] VARCHAR(100) DEFAULT '',"
 "[LastSeen] DATETIME DEFAULT NULL,"
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
