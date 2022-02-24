@@ -26,16 +26,20 @@
 			<td><input type="checkbox" id="enabled" checked><label for="enabled"></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:200px"><label for="applicationname"><span data-i18n="Applicationname"></span>:</label></td>
+			<td align="right" style="width:200px"><span data-i18n="Applicationpublic">Is Public</span>:</td>
+			<td><input type="checkbox" id="applicationpublic" onchange="togglePublic();"><label for="applicationpublic"></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:200px"><label for="applicationname"><span data-i18n="Applicationname">Application Name</span>:</label></td>
 			<td><input type="text" id="applicationname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
-		<tr>
-			<td align="right" style="width:200px"><label for="applicationsecret"><span data-i18n="Applicationsecret"></span>:</label></td>
+		<tr id="appsecrettr">
+			<td align="right" style="width:200px"><label for="applicationsecret"><span data-i18n="Applicationsecret">Application Secret</span>:</label></td>
 			<td><input type="password" id="applicationsecret" name="applicationsecret" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
-		<tr>
-			<td align="right" style="width:200px"><span data-i18n="Applicationpublic"></span>:</td>
-			<td><input type="checkbox" id="applicationpublic"><label for="applicationpublic"></td>
+		<tr id="apppemfiletr" hidden>
+			<td align="right" style="width:200px"><label for="applicationpemfile"><span data-i18n="applicationpemfile">Application keys PEM-file</span>:</label></td>
+			<td><input type="text" id="applicationpemfile" name="applicationpemfile" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 		</tr>
 		<tr>
 			<td></td>

@@ -26,13 +26,18 @@ define(['app'], function (app) {
 			csettings.bEnabled = $('#applicationcontent #applicationparamstable #enabled').is(":checked");
 			csettings.applicationname = $("#applicationcontent #applicationparamstable #applicationname").val();
 			if (csettings.applicationname == "") {
-				ShowNotify($.t('Please enter a Applicationname!'), 2500, true);
+				ShowNotify($.t('Please enter an Applicationname!'), 2500, true);
 				return;
 			}
 			csettings.bPublic = $('#applicationcontent #applicationparamstable #applicationpublic').is(":checked");
 			csettings.secret = $("#applicationcontent #applicationparamstable #applicationsecret").val();
+			csettings.pemfile = $("#applicationcontent #applicationparamstable #applicationpemfile").val();
 			if ((csettings.bPublic == false) && (csettings.secret == "")) {
 				ShowNotify($.t('Please enter a Secret!'), 2500, true);
+				return;
+			}
+			if ((csettings.bPublic == true) && (csettings.pemfile == "")) {
+				ShowNotify($.t('Please enter a PEM file!'), 2500, true);
 				return;
 			}
 			if ((csettings.secret != "") && (csettings.secret.length != 32)) {
@@ -53,6 +58,7 @@ define(['app'], function (app) {
 				"&enabled=" + csettings.bEnabled +
 				"&applicationname=" + csettings.applicationname +
 				"&secret=" + csettings.secret +
+				"&pemfile=" + csettings.pemfile +
 				"&public=" + csettings.bPublic,
 				async: false,
 				dataType: 'json',
@@ -79,6 +85,7 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=addapplication&enabled=" + csettings.bEnabled +
 				"&applicationname=" + csettings.applicationname +
 				"&secret=" + csettings.secret +
+				"&pemfile=" + csettings.pemfile +
 				"&public=" + csettings.bPublic,
 				async: false,
 				dataType: 'json',
@@ -126,6 +133,7 @@ define(['app'], function (app) {
 								"Enabled": item.Enabled,
 								"Applicationname": item.Applicationname,
 								"Applicationsecret": item.Secret,
+								"Applicationpemfile": item.Pemfile,
 								"Public": item.Public,
 								"Last seen": item.LastSeen,
 								"0": enabledstr,
@@ -164,7 +172,9 @@ define(['app'], function (app) {
 						$('#applicationcontent #applicationparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
 						$("#applicationcontent #applicationparamstable #applicationname").val(data["Applicationname"]);
 						$("#applicationcontent #applicationparamstable #applicationsecret").val(data["Applicationsecret"]);
+						$("#applicationcontent #applicationparamstable #applicationpemfile").val(data["Applicationpemfile"]);
 						$('#applicationcontent #applicationparamstable #applicationpublic').prop('checked', (data["Public"] == "true"));
+						togglePublic();
 					}
 				}
 			});
@@ -205,6 +215,22 @@ define(['app'], function (app) {
 
 			$('#modal').hide();
 			RefreshApplicationTable();
+		}
+
+		togglePublic = function () {
+			var isPublic = $('#applicationcontent #applicationparamstable #applicationpublic').is(":checked");
+			if (isPublic)
+			{
+				$('#applicationcontent #applicationparamstable #apppemfiletr').show();
+				$('#applicationcontent #applicationparamstable #appsecrettr').hide();
+				$('#applicationcontent #applicationparamstable #applicationsecret').val("");
+			}
+			else
+			{
+				$('#applicationcontent #applicationparamstable #appsecrettr').show();
+				$('#applicationcontent #applicationparamstable #apppemfiletr').hide();
+				$('#applicationcontent #applicationparamstable #applicationpemfile').val("");
+			}
 		}
 
 		init();
