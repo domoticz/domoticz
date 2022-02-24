@@ -395,16 +395,29 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	}
 
 	// Handle situation where WebLocalNetworks is not open without password for dzVents
-	if (URL.find("127.0.0") != std::string::npos || URL.find("::") != std::string::npos || URL.find("localhost") != std::string::npos)
+	if	( URL.find("127.0.0") != std::string::npos || URL.find("::") != std::string::npos || URL.find("localhost") != std::string::npos)
 	{
-		std::string allowedNetworks;
-		int rnvalue = 0;
-		m_sql.GetPreferencesVar("WebLocalNetworks", rnvalue, allowedNetworks);
-		if ((allowedNetworks.find("127.0.0.") == std::string::npos) && (allowedNetworks.find("::") == std::string::npos))
+		// Check for the http and https ports so we only test for Domoticz api calls
+		char szTmpHTTP[8] = "";
+		char szTmpHTTPS[8] = "";
+		if (!m_webservers.our_listener_port.empty())
+			sprintf(szTmpHTTP, ":%s", m_webservers.our_listener_port.c_str());
+		if (!secure_webserver_settings.listening_port.empty())
+			sprintf(szTmpHTTPS, ":%s", secure_webserver_settings.listening_port.c_str());
+		if (
+			(strlen(szTmpHTTP) != 0 && URL.find(szTmpHTTP) != std::string::npos) ||
+			(strlen(szTmpHTTPS) != 0 && URL.find(szTmpHTTPS) != std::string::npos)
+			)
 		{
-			_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
-			_log.Log(LOG_ERROR, "dzVents: check dzVents wiki (look for 'Using dzVents with Domoticz')");
-			return false;
+			std::string allowedNetworks;
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("WebLocalNetworks", rnvalue, allowedNetworks);
+			if ((allowedNetworks.find("127.0.0.") == std::string::npos) && (allowedNetworks.find("::") == std::string::npos))
+			{
+				_log.Log(LOG_ERROR, "dzVents: local netWork not open for dzVents openURL call !");
+				_log.Log(LOG_ERROR, "dzVents: check dzVents wiki (look for 'Using dzVents with Domoticz')");
+				return false;
+			}
 		}
 	}
 
