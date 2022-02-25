@@ -1409,10 +1409,19 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	*/
 	else if (szUnit == "l")
 	{
-		devType = pTypeRFXMeter;
-		subType = sTypeRFXMeterCount;
-		unsigned long counter = (unsigned long)(atof(pSensor->last_value.c_str()) * 1000.0F);
-		sValue = std_format("%lu", counter);
+		if (pSensor->icon.find("counter-inc") != std::string::npos)
+		{
+			devType = pTypeGeneral;
+			subType = sTypeCounterIncremental;
+			sValue = pSensor->last_value;
+		}
+		else
+		{
+			devType = pTypeRFXMeter;
+			subType = sTypeRFXMeterCount;
+			unsigned long counter = (unsigned long)(atof(pSensor->last_value.c_str()) * 1000.0F);
+			sValue = std_format("%lu", counter);
+		}
 	}
 	else if (szUnit == "l/hr")
 	{
@@ -1442,7 +1451,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		|| (szUnit == "cubic meters")
 		)
 	{
-		if (pSensor->icon.find("water") != std::string::npos)
+		if (pSensor->icon.find("counter-inc") != std::string::npos)
+		{
+			devType = pTypeGeneral;
+			subType = sTypeCounterIncremental;
+			sValue = pSensor->last_value;
+		}
+		else if (pSensor->icon.find("water") != std::string::npos)
 		{
 			devType = pTypeRAIN;
 			subType = sTypeRAIN3;
