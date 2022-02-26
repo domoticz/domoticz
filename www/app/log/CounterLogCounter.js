@@ -60,7 +60,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             daySeriesSuppliers: function (deviceTypeIndex) {
                 return []
-                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, no0));
+                    .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined));
             },
             weekSeriesSuppliers: function (deviceTypeIndex) {
                 return []
