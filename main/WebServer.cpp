@@ -9857,24 +9857,24 @@ namespace http
 							uint64_t total_real = total_max - total_min;
 							sprintf(szTmp, "%" PRIu64, total_real);
 
-							float musage = 0.0F;
+							double musage = 0.0F;
 							switch (metertype)
 							{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f kWh", musage);
 									break;
 								case MTYPE_GAS:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_WATER:
-									musage = float(total_real) / (divider / 1000.0F);
+									musage = double(total_real) / (divider / 1000.0F);
 									sprintf(szTmp, "%d Liter", round(musage));
 									break;
 								case MTYPE_COUNTER:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.10g", musage);
 									if (!ValueUnits.empty())
 									{
@@ -9942,7 +9942,7 @@ namespace http
 							ValueQuantity = "Custom";
 						}
 
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+						double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
 						time_t now = mytime(nullptr);
@@ -9961,26 +9961,25 @@ namespace http
 							uint64_t total_first = std::stoull(sd2[0]);
 							uint64_t total_last = std::stoull(sValue);
 							uint64_t total_real = total_last - total_first;
-							sprintf(szTmp, "%" PRIu64, total_real);
 
-							float musage = 0;
+							double musage = 0;
 							switch (metertype)
 							{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f kWh", musage);
 									break;
 								case MTYPE_GAS:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_WATER:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", float(total_real) / divider);
+									sprintf(szTmp, "%.10g", double(total_real) / divider);
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -10118,8 +10117,8 @@ namespace http
 							ValueQuantity = "Custom";
 						}
 
-						float musage = 0;
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+						double musage = 0;
+						double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
 						// get value of today
 						time_t now = mytime(nullptr);
@@ -10147,19 +10146,19 @@ namespace http
 							{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f kWh", musage);
 									break;
 								case MTYPE_GAS:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_WATER:
-									musage = float(total_real) / divider;
+									musage = double(total_real) / divider;
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", float(total_real) / divider);
+									sprintf(szTmp, "%.10g", double(total_real) / divider);
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -10184,16 +10183,16 @@ namespace http
 						{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(total_actual) / divider;
+								musage = double(total_actual) / divider;
 								sprintf(szTmp, "%.03f", musage);
 								break;
 							case MTYPE_GAS:
 							case MTYPE_WATER:
-								musage = float(total_actual) / divider;
+								musage = double(total_actual) / divider;
 								sprintf(szTmp, "%.03f", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", float(total_actual) / divider);
+								sprintf(szTmp, "%.10g", double(total_actual) / divider);
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -10209,19 +10208,19 @@ namespace http
 						{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								musage = float(acounter) / divider;
+								musage = double(acounter) / divider;
 								sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
 								break;
 							case MTYPE_GAS:
-								musage = float(acounter) / divider;
+								musage = double(acounter) / divider;
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(acounter) / divider;
+								musage = double(acounter) / divider;
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", float(acounter) / divider);
+								sprintf(szTmp, "%.10g", double(acounter) / divider);
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -13519,7 +13518,9 @@ namespace http
 			std::string sOptions = result[0][6];
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
-			float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+			double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+			double meteroffset = AddjValue;
 
 			std::string dbasetable;
 			if (srange == "day")
@@ -14183,8 +14184,8 @@ namespace http
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
-						float dividerForQuantity = divider; // kWh, m3, l
-						float dividerForRate = divider; // Watt, m3/hour, l/hour
+						double dividerForQuantity = divider; // kWh, m3, l
+						double dividerForRate = divider; // Watt, m3/hour, l/hour
 						if (method != 0)
 						{
 							// realtime graph
@@ -14233,13 +14234,13 @@ namespace http
 												ulTotalValue = ulLastValue - ulFirstRealValue;
 											}
 											ulFirstRealValue = ulLastValue;
-											float TotalValue = float(ulTotalValue);
-											float dividerHere = method == 1 ? dividerForQuantity : dividerForRate;
+											double TotalValue = double(ulTotalValue);
+											double dividerHere = method == 1 ? dividerForQuantity : dividerForRate;
 											switch (metertype)
 											{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / dividerHere) * 1000.0F); // from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / dividerHere) * 1000.0); // from kWh -> Watt
 													break;
 												case MTYPE_GAS:
 													sprintf(szTmp, "%.3f", TotalValue / dividerHere);
@@ -14278,14 +14279,14 @@ namespace http
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
-									float TotalValue = float(actValue);
+									double TotalValue = double(actValue);
 									if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
 										TotalValue /= 10.0F;
 									switch (metertype)
 									{
 										case MTYPE_ENERGY:
 										case MTYPE_ENERGY_GENERATED:
-											sprintf(szTmp, "%.3f", (TotalValue / dividerForRate) * 1000.0F); // from kWh -> Watt
+											sprintf(szTmp, "%.3f", (TotalValue / dividerForRate) * 1000.0); // from kWh -> Watt
 											break;
 										case MTYPE_GAS:
 											sprintf(szTmp, "%.2f", TotalValue / dividerForRate);
@@ -14370,7 +14371,7 @@ namespace http
 											// float TotalValue = float(actValue - ulFirstValue);
 
 											// prevents graph from going crazy if the meter counter resets
-											float TotalValue = (actValue >= ulFirstValue) ? float(actValue - ulFirstValue) : actValue;
+											double TotalValue = (actValue >= ulFirstValue) ? double(actValue - ulFirstValue) : actValue;
 
 											// if (TotalValue != 0)
 											{
@@ -14378,7 +14379,7 @@ namespace http
 												{
 													case MTYPE_ENERGY:
 													case MTYPE_ENERGY_GENERATED:
-														sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+														sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0); // from kWh -> Watt
 														break;
 													case MTYPE_GAS:
 														sprintf(szTmp, "%.3f", TotalValue / divider);
@@ -14432,14 +14433,14 @@ namespace http
 
 										root["result"][ii]["d"] = sd[1].substr(0, 16);
 
-										float TotalValue = float(curValue);
+										double TotalValue = double(curValue);
 										// if (TotalValue != 0)
 										{
 											switch (metertype)
 											{
 												case MTYPE_ENERGY:
 												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+													sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0); // from kWh -> Watt
 													break;
 												case MTYPE_GAS:
 													sprintf(szTmp, "%.2f", TotalValue / divider);
@@ -14475,7 +14476,7 @@ namespace http
 
 							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
 
-							float TotalValue = float(ulTotalValue);
+							double TotalValue = double(ulTotalValue);
 
 							// if (TotalValue != 0)
 							{
@@ -14483,7 +14484,7 @@ namespace http
 								{
 									case MTYPE_ENERGY:
 									case MTYPE_ENERGY_GENERATED:
-										sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0F); // from kWh -> Watt
+										sprintf(szTmp, "%.3f", (TotalValue / divider) * 1000.0); // from kWh -> Watt
 										break;
 									case MTYPE_GAS:
 										sprintf(szTmp, "%.3f", TotalValue / divider);
@@ -16164,21 +16165,21 @@ namespace http
 						else if (dType == pTypeRFXMeter)
 						{
 							// Add last counter value
-							float fvalue = static_cast<float>(atof(sValue.c_str()));
+							double fvalue = atof(sValue.c_str());
 							switch (metertype)
 							{
 								case MTYPE_ENERGY:
 								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
+									sprintf(szTmp, "%.3f", meteroffset + (fvalue / divider));
 									break;
 								case MTYPE_GAS:
-									sprintf(szTmp, "%.2f", AddjValue + (fvalue / divider));
+									sprintf(szTmp, "%.2f", meteroffset + (fvalue / divider));
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", AddjValue + (fvalue / divider));
+									sprintf(szTmp, "%.3f", meteroffset + (fvalue / divider));
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", fvalue);
+									sprintf(szTmp, "%.10g", meteroffset + (fvalue / divider));
 									break;
 								default:
 									strcpy(szTmp, "");
@@ -16193,7 +16194,7 @@ namespace http
 							if (results.size() == 2)
 							{
 								// Add last counter value
-								float fvalue = static_cast<float>(atof(results[0].c_str()));
+								double fvalue = atof(results[0].c_str());
 								switch (metertype)
 								{
 									case MTYPE_ENERGY:
@@ -16207,7 +16208,7 @@ namespace http
 										sprintf(szTmp, "%.3f", fvalue / divider);
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.10g", fvalue);
+										sprintf(szTmp, "%.10g", fvalue / divider);
 										break;
 									default:
 										strcpy(szTmp, "");
@@ -16216,10 +16217,33 @@ namespace http
 								root["counter"] = szTmp;
 							}
 						}
+						else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
+						{
+							double dvalue = static_cast<double>(atof(sValue.c_str()));
+
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								sprintf(szTmp, "%.3f", meteroffset + (dvalue / divider));
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp, "%.3f", meteroffset + (dvalue / divider));
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp, "%.3f", meteroffset + (dvalue / divider));
+								break;
+							case MTYPE_COUNTER:
+							default:
+								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								break;
+							}
+							root["counter"] = szTmp;
+						}
 						else if (!bIsManagedCounter)
 						{
-							// Add last counter value
-							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							double dvalue = static_cast<double>(atof(sValue.c_str()));
+							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
 							root["counter"] = szTmp;
 						}
 						else
@@ -16275,7 +16299,7 @@ namespace http
 											sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
 											if (fcounter != 0)
-												sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.3f", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
 											else
 												strcpy(szTmp, "0");
 											root["result"][ii]["c"] = szTmp;
@@ -16284,7 +16308,7 @@ namespace http
 											sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
 											if (fcounter != 0)
-												sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.2f", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
 											else
 												strcpy(szTmp, "0");
 											root["result"][ii]["c"] = szTmp;
@@ -16293,7 +16317,7 @@ namespace http
 											sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
 											if (fcounter != 0)
-												sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.3f", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
 											else
 												strcpy(szTmp, "0");
 											root["result"][ii]["c"] = szTmp;
@@ -16302,7 +16326,7 @@ namespace http
 											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
 											if (fcounter != 0)
-												sprintf(szTmp, "%.10g", AddjValue + ((fcounter - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.10g", meteroffset + ((fcounter - atof(szValue.c_str())) / divider));
 											else
 												strcpy(szTmp, "0");
 											root["result"][ii]["c"] = szTmp;
@@ -16413,7 +16437,7 @@ namespace http
 
 							if (!sgroupby.empty())
 							{
-								const float todayValue = (sensorarea == "usage"	     ? (total_real_usage_1 + total_real_usage_2)
+								const double todayValue = (sensorarea == "usage"	     ? (total_real_usage_1 + total_real_usage_2)
 											  : sensorarea == "delivery" ? (total_real_deliv_1 + total_real_deliv_2)
 														     : 0) /
 											 divider;
@@ -16602,7 +16626,7 @@ namespace http
 
 								if (!sgroupby.empty())
 								{
-									float todayValue = total_real / divider;
+									double todayValue = double(total_real) / divider;
 									std::string formatString;
 									switch (metertype)
 									{
@@ -16639,29 +16663,28 @@ namespace http
 												sValue = mresults[1];
 											}
 											if (dType == pTypeENERGY)
-												sprintf(szTmp, "%.3f",
-													AddjValue + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.3f", meteroffset + (((atof(sValue.c_str()) * 100.0F) - atof(szValue.c_str())) / divider));
 											else
-												sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+												sprintf(szTmp, "%.3f", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 											root["result"][ii]["c"] = szTmp;
 										}
 										break;
 										case MTYPE_GAS:
 											sprintf(szTmp, "%.2f", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
-											sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.2f", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 											root["result"][ii]["c"] = szTmp;
 											break;
 										case MTYPE_WATER:
 											sprintf(szTmp, "%.3f", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
-											sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.3f", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 											root["result"][ii]["c"] = szTmp;
 											break;
 										case MTYPE_COUNTER:
 											sprintf(szTmp, "%.10g", atof(szValue.c_str()) / divider);
 											root["result"][ii]["v"] = szTmp;
-											sprintf(szTmp, "%.10g", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
+											sprintf(szTmp, "%.10g", meteroffset + ((atof(sValue.c_str()) - atof(szValue.c_str())) / divider));
 											root["result"][ii]["c"] = szTmp;
 											break;
 									}
@@ -17540,7 +17563,7 @@ namespace http
 		 * Adds todayValue to root["result"], either by adding it to the value of the item with the corresponding category or by adding a new item with the
 		 * respective category with todayValue. If root["firstYear"] is missing, the today's year is set in it's place.
 		 */
-		void CWebServer::AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString)
+		void CWebServer::AddTodayValueToResult(Json::Value& root, const std::string& sgroupby, const std::string& today, const double todayValue, const std::string& formatString)
 		{
 			std::string todayYear = today.substr(0, 4);
 			std::string todayCategory;
@@ -17574,7 +17597,7 @@ namespace http
 					todayResultIndex = resultIndex;
 				}
 			}
-			float resultPlusTodayValue{};
+			double resultPlusTodayValue = 0;
 			if (todayResultIndex == -1)
 			{
 				todayResultIndex = root["result"].size();
@@ -17584,7 +17607,7 @@ namespace http
 			}
 			else
 			{
-				resultPlusTodayValue = static_cast<float>(atof(root["result"][todayResultIndex]["s"].asString().c_str())) + todayValue;
+				resultPlusTodayValue = atof(root["result"][todayResultIndex]["s"].asString().c_str()) + todayValue;
 			}
 			char szTmp[30];
 			sprintf(szTmp, formatString.c_str(), resultPlusTodayValue);
