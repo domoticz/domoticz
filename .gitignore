@@ -51,3 +51,5 @@ sqlite3_config.h
 /node_modules/
 /domoticz.iml
 __pycache__
+/.vs/
+/out/build/x64-Debug/
