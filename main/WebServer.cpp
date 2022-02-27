@@ -6748,47 +6748,9 @@ namespace http
 
 				m_notifications.RemoveDeviceNotifications(idx);
 			}
-			else if (cparam == "adduser")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string srights = request::findValue(&req, "rights");
-				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
-				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					return;
-				int rights = atoi(srights.c_str());
-				if (rights != 2)
-				{
-					if (!FindAdminUser())
-					{
-						root["message"] = "Add a Admin user first!";
-						return;
-					}
-				}
-				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
-				if (!result.empty())
-				{
-					root["message"] = "Duplicate Username!";
-					return;
-				}
-				root["status"] = "OK";
-				root["title"] = "AddUser";
-				m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
-					(senabled == "true") ? 1 : 0, base64_encode(username).c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
-					atoi(sTabsEnabled.c_str()));
-				LoadUsers();
-			}
-			else if (cparam == "updateuser")
-			{
+			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
+			{	// C(R)UD operations for Users. Read is done by RType_Users
+				root["status"] = "ERR";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -6796,85 +6758,106 @@ namespace http
 				}
 
 				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
+				if (cparam != "adduser" && idx.empty())
+				{
+					root["message"] = "Missing index of User to modify!";
 					return;
+				}
+
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string username = request::findValue(&req, "username");
 				std::string password = request::findValue(&req, "password");
 				std::string srights = request::findValue(&req, "rights");
 				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
 				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					return;
 				int rights = atoi(srights.c_str());
-				if (rights != 2)
+
+				if (cparam != "deleteuser")
 				{
-					if (!FindAdminUser())
+					if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
 					{
-						root["message"] = "Add a Admin user first!";
+						root["message"] = "One or more expected values are empty!";
 						return;
 					}
+					if (rights != 2)
+					{
+						if (!FindAdminUser())
+						{
+							root["message"] = "Add an Admin user first!";
+							return;
+						}
+					}
 				}
+
 				std::string sHashedUsername = base64_encode(username);
 
 				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", sHashedUsername.c_str());
 				if (!result.empty())
 				{
-					std::string oidx = result[0][0];
-					if (oidx != idx)
+					if (!(cparam == "updateuser" && result[0][0] == idx))
 					{
 						root["message"] = "Duplicate Username!";
 						return;
 					}
 				}
 
-				// Invalid user's sessions if username or password has changed
-				std::string sOldUsername;
-				std::string sOldPassword;
-				result = m_sql.safe_query("SELECT Username, Password FROM Users WHERE (ID == '%q')", idx.c_str());
-				if (result.size() == 1)
+				if (cparam == "adduser")
 				{
-					sOldUsername = result[0][0];
-					sOldPassword = result[0][1];
+					root["title"] = "AddUser";
+					m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
+							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
+							atoi(sTabsEnabled.c_str()));
 				}
-				if ((sHashedUsername != sOldUsername) || (password != sOldPassword))
-					RemoveUsersSessions(sOldUsername, session);
+				else if (cparam == "updateuser")
+				{
+					root["title"] = "UpdateUser";
 
-				root["status"] = "OK";
-				root["title"] = "UpdateUser";
-				m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
-					idx.c_str());
+					// Invalidate user's sessions if username or password has changed
+					result = m_sql.safe_query("SELECT Username, Password, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
+					if (result.size() == 1)
+					{
+						std::string sOldUsername = result[0][0];
+						std::string sOldPassword = result[0][1];
+						std::string sOldRights = result[0][2];
+						int oldrights = atoi(sOldRights.c_str());
+						if ((oldrights == URIGHTS_ADMIN) && (rights != URIGHTS_ADMIN) && (CountAdminUsers() <= 1))
+						{
+							root["message"] = "Cannot change rights of last Admin user!";
+							return;
+						}
+						if ((sHashedUsername != sOldUsername) || (password != sOldPassword) || (oldrights != rights))
+							RemoveUsersSessions(sOldUsername, session);
+
+						m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
+								idx.c_str());
+					}
+				}
+				else if (cparam == "deleteuser")
+				{
+					root["title"] = "DeleteUser";
+
+					// Remove user's sessions
+					result = m_sql.safe_query("SELECT Username, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
+					if (result.size() == 1)
+					{
+						srights = result[0][1];
+						rights = atoi(srights.c_str());
+						if ((CountAdminUsers() <= 1) && (rights == URIGHTS_ADMIN))
+						{
+							root["message"] = "Cannot delete last Admin user!";
+							return;
+						}
+						RemoveUsersSessions(result[0][0], session);
+
+						m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+
+						m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
+					}
+				}
 				LoadUsers();
-			}
-			else if (cparam == "deleteuser")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
 				root["status"] = "OK";
-				root["title"] = "DeleteUser";
-
-				// Remove user's sessions
-				result = m_sql.safe_query("SELECT Username FROM Users WHERE (ID == '%q')", idx.c_str());
-				if (result.size() == 1)
-				{
-					RemoveUsersSessions(result[0][0], session);
-				}
-
-				m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
-
-				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
-
-				LoadUsers();
 			}
 			else if (cparam == "getapplications" || cparam == "addapplication" || cparam == "updateapplication" || cparam == "deleteapplication")
 			{	// CRUD operations for Applications
@@ -8458,6 +8441,17 @@ namespace http
 		bool CWebServer::FindAdminUser()
 		{
 			return std::any_of(m_users.begin(), m_users.end(), [](const _tWebUserPassword& user) { return user.userrights == URIGHTS_ADMIN; });
+		}
+
+		int CWebServer::CountAdminUsers()
+		{
+			int iAdmins = 0;
+			for (const auto &user : m_users)
+			{
+				if (user.userrights == URIGHTS_ADMIN)
+					iAdmins++;
+			}
+			return iAdmins;
 		}
 
 		// Depricated : This 'page' should not be used anymore. Use command instead

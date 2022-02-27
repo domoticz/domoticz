@@ -79,6 +79,8 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void AddUser(unsigned long ID, const std::string &username, const std::string &password, int userrights, int activetabs, const std::string &pemfile = "");
 	void ClearUserPasswords();
 	bool FindAdminUser();
+	int CountAdminUsers();
+
 	int FindUser(const char* szUserName);
 	void SetWebCompressionMode(_eWebCompressionMode gzmode);
 	void SetAuthenticationMethod(_eAuthenticationMethod amethod);
