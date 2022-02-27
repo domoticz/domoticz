@@ -148,8 +148,8 @@ void CPhilipsHue::RgbToXY(const std::string& bulbModel, uint8_t red, uint8_t gre
 
 	point xy = { xx / (xx + yy + zz), yy / (xx + yy + zz) };
 
-	if (isnan(xy.x)) xy.x = 0.0;
-	if (isnan(xy.y)) xy.y = 0.0;
+	if (std::isnan(xy.x)) xy.x = 0.0;
+	if (std::isnan(xy.y)) xy.y = 0.0;
 
 	bool inReachOfLamps = check_point_in_lamps_reach(xy, bulbModel);
 	if (!inReachOfLamps)
