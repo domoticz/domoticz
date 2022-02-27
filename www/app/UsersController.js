@@ -9,6 +9,10 @@ define(['app'], function (app) {
 						async: false,
 						dataType: 'json',
 						success: function (data) {
+							if (data.status != "OK") {
+								ShowNotify(data.message, 2500, true);
+								return;
+							}
 							RefreshUserTable();
 						},
 						error: function () {
@@ -82,6 +86,10 @@ define(['app'], function (app) {
 				async: false,
 				dataType: 'json',
 				success: function (data) {
+					if (data.status != "OK") {
+						ShowNotify(data.message, 2500, true);
+						return;
+					}
 					RefreshUserTable();
 				},
 				error: function () {
