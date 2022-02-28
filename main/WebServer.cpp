@@ -8381,8 +8381,10 @@ namespace http
 					}
 					_log.Debug(DEBUG_AUTH, "Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", szTmpFile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
 					ifs.close();
-					if (!bPrivFound || !bPubFound)
-						sErr = "Unable to find both a Private and Public key within the PEMfile";
+					if (!bPubFound)
+						sErr = "Unable to find a Public key within the PEMfile";
+					else if (!bPrivFound)
+						_log.Log(LOG_STATUS, "Pemfile (%s) only has a Public key, so only verification is possible. Token generation has to be done external.", szTmpFile.c_str());
 				}
 				else
 					sErr = "Unable to find/open file";
