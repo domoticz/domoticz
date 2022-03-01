@@ -92,7 +92,7 @@ namespace Plugins {
 	  void ConnectionWrite(CDirectiveBase *);
 	  void ConnectionDisconnect(CDirectiveBase *);
 	  void DisconnectEvent(CEventBase *);
-	  void Callback(PyObject* pTarget, const std::string &sHandler, PyObject *pParams);
+	  void Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams);
 	  void RestoreThread();
 	  void ReleaseThread();
 	  void Stop();
@@ -157,6 +157,7 @@ namespace Plugins {
 			m_pObject = pObject;
 		};
 		std::string	Attribute(const char* name);
+		std::string	Attribute(std::string& name) { return Attribute(name.c_str()); };
 		std::string	Type();
 		bool		IsDict() { return TypeCheck(Py_TPFLAGS_DICT_SUBCLASS); };
 		bool		IsList() { return TypeCheck(Py_TPFLAGS_LIST_SUBCLASS); };

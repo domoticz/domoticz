@@ -724,13 +724,7 @@ namespace Plugins
 		}
 		else
 		{
-			std::string	sTypeText("Unknown");
-			if (pExcept)
-			{
-				PyTypeObject* TypeName = (PyTypeObject*)pExcept;
-				PyNewRef	pName = PyObject_GetAttrString((PyObject*)TypeName, "__name__");
-				sTypeText = (std::string)pName;
-			}
+			std::string	sTypeText("Unknown Error");
 
 			/* See if we can get a full traceback */
 			PyNewRef	pModule = PyImport_ImportModule("traceback");
@@ -738,7 +732,7 @@ namespace Plugins
 			{
 				PyNewRef	pFunc = PyObject_GetAttrString(pModule, "format_exception");
 				if (pFunc && PyCallable_Check(pFunc)) {
-					PyNewRef	pList = PyObject_CallFunctionObjArgs(pFunc, pExcept, pValue, pTraceback, NULL);
+					PyNewRef	pList = PyObject_CallFunctionObjArgs(pFunc, (PyObject*)pExcept, (PyObject*)pValue, (PyObject*)pTraceback, NULL);
 					if (pList)
 					{
 						for (Py_ssize_t i = 0; i < PyList_Size(pList); i++)
@@ -756,16 +750,19 @@ namespace Plugins
 					}
 					else
 					{
+						if (pExcept) sTypeText = pExcept.Attribute("__name__");
 						Log(LOG_ERROR, "Exception: '%s'.  No traceback available.", sTypeText.c_str());
 					}
 				}
 				else
 				{
+					if (pExcept) sTypeText = pExcept.Attribute("__name__");
 					Log(LOG_ERROR, "'format_exception' lookup failed, exception: '%s'.  No traceback available.", sTypeText.c_str());
 				}
 			}
 			else
 			{
+				if (pExcept) sTypeText = pExcept.Attribute("__name__");
 				Log(LOG_ERROR, "'Traceback' module import failed, exception: '%s'.  No traceback available.", sTypeText.c_str());
 			}
 		}
@@ -1950,7 +1947,7 @@ namespace Plugins
 		}
 	}
 
-	void CPlugin::Callback(PyObject *pTarget, const std::string &sHandler, PyObject *pParams)
+	void CPlugin::Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams)
 	{
 		try
 		{
@@ -1966,19 +1963,8 @@ namespace Plugins
 				PyNewRef pFunc = PyObject_GetAttrString(pTarget, sHandler.c_str());
 				if (pFunc && PyCallable_Check(pFunc))
 				{
-					module_state *pModState = nullptr;
-					PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
-					if (!brModule)
-					{
-						brModule = PyState_FindModule(&DomoticzExModuleDef);
-					}
-
-					if (brModule)
-					{
-						pModState = ((struct module_state *)PyModule_GetState(brModule));
-					}
-
 					// Store the callback object so the Dump function has context if invoked
+					module_state* pModState = FindModule();
 					if (pModState)
 					{
 						pModState->lastCallback = pTarget;
@@ -1986,14 +1972,12 @@ namespace Plugins
 
 					if (m_bDebug & PDM_QUEUE)
 					{
-						PyNewRef	pName = PyObject_GetAttrString((PyObject*)(pTarget->ob_type), "__name__");
-						if (pName)
-							Log(LOG_NORM, "Calling message handler '%s' on '%s' type object.", sHandler.c_str(), (std::string(pName).c_str()));
+						Log(LOG_NORM, "Calling message handler '%s' on '%s' type object.", sHandler.c_str(), pTarget.Type().c_str());
 					}
 
 					PyErr_Clear();
 
-					// Invokde the callback function
+					// Invoke the callback function
 					PyNewRef	pReturnValue = PyObject_CallObject(pFunc, pParams);
 
 					if (pModState)
@@ -2020,17 +2004,14 @@ namespace Plugins
 									std::string sAttrName = pItem;
 									if (sAttrName.substr(0, 2) != "__") // ignore system stuff
 									{
-										if (PyObject_HasAttrString(pTarget, sAttrName.c_str()))
+										std::string	strValue = pTarget.Attribute(sAttrName);
+										if (strValue.length())
 										{
 											PyNewRef pValue = PyObject_GetAttrString(pTarget, sAttrName.c_str());
 											if (!PyCallable_Check(pValue)) // Filter out methods
 											{
-												std::string	strValue = pValue;
-												if (strValue.length())
-												{
-													std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
-													Log(LOG_NORM, " ----> '%s'%s '%s'", sAttrName.c_str(), sBlank.c_str(), strValue.c_str());
-												}
+												std::string sBlank((sAttrName.length() < 20) ? 20 - sAttrName.length() : 0, ' ');
+												Log(LOG_NORM, " ----> '%s'%s '%s'", sAttrName.c_str(), sBlank.c_str(), strValue.c_str());
 											}
 										}
 									}

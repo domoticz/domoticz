@@ -297,7 +297,7 @@ namespace Plugins
 			PyBorrowedRef	pModule = PythonEventsGetModule();
 			if (pModule)
 			{
-				PyBorrowedRef	pModuleDict = Plugins::PyModule_GetDict(pModule);
+				PyBorrowedRef	pModuleDict = PyModule_GetDict(pModule);
 				if (!pModuleDict)
 				{
 					_log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
@@ -312,7 +312,7 @@ namespace Plugins
 					return;
 				}
 
-				PyNewRef	pDeviceDict = Plugins::PyDict_New();
+				PyNewRef	pDeviceDict = PyDict_New();
 				if (PyDict_SetItemString(pModuleDict, "Devices", pDeviceDict) == -1)
 				{
 					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
@@ -320,7 +320,7 @@ namespace Plugins
 					return;
 				}
 
-				if (PyType_Ready((PyTypeObject*)Plugins::PDeviceType) < 0)
+				if (PyType_Ready((PyTypeObject*)PDeviceType) < 0)
 				{
 					_log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
 					PyEval_SaveThread();
