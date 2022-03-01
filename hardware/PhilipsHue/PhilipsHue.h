@@ -50,10 +50,10 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 
 public:
-  CPhilipsHue(int ID, const std::string &IPAddress, unsigned short Port, const std::string &Username, int poll, int Options);
-  ~CPhilipsHue() override = default;
-  bool WriteToHardware(const char *pdata, unsigned char length) override;
-  static std::string RegisterUser(const std::string &IPAddress, unsigned short Port, const std::string &username);
+	CPhilipsHue(int ID, const std::string& IPAddress, unsigned short Port, const std::string& Username, int poll, int Options);
+	~CPhilipsHue() override = default;
+	bool WriteToHardware(const char* pdata, unsigned char length) override;
+	static std::string RegisterUser(const std::string& IPAddress, unsigned short Port, const std::string& username);
 
 private:
 	void Init();
@@ -61,18 +61,19 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	bool GetStates();
-	bool GetLights(const Json::Value &root);
-	bool GetGroups(const Json::Value &root);
-	bool GetScenes(const Json::Value &root);
-	bool GetSensors(const Json::Value &root);
-	void InsertUpdateLamp(int NodeID, _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, bool AddMissingDevice);
-	bool InsertUpdateSelectorSwitch(int NodeID, uint8_t Unitcode, uint8_t selectorLevel, const std::string &Name, uint8_t BatteryLevel);
-	void InsertUpdateSwitch(int NodeID, uint8_t Unitcode, _eSwitchType SType, bool bIsOn, const std::string &Name, uint8_t BatteryLevel);
-	void SetSwitchOptions(int NodeID, uint8_t Unitcode, const std::map<std::string, std::string> &options);
-	bool SwitchLight(int nodeID, const std::string &LCmd, int svalue, int svalue2 = 0, int svalue3 = 0);
-	static void LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType);
-	static void RgbFromXY(double x, double y, double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
-	static bool StatesSimilar(const _tHueLightState &s1, const _tHueLightState &s2);
+	bool GetLights(const Json::Value& root);
+	bool GetGroups(const Json::Value& root);
+	bool GetScenes(const Json::Value& root);
+	bool GetSensors(const Json::Value& root);
+	void InsertUpdateLamp(int NodeID, _eHueLightType LType, _tHueLightState tstate, const std::string& Name, const std::string& Options, const std::string& modelid, bool AddMissingDevice);
+	bool InsertUpdateSelectorSwitch(int NodeID, uint8_t Unitcode, uint8_t selectorLevel, const std::string& Name, uint8_t BatteryLevel);
+	void InsertUpdateSwitch(int NodeID, uint8_t Unitcode, _eSwitchType SType, bool bIsOn, const std::string& Name, uint8_t BatteryLevel);
+	void SetSwitchOptions(int NodeID, uint8_t Unitcode, const std::map<std::string, std::string>& options);
+	bool SwitchLight(int nodeID, const std::string& LCmd, int svalue, int svalue2 = 0, int svalue3 = 0);
+	static void LightStateFromJSON(const Json::Value& lightstate, _tHueLightState& tlight, _eHueLightType& LType);
+	static void RgbFromXY(double x, double y, double bri, const std::string& modelid, uint8_t& r8, uint8_t& g8, uint8_t& b8);
+	static void RgbToXY(const std::string& bulbModel, uint8_t red, uint8_t green, uint8_t blue, double& x, double& y);
+	static bool StatesSimilar(const _tHueLightState& s1, const _tHueLightState& s2);
 private:
 	int m_poll_interval;
 	bool m_add_groups;
@@ -85,5 +86,6 @@ private:
 	std::map<int, _tHueGroup> m_groups;
 	std::map<std::string, _tHueScene> m_scenes;
 	std::map<int, CPHSensor> m_sensors;
+	std::map<int, std::string> m_lightModels;
 };
 

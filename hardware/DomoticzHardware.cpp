@@ -1072,22 +1072,23 @@ void CDomoticzHardwareBase::SendSecurity1Sensor(const int NodeID, const int Devi
  *  
  * @param  {int} NodeID               : As normal
  * @param  {uint8_t} ChildID          : As normal
- * @param  {int} sValue               : Int with the value of the action to take/show, must be present in LevelActions
+ * @param  {int} sValue               : Current Level (Level a 0 / 10 / 20 / 30 etc... 0 = Off, 10 = Level 1, 20 = Level 2 etc...)
  * @param  {std::string} defaultname  : As normal
- * @param  {int} customImage          : Int with the number of a custom image to use for the selector
+ * @param  {int} customImage          : Custom image ID to use for the selector
  * @param  {bool} bDropdown           : boolean: true will show a drop down, false will show a row of buttons
- * @param  {std::string} LevelNames   : String with the labels to show for Actions, seperated with |. Example: "Off|Label 1|Label 2|Label 3"
- * @param  {std::string} LevelActions : String with numbers, one for eacht Action, seperated with |.  Example: "00|10,|20|30"  - Off is 00
+ * @param  {std::string} LevelNames   : String with the labels to show for each level, seperated with |. Example: "Off|Level 1|Level 2|Level 3"
+ * @param  {std::string} LevelActions : String with action to be carried for each level (http:// https:// script://), separated with |, can be an empty string. Example "http://www.dosomething.com|http://www.doanotherthing.com"
  * @param  {bool} bHideOff            : Boolean: true will hide the off level, false will enable it.
   */
 void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t ChildID, const std::string &sValue, const std::string &defaultname, const int customImage, const bool bDropdown,
 					       const std::string &LevelNames, const std::string &LevelActions, const bool bHideOff, const std::string &userName)
 {
-	if (std::size_t index = LevelActions.find(sValue) == std::string::npos)
+	/*if (std::size_t index = LevelActions.find(sValue) == std::string::npos)
 	{ 
 	   Log(LOG_ERROR,"Value %s not supported by Selector Switch %s, it needs %s ",sValue.c_str() , defaultname.c_str(), LevelActions.c_str() ); 
 	   return; // did not find sValue in LevelAction string so exit with warning
-	}
+	}*/
+
 	_tGeneralSwitch xcmd;
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
 	xcmd.type = pTypeGeneralSwitch;
@@ -1125,7 +1126,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 	}
 	else
 	{ 
-		//Check Level
+		//Check Level (sValue in SQL Query)
 		if (xcmd.level == std::stoi(result[0][1]))
 			return; // no need to uodate
 		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X')", xcmd.level, m_HwdID, NodeID);

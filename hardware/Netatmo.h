@@ -56,10 +56,11 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::string MakeRequestURL(_eNetatmoType NetatmoType);
 	void GetMeterDetails();
 	void GetThermostatDetails();
-	bool ParseNetatmoGetResponse(const std::string &sResult, _eNetatmoType NetatmoType, bool bIsThermostat);
+	bool ParseStationData(const std::string &sResult, bool bIsThermostat);
 	bool ParseHomeData(const std::string &sResult);
 	bool ParseHomeStatus(const std::string &sResult);
 	bool SetAway(int idx, bool bIsAway);
+	bool SetSchedule(int scheduleId);
 
 	bool Login();
 	bool RefreshToken(bool bForce = false);
@@ -67,14 +68,19 @@ class CNetatmo : public CDomoticzHardwareBase
 	void StoreRefreshToken();
 	bool m_isLogged;
 	bool m_bForceLogin;
-	_eNetatmoType m_NetatmoType;
+	_eNetatmoType m_weatherType;
+	_eNetatmoType m_energyType;
 
 	int m_ActHome;
 	std::string m_Home_ID;
+	std::string m_ThermostatName;
 	std::map<std::string, std::string> m_RoomNames;
 	std::map<std::string, int> m_RoomIDs;
 	std::map<std::string, std::string> m_ModuleNames;
 	std::map<std::string, int> m_ModuleIDs;
+	std::map<int, std::string> m_ScheduleNames;
+	std::map<int, std::string> m_ScheduleIDs;
+	int m_selectedScheduleID;
 
 	std::map<int, CBaroForecastCalculator> m_forecast_calculators;
 

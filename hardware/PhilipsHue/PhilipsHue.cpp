@@ -32,7 +32,7 @@
 #ifdef DEBUG_PhilipsHue
 void SaveString2Disk(std::string str, std::string filename)
 {
-	FILE *fOut = fopen(filename.c_str(), "wb+");
+	FILE* fOut = fopen(filename.c_str(), "wb+");
 	if (fOut)
 	{
 		fwrite(str.c_str(), 1, str.size(), fOut);
@@ -57,11 +57,11 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int PollInterval, const int Options) :
-m_IPAddress(IPAddress),
-m_UserName(Username)
+CPhilipsHue::CPhilipsHue(const int ID, const std::string& IPAddress, const unsigned short Port, const std::string& Username, const int PollInterval, const int Options) :
+	m_IPAddress(IPAddress),
+	m_UserName(Username)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	m_Port = Port;
 	m_poll_interval = PollInterval;
 	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
@@ -106,17 +106,16 @@ bool CPhilipsHue::StopHardware()
 		m_thread->join();
 		m_thread.reset();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
-
 
 void CPhilipsHue::Do_Work()
 {
 	int msec_counter = 0;
 	int sec_counter = m_poll_interval - 1;
 
-	Log(LOG_STATUS,"Worker started...");
+	Log(LOG_STATUS, "Worker started...");
 
 	while (!IsStopRequested(500))
 	{
@@ -132,12 +131,12 @@ void CPhilipsHue::Do_Work()
 			}
 		}
 	}
-	Log(LOG_STATUS,"Worker stopped...");
+	Log(LOG_STATUS, "Worker stopped...");
 }
 
-bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*length*/)
+bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
-	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 
@@ -149,7 +148,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 
 	if (packettype == pTypeGeneralSwitch)
 	{
-		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pSen);
+		const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pSen);
 		//light command
 		nodeID = static_cast<int>(pSwitch->id);
 		if ((pSwitch->cmnd == gswitch_sOff) || (pSwitch->cmnd == gswitch_sGroupOff))
@@ -176,7 +175,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	}
 	else if (packettype == pTypeColorSwitch)
 	{
-		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch*>(pSen);
+		const _tColorSwitch* pLed = reinterpret_cast<const _tColorSwitch*>(pSen);
 		nodeID = static_cast<int>(pLed->id);
 
 		if (pLed->command == Color_LedOff)
@@ -249,6 +248,15 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 			}
 			else if (pLed->color.mode == ColorModeRGB)
 			{
+				//get the xy color
+				double x = 0;
+				double y = 0;
+				RgbToXY(m_lightModels[nodeID], pLed->color.r, pLed->color.g, pLed->color.b, x, y);
+				LCmd = "Set XY";
+				svalue2 = round(x * 1000);
+				svalue3 = round(y * 1000);
+
+				/*
 				float hsb[3];
 				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
 				float cHue = (65535.0F) * hsb[0]; // Scale hue from 0..1 to 0..65535
@@ -256,8 +264,9 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 				LCmd = "Set Hue";
 				svalue2 = round(cHue);
 				svalue3 = round(cSat);
+				*/
 			}
-			else{
+			else {
 				Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
 			}
 			float fvalue = (254.0F / 100.0F) * float(pLed->value);
@@ -271,7 +280,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char /*lengt
 	return true;
 }
 
-bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 /*= 0*/, const int svalue3 /*= 0*/)
+bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const int svalue, const int svalue2 /*= 0*/, const int svalue3 /*= 0*/)
 {
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Content-Type: application/json");
@@ -285,7 +294,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	bool setMode = false;
 	_eHueColorMode mode;
 
-	if (LCmd=="On")
+	if (LCmd == "On")
 	{
 		sPostData << "{\"on\": true }";
 		setOn = true;
@@ -306,6 +315,15 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	{
 		sPostData << R"({"on": true, "sat": 0 , "bri": 255, "hue": 0 })";
 		// Do state update next time the light is polled
+	}
+	else if (LCmd == "Set XY")
+	{
+		sPostData << R"({"on": true, "xy": [)" << ((double)svalue2 / 1000) << ", " << ((double)svalue3 / 1000) << " ], \"bri\": " << svalue << "  }";
+		setOn = true;
+		setLevel = true;
+		setHueSat = true;
+		setMode = true;
+		mode = HLMODE_HS;
 	}
 	else if (LCmd == "Set Hue")
 	{
@@ -332,12 +350,12 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 
 	// Update cached state
-	_tHueLightState *pState = nullptr;
+	_tHueLightState* pState = nullptr;
 
 	if (nodeID < 1000)
 	{
 		//Light
-		auto && ittLight = m_lights.find(nodeID);
+		auto&& ittLight = m_lights.find(nodeID);
 		if (ittLight != m_lights.end())
 		{
 			pState = &ittLight->second;
@@ -346,7 +364,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	else if (nodeID < 2000)
 	{
 		//Group
-		auto && ittGroup = m_groups.find(nodeID - 1000);
+		auto&& ittGroup = m_groups.find(nodeID - 1000);
 		if (ittGroup != m_groups.end())
 		{
 			pState = &ittGroup->second.gstate;
@@ -359,7 +377,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 			pState->level = int((100.0F / 254.0F) * float(svalue));
 		if (setHueSat) pState->hue = svalue2;
 		if (setHueSat) pState->sat = svalue3;
-		if (setCt) pState->ct = int((float(svalue2)-153.0)/(500.0-153.0));
+		if (setCt) pState->ct = int((float(svalue2) - 153.0) / (500.0 - 153.0));
 		if (setMode) pState->mode = mode;
 	}
 
@@ -426,7 +444,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	return true;
 }
 
-std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username)
+std::string CPhilipsHue::RegisterUser(const std::string& IPAddress, const unsigned short Port, const std::string& username)
 {
 	std::string retStr = "Error;Unknown";
 	std::vector<std::string> ExtraHeaders;
@@ -469,13 +487,13 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 	return retStr;
 }
 
-void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string &modelid, const bool AddMissingDevice)
+void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType, const _tHueLightState tstate, const std::string& Name, const std::string& Options, const std::string& modelid, const bool AddMissingDevice)
 {
 	if (LType == HLTYPE_RGB_W || LType == HLTYPE_CW_WW || LType == HLTYPE_RGB_CW_WW)
 	{
 		char szID[10];
 		char szSValue[20];
-		if (NodeID==1)
+		if (NodeID == 1)
 			sprintf(szID, "%d", NodeID);
 		else
 			sprintf(szID, "%08X", (unsigned int)NodeID);
@@ -487,16 +505,16 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		unsigned sType;
 		switch (LType)
 		{
-			case HLTYPE_CW_WW:
-				sType = sTypeColor_CW_WW;
-				break;
-			case HLTYPE_RGB_CW_WW:
-				sType = sTypeColor_RGB_CW_WW;
-				break;
-			case HLTYPE_RGB_W:
-			default:
-				sType = sTypeColor_RGB_W;
-				break;
+		case HLTYPE_CW_WW:
+			sType = sTypeColor_CW_WW;
+			break;
+		case HLTYPE_RGB_CW_WW:
+			sType = sTypeColor_RGB_CW_WW;
+			break;
+		case HLTYPE_RGB_W:
+		default:
+			sType = sTypeColor_RGB_W;
+			break;
 		}
 
 		//Get current nValue if exist
@@ -572,7 +590,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.value = tstate.level;
 		lcmd.color = color;
 		lcmd.subtype = sType;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -623,7 +641,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.command = cmd;
 		lcmd.value = 0;
 		//lcmd.subtype = sType; // TODO: set type also for groups?
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -671,9 +689,9 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 			int nvalue = atoi(result[0][0].c_str());
 		}
 		else
- 		{
- 			Log(LOG_STATUS, "adding device '%s'", Name.c_str());
- 		}
+		{
+			Log(LOG_STATUS, "adding device '%s'", Name.c_str());
+		}
 
 		//Change command to SetLevel for dimmer type switch
 		if (LType == HLTYPE_DIM && tstate.on && (tstate.level != 100))
@@ -686,7 +704,7 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 		lcmd.cmnd = cmd;
 		lcmd.level = tstate.level;
 		lcmd.seqnbr = 1;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255, m_Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&lcmd, Name.c_str(), 255, m_Name.c_str());
 
 		if (result.empty())
 		{
@@ -702,7 +720,7 @@ bool CPhilipsHue::GetStates()
 	std::string sResult;
 
 #ifdef DEBUG_PhilipsHue
-	sResult= ReadFile("E:\\philipshue.json");
+	sResult = ReadFile("E:\\philipshue.json");
 #else
 	std::stringstream sstr2;
 	sstr2 << "http://" << m_IPAddress
@@ -751,20 +769,20 @@ bool CPhilipsHue::GetStates()
 	return true;
 }
 
-void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightState &tlight, _eHueLightType &LType)
+void CPhilipsHue::LightStateFromJSON(const Json::Value& lightstate, _tHueLightState& tlight, _eHueLightType& LType)
 {
 	if (lightstate.isObject())
 	{
 		tlight.level = 0;          // Brightness of the light. This is a scale from the minimum brightness the light is capable of, 1,
-		                           // to the maximum capable brightness, 254.
+								   // to the maximum capable brightness, 254.
 		tlight.sat = 0;            // Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
 		tlight.hue = 0;            // Hue of the light. This is a wrapping value between 0 and 65535.
 		tlight.ct = 0;             // The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
 		tlight.mode = HLMODE_NONE; // Indicates the color mode in which the light is working, this is the last command type it received. Values
-		                           // are "hs" for Hue and Saturation, "xy" for XY and "ct" for Color Temperature.
+								   // are "hs" for Hue and Saturation, "xy" for XY and "ct" for Color Temperature.
 		tlight.x = 0.0;            // The x and y coordinates of a color in CIE color space.
 		tlight.y = 0.0;            // The first entry is the x coordinate and the second entry is the y coordinate. Both x and y must be between 0 and 1.
-		                           // If the specified coordinates are not in the CIE color space, the closest color to the coordinates will be chosen.
+								   // If the specified coordinates are not in the CIE color space, the closest color to the coordinates will be chosen.
 		tlight.on = false;
 
 		bool hasBri = false;
@@ -836,7 +854,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value &lightstate, _tHueLightSt
 	}
 }
 
-bool CPhilipsHue::GetLights(const Json::Value &root)
+bool CPhilipsHue::GetLights(const Json::Value& root)
 {
 	if (root["lights"].empty())
 		return false;
@@ -864,6 +882,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 				//Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
 				m_lights[lID] = tlight;
 				std::string modelid = light["modelid"].asString();
+				m_lightModels[lID] = modelid;
 				InsertUpdateLamp(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}
@@ -871,7 +890,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 	return true;
 }
 
-bool CPhilipsHue::GetGroups(const Json::Value &root)
+bool CPhilipsHue::GetGroups(const Json::Value& root)
 {
 	//Groups (0=All)
 
@@ -972,7 +991,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	}
 
 	int gID = 0;
-	auto myGroup = m_groups.find(gID);
+	std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
 	if (myGroup != m_groups.end())
 	{
 		if (!StatesSimilar(myGroup->second.gstate, tstate))
@@ -985,7 +1004,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	return true;
 }
 
-bool CPhilipsHue::GetScenes(const Json::Value &root)
+bool CPhilipsHue::GetScenes(const Json::Value& root)
 {
 	if (root["scenes"].empty())
 		return false;
@@ -1059,7 +1078,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 	return true;
 }
 
-bool CPhilipsHue::GetSensors(const Json::Value &root)
+bool CPhilipsHue::GetSensors(const Json::Value& root)
 {
 	if (root["sensors"].empty())
 		return false;
@@ -1100,7 +1119,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 			}
 			else if (
 				(current_sensor.m_type == SensorTypeZGPSwitch)
-					|| (current_sensor.m_type == SensorTypeZLLSwitch))
+				|| (current_sensor.m_type == SensorTypeZLLSwitch))
 			{
 				int32_t selectorLevel = current_sensor.m_state.GetSelectorLevel(previous_sensor.m_state);
 				if (selectorLevel >= 0)
@@ -1181,7 +1200,7 @@ bool CPhilipsHue::InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Uni
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1191,7 +1210,7 @@ bool CPhilipsHue::InsertUpdateSelectorSwitch(const int NodeID, const uint8_t Uni
 	return false;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, const _eSwitchType SType, const bool bIsOn, const std::string &Name, const uint8_t BatteryLevel)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, const _eSwitchType SType, const bool bIsOn, const std::string& Name, const uint8_t BatteryLevel)
 {
 	_tGeneralSwitch xcmd;
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
@@ -1202,14 +1221,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 	xcmd.battery_level = BatteryLevel;
 	xcmd.rssi = 12;
 
-	if (bIsOn) 
+	if (bIsOn)
 		xcmd.cmnd = gswitch_sOn;
-	else 
+	else
 		xcmd.cmnd = gswitch_sOff;
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, xcmd.unitcode);
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
+	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char*)&xcmd, Name.c_str(), BatteryLevel, m_Name.c_str());
 	if (result.empty())
 	{
 		//Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
@@ -1217,7 +1236,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const uint8_t Unitcode, c
 	}
 }
 
-void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, const std::map<std::string, std::string> &options)
+void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, const std::map<std::string, std::string>& options)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", m_HwdID, NodeID, Unitcode);
@@ -1232,7 +1251,7 @@ void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, con
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != 2)
 			{
@@ -1260,23 +1279,23 @@ namespace http {
 			root["status"] = "OK";
 			root["username"] = strarray[1];
 		}
-		void CWebServer::Cmd_PhilipsHueGetGroups(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueGetGroups(WebEmSession& session, const request& req, Json::Value& root)
 		{
 
 		}
-		void CWebServer::Cmd_PhilipsHueAddGroup(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueAddGroup(WebEmSession& session, const request& req, Json::Value& root)
 		{
 
 		}
-		void CWebServer::Cmd_PhilipsHueDeleteGroup(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueDeleteGroup(WebEmSession& session, const request& req, Json::Value& root)
 		{
 
 		}
-		void CWebServer::Cmd_PhilipsHueGroupAddLight(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueGroupAddLight(WebEmSession& session, const request& req, Json::Value& root)
 		{
 
 		}
-		void CWebServer::Cmd_PhilipsHueGroupRemoveLight(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueGroupRemoveLight(WebEmSession& session, const request& req, Json::Value& root)
 		{
 
 		}
