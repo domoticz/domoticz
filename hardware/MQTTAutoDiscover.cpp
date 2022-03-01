@@ -1273,6 +1273,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 	{
 		if (
 			(pSensor->object_id.find("humidity") != std::string::npos)
+			|| (pSensor->device_class.find("humidity") != std::string::npos)
 			|| (pSensor->state_topic.find("humidity") != std::string::npos)
 			|| (pSensor->unique_id.find("humidity") != std::string::npos)
 			|| (pSensor->value_template.find("humidity") != std::string::npos)
@@ -1407,6 +1408,13 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())) * 100.0F);
 		}
 	*/
+	else if (szUnit == "cm")
+	{
+		devType = pTypeGeneral;
+		subType = sTypeDistance;
+		sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())));
+	}
+
 	else if (szUnit == "l")
 	{
 		if (pSensor->icon.find("counter-inc") != std::string::npos)
