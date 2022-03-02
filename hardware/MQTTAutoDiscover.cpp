@@ -1417,7 +1417,10 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 	else if (szUnit == "l")
 	{
-		if (pSensor->icon.find("counter-inc") != std::string::npos)
+		if (
+			(pSensor->icon.find("counter-inc") != std::string::npos)
+			|| (pSensor->icon.find("pulse") != std::string::npos)
+			)
 		{
 			devType = pTypeGeneral;
 			subType = sTypeCounterIncremental;
@@ -1459,7 +1462,10 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		|| (szUnit == "cubic meters")
 		)
 	{
-		if (pSensor->icon.find("counter-inc") != std::string::npos)
+		if (
+			(pSensor->icon.find("counter-inc") != std::string::npos)
+			|| (pSensor->icon.find("pulse") != std::string::npos)
+			)
 		{
 			devType = pTypeGeneral;
 			subType = sTypeCounterIncremental;
@@ -1841,6 +1847,17 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		{
 			//Insert
 			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			uint8_t SwitchType = 0;
+
+			if (
+				(pSensor->devType == pTypeGeneral)
+				&& (pSensor->subType == sTypeCounterIncremental)
+				)
+			{
+				if (szUnit == "l")
+					SwitchType = MTYPE_WATER;
+			}
+
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, Options, nValue, sValue) "
 				"VALUES (%d, '%q', %d, %d, %d, %d, %d, '%q', %d, '1;%q', %d, '%q')",
 				m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
