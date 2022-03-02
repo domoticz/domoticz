@@ -1415,7 +1415,10 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		sValue = std_format("%.1f", static_cast<float>(atof(pSensor->last_value.c_str())));
 	}
 
-	else if (szUnit == "l")
+	else if (
+		(szUnit == "l")
+		|| (szUnit == "liter")
+		)
 	{
 		if (
 			(pSensor->icon.find("counter-inc") != std::string::npos)
@@ -1854,7 +1857,10 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 				&& (pSensor->subType == sTypeCounterIncremental)
 				)
 			{
-				if (szUnit == "l")
+				if (
+					(szUnit == "l")
+					|| (szUnit == "liter")
+					)
 					SwitchType = MTYPE_WATER;
 			}
 
