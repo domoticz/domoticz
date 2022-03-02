@@ -1490,6 +1490,12 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			float TotalGas = static_cast<float>(atof(pSensor->last_value.c_str()));
 			sValue = std_format("%.0f", TotalGas * 1000.0F);
 		}
+		else if (szUnit == "pulses")
+		{
+			devType = pTypeGeneral;
+			subType = sTypeCounterIncremental;
+			sValue = pSensor->last_value;
+		}
 		else
 		{
 			devType = pTypeRFXMeter;
