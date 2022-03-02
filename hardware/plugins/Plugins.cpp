@@ -917,16 +917,10 @@ namespace Plugins
 				m_Notifier = nullptr;
 			}
 
+			// If plugin failed to start onStop won't be called so force a cleanup here
 			if (m_PyInterpreter) {
-				Log(LOG_STATUS, "Stopping python interpreter.");
-				RestoreThread();
-
-				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
-				m_PyInterpreter = nullptr;
-
-				CPluginSystem pManager;
-				PyThreadState_Swap((PyThreadState *)pManager.PythonThread());
-				PyEval_ReleaseLock();
+				AccessPython	Guard(this, m_Name.c_str());
+				Stop();
 			}
 		}
 		catch (...)
@@ -2158,7 +2152,7 @@ namespace Plugins
 			if (m_SettingsDict)
 				Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter)
-				Py_EndInterpreter((PyThreadState *)m_PyInterpreter);
+				Py_EndInterpreter(m_PyInterpreter);
 			// To release the GIL there must be a valid thread state so use
 			// the one created during start up of the plugin system because it will always exist
 			CPluginSystem pManager;
