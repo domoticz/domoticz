@@ -4235,18 +4235,31 @@ int CSQLHelper::execute_sql(const std::string &sSQL, std::vector<std::string> *p
 
 std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ...)
 {
-	va_list args;
-	va_start(args, fmt);
-	char* zQuery = sqlite3_vmprintf(fmt, args);
-	va_end(args);
-	if (!zQuery)
+	std::vector<std::vector<std::string> > results;
+	try
 	{
-		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
-		std::vector<std::vector<std::string> > results;
-		return results;
+		va_list args;
+		va_start(args, fmt);
+		char* zQuery = sqlite3_vmprintf(fmt, args);
+		va_end(args);
+		if (!zQuery)
+		{
+			_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+			std::vector<std::vector<std::string> > results;
+			return results;
+		}
+		results = query(zQuery);
+		sqlite3_free(zQuery);
 	}
-	std::vector<std::vector<std::string> > results = query(zQuery);
-	sqlite3_free(zQuery);
+	catch (const std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "SQL query error!");
+#ifdef _DEBUG
+		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+#else
+		(void)e;
+#endif
+	}
 	return results;
 }
 
