@@ -150,7 +150,9 @@ void CNetatmo::Do_Work()
 			if (RefreshToken())
 			{
 				//Weather / HomeCoach data is updated every 10 minutes
-				if ((sec_counter % 600 == 0) || (bFirstTimeWS))
+				// 03/03/2022 - PP Changing the Weather polling from 600 to 900s. This has reduce the number of server errors, 
+				// but do not prevennt to have one time to time
+				if ((sec_counter % 900 == 0) || (bFirstTimeWS))
 				{
 					bFirstTimeWS = false;
 					if ((m_bPollWeatherData) || (sec_counter % 1200 == 0))
@@ -158,7 +160,7 @@ void CNetatmo::Do_Work()
 				}
 
 				//Thermostat data is updated every 10 minutes
-				if ((sec_counter % 600 == 0) || (bFirstTimeTH))
+				if ((sec_counter % 900 == 0) || (bFirstTimeTH))
 				{
 					bFirstTimeTH = false;
 					if (m_bPollThermostat)
