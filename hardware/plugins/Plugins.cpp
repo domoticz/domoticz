@@ -85,18 +85,41 @@ namespace Plugins
 		CPlugin* pPlugin = CPlugin::FindPlugin();
 		if (!pPlugin)
 		{
-			_log.Log(LOG_ERROR, "%s, illegal operation, Plugin has not started yet.", __func__);
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
 			if (pPlugin->m_bDebug & PDM_PYTHON)
 			{
+				PyBorrowedRef	pArg(args);
+				if (!pArg.IsTuple())
+				{
+					pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected 'tuple' got '%s'.", __func__, pArg.Type().c_str());
+					Py_RETURN_NONE;
+				}
+
+				Py_ssize_t	tupleSize = PyTuple_Size(pArg);
+				if (tupleSize != 1)
+				{
+					pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+					Py_RETURN_NONE;
+				}
+
 				char *msg;
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
-					// TODO: Dump data to aid debugging
-					pPlugin->Log(LOG_ERROR, "%s failed to parse parameters: string expected.", __func__);
-					pPlugin->LogPythonException(std::string(__func__));
+					PyErr_Clear();
+					PyObject* pObject;
+					if (PyArg_ParseTuple(args, "O", &pObject))
+					{
+						std::string	sMessage = PyBorrowedRef(pObject);
+						pPlugin->Log(LOG_NORM, sMessage);
+					}
+					else
+					{
+						pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters: string expected.", __func__);
+						pPlugin->LogPythonException(std::string(__func__));
+					}
 				}
 				else
 				{
@@ -117,11 +140,35 @@ namespace Plugins
 		}
 		else
 		{
+			PyBorrowedRef	pArg(args);
+			if (!pArg.IsTuple())
+			{
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected 'tuple' got '%s'.", __func__, pArg.Type().c_str());
+				Py_RETURN_NONE;
+			}
+
+			Py_ssize_t	tupleSize = PyTuple_Size(pArg);
+			if (tupleSize != 1)
+			{
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+				Py_RETURN_NONE;
+			}
+
 			char *msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
-				pPlugin->Log(LOG_ERROR, "%s failed to parse parameters: string expected.", __func__);
-				pPlugin->LogPythonException(std::string(__func__));
+				PyErr_Clear();
+				PyObject*	pObject;
+				if (PyArg_ParseTuple(args, "O", &pObject))
+				{
+					std::string	sMessage = PyBorrowedRef(pObject);
+					pPlugin->Log(LOG_NORM, sMessage);
+				}
+				else
+				{
+					pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters: string expected.", __func__);
+					pPlugin->LogPythonException(std::string(__func__));
+				}
 			}
 			else
 			{
@@ -141,11 +188,35 @@ namespace Plugins
 		}
 		else
 		{
+			PyBorrowedRef	pArg(args);
+			if (!pArg.IsTuple())
+			{
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected 'tuple' got '%s'.", __func__, pArg.Type().c_str());
+				Py_RETURN_NONE;
+			}
+
+			Py_ssize_t	tupleSize = PyTuple_Size(pArg);
+			if (tupleSize != 1)
+			{
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+				Py_RETURN_NONE;
+			}
+
 			char *msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
-				pPlugin->Log(LOG_ERROR, "%s failed to parse parameters: string expected.", __func__);
-				pPlugin->LogPythonException(std::string(__func__));
+				PyErr_Clear();
+				PyObject* pObject;
+				if (PyArg_ParseTuple(args, "O", &pObject))
+				{
+					std::string	sMessage = PyBorrowedRef(pObject);
+					pPlugin->Log(LOG_STATUS, sMessage);
+				}
+				else
+				{
+					pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters: string expected.", __func__);
+					pPlugin->LogPythonException(std::string(__func__));
+				}
 			}
 			else
 			{
@@ -165,12 +236,35 @@ namespace Plugins
 		}
 		else
 		{
+			PyBorrowedRef	pArg(args);
+			if (!pArg.IsTuple())
+			{
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected 'tuple' got '%s'.", __func__, pArg.Type().c_str());
+				Py_RETURN_NONE;
+			}
+
+			Py_ssize_t	tupleSize = PyTuple_Size(pArg);
+			if (tupleSize != 1)
+			{
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+				Py_RETURN_NONE;
+			}
+
 			char *msg;
 			if ((PyTuple_Size(args) != 1) || !PyArg_ParseTuple(args, "s", &msg))
 			{
-				// TODO: Dump data to aid debugging
-				pPlugin->Log(LOG_ERROR, "%s failed to parse parameters: string expected.", __func__);
-				pPlugin->LogPythonException(std::string(__func__));
+				PyErr_Clear();
+				PyObject* pObject;
+				if (PyArg_ParseTuple(args, "O", &pObject))
+				{
+					std::string	sMessage = PyBorrowedRef(pObject);
+					pPlugin->Log(LOG_ERROR, sMessage);
+				}
+				else
+				{
+					pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters: string expected.", __func__);
+					pPlugin->LogPythonException(std::string(__func__));
+				}
 			}
 			else
 			{
@@ -569,6 +663,7 @@ namespace Plugins
 		}
 		pModState->pDeviceClass = CDeviceType;
 		pModState->pUnitClass = nullptr;
+		Py_INCREF(CDeviceType);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Device", (PyObject*)CDeviceType);
 
 		if (!CConnectionType)
@@ -576,6 +671,7 @@ namespace Plugins
 			CConnectionType = (PyTypeObject*)PyType_FromSpec(&ConnectionSpec);
 			PyType_Ready(CConnectionType);
 		}
+		Py_INCREF(CConnectionType);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType);
 
 		if (!CImageType)
@@ -583,6 +679,8 @@ namespace Plugins
 			CImageType = (PyTypeObject*)PyType_FromSpec(&ImageSpec);
 			PyType_Ready(CImageType);
 		}
+		PyObject* refTracker = (PyObject*)CImageType;
+		Py_INCREF(CImageType);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Image", (PyObject*)CImageType);
 
 		return pModule;
@@ -611,6 +709,7 @@ namespace Plugins
 							  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, DeviceExSlots };
 
 		pModState->pDeviceClass = (PyTypeObject*)PyType_FromSpec(&DeviceExSpec);	// Calls PyType_Ready internally from, 3.9 onwards
+		Py_INCREF(pModState->pDeviceClass);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Device", (PyObject *)pModState->pDeviceClass);
 		PyType_Ready(pModState->pDeviceClass);
 
@@ -628,6 +727,7 @@ namespace Plugins
 								Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, UnitExSlots };
 
 		pModState->pUnitClass = (PyTypeObject*)PyType_FromSpec(&UnitExSpec);
+		Py_INCREF(pModState->pUnitClass);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Unit", (PyObject*)pModState->pUnitClass);
 		PyType_Ready(pModState->pUnitClass);
 
@@ -636,6 +736,7 @@ namespace Plugins
 			CConnectionType = (PyTypeObject*)PyType_FromSpec(&ConnectionSpec);
 			PyType_Ready(CConnectionType);
 		}
+		Py_INCREF(CConnectionType);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType);
 
 		if (!CImageType)
@@ -643,6 +744,7 @@ namespace Plugins
 			CImageType = (PyTypeObject*)PyType_FromSpec(&ImageSpec);
 			PyType_Ready(CImageType);
 		}
+		Py_INCREF(CImageType);	// PyModule_AddObject steals a reference
 		PyModule_AddObject(pModule, "Image", (PyObject*)CImageType);
 
 		return pModule;

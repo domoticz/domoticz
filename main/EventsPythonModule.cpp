@@ -117,7 +117,7 @@ namespace Plugins
 							  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, PDeviceSlots };
 
 		PDeviceType = (PyTypeObject*)PyType_FromSpec(&PDeviceSpec);
-		PyModule_AddObject(pModule, "PDevice", (PyObject*)PDeviceType);
+		PyModule_AddObject(pModule, "PDevice", (PyObject*)PDeviceType);	// PyModule_AddObject steals a reference
 
 		return pModule;
 	}
