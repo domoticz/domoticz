@@ -1034,6 +1034,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			handle_auto_discovery_binary_sensor(pSensor, message);
 		}
+		else if (pSensor->component_type == "button")
+		{
+			handle_auto_discovery_button(pSensor, message);
+		}
 
 
 		//Check if we want to subscribe to this sensor
@@ -1050,6 +1054,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				|| (pSensor->component_type == "select")
 				|| (pSensor->component_type == "cover")
 				|| (pSensor->component_type == "climate")
+				|| (pSensor->component_type == "button")
 				);
 
 		if (bDoSubscribe)
@@ -1177,6 +1182,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 				handle_auto_discovery_climate(pSensor, message);
 			else if (pSensor->component_type == "lock")
 				handle_auto_discovery_lock(pSensor, message);
+			else if (pSensor->component_type == "button")
+				handle_auto_discovery_button(pSensor, message);
 		}
 		else if (pSensor->availability_topic == topic)
 		{
@@ -1892,6 +1899,11 @@ void MQTTAutoDiscover::handle_auto_discovery_binary_sensor(_tMQTTASensor* pSenso
 	InsertUpdateSwitch(pSensor);
 }
 
+void MQTTAutoDiscover::handle_auto_discovery_button(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
+{
+	InsertUpdateSwitch(pSensor);
+}
+
 void MQTTAutoDiscover::handle_auto_discovery_light(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
 	InsertUpdateSwitch(pSensor);
@@ -2477,6 +2489,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		//99,9% also received as percentage, so don't add this as 'used'
 		iUsed = 0;
 	}
+	else if (pSensor->component_type == "button")
+	{
+		switchType = STYPE_PushOn;
+		szOnOffValue = "on";
+	}
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID, Name, nValue, sValue, Color, SubType, SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit);
@@ -2872,6 +2889,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		&& (pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
 		&& (pSensor->component_type != "lock")
+		&& (pSensor->component_type != "button")
 		)
 	{
 		Log(LOG_ERROR, "sending switch commands for switch type '%s' is not supported (yet...) (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
