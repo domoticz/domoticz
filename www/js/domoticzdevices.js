@@ -1160,8 +1160,38 @@ Device.MakeFavorite = function (id, isfavorite) {
 function Sensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.image = "images/" + item.TypeImg + "48.png";
-
+       
+        this.image = "images/";
+        
+        if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
+          if (item.SwitchTypeVal == 1) {
+            this.image += (item.CustomImage == 0)  ? 'Gas48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 2) {
+            this.image += (item.CustomImage == 0)  ? 'Water48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 3) {
+            this.image += (item.CustomImage == 0)  ? 'Counter48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 4) {
+            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+          }
+          else {
+            this.image += item.TypeImg + "48.png";
+          }
+		} else if ((item.Type == "General") && (item.SubType == "kWh")) {
+          if (item.SwitchTypeVal == 4) {
+            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+          }
+          else {
+            this.image += item.TypeImg + "48.png";
+          }
+        } else if (item.SubType == "Gas") {
+            this.image += "Gas48.png";
+        } else {
+            this.image += item.TypeImg + "48.png";
+        }
+        
         var sensorType = this.type.replace(/\s/g, '');
 
         if (sensorType === 'General') {
@@ -1331,10 +1361,37 @@ Blinds.inheritsFrom(Switch);
 function Counter(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        if(item.Image == undefined)
-            this.image = "images/counter.png";
-        else
-            this.image = "images/"+item.Image+".png";
+        if(item.Image == undefined) {
+			this.image = "images/";
+			if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
+			  if (item.SwitchTypeVal == 1) {
+				this.image += (item.CustomImage == 0)  ? 'Gas48.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 2) {
+				this.image += (item.CustomImage == 0)  ? 'Water48_On.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 3) {
+				this.image += (item.CustomImage == 0)  ? 'Counter48.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 4) {
+				this.image += (item.CustomImage == 0)  ? 'PV48.png' : 'Counter48.png';
+			  }
+			  else {
+				this.image += 'Counter48.png';
+			  }
+			} else if (item.SubType == "Gas") {
+				this.image += "Gas48.png";
+			} else {
+				this.image += 'Counter48.png';
+			}
+        }
+        else {
+            if (item.SubType == "Gas") {
+              this.image = "images/Gas48.png";
+            } else {
+              this.image = "images/"+item.Image+".png";
+            }
+        }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {
