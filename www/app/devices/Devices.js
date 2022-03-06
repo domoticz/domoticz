@@ -34,7 +34,7 @@ define(['app', 'livesocket'], function(app) {
         controllerAs: '$ctrl',
         controller: function($scope, deviceApi, sceneApi) {
             var $ctrl = this;
-            $ctrl.device = Object.assign($scope.device);
+            $ctrl.device = JSON.parse(JSON.stringify($scope.device));
 
             $ctrl.renameDevice = function() {
                 $ctrl.isSaving = true;
