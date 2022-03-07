@@ -15,8 +15,8 @@
           Py_XDECREF(self->s_value);
           Py_XDECREF(self->last_update_string);
 
-		  PyTypeObject*	pType = (PyTypeObject*)PyObject_Type((PyObject*)self);
-		  freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
+		  PyObject*	pType = PyObject_Type((PyObject*)self);
+		  freefunc pFree = (freefunc)PyType_GetSlot((PyTypeObject*)pType, Py_tp_free);
 		  pFree((PyObject*)self);
 		  Py_XDECREF(pType);
 	  }

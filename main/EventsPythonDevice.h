@@ -54,7 +54,5 @@
 					   nullptr,
 					   nullptr,
 					   nullptr };
-
-	  static PyTypeObject* PDeviceType;
     }
 #endif
