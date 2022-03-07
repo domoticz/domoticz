@@ -18,6 +18,7 @@ namespace Plugins
 
 	PyThreadState*	m_PyInterpreter;
     bool			m_ModuleInitialized = false;
+	PyObject*		pDeviceType;
 
     struct eventModule_state {
 		PyObject*	error;
@@ -44,11 +45,35 @@ namespace Plugins
 
 	static PyObject *PyDomoticz_EventsLog(PyObject *self, PyObject *args)
 	{
+		PyBorrowedRef	pArg(args);
+		if (!pArg.IsTuple())
+		{
+			_log.Log(LOG_ERROR, "%s: Invalid parameter, expected 'tuple' got '%s'.", __func__, pArg.Type().c_str());
+			Py_RETURN_NONE;
+		}
+
+		Py_ssize_t	tupleSize = PyTuple_Size(pArg);
+		if (tupleSize != 1)
+		{
+			_log.Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+			Py_RETURN_NONE;
+		}
+
 		char *msg;
 
 		if (!PyArg_ParseTuple(args, "s", &msg))
 		{
-			_log.Log(LOG_ERROR, "Pyhton Event System: Failed to parse parameters: string expected.");
+			PyErr_Clear();
+			PyObject* pObject;
+			if (PyArg_ParseTuple(args, "O", &pObject))
+			{
+				std::string	sMessage = PyBorrowedRef(pObject);
+				_log.Log(LOG_NORM, sMessage);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: Failed to parse parameters: string expected.", __func__);
+			}
 		}
 		else
 		{
@@ -113,11 +138,16 @@ namespace Plugins
 			{ Py_tp_methods, PDevice_methods },
 			{ 0, nullptr },
 		};
-		PyType_Spec PDeviceSpec = { "DomoticzEvents.PDevice", sizeof(PDevice), 0,
+		PyType_Spec DeviceSpec = { "DomoticzEvents.PDevice", sizeof(PDevice), 0,
 							  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, PDeviceSlots };
 
-		PDeviceType = (PyTypeObject*)PyType_FromSpec(&PDeviceSpec);
-		PyModule_AddObject(pModule, "PDevice", (PyObject*)PDeviceType);	// PyModule_AddObject steals a reference
+		pDeviceType = PyType_FromSpec(&DeviceSpec);
+		if (PyType_Ready((PyTypeObject*)pDeviceType) < 0)
+		{
+			_log.Log(LOG_ERROR, "Python EventSystem: Unable to ready 'PDevice objects'.");
+		}
+
+		PyModule_AddObject(pModule, "PDevice", pDeviceType);	// PyModule_AddObject steals a reference
 
 		return pModule;
 	}
@@ -317,32 +347,25 @@ namespace Plugins
 					return;
 				}
 
-				if (PyType_Ready((PyTypeObject*)PDeviceType) < 0)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
-					PyEval_SaveThread();
-					return;
-				}
-
 				for (auto it_type = deviceStates.begin(); it_type != deviceStates.end(); ++it_type)
 				{
 					CEventSystem::_tDeviceStatus sitem = it_type->second;
 
-					PyNewRef nrArgList = Py_BuildValue("(iOiiiOiOO)",	static_cast<int>(sitem.ID),
-																		PyUnicode_FromString(sitem.deviceName.c_str()),
+					PyNewRef nrArgList = Py_BuildValue("(isiiisiss)",	static_cast<int>(sitem.ID),
+																		sitem.deviceName.c_str(),
 																		sitem.devType,
 																		sitem.subType,
 																		sitem.switchtype,
-																		PyUnicode_FromString(sitem.sValue.c_str()),
+																		sitem.sValue.c_str(),
 																		sitem.nValue,
-																		PyUnicode_FromString(sitem.nValueWording.c_str()),
-																		PyUnicode_FromString(sitem.lastUpdate.c_str()));
+																		sitem.nValueWording.c_str(),
+																		sitem.lastUpdate.c_str());
 					if (!nrArgList)
 					{
 						_log.Log(LOG_ERROR, "Python EventSystem: Building device argument list failed for key %s.", sitem.deviceName.c_str());
 						continue;
 					}
-					PyNewRef pDevice = PyObject_CallObject((PyObject*)PDeviceType, nrArgList);
+					PyNewRef pDevice = PyObject_CallObject((PyObject*)pDeviceType, nrArgList);
 					if (!pDevice)
 					{
 						_log.Log(LOG_ERROR, "Python EventSystem: Event Device object creation failed for key %s.", sitem.deviceName.c_str());
@@ -537,6 +560,16 @@ namespace Plugins
 						// Remove line from buffer
 						logString = logString.substr(lineBreakPos + 1);
 					}
+				}
+
+				// Empty dictionaries to free memory
+				if (pDeviceDict.IsDict())
+				{
+					PyDict_Clear(pDeviceDict);
+				}
+				if (userVariablesDict.IsDict())
+				{
+					PyDict_Clear(userVariablesDict);
 				}
 			}
 			else
