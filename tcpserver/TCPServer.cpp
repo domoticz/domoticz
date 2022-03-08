@@ -215,6 +215,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	io_service_(),
 	acceptor_(io_service_)
 {
+/*
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
 	boost::asio::ip::tcp::resolver::query query(address, port);
@@ -226,7 +227,8 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 
 	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
 
-	acceptor_.async_accept(*(new_connection_->socket()), [this](auto &&err) { handleAccept(err); });
+	acceptor_.async_accept(*(new_connection_->socket()), [this](auto &&err) { handleAccept(err); }); <<<------- It goes wrong here on Linux systems !?
+*/
 }
 
 #ifndef NOCLOUD
