@@ -126,7 +126,7 @@ bool CTCPServerIntBase::HandleAuthentication(const CTCPClient_ptr &c, const std:
 	if (pUser == nullptr)
 		return false;
 
-	return ((pUser->Username==username)&&(pUser->Password==password));
+	return (pUser->Password == password);
 }
 
 void CTCPServerIntBase::DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand)
