@@ -253,10 +253,20 @@ namespace http
 
 		bool CWebServer::StartServer(server_settings& settings, const std::string& serverpath, const bool bIgnoreUsernamePassword)
 		{
-			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
-
 			if (!settings.is_enabled())
 				return true;
+
+			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
+
+			std::string sRealm = (settings.is_secure() == true) ? "https://" : "http://";
+
+			if (!settings.vhostname.empty())
+				sRealm += settings.vhostname;
+			else
+				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
+			if(settings.listening_port != "80" || settings.listening_port != "443")
+				sRealm += ":" + settings.listening_port;
+			sRealm += "/";
 
 			ReloadCustomSwitchIcons();
 
@@ -302,7 +312,7 @@ namespace http
 
 			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
 
-			m_pWebEm->SetDigistRealm("Domoticz.local");
+			m_pWebEm->SetDigistRealm(sRealm);
 			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
@@ -1361,9 +1371,9 @@ namespace http
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
 
-			std::string base_url = "https://localhost:8443";
+			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size()-1);
 
-			root["issuer"] = base_url + "/";
+			root["issuer"] = m_pWebEm->m_DigistRealm;
 			root["authorization_endpoint"] = base_url + OAUTH2_AUTH_URL;
 			root["token_endpoint"] = base_url + OAUTH2_TOKEN_URL;
 			jaRTS.append("code");

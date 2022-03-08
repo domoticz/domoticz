@@ -53,6 +53,7 @@ namespace
 		"\t-version display version number\n"
 		"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
 		"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
+		"\t-vhostname virtualhostname (for example -vhostname internal.mydomain.name or -vhostname localhost)\n"
 #ifdef WWW_ENABLE_SSL
 		"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 		"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
@@ -834,6 +835,15 @@ int main(int argc, char**argv)
 			}
 			webserver_settings.listening_port = wwwport;
 		}
+		if (cmdLine.HasSwitch("-vhostname"))
+		{
+			if (cmdLine.GetArgumentCount("-vhostname") != 1)
+			{
+				_log.Log(LOG_ERROR, "Please specify a (FQDN) Virtual Hostname");
+				return 1;
+			}
+			webserver_settings.vhostname = cmdLine.GetSafeArgument("-vhostname", 0, "");
+		}
 		if (cmdLine.HasSwitch("-php_cgi_path"))
 		{
 			if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
@@ -878,6 +888,10 @@ int main(int argc, char**argv)
 		if (!webserver_settings.listening_address.empty()) {
 			// Secure listening address has to be equal
 			secure_webserver_settings.listening_address = webserver_settings.listening_address;
+		}
+		if (!webserver_settings.vhostname.empty()) {
+			// vhostname has to be equal
+			secure_webserver_settings.vhostname = webserver_settings.vhostname;
 		}
 		if (cmdLine.HasSwitch("-sslcert"))
 		{
