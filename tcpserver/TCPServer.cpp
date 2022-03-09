@@ -235,7 +235,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 		return;
 	}
 
-	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); }); < ------ - It goes wrong here on Linux systems !?
+	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); }); //< ------ - It goes wrong here on Linux systems !?
 }
 
 //Out main (wrapper) server
