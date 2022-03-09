@@ -11,10 +11,9 @@ namespace http {
 
 			// called from mainworker():
 #ifdef WWW_ENABLE_SSL
-			bool StartServers(server_settings &web_settings, ssl_server_settings &secure_web_settings, const std::string &serverpath, bool bIgnoreUsernamePassword,
-					  tcp::server::CTCPServer *sharedServer);
+			bool StartServers(server_settings &web_settings, ssl_server_settings &secure_web_settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
 #else
-			bool StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
+			bool StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword);
 #endif
 			void StopServers();
 			void SetWebCompressionMode(_eWebCompressionMode gzmode);
@@ -36,7 +35,6 @@ namespace http {
 #ifdef WWW_ENABLE_SSL
 			std::shared_ptr<CWebServer> secureServer_;
 #endif
-			tcp::server::CTCPServer *m_pDomServ;
 			std::vector<std::shared_ptr<CWebServer> > serverCollection;
 
 			std::string our_serverpath;

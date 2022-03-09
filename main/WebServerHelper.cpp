@@ -8,7 +8,6 @@ namespace http {
 
 		CWebServerHelper::CWebServerHelper()
 		{
-			m_pDomServ = nullptr;
 		}
 
 		CWebServerHelper::~CWebServerHelper()
@@ -16,14 +15,12 @@ namespace http {
 			StopServers();
 		}
 #ifdef WWW_ENABLE_SSL
-		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 #else
-		bool CWebServerHelper::StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+		bool CWebServerHelper::StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
 #endif
 		{
 			bool bRet = false;
-
-			m_pDomServ = sharedServer;
 
 			our_serverpath = serverpath;
 			plainServer_.reset(new CWebServer());
