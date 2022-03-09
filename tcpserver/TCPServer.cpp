@@ -215,9 +215,7 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot) :
 	CTCPServerIntBase(pRoot),
 	io_service_(),
-	acceptor_(io_service_),
-	address_(address),
-	port_(port)
+	acceptor_(io_service_)
 {
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -225,6 +223,11 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
 	acceptor_.open(endpoint.protocol());
 	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+	// bind to both ipv6 and ipv4 sockets for the "::" address only
+	if (address == "::")
+	{
+		acceptor_.set_option(boost::asio::ip::v6_only(false));
+	}
 	acceptor_.bind(endpoint);
 	acceptor_.listen();
 
@@ -235,7 +238,7 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 		return;
 	}
 
-	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); }); //< ------ - It goes wrong here on Linux systems !?
+	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); });
 }
 
 //Out main (wrapper) server

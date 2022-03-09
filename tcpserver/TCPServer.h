@@ -76,9 +76,6 @@ private:
 
 	CTCPClient_ptr new_connection_;
 
-	std::string address_;
-	std::string port_;
-
 	bool IsUserHereFirstTime(const std::string &ip_string);
 	std::vector<_tTCPLogInfo> m_incoming_domoticz_history;
 };
