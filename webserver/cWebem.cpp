@@ -1063,16 +1063,6 @@ namespace http {
 			m_localnetworks.clear();
 		}
 
-		void cWebem::AddRemoteProxyIPs(const std::string &ipaddr)
-		{
-			myRemoteProxyIPs.push_back(ipaddr);
-		}
-
-		void cWebem::ClearRemoteProxyIPs()
-		{
-			myRemoteProxyIPs.clear();
-		}
-
 		void cWebem::SetDigistRealm(const std::string &realm)
 		{
 			m_DigistRealm = realm;
@@ -1964,32 +1954,6 @@ namespace http {
 			session.local_host = req.host_local_address;
 			session.remote_port = req.host_remote_port;
 			session.local_port = req.host_local_port;
-
-			if (!myWebem->myRemoteProxyIPs.empty())
-			{
-				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs)
-				{
-					if (session.remote_host == myRemoteProxyIP)
-					{
-						const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
-						if (host_header != nullptr)
-						{
-							if (strstr(host_header, ",") != nullptr)
-							{
-								//Multiple proxies are used... this is not very common
-								host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-								if (!host_header)
-								{
-									_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
-									rep = reply::stock_reply(reply::forbidden);
-									return;
-								}
-							}
-							session.remote_host = host_header;
-						}
-					}
-				}
-			}
 
 			session.reply_status = reply::ok;
 			session.isnew = false;

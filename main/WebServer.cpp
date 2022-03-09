@@ -319,16 +319,6 @@ namespace http
 				}
 			}
 
-			std::string WebRemoteProxyIPs;
-			int nValue;
-			if (m_sql.GetPreferencesVar("WebRemoteProxyIPs", nValue, WebRemoteProxyIPs))
-			{
-				std::vector<std::string> strarray;
-				StringSplit(WebRemoteProxyIPs, ";", strarray);
-				for (const auto &str : strarray)
-					m_pWebEm->AddRemoteProxyIPs(str);
-			}
-
 			// register callbacks
 			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto &&content_part) { DisplaySwitchTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto &&content_part) { DisplayMeterTypesCombo(content_part); });
@@ -2658,11 +2648,6 @@ namespace http
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 
-#ifndef NOCLOUD
-			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != nullptr;
-#else
-			bool bEnableTabProxy = false;
-#endif
 			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
@@ -2704,7 +2689,6 @@ namespace http
 				// Floorplan , no need to show a tab floorplan
 				bEnableTabFloorplans = 0;
 			}
-			root["result"]["EnableTabProxy"] = bEnableTabProxy;
 			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
 			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
 			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
@@ -8023,11 +8007,9 @@ namespace http
 				cntSettings++;
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
-				std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
-				m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
-				m_webservers.ReloadLocalNetworksAndProxyIPs();
+				m_webservers.ReloadLocalNetworks();
 				cntSettings++;
 				cntSettings++;
 
@@ -8172,31 +8154,6 @@ namespace http
 				m_pWebEm->SetWebTheme(SelectedTheme);
 				cntSettings++;
 
-#ifndef NOCLOUD
-				std::string md_userid, md_password, pf_userid, pf_password;
-				int md_subsystems, pf_subsystems;
-				m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
-				m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
-				m_sql.GetPreferencesVar("MyDomoticzSubsystems", pf_subsystems);
-				md_userid = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzUserId"));
-				md_password = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzPassword"));
-				md_subsystems = (request::findValue(&req, "SubsystemHttp").empty() ? 0 : 1) + (request::findValue(&req, "SubsystemShared").empty() ? 0 : 2) +
-						(request::findValue(&req, "SubsystemApps").empty() ? 0 : 4);
-				if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems)
-				{
-					m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
-					if (md_password != pf_password)
-					{
-						md_password = base64_encode(md_password);
-						m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
-					}
-					m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
-					m_webservers.RestartProxy();
-				}
-				cntSettings++;
-				cntSettings++;
-				cntSettings++;
-#endif
 				/* To wrap up everything */
 				m_notifications.ConfigFromGetvars(req, true);
 				m_notifications.LoadConfig();
@@ -12899,11 +12856,7 @@ namespace http
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
-#ifndef NOCLOUD
-			root["cloudenabled"] = true;
-#else
 			root["cloudenabled"] = false;
-#endif
 
 			for (const auto &sd : result)
 			{
@@ -12973,10 +12926,6 @@ namespace http
 				else if (Key == "WebLocalNetworks")
 				{
 					root["WebLocalNetworks"] = sValue;
-				}
-				else if (Key == "WebRemoteProxyIPs")
-				{
-					root["WebRemoteProxyIPs"] = sValue;
 				}
 				else if (Key == "RandomTimerFrame")
 				{
@@ -13236,24 +13185,6 @@ namespace http
 				{
 					root["WebTheme"] = sValue;
 				}
-#ifndef NOCLOUD
-				else if (Key == "MyDomoticzInstanceId")
-				{
-					root["MyDomoticzInstanceId"] = sValue;
-				}
-				else if (Key == "MyDomoticzUserId")
-				{
-					root["MyDomoticzUserId"] = sValue;
-				}
-				else if (Key == "MyDomoticzPassword")
-				{
-					root["MyDomoticzPassword"] = sValue;
-				}
-				else if (Key == "MyDomoticzSubsystems")
-				{
-					root["MyDomoticzSubsystems"] = nValue;
-				}
-#endif
 				else if (Key == "MyDomoticzSubsystems")
 				{
 					root["MyDomoticzSubsystems"] = nValue;

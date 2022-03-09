@@ -3,12 +3,6 @@
 #include "../main/Noncopyable.h"
 #include <boost/asio.hpp>
 
-namespace http {
-	namespace server {
-		class CProxyClient;
-	} // namespace server
-} // namespace http
-
 namespace tcp {
 namespace server {
 
@@ -57,24 +51,6 @@ public:
 	/// Buffer for incoming data.
 	std::array<char, 8192> buffer_;
 };
-
-#ifndef NOCLOUD
-class CSharedClient : public CTCPClientBase,
-	public std::enable_shared_from_this<CSharedClient>
-{
-public:
-	CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username);
-	~CSharedClient() = default;
-	void start() override;
-	void stop() override;
-	void write(const char *pData, size_t Length) override;
-	void OnIncomingData(const unsigned char *data, size_t bytes_transferred);
-	bool CompareToken(const std::string &token);
-private:
-	http::server::CProxyClient *m_pProxyClient;
-	std::string m_token;
-};
-#endif
 
 typedef std::shared_ptr<CTCPClientBase> CTCPClient_ptr;
 

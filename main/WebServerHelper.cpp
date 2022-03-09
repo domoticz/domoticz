@@ -5,9 +5,6 @@
 
 namespace http {
 	namespace server {
-#ifndef NOCLOUD
-		extern CProxySharedData sharedData;
-#endif
 
 		CWebServerHelper::CWebServerHelper()
 		{
@@ -44,12 +41,6 @@ namespace http {
 				serverCollection.push_back(secureServer_);
 			}
 #endif
-
-#ifndef NOCLOUD
-			// start up the mydomoticz proxy client
-			RestartProxy();
-#endif
-
 			return bRet;
 		}
 
@@ -64,41 +55,7 @@ namespace http {
 #ifdef WWW_ENABLE_SSL
 			secureServer_.reset();
 #endif
-
-#ifndef NOCLOUD
-			proxymanager.Stop();
-#endif
 		}
-
-#ifndef NOCLOUD
-		void CWebServerHelper::RestartProxy() {
-			sharedData.StopTCPClients();
-			proxymanager.Stop();
-			// restart
-#ifdef WWW_ENABLE_SSL
-			cWebem *my_pWebEm = (plainServer_ != nullptr && plainServer_->m_pWebEm != nullptr ? plainServer_->m_pWebEm
-							     : (secureServer_ != nullptr && secureServer_->m_pWebEm != nullptr ? secureServer_->m_pWebEm : nullptr));
-#else
-			cWebem* my_pWebEm = plainServer_ != nullptr && plainServer_->m_pWebEm != nullptr ? plainServer_->m_pWebEm : nullptr;
-#endif
-			if (my_pWebEm == nullptr)
-			{
-				_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either (if configured)");
-				return;
-			}
-			if (proxymanager.Start(my_pWebEm, m_pDomServ)) {
-				_log.Log(LOG_STATUS, "Proxymanager started.");
-			}
-		}
-
-		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
-			return proxymanager.GetProxyForMaster(master);
-		}
-
-		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {
-			sharedData.RemoveTCPClient(master);
-		}
-#endif
 
 		void CWebServerHelper::SetWebCompressionMode(const _eWebCompressionMode gzmode)
 		{
@@ -130,7 +87,6 @@ namespace http {
 			{
 				it->SetWebRoot(webRoot);
 			}
-			proxymanager.SetWebRoot(webRoot);
 		}
 
 		void CWebServerHelper::LoadUsers()
@@ -149,11 +105,10 @@ namespace http {
 			}
 		}
 
-		void CWebServerHelper::ReloadLocalNetworksAndProxyIPs()
+		void CWebServerHelper::ReloadLocalNetworks()
 		{
-			std::string WebLocalNetworks, WebRemoteProxyIPs;
+			std::string WebLocalNetworks;
 			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
-			m_sql.GetPreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
 			for (auto &it : serverCollection)
 			{
@@ -167,12 +122,6 @@ namespace http {
 					it->m_pWebEm->AddLocalNetworks(str);
 				// add local hostname
 				it->m_pWebEm->AddLocalNetworks("");
-
-				it->m_pWebEm->ClearRemoteProxyIPs();
-				strarray.clear();
-				StringSplit(WebRemoteProxyIPs, ";", strarray);
-				for (const auto &str : strarray)
-					it->m_pWebEm->AddRemoteProxyIPs(str);
 			}
 		}
 

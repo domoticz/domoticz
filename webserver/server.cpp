@@ -32,7 +32,6 @@ namespace server {
 
 	void server_base::init(const init_connectionhandler_func &init_connection_handler, accept_handler_func accept_handler)
 	{
-
 		init_connection_handler();
 
 		if (!new_connection_)

@@ -147,17 +147,12 @@ namespace http
 			bool checkAuthToken(WebEmSession &session);
 			void removeAuthToken(const std::string &sessionId);
 		};
-		// forward declaration for friend declaration
-		class CProxyClient;
+
 		/**
-
 		The webem embedded web server.
-
 		*/
 		class cWebem
 		{
-			friend class CProxyClient;
-
 		      public:
 			cWebem(const server_settings &settings, const std::string &doc_root);
 			~cWebem();
@@ -199,11 +194,6 @@ namespace http
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(const std::string &password);
-
-			// IPs that are allowed to pass proxy headers
-			std::vector<std::string> myRemoteProxyIPs;
-			void AddRemoteProxyIPs(const std::string &ipaddr);
-			void ClearRemoteProxyIPs();
 
 			// Session store manager
 			void SetSessionStore(session_store_impl_ptr sessionStore);
@@ -248,7 +238,7 @@ namespace http
 			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
 			std::shared_ptr<server_base> myServer;
-			// root of url for reverse proxy servers
+			// root of url
 			std::string m_webRoot;
 			/// sessions management
 			std::mutex m_sessionsMutex;

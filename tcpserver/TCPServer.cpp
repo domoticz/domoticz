@@ -12,6 +12,8 @@
 #include <boost/asio.hpp>
 #include <algorithm>
 
+#define SECONDS_PER_DAY 60*60*24
+
 namespace tcp {
 namespace server {
 
@@ -213,9 +215,10 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot) :
 	CTCPServerIntBase(pRoot),
 	io_service_(),
-	acceptor_(io_service_)
+	acceptor_(io_service_),
+	address_(address),
+	port_(port)
 {
-/*
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
 	boost::asio::ip::tcp::resolver::query query(address, port);
@@ -226,116 +229,29 @@ CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port
 	acceptor_.listen();
 
 	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
-
-	acceptor_.async_accept(*(new_connection_->socket()), [this](auto &&err) { handleAccept(err); }); <<<------- It goes wrong here on Linux systems !?
-*/
-}
-
-#ifndef NOCLOUD
-// our proxied server
-CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy) : CTCPServerIntBase(pRoot)
-{
-	m_pProxyClient = proxy;
-}
-
-void CTCPServerProxied::start()
-{
-}
-
-void CTCPServerProxied::stop()
-{
-	stopAllClients();
-}
-
-/// Stop the specified connection.
-void CTCPServerProxied::stopClient(CTCPClient_ptr c)
-{
-	std::lock_guard<std::mutex> l(connectionMutex);
-	c->stop();
-	connections_.erase(c);
-}
-
-bool CTCPServerProxied::OnDisconnect(const std::string &token)
-{
-	for (auto itt = connections_.begin(); itt != connections_.end(); ++itt)
+	if (new_connection_ == nullptr)
 	{
-		CSharedClient *pClient = dynamic_cast<CSharedClient *>(itt->get());
-		if (pClient && pClient->CompareToken(token)) {
-			pClient->stop();
-			connections_.erase(itt);
-			return true;
-		}
+		_log.Log(LOG_ERROR, "Error creating new client!");
+		return;
 	}
-	return false;
-}
 
-bool CTCPServerProxied::OnNewConnection(const std::string &token, const std::string &username, const std::string &password)
-{
-	CSharedClient *new_client = new CSharedClient(this, m_pProxyClient, token, username);
-	CTCPClient_ptr new_connection_ = std::shared_ptr<CSharedClient>(new_client);
-	if (!HandleAuthentication(new_connection_, username, password)) {
-		new_connection_.reset(); // deletes new_client
-		return false;
-	}
-	_log.Log(LOG_STATUS, "Incoming Domoticz connection via Proxy accepted for user %s.", username.c_str());
-	connections_.insert(new_connection_);
-	new_connection_->start();
-	new_connection_.reset(); // invalidate dangling pointer
-	return true;
+	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); }); < ------ - It goes wrong here on Linux systems !?
 }
-
-bool CTCPServerProxied::OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred)
-{
-	CSharedClient *client = FindClient(token);
-	if (client == nullptr)
-	{
-		return false;
-	}
-	client->OnIncomingData(data, bytes_transferred);
-	return true;
-}
-
-CSharedClient *CTCPServerProxied::FindClient(const std::string &token)
-{
-	for (const auto &c : connections_)
-	{
-		CSharedClient *pClient = dynamic_cast<CSharedClient *>(c.get());
-		if (pClient && pClient->CompareToken(token)) {
-			return pClient;
-		}
-	}
-	return nullptr;
-}
-#endif
 
 //Out main (wrapper) server
 CTCPServer::CTCPServer()
 {
 	m_pTCPServer = nullptr;
-#ifndef NOCLOUD
-	m_pProxyServer = nullptr;
-#endif
 }
 
 CTCPServer::CTCPServer(const int /*ID*/)
 {
 	m_pTCPServer = nullptr;
-#ifndef NOCLOUD
-	m_pProxyServer = nullptr;
-#endif
 }
 
 CTCPServer::~CTCPServer()
 {
 	StopServer();
-#ifndef NOCLOUD
-	if (m_pProxyServer != nullptr)
-	{
-		m_pProxyServer->stop();
-		delete m_pProxyServer;
-		m_pProxyServer = nullptr;
-	}
-#endif
 }
 
 bool CTCPServer::StartServer(const std::string &address, const std::string &port)
@@ -379,23 +295,6 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 	return (m_thread != nullptr);
 }
 
-#ifndef NOCLOUD
-bool CTCPServer::StartServer(http::server::CProxyClient *proxy)
-{
-	_log.Log(LOG_NORM, "Accepting shared server connections via MyDomotiz (see settings menu).");
-	m_pProxyServer = new CTCPServerProxied(this, proxy);
-	// we load the remote users at this point, because this server was not started yet when
-	// LoadSharedUsers() was called at startup.
-	if (m_pTCPServer) {
-		m_pProxyServer->SetRemoteUsers(m_pTCPServer->GetRemoteUsers());
-	}
-	else {
-		m_mainworker.LoadSharedUsers();
-	}
-	return true;
-}
-#endif
-
 void CTCPServer::StopServer()
 {
 	std::lock_guard<std::mutex> l(m_server_mutex);
@@ -413,11 +312,6 @@ void CTCPServer::StopServer()
 		m_pTCPServer = nullptr;
 		_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
 	}
-#ifndef NOCLOUD
-	if (m_pProxyServer) {
-		m_pProxyServer->stop();
-	}
-#endif
 }
 
 void CTCPServer::Do_Work()
@@ -433,10 +327,6 @@ void CTCPServer::SendToAll(const int HardwareID, const uint64_t DeviceRowID, con
 	std::lock_guard<std::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->SendToAll(HardwareID, DeviceRowID, pData, Length, pClient2Ignore);
-#ifndef NOCLOUD
-	if (m_pProxyServer)
-		m_pProxyServer->SendToAll(HardwareID, DeviceRowID, pData, Length, pClient2Ignore);
-#endif
 }
 
 void CTCPServer::SetRemoteUsers(const std::vector<_tRemoteShareUser> &users)
@@ -444,10 +334,6 @@ void CTCPServer::SetRemoteUsers(const std::vector<_tRemoteShareUser> &users)
 	std::lock_guard<std::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->SetRemoteUsers(users);
-#ifndef NOCLOUD
-	if (m_pProxyServer)
-		m_pProxyServer->SetRemoteUsers(users);
-#endif
 }
 
 unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
@@ -456,12 +342,6 @@ unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 	if (m_pTCPServer) {
 		return m_pTCPServer->GetUserDevicesCount(username);
 	}
-#ifndef NOCLOUD
-	if (m_pProxyServer)
-	{
-		return m_pProxyServer->GetUserDevicesCount(username);
-	}
-#endif
 	return 0;
 }
 
@@ -469,10 +349,6 @@ void CTCPServer::stopAllClients()
 {
 	if (m_pTCPServer)
 		m_pTCPServer->stopAllClients();
-#ifndef NOCLOUD
-	if (m_pProxyServer)
-		m_pProxyServer->stopAllClients();
-#endif
 }
 
 void CTCPServer::DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand)
@@ -484,13 +360,6 @@ void CTCPServer::DoDecodeMessage(const CTCPClientBase *pClient, const unsigned c
 	m_pUserData=(void*)pClient;
 	sDecodeRXMessage(this, pRXCommand, nullptr, -1, m_Name.c_str());
 }
-
-#ifndef NOCLOUD
-CTCPServerProxied *CTCPServer::GetProxiedServer()
-{
-	return m_pProxyServer;
-}
-#endif
 
 } // namespace server
 } // namespace tcp

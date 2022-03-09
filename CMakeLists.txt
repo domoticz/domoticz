@@ -310,7 +310,6 @@ hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
 hardware/SysfsGpio.cpp
 hardware/Tado.cpp
-hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/TeleinfoBase.cpp
@@ -366,8 +365,6 @@ webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/fastcgi.cpp
 webserver/mime_types.cpp
-webserver/proxycereal.cpp
-webserver/proxyclient.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp

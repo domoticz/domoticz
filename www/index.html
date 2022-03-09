@@ -1237,7 +1237,6 @@ $(document).ready(function() {
 			<div class="container">
 				<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
 				<ul class="nav" id="appnavbar">
-					<li ng-show="config.EnableTabProxy" class="clDashboard"><a id="cProxy" href="/mydomoticz/dashboard"><img src="images/proxy.png"> <span class="hidden-phone hidden-tablet" data-i18n="Proxy">Proxy</span></a></li>
 					<li ng-show="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>
 					<li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
 					<li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
