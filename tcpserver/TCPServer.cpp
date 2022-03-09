@@ -17,9 +17,33 @@
 namespace tcp {
 namespace server {
 
-CTCPServerIntBase::CTCPServerIntBase(CTCPServer *pRoot)
+CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer* pRoot) :
+	CTCPServerIntBase(pRoot),
+	io_service_(),
+	acceptor_(io_service_)
 {
-	m_pRoot=pRoot;
+	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
+	boost::asio::ip::tcp::resolver resolver(io_service_);
+	boost::asio::ip::tcp::resolver::query query(address, port);
+	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+	acceptor_.open(endpoint.protocol());
+	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+	// bind to both ipv6 and ipv4 sockets for the "::" address only
+	if (address == "::")
+	{
+		acceptor_.set_option(boost::asio::ip::v6_only(false));
+	}
+	acceptor_.bind(endpoint);
+	acceptor_.listen();
+
+	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
+	if (new_connection_ == nullptr)
+	{
+		_log.Log(LOG_ERROR, "Error creating new client!");
+		return;
+	}
+
+	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); });
 }
 
 void CTCPServerInt::start()
@@ -36,7 +60,6 @@ void CTCPServerInt::stop()
 	// Post a call to the stop function so that server::stop() is safe to call
 	// from any thread.
 	io_service_.post([this] { handle_stop(); });
-	m_incoming_domoticz_history.clear();
 }
 
 void CTCPServerInt::handle_stop()
@@ -46,38 +69,6 @@ void CTCPServerInt::handle_stop()
 	// will exit.
 	acceptor_.close();
 	stopAllClients();
-}
-
-bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
-{
-	//
-	//	Log same IP-address first time and then once per day
-	//
-	time_t now = mytime(nullptr);
-
-	auto itt = m_incoming_domoticz_history.begin();
-	while (itt != m_incoming_domoticz_history.end())
-	{
-		if (difftime(now,itt->time) > SECONDS_PER_DAY)
-			itt = m_incoming_domoticz_history.erase(itt);
-		else
-		{
-			if (ip_string == itt->string)
-			{
-				//already logged this
-				return false;
-			}
-			++itt;
-		}
-	}
-	if (m_incoming_domoticz_history.size() > 100)
-		return false; //just to be safe
-
-	_tTCPLogInfo li;
-	li.time = now;
-	li.string = ip_string;
-	m_incoming_domoticz_history.push_back(li);
-	return true;
 }
 
 void CTCPServerInt::handleAccept(const boost::system::error_code& error)
@@ -93,14 +84,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 
 	new_connection_->m_endpoint=s;
 
-	if (IsUserHereFirstTime(s))
-	{
-		_log.Log(LOG_STATUS, "Incoming Domoticz connection from: %s", s.c_str());
-	}
-	else
-	{
-		_log.Debug(DEBUG_NORM, "Incoming Domoticz connection from: %s", s.c_str());
-	}
+	_log.Log(LOG_STATUS, "Incoming Domoticz connection from: %s", s.c_str());
 
 	connections_.insert(new_connection_);
 	new_connection_->start();
@@ -108,6 +92,18 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	new_connection_.reset(new CTCPClient(io_service_, this));
 
 	acceptor_.async_accept(*(new_connection_->socket()), [this](auto &&err) { handleAccept(err); });
+}
+
+void CTCPServerInt::stopClient(CTCPClient_ptr c)
+{
+	std::lock_guard<std::mutex> l(connectionMutex);
+	connections_.erase(c);
+	c->stop();
+}
+
+CTCPServerIntBase::CTCPServerIntBase(CTCPServer* pRoot)
+{
+	m_pRoot = pRoot;
 }
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
@@ -134,13 +130,6 @@ bool CTCPServerIntBase::HandleAuthentication(const CTCPClient_ptr &c, const std:
 void CTCPServerIntBase::DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand)
 {
 	m_pRoot->DoDecodeMessage(pClient,pRXCommand);
-}
-
-void CTCPServerInt::stopClient(CTCPClient_ptr c)
-{
-	std::lock_guard<std::mutex> l(connectionMutex);
-	connections_.erase(c);
-	c->stop();
 }
 
 void CTCPServerIntBase::stopAllClients()
@@ -210,35 +199,6 @@ void CTCPServerIntBase::SendToAll(const int /*HardwareID*/, const uint64_t Devic
 			}
 		}
 	}
-}
-
-CTCPServerInt::CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot) :
-	CTCPServerIntBase(pRoot),
-	io_service_(),
-	acceptor_(io_service_)
-{
-	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
-	boost::asio::ip::tcp::resolver resolver(io_service_);
-	boost::asio::ip::tcp::resolver::query query(address, port);
-	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-	acceptor_.open(endpoint.protocol());
-	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-	// bind to both ipv6 and ipv4 sockets for the "::" address only
-	if (address == "::")
-	{
-		acceptor_.set_option(boost::asio::ip::v6_only(false));
-	}
-	acceptor_.bind(endpoint);
-	acceptor_.listen();
-
-	new_connection_ = std::make_shared<CTCPClient>(io_service_, this);
-	if (new_connection_ == nullptr)
-	{
-		_log.Log(LOG_ERROR, "Error creating new client!");
-		return;
-	}
-
-	acceptor_.async_accept(*(new_connection_->socket()), [this](auto&& err) { handleAccept(err); });
 }
 
 //Out main (wrapper) server

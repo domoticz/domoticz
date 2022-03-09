@@ -75,9 +75,6 @@ private:
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	CTCPClient_ptr new_connection_;
-
-	bool IsUserHereFirstTime(const std::string &ip_string);
-	std::vector<_tTCPLogInfo> m_incoming_domoticz_history;
 };
 
 class CTCPServer : public CDomoticzHardwareBase
