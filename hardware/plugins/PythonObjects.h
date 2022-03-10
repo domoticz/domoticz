@@ -169,3 +169,4 @@ namespace Plugins {
 	};
 
 } // namespace Plugins
+

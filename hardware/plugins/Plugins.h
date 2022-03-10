@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef ENABLE_PYTHON
+
 #include "../DomoticzHardware.h"
 #include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
@@ -300,3 +302,5 @@ namespace Plugins {
 	};
 
 } // namespace Plugins
+
+#endif //#ifdef ENABLE_PYTHON
