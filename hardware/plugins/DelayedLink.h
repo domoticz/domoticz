@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef ENABLE_PYTHON
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
 #else
@@ -574,3 +574,4 @@ static inline void py3__Py_XDECREF(PyObject* op)
 #endif
 #pragma pop_macro("_DEBUG")
 } // namespace Plugins
+#endif //#ifdef ENABLE_PYTHON
