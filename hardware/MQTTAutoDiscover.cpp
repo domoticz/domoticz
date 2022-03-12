@@ -423,6 +423,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		|| (object_id == "update_state")
 		|| (object_id == "over-load_status")
 		|| (object_id == "linkquality")
+		|| (object_id == "last_seen")
 		|| (object_id == "sensitivity")
 		|| (object_id == "color_temp_startup")
 		|| (object_id == "requested_brightness_level")
