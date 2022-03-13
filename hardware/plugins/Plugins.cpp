@@ -101,7 +101,7 @@ namespace Plugins
 				Py_ssize_t	tupleSize = PyTuple_Size(pArg);
 				if (tupleSize != 1)
 				{
-					pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+					pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, (int)tupleSize);
 					Py_RETURN_NONE;
 				}
 
@@ -150,7 +150,7 @@ namespace Plugins
 			Py_ssize_t	tupleSize = PyTuple_Size(pArg);
 			if (tupleSize != 1)
 			{
-				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, (int)tupleSize);
 				Py_RETURN_NONE;
 			}
 
@@ -198,7 +198,7 @@ namespace Plugins
 			Py_ssize_t	tupleSize = PyTuple_Size(pArg);
 			if (tupleSize != 1)
 			{
-				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, (int)tupleSize);
 				Py_RETURN_NONE;
 			}
 
@@ -246,7 +246,7 @@ namespace Plugins
 			Py_ssize_t	tupleSize = PyTuple_Size(pArg);
 			if (tupleSize != 1)
 			{
-				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+				pPlugin->Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, (int)tupleSize);
 				Py_RETURN_NONE;
 			}
 

@@ -55,7 +55,7 @@ namespace Plugins
 		Py_ssize_t	tupleSize = PyTuple_Size(pArg);
 		if (tupleSize != 1)
 		{
-			_log.Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, tupleSize);
+			_log.Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, (int)tupleSize);
 			Py_RETURN_NONE;
 		}
 
