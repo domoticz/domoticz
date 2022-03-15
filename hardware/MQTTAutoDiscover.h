@@ -159,6 +159,7 @@ private:
 	void handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
+	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
 private:
 	std::string m_TopicDiscoveryPrefix;
 

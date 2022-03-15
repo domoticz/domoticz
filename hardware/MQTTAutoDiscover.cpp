@@ -1390,7 +1390,7 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 
 		}
 
-		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_unit(pSensor, "w");
+		_tMQTTASensor* pWattSensor = get_auto_discovery_sensor_WATT_unit(pSensor);
 		if (pWattSensor)
 		{
 			fUsage = static_cast<float>(atof(pWattSensor->last_value.c_str()));
@@ -1659,6 +1659,81 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 	}
 	return nullptr;
 }
+
+//This is a special routine that first tries to 
+MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor)
+{
+	//Retrieved sensor from same device with specified measurement unit
+	_tMQTTADevice* pDevice = &m_discovered_devices[pSensor->device_identifiers];
+	if (pDevice == nullptr)
+		return nullptr; //device not found!?
+
+	std::vector<std::string> strarraySensor;
+	StringSplit(pSensor->state_topic, "/", strarraySensor);
+
+	bool bIsZWave = (strarraySensor.size() >= 6);
+	if (!bIsZWave)
+		return get_auto_discovery_sensor_unit(pSensor, "w");
+
+	_tMQTTASensor* pSensor2Return = nullptr;
+
+	// Check for the correct sensor with the largest match in the UID
+	for (const auto ittSensorID : pDevice->sensor_ids)
+	{
+		//if (m_discovered_sensors.find(ittSensorID.first) != m_discovered_sensors.end())
+		{
+			_tMQTTASensor* pTmpDeviceSensor = &m_discovered_sensors[ittSensorID.first];
+
+			std::string szUnit = utf8_to_string(pTmpDeviceSensor->unit_of_measurement);
+			stdlower(szUnit);
+
+			if (szUnit == "w")
+			{
+				if (pSensor->unique_id == pTmpDeviceSensor->unique_id)
+					return pTmpDeviceSensor; //non-zwave?
+
+				std::vector<std::string> strarrayTmp;
+				StringSplit(pTmpDeviceSensor->state_topic, "/", strarrayTmp);
+				if (strarrayTmp.size() < 6)
+					continue; //not interested
+
+				if (strarraySensor.size() == 7)
+				{
+					if (
+						(strarrayTmp[0] == strarraySensor[0])
+						&& (strarrayTmp[1] == strarraySensor[1])
+						&& (strarrayTmp[2] == strarraySensor[2])
+						&& (strarrayTmp[4] == strarraySensor[4])
+						)
+					{
+						if (
+							(pSensor2Return == nullptr)
+							|| (strarrayTmp[3] == "49")
+							)
+							pSensor2Return = pTmpDeviceSensor;
+					}
+				}
+				else
+				{
+					if (
+						(strarrayTmp[0] == strarraySensor[0])
+						&& (strarrayTmp[1] == strarraySensor[1])
+						&& (strarrayTmp[3] == strarraySensor[3])
+						)
+					{
+						if (
+							(pSensor2Return == nullptr)
+							|| (strarrayTmp[2] == "49")
+							)
+							pSensor2Return = pTmpDeviceSensor;
+					}
+				}
+			}
+		}
+	}
+	return pSensor2Return;
+}
+
 
 void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message)
 {
