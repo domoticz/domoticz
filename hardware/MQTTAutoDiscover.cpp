@@ -1660,7 +1660,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 	return nullptr;
 }
 
-//This is a special routine that first tries to 
+//This is a special routine that first tries to return the value of COMMAND_CLASS_SENSOR_MULTILEVEL else from COMMAND_CLASS_METER for ZWave nodes
 MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor)
 {
 	//Retrieved sensor from same device with specified measurement unit
@@ -1668,12 +1668,11 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 	if (pDevice == nullptr)
 		return nullptr; //device not found!?
 
-	std::vector<std::string> strarraySensor;
-	StringSplit(pSensor->state_topic, "/", strarraySensor);
+	if (pSensor->unique_id.find("zwavejs2mqtt_") != 0)
+		return get_auto_discovery_sensor_unit(pSensor, "w"); //not ZWave
 
-	bool bIsZWave = (strarraySensor.size() >= 6);
-	if (!bIsZWave)
-		return get_auto_discovery_sensor_unit(pSensor, "w");
+	std::vector<std::string> strarraySensor;
+	StringSplit(pSensor->unique_id, "-", strarraySensor);
 
 	_tMQTTASensor* pSensor2Return = nullptr;
 
@@ -1693,40 +1692,20 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 					return pTmpDeviceSensor; //non-zwave?
 
 				std::vector<std::string> strarrayTmp;
-				StringSplit(pTmpDeviceSensor->state_topic, "/", strarrayTmp);
-				if (strarrayTmp.size() < 6)
+				StringSplit(pTmpDeviceSensor->unique_id, "-", strarrayTmp);
+				if (strarrayTmp.size() < 4)
 					continue; //not interested
 
-				if (strarraySensor.size() == 7)
+				if (
+					(strarrayTmp[0] == strarraySensor[0])
+					&& (strarrayTmp[2] == strarraySensor[2])
+					)
 				{
 					if (
-						(strarrayTmp[0] == strarraySensor[0])
-						&& (strarrayTmp[1] == strarraySensor[1])
-						&& (strarrayTmp[2] == strarraySensor[2])
-						&& (strarrayTmp[4] == strarraySensor[4])
+						(pSensor2Return == nullptr)
+						|| (strarrayTmp[1] == "49")
 						)
-					{
-						if (
-							(pSensor2Return == nullptr)
-							|| (strarrayTmp[3] == "49")
-							)
-							pSensor2Return = pTmpDeviceSensor;
-					}
-				}
-				else
-				{
-					if (
-						(strarrayTmp[0] == strarraySensor[0])
-						&& (strarrayTmp[1] == strarraySensor[1])
-						&& (strarrayTmp[3] == strarraySensor[3])
-						)
-					{
-						if (
-							(pSensor2Return == nullptr)
-							|| (strarrayTmp[2] == "49")
-							)
-							pSensor2Return = pTmpDeviceSensor;
-					}
+						pSensor2Return = pTmpDeviceSensor;
 				}
 			}
 		}
