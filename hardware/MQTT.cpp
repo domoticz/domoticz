@@ -571,7 +571,7 @@ void MQTT::on_disconnect(int rc)
 			}
 			else
 			{
-				Log(LOG_ERROR, "disconnected, restarting (rc=%d)", rc);
+				Log(LOG_ERROR, "disconnected, restarting (rc=%d/%s)", rc, mosquitto_strerror(rc));
 			}
 			m_subscribed_topics.clear();
 			m_bDoReconnect = true;
@@ -588,15 +588,34 @@ bool MQTT::ConnectInt()
 bool MQTT::ConnectIntEx()
 {
 	m_bDoReconnect = false;
+
+	std::string IPAddress(m_szIPAddress);
+	bool bIsSecure = (IPAddress.find("tls://") == 0);
+	if (bIsSecure)
+		IPAddress = IPAddress.substr(std::string("tls://").size());
+	else
+		bIsSecure = (m_usIPPort = 8883);
+
 	Log(LOG_STATUS, "Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
 	int keepalive = 40;
 
-	if (!m_CAFilename.empty())
+	if (
+		(bIsSecure)
+		|| (!m_CAFilename.empty())
+		)
 	{
 		rc = tls_opts_set(SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], nullptr);
-		rc = tls_set(m_CAFilename.c_str());
+		if (!m_CAFilename.empty())
+		{
+			rc = tls_set(m_CAFilename.c_str());
+		}
+		else
+		{
+			//Use our servers certificate
+			rc = tls_set("./server_cert.pem");
+		}
 		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
@@ -608,10 +627,10 @@ bool MQTT::ConnectIntEx()
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
-	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
+	rc = connect(IPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
 	{
-		Log(LOG_ERROR, "Failed to start, return code: %d (Check IP/Port)", rc);
+		Log(LOG_ERROR, "Failed to start, return code: %d/%s (Check IP/Port)", rc, mosquitto_strerror(rc));
 		m_bDoReconnect = true;
 		return false;
 	}
