@@ -594,7 +594,7 @@ bool MQTT::ConnectIntEx()
 	if (bIsSecure)
 		IPAddress = IPAddress.substr(std::string("tls://").size());
 	else
-		bIsSecure = (m_usIPPort = 8883);
+		bIsSecure = (m_usIPPort == 8883);
 
 	Log(LOG_STATUS, "Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
