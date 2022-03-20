@@ -2280,7 +2280,7 @@ namespace Plugins
 			// if threading module is running then check no threads are still running
 			for (int i=10; PythonThreadCount() && i; i--)
 			{
-				Sleep(1000);
+				sleep_milliseconds(1000);
 			}
 			if (PythonThreadCount())
 				Log(LOG_NORM, "Abandoning wait for Plugin thread shutdown, hang or crash may result.");
