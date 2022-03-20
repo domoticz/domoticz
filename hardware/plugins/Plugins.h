@@ -95,6 +95,7 @@ namespace Plugins {
 	  void ConnectionDisconnect(CDirectiveBase *);
 	  void DisconnectEvent(CEventBase *);
 	  void Callback(PyBorrowedRef& pTarget, const std::string &sHandler, PyObject *pParams);
+	  long PythonThreadCount();
 	  void RestoreThread();
 	  void ReleaseThread();
 	  void Stop();

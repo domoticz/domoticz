@@ -2140,6 +2140,37 @@ namespace Plugins
 		}
 	}
 
+	long CPlugin::PythonThreadCount()
+	{
+		long	lRetVal = 0;
+
+		if (m_PyModule)
+		{
+			PyBorrowedRef	pModuleDict = PyModule_GetDict(m_PyModule);
+			if (pModuleDict)
+			{
+				PyBorrowedRef	pThreadModule = PyDict_GetItemString(pModuleDict, "threading");
+				if (pThreadModule)
+				{
+					PyNewRef pFunc = PyObject_GetAttrString(pThreadModule, "active_count");
+					if (pFunc && PyCallable_Check(pFunc))
+					{
+						PyNewRef	pReturnValue = PyObject_CallObject(pFunc, nullptr);
+						if (pReturnValue.IsLong())
+						{
+							lRetVal = PyLong_AsLong(pReturnValue) - 1;
+							if (lRetVal)
+							{
+								Log(LOG_NORM, "Warning: Plugin has %d Python threads running.", lRetVal);
+							}
+						}
+					}
+				}
+			}
+		}
+		return lRetVal;
+	}
+
 	void CPlugin::Stop()
 	{
 		try
@@ -2246,8 +2277,17 @@ namespace Plugins
 				PyDict_Clear((PyObject*)m_DeviceDict);
 			}
 
+			// if threading module is running then check no threads are still running
+			for (int i=10; PythonThreadCount() && i; i--)
+			{
+				Sleep(1000);
+			}
+			if (PythonThreadCount())
+				Log(LOG_NORM, "Abandoning wait for Plugin thread shutdown, hang or crash may result.");
+
 			// Stop Python
 			Py_XDECREF(m_PyModule);
+			m_PyModule = nullptr;
 			Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict)
 				Py_XDECREF(m_ImageDict);
@@ -2263,11 +2303,11 @@ namespace Plugins
 		}
 		catch (std::exception *e)
 		{
-			Log(LOG_ERROR, "%s: Execption thrown releasing Interpreter: %s", __func__, e->what());
+			Log(LOG_ERROR, "%s: Exception thrown releasing Interpreter: %s", __func__, e->what());
 		}
 		catch (...)
 		{
-			Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
+			Log(LOG_ERROR, "%s: Unknown exception thrown releasing Interpreter", __func__);
 		}
 
 		m_PyModule = nullptr;
