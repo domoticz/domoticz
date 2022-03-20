@@ -2161,7 +2161,7 @@ namespace Plugins
 							lRetVal = PyLong_AsLong(pReturnValue) - 1;
 							if (lRetVal)
 							{
-								Log(LOG_NORM, "Warning: Plugin has %d Python threads running.", lRetVal);
+								Log(LOG_NORM, "Warning: Plugin has %d Python threads running.", (int)lRetVal);
 							}
 						}
 					}
