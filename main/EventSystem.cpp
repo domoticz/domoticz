@@ -3572,14 +3572,29 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		level = calculateDimLevel(deviceID, atoi(oParseResults.sCommand.substr(10).c_str()));
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
 	}
 	else if (oParseResults.sCommand.substr(0, 10) == "Set Volume") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		level = atoi(oParseResults.sCommand.substr(11).c_str());
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
 	}
 	else if (oParseResults.sCommand.substr(0, 13) == "Play Playlist") {
+		if (oParseResults.sCommand.size() < 14)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(14);
 
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3615,6 +3630,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 13);
 	}
 	else if (oParseResults.sCommand.substr(0, 14) == "Play Favorites") {
+		if (oParseResults.sCommand.size() < 15)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
@@ -3628,6 +3648,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
 	}
 	else if (oParseResults.sCommand.substr(0, 7) == "Execute") {
+		if (oParseResults.sCommand.size() < 9)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
@@ -3641,6 +3666,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		previousState = "Set Level";
 	}
 	else if (previousState.substr(0, 10) == "Set Volume") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		previousState = previousState.substr(0, 10);
 	}
 
