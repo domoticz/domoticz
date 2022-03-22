@@ -12813,9 +12813,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 				return false;
 		}
 	}
+	if (!ret)
+		return false;
 	//Also put it in the database, not all devices are awake (battery operated nodes)
 	PushAndWaitRxMessage(pHardware, (const uint8_t*)&tmeter, nullptr, -1, nullptr);
-	return ret;
+	return true;
 }
 
 bool MainWorker::SetClockInt(const std::vector<std::string>& sd, const std::string& clockstr)
