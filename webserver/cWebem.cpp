@@ -1955,6 +1955,29 @@ namespace http {
 			session.remote_port = req.host_remote_port;
 			session.local_port = req.host_local_port;
 
+			if (session.remote_host == "127.0.0.1")
+			{
+				//We could be using a proxy server
+				//Check if we have the "X-Forwarded-For" (connection via proxy)
+				const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
+				if (host_header != NULL)
+				{
+					session.remote_host = host_header;
+					if (strstr(host_header, ",") != NULL)
+					{
+						//Multiple proxies are used... this is not very common
+						host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+						if (!host_header)
+						{
+							_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+							rep = reply::stock_reply(reply::forbidden);
+							return;
+						}
+						session.remote_host = host_header;
+					}
+				}
+			}
+
 			session.reply_status = reply::ok;
 			session.isnew = false;
 			session.forcelogin = false;
