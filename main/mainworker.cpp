@@ -12775,7 +12775,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		{
 			MQTTAutoDiscover *pGateway = dynamic_cast<MQTTAutoDiscover*>(pHardware);
-			ret = pGateway->SetSetpoint(sd[1], TempValue);
+			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}
 	else

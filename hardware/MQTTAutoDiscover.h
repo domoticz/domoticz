@@ -125,7 +125,7 @@ public:
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true);
 	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color);
-	bool SetSetpoint(const std::string& DeviceID, float Temp);
+	bool SetSetpoint(const std::string& DeviceID, const float Temp);
 
 public:
 	void on_message(const struct mosquitto_message *message) override;

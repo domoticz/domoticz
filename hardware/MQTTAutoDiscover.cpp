@@ -3399,11 +3399,7 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	}
 
 	//We might need to convert this to Fahrenheit
-	if (pSensor->temperature_unit == "F")
-	{
-		//Convert to Fahrenheit
-		Temp = (float)ConvertToFahrenheit(Temp);
-	}
+	double TempDest = (pSensor->temperature_unit == "F") ? (float)ConvertToFahrenheit(Temp) : Temp;
 
 	Json::Value root;
 	std::string szSendValue;
@@ -3411,7 +3407,7 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 	{
 		std::string szKey = GetValueTemplateKey(pSensor->temperature_command_template);
 		if (!szKey.empty())
-			root[szKey] = Temp;
+			root[szKey] = TempDest;
 		else
 		{
 			Log(LOG_ERROR, "Climate device unhandled temperature_command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
@@ -3420,12 +3416,27 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 		szSendValue = JSonToRawString(root);
 	}
 	else
-		szSendValue = std_format("%.1f", Temp);
+		szSendValue = std_format("%.1f", TempDest);
 
 	std::string szTopic = pSensor->state_topic;
 	if (!pSensor->temperature_command_topic.empty())
 		szTopic = pSensor->temperature_command_topic;
 	SendMessage(szTopic, szSendValue);
+
+	//Because thermostats could be battery operated and not listening 24/7
+	//we force a value update internally in Domoticz so the user sees the just set SetPoint
+
+	pSensor->sValue = std_format("%.2f", Temp);
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID,
+		pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType);
+	if (result.empty())
+		return false; //?? That's impossible
+	// Update
+	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+		pSensor->nValue, pSensor->sValue.c_str(),
+		result[0][0]);
+
 	return true;
 }
 
