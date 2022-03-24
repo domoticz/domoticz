@@ -319,6 +319,16 @@ namespace http
 				}
 			}
 
+			std::string WebRemoteProxyIPs;
+			int nValue;
+			if (m_sql.GetPreferencesVar("WebRemoteProxyIPs", nValue, WebRemoteProxyIPs))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(WebRemoteProxyIPs, ";", strarray);
+				for (const auto& str : strarray)
+					m_pWebEm->AddRemoteProxyIPs(str);
+			}
+
 			// register callbacks
 			m_pWebEm->RegisterIncludeCode("switchtypes", [this](auto &&content_part) { DisplaySwitchTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("metertypes", [this](auto &&content_part) { DisplayMeterTypesCombo(content_part); });
@@ -8008,8 +8018,10 @@ namespace http
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
+				std::string WebRemoteProxyIPs = CURLEncode::URLDecode(request::findValue(&req, "WebRemoteProxyIPs"));
+				m_sql.UpdatePreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
-				m_webservers.ReloadLocalNetworks();
+				m_webservers.ReloadLocalNetworksAndProxyIPs();
 				cntSettings++;
 				cntSettings++;
 
@@ -12926,6 +12938,10 @@ namespace http
 				else if (Key == "WebLocalNetworks")
 				{
 					root["WebLocalNetworks"] = sValue;
+				}
+				else if (Key == "WebRemoteProxyIPs")
+				{
+					root["WebRemoteProxyIPs"] = sValue;
 				}
 				else if (Key == "RandomTimerFrame")
 				{

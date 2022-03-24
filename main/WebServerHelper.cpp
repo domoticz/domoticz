@@ -102,16 +102,18 @@ namespace http {
 			}
 		}
 
-		void CWebServerHelper::ReloadLocalNetworks()
+		void CWebServerHelper::ReloadLocalNetworksAndProxyIPs()
 		{
-			std::string WebLocalNetworks;
+			std::string WebLocalNetworks, WebRemoteProxyIPs;
 			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			m_sql.GetPreferencesVar("WebRemoteProxyIPs", WebRemoteProxyIPs);
 
 			for (auto &it : serverCollection)
 			{
 				if (it->m_pWebEm == nullptr)
 					continue;
 				it->m_pWebEm->ClearLocalNetworks();
+				it->m_pWebEm->ClearRemoteProxyIPs();
 
 				std::vector<std::string> strarray;
 				StringSplit(WebLocalNetworks, ";", strarray);
@@ -119,6 +121,10 @@ namespace http {
 					it->m_pWebEm->AddLocalNetworks(str);
 				// add local hostname
 				it->m_pWebEm->AddLocalNetworks("");
+
+				StringSplit(WebRemoteProxyIPs, ";", strarray);
+				for (const auto& str : strarray)
+					it->m_pWebEm->AddRemoteProxyIPs(str);
 			}
 		}
 

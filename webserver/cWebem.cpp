@@ -1063,6 +1063,16 @@ namespace http {
 			m_localnetworks.clear();
 		}
 
+		void cWebem::AddRemoteProxyIPs(const std::string& ipaddr)
+		{
+			RemoteProxyIPs.push_back(ipaddr);
+		}
+
+		void cWebem::ClearRemoteProxyIPs()
+		{
+			RemoteProxyIPs.clear();
+		}
+
 		void cWebem::SetDigistRealm(const std::string &realm)
 		{
 			m_DigistRealm = realm;
@@ -1951,27 +1961,27 @@ namespace http {
 			// Initialize session
 			WebEmSession session;
 			session.remote_host = req.host_remote_address;
-			session.local_host = req.host_local_address;
 			session.remote_port = req.host_remote_port;
+			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
 
-			if (session.remote_host == "127.0.0.1")
+			for (const auto& myRemoteProxyIP : myWebem->RemoteProxyIPs)
 			{
-				//We could be using a proxy server
-				//Check if we have the "X-Forwarded-For" (connection via proxy)
-				const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
-				if (host_header != NULL)
+				if (session.remote_host == myRemoteProxyIP)
 				{
-					session.remote_host = host_header;
-					if (strstr(host_header, ",") != NULL)
+					const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
+					if (host_header != nullptr)
 					{
-						//Multiple proxies are used... this is not very common
-						host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-						if (!host_header)
+						if (strstr(host_header, ",") != nullptr)
 						{
-							_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
-							rep = reply::stock_reply(reply::forbidden);
-							return;
+							//Multiple proxies are used... this is not very common
+							host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+							if (!host_header)
+							{
+								_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+								rep = reply::stock_reply(reply::forbidden);
+								return;
+							}
 						}
 						session.remote_host = host_header;
 					}
