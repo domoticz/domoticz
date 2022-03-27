@@ -57,6 +57,7 @@ namespace http
 		typedef struct _tIPNetwork
 		{
 			bool bIsIPv6 = false;
+			std::string ip_string;
 			uint8_t Network[16] = { 0 };
 			uint8_t Mask[16] = { 0 };
 		} IPNetwork;
@@ -194,11 +195,6 @@ namespace http
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(const std::string &password);
-
-			// IPs that are allowed to pass proxy headers
-			std::vector<std::string> RemoteProxyIPs;
-			void AddRemoteProxyIPs(const std::string& ipaddr);
-			void ClearRemoteProxyIPs();
 
 			// Session store manager
 			void SetSessionStore(session_store_impl_ptr sessionStore);

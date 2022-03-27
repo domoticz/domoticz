@@ -1048,10 +1048,7 @@ namespace http {
 						 != 1)
 						return; //invalid address
 					memset((void*)&ipnetwork.Mask, 0xFF, iASize);
-
-					//Apply mask to network address
-					for (ii = 0; ii < iASize; ii++)
-						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
+					ipnetwork.ip_string = network;
 				}
 			}
 
@@ -1061,16 +1058,6 @@ namespace http {
 		void cWebem::ClearLocalNetworks()
 		{
 			m_localnetworks.clear();
-		}
-
-		void cWebem::AddRemoteProxyIPs(const std::string& ipaddr)
-		{
-			RemoteProxyIPs.push_back(ipaddr);
-		}
-
-		void cWebem::ClearRemoteProxyIPs()
-		{
-			RemoteProxyIPs.clear();
 		}
 
 		void cWebem::SetDigistRealm(const std::string &realm)
@@ -1965,9 +1952,11 @@ namespace http {
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
 
-			for (const auto& myRemoteProxyIP : myWebem->RemoteProxyIPs)
+			for (const auto& ittNetwork : myWebem->m_localnetworks)
 			{
-				if (session.remote_host == myRemoteProxyIP)
+				if (ittNetwork.ip_string.empty())
+					continue;
+				if (session.remote_host == ittNetwork.ip_string)
 				{
 					const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
 					if (host_header != nullptr)
