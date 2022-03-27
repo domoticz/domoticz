@@ -45,7 +45,7 @@ jobs:
           sudo apt-get install lua5.3 luarocks
           sudo luarocks install busted
           sudo luarocks install luacov
-          sudo luarocks install lodash
+      # Disabled March 2022 - sudo luarocks install lodash
 
       # get CMake
       - name: cmake-compile
@@ -81,14 +81,14 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
 
-      # Run automated tests
-      - name: unit-tests domoticz-dzVents
-        run: |
-          cd $GITHUB_WORKSPACE/dzVents/runtime/tests
-          busted --coverage -o TAP *
-          luacov
-          tail -19 luacov.report.out
-        continue-on-error: true
+      # Run automated tests (disabled March 2022)
+      #- name: unit-tests domoticz-dzVents
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+      #    busted --coverage -o TAP *
+      #    luacov
+      #    tail -19 luacov.report.out
+      #  continue-on-error: true
 
       - name: functional-tests domoticz
         run: |
