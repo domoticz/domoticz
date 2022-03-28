@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 154
+#define DB_VERSION 155
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2976,6 +2976,29 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Cameras ADD COLUMN [AspectRatio] INTEGER DEFAULT 0");
 		}
+		if (dbversion < 155)
+		{
+			//Merge remote proxy IP's into local networks
+
+			std::string WebLocalNetworks, RemoteProxyIPs;
+			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			m_sql.GetPreferencesVar("WebRemoteProxyIPs", RemoteProxyIPs);
+
+			std::vector<std::string> strarray;
+			StringSplit(RemoteProxyIPs, ";", strarray);
+			for (const auto& str : strarray)
+			{
+				if (WebLocalNetworks.find(str) == std::string::npos)
+				{
+					if (!WebLocalNetworks.empty())
+						WebLocalNetworks += ";";
+					WebLocalNetworks += str;
+				}
+			}
+			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			DeletePreferencesVar("WebRemoteProxyIPs");
+		}
+		
 	}
 	else if (bNewInstall)
 	{
