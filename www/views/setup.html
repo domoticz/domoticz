@@ -1137,14 +1137,14 @@
 							<br>
 							<div class="row-fluid">
 								<div class="span6">
-									<h2><span data-i18n="RemoteProxyIPs">Remote Proxy IPs</span>:</h2>
-									<table class="display" id="webproxytable" border="0" cellpadding="0" cellspacing="0">
+									<h2><span data-i18n="WebsiteProtection"></span>:</h2>
+									<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:60px"><label><span data-i18n="IP Address"></span>: </label></td>
-										<td>
-											<input type="input" id="WebRemoteProxyIPs" name="WebRemoteProxyIPs" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
-											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.1;192.168.0.12)
-										</td>
+										<td align="right"><label><span data-i18n="Authentication"></span>: </label></td>
+										<td><select id="comboauthmethod" name="AuthenticationMethod" style="width:200px" class="combobox ui-corner-all">
+											<option data-i18n="Login Page" value="0">Login Page</option>
+											<option data-i18n="Basic-Auth" value="1">Basic-Auth</option>
+										</select></td>
 									</tr>
 									</table>
 									<br>
@@ -1162,7 +1162,7 @@
 							</div>
 							<br>
 							<div class="row-fluid">
-								<div class="span6">
+								<div class="span12">
 									<h2><span data-i18n="LocalNetworks(no_username/password)"></span>:</h2>
 									<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
@@ -1171,19 +1171,6 @@
 											<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
 											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)
 										</td>
-									</tr>
-									</table>
-									<br>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="WebsiteProtection"></span>:</h2>
-									<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td align="right"><label><span data-i18n="Authentication"></span>: </label></td>
-										<td><select id="comboauthmethod" name="AuthenticationMethod" style="width:200px" class="combobox ui-corner-all">
-											<option data-i18n="Login Page" value="0">Login Page</option>
-											<option data-i18n="Basic-Auth" value="1">Basic-Auth</option>
-										</select></td>
 									</tr>
 									</table>
 									<br>
