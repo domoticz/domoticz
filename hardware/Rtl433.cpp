@@ -25,7 +25,7 @@ CRtl433::CRtl433(const int ID, const std::string& cmdline) :
 	m_cmdline(cmdline)
 {
 	// Basic protection from malicious command line
-	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
+	removeCharsFromString(m_cmdline, ";/$()`<>|&");
 	m_HwdID = ID;
 	/*
 		#ifdef _DEBUG
