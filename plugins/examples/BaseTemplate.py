@@ -24,7 +24,7 @@
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
+#from Domoticz import Devices, Parameters
 
 
 class BasePlugin:
