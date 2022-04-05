@@ -25,7 +25,7 @@
 #define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                      \
 	{                                                                                                                                       \
 		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                               \
-		if (PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                   \
+		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                   \
 			pPlugin->Log(LOG_ERROR, "Failed to add key '%s', value '%s' to dictionary.", key, value.c_str());     \
 	}
 
@@ -1170,7 +1170,7 @@ namespace Plugins
 				//	Python loads the 'site' module automatically and adds extra search directories for module loading
 				//	This code makes the plugin framework function the same way
 				//
-				void *pSiteModule = PyImport_ImportModule("site");
+				PyNewRef	pSiteModule = PyImport_ImportModule("site");
 				if (!pSiteModule)
 				{
 					Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
@@ -1213,17 +1213,25 @@ namespace Plugins
 				//
 				//	Load the 'faulthandler' module to get a python stackdump during a segfault
 				//
-				void *pFaultModule = PyImport_ImportModule("faulthandler");
+				PyNewRef	pFaultModule = PyImport_ImportModule("faulthandler");
 				if (!pFaultModule)
 				{
 					Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", m_PluginKey.c_str());
 				}
 				else
 				{
-					PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pFaultModule, "enable");
+					PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "is_enabled");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
+						PyNewRef	pRetObj = PyObject_CallObject(pFunc, nullptr);
+						if (!pRetObj.IsTrue())
+						{
+							PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+							if (pFunc && PyCallable_Check(pFunc))
+							{
+								PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
+							}
+						}
 					}
 				}
 			}
