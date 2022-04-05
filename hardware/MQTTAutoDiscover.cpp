@@ -913,6 +913,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				pSensor->select_options.push_back(ittMode.asString());
 			}
 		}
+		if (!root["ops"].empty())
+		{
+			for (const auto& ittMode : root["ops"])
+			{
+				pSensor->select_options.push_back(ittMode.asString());
+			}
+		}
 		if ((pSensor->component_type == "select") && (pSensor->select_options.empty()))
 		{
 			Log(LOG_ERROR, "MQTT_Discovery: component_type 'select' received without options! (%s/%s)!", topic.c_str(), qMessage.c_str());
