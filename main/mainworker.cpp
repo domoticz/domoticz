@@ -1036,7 +1036,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
 		break;
 	case HTYPE_IntergasInComfortLAN2RF:
-		pHardware = new CInComfort(ID, Address, Port);
+		pHardware = new CInComfort(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_EVOHOME_WEB:
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
