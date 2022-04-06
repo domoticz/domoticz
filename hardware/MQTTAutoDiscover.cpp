@@ -144,23 +144,6 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 	}
 }
 
-void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template)
-{
-	size_t pos = state_template.find("value_json.");
-	if (pos == std::string::npos)
-		return; //no fixing needed
-	std::string value_json = state_template.substr(pos + std::string("value_json.").size());
-	stdreplace(value_json, "]", "");
-
-	std::string svalue = "/" + value_json;
-
-	pos = command_topic.rfind(svalue);
-	if (pos != (command_topic.size() - svalue.size()))
-		return; //no fixing needed
-
-	command_topic = command_topic.substr(0, pos);
-}
-
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemplate)
 {
 	std::string szKey = szValueTemplate;
@@ -364,6 +347,45 @@ bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szVal
 	}
 	return false;
 }
+
+/*
+Some nodes seem to announce the mode/temperature command topics wrong
+They include the value template name field
+
+For example:
+
+  "mode_command_topic": "zigbee2mqtt/My-ThermControl1/set/system_mode",
+  "mode_state_template": "{{ value_json.system_mode }}",
+
+or:
+
+  "temperature_command_topic": "zigbee2mqtt/My-ThermControl1/set/current_heating_setpoint",
+  "temperature_state_template": "{{ value_json.current_heating_setpoint }}",
+
+This function checks this the command_topic ends with /{template name field}
+and if found removes this from the command topic
+
+The result will be:
+  "mode_command_topic": "zigbee2mqtt/My-ThermControl1/set",
+  "temperature_command_topic": "zigbee2mqtt/My-ThermControl1/set",
+*/
+void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template)
+{
+	size_t pos = state_template.find("value_json.");
+	if (pos == std::string::npos)
+		return; //no fixing needed
+	std::string value_json = state_template.substr(pos + std::string("value_json.").size());
+	stdreplace(value_json, "]", "");
+
+	std::string svalue = "/" + value_json;
+
+	pos = command_topic.rfind(svalue);
+	if (pos != (command_topic.size() - svalue.size()))
+		return; //no fixing needed
+
+	command_topic = command_topic.substr(0, pos);
+}
+
 
 void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message* message)
 {
