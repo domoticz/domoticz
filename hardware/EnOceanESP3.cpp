@@ -2126,24 +2126,31 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		int channel = tsen->LIGHTING2.unitcode - 1;
 		int cmd = tsen->LIGHTING2.cmnd;
 		int pos;
+		
+		// don't keep the last position if the request is for a different node!
+		if (m_last_requested_blind_nodeID != nodeID)
+		{
+			m_last_requested_blind_position = -1;
+			m_last_requested_blind_nodeID = nodeID;
+		}
 
 		if (cmd != gswitch_sStop)
 			pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
 		else
-			pos = LastPosition;
+			pos = m_last_requested_blind_position;
 
-		if (LastPosition == pos)
+		if (m_last_requested_blind_position == pos)
 		{
 			//send command stop si rappuie
 			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
 			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
-			LastPosition = -1;
+			m_last_requested_blind_position = -1;
 		}
 		else
 		{
 			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X", pos, nodeID);
 			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
-			LastPosition = pos;
+			m_last_requested_blind_position = pos;
 		}
 		return true;
 	}

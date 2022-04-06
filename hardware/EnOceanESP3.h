@@ -138,7 +138,13 @@ private:
 	time_t m_RPS_teachin_timer;
 	uint8_t m_RPS_teachin_count;
 
-	int LastPosition = -1;
+	/* Used to keep track of requested blind position.
+	If the same position request is sent twice to the same device, it is translated to a "stop" request.
+	For example:
+		- press the button to close the blind, it starts to close
+		- press the button again, it stops where it is */
+	uint32_t m_last_requested_blind_nodeID = 0;
+	int m_last_requested_blind_position = -1;
 
 	void createOtherVldUteDevices(uint32_t iSenderID, uint8_t rorg, uint8_t func, uint8_t type, uint8_t nb_channel);
 	bool manageVldMessage(uint32_t iSenderID, unsigned char *vldData, uint8_t func, uint8_t type, std::string &m_Name, uint8_t rssi);
