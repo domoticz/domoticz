@@ -135,6 +135,7 @@ public:
 private:
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 	void CleanValueTemplate(std::string& szValueTemplate);
+	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
 	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);

@@ -144,6 +144,23 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 	}
 }
 
+void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template)
+{
+	size_t pos = state_template.find("value_json.");
+	if (pos == std::string::npos)
+		return; //no fixing needed
+	std::string value_json = state_template.substr(pos + std::string("value_json.").size());
+	stdreplace(value_json, "]", "");
+
+	std::string svalue = "/" + value_json;
+
+	pos = command_topic.rfind(svalue);
+	if (pos != (command_topic.size() - svalue.size()))
+		return; //no fixing needed
+
+	command_topic = command_topic.substr(0, pos);
+}
+
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szValueTemplate)
 {
 	std::string szKey = szValueTemplate;
@@ -977,6 +994,10 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		CleanValueTemplate(pSensor->mode_state_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
+
+		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
+		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_state_template);
+
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
