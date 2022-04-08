@@ -360,7 +360,7 @@ For example:
 or:
 
   "temperature_command_topic": "zigbee2mqtt/My-ThermControl1/set/current_heating_setpoint",
-  "temperature_state_template": "{{ value_json.current_heating_setpoint }}",
+  "temperature_command_template": "{{ value_json.current_heating_setpoint }}",
 
 This function checks this the command_topic ends with /{template name field}
 and if found removes this from the command topic
@@ -1018,8 +1018,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		CleanValueTemplate(pSensor->current_temperature_template);
 
 		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
-		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_state_template);
-
+		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
