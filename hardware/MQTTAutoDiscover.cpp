@@ -1036,9 +1036,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else
 			Log(LOG_STATUS, "discovered: %s/%s (unique_id: %s)  supported_color_modes: %s", pDevice->name.c_str(), pSensor->name.c_str(), pSensor->unique_id.c_str(), std_map_to_string(pSensor->supported_color_modes).c_str());
 
-		if (pSensor->component_type == "number")
-			return; //nothing to do for config objects
-
 		//Sanity checks
 		if (pSensor->component_type == "sensor")
 		{
@@ -1156,9 +1153,6 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 	{
 		_tMQTTASensor* pSensor = &itt.second;
 		
-		if (pSensor->component_type == "number")
-			continue; //ignore configs
-
 		if (
 			(pSensor->state_topic == topic)
 			|| (pSensor->position_topic == topic)
