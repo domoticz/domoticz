@@ -1510,15 +1510,11 @@ void MainWorker::ParseRFXLogFile()
 			std::string _line;
 			getline(myfile, _line);
 			size_t tpos = _line.find("=");
-			if (tpos != std::string::npos)
-			{
-				_line = _line.substr(tpos + 1);
-				tpos = _line.find(" ");
-				if (tpos == 0)
-				{
-					_line = _line.substr(1);
-				}
-			}
+			if ((tpos == std::string::npos) || (tpos < 10))
+				continue;
+			if (_line[tpos - 4] != ':')
+				continue;
+			_line = _line.substr(tpos + 1);
 			stdreplace(_line, " ", "");
 			_lines.push_back(_line);
 		}
@@ -1527,17 +1523,19 @@ void MainWorker::ParseRFXLogFile()
 	int HWID = 999;
 	//m_sql.DeleteHardware("999");
 
-	CDomoticzHardwareBase* pHardware = GetHardware(HWID);
+	RFXComTCP* pHardware = (RFXComTCP*)GetHardware(HWID);
 	if (pHardware == NULL)
 	{
-		pHardware = new CDummy(HWID);
+		pHardware = new RFXComTCP(HWID, "127.0.0.1", 1234, CRFXBase::ATYPE_P1_DSMR_5);
 		//pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4, _5));
 		AddDomoticzHardware(pHardware);
+		pHardware->m_bEnableReceive = true;
+		pHardware->m_Name = pHardware->m_ShortName = "RFXCom debug";
 	}
 
 	unsigned char rxbuffer[600];
 	static const char* const lut = "0123456789ABCDEF";
-	for (const auto &hexstring : _lines.begin())
+	for (const auto &hexstring : _lines)
 	{
 		if (hexstring.size() % 2 != 0)
 			continue;//illegal
@@ -1560,16 +1558,9 @@ void MainWorker::ParseRFXLogFile()
 		}
 		if (ii == 0)
 			continue;
-		if (CRFXBase::CheckValidRFXData((const uint8_t*)&rxbuffer))
-		{
-			//pHardware->WriteToHardware((const char *)&rxbuffer, totbytes);
-			DecodeRXMessage(pHardware, (const unsigned char*)&rxbuffer, NULL, 255);
-			sleep_milliseconds(300);
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "Invalid data/length!");
-		}
+
+		pHardware->onInternalMessage((const uint8_t*)&rxbuffer, ii);
+		sleep_milliseconds(300);
 	}
 #endif
 }
