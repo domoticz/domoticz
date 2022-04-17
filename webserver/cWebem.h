@@ -131,6 +131,7 @@ namespace http
 			/// Handle a request and produce a reply.
 			void handle_request(const request &req, reply &rep) override;
 			bool CheckUserAuthorization(std::string &user, const request &req);
+			void set_cors_header(reply& rep);
 
 				private:
 			char *strftime_t(const char *format, time_t rawtime);

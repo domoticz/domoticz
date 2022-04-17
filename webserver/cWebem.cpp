@@ -783,7 +783,7 @@ namespace http {
 				{
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
-					reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+					myRequestHandler.set_cors_header(rep);
 				}
 				else
 				{
@@ -812,7 +812,7 @@ namespace http {
 			reply::add_header_content_type(&rep, strMimeType);
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
-			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+			myRequestHandler.set_cors_header(rep);
 
 			return true;
 		}
@@ -1706,10 +1706,16 @@ namespace http {
 			return bCookie;
 		}
 
+		void cWebemRequestHandler::set_cors_header(reply& rep)
+		{
+			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+		}
+
 		void cWebemRequestHandler::send_authorization_request(reply& rep)
 		{
 			rep = reply::stock_reply(reply::unauthorized);
 			rep.status = reply::unauthorized;
+			set_cors_header(rep);
 			send_remove_cookie(rep);
 			if (myWebem->m_authmethod == AUTH_BASIC)
 			{
@@ -2259,9 +2265,9 @@ namespace http {
 				reply::add_header(&rep, "Content-Length", "0");
 				reply::add_header(&rep, "Content-Type", "text/plain");
 				reply::add_header(&rep, "Access-Control-Max-Age", "3600");
-				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, POST");
 				reply::add_header(&rep, "Access-Control-Allow-Headers", "Authorization, Content-Type");
+				set_cors_header(rep);
 				return;
 			}
 
