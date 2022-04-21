@@ -643,25 +643,22 @@ bool P1MeterBase::CheckCRC()
 	char crc_str[5];
 	strncpy(crc_str, l_buffer + 1, 4);
 	crc_str[4] = 0;
-	uint16_t m_crc16 = (uint16_t)strtoul(crc_str, nullptr, 16);
+	unsigned int m_crc16 = (unsigned int)strtoul(crc_str, nullptr, 16);
 
 	// calculate CRC
-	const unsigned char* c_buffer = m_buffer;
-	uint8_t i;
-	uint16_t crc = 0;
-	int m_size = m_bufferpos;
-	while (m_size--)
+	unsigned int crc = 0;
+	for (int pos = 0; pos < m_bufferpos; pos++)
 	{
-		crc = crc ^ *c_buffer++;
-		for (i = 0; i < 8; i++)
-		{
-			if ((crc & 0x0001))
-			{
-				crc = (crc >> 1) ^ CRC16_ARC_REFL;
+
+		crc ^= (unsigned int)m_buffer[pos];    // XOR byte into least sig. byte of crc
+
+		for (int i = 8; i != 0; i--) {    // Loop over each bit
+			if ((crc & 0x0001) != 0) {      // If the LSB is set
+				crc >>= 1;                    // Shift right and XOR 0xA001
+				crc ^= 0xA001;
 			}
-			else {
-				crc = crc >> 1;
-			}
+			else                            // Else LSB is not set
+				crc >>= 1;                    // Just shift right
 		}
 	}
 	if (crc != m_crc16)

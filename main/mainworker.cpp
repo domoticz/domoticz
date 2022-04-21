@@ -1558,9 +1558,8 @@ void MainWorker::ParseRFXLogFile()
 		}
 		if (ii == 0)
 			continue;
-
 		pHardware->onInternalMessage((const uint8_t*)&rxbuffer, ii);
-		sleep_milliseconds(300);
+		sleep_milliseconds(100);
 	}
 #endif
 }

@@ -45,7 +45,7 @@ class CRFXBase : public P1MeterBase
 
 	std::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE] = { 0 };
-	unsigned char m_rxbufferpos = { 0 };
+	uint16_t m_rxbufferpos = { 0 };
 
       private:
 	static bool CheckValidRFXData(const uint8_t *pData);
