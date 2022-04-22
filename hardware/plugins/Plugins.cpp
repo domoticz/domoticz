@@ -2438,8 +2438,6 @@ namespace Plugins
 		if (!m_DeviceDict)
 			return true;
 
-		return false;
-
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
 		while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, &value))
