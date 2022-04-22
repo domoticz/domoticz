@@ -968,10 +968,14 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		//Climate
 		if (!root["mode_command_topic"].empty())
 			pSensor->mode_command_topic = root["mode_command_topic"].asString();
+		if (!root["hold_command_topic"].empty())
+			pSensor->mode_command_topic = root["hold_command_topic"].asString();
 		if (!root["mode_cmd_t"].empty())
 			pSensor->mode_command_topic = root["mode_cmd_t"].asString();
 		if (!root["mode_state_topic"].empty())
 			pSensor->mode_state_topic = root["mode_state_topic"].asString();
+		if (!root["hold_state_topic"].empty())
+			pSensor->mode_state_topic = root["hold_state_topic"].asString();
 		if (!root["mode_stat_t"].empty())
 			pSensor->mode_state_topic = root["mode_stat_t"].asString();
 		if (!root["mode_state_template"].empty())
@@ -981,6 +985,13 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["modes"].empty())
 		{
 			for (const auto& ittMode : root["modes"])
+			{
+				pSensor->climate_modes.push_back(ittMode.asString());
+			}
+		}
+		if (!root["hold_modes"].empty())
+		{
+			for (const auto& ittMode : root["hold_modes"])
 			{
 				pSensor->climate_modes.push_back(ittMode.asString());
 			}
