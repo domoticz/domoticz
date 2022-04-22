@@ -2875,12 +2875,13 @@ namespace http
 			std::string subject = request::findValue(&req, "subject");
 			std::string body = request::findValue(&req, "body");
 			std::string subsystem = request::findValue(&req, "subsystem");
+			std::string extradata = request::findValue(&req, "extradata");
 			if ((subject.empty()) || (body.empty()))
 				return;
 			if (subsystem.empty())
 				subsystem = NOTIFYALL;
 			// Add to queue
-			if (m_notifications.SendMessage(0, std::string(""), subsystem, std::string(""), subject, body, std::string(""), 1, std::string(""), false))
+			if (m_notifications.SendMessage(0, std::string(""), subsystem, std::string(""), subject, body, extradata, 1, std::string(""), false))
 			{
 				root["status"] = "OK";
 			}
