@@ -3358,6 +3358,10 @@ void MainWorker::decode_Wind(const CDomoticzHardwareBase* pHardware, const tRBUF
 				float chillJatTI = 13.12F + 0.6215F * temp - 11.37F * pow(wspeedms * 3.6F, 0.16F) + 0.3965F * temp * pow(wspeedms * 3.6F, 0.16F);
 				chill = chillJatTI;
 			}
+			else
+			{
+				chill = temp;
+			}
 		}
 	}
 
