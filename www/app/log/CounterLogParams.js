@@ -36,6 +36,7 @@ define(['app', 'log/Chart'], function (app) {
                             }
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
@@ -75,6 +76,7 @@ define(['app', 'log/Chart'], function (app) {
                             crosshairs: false
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
@@ -105,6 +107,7 @@ define(['app', 'log/Chart'], function (app) {
                             crosshairs: false
                         }
                     },
+                    ctrl: ctrl,
                     range: ctrl.range,
                     device: ctrl.device,
                     sensorType: 'counter',
@@ -170,8 +173,11 @@ define(['app', 'log/Chart'], function (app) {
 
         function chartParamsCompareTemplate(ctrl, deviceUnit) {
             const deviceType = ctrl.device.SwitchTypeVal;
-            return {
+            const template = {
                 chartName: $.t('Comparing') + ' ' + $.t(deviceType === chart.deviceTypes.EnergyUsed ? 'Usage' : deviceType === chart.deviceTypes.EnergyGenerated ? 'Generated' : chart.deviceTypes.fromIndex(deviceType)),
+                trendValuationIsReversed: function () {
+                    return deviceType === chart.deviceTypes.EnergyGenerated;
+                },
                 highchartTemplate: {
                     chart: {
                         type: 'column'
@@ -195,21 +201,79 @@ define(['app', 'log/Chart'], function (app) {
                                 + '<table>'
                                 + '<tr><td colspan="2"><b>' + categoryKeyToString(this.x) + '</b></td></tr>'
                                 + this.points.reduce(
-                                    function (s, point) {
-                                        return s
+                                    function (rowsHtml, point) {
+                                        return rowsHtml
                                             + '<tr>'
                                             + '<td><span style="color:' + point.color + '">●</span> ' + point.series.name + ': </td>'
                                             + '<td><b>' + Highcharts.numberFormat(point.y) + '</b></td>'
                                             + '<td><b>' + (deviceUnit ? '&nbsp;' + deviceUnit : '') + '</b></td>'
-                                            + '<td>' + (point.point.options.trend ?
-                                                '<img src="/images/' + point.point.options.trend + '.png" alt="' + point.point.options.trend + '">' : '') + '</td>'
+                                            + '<td style="text-align: center; padding-left: 3px;">' + fontAwesomeIcon(
+                                                    trendToFontAwesomeIconNameAndSize(point.point.options.trend),
+                                                    trendToColor(point.point.options.trend)) + '</td>'
                                             + '</tr>';
                                     }, '')
                                 + '</table>';
+
+                            function trendToFontAwesomeIconNameAndSize(trend) {
+                                if (trend === 'up' || trend === 'down') {
+                                    return {
+                                        name: 'caret-' + trend,
+                                        size: '1.3em'
+                                    };
+                                }
+                                if (trend === 'equal') {
+                                    return {
+                                        name: 'equals',
+                                        size: '0.9em'
+                                    };
+                                }
+                            }
+
+                            function trendToColor(trend) {
+                                const valuation = trendValuation(trend);
+                                if (valuation === 'better') {
+                                    return 'rgb(125,220,78)';
+                                }
+                                if (valuation === 'worse') {
+                                    return 'rgb(255,107,107)';
+                                }
+                                if (valuation === 'same') {
+                                    return 'rgb(192,192,192)';
+                                }
+                            }
+
+                            function trendValuation(trend) {
+                                if (template.trendValuationIsReversed()) {
+                                    if (trend === 'up') {
+                                        return 'better';
+                                    }
+                                    if (trend === 'down') {
+                                        return 'worse';
+                                    }
+                                } else {
+                                    if (trend === 'up') {
+                                        return 'worse';
+                                    }
+                                    if (trend === 'down') {
+                                        return 'better';
+                                    }
+                                }
+                                if (trend === 'equal') {
+                                    return 'same';
+                                }
+                            }
+
+                            function fontAwesomeIcon(nameAndSize, color) {
+                                if (nameAndSize === undefined) {
+                                    return '';
+                                }
+                                return '<i class="fas fa-' + nameAndSize.name + '" style="font-size: ' + nameAndSize.size + '; color: ' + color + ';"></i>';
+                            }
                         }
                     }
                 }
             };
+            return template;
 
             function categoryKeyToString(categoryKey) {
                 return ctrl.groupingBy === 'month' ? monthToString(categoryKey) : categoryKey;

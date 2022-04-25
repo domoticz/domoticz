@@ -295,7 +295,7 @@ void COctoPrintMQTT::WriteInt(const std::string &sendStr)
 
 void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::string &varValue)
 {
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	int ID;
 
@@ -312,11 +312,11 @@ void COctoPrintMQTT::UpdateUserVariable(const std::string &varName, const std::s
 	else
 	{
 		ID = atoi(result[0][0].c_str());
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), szLastUpdate.c_str(), ID);
+		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", varValue.c_str(), sLastUpdate.c_str(), ID);
 	}
 
 	m_mainworker.m_eventsystem.SetEventTrigger(ID, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, szLastUpdate);
+	m_mainworker.m_eventsystem.UpdateUserVariable(ID, varValue, sLastUpdate);
 }
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ManufacturerSpecificData Revision="171" xmlns="https://github.com/OpenZWave/open-zwave">
+<ManufacturerSpecificData Revision="172" xmlns="https://github.com/OpenZWave/open-zwave">
   <Manufacturer id="0028" name="2B Electronics"></Manufacturer>
   <Manufacturer id="0098" name="2GIG Technologies">
     <Product config="2gig/ct50e.xml" id="015e" name="CT50e Thermostat" type="3200"/>
@@ -1771,6 +1771,7 @@
     <Product config="there/800z.xml" id="0001" name="ThereGate" type="0001"/>
   </Manufacturer>
   <Manufacturer id="019b" name="ThermoFloor AS">
+    <Product config="thermofloor/heatitzm.xml" id="3500" name="Heatit ZM Single Relay 16A" type="0004"/>
     <Product config="thermofloor/heatit021.xml" id="0001" name="Heatit Thermostat TF 021" type="0001"/>
     <Product config="thermofloor/heatit021-v1.92.xml" id="0201" name="Heatit Thermostat TF 016 (TF 021 FW > 1.92)" type="0003"/>
     <Product config="thermofloor/heatit056.xml" id="0202" name="Heatit Thermostat TF 056" type="0003"/>

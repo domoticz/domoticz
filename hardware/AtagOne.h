@@ -4,20 +4,18 @@
 
 class CAtagOne : public CDomoticzHardwareBase
 {
-      public:
+public:
 	CAtagOne(int ID, const std::string &Username, const std::string &Password, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
 	~CAtagOne() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SetSetpoint(int idx, float temp);
 
-      private:
+private:
 	void SetPauseStatus(bool bIsPause);
 	void SetOutsideTemp(float temp);
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
 	void SendOutsideTemperature();
 	bool Login();
-	void Logout();
-	std::string GetRequestVerificationToken(const std::string &url);
 	void Init();
 	void SetModes(int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6);
 	bool StartHardware() override;
@@ -25,11 +23,16 @@ class CAtagOne : public CDomoticzHardwareBase
 	void Do_Work();
 	void GetMeterDetails();
 
-      private:
+private:
+	bool GetDeviceDetails(const std::string& ThermostatID);
+	std::string GetHTMLPageValue(const std::string& hpage, const std::string& svalueLng, const bool asFloat);
+	bool GetThermostats(const std::string& shtml);
+	std::string GetRequestVerificationToken(const std::string& url, const std::string& ThermostatID);
+
 	std::string m_UserName;
 	std::string m_Password;
 
-	std::string m_ThermostatID;
+	std::vector<std::string> m_Thermostats;
 
 	bool m_bDoLogin;
 

@@ -1,0 +1,153 @@
+<style>
+.label {
+    margin-right:2px;
+}
+/*
+Uncomment this to debug...
+table, tr, td {
+	border:1px solid red;
+}
+*/
+</style>
+<div id="hardwarecontent" class="container"></div>
+<div id="enoceansp3" style="display:none;">
+	<div id="esp3settingscontent">
+		<section id="nodes">
+			<div class="page-header-small">
+				<table class="display" id="nodesheader" border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td><h1 data-i18n="Nodes">Nodes</h1></td>
+						<td class="pull-right">
+							<div class="dropdown">
+								<button class="btn" type="button" id="dropdownMenu1" data-toggle="dropdown">
+									<span data-i18n="Node management">Node management</span>
+									<span class="caret"></span>
+								</button>
+								<ul class="dropdown-menu pull-right text-right" role="menu" aria-labelledby="dropdownMenu1">
+									<li><a href="javascript:EnableLearnMode();"><button type="button" data-i18n="Include node" class="btn btn-primary">Include node</button></a></li>
+									<li role="presentation" class="divider"></li>
+									<li><a href="javascript:ResetController();"><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
+								</ul>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="row-fluid">
+				<div class="span12">
+					<table class="display" id="nodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+						<thead>
+							<tr style="height:35px;">
+								<th width="80" align="center" data-i18n="NodeID">NodeID</th>
+								<th width="85" align="center" data-i18n="Type">Type</th>
+								<th width="150" align="left" data-i18n="Name">Name</th>
+								<th width="120" align="left" data-i18n="Manufacturer">Manufacturer</th>
+								<th width="75" align="center" data-i18n="EEP">EEP</th>
+								<th align="left" data-i18n="Description">Description</th>
+								<th width="30" align="center"><img src="images/air_signal.png" data-i18n="[title]RF Signal Level"></th>
+								<th width="30" align="center"><img src="images/battery.png" style="transform:rotate(180deg);" data-i18n="[title]Battery Level"></th>
+								<th width="30" align="center" data-i18n="Status">Status</th>
+								<th width="150" align="center" data-i18n="Last Seen">Last Seen</th>
+							</tr>
+						</thead>
+					</table>
+					<table class="display" id="nodestableactions" border="0" cellpadding="0" cellspacing="0" width="100%">
+						<tr>
+							<td>
+								<a class="btnstyle3-dis" id="updatenode" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+								<a class="btnstyle3-dis" id="deletenode" data-i18n="Delete">Delete</a>
+							</td>
+							<td align="right">
+								<a class="btnstyle3" id="refreshnodetable" data-i18n="Refresh" onclick="RefreshNodesTable();">Refresh</a>
+							</td>
+						</tr>
+					</table>
+					<br>
+					<table class="display" id="nodeparameters" border="0" cellpadding="0" cellspacing="0">
+						<tr>
+							<td align="right" style="width:115px"><label for="nodename"><span data-i18n="Name">Name</span>:</label></td>
+							<td><input type="text" id="nodename" name="nodename" style="width:385px;" class="text ui-widget-content ui-corner-all"></td>
+						</tr>
+						<tr>
+							<td align="right" style="width:115px"><label for="nodemanufacturer"><span data-i18n="Manufacturer">Manufacturer</span>:</label></td>
+							<td><select id="nodemanufacturer" ng-model="data.singleselect" style="width:405px;" class="combobox ui-corner-all"></select></td>
+						</tr>
+						<tr>
+							<td align="right" style="width:115px"><span data-i18n="EnOcean Profile">EnOcean Profile</span>:</td>
+							<td>
+								<label for="noderorg"><span data-i18n="RORG">RORG</span>: </label>
+								<select id="noderorg" onChange="OnChangeNodeRORG(this);" style="width:90px; margin-right:1em;" class="combobox ui-corner-all"></select>
+								<label for="nodeeep"><span data-i18n="EEP">EEP</span>: </label>
+								<select id="nodeeep" onChange="OnChangeNodeEEP(this);" style="width:90px; margin-right:1em;" class="combobox ui-corner-all"></select>
+								<span id="nodeeepdesc"></span>
+							</td>
+						</tr>
+						<tr>	
+							<td align="right" style="width:115px"><label for="nodedescription"><span data-i18n="Description"></span>:</label></td>
+							<td><input type="text" id="nodedescription" name="nodedescription" style="width:385px;" class="text ui-widget-content ui-corner-all"></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</section>
+		<section id="optionalnodeconfigurationpane" >
+			<br>
+			<h2 data-i18n="Configuration">Configuration</h2>
+			<br>
+			<div id="nodeconfiguration"></div>
+		</section>
+    </div>
+</div>
+<div class="modal hide fade" id="esp3learnmodedialog" tabindex="-1" role="dialog" aria-labelledby="esp3learnmodedialog" aria-hidden="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 class="modal-title" id="esp3lmdtitle" data-i18n="EnOcean learn mode">EnOcean learn mode</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" name="modalForm">
+					<div class="control-group">
+						<center>
+							<div id="esp3lmdwaiting" style="display:none;">
+								<b><span data-i18n="Teach-in your EnOcean node according to it's documentation...">Teach-in your EnOcean node according to it's documentation...</span></b>
+								<br><br>
+								<div class="sk-fading-circle" style="width:48px; height:48px;">
+									<div class="sk-circle1 sk-circle"></div>
+									<div class="sk-circle2 sk-circle"></div>
+									<div class="sk-circle3 sk-circle"></div>
+									<div class="sk-circle4 sk-circle"></div>
+									<div class="sk-circle5 sk-circle"></div>
+									<div class="sk-circle6 sk-circle"></div>
+									<div class="sk-circle7 sk-circle"></div>
+									<div class="sk-circle8 sk-circle"></div>
+									<div class="sk-circle9 sk-circle"></div>
+									<div class="sk-circle10 sk-circle"></div>
+									<div class="sk-circle11 sk-circle"></div>
+									<div class="sk-circle12 sk-circle"></div>
+								</div>
+								<br><br>
+								<button type="button" onclick="OnCancelTeachIn()" class="btn btn-info" data-dismiss="modal"><span data-i18n="Cancel">Cancel</span></button><br>
+							</div>
+							<div id="esp3lmdteachedin" style="display:none;">
+								<b><span data-i18n="New EnOcean node teached-in">New EnOcean node teached-in</span> :</b>
+								<br><br>
+								<b><span data-i18n="NodeID">NodeID</span> : {{esp3_nodeid}}</b><br>
+								<b><span data-i18n="Manufacturer">Manufacturer</span> : {{esp3_manufacturername}}</b><br>
+								<b><span data-i18n="EEP">EEP</span> : {{esp3_eep}} ({{esp3_description}})</b><br>
+								<br><br>
+								<button type="button" onclick="OnCloseLearnMode()" class="btn btn-default" data-dismiss="modal">OK</button>
+							</div>
+							<div id="esp3lmdtimedout" style="display:none;">
+								<b><span data-i18n="Learn mode timed out!">Learn mode timed out!</span></b>
+								<br><br>
+								<b><span data-i18n="No new EnOcean node teached-in!">No new EnOcean node teached-in!</span></b>
+								<br><br>
+								<button type="button" onclick="OnCloseLearnMode()" class="btn btn-default" data-dismiss="modal">OK</button>
+							</div>
+						</center>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

@@ -39,8 +39,6 @@
 // 12 : shum : description: represents the target humidity
 // 20 : SetPoint
 
-#define Daikin_POLL_INTERVAL 300
-
 #ifdef _DEBUG
 //#define DEBUG_DaikinR
 //#define DEBUG_DaikinW
@@ -77,7 +75,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CDaikin::CDaikin(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password)
+CDaikin::CDaikin(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const int poll)
 	: m_szIPAddress(IPAddress)
 	, m_Username(CURLEncode::URLEncode(username))
 	, m_Password(CURLEncode::URLEncode(password))
@@ -85,6 +83,7 @@ CDaikin::CDaikin(const int ID, const std::string &IPAddress, const unsigned shor
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
 	m_bOutputLog = false;
+	m_poll = poll ? poll : 300;
 	Init();
 }
 
@@ -121,7 +120,7 @@ void CDaikin::Do_Work()
 {
 	time_t last_sci_update = 0;
 	time_t current_time = 0;
-	m_sec_counter = Daikin_POLL_INTERVAL - 2; // Trigger immediatly (in 2s) a POLL after startup.
+	m_sec_counter = m_poll - 2; // Trigger immediatly (in 2s) a POLL after startup.
 	m_last_setcontrolinfo = 0;		  // no set request occured at this point
 	m_force_sci = false;
 
@@ -135,7 +134,7 @@ void CDaikin::Do_Work()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 
-		if (m_sec_counter % Daikin_POLL_INTERVAL == 0)
+		if (m_sec_counter % m_poll == 0)
 		{
 			GetMeterDetails();
 		}
@@ -148,6 +147,7 @@ void CDaikin::Do_Work()
 			m_force_sci = false;
 			m_last_setcontrolinfo = 0;
 			last_sci_update = current_time;
+			m_sec_counter = m_poll - 2; // Force re-reading of values after a set.
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped %s ...", m_szIPAddress.c_str());
@@ -745,7 +745,7 @@ void CDaikin::InsertUpdateSwitchSelector(uint32_t Idx, const bool bIsOn, const i
 				customimage = 7;
 			}
 		}
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '0000000%d') AND (Unit == '%d')", defaultname.c_str(),
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE (HardwareID == %d) AND (DeviceID == '0000000%d') AND (Unit == '%d')", defaultname.c_str(),
 				 (switchtype), customimage, m_HwdID, Idx, xcmd.unitcode);
 
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='0000000%d') AND (Type==%d) AND (Unit == '%d')", m_HwdID, Idx, xcmd.type, xcmd.unitcode);
@@ -969,6 +969,21 @@ void CDaikin::HTTPSetControlInfo()
 	szURL << "&f_rate=" << m_sci_FRateLevel;
 	szURL << "&f_dir=" << m_sci_FDirLevel;
 
+	/*
+	 * We have to update our internal values here regardless of whether the HTTP request
+	 * succeeds or fails. Otherwise, in the latter case Domoticz elements won't be updated
+	 * to reflect the actual state until another command is sent - i.e. if someone requested
+	 * the heat pump to be off, but the HTTP request fails, the Domoticz switch would show
+	 * as off even though the heat pump never received the command... by updating our values
+	 * here, things will be updated on the next poll.
+	 */
+	m_pow = m_sci_OnOFF;
+	m_mode = m_sci_ModeLevel;
+	m_stemp = m_sci_Temp;
+	m_shum = m_sci_Hum;
+	m_f_rate = m_sci_FRateLevel;
+	m_f_dir = m_sci_FDirLevel;
+
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
 		Log(LOG_ERROR, "Error connecting to: %s", m_szIPAddress.c_str());
@@ -980,14 +995,7 @@ void CDaikin::HTTPSetControlInfo()
 
 	if (sResult.find("ret=OK") == std::string::npos)
 	{
-		Log(LOG_ERROR, "Invalid response");
+		Log(LOG_ERROR, "Invalid response: %s", sResult.c_str());
 		return;
 	}
-	// once http sci request is done and OK, update internal values
-	m_pow = m_sci_OnOFF;
-	m_mode = m_sci_ModeLevel;
-	m_stemp = m_sci_Temp;
-	m_shum = m_sci_Hum;
-	m_f_rate = m_sci_FRateLevel;
-	m_f_dir = m_sci_FDirLevel;
 }

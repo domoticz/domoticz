@@ -322,7 +322,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				std::stringstream ssUpdateStat;
 				ssUpdateStat << sztemperature << ";5;" << sznewmode;
 				std::string sdevname;
-				m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+				m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname, true, "");
 			}
 			return true;
 		}
@@ -385,7 +385,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 					ssUpdateStat << ";" << szuntil;
 			}
 			std::string sdevname;
-			m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+			m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname, true, "");
 		}
 		return true;
 	}
@@ -539,11 +539,9 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
-			time_t now = mytime(nullptr);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
+			std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', StrParam1='' WHERE HardwareID=%d AND DeviceID='%s'", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%q', StrParam1='' WHERE HardwareID=%d AND DeviceID='%s'", devname.c_str(), sLastUpdate.c_str(), this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }
@@ -644,7 +642,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	}
 
 	std::string sdevname;
-	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname, true, "");
 
 	if (m_updatedev && (DevRowIdx != -1))
 	{
@@ -706,7 +704,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		{
 			// create device
 			std::string sdevname;
-			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", sdevname);
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", sdevname, true, "");
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
 		}
 		else if ((result[0][1] != szId) || (result[0][2] != ndevname))
@@ -730,7 +728,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		ssUpdateStat << ";" << szuntil;
 
 	std::string sdevname;
-	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
+	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname, true, "");
 
 	// Notify MQTT and various push mechanisms
 	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, "Hot Water", nullptr);
@@ -780,7 +778,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				unsigned long nid = 92000 + row;
 				char ID[40];
 				sprintf(ID, "%lu", nid);
-				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, ID, unit, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", sdevname);
+				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, ID, unit, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", sdevname, true, "");
 				if (DevRowIdx == -1)
 					return (uint8_t)-1;
 				char devname[8];
@@ -1312,7 +1310,7 @@ bool CEvohomeWeb::get_status(int location)
 					// get zone status
 					if ((*j_tcs)["zones"].isArray())
 					{
-						size_t lz = (*j_tcs)["zones"].size();
+						size_t lz = std::min((size_t)(*j_tcs)["zones"].size(), (size_t)m_locations[location].gateways[igw].temperatureControlSystems[itcs].zones.size());
 						for (size_t iz = 0; iz < lz; iz++)
 						{
 							m_locations[location].gateways[igw].temperatureControlSystems[itcs].zones[iz].status = &(*j_tcs)["zones"][(int)(iz)];

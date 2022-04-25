@@ -15,6 +15,7 @@
 #include "mime_types.hpp"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 namespace http {
 	namespace server {
@@ -39,10 +40,7 @@ namespace http {
 			keepalive_ = false;
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
-#ifdef WWW_ENABLE_SSL
-			sslsocket_ = nullptr;
-#endif
-			socket_ = new boost::asio::ip::tcp::socket(io_service);
+			socket_ = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
 		}
 
 #ifdef WWW_ENABLE_SSL
@@ -65,7 +63,7 @@ namespace http {
 			write_in_progress = false;
 			connection_type = ConnectionType::connection_http;
 			socket_ = nullptr;
-			sslsocket_ = new ssl_socket(io_service, context);
+			sslsocket_ = std::make_unique<ssl_socket>(io_service, context);
 		}
 #endif
 
@@ -89,7 +87,7 @@ namespace http {
 		void connection::start()
 		{
 			boost::system::error_code ec;
-			boost::asio::ip::tcp::endpoint endpoint = socket().remote_endpoint(ec);
+			boost::asio::ip::tcp::endpoint remote_endpoint = socket().remote_endpoint(ec);
 			if (ec) {
 				// Prevent the exception to be thrown to run to avoid the server to be locked (still listening but no more connection or stop).
 				// If the exception returns to WebServer to also create a exception loop.
@@ -97,10 +95,19 @@ namespace http {
 				connection_manager_.stop(shared_from_this());
 				return;
 			}
-			host_endpoint_address_ = endpoint.address().to_string();
-			//std::stringstream sstr;
-			//sstr << endpoint.port();
-			//sstr >> host_endpoint_port_;
+			host_remote_endpoint_address_ = remote_endpoint.address().to_string();
+			host_remote_endpoint_port_ = std::to_string(remote_endpoint.port());
+
+			boost::asio::ip::tcp::endpoint local_endpoint = socket().local_endpoint(ec);
+			if (ec) {
+				// Prevent the exception to be thrown to run to avoid the server to be locked (still listening but no more connection or stop).
+				// If the exception returns to WebServer to also create a exception loop.
+				_log.Log(LOG_ERROR, "Getting error '%s' while getting local_endpoint in connection::start", ec.message().c_str());
+				connection_manager_.stop(shared_from_this());
+				return;
+			}
+			host_local_endpoint_address_ = local_endpoint.address().to_string();
+			host_local_endpoint_port_ = std::to_string(local_endpoint.port());
 
 			set_abandoned_timeout();
 
@@ -160,7 +167,7 @@ namespace http {
 						socket().close(ignored_ec);
 					}
 					catch (...) {
-						_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_address_.c_str());
+						_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_remote_endpoint_address_.c_str());
 					}
 					break;
 				case ConnectionType::connection_websocket:
@@ -182,7 +189,7 @@ namespace http {
 				}
 				else
 				{
-					// _log.Log(LOG_ERROR, "connection::handle_handshake Error: %s", error.message().c_str());
+					_log.Debug(DEBUG_WEBSERVER, "connection::handle_handshake Error: %s", error.message().c_str());
 					connection_manager_.stop(shared_from_this());
 				}
 			}
@@ -264,10 +271,9 @@ namespace http {
 		{
 			if (!error && sendfile_.is_open() && !sendfile_.eof())
 			{
-#define FILE_SEND_BUFFER_SIZE 16*1024
 				if (!send_buffer_)
-					send_buffer_ = new uint8_t[FILE_SEND_BUFFER_SIZE];
-				size_t bread = static_cast<size_t>(sendfile_.read((char*)send_buffer_, FILE_SEND_BUFFER_SIZE).gcount());
+					send_buffer_ = std::make_unique<std::array<uint8_t, FILE_SEND_BUFFER_SIZE>>();
+				size_t bread = static_cast<size_t>(sendfile_.read((char *)send_buffer_->data(), FILE_SEND_BUFFER_SIZE).gcount());
 				if (bread <= 0)
 				{
 					//Error reading file!
@@ -275,12 +281,12 @@ namespace http {
 				};
 				if (secure_) {
 #ifdef WWW_ENABLE_SSL
-					boost::asio::async_write(*sslsocket_, boost::asio::buffer(send_buffer_, bread),
+					boost::asio::async_write(*sslsocket_, boost::asio::buffer(*send_buffer_, bread),
 								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 #endif
 				}
 				else {
-					boost::asio::async_write(*socket_, boost::asio::buffer(send_buffer_, bread),
+					boost::asio::async_write(*socket_, boost::asio::buffer(*send_buffer_, bread),
 								 [self = shared_from_this()](auto &&err, auto bytes) { self->handle_write_file(err, bytes); });
 				}
 				return;
@@ -289,8 +295,7 @@ namespace http {
 			if (sendfile_.is_open())
 				sendfile_.close();
 
-			delete[] send_buffer_;
-			send_buffer_ = nullptr;
+			send_buffer_.release();
 			connection_manager_.stop(shared_from_this());
 		}
 
@@ -377,22 +382,85 @@ namespace http {
 					}
 					catch (...)
 					{
-						_log.Log(LOG_ERROR, "Exception parsing HTTP. Address: %s", host_endpoint_address_.c_str());
+						_log.Log(LOG_ERROR, "Exception parsing HTTP. Address: %s", host_remote_endpoint_address_.c_str());
 					}
 
 					if (result) {
+						struct timeval tv;
+						std::time_t newt;
+
+						if(_log.IsACLFlogEnabled())
+						{
+							// Record timestamp (with milliseconds) before starting to process
+						#ifdef CLOCK_REALTIME
+							struct timespec ts;
+							if (!clock_gettime(CLOCK_REALTIME, &ts))
+							{
+								tv.tv_sec = ts.tv_sec;
+								tv.tv_usec = ts.tv_nsec / 1000;
+							}
+							else
+						#endif
+								gettimeofday(&tv, nullptr);
+							newt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+						}
+
 						size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 						_buf.consume(sizeread);
 						reply_.reset();
 						const char* pConnection = request_.get_req_header(&request_, "Connection");
 						keepalive_ = pConnection != nullptr && boost::iequals(pConnection, "Keep-Alive");
 						request_.keep_alive = keepalive_;
-						request_.host_address = host_endpoint_address_;
-						request_.host_port = host_endpoint_port_;
-						if (request_.host_address.substr(0, 7) == "::ffff:") {
-							request_.host_address = request_.host_address.substr(7);
+						request_.host_remote_address = host_remote_endpoint_address_;
+						request_.host_local_address = host_local_endpoint_address_;
+						if (request_.host_remote_address.substr(0, 7) == "::ffff:") {
+							request_.host_remote_address = request_.host_remote_address.substr(7);
 						}
+						if (request_.host_local_address.substr(0, 7) == "::ffff:") {
+							request_.host_local_address = request_.host_local_address.substr(7);
+						}
+						request_.host_remote_port = host_remote_endpoint_port_;
+						request_.host_local_port = host_local_endpoint_port_;
 						request_handler_.handle_request(request_, reply_);
+
+						if(_log.IsACLFlogEnabled())	// Only do this if we are gonna use it, otherwise don't spend the compute power
+						{
+							// Generate webserver logentry
+							// Follow Apache's Combined Log Format, allows easy processing by 3rd party tools
+							// LogFormat "%h %l %u %f \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
+							// 127.0.0.1 - frank [10/Oct/2000:13:55:36.012 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://my.domoticz.local/index.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
+							std::string wlHost = request_.host_remote_address;
+							std::string wlUser = "-";	// Maybe we can fill this sometime? Or maybe not so we don't expose sensitive data?
+							std::string wlReqUri = request_.method + " " + request_.uri + " HTTP/" + std::to_string(request_.http_version_major) + (request_.http_version_minor ? "." + std::to_string(request_.http_version_minor): "");
+							std::string wlReqRef = "-";
+							if (request_.get_req_header(&request_, "Referer") != nullptr)
+							{
+								std::string shdr = request_.get_req_header(&request_, "Referer");
+								wlReqRef = "\"" + shdr + "\"";
+							}
+							std::string wlBrowser = "-";
+							if (request_.get_req_header(&request_, "User-Agent") != nullptr)
+							{
+								std::string shdr = request_.get_req_header(&request_, "User-Agent");
+								wlBrowser = "\"" + shdr + "\"";
+							}
+							int wlResCode = (int)reply_.status;
+							int wlContentSize = (int)reply_.content.length();
+
+							std::stringstream sstr;
+							sstr << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+							std::string wlReqTimeMs = sstr.str();
+
+							char wlReqTime[32];
+							std::strftime(wlReqTime, sizeof(wlReqTime), "%d/%b/%Y:%H:%M:%S", std::localtime(&newt));
+							wlReqTime[sizeof(wlReqTime) - 1] = '\0';
+
+							char wlReqTimeZone[16];
+							std::strftime(wlReqTimeZone, sizeof(wlReqTimeZone), "%z", std::localtime(&newt));
+							wlReqTimeZone[sizeof(wlReqTimeZone) - 1] = '\0';
+
+							_log.ACLFlog("%s - %s [%s.%s %s] \"%s\" %d %d %s %s", wlHost.c_str(), wlUser.c_str(), wlReqTime, wlReqTimeMs.c_str(), wlReqTimeZone, wlReqUri.c_str(), wlResCode, wlContentSize, wlReqRef.c_str(), wlBrowser.c_str());
+						}
 
 						if (reply_.status == reply::switching_protocols) {
 							// this was an upgrade request
@@ -440,7 +508,7 @@ namespace http {
 					}
 					else if (!result)
 					{
-						_log.Log(LOG_ERROR, "Error parsing http request address: %s", host_endpoint_address_.c_str());
+						_log.Log(LOG_ERROR, "Error parsing http request address: %s", host_remote_endpoint_address_.c_str());
 						keepalive_ = false;
 						reply_ = reply::stock_reply(reply::bad_request);
 						MyWrite(reply_.to_string(request_.method));
@@ -530,16 +598,6 @@ namespace http {
 			}
 		}
 
-		connection::~connection()
-		{
-			// free up resources, delete the socket pointers
-			delete socket_;
-#ifdef WWW_ENABLE_SSL
-			delete sslsocket_;
-#endif
-			delete[] send_buffer_;
-		}
-
 		// schedule read timeout timer
 		void connection::set_read_timeout() {
 			read_timer_.expires_from_now(boost::posix_time::seconds(read_timeout_));
@@ -552,11 +610,11 @@ namespace http {
 				boost::system::error_code ignored_ec;
 				read_timer_.cancel(ignored_ec);
 				if (ignored_ec) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
+					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_remote_endpoint_address_.c_str(), ignored_ec.message().c_str());
 				}
 			}
 			catch (...) {
-				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_address_.c_str());
+				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_remote_endpoint_address_.c_str());
 			}
 		}
 
@@ -595,11 +653,11 @@ namespace http {
 				boost::system::error_code ignored_ec;
 				abandoned_timer_.cancel(ignored_ec);
 				if (ignored_ec) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
+					_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_remote_endpoint_address_.c_str(), ignored_ec.message().c_str());
 				}
 			}
 			catch (...) {
-				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_address_.c_str());
+				_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_remote_endpoint_address_.c_str());
 			}
 		}
 
@@ -612,7 +670,7 @@ namespace http {
 		/// stop connection on abandoned timeout
 		void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
 			if (error != boost::asio::error::operation_aborted) {
-				_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_address_.c_str(), status_);
+				_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_remote_endpoint_address_.c_str(), status_);
 				connection_manager_.stop(shared_from_this());
 			}
 		}

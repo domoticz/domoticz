@@ -298,14 +298,8 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 			bNoChange = true;
 		if (bNoChange)
 		{
-			time_t now = time(nullptr);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')", szLastUpdate, m_HwdID, szIdx);
+			std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q')", sLastUpdate.c_str(), m_HwdID, szIdx);
 			return;
 		}
 	}
@@ -422,7 +416,7 @@ void CNest::GetMeterDetails()
 			return;
 		}
 		int SwitchIndex = 1;
-		for (Json::Value::iterator itDevice = root["topaz"].begin(); itDevice != root["topaz"].end(); ++itDevice)
+		for (auto itDevice = root["topaz"].begin(); itDevice != root["topaz"].end(); ++itDevice)
 		{
 			Json::Value device = *itDevice;
 			std::string devstring = itDevice.key().asString();
@@ -536,7 +530,7 @@ void CNest::GetMeterDetails()
 	}
 
 	size_t iThermostat = 0;
-	for (Json::Value::iterator ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
+	for (auto ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
 		Json::Value nstructure = *ittStructure;
 		if (!nstructure.isObject())

@@ -1,0 +1,78 @@
+<br>
+<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
+	<tr id="mqtt_preventloop" valign="top">
+		<td align="right" style="width:110px"><label for="combopreventloop"><span data-i18n="Prevent Loop">Prevent Loop</span>:</label></td>
+		<td>
+			<select id="combopreventloop" style="width:200px" class="combobox ui-corner-all">
+				<option value="0">False</option>
+				<option value="1" selected>True</option>
+			</select>
+			<br>
+			<span>
+				If 'False' this will cause the MQTT message to be echoed back. <br>
+				In most cases this is a bad scenario and should be avoided.<br>
+		</td>
+	</tr>
+	<tr id="mqtt_publish" valign="top" hidden>
+		<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
+		<td>
+			<select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+				<option value="1">Flat</option>
+				<option value="2">Floor/Room</option>
+				<option value="3">Flat + Floor/Room</option>
+				<option value="4">Index</option>
+				<option value="132">Index (with Retain)</option>
+				<option value="8">Name</option>
+				<option value="136">Name (with Retain)</option>
+				<option value="0">None</option>
+			</select>
+			<br>
+			<span>
+				Select the Topic('s) Domoticz will use to publish outgoing messages. <br>
+				<b>Flat</b> - publish outgoing messages on topic <i>{domoticz/out}</i>.<br>
+				<b>Hierarchical</b> - publish outgoing messages on topic <i>{domoticz/out}/{$floorplan name}/{$plan name}</i>.<br>
+				<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br>
+				<b>Index</b> - publish outgoing messages on topic <i>{domoticz/out}/{$idx}</i>.&nbsp;(with or without Retain bit)<br>
+				<b>Name</b> - publish outgoing messages on topic <i>{domoticz/out}/{$name}</i>.&nbsp;(with or without Retain bit)<br>
+				<b>None</b> - disable outgoing messages.<br>
+				<br>
+				Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.<br>
+				<br>
+		</td>
+	</tr>
+	<tr id="mqtt_topic_in_out">
+		<td align="right" style="width:110px"><label for="mqtttopicin"><span data-i18n="Topic In Prefix"></span>:</label></td>
+		<td>
+			<input type="text" id="mqtttopicin" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="domoticz/in">
+			&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b><span data-i18n="Disabled"></span></b>
+		</td>
+	</tr>
+	<tr id="mqtt_topic_in_out">
+		<td align="right" style="width:110px"><label for="mqtttopicout"><span data-i18n="Topic Out Prefix"></span>:</label></td>
+		<td>
+			<input type="text" id="mqtttopicout" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="domoticz/out">
+			&#8592;&nbsp;<span data-i18n="Leave empty for"></span>&nbsp;<b><span data-i18n="Disabled"></span></b>
+		</td>
+	</tr>
+	<tr id="mqtt_auto_dicovery">
+		<td align="right"><label for="mqttdiscoveryprefix"><span data-i18n="Auto Discovery Prefix">Auto Discovery Prefix</span>:</label></td>
+		<td>
+			<input type="text" id="mqttdiscoveryprefix" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+			&#8592;&nbsp;<span>(for example <b>domoticz</b> or <b>homeassistant</b>)</span>&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+		<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+	</tr>
+	<tr>
+		<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="TLS Version">TLS Version</span>:</label></td>
+		<td>
+			<select id="combotlsversion" style="width:200px" class="combobox ui-corner-all">
+				<option value="0">tlsv1</option>
+				<option value="1">tlsv1.1</option>
+				<option value="2">tlsv1.2</option>
+			</select>
+		</td>
+	</tr>
+</table>

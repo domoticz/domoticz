@@ -42,7 +42,6 @@ extern http::server::CWebServerHelper m_webservers;
 #include "../hardware/plugins/PluginMessages.h"
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
-extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
 // Helper table for Blockly and SQL name mapping
@@ -196,7 +195,7 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
-	std::string dzv_Dir, s;
+	std::string dzv_Dir;
 	CdzVents* dzvents = CdzVents::GetInstance();
 	dzvents->m_bdzVentsExist = false;
 
@@ -239,16 +238,14 @@ void CEventSystem::LoadEvents()
 		}
 	}
 
-	std::vector<std::string> FileEntries;
-	std::string filename;
-
 	// Remove dzVents DB files from disk
+	std::vector<std::string> FileEntries;
 	DirectoryListing(FileEntries, dzv_Dir, false, true);
 	for (const auto &file : FileEntries)
 	{
-		filename = dzv_Dir + file;
-		if (filename.find("README.md") == std::string::npos)
-			std::remove(filename.c_str());
+		if (file.find("README.md") != std::string::npos)
+			continue;
+		std::remove((dzv_Dir + file).c_str());
 	}
 
 	result = m_sql.safe_query(
@@ -273,9 +270,9 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				s = dzv_Dir + eitem.Name + ".lua";
-				_log.Log(LOG_STATUS, "dzVents: Write file: %s", s.c_str());
-				FILE *fOut = fopen(s.c_str(), "wb+");
+				std::string sFile = dzv_Dir + eitem.Name + ".lua";
+				_log.Log(LOG_STATUS, "dzVents: Write file: %s", sFile.c_str());
+				FILE* fOut = fopen(sFile.c_str(), "wb+");
 				if (fOut)
 				{
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
@@ -284,7 +281,7 @@ void CEventSystem::LoadEvents()
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s",  s.c_str());
+					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s", sFile.c_str());
 				}
 			}
 		}
@@ -1228,7 +1225,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 
 	bool bEventTrigger = true;
 	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
-	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
+	auto itt = m_scenesgroups.find(ulDevID);
 	if (itt != m_scenesgroups.end())
 	{
 		_tScenesGroups replaceitem = itt->second;
@@ -1264,7 +1261,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
-	std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
+	auto itt = m_uservariables.find(ulDevID);
 	if (itt == m_uservariables.end())
 		return; //not found
 
@@ -1291,7 +1288,7 @@ void CEventSystem::UpdateBatteryLevel(const uint64_t ulDevID, const unsigned cha
 		return;
 
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+	auto itt = m_devicestates.find(ulDevID);
 
 	if (itt != m_devicestates.end())
 	{
@@ -1324,8 +1321,7 @@ std::string CEventSystem::UpdateSingleState(
 
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-
+	auto itt = m_devicestates.find(ulDevID);
 	if (itt != m_devicestates.end())
 	{
 		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
@@ -1961,7 +1957,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 
 	if (Argument.find("temperaturedevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_tempValuesByID.find(dindex);
+		auto itt = m_tempValuesByID.find(dindex);
 		if (itt != m_tempValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1971,7 +1967,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("dewpointdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_dewValuesByID.find(dindex);
+		auto itt = m_dewValuesByID.find(dindex);
 		if (itt != m_dewValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1981,7 +1977,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("humiditydevice") == 0)
 	{
-		std::map<uint64_t, int>::const_iterator itt = m_humValuesByID.find(dindex);
+		auto itt = m_humValuesByID.find(dindex);
 		if (itt != m_humValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1991,7 +1987,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("barometerdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_baroValuesByID.find(dindex);
+		auto itt = m_baroValuesByID.find(dindex);
 		if (itt != m_baroValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2001,7 +1997,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("utilitydevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_utilityValuesByID.find(dindex);
+		auto itt = m_utilityValuesByID.find(dindex);
 		if (itt != m_utilityValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2011,7 +2007,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("weatherdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_weatherValuesByID.find(dindex);
+		auto itt = m_weatherValuesByID.find(dindex);
 		if (itt != m_weatherValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2021,7 +2017,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("raindevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_rainValuesByID.find(dindex);
+		auto itt = m_rainValuesByID.find(dindex);
 		if (itt != m_rainValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2031,7 +2027,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("rainlasthourdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_rainLastHourValuesByID.find(dindex);
+		auto itt = m_rainLastHourValuesByID.find(dindex);
 		if (itt != m_rainLastHourValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2041,7 +2037,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("uvdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_uvValuesByID.find(dindex);
+		auto itt = m_uvValuesByID.find(dindex);
 		if (itt != m_uvValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2051,7 +2047,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("winddirdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_winddirValuesByID.find(dindex);
+		auto itt = m_winddirValuesByID.find(dindex);
 		if (itt != m_winddirValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2061,7 +2057,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("windspeeddevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_windspeedValuesByID.find(dindex);
+		auto itt = m_windspeedValuesByID.find(dindex);
 		if (itt != m_windspeedValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2071,7 +2067,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("windgustdevice") == 0)
 	{
-		std::map<uint64_t, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
+		auto itt = m_windgustValuesByID.find(dindex);
 		if (itt != m_windgustValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -2081,7 +2077,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("variable") == 0)
 	{
-		std::map<uint64_t, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
+		auto itt = m_uservariables.find(dindex);
 		if (itt != m_uservariables.end())
 		{
 			return itt->second.variableValue;
@@ -2089,7 +2085,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("zwavealarms") == 0)
 	{
-		std::map<uint64_t, int>::const_iterator itt = m_zwaveAlarmValuesByID.find(dindex);
+		auto itt = m_zwaveAlarmValuesByID.find(dindex);
 		if (itt != m_zwaveAlarmValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -3576,20 +3572,35 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		level = calculateDimLevel(deviceID, atoi(oParseResults.sCommand.substr(10).c_str()));
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
 	}
 	else if (oParseResults.sCommand.substr(0, 10) == "Set Volume") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		level = atoi(oParseResults.sCommand.substr(11).c_str());
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
 	}
 	else if (oParseResults.sCommand.substr(0, 13) == "Play Playlist") {
+		if (oParseResults.sCommand.size() < 14)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(14);
 
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
 		{
-			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi			*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			std::string		sPlayList = sParams;
 			size_t			iLastSpace = sParams.find_last_of(' ', sParams.length());
 
@@ -3609,7 +3620,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
 			if (pBaseHardware == nullptr)
 				return false;
-			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+			CLogitechMediaServer *pHardware = dynamic_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr(14));
 			if (iPlaylistID == 0) return false;
@@ -3619,11 +3630,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 13);
 	}
 	else if (oParseResults.sCommand.substr(0, 14) == "Play Favorites") {
+		if (oParseResults.sCommand.size() < 15)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
 		{
-			//CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			//CKodi			*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
 				level = atoi(sParams.c_str());
@@ -3632,11 +3648,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
 	}
 	else if (oParseResults.sCommand.substr(0, 7) == "Execute") {
+		if (oParseResults.sCommand.size() < 9)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
 		{
-			CKodi	*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi	*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			pHardware->SetExecuteCommand(deviceID, sParams);
 		}
 	}
@@ -3645,6 +3666,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		previousState = "Set Level";
 	}
 	else if (previousState.substr(0, 10) == "Set Volume") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		previousState = previousState.substr(0, 10);
 	}
 

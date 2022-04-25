@@ -64,6 +64,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
+  ADD_DEFINITIONS( -D_FILE_OFFSET_BITS=64 )
 ENDIF()
 
 ### VERSIONING SUPPORT
@@ -253,6 +254,7 @@ hardware/Meteorologisk.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
+hardware/MQTTAutoDiscover.cpp
 hardware/MultiFun.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
@@ -291,6 +293,7 @@ hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp
+hardware/RFLinkMQTT.cpp
 hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
@@ -307,7 +310,6 @@ hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
 hardware/SysfsGpio.cpp
 hardware/Tado.cpp
-hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/TeleinfoBase.cpp
@@ -363,8 +365,6 @@ webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/fastcgi.cpp
 webserver/mime_types.cpp
-webserver/proxycereal.cpp
-webserver/proxyclient.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp
@@ -418,15 +418,14 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 ENDIF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
 
 IF(USE_PYTHON)
-  find_package(PythonInterp 3.4)
-  find_package(PythonLibs 3.4)
-  IF(PYTHONLIBS_FOUND)
-    MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
-    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+  find_package(Python3 3.4 COMPONENTS Development)
+  IF(Python3_Development_FOUND)
+    MESSAGE(STATUS "Python3 version ${Python3_VERSION} includes found at: ${Python3_INCLUDE_DIRS}")
+    INCLUDE_DIRECTORIES(${Python3_INCLUDE_DIRS})
     add_definitions(-DENABLE_PYTHON)
-  ELSE(PYTHONLIBS_FOUND)
+  ELSE(Python3_Development_FOUND)
     MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON=NO or sudo apt-get install python3-dev)")
-  ENDIF(PYTHONLIBS_FOUND)
+  ENDIF(Python3_Development_FOUND)
 ENDIF(USE_PYTHON)
 
 CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)

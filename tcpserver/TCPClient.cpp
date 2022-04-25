@@ -3,7 +3,6 @@
 #include "TCPServer.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../webserver/proxyclient.h"
 
 namespace tcp {
 namespace server {
@@ -95,48 +94,6 @@ void CTCPClient::handleWrite(const boost::system::error_code& error)
 		pConnectionManager->stopClient(shared_from_this());
 	}
 }
-
-#ifndef NOCLOUD
-/* shared server via proxy client class */
-CSharedClient::CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username) :
-	CTCPClientBase(pManager),
-	m_token(token)
-{
-	m_username = username;
-	m_pProxyClient = proxy;
-}
-
-void CSharedClient::start()
-{
-	m_bIsLoggedIn = true;
-}
-
-void CSharedClient::stop()
-{
-	m_bIsLoggedIn = false;
-}
-
-void CSharedClient::OnIncomingData(const unsigned char *data, size_t bytes_transferred)
-{
-	if (!m_bIsLoggedIn) {
-		return;
-	}
-	pConnectionManager->DoDecodeMessage(this, data);
-}
-
-void CSharedClient::write(const char *pData, size_t Length)
-{
-	if (!m_bIsLoggedIn)
-		return;
-	// RK, todo: m_pProxyClient is not valid after a reconnect
-	m_pProxyClient->WriteSlaveData(m_token, pData, Length);
-}
-
-bool CSharedClient::CompareToken(const std::string &token)
-{
-	return (token == m_token);
-}
-#endif
 
 } // namespace server
 } // namespace tcp

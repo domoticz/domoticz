@@ -403,7 +403,7 @@ void CEnOceanESP2::Do_Work()
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
 
-			std::vector<std::string>::iterator itt = m_sendqueue.begin();
+			auto itt = m_sendqueue.begin();
 			if (itt != m_sendqueue.end())
 			{
 				std::string sBytes = *itt;
@@ -1045,24 +1045,25 @@ bool CEnOceanESP2::ParseData()
 				uint16_t manID = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 				uint8_t func = pFrame->DATA_BYTE3 >> 2;
 				uint8_t type = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
+
 				Log(LOG_NORM, "4BS Teach-in diagram: Node %08X Manufacturer %02X (%s) Profile %02X Type %02X (%s)",
 					nodeID, manID, GetManufacturerName(manID),
 					func, type, GetEEPLabel(RORG_4BS, func, type));
 
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, nodeID);
+				result = m_sql.safe_query("SELECT ID FROM EnOceanNodes WHERE (HardwareID==%d) AND (NodeID==%u)", m_HwdID, nodeID);
 				if (result.empty())
 				{ // Add it to the database
 					m_sql.safe_query(
-						"INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, Type) VALUES (%d,'%08X',%u,%u,%u)",
-						m_HwdID, nodeID, manID, func, type);
+						"INSERT INTO EnOceanNodes (HardwareID, NodeID, ManufacturerID, RORG, Func, Type) VALUES (%d,%u,%u,%u,%u,%u)",
+						m_HwdID, nodeID, manID, RORG_4BS, func, type);
 				}
 			}
 		}
 		else
 		{ // Following sensors need to have had a teach-in
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Manufacturer, Profile, Type FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%08X')", m_HwdID, nodeID);
+			result = m_sql.safe_query("SELECT ID, ManufacturerID, Func, Type FROM EnOceanNodes WHERE (HardwareID==%d) AND (NodeID==%u)", m_HwdID, nodeID);
 			if (result.empty())
 			{
 				char* pszHumenTxt = enocean_hexToHuman(pFrame);
@@ -1177,11 +1178,11 @@ bool CEnOceanESP2::ParseData()
 				sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(RORG_4BS, Profile, iType), 255, m_Name.c_str());
 			}
 			else if (Profile == 0x10 && iType <= 0x0D)
-			{ // A5-10-01..OD, Room Operating Panel
+			{ // A5-10-01..0D, Room Operating Panel
 				RBUF tsen;
 
 				if (Manufacturer != ELTAKO)
-				{ // General case for A5-10-01..OD
+				{ // General case for A5-10-01..0D
 					// pFrame->DATA_BYTE3 is the fan speed
 					// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
 					// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C

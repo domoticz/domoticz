@@ -14,7 +14,7 @@
 class CInComfort : public CDomoticzHardwareBase
 {
       public:
-	CInComfort(int ID, const std::string &IPAddress, unsigned short usIPPort);
+	CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password);
 	~CInComfort() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	void SetSetpoint(int idx, float temp);
@@ -35,6 +35,10 @@ class CInComfort : public CDomoticzHardwareBase
       private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+	std::string m_szUsername;
+	std::string m_szPassword;
+
+
 	std::shared_ptr<std::thread> m_thread;
 
 	time_t m_LastUpdateFrequentChangingValues;

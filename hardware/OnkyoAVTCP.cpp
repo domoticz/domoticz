@@ -367,7 +367,7 @@ void OnkyoAVTCP::ReceiveSwitchMsg(const char *pData, int Len, bool muting, int I
 	if (switch_types[ID].subtype == sSwitchTypeSelector)
 	{
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
-		std::map<std::string, std::string>::const_iterator itt = options.find("LevelActions");
+		auto itt = options.find("LevelActions");
 		if (itt == options.end())
 			return;
 		std::string sOptions = itt->second;
@@ -711,7 +711,7 @@ namespace http
 						CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_OnkyoAVTCP);
 						if (pBaseHardware == nullptr)
 							return;
-						OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP *>(pBaseHardware);
+						OnkyoAVTCP *pOnkyoAVTCP = dynamic_cast<OnkyoAVTCP *>(pBaseHardware);
 
 						pOnkyoAVTCP->SendPacket(sAction.c_str());
 						root["status"] = "OK";

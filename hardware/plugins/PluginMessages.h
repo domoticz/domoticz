@@ -9,7 +9,6 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
-	extern std::mutex PythonMutex;			// controls access to Python
 	extern struct PyModuleDef DomoticzExModuleDef;
 
 	class CPluginMessageBase
@@ -35,10 +34,8 @@ namespace Plugins {
 		virtual const char* Name() { return m_Name.c_str(); };
 		virtual void Process(CPlugin*	pPlugin)
 		{
-			std::lock_guard<std::mutex> l(PythonMutex);
-			pPlugin->RestoreThread();
+			AccessPython	Guard(pPlugin, m_Name.c_str());
 			ProcessLocked(pPlugin);
-			pPlugin->ReleaseThread();
 		};
 	};
 
@@ -63,7 +60,6 @@ namespace Plugins {
 		InitializeMessage() : CPluginMessageBase() { m_Name = __func__; };
 		void Process(CPlugin* pPlugin) override
 		{
-			std::lock_guard<std::mutex> l(PythonMutex);
 			pPlugin->Initialise();
 		};
 		void ProcessLocked(CPlugin* pPlugin) override{};
@@ -614,10 +610,8 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		CDirectiveBase() : CPluginMessageBase() {};
 		void Process(CPlugin* pPlugin) override
 		{
-			std::lock_guard<std::mutex> l(PythonMutex);
-			pPlugin->RestoreThread();
+			AccessPython	Guard(pPlugin, m_Name.c_str());
 			ProcessLocked(pPlugin);
-			pPlugin->ReleaseThread();
 		};
 	};
 

@@ -19,7 +19,7 @@ class CDomoticzHardwareBase : public StoppableTask
 {
 	friend class MainWorker;
 
-      public:
+	public:
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase() = default;
 
@@ -29,6 +29,9 @@ class CDomoticzHardwareBase : public StoppableTask
 	bool RestartWithDelay(long seconds);
 	virtual bool WriteToHardware(const char *pdata, unsigned char length) = 0;
 	virtual bool CustomCommand(uint64_t idx, const std::string &sCommand);
+	virtual std::string GetManualSwitchesJsonConfiguration() const;
+	virtual void GetManualSwitchParameters(const std::multimap<std::string, std::string> &Parameters, _eSwitchType &SwitchTypeInOut, int &LightTypeInOut,
+		int &dTypeOut, int &dSubTypeOut, std::string &devIDOut, std::string &sUnitOut) const;
 
 	void EnableOutputLog(bool bEnableLog);
 
@@ -70,7 +73,7 @@ class CDomoticzHardwareBase : public StoppableTask
 		__attribute__((format(printf, 3, 4)))
 #endif
 		;
-	uint32_t m_LogLevelEnabled; //bitwise _eLogLevel 7 = LOG_NORM | LOG_STATUS | LOG_ERROR
+	uint32_t m_LogLevelEnabled = 7; //bitwise _eLogLevel 7 = LOG_NORM | LOG_STATUS | LOG_ERROR
       protected:
 	virtual bool StartHardware() = 0;
 	virtual bool StopHardware() = 0;

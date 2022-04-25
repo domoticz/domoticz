@@ -45,7 +45,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 preprocessData: subtype.preprocessDayData,
                                 preprocessDataItems: subtype.preprocessDayDataItems
                             },
-                            subtype.daySeriesSuppliers(self.device.SwitchTypeVal)
+                            subtype.daySeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
                         )
                     );
                 }
@@ -79,10 +79,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 timestampFromDataItem: function (dataItem, yearOffset = 0) {
                                     return GetLocalDateFromString(dataItem.d, yearOffset);
                                 },
-                                preprocessData: subtype.preprocesWeeksData,
+                                preprocessData: subtype.preprocessWeekData,
                                 preprocessDataItems: subtype.preprocessWeekDataItems
                             },
-                            subtype.weekSeriesSuppliers(self.device.SwitchTypeVal)
+                            subtype.weekSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
                         )
                     );
                 }
@@ -119,7 +119,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 preprocessData: subtype.preprocessMonthYearData,
                                 preprocessDataItems: subtype.preprocessMonthYearDataItems
                             },
-                            subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
+                            subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
                         )
                     );
                 }
@@ -156,7 +156,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 preprocessData: subtype.preprocessMonthYearData,
                                 preprocessDataItems: subtype.preprocessMonthYearDataItems
                             },
-                            subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal)
+                            subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
                         )
                     );
                 }

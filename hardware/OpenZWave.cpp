@@ -1,4 +1,7 @@
 #include "stdafx.h"
+
+//deprecated, please switch to zwavejs2mqtt in combination with the MQTT auto discovery hardware
+
 #ifdef WITH_OPENZWAVE
 #include "OpenZWave.h"
 
@@ -1291,8 +1294,8 @@ bool COpenZWave::SwitchLight(_tZWaveDevice* pDevice, const int instanceID, const
 					m_pManager->GetValueListItems(vID, &vStringList);
 					if (svalue == 255)
 					{
-						// Aeotec DoorBell 6 only
-						if ((pDevice->Manufacturer_id == 0x0371) && (pDevice->Product_id == 0x00a2) && (pDevice->Product_type == 0x0003))
+						// Aeotec DoorBell 6 & Indoor Siren 6 only
+						if ((pDevice->Manufacturer_id == 0x0371) && ((pDevice->Product_id == 0x00a2)|| (pDevice->Product_id == 0x00a4)) && (pDevice->Product_type == 0x0003))
 						{
 							m_pManager->SetValueListSelection(vID, vStringList[31]); //default tone
 							pDevice->intvalue = 255;
@@ -5335,11 +5338,6 @@ void COpenZWave::UpdateDeviceBatteryStatus(const uint8_t nodeID, const int value
 
 		if (dev_nodeID == nodeID)
 		{
-			/*
-						m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate='%04d-%02d-%02d
-			   %02d:%02d:%02d' WHERE (ID==%s)", value, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour,
-			   ltime.tm_min, ltime.tm_sec, r[0].c_str());
-			*/
 			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%s)", value, r[0].c_str());
 		}
 	}

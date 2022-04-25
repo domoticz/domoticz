@@ -14,15 +14,21 @@
           Py_XDECREF(self->n_value_string);
           Py_XDECREF(self->s_value);
           Py_XDECREF(self->last_update_string);
-          Py_TYPE(self)->tp_free((PyObject*)self);
-      }
+
+		  PyObject*	pType = PyObject_Type((PyObject*)self);
+		  freefunc pFree = (freefunc)PyType_GetSlot((PyTypeObject*)pType, Py_tp_free);
+		  pFree((PyObject*)self);
+		  Py_XDECREF(pType);
+	  }
 
       PyObject *
       PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       {
           PDevice *self;
 
-          self = (PDevice *)type->tp_alloc(type, 0);
+		  allocfunc pAlloc = (allocfunc)PyType_GetSlot(type, Py_tp_alloc);
+		  self = (PDevice*)pAlloc(type, 0);
+
 	  if (self != nullptr)
 	  {
 		  self->name = PyUnicode_FromString("");

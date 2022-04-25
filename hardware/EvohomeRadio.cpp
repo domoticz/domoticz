@@ -57,10 +57,10 @@ enum evoCommands
 };
 
 const char  CEvohomeRadio::m_szNameErr[18] = { 0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F };
-const int CEvohomeRadio::m_evoToDczControllerMode[8] = { 0,6,1,2,3,4,-1,5 };//are the hidden modes actually valid?
+const int CEvohomeRadio::m_evoToDczControllerMode[8] = { 0,5,1,2,3,-1,-1,4 };//are the hidden modes actually valid?
 const int  CEvohomeRadio::m_evoToDczOverrideMode[5] = { zmAuto,-1,zmPerm,-1,zmTmp };//are the hidden modes actually valid?
 const uint8_t CEvohomeRadio::m_dczToEvoZoneMode[3] = { 0,2,4 };
-const uint8_t CEvohomeRadio::m_dczToEvoControllerMode[7] = { 0,2,3,4,5,7,1 };
+const uint8_t CEvohomeRadio::m_dczToEvoControllerMode[6] = { 0,2,3,4,7,1 };
 
 char const CEvohomeMsg::szPacketType[5][8] = { "Unknown","I","RQ","RP","W" };
 
@@ -748,7 +748,7 @@ void CEvohomeRadio::ProcessMsg(const char* rawmsg)
 
 bool CEvohomeRadio::DecodePayload(CEvohomeMsg& msg)
 {
-	std::map < unsigned int, fnc_evohome_decode >::iterator pf = m_Decoders.find(msg.command);
+	auto pf = m_Decoders.find(msg.command);
 	if (pf != m_Decoders.end())
 	{
 		bool ret = pf->second(msg);
@@ -2160,7 +2160,7 @@ namespace http {
 				return;
 			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_TCP)
 				return;
-			CEvohomeRadio* pEvoHW = reinterpret_cast<CEvohomeRadio*>(pHardware);
+			CEvohomeRadio* pEvoHW = dynamic_cast<CEvohomeRadio*>(pHardware);
 
 			int nDevNo = 0;
 			int nID = 0;
@@ -2195,7 +2195,7 @@ namespace http {
 				if (result.empty())
 				{
 					std::string devname = "Zone Temp";
-					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname, true, "");
 				}
 				root["status"] = "OK";
 				root["title"] = "CreateEvohomeSensor";
@@ -2247,7 +2247,7 @@ namespace http {
 				}
 
 				std::string devname;
-				m_sql.UpdateValue(HwdID, devid.c_str(), (uint8_t)nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname);
+				m_sql.UpdateValue(HwdID, devid.c_str(), (uint8_t)nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname, true, "");
 				pEvoHW->SetRelayHeatDemand((uint8_t)nDevNo, 0);//initialize heat demand
 			}
 			else if (type == "ZoneSensor")
@@ -2267,7 +2267,7 @@ namespace http {
 				}
 
 				std::string devname; // = "Zone Temp";
-				m_sql.UpdateValue(HwdID, ID, (const unsigned char)nDevNo, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+				m_sql.UpdateValue(HwdID, ID, (const unsigned char)nDevNo, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname, true, "");
 			}
 			root["status"] = "OK";
 			root["title"] = "BindEvohome";

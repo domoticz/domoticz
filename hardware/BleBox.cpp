@@ -759,7 +759,7 @@ namespace http {
 					root["result"][ii]["hv"] = "unknown";
 					root["result"][ii]["fv"] = "unknown";
 
-					BleBox* pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+					BleBox* pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 					int type = pHardware->GetDeviceType(ip);
 					if (type != -1)
@@ -801,7 +801,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxSetMode";
@@ -831,7 +831,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxAddNode";
@@ -853,7 +853,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxRemoveNode";
@@ -873,7 +873,7 @@ namespace http {
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxClearNodes";
@@ -895,7 +895,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxAutoSearchingNodes";
@@ -914,7 +914,7 @@ namespace http {
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxUpdateFirmware";

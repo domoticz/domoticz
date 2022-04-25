@@ -674,32 +674,16 @@ bool CHEOS::WriteInt(const std::string &sendStr)
 
 void CHEOS::UpdateNodeStatus(const std::string &DevID, const _eMediaStatus nStatus, const std::string &sStatus)
 {
-	std::vector<std::vector<std::string> > result;
-
-	time_t now = time(nullptr);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-
-	char szLastUpdate[40];
-	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-	result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
-		int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, DevID.c_str(), STYPE_Media);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+	m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+		int(nStatus), sStatus.c_str(), sLastUpdate.c_str(), m_HwdID, DevID.c_str(), STYPE_Media);
 }
 
 void CHEOS::UpdateNodesStatus(const std::string &DevID, const std::string &sStatus)
 {
-	std::vector<std::vector<std::string> > result;
-
-	time_t now = time(nullptr);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-
-	char szLastUpdate[40];
-	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-	result = m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
-		sStatus.c_str(), szLastUpdate, m_HwdID, DevID.c_str(), STYPE_Media);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+	m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+		sStatus.c_str(), sLastUpdate.c_str(), m_HwdID, DevID.c_str(), STYPE_Media);
 }
 
 void CHEOS::AddNode(const std::string &Name, const std::string &PlayerID)
@@ -834,7 +818,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_HEOS)
 				return;
-			CHEOS *pHardware = reinterpret_cast<CHEOS*>(pBaseHardware);
+			CHEOS *pHardware = dynamic_cast<CHEOS*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "HEOSSetMode";
@@ -874,7 +858,7 @@ namespace http {
 						CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3], HTYPE_HEOS);
 						if (pBaseHardware == nullptr)
 							return;
-						CHEOS *pHEOS = reinterpret_cast<CHEOS*>(pBaseHardware);
+						CHEOS *pHEOS = dynamic_cast<CHEOS*>(pBaseHardware);
 
 						pHEOS->SendCommand(sAction, PlayerID);
 						break;

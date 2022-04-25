@@ -137,7 +137,7 @@ class CEvohomeRadio : public CEvohomeBase
 	static const int m_evoToDczControllerMode[8];
 	static const int m_evoToDczOverrideMode[5];
 	static const uint8_t m_dczToEvoZoneMode[3];
-	static const uint8_t m_dczToEvoControllerMode[7];
+	static const uint8_t m_dczToEvoControllerMode[6];
 
 	template <typename RT> RT ConvertMode(RT *pArray, uint8_t nIdx)
 	{
@@ -160,7 +160,6 @@ class CEvohomeRadio : public CEvohomeBase
 
 	unsigned int m_UControllerID;
 
-	typedef tmap_relay_check::iterator tmap_relay_check_it;
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 
 	std::array<bool, 2> m_bStartup;

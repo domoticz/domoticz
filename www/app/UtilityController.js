@@ -153,7 +153,7 @@ define(['app', 'livesocket'], function (app) {
 				if (meterType == 3) { //Counter
 					if (($("#dialog-editmeterdevice #valuequantity").val() == "")
 						&& ($("#dialog-editmeterdevice #valueunits").val() == "")) {
-						$("#dialog-editmeterdevice #valuequantity").val("Count");
+						$("#dialog-editmeterdevice #valuequantity").val("Custom");
 					}
 					$("#dialog-editmeterdevice #metertable #customcounter").show();
 				}
@@ -167,7 +167,6 @@ define(['app', 'livesocket'], function (app) {
 			});
 			//find our custom image index and select it
 			$.each($.ddData, function (i, item) {
-				console.log(item.value+" "+customimage)
 				if (item.value == customimage) {
 					$('#dialog-editmeterdevice #combosensoricon').ddslick('select', { index: i });
 				}
@@ -1540,6 +1539,10 @@ define(['app', 'livesocket'], function (app) {
 						});
 					}
 				});
+			};
+			dialog_editsetpointdevice_buttons[$.t("Replace")] = function () {
+				$(this).dialog("close");
+				ReplaceDevice($.devIdx, ShowUtilities);
 			};
 			dialog_editsetpointdevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");

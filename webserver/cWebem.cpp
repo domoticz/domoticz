@@ -240,7 +240,7 @@ namespace http {
 				std::string code = reply.substr(p + 11, q - p - 15);
 
 				// find the function associated with this code
-				std::map < std::string, webem_include_function >::iterator pf = myIncludes.find(code);
+				auto pf = myIncludes.find(code);
 				if (pf != myIncludes.end())
 				{
 					// insert generated text
@@ -259,7 +259,7 @@ namespace http {
 				else
 				{
 					// no function found, look for a wide character fuction
-					std::map < std::string, webem_include_function_w >::iterator pf = myIncludes_w.find(code);
+					auto pf = myIncludes_w.find(code);
 					if (pf != myIncludes_w.end())
 					{
 						// function found
@@ -333,8 +333,7 @@ namespace http {
 			// find function matching action code
 			size_t q = uri.find(".webem");
 			std::string code = uri.substr(1, q - 1);
-			std::map < std::string, webem_action_function >::iterator
-				pfun = myActions.find(code);
+			auto pfun = myActions.find(code);
 			if (pfun == myActions.end())
 				return false;
 
@@ -536,17 +535,12 @@ namespace http {
 				request_path = request_path.substr(0, paramPos);
 			}
 
-			std::map < std::string, webem_page_function >::iterator
-				pfun = myPages.find(request_path);
-
+			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 				return true;
 			//check wchar_t
-			std::map < std::string, webem_page_function >::iterator
-				pfunW = myPages_w.find(request_path);
-			if (pfunW != myPages_w.end())
-				return true;
-			return false;
+			auto pfunW = myPages_w.find(request_path);
+			return pfunW != myPages_w.end();
 		}
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
@@ -749,9 +743,7 @@ namespace http {
 			}
 			std::string strMimeType = mime_types::extension_to_type(extension);
 
-			std::map < std::string, webem_page_function >::iterator
-				pfun = myPages.find(request_path);
-
+			auto pfun = myPages.find(request_path);
 			if (pfun != myPages.end())
 			{
 				rep.status = reply::ok;
@@ -799,8 +791,7 @@ namespace http {
 			}
 
 			//check wchar_t
-			std::map < std::string, webem_page_function >::iterator
-				pfunW = myPages_w.find(request_path);
+			auto pfunW = myPages_w.find(request_path);
 			if (pfunW == myPages_w.end())
 				return false;
 
@@ -1057,10 +1048,7 @@ namespace http {
 						 != 1)
 						return; //invalid address
 					memset((void*)&ipnetwork.Mask, 0xFF, iASize);
-
-					//Apply mask to network address
-					for (ii = 0; ii < iASize; ii++)
-						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
+					ipnetwork.ip_string = network;
 				}
 			}
 
@@ -1070,16 +1058,6 @@ namespace http {
 		void cWebem::ClearLocalNetworks()
 		{
 			m_localnetworks.clear();
-		}
-
-		void cWebem::AddRemoteProxyIPs(const std::string &ipaddr)
-		{
-			myRemoteProxyIPs.push_back(ipaddr);
-		}
-
-		void cWebem::ClearRemoteProxyIPs()
-		{
-			myRemoteProxyIPs.clear();
 		}
 
 		void cWebem::SetDigistRealm(const std::string &realm)
@@ -1438,6 +1416,9 @@ namespace http {
 				storedSession.username = session.username;
 				storedSession.expires = session.expires;
 				storedSession.remote_host = session.remote_host; // to trace host
+				storedSession.local_host = session.local_host; // to trace host
+				storedSession.remote_port = session.remote_port; // to trace host
+				storedSession.local_port = session.local_port; // to trace host
 				sstore->StoreSession(storedSession); // only one place to do that
 			}
 
@@ -1962,34 +1943,36 @@ namespace http {
 
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_remote_address.c_str(), req.uri.c_str());
 
 			// Initialize session
 			WebEmSession session;
-			session.remote_host = req.host_address;
+			session.remote_host = req.host_remote_address;
+			session.remote_port = req.host_remote_port;
+			session.local_host = req.host_local_address;
+			session.local_port = req.host_local_port;
 
-			if (!myWebem->myRemoteProxyIPs.empty())
+			for (const auto& ittNetwork : myWebem->m_localnetworks)
 			{
-				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs)
+				if (ittNetwork.ip_string.empty())
+					continue;
+				if (session.remote_host == ittNetwork.ip_string)
 				{
-					if (session.remote_host == myRemoteProxyIP)
+					const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
+					if (host_header != nullptr)
 					{
-						const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
-						if (host_header != nullptr)
+						if (strstr(host_header, ",") != nullptr)
 						{
-							if (strstr(host_header, ",") != nullptr)
+							//Multiple proxies are used... this is not very common
+							host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+							if (!host_header)
 							{
-								//Multiple proxies are used... this is not very common
-								host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-								if (!host_header)
-								{
-									_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
-									rep = reply::stock_reply(reply::forbidden);
-									return;
-								}
+								_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+								rep = reply::stock_reply(reply::forbidden);
+								return;
 							}
-							session.remote_host = host_header;
 						}
+						session.remote_host = host_header;
 					}
 				}
 			}

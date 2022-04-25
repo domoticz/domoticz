@@ -94,6 +94,7 @@ public:
 	bool verify_peer{ false };
 	bool verify_fail_if_no_peer_cert{ false };
 	std::string verify_file_path;
+	std::string cipher_list;
 
 	ssl_server_settings()
 		: server_settings(true)
@@ -136,6 +137,22 @@ public:
 		else if (ssl_method == "tlsv12_server")
 		{
 			method = boost::asio::ssl::context::tlsv12_server;
+		}
+		else if (ssl_method == "tlsv13")
+		{
+			method = boost::asio::ssl::context::tlsv13;
+		}
+		else if (ssl_method == "tlsv13_server")
+		{
+			method = boost::asio::ssl::context::tlsv13_server;
+		}
+		else if (ssl_method == "tls")
+		{
+			method = boost::asio::ssl::context::tls;
+		}
+		else if (ssl_method == "tls_server")
+		{
+			method = boost::asio::ssl::context::tls_server;
 		}
 		else
 		{

@@ -40,46 +40,6 @@ namespace Plugins {
 		{ nullptr } /* Sentinel */
 	};
 
-	static PyTypeObject CImageType = {
-		PyVarObject_HEAD_INIT(nullptr, 0) "Domoticz.Image", /* tp_name */
-		sizeof(CImage),					    /* tp_basicsize */
-		0,						    /* tp_itemsize */
-		(destructor)CImage_dealloc,			    /* tp_dealloc */
-		0,						    /* tp_print */
-		nullptr,					    /* tp_getattr */
-		nullptr,					    /* tp_setattr */
-		nullptr,					    /* tp_reserved */
-		nullptr,					    /* tp_repr */
-		nullptr,					    /* tp_as_number */
-		nullptr,					    /* tp_as_sequence */
-		nullptr,					    /* tp_as_mapping */
-		nullptr,					    /* tp_hash  */
-		nullptr,					    /* tp_call */
-		(reprfunc)CImage_str,				    /* tp_str */
-		nullptr,					    /* tp_getattro */
-		nullptr,					    /* tp_setattro */
-		nullptr,					    /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	   /* tp_flags */
-		"Domoticz Image",				    /* tp_doc */
-		nullptr,					    /* tp_traverse */
-		nullptr,					    /* tp_clear */
-		nullptr,					    /* tp_richcompare */
-		0,						    /* tp_weaklistoffset */
-		nullptr,					    /* tp_iter */
-		nullptr,					    /* tp_iternext */
-		CImage_methods,					    /* tp_methods */
-		CImage_members,					    /* tp_members */
-		nullptr,					    /* tp_getset */
-		nullptr,					    /* tp_base */
-		nullptr,					    /* tp_dict */
-		nullptr,					    /* tp_descr_get */
-		nullptr,					    /* tp_descr_set */
-		0,						    /* tp_dictoffset */
-		(initproc)CImage_init,				    /* tp_init */
-		nullptr,					    /* tp_alloc */
-		CImage_new					    /* tp_new */
-	};
-
 	class CDevice
 	{
 	public:
@@ -151,46 +111,6 @@ namespace Plugins {
 		{ nullptr } /* Sentinel */
 	};
 
-	static PyTypeObject CDeviceType = {
-		PyVarObject_HEAD_INIT(nullptr, 0) "Domoticz.Device", /* tp_name */
-		sizeof(CDevice),				     /* tp_basicsize */
-		0,						     /* tp_itemsize */
-		(destructor)CDevice_dealloc,			     /* tp_dealloc */
-		0,						     /* tp_print */
-		nullptr,					     /* tp_getattr */
-		nullptr,					     /* tp_setattr */
-		nullptr,					     /* tp_reserved */
-		nullptr,					     /* tp_repr */
-		nullptr,					     /* tp_as_number */
-		nullptr,					     /* tp_as_sequence */
-		nullptr,					     /* tp_as_mapping */
-		nullptr,					     /* tp_hash  */
-		nullptr,					     /* tp_call */
-		(reprfunc)CDevice_str,				     /* tp_str */
-		nullptr,					     /* tp_getattro */
-		nullptr,					     /* tp_setattro */
-		nullptr,					     /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	    /* tp_flags */
-		"Domoticz Device",				     /* tp_doc */
-		nullptr,					     /* tp_traverse */
-		nullptr,					     /* tp_clear */
-		nullptr,					     /* tp_richcompare */
-		0,						     /* tp_weaklistoffset */
-		nullptr,					     /* tp_iter */
-		nullptr,					     /* tp_iternext */
-		CDevice_methods,				     /* tp_methods */
-		CDevice_members,				     /* tp_members */
-		nullptr,					     /* tp_getset */
-		nullptr,					     /* tp_base */
-		nullptr,					     /* tp_dict */
-		nullptr,					     /* tp_descr_get */
-		nullptr,					     /* tp_descr_set */
-		0,						     /* tp_dictoffset */
-		(initproc)CDevice_init,				     /* tp_init */
-		nullptr,					     /* tp_alloc */
-		CDevice_new					     /* tp_new */
-	};
-
 	class CPluginTransport;
 	class CPluginProtocol;
 
@@ -248,43 +168,5 @@ namespace Plugins {
 		{ nullptr } /* Sentinel */
 	};
 
-	static PyTypeObject CConnectionType = {
-		PyVarObject_HEAD_INIT(nullptr, 0) "Domoticz.Connection", /* tp_name */
-		sizeof(CConnection),					 /* tp_basicsize */
-		0,							 /* tp_itemsize */
-		(destructor)CConnection_dealloc,			 /* tp_dealloc */
-		0,							 /* tp_print */
-		nullptr,						 /* tp_getattr */
-		nullptr,						 /* tp_setattr */
-		nullptr,						 /* tp_reserved */
-		nullptr,						 /* tp_repr */
-		nullptr,						 /* tp_as_number */
-		nullptr,						 /* tp_as_sequence */
-		nullptr,						 /* tp_as_mapping */
-		nullptr,						 /* tp_hash  */
-		nullptr,						 /* tp_call */
-		(reprfunc)CConnection_str,				 /* tp_str */
-		nullptr,						 /* tp_getattro */
-		nullptr,						 /* tp_setattro */
-		nullptr,						 /* tp_as_buffer */
-		Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,		 /* tp_flags */
-		"Domoticz Connection",					 /* tp_doc */
-		nullptr,						 /* tp_traverse */
-		nullptr,						 /* tp_clear */
-		nullptr,						 /* tp_richcompare */
-		0,							 /* tp_weaklistoffset */
-		nullptr,						 /* tp_iter */
-		nullptr,						 /* tp_iternext */
-		CConnection_methods,					 /* tp_methods */
-		CConnection_members,					 /* tp_members */
-		nullptr,						 /* tp_getset */
-		nullptr,						 /* tp_base */
-		nullptr,						 /* tp_dict */
-		nullptr,						 /* tp_descr_get */
-		nullptr,						 /* tp_descr_set */
-		0,							 /* tp_dictoffset */
-		(initproc)CConnection_init,				 /* tp_init */
-		nullptr,						 /* tp_alloc */
-		CConnection_new						 /* tp_new */
-	};
 } // namespace Plugins
+

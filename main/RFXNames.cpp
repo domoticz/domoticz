@@ -200,7 +200,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface", "MySensors" },
 	{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface", "MySensors" },
 	{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface", "MQTT" },
-	{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface", "Fritzbox" },
+	{ HTYPE_FRITZBOX, "Fritzbox Call/Statistics monitor via LAN interface", "Fritzbox" },
 	{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface", "ETh8020" },
 	{ HTYPE_RFLINKUSB, "RFLink Gateway USB", "RFLink" },
 	{ HTYPE_KMTronicUSB, "KMTronic Gateway USB", "KMTronic" },
@@ -276,6 +276,8 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_Meteorologisk, "Meteorologisk institutt Norway (Weather Lookup)", "Meteorologisk" },
 	{ HTYPE_AirconWithMe, "AirconWithMe Wifi Airco module", "AirconWithMe" },
 	{ HTYPE_TeleinfoMeterTCP, "Teleinfo EDF with LAN interface", "TeleInfo" },
+	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
+	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT",	"RFLink" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -326,7 +328,7 @@ const char* Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_ENERGY, "Energy" },
 		{ MTYPE_GAS, "Gas" },
 		{ MTYPE_WATER, "Water" },
-		{ MTYPE_COUNTER, "Counter" },
+		{ MTYPE_COUNTER, "Custom" },
 		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
 		{ MTYPE_TIME, "Time" },
 		{ 0, nullptr, nullptr },
@@ -1058,6 +1060,12 @@ void GetLightStatus(
 	maxDimLevel = 0;
 	bHaveGroupCmd = false;
 	lstatus = "";
+
+	if (nValue == gswitch_sToggle)
+	{
+		lstatus = "Toggle";
+		return;
+	}
 
 	char szTmp[80];
 	switch (dType)
@@ -2311,7 +2319,7 @@ void GetLightStatus(
 * Returns a map associating a level value to its name.
 */
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options, std::map<std::string, std::string>& statuses) {
-	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	auto itt = options.find("LevelNames");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
 		std::string sOptions = itt->second;
@@ -2337,7 +2345,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options
 */
 int GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, const std::string& levelName) {
 	int level = -1; // not found
-	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	auto itt = options.find("LevelNames");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
 		std::string sOptions = itt->second;
@@ -2361,7 +2369,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, co
 * Returns the action associated with a level
 */
 std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string>& options, const int level) {
-	std::map< std::string, std::string >::const_iterator itt = options.find("LevelActions");
+	auto itt = options.find("LevelActions");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level action...");
 		std::string sOptions = itt->second;
@@ -2391,6 +2399,12 @@ bool GetLightCommand(
 {
 	if (switchtype == STYPE_Contact && dType != pTypeGeneralSwitch)
 		return false;	//we can not (or will not) switch this type
+
+	if (switchcmd == "Toggle")
+	{
+		cmd = gswitch_sToggle;
+		return true;
+	}
 
 	switch (dType)
 	{
@@ -3933,6 +3947,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_MySensorsTCP:
 	case HTYPE_MySensorsMQTT:
 	case HTYPE_MQTT:
+	case HTYPE_RFLINKMQTT:
 	case HTYPE_FRITZBOX:
 	case HTYPE_ETH8020:
 	case HTYPE_RelayNet:
@@ -3957,6 +3972,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_S0SmartMeterTCP:
 	case HTYPE_OctoPrint:
 	case HTYPE_TeleinfoMeterTCP:
+	case HTYPE_MQTTAutoDiscovery:
 		return true;
 	default:
 		return false;

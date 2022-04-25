@@ -47,7 +47,7 @@ namespace tcp_proxy
 		boost::asio::io_service &ios= GET_IO_SERVICE(downstream_socket_);
 		boost::asio::ip::tcp::resolver resolver(ios);
 		boost::asio::ip::tcp::resolver::query query(upstream_host, upstream_port, boost::asio::ip::resolver_query_base::numeric_service);
-		boost::asio::ip::tcp::resolver::iterator i = resolver.resolve(query);
+		auto i = resolver.resolve(query);
 		if (i == boost::asio::ip::tcp::resolver::iterator())
 		{
 			end=boost::asio::ip::tcp::endpoint(

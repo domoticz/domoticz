@@ -9,7 +9,7 @@
 
 /*
                                                                    
-Copyright 2011-2021, RFXCOM
+Copyright 2011-2022, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
 Netherlands Copyright Laws and Treaties and shall be subject to the 
@@ -27,6 +27,15 @@ portions of this file.
 */
 
 /*
+SDK version 9.33	April ??, 2022
+	Thermostat5 - Gazco added
+	Chime - ByronDBY added
+	Chime stucture changed
+	Novy Filter and Mood added
+
+SDK version 9.32	July 12, 2021
+	Brel bi-directional added
+
 SDK version 9.31	April 6, 2021
 	BlindsT19 Louvolite vertical added (not yet operational)
 	BlindsT20 Ozroll E-Trans added
@@ -732,6 +741,7 @@ SDK version 4.9
 #define sTypeEnvivo 0x4
 #define sTypeAlfawise 0x5
 #define sType1byOne 0x6
+#define sTypeByronDBY 0x7
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -837,6 +847,8 @@ SDK version 4.9
 #define fan_NovyMin 0x3
 #define fan_NovyLight 0x4
 #define fan_NovyLearn 0x5
+#define fan_NovyFilter 0x6
+#define fan_NovyMood 0x7
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -1037,6 +1049,10 @@ SDK version 4.9
 #define camera_sSweep 0xE
 #define camera_sProgramSweep 0xF
 
+//types for Bi-directional Blinds DDxxxx
+#define pTypeDDxxxx 0x40
+#define sTypeDDxxxx 0x00
+
 //types for Remotes
 #define pTypeRemote 0x30
 #define sTypeATI 0x0		//ATI Remote Wonder
@@ -1084,6 +1100,14 @@ SDK version 4.9
 #define thermostat4_sManual 0x1
 #define thermostat4_sAuto 0x2
 #define thermostat4_sEco 0x3
+
+#define pTypeThermostat5 0x44
+#define sTypeGazco 0x0
+#define thermostat5_sOff 0x0
+#define thermostat5_sOn 0x1
+#define thermostat5_sOnHeaterStby 0x2
+#define thermostat5_sOnHeaterLow 0x3
+#define thermostat5_sOnHeaterHigh 0x04
 
 //types for Radiator valve
 #define pTypeRadiator1 0x48
@@ -1435,7 +1459,7 @@ typedef union tRBUF {
         //BYTE	msg6;
         BYTE    KEELOQenabled : 1;
 		BYTE    HCEnabled : 1;
-        BYTE    MSG6Reserved2 : 1;
+        BYTE    DDenabled : 1;
         BYTE    MSG6Reserved3 : 1;
         BYTE    MSG6Reserved4 : 1;
         BYTE    MSG6Reserved5 : 1;
@@ -1730,11 +1754,12 @@ typedef union tRBUF {
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	sound;
+		BYTE	id4;
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
-		BYTE	id4 : 4;
+		BYTE	filler : 4;
 #else
-		BYTE	id4  : 4;
+		BYTE	filler  : 4;
 		BYTE	rssi : 4;
 #endif
 	} CHIME;
@@ -1834,6 +1859,53 @@ typedef union tRBUF {
 		BYTE    rssi : 4;
 #endif
 	} HOMECONFORT;
+
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE id1;
+		BYTE id2;
+		BYTE id3;
+		BYTE id4;
+		BYTE unitcode;
+		BYTE cmnd;
+		BYTE level;
+		BYTE R; //or temperatureh
+		BYTE G; //or temperaturel
+		BYTE B;
+		BYTE maxrepeat;
+		BYTE repeatcnt;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} EDISIO;
+
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE id1;
+		BYTE id2;
+		BYTE id3;
+		BYTE id4;
+		BYTE id5;
+		BYTE id6;
+		BYTE rfu;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} HONEYWELL_AL;
 
 	struct {
 		BYTE	packetlength;
@@ -1956,6 +2028,28 @@ typedef union tRBUF {
 	} CAMERA1;
 
 	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE id1;
+		BYTE id2;
+		BYTE id3;
+		BYTE id4;
+		BYTE unitcode;
+		BYTE cmnd;
+		BYTE percent;
+		BYTE angle;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} DDXXXX;
+
+	struct {
 		BYTE	packetlength;
 		BYTE	packettype;
 		BYTE	subtype;
@@ -2060,6 +2154,29 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} THERMOSTAT4;
+
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE unitcode1;
+		BYTE unitcode2;
+		BYTE cmnd;
+		BYTE flame_colour;
+		BYTE flame_brightness;
+		BYTE fuel_colour;
+		BYTE fuel_brightness;
+		BYTE rfu1;
+		BYTE rfu2;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} THERMOSTAT5;
 
 	struct {
 		BYTE	packetlength;

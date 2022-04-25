@@ -583,7 +583,7 @@ void CKodiNode::handleConnect()
 			boost::system::error_code ec;
 			boost::asio::ip::tcp::resolver resolver(*m_Ios);
 			boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
-			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
+			auto iter = resolver.resolve(query);
 			boost::asio::ip::tcp::endpoint endpoint = *iter;
 			m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
 			m_Socket->connect(endpoint, ec);
@@ -1287,7 +1287,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiSetMode";
@@ -1320,7 +1320,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiAddNode";
@@ -1348,7 +1348,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1374,7 +1374,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1399,7 +1399,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi *pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiClearNodes";

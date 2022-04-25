@@ -282,7 +282,7 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
 	case programmable_resolution_digital_thermometer:
 	case Temperature_memory:
 	{
-		DeviceCollection::const_iterator devIt = m_Devices.find(device.devid);
+		auto devIt = m_Devices.find(device.devid);
 		return (devIt == m_Devices.end()) ? -1000.0F : (*devIt).second->m_Temperature;
 	}
 	default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
@@ -319,7 +319,7 @@ bool C1WireByKernel::GetLightState(const _t1WireDevice& device, int unit) const
 			return pendingState->m_DigitalIo[unit];
 
 		// Else return current state
-		DeviceCollection::const_iterator devIt = m_Devices.find(device.devid);
+		auto devIt = m_Devices.find(device.devid);
 		return (devIt == m_Devices.end()) ? false : (*devIt).second->m_DigitalIo[unit];
 	}
 	default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
@@ -450,7 +450,7 @@ unsigned char C1WireByKernel::ThreadReadRawData8ChannelAddressableSwitch(const s
 
 void C1WireByKernel::SetLightState(const std::string& sId, int unit, bool value, const unsigned int /*level*/)
 {
-	DeviceCollection::const_iterator it = m_Devices.find(sId);
+	auto it = m_Devices.find(sId);
 	if (it == m_Devices.end())
 		return;
 

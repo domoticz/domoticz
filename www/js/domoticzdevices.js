@@ -1,7 +1,3 @@
-/*
-//    (c)  Kendel Boul - 2014
-*/
-
 String.prototype.setCharAt = function (idx, chr) {
     if (idx > this.length - 1) {
         return this.toString();
@@ -9,6 +5,26 @@ String.prototype.setCharAt = function (idx, chr) {
         return this.substr(0, idx) + chr + this.substr(idx + 1);
     }
 };
+
+function decimalPlaces(n) {
+  let result= /^-?[0-9]+\.([0-9]+)$/.exec(n);
+  return result === null ? 0 : result[1].length;
+}
+
+function decimalPlacesDiv1(n) {
+  n = 1.0 / n;
+  let result= /^-?[0-9]+\.([0-9]+)$/.exec(n);
+  return result === null ? 0 : result[1].length;
+}
+
+
+// Augmenting Number proto.
+Number.prototype.numDecimals = function () {
+  return decimalPlaces(this);
+}
+Number.prototype.numDecimalsDiv1 = function () {
+  return decimalPlaces(1.0/this);
+}
 
 function getSVGnode() {
     var divFloors = $(".imageparent");
@@ -368,6 +384,7 @@ function Device(item) {
         this.haveTimeout = (typeof item.HaveTimeout != 'undefined') ? item.HaveTimeout : false;
         this.haveCamera = ((typeof item.UsedByCamera != 'undefined') && (typeof item.CameraIdx != 'undefined')) ? item.UsedByCamera : false;
         this.cameraIdx = (typeof item.CameraIdx != 'undefined') ? item.CameraIdx : 0;
+        this.cameraAspect = (typeof item.CameraAspect != 'undefined') ? item.CameraAspect : 0;
         this.haveDimmer = false;  // data from server is unreliable so inheriting classes will need to force true
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
@@ -1143,8 +1160,38 @@ Device.MakeFavorite = function (id, isfavorite) {
 function Sensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.image = "images/" + item.TypeImg + "48.png";
-
+       
+        this.image = "images/";
+        
+        if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
+          if (item.SwitchTypeVal == 1) {
+            this.image += (item.CustomImage == 0)  ? 'Gas48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 2) {
+            this.image += (item.CustomImage == 0)  ? 'Water48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 3) {
+            this.image += (item.CustomImage == 0)  ? 'Counter48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 4) {
+            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+          }
+          else {
+            this.image += item.TypeImg + "48.png";
+          }
+		} else if ((item.Type == "General") && (item.SubType == "kWh")) {
+          if (item.SwitchTypeVal == 4) {
+            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+          }
+          else {
+            this.image += item.TypeImg + "48.png";
+          }
+        } else if (item.SubType == "Gas") {
+            this.image += "Gas48.png";
+        } else {
+            this.image += item.TypeImg + "48.png";
+        }
+        
         var sensorType = this.type.replace(/\s/g, '');
 
         if (sensorType === 'General') {
@@ -1156,7 +1203,7 @@ function Sensor(item) {
         this.imagetext = "Show graph";
         this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
 
-        if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "','" + this.cameraIdx + "')";
+        if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "'," + this.cameraIdx + "," + this.cameraAspect + ")";
         this.showStatus = (Device.showSensorValues == true);
     }
 }
@@ -1314,10 +1361,37 @@ Blinds.inheritsFrom(Switch);
 function Counter(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        if(item.Image == undefined)
-            this.image = "images/counter.png";
-        else
-            this.image = "images/"+item.Image+".png";
+        if(item.Image == undefined) {
+			this.image = "images/";
+			if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
+			  if (item.SwitchTypeVal == 1) {
+				this.image += (item.CustomImage == 0)  ? 'Gas48.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 2) {
+				this.image += (item.CustomImage == 0)  ? 'Water48_On.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 3) {
+				this.image += (item.CustomImage == 0)  ? 'Counter48.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 4) {
+				this.image += (item.CustomImage == 0)  ? 'PV48.png' : 'Counter48.png';
+			  }
+			  else {
+				this.image += 'Counter48.png';
+			  }
+			} else if (item.SubType == "Gas") {
+				this.image += "Gas48.png";
+			} else {
+				this.image += 'Counter48.png';
+			}
+        }
+        else {
+            if (item.SubType == "Gas") {
+              this.image = "images/Gas48.png";
+            } else {
+              this.image = "images/"+item.Image+".png";
+            }
+        }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {

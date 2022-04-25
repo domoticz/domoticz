@@ -55,9 +55,7 @@ define(['app', 'livesocket'], function (app) {
 				strstatus = "Economy";
 			else if (strstatus == "DayOff")//FIXME better way to convert?
 				strstatus = "Day Off";
-			else if (strstatus == "DayOffWithEco")//FIXME better way to convert?
-				strstatus = "Day Off With Eco";
- 			else if (strstatus == "HeatingOff")//FIXME better way to convert?
+			else if (strstatus == "HeatingOff")//FIXME better way to convert?
 				strstatus = "Heating Off";
 			return strstatus;
 		}
@@ -82,7 +80,7 @@ define(['app', 'livesocket'], function (app) {
 
 		EvohomePopupMenu = function (item, strclass) {
 			var htm = '\t      <td id="img" class="img img1"><a href="#evohome" id="evohome_' + item.idx + '">' + EvohomeImg(item, strclass) + '</a></td>\n<span class="' + strclass + '"><div id="evopop_' + item.idx + '" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
-			$.each([{ "name": "Normal", "data": "Auto" }, { "name": "Economy", "data": "AutoWithEco" }, { "name": "Away", "data": "Away" }, { "name": "Day Off", "data": "DayOff" }, { "name": "Day Off With Eco", "data": "DayOffWithEco" }, { "name": "Custom", "data": "Custom" }, { "name": "Heating Off", "data": "HeatingOff" }], function (idx, obj) { htm += '<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-' + obj.data + '" onclick="SwitchModal(\'' + item.idx + '\',\'' + obj.name + '\',\'' + obj.data + '\');deselect($(this),\'#evopop_' + item.idx + '\');return false;">' + obj.name + '</a></li>'; });
+			$.each([{ "name": "Normal", "data": "Auto" }, { "name": "Economy", "data": "AutoWithEco" }, { "name": "Away", "data": "Away" }, { "name": "Day Off", "data": "DayOff" }, { "name": "Custom", "data": "Custom" }, { "name": "Heating Off", "data": "HeatingOff" }], function (idx, obj) { htm += '<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-' + obj.data + '" onclick="SwitchModal(\'' + item.idx + '\',\'' + obj.name + '\',\'' + obj.data + '\');deselect($(this),\'#evopop_' + item.idx + '\');return false;">' + obj.name + '</a></li>'; });
 			htm += '</ul></div></span>';
 			return htm;
 		}
@@ -141,7 +139,7 @@ define(['app', 'livesocket'], function (app) {
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+								streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
 								bigtext += "&nbsp;" + streamurl;
 							}
 
@@ -607,7 +605,7 @@ define(['app', 'livesocket'], function (app) {
 						var bigtext = TranslateStatusShort(item.Status);
 						if (item.UsedByCamera == true) {
 							var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-							streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+							streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
 							bigtext += "&nbsp;" + streamurl;
 						}
 
@@ -980,6 +978,11 @@ define(['app', 'livesocket'], function (app) {
 								}
 							}
 							bigtext = GetLightStatusText(item);
+							if (item.UsedByCamera == true) {
+								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
+								var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
+								bigtext += "&nbsp;" + streamurl;
+							}
 						}
 						if ($(id + " #bigtext > span").html() != bigtext) {
 							$(id + " #bigtext > span").html(bigtext);
@@ -1122,6 +1125,10 @@ define(['app', 'livesocket'], function (app) {
 						var status = "";
 						var bHaveBefore = false;
 						if (typeof item.Temp != 'undefined') {
+              if ($rootScope.DisplayTrend(item.trend))
+              {
+                status += '<img src="images/arrow_' + $rootScope.TrendState(item.trend) + '.png" width="14" height="15">';
+              }
 							status += item.Temp + '&deg; ' + $scope.config.TempSign;
 							bHaveBefore = true;
 						}
@@ -1495,7 +1502,7 @@ define(['app', 'livesocket'], function (app) {
 							status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 						}
 						else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-							status += item.Data + '\u00B0 ' + $scope.config.TempSign;
+							status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 						}
 						else if (item.SubType == "Smartwares") {
 							status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1878,7 +1885,7 @@ define(['app', 'livesocket'], function (app) {
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
 										var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
 										bigtext += "&nbsp;" + streamurl;
 									}
 									xhtm += bigtext + '</span></td>\n';
@@ -2476,7 +2483,7 @@ define(['app', 'livesocket'], function (app) {
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
 										var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "'," + item.CameraIdx + "," + item.CameraAspect + ")\">" + streamimg + "</a>";
 										bigtext += "&nbsp;" + streamurl;
 									} else if (item.SwitchType == "Selector") {
 										bigtext = GetLightStatusText(item);
@@ -2926,6 +2933,10 @@ define(['app', 'livesocket'], function (app) {
 									var status = "";
 									var bHaveBefore = false;
 									if (typeof item.Temp != 'undefined') {
+                    if ($rootScope.DisplayTrend(item.trend))
+                    {
+                      status += '<img src="images/arrow_' + $rootScope.TrendState(item.trend) + '.png" width="14" height="15">';
+                    }
 										status += item.Temp + '&deg; ' + $scope.config.TempSign;
 										bHaveBefore = true;
 									}
@@ -2966,7 +2977,11 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = "";
 									if (typeof item.Temp != 'undefined') {
-										bigtext = item.Temp + '\u00B0 ' + $scope.config.TempSign;
+                    if ($rootScope.DisplayTrend(item.trend))
+                    {
+                      bigtext += '<img src="images/arrow_' + $rootScope.TrendState(item.trend) + '.png" width="14" height="15">';
+                    }
+										bigtext += item.Temp + '\u00B0 ' + $scope.config.TempSign;
 									}
 									if (typeof item.Humidity != 'undefined') {
 										if (bigtext != "") {
@@ -3677,11 +3692,11 @@ define(['app', 'livesocket'], function (app) {
 										status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
+										status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 									}
 									else if (item.SubType == "Smartwares") {
 										status = item.Data + '\u00B0 ' + $scope.config.TempSign;
-										status += ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + $.t("Set") + '</button> ';
+										status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + $.t("Set") + '</button> ';
 									}
 									else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
 										status = item.Data;

@@ -540,7 +540,7 @@ bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char len
 
 double CToonThermostat::GetElectricOffset(const int idx, const double currentKwh)
 {
-	std::map<int, double>::const_iterator itt = m_OffsetElectricUsage.find(idx);
+	auto itt = m_OffsetElectricUsage.find(idx);
 	if (itt == m_OffsetElectricUsage.end())
 	{
 		// First time, lets add it

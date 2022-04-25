@@ -23,12 +23,12 @@ namespace
 	constexpr std::array<point, 3> colorPointsGamut_C{ point{ 0.692, 0.308 }, point{ 0.17, 0.7 }, point{ 0.153, 0.048 } };
 	constexpr std::array<point, 3> colorPointsGamut_Default{ point{ 1.0, 0.0 }, point{ 0.0, 1.0 }, point{ 0.0, 0.0 } };
 
-	constexpr std::array<const char *, 10> GAMUT_A_BULBS_LIST{ "LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001" };
-	constexpr std::array<const char *, 8> GAMUT_B_BULBS_LIST{ "LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007" };
-	constexpr std::array<const char *, 10> GAMUT_C_BULBS_LIST{ "LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002" };
-	constexpr std::array<const char *, 7> MULTI_SOURCE_LUMINAIRES{ "HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002" };
+	constexpr std::array<const char*, 10> GAMUT_A_BULBS_LIST{ "LLC001", "LLC005", "LLC006", "LLC007", "LLC010", "LLC011", "LLC012", "LLC014", "LLC013", "LST001" };
+	constexpr std::array<const char*, 8> GAMUT_B_BULBS_LIST{ "LCT001", "LCT002", "LCT003", "LCT004", "LLM001", "LCT005", "LCT006", "LCT007" };
+	constexpr std::array<const char*, 10> GAMUT_C_BULBS_LIST{ "LCT010", "LCT011", "LCT012", "LCT014", "LCT015", "LCT016", "LLC020", "LST002", "LCS001", "LCG002" };
+	constexpr std::array<const char*, 7> MULTI_SOURCE_LUMINAIRES{ "HBL001", "HBL002", "HBL003", "HIL001", "HIL002", "HEL001", "HEL002" };
 
-	auto get_light_gamut(const std::string &modelid)
+	auto get_light_gamut(const std::string& modelid)
 	{
 		if (std::find(GAMUT_A_BULBS_LIST.begin(), GAMUT_A_BULBS_LIST.end(), modelid) != GAMUT_A_BULBS_LIST.end())
 			return colorPointsGamut_A;
@@ -48,7 +48,7 @@ namespace
 		return p1.x * p2.y - p1.y * p2.x;
 	}
 
-	bool check_point_in_lamps_reach(point p, const std::string &modelid)
+	bool check_point_in_lamps_reach(point p, const std::string& modelid)
 	{
 		const auto gamut = get_light_gamut(modelid);
 		const auto Red = gamut[0];
@@ -91,7 +91,7 @@ namespace
 		return sqrt(dx * dx + dy * dy);
 	}
 
-	point get_closest_point_to_point(point xy_point, const std::string &modelid)
+	point get_closest_point_to_point(point xy_point, const std::string& modelid)
 	{
 		const auto gamut = get_light_gamut(modelid);
 		point Red = gamut[0];
@@ -131,7 +131,35 @@ namespace
 	}
 } // namespace
 
-void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string &modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8)
+void CPhilipsHue::RgbToXY(const std::string& bulbModel, uint8_t red, uint8_t green, uint8_t blue, double& x, double& y)
+{
+	double r = (double)red / 255;
+	double g = (double)green / 255;
+	double b = (double)blue / 255;
+
+
+	if (r > 0.04045) r = pow((r + 0.055) / 1.055, 2.4000000953674316); else r = r / 12.92;
+	if (g > 0.04045) g = pow((g + 0.055) / 1.055, 2.4000000953674316); else g = g / 12.92;
+	if (b > 0.04045) b = pow((b + 0.055) / 1.055, 2.4000000953674316); else b = b / 12.92;
+
+	double xx = r * 0.664511 + g * 0.154324 + b * 0.162028;
+	double yy = r * 0.283881 + g * 0.668433 + b * 0.047685;
+	double zz = r * 8.8e-5 + g * 0.07231 + b * 0.986039;
+
+	point xy = { xx / (xx + yy + zz), yy / (xx + yy + zz) };
+
+	if (std::isnan(xy.x)) xy.x = 0.0;
+	if (std::isnan(xy.y)) xy.y = 0.0;
+
+	bool inReachOfLamps = check_point_in_lamps_reach(xy, bulbModel);
+	if (!inReachOfLamps)
+		xy = get_closest_point_to_point(xy, "");
+
+	x = xy.x;
+	y = xy.y;
+}
+
+void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, const std::string& modelid, uint8_t& r8, uint8_t& g8, uint8_t& b8)
 {
 	/* Returns (r, g, b) for given x, y values.
 	   Implementation of the instructions found on the Philips Hue iOS SDK docs: http://goo.gl/kWKXKl
@@ -184,9 +212,9 @@ void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, co
 	b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * pow(b, (1.0 / 2.4)) - 0.055;
 
 	// Bring all negative components to zero
-	r = std::max(0.0,r);
-	g = std::max(0.0,g);
-	b = std::max(0.0,b);
+	r = std::max(0.0, r);
+	g = std::max(0.0, g);
+	b = std::max(0.0, b);
 
 	// If one component is greater than 1, weight components by that value.
 	// TODO: Rewrite with C++11 lambda functions:
@@ -224,33 +252,33 @@ void CPhilipsHue::RgbFromXY(const double x, const double y, const double bri, co
 	b8 = uint8_t(b * 255.0);
 }
 
-bool CPhilipsHue::StatesSimilar(const _tHueLightState &s1, const _tHueLightState &s2)
+bool CPhilipsHue::StatesSimilar(const _tHueLightState& s1, const _tHueLightState& s2)
 {
 	bool res = false;
 	if (s1.on == s2.on &&
-	    s1.mode == s2.mode &&
-	    abs(s1.level - s2.level) <= 1)
+		s1.mode == s2.mode &&
+		abs(s1.level - s2.level) <= 1)
 	{
 		switch (s1.mode)
 		{
-			case HLMODE_NONE:
-				res = true;
-				break;
-			case HLMODE_CT:
-				res = abs(s1.ct - s2.ct) <= 3; // 3 is 1% of 255
-				break;
-			case HLMODE_HS:
-			{
-				uint16_t h1 = (uint16_t) s1.hue;
-				uint16_t h2 = (uint16_t) s2.hue;
-				res = abs(int16_t(h1-h2)) < 655 && // 655 is 1% of 65535, the range of hue
-					  abs(s1.sat - s2.sat) <= 3;   // 3 is 1% of 255, the range of sat
-				  break;
-			}
-			case HLMODE_XY:
-				res = std::abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
-					  std::abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
-				break;
+		case HLMODE_NONE:
+			res = true;
+			break;
+		case HLMODE_CT:
+			res = abs(s1.ct - s2.ct) <= 3; // 3 is 1% of 255
+			break;
+		case HLMODE_HS:
+		{
+			uint16_t h1 = (uint16_t)s1.hue;
+			uint16_t h2 = (uint16_t)s2.hue;
+			res = abs(int16_t(h1 - h2)) < 655 && // 655 is 1% of 65535, the range of hue
+				abs(s1.sat - s2.sat) <= 3;   // 3 is 1% of 255, the range of sat
+			break;
+		}
+		case HLMODE_XY:
+			res = std::abs(s1.x - s2.x) < 0.01 && // 655 is 1% of 65535, the range of hue
+				std::abs(s1.y - s2.y) < 0.01;   // 3 is 1% of 255, the range of sat
+			break;
 		}
 	}
 	return res;

@@ -330,7 +330,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		}
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
-			EnableTabProxy: false,
 			EnableTabDashboard: false,
 			EnableTabFloorplans: false,
 			EnableTabLights: false,
@@ -378,7 +377,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.WindScale = data.WindScale;
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
-						$rootScope.config.EnableTabProxy = data.result.EnableTabProxy,
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;

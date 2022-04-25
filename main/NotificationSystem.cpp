@@ -35,6 +35,7 @@ CNotificationSystem::~CNotificationSystem()
 
 void CNotificationSystem::Start()
 {
+	Stop();
 	RequestStart();
 	m_pQueueThread = std::make_shared<std::thread>([this] { QueueThread(); });
 	SetThreadName(m_pQueueThread->native_handle(), "NotificationSystemQueue");
