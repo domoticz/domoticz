@@ -80,6 +80,7 @@ typedef enum
 #define MODEL_SELECTOR_WIRED_WALL_SINGLE_1 "ctrl_neutral1"
 #define MODEL_SELECTOR_WIRED_WALL_SINGLE_2 "ctrl_ln1"
 #define MODEL_SELECTOR_WIRED_WALL_SINGLE_3 "ctrl_ln1.aq1"
+#define MODEL_SELECTOR_WIRED_WALL_SINGLE_4 "switch_b1lacn02"
 #define NAME_SELECTOR_WIRED_WALL_SINGLE "Xiaomi Wired Single Wall Switch"
 
 // Xiaomi Wired Dual Wall Switch | QBKG12LM (QBKG26LM)
@@ -1340,7 +1341,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				{
 					name = NAME_GATEWAY;
 				}
-				else if (model == MODEL_SELECTOR_WIRED_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_2 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_3)
+				else if (model == MODEL_SELECTOR_WIRED_WALL_SINGLE_1 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_2 || model == MODEL_SELECTOR_WIRED_WALL_SINGLE_3 ||
+					model == MODEL_SELECTOR_WIRED_WALL_SINGLE_4)
 				{
 					type = STYPE_END; // type = STYPE_OnOff; // TODO: fix this hack
 					name = NAME_SELECTOR_WIRED_WALL_SINGLE;
