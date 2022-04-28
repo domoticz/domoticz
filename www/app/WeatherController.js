@@ -50,6 +50,16 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editwinddevice").dialog("open");
 		}
 
+		EditUviDevice = function (idx, name, description, addjmulti) {
+			$.devIdx = idx;
+			$("#dialog-edituvidevice #deviceidx").text(idx);
+			$("#dialog-edituvidevice #devicename").val(unescape(name));
+			$("#dialog-edituvidevice #devicedescription").val(unescape(description));
+			$("#dialog-edituvidevice #multiply").val(addjmulti);
+			$("#dialog-edituvidevice").i18n();
+			$("#dialog-edituvidevice").dialog("open");
+		}
+
 		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti) {
 			$.devIdx = idx;
 			$("#dialog-editweatherdevice #deviceidx").text(idx);
@@ -466,6 +476,68 @@ define(['app', 'livesocket'], function (app) {
 				}
 			}).i18n();
 
+			//UV
+			var dialog_edituvidevice_buttons = {};
+
+			dialog_edituvidevice_buttons[$.t("Update")] = function () {
+				var bValid = true;
+				bValid = bValid && checkLength($("#dialog-edituvidevice #edittable #devicename"), 2, 100);
+				if (bValid) {
+					$(this).dialog("close");
+					$.ajax({
+						url: "json.htm?type=setused&idx=" + $.devIdx +
+						'&name=' + encodeURIComponent($("#dialog-edituvidevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-edituvidevice #devicedescription").val()) +
+						'&addjmulti=' + $("#dialog-edituvidevice #edittable #multiply").val() +
+						'&used=true',
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							ShowWeathers();
+						}
+					});
+
+				}
+			};
+			dialog_edituvidevice_buttons[$.t("Remove Device")] = function () {
+				$(this).dialog("close");
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
+					if (result == true) {
+						$.ajax({
+							url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-edituvidevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edituvidevice #devicedescription").val()) +
+							'&used=false',
+							async: false,
+							dataType: 'json',
+							success: function (data) {
+								ShowWeathers();
+							}
+						});
+					}
+				});
+			};
+			dialog_edituvidevice_buttons[$.t("Replace")] = function () {
+				$(this).dialog("close");
+				ReplaceDevice($.devIdx, ShowWeathers);
+			};
+			dialog_edituvidevice_buttons[$.t("Cancel")] = function () {
+				$(this).dialog("close");
+			};
+
+			$("#dialog-edituvidevice").dialog({
+				autoOpen: false,
+				width: 'auto',
+				height: 'auto',
+				modal: true,
+				resizable: false,
+				title: $.t("Edit Device"),
+				buttons: dialog_edituvidevice_buttons,
+				close: function () {
+					$(this).dialog("close");
+				}
+			}).i18n();
+
 			ShowWeathers();
 			$("dialog-editweatherdevice").keydown(function (event) {
 				if (event.keyCode == 13) {
@@ -603,7 +675,10 @@ define(['app', 'livesocket'], function (app) {
 						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti);
 					} else if (typeof item.Visibility != 'undefined') {
 						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal);
-					} else if (typeof item.Barometer != 'undefined') {
+					} else if (typeof item.UVI != 'undefined') {
+						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti);
+					}
+					else if (typeof item.Barometer != 'undefined') {
 						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2);
 					} else {
 						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti);
