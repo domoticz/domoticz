@@ -4334,7 +4334,11 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 		BatteryLevel = 0;
 	else
 		BatteryLevel = 100;
-	float Level = float(pResponse->UV.uv) / 10.0F;
+	float Level = pResponse->UV.uv;
+	float AddjValue = 0.0F;
+	float AddjMulti = 1.0F;
+	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	Level *= AddjMulti;
 	if (Level > 30)
 	{
 		WriteMessage(" Invalid UV");
@@ -4357,10 +4361,10 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 			return;
 		}
 
-		float AddjValue = 0.0F;
-		float AddjMulti = 1.0F;
-		m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
+		float AddjValue2 = 0.0F;
+		float AddjMulti2 = 1.0F;
+		m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue2, AddjMulti2);
+		temp += AddjValue2;
 	}
 
 	sprintf(szTmp, "%.1f;%.1f", Level, temp);
@@ -4404,13 +4408,13 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 			WriteMessage(szTmp);
 		}
 
-		if (pResponse->UV.uv < 3)
+		if (Level < 3)
 			WriteMessage("Description = Low");
-		else if (pResponse->UV.uv < 6)
+		else if (Level < 6)
 			WriteMessage("Description = Medium");
-		else if (pResponse->UV.uv < 8)
+		else if (Level < 8)
 			WriteMessage("Description = High");
-		else if (pResponse->UV.uv < 11)
+		else if (Level < 11)
 			WriteMessage("Description = Very high");
 		else
 			WriteMessage("Description = Dangerous");
