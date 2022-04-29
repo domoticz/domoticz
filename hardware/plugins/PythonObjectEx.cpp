@@ -968,7 +968,7 @@ namespace Plugins {
 			Py_RETURN_NONE;
 		}
 
-		if (!pModState->pPlugin)
+		if (pModState->pPlugin)
 		{
 			std::string sName = PyBorrowedRef(self->Name);
 			if (self->ID != -1)
