@@ -530,7 +530,7 @@ namespace Plugins {
 		// HTML is non binary so use strings
 		std::string		sData(m_sRetainedData.begin(), m_sRetainedData.end());
 
-		m_ContentLength = -1;
+		m_ContentLength = 0;
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
@@ -608,8 +608,14 @@ namespace Plugins {
 						if (sData.length())
 						{
 							PyNewRef pObj = Py_BuildValue("y#", sData.c_str(), sData.length());
+							if (!pObj)
+							{
+								if (PyErr_Occurred())
+									PyErr_Clear();
+								pObj = Py_BuildValue("s", sData.c_str());
+							}
 							if (PyDict_SetItemString(pDataDict, "Data", pObj) == -1)
-								_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Data", sData.c_str());
+									_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Data", sData.c_str());
 						}
 
 						Message->m_pConnection->pPlugin->MessagePlugin(new onMessageCallback(Message->m_pConnection, pDataDict));
@@ -2219,7 +2225,7 @@ namespace Plugins {
 
 	bool CPluginProtocolWS::ProcessWholeMessage(std::vector<byte>& vMessage, const ReadEvent* Message)
 	{
-		while (!vMessage.empty())
+		if (!vMessage.empty())
 		{
 			// Look for a complete message
 			std::vector<byte>	vPayload;
@@ -2370,23 +2376,30 @@ namespace Plugins {
 
 	void CPluginProtocolWS::ProcessInbound(const ReadEvent* Message)
 	{
-		//	Although messages can be fragmented, control messages can be inserted in between fragments
-		//	so try to process just the message first, then retained data and the message
-		std::vector<byte>	Buffer = Message->m_Buffer;
-		if (ProcessWholeMessage(Buffer, Message))
+		// Check this isn't an HTTP message (connection/protocol switch may have failed)
+		if (Message->m_Buffer.size() >= 4)
 		{
-			return;		// Message processed
+			std::string		sData(Message->m_Buffer.begin(), Message->m_Buffer.begin() + 4);
+			if (sData == "HTTP")
+			{
+				CPluginProtocolHTTP::ProcessInbound(Message);
+				return;
+			}
 		}
+
+		//	Although messages can be fragmented, control messages can be inserted in between fragments
+		//	so try to process just the new message first, then retained data and the message
+		std::vector<byte>	Buffer = Message->m_Buffer;
+		ProcessWholeMessage(Buffer, Message);
 
 		// Add new message to retained data, process all messages if this one is the finish of a message
-		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+		m_sRetainedData.insert(m_sRetainedData.end(), Buffer.begin(), Buffer.end());
 
 		// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
-		if (ProcessWholeMessage(m_sRetainedData, Message))
+		while (ProcessWholeMessage(m_sRetainedData, Message))
 		{
-			return;		// Message processed
+			continue;		// Message processed
 		}
-
 	}
 
 	std::vector<byte> CPluginProtocolWS::ProcessOutbound(const WriteDirective* WriteMessage)
@@ -2403,6 +2416,7 @@ namespace Plugins {
 		}
 		else
 		{
+			// If a URL is specified then this is an HTTP message (which must be the WebSocket upgrade message in a valid flow)
 			PyBorrowedRef pURL = PyDict_GetItemString(WriteMessage->m_Object, "URL");
 			if (pURL)
 			{
@@ -2421,36 +2435,46 @@ namespace Plugins {
 				{
 					pHeaders = (PyObject*)PyDict_New();
 					if (PyDict_SetItemString(WriteMessage->m_Object, "Headers", (PyObject*)pHeaders) == -1)
-						_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "WS", "Headers");
+						_log.Log(LOG_ERROR, "(%s) failed to create '%s' missing dictionary.", "WS", "Headers");
 					Py_DECREF(pHeaders);
 				}
-				PyBorrowedRef pConnection = PyDict_GetItemString(pHeaders, "Connection");
-				if (!pConnection)
-				{
-					PyNewRef pObj = Py_BuildValue("s", "keep-alive, Upgrade");
-					if (PyDict_SetItemString(pHeaders, "Connection", pObj) == -1)
-						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, "Connection", "Upgrade");
-				}
-				PyBorrowedRef pUpgrade = PyDict_GetItemString(pHeaders, "Upgrade");
-				if (!pUpgrade)
-				{
-					PyNewRef pObj = Py_BuildValue("s", "websocket");
-					if (PyDict_SetItemString(pHeaders, "Upgrade", pObj) == -1)
-						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, "Upgrade", "websocket");
-				}
-				PyBorrowedRef pUserAgent = PyDict_GetItemString(pHeaders, "User-Agent");
-				if (!pUserAgent)
-				{
-					PyNewRef pObj = Py_BuildValue("s", "Domoticz/1.0");
-					if (PyDict_SetItemString(pHeaders, "User-Agent", pObj) == -1)
-						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, "User-Agent", "Domoticz/1.0");
-				}
 
-				// Use parent HTTP protocol object to do the actual formatting
+				// Add default values for missing headers
+				if (!PyDict_GetItemString(pHeaders, "Accept"))
+					AddStringToDict(pHeaders, "Accept", "*/*");
+
+				if (!PyDict_GetItemString(pHeaders, "Accept-Language"))
+					AddStringToDict(pHeaders, "Accept-Language", "en-US,en;q=0.9'");
+
+				if (!PyDict_GetItemString(pHeaders, "Accept-Encoding"))
+					AddStringToDict(pHeaders, "Accept-Encoding", "gzip, deflate");
+
+				if (!PyDict_GetItemString(pHeaders, "Connection"))
+					AddStringToDict(pHeaders, "Connection", "keep-alive, Upgrade");
+
+				if (!PyDict_GetItemString(pHeaders, "Sec-WebSocket-Version"))
+					AddStringToDict(pHeaders, "Sec-WebSocket-Version", "13");
+
+				if (!PyDict_GetItemString(pHeaders, "Sec-WebSocket-Extensions"))
+					AddStringToDict(pHeaders, "Sec-WebSocket-Extensions", "permessage-deflate");
+
+				if (!PyDict_GetItemString(pHeaders, "Upgrade"))
+					AddStringToDict(pHeaders, "Upgrade", "websocket");
+
+				if (!PyDict_GetItemString(pHeaders, "User-Agent"))
+					AddStringToDict(pHeaders, "User-Agent", "Domoticz/1.0");
+
+				if (!PyDict_GetItemString(pHeaders, "Pragma"))
+					AddStringToDict(pHeaders, "Pragma", "no-cache");
+
+				if (!PyDict_GetItemString(pHeaders, "Cache-Control"))
+					AddStringToDict(pHeaders, "Cache-Control", "no-cache");
+
+				// Use parent HTTP protocol object to do the actual formatting and queuing
 				return CPluginProtocolHTTP::ProcessOutbound(WriteMessage);
 			}
 			int iOpCode = 0;
-			long lMaskingKey = 0;
+			long long llMaskingKey = 0;
 			long lPayloadLength = 0;
 			byte bMaskBit = 0x00;
 
@@ -2505,13 +2529,13 @@ namespace Plugins {
 			{
 				if (pMask.IsLong())
 				{
-					lMaskingKey = PyLong_AsLong(pMask);
+					llMaskingKey = PyLong_AsLongLong(pMask);
 					bMaskBit = 0x80; // Set mask bit in header
 				}
 				else if (pMask.IsString())
 				{
 					std::string sMask = PyUnicode_AsUTF8(pMask);
-					lMaskingKey = atoi(sMask.c_str());
+					llMaskingKey = atoi(sMask.c_str());
 					bMaskBit = 0x80; // Set mask bit in header
 				}
 				else
@@ -2540,11 +2564,11 @@ namespace Plugins {
 			byte *pbMask = nullptr;
 			if (bMaskBit)
 			{
-				retVal.push_back(lMaskingKey >> 24);
+				retVal.push_back(llMaskingKey >> 24);
 				pbMask = &retVal[retVal.size() - 1];
-				retVal.push_back((lMaskingKey >> 16) & 0xFF);
-				retVal.push_back((lMaskingKey >> 8) & 0xFF);
-				retVal.push_back(lMaskingKey & 0xFF); // Encode mask
+				retVal.push_back((llMaskingKey >> 16) & 0xFF);
+				retVal.push_back((llMaskingKey >> 8) & 0xFF);
+				retVal.push_back(llMaskingKey & 0xFF); // Encode mask
 			}
 
 			if (pPayload.IsString())
@@ -2552,7 +2576,10 @@ namespace Plugins {
 				std::string sPayload = PyUnicode_AsUTF8(pPayload);
 				for (int i = 0; i < lPayloadLength; i++)
 				{
-					retVal.push_back(sPayload[i] ^ pbMask[i % 4]);
+					if (bMaskBit)
+						retVal.push_back(sPayload[i] ^ pbMask[i % 4]);
+					else
+						retVal.push_back(sPayload[i]);
 				}
 			}
 			else if (pPayload.IsBytes())
@@ -2560,7 +2587,10 @@ namespace Plugins {
 				byte *pByte = (byte *)PyBytes_AsString(pPayload);
 				for (int i = 0; i < lPayloadLength; i++)
 				{
-					retVal.push_back(pByte[i] ^ pbMask[i % 4]);
+					if (bMaskBit)
+						retVal.push_back(pByte[i] ^ pbMask[i % 4]);
+					else
+						retVal.push_back(pByte[i]);
 				}
 			}
 			else if (pPayload.IsByteArray())
@@ -2568,7 +2598,10 @@ namespace Plugins {
 				byte *pByte = (byte *)PyByteArray_AsString(pPayload);
 				for (int i = 0; i < lPayloadLength; i++)
 				{
-					retVal.push_back(pByte[i] ^ pbMask[i % 4]);
+					if (bMaskBit)
+						retVal.push_back(pByte[i] ^ pbMask[i % 4]);
+					else
+						retVal.push_back(pByte[i]);
 				}
 			}
 		}
