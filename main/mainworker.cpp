@@ -4330,7 +4330,7 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 		BatteryLevel = 0;
 	else
 		BatteryLevel = 100;
-	float Level = pResponse->UV.uv;
+	float Level = float(pResponse->UV.uv) / 10.0F;
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
