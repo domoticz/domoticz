@@ -154,7 +154,7 @@ namespace Plugins {
 
 	public:
 		PyBorrowedRef()
-			: m_pObject(NULL){};
+			: m_pObject(NULL) {};
 		PyBorrowedRef(PyObject *pObject)
 		{
 			m_pObject = pObject;
