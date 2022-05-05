@@ -50,12 +50,12 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editwinddevice").dialog("open");
 		}
 
-		EditUviDevice = function (idx, name, description, addjmulti) {
+		EditUviDevice = function (idx, name, description, addjmulti2) {
 			$.devIdx = idx;
 			$("#dialog-edituvidevice #deviceidx").text(idx);
 			$("#dialog-edituvidevice #devicename").val(unescape(name));
 			$("#dialog-edituvidevice #devicedescription").val(unescape(description));
-			$("#dialog-edituvidevice #multiply").val(addjmulti);
+			$("#dialog-edituvidevice #multiply").val(addjmulti2);
 			$("#dialog-edituvidevice").i18n();
 			$("#dialog-edituvidevice").dialog("open");
 		}
@@ -488,7 +488,7 @@ define(['app', 'livesocket'], function (app) {
 						url: "json.htm?type=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edituvidevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edituvidevice #devicedescription").val()) +
-						'&addjmulti=' + $("#dialog-edituvidevice #edittable #multiply").val() +
+						'&addjmulti2=' + $("#dialog-edituvidevice #edittable #multiply").val() +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -676,7 +676,7 @@ define(['app', 'livesocket'], function (app) {
 					} else if (typeof item.Visibility != 'undefined') {
 						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal);
 					} else if (typeof item.UVI != 'undefined') {
-						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti);
+						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2);
 					}
 					else if (typeof item.Barometer != 'undefined') {
 						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2);
