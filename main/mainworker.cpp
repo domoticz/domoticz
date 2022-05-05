@@ -4331,10 +4331,10 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 	else
 		BatteryLevel = 100;
 	float Level = float(pResponse->UV.uv) / 10.0F;
-	float AddjValue = 0.0F;
-	float AddjMulti = 1.0F;
-	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	Level *= AddjMulti;
+	float AddjValue2 = 0.0F;
+	float AddjMulti2 = 1.0F;
+	m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue2, AddjMulti2);
+	Level *= AddjMulti2;
 	if (Level > 30)
 	{
 		WriteMessage(" Invalid UV");
@@ -4357,10 +4357,10 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 			return;
 		}
 
-		float AddjValue2 = 0.0F;
-		float AddjMulti2 = 1.0F;
-		m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue2, AddjMulti2);
-		temp += AddjValue2;
+		float AddjValue = 0.0F;
+		float AddjMulti = 1.0F;
+		m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
 	}
 
 	sprintf(szTmp, "%.1f;%.1f", Level, temp);
