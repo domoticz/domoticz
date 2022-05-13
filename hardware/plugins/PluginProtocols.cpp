@@ -145,7 +145,7 @@ namespace Plugins {
 	{
 		PyNewRef pObj(value);
 		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
-			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%ld' to dictionary.", __func__, key, value);
 	}
 
 	static void AddUIntToDict(PyObject* pDict, const char* key, const unsigned int value)
