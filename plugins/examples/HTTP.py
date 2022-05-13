@@ -36,8 +36,6 @@
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
-
 
 class BasePlugin:
     httpConn = None
