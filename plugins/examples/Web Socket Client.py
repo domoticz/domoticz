@@ -61,7 +61,7 @@ class BasePlugin:
         return True
 
     def onMessage(self, Connection, Data):
-        Domoticz.Log("onMessage called")
+        Domoticz.Debug("onMessage called")
         if "Status" in Data:  # HTTP Message
             if Data["Status"] == "101":
                 Domoticz.Log("WebSocket successfully upgraded")

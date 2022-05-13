@@ -247,13 +247,66 @@ namespace Plugins {
 			: PyBorrowedRef(){};
 		PyNewRef(PyObject *pObject)
 			: PyBorrowedRef(pObject){};
-		void operator=(PyObject *pObject)
+		PyNewRef(const std::vector<byte> value)
+			: PyBorrowedRef() {
+			m_pObject = PyBytes_FromStringAndSize((const char*)&value[0], value.size());
+		};
+		PyNewRef(const byte* value, const int size)
+			: PyBorrowedRef() {
+			m_pObject = PyBytes_FromStringAndSize((const char*)value, size);
+		};
+		PyNewRef(const std::string& value)
+			: PyBorrowedRef() {
+			m_pObject = PyUnicode_FromString(value.c_str());
+		};
+		PyNewRef(const char* value)
+			: PyBorrowedRef() {
+			m_pObject = PyUnicode_FromString(value);
+		};
+		PyNewRef(const long value)
+			: PyBorrowedRef() {
+			m_pObject = PyLong_FromLong(value);
+		};
+		PyNewRef(const long long value)
+			: PyBorrowedRef() {
+			m_pObject = Py_BuildValue("L", value);
+		};
+		PyNewRef(const int value)
+			: PyBorrowedRef() {
+			m_pObject = Py_BuildValue("i", value);
+		};
+		PyNewRef(const unsigned int value)
+			: PyBorrowedRef() {
+			m_pObject = Py_BuildValue("I", value);
+		};
+		PyNewRef(const float value)
+			: PyBorrowedRef() {
+			m_pObject = Py_BuildValue("f", value);
+		};
+		PyNewRef(const double value)
+			: PyBorrowedRef() {
+			m_pObject = Py_BuildValue("d", value);
+		};
+		PyNewRef(const bool value)
+			: PyBorrowedRef() {
+			m_pObject = PyBool_FromLong(value);
+		};
+		void operator=(const PyNewRef& pNewRef)
 		{
 			if (m_pObject)
 			{
 				Py_XDECREF(m_pObject);
 			}
-			m_pObject = pObject;
+			m_pObject = pNewRef.m_pObject;
+			Py_XINCREF(m_pObject);
+		}
+		void operator=(PyObject* pObject)
+		{
+			if (m_pObject)
+			{
+				Py_XDECREF(m_pObject);
+			}
+			PyBorrowedRef::operator=(pObject);
 		}
 		void operator+=(PyObject *pObject)
 		{

@@ -1682,6 +1682,11 @@ namespace Plugins
 		CConnection *pConnection = pMessage->m_pConnection;
 
 		pConnection->pProtocol->ProcessInbound(pMessage);
+
+		if (PyErr_Occurred())
+		{
+			LogPythonException("ProcessInbound");
+		}
 	}
 
 	void CPlugin::ConnectionWrite(CDirectiveBase *pMess)

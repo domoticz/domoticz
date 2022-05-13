@@ -531,7 +531,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
-		  PyNewRef pParams = nullptr;
+		  PyNewRef pParams;
 
 		  // Data is stored in a single vector of bytes
 		  if (!m_Buffer.empty())

@@ -70,6 +70,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_GetAttrString, PyObject* pObj COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_HasAttrString, PyObject* COMMA const char *);
 		DECLARE_PYTHON_SYMBOL(const char*, PyBytes_AsString, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyBytes_FromStringAndSize, const char* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyBytes_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsASCIIString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromString, const char*);
@@ -199,6 +200,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyObject_GetAttrString);
 					RESOLVE_PYTHON_SYMBOL(PyObject_HasAttrString);
 					RESOLVE_PYTHON_SYMBOL(PyBytes_AsString);
+					RESOLVE_PYTHON_SYMBOL(PyBytes_FromStringAndSize);
 					RESOLVE_PYTHON_SYMBOL(PyBytes_Size);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsASCIIString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromString);
@@ -420,6 +422,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define	PyObject_GetAttrString	pythonLib->PyObject_GetAttrString
 #define	PyObject_HasAttrString	pythonLib->PyObject_HasAttrString
 #define	PyBytes_AsString		pythonLib->PyBytes_AsString
+#define	PyBytes_FromStringAndSize	pythonLib->PyBytes_FromStringAndSize
 #define	PyBytes_Size			pythonLib->PyBytes_Size
 #define PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
 #define PyUnicode_FromString	pythonLib->PyUnicode_FromString
