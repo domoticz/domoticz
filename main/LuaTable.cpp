@@ -6,9 +6,9 @@ extern "C" {
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+}
 
 #include <utility>
-}
 
 CLuaTable::CLuaTable(lua_State *lua_state, const std::string &Name)
 {
