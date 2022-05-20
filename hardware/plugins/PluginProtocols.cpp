@@ -2226,7 +2226,7 @@ namespace Plugins {
 
 	bool CPluginProtocolWS::ProcessWholeMessage(std::vector<byte>& vMessage, const ReadEvent* Message)
 	{
-		if (!vMessage.empty())
+		if (vMessage.size() > 1)
 		{
 			// Look for a complete message
 			std::vector<byte>	vPayload;
@@ -2381,14 +2381,11 @@ namespace Plugins {
 			}
 		}
 
-		//	Although messages can be fragmented, control messages can be inserted in between fragments
-		//	so try to process just the new message first, then retained data and the message
-		std::vector<byte>	Buffer = Message->m_Buffer;
-		ProcessWholeMessage(Buffer, Message);
-
 		// Add new message to retained data, process all messages if this one is the finish of a message
-		m_sRetainedData.insert(m_sRetainedData.end(), Buffer.begin(), Buffer.end());
+		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
+		// Although messages can be fragmented, control messages can be inserted in between fragments. 
+		// see https://datatracker.ietf.org/doc/html/rfc6455#section-5.4 
 		// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
 		while (ProcessWholeMessage(m_sRetainedData, Message))
 		{
