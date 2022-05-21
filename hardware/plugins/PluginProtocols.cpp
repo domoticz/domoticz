@@ -122,7 +122,8 @@ namespace Plugins {
 
 	static void AddBytesToDict(PyObject* pDict, const char* key, const std::string& value)
 	{
-		PyNewRef pObj = Py_BuildValue("y#", value.c_str(), value.length());
+		//PyNewRef pObj = Py_BuildValue("y#", value.c_str(), value.length());
+		PyNewRef pObj((byte*)value.c_str(), value.length());
 		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
 	}

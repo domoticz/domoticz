@@ -24,8 +24,8 @@
 
 #define ADD_STRING_TO_DICT(pPlugin, pDict, key, value)                                                                                      \
 	{                                                                                                                                       \
-		PyNewRef	pObj = Py_BuildValue("s", value.c_str());                                                                               \
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)                                                                                   \
+		PyNewRef	pStr(value);                                                                               \
+		if (!pStr || PyDict_SetItemString(pDict, key, pStr) == -1)                                                                                   \
 			pPlugin->Log(LOG_ERROR, "Failed to add key '%s', value '%s' to dictionary.", key, value.c_str());     \
 	}
 
@@ -1350,8 +1350,8 @@ namespace Plugins
 				goto Error;
 			}
 
-			PyNewRef pObj = Py_BuildValue("i", m_HwdID);
-			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
+			PyNewRef pHwdID(m_HwdID);
+			if (PyDict_SetItemString(pParamsDict, "HardwareID", pHwdID) == -1)
 			{
 				Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
 				goto Error;
