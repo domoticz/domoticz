@@ -726,7 +726,7 @@ namespace Plugins {
 		}
 		else
 		{
-			pModState->pPlugin->Log(LOG_ERROR, "Unit creation failed, Device object is not associated with a plugin.");
+			_log.Log(LOG_ERROR, "Unit creation failed, Device object is not associated with a plugin.");
 		}
 
 		Py_RETURN_NONE;
