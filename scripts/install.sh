@@ -174,7 +174,7 @@ displayFinalMessage() {
 	whiptail --msgbox --backtitle "Ready..." --title "Installation Complete!" "Point your browser to either:
 
 HTTP:	${IPv4_address%/*}:${HTTP_port%/*}
-HTPS:	${IPv4_address%/*}:${HTTPS_port}
+HTTPS:	${IPv4_address%/*}:${HTTPS_port}
 
 Wiki:  https://www.domoticz.com/wiki
 Forum: https://www.domoticz.com/forum
