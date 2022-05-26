@@ -124,49 +124,49 @@ namespace Plugins {
 	{
 		//PyNewRef pObj = Py_BuildValue("y#", value.c_str(), value.length());
 		PyNewRef pObj((byte*)value.c_str(), value.length());
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
 	}
 	
 	static void AddStringToDict(PyObject* pDict, const char* key, const std::string& value)
 	{
 		PyNewRef pObj(value);
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
 	}
 
 	static void AddIntToDict(PyObject* pDict, const char* key, const int value)
 	{
 		PyNewRef pObj(value);
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
 	}
 
 	static void AddLongToDict(PyObject* pDict, const char* key, const long value)
 	{
 		PyNewRef pObj(value);
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%ld' to dictionary.", __func__, key, value);
 	}
 
 	static void AddUIntToDict(PyObject* pDict, const char* key, const unsigned int value)
 	{
 		PyNewRef pObj(value);
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
 	}
 
 	static void AddDoubleToDict(PyObject* pDict, const char* key, const double value)
 	{
 		PyNewRef pObj(value);
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%f' to dictionary.", __func__, key, value);
 	}
 
 	static void AddBoolToDict(PyObject* pDict, const char* key, const bool value)
 	{
 		PyNewRef pObj(value);
-		if (!pObj || PyDict_SetItemString(pDict, key, pObj) == -1)
+		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value ? "True" : "False");
 	}
 
