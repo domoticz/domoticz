@@ -351,12 +351,6 @@ bool P1MeterBase::MatchLine()
 				if (m_voltagel3 != -1) {
 					SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
-				/* The ampere is rounded to whole numbers and therefor not accurate enough
-				//we could calculate this ourselfs I=P/U I1=(m_power.powerusage1/m_voltagel1)
-				if (m_bReceivedAmperage) {
-					SendCurrentSensor(1, 255, m_amperagel1, m_amperagel2, m_amperagel3, "Amperage" );
-				}
-				*/
 				if (m_powerusel1 != -1) {
 					SendWattMeter(0, 1, 255, m_powerusel1, "Usage L1");
 				}
@@ -375,6 +369,20 @@ bool P1MeterBase::MatchLine()
 				}
 				if (m_powerdell3 != -1) {
 					SendWattMeter(0, 6, 255, m_powerdell3, "Delivery L3");
+				}
+
+				if (
+					(m_voltagel1 != -1)
+					&& (m_voltagel2 != -1)
+					&& (m_voltagel3 != -1)
+					)
+				{
+					// The ampere is rounded to whole numbers and therefor not accurate enough
+					// Therefor we calculate this ourselfs I=P/U, I1=(m_power.m_powerusel1/m_voltagel1)
+					float I1 = m_powerusel1 / m_voltagel1;
+					float I2 = m_powerusel2 / m_voltagel2;
+					float I3 = m_powerusel3 / m_voltagel3;
+					SendCurrentSensor(0, 255, I1, I2, I3, "Current L1/L2/L3");
 				}
 
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
