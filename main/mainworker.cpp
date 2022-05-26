@@ -8919,7 +8919,7 @@ void MainWorker::decode_Current(const CDomoticzHardwareBase* pHardware, const tR
 		WriteMessage(szTmp);
 		sprintf(szTmp, "ID            = %d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp, "Count         = %d", pResponse->CURRENT.id2);//m_rxbuffer[5]);
+		sprintf(szTmp, "Count         = %d", pResponse->CURRENT.count);
 		WriteMessage(szTmp);
 		sprintf(szTmp, "Channel 1     = %.1f ampere", CurrentChannel1);
 		WriteMessage(szTmp);
