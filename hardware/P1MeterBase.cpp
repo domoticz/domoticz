@@ -383,6 +383,15 @@ bool P1MeterBase::MatchLine()
 					float I2 = m_powerusel2 / m_voltagel2;
 					float I3 = m_powerusel3 / m_voltagel3;
 					SendCurrentSensor(0, 255, I1, I2, I3, "Current L1/L2/L3");
+
+					//Do the same for delivered
+					if (m_powerdell1 || m_powerdell2 || m_powerdell3)
+					{
+						I1 = m_powerdell1 / m_voltagel1;
+						I2 = m_powerdell2 / m_voltagel2;
+						I3 = m_powerdell3 / m_voltagel3;
+						SendCurrentSensor(1, 255, I1, I2, I3, "Delivery Current L1/L2/L3");
+					}
 				}
 
 				if ((m_gas.gasusage > 0) && ((m_gas.gasusage != m_lastgasusage) || (difftime(atime, m_lastSharedSendGas) >= 300)))
