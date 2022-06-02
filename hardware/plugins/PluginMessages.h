@@ -537,7 +537,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		  if (!m_Buffer.empty())
 		  {
 			  PyNewRef	Bytes(m_Buffer);
-			  pParams = Py_BuildValue("OO", m_pConnection, Bytes);
+			  pParams = Py_BuildValue("OO", m_pConnection, (PyObject*)Bytes);
 			  Callback(pPlugin, pParams);
 		  }
 

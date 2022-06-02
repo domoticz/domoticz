@@ -247,9 +247,9 @@ namespace Plugins {
 			: PyBorrowedRef(){};
 		PyNewRef(PyObject *pObject)
 			: PyBorrowedRef(pObject){};
-		PyNewRef(const std::vector<byte> value)
+		PyNewRef(const std::vector<byte>& value)
 			: PyBorrowedRef() {
-			m_pObject = PyBytes_FromStringAndSize((const char*)&value[0], value.size());
+			m_pObject = PyBytes_FromStringAndSize((const char*)value.data(), value.size());
 		};
 		PyNewRef(const byte* value, const int size)
 			: PyBorrowedRef() {
