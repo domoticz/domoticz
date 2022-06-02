@@ -3779,13 +3779,12 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
-	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-	/*
-		if (lstatus.find("Set Level") == 0)
-		{
-			lstatus = "Set Level";
-		}
-	*/
+
+	if (IsLightOrSwitch(dType, dSubType))
+	{
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	}
+
 	if (switchtype == STYPE_Dimmer)
 	{
 		// use default lstatus
