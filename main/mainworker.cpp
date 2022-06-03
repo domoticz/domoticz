@@ -12671,6 +12671,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	{
 #ifdef ENABLE_PYTHON
 		((Plugins::CPlugin*)pHardware)->SendCommand(sd[1], Unit, "Set Level", TempValue);
+		return true;
 #endif
 	}
 	else if (
