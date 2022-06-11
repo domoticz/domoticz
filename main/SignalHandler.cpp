@@ -493,6 +493,7 @@ void signal_handler(int sig_num
 
 static void heartbeat_check()
 {
+	bool bTimeOut = false;
 	time_t now;
 	mytime(&now);
 
@@ -500,20 +501,18 @@ static void heartbeat_check()
 	if (diff > Heartbeat_Timeout)
 	{
 		_log.Log(LOG_ERROR, "mainworker seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
-		if (!IsDebuggerPresent())
-		{
-#ifdef WIN32
-			abort();
-#else
-			raise(SIGUSR1);
-#endif
-		}
+		bTimeOut = true;
 	}
 
 	diff = difftime(now, m_LastHeartbeat);
 	if (diff > Heartbeat_Timeout)
 	{
 		_log.Log(LOG_ERROR, "main thread seems to have ended or hung unexpectedly (last update %f seconds ago)", diff);
+		bTimeOut = true;
+	}
+
+	if(bTimeOut)
+	{
 		if (!IsDebuggerPresent())
 		{
 #ifdef WIN32
@@ -529,6 +528,10 @@ bool g_stop_watchdog = false;
 
 void Do_Watchdog_Work()
 {
+	// Initialize hartbeats with current time (fixes issues #5252)
+	m_LastHeartbeat = mytime(nullptr);
+	m_mainworker.m_LastHeartbeat = mytime(nullptr);
+
 	while(!g_stop_watchdog)
 	{
 		sleep_milliseconds(1000);
