@@ -23,9 +23,13 @@ Your first place for support is the [Domoticz Forum](http://www.domoticz.com/for
 
 The Github issue tracker is NOT for end-user support.
 
+## Security issues
+
+See the [Security](SECURITY.md) file for more information.
+
 ## Donations
 Donations are more than welcome and will be used to buy new hardware, devices, sensors, hosting and coffee.
-If you like the product or encourage the development, please use thelink:
+If you like the product or encourage the development, please use the link:
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=6S2CXM772QY84&currency_code=EUR&source=url)
 
