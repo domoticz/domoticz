@@ -691,6 +691,7 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT16, "Zemismart" },
 		{ pTypeBlinds, sTypeBlindsT17, "Gaposa" },
 		{ pTypeBlinds, sTypeBlindsT18, "Cherubini" },
+		{ pTypeBlinds, sTypeBlindsT21, "Generic" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -1813,6 +1814,13 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeBlinds:
+		if (dSubType == sTypeBlindsT21)
+		{
+			bHaveDimmer = true;
+			maxDimLevel = 100;
+			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		}
+
 		switch (nValue)
 		{
 		case blinds_sOpen:
@@ -1824,6 +1832,11 @@ void GetLightStatus(
 		case blinds_sClose:
 			if (dSubType == sTypeBlindsT10)
 				lstatus = "Off";
+			else if (dSubType == sTypeBlindsT21 && (llevel > 0) && (llevel < 100))
+			{
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				lstatus = szTmp;
+			}
 			else
 				lstatus = "On";
 			break;
@@ -3329,14 +3342,14 @@ bool GetLightCommand(
 	{
 		if (switchcmd == "On")
 		{
-			if (dSubType == sTypeBlindsT10)
+			if (dSubType == sTypeBlindsT10 || dSubType == sTypeBlindsT21)
 				cmd = blinds_sOpen;
 			else
 				cmd = blinds_sClose;
 		}
 		else if (switchcmd == "Off")
 		{
-			if (dSubType == sTypeBlindsT10)
+			if (dSubType == sTypeBlindsT10 || dSubType == sTypeBlindsT21)
 				cmd = blinds_sClose;
 			else
 				cmd = blinds_sOpen;
@@ -4036,13 +4049,13 @@ void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype)
 		subtype = sSwitchTypeHomeConfort;
 	}
 	else if (dtype == pTypeBlinds) {
-		dtype = pTypeGeneralSwitch;
 		if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
 		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeDooya;
 		else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeDooya;
+		else if (subtype == sTypeBlindsT21) subtype = sSwitchGeneralSwitch;
 		std::stringstream s_strid;
 		s_strid << std::hex << strtoul(devid.c_str(), nullptr, 16);
 		unsigned long deviceid = 0;

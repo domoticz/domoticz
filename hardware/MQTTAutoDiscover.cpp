@@ -2514,6 +2514,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		|| (!pSensor->set_position_topic.empty())
 		)
 	{
+		pSensor->devType = pTypeBlinds;
+		pSensor->subType = sTypeBlindsT21;
 		if (pSensor->payload_stop.empty())
 			switchType = STYPE_BlindsPercentage;
 		else
@@ -2701,9 +2703,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				// For cover use the value as position
 				if (pSensor->component_type == "cover")
 				{
-					if (level == pSensor->position_closed)
+					if (level == pSensor->position_open)
 						szOnOffValue = "on";
-					else if (level == pSensor->position_open)
+					else if (level == pSensor->position_closed)
 						szOnOffValue = "off";
 					else
 					{
@@ -2717,11 +2719,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 								)
 							{
 								// invert level for inverted blinds with percentage.
-								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+								level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 							}
 							else
 							{
-								level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 							}
 						}
 					}
@@ -2752,9 +2754,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		if (!root["position"].empty())
 		{
 			level = root["position"].asInt();
-			if (level == pSensor->position_closed)
+			if (level == pSensor->position_open)
 				szOnOffValue = "on";
-			else if (level == pSensor->position_open)
+			else if (level == pSensor->position_closed)
 				szOnOffValue = "off";
 			else
 			{
@@ -2768,11 +2770,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				)
 			{
 				// invert level for inverted blinds with percentage.
-				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
 			else
 			{
-				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
 		}
 		if (!root["color"].empty())
@@ -2851,9 +2853,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			//must be a level
 			level = atoi(szOnOffValue.c_str());
 			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
-				szOnOffValue = "on";
-			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
 				szOnOffValue = "off";
+			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
+				szOnOffValue = "on";
 			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_off)
 				szOnOffValue = "off";
 			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
@@ -2879,9 +2881,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		if (pSensor->component_type == "cover") {
 			// ensure the level is correct when we receive "on"/"off" in the payload
 			if (szOnOffValue == "on")
-				level = pSensor->position_closed;
-			if (szOnOffValue == "off")
 				level = pSensor->position_open;
+			if (szOnOffValue == "off")
+				level = pSensor->position_closed;
 
 			// COVERS: Always recalculate to make level relative to 100 and invert when needed
 			if (
@@ -2891,11 +2893,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				)
 			{
 				// invert level for inverted blinds with percentage.
-				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
 			else
 			{
-				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
 		}
 	}
@@ -2948,8 +2950,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			nValue = gswitch_sSetLevel;
 		}
-		else
-			nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+		nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
 	}
 	else
 	{
@@ -3250,24 +3251,24 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 		if (command == "On")
 		{
-			szValue = pSensor->payload_close;
+			szValue = pSensor->payload_open;
 			if (pSensor->command_topic.empty())
 			{
 				command = "Set Level";
 				level = 100; // Is recalculated in the "Set Level" logic
 			}
 			else
-				level = pSensor->position_closed;
+				level = pSensor->position_open;
 		}
 		else if (command == "Off")
 		{
-			szValue = pSensor->payload_open;
+			szValue = pSensor->payload_close;
 			if (pSensor->command_topic.empty()) {
 				command = "Set Level";
 				level = 0; // Is recalculated in the "Set Level" logic
 			}
 			else
-				level = pSensor->position_open;
+				level = pSensor->position_closed;
 		}
 		else if (command == "Stop")
 		{
@@ -3280,7 +3281,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			szValue = std::to_string(level);
 			if (!pSensor->set_position_topic.empty())
 			{
-				int iValue = (int)round(pSensor->position_open - (((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level)));
+				int iValue = (int)round(((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level));
 				// invert level for inverted blinds with percentage.
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());

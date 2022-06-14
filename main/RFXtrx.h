@@ -881,6 +881,7 @@ SDK version 4.9
 #define sTypeBlindsT18 0x12	//Cherubini
 #define sTypeBlindsT19 0x13	//Louvolite vertical
 #define sTypeBlindsT20 0x14	//Ozroll E-Trans
+#define sTypeBlindsT21 0x15	//Generic
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
