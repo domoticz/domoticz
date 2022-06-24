@@ -3846,17 +3846,33 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		|| (switchtype == STYPE_BlindsPercentageWithStop)
 		)
 	{
-		if (lstatus == "On")
-		{
-			lstatus = "Closed";
+		if (dSubType == sTypeBlindsT21) {
+			if (lstatus == "On")
+			{
+				lstatus = "Open";
+			}
+			else if (lstatus == "Stop")
+			{
+				lstatus = "Stopped";
+			}
+			else
+			{
+				lstatus = "Closed";
+			}
 		}
-		else if (lstatus == "Stop")
-		{
-			lstatus = "Stopped";
-		}
-		else
-		{
-			lstatus = "Open";
+		else {
+			if (lstatus == "On")
+			{
+				lstatus = "Closed";
+			}
+			else if (lstatus == "Stop")
+			{
+				lstatus = "Stopped";
+			}
+			else
+			{
+				lstatus = "Open";
+			}
 		}
 	}
 	else if (
@@ -3865,17 +3881,33 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 		)
 	{
-		if (lstatus == "Off")
-		{
-			lstatus = "Closed";
+		if (dSubType == sTypeBlindsT21) {
+			if (lstatus == "Off")
+			{
+				lstatus = "Open";
+			}
+			else if (lstatus == "Stop")
+			{
+				lstatus = "Stopped";
+			}
+			else
+			{
+				lstatus = "Closed";
+			}
 		}
-		else if (lstatus == "Stop")
-		{
-			lstatus = "Stopped";
-		}
-		else
-		{
-			lstatus = "Open";
+		else {
+			if (lstatus == "Off")
+			{
+				lstatus = "Closed";
+			}
+			else if (lstatus == "Stop")
+			{
+				lstatus = "Stopped";
+			}
+			else
+			{
+				lstatus = "Open";
+			}
 		}
 	}
 	else if (switchtype == STYPE_Media)
