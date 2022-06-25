@@ -1114,21 +1114,20 @@ std::string XiaomiGateway::GetGatewayKey()
 	unsigned char *plaintext = (unsigned char *)token.c_str();
 	unsigned char ciphertext[128];
 
-	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-	EVP_CipherInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv, 1);
+	auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
+	EVP_CipherInit(ctx.get(), EVP_aes_128_cbc(), key, iv, 1);
 	int cipherSize = 0;
-	if (!EVP_CipherUpdate(ctx, ciphertext, &cipherSize, plaintext, sizeof(plaintext))) {
+	if (!EVP_CipherUpdate(ctx.get(), ciphertext, &cipherSize, plaintext, strlen((char*)plaintext))) {
 		Log(LOG_ERROR, "GetGatewayKey Cannot Perform EVP Cipher Update");
-		EVP_CIPHER_CTX_free(ctx);
 		return std::string("");
 	}
+	EVP_CipherFinal(ctx.get(), ciphertext, &cipherSize);
 
 	char gatewaykey[128];
 	for (int i = 0; i < 16; i++)
 	{
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
-	EVP_CIPHER_CTX_free(ctx);
 
 #ifdef _DEBUG
 	Log(LOG_STATUS, "GetGatewayKey Password - %s", m_GatewayPassword.c_str());
