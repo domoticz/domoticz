@@ -587,7 +587,7 @@ IF(USE_OPENSSL_STATIC)
   set(OPENSSL_USE_STATIC_LIBS TRUE)
 ENDIF(USE_OPENSSL_STATIC)
 
-find_package(OpenSSL 1.1 REQUIRED)
+find_package(OpenSSL REQUIRED)
 IF(NOT OPENSSL_INCLUDE_DIR)
   message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
 ENDIF()
