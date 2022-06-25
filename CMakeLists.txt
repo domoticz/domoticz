@@ -583,12 +583,11 @@ ENDIF(USE_BUILTIN_MINIZIP)
 #
 # Find MD5/RMD160/SHA library
 #
-set(OpenSSL_Version 1.1)
 IF(USE_OPENSSL_STATIC)
   set(OPENSSL_USE_STATIC_LIBS TRUE)
 ENDIF(USE_OPENSSL_STATIC)
 
-find_package(OpenSSL OpenSSL_Version REQUIRED)
+find_package(OpenSSL 1.1 REQUIRED)
 IF(NOT OPENSSL_INCLUDE_DIR)
   message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
 ENDIF()
