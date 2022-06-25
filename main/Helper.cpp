@@ -875,9 +875,9 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 
 	auto md5ctx = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>(EVP_MD_CTX_new(), EVP_MD_CTX_free);
 
-	EVP_DigestInit_ex(md5ctx.get(), EVP_md5(), nullptr);
+	EVP_DigestInit(md5ctx.get(), EVP_md5());
 	EVP_DigestUpdate(md5ctx.get(), cstring.c_str(), cstring.size());
-	EVP_DigestFinal_ex(md5ctx.get(), digest, &hash_length);
+	EVP_DigestFinal(md5ctx.get(), digest, &hash_length);
 
 	char mdString[(EVP_MAX_MD_SIZE * 2) + 1];
 	mdString[EVP_MAX_MD_SIZE * 2] = 0;
