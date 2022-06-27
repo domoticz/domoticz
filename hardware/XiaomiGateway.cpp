@@ -9,7 +9,7 @@
 #include "../main/json_helper.h"
 #include "hardwaretypes.h"
 #include "XiaomiGateway.h"
-#include <openssl/aes.h>
+#include <openssl/evp.h>
 #include <boost/asio.hpp>
 #include "XiaomiDeviceSupport.h"
 
@@ -1109,20 +1109,26 @@ std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
 	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
-	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
+	unsigned char iv[EVP_MAX_IV_LENGTH] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
 	std::string token = XiaomiGatewayTokenManager::GetInstance().GetToken(m_GatewayIp);
 	unsigned char *plaintext = (unsigned char *)token.c_str();
 	unsigned char ciphertext[128];
 
-	AES_KEY encryption_key;
-	AES_set_encrypt_key(key, 128, &(encryption_key));
-	AES_cbc_encrypt((unsigned char *)plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
+	auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
+	EVP_CipherInit(ctx.get(), EVP_aes_128_cbc(), key, iv, 1);
+	int cipherSize = 0;
+	if (!EVP_CipherUpdate(ctx.get(), ciphertext, &cipherSize, plaintext, strlen((char*)plaintext))) {
+		Log(LOG_ERROR, "GetGatewayKey Cannot Perform EVP Cipher Update");
+		return std::string("");
+	}
+	EVP_CipherFinal(ctx.get(), ciphertext, &cipherSize);
 
 	char gatewaykey[128];
 	for (int i = 0; i < 16; i++)
 	{
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
+
 #ifdef _DEBUG
 	Log(LOG_STATUS, "GetGatewayKey Password - %s", m_GatewayPassword.c_str());
 	Log(LOG_STATUS, "GetGatewayKey key - %s", gatewaykey);

@@ -18,7 +18,7 @@
 #include <algorithm>
 #include "../main/localtime_r.h"
 #include <sstream>
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 #include <chrono>
 #include <limits.h>
 #include <cstring>
@@ -869,16 +869,18 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
-	unsigned char digest[MD5_DIGEST_LENGTH + 1];
-	digest[MD5_DIGEST_LENGTH] = 0;
+	unsigned char digest[EVP_MAX_MD_SIZE + 1];
+	digest[EVP_MAX_MD_SIZE] = 0;
+	unsigned int hash_length = 0;
 
-	MD5_CTX md5ctx;
-	MD5_Init(&md5ctx);
-	MD5_Update(&md5ctx, cstring.c_str(), cstring.size());
-	MD5_Final((unsigned char*)&digest, &md5ctx);
+	auto md5ctx = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>(EVP_MD_CTX_new(), EVP_MD_CTX_free);
 
-	char mdString[(MD5_DIGEST_LENGTH * 2) + 1];
-	mdString[MD5_DIGEST_LENGTH * 2] = 0;
+	EVP_DigestInit(md5ctx.get(), EVP_md5());
+	EVP_DigestUpdate(md5ctx.get(), cstring.c_str(), cstring.size());
+	EVP_DigestFinal(md5ctx.get(), digest, &hash_length);
+
+	char mdString[(EVP_MAX_MD_SIZE * 2) + 1];
+	mdString[EVP_MAX_MD_SIZE * 2] = 0;
 	for (int i = 0; i < 16; i++)
 		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
 

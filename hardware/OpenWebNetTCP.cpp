@@ -27,8 +27,6 @@ License: Public domain
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 
-#include <openssl/sha.h>
-
 #include "../notifications/NotificationHelper.h"
 
 #define OPENWEBNET_HEARTBEAT_DELAY      1
