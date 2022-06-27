@@ -256,7 +256,6 @@ define(['app', 'livesocket'], function (app) {
 							}
 						}
 						else if ((item.SwitchType.indexOf("Blinds")>=0)) {
-							console.log(item);
 							item.Image = item.TypeImg;
 			
 							isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
@@ -564,7 +563,6 @@ define(['app', 'livesocket'], function (app) {
 							}
 						}
 						else if ((item.SwitchType.indexOf("Blinds")>=0) || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-							console.log(item);
 							item.Image = item.TypeImg;
 			
 							isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
@@ -1883,7 +1881,6 @@ define(['app', 'livesocket'], function (app) {
 										}
 									}
 									else if (item.SwitchType.indexOf("Blinds")>=0) {
-										console.log(item);
 										item.Image = item.TypeImg;
 						
 										isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
@@ -2295,7 +2292,6 @@ define(['app', 'livesocket'], function (app) {
 										status = item.Data;
 									}
 									else if (item.SwitchType.indexOf("Blinds")>=0) {
-										console.log(item);
 										item.Image = item.TypeImg;
 						
 										isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);

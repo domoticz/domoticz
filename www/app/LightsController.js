@@ -958,7 +958,6 @@ define(['app', 'livesocket'], function (app) {
 								bAddTimer = false;
 							}
 							else if (item.SwitchType.indexOf("Blinds") >= 0) {
-								console.log(item);
 								item.Image = item.TypeImg;
 								bIsdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
