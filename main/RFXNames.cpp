@@ -1802,10 +1802,10 @@ void GetLightStatus(
 		switch (nValue)
 		{
 		case curtain_sOpen:
-			lstatus = "Off";
+			lstatus = "On";
 			break;
 		case curtain_sClose:
-			lstatus = "On";
+			lstatus = "Off";
 			break;
 		case curtain_sStop:
 			lstatus = "Stop";
@@ -3318,11 +3318,11 @@ bool GetLightCommand(
 	{
 		if (switchcmd == "On")
 		{
-			cmd = curtain_sClose;
+			cmd = curtain_sOpen;
 		}
 		else if (switchcmd == "Off")
 		{
-			cmd = curtain_sOpen;
+			cmd = curtain_sClose;
 		}
 		else
 		{

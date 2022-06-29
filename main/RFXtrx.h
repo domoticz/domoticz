@@ -853,8 +853,8 @@ SDK version 4.9
 //types for Curtain
 #define pTypeCurtain 0x18
 #define sTypeHarrison 0x0
-#define curtain_sOpen 0x0
-#define curtain_sClose 0x1
+#define curtain_sClose 0x0
+#define curtain_sOpen 0x1
 #define curtain_sStop 0x2
 #define curtain_sProgram 0x3
 
