@@ -1802,11 +1802,11 @@ void GetLightStatus(
 		switch (nValue)
 		{
 		case curtain_sOpen:
-			lstatus = "On";
-			break;
-		case curtain_sClose:
 			lstatus = "Off";
 			break;
+		case curtain_sClose:
+			lstatus = "On";
+			break; 
 		case curtain_sStop:
 			lstatus = "Stop";
 			break;
@@ -1828,10 +1828,16 @@ void GetLightStatus(
 		switch (nValue)
 		{
 		case blinds_sOpen:
-			lstatus = "On";
+			if (dSubType == sTypeBlindsT10)
+				lstatus = "On";
+			else
+				lstatus = "Off";
 			break;
 		case blinds_sClose:
-			lstatus = "Off";
+			if (dSubType == sTypeBlindsT10)
+				lstatus = "Off";
+			else
+				lstatus = "On";
 			break;
 		case blinds_sStop:
 			lstatus = "Stop";

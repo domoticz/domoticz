@@ -853,8 +853,8 @@ SDK version 4.9
 //types for Curtain
 #define pTypeCurtain 0x18
 #define sTypeHarrison 0x0
-#define curtain_sClose 0x0
-#define curtain_sOpen 0x1
+#define curtain_sOpen 0x0
+#define curtain_sClose 0x1
 #define curtain_sStop 0x2
 #define curtain_sProgram 0x3
 
@@ -882,8 +882,8 @@ SDK version 4.9
 #define sTypeBlindsT19 0x13	//Louvolite vertical
 #define sTypeBlindsT20 0x14	//Ozroll E-Trans
 
-#define blinds_sClose 0x0
-#define blinds_sOpen 0x1
+#define blinds_sOpen 0x0
+#define blinds_sClose 0x1
 #define blinds_sStop 0x2
 #define blinds_sConfirm 0x3
 #define blinds_sLimit 0x4
