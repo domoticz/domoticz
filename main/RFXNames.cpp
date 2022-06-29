@@ -691,7 +691,6 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT16, "Zemismart" },
 		{ pTypeBlinds, sTypeBlindsT17, "Gaposa" },
 		{ pTypeBlinds, sTypeBlindsT18, "Cherubini" },
-		{ pTypeBlinds, sTypeBlindsT21, "Generic" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -1016,7 +1015,7 @@ NULL
 };
 */
 const char *ZWave_Thermostat_Fan_Modes[]
-	= { "Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown", nullptr };
+= { "Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown", nullptr };
 
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const std::string& sMode)
 {
@@ -1814,31 +1813,25 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeBlinds:
-		if (dSubType == sTypeBlindsT21)
+		if (switchtype == STYPE_BlindsPercentage || 
+			switchtype == STYPE_BlindsPercentageInverted ||
+			switchtype == STYPE_BlindsPercentageInvertedWithStop ||
+			switchtype == STYPE_BlindsPercentageWithStop)
 		{
 			bHaveDimmer = true;
 			maxDimLevel = 100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
 			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
 		}
 
 		switch (nValue)
 		{
 		case blinds_sOpen:
-			if (dSubType == sTypeBlindsT10)
-				lstatus = "On";
-			else
-				lstatus = "Off";
+			lstatus = "On";
 			break;
 		case blinds_sClose:
-			if (dSubType == sTypeBlindsT10)
-				lstatus = "Off";
-			else if (dSubType == sTypeBlindsT21 && (llevel > 0) && (llevel < 100))
-			{
-				sprintf(szTmp, "Set Level: %d %%", llevel);
-				lstatus = szTmp;
-			}
-			else
-				lstatus = "On";
+			lstatus = "Off";
 			break;
 		case blinds_sStop:
 			lstatus = "Stop";
@@ -3342,17 +3335,11 @@ bool GetLightCommand(
 	{
 		if (switchcmd == "On")
 		{
-			if (dSubType == sTypeBlindsT10 || dSubType == sTypeBlindsT21)
-				cmd = blinds_sOpen;
-			else
-				cmd = blinds_sClose;
+			cmd = blinds_sOpen;
 		}
 		else if (switchcmd == "Off")
 		{
-			if (dSubType == sTypeBlindsT10 || dSubType == sTypeBlindsT21)
-				cmd = blinds_sClose;
-			else
-				cmd = blinds_sOpen;
+			cmd = blinds_sClose;
 		}
 		else
 		{
@@ -4055,7 +4042,6 @@ void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype)
 		else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeDooya;
-		else if (subtype == sTypeBlindsT21) subtype = sSwitchGeneralSwitch;
 		std::stringstream s_strid;
 		s_strid << std::hex << strtoul(devid.c_str(), nullptr, 16);
 		unsigned long deviceid = 0;

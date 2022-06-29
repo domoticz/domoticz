@@ -44,7 +44,7 @@ return {
 		else
 			blindsOff2Close = { "Venetian Blinds US", "Venetian Blinds EU", "Blinds Percentage", "Blinds", "Blinds + Stop" }
 		end
-
+ 
 		return res
 	end,
 
@@ -97,11 +97,11 @@ return {
 		end
 
 		function device.close()
-			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and device.deviceSubType ~= 'Generic' and 'On') or 'Off', 'device', device.state)
+			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'Off') or 'On', 'device', device.state)
 		end
 
 		function device.open()
-			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and device.deviceSubType ~= 'Generic'  and 'Off') or 'On', 'device', device.state)
+			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'On') or 'Off', 'device', device.state)
 		end
 
 		function device.stop() -- blinds

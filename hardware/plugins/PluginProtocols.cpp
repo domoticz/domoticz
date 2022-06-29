@@ -2551,7 +2551,7 @@ namespace Plugins {
 			byte *pbMask = nullptr;
 			if (bMaskBit)
 			{
-				retVal.push_back(llMaskingKey >> 24);
+				retVal.push_back((byte)(llMaskingKey >> 24));
 				pbMask = &retVal[retVal.size() - 1];
 				retVal.push_back((llMaskingKey >> 16) & 0xFF);
 				retVal.push_back((llMaskingKey >> 8) & 0xFF);

@@ -10,8 +10,8 @@
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
 
-MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password,
-			     const std::string &CAfilenameExtra, const int TLS_Version)
+MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const std::string& IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password,
+	const std::string& CAfilenameExtra, const int TLS_Version)
 	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTTAutoDiscover::PT_none, std::string("Domoticz-MQTT-AutoDiscover") + GenerateUUID() + std::to_string(ID), true)
 {
 	std::vector<std::string> strarray;
@@ -240,7 +240,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				stdreplace(szKey, "]", "");
 				if (
 					(is_number(szKey)
-					&& (root.isArray()))
+						&& (root.isArray()))
 					)
 				{
 					int iNumber = std::stoi(szKey);
@@ -763,7 +763,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["state_class"].empty())
 			pSensor->state_class = root["state_class"].asString();
 		else if (!root["stat_cla"].empty())
-			pSensor->state_class = root["stat_cla"].asString();		
+			pSensor->state_class = root["stat_cla"].asString();
 
 		if (!root["device_class"].empty())
 			pSensor->device_class = root["device_class"].asString();
@@ -899,7 +899,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				// Note: there is currently no distinction between RGB and RGBW. All will be treated as RGBW devices!
 				pSensor->supported_color_modes["rgbw"] = 1;
 				pSensor->bColor_mode = true;
-			}		
+			}
 
 			// If there is an hs_command_topic, add HS colormode
 			if (!root["hs_command_topic"].empty() || !root["hs_cmd_t"].empty())
@@ -925,7 +925,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			{
 				pSensor->supported_color_modes["color temp"] = 1;
 				pSensor->bColor_mode = true;
-			}		
+			}
 		}
 
 		if (!root["min_mireds"].empty())
@@ -1152,7 +1152,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 	for (auto& itt : m_discovered_sensors)
 	{
 		_tMQTTASensor* pSensor = &itt.second;
-		
+
 		if (
 			(pSensor->state_topic == topic)
 			|| (pSensor->position_topic == topic)
@@ -1605,21 +1605,21 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeLux;
 		sValue = pSensor->last_value;
 	}
-/*
-	else if (pSensor->state_class == "total_increasing")
-	{
-		devType = pTypeRFXMeter;
-		subType = sTypeRFXMeterCount;
-		sValue = pSensor->last_value;
-	}
-*/
+	/*
+		else if (pSensor->state_class == "total_increasing")
+		{
+			devType = pTypeRFXMeter;
+			subType = sTypeRFXMeterCount;
+			sValue = pSensor->last_value;
+		}
+	*/
 	else
 	{
 		devType = pTypeGeneral;
 		subType = sTypeCustom;
 		szOptions = pSensor->unit_of_measurement;
 		sValue = pSensor->last_value;
-	 }
+	}
 
 	if ((devType == pTypeGeneral) && (subType == sTypeCustom) && pSensor->szOptions.empty())
 		szOptions = "??";
@@ -2514,8 +2514,6 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		|| (!pSensor->set_position_topic.empty())
 		)
 	{
-		pSensor->devType = pTypeBlinds;
-		pSensor->subType = sTypeBlindsT21;
 		if (pSensor->payload_stop.empty())
 			switchType = STYPE_BlindsPercentage;
 		else
@@ -2645,7 +2643,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	color_old.mode = ColorModeCustom;
 	color_new.mode = ColorModeCustom;
 	bool bHaveColorChange = false;
-	bool bDoNotUpdateLevel=false;
+	bool bDoNotUpdateLevel = false;
 
 	if (bIsJSON)
 	{
@@ -2656,17 +2654,17 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			root.removeMember("value");
 		}
 
-		if(root["color"].isObject() && !root["color"]["red"].empty())
+		if (root["color"].isObject() && !root["color"]["red"].empty())
 		{
 			// The device uses "red", "green"... to specify the color components, default for domoticz would be "r", "g"... (e.g. Fibaro FGRGBW)
-			JSonRenameKey(root["color"],"red","r");
-			JSonRenameKey(root["color"],"green","g");
-			JSonRenameKey(root["color"],"blue","b");
-			JSonRenameKey(root["color"],"warmWhite","w");
-			JSonRenameKey(root["color"],"coldWhite","c");
+			JSonRenameKey(root["color"], "red", "r");
+			JSonRenameKey(root["color"], "green", "g");
+			JSonRenameKey(root["color"], "blue", "b");
+			JSonRenameKey(root["color"], "warmWhite", "w");
+			JSonRenameKey(root["color"], "coldWhite", "c");
 		}
 
-		if(root["state"].empty() && root["color"].isObject())
+		if (root["state"].empty() && root["color"].isObject())
 		{
 			// The on/off state is omitted in the message, so guess it from the color components (e.g. Fibaro FGRGBW)
 			int r = root["color"]["r"].asInt();
@@ -2674,7 +2672,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			int b = root["color"]["b"].asInt();
 			int w = root["color"]["w"].asInt();
 			int c = root["color"]["c"].asInt();
-			if(r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
+			if (r == 0 && g == 0 && b == 0 && w == 0 && c == 0)
 			{
 				root["state"] = "OFF";
 			}
@@ -2882,7 +2880,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			// ensure the level is correct when we receive "on"/"off" in the payload
 			if (szOnOffValue == "on")
 				level = pSensor->position_open;
-			if (szOnOffValue == "off")
+			else if (szOnOffValue == "off")
 				level = pSensor->position_closed;
 
 			// COVERS: Always recalculate to make level relative to 100 and invert when needed
@@ -2950,7 +2948,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		{
 			nValue = gswitch_sSetLevel;
 		}
-		nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
+		else
+			nValue = (bOn) ? gswitch_sOn : gswitch_sOff;
 	}
 	else
 	{
@@ -3023,6 +3022,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				command = "Off";
 				szSendValue = pSensor->payload_off;
 			}
+			else if (level == 100)
+			{
+				command = "On";
+				szSendValue = pSensor->payload_on;
+			}
 		}
 		else if ((command == "Set Color") && (pSensor->component_type == "light"))
 		{
@@ -3046,16 +3050,14 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	{
 		Json::Value root;
 
-		if (
-			(command == "On")
-			|| (command == "Off"))
+		if ((command == "On") || (command == "Off"))
 		{
 			if (!pSensor->brightness_value_template.empty())
 			{
 				SendMessage(pSensor->command_topic, szSendValue);
 				return true;
 			}
-			else 
+			else
 			{
 				if (szSendValue == "true")
 					root["state"] = true;
@@ -3171,7 +3173,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["w"] = color.ww;
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
-				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red") != std::string::npos) 
+				if (!pSensor->rgb_command_template.empty() && pSensor->rgb_command_template.find("red: red") != std::string::npos)
 				{
 					// For the Fibaro FGRGBW dimmer:
 					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
