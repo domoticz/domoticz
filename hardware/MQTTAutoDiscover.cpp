@@ -3371,6 +3371,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					level = 100;
 				else if (command == "Off")
 					level = 0;
+				if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+					level = 100;
 				int nValue = (level > 0) ? 1 : 0;
 				m_sql.safe_query(
 					"UPDATE DeviceStatus SET nValue=%d, LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
