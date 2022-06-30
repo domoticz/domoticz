@@ -1181,11 +1181,8 @@ define(['app', 'livesocket'], function (app) {
 							}
 							xhtm +=
 								'\t      <td id="status">' + status + '</td>\n' +
-								'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
-							if(item.HardwareTypeVal != 125)
-								xhtm += '\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
-							else
-								xhtm += '\t      <td id="type">' + item.Type + ', ' + item.SwitchType;
+								'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
+							  '\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 
 							if (item.SwitchType == "Dimmer") {
 								if (item.DimmerType && item.DimmerType != "abs") {
