@@ -2723,6 +2723,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 							{
 								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 							}
+							if (pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+							{
+								szOnOffValue = "on";
+								level = 100;
+							}
 						}
 					}
 				}
@@ -2773,6 +2778,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else
 			{
 				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+			}
+			if (pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+			{
+				szOnOffValue = "on";
+				level = 100;
 			}
 		}
 		if (!root["color"].empty())
@@ -2862,6 +2872,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szOnOffValue = "off";
 			else if (pSensor->component_type == "lock" && szOnOffValue == pSensor->payload_lock)
 				szOnOffValue = "on";
+			else if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+			{
+				level = 100;
+				szOnOffValue = "on";
+			}
 			else if (level > 0)
 			{
 				if (level != 100)
@@ -2896,6 +2911,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else
 			{
 				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+			}
+			
+			if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+			{
+				level = 100;
+				szOnOffValue = "on";
 			}
 		}
 	}
