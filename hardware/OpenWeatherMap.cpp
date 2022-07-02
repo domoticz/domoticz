@@ -486,7 +486,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 	{
 		try
 		{
-			float rainmm = 9999.00F;
+			float rainmm = 0.00F;
 			float uvi = -999.9F;
 			float mintemp = -999.9F;
 			float maxtemp = -999.9F;
@@ -599,12 +599,13 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str());
 
 			NodeID++;;
-			if ((rainmm != 9999.00F) && (rainmm >= 0.00F))
+			if (rainmm >= 0.00F)
 			{
 				sName.str("");
 				sName.clear();
 				sName << "Rain(Snow) " << period << " " << (count + 0);
-				SendRainRateSensor(NodeID, 255, rainmm, sName.str());
+				std::string sVal="mm";
+				SendCustomSensor(NodeID, 0, 255, rainmm, sName.str(), sVal, 12);
 			}
 
 			NodeID++;;
