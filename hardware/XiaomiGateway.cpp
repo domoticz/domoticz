@@ -1121,7 +1121,8 @@ std::string XiaomiGateway::GetGatewayKey()
 		Log(LOG_ERROR, "GetGatewayKey Cannot Perform EVP Cipher Update");
 		return std::string("");
 	}
-	EVP_CipherFinal(ctx.get(), ciphertext, &cipherSize);
+	int len = cipherSize;
+	EVP_CipherFinal(ctx.get(), ciphertext + len, &cipherSize);
 
 	char gatewaykey[128];
 	for (int i = 0; i < 16; i++)
