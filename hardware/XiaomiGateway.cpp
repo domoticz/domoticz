@@ -1114,11 +1114,12 @@ std::string XiaomiGateway::GetGatewayKey()
 	memset(&key, 0, sizeof(key));
 	memcpy(&key, m_GatewayPassword.c_str(), std::max((int)m_GatewayPassword.size(), EVP_MAX_KEY_LENGTH));
 
-	std::string token = XiaomiGatewayTokenManager::GetInstance().GetToken(m_GatewayIp);
+	unsigned char token[EVP_MAX_KEY_LENGTH];
+	memset(&token, 0, sizeof(token));
+	memcpy(&token, m_GatewayIp.c_str(), std::max((int)m_GatewayIp.size(), EVP_MAX_KEY_LENGTH));
 
 	std::vector<unsigned char> encrypted;
-	size_t max_output_len = token.size() + 16 - (token.size() % 16);
-	encrypted.resize(max_output_len);
+	encrypted.resize(32);
 
 	auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
 
@@ -1127,11 +1128,11 @@ std::string XiaomiGateway::GetGatewayKey()
 	int actual_size = 0;
 	EVP_CipherUpdate(ctx.get(),
 		&encrypted[0], &actual_size,
-		reinterpret_cast<unsigned char*>(&token[0]), token.size());
+		reinterpret_cast<unsigned char*>(&token[0]), 16);
 
-	int final_size;
-	EVP_CipherFinal_ex(ctx.get(), &encrypted[actual_size], &final_size);
-	actual_size += final_size;
+	//int final_size;
+	//EVP_CipherFinal_ex(ctx.get(), &encrypted[actual_size], &final_size);
+	//actual_size += final_size;
 
 	encrypted.resize(actual_size);
 
