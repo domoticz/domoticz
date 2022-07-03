@@ -1108,32 +1108,45 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
-	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
 	unsigned char iv[EVP_MAX_IV_LENGTH] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
+
+	unsigned char key[EVP_MAX_KEY_LENGTH];
+	memset(&key, 0, sizeof(key));
+	memcpy(&key, m_GatewayPassword.c_str(), std::max((int)m_GatewayPassword.size(), EVP_MAX_KEY_LENGTH));
+
 	std::string token = XiaomiGatewayTokenManager::GetInstance().GetToken(m_GatewayIp);
-	unsigned char *plaintext = (unsigned char *)token.c_str();
-	unsigned char ciphertext[128];
+
+	std::vector<unsigned char> encrypted;
+	size_t max_output_len = token.size() + 16 - (token.size() % 16);
+	encrypted.resize(max_output_len);
 
 	auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>(EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
-	EVP_CipherInit(ctx.get(), EVP_aes_128_cbc(), key, iv, 1);
-	int cipherSize = 0;
-	if (!EVP_CipherUpdate(ctx.get(), ciphertext, &cipherSize, plaintext, strlen((char*)plaintext))) {
-		Log(LOG_ERROR, "GetGatewayKey Cannot Perform EVP Cipher Update");
-		return std::string("");
-	}
-	EVP_CipherFinal(ctx.get(), ciphertext, &cipherSize);
 
-	char gatewaykey[128];
-	for (int i = 0; i < 16; i++)
+	EVP_CipherInit_ex(ctx.get(), EVP_aes_128_cbc(), nullptr, key, iv, 1);
+
+	int actual_size = 0;
+	EVP_CipherUpdate(ctx.get(),
+		&encrypted[0], &actual_size,
+		reinterpret_cast<unsigned char*>(&token[0]), token.size());
+
+	int final_size;
+	EVP_CipherFinal_ex(ctx.get(), &encrypted[actual_size], &final_size);
+	actual_size += final_size;
+
+	encrypted.resize(actual_size);
+
+	std::stringstream sstr;
+	for (size_t index = 0; index < encrypted.size(); ++index)
 	{
-		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
+		sstr << std::hex << std::setw(2) << std::setfill('0') << std::uppercase <<
+			static_cast<unsigned int>(encrypted[index]);
 	}
 
 #ifdef _DEBUG
 	Log(LOG_STATUS, "GetGatewayKey Password - %s", m_GatewayPassword.c_str());
-	Log(LOG_STATUS, "GetGatewayKey key - %s", gatewaykey);
+	Log(LOG_STATUS, "GetGatewayKey key - %s", sstr.str());
 #endif
-	return gatewaykey;
+	return sstr.str();
 #else
 	Log(LOG_ERROR, "GetGatewayKey NO SSL AVAILABLE");
 	return std::string("");
