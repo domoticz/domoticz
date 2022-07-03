@@ -12,7 +12,7 @@ The team and community of Domoticz take all security vulnerabilities seriously. 
 
 Report security vulnerabilities by emailing the Domoticz team at:
 
-    info@domoticz.com
+    security@domoticz.com
 
 Normally we will acknowledge your email within 24 hours, and will send a more detailed response within a week indicating the next steps in handling your report. After the initial reply to your report, the team will endeavor to keep you informed of the progress towards a fix and full announcement, and may ask for additional information or guidance.
 
