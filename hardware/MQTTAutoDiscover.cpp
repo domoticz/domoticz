@@ -2779,7 +2779,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
-			if (pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+			if (   (sSwitchType ==  STYPE_Blinds ||
+					sSwitchType == STYPE_BlindsInverted ||
+					sSwitchType == STYPE_BlindsPercentage ||
+					sSwitchType == STYPE_BlindsPercentageInverted ||
+					sSwitchType == STYPE_BlindsPercentageInvertedWithStop ||
+					sSwitchType == STYPE_BlindsPercentageWithStop) && 
+				pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
 			{
 				szOnOffValue = "on";
 				level = 100;
