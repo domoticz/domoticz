@@ -6688,6 +6688,10 @@ void CSQLHelper::UpdateMultiMeter()
 
 			if (difftime(now, checktime) >= SensorTimeOut * 60)
 				continue;
+
+			if (difftime(now, checktime) >= m_ShortLogInterval * 60)
+                               continue;
+
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 
