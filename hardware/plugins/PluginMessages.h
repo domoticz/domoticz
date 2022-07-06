@@ -597,6 +597,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  Callback(pPlugin, nullptr);
+		  m_Target = Py_None; // Make sure object does not hold any Python memory
 		  pPlugin->Stop();
 	  };
 	};
