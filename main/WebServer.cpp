@@ -14309,7 +14309,13 @@ namespace http
 											// float TotalValue = float(actValue - ulFirstValue);
 
 											// prevents graph from going crazy if the meter counter resets
-											double TotalValue = (ulLastValue >= ulFirstValue) ? double(ulLastValue - ulFirstValue) : ulLastValue;
+											double TotalValue;
+											if (ulLastValue > ulFirstValue)
+												TotalValue = double(ulLastValue - ulFirstValue);
+											else if (ulLastValue == ulFirstValue)
+												TotalValue = double(actValue - ulLastValue);
+											else
+												TotalValue = double(ulLastValue);
 
 											// if (TotalValue != 0)
 											{
@@ -14412,9 +14418,7 @@ namespace http
 							// add last value
 							root["result"][ii]["d"] = LastDateTime + ":00";
 
-							unsigned long long ulTotalValue = ulLastsValue - ulFirstValue;
-
-							double TotalValue = double(ulTotalValue);
+							double TotalValue = double(ulLastsValue - ulFirstValue);
 
 							// if (TotalValue != 0)
 							{
