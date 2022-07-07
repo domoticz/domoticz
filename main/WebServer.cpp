@@ -14253,12 +14253,22 @@ namespace http
 						root["ValueUnits"] = options["ValueUnits"];
 						root["Divider"] = divider;
 
+						std::string sValue; //Last Counter value
+
+						result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID==%" PRIu64 ")", idx);
+						if (!result.empty())
+						{
+							sValue = result[0][0];
+						}
+
+
 						int ii = 0;
 
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						unsigned long long ulFirstValue = 0;
 						unsigned long long ulLastValue = 0;
+						unsigned long long ulLastsValue = std::strtoull(sValue.c_str(), nullptr, 10);;
 
 						std::string LastDateTime;
 						time_t lastTime = 0;
@@ -14294,22 +14304,12 @@ namespace http
 									{
 										if (bHaveFirstValue)
 										{
-											struct tm ntime;
-											time_t atime;
-											if (actDateTimeHour.size() == 10)
-												actDateTimeHour += " 00";
-											constructTime(atime, ntime, atoi(actDateTimeHour.substr(0, 4).c_str()),
-												      atoi(actDateTimeHour.substr(5, 2).c_str()), atoi(actDateTimeHour.substr(8, 2).c_str()),
-												      atoi(actDateTimeHour.substr(11, 2).c_str()) - 1, 0, 0, -1);
-
-											char szTime[50];
-											sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
-											root["result"][ii]["d"] = szTime;
+											root["result"][ii]["d"] = LastDateTime + ":00";
 
 											// float TotalValue = float(actValue - ulFirstValue);
 
 											// prevents graph from going crazy if the meter counter resets
-											double TotalValue = (actValue >= ulFirstValue) ? double(actValue - ulFirstValue) : actValue;
+											double TotalValue = (ulLastValue >= ulFirstValue) ? double(ulLastValue - ulFirstValue) : ulLastValue;
 
 											// if (TotalValue != 0)
 											{
@@ -14412,7 +14412,7 @@ namespace http
 							// add last value
 							root["result"][ii]["d"] = LastDateTime + ":00";
 
-							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
+							unsigned long long ulTotalValue = ulLastsValue - ulFirstValue;
 
 							double TotalValue = double(ulTotalValue);
 
