@@ -395,6 +395,9 @@ define(['app'], function (app) {
 					if (typeof data.ShortLogDays != 'undefined') {
 						$("#shortlogtable #comboshortlogdays").val(data.ShortLogDays);
 					}
+					if (typeof data.ShortLogAddOnlyNewValues != 'undefined') {
+						$("#shortlogtable #ShortLogAddOnlyNewValues").prop('checked', data.ShortLogAddOnlyNewValues == 1);
+					}
 					if (typeof data.ShortLogInterval != 'undefined') {
 						$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
 					}

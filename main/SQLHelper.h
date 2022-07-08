@@ -496,6 +496,7 @@ class CSQLHelper : public StoppableTask
 	bool m_bEnableEventSystem;
 	bool m_bEnableEventSystemFullURLLog;
 	int m_ShortLogInterval;
+	bool m_bShortLogAddOnlyNewValues;
 	bool m_bLogEventScriptTrigger;
 	bool m_bDisableDzVentsSystem;
 	double m_max_kwh_usage;
