@@ -7870,6 +7870,8 @@ namespace http
 
 				/* More complex ones that need additional processing */
 				/* ------------------------------------------------- */
+				bool ShortLogAddOnlyNewValues = (request::findValue(&req, "ShortLogAddOnlyNewValues") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("ShortLogAddOnlyNewValues", ShortLogAddOnlyNewValues); cntSettings++;
 
 				float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
 				m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy * 10000.0F)); cntSettings++;
@@ -12903,6 +12905,10 @@ namespace http
 				else if (Key == "5MinuteHistoryDays")
 				{
 					root["ShortLogDays"] = nValue;
+				}
+				else if (Key == "ShortLogAddOnlyNewValues")
+				{
+					root["ShortLogAddOnlyNewValues"] = nValue;
 				}
 				else if (Key == "ShortLogInterval")
 				{
