@@ -298,6 +298,7 @@ private:
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Settings(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
