@@ -1941,6 +1941,8 @@ namespace http {
 			return buffer;
 		}
 
+		std::map<std::string, connection::_tRemoteClients> m_remote_web_clients;
+
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
 			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_remote_address.c_str(), req.uri.c_str());
@@ -1976,6 +1978,19 @@ namespace http {
 					}
 				}
 			}
+
+			std::string remoteClientKey = session.remote_host + session.local_port;
+			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
+			if (itt_rc == m_remote_web_clients.end())
+			{
+				connection::_tRemoteClients rc;
+				rc.host_remote_endpoint_address_ = session.remote_host;
+				rc.host_local_endpoint_port_ = session.local_port;
+				m_remote_web_clients[remoteClientKey] = rc;
+				itt_rc = m_remote_web_clients.find(remoteClientKey);
+			}
+			itt_rc->second.last_seen = mytime(nullptr);
+			itt_rc->second.host_last_request_uri_ = req.uri;
 
 			session.reply_status = reply::ok;
 			session.isnew = false;

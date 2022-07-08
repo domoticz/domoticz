@@ -22,8 +22,6 @@ namespace http {
 		extern std::string convert_to_http_date(time_t time);
 		extern time_t last_write_time(const std::string& path);
 
-		std::map<std::string, connection::_tRemoteClients> m_remote_web_clients;
-
 		// this is the constructor for plain connections
 		connection::connection(boost::asio::io_service &io_service, connection_manager &manager, request_handler &handler, int read_timeout)
 			: send_buffer_(nullptr)
@@ -425,19 +423,6 @@ namespace http {
 						request_.host_local_port = host_local_endpoint_port_;
 						host_last_request_uri_ = request_.uri;
 						request_handler_.handle_request(request_, reply_);
-
-						std::string remoteClientKey = host_remote_endpoint_address_ + host_local_endpoint_port_;
-						auto itt_rc = m_remote_web_clients.find(remoteClientKey);
-						if (itt_rc == m_remote_web_clients.end())
-						{
-							_tRemoteClients rc;
-							rc.host_remote_endpoint_address_ = request_.host_remote_address;
-							rc.host_local_endpoint_port_ = host_local_endpoint_port_;
-							m_remote_web_clients[remoteClientKey] = rc;
-							itt_rc = m_remote_web_clients.find(remoteClientKey);
-						}
-						itt_rc->second.last_seen = mytime(nullptr);
-						itt_rc->second.host_last_request_uri_ = host_last_request_uri_;
 
 						if(_log.IsACLFlogEnabled())	// Only do this if we are gonna use it, otherwise don't spend the compute power
 						{
