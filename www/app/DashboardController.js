@@ -1265,7 +1265,7 @@ define(['app', 'livesocket'], function (app) {
 							status = item.UVI + ' UVI';
 						}
 						else if (typeof item.Radiation != 'undefined') {
-							status = "";
+							status = item.Data;
 						}
 						else if (typeof item.Direction != 'undefined') {
 							img = '<img src="images/Wind' + item.DirectionStr + '.png" height="40" width="40">';
