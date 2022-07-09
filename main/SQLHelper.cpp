@@ -672,7 +672,7 @@ CSQLHelper::CSQLHelper()
 	m_bEnableEventSystemFullURLLog = true;
 	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
-	m_bShortLogAddOnlyNewValues = true;
+	m_bShortLogAddOnlyNewValues = false;
 	m_bPreviousAcceptNewHardware = false;
 	m_bLogEventScriptTrigger = false;
 
