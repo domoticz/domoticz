@@ -125,13 +125,13 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 		bSuccess = true;
 	}
 	// stdstring_rtrim
-	if (szFunction == "stdstring_rtrim")
+	else if (szFunction == "stdstring_rtrim")
 	{
 		szOutput = stdstring_rtrim(szInput);
 		bSuccess = true;
 	}
 	// stdstring_trim
-	if (szFunction == "stdstring_trim")
+	else if (szFunction == "stdstring_trim")
 	{
 		szOutput = stdstring_trim(szInput);
 		bSuccess = true;
@@ -291,7 +291,7 @@ int main(int argc, char**argv)
 	std::stringstream sstr;
 	sstr << "Executing : " << szTestFunction << " (" << szTestModule << ") | ";
 	if (bSuccess)
-		sstr << "Result : " << szTestOutput;
+		sstr << "Result : ." << szTestOutput << ".";
 	else
 	{
 		sstr << "Failed!";
