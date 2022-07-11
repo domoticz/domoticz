@@ -10,7 +10,8 @@ class Domoticz:
     oReqHeaders = ""
     sTestModule = ""
     sTestFunction = ""
-    sTestInput = []
+    sTestInput = ""
+    sTestOutput = ""
 
 @given('Domoticz is running')
 def test_domoticz():
@@ -37,7 +38,8 @@ def check_command_exec(test_domoticz):
     if test_domoticz.sCommand == "":
         assert False
     sOut = subprocess.run([test_domoticz.sCommand, "-version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    print(sOut)
+    if sOut.returncode != 0:
+        assert False
 
 @given('I am a normal Domoticz user')
 def setup_user():
