@@ -486,7 +486,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 	{
 		try
 		{
-			float rainmm = 0.00F;
+			float rainmm = 9999.00F;
 			float uvi = -999.9F;
 			float mintemp = -999.9F;
 			float maxtemp = -999.9F;
@@ -518,27 +518,35 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 				uvi = forecast["uvi"].asFloat();
 			}
 
-			//Rain (only present if there is rain (or snow))
-			if (!forecast["rain"].empty())
+			//Set Rain to 0 when PoP = 0 (Probability of precipitation)
+			if (pop == 0)
 			{
-				if (!forecast["rain"].isObject())
-				{
-					rainmm = forecast["rain"].asFloat();
-				}
-				else if (!forecast["rain"]["1h"].empty())
-				{
-					rainmm = forecast["rain"]["1h"].asFloat();
-				}
+				rainmm = 0;
 			}
-			if (!forecast["snow"].empty())
+			else
 			{
-				if (!forecast["snow"].isArray())
+				//Rain (only present if there is rain (or snow))
+				if (!forecast["rain"].empty())
 				{
-					rainmm = rainmm + forecast["snow"].asFloat();
+					if (!forecast["rain"].isObject())
+					{
+						rainmm = forecast["rain"].asFloat();
+					}
+					else if (!forecast["rain"]["1h"].empty())
+					{
+						rainmm = forecast["rain"]["1h"].asFloat();
+					}
 				}
-				else if (!forecast["snow"]["1h"].empty())
+				if (!forecast["snow"].empty())
 				{
-					rainmm = rainmm + forecast["snow"]["1h"].asFloat();
+					if (!forecast["snow"].isObject())
+					{
+						rainmm = rainmm + forecast["snow"].asFloat();
+					}
+					else if (!forecast["snow"]["1h"].empty())
+					{
+						rainmm = rainmm + forecast["snow"]["1h"].asFloat();
+					}
 				}
 			}
 
@@ -599,13 +607,12 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			SendPercentageSensor(NodeID, 1, 255, clouds, sName.str());
 
 			NodeID++;;
-			if (rainmm >= 0.00F)
+			if (rainmm != 9999.00F)
 			{
 				sName.str("");
 				sName.clear();
 				sName << "Rain(Snow) " << period << " " << (count + 0);
-				std::string sVal="mm";
-				SendCustomSensor(NodeID, 0, 255, rainmm, sName.str(), sVal, 12);
+				SendRainRateSensor(NodeID, 255, rainmm, sName.str());
 			}
 
 			NodeID++;;
