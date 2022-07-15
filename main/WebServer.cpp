@@ -7870,9 +7870,6 @@ namespace http
 
 				/* More complex ones that need additional processing */
 				/* ------------------------------------------------- */
-				bool ShortLogAddOnlyNewValues = (request::findValue(&req, "ShortLogAddOnlyNewValues") == "on" ? 1 : 0);
-				m_sql.UpdatePreferencesVar("ShortLogAddOnlyNewValues", ShortLogAddOnlyNewValues); cntSettings++;
-				m_sql.m_bShortLogAddOnlyNewValues = ShortLogAddOnlyNewValues;
 
 				float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
 				m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy * 10000.0F)); cntSettings++;
@@ -7923,6 +7920,9 @@ namespace http
 					iShortLogInterval = 5;
 				m_sql.m_ShortLogInterval = iShortLogInterval;
 				m_sql.UpdatePreferencesVar("ShortLogInterval", m_sql.m_ShortLogInterval); cntSettings++;
+
+				m_sql.m_bShortLogAddOnlyNewValues = (request::findValue(&req, "ShortLogAddOnlyNewValues") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("ShortLogAddOnlyNewValues", m_sql.m_bShortLogAddOnlyNewValues); cntSettings++;
 
 				m_sql.m_bLogEventScriptTrigger = (request::findValue(&req, "LogEventScriptTrigger") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger); cntSettings++;
