@@ -1005,8 +1005,8 @@ namespace http
 			std::string loglevel = request::findValue(&req, "loglevel");
 			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
-			std::string password = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "password")));
+			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
+			std::string password = request::findValue(&req, "password");
 			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
@@ -1419,8 +1419,8 @@ namespace http
 			std::string loglevel = request::findValue(&req, "loglevel");
 			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
 			std::string sport = request::findValue(&req, "port");
-			std::string username = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "username")));
-			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string username = HTMLSanitizer::Sanitize(request::findValue(&req, "username"));
+			std::string password = request::findValue(&req, "password");
 			std::string extra = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "extra")));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 
