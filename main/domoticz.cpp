@@ -758,6 +758,8 @@ int main(int argc, char**argv)
 #endif
 	}
 
+	szStartupFolder = "s:\\domoticz\\";
+
 	/* call srand once for the entire app */
 	std::srand((unsigned int)std::time(nullptr));
 

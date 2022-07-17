@@ -683,7 +683,7 @@ void CAnnaThermostat::GetMeterDetails()
                 tmpstr = GetPeriodMeasurement(pElem);
                 if (!tmpstr.empty())
                 {
-                    float level = (float)atof(tmpstr.c_str());
+                    float level = (float)atof(tmpstr.c_str()) * 100.F;
                     SendPercentageSensor(sAnnaModulationLevel, 1, 255, level, sname);
                 }
             }
