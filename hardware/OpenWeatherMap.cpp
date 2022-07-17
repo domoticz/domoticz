@@ -526,6 +526,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			else
 			{
 				//Rain (only present if there is rain (or snow))
+				rainmm = 0; // feels weird, but sometimes it seems to happen that PoP > 0 but no rain/snow data
 				if (!forecast["rain"].empty())
 				{
 					if (!forecast["rain"].isObject())
