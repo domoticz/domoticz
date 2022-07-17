@@ -29,6 +29,11 @@ def test_ltrim4():
 def test_md5hash():
     pass
 
+@scenario('helper.feature', 'Test CalculateDewPoint function')
+def test_calculatedewpoint():
+    pass
+
+
 @given(parsers.parse('I am testing the "{module}" module'))
 def setup_test_module(test_domoticz, module):
     if module == "helper":
@@ -53,8 +58,8 @@ def execute_test(test_domoticz):
     if not (len(sResult) > 1 and sResult[1].find("Result : ") > 0):
         assert False
     sResult = sResult[1].split(": .")
-    sResult = sResult[1].split(".")
-    test_domoticz.sTestOutput = sResult[0]
+    sResult = sResult[1]
+    test_domoticz.sTestOutput = sResult[0:sResult.rfind(".")]
 
 @then(parsers.parse('have the following result "{output}"'))
 def check_test_output(test_domoticz,output):

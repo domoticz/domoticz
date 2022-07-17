@@ -55,3 +55,10 @@ Feature: Helper routines
         And I provide the following input "MD5 \#Hash Input wïth Speca1 (h@ract3r$!"
         Then I expect the function to succeed
         And have the following result "6c97df5a126629b446babadb6c5a619c"
+
+    Scenario: Test CalculateDewPoint function
+        Given I am testing the "helper" module
+        When I test the function "CalculateDewPoint"
+        And I provide the following input "25|#|70"
+        Then I expect the function to succeed
+        And have the following result "19.15"
