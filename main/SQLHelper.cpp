@@ -5281,20 +5281,11 @@ uint64_t CSQLHelper::UpdateValueInt(
 				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				)
 			{
-				if (
-					(HWtype != HTYPE_MQTTAutoDiscovery)
-					&&
-					(switchtype == STYPE_BlindsPercentage
-					|| switchtype == STYPE_BlindsPercentageWithStop
-					|| switchtype == STYPE_BlindsPercentageInverted
-					|| switchtype == STYPE_BlindsPercentageInvertedWithStop)
-					)
-				{
-					if (nValue == light2_sOn)
-						llevel = 100;
-					else if (nValue == light2_sOff)
-						llevel = 0;
-				}
+				if (nValue == light2_sOn)
+					llevel = 100;
+				else if (nValue == light2_sOff)
+					llevel = 0;
+
 				//update level for device
 				safe_query(
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",

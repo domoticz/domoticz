@@ -116,11 +116,11 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 
 					if (pCmd->cmnd == gswitch_sOff)
 					{
-						what = AUTOMATION_WHAT_UP;
+						what = AUTOMATION_WHAT_DOWN;
 					}
 					else if (pCmd->cmnd == gswitch_sOn)
 					{
-						what = AUTOMATION_WHAT_DOWN;
+						what = AUTOMATION_WHAT_UP;
 					}
 					else if (pCmd->cmnd == gswitch_sStop)
 					{

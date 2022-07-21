@@ -3848,7 +3848,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	{
 		if (lstatus == "On")
 		{
-			lstatus = "Closed";
+			lstatus = "Open";
 		}
 		else if (lstatus == "Stop")
 		{
@@ -3856,7 +3856,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		}
 		else
 		{
-			lstatus = "Open";
+			lstatus = "Closed";
 		}
 	}
 	else if (
@@ -3867,7 +3867,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	{
 		if (lstatus == "Off")
 		{
-			lstatus = "Closed";
+			lstatus = "Open";
 		}
 		else if (lstatus == "Stop")
 		{
@@ -3875,7 +3875,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		}
 		else
 		{
-			lstatus = "Open";
+			lstatus = "Closed";
 		}
 	}
 	else if (switchtype == STYPE_Media)
@@ -3956,7 +3956,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 	iStates.clear();
 	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates),
-		       [](const std::pair<const uint64_t, CEventSystem::_tDeviceStatus> &m) { return m.second; });
+		[](const std::pair<const uint64_t, CEventSystem::_tDeviceStatus> &m) { return m.second; });
 }
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
@@ -3988,7 +3988,7 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 		return false;
 
 	return std::any_of(currentTasks.begin(), currentTasks.end(),
-			   [&](const _tTaskItem &currentTask) { return currentTask._relatedEvent == eventName; });
+		[&](const _tTaskItem &currentTask) { return currentTask._relatedEvent == eventName; });
 }
 
 int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
@@ -4023,6 +4023,7 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 				float fLevel = (maxDimLevel / 100.0F) * percentageLevel;
 				if (fLevel > 100)
 					fLevel = 100;
+
 				iLevel = int(fLevel);
 			}
 			else if (switchtype == STYPE_Selector)

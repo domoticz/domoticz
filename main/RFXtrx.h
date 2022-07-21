@@ -8,11 +8,11 @@
 //
 
 /*
-                                                                   
+
 Copyright 2011-2022, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
-Netherlands Copyright Laws and Treaties and shall be subject to the 
+Netherlands Copyright Laws and Treaties and shall be subject to the
 exclusive jurisdiction of the Netherlands Courts. The information from this
 file may freely be used to create programs to exclusively interface with
 RFXCOM products only. Any other use or unauthorized reprint of this material
@@ -85,7 +85,7 @@ SDK version 9.22	Aug 18, 2018
 	Zemismart blinds added
 	Async port added
 	Firmware types added
-	Livolo 1-10 device changed 
+	Livolo 1-10 device changed
 
 SDK version 9.21	June 18, 2018
 	Fan LucciAir DC added
@@ -301,7 +301,7 @@ SDK version 6.07
 	CHIME structure and pTypeChime added for Byron SX Chime
 
 SDK version 6.06a
-    RFU4 changed to RSLenabled in IRESPONSE
+	RFU4 changed to RSLenabled in IRESPONSE
 
 SDK version 6.06
 	Lighting1 Energenie added
@@ -337,7 +337,7 @@ SDK version 5.00
 		cmdENABLEALL 0x04, cmdUNDEC 0x05
 		cmdDISX10 0x10   to    cmdDISFS20 0x1C
 	CM180i CURRENT_ENERGY - ELEC4 added
-	code for pTypeGAS and pTypeWATER changed (not yet used) 
+	code for pTypeGAS and pTypeWATER changed (not yet used)
 
 SDK version 4.36
 	security - #define sStatusIRbeam 0x8 added
@@ -1417,14 +1417,14 @@ typedef union tRBUF {
 		BYTE	X10enabled : 1; //note: keep this order
 
 		//BYTE    msg6;
-        BYTE    MSG6Reserved7 : 1;
-        BYTE    MSG6Reserved6 : 1;
-        BYTE    MSG6Reserved5 : 1;
-        BYTE    MSG6Reserved4 : 1;
-        BYTE    MSG6Reserved3 : 1;
-        BYTE    MSG6Reserved2 : 1;
+		BYTE    MSG6Reserved7 : 1;
+		BYTE    MSG6Reserved6 : 1;
+		BYTE    MSG6Reserved5 : 1;
+		BYTE    MSG6Reserved4 : 1;
+		BYTE    MSG6Reserved3 : 1;
+		BYTE    MSG6Reserved2 : 1;
 		BYTE    HCEnabled : 1;
-        BYTE    KEELOQenabled : 1;
+		BYTE    KEELOQenabled : 1;
 #else
 		//BYTE	msg3;
 		BYTE	AEenabled : 1;
@@ -1456,27 +1456,27 @@ typedef union tRBUF {
 		BYTE	ATIenabled : 1;
 		BYTE	VISONICenabled : 1;
 
-        //BYTE	msg6;
-        BYTE    KEELOQenabled : 1;
+		//BYTE	msg6;
+		BYTE    KEELOQenabled : 1;
 		BYTE    HCEnabled : 1;
-        BYTE    DDenabled : 1;
-        BYTE    MSG6Reserved3 : 1;
-        BYTE    MSG6Reserved4 : 1;
-        BYTE    MSG6Reserved5 : 1;
-        BYTE    MSG6Reserved6 : 1;
-        BYTE    MSG6Reserved7 : 1;
+		BYTE    DDenabled : 1;
+		BYTE    MSG6Reserved3 : 1;
+		BYTE    MSG6Reserved4 : 1;
+		BYTE    MSG6Reserved5 : 1;
+		BYTE    MSG6Reserved6 : 1;
+		BYTE    MSG6Reserved7 : 1;
 #endif
 
 		BYTE	msg7;
 		BYTE	msg8;
 		BYTE	msg9;
 		BYTE	msg10;
-        BYTE	msg11;
-        BYTE	msg12;
-        BYTE	msg13;
-        BYTE	msg14;
-        BYTE	msg15;
-        BYTE	msg16;
+		BYTE	msg11;
+		BYTE	msg12;
+		BYTE	msg13;
+		BYTE	msg14;
+		BYTE	msg15;
+		BYTE	msg16;
 	} IRESPONSE;
 
 	struct {	//response on a mode command from the application
@@ -2283,7 +2283,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
@@ -2306,7 +2306,7 @@ typedef union tRBUF {
 		BYTE	temperatureh : 7;
 
 		BYTE	temperaturel;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 
 		BYTE	rssi : 4;
@@ -2316,7 +2316,7 @@ typedef union tRBUF {
 		BYTE	tempsign : 1;
 
 		BYTE	temperaturel;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 
 		BYTE	battery_level : 4;
@@ -2358,7 +2358,7 @@ typedef union tRBUF {
 		BYTE	tempsign : 1;
 #endif
 		BYTE	temperaturel;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 		BYTE	baroh;
 		BYTE	barol;
@@ -2565,29 +2565,29 @@ typedef union tRBUF {
 	} CURRENT_ENERGY;
 
 	struct {
-        BYTE	packetlength;
-        BYTE	packettype;
-        BYTE	subtype;
-        BYTE	seqnbr;
-        BYTE	id1;
-        BYTE	id2;
-        BYTE	voltage;
-        BYTE	currentH;
-        BYTE	currentL;
-        BYTE	powerH;
-        BYTE	powerL;
-        BYTE	energyH;
-        BYTE	energyL;
-        BYTE	pf;
-        BYTE	freq;
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	voltage;
+		BYTE	currentH;
+		BYTE	currentL;
+		BYTE	powerH;
+		BYTE	powerL;
+		BYTE	energyH;
+		BYTE	energyL;
+		BYTE	pf;
+		BYTE	freq;
 #ifdef IS_BIG_ENDIAN
-        BYTE	rssi : 4;
-        BYTE	filler : 4;
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
 #else
-        BYTE	filler : 4;
-        BYTE	rssi : 4;
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
 #endif
-    } POWER;
+	} POWER;
 
 	struct {
 		BYTE	packetlength;
@@ -2763,23 +2763,23 @@ typedef union tRBUF {
 	} RFXMETER;
 
 	struct {
-	BYTE	packetlength;
-	BYTE	packettype;
-	BYTE	subtype;
-	BYTE	seqnbr;
-	BYTE	hc1;
-	BYTE	hc2;
-	BYTE	addr;
-	BYTE	cmd1;
-	BYTE	cmd2;
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	hc1;
+		BYTE	hc2;
+		BYTE	addr;
+		BYTE	cmd1;
+		BYTE	cmd2;
 #ifdef IS_BIG_ENDIAN
-	BYTE	rssi : 4;
-	BYTE	filler : 4;
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
 #else
-	BYTE	filler : 4;
-	BYTE	rssi : 4;
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
 #endif
-    } FS20;
+	} FS20;
 
 	struct {
 		BYTE	packetlength;
@@ -2884,16 +2884,16 @@ typedef union tRBUF {
 	} SOLAR;
 
 	struct {
-	BYTE	packetlength;
-	BYTE	packettype;
-	BYTE	subtype;
-	BYTE	seqnbr;
-	BYTE	repeat;
-	struct{
-		BYTE	uint_msb;
-		BYTE	uint_lsb;
-	} pulse[124];
-    } RAW;
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	repeat;
+		struct{
+			BYTE	uint_msb;
+			BYTE	uint_lsb;
+		} pulse[124];
+	} RAW;
 } RBUF;
 
 #endif //_RXFCOMLIB_F11DD459_E67E_4B26_8E44_B964E99304BF

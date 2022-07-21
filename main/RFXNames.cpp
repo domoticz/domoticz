@@ -1015,7 +1015,7 @@ NULL
 };
 */
 const char *ZWave_Thermostat_Fan_Modes[]
-	= { "Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown", nullptr };
+= { "Auto Low", "On Low", "Auto High", "On High", "Unknown 4", "Unknown 5", "Circulate", "Unknown", nullptr };
 
 int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const std::string& sMode)
 {
@@ -1806,13 +1806,25 @@ void GetLightStatus(
 			break;
 		case curtain_sClose:
 			lstatus = "On";
-			break;
+			break; 
 		case curtain_sStop:
 			lstatus = "Stop";
 			break;
 		}
 		break;
 	case pTypeBlinds:
+		if (switchtype == STYPE_BlindsPercentage || 
+			switchtype == STYPE_BlindsPercentageInverted ||
+			switchtype == STYPE_BlindsPercentageInvertedWithStop ||
+			switchtype == STYPE_BlindsPercentageWithStop)
+		{
+			bHaveDimmer = true;
+			maxDimLevel = 100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
+			llevel = (int)float((100.0F / float(maxDimLevel)) * atof(sValue.c_str()));
+		}
+
 		switch (nValue)
 		{
 		case blinds_sOpen:
@@ -3312,11 +3324,11 @@ bool GetLightCommand(
 	{
 		if (switchcmd == "On")
 		{
-			cmd = curtain_sClose;
+			cmd = curtain_sOpen;
 		}
 		else if (switchcmd == "Off")
 		{
-			cmd = curtain_sOpen;
+			cmd = curtain_sClose;
 		}
 		else
 		{
@@ -3329,17 +3341,11 @@ bool GetLightCommand(
 	{
 		if (switchcmd == "On")
 		{
-			if (dSubType == sTypeBlindsT10)
-				cmd = blinds_sOpen;
-			else
-				cmd = blinds_sClose;
+			cmd = blinds_sOpen;
 		}
 		else if (switchcmd == "Off")
 		{
-			if (dSubType == sTypeBlindsT10)
-				cmd = blinds_sClose;
-			else
-				cmd = blinds_sOpen;
+			cmd = blinds_sClose;
 		}
 		else
 		{
@@ -4036,7 +4042,6 @@ void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype)
 		subtype = sSwitchTypeHomeConfort;
 	}
 	else if (dtype == pTypeBlinds) {
-		dtype = pTypeGeneralSwitch;
 		if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
 		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeDooya;

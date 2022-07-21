@@ -9051,8 +9051,8 @@ namespace http
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
 							if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
-							    (dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
-							    (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
+								(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
+								(dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
 							{
 								_tColor color(sColor);
 								std::string jsonColor = color.toJSONString();
@@ -9079,10 +9079,10 @@ namespace http
 							{
 								// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
 								if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
-								    atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
-								    (atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
-								     atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
-								     atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
+									atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
+									(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
+										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
+										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
 								{
 									DimmerType = "rel";
 								}
@@ -9229,10 +9229,11 @@ namespace http
 						}
 						else if ((switchtype == STYPE_Blinds) || (switchtype == STYPE_VenetianBlindsUS) || (switchtype == STYPE_VenetianBlindsEU))
 						{
+							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
-							if ((lstatus == "On") || (lstatus == "Close inline relay"))
+							if ((lstatus == "On") || (lstatus == "Open inline relay"))
 							{
-								lstatus = "Closed";
+								lstatus = "Open";
 							}
 							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
 							{
@@ -9240,20 +9241,21 @@ namespace http
 							}
 							else
 							{
-								lstatus = "Open";
+								lstatus = "Closed";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
 						else if (switchtype == STYPE_BlindsInverted)
 						{
+							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
 							if (lstatus == "On")
 							{
-								lstatus = "Open";
+								lstatus = "Closed";
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = "Closed";
+								lstatus = "Open";
 							}
 							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
 							{
@@ -9268,24 +9270,25 @@ namespace http
 							|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 							)
 						{
+							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-/*
-							if ((iLevel > 0) && (iLevel < maxDimLevel))
-							{
-								lstatus = std_format("%d %%", iLevel);
-							}
-							else if (lstatus == "On")
-*/
+							/*
+														if ((iLevel > 0) && (iLevel < maxDimLevel))
+														{
+															lstatus = std_format("%d %%", iLevel);
+														}
+														else if (lstatus == "On")
+							*/
 							if (lstatus == "On")
 							{
-								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Open" : "Closed";
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Open" : "Closed";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
 							}
 							else if (lstatus == "Stop")
 							{
@@ -13327,25 +13330,25 @@ namespace http
 						case STYPE_Blinds:
 						case STYPE_VenetianBlindsEU:
 						case STYPE_VenetianBlindsUS:
+						ldata = (ldata == "On") ? "Open" : "Closed";
+						break;
+					case STYPE_BlindsInverted:
+						ldata = (ldata == "On") ? "Closed" : "Open";
+						break;
+					case STYPE_BlindsPercentage:
+					case STYPE_BlindsPercentageWithStop:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
 							ldata = (ldata == "On") ? "Closed" : "Open";
-							break;
-						case STYPE_BlindsInverted:
-							ldata = (ldata == "On") ? "Open" : "Closed";
-							break;
-						case STYPE_BlindsPercentage:
-						case STYPE_BlindsPercentageWithStop:
-							if ((ldata == "On") || (ldata == "Off"))
-							{
-								ldata = (ldata == "On") ? "Closed" : "Open";
-							}
-							break;
-						case STYPE_BlindsPercentageInverted:
-						case STYPE_BlindsPercentageInvertedWithStop:
-							if ((ldata == "On") || (ldata == "Off"))
-							{
-								ldata = (ldata == "On") ? "Open" : "Closed";
-							}
-							break;
+						}
+						break;
+					case STYPE_BlindsPercentageInverted:
+					case STYPE_BlindsPercentageInvertedWithStop:
+						if ((ldata == "On") || (ldata == "Off"))
+						{
+							ldata = (ldata == "On") ? "Closed" : "Open";
+						}
+						break;
 					}
 
 					root["result"][ii]["idx"] = lidx;
