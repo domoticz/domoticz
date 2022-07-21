@@ -20,10 +20,21 @@
         Configuration options...
     </description>
     <params>
+        <param field="Mode6" label="Debug" width="150px">
+            <options>
+                <option label="None" value="0"  default="true" />
+                <option label="Python Only" value="2"/>
+                <option label="Basic Debugging" value="62"/>
+                <option label="Basic+Messages" value="126"/>
+                <option label="Queue" value="128"/>
+                <option label="Connections Only" value="16"/>
+                <option label="Connections+Queue" value="144"/>
+                <option label="All" value="-1"/>
+            </options>
     </params>
 </plugin>
 """
-import Domoticz
+import DomoticzEx as Domoticz
 
 class BasePlugin:
     enabled = False
@@ -33,6 +44,12 @@ class BasePlugin:
 
     def onStart(self):
         Domoticz.Log("onStart called")
+        if Parameters["Mode6"] != "0":
+            Domoticz.Debugging(int(Parameters["Mode6"]))
+            DumpConfigToLog()
+
+        #if (not "Dimmer" in Devices):
+        #    Domoticz.Unit(Name="Dimmer", Unit=2, TypeName="Dimmer", DeviceID="Dimmer").Create()
 
     def onStop(self):
         Domoticz.Log("onStop called")
@@ -90,17 +107,21 @@ def onHeartbeat():
     global _plugin
     _plugin.onHeartbeat()
 
-    # Generic helper functions
+# Generic helper functions
 def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug( "'" + x + "':'" + str(Parameters[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
-    for x in Devices:
-        Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
-        Domoticz.Debug("Device ID:       '" + str(Devices[x].ID) + "'")
-        Domoticz.Debug("Device Name:     '" + Devices[x].Name + "'")
-        Domoticz.Debug("Device nValue:    " + str(Devices[x].nValue))
-        Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
-        Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
+    for DeviceName in Devices:
+        Device = Devices[DeviceName]
+        Domoticz.Debug("Device ID:       '" + str(Device.DeviceID) + "'")
+        Domoticz.Debug("--->Unit Count:      '" + str(len(Device.Units)) + "'")
+        for UnitNo in Device.Units:
+            Unit = Device.Units[UnitNo]
+            Domoticz.Debug("--->Unit:           " + str(UnitNo))
+            Domoticz.Debug("--->Unit Name:     '" + Unit.Name + "'")
+            Domoticz.Debug("--->Unit nValue:    " + str(Unit.nValue))
+            Domoticz.Debug("--->Unit sValue:   '" + Unit.sValue + "'")
+            Domoticz.Debug("--->Unit LastLevel: " + str(Unit.LastLevel))
     return
