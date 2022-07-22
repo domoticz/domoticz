@@ -583,25 +583,13 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
 
 std::string &stdstring_ltrim(std::string &s)
 {
-	while (!s.empty())
-	{
-		if (s[0] != ' ')
-			return s;
-		s = s.substr(1);
-	}
-	//	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), ::isspace));
 	return s;
 }
 
 std::string &stdstring_rtrim(std::string &s)
 {
-	while (!s.empty())
-	{
-		if (s[s.size() - 1] != ' ')
-			return s;
-		s = s.substr(0, s.size() - 1);
-	}
-	//s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	s.erase(std::find_if_not(s.rbegin(), s.rend(), ::isspace).base(), s.end());
 	return s;
 }
 
