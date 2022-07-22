@@ -43,14 +43,15 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 		if (qMessage.empty())
 			return;
 
-		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
-		{
-			on_auto_discovery_message(message);
-			return;
-		}
 		if (m_subscribed_topics.find(topic) != m_subscribed_topics.end())
 		{
 			handle_auto_discovery_sensor_message(message);
+			return;
+		}
+
+		if (topic.substr(0, topic.find('/')) == m_TopicDiscoveryPrefix)
+		{
+			on_auto_discovery_message(message);
 			return;
 		}
 		return;
