@@ -15,11 +15,6 @@
 	https://www.comm5.com.br/en/sm-1200/
 */
 
-static inline std::string &rtrim(std::string &s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
-}
-
 static inline std::vector<std::string> tokenize(const std::string &s) {
 	std::vector<std::string> tokens;
 	std::istringstream iss(s);
@@ -118,7 +113,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 	std::string line;
 
 	while (std::getline(stream, line, '\n')) {
-		line = rtrim(line);
+		line = stdstring_rtrim(line);
 		if (startsWith(line, "280")) {
 			std::vector<std::string> tokens = tokenize(line);
 			if (tokens.size() < 2)
