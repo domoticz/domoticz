@@ -22,9 +22,10 @@ constexpr const char *szHelp
 {
 	"Usage: Domoticz_tester\n"
 	"\t-module <module> (which module to test, for example -module helper)\n"
-	"\t-function <function> (for example -www 8080, or -www 0 to disable http)\n"
+	"\t-function <function> (for example -function stdstring_ltrim)\n"
 	"\t-input <input> (for example -input \"3,text\")\n"
 	"\t-verbose More verbose output\n"
+	"\t-binary Output the result in binary (Hexadecimal)\n"
 	"\t-measure Show measurements like execution speed\n"
 	"\t-version display version number\n"
 	"\t-h (or --help or /?) display this help information\n"
@@ -51,6 +52,8 @@ std::string szTestOutput = "";
 bool bSuccess = false;
 bool bVerbose = false;
 bool bQuiet = false;
+bool bBinary = false;
+bool bMeasure = false;
 
 #define MAX_LOG_LINE_BUFFER 100
 #define MAX_LOG_LINE_LENGTH (2048 * 3)
@@ -196,6 +199,14 @@ int main(int argc, char**argv)
 	{
 		bQuiet = true;
 	}
+	if (cmdLine.HasSwitch("-binary"))
+	{
+		bBinary = true;
+	}
+	if (cmdLine.HasSwitch("-measure"))
+	{
+		bMeasure = true;
+	}
 
 	GetAppVersion();
 	DisplayAppVersion();
@@ -297,6 +308,11 @@ int main(int argc, char**argv)
 		sstr << "Failed!";
 		if (!szTestOutput.empty())
 			sstr << " (" << szTestOutput << ")";
+	}
+	if (bBinary)
+	{
+		std::string sHex = ToHexString((uint8_t*)szTestOutput.c_str(),szTestOutput.size());
+		sstr << " (b'" << sHex << "')";
 	}
 
 	Log(sstr.str().c_str());
