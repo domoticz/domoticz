@@ -6,6 +6,8 @@ on:
       - development
     paths-ignore:
       - '!msbuild/**'
+      - '!.github/**'
+      - '!tools/**'
       - '!**.md'
       - '!**.txt'
 
