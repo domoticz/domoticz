@@ -49,12 +49,19 @@ Feature: Helper routines
         Then I expect the function to succeed
         And have the following result "1 left and 1 right"
 
+    Scenario: Test trim function UTF-8
+        Given I am testing the "helper" module
+        When I test the function "stdstring_trim"
+        And I provide the following input "  Â°C 2 left UTF-8 Δ 1 right "
+        Then I expect the function to succeed
+        And have the following result "Â°C 2 left UTF-8 Δ 1 right"
+
     Scenario: Test MD5Hash generation function
         Given I am testing the "helper" module
         When I test the function "GenerateMD5Hash"
-        And I provide the following input "MD5 \#Hash Input wïth Speca1 (h@ract3r$!"
+        And I provide the following input "MD5 \#Hash Input wïth Specia1 (h@ract3r$!"
         Then I expect the function to succeed
-        And have the following result "6c97df5a126629b446babadb6c5a619c"
+        And have the following result "a175fd87223b1b548c72f5d37a9984c1"
 
     Scenario: Test CalculateDewPoint function
         Given I am testing the "helper" module

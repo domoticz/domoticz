@@ -1,10 +1,6 @@
 from pytest_bdd import scenario, given, when, then, parsers
 import requests, subprocess
 
-@scenario('helper.feature', 'Test trim function')
-def test_trim():
-    pass
-
 @scenario('helper.feature', 'Test right trim function')
 def test_rtrim():
     pass
@@ -25,6 +21,14 @@ def test_ltrim3():
 def test_ltrim4():
     pass
 
+@scenario('helper.feature', 'Test trim function')
+def test_trim():
+    pass
+
+@scenario('helper.feature', 'Test trim function UTF-8')
+def test_trimUTF8():
+    pass
+
 @scenario('helper.feature', 'Test MD5Hash generation function')
 def test_md5hash():
     pass
@@ -32,7 +36,6 @@ def test_md5hash():
 @scenario('helper.feature', 'Test CalculateDewPoint function')
 def test_calculatedewpoint():
     pass
-
 
 @given(parsers.parse('I am testing the "{module}" module'))
 def setup_test_module(test_domoticz, module):
