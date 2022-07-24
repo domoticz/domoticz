@@ -583,7 +583,7 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
 
 std::string &stdstring_ltrim(std::string &s)
 {
-	return s.erase(0, s.find_first_not_of(' ' ));
+	return s.erase(0, s.find_first_not_of(' '));
 }
 
 std::string &stdstring_rtrim(std::string &s)

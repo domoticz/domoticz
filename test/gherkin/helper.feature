@@ -52,9 +52,9 @@ Feature: Helper routines
     Scenario: Test trim function UTF-8
         Given I am testing the "helper" module
         When I test the function "stdstring_trim"
-        And I provide the following input "  2 left Δn©l UTF-8° 1 right "
+        And I provide the following input "  Â°C 2 left UTF-8 Δ 1 right "
         Then I expect the function to succeed
-        And have the following result "2 left Δn©l UTF-8° 1 right"
+        And have the following result "Â°C 2 left UTF-8 Δ 1 right"
 
     Scenario: Test MD5Hash generation function
         Given I am testing the "helper" module
