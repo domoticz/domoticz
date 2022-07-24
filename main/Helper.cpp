@@ -588,7 +588,7 @@ std::string &stdstring_ltrim(std::string &s)
 
 std::string &stdstring_rtrim(std::string &s)
 {
-	return s.erase(s.find_last_not_of(" ") + 1);
+	return s.erase(s.find_last_not_of(' ') + 1);
 }
 
 // trim from both ends
