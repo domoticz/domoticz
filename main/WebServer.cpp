@@ -9090,7 +9090,6 @@ namespace http
 						}
 						root["result"][ii]["DimmerType"] = DimmerType;
 						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-						root["result"][ii]["InvertCmd"] = false;
 						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
 						root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
 						root["result"][ii]["SwitchTypeVal"] = switchtype;
@@ -9113,25 +9112,6 @@ namespace http
 
 						std::string openStatus = "Open";
 						std::string closedStatus = "Closed";
-						if (pHardware != nullptr)
-						{
-							if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery) {
-								openStatus = "Closed";
-								closedStatus = "Open";
-								if ((switchtype == STYPE_Blinds) 
-									|| (switchtype == STYPE_VenetianBlindsUS) 
-									|| (switchtype == STYPE_VenetianBlindsEU)
-									|| (switchtype == STYPE_BlindsInverted)
-									|| (switchtype == STYPE_BlindsPercentage)
-									|| (switchtype == STYPE_BlindsPercentageInverted)
-									|| (switchtype == STYPE_BlindsPercentageWithStop)
-									|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-									)
-								{
-									root["result"][ii]["InvertCmd"] = true;
-								}
-							}
-						}
 						if (switchtype == STYPE_Doorbell)
 						{
 							root["result"][ii]["TypeImg"] = "doorbell";

@@ -11407,6 +11407,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
+	if (switchcmd == "Open") {
+		if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery && 
+			(switchtype == STYPE_Blinds 
+				|| switchtype == STYPE_BlindsPercentage 
+				|| switchtype == STYPE_BlindsPercentageWithStop
+				|| switchtype == STYPE_VenetianBlindsEU))
+			switchcmd = "On";
+		else
+			switchcmd = "Off";
+	}
+	else if (switchcmd == "Close") {
+		if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery &&
+			(switchtype == STYPE_Blinds
+				|| switchtype == STYPE_BlindsPercentage
+				|| switchtype == STYPE_BlindsPercentageWithStop
+				|| switchtype == STYPE_VenetianBlindsEU))
+			switchcmd = "Off";
+		else
+			switchcmd = "On";
+	}
+
 	//when asking for Toggle, just switch to the opposite value
 	if (switchcmd == "Toggle") {
 		//Request current state of switch

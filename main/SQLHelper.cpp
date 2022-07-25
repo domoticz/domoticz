@@ -3556,20 +3556,21 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 	if ((pHardware->HwdType == HTYPE_MQTTAutoDiscovery) && 
 		(
 			(switchtype == STYPE_Blinds)
-			|| (switchtype == STYPE_BlindsInverted)
 			|| (switchtype == STYPE_BlindsPercentage)
-			|| (switchtype == STYPE_BlindsPercentageInverted)
 			|| (switchtype == STYPE_BlindsPercentageWithStop)
-			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 			|| (switchtype == STYPE_VenetianBlindsUS)
-			|| (switchtype == STYPE_VenetianBlindsEU)
 			))
 	{
-		if (switchCommand == "On")
+		if (switchCommand == "Close")
 			switchCommand = "Off";
-		else if (switchCommand == "Off")
+		else if (switchCommand == "Open")
 			switchCommand = "On";
 	}
+	else if (switchCommand == "Close")
+		switchCommand = "On";
+	else if (switchCommand == "Open")
+		switchCommand = "Off";
+
 	return m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
 }
 
