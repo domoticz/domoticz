@@ -42,7 +42,7 @@ return {
 			adapterManager.addDummyMethod(device, 'quietOn')
 			adapterManager.addDummyMethod(device, 'quietOff')
 		else
-			blindsOff2Close = { "Venetian Blinds US", "Venetian Blinds EU", "Blinds Percentage", "Blinds", "Blinds + Stop" }
+			blindsOff2Close = { "Venetian Blinds US", "Blinds Percentage Inverted", "Blinds Inverted", "Blinds + Stop Inverted" }
 		end
  
 		return res

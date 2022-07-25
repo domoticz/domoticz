@@ -396,8 +396,9 @@ define(['app', 'livesocket'], function (app) {
 
 				isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
-				const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-				const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+				const invert = item.SwitchType.indexOf("Inverted") >= 0 ^ item.InvertCmd;
+				const closeAction = invert ? "Off" : "On";
+				const openAction = invert ? "On" : "Off";
 
 				const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 				const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";
@@ -958,8 +959,9 @@ define(['app', 'livesocket'], function (app) {
 								item.Image = item.TypeImg;
 								bIsdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
-								const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-								const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+								const invert = item.SwitchType.indexOf("Inverted") >= 0 ^ item.InvertCmd;
+								const closeAction = invert ? "Off" : "On";
+								const openAction = invert ? "On" : "Off";
 				
 								const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 								const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";

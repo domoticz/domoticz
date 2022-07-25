@@ -11587,9 +11587,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	}
 	break;
 	case pTypeLighting3:
+	{
 		if (level > 9)
 			level = 9;
-		break;
+	}
+	break;
 	case pTypeLighting4:
 	{
 		tRBUF lcmd;
@@ -12283,6 +12285,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	}
 	break;
 	case pTypeRadiator1:
+	{
 		tRBUF lcmd;
 		lcmd.RADIATOR1.packetlength = sizeof(lcmd.RADIATOR1) - 1;
 		lcmd.RADIATOR1.packettype = pTypeRadiator1;
@@ -12307,12 +12310,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
 			lcmd.RADIATOR1.subtype = sTypeSmartwaresSwitchRadiator;
-			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t *)&lcmd, nullptr, -1, User.c_str());
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const uint8_t*)&lcmd, nullptr, -1, User.c_str());
 		}
 		return true;
+	}
 	case pTypeGeneralSwitch:
 	{
-
+		tRBUF lcmd;
 		_tGeneralSwitch gswitch;
 		gswitch.type = dType;
 		gswitch.subtype = dSubType;
@@ -12502,7 +12506,6 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 	std::string sValue = sd[8];
 	std::string devName = sd[9];
 
-	std::string switchCommand = switchcmd;
 	//std::string sOptions = sd[10].c_str();
 	// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 	CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
@@ -12515,14 +12518,8 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 			sd[3] = std::to_string(dtype);
 			sd[4] = std::to_string(subtype);
 		}
-		else if (pBaseHardware->HwdType == HTYPE_MQTTAutoDiscovery) {
-			if (switchCommand == "On")
-				switchCommand = "Off";
-			else if (switchCommand == "Off")
-				switchCommand = "On";
-		}
 	}
-	bool bIsOn = IsLightSwitchOn(switchCommand);
+	bool bIsOn = IsLightSwitchOn(switchcmd);
 	if (ooc)//Only on change
 	{
 		int nNewVal = bIsOn ? 1 : 0;//Is that everything we need here
@@ -12539,12 +12536,12 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string& switchcmd, c
 	{
 		if (iOnDelay + ExtraDelay != 0)
 		{
-			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchCommand.c_str(), iOnDelay + ExtraDelay);
+			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), iOnDelay + ExtraDelay);
 		}
-		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchCommand, level, color, "Switch with Delay", User));
+		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(static_cast<float>(iOnDelay + ExtraDelay), idx, switchcmd, level, color, "Switch with Delay", User));
 		return true;
 	}
-	return SwitchLightInt(sd, switchCommand, level, color, false, User);
+	return SwitchLightInt(sd, switchcmd, level, color, false, User);
 }
 
 //Seems this is only called for EvoHome, so this function needs to be moved to the EvoHome (base)class!
