@@ -2290,6 +2290,9 @@ void GetLightStatus(
 			case fan_NovyLearn:
 				lstatus = "learn";
 				break;
+			case fan_NovyMood:
+				lstatus = "mood";
+				break;
 			}
 		}
 		break;
@@ -3813,6 +3816,8 @@ bool GetLightCommand(
 				cmd = fan_NovyLight;
 			if (switchcmd == "learn")
 				cmd = fan_NovyLearn;
+			if (switchcmd == "mood")
+				cmd = fan_NovyMood;
 		}
 		break;
 		}
