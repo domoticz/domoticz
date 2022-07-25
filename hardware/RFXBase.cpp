@@ -156,6 +156,8 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x0A);
 	case pTypeHunter:
 		return (pLen == 0x0B);
+	case pTypeLEVELSENSOR:
+		return (pLen == 0x0D);
 	default:
 		return false;//unknown Type
 	}

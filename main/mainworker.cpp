@@ -2443,6 +2443,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeHunter:
 			decode_Hunter(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
 			break;
+		case pTypeLEVELSENSOR:
+			decode_LevelSensor(pHardware, reinterpret_cast<const tRBUF*>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -11125,7 +11128,7 @@ void MainWorker::decode_Solar(const CDomoticzHardwareBase* pHardware, const tRBU
 
 	gdevice.rssi = SignalLevel;
 	gdevice.battery_level = BatteryLevel;
-	decode_General(pHardware, pResponse, procResult);
+	decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
 	procResult.bProcessBatteryValue = false;
 }
 
@@ -11199,6 +11202,59 @@ void MainWorker::decode_Hunter(const CDomoticzHardwareBase* pHardware, const tRB
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
 }
+
+void MainWorker::decode_LevelSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult)
+{
+	char szTmp[50];
+
+	uint8_t devType = pTypeLEVELSENSOR;
+	uint8_t subType = pResponse->LEVELSENSOR.subtype;
+
+	sprintf(szTmp, "%d", (pResponse->LEVELSENSOR.id1 * 256) + pResponse->LEVELSENSOR.id2);
+	std::string ID = szTmp;
+	uint8_t Unit = pResponse->TEMP.id2;
+
+
+	uint8_t SignalLevel = pResponse->LEVELSENSOR.rssi;
+	uint8_t BatteryLevel = get_BateryLevel(pHardware->HwdType, false, pResponse->LEVELSENSOR.battery_level & 0x0F);
+
+	float temp = 0;
+	if (!pResponse->LEVELSENSOR.temperaturesign)
+	{
+		temp = float((pResponse->LEVELSENSOR.temperaturehigh * 256) + pResponse->LEVELSENSOR.temperaturelow) / 10.0F;
+	}
+	else
+	{
+		temp = -(float(((pResponse->LEVELSENSOR.temperaturehigh & 0x7F) * 256) + pResponse->LEVELSENSOR.temperaturelow) / 10.0F);
+	}
+	if ((temp < -200) || (temp > 380))
+	{
+		WriteMessage("ERROR: Invalid Temperature");
+		return;
+	}
+
+	float AddjValue = 0.0F;
+	float AddjMulti = 1.0F;
+	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	temp += AddjValue;
+
+	sprintf(szTmp, "%.1f", temp);
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, ID.c_str(), Unit, pTypeTEMP, sTypeTEMP1, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	if (DevRowIdx == (uint64_t)-1)
+		return;
+
+	//Depth
+	_tGeneralDevice gdevice;
+	gdevice.subtype = sTypeDistance;
+	gdevice.intval1 = (pResponse->LEVELSENSOR.id1 * 256) + pResponse->LEVELSENSOR.id2;
+	gdevice.id = (uint8_t)gdevice.intval1;
+	gdevice.floatval1 = float((pResponse->LEVELSENSOR.depth1 * 256) + float(pResponse->LEVELSENSOR.depth2));
+	gdevice.rssi = SignalLevel;
+	gdevice.battery_level = BatteryLevel;
+	decode_General(pHardware, (const tRBUF*)&gdevice, procResult);
+	procResult.bProcessBatteryValue = false;
+}
+
 
 bool MainWorker::GetSensorData(const uint64_t idx, int& nValue, std::string& sValue)
 {
