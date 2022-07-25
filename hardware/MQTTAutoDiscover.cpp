@@ -1688,6 +1688,12 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_uni
 		{
 			_tMQTTASensor* pDeviceSensor = &m_discovered_sensors[ittSensorID.first];
 
+			if (
+				(pDeviceSensor->object_id.find("_min") == pDeviceSensor->object_id.size() - 4)
+				|| (pDeviceSensor->object_id.find("_max") == pDeviceSensor->object_id.size() - 4)
+				)
+				continue; //ignore sensor
+
 			uint8_t devsensor_devType, devsensor_subType;
 			std::string szOptions;
 			int nValue = 0;
@@ -1866,12 +1872,24 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		_tMQTTASensor* pHumSensor = (bIsHum) ? pSensor : nullptr;
 		_tMQTTASensor* pBaroSensor = (bIsBaro) ? pSensor : nullptr;
 
-		if (!pTempSensor)
-			pTempSensor = get_auto_discovery_sensor_unit(pSensor, pTypeTEMP, sTypeTEMP1);
-		if (!pHumSensor)
-			pHumSensor = get_auto_discovery_sensor_unit(pSensor, pTypeHUM, sTypeHUM2);
-		if (!pBaroSensor)
-			pBaroSensor = get_auto_discovery_sensor_unit(pSensor, pTypeGeneral, sTypeBaro);
+		if (
+			(pSensor->object_id.find("_min") == pSensor->object_id.size() - 4)
+			|| (pSensor->object_id.find("_max") == pSensor->object_id.size() - 4)
+			)
+		{
+			//it's a standalone sensor, or a configuration option that should not have been specified as a 'sensor'
+			//for now, we assume the later and ignore this
+			return; //else do nothing
+		}
+		else
+		{
+			if (!pTempSensor)
+				pTempSensor = get_auto_discovery_sensor_unit(pSensor, pTypeTEMP, sTypeTEMP1);
+			if (!pHumSensor)
+				pHumSensor = get_auto_discovery_sensor_unit(pSensor, pTypeHUM, sTypeHUM2);
+			if (!pBaroSensor)
+				pBaroSensor = get_auto_discovery_sensor_unit(pSensor, pTypeGeneral, sTypeBaro);
+		}
 
 		if (pTempSensor)
 			temp = static_cast<float>(atof(pTempSensor->last_value.c_str()));
