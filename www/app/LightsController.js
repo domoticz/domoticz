@@ -396,8 +396,8 @@ define(['app', 'livesocket'], function (app) {
 
 				isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
-				const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-				const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+				const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
+				const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
 
 				const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 				const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";
@@ -405,10 +405,7 @@ define(['app', 'livesocket'], function (app) {
 				const openImage = '<img src="images/' + item.Image + 'open48' + selOpenImage + '.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + openAction + '\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
 				const closeImage = '<img src="images/' + item.Image + '48' + selCloseImage + '.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + closeAction + '\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
 
-				const firstImage = (item.SwitchType.indexOf("Inverted") >= 0) ? openImage : closeImage;
-				const secondImage = (item.SwitchType.indexOf("Inverted") >= 0) ? closeImage : openImage;
-
-				img = firstImage;
+				img = openImage;
 				if (
 					(item.SubType == "RAEX") ||
 					(item.SubType.indexOf('A-OK') == 0) ||
@@ -428,10 +425,10 @@ define(['app', 'livesocket'], function (app) {
 					(item.SwitchType.indexOf("Venetian Blinds") == 0) ||
 					(item.SwitchType.indexOf("Stop") >= 0)
 				) {
-					img3 = secondImage;
+					img3 = closeImage;
 				}
 				else {
-					img2 = secondImage;
+					img2 = closeImage;
 				}
 			}
 			else if (item.SwitchType == "Smoke Detector") {
@@ -961,19 +958,16 @@ define(['app', 'livesocket'], function (app) {
 								item.Image = item.TypeImg;
 								bIsdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
-								const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-								const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
-
+								const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
+								const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+				
 								const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 								const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";
 
 								const openImage = '<img src="images/' + item.Image + 'open48' + selOpenImage + '.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + openAction + '\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
 								const closeImage = '<img src="images/' + item.Image + '48' + selCloseImage + '.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + closeAction + '\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
 
-								const firstImage = (item.SwitchType.indexOf("Inverted") >= 0) ? openImage : closeImage;
-								const secondImage = (item.SwitchType.indexOf("Inverted") >= 0) ? closeImage : openImage;
-
-								xhtm += '\t      <td id="img">' + firstImage + '</td>\n';
+								xhtm += '\t      <td id="img">' + openImage + '</td>\n';
 								if (
 									(item.SubType == "RAEX") ||
 									(item.SubType.indexOf('A-OK') == 0) ||
@@ -994,10 +988,10 @@ define(['app', 'livesocket'], function (app) {
 									(item.SwitchType.indexOf("Stop") >= 0)
 								) {
 									xhtm += '\t      <td id="img2"><img src="images/' + item.Image + 'stop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',' + item.Protected + ');" class="lcursor" height="48" width="24"></td>\n';
-									xhtm += '\t      <td id="img3">' + secondImage + '</td>\n';
+									xhtm += '\t      <td id="img3">' + closeImage + '</td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img2">' + secondImage + '</td>\n';
+									xhtm += '\t      <td id="img2">' + closeImage + '</td>\n';
 								}
 							}
 							else if (item.SwitchType == "Smoke Detector") {

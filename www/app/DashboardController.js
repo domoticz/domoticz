@@ -270,10 +270,7 @@ define(['app', 'livesocket'], function (app) {
 							const openImage = '<button class="btn btn-mini' + selOpenImage + ' type="button" onclick="SwitchLight(' + item.idx + ',\'' + openAction + '\',' + item.Protected + ');">' + $.t("Open") + '</button>';
 							const closeImage = '<button class="btn btn-mini' + selCloseImage + ' type="button" onclick="SwitchLight(' + item.idx + ',\'' + closeAction + '\',' + item.Protected + ');">' + closedText + '</button>';
 
-							const firstImage = (item.SwitchType.indexOf("Inverted") >= 0) ? openImage : closeImage;
-							const secondImage = (item.SwitchType.indexOf("Inverted") >= 0) ? closeImage : openImage;
-
-							status = firstImage;
+							status = openImage;
 
 							if (
 								(item.SubType == "RAEX") ||
@@ -295,7 +292,7 @@ define(['app', 'livesocket'], function (app) {
 							) {
 								status += '<button class="btn btn-mini btn-danger" type="button" onclick="SwitchLight(' + item.idx + ',\'Stop\',' + item.Protected + ');">' + $.t("Stop") + '</button> ';
 							}
-							status += secondImage
+							status += closeImage
 						}
 						else if (item.SwitchType == "Dimmer") {
 							isdimmer = true;
@@ -576,10 +573,7 @@ define(['app', 'livesocket'], function (app) {
 							const openImage = '<img src="images/blindsopen48' + selOpenImage + '.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + openAction + '\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
 							const closeImage = '<img src="images/blinds48' + selCloseImage + '.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + closeAction + '\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
 			
-							const firstImage = (item.SwitchType.indexOf("Inverted") >= 0) ? openImage : closeImage;
-							const secondImage = (item.SwitchType.indexOf("Inverted") >= 0) ? closeImage : openImage;
-			
-							img = firstImage;
+							img = openImage;
 
 							if (
 								(item.SubType == "RAEX") ||
@@ -599,10 +593,10 @@ define(['app', 'livesocket'], function (app) {
 								(item.SwitchType.indexOf("Venetian Blinds") == 0) ||
 								(item.SwitchType.indexOf("Stop") >= 0)
 							) {
-								img3 = secondImage;
+								img3 = closeImage;
 							}
 							else {
-								img2 = secondImage;
+								img2 = closeImage;
 							}
 						}
 						else if (item.SwitchType == "Dimmer") {
@@ -1895,10 +1889,7 @@ define(['app', 'livesocket'], function (app) {
 										const openImage = '<button class="btn btn-mini' + selOpenImage + ' type="button" onclick="SwitchLight(' + item.idx + ',\'' + openAction + '\',' + item.Protected + ');">' + $.t("Open") + '</button>';
 										const closeImage = '<button class="btn btn-mini' + selCloseImage + ' type="button" onclick="SwitchLight(' + item.idx + ',\'' + closeAction + '\',' + item.Protected + ');">' + closedText + '</button>';
 						
-										const firstImage = (item.SwitchType.indexOf("Inverted") >= 0) ? openImage : closeImage;
-										const secondImage = (item.SwitchType.indexOf("Inverted") >= 0) ? closeImage : openImage;
-						
-										status = firstImage;
+										status = openImage;
 			
 										if (
 											(item.SubType == "RAEX") ||
@@ -1920,7 +1911,7 @@ define(['app', 'livesocket'], function (app) {
 										) {
 											status += '<button class="btn btn-mini btn-danger" type="button" onclick="SwitchLight(' + item.idx + ',\'Stop\',' + item.Protected + ');">' + $.t("Stop") + '</button> ';
 										}
-										status += secondImage;
+										status += closeImage;
 									}
 									else if (item.SwitchType == "Dimmer") {
 										var img = "";
@@ -2105,15 +2096,7 @@ define(['app', 'livesocket'], function (app) {
 									else if (
 										(item.SwitchType == "Blinds Percentage")
 										|| (item.SwitchType == "Blinds Percentage Inverted")
-									) {
-										xhtm += '<tr>';
-										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
-										xhtm += '<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidersmall" id="light_' + item.idx + '_slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
-										xhtm += '</td>';
-										xhtm += '</tr>';
-									}
-									else if (
-										(item.SwitchType == "Blinds + Stop")
+										|| (item.SwitchType == "Blinds + Stop")
 										|| (item.SwitchType == "Blinds Inverted + Stop")
 									) {
 										xhtm += '<tr>';
@@ -2296,19 +2279,16 @@ define(['app', 'livesocket'], function (app) {
 						
 										isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 						
-										const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-										const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
-						
+										const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
+										const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+												
 										const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 										const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";
 										
 										const openImage = '<img src="images/blindsopen48' + selOpenImage + '.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + openAction + '\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										const closeImage = '<img src="images/blinds48' + selCloseImage + '.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'' + closeAction + '\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
 						
-										const firstImage = (item.SwitchType.indexOf("Inverted") >= 0) ? openImage : closeImage;
-										const secondImage = (item.SwitchType.indexOf("Inverted") >= 0) ? closeImage : openImage;
-						
-										xhtm += '\t      <td id="img" class="img img1">' + firstImage + '</td>\n';
+										xhtm += '\t      <td id="img" class="img img1">' + openImage + '</td>\n';
 			
 										if (
 											(item.SubType == "RAEX") ||
@@ -2329,10 +2309,10 @@ define(['app', 'livesocket'], function (app) {
 											(item.SwitchType.indexOf("Stop") >= 0)
 										) {
 											xhtm += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
-											xhtm += '\t      <td id="img3" class="img3">' + secondImage + '</td>\n';
+											xhtm += '\t      <td id="img3" class="img3">' + closeImage + '</td>\n';
 										}
 										else {
-											xhtm += '\t      <td id="img2" class="img2">' + secondImage + '</td>\n';
+											xhtm += '\t      <td id="img2" class="img2">' + closeImage + '</td>\n';
 										}
 									}
 									else if (item.SwitchType == "Dimmer") {
