@@ -323,6 +323,8 @@ define(['app', 'livesocket'], function (app) {
 			var img3 = "";
 			var status = "";
 
+			console.log(item);
+
 			var bigtext = TranslateStatusShort(item.Status);
 			if (item.UsedByCamera == true) {
 				var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
@@ -396,8 +398,8 @@ define(['app', 'livesocket'], function (app) {
 
 				isdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
-				const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-				const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+				const closeAction = "Close";
+				const openAction = "Open";
 
 				const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 				const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";
@@ -958,8 +960,8 @@ define(['app', 'livesocket'], function (app) {
 								item.Image = item.TypeImg;
 								bIsdimmer = (item.SwitchType.indexOf("Percentage") >= 0 || item.SwitchType.indexOf("Stop") >= 0);
 
-								const closeAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "Off" : "On";
-								const openAction = (item.SwitchType.indexOf("Inverted") >= 0) ? "On" : "Off";
+								const closeAction = "Close";
+								const openAction = "Open";
 				
 								const selOpenImage = ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) ? "sel" : "";
 								const selCloseImage = ((item.Status == 'Closed')) ? "sel" : "";

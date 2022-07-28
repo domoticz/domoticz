@@ -9110,6 +9110,8 @@ namespace http
 
 						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
 
+						std::string openStatus = "Open";
+						std::string closedStatus = "Closed";
 						if (switchtype == STYPE_Doorbell)
 						{
 							root["result"][ii]["TypeImg"] = "doorbell";
@@ -9231,9 +9233,10 @@ namespace http
 						{
 							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
-							if ((lstatus == "On") || (lstatus == "Open inline relay"))
+
+							if ((lstatus == "On") || (lstatus == "Close inline relay"))
 							{
-								lstatus = "Open";
+								lstatus = closedStatus;
 							}
 							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
 							{
@@ -9241,7 +9244,7 @@ namespace http
 							}
 							else
 							{
-								lstatus = "Closed";
+								lstatus = openStatus;
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
@@ -9251,11 +9254,11 @@ namespace http
 							root["result"][ii]["TypeImg"] = "blinds";
 							if (lstatus == "On")
 							{
-								lstatus = "Closed";
+								lstatus = openStatus;
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = "Open";
+								lstatus = closedStatus;
 							}
 							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
 							{
@@ -9284,11 +9287,11 @@ namespace http
 							*/
 							if (lstatus == "On")
 							{
-								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Open" : "Closed";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? closedStatus : openStatus;
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? "Closed" : "Open";
+								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? openStatus : closedStatus;
 							}
 							else if (lstatus == "Stop")
 							{
@@ -13330,10 +13333,10 @@ namespace http
 						case STYPE_Blinds:
 						case STYPE_VenetianBlindsEU:
 						case STYPE_VenetianBlindsUS:
-						ldata = (ldata == "On") ? "Open" : "Closed";
+						ldata = (ldata == "On") ? "Closed" : "Open";
 						break;
 					case STYPE_BlindsInverted:
-						ldata = (ldata == "On") ? "Closed" : "Open";
+						ldata = (ldata == "On") ? "Open" : "Closed";
 						break;
 					case STYPE_BlindsPercentage:
 					case STYPE_BlindsPercentageWithStop:
@@ -13346,7 +13349,7 @@ namespace http
 					case STYPE_BlindsPercentageInvertedWithStop:
 						if ((ldata == "On") || (ldata == "Off"))
 						{
-							ldata = (ldata == "On") ? "Closed" : "Open";
+							ldata = (ldata == "On") ? "Open" : "Closed";
 						}
 						break;
 					}

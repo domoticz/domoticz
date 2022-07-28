@@ -3546,7 +3546,32 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false, User);
+	int HardwareID = atoi(sd[0].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(HardwareID);
+	if (pHardware == nullptr)
+		return false;
+
+	std::string switchCommand = switchcmd;
+	if ((pHardware->HwdType == HTYPE_MQTTAutoDiscovery) && 
+		(
+			(switchtype == STYPE_Blinds)
+			|| (switchtype == STYPE_BlindsPercentage)
+			|| (switchtype == STYPE_BlindsPercentageWithStop)
+			|| (switchtype == STYPE_VenetianBlindsUS)
+			))
+	{
+		if (switchCommand == "Close")
+			switchCommand = "Off";
+		else if (switchCommand == "Open")
+			switchCommand = "On";
+	}
+	else if (switchCommand == "Close")
+		switchCommand = "On";
+	else if (switchCommand == "Open")
+		switchCommand = "Off";
+
+	return m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
 }
 
 #ifndef WIN32
