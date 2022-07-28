@@ -6,8 +6,8 @@ services:
         build:
             context: .
             args:
-                CMAKE_VERSION: ${CMAKE_VERSION:-3.19.3}
-                BOOST_VERSION: ${BOOST_VERSION:-1.75.0}
+                CMAKE_VERSION: ${CMAKE_VERSION:-3.23.2}
+                BOOST_VERSION: ${BOOST_VERSION:-1.76.0}
         volumes:
             - ../../open-zwave:/opt/open-zwave-read-only
             - ..:/opt/dev-domoticz
