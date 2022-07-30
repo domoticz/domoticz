@@ -3342,11 +3342,11 @@ bool GetLightCommand(
 	break;
 	case pTypeBlinds:
 	{
-		if (switchcmd == "On")
+		if (switchcmd == "Off")
 		{
 			cmd = blinds_sOpen;
 		}
-		else if (switchcmd == "Off")
+		else if (switchcmd == "On")
 		{
 			cmd = blinds_sClose;
 		}
