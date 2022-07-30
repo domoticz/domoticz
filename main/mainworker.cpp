@@ -11463,25 +11463,35 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
-	if (switchcmd == "Open") {
-		if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery && 
-			(switchtype == STYPE_Blinds 
-				|| switchtype == STYPE_BlindsPercentage 
-				|| switchtype == STYPE_BlindsPercentageWithStop
-				|| switchtype == STYPE_VenetianBlindsEU))
-			switchcmd = "On";
-		else
-			switchcmd = "Off";
+	if (switchtype == STYPE_Blinds
+		|| switchtype == STYPE_BlindsPercentage
+		|| switchtype == STYPE_BlindsPercentageWithStop
+		|| switchtype == STYPE_VenetianBlindsEU
+		|| switchtype == STYPE_VenetianBlindsUS
+		)
+	{
+		if (switchcmd == "Open")
+		{
+			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "Off" : "On";
+		}
+		else if (switchcmd == "Close")
+		{
+			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "On" : "Off";
+		}
 	}
-	else if (switchcmd == "Close") {
-		if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery &&
-			(switchtype == STYPE_Blinds
-				|| switchtype == STYPE_BlindsPercentage
-				|| switchtype == STYPE_BlindsPercentageWithStop
-				|| switchtype == STYPE_VenetianBlindsEU))
-			switchcmd = "Off";
-		else
-			switchcmd = "On";
+	else if (switchtype == STYPE_BlindsInverted
+		|| switchtype == STYPE_BlindsPercentageInverted
+		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
+		)
+	{
+		if (switchcmd == "Open")
+		{
+			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "On" : "Off";
+		}
+		else if (switchcmd == "Close")
+		{
+			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "Off" : "On";
+		}
 	}
 
 	//when asking for Toggle, just switch to the opposite value
