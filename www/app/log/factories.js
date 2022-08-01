@@ -84,18 +84,20 @@ define(['app'], function (app) {
                     if (result !== true) {
                         reject();
                     }
-
-                    domoticzApi
-                        .sendCommand('deletedatapoint', {
-                            idx: deviceIdx,
-                            date: dateString
-                        })
-                        .then(resolve)
-                        .catch(function () {
-                            HideNotify();
-                            ShowNotify($.t('Problem deleting data point!'), 2500, true);
-                            reject();
-                        });
+                    else
+                    {
+                        domoticzApi
+                            .sendCommand('deletedatapoint', {
+                                idx: deviceIdx,
+                                date: dateString
+                            })
+                            .then(resolve)
+                            .catch(function () {
+                                HideNotify();
+                                ShowNotify($.t('Problem deleting data point!'), 2500, true);
+                                reject();
+                            });
+                    }
                 });
             });
         }
