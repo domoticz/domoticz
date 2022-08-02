@@ -9229,7 +9229,10 @@ namespace http
 							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
 							lstatus = sValue;
 						}
-						else if ((switchtype == STYPE_Blinds) || (switchtype == STYPE_VenetianBlindsUS) || (switchtype == STYPE_VenetianBlindsEU))
+						else if (
+							(switchtype == STYPE_Blinds)
+							|| (switchtype == STYPE_VenetianBlindsUS)
+							|| (switchtype == STYPE_VenetianBlindsEU))
 						{
 							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
