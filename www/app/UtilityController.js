@@ -433,6 +433,8 @@ define(['app', 'livesocket'], function (app) {
 				else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 					status = "";
 					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
+					const regex = /ShowSetpointPopup\(event, \d*, \w*, (\d+\.?)*\d+\);/gm;
+					img = $(id + " #img").html().replace(regex, 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');')
 				}
 				else if (item.Type == "Radiator 1") {
 					status = item.Data + '\u00B0 ' + $scope.config.TempSign;
