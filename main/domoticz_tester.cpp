@@ -139,6 +139,24 @@ bool helper_tester(const std::string szFunction, std::string &szInput, std::stri
 		szOutput = stdstring_trim(szInput);
 		bSuccess = true;
 	}
+	// stdstring_ltrimws
+	else if (szFunction == "stdstring_ltrimws")
+	{
+		szOutput = stdstring_ltrimws(szInput);
+		bSuccess = true;
+	}
+	// stdstring_rtrimws
+	else if (szFunction == "stdstring_rtrimws")
+	{
+		szOutput = stdstring_rtrimws(szInput);
+		bSuccess = true;
+	}
+	// stdstring_trimws
+	else if (szFunction == "stdstring_trimws")
+	{
+		szOutput = stdstring_trimws(szInput);
+		bSuccess = true;
+	}
 	// GenerateMD5Hash
 	else if (szFunction == "GenerateMD5Hash")
 	{
