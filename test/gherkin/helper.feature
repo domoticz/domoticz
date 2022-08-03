@@ -31,9 +31,9 @@ Feature: Helper routines
     Scenario: Test left trim function 4
         Given I am testing the "helper" module
         When I test the function "stdstring_ltrim"
-        And I provide the following input " \r 1 left + special "
+        And I provide the following input " 	 1 left + special "
         Then I expect the function to succeed
-        And have the following result "\r 1 left + special "
+        And have the following result "	 1 left + special "
 
     Scenario: Test right trim function
         Given I am testing the "helper" module
@@ -55,6 +55,13 @@ Feature: Helper routines
         And I provide the following input "  Â°C 2 left UTF-8 Δ 1 right "
         Then I expect the function to succeed
         And have the following result "Â°C 2 left UTF-8 Δ 1 right"
+
+    Scenario: Test whitespace trim function
+        Given I am testing the "helper" module
+        When I test the function "stdstring_trimws"
+        And I provide the following input " 	 3 left with whitespace and UTF-8 Δ and 2 right  "
+        Then I expect the function to succeed
+        And have the following result "3 left with whitespace and UTF-8 Δ and 2 right"
 
     Scenario: Test MD5Hash generation function
         Given I am testing the "helper" module

@@ -29,6 +29,10 @@ def test_trim():
 def test_trimUTF8():
     pass
 
+@scenario('helper.feature', 'Test whitespace trim function')
+def test_trimws():
+    pass
+
 @scenario('helper.feature', 'Test MD5Hash generation function')
 def test_md5hash():
     pass
