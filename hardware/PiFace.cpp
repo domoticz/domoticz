@@ -93,15 +93,11 @@ CPiFace::CPiFace(const int ID)
 std::string & CPiFace::preprocess(std::string &s)
 {
     std::string temp;
-    std::string tempstripped;
 
     temp.resize(s.size());
     std::transform(s.begin(),s.end(),temp.begin(),::tolower);
 
-    tempstripped = stdstring_trim(temp);
-
-    s=tempstripped;
-    return s;
+    return stdstring_trimws(temp);
 }
 
 int CPiFace::LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items)
