@@ -581,6 +581,7 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
 	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
 }
 
+// trim only the space character
 std::string &stdstring_ltrim(std::string &s)
 {
 	return s.erase(0, s.find_first_not_of(' '));
@@ -590,11 +591,22 @@ std::string &stdstring_rtrim(std::string &s)
 {
 	return s.erase(s.find_last_not_of(' ') + 1);
 }
-
-// trim from both ends
 std::string &stdstring_trim(std::string &s)
 {
 	return stdstring_ltrim(stdstring_rtrim(s));
+}
+// trim all whitespace
+std::string &stdstring_ltrimws(std::string &s)
+{
+	return s.erase(0, s.find_first_not_of(WHITESPACE));
+}
+std::string &stdstring_rtrimws(std::string &s)
+{
+	return s.erase(s.find_last_not_of(WHITESPACE) + 1);
+}
+std::string &stdstring_trimws(std::string &s)
+{
+	return stdstring_ltrimws(stdstring_rtrimws(s));
 }
 
 double CalculateDewPoint(double temp, int humidity)
