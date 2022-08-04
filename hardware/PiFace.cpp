@@ -97,7 +97,8 @@ std::string & CPiFace::preprocess(std::string &s)
     temp.resize(s.size());
     std::transform(s.begin(),s.end(),temp.begin(),::tolower);
 
-    return stdstring_trimws(temp);
+    s = stdstring_trimws(temp);
+    return s;
 }
 
 int CPiFace::LocateValueInParameterArray(const std::string &Parametername, const std::string *ParameterArray, int Items)
