@@ -82,15 +82,17 @@ jobs:
           shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
           cp appversion.h.txt package/version_linux_x86_64.h
           cp History.txt package/history_linux_x86_64.txt
+          echo "DOMVERSION=$(cat appversion.h.txt |grep APPVERSION|awk '{print $3}')" >> $GITHUB_ENV
       
       # Artifact upload
       - name: Upload artifacts
         #if: ${{ false }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: domoticz_linux_x86_64-${{ github.sha }}
-          path: package/domoticz_linux_x86_64.tgz
+          name: domoticz_linux_x86_64-${{ env.DOMVERSION }}
+          path: package/
           retention-days: 7
+          if-no-files-found: error
  
       # Deploy
       - name: FTP Deployment
