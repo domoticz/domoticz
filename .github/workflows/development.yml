@@ -29,14 +29,26 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      # Prepare environment
+      - name: prepare environment
+        run: |
+          sudo timedatectl set-timezone Europe/Amsterdam
+          buildnr=$(git rev-list HEAD --count)
+          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
+
       #- name: Make an error (Enable debug)
       #  run: ./not-exist-file.sh it bloke build
 
       # install dependencies
       - name: dependencies
         run: |
-          sudo apt-get update && sudo apt-get install
+          sudo apt-get update && sudo apt-get --autoremove upgrade
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+          sudo apt-get install python3-pytest python3-pytest-bdd
+          sudo apt-get install lua5.3 luarocks
+          sudo luarocks install busted
+          sudo luarocks install luacov
+      # Disabled March 2022 - sudo luarocks install lodash
 
       # get CMake
       - name: cmake-compile
@@ -72,24 +84,38 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
 
+      # Run automated tests (disabled March 2022)
+      #- name: unit-tests domoticz-dzVents
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+      #    busted --coverage -o TAP *
+      #    luacov
+      #    tail -19 luacov.report.out
+      #  continue-on-error: true
+      - name: functional-tests domoticz
+        run: |
+          cd $GITHUB_WORKSPACE
+          ln -s ../test/gherkin/resources/testwebcontent www/test
+          sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+          pytest-3 -rA --tb=no test/gherkin/
+          sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
+        continue-on-error: false
+
       # Packaging
       - name: package domoticz
         #if: ${{ false }}
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
-          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
-          shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
-          cp appversion.h.txt package/version_linux_x86_64.h
-          cp History.txt package/history_linux_x86_64.txt
-          echo "DOMVERSION=$(cat appversion.h.txt |grep APPVERSION|awk '{print $3}')" >> $GITHUB_ENV
+          tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          shasum -a 256 package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz > package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz.sha256sum
       
       # Artifact upload
       - name: Upload artifacts
         #if: ${{ false }}
         uses: actions/upload-artifact@v3
         with:
-          name: domoticz_linux_x86_64-${{ env.DOMVERSION }}
+          name: domoticz_linux_x86_64-${{ env.BUILDNR }}
           path: package/
           retention-days: 7
           if-no-files-found: error
@@ -109,10 +135,10 @@ jobs:
           security: loose
 
       # Grok 2.tcp.ngrok.io DNS resolves to 52.14.18.129
-      - name: Start SSH debug Session
-        #if: ${{ failure() }}
-        if: ${{ false }}
-        uses: luchihoratiu/debug-via-ssh@main
-        with:
-         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
-         SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
+      #- name: Start SSH debug Session
+      #  #if: ${{ failure() }}
+      #  if: ${{ false }}
+      #  uses: luchihoratiu/debug-via-ssh@main
+      #  with:
+      #   NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
+      #   SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
