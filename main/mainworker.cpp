@@ -11479,6 +11479,31 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			level = atoi(result[0][0].c_str());
 		}
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
+
+		if (switchtype == STYPE_Dimmer)
+		{
+			if (switchcmd == "On" && level > 0)
+			{
+				std::string lstatus;
+				int llevel = 0;
+				bool bHaveDimmer = false;
+				bool bHaveGroupCmd = false;
+				int maxDimLevel = 0;
+
+				int nValue = atoi(sd[7].c_str());
+				std::string sValue = sd[8];
+
+				GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				if (bHaveDimmer)
+				{
+					float fLevel = (maxDimLevel / 100.0F) * level;
+					level = round(fLevel);
+					level = std::min(level, maxDimLevel);
+					if (level != maxDimLevel)
+						switchcmd = "Set Level";
+				}
+			}
+		}
 	}
 	// TODO: Something smarter if level is not valid?
 	level = std::max(level, 0);
