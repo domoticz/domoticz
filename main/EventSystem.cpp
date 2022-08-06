@@ -3780,6 +3780,9 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
 
+	std::string openStatus = "Open";
+	std::string closedStatus = "Closed";
+
 	if (IsLightOrSwitch(dType, dSubType))
 	{
 		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
@@ -3842,40 +3845,57 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (
 		(switchtype == STYPE_Blinds)
-		|| (switchtype == STYPE_BlindsPercentage)
-		|| (switchtype == STYPE_BlindsPercentageWithStop)
-		)
+		|| (switchtype == STYPE_VenetianBlindsUS)
+		|| (switchtype == STYPE_VenetianBlindsEU))
+	{
+		if ((lstatus == "On") || (lstatus == "Close inline relay"))
+		{
+			lstatus = closedStatus;
+		}
+		else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
+		{
+			lstatus = "Stopped";
+		}
+		else
+		{
+			lstatus = openStatus;
+		}
+	}
+	else if (switchtype == STYPE_BlindsInverted)
 	{
 		if (lstatus == "On")
 		{
-			lstatus = "Open";
+			lstatus = openStatus;
 		}
-		else if (lstatus == "Stop")
+		else if (lstatus == "Off")
+		{
+			lstatus = closedStatus;
+		}
+		else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
 		{
 			lstatus = "Stopped";
-		}
-		else
-		{
-			lstatus = "Closed";
 		}
 	}
 	else if (
-		(switchtype == STYPE_BlindsInverted)
+		(switchtype == STYPE_BlindsPercentage)
 		|| (switchtype == STYPE_BlindsPercentageInverted)
+		|| (switchtype == STYPE_BlindsPercentageWithStop)
 		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 		)
 	{
-		if (lstatus == "Off")
+		//int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+		//root["result"][ii]["LevelInt"] = iLevel;
+		if (lstatus == "On")
 		{
-			lstatus = "Open";
+			lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? closedStatus : openStatus;
+		}
+		else if (lstatus == "Off")
+		{
+			lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? openStatus : closedStatus;
 		}
 		else if (lstatus == "Stop")
 		{
 			lstatus = "Stopped";
-		}
-		else
-		{
-			lstatus = "Closed";
 		}
 	}
 	else if (switchtype == STYPE_Media)

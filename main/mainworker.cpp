@@ -11463,6 +11463,48 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
+	// If dimlevel is 0 or no dimlevel, turn switch off
+	if (level <= 0 && switchcmd == "Set Level")
+		switchcmd = "Off";
+
+	//when level is invalid or command is "On", replace level with "LastLevel"
+	if (switchcmd == "On" || level < 0)
+	{
+		//Get LastLevel
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
+		if (result.size() == 1)
+		{
+			level = atoi(result[0][0].c_str());
+		}
+		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
+	}
+	// TODO: Something smarter if level is not valid?
+	level = std::max(level, 0);
+
+	if (switchtype == STYPE_Blinds
+		|| switchtype == STYPE_BlindsPercentage
+		|| switchtype == STYPE_BlindsPercentageWithStop
+		|| switchtype == STYPE_VenetianBlindsEU
+		|| switchtype == STYPE_VenetianBlindsUS
+		|| switchtype == STYPE_BlindsInverted
+		|| switchtype == STYPE_BlindsPercentageInverted
+		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
+		)
+	{
+		if (
+			(switchcmd == "Off")
+			|| (switchcmd == "Set Level" && level == 0)
+			)
+			switchcmd = "Open";
+		else if (
+			(switchcmd == "On")
+			|| (switchcmd == "Set Level" && level == 100)
+			)
+			switchcmd = "Close";
+	}
+
 	if (switchtype == STYPE_Blinds
 		|| switchtype == STYPE_BlindsPercentage
 		|| switchtype == STYPE_BlindsPercentageWithStop
@@ -11510,26 +11552,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		//Flip the status
 		switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
 	}
-
-	// If dimlevel is 0 or no dimlevel, turn switch off
-	if (level <= 0 && switchcmd == "Set Level")
-		switchcmd = "Off";
-
-	//when level is invalid or command is "On", replace level with "LastLevel"
-	if (switchcmd == "On" || level < 0)
-	{
-		//Get LastLevel
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query(
-			"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
-		if (result.size() == 1)
-		{
-			level = atoi(result[0][0].c_str());
-		}
-		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
-	}
-	// TODO: Something smarter if level is not valid?
-	level = std::max(level, 0);
 
 	//
 	//	For plugins all the specific logic below is irrelevent
