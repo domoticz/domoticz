@@ -122,8 +122,9 @@ jobs:
  
       # Deploy
       - name: FTP Deployment
-        if: ${{ false }}
-        #if: github.repository_owner == 'domoticz'
+        env:
+          isFtpSet: ${{ secrets.FTP_SERVER }}
+        if: "${{ env.isFtpSet != '' }}"
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -133,12 +134,3 @@ jobs:
           local-dir: ./package/
           server-dir: beta/
           security: loose
-
-      # Grok 2.tcp.ngrok.io DNS resolves to 52.14.18.129
-      #- name: Start SSH debug Session
-      #  #if: ${{ failure() }}
-      #  if: ${{ false }}
-      #  uses: luchihoratiu/debug-via-ssh@main
-      #  with:
-      #   NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
-      #   SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
