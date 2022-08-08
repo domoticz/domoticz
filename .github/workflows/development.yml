@@ -109,7 +109,7 @@ jobs:
           mkdir package
           tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
           shasum -a 256 package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz > package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz.sha256sum
-      
+
       # Artifact upload
       - name: Upload artifacts
         #if: ${{ false }}
@@ -119,7 +119,7 @@ jobs:
           path: package/
           retention-days: 7
           if-no-files-found: error
- 
+
       # Deploy
       - name: FTP Deployment
         env:
@@ -134,3 +134,9 @@ jobs:
           local-dir: ./package/
           server-dir: beta/
           security: loose
+
+      #- name: Start SSH debug Session
+      #  uses: luchihoratiu/debug-via-ssh@main
+      #  with:
+      #   NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
+      #   SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
