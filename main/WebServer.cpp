@@ -819,7 +819,7 @@ namespace http
 					root["title"] = "Logout";
 					goto exitjson;
 				}
-				_log.Debug(DEBUG_WEBSERVER, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
 				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else
@@ -3324,7 +3324,7 @@ namespace http
 				}
 				else
 				{
-					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetForecastConfig() : Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
 					root["Forecasthardware"] = 0; // reset to 0
 				}
 			}
@@ -7224,7 +7224,7 @@ namespace http
 				if (switchcmd == "Set Level")
 					level = request::findValue(&req, "level");
 				std::string onlyonchange = request::findValue(&req, "ooc"); // No update unless the value changed (check if updated)
-				_log.Debug(DEBUG_WEBSERVER, "WEBS switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::HandleCommand() : switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
 				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx.empty()) || (switchcmd.empty()) || ((switchcmd == "Set Level") && (level.empty())))
 					return;
@@ -8389,19 +8389,19 @@ namespace http
 						}
 						i++;
 					}
-					_log.Debug(DEBUG_AUTH, "Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", szTmpFile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
+					_log.Debug(DEBUG_AUTH, "Add User: Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", szTmpFile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
 					ifs.close();
 					if (!bPubFound)
 						sErr = "Unable to find a Public key within the PEMfile";
 					else if (!bPrivFound)
-						_log.Log(LOG_STATUS, "Pemfile (%s) only has a Public key, so only verification is possible. Token generation has to be done external.", szTmpFile.c_str());
+						_log.Log(LOG_STATUS, "AddUser: Pemfile (%s) only has a Public key, so only verification is possible. Token generation has to be done external.", szTmpFile.c_str());
 				}
 				else
 					sErr = "Unable to find/open file";
 
 				if(!sErr.empty())
 				{
-					_log.Log(LOG_STATUS,"Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
+					_log.Log(LOG_STATUS,"AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
 					return;
 				}
 			}
@@ -14084,7 +14084,7 @@ namespace http
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			_log.Debug(DEBUG_WEBSERVER, "dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
+			_log.Debug(DEBUG_WEBSERVER, "CWebServer::RType_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || (dType == pTypeCURRENTENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 			{
 				metertype = MTYPE_ENERGY;
