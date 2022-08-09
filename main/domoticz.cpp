@@ -59,8 +59,8 @@ namespace
 		"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 		"\t-sslkey file_path (if different from certificate file)\n"
 		"\t-sslpass passphrase (to access to server private key in certificate)\n"
-		"\t-sslmethod method (supported methods: tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server)\n"
-		"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
+		"\t-sslmethod method (supported methods: tls [default], tls_server, tlsv1, tlsv1_server, sslv23, sslv23_server, tlsv11, tlsv11_server, tlsv12, tlsv12_server, tlsv13, tlsv13_server)\n"
+		"\t-ssloptions options (for SSL options, default is 'single_dh_use')\n"
 		"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
