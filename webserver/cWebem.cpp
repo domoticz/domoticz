@@ -756,11 +756,11 @@ namespace http {
 				}
 				catch (std::exception& e)
 				{
-					_log.Log(LOG_ERROR, "WebServer PO exception occurred : '%s'", e.what());
+					_log.Log(LOG_ERROR, "[web:%s] PO exception occurred : '%s'", GetPort().c_str(), e.what());
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "WebServer PO unknown exception occurred");
+					_log.Log(LOG_ERROR, "[web:%s] PO unknown exception occurred", GetPort().c_str());
 				}
 				std::string attachment;
 				for (const auto &header : rep.headers)
@@ -935,7 +935,7 @@ namespace http {
 		{
 			if (network.empty())
 			{
-				_log.Log(LOG_ERROR, "Empty network string provided! Skipping...");
+				_log.Log(LOG_ERROR, "[web:%s] Empty network string provided! Skipping...", GetPort().c_str());
 				return;
 			}
 
@@ -945,7 +945,7 @@ namespace http {
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
 
-			_log.Log(LOG_STATUS, "Adding IPv%s network (%s) to list of local networks.", (ipnetwork.bIsIPv6 ? "6" : "4"),network.c_str());
+			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of local networks.", (ipnetwork.bIsIPv6 ? "6" : "4"), GetPort().c_str(), network.c_str());
 
 			if (network.find('*') != std::string::npos)
 			{
@@ -1048,9 +1048,9 @@ namespace http {
 							return;
 						memcpy(&ipnetwork.Network, pAddress, iASize);
 					}
-					else if (inet_pton((!ipnetwork.bIsIPv6) ? AF_INET : AF_INET6, network.c_str(), &ipnetwork.Network)
-						 != 1)
+					else if (inet_pton((!ipnetwork.bIsIPv6) ? AF_INET : AF_INET6, network.c_str(), &ipnetwork.Network) != 1)
 						return; //invalid address
+
 					memset((void*)&ipnetwork.Mask, 0xFF, iASize);
 					ipnetwork.ip_string = network;
 				}
@@ -1243,7 +1243,7 @@ namespace http {
 				{
 					return 0;
 				}
-				_log.Debug(DEBUG_AUTH, "Found a X509 Auth Header (%s)", ah->user.c_str());
+				_log.Debug(DEBUG_AUTH, "[X509] Found a X509 Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
 			// Basic Auth header
@@ -1258,7 +1258,7 @@ namespace http {
 
 				ah->user = decoded.substr(0, npos);
 				ah->response = decoded.substr(npos + 1);
-				_log.Debug(DEBUG_AUTH, "Found a Basic Auth Header (%s)", ah->user.c_str());
+				_log.Debug(DEBUG_AUTH, "[Basic] Found a Basic Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
 			// Bearer Auth header
@@ -1279,18 +1279,18 @@ namespace http {
 						auto decodedJWT = jwt::decode(sToken, &base64url_decode);
 						if(!decodedJWT.has_algorithm())
 						{
-							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an algorithm!");
+							_log.Debug(DEBUG_AUTH,"[JWT] Token does not contain an algorithm!");
 							return 0;
 						}
 						if(!(decodedJWT.has_audience() && decodedJWT.has_issuer()))
 						{
-							_log.Debug(DEBUG_AUTH,"JWT Token does not contain an intended audience and/or issuer!");
+							_log.Debug(DEBUG_AUTH,"[JWT] Token does not contain an intended audience and/or issuer!");
 							return 0;
 						}
 						// Step 2: Find the audience = our ClientID (~ the Username of the Domoticz User where the userright = ClientID)
 						std::string clientid = decodedJWT.get_audience().cbegin()->data();	// Assumption: only 1 element in the AUD set!
 						std::string JWTsubject = decodedJWT.get_subject();
-						_log.Debug(DEBUG_AUTH,"JWT Token audience : %s", clientid.c_str());
+						_log.Debug(DEBUG_AUTH,"[JWT] Token audience : %s", clientid.c_str());
 
 						std::string clientsecret;
 						std::string clientpubkey;
@@ -1313,7 +1313,7 @@ namespace http {
 						}
 						if (client_key_id.empty() || (clientsecret.empty() && clientpubkey.empty()))
 						{
-							_log.Debug(DEBUG_AUTH, "Unable to verify token as no ClientID for the audience has been found!");
+							_log.Debug(DEBUG_AUTH, "[JWT] Unable to verify token as no ClientID for the audience has been found!");
 							return 0;
 						}
 						// Step 3: Using the (hashed :( ) password of the ClientID as our ClientSecret to verify the JWT signature
@@ -1342,7 +1342,7 @@ namespace http {
 						}
 						else
 						{
-							_log.Debug(DEBUG_AUTH, "This JWT is signed with an unsupported algorithm (%s)!", JWTalgo.c_str());
+							_log.Debug(DEBUG_AUTH, "[JWT] This token is signed with an unsupported algorithm (%s)!", JWTalgo.c_str());
 							return 0;
 						}
 						JWTverifyer.expires_at_leeway(60);	// 60 seconds leeway time in case clocks are NOT fully (NTP) synced
@@ -1351,13 +1351,13 @@ namespace http {
 						JWTverifyer.verify(decodedJWT, ec);
 						if(ec)
 						{
-							_log.Debug(DEBUG_AUTH, "JWT not valid! (%s)", ec.message().c_str());
+							_log.Debug(DEBUG_AUTH, "[JWT] Token not valid! (%s)", ec.message().c_str());
 							return 0;
 						}
 						// Step 4: Now also check if other mandatory claims (nbf, exp, sub) have been provided
 						if(!(decodedJWT.has_expires_at() && decodedJWT.has_not_before() && decodedJWT.has_issued_at() && decodedJWT.has_subject() && decodedJWT.has_key_id()))
 						{
-							_log.Debug(DEBUG_AUTH, "JWT mandatory claims KID, NBF, EXP, IAT, SUB are missing!");
+							_log.Debug(DEBUG_AUTH, "[JWT] Mandatory claims KID, NBF, EXP, IAT, SUB are missing!");
 							return 0;
 						}
 						// Step 5: See of the subject (intended user) is available and exists in the User table
@@ -1370,7 +1370,7 @@ namespace http {
 								{
 									if (key_id.compare(client_key_id) == 0)
 									{
-										_log.Debug(DEBUG_AUTH,"Decoded valid JWT (%s)", JWTsubject.c_str());
+										_log.Debug(DEBUG_AUTH,"[JWT] Decoded valid user (%s)", JWTsubject.c_str());
 										ah->method = "JWT";
 										ah->user = JWTsubject;
 										ah->response = my.Password;
@@ -1379,13 +1379,13 @@ namespace http {
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "JWT KID does not match (%s)!", client_key_id.c_str());
+										_log.Debug(DEBUG_AUTH, "[JWT] KID does not match (%s)!", client_key_id.c_str());
 										return 0;
 									}
 								}
 							}
 						}
-						_log.Debug(DEBUG_AUTH, "JWT contains non-existing user (%s)!", JWTsubject.c_str());
+						_log.Debug(DEBUG_AUTH, "[JWT] Token contains non-existing user (%s)!", JWTsubject.c_str());
 						return 0;
 					}
 				}
@@ -1393,7 +1393,7 @@ namespace http {
 				ah->method = "Bearer";
 				ah->user = "";				// No clue how to deduce the user from the Bearer token provided
 				ah->response = sToken; // Let's provide the found token as the 'password'
-				_log.Debug(DEBUG_AUTH, "Found a Bearer Token (%s)", sToken.c_str());
+				_log.Debug(DEBUG_AUTH, "[Bearer] Found a Token (%s)", sToken.c_str());
 				return 1;
 			}
 			return 0;
@@ -1459,7 +1459,7 @@ namespace http {
 				if (my.Username == _ah.user)
 				{
 					int bOK = check_password(&_ah, my.Password);
-					_log.Debug(DEBUG_AUTH, "User %s password check: %d", _ah.user.c_str(), bOK);
+					_log.Debug(DEBUG_AUTH, "[Authorize] User %s password check: %d", _ah.user.c_str(), bOK);
 					if (!bOK || my.userrights == URIGHTS_CLIENTID)	// User with ClientID 'rights' are not real users!
 					{
 						m_failcounter++;
@@ -1498,7 +1498,7 @@ namespace http {
 						{
 							if (my.ActiveTabs)
 							{
-								_log.Debug(DEBUG_AUTH, "Generate JWT Token for %s using clientid %s and PrivKey (%s)", user.c_str(), clientid.c_str(), my.PrivKey.c_str());
+								_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s and PrivKey (%s)", user.c_str(), clientid.c_str(), my.PrivKey.c_str());
 								auto JWT = jwt::create()
 									.set_type("JWT")
 									.set_key_id(std::to_string(my.ID))
@@ -1549,7 +1549,7 @@ namespace http {
 					return false;
 
 			// As all segments of the given IP fit within the given network range, otherwise we wouldn't be here
-			_log.Debug(DEBUG_WEBSERVER,"web: IP (%s) is within Localnetwork range!",ip.c_str());
+			_log.Debug(DEBUG_WEBSERVER,"[web:%s] IP (%s) is within Localnetwork range!",myWebem->GetPort().c_str(), ip.c_str());
 			return true;
 		}
 
@@ -1565,7 +1565,7 @@ namespace http {
 			uint8_t IP[16] = { 0 };
 			if ( (sHost.size() < 3) || (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1) )
 			{
-				_log.Log(LOG_STATUS,"Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in LocalNetwork!",sHost.c_str());
+				_log.Log(LOG_STATUS,"[web:%s] Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in LocalNetwork!", myWebem->GetPort().c_str() ,sHost.c_str());
 				return false;	// The IP address is not a valid IPv4 or IPv6 address
 			}
 
@@ -1929,13 +1929,13 @@ namespace http {
 			if (myWebem->m_userpasswords.empty())
 			{
 				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "No userpasswords set, so set rights = 2 (Admin)!");
+				_log.Debug(DEBUG_AUTH, "[Check] No userpasswords set, so set rights = 2 (Admin)!");
 			}
 
 			if (AreWeInLocalNetwork(session.remote_host))
 			{
 				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "Local network detected, so set rights = 2 (Admin)!");
+				_log.Debug(DEBUG_AUTH, "[Check] Local network exception detected, so set rights = 2 (Admin)!");
 			}
 
 			//Check for valid JWT token
@@ -1944,7 +1944,7 @@ namespace http {
 			{
 				if (_ah.method == "JWT")
 				{
-					_log.Debug(DEBUG_AUTH, "Found JWT Authorization token: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+					_log.Debug(DEBUG_AUTH, "[Check] Found JWT Authorization token: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
@@ -2105,7 +2105,7 @@ namespace http {
 			session_store_impl_ptr sstore = myWebem->GetSessionStore();
 			if (sstore == nullptr)
 			{
-				_log.Log(LOG_ERROR, "CheckAuthToken([%s_%s]) : no store defined", session.id.c_str(), session.auth_token.c_str());
+				_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : no store defined", session.id.c_str(), session.auth_token.c_str());
 				return true;
 			}
 
@@ -2117,7 +2117,7 @@ namespace http {
 			WebEmStoredSession storedSession = sstore->GetSession(session.id);
 			if (storedSession.id.empty())
 			{
-				_log.Debug(DEBUG_WEBSERVER, "CheckAuthToken(%s_%s) : session id not found", session.id.c_str(), session.auth_token.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] CheckAuthToken(%s_%s) : session id not found", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str());
 				return false;
 			}
 			if (storedSession.auth_token != GenerateMD5Hash(session.auth_token))
@@ -2204,7 +2204,7 @@ namespace http {
 
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_remote_address.c_str(), req.uri.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
 
 			// Initialize session
 			WebEmSession session;
@@ -2228,7 +2228,7 @@ namespace http {
 							host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
 							if (!host_header)
 							{
-								_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+								_log.Log(LOG_ERROR, "[web:%s]: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
 								rep = reply::stock_reply(reply::forbidden);
 								return;
 							}
@@ -2283,7 +2283,7 @@ namespace http {
 				bool expired = false;
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
-					_log.Debug(DEBUG_WEBSERVER, "Web: Logout : remove session %s", sSID.c_str());
+					_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
 					auto itt = myWebem->m_sessions.find(sSID);
 					if (itt != myWebem->m_sessions.end())
 					{
@@ -2302,12 +2302,12 @@ namespace http {
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 			bool isAuthenticated = CheckAuthentication(session, req, rep);
-			_log.Debug(DEBUG_AUTH,"Request: page %d action %d upgrade %d authorization %d", isPage, isAction, isUpgradeRequest, isAuthenticated);
+			_log.Debug(DEBUG_AUTH,"[Request] isPage %d isAction %d isUpgrade %d isAuthenticated %d", isPage, isAction, isUpgradeRequest, isAuthenticated);
 
 			// Check user authentication on each page or action, if it exists.
 			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)
 			{
-				_log.Debug(DEBUG_WEBSERVER, "Web: Did not find suitable Authorization!");
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
 				send_authorization_request(rep);
 				return;
 			}
@@ -2460,7 +2460,7 @@ namespace http {
 
 			if (session.isnew == true)
 			{
-				_log.Log(LOG_STATUS, "Incoming connection from: %s", session.remote_host.c_str());
+				_log.Log(LOG_STATUS, "[web:%s] Incoming connection from: %s", myWebem->GetPort().c_str(), session.remote_host.c_str());
 				// Create a new session ID
 				session.id = generateSessionID();
 				session.expires = session.timeout;
