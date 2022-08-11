@@ -67,6 +67,7 @@ struct reply
   static bool set_download_file(reply* rep, const std::string& file_path, const std::string& attachment);
   static void add_header_attachment(reply *rep, const std::string & attachment);
   static void add_header_content_type(reply *rep, const std::string & content_type);
+  static void add_security_headers(reply *rep);
 
   template <class InputIterator>
   static void set_content(reply *rep, InputIterator first, InputIterator last) {
@@ -81,7 +82,7 @@ struct reply
   void reset();
 
   /// Get a stock reply.
-  static reply stock_reply(status_type status);
+  static reply stock_reply(status_type status, bool addsecheaders = false);
 };
 
 } // namespace server
