@@ -68,6 +68,7 @@ struct reply
   static void add_header_attachment(reply *rep, const std::string & attachment);
   static void add_header_content_type(reply *rep, const std::string & content_type);
   static void add_security_headers(reply *rep);
+  static void add_cors_headers(reply *rep);
 
   template <class InputIterator>
   static void set_content(reply *rep, InputIterator first, InputIterator last) {

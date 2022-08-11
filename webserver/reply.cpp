@@ -252,6 +252,11 @@ void reply::add_security_headers(reply *rep)
 	//add_header(rep, "X-Frame-Options", "SAMEORIGIN", true);	// obsolete thx to CSP
 }
 
+void reply::add_cors_headers(reply *rep)
+{
+	add_header(rep, "Access-Control-Allow-Origin", "*", true);
+}
+
 void reply::add_header(reply *rep, const std::string &name, const std::string &value, bool replace)
 {
 	size_t num = rep->headers.size();
