@@ -2302,7 +2302,7 @@ namespace http {
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 			bool isAuthenticated = CheckAuthentication(session, req, rep);
-			_log.Debug(DEBUG_AUTH,"[Request] isPage %d isAction %d isUpgrade %d isAuthenticated %d", isPage, isAction, isUpgradeRequest, isAuthenticated);
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated);
 
 			// Check user authentication on each page or action, if it exists.
 			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)
@@ -2352,12 +2352,6 @@ namespace http {
 					if (rep.status == reply::status_type::download_file)
 						return;
 
-					if (session.reply_status != reply::ok)
-					{
-						rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
-						return;
-					}
-
 					if (!rep.bIsGZIP)
 					{
 						CompressWebOutput(req, rep);
@@ -2366,11 +2360,6 @@ namespace http {
 				else
 				{
 					modify_info mInfo;
-					if (session.reply_status != reply::ok)
-					{
-						rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
-						return;
-					}
 					if (rep.status != reply::ok) // even before handling the page, somehow/something above did set the expected reply status to NOT OK
 					{
 						return;
