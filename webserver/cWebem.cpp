@@ -524,12 +524,7 @@ namespace http {
 		bool cWebem::IsPageOverride(const request& req, reply& rep)
 		{
 			std::string request_path;
-			if (!request_handler::url_decode(req.uri, request_path))
-			{
-				rep = reply::stock_reply(reply::bad_request);
-				return false;
-			}
-
+			request_handler::url_decode(req.uri, request_path);
 			request_path = ExtractRequestPath(request_path);
 
 			size_t paramPos = request_path.find_first_of('?');
@@ -548,14 +543,8 @@ namespace http {
 
 		bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
 		{
-			// Decode url to path.
 			std::string request_path;
-			if (!request_handler::url_decode(req.uri, request_path))
-			{
-				rep = reply::stock_reply(reply::bad_request);
-				return false;
-			}
-
+			request_handler::url_decode(req.uri, request_path);
 			request_path = ExtractRequestPath(request_path);
 
 			req.parameters.clear();
@@ -783,38 +772,44 @@ namespace http {
 				{
 					reply::add_header(&rep, "Cache-Control", "no-cache");
 					reply::add_header(&rep, "Pragma", "no-cache");
-					myRequestHandler.set_cors_header(rep);
+					reply::add_cors_headers(&rep);
 				}
 				else
 				{
 					reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
 				}
 				reply::add_header_content_type(&rep, strMimeType);
+				if (m_settings.is_secure())
+					reply::add_security_headers(&rep);
 				return true;
 			}
 
 			//check wchar_t
 			auto pfunW = myPages_w.find(request_path);
-			if (pfunW == myPages_w.end())
-				return false;
-
-			try
+			if (pfunW != myPages_w.end())
 			{
-				pfunW->second(session, req, rep);
+				try
+				{
+					pfunW->second(session, req, rep);
+				}
+				catch (...)
+				{
+					_log.Log(LOG_ERROR, "[web:%s] PO unknown exception occurred", GetPort().c_str());
+				}
+
+				rep.status = reply::ok;
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
+				reply::add_header_content_type(&rep, strMimeType);
+				reply::add_header(&rep, "Cache-Control", "no-cache");
+				reply::add_header(&rep, "Pragma", "no-cache");
+				reply::add_cors_headers(&rep);
+				if (m_settings.is_secure())
+					reply::add_security_headers(&rep);
+
+				return true;
 			}
-			catch (...)
-			{
 
-			}
-
-			rep.status = reply::ok;
-			reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
-			reply::add_header_content_type(&rep, strMimeType);
-			reply::add_header(&rep, "Cache-Control", "no-cache");
-			reply::add_header(&rep, "Pragma", "no-cache");
-			myRequestHandler.set_cors_header(rep);
-
-			return true;
+			return false;
 		}
 
 		void cWebem::SetWebTheme(const std::string &themename)
@@ -1706,16 +1701,11 @@ namespace http {
 			return bCookie;
 		}
 
-		void cWebemRequestHandler::set_cors_header(reply& rep)
-		{
-			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-		}
-
 		void cWebemRequestHandler::send_authorization_request(reply& rep)
 		{
 			rep = reply::stock_reply(reply::unauthorized);
 			rep.status = reply::unauthorized;
-			set_cors_header(rep);
+			reply::add_cors_headers(&rep);
 			send_remove_cookie(rep);
 			if (myWebem->m_authmethod == AUTH_BASIC)
 			{
@@ -2206,6 +2196,14 @@ namespace http {
 		{
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
 
+			// Decode url to path.
+			std::string request_path;
+			if (!request_handler::url_decode(req.uri, request_path))
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
+
 			// Initialize session
 			WebEmSession session;
 			session.remote_host = req.host_remote_address;
@@ -2267,7 +2265,7 @@ namespace http {
 				reply::add_header(&rep, "Access-Control-Max-Age", "3600");
 				reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, POST");
 				reply::add_header(&rep, "Access-Control-Allow-Headers", "Authorization, Content-Type");
-				set_cors_header(rep);
+				reply::add_cors_headers(&rep);
 				return;
 			}
 
@@ -2359,13 +2357,8 @@ namespace http {
 				}
 				else
 				{
-					modify_info mInfo;
-					if (rep.status != reply::ok) // even before handling the page, somehow/something above did set the expected reply status to NOT OK
-					{
-						return;
-					}
-
 					// do normal handling
+					modify_info mInfo;
 					try
 					{
 						if (myWebem->m_actTheme.find("default") == std::string::npos)
