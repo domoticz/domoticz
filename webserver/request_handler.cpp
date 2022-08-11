@@ -278,7 +278,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	// For PHP files, we hand-over the processing to the PHP processor and are done
 	if (extension == "php")
 	{
-		if (!myWebem->m_settings.is_php_enabled())
+		if (!myWebem->m_settings.is_php_enabled() || myWebem->m_settings.is_secure())
 		{
 			rep = reply::stock_reply(reply::not_implemented);
 			return;
