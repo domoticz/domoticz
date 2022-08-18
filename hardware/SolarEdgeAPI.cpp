@@ -353,37 +353,32 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 		sprintf(szTmp, "DC %s", pInverterSettings->name.c_str());
 		SendVoltageSensor(iInverterNumber, SE_VOLT_DC, 255, dcVoltage, szTmp);
 	}
-	// added
 	if (!reading["powerLimit"].empty())
 	{
 		float powerLimit = reading["powerLimit"].asFloat();
 		sprintf(szTmp, "powerLimit %s", pInverterSettings->name.c_str());
 		SendPercentageSensor(iInverterNumber, SE_POWERLIMIT, 255, powerLimit, szTmp);
 	}
-	// added
 	if (!reading["groundFaultResistance"].empty())
 	{
 		float groundFaultResistance = reading["groundFaultResistance"].asFloat();
 		sprintf(szTmp, "groundFaultResistance %s", pInverterSettings->name.c_str());
 		SendCustomSensor(iInverterNumber, SE_GROUND_RES, 255, groundFaultResistance, szTmp, "kOhm");
 	}
-	// added
-		if (!reading["inverterMode"].empty())
+	if (!reading["inverterMode"].empty())
 	{
 		char inverterMode[25];
 		strncpy(inverterMode, reading["inverterMode"].asCString(), 24);
 		sprintf(szTmp, "inverterMode %s", pInverterSettings->name.c_str());
 		SendTextSensor(iInverterNumber, SE_INV_MODE, 255, inverterMode, szTmp);
 	}
-		// added
-		if (!reading["date"].empty())
-		{
-			char inverterMode[25];
-			strncpy(inverterMode, reading["date"].asCString(), 24);
-			sprintf(szTmp, "date %s", pInverterSettings->name.c_str());
-			SendTextSensor(iInverterNumber, SE_DATE, 255, inverterMode, szTmp);
-		}
-
+	if (!reading["date"].empty())
+	{
+		char date[20];
+		strncpy(date, reading["date"].asCString(), 19);
+		sprintf(szTmp, "date %s", pInverterSettings->name.c_str());
+		SendTextSensor(iInverterNumber, SE_DATE, 255, date, szTmp);
+	}
 	if (!reading["temperature"].empty())
 	{
 		float temp = reading["temperature"].asFloat();
@@ -410,7 +405,6 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 				sprintf(szTmp, "Hz L%d %s", iPhase, pInverterSettings->name.c_str());
 				SendCustomSensor(1 + iInverterNumber, iPhase, 255, acFrequency, szTmp, "Hz");
 			}
-    		// added
 			if (!reading[szPhase]["acCurrent"].empty())
 			{
 				float acCurrent = reading[szPhase]["acCurrent"].asFloat();
