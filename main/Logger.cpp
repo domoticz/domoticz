@@ -63,8 +63,8 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			SetLogFlags(strtoul(wflag.c_str(), nullptr, 10));
-			return true;
+			iFlags = strtoul(wflag.c_str(), nullptr, 10);
+			break;
 		}
 		if (wflag == "all")
 			iFlags |= LOG_ALL;
@@ -77,8 +77,10 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 		else if (wflag == "debug")
 			iFlags |= LOG_DEBUG_INT;
 		else
-			return false; // invalid flag
+			continue; // invalid flag, skip but continue processing the other flags
 	}
+	if (iFlags == 0)
+		iFlags = LOG_STATUS + LOG_ERROR;
 	SetLogFlags(iFlags);
 	return true;
 }
@@ -104,8 +106,8 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			SetDebugFlags(strtoul(wflag.c_str(), nullptr, 10));
-			return true;
+			iFlags = strtoul(wflag.c_str(), nullptr, 10);
+			break;
 		}
 		if (wflag == "all")
 			iFlags |= DEBUG_ALL;
@@ -126,11 +128,13 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 		else if (wflag == "sql")
 			iFlags |= DEBUG_SQL;
 		else
-			return false; // invalid flag
+			continue; // invalid flag, skip but continue processing the other flags
 	}
 	SetDebugFlags(iFlags);
 	if(IsDebugLevelEnabled(DEBUG_WEBSERVER))
 		SetACLFlogFlags(LOG_ACLF_ENABLED);
+	if(!IsLogLevelEnabled(LOG_DEBUG_INT))
+		Log(LOG_STATUS,"Debug logging not active. Set loglevel DEBUG when using debug logging!");
 	return true;
 }
 
