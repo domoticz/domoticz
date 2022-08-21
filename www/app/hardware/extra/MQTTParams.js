@@ -33,13 +33,13 @@ extraHWInitParams = function(data) {
 		if (window.__hwfnparam == 3)
 			data["Extra"] += ";homeassistant";
 	}
-	if (!data["Mode1"])
+	if (data["Mode1"] == '')
 		data["Mode1"] = 1;
 	
-	if (!data["Mode2"])
+	if (data["Mode2"] == '')
 		data["Mode2"] = 2;
 	
-	if (!data["Mode3"])
+  if (data["Mode3"] == '')
 		data["Mode3"] = 1;
 	
 	if (!data["Port"])
