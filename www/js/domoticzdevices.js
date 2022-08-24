@@ -1260,23 +1260,28 @@ function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
 
-        var bIsOff = (
+        var bIsOffImage = (
             (this.status == "Off")
             || (item.Status == 'Closed')
             || (item.Status == 'Locked')
         );
+        var bIsOff = (
+            (this.status == "Off")
+            || (item.Status == 'Unlocked')
+            || (item.Status == 'Open')
+        );
         
         if (item.CustomImage != 0) {
-            this.image = (bIsOff) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+            this.image = (bIsOffImage) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
-            this.image = (bIsOff) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+            this.image = (bIsOffImage) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.showStatus = (Device.showSwitchValues == true);
         this.imagetext = "Activate switch";
         this.controlable = true;
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'" + ((bIsOff) ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 Switch.inheritsFrom(Sensor);
@@ -1284,7 +1289,13 @@ Switch.inheritsFrom(Sensor);
 function BinarySwitch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
+
+        var bIsOff = (
+            (this.status == "Off")
+            || (item.Status == 'Unlocked')
+            || (item.Status == 'Open')
+        );
+        this.onClick = "SwitchLight(" + this.index + ",'" + ((bIsOff) ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 BinarySwitch.inheritsFrom(Switch);
@@ -1508,8 +1519,8 @@ function Door(item) {
             this.image = ((this.status == "Locked")||(this.status == "Closed")) ? "images/" + item.Image + "48_Off.png" : this.image = "images/" + item.Image + "48_On.png";
         }
         this.data = '';
-        this.NotifyLink = this.onClick = "";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.NotifyLink = "";
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Door.inheritsFrom(BinarySwitch);
