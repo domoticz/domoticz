@@ -30,7 +30,7 @@ The methods are:
  * def is_on(self):
     returns True when device is on
  * def is_off(self):
-    returns True when device is ooff
+    returns True when device is off
 
  * def on(self, after=None, reflect=False):
  	  turns device on, after is optional and are the number of seconds after which
