@@ -93,7 +93,7 @@ define(['app'], function (app) {
 		SaveUserDevices = function () {
 			var selecteddevices = $("#usercontent .multiselect option:selected").map(function () { return this.value }).get().join(";");
 			$.ajax({
-				url: "json.htm?type=setshareduserdevices&idx=" + $.devIdx + "&devices=" + selecteddevices,
+				url: "json.htm?type=setshareduserdevices&idx=" + $.devIdx + "&devices=" + encodeURIComponent(selecteddevices),
 				async: false,
 				dataType: 'json',
 				success: function (data) {
