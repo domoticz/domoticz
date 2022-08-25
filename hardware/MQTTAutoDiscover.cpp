@@ -2709,7 +2709,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				level = atoi(szOnOffValue.c_str());
 				if (level > 0)
 				{
-					if (level != 100)
+					if (level < 99)
 						szOnOffValue = "Set Level";
 					else
 						szOnOffValue = "on";
