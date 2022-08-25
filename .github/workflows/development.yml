@@ -121,19 +121,7 @@ jobs:
           if-no-files-found: error
 
       # Deploy
-      - name: FTP Deployment
-        env:
-          isFtpSet: ${{ secrets.FTP_SERVER }}
-        if: "${{ env.isFtpSet != '' }}"
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          local-dir: ./package/
-          server-dir: beta/
-          security: loose
+      # Using WebHooks and 'workflow_run' events on this action, the artifact will be available via other channels as well
 
       #- name: Start SSH debug Session
       #  uses: luchihoratiu/debug-via-ssh@main
