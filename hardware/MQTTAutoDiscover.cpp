@@ -1794,7 +1794,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 	if (
 		(pSensor->value_template == "action")
 		|| (pSensor->value_template == "click")
-		|| (pSensor->object_id == "scene_state_sceneid")
+		|| (pSensor->object_id.find("scene_state_scene") != std::string::npos)
 		|| (pSensor->object_id == "action")
 		)
 	{
@@ -2600,7 +2600,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		szSensorName += "_" + pSensor->last_value;
 	}
-	else if (pSensor->object_id == "scene_state_sceneid")
+	else if (pSensor->object_id.find("scene_state_scene") != std::string::npos)
 	{
 		pSensor->devUnit = atoi(pSensor->last_value.c_str());
 		switchType = STYPE_PushOn;
