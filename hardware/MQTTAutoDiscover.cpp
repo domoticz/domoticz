@@ -1094,7 +1094,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		//Check if we want to subscribe to this sensor
 		bool bDoSubscribe = false;
 
-		//Only add component_type = "sensor" for now
+		//Only subscribe to the below compontent_types for now
 		bDoSubscribe =
 			(
 				(pSensor->component_type == "sensor")
