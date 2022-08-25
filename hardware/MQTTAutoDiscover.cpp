@@ -3120,7 +3120,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if (command == "Set Level")
 		{
 			//root["state"] = pSensor->payload_on;
-			int slevel = (int)round((pSensor->brightness_scale / 100.0F) * level);
+			int slevel = (int)round((pSensor->brightness_scale / 99.0F) * level);
 
 			if (!pSensor->brightness_value_template.empty())
 			{
