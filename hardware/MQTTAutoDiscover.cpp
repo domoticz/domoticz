@@ -2910,6 +2910,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "off";
 				else {
 					szSwitchCmd = "Set Level";
+					if (pSensor->bReceived_brightness_scale)
+						level = (int)round((100.0 / pSensor->brightness_scale) * level);
 				}
 			}
 		}
@@ -3122,7 +3124,9 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if (command == "Set Level")
 		{
 			//root["state"] = pSensor->payload_on;
-			int slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
+			int slevel = level;
+			if (pSensor->bReceived_brightness_scale)
+				slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
 
 			if (!pSensor->brightness_value_template.empty())
 			{
