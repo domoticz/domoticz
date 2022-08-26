@@ -2719,11 +2719,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 				if (level == 0)
 					szSwitchCmd = "off";
-				else if (level <= 99)
-					szSwitchCmd = "Set Level";
-				else
+				else if (level == 100)
 					szSwitchCmd = "on";
-
+				else
+					szSwitchCmd = "Set Level";
+				
 				// For cover use the value as position
 				if (pSensor->component_type == "cover")
 				{
@@ -2742,16 +2742,15 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 							)
 						{
 							// invert level for inverted blinds with percentage.
-							level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+							level = 100 - (int)round(((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 						}
 						else
 						{
-							level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+							level = (int)round((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 						}
-						if (pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+						if (level == 100)
 						{
 							szSwitchCmd = "on";
-							level = 100;
 						}
 					}
 				}
@@ -2797,11 +2796,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				)
 			{
 				// invert level for inverted blinds with percentage.
-				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+				level = 100 - (int)round(((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
 			else
 			{
-				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+				level = (int)round((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
 			if ((sSwitchType == STYPE_Blinds ||
 				sSwitchType == STYPE_BlindsInverted ||
@@ -2809,10 +2808,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				sSwitchType == STYPE_BlindsPercentageInverted ||
 				sSwitchType == STYPE_BlindsPercentageInvertedWithStop ||
 				sSwitchType == STYPE_BlindsPercentageWithStop) &&
-				pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+				level == 100)
 			{
 				szSwitchCmd = "on";
-				level = 100;
 			}
 		}
 		if (!root["color"].empty())
@@ -2902,9 +2900,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szSwitchCmd = "off";
 			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->payload_lock)
 				szSwitchCmd = "on";
-			else if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+			else if (pSensor->component_type == "cover" && level == 100)
 			{
-				level = 100;
 				szSwitchCmd = "on";
 			}
 			else
@@ -2913,8 +2910,6 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "off";
 				else {
 					szSwitchCmd = "Set Level";
-					if (level > 100)
-						level = 100;
 				}
 			}
 		}
@@ -2936,16 +2931,15 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				)
 			{
 				// invert level for inverted blinds with percentage.
-				level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+				level = 100 - (int)round( ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
 			}
 			else
 			{
-				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+				level = (int)round((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
 
-			if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+			if (pSensor->component_type == "cover" && level == 100)
 			{
-				level = 100;
 				szSwitchCmd = "on";
 			}
 		}
