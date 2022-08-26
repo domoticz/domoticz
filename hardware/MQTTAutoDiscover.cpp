@@ -2436,7 +2436,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	pSensor->subType = sSwitchGeneralSwitch;
 	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 
-	std::string szOnOffValue = pSensor->last_value;
+	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
 	int switchType = STYPE_OnOff;
 	std::string szSensorName = pSensor->name;
@@ -2605,7 +2605,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		pSensor->devUnit = atoi(pSensor->last_value.c_str());
 		switchType = STYPE_PushOn;
 		szSensorName += "_" + pSensor->last_value;
-		szOnOffValue = "on";
+		szSwitchCmd = "on";
 	}
 	else if (pSensor->object_id.find("battery") != std::string::npos)
 	{
@@ -2615,7 +2615,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else if (pSensor->component_type == "button")
 	{
 		switchType = STYPE_PushOn;
-		szOnOffValue = "on";
+		szSwitchCmd = "on";
 	}
 
 	std::vector<std::vector<std::string>> result;
@@ -2699,54 +2699,49 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 
 		if (!root["state"].empty())
-			szOnOffValue = root["state"].asString();
+			szSwitchCmd = root["state"].asString();
 		else if (!root["value"].empty())
 		{
-			szOnOffValue = root["value"].asString();
-			if (is_number(szOnOffValue))
+			szSwitchCmd = root["value"].asString();
+			if (is_number(szSwitchCmd))
 			{
 				//must be a level
-				level = atoi(szOnOffValue.c_str());
-				if (level > 0)
-				{
-					if (level < 99)
-						szOnOffValue = "Set Level";
-					else
-						szOnOffValue = "on";
-				}
+				level = atoi(szSwitchCmd.c_str());
+				if (level == 0)
+					szSwitchCmd = "off";
+				else if (level <= 99)
+					szSwitchCmd = "Set Level";
 				else
-					szOnOffValue = "off";
+					szSwitchCmd = "on";
 
 				// For cover use the value as position
 				if (pSensor->component_type == "cover")
 				{
 					if (level == pSensor->position_open)
-						szOnOffValue = "on";
+						szSwitchCmd = "on";
 					else if (level == pSensor->position_closed)
-						szOnOffValue = "off";
+						szSwitchCmd = "off";
 					else
 					{
-						szOnOffValue = "Set Level";
+						szSwitchCmd = "Set Level";
 						// recalculate level to make relative to min/maxpositions
-						if (pSensor->component_type == "cover") {
-							if (
-								(sSwitchType == STYPE_BlindsInverted)
-								|| (sSwitchType == STYPE_BlindsPercentageInverted)
-								|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-								)
-							{
-								// invert level for inverted blinds with percentage.
-								level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
-							}
-							else
-							{
-								level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
-							}
-							if (pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
-							{
-								szOnOffValue = "on";
-								level = 100;
-							}
+						if (
+							(sSwitchType == STYPE_BlindsInverted)
+							|| (sSwitchType == STYPE_BlindsPercentageInverted)
+							|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+							)
+						{
+							// invert level for inverted blinds with percentage.
+							level = (int)(100 - ((100.0 / (pSensor->position_open - pSensor->position_closed)) * level));
+						}
+						else
+						{
+							level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
+						}
+						if (pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
+						{
+							szSwitchCmd = "on";
+							level = 100;
 						}
 					}
 				}
@@ -2764,25 +2759,25 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		}
 		if (!root["brightness"].empty())
 		{
-			double dLevel = (100.0 / 255.0) * root["brightness"].asInt();
-			level = (int)dLevel;
+			float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
+			level = (int)round(dLevel);
 			if (
-				(szOnOffValue != pSensor->payload_on)
-				&& (szOnOffValue != pSensor->payload_off))
+				(szSwitchCmd != pSensor->payload_on)
+				&& (szSwitchCmd != pSensor->payload_off))
 			{
-				szOnOffValue = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
+				szSwitchCmd = (level > 0) ? pSensor->payload_on : pSensor->payload_off;
 			}
 		}
 		if (!root["position"].empty())
 		{
 			level = root["position"].asInt();
 			if (level == pSensor->position_open)
-				szOnOffValue = "on";
+				szSwitchCmd = "on";
 			else if (level == pSensor->position_closed)
-				szOnOffValue = "off";
+				szSwitchCmd = "off";
 			else
 			{
-				szOnOffValue = "Set Level";
+				szSwitchCmd = "Set Level";
 			}
 			// Make level relative to 100.
 			if (
@@ -2798,15 +2793,15 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
-			if (   (sSwitchType ==  STYPE_Blinds ||
-					sSwitchType == STYPE_BlindsInverted ||
-					sSwitchType == STYPE_BlindsPercentage ||
-					sSwitchType == STYPE_BlindsPercentageInverted ||
-					sSwitchType == STYPE_BlindsPercentageInvertedWithStop ||
-					sSwitchType == STYPE_BlindsPercentageWithStop) && 
+			if ((sSwitchType == STYPE_Blinds ||
+				sSwitchType == STYPE_BlindsInverted ||
+				sSwitchType == STYPE_BlindsPercentage ||
+				sSwitchType == STYPE_BlindsPercentageInverted ||
+				sSwitchType == STYPE_BlindsPercentageInvertedWithStop ||
+				sSwitchType == STYPE_BlindsPercentageWithStop) &&
 				pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
 			{
-				szOnOffValue = "on";
+				szSwitchCmd = "on";
 				level = 100;
 			}
 		}
@@ -2881,46 +2876,46 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else
 	{
 		//not json
-		if (is_number(szOnOffValue))
+		if (is_number(szSwitchCmd))
 		{
 			//must be a level
-			level = atoi(szOnOffValue.c_str());
+			level = atoi(szSwitchCmd.c_str());
 			if (pSensor->component_type == "cover" && level == pSensor->position_closed)
-				szOnOffValue = "off";
+				szSwitchCmd = "off";
 			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
-				szOnOffValue = "on";
-			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_off)
-				szOnOffValue = "off";
-			else if (pSensor->component_type == "binary_sensor" && szOnOffValue == pSensor->payload_on)
-				szOnOffValue = "on";
-			else if (pSensor->component_type == "lock" && szOnOffValue == pSensor->payload_unlock)
-				szOnOffValue = "off";
-			else if (pSensor->component_type == "lock" && szOnOffValue == pSensor->payload_lock)
-				szOnOffValue = "on";
+				szSwitchCmd = "on";
+			else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_off)
+				szSwitchCmd = "off";
+			else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_on)
+				szSwitchCmd = "on";
+			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->payload_unlock)
+				szSwitchCmd = "off";
+			else if (pSensor->component_type == "lock" && szSwitchCmd == pSensor->payload_lock)
+				szSwitchCmd = "on";
 			else if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
 			{
 				level = 100;
-				szOnOffValue = "on";
-			}
-			else if (level > 0)
-			{
-				if (level != 100)
-				{
-					szOnOffValue = "Set Level";
-				}
-				else
-					szOnOffValue = "on";
+				szSwitchCmd = "on";
 			}
 			else
-				szOnOffValue = "off";
+			{
+				if (level == 0)
+					szSwitchCmd = "off";
+				else {
+					szSwitchCmd = "Set Level";
+					if (level > 100)
+						level = 100;
+				}
+			}
 		}
 
 		// COVERS: Always recalculate to make level relative to 100 and invert when needed
-		if (pSensor->component_type == "cover") {
+		if (pSensor->component_type == "cover")
+		{
 			// ensure the level is correct when we receive "on"/"off" in the payload
-			if (szOnOffValue == "on")
+			if (szSwitchCmd == "on")
 				level = pSensor->position_open;
-			else if (szOnOffValue == "off")
+			else if (szSwitchCmd == "off")
 				level = pSensor->position_closed;
 
 			// COVERS: Always recalculate to make level relative to 100 and invert when needed
@@ -2937,11 +2932,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				level = (int)((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 			}
-			
+
 			if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99)
 			{
 				level = 100;
-				szOnOffValue = "on";
+				szSwitchCmd = "on";
 			}
 		}
 	}
@@ -2953,12 +2948,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	bool bHaveLevelChange = (slevel != level);
 
 
-	if (szOnOffValue == pSensor->payload_on)
+	if (szSwitchCmd == pSensor->payload_on)
 		bOn = true;
-	else if (szOnOffValue == pSensor->payload_off)
+	else if (szSwitchCmd == pSensor->payload_off)
 		bOn = false;
 	else
-		bOn = (szOnOffValue == "on") || (szOnOffValue == "ON") || (szOnOffValue == "true") || (szOnOffValue == "Set Level");
+		bOn = (szSwitchCmd == "on") || (szSwitchCmd == "ON") || (szSwitchCmd == "true") || (szSwitchCmd == "Set Level");
 
 	// check if we have a change, if not do not update it
 	if (
@@ -2984,13 +2979,19 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					return;
 			}
 		}
+/*
+		if (bOn && (level == 0) && (slevel != 0)) {
+			level = slevel; //set level to last level (can't have a light that is on with a level of 0)
+			szSwitchCmd = "Set Level";
+		}
+*/
 	}
 
 	sValue = std_format("%d", level);
 
 	if (pSensor->devType != pTypeColorSwitch)
 	{
-		if (szOnOffValue == "Set Level")
+		if (szSwitchCmd == "Set Level")
 		{
 			nValue = gswitch_sSetLevel;
 		}
@@ -3000,7 +3001,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else
 	{
 		if (
-			(szOnOffValue == "Set Level")
+			(szSwitchCmd == "Set Level")
 			|| (bOn && (level > 0) && (sValue != pSensor->payload_on))
 			)
 		{
@@ -3068,11 +3069,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				command = "Off";
 				szSendValue = pSensor->payload_off;
 			}
-			else if (level == 100)
-			{
-				command = "On";
-				szSendValue = pSensor->payload_on;
-			}
+			else if (level > 100)
+				level = 100;
 		}
 		else if ((command == "Set Color") && (pSensor->component_type == "light"))
 		{
@@ -3120,7 +3118,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if (command == "Set Level")
 		{
 			//root["state"] = pSensor->payload_on;
-			int slevel = (int)round((pSensor->brightness_scale / 99.0F) * level);
+			int slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
 
 			if (!pSensor->brightness_value_template.empty())
 			{
