@@ -729,9 +729,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		else if (!root["bri_stat_t"].empty())
 			pSensor->brightness_state_topic = root["bri_stat_t"].asString();
 		if (!root["brightness_scale"].empty())
+		{
 			pSensor->brightness_scale = root["brightness_scale"].asFloat();
+			pSensor->bReceived_brightness_scale = true;
+		}
 		else if (!root["bri_scl"].empty())
+		{
 			pSensor->brightness_scale = root["bri_scl"].asFloat();
+			pSensor->bReceived_brightness_scale = true;
+		}
 		if (!root["brightness_value_template"].empty())
 			pSensor->brightness_value_template = root["brightness_value_template"].asString();
 		else if (!root["bri_val_tpl"].empty())
@@ -2707,6 +2713,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				//must be a level
 				level = atoi(szSwitchCmd.c_str());
+
+				if (pSensor->bReceived_brightness_scale)
+					level = (int)round((100.0 / pSensor->brightness_scale) * level);
+
 				if (level == 0)
 					szSwitchCmd = "off";
 				else if (level <= 99)
