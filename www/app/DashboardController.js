@@ -768,12 +768,10 @@ define(['app', 'livesocket'], function (app) {
 							if (typeof dslider != 'undefined') {
 								dslider.slider("value", item.LevelInt);
 							}
-							else{
-								dslider = $(id + " #slider");
-								if (typeof dslider != 'undefined') {
-									dslider.slider("value", item.LevelInt);
-								}
-							}
+              dslider = $(id + " #slider");
+              if (typeof dslider != 'undefined') {
+                dslider.slider("value", item.LevelInt);
+              }
 						}
 						if (item.SwitchType === "Selector") {
 							var selector$ = $("#selector" + item.idx);
