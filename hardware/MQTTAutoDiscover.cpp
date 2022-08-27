@@ -731,12 +731,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["brightness_scale"].empty())
 		{
 			pSensor->brightness_scale = root["brightness_scale"].asFloat();
-			pSensor->bReceived_brightness_scale = true;
+			pSensor->bHave_brightness_scale = true;
 		}
 		else if (!root["bri_scl"].empty())
 		{
 			pSensor->brightness_scale = root["bri_scl"].asFloat();
-			pSensor->bReceived_brightness_scale = true;
+			pSensor->bHave_brightness_scale = true;
 		}
 		if (!root["brightness_value_template"].empty())
 			pSensor->brightness_value_template = root["brightness_value_template"].asString();
@@ -846,7 +846,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->state_unlocked = root["stat_unlocked"].asString();
 
 		if (!root["brightness"].empty())
+		{
 			pSensor->bBrightness = (root["brightness"].asString() == "true");
+			if (pSensor->bBrightness)
+				pSensor->bHave_brightness_scale = true;
+		}
 
 		if (!root["rgb_value_template"].empty())
 			pSensor->rgb_value_template = root["rgb_value_template"].asString();
@@ -2714,7 +2718,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				//must be a level
 				level = atoi(szSwitchCmd.c_str());
 
-				if (pSensor->bReceived_brightness_scale)
+				if (pSensor->bHave_brightness_scale)
 					level = (int)round((100.0 / pSensor->brightness_scale) * level);
 
 				if (level == 0)
@@ -2910,7 +2914,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					szSwitchCmd = "off";
 				else {
 					szSwitchCmd = "Set Level";
-					if (pSensor->bReceived_brightness_scale)
+					if (pSensor->bHave_brightness_scale)
 						level = (int)round((100.0 / pSensor->brightness_scale) * level);
 				}
 			}
@@ -3125,7 +3129,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		{
 			//root["state"] = pSensor->payload_on;
 			int slevel = level;
-			if (pSensor->bReceived_brightness_scale)
+			if (pSensor->bHave_brightness_scale)
 				slevel = (int)round((pSensor->brightness_scale / 100.F) * level);
 
 			if (!pSensor->brightness_value_template.empty())
