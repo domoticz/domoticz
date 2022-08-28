@@ -533,7 +533,7 @@ namespace Plugins {
 			Type = pTypeSecurity1;
 			SubType = sTypeDomoticzSecurity;
 		}
-		else if (sTypeName == "Set Point")
+		else if (sTypeName == "Set Point" || sTypeName == "Setpoint" || sTypeName == "Thermostat")
 		{
 			Type = pTypeThermostat;
 			SubType = sTypeThermSetpoint;
