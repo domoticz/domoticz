@@ -53,6 +53,7 @@
 
 extern std::string szUserDataFolder;
 extern std::string szPyVersion;
+extern MainWorker m_mainworker;
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -90,9 +91,6 @@ namespace Plugins {
 			_log.Log(LOG_STATUS, "PluginSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
 			return false;
 		}
-
-		// Pull UI elements from plugins and create manifest map in memory
-		BuildManifest();
 
 		m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 		SetThreadName(m_thread->native_handle(), "PluginMgr");
@@ -152,6 +150,9 @@ namespace Plugins {
 			}
 
 			m_InitialPythonThread = PyEval_SaveThread();
+
+			// Pull UI elements from plugins and create manifest map in memory
+			BuildManifest();
 
 			m_bEnabled = true;
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s', %d plugin definitions loaded.", sVersion.c_str(), (int)m_PluginXml.size());
@@ -249,6 +250,140 @@ namespace Plugins {
 							std::ifstream readFile(plugin_File.c_str());
 							bool bFound = false;
 							while (getline(readFile, line)) {
+								if (line.find("def get_plugin_description():") != std::string::npos)
+								{
+									//continue;
+									PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
+									PyThreadState* m_PyInterpreter = Py_NewInterpreter();
+									if (!m_PyInterpreter)
+									{
+										_log.Log(LOG_ERROR, "Description parser: failed to create interpreter.");
+										PyEval_SaveThread();
+										continue;
+									}
+
+
+									// Prepend plugin directory to path so that python will search it early when importing
+#ifdef WIN32
+									std::wstring sSeparator = L";";
+#else
+									std::wstring sSeparator = L":";
+#endif
+									std::wstringstream ssPath;
+									CPluginSystem Plugins;
+
+									ssPath << plugin_Dir.c_str();
+
+									std::wstring sPath = ssPath.str() + sSeparator;
+									sPath += Py_GetPath();
+
+									try
+									{
+										//
+										//	Python loads the 'site' module automatically and adds extra search directories for module loading
+										//	This code makes the plugin framework function the same way
+										//
+										PyNewRef	pSiteModule = PyImport_ImportModule("site");
+										if (!pSiteModule)
+										{
+											_log.Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", "tmp");
+										}
+										else
+										{
+											PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pSiteModule, "getsitepackages");
+											if (pFunc && PyCallable_Check(pFunc))
+											{
+												PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
+												if (!pSites)
+												{
+													
+												}
+												else
+													for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+													{
+														PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
+														if (pSite.IsString())
+														{
+															std::wstringstream ssPath;
+															ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
+															sPath += sSeparator + ssPath.str();
+														}
+													}
+											}
+										}
+									}
+									catch (...)
+									{
+										_log.Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", "tmp");
+										PyErr_Clear();
+									}
+
+									// Update the path itself
+									PySys_SetPath((wchar_t*)sPath.c_str());
+
+									try
+									{
+										//
+										//	Load the 'faulthandler' module to get a python stackdump during a segfault
+										//
+										PyNewRef	pFaultModule = PyImport_ImportModule("faulthandler");
+										if (!pFaultModule)
+										{
+											_log.Log(LOG_ERROR, "(%s) failed to load 'faulthandler' module, continuing.", "tmp");
+										}
+										else
+										{
+											PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "is_enabled");
+											if (pFunc && PyCallable_Check(pFunc))
+											{
+												PyNewRef	pRetObj = PyObject_CallObject(pFunc, nullptr);
+												if (!pRetObj.IsTrue())
+												{
+													PyNewRef	pFunc = PyObject_GetAttrString((PyObject*)pFaultModule, "enable");
+													if (pFunc && PyCallable_Check(pFunc))
+													{
+														PyNewRef pRetObj = PyObject_CallObject(pFunc, nullptr);
+													}
+												}
+											}
+										}
+									}
+									catch (...)
+									{
+										_log.Log(LOG_ERROR, "(%s) exception loading 'faulthandler' module, continuing.", "tmp");
+										PyErr_Clear();
+									}
+
+									try
+									{
+										PyObject* m_PyModule = PyImport_ImportModule("plugin");
+										if (!m_PyModule)
+										{
+											_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", "tmp", sPath.c_str());
+											PyEval_SaveThread();
+											continue;
+										}
+
+										PyObject* myFunction = PyObject_GetAttrString(m_PyModule, (char*)"get_plugin_description");
+										PyObject* myResult = PyObject_CallObject(myFunction, nullptr);
+
+										sXML = std::string(PyUnicode_AsUTF8(myResult)) + '\n';
+										break;
+
+									}
+									catch (...)
+									{
+										_log.Log(LOG_ERROR, "(%s) exception loading 'plugin.py', Python Path used was '%S'.", "tmp", sPath.c_str());
+										PyErr_Clear();
+									}
+
+									/*if ((result = PyObject_CallFunction(func, NULL))) {
+										Py_DECREF(result);
+									}
+									else {
+										PyErr_Print();
+									}*/
+								}
 								if (!bFound && (line.find("<plugin") != std::string::npos))
 									bFound = true;
 								if (bFound)
