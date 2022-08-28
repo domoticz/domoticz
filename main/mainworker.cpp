@@ -11514,11 +11514,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	{
 		if (switchcmd == "Open")
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "Off" : "On";
+			switchcmd = "Off";
 		}
 		else if (switchcmd.find("Close") != std::string::npos)
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "On" : "Off";
+			switchcmd = "On";
 		}
 	}
 	else if (switchtype == STYPE_BlindsInverted
@@ -11528,11 +11528,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	{
 		if (switchcmd == "Open")
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "On" : "Off";
+			switchcmd = "On";
 		}
 		else if (switchcmd.find("Close") != std::string::npos)
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "Off" : "On";
+			switchcmd = "Off";
 		}
 	}
 
