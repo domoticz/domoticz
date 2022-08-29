@@ -31,6 +31,7 @@
                 <option label="Connections+Queue" value="144"/>
                 <option label="All" value="-1"/>
             </options>
+        </param>
     </params>
 </plugin>
 """
