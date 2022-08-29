@@ -64,8 +64,15 @@ https://www.domoticz.com/wiki/Installing_and_running_Domoticz_on_a_Raspberry_PI
   vcpkg.exe integrate install
 ```
 
-- You should now be able to compile Domoticz with Visual Studio
-- Make sure to check the projects configuration properties for Debugging/Working Directory, this should be set to "$(ProjectDir)/.."
+- To compile Domoticz with Visual Studio choose Win32 configuration (Debug or Release)
+- Set the projects configuration properties for Debugging/Working Directory. 
+`Solution Explorer` -> `domoticz` -> `Properties` -> `Debugging` -> `Working Directory` should be set to 
+```
+"$(ProjectDir)/.."
+```
+- Optional: Python support
+  - Install Python version x32 downloaded from the official web: www.python.org
+  - Add path to the project: `Solution Explorer` -> `domoticz` -> `Properties` -> `Linker` -> `General` -> `Additional Library Directories` -> add `{path_to_python_install_dir}\libs`
 
 ### Synology
 
