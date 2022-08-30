@@ -11466,8 +11466,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
+	bool bIsBlinds = (switchtype == STYPE_Blinds
+		|| switchtype == STYPE_BlindsPercentage
+		|| switchtype == STYPE_BlindsPercentageWithStop
+		|| switchtype == STYPE_VenetianBlindsEU
+		|| switchtype == STYPE_VenetianBlindsUS
+		|| switchtype == STYPE_BlindsInverted
+		|| switchtype == STYPE_BlindsPercentageInverted
+		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
+		);
+
 	// If dimlevel is 0 or no dimlevel, turn switch off
-	if (level <= 0 && switchcmd == "Set Level")
+	if ((level <= 0 && switchcmd == "Set Level") && (!bIsBlinds))
 		switchcmd = "Off";
 
 	//when level is invalid or command is "On", replace level with "LastLevel"
@@ -11486,24 +11496,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	// TODO: Something smarter if level is not valid?
 	level = std::max(level, 0);
 
-	if (switchtype == STYPE_Blinds
-		|| switchtype == STYPE_BlindsPercentage
-		|| switchtype == STYPE_BlindsPercentageWithStop
-		|| switchtype == STYPE_VenetianBlindsEU
-		|| switchtype == STYPE_VenetianBlindsUS
-		|| switchtype == STYPE_BlindsInverted
-		|| switchtype == STYPE_BlindsPercentageInverted
-		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
-		)
+	if (bIsBlinds)
 	{
 		if (
 			(switchcmd == "Off")
-			|| (switchcmd == "Set Level" && level == 0)
+			|| ((switchcmd == "Set Level" && level == 0) && (pHardware->HwdType != HTYPE_MQTTAutoDiscovery))
 			)
 			switchcmd = "Open";
 		else if (
 			(switchcmd == "On")
-			|| (switchcmd == "Set Level" && level == 100)
+			|| ((switchcmd == "Set Level" && level == 100) && (pHardware->HwdType != HTYPE_MQTTAutoDiscovery))
 			)
 			switchcmd = "Close";
 	}
@@ -11517,11 +11519,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	{
 		if (switchcmd == "Open")
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "Off" : "On";
+			switchcmd = "Off";
 		}
 		else if (switchcmd.find("Close") != std::string::npos)
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "On" : "Off";
+			switchcmd = "On";
 		}
 	}
 	else if (switchtype == STYPE_BlindsInverted
@@ -11531,11 +11533,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	{
 		if (switchcmd == "Open")
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "On" : "Off";
+			switchcmd = "On";
 		}
 		else if (switchcmd.find("Close") != std::string::npos)
 		{
-			switchcmd = (pHardware->HwdType != HTYPE_MQTTAutoDiscovery) ? "Off" : "On";
+			switchcmd = "Off";
 		}
 	}
 
