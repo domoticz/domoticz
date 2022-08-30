@@ -1567,6 +1567,7 @@ void MainWorker::ParseRFXLogFile()
 void MainWorker::Do_Work()
 {
 	int second_counter = 0;
+	int minute_counter = 0;
 	int heartbeat_counter = 0;
 	while (!IsStopRequested(500))
 	{
@@ -1670,6 +1671,7 @@ void MainWorker::Do_Work()
 
 		if (ltime.tm_min != m_ScheduleLastMinute)
 		{
+			minute_counter++;
 			if (difftime(atime, m_ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
 			{
 				m_ScheduleLastMinuteTime = atime;
@@ -1699,6 +1701,11 @@ void MainWorker::Do_Work()
 					m_bForceLogNotificationCheck = false;
 					HandleLogNotifications();
 				}
+			}
+			//Check for updates every 12 hours (every 720 seconds)
+			if (minute_counter % 720 == 0)
+			{
+				IsUpdateAvailable(true);
 			}
 		}
 		if (ltime.tm_hour != m_ScheduleLastHour)
@@ -1736,10 +1743,6 @@ void MainWorker::Do_Work()
 					}
 				}
 #endif
-				if ((ltime.tm_hour == 5) || (ltime.tm_hour == 17))
-				{
-					IsUpdateAvailable(true);//check for update
-				}
 				HandleAutomaticBackups();
 			}
 		}
