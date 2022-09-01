@@ -5307,8 +5307,8 @@ uint64_t CSQLHelper::UpdateValueInt(
 				)
 			{
 				if (
-					(switchtype != STYPE_BlindsPercentageInverted)
-					&& (switchtype != STYPE_BlindsPercentageInvertedWithStop)
+					(switchtype == STYPE_BlindsPercentage)
+					|| (switchtype == STYPE_BlindsPercentageInverted)
 					)
 				{
 					if (nValue == light2_sOn)
@@ -5316,7 +5316,10 @@ uint64_t CSQLHelper::UpdateValueInt(
 					else if (nValue == light2_sOff)
 						llevel = 0;
 				}
-				else
+				else if (
+					(switchtype == STYPE_BlindsPercentageWithStop)
+					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+					)
 				{
 					if (nValue == light2_sOn)
 						llevel = 0;
