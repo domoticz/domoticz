@@ -5070,17 +5070,17 @@ uint64_t CSQLHelper::UpdateValueInt(
 			if (powerAndEnergyBeforeUpdate.size() == 2)
 			{
 				//we need to use atof here because some users seem to have a illegal sValue in the database that causes std::stof to crash
-				float powerDuringInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[0].c_str()));
-				float energyUpToInterval = static_cast<float>(atof(powerAndEnergyBeforeUpdate[1].c_str()));
-				float energyDuringInterval = static_cast<float>(powerDuringInterval * intervalSeconds / 3600);
-				float energyAfterInterval = static_cast<float>(energyUpToInterval + energyDuringInterval);
+				double powerDuringInterval = atof(powerAndEnergyBeforeUpdate[0].c_str());
+				double energyUpToInterval = atof(powerAndEnergyBeforeUpdate[1].c_str());
+				double energyDuringInterval = powerDuringInterval * intervalSeconds / 3600;
+				double energyAfterInterval = energyUpToInterval + energyDuringInterval;
 				std::vector<std::string> powerAndEnergyUpdate;
 				StringSplit(sValue, ";", powerAndEnergyUpdate);
 				if (!powerAndEnergyUpdate.empty())
 				{
 					const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
                     char sValueUpdate[100];
-                    sprintf(sValueUpdate, "%s;%.1f", powerUpdate, energyAfterInterval);
+                    sprintf(sValueUpdate, "%s;%.3f", powerUpdate, energyAfterInterval);
 					sValue = sValueUpdate;
 				}
 				else
