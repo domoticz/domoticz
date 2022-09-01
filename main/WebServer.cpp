@@ -8307,7 +8307,7 @@ namespace http
 			}
 			else
 			{
-				sprintf(szOrderBy, "A.[Order],A.%%s ASC");
+				sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 			}
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
@@ -8540,7 +8540,7 @@ namespace http
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
+						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					if (!hardwareid.empty())
