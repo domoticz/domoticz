@@ -5080,7 +5080,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 				{
 					const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
                     char sValueUpdate[100];
-                    sprintf(sValueUpdate, "%s;%.3f", powerUpdate, energyAfterInterval);
+                    sprintf(sValueUpdate, "%s;%.4f", powerUpdate, energyAfterInterval);
 					sValue = sValueUpdate;
 				}
 				else
