@@ -3000,11 +3000,11 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 			if (level == 100)
 			{
-				szSwitchCmd = (bIsInvertedType) ? "on": "off";
+				szSwitchCmd = "off";
 			}
 			else if (level == 0)
 			{
-				szSwitchCmd = (bIsInvertedType) ? "off" : "on";
+				szSwitchCmd = "on";
 			}
 		}
 	}
@@ -3363,11 +3363,32 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		Json::Value root;
 		std::string szValue;
 
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+		if (result.empty())
+			return false;
+		_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
+
+		bool bIsInvertedType = (
+			(sSwitchType == STYPE_BlindsInverted)
+			|| (sSwitchType == STYPE_BlindsPercentageInverted)
+			|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
+			);
+
 		//For MQTT Auto discovery Open/Closed/Level are reversed, so correct this here!
 		if (command == "On")
 			command = "Off";
 		else if (command == "Off")
 			command = "On";
+
+		//But if we use a Inverted blind... invert this
+		if (bIsInvertedType)
+		{
+			if (command == "On")
+				command = "Off";
+			else if (command == "Off")
+				command = "On";
+		}
 
 		if (command == "On")
 		{
@@ -3403,22 +3424,9 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			{
 				int iValue = (int)round(((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level));
 				// invert level for inverted blinds with percentage.
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-				if (!result.empty())
+				if (bIsInvertedType)
 				{
-					_eSwitchType sSwitchType = (_eSwitchType)atoi(result[0][0].c_str());
-
-					bool bIsInvertedType = (
-						(sSwitchType == STYPE_BlindsInverted)
-						|| (sSwitchType == STYPE_BlindsPercentageInverted)
-						|| (sSwitchType == STYPE_BlindsPercentageInvertedWithStop)
-						);
-
-					if (bIsInvertedType)
-					{
-						iValue = pSensor->position_open - iValue;
-					}
+					iValue = pSensor->position_open - iValue;
 				}
 
 				if (pSensor->set_position_template.empty())
