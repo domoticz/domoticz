@@ -12783,7 +12783,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 	tmeter.id2 = ID2;
 	tmeter.id3 = ID3;
 	tmeter.id4 = ID4;
-	tmeter.dunit = 1;
+	tmeter.dunit = Unit;
 	tmeter.temp = (m_sql.m_tempsign[0] != 'F') ? TempValue : static_cast<float>(ConvertToCelsius(TempValue));
 
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
