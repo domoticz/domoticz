@@ -18,10 +18,18 @@ local function setStateAttribute(state, device, _states)
 	local level;
 	
 	if (state and string.find(state, 'Open')) then
-		level = 0
+    if (string.find(device['hardwareType'], "MQTT Auto Discovery")) then
+      level = 100
+    else
+      level = 0
+    end
 	end
 	if (state and string.find(state, 'Closed')) then
-		level = 100
+    if (string.find(device['hardwareType'], "MQTT Auto Discovery")) then
+      level = 0
+    else
+      level = 100
+    end
 	end
 	if (state and string.find(state, 'Set Level')) then
 		level = string.match(state, '%d+') -- extract dimming value
