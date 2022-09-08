@@ -8,11 +8,12 @@ http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 Detailed information on the API can be found at
 http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
-Version 3.2
+Version 3.3
 Author Blaise Thauvin
 
 Version history
 
+3.3   07-09-2022 Added support for EcoDevices RT2 with Firmware 3.00.x
 3.2   12-04-2017 Added support for authentication when connecting to EcoDevices
 3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
 3.0   15-03-2017 Merge Teleinfo protocol processing with other hardware using common class CTeleinfoBase
@@ -421,7 +422,7 @@ void CEcoDevices::GetMeterRT2Details()
 	// XML format changes dramatically between firmware versions. This code was developped for version 2.0.29
 	using namespace TinyXPath;
 	std::string product = S_xpath_string(XMLdoc.RootElement(), "/response/product/text()").c_str();
-	if (product != "ECODEVICES RT 2")
+	if ((product != "ECODEVICES RT 2") || (product != "EcoDevices RT2"))
 	{
 		Log(LOG_ERROR, "Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", product.c_str());
 		return;
