@@ -1472,7 +1472,7 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const bool noclient)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime)
 		{
 			bool bOk = false;
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
@@ -1482,12 +1482,11 @@ namespace http {
 				hashedsecret = GenerateMD5Hash(clientsecret);
 			}
 			// Check if the clientID exists and we have a valid clientSecret for it (used when generating Tokens for registered clients)
-			// But with 'noclient', a normal registered user is assumed and checked (used for cases without registered clients. And clientid = user and should be the same)
 			for (const auto &my : myRequestHandler.Get_myWebem()->m_userpasswords)
 			{
 				if (my.Username == clientid)
 				{
-					if (my.userrights == URIGHTS_CLIENTID || noclient)	// The 'user' should have CLIENTID rights to be a real Client (and not a normal user) or we skip this check
+					if (my.userrights == URIGHTS_CLIENTID)	// The 'user' should have CLIENTID rights to be a real Client
 					{
 						if ((my.Password == hashedsecret) || (my.ActiveTabs == true))	// We 'abuse' the Users ActiveTabs as the Application Public boolean
 						{

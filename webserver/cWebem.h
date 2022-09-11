@@ -193,7 +193,7 @@ namespace http
 			std::string ExtractRequestPath(const std::string &original_request_path);
 			bool IsBadRequestPath(const std::string &original_request_path);
 
-			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const bool noclient = false);
+			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime);
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 
 			void ClearUserPasswords();
