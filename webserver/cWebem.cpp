@@ -1491,9 +1491,9 @@ namespace http {
 					{
 						if ((my.Password == hashedsecret) || (my.ActiveTabs == true))	// We 'abuse' the Users ActiveTabs as the Application Public boolean
 						{
+							_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
 							if (my.ActiveTabs)
 							{
-								_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s and PrivKey (%s)", user.c_str(), clientid.c_str(), my.PrivKey.c_str());
 								auto JWT = jwt::create()
 									.set_type("JWT")
 									.set_key_id(std::to_string(my.ID))
