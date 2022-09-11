@@ -72,6 +72,7 @@
 
 #define OAUTH2_AUTH_URL "/oauth2/v1/authorize"
 #define OAUTH2_TOKEN_URL "/oauth2/v1/token"
+#define OAUTH2_USERIDX_OFFSET 20000
 
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
@@ -1231,6 +1232,7 @@ namespace http
 
 						// Maybe we should only allow this when in a safe 'local' network? So check if request comes from local networks?
 						int iUser = -1;
+						int iClient = -1;
 						if (request::get_req_header(&req, "Authorization") != nullptr)
 						{
 							std::string auth_header = request::get_req_header(&req, "Authorization");
@@ -1251,17 +1253,26 @@ namespace http
 									{
 										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
 										{
-											if (m_pWebEm->GenerateJwtToken(jwttoken, user, passwd, user, exptime, true))
+											iClient = FindUser(client_id.c_str());
+											if (iClient > 0 && m_users[iClient].ID >= OAUTH2_USERIDX_OFFSET && m_users[iClient].userrights == URIGHTS_CLIENTID)
 											{
-												root["access_token"] = jwttoken;
-												root["token_type"] = "Bearer";
-												root["expires_in"] = exptime;
-												rep.status = reply::ok;
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime))
+												{
+													root["access_token"] = jwttoken;
+													root["token_type"] = "Bearer";
+													root["expires_in"] = exptime;
+													rep.status = reply::ok;
+												}
+												else
+												{
+													root["error"] = "server_error";
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+													iUser = -1;
+												}
 											}
 											else
 											{
-												root["error"] = "server_error";
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid client_id (%s)(%d) for user (%s) for Password grant flow!", client_id.c_str(), iClient, user.c_str());
 												iUser = -1;
 											}
 										}
@@ -8320,7 +8331,7 @@ namespace http
 					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 					if (bIsActive)
 					{
-						unsigned long ID = 20000 + (unsigned long)atol(sd[0].c_str());
+						unsigned long ID = OAUTH2_USERIDX_OFFSET + (unsigned long)atol(sd[0].c_str());
 						int bPublic = static_cast<int>(atoi(sd[2].c_str()));
 						std::string applicationname = sd[3];
 						std::string secret = sd[4];
