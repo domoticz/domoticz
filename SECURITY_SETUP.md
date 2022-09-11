@@ -136,6 +136,26 @@ Under 'Setup/More Options/Applications' it is possible to add/modify _applicatio
 
 The information from an application is used by the _IAM Service_ when handing out Tokens to _clients_ (applications) on behalf of an (authorized) User.
 
+### Generating _secrets_ for _clients_
+
+To be able to generate and sign secure _tokens_, each client needs to have some kind of _secret_.
+
+Such a _secret_ is used to digitally sign the tokendata and is also used to validate if a _token_ is valid.
+
+It is possibe to specify a _secret_ as a passphrase which will be used both for signing and validation. As both the IAM server (for signing) __and__ the UI (for validation) need to know the _secret_, this is not considered the most safe option.
+
+It is better to use a _public/private keypair_ where the private key is used to sign the _token_ (by the IAM server) while the public key is used to validate it (by the UI).
+
+At the moment of writing (2022), an RSA-PSS (Probabilistic) based keypair using 3072 bits key generation is considered quite safe for the coming years.
+
+See below how to generate such a keypair:
+
+```
+openssl genpkey -algorithm rsa-pss -pkeyopt rsa_keygen_bits:3072 > [_yourpemfile_].pem
+
+openssl rsa -pubout -in [_yourpemfile_].pem >> [_yourpemfile_].pem
+```
+
 ## Connecting Domoticz to the Internet/Cloud
 
 More and more, Users are looking into ways to control their _Automated Home_ from a distance. So preferably _through the Cloud_. So the Domoticz setup somehow needs to be _accesible_ outside the safe environment of the Home.
@@ -171,7 +191,7 @@ To see the details of what is supported by the current _IAM Service_, the specif
 
 ```JSON
 {
-    "authorization_endpoint": "https://localhost:8443/oauth2/v1/authorize",
+    "authorization_endpoint": "https://domoticz.local:8443/oauth2/v1/authorize",
     "code_challenge_methods_supported": [
         "S256"
     ],
@@ -180,15 +200,17 @@ To see the details of what is supported by the current _IAM Service_, the specif
         "password",
         "refresh_token"
     ],
-    "issuer": "https://localhost:8443/",
+    "issuer": "https://domoticz.local:8443/",
     "response_types_supported": [
         "code"
     ],
-    "token_endpoint": "https://localhost:8443/oauth2/v1/token",
+    "token_endpoint": "https://domoticz.local:8443/oauth2/v1/token",
     "token_endpoint_auth_methods_supported": [
         "client_secret_basic"
     ],
     "token_endpoint_auth_signing_alg_values_supported": [
+        "PS256",
+        "RS256",
         "HS256",
         "HS384",
         "HS512"
