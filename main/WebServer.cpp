@@ -1000,11 +1000,6 @@ namespace http
 										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Could not find an authenticated user for Client (%s)!", client_id.c_str());
 									}
 								}
-								else
-								{
-									iUser = iClient;	// Working with a regular user (not a registered client)
-									m_accesscodes[iUser].clientID = -1;
-								}
 								if (iUser != -1 && bAuthenticated)
 								{
 									code = GenerateMD5Hash(base64_encode(GenerateUUID()));
@@ -1110,7 +1105,7 @@ namespace http
 						if (!client_id.empty())
 						{
 							iClient = FindUser(client_id.c_str());
-							if (iClient >= 0)
+							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
 							{
 								// Let's find the user for this client with the right auth_code, if any
 								iUser = 0;
@@ -1133,11 +1128,10 @@ namespace http
 									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
 									unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
 									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-									bool noclient = (m_accesscodes[iUser].clientID == -1);
 
 									// For so-called (registered) 'public' clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
 									// So in those cases, we use the registered secret
-									if(!noclient && client_secret.empty())
+									if(client_secret.empty())
 									{
 										client_secret = m_users[iClient].Password;
 									}
@@ -1165,26 +1159,23 @@ namespace http
 											}
 											if(code_verifier.empty() || bPKCE)
 											{
-												std::string user = m_users[iUser].Username;
-
-												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, user, exptime, noclient))
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime))
 												{
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
 													root["expires_in"] = exptime;
-													if (!noclient)
-													{
-														std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
-														WebEmStoredSession refreshsession;
-														refreshsession.id = GenerateMD5Hash(refreshtoken);
-														refreshsession.auth_token = refreshtoken;
-														refreshsession.expires = mytime(nullptr) + refreshexptime;
-														refreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
-														StoreSession(refreshsession);
-														root["refresh_token"] = refreshtoken;
-														_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
-														m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
-													}
+
+													std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
+													WebEmStoredSession refreshsession;
+													refreshsession.id = GenerateMD5Hash(refreshtoken);
+													refreshsession.auth_token = refreshtoken;
+													refreshsession.expires = mytime(nullptr) + refreshexptime;
+													refreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
+													StoreSession(refreshsession);
+													root["refresh_token"] = refreshtoken;
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
+													m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
+
 													rep.status = reply::ok;
 													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
 												}
