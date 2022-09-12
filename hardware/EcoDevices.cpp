@@ -180,9 +180,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.PPOT = i_xpath_int(XMLdoc.RootElement(), "/response/PPOT/text()");
 	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(), "/response/ADPS/text()");
 
-	Debug(DEBUG_HARDWARE, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
-	Debug(DEBUG_HARDWARE, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
-	Debug(DEBUG_HARDWARE, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
+	Debug(DEBUG_HARDWARE, "OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	Debug(DEBUG_HARDWARE, "PTEC:    '%s'", teleinfo.PTEC.c_str());
+	Debug(DEBUG_HARDWARE, "DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
 }
 
 void CEcoDevices::GetMeterDetails()
@@ -227,7 +227,7 @@ void CEcoDevices::GetMeterDetails()
 	using namespace TinyXPath;
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
-	Debug(DEBUG_HARDWARE, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
+	Debug(DEBUG_HARDWARE, "XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
@@ -298,7 +298,7 @@ void CEcoDevices::GetMeterDetails()
 			Log(LOG_ERROR, "Error getting teleinfo1.xml from EcoDevices!");
 			return;
 		}
-		Debug(DEBUG_HARDWARE, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
+		Debug(DEBUG_HARDWARE, "XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
 
 		// Remove all "T1_"s from output as it prevents writing generic code for both counters
 		sub = "T1_";
@@ -321,7 +321,7 @@ void CEcoDevices::GetMeterDetails()
 			Log(LOG_ERROR, "Error getting teleinfo2.xml!");
 			return;
 		}
-		Debug(DEBUG_HARDWARE, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
+		Debug(DEBUG_HARDWARE, "XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
 		sub = "T2_";
@@ -419,7 +419,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/infofirm/text()").c_str();
 
-	Debug(DEBUG_HARDWARE, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
+	Debug(DEBUG_HARDWARE, "XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
@@ -488,9 +488,9 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
 	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 
-	Debug(DEBUG_HARDWARE, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
-	Debug(DEBUG_HARDWARE, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
-	Debug(DEBUG_HARDWARE, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
+	Debug(DEBUG_HARDWARE, "OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
+	Debug(DEBUG_HARDWARE, "PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
+	Debug(DEBUG_HARDWARE, "DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
 
 	ProcessTeleinfo(m_status.hostname, 1, m_teleinfo1);
 
