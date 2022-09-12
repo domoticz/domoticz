@@ -8,11 +8,13 @@ http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 Detailed information on the API can be found at
 http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
-Version 3.3
+Version 3.4
 Author Blaise Thauvin
 
 Version history
 
+3.4   12-09-2022 Fix support for EcoDevice RT2 with Firmware 3.00.xx and unify
+                 Debug support.
 3.3   07-09-2022 Added support for EcoDevices RT2 with Firmware 3.00.x
 3.2   12-04-2017 Added support for authentication when connecting to EcoDevices
 3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
@@ -39,10 +41,6 @@ Version history
 #include "../webserver/Base64.h"
 #include "../main/json_helper.h"
 #include <sstream>
-
-#ifdef _DEBUG
-#define DEBUG_EcoDevices
-#endif
 
 // Minimum EcoDevises firmware required
 #define MAJOR 1
@@ -182,11 +180,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.PPOT = i_xpath_int(XMLdoc.RootElement(), "/response/PPOT/text()");
 	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(), "/response/ADPS/text()");
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
-	Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
-	Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	Debug(DEBUG_HARDWARE, "PTEC:    '%s'", teleinfo.PTEC.c_str());
+	Debug(DEBUG_HARDWARE, "DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
 }
 
 void CEcoDevices::GetMeterDetails()
@@ -231,9 +227,7 @@ void CEcoDevices::GetMeterDetails()
 	using namespace TinyXPath;
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
@@ -304,9 +298,7 @@ void CEcoDevices::GetMeterDetails()
 			Log(LOG_ERROR, "Error getting teleinfo1.xml from EcoDevices!");
 			return;
 		}
-#ifdef DEBUG_EcoDevices
-		Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
-#endif
+		Debug(DEBUG_HARDWARE, "XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
 
 		// Remove all "T1_"s from output as it prevents writing generic code for both counters
 		sub = "T1_";
@@ -329,9 +321,7 @@ void CEcoDevices::GetMeterDetails()
 			Log(LOG_ERROR, "Error getting teleinfo2.xml!");
 			return;
 		}
-#ifdef DEBUG_EcoDevices
-		Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
-#endif
+		Debug(DEBUG_HARDWARE, "XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
 		sub = "T2_";
@@ -422,16 +412,14 @@ void CEcoDevices::GetMeterRT2Details()
 	// XML format changes dramatically between firmware versions. This code was developped for version 2.0.29
 	using namespace TinyXPath;
 	std::string product = S_xpath_string(XMLdoc.RootElement(), "/response/product/text()").c_str();
-	if ((product != "ECODEVICES RT 2") || (product != "EcoDevices RT2"))
+	if ((product != "ECODEVICES RT 2") && (product != "EcoDevices RT2"))
 	{
-		Log(LOG_ERROR, "Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", product.c_str());
+		Log(LOG_ERROR, "Product information found in XML file is not 'ECODEVICES RT 2' or 'EcoDevices RT2'as expected, but '%s'", product.c_str());
 		return;
 	}
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/infofirm/text()").c_str();
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
@@ -450,6 +438,10 @@ void CEcoDevices::GetMeterRT2Details()
 		return;
 	}
 
+	message = "EcoDevices RT2 version ";
+	message = message + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(release);
+	Debug(DEBUG_HARDWARE, "%s", message.c_str());
+
 	//Measured voltage on power supply
 	m_status.voltage = i_xpath_int(XMLdoc.RootElement(), "/response/vmesure/text()");
 	SendVoltageSensor(m_HwdID, 1, 255, (float)m_status.voltage, "EcoDevice RT2");
@@ -459,7 +451,11 @@ void CEcoDevices::GetMeterRT2Details()
 	{
 		sprintf(XMLLabel, "/response/etiquette%i/text()", i);
 		label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
-		sprintf(XMLLabel, "/response/etiquetteEC%i/text()", i);
+		if (major >= 3) 
+			sprintf(XMLLabel, "/response/etiquetteVal%i/text()", i);
+		else	
+			// EcoDevices RT2 v2
+			sprintf(XMLLabel, "/response/etiquetteECl%i/text()", i);
 		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		if (label.empty())
 			break;
@@ -492,11 +488,10 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
 	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
-	Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
-	Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
+	Debug(DEBUG_HARDWARE, "PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
+	Debug(DEBUG_HARDWARE, "DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
+
 	ProcessTeleinfo(m_status.hostname, 1, m_teleinfo1);
 
 	// 8 internal counters (postes) processing
@@ -511,10 +506,18 @@ void CEcoDevices::GetMeterRT2Details()
 			break;
 
 		fvalue1 = (float)atof(splitresults[0].c_str());
-		if (fvalue1 > 0)
-			SendMeterSensor(m_HwdID, i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
+		if (fvalue1 > 0) {
+			if (major >= 3)
+				SendMeterSensor(m_HwdID, (uint8_t)i, 255, fvalue1, m_status.hostname + " " + label);
+			else
+				SendMeterSensor(m_HwdID, (uint8_t)i, 255, fvalue1 / 1000, m_status.hostname + " " + label);
+		}
 		fvalue2 = (float)atof(splitresults[1].c_str());
-		if (fvalue2 > 0)
-			SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
+		if (fvalue2 > 0) {
+			if (major >= 3)
+				SendCustomSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label, "Eur");
+			else
+				SendWaterflowSensor(m_HwdID, (uint8_t)i, 255, fvalue2, m_status.hostname + " " + label);
+		}
 	}
 }
