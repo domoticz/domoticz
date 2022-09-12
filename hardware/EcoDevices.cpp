@@ -13,7 +13,8 @@ Author Blaise Thauvin
 
 Version history
 
-3.4   12-09-2022 Fix suport for EcoDevice RT2 with Firmware 3.00.xx
+3.4   12-09-2022 Fix support for EcoDevice RT2 with Firmware 3.00.xx and unify
+                 Debug support.
 3.3   07-09-2022 Added support for EcoDevices RT2 with Firmware 3.00.x
 3.2   12-04-2017 Added support for authentication when connecting to EcoDevices
 3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
@@ -40,10 +41,6 @@ Version history
 #include "../webserver/Base64.h"
 #include "../main/json_helper.h"
 #include <sstream>
-
-#ifdef _DEBUG
-#define DEBUG_EcoDevices
-#endif
 
 // Minimum EcoDevises firmware required
 #define MAJOR 1
@@ -183,11 +180,9 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.PPOT = i_xpath_int(XMLdoc.RootElement(), "/response/PPOT/text()");
 	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(), "/response/ADPS/text()");
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
-	Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
-	Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	Debug(DEBUG_HARDWARE, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+	Debug(DEBUG_HARDWARE, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
 }
 
 void CEcoDevices::GetMeterDetails()
@@ -232,9 +227,7 @@ void CEcoDevices::GetMeterDetails()
 	using namespace TinyXPath;
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/version/text()").c_str();
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
@@ -305,9 +298,7 @@ void CEcoDevices::GetMeterDetails()
 			Log(LOG_ERROR, "Error getting teleinfo1.xml from EcoDevices!");
 			return;
 		}
-#ifdef DEBUG_EcoDevices
-		Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
-#endif
+		Debug(DEBUG_HARDWARE, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
 
 		// Remove all "T1_"s from output as it prevents writing generic code for both counters
 		sub = "T1_";
@@ -330,9 +321,7 @@ void CEcoDevices::GetMeterDetails()
 			Log(LOG_ERROR, "Error getting teleinfo2.xml!");
 			return;
 		}
-#ifdef DEBUG_EcoDevices
-		Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
-#endif
+		Debug(DEBUG_HARDWARE, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
 		sub = "T2_";
@@ -430,9 +419,7 @@ void CEcoDevices::GetMeterRT2Details()
 	}
 	m_status.version = S_xpath_string(XMLdoc.RootElement(), "/response/infofirm/text()").c_str();
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
 
 	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0, m_status.version.find('.')).c_str());
@@ -451,11 +438,9 @@ void CEcoDevices::GetMeterRT2Details()
 		return;
 	}
 
-#ifdef DEBUG_EcoDevices
 	message = "EcoDevices RT2 version ";
 	message = message + std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(release);
-	Log(LOG_NORM, "%s", message.c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "%s", message.c_str());
 
 	//Measured voltage on power supply
 	m_status.voltage = i_xpath_int(XMLdoc.RootElement(), "/response/vmesure/text()");
@@ -503,11 +488,10 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
 	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 
-#ifdef DEBUG_EcoDevices
-	Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
-	Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
-	Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
-#endif
+	Debug(DEBUG_HARDWARE, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
+	Debug(DEBUG_HARDWARE, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
+	Debug(DEBUG_HARDWARE, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
+
 	ProcessTeleinfo(m_status.hostname, 1, m_teleinfo1);
 
 	// 8 internal counters (postes) processing
