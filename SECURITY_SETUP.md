@@ -142,19 +142,21 @@ To be able to generate and sign secure _tokens_, each client needs to have some 
 
 Such a _secret_ is used to digitally sign the tokendata and is also used to validate if a _token_ is valid.
 
-It is possibe to specify a _secret_ as a passphrase which will be used both for signing and validation. As both the IAM server (for signing) __and__ the UI (for validation) need to know the _secret_, this is not considered the most safe option.
+It is possibe to specify a _secret_ as a passphrase which will be used both for signing and validation. As both the IAM server (for signing) __and__ the Resource server (for validation) need to know this _secret_, it is not considered the most safe option.
 
-It is better to use a _public/private keypair_ where the private key is used to sign the _token_ (by the IAM server) while the public key is used to validate it (by the UI).
+It is better to use a _public/private keypair_ where the private key is used to sign the _token_ (by the IAM server) while the public key is used to validate it (by the Resource server).
 
 At the moment of writing (2022), an RSA-PSS (Probabilistic) based keypair using 3072 bits key generation is considered quite safe for the coming years.
 
-See below how to generate such a keypair:
+See below how to generate such a keypair (in PEM format):
 
 ```
 openssl genpkey -algorithm rsa-pss -pkeyopt rsa_keygen_bits:3072 > [_yourpemfile_].pem
 
 openssl rsa -pubout -in [_yourpemfile_].pem >> [_yourpemfile_].pem
 ```
+
+In cases where _token_ generation and signing is done by an external IAM service, only the _public key_ has to be made available for the _client_ in Domoticz.
 
 ## Connecting Domoticz to the Internet/Cloud
 
