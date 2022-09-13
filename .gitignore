@@ -18,6 +18,7 @@ CMakeFiles
 *.tlog
 CMakeCache.txt
 domoticz
+domoticztester
 !scripts/logrotate/domoticz
 stdafx.h.gch
 .DS_Store
@@ -25,6 +26,7 @@ stdafx.h.gch
 Config/OZW_Log.txt
 Config/zwscene.xml
 backups/
+build/
 domocookie.txt
 domoticz.exe
 nohup.out
