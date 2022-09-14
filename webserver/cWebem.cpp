@@ -1157,6 +1157,36 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
+		bool cWebem::CheckVHost(const request &req)
+		{
+			if (m_settings.vhostname.empty() || !m_settings.is_secure())	// Only do vhost checking for Secure (https) server
+				return true;
+
+			std::string sHost;
+			std::string vHost = m_settings.vhostname;
+
+			// When a vhostname is given, only respond to request addressed to it
+			const char *cHost = req.get_req_header(&req, "Host");
+			if (cHost != nullptr)
+			{
+				std::string scHost(cHost);
+				size_t iPos = scHost.find_first_of(":");
+				if (iPos != std::string::npos)
+					sHost = scHost.substr(0,iPos);
+				else
+					sHost = scHost;
+			}
+			else
+			{
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Unable to verify vhostname as Host header is missing in request!", GetPort().c_str());
+				return false;
+			}
+
+			bool bStatus = (sHost.compare(vHost) == 0);
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Checking vhostname (%s) with request (%s) = %d", GetPort().c_str(), vHost.c_str(), sHost.c_str(), bStatus);
+			return bStatus;
+		}
+
 		bool cWebem::FindAuthenticatedUser(std::string &user, const request &req, reply &rep)
 		{
 			bool bStatus = myRequestHandler.CheckUserAuthorization(user, req);
@@ -2194,6 +2224,12 @@ namespace http {
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
 			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
+
+			if(!myWebem->CheckVHost(req))
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
 
 			// Decode url to path.
 			std::string request_path;
