@@ -1532,6 +1532,7 @@ namespace http {
 									.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
 									.set_audience(clientid)
 									.set_subject(user)
+									.set_id(GenerateUUID())
 									.sign(jwt::algorithm::ps256{"", my.PrivKey, "", ""}, &base64url_encode);
 								jwttoken = JWT;
 							}
@@ -1546,6 +1547,7 @@ namespace http {
 									.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
 									.set_audience(clientid)
 									.set_subject(user)
+									.set_id(GenerateUUID())
 									.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
 								jwttoken = JWT;
 							}
