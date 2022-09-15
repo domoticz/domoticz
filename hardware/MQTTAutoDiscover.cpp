@@ -2949,8 +2949,6 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				szSwitchCmd = "off";
 			else if (pSensor->component_type == "cover" && level == pSensor->position_open)
 				szSwitchCmd = "on";
-			else if (pSensor->component_type == "cover" && level == pSensor->position_closed)
-				szSwitchCmd = "off";
 			else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_off)
 				szSwitchCmd = "off";
 			else if (pSensor->component_type == "binary_sensor" && szSwitchCmd == pSensor->payload_on)
