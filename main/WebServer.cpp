@@ -969,6 +969,10 @@ namespace http
 				{
 					if(!response_type.empty() && (response_type.compare("code") == 0 )) // || response_type.compare("token") == 0))
 					{
+						if(scope.find_first_of("openid") == std::string::npos)
+						{
+							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Missing 'openid' in scope (%s)! Not an OpenID Connect request, maybe just OAuth2?", scope.c_str());
+						}
 						int iClient = -1;
 						int iUser = -1;
 						if (!client_id.empty())
@@ -1004,6 +1008,7 @@ namespace http
 								{
 									code = GenerateMD5Hash(base64_encode(GenerateUUID()));
 									m_accesscodes[iUser].AuthCode = code;
+									m_accesscodes[iUser].AuthTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
 									m_accesscodes[iUser].RedirectUri = redirect_uri;
 									m_accesscodes[iUser].Scope = scope;
@@ -1126,6 +1131,7 @@ namespace http
 									std::string acRedirectUri = m_accesscodes[iUser].RedirectUri;
 									std::string acScope = m_accesscodes[iUser].Scope;
 									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
+									uint64_t AuthTime = m_accesscodes[iUser].AuthTime;
 									unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
 									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
@@ -1140,6 +1146,7 @@ namespace http
 									m_accesscodes[iUser].RedirectUri = "";
 									m_accesscodes[iUser].Scope = "";
 									m_accesscodes[iUser].clientID = -1;
+									m_accesscodes[iUser].AuthTime = 0;
 									m_accesscodes[iUser].ExpTime = 0;
 									m_accesscodes[iUser].CodeChallenge = "";
 
@@ -1159,7 +1166,13 @@ namespace http
 											}
 											if(code_verifier.empty() || bPKCE)
 											{
-												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime))
+												Json::Value jwtpayload;
+												jwtpayload["auth_time"] = AuthTime;
+												jwtpayload["preferred_username"] = m_users[iUser].Username;
+												jwtpayload["name"] = m_users[iUser].Username;
+												jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload))
 												{
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
@@ -1174,10 +1187,10 @@ namespace http
 													StoreSession(refreshsession);
 													root["refresh_token"] = refreshtoken;
 													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
-													m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
 
-													rep.status = reply::ok;
+													m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
 													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
+													rep.status = reply::ok;
 												}
 												else
 												{
@@ -1247,7 +1260,12 @@ namespace http
 											iClient = FindUser(client_id.c_str());
 											if (iClient > 0 && m_users[iClient].ID >= OAUTH2_USERIDX_OFFSET && m_users[iClient].userrights == URIGHTS_CLIENTID)
 											{
-												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime))
+												Json::Value jwtpayload;
+												jwtpayload["preferred_username"] = m_users[iUser].Username;
+												jwtpayload["name"] = m_users[iUser].Username;
+												jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime, jwtpayload))
 												{
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
@@ -1307,7 +1325,12 @@ namespace http
 									int iUser = std::atoi(strarray[1].c_str());
 									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found valid Refresh token (%s) (c:%d,u:%d)!", refresh_token.c_str(), iClient, iUser);
 
-									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime))
+									Json::Value jwtpayload;
+									jwtpayload["preferred_username"] = m_users[iUser].Username;
+									jwtpayload["name"] = m_users[iUser].Username;
+									jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload))
 									{
 										root["access_token"] = jwttoken;
 										root["token_type"] = "Bearer";

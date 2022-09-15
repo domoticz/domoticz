@@ -418,6 +418,7 @@ private:
 	{
 		int ID;
 		int clientID;
+		u_int64_t AuthTime;
 		unsigned long long ExpTime;
 		std::string UserName;
 		std::string AuthCode;
