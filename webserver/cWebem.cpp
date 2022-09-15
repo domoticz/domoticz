@@ -1502,7 +1502,7 @@ namespace http {
 			return 0;
 		}
 
-		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime)
+		bool cWebem::GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload)
 		{
 			bool bOk = false;
 			// Did we get a 'plain' clientsecret or an already MD5Hashed one?
@@ -1521,35 +1521,49 @@ namespace http {
 						if ((my.Password == hashedsecret) || (my.ActiveTabs == true))	// We 'abuse' the Users ActiveTabs as the Application Public boolean
 						{
 							_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
+							auto JWT = jwt::create()
+								.set_type("JWT")
+								.set_key_id(std::to_string(my.ID))
+								.set_issuer(m_DigistRealm)
+								.set_issued_at(std::chrono::system_clock::now())
+								.set_not_before(std::chrono::system_clock::now())
+								.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
+								.set_audience(clientid)
+								.set_subject(user)
+								.set_id(GenerateUUID());
+							if (!jwtpayload.empty())
+							{
+								for (auto const& id : jwtpayload.getMemberNames())
+								{
+									if(!(jwtpayload[id].isNull()))
+									{
+										if(jwtpayload[id].isNumeric())
+										{
+											double dVal(jwtpayload[id].asDouble());
+											JWT.set_payload_claim(id, picojson::value(dVal));
+										}
+										else if(jwtpayload[id].isString())
+										{
+											std::string sVal(jwtpayload[id].asString());
+											JWT.set_payload_claim(id, picojson::value(sVal));
+										}
+										else if(jwtpayload[id].isArray())
+										{
+											std::vector<std::string> aStrList;
+											aStrList.reserve(jwtpayload[id].size());
+											std::transform(jwtpayload[id].begin(), jwtpayload[id].end(), std::back_inserter(aStrList),[](const auto& s) { return s.asString(); });
+											JWT.set_payload_claim(id, jwt::claim(aStrList.begin(), aStrList.end()));
+										}
+									}
+								}
+							}
 							if (my.ActiveTabs)
 							{
-								auto JWT = jwt::create()
-									.set_type("JWT")
-									.set_key_id(std::to_string(my.ID))
-									.set_issuer(m_DigistRealm)
-									.set_issued_at(std::chrono::system_clock::now())
-									.set_not_before(std::chrono::system_clock::now())
-									.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
-									.set_audience(clientid)
-									.set_subject(user)
-									.set_id(GenerateUUID())
-									.sign(jwt::algorithm::ps256{"", my.PrivKey, "", ""}, &base64url_encode);
-								jwttoken = JWT;
+								jwttoken = JWT.sign(jwt::algorithm::ps256{"", my.PrivKey, "", ""}, &base64url_encode);
 							}
 							else
 							{
-								auto JWT = jwt::create()
-									.set_type("JWT")
-									.set_key_id(std::to_string(my.ID))
-									.set_issuer(m_DigistRealm)
-									.set_issued_at(std::chrono::system_clock::now())
-									.set_not_before(std::chrono::system_clock::now())
-									.set_expires_at(std::chrono::system_clock::now() + std::chrono::seconds{exptime})
-									.set_audience(clientid)
-									.set_subject(user)
-									.set_id(GenerateUUID())
-									.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
-								jwttoken = JWT;
+								jwttoken = JWT.sign(jwt::algorithm::hs256{my.Password}, &base64url_encode);
 							}
 							bOk = true;
 						}
