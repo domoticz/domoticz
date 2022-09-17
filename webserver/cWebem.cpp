@@ -1518,7 +1518,7 @@ namespace http {
 				{
 					if (my.userrights == URIGHTS_CLIENTID)	// The 'user' should have CLIENTID rights to be a real Client
 					{
-						if ((my.Password == hashedsecret) || (my.ActiveTabs == true))	// We 'abuse' the Users ActiveTabs as the Application Public boolean
+						if ((my.Password == hashedsecret) || (my.ActiveTabs == 1))	// We 'abuse' the Users ActiveTabs as the Application Public 'boolean'
 						{
 							_log.Debug(DEBUG_AUTH, "[JWT] Generate Token for %s using clientid %s (privKey %d)!", user.c_str(), clientid.c_str(), my.ActiveTabs);
 							auto JWT = jwt::create()

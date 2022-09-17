@@ -418,8 +418,8 @@ private:
 	{
 		int ID;
 		int clientID;
-		u_int64_t AuthTime;
-		unsigned long long ExpTime;
+		time_t AuthTime;
+		uint64_t ExpTime;
 		std::string UserName;
 		std::string AuthCode;
 		std::string Scope;
