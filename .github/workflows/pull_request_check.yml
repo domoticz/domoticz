@@ -109,7 +109,7 @@ jobs:
 
       # Packaging
       - name: package domoticz
-        if: ${{ false }}
+      # if: ${{ false }}
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
@@ -120,7 +120,7 @@ jobs:
       
       # Artifact upload
       - name: Upload artifacts
-        if: ${{ false }}
+      # if: ${{ false }}
         uses: actions/upload-artifact@v2
         with:
           name: domoticz_linux_x86_64-${{ github.event.issue.number }}-${{ github.sha }}
