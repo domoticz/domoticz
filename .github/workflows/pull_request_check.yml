@@ -34,13 +34,15 @@ jobs:
           sudo timedatectl set-timezone Europe/Amsterdam
           if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
             echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
-            echo "PRNUMBER=$(echo ${{ github.event.issue.number }})" >> $GITHUB_ENV
+            echo "PRNUMBER=$(echo ${PR_NR})" >> $GITHUB_ENV
           else
             echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
           fi
           buildnr=$(git rev-list HEAD --count)
           echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
+        env:
+          PR_NR: ${{ github.event.issue.number }}
 
       # install dependencies
       - name: dependencies
