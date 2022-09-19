@@ -15,6 +15,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  PR_NR: ${{ github.event.pull_request.number }}
+
 jobs:
   # This workflow contains a single job called "build"
   build:
@@ -32,17 +35,16 @@ jobs:
       - name: prepare environment
         run: |
           sudo timedatectl set-timezone Europe/Amsterdam
+          buildnr=$(git rev-list HEAD --count)
+          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
           if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
             echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${PR_NR})" >> $GITHUB_ENV
+            echo "Domoticz build for PR ${PR_NR}! Building version $(($buildnr + 2107)) from branch ${GITHUB_HEAD_REF}"
           else
             echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
           fi
-          buildnr=$(git rev-list HEAD --count)
-          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
-        env:
-          PR_NR: ${{ github.event.issue.number }}
 
       # install dependencies
       - name: dependencies
@@ -123,6 +125,6 @@ jobs:
       # if: ${{ false }}
         uses: actions/upload-artifact@v2
         with:
-          name: domoticz_linux_x86_64-${{ github.event.issue.number }}-${{ github.sha }}
+          name: domoticz_linux_x86_64-${{ github.event.pull_request.number }}-${{ github.run_number }}
           path: package/domoticz_linux_x86_64.tgz
           retention-days: 7
