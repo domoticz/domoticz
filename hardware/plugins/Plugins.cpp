@@ -1653,6 +1653,7 @@ namespace Plugins
 				Log(LOG_ERROR, "Transport '%s' does not support secure connections.", sTransport.c_str());
 			if (m_bDebug & PDM_CONNECTION)
 				Log(LOG_NORM, "Transport set to: '%s', %s.", sTransport.c_str(), sAddress.c_str());
+			ConnectionProtocol(pMess);
 			pConnection->pTransport = (CPluginTransport *)new CPluginTransportICMP(m_HwdID, pConnection, sAddress, sPort);
 		}
 		else

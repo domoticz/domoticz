@@ -1188,7 +1188,7 @@ namespace Plugins {
 
 		std::string		sData(Message->m_Buffer.begin(), Message->m_Buffer.end());
 		sData = sData.substr(iDataOffset, iTotalData - iDataOffset);
-		pObj = Py_BuildValue("y#", sData.c_str(), sData.length());
+		pObj = Py_BuildValue("s", sData.c_str(), sData.length());
 		if (PyDict_SetItemString(pDataDict, "Data", pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "ICMP", "Data", sData.c_str());
 

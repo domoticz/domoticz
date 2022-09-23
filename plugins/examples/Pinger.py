@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2017 - 2018
 #
 """
-<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.1.1">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.1.4>
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
@@ -70,16 +70,17 @@ class IcmpDevice:
             self.Close()
         self.icmpConn = Domoticz.Connection(Name=self.Address, Transport="ICMP/IP", Protocol="ICMP", Address=self.Address)
         self.icmpConn.Listen()
-    
+
     def Send(self):
         if (self.icmpConn == None):
             self.Open()
         else:
             self.icmpConn.Send("Domoticz")
-    
+
     def Close(self):
+        self.icmpConn.Disconnect()
         self.icmpConn = None
-    
+
 class BasePlugin:
     icmpConn = None
     icmpList = []
@@ -108,7 +109,7 @@ class BasePlugin:
             deviceLost = 1
         for Device in Devices:
             UpdateDevice(Device, Devices[Device].nValue, Devices[Device].sValue, deviceLost)
- 
+
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Log("Successful connect to: "+Connection.Address+" which is surprising because ICMP is connectionless.")
@@ -118,7 +119,7 @@ class BasePlugin:
 
     def onMessage(self, Connection, Data):
         Domoticz.Debug("onMessage called for connection: '"+Connection.Name+"'")
-        if Parameters["Mode6"] == "1":
+        if Parameters["Mode6"] != "0":
             DumpICMPResponseToLog(Data)
         if isinstance(Data, dict) and (Data["Status"] == 0):
             iUnit = -1
@@ -143,6 +144,7 @@ class BasePlugin:
             for Device in Devices:
                 if (("Name" in Devices[Device].Options) and (Devices[Device].Options["Name"] == Connection.Name)):
                     UpdateDevice(Device, 0, "Off", TimedOut)
+        self.icmpConn.Close()
         self.icmpConn = None
 
     def onHeartbeat(self):
@@ -151,12 +153,13 @@ class BasePlugin:
         # No response to previous heartbeat so mark as Off
         if (self.icmpConn != None):
             for Device in Devices:
-                if (("Name" in Devices[Device].Options) and (Devices[Device].Options["Name"] == self.icmpConn.Name)):
+                if (("Name" in Devices[Device].Options) and (Devices[Device].Options["Name"] == self.icmpConn.Address)):
                     Domoticz.Log("Device: '"+Devices[Device].Options["Name"]+"' address '"+self.icmpConn.Address+"' - No response.")
                     TimedOut = 0
                     if Parameters["Mode5"] == "True": TimedOut = 1
                     UpdateDevice(Device, 0, "Off", TimedOut)
                     break
+            self.icmpConn.Close()
             self.icmpConn = None
 
         Domoticz.Debug("Heartbeating '"+self.icmpList[self.nextDev]+"'")
@@ -186,7 +189,7 @@ def onHeartbeat():
     _plugin.onHeartbeat()
 
 def UpdateDevice(Unit, nValue, sValue, TimedOut):
-    # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
+    # Make sure that the Domoticz device still exists (they can be deleted) before updating it
     if (Unit in Devices):
         if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue) or (Devices[Unit].TimedOut != TimedOut):
             Devices[Unit].Update(nValue=nValue, sValue=str(sValue), TimedOut=TimedOut)
@@ -218,4 +221,4 @@ def DumpICMPResponseToLog(icmpList):
             else:
                 Domoticz.Log("--->'" + x + "':'" + str(icmpList[x]) + "'")
     else:
-        Domoticz.Log(Data.decode("utf-8", "ignore"))  # noqa: F821
+        Domoticz.Log(Data.decode("utf-8", "ignore"))
