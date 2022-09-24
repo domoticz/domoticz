@@ -7284,15 +7284,15 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			if (
 				(devType != pTypeAirQuality) &&
 				(devType != pTypeRFXSensor) &&
-				((devType != pTypeGeneral) && (subType != sTypeVisibility)) &&
-				((devType != pTypeGeneral) && (subType != sTypeDistance)) &&
-				((devType != pTypeGeneral) && (subType != sTypeSolarRadiation)) &&
-				((devType != pTypeGeneral) && (subType != sTypeVoltage)) &&
-				((devType != pTypeGeneral) && (subType != sTypeCurrent)) &&
-				((devType != pTypeGeneral) && (subType != sTypePressure)) &&
-				((devType != pTypeGeneral) && (subType != sTypeSoilMoisture)) &&
-				((devType != pTypeGeneral) && (subType != sTypeLeafWetness)) &&
-				((devType != pTypeGeneral) && (subType != sTypeSoundLevel)) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeVisibility))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeDistance))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeSolarRadiation))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeSoilMoisture))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeLeafWetness))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeVoltage))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeCurrent))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypePressure))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeSoundLevel))) &&
 				(devType != pTypeLux) &&
 				(devType != pTypeWEIGHT)
 				)
