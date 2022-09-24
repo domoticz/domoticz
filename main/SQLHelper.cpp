@@ -7293,7 +7293,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				|| ((devType == pTypeGeneral) && (subType == sTypeKwh))
 				)
 			{
-				result = safe_query("SELECT Value,Date FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
+				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
