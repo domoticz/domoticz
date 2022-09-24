@@ -7299,7 +7299,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					std::vector<std::string> sd = result[0];
 					result = safe_query(
 						"INSERT INTO Meter (DeviceRowID, Value) "
-						"VALUES ('%" PRIu64 "', '%q', '%q')",
+						"VALUES ('%" PRIu64 "', '%q')",
 						ID,
 						sd[0].c_str()
 					);
