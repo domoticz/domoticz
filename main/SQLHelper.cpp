@@ -7281,33 +7281,27 @@ void CSQLHelper::AddCalendarUpdateMeter()
 						    "VALUES ('%" PRIu64 "', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
 						    ID, total_min, total_max, avg_value, 0.0F, 0.0F, 0.0F, szDateStart);
 			}
+			//Insert the last (max) counter value into the meter table to get the "today" value correct.
 			if (
-				(devType != pTypeAirQuality) &&
-				(devType != pTypeRFXSensor) &&
-				((devType != pTypeGeneral) && (subType != sTypeVisibility)) &&
-				((devType != pTypeGeneral) && (subType != sTypeDistance)) &&
-				((devType != pTypeGeneral) && (subType != sTypeSolarRadiation)) &&
-				((devType != pTypeGeneral) && (subType != sTypeVoltage)) &&
-				((devType != pTypeGeneral) && (subType != sTypeCurrent)) &&
-				((devType != pTypeGeneral) && (subType != sTypePressure)) &&
-				((devType != pTypeGeneral) && (subType != sTypeSoilMoisture)) &&
-				((devType != pTypeGeneral) && (subType != sTypeLeafWetness)) &&
-				((devType != pTypeGeneral) && (subType != sTypeSoundLevel)) &&
-				(devType != pTypeLux) &&
-				(devType != pTypeWEIGHT)
+				(devType == pTypeRFXMeter)
+				|| (devType == pTypeP1Gas)
+				|| (devType == pTypeYouLess)
+				|| (devType == pTypeENERGY)
+				|| (devType == pTypePOWER)
+				|| ((devType == pTypeRego6XXValue) && (subType == sTypeRego6XXCounter))
+				|| ((devType == pTypeGeneral) && (subType == sTypeCounterIncremental))
+				|| ((devType == pTypeGeneral) && (subType == sTypeKwh))
 				)
 			{
 				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
 				if (!result.empty())
 				{
 					std::vector<std::string> sd = result[0];
-					//Insert the last (max) counter value into the meter table to get the "today" value correct.
 					result = safe_query(
-						"INSERT INTO Meter (DeviceRowID, Value, Date) "
-						"VALUES ('%" PRIu64 "', '%q', '%q')",
+						"INSERT INTO Meter (DeviceRowID, Value) "
+						"VALUES ('%" PRIu64 "', '%q')",
 						ID,
-						sd[0].c_str(),
-						szDateEnd
+						sd[0].c_str()
 					);
 				}
 			}
