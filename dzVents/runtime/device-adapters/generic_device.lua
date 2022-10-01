@@ -15,20 +15,41 @@ local function stateToBool(state, _states)
 end
 
 local function setStateAttribute(state, device, _states)
-	local level;
+	local level
+	
+	local blindsInverted = false
+	if (device['switchType'] and string.find(device['switchType'], "Inverted")) then
+    blindsInverted = true
+	end
 	
 	if (state and string.find(state, 'Open')) then
     if (string.find(device['hardwareType'], "MQTT Auto Discovery")) then
-      level = 100
+      if (blindsInverted == false) then
+        level =  100
+      else
+        level =  0
+      end
     else
-      level = 0
+      if (blindsInverted == false) then
+        level =  0
+      else
+        level =  100
+      end
     end
 	end
 	if (state and string.find(state, 'Closed')) then
     if (string.find(device['hardwareType'], "MQTT Auto Discovery")) then
-      level = 0
+      if (blindsInverted == false) then
+        level =  0
+      else
+        level =  100
+      end
     else
-      level = 100
+      if (blindsInverted == false) then
+        level =  100
+      else
+        level =  0
+      end
     end
 	end
 	if (state and string.find(state, 'Set Level')) then
