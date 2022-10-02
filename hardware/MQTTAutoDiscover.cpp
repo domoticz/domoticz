@@ -391,6 +391,7 @@ void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, 
 void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message* message)
 {
 	std::string topic = message->topic;
+	std::string org_topic(topic);
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	if (qMessage.empty())
@@ -1140,11 +1141,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	}
 	catch (const std::exception& e)
 	{
-		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s/message: %s", e.what(), topic.c_str(), qMessage.c_str());
+		Log(LOG_ERROR, "MQTT_Discovery (on_auto_discovery_message): Error: %s! (topic: %s/message: %s", e.what(), org_topic.c_str(), qMessage.c_str());
 	}
 	return;
 disovery_invaliddata:
-	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (Topic: %s, Message: %s)", topic.c_str(), qMessage.c_str());
+	Log(LOG_ERROR, "MQTT_Discovery: Invalid/Unhandled data received! (Topic: %s, Message: %s)", org_topic.c_str(), qMessage.c_str());
 }
 
 void MQTTAutoDiscover::ApplySignalLevelDevice(const _tMQTTASensor* pSensor)
