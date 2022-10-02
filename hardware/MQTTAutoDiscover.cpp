@@ -414,6 +414,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	std::string object_id;
 	std::string action;
 	std::string component;
+	bool ret;
 
 	if (qMessage.empty())
 		return;
@@ -443,7 +444,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 	if (!((strarray.size() == 3) || (strarray.size() == 4) || (strarray.size() == 5) || (strarray.size() == 6)))
 		goto disovery_invaliddata;
 
-	bool ret = ParseJSon(qMessage, root);
+	ret = ParseJSon(qMessage, root);
 	if ((!ret) || (!root.isObject()))
 	{
 		if (topic == "status")
