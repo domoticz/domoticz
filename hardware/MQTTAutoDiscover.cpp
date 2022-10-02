@@ -402,6 +402,9 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
 
+	if (topic.find("bridge") == 0)
+		return; //ignore all bridge messages
+
 	std::string component;
 	std::string node_id;
 	std::string object_id;
