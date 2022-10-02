@@ -164,6 +164,7 @@ private:
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
 private:
 	std::string m_TopicDiscoveryPrefix;
+	std::vector<std::string> m_allowed_components;
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;

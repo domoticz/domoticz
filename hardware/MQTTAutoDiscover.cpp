@@ -10,10 +10,26 @@
 #include "../notifications/NotificationHelper.h"
 #include <iostream>
 
+std::vector<std::string> allowed_components = {
+		"binary_sensor",
+		"button",
+		"climate",
+		"cover",
+		"device_automation",
+		"light",
+		"lock",
+		"number",
+		"select",
+		"sensor",
+		"switch"
+};
+
 MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const std::string& IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password,
 	const std::string& CAfilenameExtra, const int TLS_Version)
 	: MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilenameExtra, TLS_Version, (int)MQTTAutoDiscover::PT_none, std::string("Domoticz-MQTT-AutoDiscover") + GenerateUUID() + std::to_string(ID), true)
 {
+	m_allowed_components = std::vector<std::string>(allowed_components);
+
 	std::vector<std::string> strarray;
 	StringSplit(CAfilenameExtra, ";", strarray);
 	if (!strarray.empty())
@@ -387,12 +403,17 @@ void MQTTAutoDiscover::FixCommandTopicStateTemplate(std::string& command_topic, 
 	command_topic = command_topic.substr(0, pos);
 }
 
-
 void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message* message)
 {
 	std::string topic = message->topic;
 	std::string org_topic(topic);
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+
+	Json::Value root;
+	std::string node_id;
+	std::string object_id;
+	std::string action;
+	std::string component;
 
 	if (qMessage.empty())
 		return;
@@ -402,15 +423,25 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 	topic = topic.substr(m_TopicDiscoveryPrefix.size() + 1);
 
-	if (topic.find("bridge") == 0)
-		return; //ignore all bridge messages
-
-	std::string component;
-	std::string node_id;
-	std::string object_id;
-	std::string action;
 	std::vector<std::string> strarray;
-	Json::Value root;
+	StringSplit(topic, "/", strarray);
+	if (strarray.size() <= 3)
+	{
+		//not for us
+		return;
+	}
+
+	component = strarray[0];
+
+	if (std::find(allowed_components.begin(), allowed_components.end(), component) == allowed_components.end())
+	{
+		//not for us
+		return;
+	}
+
+	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
+	if (!((strarray.size() == 3) || (strarray.size() == 4) || (strarray.size() == 5) || (strarray.size() == 6)))
+		goto disovery_invaliddata;
 
 	bool ret = ParseJSon(qMessage, root);
 	if ((!ret) || (!root.isObject()))
@@ -419,21 +450,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			return;
 		goto disovery_invaliddata;
 	}
-
-	//topic format: <discovery_prefix>/<component>/[<node_id>/]<object_id>/<action>
-
-	StringSplit(topic, "/", strarray);
-
-	if (strarray.size() == 1)
-	{
-		//could be offline/online
-		return;
-	}
-
-	if (!((strarray.size() == 3) || (strarray.size() == 4) || (strarray.size() == 5) || (strarray.size() == 6)))
-		goto disovery_invaliddata;
-
-	component = strarray[0];
 
 	if (strarray.size() == 3)
 	{
