@@ -3140,6 +3140,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		(pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
 		&& (pSensor->component_type != "lock")
+		&& (pSensor->component_type != "cover")
 		)
 	{
 		if (command == "On")
@@ -3413,7 +3414,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		if (command == "On")
 		{
 			szValue = pSensor->payload_open;
-			if (pSensor->command_topic.empty())
+			if (
+				(pSensor->command_topic.empty())
+				|| (!pSensor->set_position_topic.empty())
+				)
 			{
 				command = "Set Level";
 				level = 100; // Is recalculated in the "Set Level" logic
@@ -3424,7 +3428,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		else if (command == "Off")
 		{
 			szValue = pSensor->payload_close;
-			if (pSensor->command_topic.empty()) {
+			if (
+				(pSensor->command_topic.empty())
+				|| (!pSensor->set_position_topic.empty())
+				)
+			{
 				command = "Set Level";
 				level = 0; // Is recalculated in the "Set Level" logic
 			}
@@ -3489,23 +3497,33 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				return false;
 			}
 		}
-		if (level != -1)
+		result = m_sql.safe_query("SELECT ID,Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+		if (
+			(!result.empty())
+			&& (level != -1)
+			)
 		{
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Color,SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-			if (!result.empty())
+			int nValue = 2;
+			if (!bIsInvertedType)
 			{
-				if (command == "On")
-					level = 100;
-				else if (command == "Off")
-					level = 0;
-				if (pSensor->component_type == "cover" && pSensor->unique_id.find("zwavejs2mqtt_") == 0 && level == 99) //GizMoCuz: Is this still needed? (who can debug this?)
-					level = 100;
-				int nValue = (level > 0) ? 1 : 0;
-				m_sql.safe_query(
-					"UPDATE DeviceStatus SET nValue=%d, LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)",
-					nValue, level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+				if (level == 0)
+					nValue = 1;
+				else if (level == 100)
+					nValue = 0;
 			}
+			else
+			{
+				if (level == 0)
+					nValue = 0;
+				else if (level == 100)
+					nValue = 1;
+			}
+			nValue = 2;
+			m_sql.safe_query(
+				"UPDATE DeviceStatus SET LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)", level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+				nValue, std::to_string(level).c_str(), result[0][1]);
+
 		}
 		return true;
 	}
