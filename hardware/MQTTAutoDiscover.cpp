@@ -2525,7 +2525,10 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				pSensor->subType = sTypeColor_RGB;
 			}
-			else if (pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
+			else if (
+				(pSensor->supported_color_modes.find("rgbcct") != pSensor->supported_color_modes.end())
+				|| (pSensor->supported_color_modes.find("hs") != pSensor->supported_color_modes.end())
+				)
 			{
 				pSensor->subType = sTypeColor_RGB_CW_WW;
 			}
