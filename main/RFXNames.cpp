@@ -1503,10 +1503,12 @@ void GetLightStatus(
 			break;
 		case gswitch_sSetLevel:
 			sprintf(szTmp, "Set Level: %d %%", llevel);
-			if (sValue != "0")
-				lstatus = szTmp;
-			else
+			if (sValue == "0")
 				lstatus = "Off";
+			else if (sValue == "100")
+				lstatus = "On";
+			else
+				lstatus = szTmp;
 			break;
 		case gswitch_sGroupOff:
 			lstatus = "Group Off";

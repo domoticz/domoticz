@@ -9231,13 +9231,20 @@ namespace http
 						}
 						else if (
 							(switchtype == STYPE_Blinds)
+							|| (switchtype == STYPE_BlindsInverted)
 							|| (switchtype == STYPE_VenetianBlindsUS)
-							|| (switchtype == STYPE_VenetianBlindsEU))
+							|| (switchtype == STYPE_VenetianBlindsEU)
+							)
+
 						{
 							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
 
 							if ((lstatus == "On") || (lstatus == "Close inline relay"))
+							{
+								lstatus = openStatus;
+							}
+							else if ((lstatus == "Off") || (lstatus == "Open inline relay"))
 							{
 								lstatus = closedStatus;
 							}
@@ -9247,25 +9254,7 @@ namespace http
 							}
 							else
 							{
-								lstatus = openStatus;
-							}
-							root["result"][ii]["Status"] = lstatus;
-						}
-						else if (switchtype == STYPE_BlindsInverted)
-						{
-							root["result"][ii]["Image"] = "blinds";
-							root["result"][ii]["TypeImg"] = "blinds";
-							if (lstatus == "On")
-							{
-								lstatus = openStatus;
-							}
-							else if (lstatus == "Off")
-							{
-								lstatus = closedStatus;
-							}
-							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
-							{
-								lstatus = "Stopped";
+								lstatus = "??";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
@@ -9281,20 +9270,14 @@ namespace http
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-							/*
-														if ((iLevel > 0) && (iLevel < maxDimLevel))
-														{
-															lstatus = std_format("%d %%", iLevel);
-														}
-														else if (lstatus == "On")
-							*/
+
 							if (lstatus == "On")
 							{
-								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? closedStatus : openStatus;
+								lstatus = openStatus;
 							}
 							else if (lstatus == "Off")
 							{
-								lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? openStatus : closedStatus;
+								lstatus = closedStatus;
 							}
 							else if (lstatus == "Stop")
 							{
