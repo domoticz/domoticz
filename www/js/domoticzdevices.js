@@ -859,7 +859,7 @@ Device.create = function (item) {
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
-    ) {
+	  ) {
         type = item.SwitchType.toLowerCase()
     } else {
         type = item.TypeImg.toLowerCase();

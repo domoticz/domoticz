@@ -103,7 +103,7 @@
             </tr>
             <tr ng-show="vm.isOnActionAvailable()">
                 <td>
-                    <label for="onaction">{{ :: 'On Action' | translate}}:</label>
+                    <label for="onaction">{{ vm.onActionLabel() }}:</label>
                 </td>
                 <td>
                     <input type="text"
@@ -120,7 +120,7 @@
             </tr>
             <tr ng-show="vm.isOffActionAvailable()">
                 <td>
-                    <label for="offaction">{{ :: 'Off Action' | translate}}:</label>
+                    <label for="offaction">{{ vm.offActionLabel() }}:</label>
                 </td>
                 <td>
                     <input type="text"
