@@ -3846,9 +3846,19 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	else if (
 		(switchtype == STYPE_Blinds)
 		|| (switchtype == STYPE_VenetianBlindsUS)
-		|| (switchtype == STYPE_VenetianBlindsEU))
+		|| (switchtype == STYPE_VenetianBlindsEU)
+		|| (switchtype == STYPE_BlindsInverted)
+		|| (switchtype == STYPE_BlindsPercentage)
+		|| (switchtype == STYPE_BlindsPercentageInverted)
+		|| (switchtype == STYPE_BlindsPercentageWithStop)
+		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+		)
 	{
 		if ((lstatus == "On") || (lstatus == "Close inline relay"))
+		{
+			lstatus = openStatus;
+		}
+		else if ((lstatus == "Off") || (lstatus == "Open inline relay"))
 		{
 			lstatus = closedStatus;
 		}
@@ -3857,46 +3867,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Stopped";
 		}
 		else
-		{
-			lstatus = openStatus;
-		}
-	}
-	else if (switchtype == STYPE_BlindsInverted)
-	{
-		if (lstatus == "On")
-		{
-			lstatus = openStatus;
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = closedStatus;
-		}
-		else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
-		{
-			lstatus = "Stopped";
-		}
-	}
-	else if (
-		(switchtype == STYPE_BlindsPercentage)
-		|| (switchtype == STYPE_BlindsPercentageInverted)
-		|| (switchtype == STYPE_BlindsPercentageWithStop)
-		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-		)
-	{
-		//int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
-		//root["result"][ii]["LevelInt"] = iLevel;
-		if (lstatus == "On")
-		{
-			lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? closedStatus : openStatus;
-		}
-		else if (lstatus == "Off")
-		{
-			lstatus = ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageWithStop)) ? openStatus : closedStatus;
-		}
-		else if (lstatus == "Stop")
-		{
-			lstatus = "Stopped";
-		}
+			lstatus = "??";
 	}
 	else if (switchtype == STYPE_Media)
 	{
