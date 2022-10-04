@@ -1762,7 +1762,7 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 	if (pDevice == nullptr)
 		return nullptr; //device not found!?
 
-	if (pSensor->unique_id.find("zwavejs2mqtt_") != 0)
+	if (pSensor->unique_id.find("zwave") != 0)
 		return get_auto_discovery_sensor_unit(pSensor, "w"); //not ZWave
 
 	std::vector<std::string> strarraySensor;
@@ -1797,7 +1797,8 @@ MQTTAutoDiscover::_tMQTTASensor* MQTTAutoDiscover::get_auto_discovery_sensor_WAT
 				{
 					if (
 						(pSensor2Return == nullptr)
-						|| (strarrayTmp[1] == "49")
+						|| (strarrayTmp[1] == "49") //zwavejs2mqtt
+						|| (strarrayTmp[3] == "49") //zwave-js-ui
 						)
 						pSensor2Return = pTmpDeviceSensor;
 				}
@@ -3317,7 +3318,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["value"]["red"] = root["color"]["r"];
 					root["value"]["green"] = root["color"]["g"];
 					root["value"]["blue"] = root["color"]["b"];
-					root["value"]["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs2mqtt requires warmWhite
+					root["value"]["warmWhite"] = root["color"]["c"];		// In Domoticz cw is used for RGB_W dimmers, but Zwavejs requires warmWhite
 					root.removeMember("color");
 				}
 			}
