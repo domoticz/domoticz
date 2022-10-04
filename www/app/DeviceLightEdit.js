@@ -501,6 +501,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         vm.isOffActionAvailable = isOffActionAvailable;
         vm.isColorSettingsAvailable = isColorSettingsAvailable;
         vm.isWhiteSettingsAvailable = isWhiteSettingsAvailable;
+		vm.onActionLabel = onActionLabel;
+		vm.offActionLabel = offActionLabel;
 
         init();
 
@@ -625,5 +627,25 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         function isWhiteSettingsAvailable() {
             return vm.device.SubType === 'White';
         }
+		
+		function onActionLabel() {
+			var isBlind = [3, 6, 13, 14, 15, 16, 21, 22].includes(vm.device.SwitchTypeVal);
+			if (isBlind == true) {
+				return $.t('Close Action');
+			}
+			else {
+				return $.t('On Action');
+			}
+		}
+
+		function offActionLabel() {
+			var isBlind = [3, 6, 13, 14, 15, 16, 21, 22].includes(vm.device.SwitchTypeVal);
+			if (isBlind == true) {
+				return $.t('Open Action');
+			}
+			else {
+				return $.t('Off Action');
+			}
+		}
     });
 });
