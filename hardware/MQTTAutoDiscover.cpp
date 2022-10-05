@@ -426,7 +426,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 
 	std::vector<std::string> strarray;
 	StringSplit(topic, "/", strarray);
-	if (strarray.size() <= 3)
+	if (strarray.size() < 3)
 	{
 		//not for us
 		return;
