@@ -3880,7 +3880,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			)
 		{
 			bReversePosition = !bReversePosition;
-			bReverseState = true;
+			bReverseState = !bReverseState;
 		}
 
 		if (bReversePosition)

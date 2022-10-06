@@ -11520,7 +11520,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			)
 		{
 			bReversePosition = !bReversePosition;
-			bReverseState = true;
+			bReverseState = !bReverseState;
 		}
 
 		if (bReversePosition)

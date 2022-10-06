@@ -9273,7 +9273,7 @@ namespace http
 								)
 							{
 								bReversePosition = !bReversePosition;
-								bReverseState = true;
+								bReverseState = !bReverseState;
 							}
 
 							if (bReversePosition)
