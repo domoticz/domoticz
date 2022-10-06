@@ -2949,7 +2949,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			}
 		}
 
-		// COVERS: Always recalculate to make level relative to 100 and invert when needed
+		// COVERS: Always recalculate to make level relative to 100
 		if (pSensor->component_type == "cover")
 		{
 			// ensure the level is correct when we receive "Open"/"Close" in the payload
@@ -2957,7 +2957,6 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				level = pSensor->position_open;
 			else if (szSwitchCmd == "Close")
 				level = pSensor->position_closed;
-			// Always recalculate to make level relative to 100 and invert when needed
 			level = (int)round((100.0 / (pSensor->position_open - pSensor->position_closed)) * level);
 
 			if (level == 100)
