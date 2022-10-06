@@ -17,46 +17,17 @@ end
 local function setStateAttribute(state, device, _states)
 	local level
 	
-	local blindsInverted = false
-	if (device['switchType'] and string.find(device['switchType'], "Inverted")) then
-    blindsInverted = true
-	end
-	
 	if (state and string.find(state, 'Open')) then
-    if (string.find(device['hardwareType'], "MQTT Auto Discovery")) then
-      if (blindsInverted == false) then
-        level =  100
-      else
-        level =  0
-      end
-    else
-      if (blindsInverted == false) then
-        level =  0
-      else
-        level =  100
-      end
-    end
+		level =  100
 	end
 	if (state and string.find(state, 'Closed')) then
-    if (string.find(device['hardwareType'], "MQTT Auto Discovery")) then
-      if (blindsInverted == false) then
         level =  0
-      else
-        level =  100
-      end
-    else
-      if (blindsInverted == false) then
-        level =  100
-      else
-        level =  0
-      end
-    end
 	end
 	if (state and string.find(state, 'Set Level')) then
 		level = string.match(state, '%d+') -- extract dimming value
 		
 		if (device['switchType'] and string.find(device['switchType'], "Blind")) then
-			state = 'Open' -- consider the blind to be open
+			--state = 'Open' -- consider the blind to be open
 		else
 			state = 'On' -- consider the device to be on
 		end

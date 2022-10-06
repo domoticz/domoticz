@@ -11498,46 +11498,45 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	if (bIsBlinds)
 	{
-		if (
-			(switchcmd == "Off")
-			|| ((switchcmd == "Set Level" && level == 0) && (pHardware->HwdType != HTYPE_MQTTAutoDiscovery))
-			)
-			switchcmd = "Open";
-		else if (
-			(switchcmd == "On")
-			|| ((switchcmd == "Set Level" && level == 100) && (pHardware->HwdType != HTYPE_MQTTAutoDiscovery))
-			)
+		if ((switchcmd == "Off") || (switchcmd == "Set Level" && level == 0))
 			switchcmd = "Close";
-	}
+		else if ((switchcmd == "On") || (switchcmd == "Set Level" && level == 100))
+			switchcmd = "Open";
 
-	if (switchtype == STYPE_Blinds
-		|| switchtype == STYPE_BlindsPercentage
-		|| switchtype == STYPE_BlindsPercentageWithStop
-		|| switchtype == STYPE_VenetianBlindsEU
-		|| switchtype == STYPE_VenetianBlindsUS
-		)
-	{
-		if (switchcmd == "Open")
+		bool bReverseState = false;
+		bool bReversePosition = false;
+
+		auto itt = options.find("ReverseState");
+		if (itt != options.end())
+			bReverseState = (itt->second == "true");
+		itt = options.find("ReversePosition");
+		if (itt != options.end())
+			bReversePosition = (itt->second == "true");
+
+		if (
+			(switchtype == STYPE_BlindsInverted)
+			|| (switchtype == STYPE_BlindsPercentageInverted)
+			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+			)
 		{
-			switchcmd = "Off";
+			bReversePosition = !bReversePosition;
+			bReverseState = true;
 		}
-		else if (switchcmd.find("Close") != std::string::npos)
+
+		if (bReversePosition)
 		{
-			switchcmd = "On";
+			if (switchcmd == "Set Level")
+			{
+				level = 100 - level;
+			}
 		}
-	}
-	else if (switchtype == STYPE_BlindsInverted
-		|| switchtype == STYPE_BlindsPercentageInverted
-		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
-		)
-	{
-		if (switchcmd == "Open")
+
+		if (bReverseState)
 		{
-			switchcmd = "On";
-		}
-		else if (switchcmd.find("Close") != std::string::npos)
-		{
-			switchcmd = "Off";
+			if (switchcmd == "Open")
+				switchcmd = "Close";
+			else if(switchcmd == "Close")
+				switchcmd = "Open";
 		}
 	}
 
@@ -11555,7 +11554,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		//Flip the status
-		switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
+		if (IsLightSwitchOn(lstatus) == true)
+			switchcmd = (!bIsBlinds) ? "Off" : "Close";
+		else
+			switchcmd = (!bIsBlinds) ? "On" : "Open";
 	}
 
 	//
@@ -12481,21 +12483,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				|| (switchtype == STYPE_VenetianBlindsEU)
 				)
 		 {
-			if (((gswitch.cmnd == gswitch_sSetLevel) && (level == 100)) || (gswitch.cmnd == gswitch_sOn))
+			if (
+				(gswitch.cmnd == gswitch_sSetLevel)
+				&& (level == 100)
+				&& (pHardware->HwdType == HTYPE_OpenZWave)
+				)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
+				//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
+				//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
+				level = 99;
+				if (gswitch.cmnd == gswitch_sOpen)
 				{
-					//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
-					//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
-					level = 99;
-
-					if (gswitch.cmnd == gswitch_sOn)
-					{
-					  	gswitch.cmnd = gswitch_sSetLevel;
-					}
+					gswitch.cmnd = gswitch_sSetLevel;
 				}
-				else
-					gswitch.cmnd = gswitch_sOn;
 			}
 		}
 

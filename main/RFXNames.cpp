@@ -2328,6 +2328,24 @@ void GetLightStatus(
 		}
 		break;
 	}
+
+	const bool bIsBlinds = (switchtype == STYPE_Blinds
+		|| switchtype == STYPE_BlindsPercentage
+		|| switchtype == STYPE_BlindsPercentageWithStop
+		|| switchtype == STYPE_VenetianBlindsEU
+		|| switchtype == STYPE_VenetianBlindsUS
+		|| switchtype == STYPE_BlindsInverted
+		|| switchtype == STYPE_BlindsPercentageInverted
+		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
+		);
+	if (bIsBlinds)
+	{
+		if (lstatus == "Off")
+			lstatus = "Close";
+		else if (lstatus == "On")
+			lstatus = "Open";
+	}
+
 	//_log.Debug(DEBUG_NORM, "RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
 	//dType, dSubType, nValue, sValue.c_str(), llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd, lstatus.c_str());
 }
@@ -2954,6 +2972,16 @@ bool GetLightCommand(
 		if (switchcmd == "On")
 		{
 			cmd = gswitch_sOn;
+			return true;
+		}
+		if (switchcmd == "Open")
+		{
+			cmd = gswitch_sOpen;
+			return true;
+		}
+		if (switchcmd == "Close")
+		{
+			cmd = gswitch_sClose;
 			return true;
 		}
 		if (switchcmd == "Set Level")
@@ -3867,6 +3895,7 @@ bool IsLightSwitchOn(const std::string& lstatus)
 {
 	return (
 		(lstatus == "On") ||
+		(lstatus == "Open") ||
 		(lstatus == "Group On") ||
 		(lstatus == "All On") ||
 		(lstatus == "Chime") ||

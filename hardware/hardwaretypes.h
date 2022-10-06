@@ -209,7 +209,9 @@
 
 // Switch commands
 #define gswitch_sOff 0x00
+#define gswitch_sClose 0x00
 #define gswitch_sOn 0x01
+#define gswitch_sOpen 0x01
 #define gswitch_sSetLevel 0x02
 #define gswitch_sGroupOff 0x03
 #define gswitch_sGroupOn 0x04

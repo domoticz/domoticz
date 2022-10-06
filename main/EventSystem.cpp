@@ -3854,20 +3854,62 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 		)
 	{
-		if ((lstatus == "On") || (lstatus == "Close inline relay"))
+		if (lstatus == "Close inline relay")
+		{
+			lstatus = "Close";
+		}
+		else if (lstatus == "Open inline relay")
+		{
+			lstatus = "Open";
+		}
+
+		bool bReverseState = false;
+		bool bReversePosition = false;
+
+		auto itt = options.find("ReverseState");
+		if (itt!= options.end())
+			bReverseState = (itt->second == "true");
+		itt = options.find("ReversePosition");
+		if (itt != options.end())
+			bReversePosition = (itt->second == "true");
+
+		if (
+			(switchtype == STYPE_BlindsInverted)
+			|| (switchtype == STYPE_BlindsPercentageInverted)
+			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+			)
+		{
+			bReversePosition = !bReversePosition;
+			bReverseState = true;
+		}
+
+		if (bReversePosition)
+		{
+			llevel = 100 - llevel;
+			if (lstatus.find("Set Level") == 0)
+				lstatus = std_format("Set Level: %d %%", llevel);
+		}
+
+		if (bReverseState)
+		{
+			if (lstatus == "Open")
+				lstatus = "Close";
+			else if (lstatus == "Close")
+				lstatus = "Open";
+		}
+
+		if (lstatus == "Open")
 		{
 			lstatus = openStatus;
 		}
-		else if ((lstatus == "Off") || (lstatus == "Open inline relay"))
+		else if (lstatus == "Close")
 		{
 			lstatus = closedStatus;
 		}
-		else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
+		else if (lstatus == "Stop")
 		{
 			lstatus = "Stopped";
 		}
-		else
-			lstatus = "??";
 	}
 	else if (switchtype == STYPE_Media)
 	{

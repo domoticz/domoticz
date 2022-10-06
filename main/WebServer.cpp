@@ -9234,32 +9234,7 @@ namespace http
 							|| (switchtype == STYPE_BlindsInverted)
 							|| (switchtype == STYPE_VenetianBlindsUS)
 							|| (switchtype == STYPE_VenetianBlindsEU)
-							)
-
-						{
-							root["result"][ii]["Image"] = "blinds";
-							root["result"][ii]["TypeImg"] = "blinds";
-
-							if ((lstatus == "On") || (lstatus == "Close inline relay"))
-							{
-								lstatus = openStatus;
-							}
-							else if ((lstatus == "Off") || (lstatus == "Open inline relay"))
-							{
-								lstatus = closedStatus;
-							}
-							else if ((lstatus == "Stop") || (lstatus == "Stop inline relay"))
-							{
-								lstatus = "Stopped";
-							}
-							else
-							{
-								lstatus = "??";
-							}
-							root["result"][ii]["Status"] = lstatus;
-						}
-						else if (
-							(switchtype == STYPE_BlindsPercentage)
+							|| (switchtype == STYPE_BlindsPercentage)
 							|| (switchtype == STYPE_BlindsPercentageInverted)
 							|| (switchtype == STYPE_BlindsPercentageWithStop)
 							|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
@@ -9267,23 +9242,76 @@ namespace http
 						{
 							root["result"][ii]["Image"] = "blinds";
 							root["result"][ii]["TypeImg"] = "blinds";
-							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
-							root["result"][ii]["LevelInt"] = iLevel;
 
-							if (lstatus == "On")
+							if (lstatus == "Close inline relay")
 							{
-								lstatus = openStatus;
+								lstatus = "Close";
 							}
-							else if (lstatus == "Off")
+							else if (lstatus == "Open inline relay")
+							{
+								lstatus = "Open";
+							}
+							else if (lstatus == "Stop inline relay")
+							{
+								lstatus = "Stop";
+							}
+
+							bool bReverseState = false;
+							bool bReversePosition = false;
+
+							auto itt = options.find("ReverseState");
+							if (itt != options.end())
+								bReverseState = (itt->second == "true");
+							itt = options.find("ReversePosition");
+							if (itt != options.end())
+								bReversePosition = (itt->second == "true");
+
+							if (
+								(switchtype == STYPE_BlindsInverted)
+								|| (switchtype == STYPE_BlindsPercentageInverted)
+								|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+								)
+							{
+								bReversePosition = !bReversePosition;
+								bReverseState = true;
+							}
+
+							if (bReversePosition)
+							{
+								LastLevel = 100 - LastLevel;
+								if (lstatus.find("Set Level") == 0)
+									lstatus = std_format("Set Level: %d %%", LastLevel);
+							}
+
+							if (bReverseState)
+							{
+								if (lstatus == "Open")
+									lstatus = "Close";
+								else if (lstatus == "Close")
+									lstatus = "Open";
+							}
+
+
+							if (lstatus == "Close")
 							{
 								lstatus = closedStatus;
+							}
+							else if (lstatus == "Open")
+							{
+								lstatus = openStatus;
 							}
 							else if (lstatus == "Stop")
 							{
 								lstatus = "Stopped";
 							}
 							root["result"][ii]["Status"] = lstatus;
+
+							root["result"][ii]["Level"] = LastLevel;
+							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+							root["result"][ii]["LevelInt"] = iLevel;
+
+							root["result"][ii]["ReverseState"] = bReverseState;
+							root["result"][ii]["ReversePosition"] = bReversePosition;
 						}
 						else if (switchtype == STYPE_Dimmer)
 						{
