@@ -11471,9 +11471,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		|| switchtype == STYPE_BlindsPercentageWithStop
 		|| switchtype == STYPE_VenetianBlindsEU
 		|| switchtype == STYPE_VenetianBlindsUS
-		|| switchtype == STYPE_BlindsInverted
-		|| switchtype == STYPE_BlindsPercentageInverted
-		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
 		);
 
 	// If dimlevel is 0 or no dimlevel, turn switch off
@@ -11503,6 +11500,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		else if ((switchcmd == "On") || (switchcmd == "Set Level" && level == 100))
 			switchcmd = "Open";
 
+		if (switchcmd == "Open")
+			level = 100;
+		else if (switchcmd == "Close")
+			level = 0;
+
 		bool bReverseState = false;
 		bool bReversePosition = false;
 
@@ -11513,22 +11515,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (itt != options.end())
 			bReversePosition = (itt->second == "true");
 
-		if (
-			(switchtype == STYPE_BlindsInverted)
-			|| (switchtype == STYPE_BlindsPercentageInverted)
-			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-			)
-		{
-			bReversePosition = !bReversePosition;
-			bReverseState = !bReverseState;
-		}
-
 		if (bReversePosition)
 		{
-			if (switchcmd == "Set Level")
-			{
-				level = 100 - level;
-			}
+			level = 100 - level;
 		}
 
 		if (bReverseState)
@@ -12209,9 +12198,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	case pTypeRFY:
 	{
 		tRBUF lcmd;
-		lcmd.BLINDS1.packetlength = sizeof(lcmd.RFY) - 1;
-		lcmd.BLINDS1.packettype = dType;
-		lcmd.BLINDS1.subtype = dSubType;
+		lcmd.RFY.packetlength = sizeof(lcmd.RFY) - 1;
+		lcmd.RFY.packettype = dType;
+		lcmd.RFY.subtype = dSubType;
 		lcmd.RFY.id1 = ID2;
 		lcmd.RFY.id2 = ID3;
 		lcmd.RFY.id3 = ID4;
@@ -12228,10 +12217,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				return false;
 		}
 
-		if (lcmd.BLINDS1.subtype == sTypeRFY2)
+		if (lcmd.RFY.subtype == sTypeRFY2)
 		{
 			//Special case for protocol version 2
-			lcmd.BLINDS1.subtype = sTypeRFY;
+			lcmd.RFY.subtype = sTypeRFY;
 			if (lcmd.RFY.cmnd == rfy_sUp)
 				lcmd.RFY.cmnd = rfy_s2SecUp;
 			else if (lcmd.RFY.cmnd == rfy_sDown)
@@ -12476,9 +12465,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		else if (
 				(switchtype == STYPE_BlindsPercentage)
-				|| (switchtype == STYPE_BlindsPercentageInverted)
 				|| (switchtype == STYPE_BlindsPercentageWithStop)
-				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				|| (switchtype == STYPE_VenetianBlindsUS)
 				|| (switchtype == STYPE_VenetianBlindsEU)
 				)
@@ -13334,9 +13321,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 				(
 					(switchtype == STYPE_Dimmer)
 					|| (switchtype == STYPE_BlindsPercentage)
-					|| (switchtype == STYPE_BlindsPercentageInverted)
 					|| (switchtype == STYPE_BlindsPercentageWithStop)
-					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 					|| (switchtype == STYPE_Selector)
 				)
 				&& (maxDimLevel != 0)

@@ -38,7 +38,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 155
+#define DB_VERSION 156
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2999,7 +2999,13 @@ bool CSQLHelper::OpenDatabase()
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 			DeletePreferencesVar("WebRemoteProxyIPs");
 		}
-		
+		if (dbversion < 156)
+		{
+			//Convert inverted blinds to normal blinds
+			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_Blinds, STYPE_BlindsInverted);
+			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentage, STYPE_BlindsPercentageInverted);
+			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentageWithStop, STYPE_BlindsPercentageInvertedWithStop);
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -5285,40 +5291,23 @@ uint64_t CSQLHelper::UpdateValueInt(
 			if (pHardware != nullptr)
 				HWtype = pHardware->HwdType;
 
+			bool bIsBlinds = (
+				(switchtype == STYPE_Dimmer)
+				|| (switchtype == STYPE_BlindsPercentage)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
+				);
+
 			if (
 				((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
-				|| (switchtype == STYPE_BlindsPercentage)
-				|| (switchtype == STYPE_BlindsPercentageInverted)
-				|| (switchtype == STYPE_BlindsPercentageWithStop)
-				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+				|| (bIsBlinds)
 				)
 			{
-				if (
-					(switchtype == STYPE_BlindsPercentage)
-					|| (switchtype == STYPE_BlindsPercentageInverted)
-					)
-				{
-					if (nValue == light2_sOn)
-						llevel = 100;
-					else if (nValue == light2_sOff)
-						llevel = 0;
-				}
-				else if (
-					(switchtype == STYPE_BlindsPercentageWithStop)
-					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-					)
-				{
-					if (nValue == light2_sOn)
-						llevel = 0;
-					else if (nValue == light2_sOff)
-						llevel = 100;
-				}
-
 				//update level for device
 				safe_query(
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
 					llevel,
 					ulID);
+
 				if (bUseOnOffAction)
 					slevel = std::to_string(llevel);
 			}

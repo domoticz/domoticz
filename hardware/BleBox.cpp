@@ -24,7 +24,7 @@ struct STR_DEVICE {
 constexpr std::array<STR_DEVICE, 9> DevicesType{
 	{
 		{ 0, "switchBox", "Switch Box", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
-		{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
+		{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, "shutter" },
 		{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
 		{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
 		{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },

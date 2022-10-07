@@ -3847,11 +3847,8 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		(switchtype == STYPE_Blinds)
 		|| (switchtype == STYPE_VenetianBlindsUS)
 		|| (switchtype == STYPE_VenetianBlindsEU)
-		|| (switchtype == STYPE_BlindsInverted)
 		|| (switchtype == STYPE_BlindsPercentage)
-		|| (switchtype == STYPE_BlindsPercentageInverted)
 		|| (switchtype == STYPE_BlindsPercentageWithStop)
-		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 		)
 	{
 		if (lstatus == "Close inline relay")
@@ -3872,16 +3869,6 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		itt = options.find("ReversePosition");
 		if (itt != options.end())
 			bReversePosition = (itt->second == "true");
-
-		if (
-			(switchtype == STYPE_BlindsInverted)
-			|| (switchtype == STYPE_BlindsPercentageInverted)
-			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-			)
-		{
-			bReversePosition = !bReversePosition;
-			bReverseState = !bReverseState;
-		}
 
 		if (bReversePosition)
 		{
@@ -4049,8 +4036,8 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		{
 			if (
 				(switchtype == STYPE_Dimmer)
-				|| (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)
-				|| (switchtype == STYPE_BlindsPercentageWithStop) || (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+				|| (switchtype == STYPE_BlindsPercentage)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
 				)
 			{
 				float fLevel = (maxDimLevel / 100.0F) * percentageLevel;

@@ -3927,9 +3927,7 @@ namespace http
 								bool bIsDimmer = (
 									(switchtype == STYPE_Dimmer)
 									|| (switchtype == STYPE_BlindsPercentage)
-									|| (switchtype == STYPE_BlindsPercentageInverted)
 									|| (switchtype == STYPE_BlindsPercentageWithStop)
-									|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 									|| (switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
@@ -9231,13 +9229,10 @@ namespace http
 						}
 						else if (
 							(switchtype == STYPE_Blinds)
-							|| (switchtype == STYPE_BlindsInverted)
 							|| (switchtype == STYPE_VenetianBlindsUS)
 							|| (switchtype == STYPE_VenetianBlindsEU)
 							|| (switchtype == STYPE_BlindsPercentage)
-							|| (switchtype == STYPE_BlindsPercentageInverted)
 							|| (switchtype == STYPE_BlindsPercentageWithStop)
-							|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 							)
 						{
 							root["result"][ii]["Image"] = "blinds";
@@ -9265,16 +9260,6 @@ namespace http
 							itt = options.find("ReversePosition");
 							if (itt != options.end())
 								bReversePosition = (itt->second == "true");
-
-							if (
-								(switchtype == STYPE_BlindsInverted)
-								|| (switchtype == STYPE_BlindsPercentageInverted)
-								|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-								)
-							{
-								bReversePosition = !bReversePosition;
-								bReverseState = !bReverseState;
-							}
 
 							if (bReversePosition)
 							{

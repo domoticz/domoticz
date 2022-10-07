@@ -130,11 +130,8 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				szTypeImage = "Contact48";
 				break;
 			case STYPE_Blinds:
-			case STYPE_BlindsInverted:
 			case STYPE_BlindsPercentage:
-			case STYPE_BlindsPercentageInverted:
 			case STYPE_BlindsPercentageWithStop:
-			case STYPE_BlindsPercentageInvertedWithStop:
 			case STYPE_VenetianBlindsUS:
 			case STYPE_VenetianBlindsEU:
 				szTypeImage = "blinds48";
