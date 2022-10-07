@@ -11644,9 +11644,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		else if (
 			(switchtype == STYPE_BlindsPercentage)
-			|| (switchtype == STYPE_BlindsPercentageInverted)
 			|| (switchtype == STYPE_BlindsPercentageWithStop)
-			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 			)
 		{
 			if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)

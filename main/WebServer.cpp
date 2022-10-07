@@ -7655,7 +7655,11 @@ namespace http
 
 			for (int ii = 0; ii < STYPE_END; ii++)
 			{
-				_switchtypes[Switch_Type_Desc((_eSwitchType)ii)] = ii;
+				std::string sTypeName = Switch_Type_Desc((_eSwitchType)ii);
+				if (sTypeName != "Unknown")
+				{
+					_switchtypes[sTypeName] = ii;
+				}
 			}
 			// return a sorted list
 			for (const auto& type : _switchtypes)

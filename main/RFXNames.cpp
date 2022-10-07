@@ -300,7 +300,6 @@ const char* Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
 		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
-		{ STYPE_BlindsInverted, "Blinds Inverted (Do not use!)" },
 		{ STYPE_Dimmer, "Dimmer" },
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
@@ -310,13 +309,11 @@ const char* Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
-		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted (Do not use!)" },
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
 		{ STYPE_DoorLock, "Door Lock" },
 		{ STYPE_DoorLockInverted, "Door Lock Inverted" },
 		{ STYPE_BlindsPercentageWithStop, "Blinds + Stop" },
-		{ STYPE_BlindsPercentageInvertedWithStop, "Blinds Inverted + Stop (Do not use!)" },
 		{ 0, nullptr, nullptr },
 	};
 	return findTableIDSingle1(Table, sType);
@@ -2530,12 +2527,12 @@ bool GetLightCommand(
 			}
 			return false;
 		}
-		if (switchcmd == "Off")
+		if ((switchcmd == "Off") || (switchcmd == "Close"))
 		{
 			cmd = light2_sOff;
 			return true;
 		}
-		if (switchcmd == "On")
+		if ((switchcmd == "On") || (switchcmd == "Open"))
 		{
 			cmd = light2_sOn;
 			return true;

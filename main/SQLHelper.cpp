@@ -3002,9 +3002,9 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 156)
 		{
 			//Convert inverted blinds to normal blinds
-			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_Blinds, STYPE_BlindsInverted);
-			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentage, STYPE_BlindsPercentageInverted);
-			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentageWithStop, STYPE_BlindsPercentageInvertedWithStop);
+			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_Blinds, 6); //STYPE_BlindsInverted
+			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentage, 16); //STYPE_BlindsPercentageInverted
+			safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (SwitchType=%d)", STYPE_BlindsPercentageWithStop, 22); //STYPE_BlindsPercentageInvertedWithStop
 		}
 	}
 	else if (bNewInstall)

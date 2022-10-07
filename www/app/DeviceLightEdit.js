@@ -637,7 +637,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         }
 		
 		function isBlind() {
-			return [3, 6, 13, 14, 15, 16, 21, 22].includes(vm.device.SwitchTypeVal);
+			return ['Dimmer', 'Blinds Percentage', 'Blinds + Stop'].includes(vm.device.SwitchType);
+			//return [3, 13, 14, 15, 21].includes(vm.device.SwitchTypeVal);
 		}
 		
 		function onActionLabel() {
