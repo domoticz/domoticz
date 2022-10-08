@@ -501,6 +501,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
         vm.isOffActionAvailable = isOffActionAvailable;
         vm.isColorSettingsAvailable = isColorSettingsAvailable;
         vm.isWhiteSettingsAvailable = isWhiteSettingsAvailable;
+		vm.isBlind = isBlind;
 		vm.onActionLabel = onActionLabel;
 		vm.offActionLabel = offActionLabel;
 
@@ -553,6 +554,13 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 options.push('SelectorStyle:' + vm.device.SelectorStyle);
                 options.push('LevelOffHidden:' + vm.device.LevelOffHidden);
             }
+			if (vm.isBlind())
+			{
+                options.push('ReverseState:' + vm.device.ReverseState);
+                options.push('ReversePosition:' + vm.device.ReversePosition);
+			}
+			console.log("options: ");
+			console.log(options);
             var params = {
                 type: 'setused',
                 name: vm.device.Name,
@@ -628,10 +636,13 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
             return vm.device.SubType === 'White';
         }
 		
+		function isBlind() {
+			return [3, 13, 14, 15, 21].includes(vm.device.SwitchTypeVal);
+		}
+		
 		function onActionLabel() {
-			var isBlind = [3, 6, 13, 14, 15, 16, 21, 22].includes(vm.device.SwitchTypeVal);
-			if (isBlind == true) {
-				return $.t('Close Action');
+			if (isBlind() == true) {
+				return $.t('Open Action');
 			}
 			else {
 				return $.t('On Action');
@@ -639,9 +650,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 		}
 
 		function offActionLabel() {
-			var isBlind = [3, 6, 13, 14, 15, 16, 21, 22].includes(vm.device.SwitchTypeVal);
-			if (isBlind == true) {
-				return $.t('Open Action');
+			if (isBlind() == true) {
+				return $.t('Close Action');
 			}
 			else {
 				return $.t('Off Action');

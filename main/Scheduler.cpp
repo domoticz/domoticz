@@ -868,9 +868,7 @@ void CScheduler::CheckSchedules()
 							int ilevel = maxDimLevel;
 							if (
 								(switchtype == STYPE_BlindsPercentage)
-								|| (switchtype == STYPE_BlindsPercentageInverted)
 								|| (switchtype == STYPE_BlindsPercentageWithStop)
-								|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 								)
 							{
 								if (item.timerCmd == TCMD_ON)

@@ -11466,14 +11466,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
-	bool bIsBlinds = (switchtype == STYPE_Blinds
+	bool bIsBlinds = (
+		switchtype == STYPE_Blinds
 		|| switchtype == STYPE_BlindsPercentage
 		|| switchtype == STYPE_BlindsPercentageWithStop
 		|| switchtype == STYPE_VenetianBlindsEU
 		|| switchtype == STYPE_VenetianBlindsUS
-		|| switchtype == STYPE_BlindsInverted
-		|| switchtype == STYPE_BlindsPercentageInverted
-		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
 		);
 
 	// If dimlevel is 0 or no dimlevel, turn switch off
@@ -11498,46 +11496,37 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	if (bIsBlinds)
 	{
-		if (
-			(switchcmd == "Off")
-			|| ((switchcmd == "Set Level" && level == 0) && (pHardware->HwdType != HTYPE_MQTTAutoDiscovery))
-			)
-			switchcmd = "Open";
-		else if (
-			(switchcmd == "On")
-			|| ((switchcmd == "Set Level" && level == 100) && (pHardware->HwdType != HTYPE_MQTTAutoDiscovery))
-			)
+		if ((switchcmd == "Off") || (switchcmd == "Set Level" && level == 0))
 			switchcmd = "Close";
-	}
+		else if ((switchcmd == "On") || (switchcmd == "Set Level" && level == 100))
+			switchcmd = "Open";
 
-	if (switchtype == STYPE_Blinds
-		|| switchtype == STYPE_BlindsPercentage
-		|| switchtype == STYPE_BlindsPercentageWithStop
-		|| switchtype == STYPE_VenetianBlindsEU
-		|| switchtype == STYPE_VenetianBlindsUS
-		)
-	{
 		if (switchcmd == "Open")
+			level = 100;
+		else if (switchcmd == "Close")
+			level = 0;
+
+		bool bReverseState = false;
+		bool bReversePosition = false;
+
+		auto itt = options.find("ReverseState");
+		if (itt != options.end())
+			bReverseState = (itt->second == "true");
+		itt = options.find("ReversePosition");
+		if (itt != options.end())
+			bReversePosition = (itt->second == "true");
+
+		if (bReversePosition)
 		{
-			switchcmd = "Off";
+			level = 100 - level;
 		}
-		else if (switchcmd.find("Close") != std::string::npos)
+
+		if (bReverseState)
 		{
-			switchcmd = "On";
-		}
-	}
-	else if (switchtype == STYPE_BlindsInverted
-		|| switchtype == STYPE_BlindsPercentageInverted
-		|| switchtype == STYPE_BlindsPercentageInvertedWithStop
-		)
-	{
-		if (switchcmd == "Open")
-		{
-			switchcmd = "On";
-		}
-		else if (switchcmd.find("Close") != std::string::npos)
-		{
-			switchcmd = "Off";
+			if (switchcmd == "Open")
+				switchcmd = "Close";
+			else if(switchcmd == "Close")
+				switchcmd = "Open";
 		}
 	}
 
@@ -11555,7 +11544,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		//Flip the status
-		switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
+		if (IsLightSwitchOn(lstatus) == true)
+			switchcmd = (!bIsBlinds) ? "Off" : "Close";
+		else
+			switchcmd = (!bIsBlinds) ? "On" : "Open";
 	}
 
 	//
@@ -11653,9 +11645,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		else if (
 			(switchtype == STYPE_BlindsPercentage)
-			|| (switchtype == STYPE_BlindsPercentageInverted)
 			|| (switchtype == STYPE_BlindsPercentageWithStop)
-			|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 			)
 		{
 			if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
@@ -12207,9 +12197,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	case pTypeRFY:
 	{
 		tRBUF lcmd;
-		lcmd.BLINDS1.packetlength = sizeof(lcmd.RFY) - 1;
-		lcmd.BLINDS1.packettype = dType;
-		lcmd.BLINDS1.subtype = dSubType;
+		lcmd.RFY.packetlength = sizeof(lcmd.RFY) - 1;
+		lcmd.RFY.packettype = dType;
+		lcmd.RFY.subtype = dSubType;
 		lcmd.RFY.id1 = ID2;
 		lcmd.RFY.id2 = ID3;
 		lcmd.RFY.id3 = ID4;
@@ -12226,10 +12216,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 				return false;
 		}
 
-		if (lcmd.BLINDS1.subtype == sTypeRFY2)
+		if (lcmd.RFY.subtype == sTypeRFY2)
 		{
 			//Special case for protocol version 2
-			lcmd.BLINDS1.subtype = sTypeRFY;
+			lcmd.RFY.subtype = sTypeRFY;
 			if (lcmd.RFY.cmnd == rfy_sUp)
 				lcmd.RFY.cmnd = rfy_s2SecUp;
 			else if (lcmd.RFY.cmnd == rfy_sDown)
@@ -12474,28 +12464,25 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 		else if (
 				(switchtype == STYPE_BlindsPercentage)
-				|| (switchtype == STYPE_BlindsPercentageInverted)
 				|| (switchtype == STYPE_BlindsPercentageWithStop)
-				|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 				|| (switchtype == STYPE_VenetianBlindsUS)
 				|| (switchtype == STYPE_VenetianBlindsEU)
 				)
 		 {
-			if (((gswitch.cmnd == gswitch_sSetLevel) && (level == 100)) || (gswitch.cmnd == gswitch_sOn))
+			if (
+				(gswitch.cmnd == gswitch_sSetLevel)
+				&& (level == 100)
+				&& (pHardware->HwdType == HTYPE_OpenZWave)
+				)
 			{
-				if (pHardware->HwdType == HTYPE_OpenZWave)
+				//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
+				//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
+				//this should be done in the openzwave class, but it is deprecated and will be removed soon
+				level = 99;
+				if (gswitch.cmnd == gswitch_sOpen)
 				{
-					//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
-					//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
-					level = 99;
-
-					if (gswitch.cmnd == gswitch_sOn)
-					{
-					  	gswitch.cmnd = gswitch_sSetLevel;
-					}
+					gswitch.cmnd = gswitch_sSetLevel;
 				}
-				else
-					gswitch.cmnd = gswitch_sOn;
 			}
 		}
 
@@ -13334,9 +13321,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 				(
 					(switchtype == STYPE_Dimmer)
 					|| (switchtype == STYPE_BlindsPercentage)
-					|| (switchtype == STYPE_BlindsPercentageInverted)
 					|| (switchtype == STYPE_BlindsPercentageWithStop)
-					|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
 					|| (switchtype == STYPE_Selector)
 				)
 				&& (maxDimLevel != 0)

@@ -841,7 +841,6 @@ define(['app', 'livesocket'], function (app) {
 									|| (item.SubType.indexOf('Confexx') == 0)
 									|| (item.SwitchType.indexOf("Venetian Blinds") == 0)
 									|| (item.SwitchType == "Blinds + Stop")
-									|| (item.SwitchType == "Blinds Inverted + Stop")
 								) {
 									xhtm += '\t    <table id="itemtabletrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 								}
@@ -1197,14 +1196,8 @@ define(['app', 'livesocket'], function (app) {
 							else if (item.SwitchType == "Blinds Percentage") {
 								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 							}
-							else if (item.SwitchType == "Blinds Percentage Inverted") {
-								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds_inv" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
-							}
 							else if (item.SwitchType == "Blinds + Stop") {
 								xhtm += '<br><div style="margin-left:132px; margin-top:12px;" class="dimslider dimsmall3" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
-							}
-							else if (item.SwitchType == "Blinds Inverted + Stop") {
-								xhtm += '<br><div style="margin-left:132px; margin-top:12px;" class="dimslider dimsmall3" id="slider" data-idx="' + item.idx + '" data-type="blinds_inv" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 							}
 							else if (item.SwitchType == "Selector") {
 								if (item.SelectorStyle === 0) {

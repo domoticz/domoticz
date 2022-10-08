@@ -1364,24 +1364,24 @@ describe('device', function()
 
 			it('should open', function()
 				switch.open()
-				assert.is_same({ { ["s1"] = "On" } }, commandArray)
+				assert.is_same({ { ["s1"] = "Open" } }, commandArray)
 			end)
 
 			it('should open Blinds', function()
 				switch.switchType = "Blinds"
 				switch.open()
-				assert.is_same({ { ["s1"] = "Off" } }, commandArray)
+				assert.is_same({ { ["s1"] = "Open" } }, commandArray)
 			end)
 
 			it('should close"Venetian Blinds EU', function()
 				switch.switchType = "Venetian Blinds EU"
 				switch.close()
-				assert.is_same({ { ["s1"] = "On" } }, commandArray)
+				assert.is_same({ { ["s1"] = "Close" } }, commandArray)
 			end)
 
 			it('should close', function()
 				switch.close()
-				assert.is_same({ { ["s1"] = "Off" } }, commandArray)
+				assert.is_same({ { ["s1"] = "Close" } }, commandArray)
 			end)
 
 			it('should stop', function()

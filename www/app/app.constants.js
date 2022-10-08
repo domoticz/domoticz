@@ -13,7 +13,7 @@ define(['angular'], function () {
         3: ['blinds48.png', 'blinds48.png'],             // Blinds,
         4: ['Alarm48_On.png', 'Alarm48_Off.png'],        // X10 Siren
         5: ['smoke48on.png', 'smoke48off.png'],          // Smoke Detector
-        6: ['blinds48.png', 'blinds48sel.png'],          // Blinds Inverted
+        6: ['blinds48.png', 'blinds48sel.png'],          // Blinds Inverted (Deprecated)
         7: ['Dimmer48_On.png', 'Dimmer48_Off.png'],      // Dimmer
         8: ['motion48-on.png', 'motion48-off.png'],      // Motion Sensor
         9: ['Push48_On.png', 'Push48_Off.png'],          // Push On Button
@@ -23,13 +23,13 @@ define(['angular'], function () {
         13: ['blinds48.png', 'blinds48.png'],            // Blinds Percentage
         14: ['blinds48.png', 'blinds48.png'],            // Venetian Blinds US
         15: ['blinds48.png', 'blinds48.png'],            // Venetian Blinds EU
-        16: ['blinds48.png', 'blinds48.png'],            // Blinds Percentage Inverted
+        16: ['blinds48.png', 'blinds48.png'],            // Blinds Percentage Inverted (Deprecated)
         17: ['Media48_On.png', 'Media48_Off.png'],       // Media Player
         18: ['Generic48_On.png', 'Generic48_Off.png'],   // Selector
         19: ['Door48_On.png', 'Door48_Off.png'],         // Door Lock
         20: ['Door48_On.png', 'Door48_Off.png'],         // Door Lock Inverted
         21: ['blinds48.png', 'blinds48.png'],            // Blinds + Stop
-        22: ['blinds48.png', 'blinds48.png'],            // Blinds Inverted + Stop
+        22: ['blinds48.png', 'blinds48.png'],            // Blinds Inverted + Stop (Deprecated)
     });
 
     module.constant('dataTableDefaultSettings', {

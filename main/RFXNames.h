@@ -4,30 +4,28 @@
 
 enum _eSwitchType
 {
-	STYPE_OnOff = 0,						//0
-	STYPE_Doorbell,							//1
-	STYPE_Contact,							//2
-	STYPE_Blinds,							//3
-	STYPE_X10Siren,							//4
-	STYPE_SMOKEDETECTOR,					//5
-	STYPE_BlindsInverted,					//6
-	STYPE_Dimmer,							//7
-	STYPE_Motion,							//8
-	STYPE_PushOn,							//9
-	STYPE_PushOff,							//10
-	STYPE_DoorContact,						//11
-	STYPE_Dusk,								//12
-	STYPE_BlindsPercentage,					//13
-	STYPE_VenetianBlindsUS,					//14
-	STYPE_VenetianBlindsEU,					//15
-	STYPE_BlindsPercentageInverted,			//16
-	STYPE_Media,							//17
-	STYPE_Selector,							//18
-	STYPE_DoorLock,							//19
-	STYPE_DoorLockInverted,					//20
-	STYPE_BlindsPercentageWithStop,			//21
-	STYPE_BlindsPercentageInvertedWithStop,	//22
-	STYPE_END
+	STYPE_OnOff = 0,
+	STYPE_Doorbell = 1,
+	STYPE_Contact = 2,
+	STYPE_Blinds = 3,
+	STYPE_X10Siren = 4,
+	STYPE_SMOKEDETECTOR = 5,
+	STYPE_Dimmer = 7,
+	STYPE_Motion = 8,
+	STYPE_PushOn = 9,
+	STYPE_PushOff = 10,
+	STYPE_DoorContact = 11,
+	STYPE_Dusk = 12,
+	STYPE_BlindsPercentage = 13,
+	STYPE_VenetianBlindsUS = 14,
+	STYPE_VenetianBlindsEU = 15,
+	STYPE_Media = 17,
+	STYPE_Selector = 18,
+	STYPE_DoorLock = 19,
+	STYPE_DoorLockInverted = 20,
+	STYPE_BlindsPercentageWithStop = 21,
+
+	STYPE_END = 23 //always set this to highest numer + 1
 };
 
 enum _eMeterType
@@ -260,41 +258,41 @@ enum _eNotificationTypes
 	NTYPE_SLEEPING
 };
 
-const char *RFX_Type_Desc(unsigned char i, unsigned char snum);
-const char *RFX_Type_SubType_Desc(unsigned char dType, unsigned char sType);
+const char* RFX_Type_Desc(unsigned char i, unsigned char snum);
+const char* RFX_Type_SubType_Desc(unsigned char dType, unsigned char sType);
 unsigned char Get_Humidity_Level(unsigned char hlevel);
-const char *RFX_Humidity_Status_Desc(unsigned char status);
-const char *Switch_Type_Desc(_eSwitchType sType);
-const char *Meter_Type_Desc(_eMeterType sType);
-const char *RFX_Forecast_Desc(unsigned char Forecast);
-const char *RFX_WSForecast_Desc(unsigned char Forecast);
-const char *BMP_Forecast_Desc(unsigned char Forecast);
-const char *Timer_Type_Desc(int tType);
-const char *Timer_Cmd_Desc(int tCmd);
-const char *Hardware_Type_Desc(int hType);
-const char *Hardware_Short_Desc(int hType);
-const char *Security_Status_Desc(unsigned char status);
-const char *Notification_Type_Desc(int nType, unsigned char snum);
-const char *Notification_Type_Label(int nType);
-const char *Get_Moisture_Desc(int moisture);
-const char *Get_Alert_Desc(int level);
-const char *Media_Player_States(_eMediaStatus Status);
-const char *ZWave_Clock_Days(unsigned char Day);
-extern const char *ZWave_Thermostat_Fan_Modes[];
-int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode);
-int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
+const char* RFX_Humidity_Status_Desc(unsigned char status);
+const char* Switch_Type_Desc(_eSwitchType sType);
+const char* Meter_Type_Desc(_eMeterType sType);
+const char* RFX_Forecast_Desc(unsigned char Forecast);
+const char* RFX_WSForecast_Desc(unsigned char Forecast);
+const char* BMP_Forecast_Desc(unsigned char Forecast);
+const char* Timer_Type_Desc(int tType);
+const char* Timer_Cmd_Desc(int tCmd);
+const char* Hardware_Type_Desc(int hType);
+const char* Hardware_Short_Desc(int hType);
+const char* Security_Status_Desc(unsigned char status);
+const char* Notification_Type_Desc(int nType, unsigned char snum);
+const char* Notification_Type_Label(int nType);
+const char* Get_Moisture_Desc(int moisture);
+const char* Get_Alert_Desc(int level);
+const char* Media_Player_States(_eMediaStatus Status);
+const char* ZWave_Clock_Days(unsigned char Day);
+extern const char* ZWave_Thermostat_Fan_Modes[];
+int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string>& Modes, const std::string& sMode);
+int Lookup_ZWave_Thermostat_Fan_Modes(const std::string& sMode);
 
-void GetLightStatus(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, unsigned char nValue, const std::string &sValue, std::string &lstatus, int &llevel, bool &bHaveDimmer,
-		    int &maxDimLevel, bool &bHaveGroupCmd);
+void GetLightStatus(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, unsigned char nValue, const std::string& sValue, std::string& lstatus, int& llevel, bool& bHaveDimmer,
+	int& maxDimLevel, bool& bHaveGroupCmd);
 
-int  GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName);
-std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> &options, int level);
-void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
+int  GetSelectorSwitchLevel(const std::map<std::string, std::string>& options, const std::string& levelName);
+std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string>& options, int level);
+void GetSelectorSwitchStatuses(const std::map<std::string, std::string>& options, std::map<std::string, std::string>& statuses);
 
-bool GetLightCommand(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, std::string switchcmd, unsigned char &cmd, const std::map<std::string, std::string> &options);
+bool GetLightCommand(unsigned char dType, unsigned char dSubType, _eSwitchType switchtype, std::string switchcmd, unsigned char& cmd, const std::map<std::string, std::string>& options);
 
-bool IsLightSwitchOn(const std::string &lstatus);
+bool IsLightSwitchOn(const std::string& lstatus);
 
 bool IsSerialDevice(_eHardwareTypes htype);
 bool IsNetworkDevice(_eHardwareTypes htype);
-void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);
+void ConvertToGeneralSwitchType(std::string& devid, int& dtype, int& subtype);
