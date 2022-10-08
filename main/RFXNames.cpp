@@ -2466,12 +2466,12 @@ bool GetLightCommand(
 			}
 			return false;
 		}
-		if (switchcmd == "Off")
+		if ((switchcmd == "Off") || (switchcmd == "Close"))
 		{
 			cmd = light1_sOff;
 			return true;
 		}
-		if (switchcmd == "On")
+		if ((switchcmd == "On") || (switchcmd == "Open"))
 		{
 			cmd = light1_sOn;
 			return true;
@@ -2654,12 +2654,12 @@ bool GetLightCommand(
 			}
 			return false;
 		}
-		if (switchcmd == "Off")
+		if ((switchcmd == "Off") || (switchcmd == "Close"))
 		{
 			cmd = light5_sOff;
 			return true;
 		}
-		if (switchcmd == "On")
+		if ((switchcmd == "On") || (switchcmd == "Open"))
 		{
 			cmd = light5_sOn;
 			return true;
@@ -2721,12 +2721,12 @@ bool GetLightCommand(
 		}
 		return false;
 	case pTypeLighting6:
-		if (switchcmd == "Off")
+		if ((switchcmd == "Off") || (switchcmd == "Close"))
 		{
 			cmd = light6_sOff;
 			return true;
 		}
-		if (switchcmd == "On")
+		if ((switchcmd == "On") || (switchcmd == "Open"))
 		{
 			cmd = light6_sOn;
 			return true;
@@ -2753,12 +2753,12 @@ bool GetLightCommand(
 			//no other combinations for the door switch
 			return false;
 		}
-		if (switchcmd == "Off")
+		if ((switchcmd == "Off") || (switchcmd == "Close"))
 		{
 			cmd = HomeConfort_sOff;
 			return true;
 		}
-		if (switchcmd == "On")
+		if ((switchcmd == "On") || (switchcmd == "Open"))
 		{
 			cmd = HomeConfort_sOn;
 			return true;
