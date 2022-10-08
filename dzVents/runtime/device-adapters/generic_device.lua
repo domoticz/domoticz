@@ -26,8 +26,9 @@ local function setStateAttribute(state, device, _states)
 	if (state and string.find(state, 'Set Level')) then
 		level = string.match(state, '%d+') -- extract dimming value
 		
+		-- option, set state to 'Set Level' for both ?
 		if (device['switchType'] and string.find(device['switchType'], "Blind")) then
-			--state = 'Open' -- consider the blind to be open
+			state = 'Open' -- consider the blind to be open
 		else
 			state = 'On' -- consider the device to be on
 		end
