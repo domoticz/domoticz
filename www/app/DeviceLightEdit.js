@@ -642,7 +642,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 		
 		function onActionLabel() {
 			if (isBlind() == true) {
-				return $.t('Close Action');
+				return $.t('Open Action');
 			}
 			else {
 				return $.t('On Action');
@@ -651,7 +651,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
 		function offActionLabel() {
 			if (isBlind() == true) {
-				return $.t('Open Action');
+				return $.t('Close Action');
 			}
 			else {
 				return $.t('Off Action');
