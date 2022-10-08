@@ -5291,7 +5291,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 			if (pHardware != nullptr)
 				HWtype = pHardware->HwdType;
 
-			bool bIsBlinds = (
+			bool bIsBlindsPercentage = (
 				(switchtype == STYPE_Dimmer)
 				|| (switchtype == STYPE_BlindsPercentage)
 				|| (switchtype == STYPE_BlindsPercentageWithStop)
@@ -5299,7 +5299,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 
 			if (
 				((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
-				|| (bIsBlinds)
+				|| (bIsBlindsPercentage)
 				)
 			{
 				//update level for device

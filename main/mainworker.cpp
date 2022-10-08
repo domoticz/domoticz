@@ -11466,7 +11466,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
-	bool bIsBlinds = (switchtype == STYPE_Blinds
+	bool bIsBlinds = (
+		switchtype == STYPE_Blinds
 		|| switchtype == STYPE_BlindsPercentage
 		|| switchtype == STYPE_BlindsPercentageWithStop
 		|| switchtype == STYPE_VenetianBlindsEU
@@ -12476,6 +12477,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 			{
 				//For Multilevel switches, 255 (0xFF) means Restore to most recent (non-zero) level,
 				//which is perfect for dimmers, but for blinds (and using the slider), we set it to 99%
+				//this should be done in the openzwave class, but it is deprecated and will be removed soon
 				level = 99;
 				if (gswitch.cmnd == gswitch_sOpen)
 				{

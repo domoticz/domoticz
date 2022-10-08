@@ -9233,10 +9233,10 @@ namespace http
 						}
 						else if (
 							(switchtype == STYPE_Blinds)
-							|| (switchtype == STYPE_VenetianBlindsUS)
-							|| (switchtype == STYPE_VenetianBlindsEU)
 							|| (switchtype == STYPE_BlindsPercentage)
 							|| (switchtype == STYPE_BlindsPercentageWithStop)
+							|| (switchtype == STYPE_VenetianBlindsUS)
+							|| (switchtype == STYPE_VenetianBlindsEU)
 							)
 						{
 							root["result"][ii]["Image"] = "blinds";

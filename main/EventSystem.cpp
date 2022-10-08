@@ -3845,10 +3845,10 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (
 		(switchtype == STYPE_Blinds)
-		|| (switchtype == STYPE_VenetianBlindsUS)
-		|| (switchtype == STYPE_VenetianBlindsEU)
 		|| (switchtype == STYPE_BlindsPercentage)
 		|| (switchtype == STYPE_BlindsPercentageWithStop)
+		|| (switchtype == STYPE_VenetianBlindsUS)
+		|| (switchtype == STYPE_VenetianBlindsEU)
 		)
 	{
 		if (lstatus == "Close inline relay")
