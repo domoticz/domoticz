@@ -3798,11 +3798,7 @@ define(['app', 'livesocket'], function (app) {
 						var TxtOff = "Off";
 						if (dtype == "blinds") {
 							TxtOn = "Open";
-							TxtOff = "Close";
-						}
-						else if (dtype == "blinds_inv") {
-							TxtOn = "Close";
-							TxtOff = "Open";
+							TxtOff = "Closed";
 						}
 						if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 							if (fPercentage == 0) {
@@ -3824,13 +3820,17 @@ define(['app', 'livesocket'], function (app) {
 								imgname = "Fireplace48_O"
 							if (fPercentage == 0) {
 								img = '<img src="images/' + imgname + 'ff.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',' + isProtected + ');" class="lcursor" height="40" width="40">';
-								status = "Off";
+								status = $.t(TxtOff);
 							}
 							else {
 								img = '<img src="images/' + imgname + 'n.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + idx + ',\'Off\',' + isProtected + ');" class="lcursor" height="40" width="40">';
-								status = fPercentage + " %";
+								if ((dtype == "blinds")&&(fPercentage == 100)) {
+									status = $.t(TxtOn);
+								} else {
+									status = fPercentage + " %";
+								}
 							}
-							if ((dtype != "blinds") && (dtype != "blinds_inv") && !isled) {
+							if ((dtype != "blinds") && !isled) {
 								if ($(id + " #img").html() != img) {
 									$(id + " #img").html(img);
 								}
