@@ -1,29 +1,36 @@
-# Building Domoticz via Docker
+Building Domoticz via Docker
 
 This builder still a bit work on progress. It uses Docker to compile OpenZWave and Domoticz. To speed up the build process on macos and Windows it uses a persistent volume for the actual compilation. Currently it supports only builds to amd64 targets. Using `docker buildx` it should be possible to add architectures like Raspberry Pi.
 
+## Prerequisites
+You need to have docker-compose installed.
+To install docker-compose you can use the below instructions:
 
+### docker-compose installation ###
+```shell
+sudo apt install docker-compose
+sudo usermod -aG docker ${USER}
+exit
+```
 
-## Installation
+## Initial Setup
 
-The scripts expect that you've cloned OpenZWave repository besides Domoticz:
+The scripts expect that you've cloned OpenZWave repository besides Domoticz like:
 
 ```shell
-$ git clone https://github.com/domoticz/open-zwave.git
+$ git clone https://github.com/domoticz/domoticz.git dev-domoticz
+$ git clone --depth 1 https://github.com/domoticz/open-zwave.git
 ```
 
 Then create the Docker image:
 
 ```shell
-$ docker-compose -f domoticz/build/docker-compose.yml build
+$ docker-compose -f dev-domoticz/build/docker-compose.yml build
 ```
 
-This can take a while as it builds CMake and Boost from source.
-
-
+`This can take a while as it builds CMake and Boost from source.`
 
 ## Configuration
-
 Optionally you can use `.env.example` as a template to create an `.env` file in the same directory:
 
 ```ini
@@ -61,31 +68,30 @@ Note that `USE_STATIC_BOOST` is not supported, it's always enabled.
 First generate the Domoticz Makefiles:
 
 ```shell
-$ ./domoticz/build/build cmake
+$ ./dev-domoticz/build/build cmake
 ```
 
 Now you can build OpenZWave and Domoticz:
 
 ```shell
-$ ./domoticz/build/build compile
-$ ls -l domoticz/domoticz
--rwxr-xr-x  1 markr  staff  17540712 21 feb 23:33 domoticz/domoticz
+$ ./dev-domoticz/build/build compile
+$ ls -l dev-domoticz/domoticz
+-rwxr-xr-x  1 markr  staff  17540712 21 feb 23:33 dev-domoticz/domoticz
 ```
 
 For testing it can be useful to run Domoticz containerized:
 
 ```shell
-$ ./domoticz/build/build run
+$ ./dev-domoticz/build/build run
 ```
 
 Open http://127.0.0.1:8080/ in your browser.
 
 
-
 ## Usage
 
 ```shell
-$ cd domoticz/build
+$ cd dev-domoticz/build
 $ ./build
 Usage:
   build clean [-p openzwave | domoticz]   # clean source
@@ -101,4 +107,3 @@ Only for OpenZWave:
   build updateIndexDefines
   build test
 ```
-
