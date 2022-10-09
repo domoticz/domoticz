@@ -1161,7 +1161,7 @@ function Sensor(item) {
         this.parent.constructor(item);
        
         this.image = "images/";
-        
+		
         if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
           if (item.SwitchTypeVal == 1) {
             this.image += (item.CustomImage == 0)  ? 'Gas48.png' : item.TypeImg + '48.png';
@@ -1183,12 +1183,12 @@ function Sensor(item) {
             this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
           }
           else {
-            this.image += item.TypeImg + "48.png";
+            this.image += (item.CustomImage == 0)  ? item.TypeImg + '48.png' : item.Image + '48_On.png';
           }
         } else if (item.SubType == "Gas") {
             this.image += "Gas48.png";
         } else {
-            this.image += item.TypeImg + "48.png";
+			this.image += (item.CustomImage == 0)  ? item.TypeImg + '48.png' : item.Image + '48_On.png';
         }
         
         var sensorType = this.type.replace(/\s/g, '');
@@ -1622,7 +1622,7 @@ Humidity.inheritsFrom(WeatherSensor);
 
 function Lightbulb(item) {
     if (arguments.length != 0) {
-        item.TypeImg = "Light";
+        item.TypeImg = "lightbulb";
         this.parent.constructor(item);
     }
 }
@@ -1721,7 +1721,7 @@ function SetPoint(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         if (item.CustomImage != 0 && typeof item.Image != 'undefined') {
-            this.image = "images/" + item.Image + ".png";
+            this.image = "images/" + item.Image + "48_On.png";
         } else {
             this.image = "images/override.png";
         }

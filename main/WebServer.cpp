@@ -8682,809 +8682,936 @@ namespace http
 				}
 			}
 
-			if (!result.empty())
+			if (result.empty())
+				return;
+
+			for (const auto& sd : result)
 			{
-				for (const auto& sd : result)
+				unsigned char favorite = atoi(sd[12].c_str());
+				bool bIsInPlan = !planID.empty() && (planID != "0");
+
+				// Check if we only want favorite devices
+				if (!bIsInPlan)
 				{
-					unsigned char favorite = atoi(sd[12].c_str());
-					bool bIsInPlan = !planID.empty() && (planID != "0");
-
-					// Check if we only want favorite devices
-					if (!bIsInPlan)
-					{
-						if ((bFetchFavorites) && (!favorite))
-							continue;
-					}
-
-					std::string sDeviceName = sd[3];
-
-					if (!bDisplayHidden)
-					{
-						if (_HiddenDevices.find(sd[0]) != _HiddenDevices.end())
-							continue;
-						if (sDeviceName[0] == '$')
-						{
-							if (bAllowDeviceToBeHidden)
-								continue;
-							if (!planID.empty())
-								sDeviceName = sDeviceName.substr(1);
-						}
-					}
-					int hardwareID = atoi(sd[14].c_str());
-					auto hItt = _hardwareNames.find(hardwareID);
-					bool bIsHardwareDisabled = true;
-					if (hItt != _hardwareNames.end())
-					{
-						// ignore sensors where the hardware is disabled
-						if ((!bDisplayDisabled) && (!(*hItt).second.Enabled))
-							continue;
-						bIsHardwareDisabled = !(*hItt).second.Enabled;
-					}
-
-					unsigned int dType = atoi(sd[5].c_str());
-					unsigned int dSubType = atoi(sd[6].c_str());
-					unsigned int used = atoi(sd[4].c_str());
-					int nValue = atoi(sd[9].c_str());
-					std::string sValue = sd[10];
-					std::string sLastUpdate = sd[11];
-					if (sLastUpdate.size() > 19)
-						sLastUpdate = sLastUpdate.substr(0, 19);
-
-					if (iLastUpdate != 0)
-					{
-						time_t cLastUpdate;
-						ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
-						if (cLastUpdate <= iLastUpdate)
-							continue;
-					}
-
-					_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
-					_eMeterType metertype = (_eMeterType)switchtype;
-					double AddjValue = atof(sd[15].c_str());
-					double AddjMulti = atof(sd[16].c_str());
-					double AddjValue2 = atof(sd[17].c_str());
-					double AddjMulti2 = atof(sd[18].c_str());
-					int LastLevel = atoi(sd[19].c_str());
-					int CustomImage = atoi(sd[20].c_str());
-					std::string strParam1 = base64_encode(sd[21]);
-					std::string strParam2 = base64_encode(sd[22]);
-					int iProtected = atoi(sd[23].c_str());
-
-					std::string Description = sd[27];
-					std::string sOptions = sd[28];
-					std::string sColor = sd[29];
-					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
-
-					struct tm ntime;
-					time_t checktime;
-					ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-					bool bHaveTimeout = (now - checktime >= SensorTimeOut * 60);
-
-					if (dType == pTypeTEMP_RAIN)
-						continue; // dont want you for now
-
-					if ((rused == "true") && (!used))
+					if ((bFetchFavorites) && (!favorite))
 						continue;
+				}
 
-					if ((rused == "false") && (used))
+				std::string sDeviceName = sd[3];
+
+				if (!bDisplayHidden)
+				{
+					if (_HiddenDevices.find(sd[0]) != _HiddenDevices.end())
 						continue;
-					if (!rfilter.empty())
+					if (sDeviceName[0] == '$')
 					{
-						if (rfilter == "light")
-						{
-							if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) &&
-								(dType != pTypeLighting5) && (dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) &&
-								(dType != pTypeSecurity2) && (dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) &&
-								(dType != pTypeRFY) && (dType != pTypeChime) && (dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) &&
-								(dType != pTypeRemote) && (dType != pTypeGeneralSwitch) && (dType != pTypeHomeConfort) && (dType != pTypeChime) && (dType != pTypeFS20) &&
-								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter))
-								continue;
-						}
-						else if (rfilter == "temp")
-						{
-							if ((dType != pTypeTEMP) && (dType != pTypeHUM) && (dType != pTypeTEMP_HUM) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) &&
-								(dType != pTypeEvohomeZone) && (dType != pTypeEvohomeWater) && (!((dType == pTypeWIND) && (dSubType == sTypeWIND4))) &&
-								(!((dType == pTypeUV) && (dSubType == sTypeUV3))) && (!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
-								(dType != pTypeThermostat1) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) && (dType != pTypeRego6XXTemp))
-								continue;
-						}
-						else if (rfilter == "weather")
-						{
-							if ((dType != pTypeWIND) && (dType != pTypeRAIN) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) && (dType != pTypeUV) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeVisibility))) && (!((dType == pTypeGeneral) && (dSubType == sTypeBaro))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))))
-								continue;
-						}
-						else if (rfilter == "utility")
-						{
-							if ((dType != pTypeRFXMeter) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))) &&
-								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) && (!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeCurrent))) && (!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) && (!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) && (!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) && (!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) && (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatOperatingState))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) && (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) && (!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
-								(dType != pTypeCURRENT) && (dType != pTypeCURRENTENERGY) && (dType != pTypeENERGY) && (dType != pTypePOWER) && (dType != pTypeP1Power) &&
-								(dType != pTypeP1Gas) && (dType != pTypeYouLess) && (dType != pTypeAirQuality) && (dType != pTypeLux) && (dType != pTypeUsage) &&
-								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
-								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) && (dType != pTypeWEIGHT) &&
-								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))))
-								continue;
-						}
-						else if (rfilter == "wind")
-						{
-							if ((dType != pTypeWIND))
-								continue;
-						}
-						else if (rfilter == "rain")
-						{
-							if ((dType != pTypeRAIN))
-								continue;
-						}
-						else if (rfilter == "uv")
-						{
-							if ((dType != pTypeUV))
-								continue;
-						}
-						else if (rfilter == "baro")
-						{
-							if ((dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO))
-								continue;
-						}
-						else if (rfilter == "zwavealarms")
-						{
-							if (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveAlarm)))
-								continue;
-						}
-					}
-
-					// has this device already been seen, now with different plan?
-					// assume results are ordered such that same device is adjacent
-					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
-					std::string thisIdx = sd[0];
-					int devIdx = atoi(thisIdx.c_str());
-
-					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
-					{
-						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
-						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
-						{
-							root["result"][ii - 1]["PlanIDs"].append(atoi(sd[26].c_str()));
+						if (bAllowDeviceToBeHidden)
 							continue;
+						if (!planID.empty())
+							sDeviceName = sDeviceName.substr(1);
+					}
+				}
+				int hardwareID = atoi(sd[14].c_str());
+				auto hItt = _hardwareNames.find(hardwareID);
+				bool bIsHardwareDisabled = true;
+				if (hItt != _hardwareNames.end())
+				{
+					// ignore sensors where the hardware is disabled
+					if ((!bDisplayDisabled) && (!(*hItt).second.Enabled))
+						continue;
+					bIsHardwareDisabled = !(*hItt).second.Enabled;
+				}
+
+				unsigned int dType = atoi(sd[5].c_str());
+				unsigned int dSubType = atoi(sd[6].c_str());
+				unsigned int used = atoi(sd[4].c_str());
+				int nValue = atoi(sd[9].c_str());
+				std::string sValue = sd[10];
+				std::string sLastUpdate = sd[11];
+				if (sLastUpdate.size() > 19)
+					sLastUpdate = sLastUpdate.substr(0, 19);
+
+				if (iLastUpdate != 0)
+				{
+					time_t cLastUpdate;
+					ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
+					if (cLastUpdate <= iLastUpdate)
+						continue;
+				}
+
+				_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
+				_eMeterType metertype = (_eMeterType)switchtype;
+				double AddjValue = atof(sd[15].c_str());
+				double AddjMulti = atof(sd[16].c_str());
+				double AddjValue2 = atof(sd[17].c_str());
+				double AddjMulti2 = atof(sd[18].c_str());
+				int LastLevel = atoi(sd[19].c_str());
+				int CustomImage = atoi(sd[20].c_str());
+				std::string strParam1 = base64_encode(sd[21]);
+				std::string strParam2 = base64_encode(sd[22]);
+				int iProtected = atoi(sd[23].c_str());
+
+				std::string Description = sd[27];
+				std::string sOptions = sd[28];
+				std::string sColor = sd[29];
+				std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+
+				struct tm ntime;
+				time_t checktime;
+				ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+				bool bHaveTimeout = (now - checktime >= SensorTimeOut * 60);
+
+				if (dType == pTypeTEMP_RAIN)
+					continue; // dont want you for now
+
+				if ((rused == "true") && (!used))
+					continue;
+
+				if ((rused == "false") && (used))
+					continue;
+				if (!rfilter.empty())
+				{
+					if (rfilter == "light")
+					{
+						if ((dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) &&
+							(dType != pTypeLighting5) && (dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) &&
+							(dType != pTypeSecurity2) && (dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) &&
+							(dType != pTypeRFY) && (dType != pTypeChime) && (dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) &&
+							(dType != pTypeRemote) && (dType != pTypeGeneralSwitch) && (dType != pTypeHomeConfort) && (dType != pTypeChime) && (dType != pTypeFS20) &&
+							(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
+							(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter))
+							continue;
+					}
+					else if (rfilter == "temp")
+					{
+						if ((dType != pTypeTEMP) && (dType != pTypeHUM) && (dType != pTypeTEMP_HUM) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) &&
+							(dType != pTypeEvohomeZone) && (dType != pTypeEvohomeWater) && (!((dType == pTypeWIND) && (dSubType == sTypeWIND4))) &&
+							(!((dType == pTypeUV) && (dSubType == sTypeUV3))) && (!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
+							(dType != pTypeThermostat1) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) && (dType != pTypeRego6XXTemp))
+							continue;
+					}
+					else if (rfilter == "weather")
+					{
+						if ((dType != pTypeWIND) && (dType != pTypeRAIN) && (dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO) && (dType != pTypeUV) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeVisibility))) && (!((dType == pTypeGeneral) && (dSubType == sTypeBaro))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))))
+							continue;
+					}
+					else if (rfilter == "utility")
+					{
+						if ((dType != pTypeRFXMeter) && (!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))) &&
+							(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) && (!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeCurrent))) && (!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) && (!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) && (!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) && (!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) && (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatOperatingState))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) && (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
+							(!((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))) && (!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
+							(dType != pTypeCURRENT) && (dType != pTypeCURRENTENERGY) && (dType != pTypeENERGY) && (dType != pTypePOWER) && (dType != pTypeP1Power) &&
+							(dType != pTypeP1Gas) && (dType != pTypeYouLess) && (dType != pTypeAirQuality) && (dType != pTypeLux) && (dType != pTypeUsage) &&
+							(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
+							(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) && (dType != pTypeWEIGHT) &&
+							(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares))))
+							continue;
+					}
+					else if (rfilter == "wind")
+					{
+						if ((dType != pTypeWIND))
+							continue;
+					}
+					else if (rfilter == "rain")
+					{
+						if ((dType != pTypeRAIN))
+							continue;
+					}
+					else if (rfilter == "uv")
+					{
+						if ((dType != pTypeUV))
+							continue;
+					}
+					else if (rfilter == "baro")
+					{
+						if ((dType != pTypeTEMP_HUM_BARO) && (dType != pTypeTEMP_BARO))
+							continue;
+					}
+					else if (rfilter == "zwavealarms")
+					{
+						if (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveAlarm)))
+							continue;
+					}
+				}
+
+				// has this device already been seen, now with different plan?
+				// assume results are ordered such that same device is adjacent
+				// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+				std::string thisIdx = sd[0];
+				const int devIdx = atoi(thisIdx.c_str());
+
+				if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
+				{
+					std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
+					if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
+					{
+						root["result"][ii - 1]["PlanIDs"].append(atoi(sd[26].c_str()));
+						continue;
+					}
+				}
+
+				root["result"][ii]["HardwareID"] = hardwareID;
+				if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
+				{
+					root["result"][ii]["HardwareName"] = "Unknown?";
+					root["result"][ii]["HardwareTypeVal"] = 0;
+					root["result"][ii]["HardwareType"] = "Unknown?";
+				}
+				else
+				{
+					root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
+					root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
+					root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
+				}
+				root["result"][ii]["HardwareDisabled"] = bIsHardwareDisabled;
+
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Protected"] = (iProtected != 0);
+
+				CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hardwareID);
+				if (pHardware != nullptr)
+				{
+					if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
+					{
+						int seSensorTimeOut = 60 * 24 * 60;
+						bHaveTimeout = (now - checktime >= seSensorTimeOut * 60);
+					}
+					else if (pHardware->HwdType == HTYPE_Wunderground)
+					{
+						CWunderground* pWHardware = dynamic_cast<CWunderground*>(pHardware);
+						std::string forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
 						}
 					}
-
-					root["result"][ii]["HardwareID"] = hardwareID;
-					if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
+					else if (pHardware->HwdType == HTYPE_DarkSky)
 					{
-						root["result"][ii]["HardwareName"] = "Unknown?";
-						root["result"][ii]["HardwareTypeVal"] = 0;
-						root["result"][ii]["HardwareType"] = "Unknown?";
+						CDarkSky* pWHardware = dynamic_cast<CDarkSky*>(pHardware);
+						std::string forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_AccuWeather)
+					{
+						CAccuWeather* pWHardware = dynamic_cast<CAccuWeather*>(pHardware);
+						std::string forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
+					{
+						COpenWeatherMap* pWHardware = dynamic_cast<COpenWeatherMap*>(pHardware);
+						std::string forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_BuienRadar)
+					{
+						CBuienRadar* pWHardware = dynamic_cast<CBuienRadar*>(pHardware);
+						std::string forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+						}
+					}
+					else if (pHardware->HwdType == HTYPE_Meteorologisk)
+					{
+						CMeteorologisk* pWHardware = dynamic_cast<CMeteorologisk*>(pHardware);
+						std::string forecast_url = pWHardware->GetForecastURL();
+						if (!forecast_url.empty())
+						{
+							root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
+						}
+					}
+				}
+
+				if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_PythonPlugin))
+				{
+					// Device ID special formatting should not be applied to Python plugins
+					root["result"][ii]["ID"] = sd[1];
+				}
+				else
+				{
+					if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) ||
+						(dType == pTypeHUM) || (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) ||
+						(dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) || (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) ||
+						(dType == pTypeP1Power) || (dType == pTypeP1Gas))
+					{
+						root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int)atoi(sd[1].c_str())) : sd[1];
 					}
 					else
 					{
-						root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
-						root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
-						root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
-					}
-					root["result"][ii]["HardwareDisabled"] = bIsHardwareDisabled;
-
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Protected"] = (iProtected != 0);
-
-					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(hardwareID);
-					if (pHardware != nullptr)
-					{
-						if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
-						{
-							int seSensorTimeOut = 60 * 24 * 60;
-							bHaveTimeout = (now - checktime >= seSensorTimeOut * 60);
-						}
-						else if (pHardware->HwdType == HTYPE_Wunderground)
-						{
-							CWunderground* pWHardware = dynamic_cast<CWunderground*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-						else if (pHardware->HwdType == HTYPE_DarkSky)
-						{
-							CDarkSky* pWHardware = dynamic_cast<CDarkSky*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-						else if (pHardware->HwdType == HTYPE_AccuWeather)
-						{
-							CAccuWeather* pWHardware = dynamic_cast<CAccuWeather*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-						else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
-						{
-							COpenWeatherMap* pWHardware = dynamic_cast<COpenWeatherMap*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-						else if (pHardware->HwdType == HTYPE_BuienRadar)
-						{
-							CBuienRadar* pWHardware = dynamic_cast<CBuienRadar*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-						else if (pHardware->HwdType == HTYPE_Meteorologisk)
-						{
-							CMeteorologisk* pWHardware = dynamic_cast<CMeteorologisk*>(pHardware);
-							std::string forecast_url = pWHardware->GetForecastURL();
-							if (!forecast_url.empty())
-							{
-								root["result"][ii]["forecast_url"] = base64_encode(forecast_url);
-							}
-						}
-					}
-
-					if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_PythonPlugin))
-					{
-						// Device ID special formatting should not be applied to Python plugins
 						root["result"][ii]["ID"] = sd[1];
 					}
-					else
+				}
+
+				root["result"][ii]["Unit"] = atoi(sd[2].c_str());
+				root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
+				root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
+				root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
+				root["result"][ii]["Name"] = sDeviceName;
+				root["result"][ii]["Description"] = Description;
+				root["result"][ii]["Used"] = used;
+				root["result"][ii]["Favorite"] = favorite;
+
+				int iSignalLevel = atoi(sd[7].c_str());
+				if (iSignalLevel < 12)
+					root["result"][ii]["SignalLevel"] = iSignalLevel;
+				else
+					root["result"][ii]["SignalLevel"] = "-";
+				root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
+				root["result"][ii]["LastUpdate"] = sLastUpdate;
+
+				root["result"][ii]["CustomImage"] = CustomImage;
+				if (CustomImage != 0)
+				{
+					auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+					if (ittIcon != m_custom_light_icons_lookup.end())
 					{
-						if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) ||
-							(dType == pTypeHUM) || (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) ||
-							(dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) || (dType == pTypeRFXMeter) || (dType == pTypeAirQuality) || (dType == pTypeRFXSensor) ||
-							(dType == pTypeP1Power) || (dType == pTypeP1Gas))
-						{
-							root["result"][ii]["ID"] = is_number(sd[1]) ? std_format("%04X", (unsigned int)atoi(sd[1].c_str())) : sd[1];
-						}
-						else
-						{
-							root["result"][ii]["ID"] = sd[1];
-						}
+						root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
 					}
-					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
-					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
-					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
-					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
-					root["result"][ii]["Name"] = sDeviceName;
-					root["result"][ii]["Description"] = Description;
-					root["result"][ii]["Used"] = used;
-					root["result"][ii]["Favorite"] = favorite;
+				}
 
-					int iSignalLevel = atoi(sd[7].c_str());
-					if (iSignalLevel < 12)
-						root["result"][ii]["SignalLevel"] = iSignalLevel;
-					else
-						root["result"][ii]["SignalLevel"] = "-";
-					root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
-					root["result"][ii]["LastUpdate"] = sLastUpdate;
-					root["result"][ii]["CustomImage"] = CustomImage;
-					root["result"][ii]["XOffset"] = sd[24].c_str();
-					root["result"][ii]["YOffset"] = sd[25].c_str();
-					root["result"][ii]["PlanID"] = sd[26].c_str();
-					Json::Value jsonArray;
-					jsonArray.append(atoi(sd[26].c_str()));
-					root["result"][ii]["PlanIDs"] = jsonArray;
-					root["result"][ii]["AddjValue"] = AddjValue;
-					root["result"][ii]["AddjMulti"] = AddjMulti;
-					root["result"][ii]["AddjValue2"] = AddjValue2;
-					root["result"][ii]["AddjMulti2"] = AddjMulti2;
+				root["result"][ii]["XOffset"] = sd[24].c_str();
+				root["result"][ii]["YOffset"] = sd[25].c_str();
+				root["result"][ii]["PlanID"] = sd[26].c_str();
+				Json::Value jsonArray;
+				jsonArray.append(atoi(sd[26].c_str()));
+				root["result"][ii]["PlanIDs"] = jsonArray;
+				root["result"][ii]["AddjValue"] = AddjValue;
+				root["result"][ii]["AddjMulti"] = AddjMulti;
+				root["result"][ii]["AddjValue2"] = AddjValue2;
+				root["result"][ii]["AddjMulti2"] = AddjMulti2;
 
-					std::stringstream s_data;
-					s_data << int(nValue) << ", " << sValue;
-					root["result"][ii]["Data"] = s_data.str();
+				std::stringstream s_data;
+				s_data << int(nValue) << ", " << sValue;
+				root["result"][ii]["Data"] = s_data.str();
 
-					root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
-					root["result"][ii]["ShowNotifications"] = true;
+				root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
+				root["result"][ii]["ShowNotifications"] = true;
 
-					bool bHasTimers = false;
+				bool bHasTimers = false;
 
-					if ((dType == pTypeLighting1) || (dType == pTypeLighting2) || (dType == pTypeLighting3) || (dType == pTypeLighting4) || (dType == pTypeLighting5) ||
-						(dType == pTypeLighting6) || (dType == pTypeFan) || (dType == pTypeColorSwitch) || (dType == pTypeCurtain) || (dType == pTypeBlinds) ||
-						(dType == pTypeRFY) || (dType == pTypeChime) || (dType == pTypeThermostat2) || (dType == pTypeThermostat3) || (dType == pTypeThermostat4) ||
-						(dType == pTypeRemote) || (dType == pTypeGeneralSwitch) || (dType == pTypeHomeConfort) || (dType == pTypeFS20) ||
-						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) || ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus)) ||
-						(dType == pTypeHunter))
-					{
-						// add light details
-						bHasTimers = m_sql.HasTimers(sd[0]);
+				if (
+					(dType == pTypeLighting1)
+					|| (dType == pTypeLighting2)
+					|| (dType == pTypeLighting3)
+					|| (dType == pTypeLighting4)
+					|| (dType == pTypeLighting5)
+					|| (dType == pTypeLighting6)
+					|| (dType == pTypeFan)
+					|| (dType == pTypeColorSwitch)
+					|| (dType == pTypeCurtain)
+					|| (dType == pTypeBlinds)
+					|| (dType == pTypeRFY)
+					|| (dType == pTypeChime)
+					|| (dType == pTypeThermostat2)
+					|| (dType == pTypeThermostat3)
+					|| (dType == pTypeThermostat4)
+					|| (dType == pTypeRemote)
+					|| (dType == pTypeGeneralSwitch)
+					|| (dType == pTypeHomeConfort)
+					|| (dType == pTypeFS20)
+					|| ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
+					|| ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+					|| (dType == pTypeHunter))
+				{
+					// add light details
+					bHasTimers = m_sql.HasTimers(sd[0]);
 
-						bHaveTimeout = false;
+					bHaveTimeout = false;
 #ifdef WITH_OPENZWAVE
-						if (pHardware != nullptr)
+					if (pHardware != nullptr)
+					{
+						if (pHardware->HwdType == HTYPE_OpenZWave)
 						{
-							if (pHardware->HwdType == HTYPE_OpenZWave)
-							{
-								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-								unsigned long ID;
-								std::stringstream s_strid;
-								s_strid << std::hex << sd[1];
-								s_strid >> ID;
-								int nodeID = (ID & 0x0000FF00) >> 8;
-								bHaveTimeout = pZWave->HasNodeFailed(nodeID);
-							}
+							COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+							unsigned long ID;
+							std::stringstream s_strid;
+							s_strid << std::hex << sd[1];
+							s_strid >> ID;
+							int nodeID = (ID & 0x0000FF00) >> 8;
+							bHaveTimeout = pZWave->HasNodeFailed(nodeID);
 						}
+					}
 #endif
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
-						std::string lstatus;
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
+					std::string lstatus;
+					int llevel = 0;
+					bool bHaveDimmer = false;
+					bool bHaveGroupCmd = false;
+					int maxDimLevel = 0;
 
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
-						root["result"][ii]["Status"] = lstatus;
-						root["result"][ii]["StrParam1"] = strParam1;
-						root["result"][ii]["StrParam2"] = strParam2;
+					root["result"][ii]["Status"] = lstatus;
+					root["result"][ii]["StrParam1"] = strParam1;
+					root["result"][ii]["StrParam2"] = strParam2;
 
-						std::string IconFile = "Light";
-						auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
-						if (ittIcon != m_custom_light_icons_lookup.end())
+					if (!CustomImage)
+						root["result"][ii]["Image"] = "Light";
+
+					if (switchtype == STYPE_Dimmer)
+					{
+						root["result"][ii]["Level"] = LastLevel;
+						int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+						root["result"][ii]["LevelInt"] = iLevel;
+						if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
+							(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
+							(dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
 						{
-							IconFile = m_custom_light_icons[ittIcon->second].RootFile;
-						}
-						root["result"][ii]["Image"] = IconFile;
-
-						if (switchtype == STYPE_Dimmer)
-						{
-							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
-							root["result"][ii]["LevelInt"] = iLevel;
-							if ((dType == pTypeColorSwitch) || (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
-								(dType == pTypeLighting5 && dSubType == sTypeTRC02_2) || (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
-								(dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
+							_tColor color(sColor);
+							std::string jsonColor = color.toJSONString();
+							root["result"][ii]["Color"] = jsonColor;
+							llevel = LastLevel;
+							if (lstatus == "Set Level" || lstatus == "Set Color")
 							{
-								_tColor color(sColor);
-								std::string jsonColor = color.toJSONString();
-								root["result"][ii]["Color"] = jsonColor;
-								llevel = LastLevel;
-								if (lstatus == "Set Level" || lstatus == "Set Color")
-								{
-									sprintf(szTmp, "Set Level: %d %%", LastLevel);
-									root["result"][ii]["Status"] = szTmp;
-								}
+								sprintf(szTmp, "Set Level: %d %%", LastLevel);
+								root["result"][ii]["Status"] = szTmp;
 							}
+						}
+					}
+					else
+					{
+						root["result"][ii]["Level"] = llevel;
+						root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+					}
+					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+					std::string DimmerType = "none";
+					if (switchtype == STYPE_Dimmer)
+					{
+						DimmerType = "abs";
+						if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
+						{
+							// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
+							if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
+								atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
+								(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
+									atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
+									atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
+							{
+								DimmerType = "rel";
+							}
+						}
+					}
+					root["result"][ii]["DimmerType"] = DimmerType;
+					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+					root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
+					root["result"][ii]["SwitchTypeVal"] = switchtype;
+					uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
+					root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+					if (camIDX != 0)
+					{
+						std::stringstream scidx;
+						scidx << camIDX;
+						root["result"][ii]["CameraIdx"] = scidx.str();
+						root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
+					}
+
+					bool bIsSubDevice = false;
+					std::vector<std::vector<std::string>> resultSD;
+					resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
+					bIsSubDevice = (!resultSD.empty());
+
+					root["result"][ii]["IsSubDevice"] = bIsSubDevice;
+
+					std::string openStatus = "Open";
+					std::string closedStatus = "Closed";
+					if (switchtype == STYPE_Doorbell)
+					{
+						root["result"][ii]["TypeImg"] = "doorbell";
+						root["result"][ii]["Status"] = ""; //"Pressed";
+					}
+					else if (switchtype == STYPE_DoorContact)
+					{
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Door";
+						root["result"][ii]["TypeImg"] = "door";
+						bool bIsOn = IsLightSwitchOn(lstatus);
+						root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
+						if (bIsOn)
+						{
+							lstatus = "Open";
 						}
 						else
 						{
-							root["result"][ii]["Level"] = llevel;
-							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+							lstatus = "Closed";
 						}
-						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-						std::string DimmerType = "none";
-						if (switchtype == STYPE_Dimmer)
+						root["result"][ii]["Status"] = lstatus;
+					}
+					else if (switchtype == STYPE_DoorLock)
+					{
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Door";
+						root["result"][ii]["TypeImg"] = "door";
+						bool bIsOn = IsLightSwitchOn(lstatus);
+						root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
+						if (bIsOn)
 						{
-							DimmerType = "abs";
-							if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
-							{
-								// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
-								if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
-									atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
-									(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
-										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
-										atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
-								{
-									DimmerType = "rel";
-								}
-							}
+							lstatus = "Locked";
 						}
-						root["result"][ii]["DimmerType"] = DimmerType;
-						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-						root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
-						root["result"][ii]["SwitchTypeVal"] = switchtype;
-						uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
-						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
-						if (camIDX != 0)
+						else
 						{
-							std::stringstream scidx;
-							scidx << camIDX;
-							root["result"][ii]["CameraIdx"] = scidx.str();
-							root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
+							lstatus = "Unlocked";
+						}
+						root["result"][ii]["Status"] = lstatus;
+					}
+					else if (switchtype == STYPE_DoorLockInverted)
+					{
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Door";
+						root["result"][ii]["TypeImg"] = "door";
+						bool bIsOn = IsLightSwitchOn(lstatus);
+						root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
+						if (bIsOn)
+						{
+							lstatus = "Unlocked";
+						}
+						else
+						{
+							lstatus = "Locked";
+						}
+						root["result"][ii]["Status"] = lstatus;
+					}
+					else if (switchtype == STYPE_PushOn)
+					{
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Push";
+						root["result"][ii]["TypeImg"] = "push";
+						root["result"][ii]["Status"] = "";
+						root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
+					}
+					else if (switchtype == STYPE_PushOff)
+					{
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Push";
+						root["result"][ii]["TypeImg"] = "push";
+						root["result"][ii]["Status"] = "";
+						root["result"][ii]["TypeImg"] = "pushoff";
+					}
+					else if (switchtype == STYPE_X10Siren)
+						root["result"][ii]["TypeImg"] = "siren";
+					else if (switchtype == STYPE_SMOKEDETECTOR)
+					{
+						root["result"][ii]["TypeImg"] = "smoke";
+						root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
+						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+					}
+					else if (switchtype == STYPE_Contact)
+					{
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Contact";
+						root["result"][ii]["TypeImg"] = "contact";
+						bool bIsOn = IsLightSwitchOn(lstatus);
+						if (bIsOn)
+						{
+							lstatus = "Open";
+						}
+						else
+						{
+							lstatus = "Closed";
+						}
+						root["result"][ii]["Status"] = lstatus;
+					}
+					else if (switchtype == STYPE_Media)
+					{
+						if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+							root["result"][ii]["TypeImg"] = "LogitechMediaServer";
+						else
+							root["result"][ii]["TypeImg"] = "Media";
+						root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
+						lstatus = sValue;
+					}
+					else if (
+						(switchtype == STYPE_Blinds)
+						|| (switchtype == STYPE_BlindsPercentage)
+						|| (switchtype == STYPE_BlindsPercentageWithStop)
+						|| (switchtype == STYPE_VenetianBlindsUS)
+						|| (switchtype == STYPE_VenetianBlindsEU)
+						)
+					{
+						root["result"][ii]["Image"] = "blinds";
+						root["result"][ii]["TypeImg"] = "blinds";
+
+						if (lstatus == "Close inline relay")
+						{
+							lstatus = "Close";
+						}
+						else if (lstatus == "Open inline relay")
+						{
+							lstatus = "Open";
+						}
+						else if (lstatus == "Stop inline relay")
+						{
+							lstatus = "Stop";
 						}
 
-						bool bIsSubDevice = false;
-						std::vector<std::vector<std::string>> resultSD;
-						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
-						bIsSubDevice = (!resultSD.empty());
+						bool bReverseState = false;
+						bool bReversePosition = false;
 
-						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
+						auto itt = options.find("ReverseState");
+						if (itt != options.end())
+							bReverseState = (itt->second == "true");
+						itt = options.find("ReversePosition");
+						if (itt != options.end())
+							bReversePosition = (itt->second == "true");
 
-						std::string openStatus = "Open";
-						std::string closedStatus = "Closed";
-						if (switchtype == STYPE_Doorbell)
+						if (bReversePosition)
 						{
-							root["result"][ii]["TypeImg"] = "doorbell";
-							root["result"][ii]["Status"] = ""; //"Pressed";
+							LastLevel = 100 - LastLevel;
+							if (lstatus.find("Set Level") == 0)
+								lstatus = std_format("Set Level: %d %%", LastLevel);
 						}
-						else if (switchtype == STYPE_DoorContact)
-						{
-							if (CustomImage == 0)
-							{
-								root["result"][ii]["Image"] = "Door";
-							}
-							root["result"][ii]["TypeImg"] = "door";
-							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
-							if (bIsOn)
-							{
-								lstatus = "Open";
-							}
-							else
-							{
-								lstatus = "Closed";
-							}
-							root["result"][ii]["Status"] = lstatus;
-						}
-						else if (switchtype == STYPE_DoorLock)
-						{
-							if (CustomImage == 0)
-							{
-								root["result"][ii]["Image"] = "Door";
-							}
-							root["result"][ii]["TypeImg"] = "door";
-							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
-							if (bIsOn)
-							{
-								lstatus = "Locked";
-							}
-							else
-							{
-								lstatus = "Unlocked";
-							}
-							root["result"][ii]["Status"] = lstatus;
-						}
-						else if (switchtype == STYPE_DoorLockInverted)
-						{
-							if (CustomImage == 0)
-							{
-								root["result"][ii]["Image"] = "Door";
-							}
-							root["result"][ii]["TypeImg"] = "door";
-							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
-							if (bIsOn)
-							{
-								lstatus = "Unlocked";
-							}
-							else
-							{
-								lstatus = "Locked";
-							}
-							root["result"][ii]["Status"] = lstatus;
-						}
-						else if (switchtype == STYPE_PushOn)
-						{
-							if (CustomImage == 0)
-							{
-								root["result"][ii]["Image"] = "Push";
-							}
-							root["result"][ii]["TypeImg"] = "push";
-							root["result"][ii]["Status"] = "";
-							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
-						}
-						else if (switchtype == STYPE_PushOff)
-						{
-							if (CustomImage == 0)
-							{
-								root["result"][ii]["Image"] = "Push";
-							}
-							root["result"][ii]["TypeImg"] = "push";
-							root["result"][ii]["Status"] = "";
-							root["result"][ii]["TypeImg"] = "pushoff";
-						}
-						else if (switchtype == STYPE_X10Siren)
-							root["result"][ii]["TypeImg"] = "siren";
-						else if (switchtype == STYPE_SMOKEDETECTOR)
-						{
-							root["result"][ii]["TypeImg"] = "smoke";
-							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
-							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
-						}
-						else if (switchtype == STYPE_Contact)
-						{
-							if (CustomImage == 0)
-							{
-								root["result"][ii]["Image"] = "Contact";
-							}
-							root["result"][ii]["TypeImg"] = "contact";
-							bool bIsOn = IsLightSwitchOn(lstatus);
-							if (bIsOn)
-							{
-								lstatus = "Open";
-							}
-							else
-							{
-								lstatus = "Closed";
-							}
-							root["result"][ii]["Status"] = lstatus;
-						}
-						else if (switchtype == STYPE_Media)
-						{
-							if ((pHardware != nullptr) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
-								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
-							else
-								root["result"][ii]["TypeImg"] = "Media";
-							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
-							lstatus = sValue;
-						}
-						else if (
-							(switchtype == STYPE_Blinds)
-							|| (switchtype == STYPE_BlindsPercentage)
-							|| (switchtype == STYPE_BlindsPercentageWithStop)
-							|| (switchtype == STYPE_VenetianBlindsUS)
-							|| (switchtype == STYPE_VenetianBlindsEU)
-							)
-						{
-							root["result"][ii]["Image"] = "blinds";
-							root["result"][ii]["TypeImg"] = "blinds";
 
-							if (lstatus == "Close inline relay")
-							{
+						if (bReverseState)
+						{
+							if (lstatus == "Open")
 								lstatus = "Close";
-							}
-							else if (lstatus == "Open inline relay")
-							{
+							else if (lstatus == "Close")
 								lstatus = "Open";
-							}
-							else if (lstatus == "Stop inline relay")
-							{
-								lstatus = "Stop";
-							}
-
-							bool bReverseState = false;
-							bool bReversePosition = false;
-
-							auto itt = options.find("ReverseState");
-							if (itt != options.end())
-								bReverseState = (itt->second == "true");
-							itt = options.find("ReversePosition");
-							if (itt != options.end())
-								bReversePosition = (itt->second == "true");
-
-							if (bReversePosition)
-							{
-								LastLevel = 100 - LastLevel;
-								if (lstatus.find("Set Level") == 0)
-									lstatus = std_format("Set Level: %d %%", LastLevel);
-							}
-
-							if (bReverseState)
-							{
-								if (lstatus == "Open")
-									lstatus = "Close";
-								else if (lstatus == "Close")
-									lstatus = "Open";
-							}
-
-
-							if (lstatus == "Close")
-							{
-								lstatus = closedStatus;
-							}
-							else if (lstatus == "Open")
-							{
-								lstatus = openStatus;
-							}
-							else if (lstatus == "Stop")
-							{
-								lstatus = "Stopped";
-							}
-							root["result"][ii]["Status"] = lstatus;
-
-							root["result"][ii]["Level"] = LastLevel;
-							int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
-							root["result"][ii]["LevelInt"] = iLevel;
-
-							root["result"][ii]["ReverseState"] = bReverseState;
-							root["result"][ii]["ReversePosition"] = bReversePosition;
 						}
-						else if (switchtype == STYPE_Dimmer)
+
+
+						if (lstatus == "Close")
 						{
-							root["result"][ii]["TypeImg"] = "dimmer";
+							lstatus = closedStatus;
 						}
-						else if (switchtype == STYPE_Motion)
+						else if (lstatus == "Open")
 						{
-							root["result"][ii]["TypeImg"] = "motion";
+							lstatus = openStatus;
 						}
-						else if (switchtype == STYPE_Selector)
+						else if (lstatus == "Stop")
 						{
-							std::string selectorStyle = options["SelectorStyle"];
-							std::string levelOffHidden = options["LevelOffHidden"];
-							std::string levelNames = options["LevelNames"];
-							std::string levelActions = options["LevelActions"];
-							if (selectorStyle.empty())
-							{
-								selectorStyle.assign("0"); // default is 'button set'
-							}
-							if (levelOffHidden.empty())
-							{
-								levelOffHidden.assign("false"); // default is 'not hidden'
-							}
-							if (levelNames.empty())
-							{
-								levelNames.assign("Off"); // default is Off only
-							}
-							root["result"][ii]["TypeImg"] = "Light";
-							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
-							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
-							root["result"][ii]["LevelNames"] = base64_encode(levelNames);
-							root["result"][ii]["LevelActions"] = base64_encode(levelActions);
+							lstatus = "Stopped";
 						}
-						sprintf(szData, "%s", lstatus.c_str());
-						root["result"][ii]["Data"] = szData;
-					}
-					else if (dType == pTypeSecurity1)
-					{
-						std::string lstatus;
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
-
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
 						root["result"][ii]["Status"] = lstatus;
-						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-						root["result"][ii]["SwitchType"] = "Security";
-						root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
-						root["result"][ii]["TypeImg"] = "security";
-						root["result"][ii]["StrParam1"] = strParam1;
-						root["result"][ii]["StrParam2"] = strParam2;
-						root["result"][ii]["Protected"] = (iProtected != 0);
 
-						if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (dSubType == sTypeRM174RF) || (switchtype == STYPE_SMOKEDETECTOR))
+						root["result"][ii]["Level"] = LastLevel;
+						int iLevel = round((float(maxDimLevel) / 100.0F) * LastLevel);
+						root["result"][ii]["LevelInt"] = iLevel;
+
+						root["result"][ii]["ReverseState"] = bReverseState;
+						root["result"][ii]["ReversePosition"] = bReversePosition;
+					}
+					else if (switchtype == STYPE_Dimmer)
+					{
+						root["result"][ii]["TypeImg"] = "dimmer";
+					}
+					else if (switchtype == STYPE_Motion)
+					{
+						root["result"][ii]["TypeImg"] = "motion";
+					}
+					else if (switchtype == STYPE_Selector)
+					{
+						std::string selectorStyle = options["SelectorStyle"];
+						std::string levelOffHidden = options["LevelOffHidden"];
+						std::string levelNames = options["LevelNames"];
+						std::string levelActions = options["LevelActions"];
+						if (selectorStyle.empty())
 						{
-							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
-							root["result"][ii]["TypeImg"] = "smoke";
-							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+							selectorStyle.assign("0"); // default is 'button set'
 						}
-						sprintf(szData, "%s", lstatus.c_str());
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = false;
-					}
-					else if (dType == pTypeSecurity2)
-					{
-						std::string lstatus;
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
-
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
-						root["result"][ii]["Status"] = lstatus;
-						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-						root["result"][ii]["SwitchType"] = "Security";
-						root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
-						root["result"][ii]["TypeImg"] = "security";
-						root["result"][ii]["StrParam1"] = strParam1;
-						root["result"][ii]["StrParam2"] = strParam2;
-						root["result"][ii]["Protected"] = (iProtected != 0);
-						sprintf(szData, "%s", lstatus.c_str());
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = false;
-					}
-					else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
-					{
-						std::string lstatus;
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
-
-						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
-						root["result"][ii]["Status"] = lstatus;
-						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
-						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
-						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
-						root["result"][ii]["SwitchType"] = "evohome";
-						root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
-						root["result"][ii]["TypeImg"] = "override_mini";
-						root["result"][ii]["StrParam1"] = strParam1;
-						root["result"][ii]["StrParam2"] = strParam2;
-						root["result"][ii]["Protected"] = (iProtected != 0);
-
-						sprintf(szData, "%s", lstatus.c_str());
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = false;
-
-						if (dType == pTypeEvohomeRelay)
+						if (levelOffHidden.empty())
 						{
-							root["result"][ii]["SwitchType"] = "TPI";
-							root["result"][ii]["Level"] = llevel;
-							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
-							if (root["result"][ii]["Unit"].asInt() > 100)
-								root["result"][ii]["Protected"] = true;
-
-							sprintf(szData, "%s: %d", lstatus.c_str(), atoi(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
+							levelOffHidden.assign("false"); // default is 'not hidden'
 						}
+						if (levelNames.empty())
+						{
+							levelNames.assign("Off"); // default is Off only
+						}
+						root["result"][ii]["TypeImg"] = "Light";
+						root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
+						root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
+						root["result"][ii]["LevelNames"] = base64_encode(levelNames);
+						root["result"][ii]["LevelActions"] = base64_encode(levelActions);
 					}
-					else if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+					sprintf(szData, "%s", lstatus.c_str());
+					root["result"][ii]["Data"] = szData;
+				}
+				else if (dType == pTypeSecurity1)
+				{
+					std::string lstatus;
+					int llevel = 0;
+					bool bHaveDimmer = false;
+					bool bHaveGroupCmd = false;
+					int maxDimLevel = 0;
+
+					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+					root["result"][ii]["Status"] = lstatus;
+					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+					root["result"][ii]["SwitchType"] = "Security";
+					root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
+					root["result"][ii]["TypeImg"] = "security";
+					root["result"][ii]["StrParam1"] = strParam1;
+					root["result"][ii]["StrParam2"] = strParam2;
+					root["result"][ii]["Protected"] = (iProtected != 0);
+
+					if ((dSubType == sTypeKD101) || (dSubType == sTypeSA30) || (dSubType == sTypeRM174RF) || (switchtype == STYPE_SMOKEDETECTOR))
 					{
+						root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
+						root["result"][ii]["TypeImg"] = "smoke";
+						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
+					}
+					sprintf(szData, "%s", lstatus.c_str());
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = false;
+				}
+				else if (dType == pTypeSecurity2)
+				{
+					std::string lstatus;
+					int llevel = 0;
+					bool bHaveDimmer = false;
+					bool bHaveGroupCmd = false;
+					int maxDimLevel = 0;
+
+					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+					root["result"][ii]["Status"] = lstatus;
+					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+					root["result"][ii]["SwitchType"] = "Security";
+					root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
+					root["result"][ii]["TypeImg"] = "security";
+					root["result"][ii]["StrParam1"] = strParam1;
+					root["result"][ii]["StrParam2"] = strParam2;
+					root["result"][ii]["Protected"] = (iProtected != 0);
+					sprintf(szData, "%s", lstatus.c_str());
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = false;
+				}
+				else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
+				{
+					std::string lstatus;
+					int llevel = 0;
+					bool bHaveDimmer = false;
+					bool bHaveGroupCmd = false;
+					int maxDimLevel = 0;
+
+					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+					root["result"][ii]["Status"] = lstatus;
+					root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+					root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+					root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+					root["result"][ii]["SwitchType"] = "evohome";
+					root["result"][ii]["SwitchTypeVal"] = switchtype; // was 0?;
+					root["result"][ii]["TypeImg"] = "override_mini";
+					root["result"][ii]["StrParam1"] = strParam1;
+					root["result"][ii]["StrParam2"] = strParam2;
+					root["result"][ii]["Protected"] = (iProtected != 0);
+
+					sprintf(szData, "%s", lstatus.c_str());
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = false;
+
+					if (dType == pTypeEvohomeRelay)
+					{
+						root["result"][ii]["SwitchType"] = "TPI";
+						root["result"][ii]["Level"] = llevel;
+						root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+						if (root["result"][ii]["Unit"].asInt() > 100)
+							root["result"][ii]["Protected"] = true;
+
+						sprintf(szData, "%s: %d", lstatus.c_str(), atoi(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+					}
+				}
+				else if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
+				{
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					root["result"][ii]["TypeImg"] = "override_mini";
+
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() >= 3)
+					{
+						int i = 0;
+						double tempCelcius = atof(strarray[i++].c_str());
+						double temp = ConvertTemperature(tempCelcius, tempsign);
+						double tempSetPoint;
+						root["result"][ii]["Temp"] = temp;
+						if (dType == pTypeEvohomeWater && (strarray[i] == "Off" || strarray[i] == "On"))
+						{
+							root["result"][ii]["State"] = strarray[i++];
+						}
+						else
+						{
+							tempCelcius = atof(strarray[i++].c_str());
+							tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
+							root["result"][ii]["SetPoint"] = tempSetPoint;
+						}
+
+						std::string strstatus = strarray[i++];
+						root["result"][ii]["Status"] = strstatus;
+
+						if ((dType == pTypeEvohomeZone || dType == pTypeEvohomeWater) && strarray.size() >= 4)
+						{
+							root["result"][ii]["Until"] = strarray[i++];
+						}
+						if (dType == pTypeEvohomeZone)
+						{
+							if (tempCelcius == 325.1)
+								sprintf(szTmp, "Off");
+							else
+								sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
+							if (strarray.size() >= 4)
+								sprintf(szData, "%.1f %c, (%s), %s until %s", temp, tempsign, szTmp, strstatus.c_str(), strarray[3].c_str());
+							else
+								sprintf(szData, "%.1f %c, (%s), %s", temp, tempsign, szTmp, strstatus.c_str());
+						}
+						else if (strarray.size() >= 4)
+							sprintf(szData, "%.1f %c, %s, %s until %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str(), strarray[3].c_str());
+						else
+							sprintf(szData, "%.1f %c, %s, %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str());
+						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "override_mini";
-
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() >= 3)
-						{
-							int i = 0;
-							double tempCelcius = atof(strarray[i++].c_str());
-							double temp = ConvertTemperature(tempCelcius, tempsign);
-							double tempSetPoint;
-							root["result"][ii]["Temp"] = temp;
-							if (dType == pTypeEvohomeWater && (strarray[i] == "Off" || strarray[i] == "On"))
-							{
-								root["result"][ii]["State"] = strarray[i++];
-							}
-							else
-							{
-								tempCelcius = atof(strarray[i++].c_str());
-								tempSetPoint = ConvertTemperature(tempCelcius, tempsign);
-								root["result"][ii]["SetPoint"] = tempSetPoint;
-							}
-
-							std::string strstatus = strarray[i++];
-							root["result"][ii]["Status"] = strstatus;
-
-							if ((dType == pTypeEvohomeZone || dType == pTypeEvohomeWater) && strarray.size() >= 4)
-							{
-								root["result"][ii]["Until"] = strarray[i++];
-							}
-							if (dType == pTypeEvohomeZone)
-							{
-								if (tempCelcius == 325.1)
-									sprintf(szTmp, "Off");
-								else
-									sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
-								if (strarray.size() >= 4)
-									sprintf(szData, "%.1f %c, (%s), %s until %s", temp, tempsign, szTmp, strstatus.c_str(), strarray[3].c_str());
-								else
-									sprintf(szData, "%.1f %c, (%s), %s", temp, tempsign, szTmp, strstatus.c_str());
-							}
-							else if (strarray.size() >= 4)
-								sprintf(szData, "%.1f %c, %s, %s until %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str(), strarray[3].c_str());
-							else
-								sprintf(szData, "%.1f %c, %s, %s", temp, tempsign, strarray[1].c_str(), strstatus.c_str());
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
 					}
-					else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
+				}
+				else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
+				{
+					double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+					root["result"][ii]["Temp"] = tvalue;
+					sprintf(szData, "%.1f %c", tvalue, tempsign);
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+					_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+					uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+					if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
 					{
-						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+						tstate = m_mainworker.m_trend_calculator[tID].m_state;
+					}
+					root["result"][ii]["trend"] = (int)tstate;
+				}
+				else if (dType == pTypeThermostat1)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 4)
+					{
+						double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+				}
+				else if ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
+				{
+					double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+					root["result"][ii]["Temp"] = tvalue;
+					sprintf(szData, "%.1f %c", tvalue, tempsign);
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["TypeImg"] = "temperature";
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+					uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+					if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+					{
+						tstate = m_mainworker.m_trend_calculator[tID].m_state;
+					}
+					root["result"][ii]["trend"] = (int)tstate;
+				}
+				else if (dType == pTypeHUM)
+				{
+					root["result"][ii]["Humidity"] = nValue;
+					root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
+					sprintf(szData, "Humidity %d %%", nValue);
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+				}
+				else if (dType == pTypeTEMP_HUM)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 3)
+					{
+						double tempCelcius = atof(strarray[0].c_str());
+						double temp = ConvertTemperature(tempCelcius, tempsign);
+						int humidity = atoi(strarray[1].c_str());
+
+						root["result"][ii]["Temp"] = temp;
+						root["result"][ii]["Humidity"] = humidity;
+						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
+						sprintf(szData, "%.1f %c, %d %%", temp, tempsign, atoi(strarray[1].c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+						// Calculate dew point
+
+						sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+						root["result"][ii]["DewPoint"] = szTmp;
+
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
+					}
+				}
+				else if (dType == pTypeTEMP_HUM_BARO)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 5)
+					{
+						double tempCelcius = atof(strarray[0].c_str());
+						double temp = ConvertTemperature(tempCelcius, tempsign);
+						int humidity = atoi(strarray[1].c_str());
+
+						root["result"][ii]["Temp"] = temp;
+						root["result"][ii]["Humidity"] = humidity;
+						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
+						root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
+
+						sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
+						root["result"][ii]["DewPoint"] = szTmp;
+
+						if (dSubType == sTypeTHBFloat)
+						{
+							root["result"][ii]["Barometer"] = atof(strarray[3].c_str());
+							root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(atoi(strarray[4].c_str()));
+						}
+						else
+						{
+							root["result"][ii]["Barometer"] = atoi(strarray[3].c_str());
+							root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc(atoi(strarray[4].c_str()));
+						}
+						if (dSubType == sTypeTHBFloat)
+						{
+							sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, atoi(strarray[1].c_str()), atof(strarray[3].c_str()));
+						}
+						else
+						{
+							sprintf(szData, "%.1f %c, %d %%, %d hPa", temp, tempsign, atoi(strarray[1].c_str()), atoi(strarray[3].c_str()));
+						}
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
@@ -9496,27 +9623,24 @@ namespace http
 						}
 						root["result"][ii]["trend"] = (int)tstate;
 					}
-					else if (dType == pTypeThermostat1)
+				}
+				else if (dType == pTypeTEMP_BARO)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() >= 3)
 					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 4)
-						{
-							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
-							root["result"][ii]["Temp"] = tvalue;
-							sprintf(szData, "%.1f %c", tvalue, tempsign);
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-					}
-					else if ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
-					{
-						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+						double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
-						sprintf(szData, "%.1f %c", tvalue, tempsign);
+						int forecast = atoi(strarray[2].c_str());
+						root["result"][ii]["Forecast"] = forecast;
+						root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
+						root["result"][ii]["Barometer"] = atof(strarray[1].c_str());
+
+						sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, atof(strarray[1].c_str()));
 						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["TypeImg"] = "temperature";
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
 						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
 						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
 						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
@@ -9525,288 +9649,484 @@ namespace http
 						}
 						root["result"][ii]["trend"] = (int)tstate;
 					}
-					else if (dType == pTypeHUM)
+				}
+				else if (dType == pTypeUV)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 2)
 					{
-						root["result"][ii]["Humidity"] = nValue;
-						root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(sValue.c_str()));
-						sprintf(szData, "Humidity %d %%", nValue);
+						float UVI = static_cast<float>(atof(strarray[0].c_str()));
+						root["result"][ii]["UVI"] = strarray[0];
+						if (dSubType == sTypeUV3)
+						{
+							double tvalue = ConvertTemperature(atof(strarray[1].c_str()), tempsign);
+
+							root["result"][ii]["Temp"] = tvalue;
+							sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							{
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
+							}
+							root["result"][ii]["trend"] = (int)tstate;
+						}
+						else
+						{
+							sprintf(szData, "%.1f UVI", UVI);
+						}
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
-					else if (dType == pTypeTEMP_HUM)
+				}
+				else if (dType == pTypeWIND)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 6)
 					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 3)
+						root["result"][ii]["Direction"] = atof(strarray[0].c_str());
+						root["result"][ii]["DirectionStr"] = strarray[1];
+
+						if (dSubType != sTypeWIND5)
 						{
-							double tempCelcius = atof(strarray[0].c_str());
-							double temp = ConvertTemperature(tempCelcius, tempsign);
-							int humidity = atoi(strarray[1].c_str());
-
-							root["result"][ii]["Temp"] = temp;
-							root["result"][ii]["Humidity"] = humidity;
-							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-							sprintf(szData, "%.1f %c, %d %%", temp, tempsign, atoi(strarray[1].c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-							// Calculate dew point
-
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
-							root["result"][ii]["DewPoint"] = szTmp;
-
-							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							int intSpeed = atoi(strarray[2].c_str());
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
-								tstate = m_mainworker.m_trend_calculator[tID].m_state;
-							}
-							root["result"][ii]["trend"] = (int)tstate;
-						}
-					}
-					else if (dType == pTypeTEMP_HUM_BARO)
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 5)
-						{
-							double tempCelcius = atof(strarray[0].c_str());
-							double temp = ConvertTemperature(tempCelcius, tempsign);
-							int humidity = atoi(strarray[1].c_str());
-
-							root["result"][ii]["Temp"] = temp;
-							root["result"][ii]["Humidity"] = humidity;
-							root["result"][ii]["HumidityStatus"] = RFX_Humidity_Status_Desc(atoi(strarray[2].c_str()));
-							root["result"][ii]["Forecast"] = atoi(strarray[4].c_str());
-
-							sprintf(szTmp, "%.2f", ConvertTemperature(CalculateDewPoint(tempCelcius, humidity), tempsign));
-							root["result"][ii]["DewPoint"] = szTmp;
-
-							if (dSubType == sTypeTHBFloat)
-							{
-								root["result"][ii]["Barometer"] = atof(strarray[3].c_str());
-								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(atoi(strarray[4].c_str()));
+								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
 							}
 							else
 							{
-								root["result"][ii]["Barometer"] = atoi(strarray[3].c_str());
-								root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc(atoi(strarray[4].c_str()));
+								float windms = float(intSpeed) * 0.1F;
+								sprintf(szTmp, "%d", MStoBeaufort(windms));
 							}
-							if (dSubType == sTypeTHBFloat)
+							root["result"][ii]["Speed"] = szTmp;
+						}
+
+						// if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
+						{
+							int intGust = atoi(strarray[3].c_str());
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
-								sprintf(szData, "%.1f %c, %d %%, %.1f hPa", temp, tempsign, atoi(strarray[1].c_str()), atof(strarray[3].c_str()));
+								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
 							}
 							else
 							{
-								sprintf(szData, "%.1f %c, %d %%, %d hPa", temp, tempsign, atoi(strarray[1].c_str()), atoi(strarray[3].c_str()));
+								float gustms = float(intGust) * 0.1F;
+								sprintf(szTmp, "%d", MStoBeaufort(gustms));
 							}
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-							{
-								tstate = m_mainworker.m_trend_calculator[tID].m_state;
-							}
-							root["result"][ii]["trend"] = (int)tstate;
+							root["result"][ii]["Gust"] = szTmp;
 						}
-					}
-					else if (dType == pTypeTEMP_BARO)
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() >= 3)
+						if ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp))
 						{
-							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
-							root["result"][ii]["Temp"] = tvalue;
-							int forecast = atoi(strarray[2].c_str());
-							root["result"][ii]["Forecast"] = forecast;
-							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-							root["result"][ii]["Barometer"] = atof(strarray[1].c_str());
-
-							sprintf(szData, "%.1f %c, %.1f hPa", tvalue, tempsign, atof(strarray[1].c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+							if (dSubType == sTypeWIND4)
 							{
-								tstate = m_mainworker.m_trend_calculator[tID].m_state;
-							}
-							root["result"][ii]["trend"] = (int)tstate;
-						}
-					}
-					else if (dType == pTypeUV)
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 2)
-						{
-							float UVI = static_cast<float>(atof(strarray[0].c_str()));
-							root["result"][ii]["UVI"] = strarray[0];
-							if (dSubType == sTypeUV3)
-							{
-								double tvalue = ConvertTemperature(atof(strarray[1].c_str()), tempsign);
-
+								double tvalue = ConvertTemperature(atof(strarray[4].c_str()), tempsign);
 								root["result"][ii]["Temp"] = tvalue;
-								sprintf(szData, "%.1f UVI, %.1f&deg; %c", UVI, tvalue, tempsign);
+							}
+							double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
+							root["result"][ii]["Chill"] = tvalue;
 
-								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-								{
-									tstate = m_mainworker.m_trend_calculator[tID].m_state;
-								}
-								root["result"][ii]["trend"] = (int)tstate;
-							}
-							else
+							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
 							{
-								sprintf(szData, "%.1f UVI", UVI);
+								tstate = m_mainworker.m_trend_calculator[tID].m_state;
 							}
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["trend"] = (int)tstate;
 						}
+						root["result"][ii]["Data"] = sValue;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
-					else if (dType == pTypeWIND)
+				}
+				else if (dType == pTypeRAIN)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 2)
 					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 6)
+						// get lowest value of today, and max rate
+						time_t now = mytime(nullptr);
+						struct tm ltime;
+						localtime_r(&now, &ltime);
+						char szDate[40];
+						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+						std::vector<std::vector<std::string>> result2;
+
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 						{
-							root["result"][ii]["Direction"] = atof(strarray[0].c_str());
-							root["result"][ii]["DirectionStr"] = strarray[1];
-
-							if (dSubType != sTypeWIND5)
-							{
-								int intSpeed = atoi(strarray[2].c_str());
-								if (m_sql.m_windunit != WINDUNIT_Beaufort)
-								{
-									sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-								}
-								else
-								{
-									float windms = float(intSpeed) * 0.1F;
-									sprintf(szTmp, "%d", MStoBeaufort(windms));
-								}
-								root["result"][ii]["Speed"] = szTmp;
-							}
-
-							// if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
-							{
-								int intGust = atoi(strarray[3].c_str());
-								if (m_sql.m_windunit != WINDUNIT_Beaufort)
-								{
-									sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-								}
-								else
-								{
-									float gustms = float(intGust) * 0.1F;
-									sprintf(szTmp, "%d", MStoBeaufort(gustms));
-								}
-								root["result"][ii]["Gust"] = szTmp;
-							}
-							if ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp))
-							{
-								if (dSubType == sTypeWIND4)
-								{
-									double tvalue = ConvertTemperature(atof(strarray[4].c_str()), tempsign);
-									root["result"][ii]["Temp"] = tvalue;
-								}
-								double tvalue = ConvertTemperature(atof(strarray[5].c_str()), tempsign);
-								root["result"][ii]["Chill"] = tvalue;
-
-								_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-								uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-								if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-								{
-									tstate = m_mainworker.m_trend_calculator[tID].m_state;
-								}
-								root["result"][ii]["trend"] = (int)tstate;
-							}
-							root["result"][ii]["Data"] = sValue;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							result2 = m_sql.safe_query("SELECT Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+								sd[0].c_str(), szDate);
 						}
-					}
-					else if (dType == pTypeRAIN)
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 2)
+						else
 						{
-							// get lowest value of today, and max rate
-							time_t now = mytime(nullptr);
-							struct tm ltime;
-							localtime_r(&now, &ltime);
-							char szDate[40];
-							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+							result2 = m_sql.safe_query("SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						}
 
-							std::vector<std::vector<std::string>> result2;
+						if (!result2.empty())
+						{
+							double total_real = 0;
+							float rate = 0;
+							std::vector<std::string> sd2 = result2[0];
 
 							if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 							{
-								result2 = m_sql.safe_query("SELECT Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-									sd[0].c_str(), szDate);
+								total_real = atof(sd2[0].c_str());
 							}
 							else
 							{
-								result2 = m_sql.safe_query("SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+								double total_min = atof(sd2[0].c_str());
+								double total_max = atof(strarray[1].c_str());
+								total_real = total_max - total_min;
 							}
 
-							if (!result2.empty())
+							total_real *= AddjMulti;
+							if (dSubType == sTypeRAINByRate)
 							{
-								double total_real = 0;
-								float rate = 0;
-								std::vector<std::string> sd2 = result2[0];
-
-								if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
-								{
-									total_real = atof(sd2[0].c_str());
-								}
-								else
-								{
-									double total_min = atof(sd2[0].c_str());
-									double total_max = atof(strarray[1].c_str());
-									total_real = total_max - total_min;
-								}
-
-								total_real *= AddjMulti;
-								if (dSubType == sTypeRAINByRate)
-								{
-									rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0F);
-								}
-								else
-								{
-									rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0F) * float(AddjMulti);
-								}
-
-								sprintf(szTmp, "%.1f", total_real);
-								root["result"][ii]["Rain"] = szTmp;
-								sprintf(szTmp, "%g", rate);
-								root["result"][ii]["RainRate"] = szTmp;
-								root["result"][ii]["Data"] = sValue;
-								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+								rate = static_cast<float>(atof(sd2[1].c_str()) / 10000.0F);
 							}
 							else
 							{
-								root["result"][ii]["Rain"] = "0";
-								root["result"][ii]["RainRate"] = "0";
-								root["result"][ii]["Data"] = "0";
-								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0F) * float(AddjMulti);
 							}
+
+							sprintf(szTmp, "%.1f", total_real);
+							root["result"][ii]["Rain"] = szTmp;
+							sprintf(szTmp, "%g", rate);
+							root["result"][ii]["RainRate"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+						else
+						{
+							root["result"][ii]["Rain"] = "0";
+							root["result"][ii]["RainRate"] = "0";
+							root["result"][ii]["Data"] = "0";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
-					else if (dType == pTypeRFXMeter)
-					{
-						std::string ValueQuantity = options["ValueQuantity"];
-						std::string ValueUnits = options["ValueUnits"];
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+				}
+				else if (dType == pTypeRFXMeter)
+				{
+					std::string ValueQuantity = options["ValueQuantity"];
+					std::string ValueUnits = options["ValueUnits"];
+					float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
 
-						if (ValueQuantity.empty())
+					if (ValueQuantity.empty())
+					{
+						ValueQuantity = "Custom";
+					}
+
+					// get value of today
+					time_t now = mytime(nullptr);
+					struct tm ltime;
+					localtime_r(&now, &ltime);
+					char szDate[40];
+					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+					std::vector<std::vector<std::string>> result2;
+					strcpy(szTmp, "0");
+					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+					if (!result2.empty())
+					{
+						std::vector<std::string> sd2 = result2[0];
+
+						uint64_t total_min = std::stoull(sd2[0]);
+						uint64_t total_max = std::stoull(sValue);
+						uint64_t total_real = total_max - total_min;
+						sprintf(szTmp, "%" PRIu64, total_real);
+
+						double musage = 0.0F;
+						switch (metertype)
 						{
-							ValueQuantity = "Custom";
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							musage = double(total_real) / divider;
+							sprintf(szTmp, "%.3f kWh", musage);
+							break;
+						case MTYPE_GAS:
+							musage = double(total_real) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
+							break;
+						case MTYPE_WATER:
+							musage = double(total_real) / (divider / 1000.0F);
+							sprintf(szTmp, "%d Liter", round(musage));
+							break;
+						case MTYPE_COUNTER:
+							musage = double(total_real) / divider;
+							sprintf(szTmp, "%.10g", musage);
+							if (!ValueUnits.empty())
+							{
+								strcat(szTmp, " ");
+								strcat(szTmp, ValueUnits.c_str());
+							}
+							break;
+						default:
+							strcpy(szTmp, "?");
+							break;
 						}
+					}
+					root["result"][ii]["CounterToday"] = szTmp;
+
+					root["result"][ii]["SwitchTypeVal"] = metertype;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					root["result"][ii]["ValueQuantity"] = ValueQuantity;
+					root["result"][ii]["ValueUnits"] = ValueUnits;
+					root["result"][ii]["Divider"] = divider;
+
+					double meteroffset = AddjValue;
+
+					double dvalue = static_cast<double>(atof(sValue.c_str()));
+
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
+						sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Counter"] = szTmp;
+						break;
+					case MTYPE_GAS:
+						sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Counter"] = szTmp;
+						break;
+					case MTYPE_WATER:
+						sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Counter"] = szTmp;
+						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+						if (!ValueUnits.empty())
+						{
+							strcat(szTmp, " ");
+							strcat(szTmp, ValueUnits.c_str());
+						}
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Counter"] = szTmp;
+						break;
+					default:
+						root["result"][ii]["Data"] = "?";
+						root["result"][ii]["Counter"] = "?";
+						break;
+					}
+				}
+				else if (dType == pTypeYouLess)
+				{
+					std::string ValueQuantity = options["ValueQuantity"];
+					std::string ValueUnits = options["ValueUnits"];
+					if (ValueQuantity.empty())
+					{
+						ValueQuantity = "Custom";
+					}
+
+					double musage = 0;
+					double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+					// get value of today
+					time_t now = mytime(nullptr);
+					struct tm ltime;
+					localtime_r(&now, &ltime);
+					char szDate[40];
+					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+					std::vector<std::vector<std::string>> result2;
+					strcpy(szTmp, "0");
+					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+					if (!result2.empty())
+					{
+						std::vector<std::string> sd2 = result2[0];
+
+						unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
+						unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
+						unsigned long long total_real;
+
+						total_real = total_max - total_min;
+						sprintf(szTmp, "%lld", total_real);
+
+						musage = 0;
+						switch (metertype)
+						{
+						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
+							musage = double(total_real) / divider;
+							sprintf(szTmp, "%.3f kWh", musage);
+							break;
+						case MTYPE_GAS:
+							musage = double(total_real) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
+							break;
+						case MTYPE_WATER:
+							musage = double(total_real) / divider;
+							sprintf(szTmp, "%.3f m3", musage);
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp, "%.10g", double(total_real) / divider);
+							if (!ValueUnits.empty())
+							{
+								strcat(szTmp, " ");
+								strcat(szTmp, ValueUnits.c_str());
+							}
+							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
+						}
+					}
+					root["result"][ii]["CounterToday"] = szTmp;
+
+					std::vector<std::string> splitresults;
+					StringSplit(sValue, ";", splitresults);
+					if (splitresults.size() < 2)
+						continue;
+
+					unsigned long long total_actual = std::strtoull(splitresults[0].c_str(), nullptr, 10);
+					musage = 0;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
+						musage = double(total_actual) / divider;
+						sprintf(szTmp, "%.03f", musage);
+						break;
+					case MTYPE_GAS:
+					case MTYPE_WATER:
+						musage = double(total_actual) / divider;
+						sprintf(szTmp, "%.03f", musage);
+						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp, "%.10g", double(total_actual) / divider);
+						break;
+					default:
+						strcpy(szTmp, "0");
+						break;
+					}
+					root["result"][ii]["Counter"] = szTmp;
+
+					root["result"][ii]["SwitchTypeVal"] = metertype;
+
+					unsigned long long acounter = std::strtoull(sValue.c_str(), nullptr, 10);
+					musage = 0;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
+						musage = double(acounter) / divider;
+						sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
+						break;
+					case MTYPE_GAS:
+						musage = double(acounter) / divider;
+						sprintf(szTmp, "%.3f m3", musage);
+						break;
+					case MTYPE_WATER:
+						musage = double(acounter) / divider;
+						sprintf(szTmp, "%.3f m3", musage);
+						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp, "%.10g", double(acounter) / divider);
+						if (!ValueUnits.empty())
+						{
+							strcat(szTmp, " ");
+							strcat(szTmp, ValueUnits.c_str());
+						}
+						break;
+					default:
+						strcpy(szTmp, "0");
+						break;
+					}
+					root["result"][ii]["Data"] = szTmp;
+					root["result"][ii]["ValueQuantity"] = ValueQuantity;
+					root["result"][ii]["ValueUnits"] = ValueUnits;
+					root["result"][ii]["Divider"] = divider;
+
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
+						sprintf(szTmp, "%s Watt", splitresults[1].c_str());
+						break;
+					case MTYPE_GAS:
+						sprintf(szTmp, "%s m3", splitresults[1].c_str());
+						break;
+					case MTYPE_WATER:
+						sprintf(szTmp, "%s m3", splitresults[1].c_str());
+						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp, "%s", splitresults[1].c_str());
+						break;
+					default:
+						strcpy(szTmp, "0");
+						break;
+					}
+
+					root["result"][ii]["Usage"] = szTmp;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+				}
+				else if (dType == pTypeP1Power)
+				{
+					std::vector<std::string> splitresults;
+					StringSplit(sValue, ";", splitresults);
+					if (splitresults.size() != 6)
+					{
+						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+						root["result"][ii]["Counter"] = "0";
+						root["result"][ii]["CounterDeliv"] = "0";
+						root["result"][ii]["Usage"] = "Invalid";
+						root["result"][ii]["UsageDeliv"] = "Invalid";
+						root["result"][ii]["Data"] = "Invalid!: " + sValue;
+						root["result"][ii]["HaveTimeout"] = true;
+						root["result"][ii]["CounterToday"] = "Invalid";
+						root["result"][ii]["CounterDelivToday"] = "Invalid";
+					}
+					else
+					{
+						float EnergyDivider = 1000.0F;
+						int tValue;
+						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+						{
+							EnergyDivider = float(tValue);
+						}
+
+						unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
+						unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
+						unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
+						unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
+						unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
+						unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
+
+						powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+						powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
+						unsigned long long powerusage = powerusage1 + powerusage2;
+						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+						if (powerdeliv < 2)
+							powerdeliv = 0;
+
+						double musage = 0;
+
+						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+						musage = double(powerusage) / EnergyDivider;
+						sprintf(szTmp, "%.03f", musage);
+						root["result"][ii]["Counter"] = szTmp;
+						musage = double(powerdeliv) / EnergyDivider;
+						sprintf(szTmp, "%.03f", musage);
+						root["result"][ii]["CounterDeliv"] = szTmp;
+
+						if (bHaveTimeout)
+						{
+							usagecurrent = 0;
+							delivcurrent = 0;
+						}
+						sprintf(szTmp, "%llu Watt", usagecurrent);
+						root["result"][ii]["Usage"] = szTmp;
+						sprintf(szTmp, "%llu Watt", delivcurrent);
+						root["result"][ii]["UsageDeliv"] = szTmp;
+						root["result"][ii]["Data"] = sValue;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 						// get value of today
 						time_t now = mytime(nullptr);
@@ -9817,93 +10137,608 @@ namespace http
 
 						std::vector<std::vector<std::string>> result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
+							sd[0].c_str(), szDate);
 						if (!result2.empty())
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min = std::stoull(sd2[0]);
-							uint64_t total_max = std::stoull(sValue);
-							uint64_t total_real = total_max - total_min;
-							sprintf(szTmp, "%" PRIu64, total_real);
+							unsigned long long total_min_usage_1 = std::strtoull(sd2[0].c_str(), nullptr, 10);
+							unsigned long long total_min_deliv_1 = std::strtoull(sd2[1].c_str(), nullptr, 10);
+							unsigned long long total_min_usage_2 = std::strtoull(sd2[2].c_str(), nullptr, 10);
+							unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
+							unsigned long long total_real_usage, total_real_deliv;
 
-							double musage = 0.0F;
-							switch (metertype)
-							{
-							case MTYPE_ENERGY:
-							case MTYPE_ENERGY_GENERATED:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f kWh", musage);
-								break;
-							case MTYPE_GAS:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f m3", musage);
-								break;
-							case MTYPE_WATER:
-								musage = double(total_real) / (divider / 1000.0F);
-								sprintf(szTmp, "%d Liter", round(musage));
-								break;
-							case MTYPE_COUNTER:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.10g", musage);
-								if (!ValueUnits.empty())
-								{
-									strcat(szTmp, " ");
-									strcat(szTmp, ValueUnits.c_str());
-								}
-								break;
-							default:
-								strcpy(szTmp, "?");
-								break;
-							}
+							total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
+							total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
+
+							total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
+							total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+							if (total_real_deliv < 2)
+								total_real_deliv = 0;
+
+							musage = double(total_real_usage) / EnergyDivider;
+							sprintf(szTmp, "%.3f kWh", musage);
+							root["result"][ii]["CounterToday"] = szTmp;
+							musage = double(total_real_deliv) / EnergyDivider;
+							sprintf(szTmp, "%.3f kWh", musage);
+							root["result"][ii]["CounterDelivToday"] = szTmp;
 						}
-						root["result"][ii]["CounterToday"] = szTmp;
-
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["ValueQuantity"] = ValueQuantity;
-						root["result"][ii]["ValueUnits"] = ValueUnits;
-						root["result"][ii]["Divider"] = divider;
-
-						double meteroffset = AddjValue;
-
-						double dvalue = static_cast<double>(atof(sValue.c_str()));
-
-						switch (metertype)
+						else
 						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.3f kWh", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						case MTYPE_GAS:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						case MTYPE_WATER:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
-							if (!ValueUnits.empty())
-							{
-								strcat(szTmp, " ");
-								strcat(szTmp, ValueUnits.c_str());
-							}
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Counter"] = szTmp;
-							break;
-						default:
-							root["result"][ii]["Data"] = "?";
-							root["result"][ii]["Counter"] = "?";
-							break;
+							sprintf(szTmp, "%.3f kWh", 0.0F);
+							root["result"][ii]["CounterToday"] = szTmp;
+							root["result"][ii]["CounterDelivToday"] = szTmp;
 						}
 					}
-					else if ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))
+				}
+				else if (dType == pTypeP1Gas)
+				{
+					root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
+
+					// get lowest value of today
+					time_t now = mytime(nullptr);
+					struct tm ltime;
+					localtime_r(&now, &ltime);
+					char szDate[40];
+					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+					std::vector<std::vector<std::string>> result2;
+
+					float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+					strcpy(szTmp, "0");
+					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
+					if (!result2.empty())
+					{
+						std::vector<std::string> sd2 = result2[0];
+
+						uint64_t total_min_gas = std::stoull(sd2[0]);
+						uint64_t gasactual;
+						try
+						{
+							gasactual = std::stoull(sValue);
+						}
+						catch (std::invalid_argument e)
+						{
+							_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
+							continue;
+						}
+						uint64_t total_real_gas = gasactual - total_min_gas;
+
+						double musage = double(gasactual) / divider;
+						sprintf(szTmp, "%.03f", musage);
+						root["result"][ii]["Counter"] = szTmp;
+						musage = double(total_real_gas) / divider;
+						sprintf(szTmp, "%.03f m3", musage);
+						root["result"][ii]["CounterToday"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
+						root["result"][ii]["Data"] = szTmp;
+					}
+					else
+					{
+						sprintf(szTmp, "%.03f", 0.0F);
+						root["result"][ii]["Counter"] = szTmp;
+						sprintf(szTmp, "%.03f m3", 0.0F);
+						root["result"][ii]["CounterToday"] = szTmp;
+						sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+				}
+				else if (dType == pTypeCURRENT)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 3)
+					{
+						// CM113
+						int displaytype = 0;
+						int voltage = 230;
+						m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+						m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+						double val1 = atof(strarray[0].c_str());
+						double val2 = atof(strarray[1].c_str());
+						double val3 = atof(strarray[2].c_str());
+
+						if (displaytype == 0)
+						{
+							if ((val2 == 0) && (val3 == 0))
+								sprintf(szData, "%.1f A", val1);
+							else
+								sprintf(szData, "%.1f A, %.1f A, %.1f A", val1, val2, val3);
+						}
+						else
+						{
+							if ((val2 == 0) && (val3 == 0))
+								sprintf(szData, "%d Watt", int(val1 * voltage));
+							else
+								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1 * voltage), int(val2 * voltage), int(val3 * voltage));
+						}
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["displaytype"] = displaytype;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+				}
+				else if (dType == pTypeCURRENTENERGY)
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 4)
+					{
+						// CM180i
+						int displaytype = 0;
+						int voltage = 230;
+						m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
+						m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+
+						double total = atof(strarray[3].c_str());
+						if (displaytype == 0)
+						{
+							sprintf(szData, "%.1f A, %.1f A, %.1f A", atof(strarray[0].c_str()), atof(strarray[1].c_str()), atof(strarray[2].c_str()));
+						}
+						else
+						{
+							sprintf(szData, "%d Watt, %d Watt, %d Watt", int(atof(strarray[0].c_str()) * voltage), int(atof(strarray[1].c_str()) * voltage),
+								int(atof(strarray[2].c_str()) * voltage));
+						}
+						if (total > 0)
+						{
+							sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0F);
+							strcat(szData, szTmp);
+						}
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["displaytype"] = displaytype;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+				}
+				else if (((dType == pTypeENERGY) || (dType == pTypePOWER)) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
+				{
+					std::vector<std::string> strarray;
+					StringSplit(sValue, ";", strarray);
+					if (strarray.size() == 2)
+					{
+						double total = atof(strarray[1].c_str()) / 1000;
+
+						time_t now = mytime(nullptr);
+						struct tm ltime;
+						localtime_r(&now, &ltime);
+						char szDate[40];
+						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+						std::vector<std::vector<std::string>> result2;
+						strcpy(szTmp, "0");
+						// get the first value of the day instead of the minimum value, because counter can also decrease
+						// result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
+						result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
+						if (!result2.empty())
+						{
+							float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
+
+							std::vector<std::string> sd2 = result2[0];
+							double minimum = atof(sd2[0].c_str()) / divider;
+
+							sprintf(szData, "%.3f kWh", total);
+							root["result"][ii]["Data"] = szData;
+							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+							{
+								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+							}
+							else
+							{
+								sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
+							}
+							root["result"][ii]["Usage"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							sprintf(szTmp, "%.3f kWh", total - minimum);
+							root["result"][ii]["CounterToday"] = szTmp;
+						}
+						else
+						{
+							sprintf(szData, "%.3f kWh", total);
+							root["result"][ii]["Data"] = szData;
+							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+							{
+								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+							}
+							else
+							{
+								sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
+							}
+							root["result"][ii]["Usage"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							sprintf(szTmp, "%d kWh", 0);
+							root["result"][ii]["CounterToday"] = szTmp;
+						}
+					}
+					root["result"][ii]["TypeImg"] = "current";
+					root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
+					root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
+				}
+				else if (dType == pTypeAirQuality)
+				{
+					if (bHaveTimeout)
+						nValue = 0;
+					sprintf(szTmp, "%d ppm", nValue);
+					root["result"][ii]["Data"] = szTmp;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					int airquality = nValue;
+					if (airquality < 700)
+						root["result"][ii]["Quality"] = "Excellent";
+					else if (airquality < 900)
+						root["result"][ii]["Quality"] = "Good";
+					else if (airquality < 1100)
+						root["result"][ii]["Quality"] = "Fair";
+					else if (airquality < 1600)
+						root["result"][ii]["Quality"] = "Mediocre";
+					else
+						root["result"][ii]["Quality"] = "Bad";
+				}
+				else if (dType == pTypeThermostat)
+				{
+					if (dSubType == sTypeThermSetpoint)
+					{
+						bHasTimers = m_sql.HasTimers(sd[0]);
+
+						double tempCelcius = atof(sValue.c_str());
+						double temp = ConvertTemperature(tempCelcius, tempsign);
+
+						sprintf(szTmp, "%.1f", temp);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["SetPoint"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "override_mini";
+					}
+				}
+				else if (dType == pTypeRadiator1)
+				{
+					if (dSubType == sTypeSmartwares)
+					{
+						bHasTimers = m_sql.HasTimers(sd[0]);
+
+						double tempCelcius = atof(sValue.c_str());
+						double temp = ConvertTemperature(tempCelcius, tempsign);
+
+						sprintf(szTmp, "%.1f", temp);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["SetPoint"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = false; // this device does not provide feedback, so no timeout!
+						root["result"][ii]["TypeImg"] = "override_mini";
+					}
+				}
+				else if (dType == pTypeGeneral)
+				{
+					if (dSubType == sTypeVisibility)
+					{
+						float vis = static_cast<float>(atof(sValue.c_str()));
+						if (metertype == 0)
+						{
+							// km
+							sprintf(szTmp, "%.1f km", vis);
+						}
+						else
+						{
+							// miles
+							sprintf(szTmp, "%.1f mi", vis * 0.6214F);
+						}
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Visibility"] = atof(sValue.c_str());
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "visibility";
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+					}
+					else if (dSubType == sTypeDistance)
+					{
+						float vis = static_cast<float>(atof(sValue.c_str()));
+						if (metertype == 0)
+						{
+							// Metric
+							sprintf(szTmp, "%.1f cm", vis);
+						}
+						else
+						{
+							// Imperial
+							sprintf(szTmp, "%.1f in", vis * 0.3937007874015748F);
+						}
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "visibility";
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+					}
+					else if (dSubType == sTypeSolarRadiation)
+					{
+						float radiation = static_cast<float>(atof(sValue.c_str()));
+						sprintf(szTmp, "%.1f Watt/m2", radiation);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Radiation"] = atof(sValue.c_str());
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "radiation";
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+					}
+					else if (dSubType == sTypeSoilMoisture)
+					{
+						sprintf(szTmp, "%d cb", nValue);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["Desc"] = Get_Moisture_Desc(nValue);
+						root["result"][ii]["TypeImg"] = "moisture";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+					}
+					else if (dSubType == sTypeLeafWetness)
+					{
+						sprintf(szTmp, "%d", nValue);
+						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["TypeImg"] = "leaf";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["SwitchTypeVal"] = metertype;
+					}
+					else if (dSubType == sTypeSystemTemp)
+					{
+						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+						root["result"][ii]["Temp"] = tvalue;
+						sprintf(szData, "%.1f %c", tvalue, tempsign);
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Computer";
+						root["result"][ii]["TypeImg"] = "temperature";
+						root["result"][ii]["Type"] = "temperature";
+						_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
+						uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
+						if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
+						{
+							tstate = m_mainworker.m_trend_calculator[tID].m_state;
+						}
+						root["result"][ii]["trend"] = (int)tstate;
+					}
+					else if (dSubType == sTypePercentage)
+					{
+						sprintf(szData, "%g%%", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "hardware";
+					}
+					else if (dSubType == sTypeWaterflow)
+					{
+						sprintf(szData, "%g l/min", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Moisture";
+						root["result"][ii]["TypeImg"] = "moisture";
+					}
+					else if (dSubType == sTypeCustom)
+					{
+						std::string szAxesLabel;
+						int SensorType = 1;
+						std::vector<std::string> sResults;
+						StringSplit(sOptions, ";", sResults);
+
+						if (sResults.size() == 2)
+						{
+							SensorType = atoi(sResults[0].c_str());
+							szAxesLabel = sResults[1];
+						}
+						sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["SensorType"] = SensorType;
+						root["result"][ii]["SensorUnit"] = szAxesLabel;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Custom";
+						root["result"][ii]["TypeImg"] = "Custom";
+					}
+					else if (dSubType == sTypeFan)
+					{
+						sprintf(szData, "%d RPM", atoi(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Fan";
+						root["result"][ii]["TypeImg"] = "Fan";
+					}
+					else if (dSubType == sTypeSoundLevel)
+					{
+						sprintf(szData, "%d dB", atoi(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "Speaker";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+					else if (dSubType == sTypeVoltage)
+					{
+						sprintf(szData, "%g V", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "current";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["Voltage"] = atof(sValue.c_str());
+					}
+					else if (dSubType == sTypeCurrent)
+					{
+						sprintf(szData, "%g A", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "current";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["Current"] = atof(sValue.c_str());
+					}
+					else if (dSubType == sTypeTextStatus)
+					{
+						root["result"][ii]["Data"] = sValue;
+						root["result"][ii]["TypeImg"] = "text";
+						root["result"][ii]["HaveTimeout"] = false;
+						root["result"][ii]["ShowNotifications"] = false;
+					}
+					else if (dSubType == sTypeAlert)
+					{
+						if (nValue > 4)
+							nValue = 4;
+						sprintf(szData, "Level: %d", nValue);
+						root["result"][ii]["Data"] = szData;
+						if (!sValue.empty())
+							root["result"][ii]["Data"] = sValue;
+						else
+							root["result"][ii]["Data"] = Get_Alert_Desc(nValue);
+						root["result"][ii]["TypeImg"] = "Alert";
+						root["result"][ii]["Level"] = nValue;
+						root["result"][ii]["HaveTimeout"] = false;
+					}
+					else if (dSubType == sTypePressure)
+					{
+						sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "gauge";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["Pressure"] = atof(sValue.c_str());
+					}
+					else if (dSubType == sTypeBaro)
+					{
+						std::vector<std::string> tstrarray;
+						StringSplit(sValue, ";", tstrarray);
+						if (tstrarray.empty())
+							continue;
+						sprintf(szData, "%g hPa", atof(tstrarray[0].c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "gauge";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						if (tstrarray.size() > 1)
+						{
+							root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
+							int forecast = atoi(tstrarray[1].c_str());
+							root["result"][ii]["Forecast"] = forecast;
+							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
+						}
+					}
+					else if (dSubType == sTypeZWaveClock)
+					{
+						std::vector<std::string> tstrarray;
+						StringSplit(sValue, ";", tstrarray);
+						int day = 0;
+						int hour = 0;
+						int minute = 0;
+						if (tstrarray.size() == 3)
+						{
+							day = atoi(tstrarray[0].c_str());
+							hour = atoi(tstrarray[1].c_str());
+							minute = atoi(tstrarray[2].c_str());
+						}
+						sprintf(szData, "%s %02d:%02d", ZWave_Clock_Days(day), hour, minute);
+						root["result"][ii]["DayTime"] = sValue;
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "clock";
+					}
+					else if (dSubType == sTypeZWaveThermostatMode)
+					{
+						strcpy(szData, "");
+						root["result"][ii]["Mode"] = nValue;
+						root["result"][ii]["TypeImg"] = "mode";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						std::string modes;
+						// Add supported modes
+#ifdef WITH_OPENZWAVE
+						if (pHardware)
+						{
+							if (pHardware->HwdType == HTYPE_OpenZWave)
+							{
+								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+								unsigned long ID;
+								std::stringstream s_strid;
+								s_strid << std::hex << sd[1];
+								s_strid >> ID;
+								std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
+								int smode = 0;
+								char szTmp[200];
+								for (const auto& mode : vmodes)
+								{
+									// Value supported
+									sprintf(szTmp, "%d;%s;", smode, mode.c_str());
+									modes += szTmp;
+									smode++;
+								}
+
+								if (!vmodes.empty())
+								{
+									if (nValue < (int)vmodes.size())
+									{
+										sprintf(szData, "%s", vmodes[nValue].c_str());
+									}
+								}
+							}
+						}
+#endif
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["Modes"] = modes;
+					}
+					else if (dSubType == sTypeZWaveThermostatFanMode)
+					{
+						sprintf(szData, "%s", ZWave_Thermostat_Fan_Modes[nValue]);
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["Mode"] = nValue;
+						root["result"][ii]["TypeImg"] = "mode";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						// Add supported modes (add all for now)
+						bool bAddedSupportedModes = false;
+						std::string modes;
+						// Add supported modes
+#ifdef WITH_OPENZWAVE
+						if (pHardware)
+						{
+							if (pHardware->HwdType == HTYPE_OpenZWave)
+							{
+								COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
+								unsigned long ID;
+								std::stringstream s_strid;
+								s_strid << std::hex << sd[1];
+								s_strid >> ID;
+								modes = pZWave->GetSupportedThermostatFanModes(ID);
+								bAddedSupportedModes = !modes.empty();
+							}
+						}
+#endif
+						if (!bAddedSupportedModes)
+						{
+							int smode = 0;
+							while (ZWave_Thermostat_Fan_Modes[smode] != nullptr)
+							{
+								sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
+								modes += szTmp;
+								smode++;
+							}
+						}
+						root["result"][ii]["Modes"] = modes;
+					}
+					else if (dSubType == sTypeZWaveThermostatOperatingState)
+					{
+						strcpy(szData, "");
+						root["result"][ii]["State"] = nValue;
+						root["result"][ii]["TypeImg"] = "Fan";
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						if (nValue == 1)
+						{
+							sprintf(szData, "%s", "Cooling");
+						}
+						else if (nValue == 2)
+						{
+							sprintf(szData, "%s", "Heating");
+						}
+						else
+						{
+							sprintf(szData, "%s", "Idle");
+						}
+						root["result"][ii]["Data"] = szData;
+					}
+					else if (dSubType == sTypeZWaveAlarm)
+					{
+						sprintf(szData, "Event: 0x%02X (%d)", nValue, nValue);
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["TypeImg"] = "Alert";
+						root["result"][ii]["Level"] = nValue;
+						root["result"][ii]["HaveTimeout"] = false;
+					}
+					else if (dSubType == sTypeCounterIncremental)
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
@@ -10007,7 +10842,7 @@ namespace http
 							break;
 						}
 					}
-					else if ((dType == pTypeGeneral) && (dSubType == sTypeManagedCounter))
+					else if (dSubType == sTypeManagedCounter)
 					{
 						std::string ValueQuantity = options["ValueQuantity"];
 						std::string ValueUnits = options["ValueUnits"];
@@ -10078,18 +10913,94 @@ namespace http
 							break;
 						}
 					}
-					else if (dType == pTypeYouLess)
+				}
+				else if (dType == pTypeLux)
+				{
+					sprintf(szTmp, "%.0f Lux", atof(sValue.c_str()));
+					root["result"][ii]["Data"] = szTmp;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+				}
+				else if (dType == pTypeWEIGHT)
+				{
+					sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
+					root["result"][ii]["Data"] = szTmp;
+					root["result"][ii]["HaveTimeout"] = false;
+					root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign == "kg") ? 0 : 1;
+				}
+				else if (dType == pTypeUsage)
+				{
+					if (dSubType == sTypeElectric)
 					{
-						std::string ValueQuantity = options["ValueQuantity"];
-						std::string ValueUnits = options["ValueUnits"];
-						if (ValueQuantity.empty())
+						sprintf(szData, "%g Watt", atof(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+					}
+					else
+					{
+						root["result"][ii]["Data"] = sValue;
+					}
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+				}
+				else if (dType == pTypeRFXSensor)
+				{
+					switch (dSubType)
+					{
+					case sTypeRFXSensorAD:
+						sprintf(szData, "%d mV", atoi(sValue.c_str()));
+						root["result"][ii]["TypeImg"] = "current";
+						break;
+					case sTypeRFXSensorVolt:
+						sprintf(szData, "%d mV", atoi(sValue.c_str()));
+						root["result"][ii]["TypeImg"] = "current";
+						break;
+					}
+					root["result"][ii]["Data"] = szData;
+					root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+				}
+				else if (dType == pTypeRego6XXValue)
+				{
+					switch (dSubType)
+					{
+					case sTypeRego6XXStatus:
+					{
+						std::string lstatus = "On";
+
+						if (atoi(sValue.c_str()) == 0)
 						{
-							ValueQuantity = "Custom";
+							lstatus = "Off";
+						}
+						root["result"][ii]["Status"] = lstatus;
+						root["result"][ii]["HaveDimmer"] = false;
+						root["result"][ii]["MaxDimLevel"] = 0;
+						root["result"][ii]["HaveGroupCmd"] = false;
+						root["result"][ii]["SwitchTypeVal"] = STYPE_OnOff;
+						root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_OnOff);
+						sprintf(szData, "%d", atoi(sValue.c_str()));
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["StrParam1"] = strParam1;
+						root["result"][ii]["StrParam2"] = strParam2;
+						root["result"][ii]["Protected"] = (iProtected != 0);
+
+						if (!CustomImage)
+							root["result"][ii]["Image"] = "Light";
+						root["result"][ii]["TypeImg"] = "utility";
+
+						uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
+						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
+						if (camIDX != 0)
+						{
+							std::stringstream scidx;
+							scidx << camIDX;
+							root["result"][ii]["CameraIdx"] = scidx.str();
+							root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
 						}
 
-						double musage = 0;
-						double divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
+						root["result"][ii]["Level"] = 0;
+						root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+					}
+					break;
+					case sTypeRego6XXCounter:
+					{
 						// get value of today
 						time_t now = mytime(nullptr);
 						struct tm ltime;
@@ -10110,943 +11021,29 @@ namespace http
 
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%lld", total_real);
-
-							musage = 0;
-							switch (metertype)
-							{
-							case MTYPE_ENERGY:
-							case MTYPE_ENERGY_GENERATED:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f kWh", musage);
-								break;
-							case MTYPE_GAS:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f m3", musage);
-								break;
-							case MTYPE_WATER:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f m3", musage);
-								break;
-							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", double(total_real) / divider);
-								if (!ValueUnits.empty())
-								{
-									strcat(szTmp, " ");
-									strcat(szTmp, ValueUnits.c_str());
-								}
-								break;
-							default:
-								strcpy(szTmp, "0");
-								break;
-							}
 						}
+						root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
+						root["result"][ii]["Counter"] = sValue;
 						root["result"][ii]["CounterToday"] = szTmp;
-
-						std::vector<std::string> splitresults;
-						StringSplit(sValue, ";", splitresults);
-						if (splitresults.size() < 2)
-							continue;
-
-						unsigned long long total_actual = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-						musage = 0;
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							musage = double(total_actual) / divider;
-							sprintf(szTmp, "%.03f", musage);
-							break;
-						case MTYPE_GAS:
-						case MTYPE_WATER:
-							musage = double(total_actual) / divider;
-							sprintf(szTmp, "%.03f", musage);
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", double(total_actual) / divider);
-							break;
-						default:
-							strcpy(szTmp, "0");
-							break;
-						}
-						root["result"][ii]["Counter"] = szTmp;
-
-						root["result"][ii]["SwitchTypeVal"] = metertype;
-
-						unsigned long long acounter = std::strtoull(sValue.c_str(), nullptr, 10);
-						musage = 0;
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							musage = double(acounter) / divider;
-							sprintf(szTmp, "%.3f kWh %s Watt", musage, splitresults[1].c_str());
-							break;
-						case MTYPE_GAS:
-							musage = double(acounter) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
-							break;
-						case MTYPE_WATER:
-							musage = double(acounter) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", double(acounter) / divider);
-							if (!ValueUnits.empty())
-							{
-								strcat(szTmp, " ");
-								strcat(szTmp, ValueUnits.c_str());
-							}
-							break;
-						default:
-							strcpy(szTmp, "0");
-							break;
-						}
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["ValueQuantity"] = ValueQuantity;
-						root["result"][ii]["ValueUnits"] = ValueUnits;
-						root["result"][ii]["Divider"] = divider;
-
-						switch (metertype)
-						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%s Watt", splitresults[1].c_str());
-							break;
-						case MTYPE_GAS:
-							sprintf(szTmp, "%s m3", splitresults[1].c_str());
-							break;
-						case MTYPE_WATER:
-							sprintf(szTmp, "%s m3", splitresults[1].c_str());
-							break;
-						case MTYPE_COUNTER:
-							sprintf(szTmp, "%s", splitresults[1].c_str());
-							break;
-						default:
-							strcpy(szTmp, "0");
-							break;
-						}
-
-						root["result"][ii]["Usage"] = szTmp;
+						root["result"][ii]["Data"] = sValue;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 					}
-					else if (dType == pTypeP1Power)
-					{
-						std::vector<std::string> splitresults;
-						StringSplit(sValue, ";", splitresults);
-						if (splitresults.size() != 6)
-						{
-							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-							root["result"][ii]["Counter"] = "0";
-							root["result"][ii]["CounterDeliv"] = "0";
-							root["result"][ii]["Usage"] = "Invalid";
-							root["result"][ii]["UsageDeliv"] = "Invalid";
-							root["result"][ii]["Data"] = "Invalid!: " + sValue;
-							root["result"][ii]["HaveTimeout"] = true;
-							root["result"][ii]["CounterToday"] = "Invalid";
-							root["result"][ii]["CounterDelivToday"] = "Invalid";
-						}
-						else
-						{
-							float EnergyDivider = 1000.0F;
-							int tValue;
-							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-							{
-								EnergyDivider = float(tValue);
-							}
-
-							unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
-							unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
-							unsigned long long powerdeliv1 = std::strtoull(splitresults[2].c_str(), nullptr, 10);
-							unsigned long long powerdeliv2 = std::strtoull(splitresults[3].c_str(), nullptr, 10);
-							unsigned long long usagecurrent = std::strtoull(splitresults[4].c_str(), nullptr, 10);
-							unsigned long long delivcurrent = std::strtoull(splitresults[5].c_str(), nullptr, 10);
-
-							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
-							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
-
-							unsigned long long powerusage = powerusage1 + powerusage2;
-							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
-							if (powerdeliv < 2)
-								powerdeliv = 0;
-
-							double musage = 0;
-
-							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-							musage = double(powerusage) / EnergyDivider;
-							sprintf(szTmp, "%.03f", musage);
-							root["result"][ii]["Counter"] = szTmp;
-							musage = double(powerdeliv) / EnergyDivider;
-							sprintf(szTmp, "%.03f", musage);
-							root["result"][ii]["CounterDeliv"] = szTmp;
-
-							if (bHaveTimeout)
-							{
-								usagecurrent = 0;
-								delivcurrent = 0;
-							}
-							sprintf(szTmp, "%llu Watt", usagecurrent);
-							root["result"][ii]["Usage"] = szTmp;
-							sprintf(szTmp, "%llu Watt", delivcurrent);
-							root["result"][ii]["UsageDeliv"] = szTmp;
-							root["result"][ii]["Data"] = sValue;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-							// get value of today
-							time_t now = mytime(nullptr);
-							struct tm ltime;
-							localtime_r(&now, &ltime);
-							char szDate[40];
-							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-							std::vector<std::vector<std::string>> result2;
-							strcpy(szTmp, "0");
-							result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
-								sd[0].c_str(), szDate);
-							if (!result2.empty())
-							{
-								std::vector<std::string> sd2 = result2[0];
-
-								unsigned long long total_min_usage_1 = std::strtoull(sd2[0].c_str(), nullptr, 10);
-								unsigned long long total_min_deliv_1 = std::strtoull(sd2[1].c_str(), nullptr, 10);
-								unsigned long long total_min_usage_2 = std::strtoull(sd2[2].c_str(), nullptr, 10);
-								unsigned long long total_min_deliv_2 = std::strtoull(sd2[3].c_str(), nullptr, 10);
-								unsigned long long total_real_usage, total_real_deliv;
-
-								total_min_deliv_1 = (total_min_deliv_1 < 10) ? 0 : total_min_deliv_1;
-								total_min_deliv_2 = (total_min_deliv_2 < 10) ? 0 : total_min_deliv_2;
-
-								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
-								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
-
-								if (total_real_deliv < 2)
-									total_real_deliv = 0;
-
-								musage = double(total_real_usage) / EnergyDivider;
-								sprintf(szTmp, "%.3f kWh", musage);
-								root["result"][ii]["CounterToday"] = szTmp;
-								musage = double(total_real_deliv) / EnergyDivider;
-								sprintf(szTmp, "%.3f kWh", musage);
-								root["result"][ii]["CounterDelivToday"] = szTmp;
-							}
-							else
-							{
-								sprintf(szTmp, "%.3f kWh", 0.0F);
-								root["result"][ii]["CounterToday"] = szTmp;
-								root["result"][ii]["CounterDelivToday"] = szTmp;
-							}
-						}
+					break;
 					}
-					else if (dType == pTypeP1Gas)
-					{
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
-
-						// get lowest value of today
-						time_t now = mytime(nullptr);
-						struct tm ltime;
-						localtime_r(&now, &ltime);
-						char szDate[40];
-						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-						std::vector<std::vector<std::string>> result2;
-
-						float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
-						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-						if (!result2.empty())
-						{
-							std::vector<std::string> sd2 = result2[0];
-
-							uint64_t total_min_gas = std::stoull(sd2[0]);
-							uint64_t gasactual;
-							try
-							{
-								gasactual = std::stoull(sValue);
-							}
-							catch (std::invalid_argument e)
-							{
-								_log.Log(LOG_ERROR, "Gas - invalid value: '%s'", sValue.c_str());
-								continue;
-							}
-							uint64_t total_real_gas = gasactual - total_min_gas;
-
-							double musage = double(gasactual) / divider;
-							sprintf(szTmp, "%.03f", musage);
-							root["result"][ii]["Counter"] = szTmp;
-							musage = double(total_real_gas) / divider;
-							sprintf(szTmp, "%.03f m3", musage);
-							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
-							root["result"][ii]["Data"] = szTmp;
-						}
-						else
-						{
-							sprintf(szTmp, "%.03f", 0.0F);
-							root["result"][ii]["Counter"] = szTmp;
-							sprintf(szTmp, "%.03f m3", 0.0F);
-							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-					}
-					else if (dType == pTypeCURRENT)
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 3)
-						{
-							// CM113
-							int displaytype = 0;
-							int voltage = 230;
-							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
-
-							double val1 = atof(strarray[0].c_str());
-							double val2 = atof(strarray[1].c_str());
-							double val3 = atof(strarray[2].c_str());
-
-							if (displaytype == 0)
-							{
-								if ((val2 == 0) && (val3 == 0))
-									sprintf(szData, "%.1f A", val1);
-								else
-									sprintf(szData, "%.1f A, %.1f A, %.1f A", val1, val2, val3);
-							}
-							else
-							{
-								if ((val2 == 0) && (val3 == 0))
-									sprintf(szData, "%d Watt", int(val1 * voltage));
-								else
-									sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1 * voltage), int(val2 * voltage), int(val3 * voltage));
-							}
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["displaytype"] = displaytype;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-					}
-					else if (dType == pTypeCURRENTENERGY)
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 4)
-						{
-							// CM180i
-							int displaytype = 0;
-							int voltage = 230;
-							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
-							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
-
-							double total = atof(strarray[3].c_str());
-							if (displaytype == 0)
-							{
-								sprintf(szData, "%.1f A, %.1f A, %.1f A", atof(strarray[0].c_str()), atof(strarray[1].c_str()), atof(strarray[2].c_str()));
-							}
-							else
-							{
-								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(atof(strarray[0].c_str()) * voltage), int(atof(strarray[1].c_str()) * voltage),
-									int(atof(strarray[2].c_str()) * voltage));
-							}
-							if (total > 0)
-							{
-								sprintf(szTmp, ", Total: %.3f kWh", total / 1000.0F);
-								strcat(szData, szTmp);
-							}
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["displaytype"] = displaytype;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-					}
-					else if (((dType == pTypeENERGY) || (dType == pTypePOWER)) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
-					{
-						std::vector<std::string> strarray;
-						StringSplit(sValue, ";", strarray);
-						if (strarray.size() == 2)
-						{
-							double total = atof(strarray[1].c_str()) / 1000;
-
-							time_t now = mytime(nullptr);
-							struct tm ltime;
-							localtime_r(&now, &ltime);
-							char szDate[40];
-							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-							std::vector<std::vector<std::string>> result2;
-							strcpy(szTmp, "0");
-							// get the first value of the day instead of the minimum value, because counter can also decrease
-							// result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
-							result2 = m_sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY Date LIMIT 1", sd[0].c_str(), szDate);
-							if (!result2.empty())
-							{
-								float divider = m_sql.GetCounterDivider(int(metertype), int(dType), float(AddjValue2));
-
-								std::vector<std::string> sd2 = result2[0];
-								double minimum = atof(sd2[0].c_str()) / divider;
-
-								sprintf(szData, "%.3f kWh", total);
-								root["result"][ii]["Data"] = szData;
-								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								{
-									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
-								}
-								else
-								{
-									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
-								}
-								root["result"][ii]["Usage"] = szData;
-								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-								sprintf(szTmp, "%.3f kWh", total - minimum);
-								root["result"][ii]["CounterToday"] = szTmp;
-							}
-							else
-							{
-								sprintf(szData, "%.3f kWh", total);
-								root["result"][ii]["Data"] = szData;
-								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
-								{
-									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
-								}
-								else
-								{
-									sprintf(szData, "%g Watt", atof(strarray[0].c_str()));
-								}
-								root["result"][ii]["Usage"] = szData;
-								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-								sprintf(szTmp, "%d kWh", 0);
-								root["result"][ii]["CounterToday"] = szTmp;
-							}
-						}
-						root["result"][ii]["TypeImg"] = "current";
-						root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
-						root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
-					}
-					else if (dType == pTypeAirQuality)
-					{
-						if (bHaveTimeout)
-							nValue = 0;
-						sprintf(szTmp, "%d ppm", nValue);
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						int airquality = nValue;
-						if (airquality < 700)
-							root["result"][ii]["Quality"] = "Excellent";
-						else if (airquality < 900)
-							root["result"][ii]["Quality"] = "Good";
-						else if (airquality < 1100)
-							root["result"][ii]["Quality"] = "Fair";
-						else if (airquality < 1600)
-							root["result"][ii]["Quality"] = "Mediocre";
-						else
-							root["result"][ii]["Quality"] = "Bad";
-					}
-					else if (dType == pTypeThermostat)
-					{
-						if (dSubType == sTypeThermSetpoint)
-						{
-							bHasTimers = m_sql.HasTimers(sd[0]);
-
-							double tempCelcius = atof(sValue.c_str());
-							double temp = ConvertTemperature(tempCelcius, tempsign);
-
-							sprintf(szTmp, "%.1f", temp);
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["SetPoint"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["TypeImg"] = "override_mini";
-						}
-					}
-					else if (dType == pTypeRadiator1)
-					{
-						if (dSubType == sTypeSmartwares)
-						{
-							bHasTimers = m_sql.HasTimers(sd[0]);
-
-							double tempCelcius = atof(sValue.c_str());
-							double temp = ConvertTemperature(tempCelcius, tempsign);
-
-							sprintf(szTmp, "%.1f", temp);
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["SetPoint"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = false; // this device does not provide feedback, so no timeout!
-							root["result"][ii]["TypeImg"] = "override_mini";
-						}
-					}
-					else if (dType == pTypeGeneral)
-					{
-						if (dSubType == sTypeVisibility)
-						{
-							float vis = static_cast<float>(atof(sValue.c_str()));
-							if (metertype == 0)
-							{
-								// km
-								sprintf(szTmp, "%.1f km", vis);
-							}
-							else
-							{
-								// miles
-								sprintf(szTmp, "%.1f mi", vis * 0.6214F);
-							}
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Visibility"] = atof(sValue.c_str());
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["TypeImg"] = "visibility";
-							root["result"][ii]["SwitchTypeVal"] = metertype;
-						}
-						else if (dSubType == sTypeDistance)
-						{
-							float vis = static_cast<float>(atof(sValue.c_str()));
-							if (metertype == 0)
-							{
-								// Metric
-								sprintf(szTmp, "%.1f cm", vis);
-							}
-							else
-							{
-								// Imperial
-								sprintf(szTmp, "%.1f in", vis * 0.3937007874015748F);
-							}
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["TypeImg"] = "visibility";
-							root["result"][ii]["SwitchTypeVal"] = metertype;
-						}
-						else if (dSubType == sTypeSolarRadiation)
-						{
-							float radiation = static_cast<float>(atof(sValue.c_str()));
-							sprintf(szTmp, "%.1f Watt/m2", radiation);
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Radiation"] = atof(sValue.c_str());
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["TypeImg"] = "radiation";
-							root["result"][ii]["SwitchTypeVal"] = metertype;
-						}
-						else if (dSubType == sTypeSoilMoisture)
-						{
-							sprintf(szTmp, "%d cb", nValue);
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["Desc"] = Get_Moisture_Desc(nValue);
-							root["result"][ii]["TypeImg"] = "moisture";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["SwitchTypeVal"] = metertype;
-						}
-						else if (dSubType == sTypeLeafWetness)
-						{
-							sprintf(szTmp, "%d", nValue);
-							root["result"][ii]["Data"] = szTmp;
-							root["result"][ii]["TypeImg"] = "leaf";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["SwitchTypeVal"] = metertype;
-						}
-						else if (dSubType == sTypeSystemTemp)
-						{
-							double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
-							root["result"][ii]["Temp"] = tvalue;
-							sprintf(szData, "%.1f %c", tvalue, tempsign);
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Image"] = "Computer";
-							root["result"][ii]["TypeImg"] = "temperature";
-							root["result"][ii]["Type"] = "temperature";
-							_tTrendCalculator::_eTendencyType tstate = _tTrendCalculator::_eTendencyType::TENDENCY_UNKNOWN;
-							uint64_t tID = ((uint64_t)(hardwareID & 0x7FFFFFFF) << 32) | (devIdx & 0x7FFFFFFF);
-							if (m_mainworker.m_trend_calculator.find(tID) != m_mainworker.m_trend_calculator.end())
-							{
-								tstate = m_mainworker.m_trend_calculator[tID].m_state;
-							}
-							root["result"][ii]["trend"] = (int)tstate;
-						}
-						else if (dSubType == sTypePercentage)
-						{
-							sprintf(szData, "%g%%", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							// root["result"][ii]["Image"] = "Computer";
-							root["result"][ii]["TypeImg"] = "hardware";
-						}
-						else if (dSubType == sTypeWaterflow)
-						{
-							sprintf(szData, "%g l/min", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Image"] = "Moisture";
-							root["result"][ii]["TypeImg"] = "moisture";
-						}
-						else if (dSubType == sTypeCustom)
-						{
-							std::string szAxesLabel;
-							int SensorType = 1;
-							std::vector<std::string> sResults;
-							StringSplit(sOptions, ";", sResults);
-
-							if (sResults.size() == 2)
-							{
-								SensorType = atoi(sResults[0].c_str());
-								szAxesLabel = sResults[1];
-							}
-							sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["SensorType"] = SensorType;
-							root["result"][ii]["SensorUnit"] = szAxesLabel;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-							std::string IconFile = "Custom";
-							if (CustomImage != 0)
-							{
-								auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
-								if (ittIcon != m_custom_light_icons_lookup.end())
-								{
-									IconFile = m_custom_light_icons[ittIcon->second].RootFile;
-								}
-							}
-							root["result"][ii]["Image"] = IconFile;
-							root["result"][ii]["TypeImg"] = IconFile;
-						}
-						else if (dSubType == sTypeFan)
-						{
-							sprintf(szData, "%d RPM", atoi(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Image"] = "Fan";
-							root["result"][ii]["TypeImg"] = "Fan";
-						}
-						else if (dSubType == sTypeSoundLevel)
-						{
-							sprintf(szData, "%d dB", atoi(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "Speaker";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-						else if (dSubType == sTypeVoltage)
-						{
-							sprintf(szData, "%g V", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "current";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Voltage"] = atof(sValue.c_str());
-						}
-						else if (dSubType == sTypeCurrent)
-						{
-							sprintf(szData, "%g A", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "current";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Current"] = atof(sValue.c_str());
-						}
-						else if (dSubType == sTypeTextStatus)
-						{
-							root["result"][ii]["Data"] = sValue;
-							root["result"][ii]["TypeImg"] = "text";
-							root["result"][ii]["HaveTimeout"] = false;
-							root["result"][ii]["ShowNotifications"] = false;
-						}
-						else if (dSubType == sTypeAlert)
-						{
-							if (nValue > 4)
-								nValue = 4;
-							sprintf(szData, "Level: %d", nValue);
-							root["result"][ii]["Data"] = szData;
-							if (!sValue.empty())
-								root["result"][ii]["Data"] = sValue;
-							else
-								root["result"][ii]["Data"] = Get_Alert_Desc(nValue);
-							root["result"][ii]["TypeImg"] = "Alert";
-							root["result"][ii]["Level"] = nValue;
-							root["result"][ii]["HaveTimeout"] = false;
-						}
-						else if (dSubType == sTypePressure)
-						{
-							sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "gauge";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Pressure"] = atof(sValue.c_str());
-						}
-						else if (dSubType == sTypeBaro)
-						{
-							std::vector<std::string> tstrarray;
-							StringSplit(sValue, ";", tstrarray);
-							if (tstrarray.empty())
-								continue;
-							sprintf(szData, "%g hPa", atof(tstrarray[0].c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "gauge";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							if (tstrarray.size() > 1)
-							{
-								root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
-								int forecast = atoi(tstrarray[1].c_str());
-								root["result"][ii]["Forecast"] = forecast;
-								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-							}
-						}
-						else if (dSubType == sTypeZWaveClock)
-						{
-							std::vector<std::string> tstrarray;
-							StringSplit(sValue, ";", tstrarray);
-							int day = 0;
-							int hour = 0;
-							int minute = 0;
-							if (tstrarray.size() == 3)
-							{
-								day = atoi(tstrarray[0].c_str());
-								hour = atoi(tstrarray[1].c_str());
-								minute = atoi(tstrarray[2].c_str());
-							}
-							sprintf(szData, "%s %02d:%02d", ZWave_Clock_Days(day), hour, minute);
-							root["result"][ii]["DayTime"] = sValue;
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["TypeImg"] = "clock";
-						}
-						else if (dSubType == sTypeZWaveThermostatMode)
-						{
-							strcpy(szData, "");
-							root["result"][ii]["Mode"] = nValue;
-							root["result"][ii]["TypeImg"] = "mode";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							std::string modes;
-							// Add supported modes
-#ifdef WITH_OPENZWAVE
-							if (pHardware)
-							{
-								if (pHardware->HwdType == HTYPE_OpenZWave)
-								{
-									COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-									unsigned long ID;
-									std::stringstream s_strid;
-									s_strid << std::hex << sd[1];
-									s_strid >> ID;
-									std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
-									int smode = 0;
-									char szTmp[200];
-									for (const auto& mode : vmodes)
-									{
-										// Value supported
-										sprintf(szTmp, "%d;%s;", smode, mode.c_str());
-										modes += szTmp;
-										smode++;
-									}
-
-									if (!vmodes.empty())
-									{
-										if (nValue < (int)vmodes.size())
-										{
-											sprintf(szData, "%s", vmodes[nValue].c_str());
-										}
-									}
-								}
-							}
-#endif
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["Modes"] = modes;
-						}
-						else if (dSubType == sTypeZWaveThermostatFanMode)
-						{
-							sprintf(szData, "%s", ZWave_Thermostat_Fan_Modes[nValue]);
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["Mode"] = nValue;
-							root["result"][ii]["TypeImg"] = "mode";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							// Add supported modes (add all for now)
-							bool bAddedSupportedModes = false;
-							std::string modes;
-							// Add supported modes
-#ifdef WITH_OPENZWAVE
-							if (pHardware)
-							{
-								if (pHardware->HwdType == HTYPE_OpenZWave)
-								{
-									COpenZWave* pZWave = dynamic_cast<COpenZWave*>(pHardware);
-									unsigned long ID;
-									std::stringstream s_strid;
-									s_strid << std::hex << sd[1];
-									s_strid >> ID;
-									modes = pZWave->GetSupportedThermostatFanModes(ID);
-									bAddedSupportedModes = !modes.empty();
-								}
-							}
-#endif
-							if (!bAddedSupportedModes)
-							{
-								int smode = 0;
-								while (ZWave_Thermostat_Fan_Modes[smode] != nullptr)
-								{
-									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Fan_Modes[smode]);
-									modes += szTmp;
-									smode++;
-								}
-							}
-							root["result"][ii]["Modes"] = modes;
-						}
-						else if (dSubType == sTypeZWaveThermostatOperatingState)
-						{
-							strcpy(szData, "");
-							root["result"][ii]["State"] = nValue;
-							root["result"][ii]["TypeImg"] = "Fan";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							if (nValue == 1)
-							{
-								sprintf(szData, "%s", "Cooling");
-							}
-							else if (nValue == 2)
-							{
-								sprintf(szData, "%s", "Heating");
-							}
-							else
-							{
-								sprintf(szData, "%s", "Idle");
-							}
-							root["result"][ii]["Data"] = szData;
-						}
-						else if (dSubType == sTypeZWaveAlarm)
-						{
-							sprintf(szData, "Event: 0x%02X (%d)", nValue, nValue);
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "Alert";
-							root["result"][ii]["Level"] = nValue;
-							root["result"][ii]["HaveTimeout"] = false;
-						}
-					}
-					else if (dType == pTypeLux)
-					{
-						sprintf(szTmp, "%.0f Lux", atof(sValue.c_str()));
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-					else if (dType == pTypeWEIGHT)
-					{
-						sprintf(szTmp, "%g %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
-						root["result"][ii]["Data"] = szTmp;
-						root["result"][ii]["HaveTimeout"] = false;
-						root["result"][ii]["SwitchTypeVal"] = (m_sql.m_weightsign == "kg") ? 0 : 1;
-					}
-					else if (dType == pTypeUsage)
-					{
-						if (dSubType == sTypeElectric)
-						{
-							sprintf(szData, "%g Watt", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-						}
-						else
-						{
-							root["result"][ii]["Data"] = sValue;
-						}
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-					else if (dType == pTypeRFXSensor)
-					{
-						switch (dSubType)
-						{
-						case sTypeRFXSensorAD:
-							sprintf(szData, "%d mV", atoi(sValue.c_str()));
-							root["result"][ii]["TypeImg"] = "current";
-							break;
-						case sTypeRFXSensorVolt:
-							sprintf(szData, "%d mV", atoi(sValue.c_str()));
-							root["result"][ii]["TypeImg"] = "current";
-							break;
-						}
-						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-					}
-					else if (dType == pTypeRego6XXValue)
-					{
-						switch (dSubType)
-						{
-						case sTypeRego6XXStatus: {
-							std::string lstatus = "On";
-
-							if (atoi(sValue.c_str()) == 0)
-							{
-								lstatus = "Off";
-							}
-							root["result"][ii]["Status"] = lstatus;
-							root["result"][ii]["HaveDimmer"] = false;
-							root["result"][ii]["MaxDimLevel"] = 0;
-							root["result"][ii]["HaveGroupCmd"] = false;
-							root["result"][ii]["TypeImg"] = "utility";
-							root["result"][ii]["SwitchTypeVal"] = STYPE_OnOff;
-							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_OnOff);
-							sprintf(szData, "%d", atoi(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["StrParam1"] = strParam1;
-							root["result"][ii]["StrParam2"] = strParam2;
-							root["result"][ii]["Protected"] = (iProtected != 0);
-
-							if (CustomImage < static_cast<int>(m_custom_light_icons.size()))
-								root["result"][ii]["Image"] = m_custom_light_icons[CustomImage].RootFile;
-							else
-								root["result"][ii]["Image"] = "Light";
-
-							uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
-							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
-							if (camIDX != 0)
-							{
-								std::stringstream scidx;
-								scidx << camIDX;
-								root["result"][ii]["CameraIdx"] = scidx.str();
-								root["result"][ii]["CameraAspect"] = m_mainworker.m_cameras.GetCameraAspectRatio(scidx.str());
-							}
-
-							root["result"][ii]["Level"] = 0;
-							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
-						}
-											   break;
-						case sTypeRego6XXCounter: {
-							// get value of today
-							time_t now = mytime(nullptr);
-							struct tm ltime;
-							localtime_r(&now, &ltime);
-							char szDate[40];
-							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-							std::vector<std::vector<std::string>> result2;
-							strcpy(szTmp, "0");
-							result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
-							if (!result2.empty())
-							{
-								std::vector<std::string> sd2 = result2[0];
-
-								unsigned long long total_min = std::strtoull(sd2[0].c_str(), nullptr, 10);
-								unsigned long long total_max = std::strtoull(sd2[1].c_str(), nullptr, 10);
-								unsigned long long total_real;
-
-								total_real = total_max - total_min;
-								sprintf(szTmp, "%lld", total_real);
-							}
-							root["result"][ii]["SwitchTypeVal"] = MTYPE_COUNTER;
-							root["result"][ii]["Counter"] = sValue;
-							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["Data"] = sValue;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-												break;
-						}
-					}
-					if (CustomImage != 0 && !root["result"][ii].isMember("Image"))
-					{
-						auto ittIcon = m_custom_light_icons_lookup.find(CustomImage);
-						if (ittIcon != m_custom_light_icons_lookup.end())
-						{
-							root["result"][ii]["Image"] = m_custom_light_icons[ittIcon->second].RootFile;
-						}
-					}
-#ifdef ENABLE_PYTHON
-					if (pHardware != nullptr)
-					{
-						if (pHardware->HwdType == HTYPE_PythonPlugin)
-						{
-							Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
-							bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), atoi(sd[2].c_str()));
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						}
-					}
-#endif
-					root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
-					ii++;
 				}
+#ifdef ENABLE_PYTHON
+				if (pHardware != nullptr)
+				{
+					if (pHardware->HwdType == HTYPE_PythonPlugin)
+					{
+						Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)pHardware;
+						bHaveTimeout = pPlugin->HasNodeFailed(sd[1].c_str(), atoi(sd[2].c_str()));
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+					}
+				}
+#endif
+				root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
+				ii++;
 			}
 		}
 
