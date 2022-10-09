@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-LABEL maintainer="Mark Ruys <mark@paracas.nl>"
+LABEL maintainer="Mark Ruys"
 
 ARG CMAKE_VERSION
 ARG BOOST_VERSION
