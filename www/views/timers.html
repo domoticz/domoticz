@@ -18,6 +18,7 @@
             timers="vm.timers"
             selected-timer-idx="vm.selectedTimerIdx"
             level-options="::vm.levelOptions"
+            is-Blind="::vm.isBlind"
             is-setpoint-timers="::vm.isSetpointTimers">
     </timers-table>
 
@@ -49,6 +50,7 @@
             ng-if="::vm.isLoaded"
             timer-settings="vm.timerSettings"
             level-options="::vm.levelOptions"
+            is-Blind="::vm.isBlind"
             color-settings-type="::vm.colorSettingsType"
             is-command-selection-disabled="::vm.isCommandSelectionDisabled"
             is-setpoint-timers="::vm.isSetpointTimers">
@@ -141,12 +143,20 @@
             <td>
                 <label for="combocommand">{{:: 'Command' | translate }}:</label>
             </td>
-            <td>
+            <td ng-hide="::vm.isBlind">
                 <select id="combocommand"
                         class="combobox ui-corner-all"
                         style="width:90px"
                         ng-disabled="vm.isCommandSelectionDisabled" ng-model="vm.timerSettings.command"
                         ng-options="item.value as item.label for item in ::vm.commandOptions">
+                </select>
+            </td>
+            <td ng-show="::vm.isBlind">
+                <select id="combocommand"
+                        class="combobox ui-corner-all"
+                        style="width:90px"
+                        ng-disabled="vm.isCommandSelectionDisabled" ng-model="vm.timerSettings.command"
+                        ng-options="item.value as item.label for item in ::vm.blindOptions">
                 </select>
             </td>
         </tr>

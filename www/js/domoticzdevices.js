@@ -876,6 +876,7 @@ Device.create = function (item) {
             break;
         case "blinds":
         case "blinds percentage":
+        case "venetian blinds":
             dev = new Blinds(item);
             break;
         case "contact":
@@ -967,9 +968,6 @@ Device.create = function (item) {
             break;
         case "visibility":
             dev = new Visibility(item);
-            break;
-        case "venetian blinds":
-            dev = new Blinds(item);
             break;
         case "wind":
             dev = new Wind(item);

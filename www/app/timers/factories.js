@@ -110,6 +110,7 @@ define(['app'], function (app) {
         return {
             timerTypes: getTimerTypes(),
             command: getCommandOptions(),
+            blind_commands: getBlindOptions(),
             month: getMonthOptions(),
             monthday: getMonthdayOptions(),
             weekday: getWeekdayOptions(),
@@ -150,6 +151,13 @@ define(['app'], function (app) {
             return [
                 {label: $.t('On'), value: 0},
                 {label: $.t('Off'), value: 1},
+            ]
+        }
+
+        function getBlindOptions() {
+            return [
+                {label: $.t('Open'), value: 0},
+                {label: $.t('Close'), value: 1},
             ]
         }
 
