@@ -3069,10 +3069,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	}
 	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
 
+	if (pSensor->component_type == "cover")
+		return SendCoverCommand(pSensor, DeviceName, command, level);
+
 	if (
 		(pSensor->component_type != "switch")
 		&& (pSensor->component_type != "light")
-		&& (pSensor->component_type != "cover")
 		&& (pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
 		&& (pSensor->component_type != "lock")
@@ -3090,7 +3092,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		(pSensor->component_type != "climate")
 		&& (pSensor->component_type != "select")
 		&& (pSensor->component_type != "lock")
-		&& (pSensor->component_type != "cover")
 		)
 	{
 		if (command == "On")
@@ -3101,7 +3102,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			szSendValue = pSensor->payload_stop;
 		else if (command == "Set Level")
 		{
-			if ((level == 0) && (pSensor->component_type != "cover"))
+			if (level == 0)
 			{
 				command = "Off";
 				szSendValue = pSensor->payload_off;
@@ -3329,94 +3330,6 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 		szSendValue = JSonToRawString(root);
 	}
-	else if (pSensor->component_type == "cover")
-	{
-		Json::Value root;
-		std::string szValue;
-
-		if (command == "Open")
-		{
-			szValue = pSensor->payload_open;
-			level = pSensor->position_open;
-			if (!pSensor->set_position_topic.empty())
-				command = "Set Level";
-		}
-		else if (command == "Close")
-		{
-			szValue = pSensor->payload_close;
-			level = pSensor->position_closed;
-			if (!pSensor->set_position_topic.empty())
-				command = "Set Level";
-		}
-		else if (command == "Stop")
-		{
-			level = -1;
-			szValue = pSensor->payload_stop;
-		}
-
-		if (command == "Set Level")
-		{
-			szValue = std::to_string(level);
-			if (!pSensor->set_position_topic.empty())
-			{
-				int iValue = (int)round(((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level));
-				if (pSensor->set_position_template.empty())
-				{
-					szSendValue = std::to_string(iValue);
-				}
-				else
-				{
-					std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
-					if (szKey.empty())
-					{
-						Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-						return false;
-					}
-					if (is_number(szValue))
-					{
-						root[szKey] = (int)iValue;
-					}
-					else
-						root[szKey] = szValue;
-					szSendValue = JSonToRawString(root);
-				}
-				SendMessage(pSensor->set_position_topic, szSendValue);
-			}
-			else {
-				Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-				return false;
-			}
-		}
-		else {
-			if (!pSensor->command_topic.empty())
-			{
-				SendMessage(pSensor->command_topic, szValue);
-			}
-			else {
-				Log(LOG_ERROR, "Cover device does not have command_topic (%s/%s)", DeviceID.c_str(), DeviceName.c_str());
-				return false;
-			}
-		}
-		auto result = m_sql.safe_query("SELECT ID,Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
-		if (
-			(!result.empty())
-			&& (level != -1)
-			)
-		{
-			int nValue = gswitch_sSetLevel;
-			if (level == 0)
-				nValue = gswitch_sClose;
-			else if (level == 100)
-				nValue = gswitch_sOpen;
-			//nValue = gswitch_sSetLevel;
-			m_sql.safe_query(
-				"UPDATE DeviceStatus SET LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)", level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
-			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
-				nValue, std::to_string(level).c_str(), result[0][1]);
-
-		}
-		return true;
-	}
 	else if (
 		(pSensor->component_type == "climate")
 		|| (pSensor->component_type == "select")
@@ -3494,6 +3407,96 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	}
 
 	SendMessage(command_topic, szSendValue);
+	return true;
+}
+
+bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level)
+{
+	Json::Value root;
+	std::string szValue;
+
+	if (command == "Open")
+	{
+		szValue = pSensor->payload_open;
+		level = 100;
+		if (!pSensor->set_position_topic.empty())
+			command = "Set Level";
+	}
+	else if (command == "Close")
+	{
+		szValue = pSensor->payload_close;
+		level = 0;
+		if (!pSensor->set_position_topic.empty())
+			command = "Set Level";
+	}
+	else if (command == "Stop")
+	{
+		level = -1;
+		szValue = pSensor->payload_stop;
+	}
+
+	if (command == "Set Level")
+	{
+		szValue = std::to_string(level);
+		if (!pSensor->set_position_topic.empty())
+		{
+			std::string szSendValue;
+			int iValue = (int)round(((pSensor->position_open - pSensor->position_closed) / 100.0F) * float(level));
+			if (pSensor->set_position_template.empty())
+			{
+				szSendValue = std::to_string(iValue);
+			}
+			else
+			{
+				std::string szKey = GetValueTemplateKey(pSensor->set_position_template);
+				if (szKey.empty())
+				{
+					Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+					return false;
+				}
+				if (is_number(szValue))
+				{
+					root[szKey] = (int)iValue;
+				}
+				else
+					root[szKey] = szValue;
+				szSendValue = JSonToRawString(root);
+			}
+			SendMessage(pSensor->set_position_topic, szSendValue);
+		}
+		else {
+			Log(LOG_ERROR, "Cover device does not have set_position_topic (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+			return false;
+		}
+	}
+	else {
+		if (!pSensor->command_topic.empty())
+		{
+			SendMessage(pSensor->command_topic, szValue);
+		}
+		else {
+			Log(LOG_ERROR, "Cover device does not have command_topic (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+			return false;
+		}
+	}
+	auto result = m_sql.safe_query("SELECT ID,Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, pSensor->unique_id.c_str());
+	if (
+		(!result.empty())
+		&& (level != -1)
+		)
+	{
+		int nValue = gswitch_sSetLevel;
+		if (level == 0)
+			nValue = gswitch_sClose;
+		else if (level == 100)
+			nValue = gswitch_sOpen;
+		//nValue = gswitch_sSetLevel;
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)", level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
+		UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+			nValue, std::to_string(level).c_str(), result[0][1]);
+
+	}
 	return true;
 }
 
