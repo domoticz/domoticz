@@ -1383,20 +1383,11 @@ define(['app', 'livesocket'], function (app) {
 						var bigtext;
 						if (fPercentage == 0) {
 							img = '<img src="images/' + imgname + 'ff.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',' + isProtected + ');" class="lcursor" height="48" width="48">';
-							if (dtype == "blinds") {
-								bigtext = $.t("Closed");
-							}
-							else {
-								bigtext = $.t("Off");
-							}
+							bigtext = fPercentage + " %";
 						}
 						else {
 							img = '<img src="images/' + imgname + 'n.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + idx + ',\'Off\',' + isProtected + ');" class="lcursor" height="48" width="48">';
-							if ((dtype == "blinds")&&(fPercentage == 100)) {
-								bigtext = $.t("Open");
-							} else {
-								bigtext = fPercentage + " %";
-							}
+							bigtext = fPercentage + " %";
 						}
 						if ((dtype != "blinds") && !isled) {
 							if ($(id + " #img").html() != img) {

@@ -3820,15 +3820,11 @@ define(['app', 'livesocket'], function (app) {
 								imgname = "Fireplace48_O"
 							if (fPercentage == 0) {
 								img = '<img src="images/' + imgname + 'ff.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',' + isProtected + ');" class="lcursor" height="40" width="40">';
-								status = $.t(TxtOff);
+								status = fPercentage + " %";
 							}
 							else {
 								img = '<img src="images/' + imgname + 'n.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + idx + ',\'Off\',' + isProtected + ');" class="lcursor" height="40" width="40">';
-								if ((dtype == "blinds")&&(fPercentage == 100)) {
-									status = $.t(TxtOn);
-								} else {
-									status = fPercentage + " %";
-								}
+								status = fPercentage + " %";
 							}
 							if ((dtype != "blinds") && !isled) {
 								if ($(id + " #img").html() != img) {

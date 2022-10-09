@@ -11496,16 +11496,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	if (bIsBlinds)
 	{
-		if ((switchcmd == "Off") || (switchcmd == "Set Level" && level == 0))
-			switchcmd = "Close";
-		else if ((switchcmd == "On") || (switchcmd == "Set Level" && level == 100))
-			switchcmd = "Open";
-
-		if (switchcmd == "Open")
-			level = 100;
-		else if (switchcmd == "Close")
-			level = 0;
-
+		std::string szOrgCommand = switchcmd;
 		bool bReverseState = false;
 		bool bReversePosition = false;
 
@@ -11516,16 +11507,26 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		if (itt != options.end())
 			bReversePosition = (itt->second == "true");
 
-		if (bReversePosition)
+		if ((bReversePosition) && (switchcmd == "Set Level"))
 		{
 			level = 100 - level;
 		}
 
-		if (bReverseState)
+		if ((switchcmd == "Off") || (switchcmd == "Set Level" && level == 0))
+			switchcmd = "Close";
+		else if ((switchcmd == "On") || (switchcmd == "Set Level" && level == 100))
+			switchcmd = "Open";
+
+		if (switchcmd == "Open")
+			level = 100;
+		else if (switchcmd == "Close")
+			level = 0;
+
+		if ((bReverseState) && (szOrgCommand != "Set Level"))
 		{
 			if (switchcmd == "Open")
 				switchcmd = "Close";
-			else if(switchcmd == "Close")
+			else if (switchcmd == "Close")
 				switchcmd = "Open";
 		}
 	}
