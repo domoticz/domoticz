@@ -1622,7 +1622,7 @@ Humidity.inheritsFrom(WeatherSensor);
 
 function Lightbulb(item) {
     if (arguments.length != 0) {
-        item.TypeImg = "lightbulb";
+        item.TypeImg = "Light";
         this.parent.constructor(item);
     }
 }
