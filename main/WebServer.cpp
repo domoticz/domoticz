@@ -3654,6 +3654,14 @@ namespace http
 
 						unsigned char devType = atoi(sd[3].c_str());
 
+						bool bIsBlinds = (
+							switchtype == STYPE_Blinds
+							|| switchtype == STYPE_BlindsPercentage
+							|| switchtype == STYPE_BlindsPercentageWithStop
+							|| switchtype == STYPE_VenetianBlindsEU
+							|| switchtype == STYPE_VenetianBlindsUS
+							);
+
 						// switchtype seemed not to be used down with the GetLightStatus command,
 						// causing RFY to go wrong, fixing here
 						if (devType != pTypeRFY)
@@ -3671,6 +3679,14 @@ namespace http
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
 						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						if (bIsBlinds)
+						{
+							if (lstatus == "On")
+								lstatus = "Open";
+							else if (lstatus == "Off")
+								lstatus = "Close";
+						}
+
 						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
 						root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
