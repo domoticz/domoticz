@@ -3391,38 +3391,38 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 
 	if (bIsJSON)
 	{
-		if (!root["state"].empty())
-			szSwitchCmd = root["state"].asString();
-		else if (!root["value"].empty())
-		{
-			szSwitchCmd = root["value"].asString();
-			if (is_number(szSwitchCmd))
-			{
-				//must be a position
-				level = atoi(szSwitchCmd.c_str());
-
-				szSwitchCmd = "Set Level";
-			}
-		}
-		else
-		{
-			if (root["position"].empty())
-			{
-#ifdef _DEBUG
-				_log.Debug(DEBUG_NORM, "ERROR: Last Payload is missing state field (%s/%s)", pSensor->unique_id.c_str(), szDeviceName.c_str());
-#endif
-				return;
-			}
-		}
 		if (!root["position"].empty())
 		{
 			level = root["position"].asInt();
+			szSwitchCmd = "Set Level";
+		}
+		else if (!root["value"].empty())
+		{
+			//check against a possible value template ?
+			szSwitchCmd = root["value"].asString();
+		}
+		else if (!root["state"].empty())
+		{
+			szSwitchCmd = root["state"].asString();
+		}
+		else
+		{
+#ifdef _DEBUG
+			_log.Debug(DEBUG_NORM, "ERROR: Cover, unknown how to interpretate position/state", pSensor->unique_id.c_str(), szDeviceName.c_str());
+#endif
+			return;
+		}
+		if (is_number(szSwitchCmd))
+		{
+			//must be a position
+			level = atoi(szSwitchCmd.c_str());
 			szSwitchCmd = "Set Level";
 		}
 	}
 	else
 	{
 		//not json
+		szSwitchCmd = pSensor->last_value;
 		if (is_number(szSwitchCmd))
 		{
 			//must be a level
