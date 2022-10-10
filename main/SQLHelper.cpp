@@ -3559,11 +3559,6 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string& switchcm
 		return false;
 
 	std::string switchCommand = switchcmd;
-	if (switchCommand == "Close")
-		switchCommand = "On";
-	else if (switchCommand == "Open")
-		switchCommand = "Off";
-
 	return m_mainworker.SwitchLightInt(sd, switchCommand, level, color, false, User);
 }
 
