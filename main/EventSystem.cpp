@@ -3730,6 +3730,10 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 
 		}
 		else {
+			if (oParseResults.sCommand == "Closed")
+				oParseResults.sCommand = "Close";
+			else if (oParseResults.sCommand == "Off")
+				level = -1;
 			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, "EventSystem/" + eventName);
 		}
 		m_sql.AddTaskItem(tItem);
