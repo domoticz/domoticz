@@ -135,6 +135,8 @@ public:
 
 private:
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
+
+	void UpdateBlindPosition(_tMQTTASensor* pSensor);
 	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level);
 	void CleanValueTemplate(std::string& szValueTemplate);
 	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
