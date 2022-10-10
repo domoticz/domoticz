@@ -13328,7 +13328,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd, const st
 				&& (maxDimLevel != 0)
 			   )
 			{
-				if (lstatus == "On")
+				if ((lstatus == "On")|| (lstatus == "Open"))
 				{
 					lstatus = "Set Level";
 					float fLevel = (maxDimLevel / 100.0F) * level;
