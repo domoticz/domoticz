@@ -841,7 +841,10 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		root["description"] = description;
 		root["LastUpdate"] = sLastUpdate;
 
-		if (switchType == STYPE_Dimmer)
+		if (
+			(switchType == STYPE_Dimmer)
+			(switchType == STYPE_BlindsPercentage)
+			(switchType == STYPE_BlindsPercentageWithStop)
 		{
 			root["Level"] = LastLevel;
 			if (dType == pTypeColorSwitch)
