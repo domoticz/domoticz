@@ -2470,10 +2470,6 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
-	pSensor->devUnit = 1;
-	pSensor->devType = pTypeGeneralSwitch;
-	pSensor->subType = sSwitchGeneralSwitch;
-
 	if (pSensor->component_type == "cover")
 	{
 		UpdateBlindPosition(pSensor);
@@ -3334,6 +3330,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 {
+	pSensor->devUnit = 1;
+	pSensor->devType = pTypeGeneralSwitch;
+	pSensor->subType = sSwitchGeneralSwitch;
+
 	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
