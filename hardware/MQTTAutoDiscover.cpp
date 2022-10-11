@@ -2470,6 +2470,10 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 {
+	pSensor->devUnit = 1;
+	pSensor->devType = pTypeGeneralSwitch;
+	pSensor->subType = sSwitchGeneralSwitch;
+
 	if (pSensor->component_type == "cover")
 	{
 		UpdateBlindPosition(pSensor);
