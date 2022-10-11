@@ -11488,7 +11488,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		switchcmd = "Off";
 	// If command is Off, we retrieve/store our previous level below
 	if ((switchcmd == "Off") && (!bIsBlinds))
-		level = -1;
+		level = (switchtype != STYPE_Selector)  ? -1 : 0;
 
 	//when level is invalid or command is "On", replace level with "LastLevel"
 	if (switchcmd == "On" || level < 0)
@@ -11503,7 +11503,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		}
 
 		//level here is from 0-100, convert it to device range
-		if (maxDimLevel != 0)
+		if ((maxDimLevel != 0) && (switchtype != STYPE_Selector))
 		{
 			float fLevel = (maxDimLevel / 100.0F) * level;
 			if (fLevel > 100)
