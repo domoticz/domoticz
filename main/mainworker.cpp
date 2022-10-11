@@ -11445,6 +11445,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	int dSubType = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
+	std::string lstatus;
+	int llevel = 0;
+	bool bHaveDimmer = false;
+	bool bHaveGroupCmd = false;
+	int maxDimLevel = 0;
+	int nValue = atoi(sd[7].c_str());
+	std::string sValue = sd[8];
+	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
 	if (pHardware->HwdType == HTYPE_DomoticzInternal)
 	{
 		//Special cases
@@ -11466,7 +11475,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
-	bool bIsBlinds = (
+	const bool bIsBlinds = (
 		switchtype == STYPE_Blinds
 		|| switchtype == STYPE_BlindsPercentage
 		|| switchtype == STYPE_BlindsPercentageWithStop
@@ -11492,9 +11501,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		{
 			level = atoi(result[0][0].c_str());
 		}
+
+		//level here is from 0-100, convert it to device range
+		if (maxDimLevel != 0)
+		{
+			float fLevel = (maxDimLevel / 100.0F) * level;
+			if (fLevel > 100)
+				fLevel = 100;
+			level = round(fLevel);
+		}
 		_log.Debug(DEBUG_NORM, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
-	// TODO: Something smarter if level is not valid?
 	level = std::max(level, 0);
 
 	if (bIsBlinds)
@@ -11536,17 +11553,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 
 	//when asking for Toggle, just switch to the opposite value
 	if (switchcmd == "Toggle") {
-		//Request current state of switch
-		std::string lstatus;
-		int llevel = 0;
-		bool bHaveDimmer = false;
-		bool bHaveGroupCmd = false;
-		int maxDimLevel = 0;
-
-		int nValue = atoi(sd[7].c_str());
-		std::string sValue = sd[8];
-
-		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		//Flip the status
 		if (IsLightSwitchOn(lstatus) == true)
 			switchcmd = (!bIsBlinds) ? "Off" : "Close";
