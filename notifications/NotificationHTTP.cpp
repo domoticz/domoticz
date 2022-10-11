@@ -93,7 +93,7 @@ bool CNotificationHTTP::SendMessageImplementation(
 		//Check if it is secure
 		if (!IsArgumentSecure(destURL))
 		{
-			_log.Log(LOG_ERROR, "HTTP: Insecure script command!");
+			_log.Log(LOG_ERROR, "Script: Insecure script command!");
 			return false;
 		}
 
