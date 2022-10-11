@@ -14298,6 +14298,7 @@ namespace http
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						unsigned long long ulFirstValue = 0;
+						std::string szFirstDateTime;
 						unsigned long long ulLastValue = 0;
 
 						std::string LastDateTime;
@@ -14334,17 +14335,9 @@ namespace http
 									{
 										if (bHaveFirstValue)
 										{
-											struct tm ntime;
-											time_t atime;
-											if (actDateTimeHour.size() == 10)
-												actDateTimeHour += " 00";
-											constructTime(atime, ntime, atoi(actDateTimeHour.substr(0, 4).c_str()),
-												atoi(actDateTimeHour.substr(5, 2).c_str()), atoi(actDateTimeHour.substr(8, 2).c_str()),
-												atoi(actDateTimeHour.substr(11, 2).c_str()) - 1, 0, 0, -1);
-
-											char szTime[50];
-											sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
-											root["result"][ii]["d"] = szTime;
+											if (LastDateTime.size() == 10)
+												LastDateTime += " 00";
+											root["result"][ii]["d"] = LastDateTime + ":00";
 
 											// float TotalValue = float(actValue - ulFirstValue);
 
@@ -14386,6 +14379,7 @@ namespace http
 									if (!bHaveFirstValue)
 									{
 										ulFirstValue = actValue;
+										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = true;
 									}
 									ulLastValue = actValue;
