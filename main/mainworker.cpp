@@ -11477,6 +11477,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 	// If dimlevel is 0 or no dimlevel, turn switch off
 	if ((level <= 0 && switchcmd == "Set Level") && (!bIsBlinds))
 		switchcmd = "Off";
+	// If command is Off, we retrieve/store our previous level below
+	if ((switchcmd == "Off") && (!bIsBlinds))
+		level = -1;
 
 	//when level is invalid or command is "On", replace level with "LastLevel"
 	if (switchcmd == "On" || level < 0)
