@@ -253,8 +253,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker', 'timers/factories'], functio
 
             function commandRenderer(value) {
                 var timer = getTimerByIdx(value);
-				var txtOn = (vm.isBlind) ? 'Open' : 'Off';
-				var txtOff = (vm.isBlind) ? 'Close' : 'On';
+				var txtOn = (vm.isBlind) ? 'Open' : 'On';
+				var txtOff = (vm.isBlind) ? 'Close' : 'Off';
                 var command = timer.Cmd === 1 ? txtOff : txtOn;
 
                 if (vm.isSetpointTimers) {
