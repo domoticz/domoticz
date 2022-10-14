@@ -11586,7 +11586,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string>& sd, std::string 
 		{
 			switchcmd = "Set Color";
 		}
-		return ((MQTTAutoDiscover*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color);
+		return ((MQTTAutoDiscover*)m_hardwaredevices[hindex])->SendSwitchCommand(sd[1], sd[9], Unit, switchcmd, level, color, User);
 	}
 
 	switch (dType)

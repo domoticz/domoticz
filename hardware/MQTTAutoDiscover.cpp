@@ -1282,9 +1282,9 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 }
 
 uint64_t MQTTAutoDiscover::UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-	const char* sValue, std::string& devname, bool bUseOnOffAction)
+	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
-	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, m_Name.c_str());
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, (!user.empty()) ? user.c_str() : m_Name.c_str());
 	if (DeviceRowIdx == (uint64_t)-1)
 		return -1;
 	if (m_bOutputLog)
@@ -2982,7 +2982,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		m_sql.UpdateDeviceValue("LastLevel", level, szIdx);
 }
 
-bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color)
+bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user)
 {
 	if (m_discovered_sensors.find(DeviceID) == m_discovered_sensors.end())
 	{
@@ -2992,7 +2992,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 	_tMQTTASensor* pSensor = &m_discovered_sensors[DeviceID];
 
 	if (pSensor->component_type == "cover")
-		return SendCoverCommand(pSensor, DeviceName, command, level);
+		return SendCoverCommand(pSensor, DeviceName, command, level, user);
 
 	if (
 		(pSensor->component_type != "switch")
@@ -3482,7 +3482,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 	}
 }
 
-bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level)
+bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level, const std::string& user)
 {
 	Json::Value root;
 	std::string szValue;
@@ -3566,7 +3566,7 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 		m_sql.safe_query(
 			"UPDATE DeviceStatus SET LastLevel=%d, LastUpdate='%s' WHERE (ID = %s)", level, TimeToString(nullptr, TF_DateTime).c_str(), result[0][0].c_str());
 		UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), 1, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
-			nValue, std::to_string(level).c_str(), result[0][1]);
+			nValue, std::to_string(level).c_str(), result[0][1], true, user);
 
 	}
 	return true;

@@ -124,8 +124,8 @@ public:
 	~MQTTAutoDiscover() override = default;
 
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		const char* sValue, std::string& devname, bool bUseOnOffAction = true);
-	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color);
+		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
+	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
 	bool SetSetpoint(const std::string& DeviceID, const float Temp);
 
 public:
@@ -137,7 +137,7 @@ private:
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
 
 	void UpdateBlindPosition(_tMQTTASensor* pSensor);
-	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level);
+	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level, const std::string& user);
 	void CleanValueTemplate(std::string& szValueTemplate);
 	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
