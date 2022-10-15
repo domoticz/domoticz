@@ -21,7 +21,7 @@ local function setStateAttribute(state, device, _states)
 		level =  100
 	end
 	if (state and string.find(state, 'Closed')) then
-        level =  0
+		level =  0
 	end
 	if (state and string.find(state, 'Set Level')) then
 		level = string.match(state, '%d+') -- extract dimming value
