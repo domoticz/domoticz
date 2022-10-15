@@ -337,12 +337,11 @@ namespace Plugins
 
 			if (!Py_None)
 			{
-				PyNewRef global_dict = PyDict_New(); //safe to use pModuleDict here?
 				PyNewRef local_dict = PyDict_New();
 				PyNewRef pCode = Py_CompileString("# Eval will return 'None'\n", "<domoticz>", Py_file_input);
 				if (pCode)
 				{
-					PyNewRef pEval = PyEval_EvalCode(pCode, global_dict /* pModuleDict */, local_dict);
+					PyNewRef pEval = PyEval_EvalCode(pCode, pModuleDict, local_dict);
 					Py_None = pEval;
 					Py_INCREF(Py_None);
 				}
