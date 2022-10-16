@@ -1024,7 +1024,6 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 				pSensor->climate_modes.push_back(ittMode.asString());
 			}
 		}
-
 		if (!root["temperature_command_topic"].empty())
 			pSensor->temperature_command_topic = root["temperature_command_topic"].asString();
 		if (!root["temperature_command_template"].empty())
@@ -1051,13 +1050,45 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->current_temperature_template = root["current_temperature_template"].asString();
 		if (!root["curr_temp_tpl"].empty())
 			pSensor->current_temperature_template = root["curr_temp_tpl"].asString();
+		if (!root["preset_modes"].empty())
+		{
+			for (const auto& ittMode : root["preset_modes"])
+			{
+				pSensor->preset_modes.push_back(ittMode.asString());
+			}
+		}
+		if (!root["pr_modes"].empty())
+		{
+			for (const auto& ittMode : root["pr_modes"])
+			{
+				pSensor->preset_modes.push_back(ittMode.asString());
+			}
+		}
+		if (!root["preset_mode_command_topic"].empty())
+			pSensor->preset_mode_command_topic = root["preset_mode_command_topic"].asString();
+		if (!root["preset_mode_command_template"].empty())
+			pSensor->preset_mode_command_template = root["preset_mode_command_template"].asString();
+		if (!root["preset_mode_state_topic"].empty())
+			pSensor->preset_mode_state_topic = root["preset_mode_state_topic"].asString();
+		if (!root["preset_mode_value_template"].empty())
+			pSensor->preset_mode_value_template = root["preset_mode_value_template"].asString();
+		if (!root["pr_mode_cmd_t"].empty())
+			pSensor->preset_mode_command_topic = root["pr_mode_cmd_t"].asString();
+		if (!root["pr_mode_cmd_tpl"].empty())
+			pSensor->preset_mode_command_template = root["pr_mode_cmd_tpl"].asString();
+		if (!root["pr_mode_stat_t"].empty())
+			pSensor->preset_mode_state_topic = root["pr_mode_stat_t"].asString();
+		if (!root["pr_mode_val_tpl"].empty())
+			pSensor->preset_mode_value_template = root["pr_mode_val_tpl"].asString();
 
 		CleanValueTemplate(pSensor->mode_state_template);
 		CleanValueTemplate(pSensor->temperature_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
+		CleanValueTemplate(pSensor->preset_mode_value_template);
 
 		FixCommandTopicStateTemplate(pSensor->mode_command_topic, pSensor->mode_state_template);
 		FixCommandTopicStateTemplate(pSensor->temperature_command_topic, pSensor->temperature_command_template);
+		FixCommandTopicStateTemplate(pSensor->preset_mode_command_topic, pSensor->preset_mode_command_template);
 
 		if (!root["qos"].empty())
 			pSensor->qos = atoi(root["qos"].asString().c_str());
@@ -2340,6 +2371,107 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 		}
 	}
 
+	// Create/update Selector device for preset_modes
+	bValid = true;
+	if (!pSensor->preset_modes.empty())
+	{
+		pSensor->devType = pTypeGeneralSwitch;
+		pSensor->subType = sSwitchGeneralSwitch;
+		int switchType = STYPE_Selector;
+
+		bool bIsNewDevice = false;
+
+		std::vector<std::vector<std::string>> result;
+		result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType);
+		if (result.empty())
+		{
+			// New switch, add it to the system
+			bIsNewDevice = true;
+			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
+				"VALUES (%d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
+				m_HwdID, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
+			result = m_sql.safe_query("SELECT ID,Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, pSensor->unique_id.c_str(), pSensor->devType,
+				pSensor->subType);
+			if (result.empty())
+				return; // should not happen!
+		}
+
+		if (
+			(pSensor->preset_mode_state_topic == topic)
+			|| (bIsNewDevice)
+			)
+		{
+			std::string current_mode;
+			if (
+				(!pSensor->preset_mode_value_template.empty())
+				&& (bIsJSON)
+				)
+			{
+				current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template);
+				if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
+				{
+					Log(LOG_ERROR, "Climate device no idea how to interpretate preset_mode_state value (%s)", pSensor->unique_id.c_str());
+					bValid = false;
+				}
+			}
+			else
+				current_mode = qMessage;
+
+			if (bValid)
+			{
+				std::string szIdx = result[0][0];
+				uint64_t DevRowIdx = std::stoull(szIdx);
+				std::string szDeviceName = result[0][1];
+				int nValue = atoi(result[0][2].c_str());
+				std::string sValue = result[0][3];
+				std::string sOptions = result[0][4];
+
+				int iActualIndex = current_mode.empty() ? 0 : -1;
+
+				// Build switch options
+				int iValueIndex = 0;
+				std::string tmpOptionString;
+				for (const auto& ittOptions : pSensor->preset_modes)
+				{
+					if (ittOptions == current_mode)
+						iActualIndex = iValueIndex;
+					if (!tmpOptionString.empty())
+						tmpOptionString += "|";
+					tmpOptionString += ittOptions;
+					iValueIndex += 10;
+				}
+
+				if (iActualIndex == -1)
+				{
+					Log(LOG_ERROR, "Climate device invalid/unknown preset_mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
+					bValid = false;
+				}
+
+				if (bValid)
+				{
+					std::map<std::string, std::string> optionsMap;
+					optionsMap["SelectorStyle"] = "0";
+					optionsMap["LevelOffHidden"] = "false";
+					optionsMap["LevelNames"] = tmpOptionString;
+
+					std::string newOptions = m_sql.FormatDeviceOptions(optionsMap);
+					if (newOptions != sOptions)
+						m_sql.SetDeviceOptions(DevRowIdx, optionsMap);
+
+					pSensor->nValue = (iActualIndex == 0) ? 0 : 2;
+					pSensor->sValue = std_format("%d", iActualIndex);
+
+					if ((pSensor->nValue != nValue) || (pSensor->sValue != sValue))
+					{
+						UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue,
+							pSensor->sValue.c_str(), szDeviceName);
+					}
+				}
+			}
+		}
+	}
+
 	// Create/update SetPoint Thermostat for config and update payloads 
 	bValid = true;
 	if (!pSensor->temperature_command_topic.empty())
@@ -3268,6 +3400,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		std::string szCommandTopic;
 		if (!pSensor->mode_command_topic.empty())
 			szCommandTopic = pSensor->mode_command_topic;
+		else if (!pSensor->preset_mode_command_topic.empty())
+			szCommandTopic = pSensor->preset_mode_command_topic;
 		else if (!pSensor->command_topic.empty())
 			szCommandTopic = pSensor->command_topic;
 
@@ -3280,12 +3414,18 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			std::string newState;
 
-			if (
-				(pSensor->component_type == "climate")
-				&& (iLevel < (int)pSensor->climate_modes.size())
-				)
+			if (pSensor->component_type == "climate")
 			{
-				newState = pSensor->climate_modes.at(iLevel);
+				if (!pSensor->climate_modes.empty())
+				{
+					if (iLevel < (int)pSensor->climate_modes.size())
+						newState = pSensor->climate_modes.at(iLevel);
+				}
+				else if (!pSensor->preset_modes.empty())
+				{
+					if (iLevel < (int)pSensor->preset_modes.size())
+						newState = pSensor->preset_modes.at(iLevel);
+				}
 			}
 			else if (
 				(pSensor->component_type == "select")
@@ -3303,6 +3443,8 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			std::string state_template;
 			if (!pSensor->mode_state_template.empty())
 				state_template = pSensor->mode_state_template;
+			else if (!pSensor->preset_mode_value_template.empty())
+				state_template = pSensor->preset_mode_value_template;
 
 			if (!state_template.empty())
 			{

@@ -80,6 +80,11 @@ class MQTTAutoDiscover : public MQTT
 		std::string temperature_unit = "C";
 		std::string current_temperature_topic;
 		std::string current_temperature_template;
+		std::vector<std::string> preset_modes;
+		std::string preset_mode_command_topic;
+		std::string preset_mode_command_template;
+		std::string preset_mode_state_topic;
+		std::string preset_mode_value_template;
 
 		//Lock
 		std::string payload_lock = "LOCK";
