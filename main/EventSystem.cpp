@@ -3803,6 +3803,10 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	{
 		lstatus = std::to_string(nValue);
 	}
+	else if (dType == pTypeEvohome)
+	{
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	}
 	else if (switchtype == STYPE_Selector)
 	{
 		std::map<std::string, std::string> statuses;

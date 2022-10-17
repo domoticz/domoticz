@@ -53,8 +53,9 @@ return {
 			end
 			device.active = device.state ~= 'Off'
 		else
-			if device.hardwareTypeValue == 75 and device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
-				device.mode = device._state
+			if device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
+				device._state = data.data._state
+				device.mode = tostring(data.data._nValue)
 			else
 				device.state = device.rawData[2]
 				device.mode = tostring(device.rawData[3])
