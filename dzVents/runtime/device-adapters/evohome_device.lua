@@ -27,8 +27,11 @@ return {
 	process = function (device, data, domoticz, utils, adapterManager)
 
 		if device.deviceSubType == "Hot Water" then
-
-			if device.rawData[2] == "On" then device.state = "On" else device.state = "Off" end
+			if device.rawData[2] == "On" then
+				device.state = "On"
+			else
+				device.state = "Off"
+			end
 			device.mode = tostring(device.rawData[3] or "n/a")
 			device.untilDate = tostring(device.rawData[4] or "n/a")
 
@@ -43,7 +46,6 @@ return {
 					"&used=true"
 				return domoticz.openURL(url)
 			end
-
 		elseif device.deviceSubType == "Relay" then
 			device.state = device._state == 'Off' and 'Off' or 'On'
 			if device.state == 'Off' then
@@ -55,7 +57,7 @@ return {
 		else
 			if device.deviceType == 'Heating' and device.deviceSubType == 'Evohome' then
 				device._state = data.data._state
-				device.mode = tostring(data.data._nValue)
+				device.mode = data.data._state
 			else
 				device.state = device.rawData[2]
 				device.mode = tostring(device.rawData[3])
