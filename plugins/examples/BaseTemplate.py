@@ -61,8 +61,8 @@ class BasePlugin:
     def onMessage(self, Connection, Data):
         Domoticz.Log("onMessage called")
 
-    def onCommand(self, Unit, Command, Level, Hue):
-        Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
+    def onCommand(self, DeviceID, Unit, Command, Level, Color):
+        Domoticz.Log("onCommand called for Device " + str(DeviceID) + " Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
@@ -92,9 +92,9 @@ def onMessage(Connection, Data):
     global _plugin
     _plugin.onMessage(Connection, Data)
 
-def onCommand(Unit, Command, Level, Hue):
+def onCommand(DeviceID, Unit, Command, Level, Color):
     global _plugin
-    _plugin.onCommand(Unit, Command, Level, Hue)
+    _plugin.onCommand(DeviceID, Unit, Command, Level, Color)
 
 def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
     global _plugin
