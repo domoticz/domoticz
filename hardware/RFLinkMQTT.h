@@ -16,7 +16,7 @@
 class CRFLinkMQTT: public CRFLinkBase, mosqdz::mosquittodz
 {
 public:
-	CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort , const std::string &Username, const std::string &Password , const std::string &CAfilenameExtra, const int TLS_Version, const int PublishScheme, const bool PreventLoop);
+	CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort , const std::string &Username, const std::string &Password , const std::string &CAfilenameExtra, const int TLS_Version, const int PublishScheme, const bool Multidomonodesync);
 	~CRFLinkMQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 	void on_disconnect(int rc) override;
@@ -51,7 +51,9 @@ protected:
 	virtual void SendHeartbeat();
 	void StopMQTT();
 	std::shared_ptr<std::thread> m_thread;
-	bool m_bPreventLoop = false;
+	bool m_bPreventLoop = true;
 	unsigned int m_lastmsgCRC = 0;
 	time_t m_lastmsgTime = 0;
+	bool m_bMultidomonodesync = false;
+
 };

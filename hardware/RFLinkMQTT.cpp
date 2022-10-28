@@ -68,14 +68,13 @@ extern std::string szRandomUUID;
 
 CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort ,
 						const std::string &Username, const std::string &Password , const std::string &CAfilenameExtra,
-						const int TLS_Version, const int PublishScheme, const bool PreventLoop ):
+						const int TLS_Version, const int PublishScheme, const bool Multidomonodesync ):
 	mosqdz::mosquittodz((std::string("RFLINKMQTT") + std::string(GenerateUUID())).c_str()),
 	m_szIPAddressList(IPAddress),
 	m_usIPPort(usIPPort),
 	m_UserName(Username),
 	m_Password(Password),
-	m_bPreventLoop(  PreventLoop )
-	// m_CAFilename(CAfilenameExtra)
+	m_bMultidomonodesync( Multidomonodesync )
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
@@ -95,7 +94,9 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 		m_CAFilename = strarray[0];
 	}
 
-	// _log.Log(LOG_DEBUG, ">>> RFLINK MQTT: user: %s password: %s extra: %s" , m_UserName.c_str() , m_Password.c_str() , m_CAFilename.c_str() );
+	// _log.Debug(DEBUG_HARDWARE, ">>> RFLINK MQTT: user: %s password: %s extra: %s" , m_UserName.c_str() , m_Password.c_str() , m_CAFilename.c_str() );
+	_log.Debug(DEBUG_HARDWARE, ">>> RFLINK MQTT: m_bMultidomonodesync: %s" , m_bMultidomonodesync == true ? "true" : "false" );
+
 	m_TLS_Version = (TLS_Version < 3) ? TLS_Version : 0; // see szTLSVersions
 
 	selectNextIPAdress();
@@ -489,8 +490,22 @@ void CRFLinkMQTT::SendMessage(const std::string &Topic, const std::string &Messa
         {
             msg += ";";
         }
-        sstr << msg << "SYNCID=" << std::hex << m_syncid << ";\n";
-        msg = sstr.str();
+
+		// The SYNCID is used for filtering the "sync back" packet what used the
+		// gateway firmware (https://github.com/pagocs/esp32-rflinkmqttgateway)
+		// for syncing the RFLINK commands between multiple Domoticz instances.
+		// This option must be disabled if you are want to use different gateway
+		// firmware. For example: https://github.com/seb821/espRFLinkMQTT
+
+		if( m_bMultidomonodesync )
+		{
+			sstr << msg << "SYNCID=" << std::hex << m_syncid << ";\n";
+	        msg = sstr.str();
+		}
+		else
+		{
+			    msg += "\n";
+		}
 		//_log.Log(LOG_STATUS, ">>> RFLINK MQTT::Publish message %s:%s", Topic.c_str() , Message.substr(0, Message.size()-1).c_str());
         _log.Log(LOG_NORM, ">>> RFLINK MQTT::Publish message %s:%s", Topic.c_str() , msg.substr(0, msg.size()-1).c_str());
         publish(NULL, Topic.c_str(), msg.size(), msg.c_str());
