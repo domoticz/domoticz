@@ -533,6 +533,22 @@ bool P1MeterBase::MatchLine()
 					break;
 				case P1TYPE_MBUSDEVICETYPE:
 					temp_usage = std::stoul(sValue);
+					//Open Metering System Specification 4.1.2 table 2 (Device Types of OMS-Meter)
+					/*
+					* Electricity meter 02h
+					* Gas meter 03h
+					* Heat meter 04h
+					* Warm water meter (30°C ... 90°C) 06h
+					* Water meter 07h
+					* Heat Cost Allocator 08h
+					* Cooling meter (Volume measured at return temperature: outlet) 0Ah
+					* Cooling meter (Volume measured at flow temperature: inlet) 0Bh
+					* Heat meter (Volume measured at flow temperature: inlet) 0Ch
+					* Combined Heat / Cooling meter 0Dh
+					* Hot water meter (= 90°C) 15h
+					* Cold water meter a 16h
+					* Waste water meter 28h
+					*/
 					if (temp_usage == 3)
 					{
 						m_gasmbuschannel = (char)l_buffer[2];
