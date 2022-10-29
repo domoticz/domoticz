@@ -59,11 +59,21 @@ class P1MeterBase : public CDomoticzHardwareBase
 	float m_powerusel2;
 	float m_powerusel3;
 
-	unsigned char m_gasmbuschannel;
+	uint8_t m_gasmbuschannel;
 	std::string m_gasprefix;
 	std::string m_gastimestamp;
 	double m_gasclockskew;
 	time_t m_gasoktime;
+
+	uint8_t m_watermbuschannel;
+	std::string m_waterprefix;
+	std::string m_watertimestamp;
+	double m_waterclockskew;
+	time_t m_wateroktime;
+	float m_water_usage;
+	float m_last_water_usage = 0;
+	time_t m_lastSharedSendWater = 0;
+
 
 	// Encryption
 	bool m_bIsEncrypted = false;
@@ -82,7 +92,15 @@ class P1MeterBase : public CDomoticzHardwareBase
 		doneReadingTelegram
 	};
 
+	enum class P1MBusType
+	{
+		deviceType_Unknown = 0,
+		deviceType_Gas = 3,
+		deviceType_Water = 7,
+	};
+
 	P1EcryptionState m_p1_encryption_state = P1EcryptionState::waitingForStartByte;
+	P1MBusType m_p1_mbus_type = P1MBusType::deviceType_Unknown;
 	int m_currentBytePosition = 0;
 	int m_changeToNextStateAt = 0;
 	int m_dataLength = 0;

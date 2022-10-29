@@ -32,10 +32,11 @@ const char* szP1Test = R"p1_test(/FLU5\253770234_A
 0-1:96.1.1(37464C4F32313139303137303532)
 0-1:24.4.0(1)
 0-1:24.2.3(190905142001S)(00071.724*m3)
-!0F77)p1_test";
+!0F77
+)p1_test";
 
 
-const char* szP1Test = R"p1_test_water(/FLU5\253769484_A
+const char* szP1TestWater = R"p1_test_water(/FLU5\253769484_A
 
 0-0:96.1.4(50216)
 0-0:96.1.1(3153414733313030353733313933)
@@ -70,7 +71,8 @@ const char* szP1Test = R"p1_test_water(/FLU5\253769484_A
 0-2:24.1.0(007)
 0-2:96.1.1(3853455430303030323731323938)
 0-2:24.2.1(220812104503S)(00000.302*m3)
-!25FD)p1_test_water";
+!25FD
+)p1_test_water";
 #endif
 
 //0-1:24.1.0(003) = gas (3)
@@ -90,7 +92,7 @@ P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 		m_szHexKey = HexToBytes(DecryptionKey);
 	}
 #ifdef DEBUG_P1_R
-	ParseP1Data((const uint8_t*)szP1Test, static_cast<int>(strlen(szP1Test)), m_bDisableCRC, m_ratelimit);
+	ParseP1Data((const uint8_t*)szP1TestWater, static_cast<int>(strlen(szP1TestWater)), m_bDisableCRC, m_ratelimit);
 #endif
 }
 

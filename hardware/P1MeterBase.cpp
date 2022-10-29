@@ -25,7 +25,7 @@ enum class _eP1MatchType {
 	EXCLMARK,
 	STD,
 	DEVTYPE,
-	GAS,
+	MBUS,
 	LINE17,
 	LINE18
 };
@@ -81,7 +81,7 @@ enum _eP1Type {
 	P1TYPE_POWERDELL2,
 	P1TYPE_POWERDELL3,
 	P1TYPE_MBUSDEVICETYPE,
-	P1TYPE_GASUSAGEDSMR4,
+	P1TYPE_MBUSUSAGEDSMR4,
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASUSAGE
 };
@@ -119,7 +119,7 @@ constexpr std::array<P1Match, 24> p1_matchlist{
 		{ _eP1MatchType::STD, P1TYPE_POWERDELL2, P1POWDLL2, "powerdell2", 11, 6 },
 		{ _eP1MatchType::STD, P1TYPE_POWERDELL3, P1POWDLL3, "powerdell3", 11, 6 },
 		{ _eP1MatchType::DEVTYPE, P1TYPE_MBUSDEVICETYPE, P1MBTYPE, "mbusdevicetype", 11, 3 },
-		{ _eP1MatchType::GAS, P1TYPE_GASUSAGEDSMR4, P1GUDSMR4, "gasusage", 26, 8 },
+		{ _eP1MatchType::MBUS, P1TYPE_MBUSUSAGEDSMR4, P1GUDSMR4, "mbus_meter", 26, 8 },
 		// must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
 		{ _eP1MatchType::LINE17, P1TYPE_GASTIMESTAMP, P1GTS, "gastimestamp", 11, 12 },
 		{ _eP1MatchType::LINE18, P1TYPE_GASUSAGE, P1GUDSMR2, "gasusage", 1, 9 },
@@ -182,6 +182,7 @@ void P1MeterBase::Init()
 	m_bufferpos = 0;
 	m_lastgasusage = 0;
 	m_lastSharedSendGas = 0;
+	m_lastSharedSendWater = 0;
 	m_lastUpdateTime = 0;
 
 	l_exclmarkfound = 0;
@@ -227,6 +228,12 @@ void P1MeterBase::Init()
 	m_gasclockskew = 0;
 	m_gasoktime = 0;
 
+	m_watermbuschannel = 0;
+	m_waterprefix = "0-n";
+	m_watertimestamp = "";
+	m_waterclockskew = 0;
+	m_wateroktime = 0;
+
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1GasMeterChannel')");
 	if (!result.empty())
@@ -237,6 +244,17 @@ void P1MeterBase::Init()
 			m_gasmbuschannel = (char)s_gasmbuschannel[0];
 			m_gasprefix[2] = m_gasmbuschannel;
 			Log(LOG_STATUS, "Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+		}
+	}
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1WaterMeterChannel')");
+	if (!result.empty())
+	{
+		std::string s_watermbuschannel = result[0][0];
+		if ((s_watermbuschannel.length() == 1) && (s_watermbuschannel[0] > 0x30) && (s_watermbuschannel[0] < 0x35)) // value must be a single digit number between 1 and 4
+		{
+			m_watermbuschannel = (char)s_watermbuschannel[0];
+			m_waterprefix[2] = m_watermbuschannel;
+			Log(LOG_STATUS, "Water meter M-Bus channel %c enforced by 'P1WaterMeterChannel' user variable", m_watermbuschannel);
 		}
 	}
 	InitP1EncryptionState();
@@ -296,17 +314,23 @@ bool P1MeterBase::MatchLine()
 					bFound = true;
 				break;
 			case _eP1MatchType::DEVTYPE:
-				if (m_gasmbuschannel == 0)
+				if (m_p1_mbus_type == P1MBusType::deviceType_Unknown)
 				{
 					const char* pValue = t->key + 3;
 					if (strncmp(pValue, l_buffer + 3, strlen(t->key) - 3) == 0)
 						bFound = true;
 					else
-						i += 100; // skip matches with any other gas lines - we need to find the M0-Bus channel first
+						i += 100; // skip matches with any other m-bus lines - we need to find the M0-Bus channel first
 				}
 				break;
-			case _eP1MatchType::GAS:
+			case _eP1MatchType::MBUS:
 				if (strncmp((m_gasprefix + (t->key + 3)).c_str(), l_buffer, strlen(t->key)) == 0)
+				{
+					// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
+					if ((l_buffer[9] & 0xFD) == 0x31)
+						bFound = true;
+				}
+				else if (strncmp((m_waterprefix + (t->key + 3)).c_str(), l_buffer, strlen(t->key)) == 0)
 				{
 					// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
 					if ((l_buffer[9] & 0xFD) == 0x31)
@@ -448,7 +472,13 @@ bool P1MeterBase::MatchLine()
 								}
 							}
 						}
-					}
+					} //gas
+					if ((m_water_usage > 0) && ((m_water_usage != m_last_water_usage) || (difftime(atime, m_lastSharedSendWater) >= 300)))
+					{
+						SendMeterSensor(m_watermbuschannel, 1, 255, m_water_usage, "Water Meter");
+						m_last_water_usage = m_water_usage;
+						m_lastSharedSendWater = atime;
+					} //water
 				}
 				m_linecount = 0;
 				l_exclmarkfound = 0;
@@ -469,7 +499,7 @@ bool P1MeterBase::MatchLine()
 				{
 					sValue = vString.substr(0, ePos);
 #ifdef _DEBUG
-				Log(LOG_NORM, "Key: %s, Value: %s", t->topic, sValue.c_str());
+					Log(LOG_NORM, "Key: %s, Value: %s", t->topic, sValue.c_str());
 #endif
 				}
 
@@ -477,6 +507,7 @@ bool P1MeterBase::MatchLine()
 				float temp_volt = 0;
 				float temp_ampere = 0;
 				float temp_power = 0;
+				float temp_float = 0;
 
 				switch (t->type)
 				{
@@ -507,6 +538,14 @@ bool P1MeterBase::MatchLine()
 						m_gasmbuschannel = (char)l_buffer[2];
 						m_gasprefix[2] = m_gasmbuschannel;
 						Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
+						m_p1_mbus_type = P1MBusType::deviceType_Gas;
+					}
+					else if (temp_usage == 7)
+					{
+						m_watermbuschannel = (char)l_buffer[2];
+						m_waterprefix[2] = m_watermbuschannel;
+						Log(LOG_STATUS, "Found water meter on M-Bus channel %c", m_gasmbuschannel);
+						m_p1_mbus_type = P1MBusType::deviceType_Water;
 					}
 					break;
 				case P1TYPE_POWERUSAGE:
@@ -628,12 +667,24 @@ bool P1MeterBase::MatchLine()
 					m_gastimestamp = sValue;
 					break;
 				case P1TYPE_GASUSAGE:
-				case P1TYPE_GASUSAGEDSMR4:
-					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
-					if (!m_gas.gasusage || m_p1version >= 4)
-						m_gas.gasusage = temp_usage;
-					else if (temp_usage - m_gas.gasusage < 20000)
-						m_gas.gasusage = temp_usage;
+				case P1TYPE_MBUSUSAGEDSMR4:
+					temp_float = std::stof(sValue);
+					temp_usage = (unsigned long)(temp_float * 1000.0F);
+
+					if (
+						(t->type == P1TYPE_GASUSAGE)
+						|| (m_p1_mbus_type == P1MBusType::deviceType_Gas)
+						)
+					{
+						if (!m_gas.gasusage || m_p1version >= 4)
+							m_gas.gasusage = temp_usage;
+						else if (temp_usage - m_gas.gasusage < 20000)
+							m_gas.gasusage = temp_usage;
+					}
+					else if (m_p1_mbus_type == P1MBusType::deviceType_Water)
+					{
+						m_water_usage = temp_float;
+					}
 					break;
 				}
 				if (ePos > 0 && (sValue.size() != ePos))
@@ -643,14 +694,25 @@ bool P1MeterBase::MatchLine()
 					return false;
 				}
 
-				if (t->type == P1TYPE_GASUSAGEDSMR4)
+				if (t->type == P1TYPE_MBUSUSAGEDSMR4)
 				{
 					// need to get timestamp from this line as well
 					vString = l_buffer + 11;
-					m_gastimestamp = vString.substr(0, 13);
-	#ifdef _DEBUG
-					Log(LOG_NORM, "Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
-	#endif
+					if (m_p1_mbus_type == P1MBusType::deviceType_Gas)
+					{
+						m_gastimestamp = vString.substr(0, 13);
+#ifdef _DEBUG
+						Log(LOG_NORM, "Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
+#endif
+					}
+					else if (m_p1_mbus_type == P1MBusType::deviceType_Water)
+					{
+						m_watertimestamp = vString.substr(0, 13);
+#ifdef _DEBUG
+						Log(LOG_NORM, "Key: watertimestamp, Value: %s", m_watertimestamp.c_str());
+#endif
+					}
+					m_p1_mbus_type = P1MBusType::deviceType_Unknown;
 				}
 			}
 		}
@@ -932,6 +994,7 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 		l_bufferpos = 0;
 		m_bufferpos = 0;
 		m_exclmarkfound = 0;
+		m_p1_mbus_type = P1MBusType::deviceType_Unknown;
 	}
 
 	// assemble complete message in message buffer
