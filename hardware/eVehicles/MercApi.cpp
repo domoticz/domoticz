@@ -32,8 +32,9 @@ License: Public domain
 // - Electric Vehicle status (even possible for non-electric/hybrid vehicles)
 // so use the following 5 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock mb:vehicle:mbdata:evstatus
 // and we need the additional scope to get a refresh token: offline_access
-#define MERC_URL_AUTH "https://id.mercedes-benz.com"
-#define MERC_API_TOKEN "/as/token.oauth2"
+// and the basic scope to identify it as an OIDC request: openid
+#define MERC_URL_AUTH "https://ssoalpha.dvb.corpinter.net"
+#define MERC_API_TOKEN "/v1/token"
 #define MERC_URL "https://api.mercedes-benz.com"
 #define MERC_API "/vehicledata/v2/vehicles"
 
