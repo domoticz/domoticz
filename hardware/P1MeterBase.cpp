@@ -573,8 +573,9 @@ bool P1MeterBase::MatchLine()
 					if (mbus_type == P1MBusType::deviceType_Gas)
 					{
 						m_gasmbuschannel = (char)l_buffer[2];
+						if (m_gasprefix[2] == 'n')
+							Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
 						m_gasprefix[2] = m_gasmbuschannel;
-						Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
 					}
 					else
 					{
