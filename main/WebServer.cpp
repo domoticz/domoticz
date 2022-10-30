@@ -3197,38 +3197,45 @@ namespace http
 
 		void CWebServer::Cmd_GetCosts(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			int nValue = 0;
+			m_sql.GetPreferencesVar("CostEnergy", nValue);
+			root["CostEnergy"] = nValue;
+			m_sql.GetPreferencesVar("CostEnergyT2", nValue);
+			root["CostEnergyT2"] = nValue;
+			m_sql.GetPreferencesVar("CostEnergyR1", nValue);
+			root["CostEnergyR1"] = nValue;
+			m_sql.GetPreferencesVar("CostEnergyR2", nValue);
+			root["CostEnergyR2"] = nValue;
+			m_sql.GetPreferencesVar("CostGas", nValue);
+			root["CostGas"] = nValue;
+			m_sql.GetPreferencesVar("CostWater", nValue);
+			root["CostWater"] = nValue;
+
+			int tValue = 1000;
+			if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+			{
+				root["DividerWater"] = float(tValue);
+			}
+			float EnergyDivider = 1000.0F;
+			if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+			{
+				EnergyDivider = float(tValue);
+				root["DividerEnergy"] = EnergyDivider;
+			}
+
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
+
 			char szTmp[100];
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT Type, SubType, nValue, sValue FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
 			if (!result.empty())
 			{
-				std::vector<std::string> sd = result[0];
-
-				int nValue = 0;
 				root["status"] = "OK";
-				root["title"] = "GetElectraCosts";
-				m_sql.GetPreferencesVar("CostEnergy", nValue);
-				root["CostEnergy"] = nValue;
-				m_sql.GetPreferencesVar("CostEnergyT2", nValue);
-				root["CostEnergyT2"] = nValue;
-				m_sql.GetPreferencesVar("CostEnergyR1", nValue);
-				root["CostEnergyR1"] = nValue;
-				m_sql.GetPreferencesVar("CostEnergyR2", nValue);
-				root["CostEnergyR2"] = nValue;
-				m_sql.GetPreferencesVar("CostGas", nValue);
-				root["CostGas"] = nValue;
-				m_sql.GetPreferencesVar("CostWater", nValue);
-				root["CostWater"] = nValue;
+				root["title"] = "GetCosts";
 
-				int tValue = 1000;
-				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
-				{
-					root["DividerWater"] = float(tValue);
-				}
-
+				std::vector<std::string> sd = result[0];
 				unsigned char dType = atoi(sd[0].c_str());
 				// unsigned char subType = atoi(sd[1].c_str());
 				// nValue = (unsigned char)atoi(sd[2].c_str());
@@ -3242,12 +3249,6 @@ namespace http
 					StringSplit(sValue, ";", splitresults);
 					if (splitresults.size() != 6)
 						return;
-
-					float EnergyDivider = 1000.0F;
-					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
-					{
-						EnergyDivider = float(tValue);
-					}
 
 					unsigned long long powerusage1 = std::strtoull(splitresults[0].c_str(), nullptr, 10);
 					unsigned long long powerusage2 = std::strtoull(splitresults[1].c_str(), nullptr, 10);
@@ -13512,6 +13513,8 @@ namespace http
 					dbasetable = "Fan";
 				else if (sensor == "counter")
 				{
+					Cmd_GetCosts(session, req, root);
+
 					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY))
 					{
 						dbasetable = "MultiMeter";
@@ -13541,6 +13544,8 @@ namespace http
 					dbasetable = "Fan_Calendar";
 				else if (sensor == "counter")
 				{
+					Cmd_GetCosts(session, req, root);
+
 					if (dType == pTypeP1Power
 						|| dType == pTypeCURRENT
 						|| dType == pTypeCURRENTENERGY
@@ -13687,7 +13692,6 @@ namespace http
 						}
 					}
 				}
-
 				else if (sensor == "counter")
 				{
 					if (dType == pTypeP1Power)
@@ -13741,6 +13745,17 @@ namespace http
 
 									if (bHaveFirstValue)
 									{
+										if (
+											(actUsage1 < lastUsage1)
+											|| (actUsage2 < lastUsage2)
+											|| (actDeliv1 < lastDeliv1)
+											|| (actDeliv2 < lastDeliv2)
+											)
+										{
+											//daylight change happened?, ignoring  for now
+											continue;
+										}
+
 										long curUsage1 = (long)(actUsage1 - lastUsage1);
 										long curUsage2 = (long)(actUsage2 - lastUsage2);
 										long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
