@@ -91,9 +91,6 @@ P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigne
 		m_bIsEncrypted = true;
 		m_szHexKey = HexToBytes(DecryptionKey);
 	}
-#ifdef DEBUG_P1_R
-	ParseP1Data((const uint8_t*)szP1TestWater, static_cast<int>(strlen(szP1TestWater)), m_bDisableCRC, m_ratelimit);
-#endif
 }
 
 bool P1MeterTCP::StartHardware()
@@ -101,6 +98,10 @@ bool P1MeterTCP::StartHardware()
 	RequestStart();
 
 	m_bIsStarted = true;
+
+#ifdef DEBUG_P1_R
+	ParseP1Data((const uint8_t*)szP1TestWater, static_cast<int>(strlen(szP1TestWater)), m_bDisableCRC, m_ratelimit);
+#endif
 
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });

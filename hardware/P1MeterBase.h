@@ -9,14 +9,34 @@ class P1MeterBase : public CDomoticzHardwareBase
 	friend class P1MeterTCP;
 	friend class CRFXBase;
 
-      public:
+public:
 	P1MeterBase();
 	~P1MeterBase() override;
 
 	P1Power m_power;
 	P1Gas m_gas;
 
-      private:
+	enum class P1MBusType
+	{
+		deviceType_Unknown = 0,
+		deviceType_Electricity = 0x02,
+		deviceType_Gas = 0x03,
+		deviceType_Heat = 0x04,
+		deviceType_WarmWater = 0x06,
+		deviceType_Water = 0x07,
+		deviceType_Heat_Cost_Allocator = 0x08,
+		deviceType_Cooling_RT = 0x0A,
+		deviceType_Cooling_FT = 0x0B,
+		deviceType_Heat_FT = 0x0C,
+		deviceType_CombinedHeat_Cooling = 0x0D,
+		deviceType_HotWater = 0x15,
+		deviceType_ColdWater = 0x16,
+		deviceType_Breaker_electricity = 0x20,
+		deviceType_Valve_Gas_or_water = 0x21,
+		deviceType_WasteWater = 0x28
+	};
+
+private:
 	void Init();
 	bool MatchLine();
 	void ParseP1Data(const uint8_t *pDataIn, int LenIn, bool disable_crc, int ratelimit);
@@ -65,14 +85,18 @@ class P1MeterBase : public CDomoticzHardwareBase
 	double m_gasclockskew;
 	time_t m_gasoktime;
 
-	uint8_t m_watermbuschannel;
-	std::string m_waterprefix;
-	std::string m_watertimestamp;
-	double m_waterclockskew;
-	time_t m_wateroktime;
-	float m_water_usage;
-	float m_last_water_usage = 0;
-	time_t m_lastSharedSendWater = 0;
+	struct _tMBusDevice
+	{
+		uint8_t channel = 0;
+		std::string name;
+		std::string prefix = "0-n";
+		float usage = 0;
+		float last_usage = -1;
+		std::string timestamp;
+	};
+
+	std::map<P1MBusType, _tMBusDevice> m_mbus_devices;
+	time_t m_lastSendMBusDevice = 0;
 
 
 	// Encryption
@@ -90,13 +114,6 @@ class P1MeterBase : public CDomoticzHardwareBase
 		readPayload,
 		readGcmTag,
 		doneReadingTelegram
-	};
-
-	enum class P1MBusType
-	{
-		deviceType_Unknown = 0,
-		deviceType_Gas = 3,
-		deviceType_Water = 7,
 	};
 
 	P1EcryptionState m_p1_encryption_state = P1EcryptionState::waitingForStartByte;

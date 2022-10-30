@@ -56,7 +56,7 @@ enum class _eP1MatchType {
 #define P1POWDLL3	"1-0:62.7.0"    // Power delivered L3 (DSMRv5)
 #define P1GTS		"0-n:24.3.0"	// DSMR2 timestamp gas usage sample
 #define P1GUDSMR2	"("				// DSMR2 gas usage sample
-#define P1GUDSMR4	"0-n:24.2."		// DSMR4 gas usage sample (excluding 'tariff' indicator)
+#define P1MUDSMR4	"0-n:24.2."		// DSMR4 mbus value (excluding 'tariff' indicator)
 #define P1MBTYPE	"0-n:24.1.0"	// M-Bus device type
 #define P1EOT		"!"				// End of telegram.
 
@@ -119,10 +119,36 @@ constexpr std::array<P1Match, 24> p1_matchlist{
 		{ _eP1MatchType::STD, P1TYPE_POWERDELL2, P1POWDLL2, "powerdell2", 11, 6 },
 		{ _eP1MatchType::STD, P1TYPE_POWERDELL3, P1POWDLL3, "powerdell3", 11, 6 },
 		{ _eP1MatchType::DEVTYPE, P1TYPE_MBUSDEVICETYPE, P1MBTYPE, "mbusdevicetype", 11, 3 },
-		{ _eP1MatchType::MBUS, P1TYPE_MBUSUSAGEDSMR4, P1GUDSMR4, "mbus_meter", 26, 8 },
+		{ _eP1MatchType::MBUS, P1TYPE_MBUSUSAGEDSMR4, P1MUDSMR4, "mbus_meter", 26, 8 },
 		// must keep DEVTYPE, GAS, LINE17 and LINE18 in this order at end of p1_matchlist
 		{ _eP1MatchType::LINE17, P1TYPE_GASTIMESTAMP, P1GTS, "gastimestamp", 11, 12 },
 		{ _eP1MatchType::LINE18, P1TYPE_GASUSAGE, P1GUDSMR2, "gasusage", 1, 9 },
+	}
+};
+
+struct P1MBusType
+{
+	P1MeterBase::P1MBusType type = P1MeterBase::P1MBusType::deviceType_Unknown;
+	const char* name;
+};
+
+constexpr std::array<P1MBusType, 8> p1_supported_mbus_list{
+	{
+		{ P1MeterBase::P1MBusType::deviceType_Electricity , "Electricity" },
+		{ P1MeterBase::P1MBusType::deviceType_Gas , "Gas" },
+		//{ P1MeterBase::P1MBusType::deviceType_Heat, "Heat" },
+		{ P1MeterBase::P1MBusType::deviceType_WarmWater, "Warm Water" },
+		{ P1MeterBase::P1MBusType::deviceType_Water, "Water" },
+		//{ P1MeterBase::P1MBusType::deviceType_Heat_Cost_Allocator, "Heat Cost Allocator" },
+		//{ P1MeterBase::P1MBusType::deviceType_Cooling_RT, "Cooling_RT" },
+		//{ P1MeterBase::P1MBusType::deviceType_Cooling_FT, "Cooling_FT" },
+		//{ P1MeterBase::P1MBusType::deviceType_Heat_FT, "Heat_FT" },
+		//{ P1MeterBase::P1MBusType::deviceType_CombinedHeat_Cooling, "CombinedHeat_Cooling" },
+		{ P1MeterBase::P1MBusType::deviceType_HotWater, "Hot Water" },
+		{ P1MeterBase::P1MBusType::deviceType_ColdWater, "Cold Water" },
+		//{ P1MeterBase::P1MBusType::deviceType_Breaker_electricity, "Breaker_electricity" },
+		{ P1MeterBase::P1MBusType::deviceType_Valve_Gas_or_water, "Valve_Gas_or_water" },
+		{ P1MeterBase::P1MBusType::deviceType_WasteWater, "Waste Water" },
 	}
 };
 
@@ -182,7 +208,7 @@ void P1MeterBase::Init()
 	m_bufferpos = 0;
 	m_lastgasusage = 0;
 	m_lastSharedSendGas = 0;
-	m_lastSharedSendWater = 0;
+	m_lastSendMBusDevice = 0;
 	m_lastUpdateTime = 0;
 
 	l_exclmarkfound = 0;
@@ -228,12 +254,6 @@ void P1MeterBase::Init()
 	m_gasclockskew = 0;
 	m_gasoktime = 0;
 
-	m_watermbuschannel = 0;
-	m_waterprefix = "0-n";
-	m_watertimestamp = "";
-	m_waterclockskew = 0;
-	m_wateroktime = 0;
-
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1GasMeterChannel')");
 	if (!result.empty())
@@ -244,17 +264,6 @@ void P1MeterBase::Init()
 			m_gasmbuschannel = (char)s_gasmbuschannel[0];
 			m_gasprefix[2] = m_gasmbuschannel;
 			Log(LOG_STATUS, "Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
-		}
-	}
-	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1WaterMeterChannel')");
-	if (!result.empty())
-	{
-		std::string s_watermbuschannel = result[0][0];
-		if ((s_watermbuschannel.length() == 1) && (s_watermbuschannel[0] > 0x30) && (s_watermbuschannel[0] < 0x35)) // value must be a single digit number between 1 and 4
-		{
-			m_watermbuschannel = (char)s_watermbuschannel[0];
-			m_waterprefix[2] = m_watermbuschannel;
-			Log(LOG_STATUS, "Water meter M-Bus channel %c enforced by 'P1WaterMeterChannel' user variable", m_watermbuschannel);
 		}
 	}
 	InitP1EncryptionState();
@@ -330,11 +339,17 @@ bool P1MeterBase::MatchLine()
 					if ((l_buffer[9] & 0xFD) == 0x31)
 						bFound = true;
 				}
-				else if (strncmp((m_waterprefix + (t->key + 3)).c_str(), l_buffer, strlen(t->key)) == 0)
+				else
 				{
-					// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
-					if ((l_buffer[9] & 0xFD) == 0x31)
-						bFound = true;
+					for (const auto& itt : m_mbus_devices)
+					{
+						if (strncmp((itt.second.prefix + (t->key + 3)).c_str(), l_buffer, strlen(t->key)) == 0)
+						{
+							// verify that 'tariff' indicator is either 1 (Nld) or 3 (Bel)
+							if ((l_buffer[9] & 0xFD) == 0x31)
+								bFound = true;
+						}
+					}
 				}
 				if (m_p1version >= 4)
 					i += 100; // skip matches with any DSMR v2 gas lines
@@ -473,12 +488,15 @@ bool P1MeterBase::MatchLine()
 							}
 						}
 					} //gas
-					if ((m_water_usage > 0) && ((m_water_usage != m_last_water_usage) || (difftime(atime, m_lastSharedSendWater) >= 300)))
+					for (auto& itt : m_mbus_devices)
 					{
-						SendMeterSensor(m_watermbuschannel, 1, 255, m_water_usage, "Water Meter");
-						m_last_water_usage = m_water_usage;
-						m_lastSharedSendWater = atime;
-					} //water
+						if ((itt.second.usage > 0) && ((itt.second.usage != itt.second.last_usage) || (difftime(atime, m_lastSendMBusDevice) >= 300)))
+						{
+							SendMeterSensor((uint8_t)itt.first, 1, 255, itt.second.usage, itt.second.name);
+							itt.second.last_usage = itt.second.usage;
+							m_lastSendMBusDevice = atime;
+						} //water
+					}
 				}
 				m_linecount = 0;
 				l_exclmarkfound = 0;
@@ -508,6 +526,7 @@ bool P1MeterBase::MatchLine()
 				float temp_ampere = 0;
 				float temp_power = 0;
 				float temp_float = 0;
+				P1MBusType mbus_type = P1MBusType::deviceType_Unknown;
 
 				switch (t->type)
 				{
@@ -532,8 +551,8 @@ bool P1MeterBase::MatchLine()
 					}
 					break;
 				case P1TYPE_MBUSDEVICETYPE:
-					temp_usage = std::stoul(sValue);
-					//Open Metering System Specification 4.1.2 table 2 (Device Types of OMS-Meter)
+					mbus_type = (P1MBusType)std::stoul(sValue);
+					//Open Metering System Specification 4.3.3 table 2 (Device Types of OMS-Meter)
 					/*
 					* Electricity meter 02h
 					* Gas meter 03h
@@ -547,22 +566,36 @@ bool P1MeterBase::MatchLine()
 					* Combined Heat / Cooling meter 0Dh
 					* Hot water meter (= 90°C) 15h
 					* Cold water meter a 16h
+					* Breaker (electricity) 20h
+					* Valve (gas or water) 21h
 					* Waste water meter 28h
 					*/
-					if (temp_usage == 3)
+					if (mbus_type == P1MBusType::deviceType_Gas)
 					{
 						m_gasmbuschannel = (char)l_buffer[2];
 						m_gasprefix[2] = m_gasmbuschannel;
 						Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
-						m_p1_mbus_type = P1MBusType::deviceType_Gas;
 					}
-					else if (temp_usage == 7)
+					else
 					{
-						m_watermbuschannel = (char)l_buffer[2];
-						m_waterprefix[2] = m_watermbuschannel;
-						Log(LOG_STATUS, "Found water meter on M-Bus channel %c", m_gasmbuschannel);
-						m_p1_mbus_type = P1MBusType::deviceType_Water;
+						for (const auto& itt : p1_supported_mbus_list)
+						{
+							if (mbus_type == itt.type)
+							{
+								if (m_mbus_devices.find(mbus_type) == m_mbus_devices.end())
+								{
+									//new
+									_tMBusDevice mdevice;
+									mdevice.channel = l_buffer[2] - 0x30;
+									mdevice.name = itt.name;
+									mdevice.prefix[2] = (char)l_buffer[2];
+									m_mbus_devices[mbus_type] = mdevice;
+									Log(LOG_STATUS, "Found '%s' meter on M-Bus channel %c", itt.name, m_gasmbuschannel);
+								}
+							}
+						}
 					}
+					m_p1_mbus_type = mbus_type;
 					break;
 				case P1TYPE_POWERUSAGE:
 					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);
@@ -697,9 +730,15 @@ bool P1MeterBase::MatchLine()
 						else if (temp_usage - m_gas.gasusage < 20000)
 							m_gas.gasusage = temp_usage;
 					}
-					else if (m_p1_mbus_type == P1MBusType::deviceType_Water)
+					else
 					{
-						m_water_usage = temp_float;
+						for (auto& itt : m_mbus_devices)
+						{
+							if (itt.first == m_p1_mbus_type)
+							{
+								itt.second.usage = temp_float;
+							}
+						}
 					}
 					break;
 				}
@@ -721,12 +760,18 @@ bool P1MeterBase::MatchLine()
 						Log(LOG_NORM, "Key: gastimestamp, Value: %s", m_gastimestamp.c_str());
 #endif
 					}
-					else if (m_p1_mbus_type == P1MBusType::deviceType_Water)
+					else
 					{
-						m_watertimestamp = vString.substr(0, 13);
+						for (auto& itt : m_mbus_devices)
+						{
+							if (itt.first == m_p1_mbus_type)
+							{
+								itt.second.timestamp = vString.substr(0, 13);
 #ifdef _DEBUG
-						Log(LOG_NORM, "Key: watertimestamp, Value: %s", m_watertimestamp.c_str());
+								Log(LOG_NORM, "Key: %s timestamp value: %s", itt.second.name.c_str(), itt.second.timestamp.c_str());
 #endif
+							}
+						}
 					}
 					m_p1_mbus_type = P1MBusType::deviceType_Unknown;
 				}
