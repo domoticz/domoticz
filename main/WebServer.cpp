@@ -13750,6 +13750,7 @@ namespace http
 											|| (actUsage2 < lastUsage2)
 											|| (actDeliv1 < lastDeliv1)
 											|| (actDeliv2 < lastDeliv2)
+											|| (atime <= lastTime)
 											)
 										{
 											//daylight change happened?, ignoring  for now
@@ -13761,15 +13762,6 @@ namespace http
 										long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
 										long curDeliv2 = (long)(actDeliv2 - lastDeliv2);
 
-										if ((curUsage1 < 0) || (curUsage1 > 100000))
-											curUsage1 = 0;
-										if ((curUsage2 < 0) || (curUsage2 > 100000))
-											curUsage2 = 0;
-										if ((curDeliv1 < 0) || (curDeliv1 > 100000))
-											curDeliv1 = 0;
-										if ((curDeliv2 < 0) || (curDeliv2 > 100000))
-											curDeliv2 = 0;
-
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
 											tdiff = 1;
@@ -13778,6 +13770,15 @@ namespace http
 										curUsage2 *= int(tlaps);
 										curDeliv1 *= int(tlaps);
 										curDeliv2 *= int(tlaps);
+
+										if ((curUsage1 < 0) || (curUsage1 > 100000))
+											curUsage1 = 0;
+										if ((curUsage2 < 0) || (curUsage2 > 100000))
+											curUsage2 = 0;
+										if ((curDeliv1 < 0) || (curDeliv1 > 100000))
+											curDeliv1 = 0;
+										if ((curDeliv2 < 0) || (curDeliv2 > 100000))
+											curDeliv2 = 0;
 
 										root["result"][ii]["d"] = sd[6].substr(0, 16);
 
