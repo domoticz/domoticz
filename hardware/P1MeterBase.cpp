@@ -289,6 +289,9 @@ bool P1MeterBase::MatchLine()
 		if ((strlen(l_buffer) < 1) || (l_buffer[0] == 0x0a))
 			return true; //null value (startup)
 
+		if (strncmp("0-0:96.1.4(20202020", (const char *)&l_buffer, 18) == 0)
+			return true; //null value Sibelga
+
 		bool bFound = false;
 
 		for (size_t i = 0; i < p1_matchlist.size(); ++i)
@@ -557,14 +560,14 @@ bool P1MeterBase::MatchLine()
 					* Electricity meter 02h
 					* Gas meter 03h
 					* Heat meter 04h
-					* Warm water meter (30°C ... 90°C) 06h
+					* Warm water meter (30ï¿½C ... 90ï¿½C) 06h
 					* Water meter 07h
 					* Heat Cost Allocator 08h
 					* Cooling meter (Volume measured at return temperature: outlet) 0Ah
 					* Cooling meter (Volume measured at flow temperature: inlet) 0Bh
 					* Heat meter (Volume measured at flow temperature: inlet) 0Ch
 					* Combined Heat / Cooling meter 0Dh
-					* Hot water meter (= 90°C) 15h
+					* Hot water meter (= 90ï¿½C) 15h
 					* Cold water meter a 16h
 					* Breaker (electricity) 20h
 					* Valve (gas or water) 21h
@@ -636,12 +639,12 @@ bool P1MeterBase::MatchLine()
 					break;
 				case P1TYPE_USAGECURRENT:
 					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt
-					if (temp_usage < P1MAXTOTALPOWER) 
+					if (temp_usage < P1MAXTOTALPOWER)
 						m_power.usagecurrent = temp_usage;
 					break;
 				case P1TYPE_DELIVCURRENT:
 					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F); // Watt;
-					if (temp_usage < P1MAXTOTALPOWER) 
+					if (temp_usage < P1MAXTOTALPOWER)
 						m_power.delivcurrent = temp_usage;
 					break;
 				case P1TYPE_VOLTAGEL1:
