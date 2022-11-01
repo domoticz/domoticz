@@ -36,7 +36,6 @@ CTeleinfoBase::CTeleinfoBase()
 	m_p1power.ID = 1;
 	m_p2power.ID = 2;
 	m_p3power.ID = 3;
-
 	m_bDisableCRC = false;
 
 	InitTeleinfo();
@@ -515,7 +514,7 @@ bool CTeleinfoBase::isCheckSumOk(const std::string& sLine, int& isMode1)
 
 void CTeleinfoBase::MatchLine()
 {
-	std::string label, vString, ngtfString;
+	std::string label, vString;
 	std::vector<std::string> splitresults;
 	unsigned long value;
 	std::string sline(m_buffer);
@@ -589,7 +588,7 @@ void CTeleinfoBase::MatchLine()
 	else if (label == "IRMS3") m_teleinfo.IINST3 = value;
 	else if (label == "NGTF") 
 	{
-		ngtfString = stdstring_trim(vString);
+		std::string ngtfString = stdstring_trim(vString);
 		// Different abonnements existent et ca devient difficile de rester compatible du comportement historique
 		// Je ne sais pas bien si la string NGTF est dépendante ou non du fournisseur...
 		// Exemple chez totalEnergie il y a l'abonnement avec les heures super creuse qui sont sur un 3eme compteur EASF03
@@ -634,7 +633,6 @@ void CTeleinfoBase::MatchLine()
 	Debug(DEBUG_HARDWARE, "frame complete, PAPP: %i, PTEC: %s, OPTARIF: %s", m_teleinfo.PAPP, m_teleinfo.PTEC.c_str(), m_teleinfo.OPTARIF.c_str());
 	ProcessTeleinfo(m_teleinfo);
 	mytime(&m_LastHeartbeat);// keep heartbeat happy
-
 }
 
 void CTeleinfoBase::ParseTeleinfoData(const char* pData, int Len)
