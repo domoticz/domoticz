@@ -81,8 +81,6 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 
 void MQTTAutoDiscover::on_connect(int rc)
 {
-	MQTT::on_connect(rc);
-
 	/* rc=
 	** 0 - success
 	** 1 - connection refused(unacceptable protocol version)
