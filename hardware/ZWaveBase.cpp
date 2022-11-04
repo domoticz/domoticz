@@ -71,7 +71,7 @@ bool ZWaveBase::StopHardware()
 
 void ZWaveBase::Do_Work()
 {
-	Log(LOG_STATUS, "ZWave: This hardware type is Deprecated! Please move to MQTT Auto Discoveryand ZWave JS UI");
+	Log(LOG_STATUS, "ZWave: This hardware type is Deprecated! Please move to MQTT Auto Discovery and ZWave JS UI");
 #ifdef WIN32
 	//prevent OpenZWave locale from taking over
 	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
