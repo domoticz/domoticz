@@ -46,7 +46,6 @@ Auto-discovery is known to work on Linux but may not on Windows.
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
 import base64
 import datetime
 

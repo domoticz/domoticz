@@ -42,7 +42,6 @@ extern http::server::CWebServerHelper m_webservers;
 #include "../hardware/plugins/PluginMessages.h"
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
-extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
 // Helper table for Blockly and SQL name mapping
@@ -196,7 +195,7 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
-	std::string dzv_Dir, s;
+	std::string dzv_Dir;
 	CdzVents* dzvents = CdzVents::GetInstance();
 	dzvents->m_bdzVentsExist = false;
 
@@ -239,16 +238,14 @@ void CEventSystem::LoadEvents()
 		}
 	}
 
-	std::vector<std::string> FileEntries;
-	std::string filename;
-
 	// Remove dzVents DB files from disk
+	std::vector<std::string> FileEntries;
 	DirectoryListing(FileEntries, dzv_Dir, false, true);
 	for (const auto &file : FileEntries)
 	{
-		filename = dzv_Dir + file;
-		if (filename.find("README.md") == std::string::npos)
-			std::remove(filename.c_str());
+		if (file.find("README.md") != std::string::npos)
+			continue;
+		std::remove((dzv_Dir + file).c_str());
 	}
 
 	result = m_sql.safe_query(
@@ -273,9 +270,9 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				s = dzv_Dir + eitem.Name + ".lua";
-				_log.Log(LOG_STATUS, "dzVents: Write file: %s", s.c_str());
-				FILE *fOut = fopen(s.c_str(), "wb+");
+				std::string sFile = dzv_Dir + eitem.Name + ".lua";
+				_log.Log(LOG_STATUS, "dzVents: Write file: %s", sFile.c_str());
+				FILE* fOut = fopen(sFile.c_str(), "wb+");
 				if (fOut)
 				{
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
@@ -284,7 +281,7 @@ void CEventSystem::LoadEvents()
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s",  s.c_str());
+					_log.Log(LOG_ERROR, "EventSystem: problem writing file: %s", sFile.c_str());
 				}
 			}
 		}
@@ -3575,20 +3572,35 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 	ParseActionString(Action, oParseResults);
 
 	if (oParseResults.sCommand.substr(0, 9) == "Set Level") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		level = calculateDimLevel(deviceID, atoi(oParseResults.sCommand.substr(10).c_str()));
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
 	}
 	else if (oParseResults.sCommand.substr(0, 10) == "Set Volume") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		level = atoi(oParseResults.sCommand.substr(11).c_str());
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
 	}
 	else if (oParseResults.sCommand.substr(0, 13) == "Play Playlist") {
+		if (oParseResults.sCommand.size() < 14)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(14);
 
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
 		{
-			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi			*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			std::string		sPlayList = sParams;
 			size_t			iLastSpace = sParams.find_last_of(' ', sParams.length());
 
@@ -3608,7 +3620,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
 			if (pBaseHardware == nullptr)
 				return false;
-			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+			CLogitechMediaServer *pHardware = dynamic_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr(14));
 			if (iPlaylistID == 0) return false;
@@ -3618,11 +3630,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 13);
 	}
 	else if (oParseResults.sCommand.substr(0, 14) == "Play Favorites") {
+		if (oParseResults.sCommand.size() < 15)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
 		{
-			//CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			//CKodi			*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
 				level = atoi(sParams.c_str());
@@ -3631,11 +3648,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
 	}
 	else if (oParseResults.sCommand.substr(0, 7) == "Execute") {
+		if (oParseResults.sCommand.size() < 9)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		std::string	sParams = oParseResults.sCommand.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != nullptr)
 		{
-			CKodi	*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
+			CKodi	*pHardware = dynamic_cast<CKodi*>(pBaseHardware);
 			pHardware->SetExecuteCommand(deviceID, sParams);
 		}
 	}
@@ -3644,6 +3666,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		previousState = "Set Level";
 	}
 	else if (previousState.substr(0, 10) == "Set Volume") {
+		if (oParseResults.sCommand.size() < 10)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Missing command arguments! '%s'", oParseResults.sCommand.c_str());
+			return false;
+		}
 		previousState = previousState.substr(0, 10);
 	}
 
@@ -3703,6 +3730,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 
 		}
 		else {
+			if (oParseResults.sCommand == "Closed")
+				oParseResults.sCommand = "Close";
 			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, "EventSystem/" + eventName);
 		}
 		m_sql.AddTaskItem(tItem);
@@ -3752,13 +3781,15 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
-	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-	/*
-		if (lstatus.find("Set Level") == 0)
-		{
-			lstatus = "Set Level";
-		}
-	*/
+
+	std::string openStatus = "Open";
+	std::string closedStatus = "Closed";
+
+	if (IsLightOrSwitch(dType, dSubType))
+	{
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	}
+
 	if (switchtype == STYPE_Dimmer)
 	{
 		// use default lstatus
@@ -3771,6 +3802,10 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	else if (dType == pTypeHUM)
 	{
 		lstatus = std::to_string(nValue);
+	}
+	else if (dType == pTypeEvohome)
+	{
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 	}
 	else if (switchtype == STYPE_Selector)
 	{
@@ -3818,38 +3853,55 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		(switchtype == STYPE_Blinds)
 		|| (switchtype == STYPE_BlindsPercentage)
 		|| (switchtype == STYPE_BlindsPercentageWithStop)
+		|| (switchtype == STYPE_VenetianBlindsUS)
+		|| (switchtype == STYPE_VenetianBlindsEU)
 		)
 	{
-		if (lstatus == "On")
+		if (lstatus == "Close inline relay")
 		{
-			lstatus = "Closed";
+			lstatus = "Close";
+		}
+		else if (lstatus == "Open inline relay")
+		{
+			lstatus = "Open";
+		}
+
+		bool bReverseState = false;
+		bool bReversePosition = false;
+
+		auto itt = options.find("ReverseState");
+		if (itt!= options.end())
+			bReverseState = (itt->second == "true");
+		itt = options.find("ReversePosition");
+		if (itt != options.end())
+			bReversePosition = (itt->second == "true");
+
+		if (bReversePosition)
+		{
+			llevel = 100 - llevel;
+			if (lstatus.find("Set Level") == 0)
+				lstatus = std_format("Set Level: %d %%", llevel);
+		}
+
+		if (bReverseState)
+		{
+			if (lstatus == "Open")
+				lstatus = "Close";
+			else if (lstatus == "Close")
+				lstatus = "Open";
+		}
+
+		if (lstatus == "Open")
+		{
+			lstatus = openStatus;
+		}
+		else if (lstatus == "Close")
+		{
+			lstatus = closedStatus;
 		}
 		else if (lstatus == "Stop")
 		{
 			lstatus = "Stopped";
-		}
-		else
-		{
-			lstatus = "Open";
-		}
-	}
-	else if (
-		(switchtype == STYPE_BlindsInverted)
-		|| (switchtype == STYPE_BlindsPercentageInverted)
-		|| (switchtype == STYPE_BlindsPercentageInvertedWithStop)
-		)
-	{
-		if (lstatus == "Off")
-		{
-			lstatus = "Closed";
-		}
-		else if (lstatus == "Stop")
-		{
-			lstatus = "Stopped";
-		}
-		else
-		{
-			lstatus = "Open";
 		}
 	}
 	else if (switchtype == STYPE_Media)
@@ -3930,7 +3982,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 	iStates.clear();
 	std::transform(m_devicestates.begin(), m_devicestates.end(), std::back_inserter(iStates),
-		       [](const std::pair<const uint64_t, CEventSystem::_tDeviceStatus> &m) { return m.second; });
+		[](const std::pair<const uint64_t, CEventSystem::_tDeviceStatus> &m) { return m.second; });
 }
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
@@ -3962,7 +4014,7 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 		return false;
 
 	return std::any_of(currentTasks.begin(), currentTasks.end(),
-			   [&](const _tTaskItem &currentTask) { return currentTask._relatedEvent == eventName; });
+		[&](const _tTaskItem &currentTask) { return currentTask._relatedEvent == eventName; });
 }
 
 int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
@@ -3990,13 +4042,14 @@ int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		{
 			if (
 				(switchtype == STYPE_Dimmer)
-				|| (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)
-				|| (switchtype == STYPE_BlindsPercentageWithStop) || (switchtype == STYPE_BlindsPercentageInvertedWithStop)
+				|| (switchtype == STYPE_BlindsPercentage)
+				|| (switchtype == STYPE_BlindsPercentageWithStop)
 				)
 			{
 				float fLevel = (maxDimLevel / 100.0F) * percentageLevel;
 				if (fLevel > 100)
 					fLevel = 100;
+
 				iLevel = int(fLevel);
 			}
 			else if (switchtype == STYPE_Selector)

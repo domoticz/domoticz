@@ -16,18 +16,6 @@ struct _tRemoteShareUser
 	std::vector<uint64_t> Devices;
 };
 
-#define RemoteMessage_id_Low 0xE2
-#define RemoteMessage_id_High 0x2E
-#define SECONDS_PER_DAY 60*60*24
-
-struct _tRemoteMessage
-{
-	uint8_t ID_Low;
-	uint8_t ID_High;
-	int		Original_Hardware_ID;
-	//data
-};
-
 class CTCPServerIntBase
 {
 public:
@@ -75,7 +63,7 @@ public:
 	/// Stop the specified connection.
 	void stopClient(CTCPClient_ptr c) override;
 
-      private:
+private:
 	void handleAccept(const boost::system::error_code& error);
 
 	/// Handle a request to stop the server.
@@ -87,29 +75,7 @@ public:
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	CTCPClient_ptr new_connection_;
-
-	bool IsUserHereFirstTime(const std::string &ip_string);
-	std::vector<_tTCPLogInfo> m_incoming_domoticz_history;
 };
-
-#ifndef NOCLOUD
-class CTCPServerProxied : public CTCPServerIntBase {
-public:
-	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
-	~CTCPServerProxied() = default;
-	void start() override;
-	void stop() override;
-	/// Stop the specified connection.
-	void stopClient(CTCPClient_ptr c) override;
-
-	bool OnNewConnection(const std::string &token, const std::string &username, const std::string &password);
-	bool OnDisconnect(const std::string &token);
-	bool OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred);
-	CSharedClient *FindClient(const std::string &token);
-private:
-	http::server::CProxyClient *m_pProxyClient;
-};
-#endif
 
 class CTCPServer : public CDomoticzHardwareBase
 {
@@ -119,9 +85,6 @@ public:
 	~CTCPServer() override;
 
 	bool StartServer(const std::string &address, const std::string &port);
-#ifndef NOCLOUD
-	bool StartServer(http::server::CProxyClient *proxy);
-#endif
 	void StopServer();
 	void SendToAll(int HardwareID, uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase *pClient2Ignore);
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
@@ -133,16 +96,9 @@ public:
 		return true;
 	};
 	void DoDecodeMessage(const CTCPClientBase *pClient, const unsigned char *pRXCommand);
-#ifndef NOCLOUD
-	CTCPServerProxied *GetProxiedServer();
-#endif
 private:
 	std::mutex m_server_mutex;
 	CTCPServerInt *m_pTCPServer;
-#ifndef NOCLOUD
-	CTCPServerProxied *m_pProxyServer;
-#endif
-
 	std::shared_ptr<std::thread> m_thread;
 	bool StartHardware() override
 	{

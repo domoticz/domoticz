@@ -17,8 +17,10 @@
 //#define DEBUG_InComfort
 #endif
 
-CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
-m_szIPAddress(IPAddress)
+CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password):
+m_szIPAddress(IPAddress),
+m_szUsername(Username),
+m_szPassword(Password)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -72,7 +74,7 @@ bool CInComfort::StopHardware()
 
 void CInComfort::Do_Work()
 {
-	int sec_counter = 0;
+	int sec_counter = INCOMFORT_POLL_INTERVAL - 3;
 	Log(LOG_STATUS, "Worker started...");
 	while (!IsStopRequested(1000))
 	{
@@ -119,7 +121,10 @@ std::string CInComfort::SetRoom1SetTemperature(float tempSetpoint)
 	float setpointToSet = (tempSetpoint - 5.0F) * 10.0F;
 
 	std::stringstream sstr;
-	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
+	if (m_szUsername.empty())
+		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
+	else
+		sstr << "http://" << m_szUsername << ":" << m_szPassword << "@" << m_szIPAddress << ":" << m_usIPPort << "/protect/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
 
 	return GetHTTPData(sstr.str());
 }
@@ -130,7 +135,10 @@ void CInComfort::GetHeaterDetails()
 		return;
 
 	std::stringstream sstr;
-	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json";
+	if (m_szUsername.empty())
+		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json";
+	else
+		sstr << "http://" << m_szUsername << ":" << m_szPassword << "@"  << m_szIPAddress << ":" << m_usIPPort << "/protect/data.json?heater=0";
 
 	// Get Data
 	std::string sResult = GetHTTPData(sstr.str());

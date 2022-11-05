@@ -328,19 +328,19 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	fcgi_params["REQUEST_SCHEME"] = "http";
 	fcgi_params["GATEWAY_INTERFACE"] = "CGI/1.1";
 	fcgi_params["SERVER_SOFTWARE"] = "Domoticz";
-	fcgi_params["REMOTE_ADDR"] = req.host_address;
-	fcgi_params["REMOTE_PORT"] = req.host_port;
-	fcgi_params["SERVER_ADDR"] = settings.listening_address;
-	fcgi_params["SERVER_PORT"] = settings.listening_port;
+	fcgi_params["REMOTE_ADDR"] = req.host_remote_address;
+	fcgi_params["REMOTE_PORT"] = req.host_remote_port;
+	fcgi_params["SERVER_ADDR"] = req.host_local_address;
+	fcgi_params["SERVER_PORT"] = req.host_local_port;
 	fcgi_params["SERVER_NAME"] = "localhost";
 	fcgi_params["REDIRECT_STATUS"] = "200";
 
 
 	fullexecmd += " SERVER_SOFTWARE=Domoticz";
 	fullexecmd += " SERVER_NAME=localhost";
-	fullexecmd += " SERVER_ADDR='" + settings.listening_address + "'";
-	fullexecmd += " SERVER_PORT=" + settings.listening_port;
-	fullexecmd += " REMOTE_ADDR=" + req.host_address;
+	fullexecmd += " SERVER_ADDR='" + req.host_local_address + "'";
+	fullexecmd += " SERVER_PORT=" + req.host_local_port;
+	fullexecmd += " REMOTE_ADDR=" + req.host_remote_address;
 	fullexecmd += " QUERY_STRING='" + szQueryString + "'";
 
 	for (const auto &header : req.headers)

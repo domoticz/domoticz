@@ -1048,10 +1048,7 @@ namespace http {
 						 != 1)
 						return; //invalid address
 					memset((void*)&ipnetwork.Mask, 0xFF, iASize);
-
-					//Apply mask to network address
-					for (ii = 0; ii < iASize; ii++)
-						ipnetwork.Network[ii] = ipnetwork.Network[ii] & ipnetwork.Mask[ii];
+					ipnetwork.ip_string = network;
 				}
 			}
 
@@ -1061,16 +1058,6 @@ namespace http {
 		void cWebem::ClearLocalNetworks()
 		{
 			m_localnetworks.clear();
-		}
-
-		void cWebem::AddRemoteProxyIPs(const std::string &ipaddr)
-		{
-			myRemoteProxyIPs.push_back(ipaddr);
-		}
-
-		void cWebem::ClearRemoteProxyIPs()
-		{
-			myRemoteProxyIPs.clear();
 		}
 
 		void cWebem::SetDigistRealm(const std::string &realm)
@@ -1429,6 +1416,9 @@ namespace http {
 				storedSession.username = session.username;
 				storedSession.expires = session.expires;
 				storedSession.remote_host = session.remote_host; // to trace host
+				storedSession.local_host = session.local_host; // to trace host
+				storedSession.remote_port = session.remote_port; // to trace host
+				storedSession.local_port = session.local_port; // to trace host
 				sstore->StoreSession(storedSession); // only one place to do that
 			}
 
@@ -1951,39 +1941,56 @@ namespace http {
 			return buffer;
 		}
 
+		std::map<std::string, connection::_tRemoteClients> m_remote_web_clients;
+
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+			_log.Debug(DEBUG_WEBSERVER, "web: Host:%s Uri;%s", req.host_remote_address.c_str(), req.uri.c_str());
 
 			// Initialize session
 			WebEmSession session;
-			session.remote_host = req.host_address;
+			session.remote_host = req.host_remote_address;
+			session.remote_port = req.host_remote_port;
+			session.local_host = req.host_local_address;
+			session.local_port = req.host_local_port;
 
-			if (!myWebem->myRemoteProxyIPs.empty())
+			for (const auto& ittNetwork : myWebem->m_localnetworks)
 			{
-				for (auto &myRemoteProxyIP : myWebem->myRemoteProxyIPs)
+				if (ittNetwork.ip_string.empty())
+					continue;
+				if (session.remote_host == ittNetwork.ip_string)
 				{
-					if (session.remote_host == myRemoteProxyIP)
+					const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
+					if (host_header != nullptr)
 					{
-						const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
-						if (host_header != nullptr)
+						if (strstr(host_header, ",") != nullptr)
 						{
-							if (strstr(host_header, ",") != nullptr)
+							//Multiple proxies are used... this is not very common
+							host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+							if (!host_header)
 							{
-								//Multiple proxies are used... this is not very common
-								host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-								if (!host_header)
-								{
-									_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
-									rep = reply::stock_reply(reply::forbidden);
-									return;
-								}
+								_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+								rep = reply::stock_reply(reply::forbidden);
+								return;
 							}
-							session.remote_host = host_header;
 						}
+						session.remote_host = host_header;
 					}
 				}
 			}
+
+			std::string remoteClientKey = session.remote_host + session.local_port;
+			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
+			if (itt_rc == m_remote_web_clients.end())
+			{
+				connection::_tRemoteClients rc;
+				rc.host_remote_endpoint_address_ = session.remote_host;
+				rc.host_local_endpoint_port_ = session.local_port;
+				m_remote_web_clients[remoteClientKey] = rc;
+				itt_rc = m_remote_web_clients.find(remoteClientKey);
+			}
+			itt_rc->second.last_seen = mytime(nullptr);
+			itt_rc->second.host_last_request_uri_ = req.uri;
 
 			session.reply_status = reply::ok;
 			session.isnew = false;

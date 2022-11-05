@@ -18,7 +18,7 @@
 #include <algorithm>
 #include "../main/localtime_r.h"
 #include <sstream>
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 #include <chrono>
 #include <limits.h>
 #include <cstring>
@@ -581,34 +581,32 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d)
 	return 2.0 * earthRadiusKm * asin(sqrt(u * u + cos(lat1r) * cos(lat2r) * v * v));
 }
 
+// trim only the space character
 std::string &stdstring_ltrim(std::string &s)
 {
-	while (!s.empty())
-	{
-		if (s[0] != ' ')
-			return s;
-		s = s.substr(1);
-	}
-	//	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
+	return s.erase(0, s.find_first_not_of(' '));
 }
 
 std::string &stdstring_rtrim(std::string &s)
 {
-	while (!s.empty())
-	{
-		if (s[s.size() - 1] != ' ')
-			return s;
-		s = s.substr(0, s.size() - 1);
-	}
-	//s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
+	return s.erase(s.find_last_not_of(' ') + 1);
 }
-
-// trim from both ends
 std::string &stdstring_trim(std::string &s)
 {
 	return stdstring_ltrim(stdstring_rtrim(s));
+}
+// trim all whitespace
+std::string &stdstring_ltrimws(std::string &s)
+{
+	return s.erase(0, s.find_first_not_of(WHITESPACE));
+}
+std::string &stdstring_rtrimws(std::string &s)
+{
+	return s.erase(s.find_last_not_of(WHITESPACE) + 1);
+}
+std::string &stdstring_trimws(std::string &s)
+{
+	return stdstring_ltrimws(stdstring_rtrimws(s));
 }
 
 double CalculateDewPoint(double temp, int humidity)
@@ -810,30 +808,34 @@ time_t GetClockTicks()
 	return(tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
+void CurrentDateTimeMillisecond(tm &timeinfo, timeval &tv)
+{
+#ifdef CLOCK_REALTIME
+	struct timespec ts;
+	if (!clock_gettime(CLOCK_REALTIME, &ts))
+	{
+		tv.tv_sec = ts.tv_sec;
+		tv.tv_usec = ts.tv_nsec / 1000;
+	}
+	else
+#endif
+		gettimeofday(&tv, nullptr);
+
+#ifdef WIN32
+	time_t tv_sec = tv.tv_sec;
+	localtime_r(&tv_sec, &timeinfo);
+#else
+	localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+}
+
 std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
 	if (ltime == nullptr) // current time
-	{
-#ifdef CLOCK_REALTIME
-		struct timespec ts;
-		if (!clock_gettime(CLOCK_REALTIME, &ts))
-		{
-			tv.tv_sec = ts.tv_sec;
-			tv.tv_usec = ts.tv_nsec / 1000;
-		}
-		else
-#endif
-			gettimeofday(&tv, nullptr);
-#ifdef WIN32
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-	}
+		CurrentDateTimeMillisecond(timeinfo, tv);
 	else
 		localtime_r(ltime, &timeinfo);
 
@@ -865,13 +867,21 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
-	unsigned char digest[MD5_DIGEST_LENGTH + 1];
-	digest[MD5_DIGEST_LENGTH] = 0;
-	MD5((const unsigned char*)cstring.c_str(), cstring.size(), (unsigned char*)&digest);
-	char mdString[(MD5_DIGEST_LENGTH * 2) + 1];
-	mdString[MD5_DIGEST_LENGTH * 2] = 0;
+	unsigned char digest[EVP_MAX_MD_SIZE + 1];
+	digest[EVP_MAX_MD_SIZE] = 0;
+	unsigned int hash_length = 0;
+
+	auto md5ctx = std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>(EVP_MD_CTX_new(), EVP_MD_CTX_free);
+
+	EVP_DigestInit(md5ctx.get(), EVP_md5());
+	EVP_DigestUpdate(md5ctx.get(), cstring.c_str(), cstring.size());
+	EVP_DigestFinal(md5ctx.get(), digest, &hash_length);
+
+	char mdString[(EVP_MAX_MD_SIZE * 2) + 1];
+	mdString[EVP_MAX_MD_SIZE * 2] = 0;
 	for (int i = 0; i < 16; i++)
 		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
+
 	return mdString;
 }
 

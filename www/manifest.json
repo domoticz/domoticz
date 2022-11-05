@@ -1,0 +1,38 @@
+{
+    "theme_color": "#2daad2",
+    "background_color": "#2daad2",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "name": "Domoticz",
+    "short_name": "Domoticz",
+    "description": "Home Automation",
+    "icons": [
+        {
+            "src": "images/logo/maskable_icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "images/logo/192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "images/logo/256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "images/logo/384.png",
+            "sizes": "384x384",
+            "type": "image/png"
+        },
+        {
+            "src": "images/logo/512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

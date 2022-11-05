@@ -18,6 +18,8 @@
 #define MAX_LOG_LINE_BUFFER 100
 #define MAX_LOG_LINE_LENGTH (2048 * 3)
 
+#define MAX_ACLFLOG_LINES 100000
+
 extern bool g_bRunAsDaemon;
 extern bool g_bUseSyslog;
 
@@ -61,8 +63,8 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			SetLogFlags(strtoul(wflag.c_str(), nullptr, 10));
-			return true;
+			iFlags = strtoul(wflag.c_str(), nullptr, 10);
+			break;
 		}
 		if (wflag == "all")
 			iFlags |= LOG_ALL;
@@ -75,8 +77,10 @@ bool CLogger::SetLogFlags(const std::string &sFlags)
 		else if (wflag == "debug")
 			iFlags |= LOG_DEBUG_INT;
 		else
-			return false; // invalid flag
+			continue; // invalid flag, skip but continue processing the other flags
 	}
+	if (iFlags == 0)
+		iFlags = LOG_STATUS + LOG_ERROR;
 	SetLogFlags(iFlags);
 	return true;
 }
@@ -102,8 +106,8 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 		if (is_number(wflag))
 		{
 			// Flags are set provided (bitwise)
-			SetDebugFlags(strtoul(wflag.c_str(), nullptr, 10));
-			return true;
+			iFlags = strtoul(wflag.c_str(), nullptr, 10);
+			break;
 		}
 		if (wflag == "all")
 			iFlags |= DEBUG_ALL;
@@ -124,15 +128,24 @@ bool CLogger::SetDebugFlags(const std::string &sFlags)
 		else if (wflag == "sql")
 			iFlags |= DEBUG_SQL;
 		else
-			return false; // invalid flag
+			continue; // invalid flag, skip but continue processing the other flags
 	}
 	SetDebugFlags(iFlags);
+	if(IsDebugLevelEnabled(DEBUG_WEBSERVER))
+		SetACLFlogFlags(LOG_ACLF_ENABLED);
+	if(!IsLogLevelEnabled(LOG_DEBUG_INT))
+		Log(LOG_STATUS,"Debug logging not active. Set loglevel DEBUG when using debug logging!");
 	return true;
 }
 
 void CLogger::SetDebugFlags(const uint32_t iFlags)
 {
 	m_debug_flags = iFlags;
+}
+
+void CLogger::SetACLFlogFlags(const uint8_t iFlags)
+{
+	m_aclf_flags |= iFlags;
 }
 
 bool CLogger::IsLogLevelEnabled(const _eLogLevel level)
@@ -145,6 +158,13 @@ bool CLogger::IsDebugLevelEnabled(const _eDebugLevel level)
 	if (!(m_log_flags & LOG_DEBUG_INT))
 		return false;
 	return (m_debug_flags & level);
+}
+
+bool CLogger::IsACLFlogEnabled()
+{
+	if (!(m_aclf_flags & LOG_ACLF_ENABLED))
+		return false;
+	return true;
 }
 
 void CLogger::SetOutputFile(const char *OutputFile)
@@ -169,6 +189,48 @@ void CLogger::SetOutputFile(const char *OutputFile)
 	catch (...)
 	{
 		std::cerr << "Error opening output log file..." << std::endl;
+	}
+}
+
+void CLogger::SetACLFOutputFile(const char *OutputFile)
+{
+	std::string sLogFile = OutputFile;
+
+	if(sLogFile.find("syslog:") != std::string::npos)
+	{
+		Log(LOG_STATUS, "Weblogs are send to SYSLOG!");
+		SetACLFlogFlags(LOG_ACLF_SYSLOG);
+	}
+	else
+	{
+		m_aclflogfile = OutputFile;
+		SetACLFlogFlags(LOG_ACLF_FILE);
+	}
+	SetACLFlogFlags(LOG_ACLF_ENABLED);
+}
+
+void CLogger::OpenACLFOutputFile()
+{
+	std::unique_lock<std::mutex> lock(m_mutex);
+	if (m_aclfoutputfile.is_open())
+		m_aclfoutputfile.close();
+
+	if (m_aclflogfile == nullptr)
+		return;
+	if (*m_aclflogfile == 0)
+		return;
+
+	try
+	{
+#ifdef _DEBUG
+		m_aclfoutputfile.open(m_aclflogfile, std::ios::out | std::ios::trunc);
+#else
+		m_aclfoutputfile.open(m_aclflogfile, std::ios::out | std::ios::app);
+#endif
+	}
+	catch (...)
+	{
+		std::cerr << "Error opening Apache Combined LogFormat webserver log file..." << std::endl;
 	}
 }
 
@@ -294,6 +356,47 @@ void CLogger::Debug(const _eDebugLevel level, const std::string &sLogline)
 	if (!IsDebugLevelEnabled(level))
 		return;
 	Log(LOG_DEBUG_INT, sLogline);
+}
+
+void CLogger::ACLFlog(const char *logline, ...)
+{
+	if (!IsACLFlogEnabled())
+		return;
+	va_list argList;
+	char cbuffer[MAX_LOG_LINE_LENGTH];
+	va_start(argList, logline);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
+	va_end(argList);
+
+	if(IsDebugLevelEnabled(DEBUG_WEBSERVER))
+	{
+		//std::cout << std::string(cbuffer) << std::endl;
+		Debug(DEBUG_WEBSERVER,"Web ACLF: %s", cbuffer);
+	}
+
+	if(m_aclf_flags & LOG_ACLF_FILE)
+	{
+		if(m_aclf_loggedlinescnt++ >= MAX_ACLFLOG_LINES || (!m_aclfoutputfile.is_open()))
+		{
+			if(m_aclfoutputfile.is_open())
+				m_aclfoutputfile.close();
+			OpenACLFOutputFile();
+			m_aclf_loggedlinescnt = 1;
+		}
+		if (m_aclfoutputfile.is_open())
+		{
+			// output to file
+			m_aclfoutputfile << std::string(cbuffer) << std::endl;
+			m_aclfoutputfile.flush();
+		}
+	}
+
+#ifndef WIN32
+	if(g_bUseSyslog && (m_aclf_flags & LOG_ACLF_SYSLOG))
+	{
+		syslog(LOG_INFO|LOG_LOCAL1,"%s", cbuffer);
+	}
+#endif
 }
 
 bool strhasEnding(std::string const &fullString, std::string const &ending)

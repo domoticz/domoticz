@@ -5,9 +5,18 @@ on:
     branches:
       - development
       - master
+    paths-ignore:
+      - 'msbuild/**'
+      - '.github/**'
+      - 'tools/**'
+      - '**.md'
+      - '**.txt'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+env:
+  PR_NR: ${{ github.event.pull_request.number }}
 
 jobs:
   # This workflow contains a single job called "build"
@@ -26,15 +35,16 @@ jobs:
       - name: prepare environment
         run: |
           sudo timedatectl set-timezone Europe/Amsterdam
+          buildnr=$(git rev-list HEAD --count)
+          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
           if [ "${GITHUB_EVENT_NAME}" == 'pull_request' ]; then
             echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
-            echo "PRNUMBER=$(echo ${GITHUB_EVENT_ISSUE_NUMBER})" >> $GITHUB_ENV
+            echo "PRNUMBER=$(echo ${PR_NR})" >> $GITHUB_ENV
+            echo "Domoticz build for PR ${PR_NR}! Building version $(($buildnr + 2107)) from branch ${GITHUB_HEAD_REF}"
           else
             echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
             echo "PRNUMBER=$(echo ${GITHUB_SHA})" >> $GITHUB_ENV
           fi
-          buildnr=$(git rev-list HEAD --count)
-          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
 
       # install dependencies
       - name: dependencies
@@ -45,21 +55,21 @@ jobs:
           sudo apt-get install lua5.3 luarocks
           sudo luarocks install busted
           sudo luarocks install luacov
-          sudo luarocks install lodash
+      # Disabled March 2022 - sudo luarocks install lodash
 
       # get CMake
       - name: cmake-compile
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-Linux-x86_64.tar.gz -o cmake.tar.gz;
           sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
           export PATH=/usr/local/bin:$PATH;
 
       # Boost
       - name: build boost libraries
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
-          tar xfz boost_1_76_0.tar.gz
-          cd boost_1_76_0/
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_79_0.tar.gz
+          cd boost_1_79_0/
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
@@ -81,14 +91,14 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
 
-      # Run automated tests
-      - name: unit-tests domoticz-dzVents
-        run: |
-          cd $GITHUB_WORKSPACE/dzVents/runtime/tests
-          busted --coverage -o TAP *
-          luacov
-          tail -19 luacov.report.out
-        continue-on-error: true
+      # Run automated tests (disabled March 2022)
+      #- name: unit-tests domoticz-dzVents
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+      #    busted --coverage -o TAP *
+      #    luacov
+      #    tail -19 luacov.report.out
+      #  continue-on-error: true
 
       - name: functional-tests domoticz
         run: |
@@ -99,14 +109,22 @@ jobs:
           sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
         continue-on-error: true
 
-      # Upload artifacts
-      #- uses: actions/upload-artifact@v2
-      #  with:
-      #    name: Domoticz-${{ env.BUILDNR }}-${{ env.BRANCH_NAME }}
-      #    path: |
-      #      domoticz
-      #      appversion.h.txt
-      #      www/
-      #      lib/
-      #      !**/*.tar.gz
-      #    retention-days: 7
+      # Packaging
+      - name: package domoticz
+      # if: ${{ false }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          mkdir package
+          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
+          cp appversion.h.txt package/version_linux_x86_64.h
+          cp History.txt package/history_linux_x86_64.txt
+      
+      # Artifact upload
+      - name: Upload artifacts
+      # if: ${{ false }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: domoticz_linux_x86_64-${{ github.event.pull_request.number }}-${{ github.run_number }}
+          path: package/domoticz_linux_x86_64.tgz
+          retention-days: 7

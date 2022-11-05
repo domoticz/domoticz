@@ -27,8 +27,6 @@ License: Public domain
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 
-#include <openssl/sha.h>
-
 #include "../notifications/NotificationHelper.h"
 
 #define OPENWEBNET_HEARTBEAT_DELAY      1
@@ -858,7 +856,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 	{
 		nvalue = 0;
 		slevel = 0;
-		switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentageInverted;
+		switch_type = (iLevel < 0) ? STYPE_VenetianBlindsEU : STYPE_BlindsPercentage;
 		m_sql.InsertDevice(m_HwdID, szIdx, iInterface, pTypeGeneralSwitch, sSwitchTypeAC, switch_type, 0, "", devname);
 	}
 	else
@@ -868,7 +866,11 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		switch_type = atoi(result[0][3].c_str());
 	}
 
-	if ((switch_type == STYPE_BlindsPercentageInverted) && (iLevel < 0)) return; // check normal frame received for BlindsPercentageInverted
+	if (
+		(switch_type == STYPE_BlindsPercentage)
+		&& (iLevel < 0)
+		)
+		return;
 
 	int cmd = -1;
 	switch (Command)
@@ -906,7 +908,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 	}
 
 	// verify command for advanced type
-	if (switch_type == STYPE_BlindsPercentageInverted)
+	if (switch_type == STYPE_BlindsPercentage)
 	{
 		cmd = (iLevel == 0) ? gswitch_sOff : gswitch_sSetLevel;
 	}
@@ -1803,8 +1805,9 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 		case WHO_AUTOMATION:
 			//Blinds/Window command
 			sprintf(szIdx, "%08X", ((who << 16) & 0xffff0000) | (where & 0x0000ffff));
-			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (SwitchType==%d)",  //*******is there a better method for get
-				m_HwdID, szIdx, STYPE_BlindsPercentageInverted);																		   //*******SUBtype (STYPE_BlindsPercentageInverted) ??
+			result = m_sql.safe_query(
+				"SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (SwitchType==%d)",
+				m_HwdID, szIdx, STYPE_BlindsPercentage);
 
 			if (result.empty())// from a normal button
 			{

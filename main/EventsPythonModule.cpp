@@ -6,22 +6,28 @@
 #include "EventSystem.h"
 #include "mainworker.h"
 #include "localtime_r.h"
+#include "../hardware/plugins/Plugins.h"
+
+#include <fstream>
 
 #ifdef ENABLE_PYTHON
 
-    namespace Plugins {
-        #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
+namespace Plugins 
+{
+#define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
-		void*   m_PyInterpreter;
-        bool ModuleInitialized = false;
+	PyThreadState*	m_PyInterpreter;
+    bool			m_ModuleInitialized = false;
+	PyObject*		pDeviceType;
 
-        struct eventModule_state {
-            PyObject*	error;
-        };
+    struct eventModule_state {
+		PyObject*	error;
+    };
 
-	static PyMethodDef DomoticzEventsMethods[] = { { "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
-						       { "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
-						       { nullptr, nullptr, 0, nullptr } };
+	static PyMethodDef DomoticzEventsMethods[] = { 
+								{ "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
+								{ "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
+								{ nullptr, nullptr, 0, nullptr } };
 
 	static int DomoticzEventsTraverse(PyObject *m, visitproc visit, void *arg)
 	{
@@ -39,12 +45,35 @@
 
 	static PyObject *PyDomoticz_EventsLog(PyObject *self, PyObject *args)
 	{
+		PyBorrowedRef	pArg(args);
+		if (!pArg.IsTuple())
+		{
+			_log.Log(LOG_ERROR, "%s: Invalid parameter, expected 'tuple' got '%s'.", __func__, pArg.Type().c_str());
+			Py_RETURN_NONE;
+		}
+
+		Py_ssize_t	tupleSize = PyTuple_Size(pArg);
+		if (tupleSize != 1)
+		{
+			_log.Log(LOG_ERROR, "%s: Invalid parameter, expected single parameter, got %d parameters.", __func__, (int)tupleSize);
+			Py_RETURN_NONE;
+		}
+
 		char *msg;
 
 		if (!PyArg_ParseTuple(args, "s", &msg))
 		{
-			_log.Log(LOG_ERROR, "Pyhton Event System: Failed to parse parameters: string expected.");
-			// LogPythonException(pModState->pPlugin, std::string(__func__));
+			PyErr_Clear();
+			PyObject* pObject;
+			if (PyArg_ParseTuple(args, "O", &pObject))
+			{
+				std::string	sMessage = PyBorrowedRef(pObject);
+				_log.Log(LOG_NORM, sMessage);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: Failed to parse parameters: string expected.", __func__);
+			}
 		}
 		else
 		{
@@ -52,8 +81,7 @@
 			_log.Log((_eLogLevel)LOG_NORM, message);
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
 	static PyObject *PyDomoticz_EventsCommand(PyObject *self, PyObject *args)
@@ -68,7 +96,6 @@
 		if (!PyArg_ParseTuple(args, "ss", &device, &action))
 		{
 			_log.Log(LOG_ERROR, "Pyhton EventSystem: Failed to parse parameters: Two strings expected.");
-			// LogPythonException(pModState->pPlugin, std::string(__func__));
 		}
 		else
 		{
@@ -78,13 +105,20 @@
 			m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test");
 		}
 
-		Py_INCREF(Py_None);
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
-	struct PyModuleDef DomoticzEventsModuleDef
-		= { PyModuleDef_HEAD_INIT,  "DomoticzEvents",	 nullptr, sizeof(struct eventModule_state), DomoticzEventsMethods, nullptr,
-		    DomoticzEventsTraverse, DomoticzEventsClear, nullptr };
+	struct PyModuleDef DomoticzEventsModuleDef = {
+		PyModuleDef_HEAD_INIT,  
+		"DomoticzEvents",	 
+		nullptr, 
+		sizeof(struct eventModule_state), 
+		DomoticzEventsMethods, 
+		nullptr,
+		DomoticzEventsTraverse, 
+		DomoticzEventsClear, 
+		nullptr
+	};
 
 	PyMODINIT_FUNC PyInit_DomoticzEvents(void)
 	{
@@ -94,6 +128,27 @@
 		_log.Log(LOG_STATUS, "Python EventSystem: Initializing event module.");
 
 		PyObject *pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
+
+		PyType_Slot PDeviceSlots[] = {
+			{ Py_tp_doc, (void*)"PDevice objects" },
+			{ Py_tp_new, (void*)PDevice_new },
+			{ Py_tp_init, (void*)PDevice_init },
+			{ Py_tp_dealloc, (void*)PDevice_dealloc },
+			{ Py_tp_members, PDevice_members },
+			{ Py_tp_methods, PDevice_methods },
+			{ 0, nullptr },
+		};
+		PyType_Spec DeviceSpec = { "DomoticzEvents.PDevice", sizeof(PDevice), 0,
+							  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, PDeviceSlots };
+
+		pDeviceType = PyType_FromSpec(&DeviceSpec);
+		if (PyType_Ready((PyTypeObject*)pDeviceType) < 0)
+		{
+			_log.Log(LOG_ERROR, "Python EventSystem: Unable to ready 'PDevice objects'.");
+		}
+
+		PyModule_AddObject(pModule, "PDevice", pDeviceType);	// PyModule_AddObject steals a reference
+
 		return pModule;
 	}
 
@@ -144,7 +199,7 @@
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
                 return false;
             }
-            ModuleInitialized = true;
+            m_ModuleInitialized = true;
             return true;
 	}
 
@@ -166,22 +221,21 @@
 
 	PyObject *PythonEventsGetModule()
 	{
-		PyObject *pModule = PyState_FindModule(&DomoticzEventsModuleDef);
+		PyBorrowedRef	pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
 		if (pModule)
 		{
 			// _log.Log(LOG_STATUS, "Python Event System: Module found");
 			return pModule;
 		}
-		Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", nullptr);
+		PyImport_ImportModule("DomoticzEvents");
 		pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
 		if (pModule)
 		{
 			return pModule;
 		}
-		// Py_INCREF(Py_None);
-		// return Py_None;
+
 		return nullptr;
 	}
 
@@ -189,274 +243,357 @@
 
 	PyObject *mapToPythonDict(const std::map<std::string, float> &floatMap)
 	{
-		return Py_None;
+		Py_RETURN_NONE;
 	}
 
-	void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString,
-				       const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates,
-				       std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet)
+	void LogPythonException()
 	{
+		PyNewRef	pTraceback;
+		PyNewRef	pExcept;
+		PyNewRef	pValue;
 
-		if (!ModuleInitialized)
+		PyErr_Fetch(&pExcept, &pValue, &pTraceback);
+		PyErr_NormalizeException(&pExcept, &pValue, &pTraceback);
+
+		if (!pExcept && !pValue && !pTraceback)
+		{
+			_log.Log(LOG_ERROR, "Unable to decode exception.");
+		}
+		else
+		{
+			std::string	sTypeText("Unknown");
+
+			/* See if we can get a full traceback */
+			PyNewRef	pModule = PyImport_ImportModule("traceback");
+			if (pModule)
+			{
+				PyNewRef	pFunc = PyObject_GetAttrString(pModule, "format_exception");
+				if (pFunc && PyCallable_Check(pFunc)) {
+					PyNewRef	pList = PyObject_CallFunctionObjArgs(pFunc, (PyObject*)pExcept, (PyObject*)pValue, (PyObject*)pTraceback, NULL);
+					if (pList)
+					{
+						for (Py_ssize_t i = 0; i < PyList_Size(pList); i++)
+						{
+							PyBorrowedRef	pPyStr = PyList_GetItem(pList, i);
+							std::string		pStr(pPyStr);
+							size_t pos = 0;
+							std::string token;
+							while ((pos = pStr.find('\n')) != std::string::npos) {
+								token = pStr.substr(0, pos);
+								_log.Log(LOG_ERROR, "%s", token.c_str());
+								pStr.erase(0, pos + 1);
+							}
+						}
+					}
+					else
+					{
+						if (pExcept) sTypeText = pExcept.Attribute("__name__");
+						_log.Log(LOG_ERROR, "Exception: '%s'.  No traceback available.", sTypeText.c_str());
+					}
+				}
+				else
+				{
+					if (pExcept) sTypeText = pExcept.Attribute("__name__");
+					_log.Log(LOG_ERROR, "'format_exception' lookup failed, exception: '%s'.  No traceback available.", sTypeText.c_str());
+				}
+			}
+			else
+			{
+				if (pExcept) sTypeText = pExcept.Attribute("__name__");
+				_log.Log(LOG_ERROR, "'Traceback' module import failed, exception: '%s'.  No traceback available.", sTypeText.c_str());
+			}
+		}
+		PyErr_Clear();
+	}
+
+	void PythonEventsProcessPython(const std::string& reason, const std::string& filename, const std::string& PyString,
+		const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> deviceStates,
+		std::map<uint64_t, CEventSystem::_tUserVariable> userVariables, int intSunRise, int intSunSet)
+	{
+		if (!m_ModuleInitialized)
 		{
 			return;
 		}
 
-		if (Plugins::Py_IsInitialized())
+		if (!Py_IsInitialized())
 		{
+			_log.Log(LOG_ERROR, "EventSystem: Python not Initialized");
+			return;
+		}
 
-			if (m_PyInterpreter)
-				PyEval_RestoreThread((PyThreadState *)m_PyInterpreter);
+		if (m_PyInterpreter)
+			PyEval_RestoreThread(m_PyInterpreter);
 
-			/*{
-			    _log.Log(LOG_ERROR, "EventSystem - Python: Failed to attach to interpreter");
-			}*/
-
-			PyObject *pModule = Plugins::PythonEventsGetModule();
-			if (pModule)
+		PyBorrowedRef	pModule = PythonEventsGetModule();
+		if (pModule)
+		{
+			PyBorrowedRef	pModuleDict = PyModule_GetDict(pModule);
+			if (!pModuleDict)
 			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
+				PyEval_SaveThread();
+				return;
+			}
 
-				PyObject *pModuleDict = Plugins::PyModule_GetDict((PyObject *)pModule); // borrowed referece
-
-				if (!pModuleDict)
+			if (!Py_None)
+			{
+				PyNewRef local_dict = PyDict_New();
+				PyNewRef pCode = Py_CompileString("# Eval will return 'None'\n", "<domoticz>", Py_file_input);
+				if (pCode)
 				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
-					PyEval_SaveThread();
-					return;
+					PyNewRef pEval = PyEval_EvalCode(pCode, pModuleDict, local_dict);
+					Py_None = pEval;
+					Py_INCREF(Py_None);
+				}
+			}
+
+
+			PyNewRef	pStrVal = PyUnicode_FromString(deviceStates[DeviceID].deviceName.c_str());
+			if (PyDict_SetItemString(pModuleDict, "changed_device_name", pStrVal) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to set changed_device_name.");
+				return;
+			}
+
+			PyNewRef	pDeviceDict = PyDict_New();
+			if (PyDict_SetItemString(pModuleDict, "Devices", pDeviceDict) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
+				PyEval_SaveThread();
+				return;
+			}
+
+			for (auto it_type = deviceStates.begin(); it_type != deviceStates.end(); ++it_type)
+			{
+				CEventSystem::_tDeviceStatus sitem = it_type->second;
+
+				PyNewRef nrArgList = Py_BuildValue("(isiiisiss)", static_cast<int>(sitem.ID),
+					sitem.deviceName.c_str(),
+					sitem.devType,
+					sitem.subType,
+					sitem.switchtype,
+					sitem.sValue.c_str(),
+					sitem.nValue,
+					sitem.nValueWording.c_str(),
+					sitem.lastUpdate.c_str());
+				if (!nrArgList)
+				{
+					_log.Log(LOG_ERROR, "Python EventSystem: Building device argument list failed for key %s.", sitem.deviceName.c_str());
+					continue;
+				}
+				PyNewRef pDevice = PyObject_CallObject((PyObject*)pDeviceType, nrArgList);
+				if (!pDevice)
+				{
+					_log.Log(LOG_ERROR, "Python EventSystem: Event Device object creation failed for key %s.", sitem.deviceName.c_str());
+					continue;
 				}
 
-				if (Plugins::PyDict_SetItemString(
-					    pModuleDict, "changed_device_name",
-					    Plugins::PyUnicode_FromString(m_devicestates[DeviceID].deviceName.c_str()))
-				    == -1)
+				if (sitem.ID == DeviceID)
 				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to set changed_device_name.");
-					return;
-				}
-
-				PyObject *m_DeviceDict = Plugins::PyDict_New();
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", (PyObject *)m_DeviceDict) == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
-					PyEval_SaveThread();
-					return;
-				}
-				Py_DECREF(m_DeviceDict);
-
-				if (Plugins::PyType_Ready(&Plugins::PDeviceType) < 0)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
-					PyEval_SaveThread();
-					return;
-				}
-
-				// Mutex
-				// boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
-
-				for (auto it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
-				{
-					CEventSystem::_tDeviceStatus sitem = it_type->second;
-					// object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType,
-					// sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue,
-					// sitem.lastUpdate); devices[sitem.deviceName] = deviceStatus;
-
-					Plugins::PDevice *aDevice = (Plugins::PDevice *)Plugins::PDevice_new(
-						&Plugins::PDeviceType, (PyObject *)nullptr, (PyObject *)nullptr);
-					PyObject *pKey = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
-
-					if (sitem.ID == DeviceID)
+					if (PyDict_SetItemString(pModuleDict, "changed_device", (PyObject*)pDevice) == -1)
 					{
-						if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device", (PyObject *)aDevice) == -1)
-						{
-							_log.Log(LOG_ERROR,
-								 "Python EventSystem: Failed to add device '%s' as changed_device.",
-								 sitem.deviceName.c_str());
-						}
-					}
-
-					if (Plugins::PyDict_SetItem((PyObject *)m_DeviceDict, pKey, (PyObject *)aDevice) == -1)
-					{
-						_log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.",
-							 sitem.deviceName.c_str());
-					}
-					else
-					{
-
-						// _log.Log(LOG_ERROR, "Python EventSystem: nValueWording '%s' - done. ",
-						// sitem.nValueWording.c_str());
-
-						std::string temp_n_value_string = sitem.nValueWording;
-
-						// If nValueWording contains %, unicode fails?
-
-						aDevice->id = static_cast<int>(sitem.ID);
-						aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
-						aDevice->type = sitem.devType;
-						aDevice->sub_type = sitem.subType;
-						aDevice->switch_type = sitem.switchtype;
-						aDevice->n_value = sitem.nValue;
-						aDevice->n_value_string = Plugins::PyUnicode_FromString(temp_n_value_string.c_str());
-						aDevice->s_value = Plugins::PyUnicode_FromString(sitem.sValue.c_str());
-						aDevice->last_update_string = Plugins::PyUnicode_FromString(sitem.lastUpdate.c_str());
-						// _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s added to device dictionary",
-						// sitem.deviceName.c_str());
-					}
-					Py_DECREF(aDevice);
-					Py_DECREF(pKey);
-				}
-				// devicestatesMutexLock1.unlock();
-
-				// Time related
-
-				// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
-				time_t now = mytime(nullptr);
-				struct tm ltime;
-				localtime_r(&now, &ltime);
-				int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "minutes_since_midnight",
-								  Plugins::PyLong_FromLong(minutesSinceMidnight))
-				    == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'minutesSinceMidnight' to module_dict");
-				}
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", Plugins::PyLong_FromLong(intSunRise))
-				    == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunrise_in_minutes' to module_dict");
-				}
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "sunset_in_minutes", Plugins::PyLong_FromLong(intSunSet))
-				    == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
-				}
-
-				// PyObject* dayTimeBool = Py_False;
-				// PyObject* nightTimeBool = Py_False;
-
-				bool isDaytime = false;
-				bool isNightime = false;
-
-				if ((minutesSinceMidnight > intSunRise) && (minutesSinceMidnight < intSunSet))
-				{
-					isDaytime = true;
-				}
-				else
-				{
-					isNightime = true;
-				}
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", Plugins::PyBool_FromLong(isDaytime)) == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
-				}
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", Plugins::PyBool_FromLong(isNightime)) == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
-				}
-
-				// UserVariables
-				PyObject *m_uservariablesDict = Plugins::PyDict_New();
-
-				if (Plugins::PyDict_SetItemString(pModuleDict, "user_variables", (PyObject *)m_uservariablesDict) == -1)
-				{
-					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add uservariables dictionary.");
-					PyEval_SaveThread();
-					return;
-				}
-				Py_DECREF(m_uservariablesDict);
-
-				// This doesn't work
-				// boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
-
-				for (auto it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
-				{
-					CEventSystem::_tUserVariable uvitem = it_var->second;
-					Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(),
-								      Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
-				}
-
-				// uservariablesMutexLock2.unlock();
-
-				// Add __main__ module
-				PyObject *pModule = Plugins::PyImport_AddModule("__main__");
-				Py_INCREF(pModule);
-
-				// Override sys.stderr
-				Plugins::PyRun_SimpleStringFlags("import sys\nclass StdErrRedirect:\n    def __init__(self):\n        "
-								 "self.buffer = ''\n    def write(self, "
-								 "msg):\n        self.buffer += msg\nstdErrRedirect = "
-								 "StdErrRedirect()\nsys.stderr = stdErrRedirect\n",
-								 nullptr);
-
-				if (PyString.length() > 0)
-				{
-					// Python-string from WebEditor
-					Plugins::PyRun_SimpleStringFlags(PyString.c_str(), nullptr);
-				}
-				else
-				{
-					// Script-file
-					FILE *PythonScriptFile = fopen(filename.c_str(), "r");
-					Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, nullptr);
-
-					if (PythonScriptFile != nullptr)
-						fclose(PythonScriptFile);
-				}
-
-				// Get message from stderr redirect
-				PyObject *stdErrRedirect = nullptr, *logBuffer = nullptr, *logBytes = nullptr;
-				std::string logString;
-				if ((stdErrRedirect = Plugins::PyObject_GetAttrString(pModule, "stdErrRedirect")) == nullptr)
-					goto free_module;
-				if ((logBuffer = Plugins::PyObject_GetAttrString(stdErrRedirect, "buffer")) == nullptr)
-					goto free_stderrredirect;
-				if ((logBytes = PyUnicode_AsUTF8String(logBuffer)) == nullptr)
-					goto free_logbuffer;
-				logString.append(PyBytes_AsString(logBytes));
-
-				// Check if there were some errors written to stderr
-				if (logString.length() > 0)
-				{
-					// Print error source
-					_log.Log(LOG_ERROR, "EventSystem: Failed to execute python event script \"%s\"", filename.c_str());
-
-					// Loop over all lines of the error message
-					std::size_t lineBreakPos;
-					while ((lineBreakPos = logString.find('\n')) != std::string::npos)
-					{
-						// Print line
-						_log.Log(LOG_ERROR, "EventSystem: %s", logString.substr(0, lineBreakPos).c_str());
-
-						// Remove line from buffer
-						logString = logString.substr(lineBreakPos + 1);
+						_log.Log(LOG_ERROR,
+							"Python EventSystem: Failed to add device '%s' as changed_device.",
+							sitem.deviceName.c_str());
 					}
 				}
 
-				// Cleanup
-				Py_DECREF(logBytes);
-			free_logbuffer:
-				Py_DECREF(logBuffer);
-			free_stderrredirect:
-				Py_DECREF(stdErrRedirect);
-			free_module:
-				Py_DECREF(pModule);
+				PyNewRef	pKey = PyUnicode_FromString(sitem.deviceName.c_str());
+				if (PyDict_SetItem(pDeviceDict, pKey, (PyObject*)pDevice) == -1)
+				{
+					_log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.",
+						sitem.deviceName.c_str());
+				}
+			}
+
+			// Time related
+
+			// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
+			time_t now = mytime(nullptr);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+			int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
+			PyNewRef	pPyLong = PyLong_FromLong(minutesSinceMidnight);
+			if (PyDict_SetItemString(pModuleDict, "minutes_since_midnight", pPyLong) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'minutesSinceMidnight' to module_dict");
+			}
+
+			pPyLong = PyLong_FromLong(intSunRise);
+			if (PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", pPyLong) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunrise_in_minutes' to module_dict");
+			}
+
+			pPyLong = PyLong_FromLong(intSunSet);
+			if (PyDict_SetItemString(pModuleDict, "sunset_in_minutes", pPyLong) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
+			}
+
+			bool isDaytime = false;
+			bool isNightime = false;
+
+			if ((minutesSinceMidnight > intSunRise) && (minutesSinceMidnight < intSunSet))
+			{
+				isDaytime = true;
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
+				isNightime = true;
 			}
 
-			PyEval_SaveThread();
+			PyNewRef	pPyBool = PyBool_FromLong(isDaytime);
+			if (PyDict_SetItemString(pModuleDict, "is_daytime", pPyBool) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+			}
+
+			pPyBool = PyBool_FromLong(isNightime);
+			if (PyDict_SetItemString(pModuleDict, "is_nighttime", pPyBool) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+			}
+
+			// UserVariables
+			PyNewRef	userVariablesDict = PyDict_New();
+			if (PyDict_SetItemString(pModuleDict, "user_variables", userVariablesDict) == -1)
+			{
+				_log.Log(LOG_ERROR, "Python EventSystem: Failed to add uservariables dictionary.");
+				PyEval_SaveThread();
+				return;
+			}
+
+			for (auto it_var = userVariables.begin(); it_var != userVariables.end(); ++it_var)
+			{
+				CEventSystem::_tUserVariable uvitem = it_var->second;
+				PyDict_SetItemString(userVariablesDict, uvitem.variableName.c_str(),
+					PyUnicode_FromString(uvitem.variableValue.c_str()));
+			}
+
+			// Add __main__ module
+			PyBorrowedRef	pMainModule = PyImport_AddModule("__main__");
+			PyBorrowedRef	global_dict = PyModule_GetDict(pMainModule);
+			PyNewRef		local_dict = PyDict_New();
+
+			// Override sys.stderr
+			{
+				PyNewRef	pCode = Py_CompileString("import sys\nclass StdErrRedirect:\n    def __init__(self):\n        "
+					"self.buffer = ''\n    def write(self, "
+					"msg):\n        self.buffer += msg\nstdErrRedirect = "
+					"StdErrRedirect()\nsys.stderr = stdErrRedirect\n",
+					filename.c_str(), Py_file_input);
+				if (pCode)
+				{
+					PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "EventSystem: Failed to compile stderror redirection for event script '%s'", reason.c_str());
+				}
+			}
+
+			if (!PyErr_Occurred() && (PyString.length() > 0))
+			{
+				// Python-string from WebEditor
+				PyNewRef	pCode = Py_CompileString(PyString.c_str(), filename.c_str(), Py_file_input);
+				if (pCode)
+				{
+					PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "EventSystem: Failed to compile python '%s' event script '%s'", reason.c_str(), filename.c_str());
+				}
+			}
+			else
+			{
+				// Script-file
+				std::ifstream PythonScriptFile(filename.c_str());
+				if (PythonScriptFile.is_open())
+				{
+					char	PyLine[256];
+					std::string	PyString;
+					while (PythonScriptFile.getline(PyLine, sizeof(PyLine), '\n'))
+					{
+						PyString.append(PyLine);
+						PyString += '\n';
+					}
+					PythonScriptFile.close();
+
+					PyNewRef	pCode = Py_CompileString(PyString.c_str(), filename.c_str(), Py_file_input);
+					if (pCode)
+					{
+						PyNewRef	pEval = PyEval_EvalCode(pCode, global_dict, local_dict);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "EventSystem: Failed to compile python '%s' event script file '%s'", reason.c_str(), filename.c_str());
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "EventSystem: Failed to open python script file '%s'", filename.c_str());
+				}
+			}
+
+			// Log any exceptions
+			if (PyErr_Occurred())
+			{
+				LogPythonException();
+			}
+
+			// Get message from stderr redirect
+			std::string logString;
+			if (PyObject_HasAttrString(pModule, "stdErrRedirect"))
+			{
+				PyNewRef	stdErrRedirect = PyObject_GetAttrString(pModule, "stdErrRedirect");
+				if (PyObject_HasAttrString(stdErrRedirect, "buffer"))
+				{
+					PyNewRef	logBuffer = PyObject_GetAttrString(stdErrRedirect, "buffer");
+					PyNewRef	logBytes = PyUnicode_AsUTF8String(logBuffer);
+					if (logBytes)
+					{
+						logString.append(PyBytes_AsString(logBytes));
+					}
+				}
+			}
+
+			// Check if there were some errors written to stderr
+			if (logString.length() > 0)
+			{
+				// Print error source
+				_log.Log(LOG_ERROR, "EventSystem: Failed to execute python event script \"%s\"", filename.c_str());
+
+				// Loop over all lines of the error message
+				std::size_t lineBreakPos;
+				while ((lineBreakPos = logString.find('\n')) != std::string::npos)
+				{
+					// Print line
+					_log.Log(LOG_ERROR, "EventSystem: %s", logString.substr(0, lineBreakPos).c_str());
+
+					// Remove line from buffer
+					logString = logString.substr(lineBreakPos + 1);
+				}
+			}
+
+			// Empty dictionaries to free memory
+			if (pDeviceDict.IsDict())
+			{
+				PyDict_Clear(pDeviceDict);
+			}
+			if (userVariablesDict.IsDict())
+			{
+				PyDict_Clear(userVariablesDict);
+			}
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Python not Initialized");
+			_log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
 		}
+
+		PyEval_SaveThread();
 	}
-    } // namespace Plugins
+} // namespace Plugins
 #endif

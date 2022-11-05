@@ -24,7 +24,7 @@ struct STR_DEVICE {
 constexpr std::array<STR_DEVICE, 9> DevicesType{
 	{
 		{ 0, "switchBox", "Switch Box", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
-		{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
+		{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, "shutter" },
 		{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
 		{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
 		{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
@@ -759,7 +759,7 @@ namespace http {
 					root["result"][ii]["hv"] = "unknown";
 					root["result"][ii]["fv"] = "unknown";
 
-					BleBox* pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+					BleBox* pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 					int type = pHardware->GetDeviceType(ip);
 					if (type != -1)
@@ -801,7 +801,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxSetMode";
@@ -831,7 +831,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxAddNode";
@@ -853,7 +853,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxRemoveNode";
@@ -873,7 +873,7 @@ namespace http {
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxClearNodes";
@@ -895,7 +895,7 @@ namespace http {
 			CDomoticzHardwareBase * pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxAutoSearchingNodes";
@@ -914,7 +914,7 @@ namespace http {
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
 				return;
-			BleBox * pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+			BleBox * pHardware = dynamic_cast<BleBox*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxUpdateFirmware";

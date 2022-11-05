@@ -166,14 +166,11 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 					Log(LOG_NORM, "(%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
 					Log(LOG_NORM, "(%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
-				struct tm ltime;
-				localtime_r(&atime, &ltime);
-				char szLastUpdate[40];
-				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+				std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', "
 							  "LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == "
 							  "'%q') AND (Unit == 1) AND (SwitchType == %d)",
-							  int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, node.szDevID, STYPE_Media);
+							  int(nStatus), sStatus.c_str(), sLastUpdate.c_str(), m_HwdID, node.szDevID, STYPE_Media);
 
 				// 2:	Log the event if the actual status has changed
 				const std::string &sShortStatus = sStatus;
@@ -809,7 +806,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
-			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+			CLogitechMediaServer *pHardware = dynamic_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "LMSSetMode";
@@ -887,7 +884,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
-			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
+			CLogitechMediaServer *pHardware = dynamic_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "LMSGetPlaylists";

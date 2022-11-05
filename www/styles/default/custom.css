@@ -46,17 +46,17 @@
 }
 
 .btn.btn-default {
-    background: url(/css/images/img03b.jpg) repeat right top;
+    background: url("../../css/images/img03b.jpg") repeat right top;
     color: #FFFFFF;
     text-shadow: none;
 }
 
 .btn.btn-default:disabled {
-    background-image: url(/css/images/img03bd.png);
+    background-image: url("../../css/images/img03bd.png");
 }
 
 .btn.btn-default.active {
-    background-image: url(/css/images/img03bs.jpg);
+    background-image: url("../../css/images/img03bs.jpg");
 }
 
 .btn-group > .btn {

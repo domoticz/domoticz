@@ -395,6 +395,9 @@ define(['app'], function (app) {
 					if (typeof data.ShortLogDays != 'undefined') {
 						$("#shortlogtable #comboshortlogdays").val(data.ShortLogDays);
 					}
+					if (typeof data.ShortLogAddOnlyNewValues != 'undefined') {
+						$("#shortlogtable #ShortLogAddOnlyNewValues").prop('checked', data.ShortLogAddOnlyNewValues == 1);
+					}
 					if (typeof data.ShortLogInterval != 'undefined') {
 						$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
 					}
@@ -660,9 +663,6 @@ define(['app'], function (app) {
 					}
 					if (typeof data.IFTTTAPI != 'undefined') {
 						$("#ifttttable #IFTTTAPI").val(atob(data.IFTTTAPI));
-					}
-					if (typeof data.WebRemoteProxyIPs != 'undefined') {
-						$("#webproxytable #WebRemoteProxyIPs").val(data.WebRemoteProxyIPs);
 					}
 				}
 			});

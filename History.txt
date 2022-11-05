@@ -1,3 +1,48 @@
+Version 2022.2 (November 5 2022)
+- Implemented: Blockly,	added 'Toggle' set command
+- Implemented: Camera, camera Aspect Ratio
+- Implemented: Commandline option '-weblog <weblogfile>' which creates Apache Combined Logformat logs containg all webrequests
+- Implemented: Counters, support for larger counter values/usage
+- Implemented: Dashboard, temperature Trend indication
+- Implemented: Docker	startup script (for instance to install additional packages)
+- Implemented: EcoDevices, complete support for EcoDevices RT2 with firmware 3.00.xx
+- Implemented: FritzBox, more statistics
+- Implemented: Fritzbox, up/download statistics
+- Implemented: MQTT Auto Discovery Protocol (Zigbee2MQTT/ Z-Wave JS UI)
+- Implemented: P1 Meter, added Current L1/L2/L3 sensor for delivered
+- Implemented: Philips Hue, support color change on some vendors bulb (like LIDL)
+- Implemented: RFXCom, added internal support for Novy Mood, Level Sensor
+- Implemented: SolarEdge, more sensors support
+- Implemented: UVI device, added multiply field to widget
+- Implemented: Xiaomi Gateway, new model for wired single key switch
+- Updated: Mercedes EV, new Token URL (changed November 2022)
+- Changed: All inverted Blinds types should not be used anymore, instead use the regular blinds and set the needed Reverse option
+- Changed: Blinds working (see https://www.domoticz.com/wiki/Blinds)
+- Changed: Energy devices have more precision
+- Changed: kWh devices	MAX Power per phase from 10000 to 18400 (230V*80A)
+- Changed: P1 Meter, changed P1 Max W from 17250 (25A) to 55200 (80A)
+- Changed: P1 Meter, speed up CRC calculation
+- Changed: Webserver, removing AppCache, switching to service worker
+- Fixed: Blockly, keeping last dim level when switching OFF, option for Close state
+- Fixed: Counter incremental, counter in report (when used with meter offset)
+- Fixed: Counter short-term log 1 hour offset
+- Fixed: Counters, rounding (number of decimals) in GUI
+- Fixed: Crash when secure webserver could not start and applying settings
+- Fixed: Dimmer, better handling of last dimmer level when switching on/off
+- Fixed: EvoHome, correct state/mode for EvoHome type
+- Fixed: Floorplan, custom utility icons corrected in Floorplan
+- Fixed: Floorplan, fixed blinds state icon/switching
+- Fixed: Floorplan, making sure the Door Lock is switchable in the Floorplan
+- Fixed: Floorplans, fixed issues with the displaying of some icons
+- Fixed: Notification system, prevent double start
+- Fixed: P1 Meter, fix for Sibelga smart meters that use a too long string as an identifier
+- Fixed: RFXCom, corrected RFXCom solar sensor reading
+- Fixed: Temperature, corrected chill calculation
+- Fixed: WebGUI, making sure status does not wrap in mobile mode
+- Removed: AppCache
+- Deprecated: OpenZWave, please move to MQTT Auto Discovery and ZWave JS UI (Project stopped a long time ago!)
+- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
+
 Version 2022.1 (January 31 2022)
 - Implemented: Added Irrigation icon (also thanks to dbemowsk)
 - Implemented: Build system, implemented unit tests

@@ -1,7 +1,3 @@
-/*
-//    (c)  Kendel Boul - 2014
-*/
-
 String.prototype.setCharAt = function (idx, chr) {
     if (idx > this.length - 1) {
         return this.toString();
@@ -9,6 +5,26 @@ String.prototype.setCharAt = function (idx, chr) {
         return this.substr(0, idx) + chr + this.substr(idx + 1);
     }
 };
+
+function decimalPlaces(n) {
+  let result= /^-?[0-9]+\.([0-9]+)$/.exec(n);
+  return result === null ? 0 : result[1].length;
+}
+
+function decimalPlacesDiv1(n) {
+  n = 1.0 / n;
+  let result= /^-?[0-9]+\.([0-9]+)$/.exec(n);
+  return result === null ? 0 : result[1].length;
+}
+
+
+// Augmenting Number proto.
+Number.prototype.numDecimals = function () {
+  return decimalPlaces(this);
+}
+Number.prototype.numDecimalsDiv1 = function () {
+  return decimalPlaces(1.0/this);
+}
 
 function getSVGnode() {
     var divFloors = $(".imageparent");
@@ -368,6 +384,7 @@ function Device(item) {
         this.haveTimeout = (typeof item.HaveTimeout != 'undefined') ? item.HaveTimeout : false;
         this.haveCamera = ((typeof item.UsedByCamera != 'undefined') && (typeof item.CameraIdx != 'undefined')) ? item.UsedByCamera : false;
         this.cameraIdx = (typeof item.CameraIdx != 'undefined') ? item.CameraIdx : 0;
+        this.cameraAspect = (typeof item.CameraAspect != 'undefined') ? item.CameraAspect : 0;
         this.haveDimmer = false;  // data from server is unreliable so inheriting classes will need to force true
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
@@ -842,7 +859,7 @@ Device.create = function (item) {
     } else if (
         (item.SwitchType === 'Dusk Sensor') ||
         (item.SwitchType === 'Selector')
-    ) {
+	  ) {
         type = item.SwitchType.toLowerCase()
     } else {
         type = item.TypeImg.toLowerCase();
@@ -858,8 +875,8 @@ Device.create = function (item) {
             dev = new Baro(item);
             break;
         case "blinds":
-        case "blinds inverted":
         case "blinds percentage":
+        case "venetian blinds":
             dev = new Blinds(item);
             break;
         case "contact":
@@ -951,9 +968,6 @@ Device.create = function (item) {
             break;
         case "visibility":
             dev = new Visibility(item);
-            break;
-        case "venetian blinds":
-            dev = new Blinds(item);
             break;
         case "wind":
             dev = new Wind(item);
@@ -1143,8 +1157,38 @@ Device.MakeFavorite = function (id, isfavorite) {
 function Sensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.image = "images/" + item.TypeImg + "48.png";
-
+       
+        this.image = "images/";
+		
+        if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
+          if (item.SwitchTypeVal == 1) {
+            this.image += (item.CustomImage == 0)  ? 'Gas48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 2) {
+            this.image += (item.CustomImage == 0)  ? 'Water48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 3) {
+            this.image += (item.CustomImage == 0)  ? 'Counter48.png' : item.TypeImg + '48.png';
+          }
+          else if (item.SwitchTypeVal == 4) {
+            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+          }
+          else {
+            this.image += item.TypeImg + "48.png";
+          }
+		} else if ((item.Type == "General") && (item.SubType == "kWh")) {
+          if (item.SwitchTypeVal == 4) {
+            this.image += (item.CustomImage == 0)  ? 'PV48.png' : item.TypeImg + '48.png';
+          }
+          else {
+            this.image += (item.CustomImage == 0)  ? item.TypeImg + '48.png' : item.Image + '48_On.png';
+          }
+        } else if (item.SubType == "Gas") {
+            this.image += "Gas48.png";
+        } else {
+			this.image += (item.CustomImage == 0)  ? item.TypeImg + '48.png' : item.Image + '48_On.png';
+        }
+        
         var sensorType = this.type.replace(/\s/g, '');
 
         if (sensorType === 'General') {
@@ -1156,7 +1200,7 @@ function Sensor(item) {
         this.imagetext = "Show graph";
         this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
 
-        if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "','" + this.cameraIdx + "')";
+        if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "'," + this.cameraIdx + "," + this.cameraAspect + ")";
         this.showStatus = (Device.showSensorValues == true);
     }
 }
@@ -1213,23 +1257,28 @@ function Switch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
 
-        var bIsOff = (
+        var bIsOffImage = (
             (this.status == "Off")
             || (item.Status == 'Closed')
             || (item.Status == 'Locked')
         );
+        var bIsOff = (
+            (this.status == "Off")
+            || (item.Status == 'Unlocked')
+            || (item.Status == 'Open')
+        );
         
         if (item.CustomImage != 0) {
-            this.image = (bIsOff) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+            this.image = (bIsOffImage) ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
         } else {
-            this.image = (bIsOff) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+            this.image = (bIsOffImage) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.showStatus = (Device.showSwitchValues == true);
         this.imagetext = "Activate switch";
         this.controlable = true;
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
+        this.onClick = "SwitchLight(" + this.index + ",'" + ((bIsOff) ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 Switch.inheritsFrom(Sensor);
@@ -1237,7 +1286,13 @@ Switch.inheritsFrom(Sensor);
 function BinarySwitch(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.onClick = "SwitchLight(" + this.index + ",'" + ((this.status == "Off") ? "On" : "Off") + "'," + this.protected + ");";
+
+        var bIsOff = (
+            (this.status == "Off")
+            || (item.Status == 'Unlocked')
+            || (item.Status == 'Open')
+        );
+        this.onClick = "SwitchLight(" + this.index + ",'" + ((bIsOff) ? "On" : "Off") + "'," + this.protected + ");";
     }
 }
 BinarySwitch.inheritsFrom(Switch);
@@ -1284,29 +1339,35 @@ function Baro(item) {
 Baro.inheritsFrom(WeatherSensor);
 
 function Blinds(item) {
-    if (arguments.length != 0) {
-        this.parent.constructor(item);
-        this.data = '';
-    var onoff = ((item.SwitchType.match(/inverted/i)) ? 'Off' : 'On');
-        
-        if (item.Status == 'Closed') {
+    if (arguments.length == 0)
+        return;
+
+    this.parent.constructor(item);
+    this.data = '';
+
+    if (item.SwitchType.match(/percentage/i)) {
+        this.haveDimmer = true;
+        this.image2 = '';
+        this.onClick2 = '';
+
+        if (item.Status == 'Open') {
+            this.image = 'images/blindsopen48sel.png';
+            this.onClick = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
+        } else {
             this.image = 'images/blinds48sel.png';
-            this.image2 = 'images/blindsopen48.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'" + onoff + "'," + this.protected + ');';
-            this.onClick2 = 'SwitchLight(' + this.index + ",'" + ((onoff == 'On') ? 'Off' :  'On') + "'," + this.protected + ');';
-         }
-        else {
+            this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
+        }
+    } else {
+        if (item.Status == 'Open') {
             this.image = 'images/blindsopen48sel.png';
             this.image2 = 'images/blinds48.png';
-            this.onClick = 'SwitchLight(' + this.index + ",'" + ((onoff == 'On') ? 'Off' :  'On') + "'," + this.protected + ');';
-            this.onClick2 = 'SwitchLight(' + this.index + ",'" + onoff + "'," + this.protected + ');';
-    }
-        if (item.SwitchType.match(/percentage/i)) {
-            this.haveDimmer = true;
-            this.image2 = '';
-        this.onClick = this.onClick2;
-            this.onClick2 = '';
         }
+        else {
+            this.image = 'images/blinds48sel.png';
+            this.image2 = 'images/blindsopen48.png';
+        }
+        this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
+        this.onClick2 = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
     }
 }
 Blinds.inheritsFrom(Switch);
@@ -1314,10 +1375,37 @@ Blinds.inheritsFrom(Switch);
 function Counter(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        if(item.Image == undefined)
-            this.image = "images/counter.png";
-        else
-            this.image = "images/"+item.Image+".png";
+        if(item.Image == undefined) {
+			this.image = "images/";
+			if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
+			  if (item.SwitchTypeVal == 1) {
+				this.image += (item.CustomImage == 0)  ? 'Gas48.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 2) {
+				this.image += (item.CustomImage == 0)  ? 'Water48_On.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 3) {
+				this.image += (item.CustomImage == 0)  ? 'Counter48.png' : 'Counter48.png';
+			  }
+			  else if (item.SwitchTypeVal == 4) {
+				this.image += (item.CustomImage == 0)  ? 'PV48.png' : 'Counter48.png';
+			  }
+			  else {
+				this.image += 'Counter48.png';
+			  }
+			} else if (item.SubType == "Gas") {
+				this.image += "Gas48.png";
+			} else {
+				this.image += 'Counter48.png';
+			}
+        }
+        else {
+            if (item.SubType == "Gas") {
+              this.image = "images/Gas48.png";
+            } else {
+              this.image = "images/"+item.Image+".png";
+            }
+        }
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
 
         if (typeof item.CounterToday != 'undefined') {
@@ -1434,8 +1522,8 @@ function Door(item) {
             this.image = ((this.status == "Locked")||(this.status == "Closed")) ? "images/" + item.Image + "48_Off.png" : this.image = "images/" + item.Image + "48_On.png";
         }
         this.data = '';
-        this.NotifyLink = this.onClick = "";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.NotifyLink = "";
+        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
 Door.inheritsFrom(BinarySwitch);
@@ -1631,7 +1719,7 @@ function SetPoint(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         if (item.CustomImage != 0 && typeof item.Image != 'undefined') {
-            this.image = "images/" + item.Image + ".png";
+            this.image = "images/" + item.Image + "48_On.png";
         } else {
             this.image = "images/override.png";
         }

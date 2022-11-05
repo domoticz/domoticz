@@ -103,7 +103,7 @@
             </tr>
             <tr ng-show="vm.isOnActionAvailable()">
                 <td>
-                    <label for="onaction">{{ :: 'On Action' | translate}}:</label>
+                    <label for="onaction">{{ vm.onActionLabel() }}:</label>
                 </td>
                 <td>
                     <input type="text"
@@ -120,7 +120,7 @@
             </tr>
             <tr ng-show="vm.isOffActionAvailable()">
                 <td>
-                    <label for="offaction">{{ :: 'Off Action' | translate}}:</label>
+                    <label for="offaction">{{ vm.offActionLabel() }}:</label>
                 </td>
                 <td>
                     <input type="text"
@@ -141,6 +141,22 @@
                 </td>
                 <td>
                     <input type="checkbox" id="protected" ng-model="vm.device.Protected"><label for="protected"></label>
+                </td>
+            </tr>
+            <tr ng-if="vm.isBlind()">
+                <td>
+                    {{ :: 'Reverse Open/Close State' | translate}}:
+                </td>
+                <td>
+                    <input type="checkbox" id="blind_reverse_state" ng-model="vm.device.ReverseState"><label for="blind_reverse_state"></label>
+                </td>
+            </tr>
+            <tr ng-if="vm.isBlind()">
+                <td>
+                    {{ :: 'Reverse Position' | translate}}:
+                </td>
+                <td>
+                    <input type="checkbox" id="blind_reverse_position" ng-model="vm.device.ReversePosition"><label for="blind_reverse_position"></label>
                 </td>
             </tr>
             <tr ng-if="vm.isColorSettingsAvailable()">

@@ -54,6 +54,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string state_off;
 
 		bool bBrightness = false;
+		bool bHave_brightness_scale = false;
 		float brightness_scale = 254.0F;
 
 		bool bColor_mode = false;
@@ -79,6 +80,11 @@ class MQTTAutoDiscover : public MQTT
 		std::string temperature_unit = "C";
 		std::string current_temperature_topic;
 		std::string current_temperature_template;
+		std::vector<std::string> preset_modes;
+		std::string preset_mode_command_topic;
+		std::string preset_mode_command_template;
+		std::string preset_mode_state_topic;
+		std::string preset_mode_value_template;
 
 		//Lock
 		std::string payload_lock = "LOCK";
@@ -123,9 +129,9 @@ public:
 	~MQTTAutoDiscover() override = default;
 
 	uint64_t UpdateValueInt(int HardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-		const char* sValue, std::string& devname, bool bUseOnOffAction = true);
-	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color);
-	bool SetSetpoint(const std::string& DeviceID, float Temp);
+		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
+	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
+	bool SetSetpoint(const std::string& DeviceID, const float Temp);
 
 public:
 	void on_message(const struct mosquitto_message *message) override;
@@ -134,7 +140,11 @@ public:
 
 private:
 	void InsertUpdateSwitch(_tMQTTASensor* pSensor);
+
+	void UpdateBlindPosition(_tMQTTASensor* pSensor);
+	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level, const std::string& user);
 	void CleanValueTemplate(std::string& szValueTemplate);
+	void FixCommandTopicStateTemplate(std::string& command_topic, std::string& state_template);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
 	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
@@ -148,6 +158,7 @@ private:
 	void handle_auto_discovery_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_switch(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_light(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
+	void handle_auto_discovery_button(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_binary_sensor(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_camera(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	void handle_auto_discovery_cover(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
@@ -158,8 +169,10 @@ private:
 	void handle_auto_discovery_battery(_tMQTTASensor* pSensor, const struct mosquitto_message* message);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const std::string& szMeasurementUnit);
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
+	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
 private:
 	std::string m_TopicDiscoveryPrefix;
+	std::vector<std::string> m_allowed_components;
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;

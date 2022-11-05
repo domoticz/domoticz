@@ -299,7 +299,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			std::string switchcmd = root["switchcmd"].asString();
 			// if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level") && (switchcmd != "Stop"))
 			//	goto mqttinvaliddata;
-			int level = 0;
+			int level = -1;
 			if (!root["level"].empty())
 			{
 				if (root["level"].isString())
@@ -571,7 +571,7 @@ void MQTT::on_disconnect(int rc)
 			}
 			else
 			{
-				Log(LOG_ERROR, "disconnected, restarting (rc=%d)", rc);
+				Log(LOG_ERROR, "disconnected, restarting (rc=%d/%s)", rc, mosquitto_strerror(rc));
 			}
 			m_subscribed_topics.clear();
 			m_bDoReconnect = true;
@@ -588,15 +588,34 @@ bool MQTT::ConnectInt()
 bool MQTT::ConnectIntEx()
 {
 	m_bDoReconnect = false;
+
+	std::string IPAddress(m_szIPAddress);
+	bool bIsSecure = (IPAddress.find("tls://") == 0);
+	if (bIsSecure)
+		IPAddress = IPAddress.substr(std::string("tls://").size());
+	else
+		bIsSecure = (m_usIPPort == 8883);
+
 	Log(LOG_STATUS, "Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	int rc;
 	int keepalive = 40;
 
-	if (!m_CAFilename.empty())
+	if (
+		(bIsSecure)
+		|| (!m_CAFilename.empty())
+		)
 	{
 		rc = tls_opts_set(SSL_VERIFY_NONE, szTLSVersions[m_TLS_Version], nullptr);
-		rc = tls_set(m_CAFilename.c_str());
+		if (!m_CAFilename.empty())
+		{
+			rc = tls_set(m_CAFilename.c_str());
+		}
+		else
+		{
+			//Use our servers certificate
+			rc = tls_set("./server_cert.pem");
+		}
 		rc = tls_insecure_set(true);
 
 		if (rc != MOSQ_ERR_SUCCESS)
@@ -608,10 +627,10 @@ bool MQTT::ConnectIntEx()
 	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : nullptr, (!m_Password.empty()) ? m_Password.c_str() : nullptr);
 
-	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
+	rc = connect(IPAddress.c_str(), m_usIPPort, keepalive);
 	if (rc != MOSQ_ERR_SUCCESS)
 	{
-		Log(LOG_ERROR, "Failed to start, return code: %d (Check IP/Port)", rc);
+		Log(LOG_ERROR, "Failed to start, return code: %d/%s (Check IP/Port)", rc, mosquitto_strerror(rc));
 		m_bDoReconnect = true;
 		return false;
 	}
@@ -822,7 +841,11 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 		root["description"] = description;
 		root["LastUpdate"] = sLastUpdate;
 
-		if (switchType == STYPE_Dimmer)
+		if (
+			(switchType == STYPE_Dimmer)
+			|| (switchType == STYPE_BlindsPercentage)
+			|| (switchType == STYPE_BlindsPercentageWithStop)
+			)
 		{
 			root["Level"] = LastLevel;
 			if (dType == pTypeColorSwitch)
@@ -942,15 +965,7 @@ void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string & /*SceneNam
 	else
 		root["Status"] = "Mixed";
 	root["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
-	/*
-		uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
-		//root["UsedByCamera"] = (camIDX != 0) ? true : false;
-		if (camIDX != 0) {
-			std::stringstream scidx;
-			scidx << camIDX;
-			//root["CameraIdx"] = std::to_string(camIDX);
-		}
-	*/
+
 	std::string message = root.toStyledString();
 	if (m_publish_scheme & PT_out)
 	{

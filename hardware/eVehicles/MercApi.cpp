@@ -32,8 +32,9 @@ License: Public domain
 // - Electric Vehicle status (even possible for non-electric/hybrid vehicles)
 // so use the following 5 scope's: mb:vehicle:mbdata:vehiclestatus mb:vehicle:mbdata:fuelstatus mb:vehicle:mbdata:payasyoudrive mb:vehicle:mbdata:vehiclelock mb:vehicle:mbdata:evstatus
 // and we need the additional scope to get a refresh token: offline_access
-#define MERC_URL_AUTH "https://id.mercedes-benz.com"
-#define MERC_API_TOKEN "/as/token.oauth2"
+// and the basic scope to identify it as an OIDC request: openid
+#define MERC_URL_AUTH "https://ssoalpha.dvb.corpinter.net"
+#define MERC_API_TOKEN "/v1/token"
 #define MERC_URL "https://api.mercedes-benz.com"
 #define MERC_API "/vehicledata/v2/vehicles"
 
@@ -95,7 +96,7 @@ CMercApi::CMercApi(const std::string &username, const std::string &password, con
 bool CMercApi::Login()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	if (m_refreshtoken.empty() || m_refreshtoken == MERC_REFRESHTOKEN_CLEARED)
 	{
@@ -106,7 +107,7 @@ bool CMercApi::Login()
 		if (GetAuthToken(m_username, m_authtoken, false))
 		{
 			m_pBase->Log(LOG_NORM, "Login successful.");
-			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+			m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), sLastUpdate.c_str(), m_uservar_refreshtoken_idx);
 			bSuccess = true;
 		}
 		else
@@ -128,7 +129,7 @@ bool CMercApi::Login()
 bool CMercApi::RefreshLogin()
 {
 	bool bSuccess = false;
-	std::string szLastUpdate = TimeToString(nullptr, TF_DateTime);
+	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
 	m_pBase->Debug(DEBUG_NORM, "Refreshing login credentials.");
 	m_authenticating = true;
@@ -149,7 +150,7 @@ bool CMercApi::RefreshLogin()
 	}
 
 	m_authenticating = false;
-	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), szLastUpdate.c_str(), m_uservar_refreshtoken_idx);
+	m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID==%d)", m_refreshtoken.c_str(), sLastUpdate.c_str(), m_uservar_refreshtoken_idx);
 
 	return bSuccess;
 }

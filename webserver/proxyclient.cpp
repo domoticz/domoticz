@@ -136,7 +136,7 @@ namespace http {
 
 			if (result)
 			{
-				request_.host_address = originatingip;
+				request_.host_remote_address = originatingip;
 				m_pWebEm->myRequestHandler.handle_request(request_, reply_);
 			}
 			else if (!result)

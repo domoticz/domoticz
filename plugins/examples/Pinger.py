@@ -49,9 +49,7 @@ When remote devices are found a matching Domoticz device is created in the Devic
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
 from datetime import datetime
-
 
 class IcmpDevice:
     Address = ""

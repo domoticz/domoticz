@@ -11,6 +11,8 @@ enum _eTimeFormat
 	TF_DateTimeMs	// 3
 };
 
+const std::string WHITESPACE = " \n\r\t\f\v";
+
 uint8_t Crc8(uint8_t crc, const uint8_t* buf, size_t size);
 unsigned int Crc32(unsigned int crc, const uint8_t* buf, size_t size);
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
@@ -68,6 +70,9 @@ double distanceEarth(double lat1d, double lon1d, double lat2d, double lon2d);
 std::string &stdstring_ltrim(std::string &s);
 std::string &stdstring_rtrim(std::string &s);
 std::string &stdstring_trim(std::string &s);
+std::string &stdstring_ltrimws(std::string &s);
+std::string &stdstring_rtrimws(std::string &s);
+std::string &stdstring_trimws(std::string &s);
 double CalculateDewPoint(double temp, int humidity);
 uint32_t IPToUInt(const std::string &ip);
 bool isInt(const std::string &s);
@@ -87,6 +92,7 @@ double ConvertTemperature(double tValue, unsigned char tSign);
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode);
 
 time_t GetClockTicks();
+void CurrentDateTimeMillisecond(tm &timeinfo, timeval &tv);
 std::string TimeToString(const time_t *ltime, _eTimeFormat format);
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 

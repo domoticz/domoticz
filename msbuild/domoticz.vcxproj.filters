@@ -524,9 +524,6 @@
     <None Include="..\www\eventsframe.html">
       <Filter>www</Filter>
     </None>
-    <None Include="..\www\html5.appcache">
-      <Filter>www</Filter>
-    </None>
     <None Include="..\www\index.html">
       <Filter>www</Filter>
     </None>
@@ -1343,9 +1340,6 @@
     <None Include="..\www\app\TimerplanController.js">
       <Filter>www\app</Filter>
     </None>
-    <None Include="..\webserver\proxydef.def">
-      <Filter>Webserver</Filter>
-    </None>
     <None Include="..\www\app\hardware\Hardware.html">
       <Filter>www\app\hardware</Filter>
     </None>
@@ -1443,6 +1437,15 @@
       <Filter>www\app\devices</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="..\www\manifest.json">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\service-worker.js">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\js\sw-toolbox.js">
+      <Filter>www\js</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1823,9 +1826,6 @@
     <ClInclude Include="..\hardware\Winddelen.h">
       <Filter>Devices\Winddelen</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\proxyclient.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
@@ -2122,9 +2122,6 @@
     </ClInclude>
     <ClInclude Include="..\main\TrendCalculator.h">
       <Filter>Helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\proxycereal.hpp">
-      <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\HardwareCereal.h">
       <Filter>Devices</Filter>
@@ -2578,9 +2575,6 @@
     <ClCompile Include="..\hardware\Winddelen.cpp">
       <Filter>Devices\Winddelen</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\proxyclient.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\SatelIntegra.cpp">
       <Filter>Devices\SatelIntegra</Filter>
     </ClCompile>
@@ -2904,9 +2898,6 @@
     </ClCompile>
     <ClCompile Include="..\main\TrendCalculator.cpp">
       <Filter>Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\proxycereal.cpp">
-      <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\main\dzVents.cpp">
       <Filter>EventSystem\dzVents</Filter>

@@ -39,12 +39,25 @@ public:
 
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 
+	void ResetHardware();
+
+	void GetNodesJSON(Json::Value &root);
+
+	void EnableLearnMode(const uint32_t minutes);
+	void DisableLearnMode();
+	bool IsLearnModeEnabled();
+	int IsNodeTeachedInJSON(Json::Value &root);
+
 	NodeInfo *GetNodeInfo(const uint32_t nodeID);
 
 	void TeachInNode(const uint32_t nodeID, const uint16_t manID,
 		const uint8_t RORG, const uint8_t func, const uint8_t type,
 		const TeachinMode teachin_mode);
+	void TeachInVirtualNode(const uint32_t nodeID, const uint8_t RORG, const uint8_t func, const uint8_t type);
 	void CheckAndUpdateNodeRORG(NodeInfo *pNode, const uint8_t RORG);
+	void UpdateNode(const uint32_t nodeID, const std::string &name, const uint16_t manID, const uint8_t RORG, const uint8_t func, const uint8_t type, const std::string &description);
+	void DeleteNode(const uint32_t nodeID);
+	std::string GetNodeState(const uint32_t nodeID);
 
 	uint32_t m_id_base;
 	uint32_t m_id_chip;
@@ -117,21 +130,29 @@ private:
 	std::mutex m_sendMutex;
 	std::vector<std::string> m_sendqueue;
 
+	bool m_learn_mode_enabled;
+	uint32_t m_last_teachedin_nodeID;
 	uint32_t m_RPS_teachin_nodeID;
 	uint8_t m_RPS_teachin_DATA;
 	uint8_t m_RPS_teachin_STATUS;
 	time_t m_RPS_teachin_timer;
 	uint8_t m_RPS_teachin_count;
 
-	int LastPosition = -1;
+	/* Used to keep track of requested blind position.
+	If the same position request is sent twice to the same device, it is translated to a "stop" request.
+	For example:
+		- press the button to close the blind, it starts to close
+		- press the button again, it stops where it is */
+	uint32_t m_last_requested_blind_nodeID = 0;
+	int m_last_requested_blind_position = -1;
 
 	void createOtherVldUteDevices(uint32_t iSenderID, uint8_t rorg, uint8_t func, uint8_t type, uint8_t nb_channel);
 	bool manageVldMessage(uint32_t iSenderID, unsigned char *vldData, uint8_t func, uint8_t type, std::string &m_Name, uint8_t rssi);
-    std::string GetDbValue(const char* tableName, const char* fieldName, const char* whereFieldName, const char* whereFielValue);
-    void sendVld    (unsigned int sID , unsigned int destID , int channel, int value);
-	void sendVld    (unsigned int sID , unsigned int destID , unsigned char *data, int DataLen );
-	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD * OffsetDes,  ...);
-	uint32_t senDatadVld(unsigned int unitBaseAddr, unsigned int destID ,T_DATAFIELD* OffsetDes, int* values, int NbValues);
+	bool updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType);
+	std::string GetDbValue(const char *tableName, const char *fieldName, const char *whereFieldName, const char *whereFielValue);
+	void sendVld(unsigned int sID, unsigned int destID, int channel, int value);
+	void sendVld(unsigned int sID, unsigned int destID, unsigned char *data, int DataLen);
+	uint32_t sendVld(unsigned int unitBaseAddr, unsigned int destID, T_DATAFIELD *OffsetDes, ...);
+	uint32_t sendDataVld(unsigned int unitBaseAddr, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues);
+	int getPositionFromCommandLevel(int cmnd, int pos);
 };
-
-int getPositionFromCommandLevel(int cmnd, int pos);

@@ -12,6 +12,11 @@
 #include <iostream>
 
 #define SE_VOLT_DC 20
+#define SE_POWERLIMIT 21
+#define SE_GROUND_RES 22
+#define SE_INV_MODE 23
+#define SE_AC_FREQ 24
+#define SE_DATE 25
 
 #ifdef _DEBUG
 	//#define DEBUG_SolarEdgeAPIR_SITE
@@ -348,6 +353,32 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 		sprintf(szTmp, "DC %s", pInverterSettings->name.c_str());
 		SendVoltageSensor(iInverterNumber, SE_VOLT_DC, 255, dcVoltage, szTmp);
 	}
+	if (!reading["powerLimit"].empty())
+	{
+		float powerLimit = reading["powerLimit"].asFloat();
+		sprintf(szTmp, "powerLimit %s", pInverterSettings->name.c_str());
+		SendPercentageSensor(iInverterNumber, SE_POWERLIMIT, 255, powerLimit, szTmp);
+	}
+	if (!reading["groundFaultResistance"].empty())
+	{
+		float groundFaultResistance = reading["groundFaultResistance"].asFloat();
+		sprintf(szTmp, "groundFaultResistance %s", pInverterSettings->name.c_str());
+		SendCustomSensor(iInverterNumber, SE_GROUND_RES, 255, groundFaultResistance, szTmp, "kOhm");
+	}
+	if (!reading["inverterMode"].empty())
+	{
+		char inverterMode[25];
+		strncpy(inverterMode, reading["inverterMode"].asCString(), 24);
+		sprintf(szTmp, "inverterMode %s", pInverterSettings->name.c_str());
+		SendTextSensor(iInverterNumber, SE_INV_MODE, 255, inverterMode, szTmp);
+	}
+	if (!reading["date"].empty())
+	{
+		char date[20];
+		strncpy(date, reading["date"].asCString(), 19);
+		sprintf(szTmp, "date %s", pInverterSettings->name.c_str());
+		SendTextSensor(iInverterNumber, SE_DATE, 255, date, szTmp);
+	}
 	if (!reading["temperature"].empty())
 	{
 		float temp = reading["temperature"].asFloat();
@@ -374,6 +405,13 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 				sprintf(szTmp, "Hz L%d %s", iPhase, pInverterSettings->name.c_str());
 				SendCustomSensor(1 + iInverterNumber, iPhase, 255, acFrequency, szTmp, "Hz");
 			}
+			if (!reading[szPhase]["acCurrent"].empty())
+			{
+				float acCurrent = reading[szPhase]["acCurrent"].asFloat();
+				sprintf(szTmp, "acCurrent L%d %s", iPhase, pInverterSettings->name.c_str());
+				SendCustomSensor(iInverterNumber, SE_AC_FREQ, 255, acCurrent, szTmp, "A");
+			}
+
 			if (!reading[szPhase]["activePower"].empty())
 			{
 				float ActivePower = reading[szPhase]["activePower"].asFloat();

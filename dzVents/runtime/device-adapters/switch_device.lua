@@ -41,10 +41,8 @@ return {
 			adapterManager.addDummyMethod(device, 'toggleSwitch')
 			adapterManager.addDummyMethod(device, 'quietOn')
 			adapterManager.addDummyMethod(device, 'quietOff')
-		else
-			blindsOff2Close = { "Venetian Blinds US", "Venetian Blinds EU", "Blinds Percentage", "Blinds" }
 		end
-
+ 
 		return res
 	end,
 
@@ -97,11 +95,11 @@ return {
 		end
 
 		function device.close()
-			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'On') or 'Off', 'device', device.state)
+			return TimedCommand(domoticz, device.name, 'Close', 'device', device.state)
 		end
 
 		function device.open()
-			return TimedCommand(domoticz, device.name, ( utils.inTable(blindsOff2Close, device.switchType ) and 'Off') or 'On', 'device', device.state)
+			return TimedCommand(domoticz, device.name, 'Open', 'device', device.state)
 		end
 
 		function device.stop() -- blinds

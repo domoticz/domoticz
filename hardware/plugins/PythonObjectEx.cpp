@@ -8,7 +8,6 @@
 #include "../../main/Logger.h"
 #include "../../main/SQLHelper.h"
 #include "../../hardware/hardwaretypes.h"
-#include "../../main/localtime_r.h"
 #include "../../main/mainstructs.h"
 #include "../../main/mainworker.h"
 #include "../../main/EventSystem.h"
@@ -23,19 +22,22 @@
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzExModuleDef;
-	extern void LogPythonException(CPlugin *pPlugin, const std::string &sHandler);
 	extern void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject *OptionsIn, PyObject *OptionsOut);
 
 	void CDeviceEx_dealloc(CDeviceEx *self)
 	{
 		Py_XDECREF(self->DeviceID);
 		Py_XDECREF(self->m_UnitDict);
-		Py_TYPE(self)->tp_free((PyObject *)self);
+
+		PyNewRef	pType = PyObject_Type((PyObject*)self);
+		freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
+		pFree((PyObject*)self);
 	}
 
 	PyObject *CDeviceEx_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	{
-		CDeviceEx *self = (CDeviceEx *)type->tp_alloc(type, 0);
+		allocfunc pAlloc = (allocfunc)PyType_GetSlot(type, Py_tp_alloc);
+		CDeviceEx* self = (CDeviceEx*)pAlloc(type, 0);
 
 		try
 		{
@@ -95,11 +97,8 @@ namespace Plugins {
 
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &DeviceID))
 			{
-				CPlugin *pPlugin = nullptr;
-				if (pModState)
-					pPlugin = pModState->pPlugin;
 				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.DeviceEx(DeviceID='xxxx'))");
-				LogPythonException(pPlugin, __func__);
+				pModState->pPlugin->LogPythonException(__func__);
 			}
 			else
 			{
@@ -108,7 +107,7 @@ namespace Plugins {
 				{
 					self->DeviceID = PyUnicode_FromString(DeviceID);
 				}
-				self->m_UnitDict = (PyDictObject *)PyDict_New();
+				self->m_UnitDict = (PyObject *)PyDict_New();
 			}
 
 			return true;
@@ -147,7 +146,6 @@ namespace Plugins {
 		if (!result.empty())
 		{
 
-			PyType_Ready(&CUnitExType);
 			// Create Unit objects and add the Units dictionary with Unit number as the key
 			for (auto itt = result.begin(); itt != result.end(); ++itt)
 			{
@@ -236,12 +234,16 @@ namespace Plugins {
 		Py_XDECREF(self->Options);
 		Py_XDECREF(self->Color);
 		Py_XDECREF(self->Parent);
-		Py_TYPE(self)->tp_free((PyObject *)self);
+
+		PyNewRef	pType = PyObject_Type((PyObject*)self);
+		freefunc pFree = (freefunc)PyType_GetSlot(pType, Py_tp_free);
+		pFree((PyObject*)self);
 	}
 
 	PyObject *CUnitEx_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	{
-		CUnitEx *self = (CUnitEx *)type->tp_alloc(type, 0);
+		allocfunc pAlloc = (allocfunc)PyType_GetSlot(type, Py_tp_alloc);
+		CUnitEx *self = (CUnitEx*)pAlloc(type, 0);
 
 		try
 		{
@@ -380,7 +382,6 @@ namespace Plugins {
 				else
 				{
 					// Create a temporary one
-					PyType_Ready(pModState->pDeviceClass);
 					PyNewRef nrArgList = Py_BuildValue("(s)", DeviceID);
 					if (!nrArgList)
 					{
@@ -411,43 +412,40 @@ namespace Plugins {
 					self->Image = Image;
 				if (Used == 1)
 					self->Used = Used;
-				if (Options && PyDict_Check(Options) && PyDict_Size(Options) > 0)
+				if (Options && PyBorrowedRef(Options).IsDict() && PyDict_Size(Options) > 0)
 				{
 					PyObject *pKey, *pValue;
 					Py_ssize_t pos = 0;
 					PyDict_Clear(self->Options);
 					while (PyDict_Next(Options, &pos, &pKey, &pValue))
 					{
-						if (PyUnicode_Check(pValue))
+						PyNewRef	pKeyDict = PyObject_Str(pKey);
+						PyNewRef	pValueDict = PyObject_Str(pValue);
+
+						if (pKeyDict && pValueDict)
 						{
-							PyNewRef	pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
-							PyNewRef	pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
 							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
 							{
-								_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
-										pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
+								pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
+									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
 								break;
 							}
 						}
 						else
 						{
-							_log.Log(
+							PyNewRef	pName = PyObject_GetAttrString((PyObject*)pValue->ob_type, "__name__");
+							pModState->pPlugin->Log(
 								LOG_ERROR,
-								R"((%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d): Only "string" type dictionary entries supported, but entry has type "%s")",
-								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit, pValue->ob_type->tp_name);
+								"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
+								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
 						}
 					}
 				}
 			}
 			else
 			{
-				CPlugin *pPlugin = nullptr;
-				if (pModState)
-				{
-					pPlugin = pModState->pPlugin;
-					_log.Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description=""))");
-					LogPythonException(pPlugin, __func__);
-				}
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description=""))");
+				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}
 		catch (std::exception *e)
@@ -728,7 +726,7 @@ namespace Plugins {
 		}
 		else
 		{
-			pModState->pPlugin->Log(LOG_ERROR, "Unit creation failed, Device object is not associated with a plugin.");
+			_log.Log(LOG_ERROR, "Unit creation failed, Device object is not associated with a plugin.");
 		}
 
 		Py_RETURN_NONE;
@@ -756,7 +754,7 @@ namespace Plugins {
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ps", kwlist, &bWriteLog, &TypeName))
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' expected.", __func__);
-				LogPythonException(pModState->pPlugin, __func__);
+				pModState->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
 
@@ -789,7 +787,7 @@ namespace Plugins {
 
 			// Options provided, assume change
 			std::string sOptionValue;
-			if (pOptionsDict && PyDict_Check(pOptionsDict))
+			if (pOptionsDict && pOptionsDict.IsDict())
 			{
 				if (self->SubType != sTypeCustom)
 				{
@@ -877,12 +875,12 @@ namespace Plugins {
 						case sStatusArmHome:
 						case sStatusArmHomeDelayed:
 							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME, "Python");
 							break;
 						case sStatusArmAway:
 						case sStatusArmAwayDelayed:
 							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY, "Python");
 							break;
 						case sStatusDisarm:
 						case sStatusNormal:
@@ -890,7 +888,7 @@ namespace Plugins {
 						case sStatusNormalTamper:
 						case sStatusNormalDelayedTamper:
 							m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
-							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+							m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED, "Python");
 							break;
 					}
 					Py_END_ALLOW_THREADS
@@ -970,7 +968,7 @@ namespace Plugins {
 			Py_RETURN_NONE;
 		}
 
-		if (!pModState->pPlugin)
+		if (pModState->pPlugin)
 		{
 			std::string sName = PyBorrowedRef(self->Name);
 			if (self->ID != -1)

@@ -41,10 +41,10 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void DisplayTimerTypesCombo(std::string & content_part);
 	void DisplayLanguageCombo(std::string & content_part);
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
-	void GetAppCache(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
-	void GetFloorplanImage(WebEmSession & session, const request& req, reply & rep);
+	void GetFloorplanImage(WebEmSession& session, const request& req, reply& rep);
+	void GetServiceWorker(WebEmSession& session, const request& req, reply& rep);
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
@@ -98,7 +98,7 @@ private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);
     void GroupBy(Json::Value &root, std::string dbasetable, uint64_t idx, std::string sgroupby, std::function<std::string (std::string)> counterExpr, std::function<std::string (std::string)> valueExpr, std::function<std::string (double)> sumToResult);
-    void AddTodayValueToResult(Json::Value &root, std::string sgroupby, std::string today, float todayValue, std::string formatString);
+    void AddTodayValueToResult(Json::Value &root, const std::string &sgroupby, const std::string &today, const double todayValue, const std::string &formatString);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 
@@ -298,6 +298,7 @@ private:
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_RemoteWebClientsLog(WebEmSession& session, const request& req, Json::Value& root);
 	void RType_Settings(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
@@ -378,6 +379,24 @@ private:
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;
 #endif
+	//EnOcean helpers cmds
+	void Cmd_EnOceanGetManufacturers(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanGetRORGs(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanGetProfiles(WebEmSession & session, const request& req, Json::Value &root);
+
+	//EnOcean ESP3 cmds
+	void Cmd_EnOceanESP3EnableLearnMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3IsNodeTeachedIn(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3CancelTeachIn(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_EnOceanESP3ControllerReset(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_EnOceanESP3UpdateNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnOceanESP3DeleteNode(WebEmSession & session, const request& req, Json::Value &root);
+
+	//EnOcean ESP3 Rtypes
+	void RType_EnOceanESP3GetNodes(WebEmSession & session, const request& req, Json::Value &root);
+
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 	std::shared_ptr<std::thread> m_thread;
 

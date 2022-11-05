@@ -72,9 +72,10 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);S:\boost\include</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <LibraryPath>$(LibraryPath);S:\boost\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
@@ -161,6 +162,7 @@
       <AdditionalIncludeDirectories>../msbuild/Windows Libraries/include;../msbuild/Windows Libraries/openzwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,6 +191,7 @@
       <AdditionalIncludeDirectories>../msbuild/Windows Libraries/OpenZwave/openzwave;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/d2guardspecload %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -210,7 +213,6 @@
   <ItemGroup>
     <None Include="..\CMakeLists.txt" />
     <None Include="..\getsvn.cmake" />
-    <None Include="..\webserver\proxydef.def" />
     <None Include="..\www\app\AboutController.js" />
     <None Include="..\www\app\app.js" />
     <None Include="..\www\app\CamController.js" />
@@ -287,7 +289,6 @@
     <None Include="..\www\css\style.css" />
     <None Include="..\www\css\ui-darkness\jquery-ui.min.css" />
     <None Include="..\www\eventsframe.html" />
-    <None Include="..\www\html5.appcache" />
     <None Include="..\www\i18n\domoticz-ar.json.gz" />
     <None Include="..\www\i18n\domoticz-bg.json.gz" />
     <None Include="..\www\i18n\domoticz-ca.json.gz" />
@@ -444,6 +445,7 @@
     <None Include="..\www\js\noty\themes\default.js.gz" />
     <None Include="..\www\js\require.js.gz" />
     <None Include="..\www\js\respond.min.js.gz" />
+    <None Include="..\www\js\sw-toolbox.js" />
     <None Include="..\www\js\themes\dark-blue.js.gz" />
     <None Include="..\www\js\themes\dark-green.js.gz" />
     <None Include="..\www\js\themes\gray.js.gz" />
@@ -452,6 +454,7 @@
     <None Include="..\www\js\ui-bootstrap.min.js.gz" />
     <None Include="..\www\js\wow.min.js.gz" />
     <None Include="..\www\js\ZeroClipboard.js.gz" />
+    <None Include="..\www\manifest.json" />
     <None Include="..\www\media\handclosed.cur" />
     <None Include="..\www\media\handopen.cur" />
     <None Include="..\www\media\swf\copy_csv_xls.swf" />
@@ -461,6 +464,7 @@
     <None Include="..\www\ozwcp\ozwcp.html" />
     <None Include="..\www\secpanel\css\style.css" />
     <None Include="..\www\secpanel\index.html" />
+    <None Include="..\www\service-worker.js" />
     <None Include="..\www\styles\default\base.css" />
     <None Include="..\www\styles\default\custom.css" />
     <None Include="..\www\styles\default\custom.js" />
@@ -771,8 +775,6 @@
     <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
-    <ClInclude Include="..\webserver\proxycereal.hpp" />
-    <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\WebsocketHandler.h" />
     <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\hardware\BleBox.h" />
@@ -1111,13 +1113,6 @@
     <ClCompile Include="..\webserver\cWebem.cpp" />
     <ClCompile Include="..\webserver\fastcgi.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
-    <ClCompile Include="..\webserver\proxycereal.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\webserver\proxyclient.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />

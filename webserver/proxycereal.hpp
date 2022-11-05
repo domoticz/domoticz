@@ -14,7 +14,7 @@
 #define SUBSYSTEM_SHAREDDOMOTICZ 0x02
 #define SUBSYSTEM_APPS 0x04
 
-/* typedef proxy pdu numbers. These numbers align with mydomoticz. */
+// typedef proxy pdu numbers. These numbers align with mydomoticz.
 #define NOARG
 #define PDUSTRING(name)
 #define PDULONG(name)
@@ -25,7 +25,7 @@ typedef enum enum_pdu {
 	ePDU_END
 } pdu_enum;
 
-/* base pdu class */
+// base pdu class
 class CProxyPduBase {
 public:
 	pdu_enum mPduEnum;
@@ -36,14 +36,14 @@ public:
 	static std::shared_ptr<CProxyPduBase> FromString(const std::string &str);
 };
 
-/* base classes with the pdu member variables */
+// base classes with the pdu member variables
 #define PDUSTRING(name) std::string m_##name = "";
 #define PDULONG(name) int32_t m_##name = 0;
 #define PDULONGLONG(name) uint64_t m_##name = 0;
 #define PROXYPDU(name, members) class ProxyPdu_##name##_onlymembers : public CProxyPduBase { public: members };
 #include "proxydef.def"
 
-/* ProxuPdu_* classes */
+// ProxuPdu_* classes
 #define PDUSTRING(name) ar & CEREAL_NVP(m_##name);
 #define PDULONG(name) ar & CEREAL_NVP(m_##name);
 #define PDULONGLONG(name) ar & CEREAL_NVP(m_##name);
@@ -53,7 +53,7 @@ public:
 	virtual std::string pdu_name() { return #name; }; \
 	template <class Archive> void serialize(Archive &ar, std::uint32_t const version) { members }; \
 	std::string ToBinary() { \
-		std::stringstream os; { /* start a new scope */ \
+		std::stringstream os; { \ // start a new scope
 		cereal::PortableBinaryOutputArchive oarchive(os); \
 		std::shared_ptr< ProxyPdu_##name > pt(std::shared_ptr< ProxyPdu_##name >(this, [](ProxyPdu_##name *) {})); \
 		oarchive(mPduEnum); \
@@ -61,7 +61,7 @@ public:
 		return os.str(); \
 	}; \
 	std::string ToJson() { \
-		std::stringstream os; { /* start a new scope */ \
+		std::stringstream os; { \ // start a new scope
 		cereal::JSONOutputArchive oarchive(os); \
 		std::shared_ptr< ProxyPdu_##name > pt(std::shared_ptr< ProxyPdu_##name >(this, [](ProxyPdu_##name *) {})); \
 		oarchive(mPduEnum); \

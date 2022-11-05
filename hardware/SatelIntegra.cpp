@@ -751,7 +751,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 		std::string sTmp = std_format("%08X", Idx);
 		std::string devname;
 
-		m_sql.UpdateValue(m_HwdID, sTmp.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, state ? "On" : "Off", devname);
+		m_sql.UpdateValue(m_HwdID, sTmp.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, state ? "On" : "Off", devname, true, m_Name.c_str());
 	}
 }
 
@@ -768,7 +768,7 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 
 	std::string devname;
 
-	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname);
+	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname, true, m_Name.c_str());
 }
 
 void SatelIntegra::ReportTemperature(const int Idx, const int temp)

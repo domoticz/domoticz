@@ -26,7 +26,6 @@
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
 import os
 import queue
 import sys

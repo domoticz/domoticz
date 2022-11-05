@@ -1187,9 +1187,11 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
         [
             ["On", 'On'],
             ["Off", 'Off'],
+            ["Toggle", 'Toggle'],
             ["Group On", 'Group On'],
             ["Group Off", 'Group Off'],
             ["Open", 'Open'],
+            ["Close", 'Close'],
             ["Closed", 'Closed'],
             ["Locked", 'Locked'],
             ["Unlocked", 'Unlocked'],

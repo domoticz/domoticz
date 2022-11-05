@@ -39,7 +39,6 @@
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Images, Parameters, Settings
 import sys
 import json
 

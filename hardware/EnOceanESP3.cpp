@@ -13,6 +13,9 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../main/HTMLSanitizer.h"
+#include "../main/mainworker.h"
 #include "../main/localtime_r.h"
 
 #include "hardwaretypes.h"
@@ -344,11 +347,19 @@ bool CEnOceanESP3::StopHardware()
 	return true;
 }
 
+void CEnOceanESP3::ResetHardware()
+{
+	Log(LOG_STATUS, "Reset ESP3 HwdID %d", m_HwdID);
+	uint8_t CC = CO_WR_RESET;
+	SendESP3Packet(PACKET_COMMON_COMMAND, &CC, 1, nullptr, 0);
+}
+
 void CEnOceanESP3::LoadNodesFromDatabase()
 {
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string>> result;
+
 	result = m_sql.safe_query("SELECT ID, NodeID, Name, ManufacturerID, RORG, Func, Type, Description, nValue FROM EnOceanNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.empty())
 		return;
@@ -392,26 +403,162 @@ CEnOceanESP3::NodeInfo* CEnOceanESP3::GetNodeInfo(const uint32_t nodeID)
 	return &(node->second);
 }
 
+void CEnOceanESP3::GetNodesJSON(Json::Value &root)
+{
+	char idStr[20];
+	sprintf(idStr, "%08X", m_HwdID);
+	root["esp3controllerhwid"] = idStr;
+	sprintf(idStr, "%08X", m_id_base);
+	root["esp3controlleridbase"] = idStr;
+	sprintf(idStr, "%08X", m_id_chip);
+	root["esp3controlleridchip"] = idStr;
+
+	int i = 0;
+	for (auto item = m_nodes.begin(); item != m_nodes.end(); item++, i++)
+	{
+		NodeInfo node = item->second;
+
+		root["nodetbl"][i]["idx"] = node.idx;
+		root["nodetbl"][i]["nodeid"] = node.nodeID;
+		root["nodetbl"][i]["manufacturerid"] = node.manufacturerID;
+		root["nodetbl"][i]["manufacturername"] = GetManufacturerName(node.manufacturerID);
+		root["nodetbl"][i]["rorg"] = node.RORG;
+		root["nodetbl"][i]["func"] = node.func;
+		root["nodetbl"][i]["type"] = node.type;
+		char szEEPStr[20];
+		sprintf(szEEPStr, "%02X-%02X-%02X", node.RORG, node.func, node.type);
+		root["nodetbl"][i]["eep"] = szEEPStr;
+		root["nodetbl"][i]["name"] = node.name;
+		root["nodetbl"][i]["description"] = node.description;
+		root["nodetbl"][i]["teachinmode"] = node.teachin_mode;
+
+/*
+		Debug(DEBUG_NORM, "GetNodesJSON: Idx %u HwdID %d %sNode %08X Name '%s'",
+			node.idx, m_HwdID,
+			(node.teachin_mode == GENERIC_NODE) ? "Generic " : ((node.teachin_mode == VIRTUAL_NODE) ? "Virtual " : ""),
+			node.nodeID, node.name.c_str());
+		Debug(DEBUG_NORM, "GetNodesJSON: EEP %02X-%02X-%02X (%s)",
+			node.RORG, node.func, node.type, GetEEPLabel(node.RORG, node.func, node.type));
+		Debug(DEBUG_NORM, "GetNodesJSON: Manufacturer %03X (%s) Description '%s'",
+			node.manufacturerID, GetManufacturerName(node.manufacturerID), node.description.c_str());
+*/
+
+		uint16_t nodeSignalLevel = 12;
+		uint16_t nodeBatteryLevel = 255;
+		time_t maxLastUpdate = 0;
+
+		{
+			std::string deviceID = GetDeviceID(node.nodeID);
+			std::vector<std::vector<std::string>> result;
+
+			result = m_sql.safe_query("SELECT Unit, SignalLevel, BatteryLevel, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				m_HwdID, deviceID.c_str());
+			if (!result.empty())
+			{
+				time_t now = mytime(nullptr);
+				struct tm tm1;
+				localtime_r(&now, &tm1);
+				struct tm tLastUpdate;
+				localtime_r(&now, &tLastUpdate);
+
+				for (const auto &sd : result)
+				{
+					int signalLevel = static_cast<int>(std::stol(sd[1]));
+					if (nodeSignalLevel > signalLevel)
+						nodeSignalLevel = signalLevel;
+
+					int batteryLevel = static_cast<int>(std::stol(sd[2]));
+					if (nodeBatteryLevel > batteryLevel)
+						nodeBatteryLevel = batteryLevel;
+
+					std::string sLastUpdate = sd[3];
+					if (sLastUpdate.size() > 19)
+						sLastUpdate = sLastUpdate.substr(0, 19);
+					time_t cLastUpdate;
+					ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
+					if (cLastUpdate > maxLastUpdate)
+						maxLastUpdate = cLastUpdate;
+
+					struct tm ntime;
+					time_t checktime;
+					ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+				}
+			}
+		}
+		root["nodetbl"][i]["signallevel"] = (nodeSignalLevel >= 12) ? "-" : std::to_string(nodeSignalLevel);
+		root["nodetbl"][i]["batterylevel"] = (nodeBatteryLevel >= 255) ? "-" : std::to_string(nodeBatteryLevel);
+		root["nodetbl"][i]["state"] = GetNodeState(node.nodeID);
+		root["nodetbl"][i]["lastupdate"] = TimeToString(&maxLastUpdate, TF_DateTime);
+	}
+}
+
+void CEnOceanESP3::EnableLearnMode(const uint32_t minutes)
+{
+	Log(LOG_STATUS, "HwdID %d, enable ESP3 learn mode during %u minutes", m_HwdID, minutes);
+
+	m_learn_mode_enabled = true;
+	m_last_teachedin_nodeID = 0;
+	m_sql.AllowNewHardwareTimer(minutes);
+}
+
+void CEnOceanESP3::DisableLearnMode(void)
+{
+	Log(LOG_STATUS, "HwdID %d, disable ESP3 learn mode", m_HwdID);
+
+	m_learn_mode_enabled = false;
+	m_sql.AllowNewHardwareTimer(0);
+}
+
+bool CEnOceanESP3::IsLearnModeEnabled()
+{
+	return m_sql.m_bAcceptNewHardware && m_learn_mode_enabled;
+}
+
+int CEnOceanESP3::IsNodeTeachedInJSON(Json::Value &root)
+{
+	if (IsLearnModeEnabled() == false)
+	{
+		root["result"] = 2; // Learn mode timed out
+	    return 2;
+	}
+
+	NodeInfo* pNode = GetNodeInfo(m_last_teachedin_nodeID);
+	if (pNode == nullptr)
+	{
+		root["result"] = 0;	// Still waiting for teach-in
+	    return 0;
+	}
+
+	root["result"] = 1; // New EnOcean node has been teached-in
+	root["nodeid"] = pNode->nodeID;
+	root["manufacturername"] = GetManufacturerName(pNode->manufacturerID);
+	char szEEPStr[10];
+	sprintf(szEEPStr, "%02X-%02X-%02X", pNode->RORG, pNode->func, pNode->type);
+	root["eep"] = szEEPStr;
+	root["description"] = pNode->description;
+	return 1;
+}
+
 void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID,
 	const uint8_t RORG, const uint8_t func, const uint8_t type,
 	const TeachinMode teachin_mode)
 {
-	Log(LOG_NORM, "Teach-in Node: HwdID %u Node %08X Manufacturer %03X (%s) %sEEP %02X-%02X-%02X (%s)",
-		m_HwdID, nodeID, manID, GetManufacturerName(manID),
+	Log(LOG_NORM, "Teach-in Node: HwdID %d %sNode %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
+		m_HwdID,
 		(teachin_mode == GENERIC_NODE) ? "Generic " : ((teachin_mode == VIRTUAL_NODE) ? "Virtual " : ""),
+		nodeID, manID, GetManufacturerName(manID),
 		RORG, func, type, GetEEPLabel(RORG, func, type));
 
 	uint32_t nValue = (teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
-	m_sql.safe_query("INSERT INTO EnOceanNodes (HardwareID, NodeID, ManufacturerID, RORG, Func, Type, Description, nValue) VALUES (%d,%u,%u,%u,%u,%u,'%q',%u)",
-		m_HwdID, nodeID, manID, RORG, func, type, GetEEPLabel(RORG, func, type), nValue);
+	m_sql.safe_query("INSERT INTO EnOceanNodes (HardwareID, NodeID, Name, ManufacturerID, RORG, Func, Type, Description, nValue) VALUES (%d,%u,'%q',%u,%u,%u,%u,'%q',%u)",
+		m_HwdID, nodeID, GetEEPLabel(RORG, func, type), manID, RORG, func, type, GetEEPDescription(RORG, func, type), nValue);
 
 	std::vector<std::vector<std::string>> result;
 	result = m_sql.safe_query("SELECT ID, Name, Description FROM EnOceanNodes WHERE (HardwareID==%d) and (NodeID==%u)", m_HwdID, nodeID);
 	if (result.empty())
 	{ // Should never happend since node was just created in the database!
 		Log(LOG_ERROR, "Teach-in Node: problem creating Node %08X in database?!?!", nodeID);
-		LoadNodesFromDatabase();
 		return;
 	}
 
@@ -427,7 +574,50 @@ void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID,
 	node.description = result[0][2];
 	node.teachin_mode = teachin_mode;
 
-	m_nodes[node.nodeID] = node;
+	m_nodes[nodeID] = node;
+
+	if (teachin_mode != VIRTUAL_NODE)
+		m_last_teachedin_nodeID = nodeID;
+}
+
+void CEnOceanESP3::TeachInVirtualNode(const uint32_t nodeID, const uint8_t RORG, const uint8_t func, const uint8_t type)
+{
+	TeachInNode(nodeID, DOMOTICZ_MANUFACTURER, RORG, func, type, VIRTUAL_NODE);
+}
+
+void CEnOceanESP3::UpdateNode(const uint32_t nodeID,
+	const std::string &name, const uint16_t manID,
+	const uint8_t RORG, const uint8_t func, const uint8_t type,
+	const std::string &description)
+{
+	NodeInfo* pNode = GetNodeInfo(nodeID);
+	if (pNode == nullptr)
+	{ // Should never happend since node must already exist to be updated !
+		Log(LOG_ERROR, "UpdateNode : problem retrieving Node %08X in database?!?!", nodeID);
+		return;
+	}
+	pNode->name = (name == "" || name == "Unknown") ? GetEEPLabel(RORG, func, type) : name;		
+	pNode->manufacturerID = manID;		
+	pNode->RORG = RORG;			
+	pNode->func = func;			
+	pNode->type = type;			
+	pNode->description = (description == "" || description == "Unknown") ? GetEEPDescription(RORG, func, type) : description;
+
+	if (m_id_base != 0 && nodeID > m_id_base && nodeID <= (m_id_base + 128))
+		pNode->teachin_mode = VIRTUAL_NODE;
+	else
+		pNode->teachin_mode = TEACHEDIN_NODE;
+
+	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
+
+	Log(LOG_NORM, "Update Node: HwdID %d %sNode %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
+		m_HwdID,
+		(pNode->teachin_mode == VIRTUAL_NODE) ? "Virtual " : "", nodeID,
+		manID, GetManufacturerName(manID),
+		RORG, func, type, GetEEPLabel(RORG, func, type));
+
+	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', ManufacturerID=%d, RORG=%u, Func=%u, Type=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
+		pNode->name.c_str(), manID, RORG, func, type, pNode->description.c_str(), nValue, m_HwdID, nodeID);
 }
 
 void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
@@ -435,34 +625,74 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode == nullptr)
 		return;
 
-	bool do_update = false;
+	if (pNode->RORG == RORG)
+		return;
 
-	if (pNode->RORG != RORG)
-	{
-		Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
-			pNode->nodeID,
-			pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
-			RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+	Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+		pNode->nodeID,
+		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
 
-		pNode->RORG = RORG;
-		do_update = true;
-	}
+	if (pNode->name == "" || pNode->name == "Unknown")
+		pNode->name = GetEEPLabel(RORG, pNode->func, pNode->type);		
+
+	pNode->RORG = RORG;
+
+	if (pNode->description == "" || pNode->description == "Unknown")
+		pNode->description = GetEEPDescription(RORG, pNode->func, pNode->type);
+
 	if (pNode->teachin_mode == GENERIC_NODE)
 	{
 		Log(LOG_NORM, "Node %08X, update from Generic to Teached-in", pNode->nodeID);
 
-		// TODO : set to VIRTUAL_NODE instead when node is virtual (i.e. created from Domoticz)
-
 		pNode->teachin_mode = TEACHEDIN_NODE;
-		do_update = true;
 	}
-	if (do_update == false)
-		return;
-
 	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
-	m_sql.safe_query("UPDATE EnOceanNodes SET RORG=%u, nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
-		pNode->RORG, nValue, m_HwdID, pNode->nodeID);
+	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', RORG=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
+		pNode->name.c_str(), pNode->RORG, pNode->description.c_str(), nValue, m_HwdID, pNode->nodeID);
+}
+
+void CEnOceanESP3::DeleteNode(const uint32_t nodeID)
+{
+	Log(LOG_NORM, "Delete Node %08X", nodeID);
+
+	// Delete attached devices
+
+	std::string deviceID = GetDeviceID(nodeID);
+	std::vector<std::vector<std::string>> result;
+
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, deviceID.c_str());
+	if (!result.empty())
+	{
+		std::string devs2delete;
+		for (const auto &sd : result)
+		{
+			if (!devs2delete.empty())
+				devs2delete += ";";
+			devs2delete += sd[0];
+		}
+		m_sql.DeleteDevices(devs2delete);
+	}
+
+	// Delete node
+
+	m_sql.safe_query("DELETE FROM EnOceanNodes WHERE (HardwareID==%d) AND (NodeID==%u)", m_HwdID, nodeID);
+	m_nodes.erase(nodeID);
+}
+
+std::string CEnOceanESP3::GetNodeState(const uint32_t nodeID)
+{
+	std::string strState;
+
+	NodeInfo *pNode = GetNodeInfo(nodeID);
+	if (pNode == nullptr)
+		strState = "Unknown";
+	else if (m_id_base != 0 && nodeID > m_id_base && nodeID <= (m_id_base + 128))
+		strState = "Awake";
+	else
+		strState = "Sleeping";
+	return strState;
 }
 
 void CEnOceanESP3::Do_Work()
@@ -1500,6 +1730,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 	}
 	m_bIsStarted = true;
 
+	m_learn_mode_enabled = false;
 	m_RPS_teachin_nodeID = 0;
 
 	m_receivestate = ERS_SYNCBYTE;
@@ -1509,12 +1740,12 @@ bool CEnOceanESP3::OpenSerialDevice()
 
 #ifdef ENABLE_ESP3_TESTS
 	Debug(DEBUG_NORM, "------------ ESP3 tests begin ---------------------------");
-	m_sql.AllowNewHardwareTimer(1);
+	EnableLearnMode(1);
 
 	for (const auto &itt : ESP3TestsCases)
 		ReadCallback((const char *)itt.data(), itt.size());
 
-	m_sql.AllowNewHardwareTimer(0);
+	DisableLearnMode();
 	Debug(DEBUG_NORM, "------------ ESP3 tests end -----------------------------");
 #endif
 
@@ -1641,24 +1872,29 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	if (!isOpen())
 		return false;
 
-	RBUF *tsen = (RBUF *) pdata;
-    const _tGeneralSwitch* xcmd = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	auto tsen = reinterpret_cast<const RBUF *>(pdata);
+	auto xcmd = reinterpret_cast<const _tGeneralSwitch *>(pdata);
 	uint32_t nodeID;
 
 	if (tsen->RAW.packettype == pTypeLighting2)
 		nodeID = GetNodeID(tsen->LIGHTING2.id1, tsen->LIGHTING2.id2, tsen->LIGHTING2.id3, tsen->LIGHTING2.id4);
-	else if (tsen->RAW.packettype == pTypeGeneralSwitch)
+	else if (tsen->RAW.packettype == pTypeGeneralSwitch && xcmd->subtype == sSwitchTypeSelector)
 		nodeID = xcmd->id;
 	else
-		return false; // Only allowed to control switches
+		return false; // Only allowed to control switches or selectors
 
 	NodeInfo* pNode = GetNodeInfo(nodeID);
 
 	if (pNode == nullptr)
-	{ // Virtual switch created from m_id_base
-		if (nodeID <= m_id_base || nodeID > (m_id_base + 128))
+	{ // May happend if database contains invalid devices
+		Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
+		return false;
+	}
+	if (nodeID > m_id_base && nodeID <= (m_id_base + 128))
+	{ // Virtual switch created from m_HwdID/m_id_base
+		if (pNode->teachin_mode != VIRTUAL_NODE)
 		{
-			Log(LOG_ERROR, "Node %08X, invalid virtual switch", nodeID);
+			Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
 			return false;
 		}
 		if (tsen->LIGHTING2.unitcode >= 10)
@@ -1666,7 +1902,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			Log(LOG_ERROR, "Node %08X, double press not supported", nodeID);
 			return false;
 		}
-
 		uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
 		uint8_t EB = 1;
 		_eSwitchType switchtype = STYPE_OnOff;
@@ -1855,35 +2090,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
-	{ // D2-05-00, Blinds Control for Position and Angle 
-		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
-
-		// Build CMD 1 - Go to Position and Angle
-		int channel = tsen->LIGHTING2.unitcode - 1;
-		int cmd = tsen->LIGHTING2.cmnd;
-		int pos;
-
-		if (cmd != gswitch_sStop)
-			pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
-		else
-			pos = LastPosition;
-
-		if (LastPosition == pos)
-		{
-			//send command stop si rappuie
-			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
-			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
-			LastPosition = -1;
-		}
-		else
-		{
-			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X", pos, nodeID);
-			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
-			LastPosition = pos;
-		}
-		return true;
-	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type == 0x0C)
 	{ // D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
 		const char *PilotWireModeStr[] = {"Off", "Comfort", "Eco", "Anti-freeze", "Comfort-1", "Comfort-2", ""};
@@ -1891,10 +2097,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
-		if (tsen->LIGHTING2.packettype == pTypeGeneralSwitch)
-			level = xcmd->level;
-		else
-			level = tsen->LIGHTING2.level;
+		level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
 		if (level > 50)
 		{
 			Log(LOG_ERROR,"Node %08X, Invalid PiloteWire level %d", nodeID, level);
@@ -1913,11 +2116,46 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 
 		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X", PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID);
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
+		return true;
+	}
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
+	{ // D2-05-00, Blinds Control for Position and Angle 
+		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
+		// Build CMD 1 - Go to Position and Angle
+		int channel = tsen->LIGHTING2.unitcode - 1;
+		int cmd = tsen->LIGHTING2.cmnd;
+		int pos;
+		
+		// don't keep the last position if the request is for a different node!
+		if (m_last_requested_blind_nodeID != nodeID)
+		{
+			m_last_requested_blind_position = -1;
+			m_last_requested_blind_nodeID = nodeID;
+		}
+
+		if (cmd != gswitch_sStop)
+			pos = getPositionFromCommandLevel(tsen->LIGHTING2.cmnd, tsen->LIGHTING2.level);
+		else
+			pos = m_last_requested_blind_position;
+
+		if (m_last_requested_blind_position == pos)
+		{
+			//send command stop si rappuie
+			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
+			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
+			m_last_requested_blind_position = -1;
+		}
+		else
+		{
+			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X", pos, nodeID);
+			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
+			m_last_requested_blind_position = pos;
+		}
 		return true;
 	}
 	Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
-	Log(LOG_ERROR, "Create a virtual switch associated with HwdID %u", m_HwdID);
+	Log(LOG_ERROR, "Create a virtual switch created from HwdID %d ID_Base %08X", m_HwdID, m_id_base);
 	return false;
 }
 
@@ -2055,10 +2293,33 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 			{ // Base ID Information
 				m_id_base = GetNodeID(data[1], data[2], data[3], data[4]);
 				Log(LOG_STATUS, "HwdID %d ID_Base %08X", m_HwdID, m_id_base);
+
+				// To ensure backward compatibility with previous Domoticz versions
+				// Make sure virtual EnOcean ESP3 switches have been teached-in
+				// TODO: make sure all EnOcean ESP3 devices have been teached-in
+
+				std::vector<std::vector<std::string>> result;
+
+				result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
+				if (result.empty())
+					return;
+
+				for (const auto &sd : result)
+				{
+					uint32_t nodeID = static_cast<uint32_t>(std::stoul(sd[0], 0, 16));
+					if (nodeID <= m_id_base || nodeID > (m_id_base + 128))
+						continue; // Device is not a virtual switch created from m_HwdID/m_id_base
+
+					NodeInfo* pNode = GetNodeInfo(nodeID);
+					if (pNode != nullptr)
+						continue; // Virtual switch node has already been teached-in
+					
+					TeachInVirtualNode(nodeID, RORG_RPS, 0x02, 0x01);
+				}
 				return;
 			}
 			if (m_id_chip == 0 && datalen == 33)
-			{ // Base version Information
+			{ // Base chip & version information
 				m_id_chip = GetNodeID(data[9], data[10], data[11], data[12]);
 				Log(LOG_STATUS, "HwdID %d ChipID %08X ChipVersion %02X.%02X.%02X.%02X App %02X.%02X.%02X.%02X API %02X.%02X.%02X.%02X Description '%s'",
 					 m_HwdID, m_id_chip, data[13], data[14], data[15], data[16], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], (const char *)data + 17);
@@ -2139,7 +2400,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t LRN = bitrange(DATA, 3, 0x01);
 
 				if (LRN == 0)
-				{ 	// 1BS teach-in
+				{ // 1BS teach-in
 					Log(LOG_NORM, "1BS teach-in request from Node %08X", senderID);
 
 					if (pNode != nullptr)
@@ -2752,11 +3013,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				if (pNode->func == 0x10 && pNode->type <= 0x0D)
-				{ // A5-10-01..OD, RoomOperatingPanel
+				{ // A5-10-01..0D, RoomOperatingPanel
 					RBUF tsen;
 
 					if (pNode->manufacturerID != ELTAKO)
-					{ // General case for A5-10-01..OD
+					{ // General case for A5-10-01..0D
 						// DATA_BYTE3 is the fan speed
 						// DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max
 						// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
@@ -4013,7 +4274,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 	return DataSize;
 }
 
-uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
+uint32_t CEnOceanESP3::sendDataVld(unsigned int srcID, unsigned int destID, T_DATAFIELD *OffsetDes, int *values, int NbValues)
 {
 	uint8_t data[256 + 2];
 
@@ -4023,12 +4284,12 @@ uint32_t CEnOceanESP3::senDatadVld(unsigned int srcID, unsigned int destID, T_DA
 	if (DataSize)
 		sendVld(srcID, destID, data, DataSize);
 	else
-		Log(LOG_ERROR, " Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		Log(LOG_ERROR, "Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 
 	return DataSize;
 }
 
-bool updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
+bool CEnOceanESP3::updateSwitchType(int HardwareID, const char *deviceID, _eSwitchType SwitchType)
 {
 	std::vector<std::vector<std::string>> result;
 
@@ -4088,7 +4349,7 @@ bool CEnOceanESP3::manageVldMessage(uint32_t iSenderID, unsigned char *vldData, 
 		if (cmd == 0x4)
 		{ // Get position
 			int pos = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_POS);
-			bool bon = (pos > 0 ? 1 : 0);
+			bool bon = pos > 0;
 
 			if (pos >= 100)
 				pos = 99;
@@ -4158,7 +4419,7 @@ bool CEnOceanESP3::manageVldMessage(uint32_t iSenderID, unsigned char *vldData, 
 }
 
 //return position 0..100% from command / level
-int getPositionFromCommandLevel(int cmnd, int pos)
+int CEnOceanESP3::getPositionFromCommandLevel(int cmnd, int pos)
 {
 	if (cmnd == light2_sOn)
 		pos = 100;
@@ -4169,3 +4430,250 @@ int getPositionFromCommandLevel(int cmnd, int pos)
 
 	return pos;
 }
+
+// Webserver helpers
+
+namespace http
+{
+	namespace server
+	{
+		void CWebServer::Cmd_EnOceanESP3EnableLearnMode(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			std::string minutesStr = request::findValue(&req, "minutes");
+			if (minutesStr.empty())
+				return;
+
+			uint32_t minutes = static_cast<uint32_t>(std::stoul(minutesStr));
+
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3EnableLearnMode");
+
+			pESP3Hardware->EnableLearnMode(minutes);
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanESP3EnableLearnMode";
+		}
+
+		void CWebServer::Cmd_EnOceanESP3IsNodeTeachedIn(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			int rc = pESP3Hardware->IsNodeTeachedInJSON(root);
+
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3IsNodeTeachedIn: %s", (rc == 0) ? "waiting..." : (rc == 1) ? "OK" : "Timed out!");
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanESP3IsNodeTeachedIn";
+		}
+
+		void CWebServer::Cmd_EnOceanESP3CancelTeachIn(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3CancelTeachIn");
+
+			pESP3Hardware->DisableLearnMode();
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanESP3CancelTeachIn";
+		}
+
+		void CWebServer::Cmd_EnOceanESP3ControllerReset(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3ControllerReset");
+
+			pESP3Hardware->ResetHardware();
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanESP3ControllerReset";
+		}
+
+		void CWebServer::Cmd_EnOceanESP3UpdateNode(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			std::string nodeIDStr = request::findValue(&req, "nodeid");
+			if (nodeIDStr.empty())
+				return;
+
+			uint32_t nodeID = static_cast<uint32_t>(std::stoul(nodeIDStr));
+
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3UpdateNode: Node %08X", nodeID);
+
+			std::string name = request::findValue(&req, "name");
+			if (name.empty())
+				return;
+
+			name = HTMLSanitizer::Sanitize(name);
+
+			std::string manIDStr = request::findValue(&req, "manufacturerid");
+			if (manIDStr.empty())
+				return;
+
+			uint16_t manID = static_cast<uint16_t>(std::stoul(manIDStr));
+			
+			std::string eepStr = request::findValue(&req, "eep");
+			if (eepStr.empty())
+				return;
+
+			eepStr = HTMLSanitizer::Sanitize(eepStr);
+
+			uint8_t RORG;
+			uint8_t func;
+			uint8_t type;
+
+			if (sscanf(eepStr.c_str(), "%2hhx-%2hhx-%2hhx", &RORG, &func, &type) != 3)
+			    return;
+
+			std::string description = request::findValue(&req, "description");
+
+			description = HTMLSanitizer::Sanitize(description);
+
+			pESP3Hardware->UpdateNode(nodeID, name, manID, RORG, func, type, description);
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanESP3UpdateNode";
+		}
+
+		void CWebServer::Cmd_EnOceanESP3DeleteNode(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			std::string nodeIDStr = request::findValue(&req, "nodeid");
+			if (nodeIDStr.empty())
+				return;
+
+			uint32_t nodeID = static_cast<uint32_t>(std::stoul(nodeIDStr));
+
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3DeleteNode: Node %08X", nodeID);
+
+			pESP3Hardware->DeleteNode(nodeID);
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanESP3DeleteNode";
+		}
+
+		void CWebServer::RType_EnOceanESP3GetNodes(WebEmSession &session, const request &req, Json::Value &root)
+		{
+			std::string hwdIDStr = request::findValue(&req, "hwdid");
+			if (hwdIDStr.empty())
+				return;
+
+			int hwdID = static_cast<int>(std::stol(hwdIDStr));
+			
+			auto pHardware = m_mainworker.GetHardware(hwdID);
+			if (pHardware == nullptr)
+				return;
+			if (pHardware->HwdType != HTYPE_EnOceanESP3)
+				return;
+
+			auto pESP3Hardware = dynamic_cast<CEnOceanESP3 *>(pHardware);
+
+			pESP3Hardware->Debug(DEBUG_NORM, "RType_EnOceanESP3GetNodes");
+
+			pESP3Hardware->GetNodesJSON(root);
+
+			root["status"] = "OK";
+			root["title"] = "EnOceanGetNodes";
+		}
+	} // namespace server
+} // namespace http

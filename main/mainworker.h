@@ -85,8 +85,8 @@ public:
 				   const std::string &Username, const std::string &Password, const std::string &Extra, int Mode1, int Mode2, int Mode3, int Mode4, int Mode5, int Mode6,
 				   int DataTimeout, bool bDoStart);
 
-	void UpdateDomoticzSecurityStatus(int iSecStatus);
-	void SetInternalSecStatus();
+	void UpdateDomoticzSecurityStatus(const int iSecStatus, const std::string &User);
+	void SetInternalSecStatus(const std::string& User);
 	bool GetSensorData(uint64_t idx, int &nValue, std::string &sValue);
 
 	bool UpdateDevice(const int DevIdx, const int nValue, const std::string &sValue, const std::string &userName, const int signallevel = 12, const int batterylevel = 255,
@@ -129,7 +129,6 @@ public:
 	std::map<uint64_t, _tTrendCalculator> m_trend_calculator;
 
 	time_t m_LastHeartbeat = 0;
-	std::string m_szLastSwitchUser;
 private:
 	void HandleAutomaticBackups();
 	uint64_t PerformRealActionFromDomoticzClient(const uint8_t *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
@@ -211,8 +210,9 @@ private:
 
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;
-		uint64_t DeviceRowIdx;
-		bool bProcessBatteryValue;
+		uint64_t DeviceRowIdx = -1;
+		bool bProcessBatteryValue = true;
+		std::string Username;
 	};
 
 	//(RFX) Message decoders
@@ -285,7 +285,8 @@ private:
 	void decode_ASyncData(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Weather(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Solar(const CDomoticzHardwareBase *pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
-	void decode_Hunter(const CDomoticzHardwareBase *pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
+	void decode_Hunter(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
+	void decode_LevelSensor(const CDomoticzHardwareBase* pHardware, const tRBUF* pResponse, _tRxMessageProcessingResult& procResult);
 };
 
 extern MainWorker m_mainworker;

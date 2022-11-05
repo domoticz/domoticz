@@ -11,7 +11,7 @@
 
 //http://sterbox.eu/index.php/sterbox
 
-#define STERBOX_POLL_INTERVAL 8
+#define STERBOX_POLL_INTERVAL 5
 
 CSterbox::CSterbox(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
 m_szIPAddress(IPAddress),

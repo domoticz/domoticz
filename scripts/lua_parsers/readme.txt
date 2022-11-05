@@ -1,0 +1,1 @@
+https://www.domoticz.com/wiki/HTTP/HTTPS_poller

@@ -22,8 +22,6 @@
 </plugin>
 """
 import Domoticz
-from Domoticz import Devices, Parameters
-
 
 class BasePlugin:
     enabled = False

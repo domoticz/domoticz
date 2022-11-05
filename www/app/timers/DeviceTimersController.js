@@ -28,7 +28,14 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                 vm.isSelector = device.isSelector();
                 vm.isLED = device.isLED();
                 vm.isCommandSelectionDisabled = vm.isSelector && device.LevelOffHidden;
+				
+				var type = device.TypeImg.toLowerCase();
+				if ((device.CustomImage !== 0) && (typeof device.Image !== 'undefined')) {
+					type = device.Image.toLowerCase();
+				}
                 vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
+				vm.isBlind = (type == 'blinds');
+				//vm.isBlind = [3, 13, 14, 15, 21].includes(device.SwitchTypeVal);
 
                 vm.levelOptions = [];
 
