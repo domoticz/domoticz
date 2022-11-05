@@ -1,3 +1,6 @@
+Version 2022.xxxx
+- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
+
 Version 2022.2 (November 5 2022)
 - Implemented: Blockly,	added 'Toggle' set command
 - Implemented: Camera, camera Aspect Ratio
@@ -41,7 +44,6 @@ Version 2022.2 (November 5 2022)
 - Fixed: WebGUI, making sure status does not wrap in mobile mode
 - Removed: AppCache
 - Deprecated: OpenZWave, please move to MQTT Auto Discovery and ZWave JS UI (Project stopped a long time ago!)
-- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
 
 Version 2022.1 (January 31 2022)
 - Implemented: Added Irrigation icon (also thanks to dbemowsk)
@@ -77,7 +79,6 @@ Version 2022.1 (January 31 2022)
 - Fixed: EvoHome, Fix Web API crash when a new zone wass added
 - Fixed: Notifications, Email notification fix jpeg inline attachment handling for K9 mail
 - Fixed: OpenWeatherMap, Fix to resolve OWM City for default location. Used by OWM based forecast screen
-- For a full detailed overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits
 
 Version 2021.1 (April 17 2021)
 - Implemented: Added option to set loglevel per hardware device
@@ -154,7 +155,6 @@ Version 2021.1 (April 17 2021)
 - Fixed: User field in device logging for switches, -text-devices and for groups/scenes
 - Fixed: Windows installation respects configured log parameters
 - Fixed: Zwave various issues
-- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.2 (April 26th 2020)
 - Implemented: GUI: New Update controller code
@@ -173,7 +173,6 @@ Version 2020.2 (April 26th 2020)
 - Changed: Removed external library dependencies from repository
 - Updated: Translations
 - Updated: TTNMQTT, improved handling CayenneLPP channels
-- For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
 
 Version 2020.1 (March 22th 2020)
 - Implemented: BuienRadar
