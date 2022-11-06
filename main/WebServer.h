@@ -108,6 +108,11 @@ private:
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 
+	//OAuth2/OIDC support functions
+	std::string GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime);
+	bool ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username);
+	void InvalidateOAuth2RefreshToken(const std::string refreshtoken);
+
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root);

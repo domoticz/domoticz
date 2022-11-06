@@ -73,6 +73,8 @@
 #define OAUTH2_AUTH_URL "/oauth2/v1/authorize"
 #define OAUTH2_TOKEN_URL "/oauth2/v1/token"
 #define OAUTH2_USERIDX_OFFSET 20000
+#define OAUTH2_AUTHTOKEN_EXPIRETIME 3600
+#define OAUTH2_REFRESHTOKEN_EXPIRETIME 86400
 
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
@@ -1077,8 +1079,8 @@ namespace http
 		{
 			Json::Value root;
 			std::string jwttoken;
-			uint32_t exptime = 3600;			// Token validity time (seconds)
-			uint32_t refreshexptime = 86400;	// Refresh token validity time (seconds)
+			uint32_t exptime = OAUTH2_AUTHTOKEN_EXPIRETIME;			// Token validity time (seconds)
+			uint32_t refreshexptime = OAUTH2_REFRESHTOKEN_EXPIRETIME;	// Refresh token validity time (seconds)
 
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
@@ -1174,18 +1176,12 @@ namespace http
 
 												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload))
 												{
+													std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
 													root["access_token"] = jwttoken;
 													root["token_type"] = "Bearer";
 													root["expires_in"] = exptime;
+													root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
 
-													std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
-													WebEmStoredSession refreshsession;
-													refreshsession.id = GenerateMD5Hash(refreshtoken);
-													refreshsession.auth_token = refreshtoken;
-													refreshsession.expires = mytime(nullptr) + refreshexptime;
-													refreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
-													StoreSession(refreshsession);
-													root["refresh_token"] = refreshtoken;
 													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
 
 													m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
@@ -1311,14 +1307,11 @@ namespace http
 						std::string refresh_token = request::findValue(&req, "refresh_token");
 						if (!refresh_token.empty())
 						{
-							WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refresh_token));
-							if	((!refreshsession.id.empty())
-								&& (refreshsession.auth_token.compare(refresh_token) == 0)
-								&& (refreshsession.expires > mytime(nullptr))
-								)
+							std::string usernamefromtoken;
+							if (ValidateOAuth2RefreshToken(refresh_token, usernamefromtoken))
 							{
 								std::vector<std::string> strarray;
-								StringSplit(refreshsession.username,";", strarray);
+								StringSplit(usernamefromtoken,";", strarray);
 								if(strarray.size() == 2)
 								{
 									int iClient = std::atoi(strarray[0].c_str());
@@ -1332,17 +1325,11 @@ namespace http
 
 									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload))
 									{
+										std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
 										root["access_token"] = jwttoken;
 										root["token_type"] = "Bearer";
 										root["expires_in"] = exptime;
-										std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
-										WebEmStoredSession newrefreshsession;
-										newrefreshsession.id = GenerateMD5Hash(refreshtoken);
-										newrefreshsession.auth_token = refreshtoken;
-										newrefreshsession.expires = mytime(nullptr) + refreshexptime;
-										newrefreshsession.username = std::to_string(iClient) + ";" + std::to_string(iUser);
-										StoreSession(newrefreshsession);
-										root["refresh_token"] = refreshtoken;
+										root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
 										rep.status = reply::ok;
 									}
 									else
@@ -1355,7 +1342,7 @@ namespace http
 								{
 									root["error"] = "access_denied";
 									rep.status = reply::unauthorized;
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) does not contain valid reference to client/user (%s)!", refresh_token.c_str(), refreshsession.username.c_str());
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) does not contain valid reference to client/user (%s)!", refresh_token.c_str(), usernamefromtoken.c_str());
 								}
 							}
 							else
@@ -1364,7 +1351,7 @@ namespace http
 								rep.status = reply::unauthorized;
 								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) is not valid or expired!", refresh_token.c_str());
 							}
-							RemoveSession(refreshsession.id);
+							InvalidateOAuth2RefreshToken(refresh_token);
 						}
 						else
 						{
@@ -1420,6 +1407,41 @@ namespace http
 
 			rep.status = reply::ok;
 			reply::set_content(&rep, root.toStyledString());
+		}
+
+		std::string CWebServer::GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime)
+		{
+			std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
+			WebEmStoredSession refreshsession;
+			refreshsession.id = GenerateMD5Hash(refreshtoken);
+			refreshsession.auth_token = refreshtoken;
+			refreshsession.expires = mytime(nullptr) + refreshexptime;
+			refreshsession.username = username;
+			StoreSession(refreshsession);
+			return refreshtoken;
+		}
+
+		bool CWebServer::ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username)
+		{
+			bool bOk = false;
+			WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
+			if	((!refreshsession.id.empty())
+				&& (refreshsession.auth_token.compare(refreshtoken) == 0)
+				&& (refreshsession.expires > mytime(nullptr))
+				)
+			{
+				bOk = true;
+				username = refreshsession.username;
+			}
+
+			return bOk;
+		}
+
+		void CWebServer::InvalidateOAuth2RefreshToken(const std::string refreshtoken)
+		{
+			WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
+			if	(!refreshsession.id.empty())
+				RemoveSession(refreshsession.id);
 		}
 
 		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
@@ -18036,40 +18058,6 @@ namespace http
 			} // custom range
 		}
 
-		/**
-		 * Retrieve user session from store, without remote host.
-		 */
-		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
-		{
-			//_log.Log(LOG_STATUS, "SessionStore : get...");
-			WebEmStoredSession session;
-
-			if (sessionId.empty())
-			{
-				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
-			}
-			else
-			{
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'", sessionId.c_str());
-				if (!result.empty())
-				{
-					session.id = result[0][0];
-					session.username = base64_decode(result[0][1]);
-					session.auth_token = result[0][2];
-
-					std::string sExpirationDate = result[0][3];
-					// time_t now = mytime(NULL);
-					struct tm tExpirationDate;
-					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
-					// RemoteHost is not used to restore the session
-					// LastUpdate is not used to restore the session
-				}
-			}
-
-			return session;
-		}
-
 		/*
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
 		 * for each combination year/category.
@@ -18239,11 +18227,45 @@ namespace http
 		}
 
 		/**
+		 * Retrieve user session from store, without remote host.
+		 */
+		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
+		{
+			_log.Debug(DEBUG_SQL, "SessionStore : get...");
+			WebEmStoredSession session;
+
+			if (sessionId.empty())
+			{
+				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
+			}
+			else
+			{
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'", sessionId.c_str());
+				if (!result.empty())
+				{
+					session.id = result[0][0];
+					session.username = base64_decode(result[0][1]);
+					session.auth_token = result[0][2];
+
+					std::string sExpirationDate = result[0][3];
+					// time_t now = mytime(NULL);
+					struct tm tExpirationDate;
+					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
+					// RemoteHost is not used to restore the session
+					// LastUpdate is not used to restore the session
+				}
+			}
+
+			return session;
+		}
+
+		/**
 		 * Save user session.
 		 */
 		void CWebServer::StoreSession(const WebEmStoredSession& session)
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : store...");
+			_log.Debug(DEBUG_SQL, "SessionStore : store...");
 			if (session.id.empty())
 			{
 				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
@@ -18277,7 +18299,7 @@ namespace http
 		 */
 		void CWebServer::RemoveSession(const std::string& sessionId)
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : remove...");
+			_log.Debug(DEBUG_SQL, "SessionStore : remove...");
 			if (sessionId.empty())
 			{
 				return;
@@ -18290,7 +18312,7 @@ namespace http
 		 */
 		void CWebServer::CleanSessions()
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : clean...");
+			_log.Debug(DEBUG_SQL, "SessionStore : clean...");
 			m_sql.safe_query("DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
 		}
 
