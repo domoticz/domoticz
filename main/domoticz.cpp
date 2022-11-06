@@ -602,6 +602,12 @@ bool ParseConfigFile(const std::string &szConfigFile)
 			secure_webserver_settings.php_cgi_path = sLine;
 #endif
 		}
+		else if (szFlag == "vhostname") {
+			webserver_settings.vhostname = sLine;
+#ifdef WWW_ENABLE_SSL
+			secure_webserver_settings.vhostname = sLine;
+#endif
+		}
 		else if (szFlag == "app_path") {
 			szStartupFolder = sLine;
 			FixFolderEnding(szStartupFolder);
@@ -893,6 +899,10 @@ int main(int argc, char**argv)
 			// vhostname has to be equal
 			secure_webserver_settings.vhostname = webserver_settings.vhostname;
 		}
+		if (!webserver_settings.php_cgi_path.empty()) {
+			// php_cgi_path has to be equal
+			secure_webserver_settings.php_cgi_path = webserver_settings.php_cgi_path;
+		}
 		if (cmdLine.HasSwitch("-sslcert"))
 		{
 			if (cmdLine.GetArgumentCount("-sslcert") != 1)
@@ -947,15 +957,6 @@ int main(int argc, char**argv)
 				return 1;
 			}
 			secure_webserver_settings.tmp_dh_file_path = cmdLine.GetSafeArgument("-ssldhparam", 0, "");
-		}
-		if (cmdLine.HasSwitch("-php_cgi_path"))
-		{
-			if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
-			{
-				_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
-				return 1;
-			}
-			secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 		}
 	}
 	secure_webserver_settings.www_root = szWWWFolder;
@@ -1131,7 +1132,7 @@ int main(int argc, char**argv)
 		/* Deamonize */
 		daemonize(szStartupFolder.c_str(), pidfile.c_str());
 	}
-	if ((g_bRunAsDaemon) || (g_bUseSyslog))
+	if ((g_bRunAsDaemon) && (g_bUseSyslog))
 	{
 		syslog(LOG_INFO, "Domoticz running...");
 	}
@@ -1215,8 +1216,9 @@ int main(int argc, char**argv)
 #ifndef WIN32
 	if (g_bRunAsDaemon)
 	{
-		syslog(LOG_INFO, "Domoticz stopped...");
 		daemonShutdown();
+		if (g_bUseSyslog)
+			syslog(LOG_INFO, "Domoticz stopped...");
 
 		// Delete PID file
 		remove(pidfile.c_str());
