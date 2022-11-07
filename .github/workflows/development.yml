@@ -24,10 +24,17 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
+
+      # Prepare environment
+      - name: prepare environment
+        run: |
+          sudo timedatectl set-timezone Europe/Amsterdam
+          buildnr=$(git rev-list HEAD --count)
+          echo "BUILDNR=$(($buildnr + 2107))" >> $GITHUB_ENV
 
       #- name: Make an error (Enable debug)
       #  run: ./not-exist-file.sh it bloke build
@@ -35,22 +42,27 @@ jobs:
       # install dependencies
       - name: dependencies
         run: |
-          sudo apt-get update && sudo apt-get install
+          sudo apt-get update && sudo apt-get --autoremove upgrade
           sudo apt-get install make gcc g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev libcereal-dev liblua5.3-dev uthash-dev
+          sudo apt-get install python3-pytest python3-pytest-bdd
+          sudo apt-get install lua5.3 luarocks
+          sudo luarocks install busted
+          sudo luarocks install luacov
+      # Disabled March 2022 - sudo luarocks install lodash
 
       # get CMake
       - name: cmake-compile
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.24.3/cmake-3.24.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
           sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
           export PATH=/usr/local/bin:$PATH;
 
       # Boost
       - name: build boost libraries
         run: |
-          wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz >> /dev/null 2>&1
-          tar xfz boost_1_76_0.tar.gz
-          cd boost_1_76_0/
+          wget https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz >> /dev/null 2>&1
+          tar xfz boost_1_80_0.tar.gz
+          cd boost_1_80_0/
           ./bootstrap.sh
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
@@ -72,45 +84,47 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
 
+      # Run automated tests (disabled March 2022)
+      #- name: unit-tests domoticz-dzVents
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/dzVents/runtime/tests
+      #    busted --coverage -o TAP *
+      #    luacov
+      #    tail -19 luacov.report.out
+      #  continue-on-error: true
+      - name: functional-tests domoticz
+        run: |
+          cd $GITHUB_WORKSPACE
+          ln -s ../test/gherkin/resources/testwebcontent www/test
+          sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
+          pytest-3 -rA --tb=no test/gherkin/
+          sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
+        continue-on-error: false
+
       # Packaging
       - name: package domoticz
-        if: ${{ false }}
+        #if: ${{ false }}
         run: |
           cd $GITHUB_WORKSPACE
           mkdir package
-          tar czf package/domoticz_linux_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
-          shasum -a 256 package/domoticz_linux_x86_64.tgz > package/domoticz_linux_x86_64.tgz.sha256sum
-          cp appversion.h.txt package/version_linux_x86_64.h
-          cp History.txt package/history_linux_x86_64.txt
-      
+          tar czf package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+          shasum -a 256 package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz > package/domoticz_linux_x86_64-${{ env.BUILDNR }}.tgz.sha256sum
+
       # Artifact upload
       - name: Upload artifacts
-        if: ${{ false }}
-        uses: actions/upload-artifact@v2
+        #if: ${{ false }}
+        uses: actions/upload-artifact@v4
         with:
-          name: domoticz_linux_x86_64-${{ github.sha }}
-          path: package/domoticz_linux_x86_64.tgz
+          name: domoticz_linux_x86_64-${{ env.BUILDNR }}
+          path: package/
           retention-days: 7
- 
-      # Deploy
-      - name: FTP Deployment
-        if: ${{ false }}
-        #if: github.repository_owner == 'domoticz'
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          local-dir: ./package/
-          server-dir: beta/
-          security: loose
+          if-no-files-found: error
 
-      # Grok 2.tcp.ngrok.io DNS resolves to 52.14.18.129
-      - name: Start SSH debug Session
-        #if: ${{ failure() }}
-        if: ${{ false }}
-        uses: luchihoratiu/debug-via-ssh@main
-        with:
-         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
-         SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
+      # Deploy
+      # Using WebHooks and 'workflow_run' events on this action, the artifact will be available via other channels as well
+
+      #- name: Start SSH debug Session
+      #  uses: luchihoratiu/debug-via-ssh@main
+      #  with:
+      #   NGROK_AUTH_TOKEN: ${{ secrets.NGROK_TOKEN }}
+      #   SSH_PASS: ${{ secrets.NGROK_PASSWORD }}
