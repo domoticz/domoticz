@@ -70,6 +70,12 @@
 
 #define round(a) (int)(a + .5)
 
+#define OAUTH2_AUTH_URL "/oauth2/v1/authorize"
+#define OAUTH2_TOKEN_URL "/oauth2/v1/token"
+#define OAUTH2_USERIDX_OFFSET 20000
+#define OAUTH2_AUTHTOKEN_EXPIRETIME 3600
+#define OAUTH2_REFRESHTOKEN_EXPIRETIME 86400
+
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
@@ -250,10 +256,20 @@ namespace http
 
 		bool CWebServer::StartServer(server_settings& settings, const std::string& serverpath, const bool bIgnoreUsernamePassword)
 		{
-			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
-
 			if (!settings.is_enabled())
 				return true;
+
+			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
+
+			std::string sRealm = (settings.is_secure() == true) ? "https://" : "http://";
+
+			if (!settings.vhostname.empty())
+				sRealm += settings.vhostname;
+			else
+				sRealm += (settings.listening_address == "::") ? "domoticz.local" : settings.listening_address;
+			if(settings.listening_port != "80" || settings.listening_port != "443")
+				sRealm += ":" + settings.listening_port;
+			sRealm += "/";
 
 			ReloadCustomSwitchIcons();
 
@@ -299,7 +315,7 @@ namespace http
 
 			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
 
-			m_pWebEm->SetDigistRealm("Domoticz.com");
+			m_pWebEm->SetDigistRealm(sRealm);
 			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
@@ -314,8 +330,6 @@ namespace http
 					StringSplit(WebLocalNetworks, ";", strarray);
 					for (const auto& str : strarray)
 						m_pWebEm->AddLocalNetworks(str);
-					// add local hostname
-					m_pWebEm->AddLocalNetworks("");
 				}
 			}
 
@@ -325,7 +339,14 @@ namespace http
 			m_pWebEm->RegisterIncludeCode("timertypes", [this](auto&& content_part) { DisplayTimerTypesCombo(content_part); });
 			m_pWebEm->RegisterIncludeCode("combolanguage", [this](auto&& content_part) { DisplayLanguageCombo(content_part); });
 
-			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
+			m_pWebEm->RegisterPageCode(
+				OAUTH2_AUTH_URL, [this](auto &&session, auto &&req, auto &&rep) { GetOauth2AuthCode(session, req, rep); }, true);
+			m_pWebEm->RegisterPageCode(
+				OAUTH2_TOKEN_URL, [this](auto &&session, auto &&req, auto &&rep) { PostOauth2AccessToken(session, req, rep); }, true);
+			m_pWebEm->RegisterPageCode(
+				"/.well-known/openid-configuration", [this](auto &&session, auto &&req, auto &&rep) { GetOpenIDConfiguration(session, req, rep); }, true);
+
+			m_pWebEm->RegisterPageCode("/json.htm", [this](auto &&session, auto &&req, auto &&rep) { GetJSonPage(session, req, rep); });
 			// These 'Pages' should probably be 'moved' to become Command codes handled by the 'json.htm API', so we get all API calls through one entry point
 			// And why .php or .cgi while all these commands are NOT handled by a PHP or CGI processor but by Domoticz ?? Legacy? Rename these?
 			m_pWebEm->RegisterPageCode("/logincheck", [this](auto&& session, auto&& req, auto&& rep) { PostLoginCheck(session, req, rep); }, true);
@@ -371,7 +392,8 @@ namespace http
 			RegisterCommandCode(
 				"gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
 			RegisterCommandCode(
-				"logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
+				"logincheck", [this](auto &&session, auto &&req, auto &&root) { Cmd_LoginCheck(session, req, root); }, true);
+
 			RegisterCommandCode(
 				"getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
 			RegisterCommandCode(
@@ -800,7 +822,7 @@ namespace http
 					root["title"] = "Logout";
 					goto exitjson;
 				}
-				_log.Debug(DEBUG_WEBSERVER, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
 				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else
@@ -908,6 +930,11 @@ namespace http
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 						return;
 					}
+					if (m_users[iUser].userrights == URIGHTS_CLIENTID) {
+						// Not a right for users to login with
+						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+						return;
+					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
@@ -922,7 +949,502 @@ namespace http
 			}
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep)
+		{
+			bool bAuthenticated = false;
+			bool bAuthorized = false;
+
+			std::string code;
+			std::string error = "unknown_error";
+
+			std::string state = request::findValue(&req, "state");
+			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
+			std::string response_type = request::findValue(&req, "response_type");
+			std::string client_id = request::findValue(&req, "client_id");
+			std::string scope = request::findValue(&req, "scope");
+			std::string code_challenge = request::findValue(&req, "code_challenge");
+			std::string code_challenge_method = request::findValue(&req, "code_challenge_method");
+
+			if (!redirect_uri.empty() && redirect_uri.substr(0,8) == "https://")	// Absolute and (TLS)safe redirect URI expected
+			{
+				if (req.method == "GET")
+				{
+					if(!response_type.empty() && (response_type.compare("code") == 0 )) // || response_type.compare("token") == 0))
+					{
+						if(scope.find_first_of("openid") == std::string::npos)
+						{
+							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Missing 'openid' in scope (%s)! Not an OpenID Connect request, maybe just OAuth2?", scope.c_str());
+						}
+						int iClient = -1;
+						int iUser = -1;
+						if (!client_id.empty())
+						{
+							iClient = FindUser(client_id.c_str());
+							if (iClient >= 0)
+							{
+								std::string Username;
+
+								bAuthenticated = m_pWebEm->FindAuthenticatedUser(Username, req, rep);
+
+								if (Username.empty())
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: No valid User, present Basic Auth Dialog!");
+									return;
+								}
+
+								_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Checking User (%s) if authenticated (%d)!", Username.c_str(), bAuthenticated);
+
+								if (m_users[iClient].userrights == URIGHTS_CLIENTID)	// Found a registered client
+								{
+									iUser = FindUser(Username.c_str());
+									if (iUser != -1)
+									{
+										m_accesscodes[iUser].clientID = iClient;
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Could not find an authenticated user for Client (%s)!", client_id.c_str());
+									}
+								}
+								if (iUser != -1 && bAuthenticated)
+								{
+									code = GenerateMD5Hash(base64_encode(GenerateUUID()));
+									m_accesscodes[iUser].AuthCode = code;
+									m_accesscodes[iUser].AuthTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+									m_accesscodes[iUser].ExpTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() + 60000;
+									m_accesscodes[iUser].RedirectUri = redirect_uri;
+									m_accesscodes[iUser].Scope = scope;
+									if (!(code_challenge.empty() || code_challenge_method.empty()) && code_challenge_method.compare("S256") == 0 )
+									{
+										m_accesscodes[iUser].CodeChallenge = code_challenge;
+									}
+									else
+									{
+										if (!code_challenge.empty())
+										{
+											_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: PKCE Code Challenge found, but challenge method (%s) not supported! Challenge ignored!", code_challenge_method.c_str());
+										}
+									}
+									bAuthorized = true;
+								}
+								else
+								{
+									error = "Authentication for a user has failed!";
+								}
+							}
+						}
+						if (iUser == -1)
+						{
+							error = "unauthorized_client";
+							_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
+						}
+					}
+					else
+					{
+						error = "unsupported_response_type";
+						_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Invalid/unsupported response_type (%s)!", response_type.c_str());
+					}
+				}
+				else
+				{
+					error = "unsupported_request_method";
+					_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Received invalid request method .%s.", req.method.c_str());
+				}
+			}
+			else
+			{
+				error = "missing or wrong redirect_uri";
+				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
+			}
+
+			std::stringstream result;
+			if(redirect_uri.find("?") != std::string::npos)
+				result << redirect_uri << "&";
+			else
+				result << redirect_uri << "?";
+
+			if (!code.empty())
+				result << "code=" << CURLEncode::URLEncode(code);
+			else
+				result << "error=" << CURLEncode::URLEncode(error);
+
+			if (!state.empty())
+				result << "&state=" << state;
+
+			reply::add_header(&rep, "Location", result.str());
+			rep.status = reply::moved_temporarily;
+		}
+
+		void CWebServer::PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root;
+			std::string jwttoken;
+			uint32_t exptime = OAUTH2_AUTHTOKEN_EXPIRETIME;			// Token validity time (seconds)
+			uint32_t refreshexptime = OAUTH2_REFRESHTOKEN_EXPIRETIME;	// Refresh token validity time (seconds)
+
+			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
+			rep.status = reply::bad_request;
+
+			std::string state = request::findValue(&req, "state");
+			std::string grant_type = request::findValue(&req, "grant_type");
+			std::string client_id = request::findValue(&req, "client_id");
+			std::string client_secret = request::findValue(&req, "client_secret");
+			std::string auth_code = request::findValue(&req, "code");
+			std::string scope = request::findValue(&req, "scope");
+			std::string code_verifier = request::findValue(&req, "code_verifier");
+			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
+
+			if (!state.empty())
+			{
+				root["state"] = state;
+			}
+
+			if (req.method == "POST")
+			{
+				bool bValidGrantType = false;
+				if(!grant_type.empty())
+				{
+					if (grant_type.compare("authorization_code") == 0 )
+					{
+						bValidGrantType = true;
+						int iClient = -1;
+						int iUser = -1;
+						if (!client_id.empty())
+						{
+							iClient = FindUser(client_id.c_str());
+							if (iClient >= 0 && m_users[iClient].userrights == URIGHTS_CLIENTID)
+							{
+								// Let's find the user for this client with the right auth_code, if any
+								iUser = 0;
+								for (const auto &ac : m_accesscodes)
+								{
+									if (ac.AuthCode.compare(auth_code.c_str()) == 0)
+									{
+										if (ac.clientID == iClient || (ac.clientID == -1 && iUser == iClient))
+											break;
+									}
+									iUser++;
+								}
+
+								if ((iUser < m_accesscodes.size()) && (m_accesscodes[iUser].AuthCode.compare(auth_code.c_str()) == 0))
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for user (%d)!", m_accesscodes[iUser].AuthCode.c_str(), iUser);
+
+									std::string acRedirectUri = m_accesscodes[iUser].RedirectUri;
+									std::string acScope = m_accesscodes[iUser].Scope;
+									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
+									uint64_t AuthTime = m_accesscodes[iUser].AuthTime;
+									unsigned long long CodeTime = m_accesscodes[iUser].ExpTime;
+									unsigned long long CurTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+									// For so-called (registered) 'public' clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
+									// So in those cases, we use the registered secret
+									if(client_secret.empty())
+									{
+										client_secret = m_users[iClient].Password;
+									}
+
+									m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
+									m_accesscodes[iUser].RedirectUri = "";
+									m_accesscodes[iUser].Scope = "";
+									m_accesscodes[iUser].clientID = -1;
+									m_accesscodes[iUser].AuthTime = 0;
+									m_accesscodes[iUser].ExpTime = 0;
+									m_accesscodes[iUser].CodeChallenge = "";
+
+									if(acRedirectUri.compare(redirect_uri.c_str()) == 0)
+									{
+										if (CodeTime > CurTime)
+										{
+											bool bPKCE = false;
+											if(!(code_verifier.empty() || CodeChallenge.empty()))
+											{
+												// We have a code_challenge from the Auth request and now also a code_verifier.. let's see if they match
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer!", CodeChallenge.c_str());
+												if (CodeChallenge.compare(base64url_encode(sha256raw(code_verifier))) == 0)
+												{
+													bPKCE = true;
+												}
+											}
+											if(code_verifier.empty() || bPKCE)
+											{
+												Json::Value jwtpayload;
+												jwtpayload["auth_time"] = AuthTime;
+												jwtpayload["preferred_username"] = m_users[iUser].Username;
+												jwtpayload["name"] = m_users[iUser].Username;
+												jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload))
+												{
+													std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
+													root["access_token"] = jwttoken;
+													root["token_type"] = "Bearer";
+													root["expires_in"] = exptime;
+													root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
+
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
+
+													m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
+													rep.status = reply::ok;
+												}
+												else
+												{
+													root["error"] = "server_error";
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+													iUser = -1;
+												}
+											}
+											else
+											{
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: PKCE Code verification failed!");
+												iUser = -1;
+											}
+										}
+										else
+										{
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%lld) (%lld))!", CodeTime, CurTime);
+											iUser = -1;
+										}
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Redirect URI does not match (%s) (%s))!", acRedirectUri.c_str(), redirect_uri.c_str());
+										iUser = -1;
+									}
+								}
+								else
+								{
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Cannot find valid access code (%s) for user!", auth_code.c_str());
+									iUser = -1;
+								}
+							}
+						}
+						if(iUser == -1)
+						{
+							root["error"] = "unauthorized_client";
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
+						}
+					} // end 'authorization_code' grant_type
+					if (grant_type.compare("password") == 0 )
+					{
+						bValidGrantType = true;
+
+						// Maybe we should only allow this when in a safe 'local' network? So check if request comes from local networks?
+						int iUser = -1;
+						int iClient = -1;
+						if (request::get_req_header(&req, "Authorization") != nullptr)
+						{
+							std::string auth_header = request::get_req_header(&req, "Authorization");
+							// Basic Auth header
+							size_t npos = auth_header.find("Basic ");
+							if (npos != std::string::npos)
+							{
+								std::string decoded = base64_decode(auth_header.substr(6));
+								npos = decoded.find(':');
+								if (npos != std::string::npos)
+								{
+									std::string user = decoded.substr(0, npos);
+									std::string passwd = decoded.substr(npos + 1);
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found a Basic Auth Header for User (%s)", user.c_str());
+
+									iUser = FindUser(user.c_str());
+									if(iUser >= 0)
+									{
+										if (m_users[iUser].userrights != URIGHTS_CLIENTID && GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
+										{
+											iClient = FindUser(client_id.c_str());
+											if (iClient > 0 && m_users[iClient].ID >= OAUTH2_USERIDX_OFFSET && m_users[iClient].userrights == URIGHTS_CLIENTID)
+											{
+												Json::Value jwtpayload;
+												jwtpayload["preferred_username"] = m_users[iUser].Username;
+												jwtpayload["name"] = m_users[iUser].Username;
+												jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime, jwtpayload))
+												{
+													root["access_token"] = jwttoken;
+													root["token_type"] = "Bearer";
+													root["expires_in"] = exptime;
+													rep.status = reply::ok;
+												}
+												else
+												{
+													root["error"] = "server_error";
+													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
+													iUser = -1;
+												}
+											}
+											else
+											{
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid client_id (%s)(%d) for user (%s) for Password grant flow!", client_id.c_str(), iClient, user.c_str());
+												iUser = -1;
+											}
+										}
+										else
+										{
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid credentials for user (%s) for Password grant flow!", user.c_str());
+											iUser = -1;
+										}
+									}
+									else
+									{
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Password grant flow!", user.c_str());
+									}
+								}
+							}
+						}
+						if (iUser == -1)
+						{
+							root["error"] = "invalid_client";
+							rep.status = reply::unauthorized;
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant flow failed!");
+						}
+					} // end 'password' grant_type
+					if (grant_type.compare("refresh_token") == 0 )
+					{
+						bValidGrantType = true;
+						std::string refresh_token = request::findValue(&req, "refresh_token");
+						if (!refresh_token.empty())
+						{
+							std::string usernamefromtoken;
+							if (ValidateOAuth2RefreshToken(refresh_token, usernamefromtoken))
+							{
+								std::vector<std::string> strarray;
+								StringSplit(usernamefromtoken,";", strarray);
+								if(strarray.size() == 2)
+								{
+									int iClient = std::atoi(strarray[0].c_str());
+									int iUser = std::atoi(strarray[1].c_str());
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found valid Refresh token (%s) (c:%d,u:%d)!", refresh_token.c_str(), iClient, iUser);
+
+									Json::Value jwtpayload;
+									jwtpayload["preferred_username"] = m_users[iUser].Username;
+									jwtpayload["name"] = m_users[iUser].Username;
+									jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload))
+									{
+										std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
+										root["access_token"] = jwttoken;
+										root["token_type"] = "Bearer";
+										root["expires_in"] = exptime;
+										root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
+										rep.status = reply::ok;
+									}
+									else
+									{
+										root["error"] = "server_error";
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate new Access Token from Resfreshtoken!");
+									}
+								}
+								else
+								{
+									root["error"] = "access_denied";
+									rep.status = reply::unauthorized;
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) does not contain valid reference to client/user (%s)!", refresh_token.c_str(), usernamefromtoken.c_str());
+								}
+							}
+							else
+							{
+								root["error"] = "access_denied";
+								rep.status = reply::unauthorized;
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) is not valid or expired!", refresh_token.c_str());
+							}
+							InvalidateOAuth2RefreshToken(refresh_token);
+						}
+						else
+						{
+							root["error"] = "invalid_request";
+							rep.status = reply::bad_request;
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unable to process refresh token request!");
+						}
+					} // end 'refresh_token' grant_type
+				}
+				if(!bValidGrantType)
+				{
+					root["error"] = "unsupported_grant_type";
+					_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid/unsupported grant_type (%s)!", grant_type.c_str());
+				}
+			}
+			else
+			{
+				root["error"] = "invalid_request";
+				_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Received invalid request method .%s.", req.method.c_str());
+			}
+
+			reply::set_content(&rep, root.toStyledString());
+		}
+
+		void CWebServer::GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep)
+		{
+			Json::Value root, jaRTS(Json::arrayValue), jaTEASAVS(Json::arrayValue), jaGTS(Json::arrayValue), jaCCMS(Json::arrayValue), jaTEAMS(Json::arrayValue);
+
+			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
+			rep.status = reply::bad_request;
+
+			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size()-1);
+
+			root["issuer"] = m_pWebEm->m_DigistRealm;
+			root["authorization_endpoint"] = base_url + OAUTH2_AUTH_URL;
+			root["token_endpoint"] = base_url + OAUTH2_TOKEN_URL;
+			jaRTS.append("code");
+			root["response_types_supported"] = jaRTS;
+			jaTEASAVS.append("PS256");
+			jaTEASAVS.append("RS256");
+			jaTEASAVS.append("HS256");
+			jaTEASAVS.append("HS384");
+			jaTEASAVS.append("HS512");
+			root["token_endpoint_auth_signing_alg_values_supported"] = jaTEASAVS;
+			jaGTS.append("authorization_code");
+			jaGTS.append("password");
+			jaGTS.append("refresh_token");
+			root["grant_types_supported"] = jaGTS;
+			jaCCMS.append("S256");
+			root["code_challenge_methods_supported"] = jaCCMS;
+			jaTEAMS.append("client_secret_basic");
+			root["token_endpoint_auth_methods_supported"] = jaTEAMS;
+
+			rep.status = reply::ok;
+			reply::set_content(&rep, root.toStyledString());
+		}
+
+		std::string CWebServer::GenerateOAuth2RefreshToken(const std::string username, const int refreshexptime)
+		{
+			std::string refreshtoken = base64url_encode(sha256raw(GenerateUUID()));
+			WebEmStoredSession refreshsession;
+			refreshsession.id = GenerateMD5Hash(refreshtoken);
+			refreshsession.auth_token = refreshtoken;
+			refreshsession.expires = mytime(nullptr) + refreshexptime;
+			refreshsession.username = username;
+			StoreSession(refreshsession);
+			return refreshtoken;
+		}
+
+		bool CWebServer::ValidateOAuth2RefreshToken(const std::string refreshtoken, std::string &username)
+		{
+			bool bOk = false;
+			WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
+			if	((!refreshsession.id.empty())
+				&& (refreshsession.auth_token.compare(refreshtoken) == 0)
+				&& (refreshsession.expires > mytime(nullptr))
+				)
+			{
+				bOk = true;
+				username = refreshsession.username;
+			}
+
+			return bOk;
+		}
+
+		void CWebServer::InvalidateOAuth2RefreshToken(const std::string refreshtoken)
+		{
+			WebEmStoredSession refreshsession = GetSession(GenerateMD5Hash(refreshtoken));
+			if	(!refreshsession.id.empty())
+				RemoveSession(refreshsession.id);
+		}
+
+		void CWebServer::Cmd_GetHardwareTypes(WebEmSession &session, const request &req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -2849,7 +3371,7 @@ namespace http
 				}
 				else
 				{
-					_log.Debug(DEBUG_WEBSERVER, "Forecastconfig: Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetForecastConfig() : Could not find hardware (not active?) for ID %s!", root["Forecasthardware"].asString().c_str());
 					root["Forecasthardware"] = 0; // reset to 0
 				}
 			}
@@ -6283,47 +6805,9 @@ namespace http
 
 				m_notifications.RemoveDeviceNotifications(idx);
 			}
-			else if (cparam == "adduser")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; // Only admin user allowed
-				}
-
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string srights = request::findValue(&req, "rights");
-				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
-				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					return;
-				int rights = atoi(srights.c_str());
-				if (rights != 2)
-				{
-					if (!FindAdminUser())
-					{
-						root["message"] = "Add a Admin user first! (Or enable Settings/Website Protection)";
-						return;
-					}
-				}
-				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
-				if (!result.empty())
-				{
-					root["message"] = "Duplicate Username!";
-					return;
-				}
-				root["status"] = "OK";
-				root["title"] = "AddUser";
-				m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
-					(senabled == "true") ? 1 : 0, base64_encode(username).c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
-					atoi(sTabsEnabled.c_str()));
-				LoadUsers();
-			}
-			else if (cparam == "updateuser")
-			{
+			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
+			{	// C(R)UD operations for Users. Read is done by RType_Users
+				root["status"] = "ERR";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
@@ -6331,85 +6815,211 @@ namespace http
 				}
 
 				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
+				if (cparam != "adduser" && idx.empty())
+				{
+					root["message"] = "Missing index of User to modify!";
 					return;
+				}
+
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string username = request::findValue(&req, "username");
 				std::string password = request::findValue(&req, "password");
 				std::string srights = request::findValue(&req, "rights");
 				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
 				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
-				if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
-					return;
 				int rights = atoi(srights.c_str());
-				if (rights != 2)
+
+				if (cparam != "deleteuser")
 				{
-					if (!FindAdminUser())
+					if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
 					{
-						root["message"] = "Add a Admin user first! (Or enable Settings/Website Protection)";
+						root["message"] = "One or more expected values are empty!";
 						return;
 					}
+					if (rights != 2)
+					{
+						if (!FindAdminUser())
+						{
+							root["message"] = "Add an Admin user first!";
+							return;
+						}
+					}
 				}
+
 				std::string sHashedUsername = base64_encode(username);
 
 				// Check for duplicate user name
-				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", base64_encode(username).c_str());
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (Username == '%q')", sHashedUsername.c_str());
 				if (!result.empty())
 				{
-					std::string oidx = result[0][0];
-					if (oidx != idx)
+					if (!(cparam == "updateuser" && result[0][0] == idx))
 					{
 						root["message"] = "Duplicate Username!";
 						return;
 					}
 				}
 
-				// Invalid user's sessions if username or password has changed
-				std::string sOldUsername;
-				std::string sOldPassword;
-				result = m_sql.safe_query("SELECT Username, Password FROM Users WHERE (ID == '%q')", idx.c_str());
-				if (result.size() == 1)
+				if (cparam == "adduser")
 				{
-					sOldUsername = result[0][0];
-					sOldPassword = result[0][1];
+					root["title"] = "AddUser";
+					m_sql.safe_query("INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%q','%q','%d','%d','%d')",
+							(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0,
+							atoi(sTabsEnabled.c_str()));
 				}
-				if ((sHashedUsername != sOldUsername) || (password != sOldPassword))
-					RemoveUsersSessions(sOldUsername, session);
+				else if (cparam == "updateuser")
+				{
+					root["title"] = "UpdateUser";
 
-				root["status"] = "OK";
-				root["title"] = "UpdateUser";
-				m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
-					idx.c_str());
+					// Invalidate user's sessions if username or password has changed
+					result = m_sql.safe_query("SELECT Username, Password, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
+					if (result.size() == 1)
+					{
+						std::string sOldUsername = result[0][0];
+						std::string sOldPassword = result[0][1];
+						std::string sOldRights = result[0][2];
+						int oldrights = atoi(sOldRights.c_str());
+						if ((oldrights == URIGHTS_ADMIN) && (rights != URIGHTS_ADMIN) && (CountAdminUsers() <= 1))
+						{
+							root["message"] = "Cannot change rights of last Admin user!";
+							return;
+						}
+						if ((sHashedUsername != sOldUsername) || (password != sOldPassword) || (oldrights != rights))
+							RemoveUsersSessions(sOldUsername, session);
+
+						m_sql.safe_query("UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, sHashedUsername.c_str(), password.c_str(), rights, (sRemoteSharing == "true") ? 1 : 0, atoi(sTabsEnabled.c_str()),
+								idx.c_str());
+					}
+				}
+				else if (cparam == "deleteuser")
+				{
+					root["title"] = "DeleteUser";
+
+					// Remove user's sessions
+					result = m_sql.safe_query("SELECT Username, Rights FROM Users WHERE (ID == '%q')", idx.c_str());
+					if (result.size() == 1)
+					{
+						srights = result[0][1];
+						rights = atoi(srights.c_str());
+						if ((CountAdminUsers() <= 1) && (rights == URIGHTS_ADMIN))
+						{
+							root["message"] = "Cannot delete last Admin user!";
+							return;
+						}
+						RemoveUsersSessions(result[0][0], session);
+
+						m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+
+						m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
+					}
+				}
 				LoadUsers();
+				root["status"] = "OK";
 			}
-			else if (cparam == "deleteuser")
-			{
+			else if (cparam == "getapplications" || cparam == "addapplication" || cparam == "updateapplication" || cparam == "deleteapplication")
+			{	// CRUD operations for Applications
+				root["title"] = "Applications";
 				if (session.rights < 2)
 				{
 					session.reply_status = reply::forbidden;
 					return; // Only admin user allowed
 				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "DeleteUser";
-
-				// Remove user's sessions
-				result = m_sql.safe_query("SELECT Username FROM Users WHERE (ID == '%q')", idx.c_str());
-				if (result.size() == 1)
+				if 	(cparam == "getapplications")
 				{
-					RemoveUsersSessions(result[0][0], session);
+					root["title"] = "GetApplications";
+					std::vector<std::vector<std::string>> result;
+					result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
+					if (!result.empty())
+					{
+						int ii = 0;
+						for (const auto &sd : result)
+						{
+							root["result"][ii]["idx"] = sd[0];
+							root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
+							root["result"][ii]["Public"] = (sd[2] == "1") ? "true" : "false";
+							root["result"][ii]["Applicationname"] = sd[3];
+							root["result"][ii]["Secret"] = sd[4];
+							root["result"][ii]["Pemfile"] = sd[5];
+							root["result"][ii]["LastSeen"] = sd[6];
+							ii++;
+						}
+					}
 				}
+				else if (cparam == "addapplication" || cparam == "updateapplication")
+				{
+					root["title"] = "AddUpdateApplication";
+					std::string senabled = request::findValue(&req, "enabled");
+					std::string spublic = request::findValue(&req, "public");
+					std::string applicationname = request::findValue(&req, "applicationname");
+					std::string secret = request::findValue(&req, "secret");
+					std::string pemfile = request::findValue(&req, "pemfile");
+					std::string idx = request::findValue(&req, "idx");
+					if (senabled.empty() || applicationname.empty() || spublic.empty())
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+					if ((spublic != "true") && secret.empty())
+					{
+						root["statustext"] = "Secret's can only be empty for Public Clients!";
+						return;
+					}
+					if ((spublic == "true") && pemfile.empty())
+					{
+						root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
+						return;
+					}
+					// Check for duplicate application name
+					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (Applicationname == '%q')", applicationname.c_str());
+					if (!result.empty())
+					{
+						std::string oidx = result[0][0];
+						if (cparam == "addapplication" || (!idx.empty() && oidx != idx))
+						{
+							root["statustext"] = "Duplicate Applicationname!";
+							return;
+						}
+					}
+					if (cparam == "addapplication")
+					{
+						root["title"] = "AddApplication";
+						m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
+								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
+					}
+					else if (cparam == "updateapplication")
+					{
+						root["title"] = "UpdateApplication";
+						if (idx.empty())
+						{
+							session.reply_status = reply::bad_request;
+							return;
+						}
+						m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
+								(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
+					}
+				}
+				else if (cparam == "deleteapplication")
+				{
+					root["title"] = "DeleteApplication";
+					std::string idx = request::findValue(&req, "idx");
+					if (idx.empty())
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
 
-				m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
-
-				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
-
-				LoadUsers();
+					// Remove Application
+					result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
+					if (result.size() != 1)
+					{
+						session.reply_status = reply::bad_request;
+						return;
+					}
+					m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
+				}
+				root["status"] = "OK";
+				if 	(cparam != "getapplications")
+					LoadUsers();
 			}
 			else if (cparam == "clearlightlog")
 			{
@@ -6661,7 +7271,7 @@ namespace http
 				if (switchcmd == "Set Level")
 					level = request::findValue(&req, "level");
 				std::string onlyonchange = request::findValue(&req, "ooc"); // No update unless the value changed (check if updated)
-				_log.Debug(DEBUG_WEBSERVER, "WEBS switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
+				_log.Debug(DEBUG_WEBSERVER, "CWebServer::HandleCommand() : switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
 				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx.empty()) || (switchcmd.empty()) || ((switchcmd == "Set Level") && (level.empty())))
 					return;
@@ -7725,46 +8335,52 @@ namespace http
 		void CWebServer::LoadUsers()
 		{
 			ClearUserPasswords();
-			std::string WebUserName, WebPassword;
-			int nValue = 0;
-			if (m_sql.GetPreferencesVar("WebUserName", nValue, WebUserName))
+			// Add Users
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
+			if (!result.empty())
 			{
-				if (m_sql.GetPreferencesVar("WebPassword", nValue, WebPassword))
+				for (const auto &sd : result)
 				{
-					if ((!WebUserName.empty()) && (!WebPassword.empty()))
+					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					if (bIsActive)
 					{
-						WebUserName = base64_decode(WebUserName);
-						// WebPassword = WebPassword;
-						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
+						unsigned long ID = (unsigned long)atol(sd[0].c_str());
 
-						std::vector<std::vector<std::string>> result;
-						result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, TabsEnabled FROM Users");
-						if (!result.empty())
-						{
-							for (const auto& sd : result)
-							{
-								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
-								if (bIsActive)
-								{
-									unsigned long ID = (unsigned long)atol(sd[0].c_str());
+						std::string username = base64_decode(sd[2]);
+						std::string password = sd[3];
 
-									std::string username = base64_decode(sd[2]);
-									std::string password = sd[3];
+						_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
+						int activetabs = atoi(sd[5].c_str());
 
-									_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
-									int activetabs = atoi(sd[5].c_str());
-
-									AddUser(ID, username, password, rights, activetabs);
-								}
-							}
-						}
+						AddUser(ID, username, password, rights, activetabs);
 					}
 				}
 			}
+			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
+			result.clear();
+			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile FROM Applications");
+			if (!result.empty())
+			{
+				for (const auto &sd : result)
+				{
+					int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
+					if (bIsActive)
+					{
+						unsigned long ID = OAUTH2_USERIDX_OFFSET + (unsigned long)atol(sd[0].c_str());
+						int bPublic = static_cast<int>(atoi(sd[2].c_str()));
+						std::string applicationname = sd[3];
+						std::string secret = sd[4];
+						std::string pemfile = sd[5];
+						AddUser(ID, applicationname, secret, URIGHTS_CLIENTID, bPublic, pemfile);
+					}
+				}
+			}
+
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const unsigned long ID, const std::string& username, const std::string& password, const int userrights, const int activetabs)
+		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs, const std::string &pemfile)
 		{
 			if (m_pWebEm == nullptr)
 				return;
@@ -7772,21 +8388,99 @@ namespace http
 			if (result.empty())
 				return;
 
+			// Let's see if we can load the public/private keyfile for this user/client
+			std::string privkey = "";
+			std::string pubkey = "";
+			if (!pemfile.empty())
+			{
+				std::string sErr = "";
+				std::ifstream ifs;
+
+				std::string szTmpFile = szUserDataFolder + pemfile;
+
+				ifs.open(szTmpFile);
+				if(ifs.is_open())
+				{
+					std::string sLine = "";
+					int i = 0;
+					bool bPriv = false;
+					bool bPrivFound = false;
+					bool bPub = false;
+					bool bPubFound = false;
+					while (std::getline(ifs, sLine))
+					{
+						sLine += '\n';	// Newlines need to be added so the SSL library understands the Public/Private keys
+						if (sLine.find("-----BEGIN PUBLIC KEY") != std::string::npos)
+						{
+							bPub = true;
+						}
+						if (sLine.find("-----BEGIN PRIVATE KEY") != std::string::npos)
+						{
+							bPriv = true;
+						}
+						if (bPriv)
+							privkey += sLine;
+						if (bPub)
+							pubkey += sLine;
+						if (sLine.find("-----END PUBLIC KEY") != std::string::npos)
+						{
+							if(bPub)
+								bPubFound = true;
+							bPub = false;
+						}
+						if (sLine.find("-----END PRIVATE KEY") != std::string::npos)
+						{
+							if(bPriv)
+								bPrivFound = true;
+							bPriv = false;
+						}
+						i++;
+					}
+					_log.Debug(DEBUG_AUTH, "Add User: Found PEMfile (%s) for User (%s) with %d lines. PubKey (%d), PrivKey (%d)", szTmpFile.c_str(), username.c_str(), i, bPubFound, bPrivFound);
+					ifs.close();
+					if (!bPubFound)
+						sErr = "Unable to find a Public key within the PEMfile";
+					else if (!bPrivFound)
+						_log.Log(LOG_STATUS, "AddUser: Pemfile (%s) only has a Public key, so only verification is possible. Token generation has to be done external.", szTmpFile.c_str());
+				}
+				else
+					sErr = "Unable to find/open file";
+
+				if(!sErr.empty())
+				{
+					_log.Log(LOG_STATUS,"AddUser: Unable to load and process given PEMfile (%s) (%s)!", szTmpFile.c_str(), sErr.c_str());
+					return;
+				}
+			}
+
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
 			wtmp.Username = username;
 			wtmp.Password = password;
+			wtmp.PrivKey = privkey;
+			wtmp.PubKey = pubkey;
 			wtmp.userrights = (_eUserRights)userrights;
 			wtmp.ActiveTabs = activetabs;
 			wtmp.TotSensors = atoi(result[0][0].c_str());
 			m_users.push_back(wtmp);
 
-			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs);
+			_tUserAccessCode utmp;
+			utmp.ID = ID;
+			utmp.UserName = username;
+			utmp.clientID = -1	;
+			utmp.ExpTime = 0;
+			utmp.AuthCode = "";
+			utmp.Scope = "";
+			utmp.RedirectUri = "";
+			m_accesscodes.push_back(utmp);
+
+			m_pWebEm->AddUserPassword(ID, username, password, (_eUserRights)userrights, activetabs, privkey, pubkey);
 		}
 
 		void CWebServer::ClearUserPasswords()
 		{
 			m_users.clear();
+			m_accesscodes.clear();
 			if (m_pWebEm)
 				m_pWebEm->ClearUserPasswords();
 		}
@@ -7806,6 +8500,17 @@ namespace http
 		bool CWebServer::FindAdminUser()
 		{
 			return std::any_of(m_users.begin(), m_users.end(), [](const _tWebUserPassword& user) { return user.userrights == URIGHTS_ADMIN; });
+		}
+
+		int CWebServer::CountAdminUsers()
+		{
+			int iAdmins = 0;
+			for (const auto &user : m_users)
+			{
+				if (user.userrights == URIGHTS_ADMIN)
+					iAdmins++;
+			}
+			return iAdmins;
 		}
 
 		// Depricated : This 'page' should not be used anymore. Use command instead
@@ -7985,49 +8690,6 @@ namespace http
 				m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
 
 				m_pWebEm->SetAuthenticationMethod(amethod);
-				cntSettings++;
-
-				// Check new and get old username/password
-				std::string WebUserName = base64_encode(CURLEncode::URLDecode(request::findValue(&req, "WebUserName")));
-				std::string WebPassword = CURLEncode::URLDecode(request::findValue(&req, "WebPassword"));
-
-				std::string sOldWebLogin;
-				std::string sOldWebPassword;
-				m_sql.GetPreferencesVar("WebUserName", sOldWebLogin);
-				m_sql.GetPreferencesVar("WebPassword", sOldWebPassword);
-
-				bool bHaveAdminUserPasswordChange = false;
-
-				if ((WebUserName == sOldWebLogin) && (WebPassword.empty()))
-				{
-					// All is OK, no changes
-				}
-				else if (WebUserName.empty() || WebPassword.empty())
-				{
-					// If no Admin User/Password is specified, we clear them
-					if ((!sOldWebLogin.empty()) || (!sOldWebPassword.empty()))
-						bHaveAdminUserPasswordChange = true;
-					WebUserName = "";
-					WebPassword = "";
-				}
-				else
-				{
-					if ((WebUserName != sOldWebLogin) || (WebPassword != sOldWebPassword))
-					{
-						bHaveAdminUserPasswordChange = true;
-					}
-				}
-
-				// Invalid sessions of WebUser when the username or password has been changed
-				if (bHaveAdminUserPasswordChange)
-				{
-					if (!sOldWebLogin.empty())
-						RemoveUsersSessions(sOldWebLogin, session);
-					m_sql.UpdatePreferencesVar("WebUserName", WebUserName);
-					m_sql.UpdatePreferencesVar("WebPassword", WebPassword);
-				}
-				m_webservers.LoadUsers();
-				cntSettings++;
 				cntSettings++;
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
@@ -12938,14 +13600,6 @@ namespace http
 				{
 					root["ShortLogInterval"] = nValue;
 				}
-				else if (Key == "WebUserName")
-				{
-					root["WebUserName"] = base64_decode(sValue);
-				}
-				// else if (Key == "WebPassword")
-				//{
-				//	root["WebPassword"] = sValue;
-				//}
 				else if (Key == "SecPassword")
 				{
 					root["SecPassword"] = sValue;
@@ -13477,7 +14131,7 @@ namespace http
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			_log.Debug(DEBUG_WEBSERVER, "dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
+			_log.Debug(DEBUG_WEBSERVER, "CWebServer::RType_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d", dType, dSubType, int(metertype));
 			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || (dType == pTypeCURRENTENERGY) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 			{
 				metertype = MTYPE_ENERGY;
@@ -17404,40 +18058,6 @@ namespace http
 			} // custom range
 		}
 
-		/**
-		 * Retrieve user session from store, without remote host.
-		 */
-		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
-		{
-			//_log.Log(LOG_STATUS, "SessionStore : get...");
-			WebEmStoredSession session;
-
-			if (sessionId.empty())
-			{
-				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
-			}
-			else
-			{
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'", sessionId.c_str());
-				if (!result.empty())
-				{
-					session.id = result[0][0];
-					session.username = base64_decode(result[0][1]);
-					session.auth_token = result[0][2];
-
-					std::string sExpirationDate = result[0][3];
-					// time_t now = mytime(NULL);
-					struct tm tExpirationDate;
-					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
-					// RemoteHost is not used to restore the session
-					// LastUpdate is not used to restore the session
-				}
-			}
-
-			return session;
-		}
-
 		/*
 		 * Takes root["result"] and groups all items according to sgroupby, summing all values for each category, then creating new items in root["result"]
 		 * for each combination year/category.
@@ -17607,11 +18227,45 @@ namespace http
 		}
 
 		/**
+		 * Retrieve user session from store, without remote host.
+		 */
+		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
+		{
+			_log.Debug(DEBUG_SQL, "SessionStore : get...");
+			WebEmStoredSession session;
+
+			if (sessionId.empty())
+			{
+				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
+			}
+			else
+			{
+				std::vector<std::vector<std::string>> result;
+				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'", sessionId.c_str());
+				if (!result.empty())
+				{
+					session.id = result[0][0];
+					session.username = base64_decode(result[0][1]);
+					session.auth_token = result[0][2];
+
+					std::string sExpirationDate = result[0][3];
+					// time_t now = mytime(NULL);
+					struct tm tExpirationDate;
+					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
+					// RemoteHost is not used to restore the session
+					// LastUpdate is not used to restore the session
+				}
+			}
+
+			return session;
+		}
+
+		/**
 		 * Save user session.
 		 */
 		void CWebServer::StoreSession(const WebEmStoredSession& session)
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : store...");
+			_log.Debug(DEBUG_SQL, "SessionStore : store...");
 			if (session.id.empty())
 			{
 				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
@@ -17645,7 +18299,7 @@ namespace http
 		 */
 		void CWebServer::RemoveSession(const std::string& sessionId)
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : remove...");
+			_log.Debug(DEBUG_SQL, "SessionStore : remove...");
 			if (sessionId.empty())
 			{
 				return;
@@ -17658,16 +18312,13 @@ namespace http
 		 */
 		void CWebServer::CleanSessions()
 		{
-			//_log.Log(LOG_STATUS, "SessionStore : clean...");
+			_log.Debug(DEBUG_SQL, "SessionStore : clean...");
 			m_sql.safe_query("DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
 		}
 
 		/**
 		 * Delete all user's session, except the session used to modify the username or password.
 		 * username must have been hashed
-		 *
-		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
-		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
 		 */
 		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession& exceptSession)
 		{

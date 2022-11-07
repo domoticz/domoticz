@@ -117,8 +117,6 @@ namespace http {
 				StringSplit(WebLocalNetworks, ";", strarray);
 				for (const auto &str : strarray)
 					it->m_pWebEm->AddLocalNetworks(str);
-				// add local hostname
-				it->m_pWebEm->AddLocalNetworks("");
 			}
 		}
 

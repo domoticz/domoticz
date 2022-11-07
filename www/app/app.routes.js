@@ -209,6 +209,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 controller: 'UsersController',
                 permission: 'Admin'
             }))
+            .when('/Applications', angularAMD.route({
+                templateUrl: 'views/applications.html',
+                controller: 'ApplicationsController',
+                permission: 'Admin'
+            }))
             .when('/UserVariables', angularAMD.route({
                 templateUrl: 'views/uservariables.html',
                 controller: 'UserVariablesController',

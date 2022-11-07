@@ -1688,8 +1688,6 @@ void MainWorker::Do_Work()
 				if (file_exist(szPwdResetFile.c_str()))
 				{
 					m_webservers.ClearUserPasswords();
-					m_sql.UpdatePreferencesVar("WebUserName", "");
-					m_sql.UpdatePreferencesVar("WebPassword", "");
 					std::remove(szPwdResetFile.c_str());
 				}
 				m_notifications.CheckAndHandleLastUpdateNotification();

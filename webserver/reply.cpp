@@ -226,7 +226,7 @@ namespace stock_replies {
 
 } // namespace stock_replies
 
-reply reply::stock_reply(reply::status_type status)
+reply reply::stock_reply(reply::status_type status, bool addsecheaders)
 {
 	reply rep;
 	rep.status = status;
@@ -238,7 +238,23 @@ reply reply::stock_reply(reply::status_type status)
 		rep.headers[1].name = "Content-Type";
 		rep.headers[1].value = "text/html;charset=UTF-8";
 	}
+	if (addsecheaders)
+		add_security_headers(&rep);
 	return rep;
+}
+
+void reply::add_security_headers(reply *rep)
+{
+	add_header(rep, "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload", true);
+	add_header(rep, "X-Content-Type-Options", "nosniff", true);
+	add_header(rep, "Content-Security-Policy", "frame-ancestors 'self'", true);
+	//add_header(rep, "X-XSS-Protection", "1; mode=block", true);	// obsolete thx to CSP
+	//add_header(rep, "X-Frame-Options", "SAMEORIGIN", true);	// obsolete thx to CSP
+}
+
+void reply::add_cors_headers(reply *rep)
+{
+	add_header(rep, "Access-Control-Allow-Origin", "*", true);
 }
 
 void reply::add_header(reply *rep, const std::string &name, const std::string &value, bool replace)

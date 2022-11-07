@@ -19,6 +19,7 @@
 #include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/evp.h>
+#include <openssl/sha.h>
 #include <chrono>
 #include <limits.h>
 #include <cstring>
@@ -1443,6 +1444,16 @@ std::string GenerateUUID() // DCE/RFC 4122
 	return uuid;
 }
 
+bool isHexRepresentation(const std::string &input)
+{
+	if (input.empty())
+		return false;
+	bool bIsHex = true;
+	for (auto itt = input.begin(); itt != input.end(); ++itt)
+		bIsHex &= (hexCHARS.find(*itt) != std::string::npos);
+	return bIsHex;
+}
+
 double round_digits(double dIn, const int totDigits)
 {
 	std::stringstream sstr;
@@ -1483,3 +1494,27 @@ std::wstring utf8_to_wstring(const std::string& utf8str)
 	return wconv.from_bytes(utf8str);
 }
 
+std::string sha256hex(const std::string &input)
+{
+    unsigned char digest[33] = {0};
+	char hexdigest[65] = {0};
+	size_t idxb, idxh;
+
+    SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+
+	for (idxb = 0, idxh = 0; idxb < 32; idxb++, idxh += 2)
+	{
+		uint8_t bval = digest[idxb] & 0xFF;
+		hexdigest[idxh] = hexCHARS[(bval >> 4) & 0xf];
+		hexdigest[idxh + 1] = hexCHARS[bval & 0xF];
+	}
+	hexdigest[idxh] = 0;
+	return(std::string(hexdigest));
+}
+
+std::string sha256raw(const std::string &input)
+{
+    unsigned char digest[33] = {0};
+    SHA256((const unsigned char *)input.c_str(), input.length(), digest);
+	return std::string((const char *)digest);
+}

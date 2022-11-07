@@ -410,11 +410,6 @@ define(['app'], function (app) {
 					if (typeof data.MobileType != 'undefined') {
 						$("#settingscontent #combosmobiletype").val(data.MobileType);
 					}
-					if (typeof data.WebUserName != 'undefined') {
-						$scope.OldAdminUser=data.WebUserName;
-						$("#webtable #WebUserName").val(data.WebUserName);
-					}
-					$("#webtable #WebPassword").val(md5.createHash("bogus"));
 					if (typeof data.SecPassword != 'undefined') {
 						$("#sectable #SecPassword").val(data.SecPassword);
 					}
@@ -679,23 +674,6 @@ define(['app'], function (app) {
 				return;
 			}
 			
-			var adminuser = $("#webtable #WebUserName").val();
-			var adminpwd = $("#webtable #WebPassword").val();
-			if (adminpwd == md5.createHash("bogus")) {
-				$("#webtable #WebPassword").val("");
-				adminpwd = "";
-			}
-			if ((adminuser!="")&&($scope.OldAdminUser!=adminuser)) {
-				if (adminpwd=="") {
-					ShowNotify($.t('Please enter a Admin password!'), 2000, true);
-					return;
-				}
-			}
-			if (adminpwd!="") {
-				$("#webtable #WebPassword").val(md5.createHash(adminpwd));
-			}
-						
-
 			var secpanel = $("#sectable #SecPassword").val();
 			var switchprotection = $("#protectiontable #ProtectionPassword").val();
 
