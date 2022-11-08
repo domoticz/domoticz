@@ -4,12 +4,12 @@
 #ifndef PICOJSON_USE_INT64
 #define PICOJSON_USE_INT64
 #endif
-#include "picojson/picojson.h"
+#include "../jwt-cpp/picojson/picojson.h"
 
 #ifndef JWT_DISABLE_PICOJSON
 #define JWT_DISABLE_PICOJSON
 #endif
-#include "jwt-cpp/jwt.h"
+#include "../jwt-cpp/jwt.h"
 
 namespace jwt {
 	namespace traits {
