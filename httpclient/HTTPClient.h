@@ -11,7 +11,8 @@ class HTTPClient
 		HTTP_METHOD_GET,
 		HTTP_METHOD_POST,
 		HTTP_METHOD_PUT,
-		HTTP_METHOD_DELETE
+		HTTP_METHOD_DELETE,
+		HTTP_METHOD_PATCH
 	};
 
       protected:
@@ -75,6 +76,8 @@ class HTTPClient
 			bool bIgnoreNoDataReturned = false);
 	static bool Delete(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData,
 			   bool bIgnoreNoDataReturned = false);
+	static bool Patch(const std::string& url, const std::string& putdata, const std::vector<std::string>& ExtraHeaders, std::string& response, std::vector<std::string>& vHeaderData,
+		bool bIgnoreNoDataReturned = false);
 
 	/************************************************************************
 	 *									*
@@ -89,7 +92,8 @@ class HTTPClient
 	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, bool bFollowRedirect = true,
 			       long TimeOut = -1);
 	static bool PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, long TimeOut = -1);
-	static bool DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, long TimeOut = -1);
+	static bool DeleteBinary(const std::string& url, const std::string& putdata, const std::vector<std::string>& ExtraHeaders, std::vector<unsigned char>& response, long TimeOut = -1);
+	static bool PatchBinary(const std::string& url, const std::string& putdata, const std::vector<std::string>& ExtraHeaders, std::vector<unsigned char>& response, long TimeOut = -1);
 
 	/************************************************************************
 	 *									*
@@ -104,6 +108,8 @@ class HTTPClient
 			      std::vector<std::string> &vHeaderData, long TimeOut = -1);
 	static bool DeleteBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
 				 std::vector<std::string> &vHeaderData, long TimeOut = -1);
+	static bool PatchBinary(const std::string& url, const std::string& putdata, const std::vector<std::string>& ExtraHeaders, std::vector<unsigned char>& response,
+		std::vector<std::string>& vHeaderData, long TimeOut = -1);
 
       private:
 	static void SetGlobalOptions(void *curlobj);
