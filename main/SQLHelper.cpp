@@ -3915,6 +3915,10 @@ void CSQLHelper::PerformThreadedAction(const _tTaskItem tItem)
 		{
 			ret = HTTPClient::Delete(url, postData, extraHeaders, response, headerData, true);
 		}
+		else if (tmethod == HTTPClient::HTTP_METHOD_PATCH)
+		{
+			ret = HTTPClient::Patch(url, postData, extraHeaders, response, headerData, true);
+		}
 		else
 			return; // unsupported method
 
