@@ -1,6 +1,6 @@
 # Domoticz Security Setup
 
-_Applies to version: 2022.1 Beta's and up_
+_Applies to version: 2022.2 Beta's (14706) and up_
 
 This document describes the security options within Domoticz.
 
