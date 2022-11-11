@@ -288,9 +288,9 @@ define(['app'], function (app) {
 			};
 
 			function orderRenderer(value) {
-				var upIcon = '<button class="btn btn-icon js-move-up"><img src="../../images/up.png" /></button>';
-				var downIcon = '<button class="btn btn-icon js-move-down"><img src="../../images/down.png" /></button>';
-				var emptyIcon = '<img src="../../images/empty16.png" width="16" height="16" />';
+				var upIcon = '<button class="btn btn-icon js-move-up"><img src="./images/up.png" /></button>';
+				var downIcon = '<button class="btn btn-icon js-move-down"><img src="./images/down.png" /></button>';
+				var emptyIcon = '<img src="./images/empty16.png" width="16" height="16" />';
 
 				if (value === '1') {
 					return downIcon + emptyIcon;
@@ -303,8 +303,8 @@ define(['app'], function (app) {
 
 			function actionsRenderer() {
 				var actions = [];
-				actions.push('<button class="btn btn-icon js-rename" title="' + $.t('Rename') + '"><img src="../../images/rename.png" /></button>');
-				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="../../images/delete.png" /></button>');
+				actions.push('<button class="btn btn-icon js-rename" title="' + $.t('Rename') + '"><img src="./images/rename.png" /></button>');
+				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="./images/delete.png" /></button>');
 				return actions.join('&nbsp;');
 			}
 		}
@@ -375,9 +375,9 @@ define(['app'], function (app) {
 			};
 
 			function orderRenderer(value, renderType, plan, record) {
-				var upIcon = '<button class="btn btn-icon js-move-up"><img src="../../images/up.png" /></button>';
-				var downIcon = '<button class="btn btn-icon js-move-down"><img src="../../images/down.png" /></button>';
-				var emptyIcon = '<img src="../../images/empty16.png" width="16" height="16" />';
+				var upIcon = '<button class="btn btn-icon js-move-up"><img src="./images/up.png" /></button>';
+				var downIcon = '<button class="btn btn-icon js-move-down"><img src="./images/down.png" /></button>';
+				var emptyIcon = '<img src="./images/empty16.png" width="16" height="16" />';
 
 				if (record.row === 0) {
 					return downIcon + emptyIcon;
@@ -390,7 +390,7 @@ define(['app'], function (app) {
 
 			function actionsRenderer() {
 				var actions = [];
-				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="../../images/delete.png" /></button>');
+				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="./images/delete.png" /></button>');
 				return actions.join('&nbsp;');
 			}
 		}
