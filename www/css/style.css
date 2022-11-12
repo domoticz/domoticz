@@ -683,6 +683,9 @@ table.mobileitem {
 	background-color: #FFFFFF;
 	width: 100%;
 }
+.status {
+	white-space: nowrap;
+}
 
 .mobileitem {
 	border: solid #ccc 1px;
@@ -775,6 +778,10 @@ table.mobileitem {
 		-moz-border-radius: 0 0 6px 6px;
 		-webkit-border-radius: 0 0 6px 6px;
 		border-radius: 0 0 6px 6px;
+	}
+
+	.mobileitem #status {
+		white-space: normal;
 	}
 
 .borderbot {
@@ -2277,6 +2284,3 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 	color: black !important;
 }
 
-.status {
-	white-space: nowrap;
-}
