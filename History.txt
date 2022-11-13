@@ -7,6 +7,7 @@ Version 2022.xxxx
 - Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
 - Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
 - Implemented: New 'auth' debug flag to see IAM related messages
+- Implemented: dzVents, OpenURL PATCH method
 - Changed: All security related setting are now in 1 settings tab
 - Changed: Default 'admin' user is generated with standard password (see Users)
 - Changed: By default prompt for login to only allow secure access
@@ -15,7 +16,9 @@ Version 2022.xxxx
 - Changed: Menu option for 'Users' moved to main 'Setup' menu list
 - Changed: Lots of security related code cleanup and improvements
 - Fixed: Logout now returns 204 instead of 401
-
+- Fixed: Mobile display text objects with long lines
+- Fixed: Highcharts dropdown menu z-index problem
+- Fixed: Navigation bar display issues on some mobile devices
 
 Version 2022.2 (November 5 2022)
 - Implemented: Blockly,	added 'Toggle' set command
