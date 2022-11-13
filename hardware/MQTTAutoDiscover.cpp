@@ -1375,7 +1375,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		|| (szUnit == "\xB0" "c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
-		|| (szUnit == "f")
 		|| (pSensor->value_template.find("temperature") != std::string::npos)
 		|| (pSensor->state_topic.find("temperature") != std::string::npos)
 		)
@@ -1384,11 +1383,26 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 		subType = sTypeTEMP1;
 
 		double temp = static_cast<float>(atof(pSensor->last_value.c_str()));
-		if (szUnit == "f")
-		{
-			// Convert back to Celsius
-			temp = ConvertToCelsius(temp);
-		}
+		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
+		sValue = std_format("%.1f", temp);
+	}
+	else if (
+		(szUnit == "°f")
+		|| (szUnit == "\xB0" "f")
+		|| (szUnit == "f")
+		|| (szUnit == "?f")
+		|| (pSensor->value_template.find("temperature") != std::string::npos)
+		|| (pSensor->state_topic.find("temperature") != std::string::npos)
+		)
+	{
+		devType = pTypeTEMP;
+		subType = sTypeTEMP1;
+
+		double temp = static_cast<float>(atof(pSensor->last_value.c_str()));
+
+		// Convert back to Celsius
+		temp = ConvertToCelsius(temp);
 
 		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
