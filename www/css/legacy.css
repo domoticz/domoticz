@@ -22,7 +22,26 @@
 
 @media (min-width: 768px) and (max-width: 1200px) {
 	.navbar .nav li a {
-		padding: 10px 5px 10px 5px !important;
+		padding: 9px !important;
+	}
+}
+
+@media (min-width: 360px) and (max-width: 400px) {
+	.navbar .nav li a {
+		padding: 7px !important;
+	}
+}
+
+@media (min-width: 260px) and (max-width: 300px) {
+	.navbar .nav li a {
+		padding: 3px !important;
+	}
+}
+
+@media (min-width: 260px) and (max-width: 978px) {
+	#holder > .container-fluid {
+		padding-top: 0px;
+		padding-bottom: 4px;
 	}
 }
 
