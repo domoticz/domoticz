@@ -1978,6 +1978,10 @@ tspan {
     overflow: visible !important;
 }
 
+.highcharts-container  {
+ z-index: auto !important;
+}
+
 .gz-back-to-top {
 	position: fixed;
 	bottom: 28px;
