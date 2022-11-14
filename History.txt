@@ -1,13 +1,14 @@
 Version 2022.xxxx
 - For a full overview visit: https://www.domoticz.com/wiki/Domoticz_versions_-_Commits for details
-- Implemented: SECURITY_SETUP.md describing the new/improved security setup
-- Implemented: Internal OAuth2/OIDC IAM service supporting 4 different flows (OAuth2 (RFC6749), PKCE extension (RFC7636) and JWT Tokens (RFC7519))
 - Implemented: Accept JWT tokens as authentication and Authorization Bearer tokens (either from internal or external IAM service)
-- Implemented: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
-- Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
-- Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
-- Implemented: New 'auth' debug flag to see IAM related messages
 - Implemented: dzVents, OpenURL PATCH method
+- Implemented: Enphase, Added battery readings
+- Implemented: Internal OAuth2/OIDC IAM service supporting 4 different flows (OAuth2 (RFC6749), PKCE extension (RFC7636) and JWT Tokens (RFC7519))
+- Implemented: New 'auth' debug flag to see IAM related messages
+- Implemented: Now 'Applications' can be registered to get secure access to Domoticz, see 'setup' menu (standard DomoticzUI app is registered by default)
+- Implemented: SECURITY_SETUP.md describing the new/improved security setup
+- Implemented: Support for basic OpenID Connect Discovery ('https://<DOMOTICZURL>/.well-known/openid-configuration')
+- Implemented: The Security realm can be configured using the 'vhostname' option (default domoticz.com)
 - Changed: All security related setting are now in 1 settings tab
 - Changed: Default 'admin' user is generated with standard password (see Users)
 - Changed: By default prompt for login to only allow secure access

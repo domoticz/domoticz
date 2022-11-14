@@ -25,6 +25,7 @@ class EnphaseAPI : public CDomoticzHardwareBase
 	void parseProduction(const Json::Value &root);
 	void parseConsumption(const Json::Value &root);
 	void parseNetConsumption(const Json::Value &root);
+	void parseStorage(const Json::Value& root);
 
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 

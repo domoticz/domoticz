@@ -56,7 +56,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string &IPAddress, const unsigned short /*usIPPort*/) :
+EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short /*usIPPort*/) :
 	m_szIPAddress(IPAddress)
 {
 	m_p1power.ID = 1;
@@ -105,12 +105,20 @@ void EnphaseAPI::Do_Work()
 
 		if (sec_counter % Enphase_request_INTERVAL == 0)
 		{
-			Json::Value result;
-			if (getProductionDetails(result))
+			try
 			{
-				parseProduction(result);
-				parseConsumption(result);
-				parseNetConsumption(result);
+				Json::Value result;
+				if (getProductionDetails(result))
+				{
+					parseProduction(result);
+					parseConsumption(result);
+					parseNetConsumption(result);
+					parseStorage(result);
+				}
+			}
+			catch (const std::exception& e)
+			{
+				Log(LOG_ERROR, "EnphaseAPI: Exception parsing data (%s)", e.what());
 			}
 		}
 	}
@@ -168,7 +176,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 #endif
 #endif
 
-	bool ret = ParseJSon(sResult, result);
+		bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
 		Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
@@ -224,8 +232,8 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	m_p1power.powerusage1 = mtotal;
 	m_p1power.powerusage2 = 0;
-	m_p1power.usagecurrent = std::max(musage,0);
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Enphase Production kWh Total", 255, nullptr);
+	m_p1power.usagecurrent = std::max(musage, 0);
+	sDecodeRXMessage(this, (const unsigned char*)&m_p1power, "Enphase Production kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -249,8 +257,8 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 
 	m_c1power.powerusage1 = mtotal;
 	m_c1power.powerusage2 = 0;
-	m_c1power.usagecurrent = std::max(musage,0);
-	sDecodeRXMessage(this, (const unsigned char *)&m_c1power, "Enphase Consumption kWh Total", 255, nullptr);
+	m_c1power.usagecurrent = std::max(musage, 0);
+	sDecodeRXMessage(this, (const unsigned char*)&m_c1power, "Enphase Consumption kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseNetConsumption(const Json::Value& root)
@@ -274,6 +282,32 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 
 	m_c2power.powerusage1 = mtotal;
 	m_c2power.powerusage2 = 0;
-	m_c2power.usagecurrent = std::max(musage,0);
-	sDecodeRXMessage(this, (const unsigned char *)&m_c2power, "Enphase Net Consumption kWh Total", 255, nullptr);
+	m_c2power.usagecurrent = std::max(musage, 0);
+	sDecodeRXMessage(this, (const unsigned char*)&m_c2power, "Enphase Net Consumption kWh Total", 255, nullptr);
+}
+
+void EnphaseAPI::parseStorage(const Json::Value& root)
+{
+	if (root["storage"].empty())
+	{
+		return;
+	}
+	if (root["storage"][0].empty())
+	{
+		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		return;
+	}
+
+	Json::Value reading = root["storage"][0];
+
+	int musage = reading["wNow"].asInt();
+	int whNow = reading["whNow"].asInt();
+	SendWattMeter(m_HwdID, 1, 255, static_cast<float>(musage), "Enphase Storage wNow");
+	SendWattMeter(m_HwdID, 2, 255, static_cast<float>(musage), "Enphase Storage whNow");
+
+	int percentageFull = reading["percentFull"].asInt();
+	SendPercentageSensor(m_HwdID, 1, 255, static_cast<float>(percentageFull), "Enphase Storage Percent Full");
+
+	std::string szState = reading["state"].asString();
+	SendTextSensor(m_HwdID, 1, 255, szState, "Enphase Storage State");
 }
