@@ -196,27 +196,31 @@ struct _tRORGTable
 	const char *description;
 };
 
-static const _tRORGTable _RORGTable[] = { { RORG_ST, "ST", "Secure telegram" },
-					  { RORG_ST_WE, "ST_WE", "Secure telegram with RORG encapsulation" },
-					  { RORG_STT_FW, "STT_FW", "Secure teach-in telegram for switch" },
-					  { RORG_4BS, "4BS", "4 Bytes Communication" },
-					  { RORG_ADT, "ADT", "Adressing Destination Telegram" },
-					  { RORG_SM_REC, "SM_REC", "Smart Ack Reclaim" },
-					  { RORG_GP_SD, "GP_SD", "Generic Profiles selective data" },
-					  { RORG_SM_LRN_REQ, "SM_LRN_REQ", "Smart Ack Learn Request" },
-					  { RORG_SM_LRN_ANS, "SM_LRN_ANS", "Smart Ack Learn Answer" },
-					  { RORG_SM_ACK_SGNL, "SM_ACK_SGNL", "Smart Acknowledge Signal telegram" },
-					  { RORG_MSC, "MSC", "Manufacturer Specific Communication" },
-					  { RORG_VLD, "VLD", "Variable length data telegram" },
-					  { RORG_UTE, "UTE", "Universal teach-in EEP based" },
-					  { RORG_1BS, "1BS", "1 Byte Communication" },
-					  { RORG_RPS, "RPS", "Repeated Switch Communication" },
-					  { RORG_SYS_EX, "SYS_EX", "Remote Management" },
-					  { 0, nullptr, nullptr } };
+static const _tRORGTable _RORGTable[] =
+{
+    {UNKNOWN_RORG, "UNKNOWN", "Unknown RORG"},
+    {RORG_ST, "ST", "Secure telegram"},
+    {RORG_ST_WE, "ST_WE", "Secure telegram with RORG encapsulation"},
+    {RORG_STT_FW, "STT_FW", "Secure teach-in telegram for switch"},
+    {RORG_4BS, "4BS", "4 Bytes Communication"},
+    {RORG_ADT, "ADT", "Adressing Destination Telegram"},
+    {RORG_SM_REC, "SM_REC", "Smart Ack Reclaim"},
+    {RORG_GP_SD, "GP_SD", "Generic Profiles selective data"},
+    {RORG_SM_LRN_REQ, "SM_LRN_REQ", "Smart Ack Learn Request"},
+    {RORG_SM_LRN_ANS, "SM_LRN_ANS", "Smart Ack Learn Answer"},
+    {RORG_SM_ACK_SGNL, "SM_ACK_SGNL", "Smart Acknowledge Signal telegram"},
+    {RORG_MSC, "MSC", "Manufacturer Specific Communication"},
+    {RORG_VLD, "VLD", "Variable length data telegram"},
+    {RORG_UTE, "UTE", "Universal teach-in EEP based"},
+    {RORG_1BS, "1BS", "1 Byte Communication"},
+    {RORG_RPS, "RPS", "Repeated Switch Communication"},
+    {RORG_SYS_EX, "SYS_EX", "Remote Management"},
+    {0, nullptr, nullptr},
+};
 
 const char *CEnOceanEEP::GetRORGLabel(uint8_t RORG)
 {
-	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG; pTable++)
+	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != 0 || pTable->label != nullptr; pTable++)
 		if (pTable->RORG == RORG)
 			return pTable->label;
 
@@ -225,7 +229,7 @@ const char *CEnOceanEEP::GetRORGLabel(uint8_t RORG)
 
 const char *CEnOceanEEP::GetRORGDescription(uint8_t RORG)
 {
-	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG; pTable++)
+	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != 0 || pTable->description != nullptr; pTable++)
 		if (pTable->RORG == RORG)
 			return pTable->description;
 
@@ -249,7 +253,7 @@ namespace http
 			}
 
 			int i = 0;
-			for (const _tRORGTable *pTable = _RORGTable; pTable->RORG; pTable++)
+			for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != 0 || pTable->label != nullptr; pTable++)
 			{
 				if (pTable->RORG != RORG_4BS && pTable->RORG != RORG_VLD && pTable->RORG != RORG_1BS && pTable->RORG != RORG_RPS)
 					continue;
@@ -688,7 +692,7 @@ static const _tEEPTable _EEPTable[] = {
 
 const char *CEnOceanEEP::GetEEP(const int RORG, const int func, const int type)
 {
-	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
+	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != 0 || pTable->EEP != nullptr; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
 			return pTable->EEP;
 
@@ -697,7 +701,7 @@ const char *CEnOceanEEP::GetEEP(const int RORG, const int func, const int type)
 
 const char *CEnOceanEEP::GetEEPLabel(const int RORG, const int func, const int type)
 {
-	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
+	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != 0 || pTable->label != nullptr; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
 			return pTable->label;
 
@@ -706,7 +710,7 @@ const char *CEnOceanEEP::GetEEPLabel(const int RORG, const int func, const int t
 
 const char *CEnOceanEEP::GetEEPDescription(const int RORG, const int func, const int type)
 {
-	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
+	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != 0 || pTable->description != nullptr; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
 			return pTable->description;
 
