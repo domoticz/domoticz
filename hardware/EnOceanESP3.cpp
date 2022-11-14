@@ -75,7 +75,7 @@ enum ESP3_PACKET_TYPE : uint8_t
 	PACKET_CONFIG_COMMAND = 0x0B,	// RESERVED
 	PACKET_COMMAND_ACCEPTED = 0x0C,	// For long operations, informs the host the command is accepted
 	PACKET_RADIO_802_15_4 = 0x10,	// 802_15_4 Raw Packet
-	PACKET_COMMAND_2_4 = 0x11		// 2.4 GHz Command
+	PACKET_COMMAND_2_4 = 0x11,		// 2.4 GHz Command
 };
 
 // ESP3 Return codes
@@ -91,7 +91,7 @@ enum ESP3_RETURN_CODE : uint8_t
 	RET_NO_FREE_BUFFER = 0x07,		// Currently all internal buffers are used
 	RET_MEMORY_ERROR = 0x82,		// The memory write process failed
 	RET_BASEID_OUT_OF_RANGE = 0x90, // BaseID out of range
-	RET_BASEID_MAX_REACHED = 0x91	// BaseID has already been changed 10 times, no more changes are allowed
+	RET_BASEID_MAX_REACHED = 0x91,	// BaseID has already been changed 10 times, no more changes are allowed
 };
 
 // ESP3 Event codes
@@ -105,7 +105,7 @@ enum ESP3_EVENT_CODE : uint8_t
 	CO_DUTYCYCLE_LIMIT = 0x06,		// Informs the external host about reaching the duty cycle limit
 	CO_TRANSMIT_FAILED = 0x07,		// Informs the external host about not being able to send a telegram
 	CO_TX_DONE = 0x08,				// Informs that all TX operations are done
-	CO_LRN_MODE_DISABLED = 0x09		// Informs that the learn mode has time-out
+	CO_LRN_MODE_DISABLED = 0x09,	// Informs that the learn mode has time-out
 };
 
 // ESP3 Common commands
@@ -174,7 +174,7 @@ enum ESP3_COMMON_COMMAND : uint8_t
 	CO_WR_TRANSPARENT_MODE = 62,	// Control the state of the transparent mode
 	CO_RD_TRANSPARENT_MODE = 63,	// Read the state of the transparent mode
 	CO_WR_TX_ONLY_MODE = 64,		// Control the state of the TX only mode
-	CO_RD_TX_ONLY_MODE = 65			// Read the state of the TX only mode} COMMON_COMMAND;
+	CO_RD_TX_ONLY_MODE = 65,		// Read the state of the TX only mode} COMMON_COMMAND;
 };
 
 // ESP3 Smart Ack codes
@@ -187,7 +187,7 @@ enum ESP3_SMART_ACK_CODE : uint8_t
 	SA_WR_RESET = 0x05,				// Send reset command to a Smart Ack client
 	SA_RD_LEARNEDCLIENTS = 0x06,	// Get Smart Ack learned sensors / mailboxes
 	SA_WR_RECLAIMS = 0x07,			// Set number of reclaim attempts
-	SA_WR_POSTMASTER = 0x08			// Activate/Deactivate Post master functionality
+	SA_WR_POSTMASTER = 0x08,		// Activate/Deactivate Post master functionality
 };
 
 // ESP3 Function return codes
@@ -218,7 +218,7 @@ enum ESP3_FUNC_RETURN_CODE : uint8_t
 	RC_ELEGRAM_WAIT,				// Waiting before sending broadcast message
 	RC_OUT_OF_RANGE,				// Generic out of range return code
 	RC_LOCK_SET,					// Function was not executed due to sending lock
-	RC_NEW_TX_TEL					// New telegram transmitted
+	RC_NEW_TX_TEL,					// New telegram transmitted
 };
 
 // Nb seconds between attempts to open ESP3 controller serial device
@@ -268,7 +268,7 @@ static const uint8_t crc8table[256] = {
 	0xae, 0xa9, 0xa0, 0xa7, 0xb2, 0xb5, 0xbc, 0xbb,
 	0x96, 0x91, 0x98, 0x9f, 0x8a, 0x8D, 0x84, 0x83,
 	0xde, 0xd9, 0xd0, 0xd7, 0xc2, 0xc5, 0xcc, 0xcb,
-	0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3
+	0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3,
 };
 
 #define proc_crc8(crc, data) (crc8table[crc ^ data])
@@ -291,7 +291,7 @@ static const uint8_t crc8table[256] = {
 typedef enum
 {
 	UTE_UNIDIRECTIONAL = 0,	// Unidirectional
-	UTE_BIDIRECTIONAL = 1	// Bidirectional
+	UTE_BIDIRECTIONAL = 1,	// Bidirectional
 } UTE_DIRECTION;
 
 // UTE Response codes
@@ -300,14 +300,14 @@ typedef enum
 	GENERAL_REASON = 0,		// Request not accepted because of general reason
 	TEACHIN_ACCEPTED = 1, 	// Request accepted, teach-in successful
 	TEACHOUT_ACCEPTED = 2, 	// Request accepted, teach-out successful
-	EEP_NOT_SUPPORTED = 3 	// Request not accepted, EEP not supported
+	EEP_NOT_SUPPORTED = 3, 	// Request not accepted, EEP not supported
 } UTE_RESPONSE_CODE;
 
 // UTE Direction response codes
 typedef enum
 {
 	UTE_QUERY = 0,		// Teach-in query command
-	UTE_RESPONSE = 1	// Teach-in response command
+	UTE_RESPONSE = 1,	// Teach-in response command
 } UTE_CMD;
 
 CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int type)
@@ -623,7 +623,7 @@ void CEnOceanESP3::UpdateNode(const uint32_t nodeID,
 void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 {
 	if (pNode == nullptr)
-		return;
+		return; // Unknown node
 
 	if (pNode->RORG == RORG)
 		return;
@@ -840,7 +840,7 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // A5-02-03, Temperature Sensor Range -20C to +20C
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x08, 0x18, 0x88, 0x80, 0x01, RORG_4BS, 0x02, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x6D },
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x08, 0x18, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x89 },
 // Test Case : Temperature Tests
 //  Min Temperature Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x36 },
@@ -1534,6 +1534,17 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x30, 0x01, RORG_RPS, 0x05, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x52 },
 #endif // ESP3_TESTS_RPS_F6_05_02
 
+#ifdef ESP3_TESTS_VLD_D2_01_0C
+// D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
+// Test Case : Teach-in Test
+//  Bi-directional teach-in or teach-out request from Node 00D2010C, response expected
+    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x40, 0x01, 0x46, 0x00, 0x0C, 0x01, 0xD2, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAE },
+// Test Case : Actuator Status Response 
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x0A, 0x01, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xB8 },
+// Test Case : Reply Measurement Response
+    { ESP3_SER_SYNC, 0x00, 0x0C, 0x07, PACKET_RADIO_ERP1, 0x96, RORG_VLD, 0x07, 0x20, 0x00, 0x00, 0x00, 0x10, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xC9 },
+#endif
+
 #ifdef ESP3_TESTS_VLD_D2_01_12
 // D2-01-12, Slot-in module, dual channels, with external button control
 // Test Case : Teach-in Test
@@ -1569,17 +1580,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // VLD msg: Actuator Status Response, Channel 1 status Off
 	{ ESP3_SER_SYNC, 0x00, 0x09, 0x07, PACKET_RADIO_ERP1, 0x56, RORG_VLD, 0x04, 0x61, 0x80, 0x01, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xAE },
 #endif // ESP3_TESTS_VLD_D2_01_12
-
-#ifdef ESP3_TESTS_VLD_D2_01_0C
-// D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
-// Test Case : Teach-in Test
-//  Bi-directional teach-in or teach-out request from Node 00D2010C, response expected
-    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x40, 0x01, 0x46, 0x00, 0x0C, 0x01, 0xD2, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAE },
-// Test Case : Actuator Status Response 
-    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x0A, 0x01, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xB8 },
-// Test Case : Reply Measurement Response
-    { ESP3_SER_SYNC, 0x00, 0x0C, 0x07, PACKET_RADIO_ERP1, 0x96, RORG_VLD, 0x07, 0x20, 0x00, 0x00, 0x00, 0x10, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xC9 },
-#endif
 
 #ifdef ESP3_TESTS_VLD_D2_03_0A
 // D2-03-0A, Push Button – Single Button
@@ -1740,6 +1740,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 
 #ifdef ENABLE_ESP3_TESTS
 	Debug(DEBUG_NORM, "------------ ESP3 tests begin ---------------------------");
+	
 	EnableLearnMode(1);
 
 	for (const auto &itt : ESP3TestsCases)
@@ -1884,7 +1885,6 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		return false; // Only allowed to control switches or selectors
 
 	NodeInfo* pNode = GetNodeInfo(nodeID);
-
 	if (pNode == nullptr)
 	{ // May happend if database contains invalid devices
 		Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
@@ -2126,7 +2126,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		int channel = tsen->LIGHTING2.unitcode - 1;
 		int cmd = tsen->LIGHTING2.cmnd;
 		int pos;
-		
+
 		// don't keep the last position if the request is for a different node!
 		if (m_last_requested_blind_nodeID != nodeID)
 		{
@@ -2140,9 +2140,9 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			pos = m_last_requested_blind_position;
 
 		if (m_last_requested_blind_position == pos)
-		{
-			//send command stop si rappuie
+		{ // Send stop command when pressed again
 			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
+
 			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
 			m_last_requested_blind_position = -1;
 		}
@@ -2564,6 +2564,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "4BS msg: Unknown Node %08X, please proceed to teach-in", senderID);
 					return;
 				}
+
 				CheckAndUpdateNodeRORG(pNode, RORG_4BS);
 
 				Debug(DEBUG_NORM, "4BS msg: Node %08X EEP %02X-%02X-%02X (%s) Data %02X %02X %02X %02X",
@@ -3300,7 +3301,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					time_t now = GetClockTicks();
 					if (m_RPS_teachin_timer != 0 && now > (m_RPS_teachin_timer + TEACH_MAX_DELAY))
-					{ // Max delay expired => teach-in request ignored
+					{ // Max delay expired => teach-in request timed out
 						m_RPS_teachin_nodeID = 0;
 						Log(LOG_NORM, "RPS teach-in request from Node %08X (timed out)", senderID);
 						return;
@@ -3310,7 +3311,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Log(LOG_NORM, "RPS teach-in request #%u from Node %08X", m_RPS_teachin_count, senderID);
 						return;
 					}
-					// Received 3 identical telegrams from the node within delay
+					// Received TEACH_NB_REQUESTS identical telegrams from the node within delay
 					// RPS teachin
 
 					m_RPS_teachin_nodeID = 0;
@@ -3648,7 +3649,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
 							tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
 							tsen.LIGHTING2.level = 0;
-							tsen.LIGHTING2.unitcode = nbc;
+							tsen.LIGHTING2.unitcode = (BYTE) nbc;
 							tsen.LIGHTING2.cmnd = light2_sOff;
 							tsen.LIGHTING2.rssi = rssi;
 
@@ -4174,7 +4175,6 @@ const char *CEnOceanESP3::GetFunctionReturnCodeDescription(const uint8_t RC)
 	return ">>Unkown function return code... Please report!<<";
 }
 
-///---------------------------------------------------------------------------
 std::string CEnOceanESP3::GetDbValue(const char *tableName, const char *fieldName, const char *whereFieldName, const char *whereFielValue)
 {
 	std::vector<std::vector<std::string>> result;
@@ -4210,7 +4210,7 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, int channel, i
 	SendESP3PacketQueued(PACKET_RADIO_ERP1, buff, 9, opt, 7);
 }
 
-//send a VLD datagramm with payload : data to device Id sID
+// Send a VLD datagramm with payload : data to device Id sID
 void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, unsigned char *data, int DataLen)
 {
 	unsigned char buffer[256];
@@ -4491,7 +4491,7 @@ namespace http
 
 			int rc = pESP3Hardware->IsNodeTeachedInJSON(root);
 
-			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3IsNodeTeachedIn: %s", (rc == 0) ? "waiting..." : (rc == 1) ? "OK" : "Timed out!");
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3IsNodeTeachedIn: %s", (rc == 0) ? "waiting..." : ((rc == 1) ? "OK" : "Timed out!"));
 
 			root["status"] = "OK";
 			root["title"] = "EnOceanESP3IsNodeTeachedIn";

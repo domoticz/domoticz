@@ -16,7 +16,7 @@ class CEnOceanESP3 : public CEnOceanEEP, public AsyncSerial, public CDomoticzHar
 public:
 	enum TeachinMode : uint8_t
 	{
-		GENERIC_NODE = 0,
+		GENERIC_NODE = 0, // WARNING : Do not change this value !!
 		TEACHEDIN_NODE = 1,
 		VIRTUAL_NODE = 2
 	};
