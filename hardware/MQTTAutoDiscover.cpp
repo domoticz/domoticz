@@ -3738,16 +3738,13 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 		return false;
 	}
 
-	//We might need to convert this to Fahrenheit
-	double TempDest = (pSensor->temperature_unit == "F") ? (float)ConvertToFahrenheit(Temp) : Temp;
-
 	Json::Value root;
 	std::string szSendValue;
 	if (!pSensor->temperature_command_template.empty())
 	{
 		std::string szKey = GetValueTemplateKey(pSensor->temperature_command_template);
 		if (!szKey.empty())
-			root[szKey] = TempDest;
+			root[szKey] = Temp;
 		else
 		{
 			Log(LOG_ERROR, "Climate device unhandled temperature_command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
@@ -3756,7 +3753,7 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, float Temp)
 		szSendValue = JSonToRawString(root);
 	}
 	else
-		szSendValue = std_format("%.1f", TempDest);
+		szSendValue = std_format("%.1f", Temp);
 
 	std::string szTopic = pSensor->state_topic;
 	if (!pSensor->temperature_command_topic.empty())
