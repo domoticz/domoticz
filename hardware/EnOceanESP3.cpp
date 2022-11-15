@@ -3556,10 +3556,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t node_func = data[6];
 				uint8_t node_RORG = data[7];
 
-				Log(LOG_NORM, "UTE %s-directional %s request from Node %08X, nb_channels %u, %sresponse expected",
+				Log(LOG_NORM, "UTE %s-directional %s request from Node %08X, %sresponse expected",
 					(ute_direction == 0) ? "uni" : "bi",
 					(ute_request == 0) ? "teach-in" : ((ute_request == 1) ? "teach-out" : "teach-in or teach-out"),
-					senderID, num_channel,
+					senderID,
 					(ute_response == 0) ? "" : "no ");
 
 				uint8_t buf[13];
@@ -3622,10 +3622,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					// Node not found and learn mode enabled and teach-in request : add it to the database
 
-					Log(LOG_NORM, "Creating Node %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
-						senderID, node_manID, GetManufacturerName(node_manID),
-						node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
-						num_channel, (num_channel > 1) ? "s" : "");
+					if (num_channel != 0xFF)
+						Log(LOG_NORM, "Creating Node %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
+							senderID, node_manID, GetManufacturerName(node_manID),
+							node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
+							num_channel, (num_channel > 1) ? "s" : "");
+					else
+						Log(LOG_NORM, "Creating Node %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
+							senderID, node_manID, GetManufacturerName(node_manID),
+							node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type));
 
 					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, TEACHEDIN_NODE);
 
@@ -3689,7 +3694,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
 					{ // Create for D2-05-0X, Blind Control for Position and Angle, Type 0x00
-						for (int nbc = 0; nbc < num_channel; nbc++)
+						for (uint8_t nbc = 0; nbc < num_channel; nbc++)
 						{
 							Log(LOG_NORM, "TEACH Blinds Switch : 0xD2 Node 0x%08x UnitID: %02X cmd: %02X ", senderID, nbc + 1, light2_sOff);
 
