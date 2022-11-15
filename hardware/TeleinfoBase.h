@@ -153,7 +153,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 	Teleinfo m_teleinfo;
 	char m_buffer[1024];
 	int m_bufferpos;
-	unsigned int m_counter;
 };
 
 /*  Details on Teleinfo variables
