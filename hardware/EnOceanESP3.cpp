@@ -2433,7 +2433,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, RORG_1BS, node_func, node_type, GetEEPLabel(RORG_1BS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_1BS, node_func, node_type, GENERIC_NODE);
+					TeachInNode(senderID, DOMOTICZ_MANUFACTURER, RORG_1BS, node_func, node_type, GENERIC_NODE);
 					return;
 				}
 				// 1BS data
@@ -2519,7 +2519,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // 4BS teach-in, variation 1 : without EEP
 						// EnOcean EEP 2.6.8 specification §3.3 p.321 : an EEP must be manually allocated
 
-						node_manID = UNKNOWN_MANUFACTURER;
+						node_manID = DOMOTICZ_MANUFACTURER;
 						node_func = 0x02; // Generic Temperature Sensors, Temperature Sensor ranging from 0°C to +40°C
 						node_type = 0x05;
 
@@ -3350,7 +3350,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, RORG_RPS, node_func, node_type, GetEEPLabel(RORG_RPS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, node_func, node_type, GENERIC_NODE);
+					TeachInNode(senderID, DOMOTICZ_MANUFACTURER, RORG_RPS, node_func, node_type, GENERIC_NODE);
 					return;
 				}
 				// RPS data
