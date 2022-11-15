@@ -2100,17 +2100,15 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type == 0x0C)
 	{ // D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
-		const char *PilotWireModeStr[] = {"Off", "Comfort", "Eco", "Anti-freeze", "Comfort-1", "Comfort-2", ""};
-		uint8_t level = 0;
-
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
-		level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
+		uint8_t level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
 		if (level > 50)
 		{
 			Log(LOG_ERROR,"Node %08X (%s), Invalid PiloteWire level %d", nodeID, pNode->name.c_str(), level);
 			return false;
 		}
+		const char *PilotWireModeStr[] = {"Off", "Comfort", "Eco", "Anti-freeze", "Comfort-1", "Comfort-2", ""};
 		int PilotWireMode = 0;
 
 		if (xcmd->cmnd == light2_sOn)
@@ -2446,7 +2444,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				CheckAndUpdateNodeRORG(pNode, RORG_1BS);
-
+				if (pNode->RORG != RORG_1BS)
+				{
+					Log(LOG_NORM, "1BS msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
 				Debug(DEBUG_NORM, "1BS msg: Node %08X (%s) EEP %02X-%02X-%02X Data %02X",
 					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type, DATA);
 
@@ -2576,7 +2579,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				}
 
 				CheckAndUpdateNodeRORG(pNode, RORG_4BS);
-
+				if (pNode->RORG != RORG_4BS)
+				{
+					Log(LOG_NORM, "4BS msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
 				Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) EEP %02X-%02X-%02X Data %02X %02X %02X %02X",
 					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type, 
 					DATA_BYTE3, DATA_BYTE2, DATA_BYTE1, DATA_BYTE0);
@@ -3368,8 +3376,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 					return;
 				}
-				CheckAndUpdateNodeRORG(pNode, RORG_RPS);
-
+				if (pNode->RORG != RORG_RPS)
+				{
+					Log(LOG_NORM, "RPS msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
 				Debug(DEBUG_NORM, "RPS %c-msg: Node %08X (%s) EEP %02X-%02X-%02X Data %02X (%s) Status %02X",
 					(NU == 0) ? 'U' : 'N',
 					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type,
@@ -3629,6 +3641,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, TEACHEDIN_NODE);
 
+					NodeInfo* pNode = GetNodeInfo(senderID);
+					if (pNode == nullptr)
+					{ // Should never happend since node has just been teached-in !
+						Log(LOG_ERROR, "UTE teach-in: problem retrieving Node %08X in database?!?!", senderID);
+						return;
+					}
 					if (ute_response == 0)
 					{ // Build and send response
 						buf[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
@@ -3726,7 +3744,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				CheckAndUpdateNodeRORG(pNode, RORG_VLD);
-
+				if (pNode->RORG != RORG_VLD)
+				{
+					Log(LOG_NORM, "VLD msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
 				Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) EEP %02X-%02X-%02X",
 					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 
