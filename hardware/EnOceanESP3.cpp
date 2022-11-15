@@ -443,8 +443,8 @@ void CEnOceanESP3::GetNodesJSON(Json::Value &root)
 			node.manufacturerID, GetManufacturerName(node.manufacturerID), node.description.c_str());
 */
 
-		uint16_t nodeSignalLevel = 12;
-		uint16_t nodeBatteryLevel = 255;
+		uint16_t nodeSignalLevel = 12; // unavailable signal level
+		uint16_t nodeBatteryLevel = 255; // unknown battery level
 		time_t maxLastUpdate = 0;
 
 		{
@@ -467,9 +467,9 @@ void CEnOceanESP3::GetNodesJSON(Json::Value &root)
 					if (nodeSignalLevel > signalLevel)
 						nodeSignalLevel = signalLevel;
 
-					int batteryLevel = static_cast<int>(std::stol(sd[2]));
-					if (nodeBatteryLevel > batteryLevel)
-						nodeBatteryLevel = batteryLevel;
+					int battery_level = static_cast<int>(std::stol(sd[2]));
+					if (nodeBatteryLevel > battery_level)
+						nodeBatteryLevel = battery_level;
 
 					std::string sLastUpdate = sd[3];
 					if (sLastUpdate.size() > 19)
@@ -1747,7 +1747,7 @@ bool CEnOceanESP3::OpenSerialDevice()
 
 #ifdef ENABLE_ESP3_TESTS
 	Debug(DEBUG_NORM, "------------ ESP3 tests begin ---------------------------");
-	
+
 	EnableLearnMode(1);
 
 	for (const auto &itt : ESP3TestsCases)
@@ -2466,7 +2466,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Debug(DEBUG_NORM, "1BS msg: Node %08X Contact %s", senderID, CO ? "Off" : "On");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				// Should never happend, since D5-00-01 is the only 1BS EEP
@@ -2647,9 +2647,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.id2 = ID_BYTE1;
 						// WARNING
 						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
-						tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
-						tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
+						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
+						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
 						int at10 = round(std::abs(TMP * 10.0F));
 						tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
@@ -2658,7 +2658,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C", senderID, pNode->name.c_str(), TMP);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 				}
@@ -2710,13 +2710,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP_HUM.temperaturel = (BYTE) at10;
 						tsen.TEMP_HUM.humidity = (BYTE) round(HUM);
 						tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-						tsen.TEMP_HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+						tsen.TEMP_HUM.battery_level = 9; // If value = 9, decode_TempHum will set battery_level = 100%
 						tsen.TEMP_HUM.rssi = rssi;
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C HUM %d%%",
 							senderID, pNode->name.c_str(), TMP, tsen.TEMP_HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 					if (HUM > -1.0F)
@@ -2731,13 +2731,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.id2 = ID_BYTE1;
 						tsen.HUM.humidity = (BYTE) round(HUM);
 						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-						tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+						tsen.HUM.battery_level = 9; // If value > 0, decode_Hum will set battery_level = 100%
 						tsen.HUM.rssi = rssi;
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) HUM %d%%",
 							senderID, pNode->name.c_str(), tsen.HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 				}
@@ -2771,7 +2771,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.id = ID_BYTE1;
 						// WARNING
 						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+						// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 						tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
@@ -2779,7 +2779,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					else
 					{ // WARNING : ELTAKO specific implementation
@@ -2805,7 +2805,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) RS %s ILL %.1Flx",
 						senderID, pNode->name.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
 
-					sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &lmeter, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x01)
@@ -2825,7 +2825,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.id = ID_BYTE1;
 						// WARNING
 						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+						// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 						tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
@@ -2833,7 +2833,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					uint8_t PIRS = DATA_BYTE1;
 
@@ -2854,7 +2854,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) PIRS %u (%s)",
 						senderID, pNode->name.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x02)
@@ -2871,7 +2871,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXSENSOR.id = ID_BYTE1;
 					// WARNING
 					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+					// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 					tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 					tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
@@ -2879,7 +2879,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 
 					uint8_t PIRS = bitrange(DATA_BYTE0, 7, 0x01);
 
@@ -2901,7 +2901,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, pNode->name.c_str(),
 						PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x03)
@@ -2918,7 +2918,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXSENSOR.id = ID_BYTE1;
 					// WARNING
 					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+					// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 					tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 					tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
@@ -2926,7 +2926,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 
 					float ILL = GetDeviceValue((DATA_BYTE2 << 2) | bitrange(DATA_BYTE1, 6, 0x03), 0, 1000, 0.0F, 1000.0F);
 
@@ -2940,7 +2940,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) ILL %.1Flx", senderID, pNode->name.c_str(), ILL);
 
-					sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &lmeter, pNode->name.c_str(), -1, m_Name.c_str());
 
 					uint8_t PIRS = bitrange(DATA_BYTE0, 7, 0x01);
 
@@ -2962,14 +2962,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, pNode->name.c_str(),
 						PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x09 && pNode->type == 0x04)
 				{ // A5-09-04, CO2 Gas Sensor with Temp and Humidity
-					// Battery level is not reported, set value 9 (OK)
-					// TODO: Report battery level as 255 (unknown battery level) ?
-
 					RBUF tsen;
 
 					uint8_t HSN = bitrange(DATA_BYTE0, 2, 0x01);
@@ -2986,19 +2983,19 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.id2 = ID_BYTE1;
 						tsen.HUM.humidity = (BYTE) round(HUM);
 						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-						tsen.HUM.battery_level = 9; // OK
+						tsen.HUM.battery_level = 9; // If value > 0, decode_Hum will set battery_level = 100%
 						tsen.HUM.rssi = rssi;
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) HUM %d%%", senderID, pNode->name.c_str(), tsen.HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 
 					float CONC = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CO2 %.1Fppm", senderID, pNode->name.c_str(), CONC);
 
-					SendAirQualitySensor(ID_BYTE2, ID_BYTE1, 9, round(CONC), GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+					SendAirQualitySensor(ID_BYTE2, ID_BYTE1, -1, round(CONC), pNode->name);
 
 					uint8_t TSN = bitrange(DATA_BYTE0, 1, 0x01);
 					if (TSN == 1)
@@ -3008,14 +3005,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 						tsen.TEMP.packettype = pTypeTEMP;
-						tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
+						tsen.TEMP.subtype = sTypeTEMP10;
 						tsen.TEMP.id1 = ID_BYTE2;
 						tsen.TEMP.id2 = ID_BYTE1;
 						// WARNING
 						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-						// decode_Temp assumes BatteryLevel to Unknown and SignalLevel to Not available
-						tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
-						tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
+						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
+						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
 						int at10 = round(std::abs(TMP * 10.0F));
 						tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
@@ -3024,7 +3021,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C", senderID, pNode->name.c_str(), TMP);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					return;
 				}
@@ -3067,7 +3064,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 							Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) FAN %u", senderID, pNode->name.c_str(), FAN);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 
 						// A5-10-01, A5-10-02, A5-10-03, A5-10-04, A5-10-05, A5-10-06, A5-10-0A have SP information
@@ -3117,7 +3114,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) %s %u (%s)",
 								senderID, pNode->name.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 					}
 					else
@@ -3154,7 +3151,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.TEMP.id2 = ID_BYTE1;
 					// WARNING
 					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
+					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 					tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
 					tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
@@ -3165,7 +3162,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C", senderID, pNode->name.c_str(), TMP);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x00)
@@ -3193,7 +3190,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID, pNode->name.c_str(), CH, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x01)
@@ -3215,7 +3212,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID, pNode->name.c_str(), TI, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &umeter, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x02)
@@ -3243,7 +3240,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID, pNode->name.c_str(), TI, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x03)
@@ -3271,7 +3268,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
 						senderID, pNode->name.c_str(), TI, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				Log(LOG_ERROR, "4BS msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
@@ -3396,7 +3393,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) PB %s",
 						senderID, pNode->name.c_str(), PB ? "Pressed" : "Released");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x02 && (pNode->type == 0x01 ||pNode->type == 0x02))
@@ -3455,7 +3452,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Debug(DEBUG_NORM, "RPS N-msg: Node %08X (%s) UnitID %02X Cmd %02X",
 								senderID, pNode->name.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 					}
 					else
@@ -3486,41 +3483,40 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							(R1 == 0) ? "no button" : "3 or 4 buttons",
 							tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x00)
 				{ // F6-05-00, Wind speed threshold detector
 					bool WIND = (DATA == 0x10);
-					int batterylevel = (DATA == 0x30) ? 5 : 100;
+					int battery_level = (DATA == 0x30) ? 5 : 100;
 
 					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Wind speed alarm %s Energy level %s",
-						senderID, pNode->name.c_str(), WIND ? "ON" : "OFF", (batterylevel > 5) ? "OK" : "LOW");
+						senderID, pNode->name.c_str(), WIND ? "ON" : "OFF", (battery_level > 5) ? "OK" : "LOW");
 
-					SendSwitch(senderID, 1, batterylevel, WIND, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(senderID, 1, battery_level, WIND, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x01)
 				{ // F6-05-01, Liquid Leakage Sensor (mechanic harvester)
 					bool WAS = (DATA == 0x11);
-					int batterylevel = 255;
 
 					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Liquid Leakage alarm %s",
 						senderID, pNode->name.c_str(), WAS ? "ON" : "OFF");
 
-					SendSwitch(senderID, 1, batterylevel, WAS, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(senderID, 1, -1, WAS, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x02)
 				{ // F6-05-02, Smoke detector
 					bool SMO = (DATA == 0x10);
-					int batterylevel = (DATA == 0x30) ? 5 : 100;
+					int battery_level = (DATA == 0x30) ? 5 : 100;
 
 					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Smoke alarm %s Energy level %s",
-						senderID, pNode->name.c_str(), SMO ? "ON" : "OFF", (batterylevel > 5) ? "OK" : "LOW");
+						senderID, pNode->name.c_str(), SMO ? "ON" : "OFF", (battery_level > 5) ? "OK" : "LOW");
 
-					SendSwitch(senderID, 1, batterylevel, SMO, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(senderID, 1, battery_level, SMO, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				Log(LOG_ERROR, "RPS msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
@@ -3679,7 +3675,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							Log(LOG_NORM, "Node %08X (%s), creating switch/dimmer channel %d",
 								senderID, pNode->name.c_str(), nbc);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(node_RORG, node_func, node_type), 255, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 						return;
 					}
@@ -3687,9 +3683,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // Create devices for D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
 						Log(LOG_NORM, "TEACH %s  : VLD Node 0x%08x UnitID: %02X ", pNode->name.c_str(), senderID, 1);
 
-						SendSelectorSwitch(senderID, 1, "0", pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
+						SendSelectorSwitch(senderID, 1, "0", pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, m_Name);
 
-						SendKwhMeter(senderID, 1, 100, 0.0, 0.0, pNode->name, rssi);
+						SendKwhMeter(senderID, 1, -1, 0.0, 0.0, pNode->name, rssi);
 						return;
 					}
 					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
@@ -3806,7 +3802,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status, PF %d PFD %d OC %d EL %d LC %d",
 							senderID, pNode->name.c_str(), PF, PFD, OC, EL, LC);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 					if (CMD == 0x7)
@@ -3828,7 +3824,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							mtotal = std::stod(strarray[1]);
 						//add current
 						mtotal += mv;
-						SendKwhMeter(senderID, 1, 100, mv, mtotal / 1000.0, "", rssi);
+						SendKwhMeter(senderID, 1, -1, mv, mtotal / 1000.0, pNode->name, rssi);
 						//Value: 0x00 = Energy [Ws]
 						//Value: 0x01 = Energy [Wh]
 						//Value: 0x02 = Energy [KWh]
@@ -3846,15 +3842,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						std::string mes = printRawDataValues(&data[1], D20100_CMD10);
 						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status\n%s", senderID, pNode->name.c_str(), mes);
 
-						std::string level = std::to_string(PM * 10);
-						SendSelectorSwitch(senderID, 1, level, "", 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
+						std::string sValue = std::to_string(PM * 10);
+						SendSelectorSwitch(senderID, 1, sValue, pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, m_Name);
 						return;
 					}
 					if (CMD == 0xD)
 					{ // Actuator External Interface Settings Response
 						std::string mes = printRawDataValues(&data[1], D20100_CMD13);
-
-						Debug(DEBUG_HARDWARE, "VLD msg: Node %08X (%s) Actuator External Interface Settings Response (not supported)\n%s",
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) Actuator External Interface Settings Response (not supported)\n%s",
 							senderID, pNode->name.c_str(), mes.c_str());
 						return;
 					}
@@ -3871,7 +3866,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, pNode->name.c_str(),
 						BATT, BA, (BA == 1) ? "Simple press" : ((BA == 2) ? "Double press" : ((BA == 3) ? "Long press" : ((BA == 4) ? "Long press released" : "Invalid value"))));
 
-					SendGeneralSwitch(senderID, BA, BATT, 1, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendGeneralSwitch(senderID, BA, BATT, 1, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				if (pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
@@ -3929,8 +3924,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						SMA_SAS, SMA_SFMS, SMA_SACA_MNT, SMA_SACA_HUM, SMA_SACA_TMP, SMA_TSLM, ES, RPLT, TMP8, HUM, HCI, IAQTH);
 
 					bool alarm = (SMA_SAS == 1);
-					int batterylevel = (ES == 0) ? 100 : ((ES == 0) ? 100 : ((ES == 0) ? 50 : ((ES == 0) ? 25 : 10)));
-					SendSwitch(senderID, 1, batterylevel, alarm, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					int battery_level = (ES == 0) ? 100 : ((ES == 1) ? 50 : ((ES == 2) ? 20 : 5));
+
+					SendSwitch(senderID, 1, battery_level, alarm, 0, pNode->name, m_Name, rssi);
 
 					RBUF tsen;
 
@@ -3946,7 +3942,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.id2 = ID_BYTE1;
 						// WARNING
 						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-						// decode_Temp assumes BatteryLevel to Unknown and SignalLevel to Not available
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (FTMP8 >= 0) ? 0 : 1;
@@ -3957,7 +3953,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) TMP8 %.1F°C", senderID, pNode->name.c_str(), FTMP8);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), battery_level, m_Name.c_str());
 					}
 					if (HUM <= 200)
 					{
@@ -3972,12 +3968,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.id2 = ID_BYTE1;
 						tsen.HUM.humidity = (BYTE) round(FHUM);
 						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-						tsen.HUM.battery_level = (BYTE) batterylevel;
+						tsen.HUM.battery_level = (BYTE) ((ES == 3) ? 0 : 9); // decode_Hum will set battery_level = 0% or = 100%
 						tsen.HUM.rssi = rssi;
 
 						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) HUM %d%%", senderID, pNode->name.c_str(), tsen.HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, pNode->name.c_str(), battery_level, m_Name.c_str());
 					}
 					return;
 				}
