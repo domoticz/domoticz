@@ -3697,7 +3697,33 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						}
 						return;
 					}
-					createOtherVldUteDevices(senderID, node_RORG, node_func, node_type, num_channel);
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x01 && pNode->type == 0x0C)
+					{ // Create devices for D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
+						Log(LOG_NORM, "TEACH %s  : VLD Node 0x%08x UnitID: %02X ", pNode->name.c_str(), senderID, 1);
+
+						SendSelectorSwitch(senderID, 1, "0", pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
+
+						SendKwhMeter(senderID, 1, 100, 0.0, 0.0, pNode->name, rssi);
+						return;
+					}
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
+					{ // Create for D2-05-0X, Blind Control for Position and Angle, Type 0x00
+						for (int nbc = 0; nbc < num_channel; nbc++)
+						{
+							Log(LOG_NORM, "TEACH Blinds Switch : 0xD2 Node 0x%08x UnitID: %02X cmd: %02X ", senderID, nbc + 1, light2_sOff);
+
+							SendSwitch(senderID, nbc + 1, -1, light2_sOff, 0, pNode->name, m_Name, rssi);
+
+							// Wait for decive creation
+							int timeout = 10; // 1 second
+							while (updateSwitchType(m_HwdID, GetDeviceID(senderID).c_str(), STYPE_BlindsPercentageWithStop) && (timeout > 0))
+							{
+								sleep_milliseconds(100);
+								timeout--;
+							}
+						}
+						return;
+					}
 					return;
 				}
 				// Node found
@@ -3797,10 +3823,55 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
 						return;
 					}
-					// TODO: handle other CMD returning status data
-					// TODO: manage CMD 0x7 - Actuator Measurement Response
-					// TODO: manage CMD 0xA - Actuator Pilot Wire Mode Response
+					if (CMD == 0x7)
+					{ // Actuator Measurement Response
+						std::string mes = printRawDataValues(&data[1], D20100_CMD7);
 
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) Reply Measurement Response\n%s",
+							senderID, pNode->name.c_str(), mes.c_str());
+
+						int unit = GetRawValue(&data[1], D20100_CMD7, D20100_CMD7_UN);
+						uint32_t mv = GetRawValue(&data[1], D20100_CMD7, D20100_CMD7_MV);
+						uint32_t id = (senderID << 8) | 1;
+						//get last total mesure value mtotal
+						std::string sValue = GetDbValue("DeviceStatus", "sValue", "DeviceId", GetEnOceanIDToString(id).c_str());
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						double mtotal = 0;
+						if (strarray.size() >= 2)
+							mtotal = std::stod(strarray[1]);
+						//add current
+						mtotal += mv;
+						SendKwhMeter(senderID, 1, 100, mv, mtotal / 1000.0, "", rssi);
+						//Value: 0x00 = Energy [Ws]
+						//Value: 0x01 = Energy [Wh]
+						//Value: 0x02 = Energy [KWh]
+						//Value: 0x03 = Power [W]
+						//Value: 0x04 = Power [KW]
+
+						//send CMD 0x9 - Actuator Pilot Wire Mode Query
+						//sendVld(m_id_chip, senderID, D20100_CMD9,  9 , END_ARG_DATA);
+						return;
+					}
+					if (CMD == 0xA)
+					{ // CMD 0xA - Actuator Pilotwire Mode Response
+						uint8_t PM = GetRawValue(&data[1], D20100_CMD10, D20100_CMD10_PM);
+
+						std::string mes = printRawDataValues(&data[1], D20100_CMD10);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status\n%s", senderID, pNode->name.c_str(), mes);
+
+						std::string level = std::to_string(PM * 10);
+						SendSelectorSwitch(senderID, 1, level, "", 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
+						return;
+					}
+					if (CMD == 0xD)
+					{ // Actuator External Interface Settings Response
+						std::string mes = printRawDataValues(&data[1], D20100_CMD13);
+
+						Debug(DEBUG_HARDWARE, "VLD msg: Node %08X (%s) Actuator External Interface Settings Response (not supported)\n%s",
+							senderID, pNode->name.c_str(), mes.c_str());
+						return;
+					}
 					Log(LOG_ERROR, "VLD msg: Node %08X (%s), command 0x%01X not supported",
 						senderID, pNode->name.c_str(), CMD);
 					return;
@@ -3815,6 +3886,30 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						BATT, BA, (BA == 1) ? "Simple press" : ((BA == 2) ? "Double press" : ((BA == 3) ? "Long press" : ((BA == 4) ? "Long press released" : "Invalid value"))));
 
 					SendGeneralSwitch(senderID, BA, BATT, 1, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					return;
+				}
+				if (pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
+				{ // D2-05-XX, Blind Control for Position and Angle
+					uint8_t CMD = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CMD);
+					int unitcode = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CHN);
+
+					if (CMD == 0x4)
+					{ // CMD 0x4 - Reply Position and Angle
+						int POS = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_POS);
+						bool bon = POS > 0;
+
+						if (POS >= 100)
+							POS = 99;
+
+						Debug(DEBUG_HARDWARE, "VLD Node %08X (%s), Blind Reply Position: %d%%",
+							senderID, pNode->name.c_str(), POS);
+
+//	   		            SendSwitch(senderID, unitcode + 1, -1, bon, POS, "", m_Name.c_str(), rssi);
+						SendSwitch(senderID, unitcode + 1, -1, bon, POS, pNode->name, m_Name, rssi);
+						return;
+					}
+					Log(LOG_ERROR, "VLD msg: Node %08X (%s), command 0x%01X not supported",
+						senderID, pNode->name.c_str(), CMD);
 					return;
 				}
 				if (pNode->func == 0x14 && pNode->type == 0x30)
@@ -3901,9 +3996,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					return;
 				}
-                if (manageVldMessage(senderID, &data[1], pNode->func, pNode->type, m_Name, rssi))
-                    return;
-
 				Log(LOG_ERROR, "VLD msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
 					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 			}
@@ -4349,122 +4441,6 @@ bool CEnOceanESP3::updateSwitchType(int HardwareID, const char *deviceID, _eSwit
 		return false;
 	}
 	return true;
-}
-
-void CEnOceanESP3::createOtherVldUteDevices(uint32_t iSenderID, uint8_t rorg, uint8_t func, uint8_t type, uint8_t nb_channel)
-{
-	if (rorg == RORG_VLD && func == 0x05 && (type == 0x00 || type == 0x01))
-	{ // Create Blinds Control switch
-		for (int nbc = 0; nbc < nb_channel; nbc++)
-		{
-			Log(LOG_NORM, "TEACH Blinds Switch : 0xD2 Node 0x%08x UnitID: %02X cmd: %02X ", iSenderID, nbc + 1, light2_sOff);
-			SendSwitch(iSenderID, nbc + 1, -1, light2_sOff, 0, "Blinds" + GetDeviceID(iSenderID), "EnOcean");
-			// Wait for decive creation
-			int timeout = 10; // 1 second
-			while (updateSwitchType(m_HwdID, GetDeviceID(iSenderID).c_str(), STYPE_BlindsPercentageWithStop) && (timeout > 0))
-			{
-				sleep_milliseconds(100);
-				timeout--;
-			}
-			// CreateDevice(m_HwdID, GetDeviceID(iSenderID).c_str(), nbc + 1, pTypeLighting2, sTypeAC, 0, -1, light2_sOff, "0", GetDeviceID(iSenderID), STYPE_BlindsPercentage , "" , 0 );
-		}
-		return;
-	}
-	if (rorg == RORG_VLD && func == 0x01 && type == 0x0C)
-	{ // Create Pilot Wire devices
-		const std::string deviceType = GetEEPLabel(rorg, func, type);
-
-		Log(LOG_NORM, "TEACH %s  : VLD Node 0x%08x UnitID: %02X ", deviceType.c_str(), iSenderID, 1);
-		//	SendSelectorSwitch(int NodeID, uint8_t ChildID, std::string &sValue, std::string &defaultname,  int customImage,  bool bDropdown,  std::string &LevelNames,  std::string &LevelActions,  bool bHideOff,  std::string &userName)
-		SendSelectorSwitch(iSenderID, 1, "0", "PilotWire" + GetDeviceID(iSenderID), 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
-		//								CreateDevice(m_HwdID, GetDeviceID(iSenderID).c_str(),  1, pTypeLighting2, sTypeAC, 0, -1, light2_sOff, "0", GetDeviceID(iSenderID), STYPE_Selector , false, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2" ,  ""      , 0 );
-
-		// Create kwh usage
-		SendKwhMeter(iSenderID, 1, 100, 0.0, 0.0, deviceType, 12);
-		return;
-	}
-}
-
-//return false if not managed
-bool CEnOceanESP3::manageVldMessage(uint32_t iSenderID, unsigned char *vldData, uint8_t func, uint8_t type, std::string &m_Name, uint8_t rssi)
-{
-	// D2-05
-	//{ 0xD2 , 0x05 , 0x00 , "Blinds Control for Position and Angle                                            ",  "Type 0x00
-	if (func == 0x05)
-	{
-		int cmd = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_CMD);
-		int unitcode = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_CHN);
-
-		if (cmd == 0x4)
-		{ // Get position
-			int pos = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_POS);
-			bool bon = pos > 0;
-
-			if (pos >= 100)
-				pos = 99;
-
-			Debug(DEBUG_HARDWARE, "VLD Node %08X, EEP: D2-05 Reply Position: %d%%", iSenderID, pos);
-			SendSwitch(iSenderID, unitcode + 1, -1, bon, pos, "", m_Name.c_str(), rssi);
-			return true;
-		}
-		return false;
-	}
-	if (func == 0x01)
-	{
-		int cmd = GetRawValue(vldData, D20100_CMD7, D20100_CMD7_CMD);
-
-		if (cmd == 0x4)
-		{ // Actuator Status Response
-			// This message is sent by an actuator if one of the following events occurs:
-			// Already managed
-			return false;
-		}
-		if (cmd == 0x7)
-		{ // Actuator Measurement Response
-			std::string mes = printRawDataValues(vldData, D20100_CMD7);
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Reply Measurement Response %s", iSenderID, mes.c_str());
-			int unit = GetRawValue(vldData, D20100_CMD7, D20100_CMD7_UN);
-			uint32_t mv = GetRawValue(vldData, D20100_CMD7, D20100_CMD7_MV);
-			uint32_t id = (iSenderID << 8) | 1;
-			//get last total mesure value mtotal
-			std::string sValue = GetDbValue("DeviceStatus", "sValue", "DeviceId", GetEnOceanIDToString(id).c_str());
-			std::vector<std::string> strarray;
-			StringSplit(sValue, ";", strarray);
-			double mtotal = 0;
-			if (strarray.size() >= 2)
-				mtotal = std::stod(strarray[1]);
-			//add current
-			mtotal += mv;
-			SendKwhMeter(iSenderID, 1, 100, mv, mtotal / 1000.0, "", 12);
-			//Value: 0x00 = Energy [Ws]
-			//Value: 0x01 = Energy [Wh]
-			//Value: 0x02 = Energy [KWh]
-			//Value: 0x03 = Power [W]
-			//Value: 0x04 = Power [KW]
-
-			//send CMD 0x9 - Actuator Pilot Wire Mode Query
-			//sendVld(m_id_chip, iSenderID, D20100_CMD9,  9 , END_ARG_DATA);
-			return true;
-		}
-		if (cmd == 0xA)
-		{ // Actuator Pilot Wire Mode Response
-			std::string mes = printRawDataValues(vldData, D20100_CMD10);
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Actuator Pilot Wire Mode Response %s", iSenderID, mes.c_str());
-			int pm = GetRawValue(vldData, D20100_CMD10, D20100_CMD10_PM);
-			std::string level = std::to_string(pm * 10);
-			SendSelectorSwitch(iSenderID, 1, level, "", 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
-
-			return true;
-		}
-		if (cmd == 0xD)
-		{ // Actuator External Interface Settings Response
-			std::string mes = printRawDataValues(vldData, D20100_CMD13);
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Actuator External Interface Settings Response %s", iSenderID, mes.c_str());
-			return true;
-		}
-		return false;
-	}
-	return false;
 }
 
 //return position 0..100% from command / level
