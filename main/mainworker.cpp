@@ -712,7 +712,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CRFLinkSerial(ID, SerialPort);
 		break;
 	case HTYPE_RFLINKMQTT:
-		pHardware = new CRFLinkMQTT(ID, Address , Port , Username , Password , Extra, Mode2, Mode1, Mode3 != 0 );
+		pHardware = new CRFLinkMQTT(ID, Address , Port , Username , Password , Extra, Mode2, Mode1, Mode4 != 0 );
 		break;
 	case HTYPE_ZIBLUEUSB:
 		pHardware = new CZiBlueSerial(ID, SerialPort);
