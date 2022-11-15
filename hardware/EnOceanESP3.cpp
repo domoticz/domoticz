@@ -631,8 +631,11 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode == nullptr)
 		return; // Unknown node
 
-	if (pNode->RORG == RORG)
-		return;
+	if (pNode->RORG != 0x00)
+		return;	// Node RORG already set : nothing to update
+
+	if (GetEEP(RORG, pNode->func, pNode->type) == nullptr)
+	    return;	// Target EEP does not exist : ignore update
 
 	const char *target_eep_label = GetEEPLabel(RORG, pNode->func, pNode->type);
 	
@@ -649,13 +652,9 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode->description == "" || pNode->description == "Unknown")
 		pNode->description = GetEEPDescription(RORG, pNode->func, pNode->type);
 
-	if (pNode->teachin_mode == GENERIC_NODE)
-	{
-		Log(LOG_NORM, "Node %08X, update from Generic to Teached-in", pNode->nodeID);
+	pNode->teachin_mode = TEACHEDIN_NODE;
 
-		pNode->teachin_mode = TEACHEDIN_NODE;
-	}
-	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
+	uint32_t nValue = (TEACHEDIN_NODE & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
 	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', RORG=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
 		pNode->name.c_str(), pNode->RORG, pNode->description.c_str(), nValue, m_HwdID, pNode->nodeID);
