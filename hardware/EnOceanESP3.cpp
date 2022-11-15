@@ -1753,7 +1753,6 @@ bool CEnOceanESP3::OpenSerialDevice()
 	for (const auto &itt : ESP3TestsCases)
 		ReadCallback((const char *)itt.data(), itt.size());
 
-	DisableLearnMode();
 	Debug(DEBUG_NORM, "------------ ESP3 tests end -----------------------------");
 #endif
 
