@@ -2305,7 +2305,6 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 
 				// To ensure backward compatibility with previous Domoticz versions
 				// Make sure virtual EnOcean ESP3 switches have been teached-in
-				// TODO: make sure all EnOcean ESP3 devices have been teached-in
 
 				std::vector<std::vector<std::string>> result;
 
@@ -3558,8 +3557,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				// TODO: is num_channel information reliable ?
 				// EEP 2.6.8 specifies : 0x00..0xFE = individual channel number, 0xFF = all supported channels
-				// Nodon SIN-2-2-01 Slot-in module (D2-01-0D) always sends 2, which corresponds to the number of supported channels
-				// Nodon MSP-2-1-01 Micro Smart Plug (D2-01-0E) always sends 1, which corresponds to the number of supported channels
+				// But, instead of individual channel number, several modules send the number of supported channels 
+				// For instance, Nodon SIN-2-2-01 Slot-in module (D2-01-0D) sends the value 2
+
 				uint8_t num_channel = data[2]; // 0x00..0xFE = individual channel number, 0xFF = all supported channels
 
 				uint16_t node_manID = (bitrange(data[4], 0, 0x07) << 8) | data[3];
@@ -3669,9 +3669,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						// D2-01-12, Slot-in module, dual channels, with external button control
 						// D2-01-15, D2-01-16, D2-01-17
 
-						// TODO : num_channel is only a valid channel number when between 0x00 & 0x1D
-						// 0x1E means all supported output channels
-						// 0x1F means input channel (for mains supply)
+						if (num_channel == 0xFF)
+						{ // 0xFF = all supported channels
+							const uint8_t default_num_chanel[] = { 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 2U, 2U, 2U, 4U, 8U, 4U, 2U, 1U, };
+
+							num_channel = (pNode->type <= 0X17) ? default_num_chanel[pNode->type] : 1;
+						}
 						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
 							RBUF tsen;
