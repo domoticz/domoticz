@@ -871,6 +871,8 @@ namespace Plugins {
 			{
 				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint, [this](auto &&err, auto bytes) { handleRead(err, bytes); });
 			}
+
+			m_pConnection->pPlugin->MessagePlugin(new ProtocolDirective(m_pConnection));
 		}
 		catch (std::exception& e)
 		{

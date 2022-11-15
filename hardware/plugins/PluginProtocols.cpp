@@ -127,7 +127,7 @@ namespace Plugins {
 		if (!pObj || PyDict_SetItemString(pDict, key, (PyObject*)pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
 	}
-	
+
 	static void AddStringToDict(PyObject* pDict, const char* key, const std::string& value)
 	{
 		PyNewRef pObj(value);
@@ -1187,8 +1187,7 @@ namespace Plugins {
 		}
 
 		std::string		sData(Message->m_Buffer.begin(), Message->m_Buffer.end());
-		sData = sData.substr(iDataOffset, iTotalData - iDataOffset);
-		pObj = Py_BuildValue("y#", sData.c_str(), sData.length());
+		pObj = PyNewRef((byte*)sData.c_str(), sData.length());
 		if (PyDict_SetItemString(pDataDict, "Data", pObj) == -1)
 			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "ICMP", "Data", sData.c_str());
 
@@ -1651,7 +1650,7 @@ namespace Plugins {
 					m_bErrored = true;
 				}
 				break;
-			case MQTT_SUBSCRIBE: 
+			case MQTT_SUBSCRIBE:
 			{
 				AddStringToDict(pMqttDict, "Verb", std::string("SUBSCRIBE"));
 				if (flags != 2)
@@ -2385,8 +2384,8 @@ namespace Plugins {
 		// Add new message to retained data, process all messages if this one is the finish of a message
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
-		// Although messages can be fragmented, control messages can be inserted in between fragments. 
-		// see https://datatracker.ietf.org/doc/html/rfc6455#section-5.4 
+		// Although messages can be fragmented, control messages can be inserted in between fragments.
+		// see https://datatracker.ietf.org/doc/html/rfc6455#section-5.4
 		// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
 		while (ProcessWholeMessage(m_sRetainedData, Message))
 		{
