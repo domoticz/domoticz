@@ -2050,15 +2050,8 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			nodeID, pNode->name.c_str(), switchtype);
 		return false;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00)
-		&& pNode->func == 0x01
-		&& (pNode->type == 0x0D || pNode->type == 0x0E || pNode->type == 0x0F || pNode->type == 0x12))
-	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
-		// D2-01-0D, Micro smart plug, single channel, with external button control
-		// D2-01-0E, Micro smart plug, single channel, with external button control
-		// D2-01-0F, Slot-in module, single channel, with external button control
-		// D2-01-12, Slot-in module, dual channels, with external button control
-
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type != 0x0C)
+	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
 		if (tsen->LIGHTING2.unitcode > 0x1D)
@@ -2135,7 +2128,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		int cmd = tsen->LIGHTING2.cmnd;
 		int pos;
 
-		// don't keep the last position if the request is for a different node!
+		// Don't keep the last position if the request is for a different node!
 		if (m_last_requested_blind_nodeID != nodeID)
 		{
 			m_last_requested_blind_position = -1;
@@ -3361,18 +3354,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				// TODO: Remove that, as user may want to use external switch/button control as a sensor
 
-				// If RORG = VLD
-				// Or RORG unknown & RPS-func-type EEP doesn't exist & VLD-func-type EEP exists
-				// => assume VLD and ignore RPS data
+				// If RORG unknown & RPS-func-type EEP doesn't exist => assume VLD and ignore RPS data
 
-				if (pNode->RORG == RORG_VLD
-					|| (pNode->RORG == 0x00
-						&& GetEEP(RORG_RPS, pNode->func, pNode->type) == nullptr
-						&& GetEEP(RORG_VLD, pNode->func, pNode->type) != nullptr))
+				CheckAndUpdateNodeRORG(pNode, (GetEEP(RORG_RPS, pNode->func, pNode->type) == nullptr) ? RORG_VLD : RORG_RPS);
+				if (pNode->RORG == RORG_VLD)
 				{
 					Debug(DEBUG_NORM, "RPS %c-msg: Node %08X (%s), button press from VLD device (ignored)",
 						(NU == 0) ? 'U' : 'N', senderID, pNode->name.c_str());
-					CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 					return;
 				}
 				if (pNode->RORG != RORG_RPS)
@@ -3657,18 +3645,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					// TODO : instead of creating node channels, ask all node channels to report their status
 
-					if (node_RORG == RORG_VLD && node_func == 0x01
-						&& (node_type == 0x0D || node_type == 0x0E
-							|| node_type == 0x0F || node_type == 0x12
-							|| node_type == 0x15 || node_type == 0x16
-							|| node_type == 0x17))
-					{ // Create devices for :
-						// D2-01-0D, Micro smart plug, single channel, with external button control
-						// D2-01-0E, Micro smart plug, single channel, with external button control
-						// D2-01-0F, Slot-in module, single channel, with external button control
-						// D2-01-12, Slot-in module, dual channels, with external button control
-						// D2-01-15, D2-01-16, D2-01-17
-
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x01 && pNode->type != 0x0C)
+					{ // Create devices for D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
 						if (num_channel == 0xFF)
 						{ // 0xFF = all supported channels
 							const uint8_t default_num_chanel[] = { 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 2U, 2U, 2U, 4U, 8U, 4U, 2U, 1U, };
@@ -3907,7 +3885,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Debug(DEBUG_HARDWARE, "VLD Node %08X (%s), Blind Reply Position: %d%%",
 							senderID, pNode->name.c_str(), POS);
 
-//	   		            SendSwitch(senderID, unitcode + 1, -1, bon, POS, "", m_Name.c_str(), rssi);
 						SendSwitch(senderID, unitcode + 1, -1, bon, POS, pNode->name, m_Name, rssi);
 						return;
 					}
