@@ -837,7 +837,8 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
-								xhtm += '<img src="images/moisture48.png" height="48" width="48"></td>\n';
+								item.Image = (item.CustomImage == 0)  ? 'moisture48.png' : item.Image + '48_On.png';
+								xhtm += '<img src="images/' + item.Image + '" height="48" width="48"></td>\n';
 								status = "";
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
