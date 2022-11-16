@@ -3808,7 +3808,6 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					if (CMD == 0x7)
 					{ // Actuator Measurement Response
 						std::string mes = printRawDataValues(&data[1], D20100_CMD7);
-
 						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) Reply Measurement Response\n%s",
 							senderID, pNode->name.c_str(), mes.c_str());
 
@@ -3840,7 +3839,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						uint8_t PM = GetRawValue(&data[1], D20100_CMD10, D20100_CMD10_PM);
 
 						std::string mes = printRawDataValues(&data[1], D20100_CMD10);
-						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status\n%s", senderID, pNode->name.c_str(), mes);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status\n%s", senderID, pNode->name.c_str(), mes.c_str());
 
 						std::string sValue = std::to_string(PM * 10);
 						SendSelectorSwitch(senderID, 1, sValue, pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, m_Name);
