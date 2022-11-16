@@ -215,12 +215,12 @@ static const _tRORGTable _RORGTable[] =
     {RORG_1BS, "1BS", "1 Byte Communication"},
     {RORG_RPS, "RPS", "Repeated Switch Communication"},
     {RORG_SYS_EX, "SYS_EX", "Remote Management"},
-    {0, nullptr, nullptr},
+    {UNKNOWN_RORG, nullptr, nullptr},
 };
 
 const char *CEnOceanEEP::GetRORGLabel(uint8_t RORG)
 {
-	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != 0 || pTable->label != nullptr; pTable++)
+	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != UNKNOWN_RORG || pTable->label != nullptr; pTable++)
 		if (pTable->RORG == RORG)
 			return pTable->label;
 
@@ -229,7 +229,7 @@ const char *CEnOceanEEP::GetRORGLabel(uint8_t RORG)
 
 const char *CEnOceanEEP::GetRORGDescription(uint8_t RORG)
 {
-	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != 0 || pTable->description != nullptr; pTable++)
+	for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != UNKNOWN_RORG || pTable->description != nullptr; pTable++)
 		if (pTable->RORG == RORG)
 			return pTable->description;
 
@@ -253,7 +253,7 @@ namespace http
 			}
 
 			int i = 0;
-			for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != 0 || pTable->label != nullptr; pTable++)
+			for (const _tRORGTable *pTable = _RORGTable; pTable->RORG != UNKNOWN_RORG || pTable->label != nullptr; pTable++)
 			{
 				if (pTable->RORG != RORG_4BS && pTable->RORG != RORG_VLD && pTable->RORG != RORG_1BS && pTable->RORG != RORG_RPS)
 					continue;
@@ -687,12 +687,12 @@ static const _tEEPTable _EEPTable[] = {
     { RORG_RPS, 0x10, 0x01, "F6-10-01", "Window handle", "WindowHandle.01"},
 
 	// End of table
-	{ 0, 0, 0, nullptr, nullptr, nullptr },
+	{ UNKNOWN_RORG, 0, 0, nullptr, nullptr, nullptr },
 };
 
 const char *CEnOceanEEP::GetEEP(const int RORG, const int func, const int type)
 {
-	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != 0 || pTable->EEP != nullptr; pTable++)
+	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != UNKNOWN_RORG || pTable->EEP != nullptr; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
 			return pTable->EEP;
 
@@ -701,7 +701,7 @@ const char *CEnOceanEEP::GetEEP(const int RORG, const int func, const int type)
 
 const char *CEnOceanEEP::GetEEPLabel(const int RORG, const int func, const int type)
 {
-	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != 0 || pTable->label != nullptr; pTable++)
+	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != UNKNOWN_RORG || pTable->label != nullptr; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
 			return pTable->label;
 
@@ -710,7 +710,7 @@ const char *CEnOceanEEP::GetEEPLabel(const int RORG, const int func, const int t
 
 const char *CEnOceanEEP::GetEEPDescription(const int RORG, const int func, const int type)
 {
-	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != 0 || pTable->description != nullptr; pTable++)
+	for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != UNKNOWN_RORG || pTable->description != nullptr; pTable++)
 		if ((pTable->RORG == RORG) && (pTable->func == func) && (pTable->type == type))
 			return pTable->description;
 
@@ -734,7 +734,7 @@ namespace http
 			}
 
 			int i = 0;
-			for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG; pTable++)
+			for (const _tEEPTable *pTable = (const _tEEPTable *)&_EEPTable; pTable->RORG != UNKNOWN_RORG || pTable->EEP != nullptr; pTable++)
 			{
 //				_log.Log(LOG_NORM, "EnOcean: Cmd_EnOceanGetProfiles: %d %s", idx, pTable->eep);
 

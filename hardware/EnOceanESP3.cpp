@@ -631,7 +631,7 @@ void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 	if (pNode == nullptr)
 		return; // Unknown node
 
-	if (pNode->RORG != 0x00)
+	if (pNode->RORG != UNKNOWN_RORG)
 		return;	// Node RORG already set : nothing to update
 
 	if (GetEEP(RORG, pNode->func, pNode->type) == nullptr)
@@ -2050,7 +2050,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			nodeID, pNode->name.c_str(), switchtype);
 		return false;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type != 0x0C)
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x01 && pNode->type != 0x0C)
 	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
@@ -2091,7 +2091,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type == 0x0C)
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x01 && pNode->type == 0x0C)
 	{ // D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
@@ -2119,7 +2119,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x05)
 	{ // D2-05-00, Blinds Control for Position and Angle 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
