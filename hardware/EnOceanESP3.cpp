@@ -2120,7 +2120,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		return true;
 	}
 	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x05)
-	{ // D2-05-00, Blinds Control for Position and Angle 
+	{ // D2-05-0X, Blinds Control for Position and Angle 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
 		// Build CMD 1 - Go to Position and Angle
@@ -3652,7 +3652,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						{ // 0xFF = all supported channels
 							const uint8_t default_num_chanel[] = { 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 2U, 2U, 2U, 4U, 8U, 4U, 2U, 1U, };
 
-							num_channel = (pNode->type <= 0X17) ? default_num_chanel[pNode->type] : 1;
+							num_channel = (pNode->type <= 0x17) ? default_num_chanel[pNode->type] : 1;
 						}
 						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
@@ -3672,7 +3672,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.LIGHTING2.cmnd = light2_sOff;
 							tsen.LIGHTING2.rssi = rssi;
 
-							Log(LOG_NORM, "Node %08X (%s), creating switch/dimmer channel %d",
+							Log(LOG_NORM, "Node %08X (%s), creating channel %u switch/dimmer",
 								senderID, pNode->name.c_str(), nbc);
 
 							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
@@ -3681,20 +3681,29 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					if (pNode->RORG == RORG_VLD && pNode->func == 0x01 && pNode->type == 0x0C)
 					{ // Create devices for D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
-						Log(LOG_NORM, "TEACH %s  : VLD Node 0x%08x UnitID: %02X ", pNode->name.c_str(), senderID, 1);
+						Log(LOG_NORM, "Node %08X (%s), creating pilotwire selector switch", senderID, pNode->name.c_str());
 
-						SendSelectorSwitch(senderID, 1, "0", pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, m_Name);
+						SendSelectorSwitch(senderID, 1, "0", pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "0|10|20|30|40|50|60", false, m_Name);
+
+						Log(LOG_NORM, "Node %08X (%s), creating kWh meter", senderID, pNode->name.c_str());
 
 						SendKwhMeter(senderID, 1, -1, 0.0, 0.0, pNode->name, rssi);
 						return;
 					}
 					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
 					{ // Create for D2-05-0X, Blind Control for Position and Angle, Type 0x00
-						for (uint8_t nbc = 0; nbc < num_channel; nbc++)
-						{
-							Log(LOG_NORM, "TEACH Blinds Switch : 0xD2 Node 0x%08x UnitID: %02X cmd: %02X ", senderID, nbc + 1, light2_sOff);
+						if (num_channel == 0xFF)
+						{ // 0xFF = all supported channels
+							const uint8_t default_num_chanel[] = { 1U, 4U, 1U, };
 
-							SendSwitch(senderID, nbc + 1, -1, light2_sOff, 0, pNode->name, m_Name, rssi);
+							num_channel = (pNode->type <= 0x02) ? default_num_chanel[pNode->type] : 1U;
+						}
+						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
+						{
+							Log(LOG_NORM, "Node %08X (%s), creating channel %u blind control switch",
+								senderID, pNode->name.c_str(), nbc);
+
+							SendSwitch(senderID, nbc, -1, light2_sOff, 0, pNode->name, m_Name, rssi);
 
 							// Wait for decive creation
 							int timeout = 10; // 1 second
@@ -3869,7 +3878,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				if (pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
-				{ // D2-05-XX, Blind Control for Position and Angle
+				{ // D2-05-0X, Blind Control for Position and Angle
 					uint8_t CMD = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CMD);
 					int unitcode = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CHN);
 
