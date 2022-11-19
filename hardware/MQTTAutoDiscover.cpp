@@ -1389,8 +1389,6 @@ void MQTTAutoDiscover::GuessSensorTypeValue(const _tMQTTASensor* pSensor, uint8_
 			|| (szUnit == "\xB0" "f")
 			|| (szUnit == "f")
 			|| (szUnit == "?f")
-			|| (pSensor->value_template.find("temperature") != std::string::npos)
-			|| (pSensor->state_topic.find("temperature") != std::string::npos)
 			)
 		{
 			temp = ConvertToCelsius(temp);
