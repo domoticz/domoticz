@@ -126,12 +126,13 @@ enum ENOCEAN_MANUFACTURER : uint16_t
 	INABA_DENKI_SANGYO_CO_LTD = 0x075,
 	HAGER_CONTROL_SAS = 0x076,
 	DOMOTICZ_MANUFACTURER = 0x7FE, // Used as manufacturer for generic nodes
-	MULTI_USER_MANUFACTURER = 0x7FF
+	MULTI_USER_MANUFACTURER = 0x7FF,
 };
 
 // ESP3 RORGs
 enum ESP3_RORG_TYPE : uint8_t
 {
+	UNKNOWN_RORG = 0x00,	// RORG unknown (or not set) => WARNING, do not change this value !!
 	RORG_ST = 0x30,			// Secure telegram
 	RORG_ST_WE = 0x31,		// Secure telegram with RORG encapsulation
 	RORG_STT_FW = 0x35,		// Secure teach-in telegram for switch
@@ -147,7 +148,7 @@ enum ESP3_RORG_TYPE : uint8_t
 	RORG_UTE = 0xD4,		// Universal teach-in EEP based
 	RORG_1BS = 0xD5,		// 1 Byte Communication
 	RORG_RPS = 0xF6,		// Repeated Switch Communication
-	RORG_SYS_EX = 0xC5		// Remote Management
+	RORG_SYS_EX = 0xC5,		// Remote Management
 };
 
 class CEnOceanEEP

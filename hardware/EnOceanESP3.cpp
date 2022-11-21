@@ -75,7 +75,7 @@ enum ESP3_PACKET_TYPE : uint8_t
 	PACKET_CONFIG_COMMAND = 0x0B,	// RESERVED
 	PACKET_COMMAND_ACCEPTED = 0x0C,	// For long operations, informs the host the command is accepted
 	PACKET_RADIO_802_15_4 = 0x10,	// 802_15_4 Raw Packet
-	PACKET_COMMAND_2_4 = 0x11		// 2.4 GHz Command
+	PACKET_COMMAND_2_4 = 0x11,		// 2.4 GHz Command
 };
 
 // ESP3 Return codes
@@ -91,7 +91,7 @@ enum ESP3_RETURN_CODE : uint8_t
 	RET_NO_FREE_BUFFER = 0x07,		// Currently all internal buffers are used
 	RET_MEMORY_ERROR = 0x82,		// The memory write process failed
 	RET_BASEID_OUT_OF_RANGE = 0x90, // BaseID out of range
-	RET_BASEID_MAX_REACHED = 0x91	// BaseID has already been changed 10 times, no more changes are allowed
+	RET_BASEID_MAX_REACHED = 0x91,	// BaseID has already been changed 10 times, no more changes are allowed
 };
 
 // ESP3 Event codes
@@ -105,7 +105,7 @@ enum ESP3_EVENT_CODE : uint8_t
 	CO_DUTYCYCLE_LIMIT = 0x06,		// Informs the external host about reaching the duty cycle limit
 	CO_TRANSMIT_FAILED = 0x07,		// Informs the external host about not being able to send a telegram
 	CO_TX_DONE = 0x08,				// Informs that all TX operations are done
-	CO_LRN_MODE_DISABLED = 0x09		// Informs that the learn mode has time-out
+	CO_LRN_MODE_DISABLED = 0x09,	// Informs that the learn mode has time-out
 };
 
 // ESP3 Common commands
@@ -174,7 +174,7 @@ enum ESP3_COMMON_COMMAND : uint8_t
 	CO_WR_TRANSPARENT_MODE = 62,	// Control the state of the transparent mode
 	CO_RD_TRANSPARENT_MODE = 63,	// Read the state of the transparent mode
 	CO_WR_TX_ONLY_MODE = 64,		// Control the state of the TX only mode
-	CO_RD_TX_ONLY_MODE = 65			// Read the state of the TX only mode} COMMON_COMMAND;
+	CO_RD_TX_ONLY_MODE = 65,		// Read the state of the TX only mode} COMMON_COMMAND;
 };
 
 // ESP3 Smart Ack codes
@@ -187,7 +187,7 @@ enum ESP3_SMART_ACK_CODE : uint8_t
 	SA_WR_RESET = 0x05,				// Send reset command to a Smart Ack client
 	SA_RD_LEARNEDCLIENTS = 0x06,	// Get Smart Ack learned sensors / mailboxes
 	SA_WR_RECLAIMS = 0x07,			// Set number of reclaim attempts
-	SA_WR_POSTMASTER = 0x08			// Activate/Deactivate Post master functionality
+	SA_WR_POSTMASTER = 0x08,		// Activate/Deactivate Post master functionality
 };
 
 // ESP3 Function return codes
@@ -218,7 +218,7 @@ enum ESP3_FUNC_RETURN_CODE : uint8_t
 	RC_ELEGRAM_WAIT,				// Waiting before sending broadcast message
 	RC_OUT_OF_RANGE,				// Generic out of range return code
 	RC_LOCK_SET,					// Function was not executed due to sending lock
-	RC_NEW_TX_TEL					// New telegram transmitted
+	RC_NEW_TX_TEL,					// New telegram transmitted
 };
 
 // Nb seconds between attempts to open ESP3 controller serial device
@@ -268,7 +268,7 @@ static const uint8_t crc8table[256] = {
 	0xae, 0xa9, 0xa0, 0xa7, 0xb2, 0xb5, 0xbc, 0xbb,
 	0x96, 0x91, 0x98, 0x9f, 0x8a, 0x8D, 0x84, 0x83,
 	0xde, 0xd9, 0xd0, 0xd7, 0xc2, 0xc5, 0xcc, 0xcb,
-	0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3
+	0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3,
 };
 
 #define proc_crc8(crc, data) (crc8table[crc ^ data])
@@ -291,7 +291,7 @@ static const uint8_t crc8table[256] = {
 typedef enum
 {
 	UTE_UNIDIRECTIONAL = 0,	// Unidirectional
-	UTE_BIDIRECTIONAL = 1	// Bidirectional
+	UTE_BIDIRECTIONAL = 1,	// Bidirectional
 } UTE_DIRECTION;
 
 // UTE Response codes
@@ -300,14 +300,14 @@ typedef enum
 	GENERAL_REASON = 0,		// Request not accepted because of general reason
 	TEACHIN_ACCEPTED = 1, 	// Request accepted, teach-in successful
 	TEACHOUT_ACCEPTED = 2, 	// Request accepted, teach-out successful
-	EEP_NOT_SUPPORTED = 3 	// Request not accepted, EEP not supported
+	EEP_NOT_SUPPORTED = 3, 	// Request not accepted, EEP not supported
 } UTE_RESPONSE_CODE;
 
 // UTE Direction response codes
 typedef enum
 {
 	UTE_QUERY = 0,		// Teach-in query command
-	UTE_RESPONSE = 1	// Teach-in response command
+	UTE_RESPONSE = 1,	// Teach-in response command
 } UTE_CMD;
 
 CEnOceanESP3::CEnOceanESP3(const int ID, const std::string &devname, const int type)
@@ -443,8 +443,8 @@ void CEnOceanESP3::GetNodesJSON(Json::Value &root)
 			node.manufacturerID, GetManufacturerName(node.manufacturerID), node.description.c_str());
 */
 
-		uint16_t nodeSignalLevel = 12;
-		uint16_t nodeBatteryLevel = 255;
+		uint16_t nodeSignalLevel = 12; // unavailable signal level
+		uint16_t nodeBatteryLevel = 255; // unknown battery level
 		time_t maxLastUpdate = 0;
 
 		{
@@ -467,9 +467,9 @@ void CEnOceanESP3::GetNodesJSON(Json::Value &root)
 					if (nodeSignalLevel > signalLevel)
 						nodeSignalLevel = signalLevel;
 
-					int batteryLevel = static_cast<int>(std::stol(sd[2]));
-					if (nodeBatteryLevel > batteryLevel)
-						nodeBatteryLevel = batteryLevel;
+					int battery_level = static_cast<int>(std::stol(sd[2]));
+					if (nodeBatteryLevel > battery_level)
+						nodeBatteryLevel = battery_level;
 
 					std::string sLastUpdate = sd[3];
 					if (sLastUpdate.size() > 19)
@@ -582,6 +582,9 @@ void CEnOceanESP3::TeachInNode(const uint32_t nodeID, const uint16_t manID,
 
 void CEnOceanESP3::TeachInVirtualNode(const uint32_t nodeID, const uint8_t RORG, const uint8_t func, const uint8_t type)
 {
+	Log(LOG_NORM, "Creating Virtual Node %08X EEP %02X-%02X-%02X (%s)",
+		nodeID, RORG, func, type, GetEEPLabel(RORG, func, type));
+
 	TeachInNode(nodeID, DOMOTICZ_MANUFACTURER, RORG, func, type, VIRTUAL_NODE);
 }
 
@@ -593,15 +596,18 @@ void CEnOceanESP3::UpdateNode(const uint32_t nodeID,
 	NodeInfo* pNode = GetNodeInfo(nodeID);
 	if (pNode == nullptr)
 	{ // Should never happend since node must already exist to be updated !
-		Log(LOG_ERROR, "UpdateNode : problem retrieving Node %08X in database?!?!", nodeID);
+		Log(LOG_ERROR, "UpdateNode: problem retrieving Node %08X in database?!?!", nodeID);
 		return;
 	}
-	pNode->name = (name == "" || name == "Unknown") ? GetEEPLabel(RORG, func, type) : name;		
+	const char *eep_label = GetEEPLabel(RORG, func, type);
+	const char *eep_description = GetEEPDescription(RORG, func, type);
+
+	pNode->name = (name == "" || name == "Unknown") ? eep_label : name;		
 	pNode->manufacturerID = manID;		
 	pNode->RORG = RORG;			
 	pNode->func = func;			
 	pNode->type = type;			
-	pNode->description = (description == "" || description == "Unknown") ? GetEEPDescription(RORG, func, type) : description;
+	pNode->description = (description == "" || description == "Unknown") ? eep_description : description;
 
 	if (m_id_base != 0 && nodeID > m_id_base && nodeID <= (m_id_base + 128))
 		pNode->teachin_mode = VIRTUAL_NODE;
@@ -610,11 +616,11 @@ void CEnOceanESP3::UpdateNode(const uint32_t nodeID,
 
 	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
-	Log(LOG_NORM, "Update Node: HwdID %d %sNode %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
+	Log(LOG_NORM, "Update Node: HwdID %d %sNode %08X (%s) Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
 		m_HwdID,
-		(pNode->teachin_mode == VIRTUAL_NODE) ? "Virtual " : "", nodeID,
+		(pNode->teachin_mode == VIRTUAL_NODE) ? "Virtual " : "", nodeID, pNode->name.c_str(),
 		manID, GetManufacturerName(manID),
-		RORG, func, type, GetEEPLabel(RORG, func, type));
+		RORG, func, type, eep_label);
 
 	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', ManufacturerID=%d, RORG=%u, Func=%u, Type=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
 		pNode->name.c_str(), manID, RORG, func, type, pNode->description.c_str(), nValue, m_HwdID, nodeID);
@@ -623,31 +629,32 @@ void CEnOceanESP3::UpdateNode(const uint32_t nodeID,
 void CEnOceanESP3::CheckAndUpdateNodeRORG(NodeInfo* pNode, const uint8_t RORG)
 {
 	if (pNode == nullptr)
-		return;
+		return; // Unknown node
 
-	if (pNode->RORG == RORG)
-		return;
+	if (pNode->RORG != UNKNOWN_RORG)
+		return;	// Node RORG already set : nothing to update
 
-	Log(LOG_NORM, "Node %08X, update EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
-		pNode->nodeID,
+	if (GetEEP(RORG, pNode->func, pNode->type) == nullptr)
+	    return;	// Target EEP does not exist : ignore update
+
+	const char *target_eep_label = GetEEPLabel(RORG, pNode->func, pNode->type);
+	
+	Log(LOG_NORM, "Update Node %08X (%s)  EEP from %02X-%02X-%02X (%s) to %02X-%02X-%02X (%s)",
+		pNode->nodeID, pNode->name.c_str(),
 		pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
-		RORG, pNode->func, pNode->type, GetEEPLabel(RORG, pNode->func, pNode->type));
+		RORG, pNode->func, pNode->type, target_eep_label);
 
 	if (pNode->name == "" || pNode->name == "Unknown")
-		pNode->name = GetEEPLabel(RORG, pNode->func, pNode->type);		
+		pNode->name = target_eep_label;		
 
 	pNode->RORG = RORG;
 
 	if (pNode->description == "" || pNode->description == "Unknown")
 		pNode->description = GetEEPDescription(RORG, pNode->func, pNode->type);
 
-	if (pNode->teachin_mode == GENERIC_NODE)
-	{
-		Log(LOG_NORM, "Node %08X, update from Generic to Teached-in", pNode->nodeID);
+	pNode->teachin_mode = TEACHEDIN_NODE;
 
-		pNode->teachin_mode = TEACHEDIN_NODE;
-	}
-	uint32_t nValue = (pNode->teachin_mode & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
+	uint32_t nValue = (TEACHEDIN_NODE & TEACHIN_MODE_MASK) << TEACHIN_MODE_SHIFT;
 
 	m_sql.safe_query("UPDATE EnOceanNodes SET Name='%q', RORG=%u, Description='%q', nValue=%u WHERE (HardwareID==%d) AND (NodeID==%u)",
 		pNode->name.c_str(), pNode->RORG, pNode->description.c_str(), nValue, m_HwdID, pNode->nodeID);
@@ -840,7 +847,7 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // A5-02-03, Temperature Sensor Range -20C to +20C
 // Test Case : Teach-in Test
 //  Unidirectional Teach-in Test
-    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x08, 0x18, 0x88, 0x80, 0x01, RORG_4BS, 0x02, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x6D },
+    { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x08, 0x18, 0x00, 0x80, 0x01, RORG_4BS, 0x02, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x89 },
 // Test Case : Temperature Tests
 //  Min Temperature Test
     { ESP3_SER_SYNC, 0x00, 0x0A, 0x07, PACKET_RADIO_ERP1, 0xEB, RORG_4BS, 0x00, 0x00, 0xFF, 0x08, 0x01, RORG_4BS, 0x02, 0x03, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x36 },
@@ -1534,6 +1541,17 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
     { ESP3_SER_SYNC, 0x00, 0x07, 0x07, PACKET_RADIO_ERP1, 0x7A, RORG_RPS, 0x30, 0x01, RORG_RPS, 0x05, 0x02, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0x52 },
 #endif // ESP3_TESTS_RPS_F6_05_02
 
+#ifdef ESP3_TESTS_VLD_D2_01_0C
+// D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
+// Test Case : Teach-in Test
+//  Bi-directional teach-in or teach-out request from Node 00D2010C, response expected
+    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x40, 0x01, 0x46, 0x00, 0x0C, 0x01, 0xD2, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAE },
+// Test Case : Actuator Status Response 
+    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x0A, 0x01, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xB8 },
+// Test Case : Reply Measurement Response
+    { ESP3_SER_SYNC, 0x00, 0x0C, 0x07, PACKET_RADIO_ERP1, 0x96, RORG_VLD, 0x07, 0x20, 0x00, 0x00, 0x00, 0x10, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xC9 },
+#endif
+
 #ifdef ESP3_TESTS_VLD_D2_01_12
 // D2-01-12, Slot-in module, dual channels, with external button control
 // Test Case : Teach-in Test
@@ -1569,17 +1587,6 @@ static const std::vector<uint8_t> ESP3TestsCases[] =
 // VLD msg: Actuator Status Response, Channel 1 status Off
 	{ ESP3_SER_SYNC, 0x00, 0x09, 0x07, PACKET_RADIO_ERP1, 0x56, RORG_VLD, 0x04, 0x61, 0x80, 0x01, RORG_VLD, 0x01, 0x12, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xAE },
 #endif // ESP3_TESTS_VLD_D2_01_12
-
-#ifdef ESP3_TESTS_VLD_D2_01_0C
-// D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
-// Test Case : Teach-in Test
-//  Bi-directional teach-in or teach-out request from Node 00D2010C, response expected
-    { ESP3_SER_SYNC, 0x00, 0x0D, 0x07, PACKET_RADIO_ERP1, 0xFD, RORG_UTE, 0x40, 0x01, 0x46, 0x00, 0x0C, 0x01, 0xD2, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x29, 0x00, 0xAE },
-// Test Case : Actuator Status Response 
-    { ESP3_SER_SYNC, 0x00, 0x08, 0x07, PACKET_RADIO_ERP1, 0x3D, RORG_VLD, 0x0A, 0x01, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xB8 },
-// Test Case : Reply Measurement Response
-    { ESP3_SER_SYNC, 0x00, 0x0C, 0x07, PACKET_RADIO_ERP1, 0x96, RORG_VLD, 0x07, 0x20, 0x00, 0x00, 0x00, 0x10, 0x01, 0xD2, 0x01, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x2D, 0x00, 0xC9 },
-#endif
 
 #ifdef ESP3_TESTS_VLD_D2_03_0A
 // D2-03-0A, Push Button – Single Button
@@ -1740,12 +1747,12 @@ bool CEnOceanESP3::OpenSerialDevice()
 
 #ifdef ENABLE_ESP3_TESTS
 	Debug(DEBUG_NORM, "------------ ESP3 tests begin ---------------------------");
+
 	EnableLearnMode(1);
 
 	for (const auto &itt : ESP3TestsCases)
 		ReadCallback((const char *)itt.data(), itt.size());
 
-	DisableLearnMode();
 	Debug(DEBUG_NORM, "------------ ESP3 tests end -----------------------------");
 #endif
 
@@ -1884,22 +1891,21 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		return false; // Only allowed to control switches or selectors
 
 	NodeInfo* pNode = GetNodeInfo(nodeID);
-
 	if (pNode == nullptr)
 	{ // May happend if database contains invalid devices
-		Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
+		Log(LOG_ERROR, "Node %08X (%s) can not be used as a switch", nodeID, pNode->name.c_str());
 		return false;
 	}
 	if (nodeID > m_id_base && nodeID <= (m_id_base + 128))
 	{ // Virtual switch created from m_HwdID/m_id_base
 		if (pNode->teachin_mode != VIRTUAL_NODE)
 		{
-			Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
+			Log(LOG_ERROR, "Node %08X (%s) can not be used as a switch", nodeID, pNode->name.c_str());
 			return false;
 		}
 		if (tsen->LIGHTING2.unitcode >= 10)
 		{
-			Log(LOG_ERROR, "Node %08X, double press not supported", nodeID);
+			Log(LOG_ERROR, "Node %08X (%s), double press not supported", nodeID, pNode->name.c_str());
 			return false;
 		}
 		uint8_t RockerID = tsen->LIGHTING2.unitcode - 1;
@@ -1976,8 +1982,8 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			buf[5] = tsen->LIGHTING2.id4;
 			buf[6] = 0x30; // Press button
 
-			Debug(DEBUG_NORM, "Node %08X, virtual switch, set to %s",
-				nodeID, CO ? "On" : "Off");
+			Debug(DEBUG_NORM, "Node %08X (%s), virtual switch, set to %s",
+				nodeID, pNode->name.c_str(), CO ? "On" : "Off");
 
 			SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 7, nullptr, 0);
 
@@ -2011,8 +2017,8 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 				buf[1] = (RockerID << 6) | (CO << 5) | (EB << 4);
 				buf[9] = 0x30;
 
-				Debug(DEBUG_NORM, "Node %08X, virtual dimmer, set to %s",
-					nodeID, CO ? "On" : "Off");
+				Debug(DEBUG_NORM, "Node %08X (%s, virtual dimmer), set to %s",
+					nodeID, pNode->name.c_str(), CO ? "On" : "Off");
 
 				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 
@@ -2033,30 +2039,25 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 				else
 					buf[4] = 0x09; // Dim On
 
-				Debug(DEBUG_NORM, "Node %08X, virtual dimmer, dimm %s, level %d%%",
-					nodeID, (iLevel == 0 || orgcmd == light2_sOff) ? "Off" : "On", iLevel);
+				Debug(DEBUG_NORM, "Node %08X (%s, virtual dimmer), dimm %s, level %d%%",
+					nodeID, pNode->name.c_str(), (iLevel == 0 || orgcmd == light2_sOff) ? "Off" : "On", iLevel);
 
 				SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 10, nullptr, 0);
 			}
 			return true;
 		}
-		Log(LOG_ERROR, "Node %08X (virtual), switch type not supported (%d)", nodeID, switchtype);
+		Log(LOG_ERROR, "Node %08X (%s, virtual), switch type not supported (%d)",
+			nodeID, pNode->name.c_str(), switchtype);
 		return false;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00)
-		&& pNode->func == 0x01
-		&& (pNode->type == 0x0D || pNode->type == 0x0E || pNode->type == 0x0F || pNode->type == 0x12))
-	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
-		// D2-01-0D, Micro smart plug, single channel, with external button control
-		// D2-01-0E, Micro smart plug, single channel, with external button control
-		// D2-01-0F, Slot-in module, single channel, with external button control
-		// D2-01-12, Slot-in module, dual channels, with external button control
-
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x01 && pNode->type != 0x0C)
+	{ // D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
 		if (tsen->LIGHTING2.unitcode > 0x1D)
 		{
-			Log(LOG_ERROR, "Node %08X, channel %d not supported", nodeID, (int) tsen->LIGHTING2.unitcode);
+			Log(LOG_ERROR, "Node %08X (%s), channel %d not supported",
+				nodeID, pNode->name.c_str(), (int) tsen->LIGHTING2.unitcode);
 			return false;
 		}
 
@@ -2084,25 +2085,23 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		// Could be replaced by :
 		// sendVld(m_id_chip, nodeID, D20100_CMD1, 1,0, tsen->LIGHTING2.unitcode - 1, (tsen->LIGHTING2.cmnd == light2_sOn) ? 0x64 : 0x00 , END_ARG_DATA);
 
-		Debug(DEBUG_NORM, "Send switch %s to Node %08X",
-			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID);
+		Debug(DEBUG_NORM, "Send switch %s to Node %08X (%s)",
+			(tsen->LIGHTING2.cmnd == light2_sOn) ? "On" : "Off", nodeID, pNode->name.c_str());
 
 		SendESP3PacketQueued(PACKET_RADIO_ERP1, buf, 9, optbuf, 7);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x01 && pNode->type == 0x0C)
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x01 && pNode->type == 0x0C)
 	{ // D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
-		const char *PilotWireModeStr[] = {"Off", "Comfort", "Eco", "Anti-freeze", "Comfort-1", "Comfort-2", ""};
-		uint8_t level = 0;
-
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
-		level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
+		uint8_t level = (tsen->LIGHTING2.packettype == pTypeGeneralSwitch) ? xcmd->level : tsen->LIGHTING2.level;
 		if (level > 50)
 		{
-			Log(LOG_ERROR,"Node %08X, Invalid PiloteWire level %d", nodeID, level);
+			Log(LOG_ERROR,"Node %08X (%s), Invalid PiloteWire level %d", nodeID, pNode->name.c_str(), level);
 			return false;
 		}
+		const char *PilotWireModeStr[] = {"Off", "Comfort", "Eco", "Anti-freeze", "Comfort-1", "Comfort-2", ""};
 		int PilotWireMode = 0;
 
 		if (xcmd->cmnd == light2_sOn)
@@ -2114,20 +2113,22 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		else
 			return false;
 
-		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X", PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID);
+		Debug(DEBUG_NORM, "Send Set Pilot Wire Mode %d (%s) to Node %08X (%s)",
+			PilotWireMode, PilotWireModeStr[PilotWireMode], nodeID, pNode->name.c_str());
+
 		sendVld(m_id_chip, nodeID, D20100_CMD8, 8, PilotWireMode, END_ARG_DATA);
 		return true;
 	}
-	if ((pNode->RORG == RORG_VLD || pNode->RORG == 0x00) && pNode->func == 0x05)
-	{ // D2-05-00, Blinds Control for Position and Angle 
+	if ((pNode->RORG == RORG_VLD || pNode->RORG == UNKNOWN_RORG) && pNode->func == 0x05)
+	{ // D2-05-0X, Blinds Control for Position and Angle 
 		CheckAndUpdateNodeRORG(pNode, RORG_VLD);
 
 		// Build CMD 1 - Go to Position and Angle
 		int channel = tsen->LIGHTING2.unitcode - 1;
 		int cmd = tsen->LIGHTING2.cmnd;
 		int pos;
-		
-		// don't keep the last position if the request is for a different node!
+
+		// Don't keep the last position if the request is for a different node!
 		if (m_last_requested_blind_nodeID != nodeID)
 		{
 			m_last_requested_blind_position = -1;
@@ -2140,21 +2141,22 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 			pos = m_last_requested_blind_position;
 
 		if (m_last_requested_blind_position == pos)
-		{
-			//send command stop si rappuie
-			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X", nodeID);
+		{ // Send stop command when pressed again
+			Debug(DEBUG_NORM, "Send stop to Blinds Control Node %08X (%s)", nodeID, pNode->name.c_str());
+
 			sendVld(m_id_chip, nodeID, D20500_CMD2, channel, 2, END_ARG_DATA);
 			m_last_requested_blind_position = -1;
 		}
 		else
 		{
-			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X", pos, nodeID);
+			Debug(DEBUG_NORM, "Send position %d%% to Blinds Control Node %08X (%s)", pos, nodeID, pNode->name.c_str());
+
 			sendVld(m_id_chip, nodeID, D20500_CMD1, pos, 127, 0, 0, channel, 1, END_ARG_DATA);
 			m_last_requested_blind_position = pos;
 		}
 		return true;
 	}
-	Log(LOG_ERROR, "Node %08X can not be used as a switch", nodeID);
+	Log(LOG_ERROR, "Node %08X (%s) can not be used as a switch", nodeID, pNode->name.c_str());
 	Log(LOG_ERROR, "Create a virtual switch created from HwdID %d ID_Base %08X", m_HwdID, m_id_base);
 	return false;
 }
@@ -2296,7 +2298,6 @@ void CEnOceanESP3::ParseESP3Packet(uint8_t packettype, uint8_t *data, uint16_t d
 
 				// To ensure backward compatibility with previous Domoticz versions
 				// Make sure virtual EnOcean ESP3 switches have been teached-in
-				// TODO: make sure all EnOcean ESP3 devices have been teached-in
 
 				std::vector<std::vector<std::string>> result;
 
@@ -2405,8 +2406,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					if (pNode != nullptr)
 					{
-						Log(LOG_NORM, "Node %08X already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
-							senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+						Log(LOG_NORM, "Node %08X (%s) already known with EEP %02X-%02X-%02X, teach-in request ignored",
+							senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 						return;
 					}
 					if (!m_sql.m_bAcceptNewHardware)
@@ -2424,7 +2425,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, RORG_1BS, node_func, node_type, GetEEPLabel(RORG_1BS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_1BS, node_func, node_type, GENERIC_NODE);
+					TeachInNode(senderID, DOMOTICZ_MANUFACTURER, RORG_1BS, node_func, node_type, GENERIC_NODE);
 					return;
 				}
 				// 1BS data
@@ -2435,10 +2436,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				CheckAndUpdateNodeRORG(pNode, RORG_1BS);
-
-				Debug(DEBUG_NORM, "1BS msg: Node %08X EEP %02X-%02X-%02X (%s) Data %02X",
-					senderID,
-					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), DATA);
+				if (pNode->RORG != RORG_1BS)
+				{
+					Log(LOG_NORM, "1BS msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
+				Debug(DEBUG_NORM, "1BS msg: Node %08X (%s) EEP %02X-%02X-%02X Data %02X",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type, DATA);
 
 				if (pNode->func == 0x00 && pNode->type == 0x01)
 				{ // D5-00-01, Contacts and Switches, Single Input Contact
@@ -2461,12 +2466,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					Debug(DEBUG_NORM, "1BS msg: Node %08X Contact %s", senderID, CO ? "Off" : "On");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				// Should never happend, since D5-00-01 is the only 1BS EEP
-				Log(LOG_ERROR, "1BS msg: Node %08X EEP %02X-%02X-%02X (%s) not supported",
-					senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+				Log(LOG_ERROR, "1BS msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 			}
 			return;
 
@@ -2487,8 +2492,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 					if (pNode != nullptr)
 					{
-						Log(LOG_NORM, "Node %08X already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
-							senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+						Log(LOG_NORM, "Node %08X (%s) already known with EEP %02X-%02X-%02X, teach-in request ignored",
+							senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 						return;
 					}
 					if (!m_sql.m_bAcceptNewHardware)
@@ -2506,7 +2511,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					{ // 4BS teach-in, variation 1 : without EEP
 						// EnOcean EEP 2.6.8 specification §3.3 p.321 : an EEP must be manually allocated
 
-						node_manID = UNKNOWN_MANUFACTURER;
+						node_manID = DOMOTICZ_MANUFACTURER;
 						node_func = 0x02; // Generic Temperature Sensors, Temperature Sensor ranging from 0°C to +40°C
 						node_type = 0x05;
 
@@ -2564,11 +2569,16 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					Log(LOG_NORM, "4BS msg: Unknown Node %08X, please proceed to teach-in", senderID);
 					return;
 				}
-				CheckAndUpdateNodeRORG(pNode, RORG_4BS);
 
-				Debug(DEBUG_NORM, "4BS msg: Node %08X EEP %02X-%02X-%02X (%s) Data %02X %02X %02X %02X",
-					senderID,
-					pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 
+				CheckAndUpdateNodeRORG(pNode, RORG_4BS);
+				if (pNode->RORG != RORG_4BS)
+				{
+					Log(LOG_NORM, "4BS msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
+				Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) EEP %02X-%02X-%02X Data %02X %02X %02X %02X",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type, 
 					DATA_BYTE3, DATA_BYTE2, DATA_BYTE1, DATA_BYTE0);
 
 				if (pNode->func == 0x02)
@@ -2637,18 +2647,18 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.id2 = ID_BYTE1;
 						// WARNING
 						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
-						tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
-						tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
+						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
+						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
 						int at10 = round(std::abs(TMP * 10.0F));
 						tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 						at10 -= (tsen.TEMP.temperatureh * 256);
 						tsen.TEMP.temperaturel = (BYTE) at10;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", senderID, TMP);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C", senderID, pNode->name.c_str(), TMP);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 				}
@@ -2700,12 +2710,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP_HUM.temperaturel = (BYTE) at10;
 						tsen.TEMP_HUM.humidity = (BYTE) round(HUM);
 						tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-						tsen.TEMP_HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+						tsen.TEMP_HUM.battery_level = 9; // If value = 9, decode_TempHum will set battery_level = 100%
 						tsen.TEMP_HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C HUM %d%%", senderID, TMP, tsen.TEMP_HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C HUM %d%%",
+							senderID, pNode->name.c_str(), TMP, tsen.TEMP_HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP_HUM, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 					if (HUM > -1.0F)
@@ -2720,12 +2731,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.id2 = ID_BYTE1;
 						tsen.HUM.humidity = (BYTE) round(HUM);
 						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-						tsen.HUM.battery_level = 9; // OK, TODO: Should be 255 (unknown battery level) ?
+						tsen.HUM.battery_level = 9; // If value > 0, decode_Hum will set battery_level = 100%
 						tsen.HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X HUM %d%%", senderID, tsen.HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) HUM %d%%",
+							senderID, pNode->name.c_str(), tsen.HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
 				}
@@ -2759,15 +2771,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.id = ID_BYTE1;
 						// WARNING
 						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+						// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 						tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 						tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", senderID, SVC);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					else
 					{ // WARNING : ELTAKO specific implementation
@@ -2790,9 +2802,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					lmeter.dunit = 1;
 					lmeter.fLux = ILL;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X RS %s ILL %.1Flx", senderID, (RS == 0) ? "ILL1" : "ILL2", ILL);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) RS %s ILL %.1Flx",
+						senderID, pNode->name.c_str(), (RS == 0) ? "ILL1" : "ILL2", ILL);
 
-					sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &lmeter, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x01)
@@ -2812,15 +2825,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.RFXSENSOR.id = ID_BYTE1;
 						// WARNING
 						// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-						// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+						// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 						tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 						tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", senderID, SVC);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					uint8_t PIRS = DATA_BYTE1;
 
@@ -2838,9 +2851,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.cmnd = (PIRS >= 128) ? light2_sOn : light2_sOff;
 					tsen.LIGHTING2.rssi = rssi;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)", senderID, PIRS, (PIRS >= 128) ? "On" : "Off");
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) PIRS %u (%s)",
+						senderID, pNode->name.c_str(), PIRS, (PIRS >= 128) ? "On" : "Off");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x02)
@@ -2857,15 +2871,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXSENSOR.id = ID_BYTE1;
 					// WARNING
 					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+					// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 					tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 					tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", senderID, SVC);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 
 					uint8_t PIRS = bitrange(DATA_BYTE0, 7, 0x01);
 
@@ -2883,10 +2897,11 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 					tsen.LIGHTING2.rssi = rssi;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)",
-						senderID, PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+					Debug(DEBUG_NORM, "4BS msg: Node %08X P(%s) IRS %u (%s)",
+						senderID, pNode->name.c_str(),
+						PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x07 && pNode->type == 0x03)
@@ -2903,15 +2918,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXSENSOR.id = ID_BYTE1;
 					// WARNING
 					// filler & rssi fields are used here to transmit ID_BYTE0 value to decode_RFXSensor in mainworker.cpp
-					// decode_RFXSensor sets BatteryLevel to 255 (Unknown) and rssi to 12 (Not available)
+					// decode_RFXSensor assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 					tsen.RFXSENSOR.filler = bitrange(ID_BYTE0, 0, 0x0F);
 					tsen.RFXSENSOR.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 					tsen.RFXSENSOR.msg1 = (BYTE) (SVC / 256);
 					tsen.RFXSENSOR.msg2 = (BYTE) (SVC - (tsen.RFXSENSOR.msg1 * 256));
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X SVC %.1FmV", senderID, SVC);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SVC %.1FmV", senderID, pNode->name.c_str(), SVC);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXSENSOR, pNode->name.c_str(), -1, m_Name.c_str());
 
 					float ILL = GetDeviceValue((DATA_BYTE2 << 2) | bitrange(DATA_BYTE1, 6, 0x03), 0, 1000, 0.0F, 1000.0F);
 
@@ -2923,9 +2938,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					lmeter.dunit = 1;
 					lmeter.fLux = ILL;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X ILL %.1Flx", senderID, ILL);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) ILL %.1Flx", senderID, pNode->name.c_str(), ILL);
 
-					sDecodeRXMessage(this, (const unsigned char *) &lmeter, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &lmeter, pNode->name.c_str(), -1, m_Name.c_str());
 
 					uint8_t PIRS = bitrange(DATA_BYTE0, 7, 0x01);
 
@@ -2943,17 +2958,15 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.cmnd = (PIRS == 1) ? light2_sOn : light2_sOff;
 					tsen.LIGHTING2.rssi = rssi;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X PIRS %u (%s)",
-						senderID, PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) PIRS %u (%s)",
+						senderID, pNode->name.c_str(),
+						PIRS, (PIRS == 1) ? "Motion detected" : "Uncertain of occupancy status");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x09 && pNode->type == 0x04)
 				{ // A5-09-04, CO2 Gas Sensor with Temp and Humidity
-					// Battery level is not reported, set value 9 (OK)
-					// TODO: Report battery level as 255 (unknown battery level) ?
-
 					RBUF tsen;
 
 					uint8_t HSN = bitrange(DATA_BYTE0, 2, 0x01);
@@ -2970,19 +2983,19 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.id2 = ID_BYTE1;
 						tsen.HUM.humidity = (BYTE) round(HUM);
 						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-						tsen.HUM.battery_level = 9; // OK
+						tsen.HUM.battery_level = 9; // If value > 0, decode_Hum will set battery_level = 100%
 						tsen.HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X HUM %d%%", senderID, tsen.HUM.humidity);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) HUM %d%%", senderID, pNode->name.c_str(), tsen.HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 
 					float CONC = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 2550.0F);
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X CO2 %.1Fppm", senderID, CONC);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CO2 %.1Fppm", senderID, pNode->name.c_str(), CONC);
 
-					SendAirQualitySensor(ID_BYTE2, ID_BYTE1, 9, round(CONC), GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+					SendAirQualitySensor(ID_BYTE2, ID_BYTE1, -1, round(CONC), pNode->name);
 
 					uint8_t TSN = bitrange(DATA_BYTE0, 1, 0x01);
 					if (TSN == 1)
@@ -2992,23 +3005,23 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						memset(&tsen, 0, sizeof(RBUF));
 						tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
 						tsen.TEMP.packettype = pTypeTEMP;
-						tsen.TEMP.subtype = sTypeTEMP10; // TFA 30.3133
+						tsen.TEMP.subtype = sTypeTEMP10;
 						tsen.TEMP.id1 = ID_BYTE2;
 						tsen.TEMP.id2 = ID_BYTE1;
 						// WARNING
 						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-						// decode_Temp assumes BatteryLevel to Unknown and SignalLevel to Not available
-						tsen.TEMP.battery_level = ID_BYTE0 & 0x0F;
-						tsen.TEMP.rssi = (ID_BYTE0 & 0xF0) >> 4;
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
+						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
+						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
 						int at10 = round(std::abs(TMP * 10.0F));
 						tsen.TEMP.temperatureh = (BYTE) (at10 / 256);
 						at10 -= (tsen.TEMP.temperatureh * 256);
 						tsen.TEMP.temperaturel = (BYTE) at10;
 
-						Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", senderID, TMP);
+						Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C", senderID, pNode->name.c_str(), TMP);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					return;
 				}
@@ -3049,9 +3062,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.FAN.cmnd = FAN;
 							tsen.FAN.rssi = rssi;
 
-							Debug(DEBUG_NORM, "4BS msg: Node %08X FAN %u", senderID, FAN);
+							Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) FAN %u", senderID, pNode->name.c_str(), FAN);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.FAN, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 
 						// A5-10-01, A5-10-02, A5-10-03, A5-10-04, A5-10-05, A5-10-06, A5-10-0A have SP information
@@ -3059,7 +3072,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						{
 							float SP = GetDeviceValue(DATA_BYTE2, 0, 255, 0.0F, 255.0F);
 
-							Debug(DEBUG_NORM, "4BS msg: Node %08X SP %.0F not supported", senderID, SP);
+							Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) SP %.0F not supported", senderID, pNode->name.c_str(), SP);
 
 							// TODO: implement SP
 						}
@@ -3098,9 +3111,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							else // if (pNode->type == 0x0A || pNode->type == 0x0B)
 								sSW = "CTST", sSW0 = "Closed", sSW1 = "Open";
 
-							Debug(DEBUG_NORM, "4BS msg: Node %08X %s %u (%s)", senderID, sSW, SW, (SW == 0) ? sSW0 : sSW1);
+							Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) %s %u (%s)",
+								senderID, pNode->name.c_str(), sSW, SW, (SW == 0) ? sSW0 : sSW1);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 					}
 					else
@@ -3137,7 +3151,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.TEMP.id2 = ID_BYTE1;
 					// WARNING
 					// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Not available)
+					// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 					tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
 					tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 					tsen.TEMP.tempsign = (TMP >= 0) ? 0 : 1;
@@ -3146,9 +3160,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					at10 -= tsen.TEMP.temperatureh * 256;
 					tsen.TEMP.temperaturel = (BYTE) at10;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X TMP %.1F°C", senderID, TMP);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TMP %.1F°C", senderID, pNode->name.c_str(), TMP);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x00)
@@ -3173,10 +3187,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 					tsen.RFXMETER.rssi = rssi;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID, CH, DT, DIV, scaleMax, MR);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) CH %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID, pNode->name.c_str(), CH, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x01)
@@ -3195,10 +3209,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					umeter.dunit = 1;
 					umeter.fusage = GetDeviceValue(MR, 0, 16777215, 0.0F, scaleMax);
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID, TI, DT, DIV, scaleMax, MR);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID, pNode->name.c_str(), TI, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &umeter, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &umeter, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x02)
@@ -3223,10 +3237,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 					tsen.RFXMETER.rssi = rssi;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID, TI, DT, DIV, scaleMax, MR);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID, pNode->name.c_str(), TI, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x12 && pNode->type == 0x03)
@@ -3251,14 +3265,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.RFXMETER.count4 = (BYTE) (MR & 0x000000FF);
 					tsen.RFXMETER.rssi = rssi;
 
-					Debug(DEBUG_NORM, "4BS msg: Node %08X TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
-						senderID, TI, DT, DIV, scaleMax, MR);
+					Debug(DEBUG_NORM, "4BS msg: Node %08X (%s) TI %u DT %u DIV %u (scaleMax %.3F) MR %u",
+						senderID, pNode->name.c_str(), TI, DT, DIV, scaleMax, MR);
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.RFXMETER, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
-				Log(LOG_ERROR, "4BS msg: Node %08X EEP %02X-%02X-%02X (%s) not supported",
-					senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+				Log(LOG_ERROR, "4BS msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 			}
 			return;
 
@@ -3295,12 +3309,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					if (DATA != m_RPS_teachin_DATA || STATUS != m_RPS_teachin_STATUS)
 					{ // Same node ID, but data or status differ => ignore telegram
-						Log(LOG_NORM, "RPS teach-in request from Node %08X (ignored telegram)", senderID);
+						Debug(DEBUG_NORM, "RPS teach-in request from Node %08X (ignored)", senderID);
 						return;
 					}
 					time_t now = GetClockTicks();
 					if (m_RPS_teachin_timer != 0 && now > (m_RPS_teachin_timer + TEACH_MAX_DELAY))
-					{ // Max delay expired => teach-in request ignored
+					{ // Max delay expired => teach-in request timed out
 						m_RPS_teachin_nodeID = 0;
 						Log(LOG_NORM, "RPS teach-in request from Node %08X (timed out)", senderID);
 						return;
@@ -3310,12 +3324,12 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						Log(LOG_NORM, "RPS teach-in request #%u from Node %08X", m_RPS_teachin_count, senderID);
 						return;
 					}
-					// Received 3 identical telegrams from the node within delay
+					// Received TEACH_NB_REQUESTS identical telegrams from the node within delay
 					// RPS teachin
 
 					m_RPS_teachin_nodeID = 0;
 
-					Log(LOG_NORM, "RPS teach-in request #%u from Node %08X accepted", m_RPS_teachin_count, senderID);
+					Log(LOG_NORM, "RPS teach-in request #%u from Node %08X (accepted)", m_RPS_teachin_count, senderID);
 
 					// F6-02-01, Rocker Switch, 2 Rocker
 					uint8_t node_func = 0x02;
@@ -3325,7 +3339,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						senderID, RORG_RPS, node_func, node_type, GetEEPLabel(RORG_RPS, node_func, node_type));
 					Log(LOG_NORM, "Please adjust by hand if need be");
 
-					TeachInNode(senderID, UNKNOWN_MANUFACTURER, RORG_RPS, node_func, node_type, GENERIC_NODE);
+					TeachInNode(senderID, DOMOTICZ_MANUFACTURER, RORG_RPS, node_func, node_type, GENERIC_NODE);
 					return;
 				}
 				// RPS data
@@ -3337,25 +3351,24 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				// TODO: Remove that, as user may want to use external switch/button control as a sensor
 
-				// If RORG = VLD
-				// Or RORG unknown & RPS-func-type EEP doesn't exist & VLD-func-type EEP exists
-				// => assume VLD and ignore RPS data
+				// If RORG unknown & RPS-func-type EEP doesn't exist => assume VLD and ignore RPS data
 
-				if (pNode->RORG == RORG_VLD
-					|| (pNode->RORG == 0x00
-						&& GetEEP(RORG_RPS, pNode->func, pNode->type) == nullptr
-						&& GetEEP(RORG_VLD, pNode->func, pNode->type) != nullptr))
+				CheckAndUpdateNodeRORG(pNode, (GetEEP(RORG_RPS, pNode->func, pNode->type) == nullptr) ? RORG_VLD : RORG_RPS);
+				if (pNode->RORG == RORG_VLD)
 				{
-					Debug(DEBUG_NORM, "RPS %c-msg: Node %08X, button press from VLD device (ignored)",
-						(NU == 0) ? 'U' : 'N', senderID);
-					CheckAndUpdateNodeRORG(pNode, RORG_VLD);
+					Debug(DEBUG_NORM, "RPS %c-msg: Node %08X (%s), button press from VLD device (ignored)",
+						(NU == 0) ? 'U' : 'N', senderID, pNode->name.c_str());
 					return;
 				}
-				CheckAndUpdateNodeRORG(pNode, RORG_RPS);
-
-				Debug(DEBUG_NORM, "RPS %c-msg: Node %08X EEP %02X-%02X-%02X (%s) Data %02X (%s) Status %02X",
+				if (pNode->RORG != RORG_RPS)
+				{
+					Log(LOG_NORM, "RPS msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
+				Debug(DEBUG_NORM, "RPS %c-msg: Node %08X (%s) EEP %02X-%02X-%02X Data %02X (%s) Status %02X",
 					(NU == 0) ? 'U' : 'N',
-					senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type),
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type,
 					DATA, (T21 == 0) ? "PTM1xx" : "PTM2xx", STATUS);
 
 				if (pNode->func == 0x01 && pNode->type == 0x01)
@@ -3377,9 +3390,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					tsen.LIGHTING2.cmnd = PB ? light2_sOn : light2_sOff;
 					tsen.LIGHTING2.rssi = rssi;
 
-					Debug(DEBUG_NORM, "RPS msg: Node %08X PB %s", senderID, PB ? "Pressed" : "Released");
+					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) PB %s",
+						senderID, pNode->name.c_str(), PB ? "Pressed" : "Released");
 
-					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+					sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					return;
 				}
 				if (pNode->func == 0x02 && (pNode->type == 0x01 ||pNode->type == 0x02))
@@ -3402,13 +3416,13 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						uint8_t SA = bitrange(DATA, 0, 0x01);
 
 						if (SA == 0)
-							Debug(DEBUG_NORM, "RPS N-msg: Node %08X Button %c%c %s",
-								senderID,
+							Debug(DEBUG_NORM, "RPS N-msg: Node %08X (%s) Button %c%c %s",
+								senderID, pNode->name.c_str(),
 								(R1_AB == 0) ? 'A' : 'B', (R1_IO == 0) ? 'I' : 'O',
 								(EB == 0) ? "released" : "pressed");
 						else
-							Debug(DEBUG_NORM, "RPS N-msg: Node %08X Buttons %c%c and %c%c simultaneously %s",
-								senderID,
+							Debug(DEBUG_NORM, "RPS N-msg: Node %08X (%s) Buttons %c%c and %c%c simultaneously %s",
+								senderID, pNode->name.c_str(),
 								(R1_AB == 0) ? 'A' : 'B', (R1_IO == 0) ? 'I' : 'O', (R2_AB == 0) ? 'A' : 'B', (R2_IO == 0) ? 'I' : 'O',
 								(EB == 0) ? "released" : "pressed");
 
@@ -3435,10 +3449,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.LIGHTING2.cmnd = light2_sOn; // Button is pressed, so we don't get an OFF message here
 							tsen.LIGHTING2.rssi = rssi;
 
-							Debug(DEBUG_NORM, "RPS N-msg: Node %08X UnitID %02X Cmd %02X",
-								senderID, tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
+							Debug(DEBUG_NORM, "RPS N-msg: Node %08X (%s) UnitID %02X Cmd %02X",
+								senderID, pNode->name.c_str(), tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 					}
 					else
@@ -3463,50 +3477,50 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.LIGHTING2.cmnd = (EB == 1) ? light2_sGroupOn : light2_sGroupOff;
 						tsen.LIGHTING2.rssi = rssi;
 
-						Debug(DEBUG_NORM, "RPS U-msg: Node %08X Energy Bow %s (%s pressed) UnitID %02X Cmd %02X",
-							senderID,
+						Debug(DEBUG_NORM, "RPS U-msg: Node %08X (%s) Energy Bow %s (%s pressed) UnitID %02X Cmd %02X",
+							senderID, pNode->name.c_str(),
 							(EB == 0) ? "released" : "pressed",
 							(R1 == 0) ? "no button" : "3 or 4 buttons",
 							tsen.LIGHTING2.unitcode, tsen.LIGHTING2.cmnd);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 					}
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x00)
 				{ // F6-05-00, Wind speed threshold detector
 					bool WIND = (DATA == 0x10);
-					int batterylevel = (DATA == 0x30) ? 5 : 100;
+					int battery_level = (DATA == 0x30) ? 5 : 100;
 
-					Debug(DEBUG_NORM, "RPS msg: Node %08X Wind speed alarm %s Energy level %s",
-						senderID, WIND ? "ON" : "OFF", (batterylevel > 5) ? "OK" : "LOW");
+					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Wind speed alarm %s Energy level %s",
+						senderID, pNode->name.c_str(), WIND ? "ON" : "OFF", (battery_level > 5) ? "OK" : "LOW");
 
-					SendSwitch(senderID, 1, batterylevel, WIND, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(senderID, 1, battery_level, WIND, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x01)
 				{ // F6-05-01, Liquid Leakage Sensor (mechanic harvester)
 					bool WAS = (DATA == 0x11);
-					int batterylevel = 255;
 
-					Debug(DEBUG_NORM, "RPS msg: Node %08X Liquid Leakage alarm %s", senderID, WAS ? "ON" : "OFF");
+					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Liquid Leakage alarm %s",
+						senderID, pNode->name.c_str(), WAS ? "ON" : "OFF");
 
-					SendSwitch(senderID, 1, batterylevel, WAS, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(senderID, 1, -1, WAS, 0, pNode->name, m_Name, rssi);
 					return;
 				}
 				if (pNode->func == 0x05 && pNode->type == 0x02)
 				{ // F6-05-02, Smoke detector
 					bool SMO = (DATA == 0x10);
-					int batterylevel = (DATA == 0x30) ? 5 : 100;
+					int battery_level = (DATA == 0x30) ? 5 : 100;
 
-					Debug(DEBUG_NORM, "RPS msg: Node %08X Smoke alarm %s Energy level %s",
-						senderID, SMO ? "ON" : "OFF", (batterylevel > 5) ? "OK" : "LOW");
+					Debug(DEBUG_NORM, "RPS msg: Node %08X (%s) Smoke alarm %s Energy level %s",
+						senderID, pNode->name.c_str(), SMO ? "ON" : "OFF", (battery_level > 5) ? "OK" : "LOW");
 
-					SendSwitch(senderID, 1, batterylevel, SMO, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendSwitch(senderID, 1, battery_level, SMO, 0, pNode->name, m_Name, rssi);
 					return;
 				}
-				Log(LOG_ERROR, "RPS msg: Node %08X EEP %02X-%02X-%02X (%s) not supported",
-					senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+				Log(LOG_ERROR, "RPS msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 			}
 			return;
 
@@ -3515,7 +3529,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t CMD = bitrange(data[1], 0, 0x0F);				// 0 = teach-in query, 1 = teach-In response
 				if (CMD != 0)
 				{
-					Log(LOG_ERROR, "UTE teach request: Node %08X, CMD 0x%1X not supported", senderID, CMD);
+					Log(LOG_ERROR, "UTE teach request: Node %08X (%s), CMD 0x%1X not supported",
+						senderID, pNode->name.c_str(), CMD);
 					return;
 				}
 				// UTE teach-in or teach-out Query (UTE Telegram / CMD 0x0)
@@ -3526,8 +3541,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				// TODO: is num_channel information reliable ?
 				// EEP 2.6.8 specifies : 0x00..0xFE = individual channel number, 0xFF = all supported channels
-				// Nodon SIN-2-2-01 Slot-in module (D2-01-0D) always sends 2, which corresponds to the number of supported channels
-				// Nodon MSP-2-1-01 Micro Smart Plug (D2-01-0E) always sends 1, which corresponds to the number of supported channels
+				// But, instead of individual channel number, several modules send the number of supported channels 
+				// For instance, Nodon SIN-2-2-01 Slot-in module (D2-01-0D) sends the value 2
+
 				uint8_t num_channel = data[2]; // 0x00..0xFE = individual channel number, 0xFF = all supported channels
 
 				uint16_t node_manID = (bitrange(data[4], 0, 0x07) << 8) | data[3];
@@ -3536,10 +3552,10 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				uint8_t node_func = data[6];
 				uint8_t node_RORG = data[7];
 
-				Log(LOG_NORM, "UTE %s-directional %s request from Node %08X, nb_channels %u, %sresponse expected",
+				Log(LOG_NORM, "UTE %s-directional %s request from Node %08X, %sresponse expected",
 					(ute_direction == 0) ? "uni" : "bi",
 					(ute_request == 0) ? "teach-in" : ((ute_request == 1) ? "teach-out" : "teach-in or teach-out"),
-					senderID, num_channel,
+					senderID,
 					(ute_response == 0) ? "" : "no ");
 
 				uint8_t buf[13];
@@ -3602,13 +3618,24 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					// Node not found and learn mode enabled and teach-in request : add it to the database
 
-					Log(LOG_NORM, "Creating Node %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
-						senderID, node_manID, GetManufacturerName(node_manID),
-						node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
-						num_channel, (num_channel > 1) ? "s" : "");
+					if (num_channel != 0xFF)
+						Log(LOG_NORM, "Creating Node %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s), %u channel%s",
+							senderID, node_manID, GetManufacturerName(node_manID),
+							node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type),
+							num_channel, (num_channel > 1) ? "s" : "");
+					else
+						Log(LOG_NORM, "Creating Node %08X Manufacturer %03X (%s) EEP %02X-%02X-%02X (%s)",
+							senderID, node_manID, GetManufacturerName(node_manID),
+							node_RORG, node_func, node_type, GetEEPLabel(node_RORG, node_func, node_type));
 
 					TeachInNode(senderID, node_manID, node_RORG, node_func, node_type, TEACHEDIN_NODE);
 
+					NodeInfo* pNode = GetNodeInfo(senderID);
+					if (pNode == nullptr)
+					{ // Should never happend since node has just been teached-in !
+						Log(LOG_ERROR, "UTE teach-in: problem retrieving Node %08X in database?!?!", senderID);
+						return;
+					}
 					if (ute_response == 0)
 					{ // Build and send response
 						buf[1] |= (TEACHIN_ACCEPTED & 0x03) << 4;
@@ -3619,21 +3646,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					}
 					// TODO : instead of creating node channels, ask all node channels to report their status
 
-					if (node_RORG == RORG_VLD && node_func == 0x01
-						&& (node_type == 0x0D || node_type == 0x0E
-							|| node_type == 0x0F || node_type == 0x12
-							|| node_type == 0x15 || node_type == 0x16
-							|| node_type == 0x17))
-					{ // Create devices for :
-						// D2-01-0D, Micro smart plug, single channel, with external button control
-						// D2-01-0E, Micro smart plug, single channel, with external button control
-						// D2-01-0F, Slot-in module, single channel, with external button control
-						// D2-01-12, Slot-in module, dual channels, with external button control
-						// D2-01-15, D2-01-16, D2-01-17
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x01 && pNode->type != 0x0C)
+					{ // Create devices for D2-01-XX, Electronic Switches and Dimmers with Local Control (except Type 0x0C, Pilotwire)
+						if (num_channel == 0xFF)
+						{ // 0xFF = all supported channels
+							const uint8_t default_num_chanel[] = { 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 1U, 2U, 2U, 2U, 4U, 8U, 4U, 2U, 1U, };
 
-						// TODO : num_channel is only a valid channel number when between 0x00 & 0x1D
-						// 0x1E means all supported output channels
-						// 0x1F means input channel (for mains supply)
+							num_channel = (pNode->type <= 0x17) ? default_num_chanel[pNode->type] : 1;
+						}
 						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
 						{
 							RBUF tsen;
@@ -3648,17 +3668,53 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 							tsen.LIGHTING2.id3 = (BYTE) ID_BYTE1;
 							tsen.LIGHTING2.id4 = (BYTE) ID_BYTE0;
 							tsen.LIGHTING2.level = 0;
-							tsen.LIGHTING2.unitcode = nbc;
+							tsen.LIGHTING2.unitcode = (BYTE) nbc;
 							tsen.LIGHTING2.cmnd = light2_sOff;
 							tsen.LIGHTING2.rssi = rssi;
 
-							Debug(DEBUG_NORM, "UTE msg: Node %08X, creating switch/dimmer channel %d", senderID, nbc);
+							Log(LOG_NORM, "Node %08X (%s), creating channel %u switch/dimmer",
+								senderID, pNode->name.c_str(), nbc);
 
-							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(node_RORG, node_func, node_type), 255, m_Name.c_str());
+							sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						}
 						return;
 					}
-					createOtherVldUteDevices(senderID, node_RORG, node_func, node_type, num_channel);
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x01 && pNode->type == 0x0C)
+					{ // Create devices for D2-01-0C, Electronic Switches and Dimmers with Local Control, Type 0x0C, Pilotwire
+						Log(LOG_NORM, "Node %08X (%s), creating pilotwire selector switch", senderID, pNode->name.c_str());
+
+						SendSelectorSwitch(senderID, 1, "0", pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "0|10|20|30|40|50|60", false, m_Name);
+
+						Log(LOG_NORM, "Node %08X (%s), creating kWh meter", senderID, pNode->name.c_str());
+
+						SendKwhMeter(senderID, 1, -1, 0.0, 0.0, pNode->name, rssi);
+						return;
+					}
+					if (pNode->RORG == RORG_VLD && pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
+					{ // Create for D2-05-0X, Blind Control for Position and Angle, Type 0x00
+						if (num_channel == 0xFF)
+						{ // 0xFF = all supported channels
+							const uint8_t default_num_chanel[] = { 1U, 4U, 1U, };
+
+							num_channel = (pNode->type <= 0x02) ? default_num_chanel[pNode->type] : 1U;
+						}
+						for (uint8_t nbc = 1; nbc <= num_channel; nbc++)
+						{
+							Log(LOG_NORM, "Node %08X (%s), creating channel %u blind control switch",
+								senderID, pNode->name.c_str(), nbc);
+
+							SendSwitch(senderID, nbc, -1, light2_sOff, 0, pNode->name, m_Name, rssi);
+
+							// Wait for decive creation
+							int timeout = 10; // 1 second
+							while (updateSwitchType(m_HwdID, GetDeviceID(senderID).c_str(), STYPE_BlindsPercentageWithStop) && (timeout > 0))
+							{
+								sleep_milliseconds(100);
+								timeout--;
+							}
+						}
+						return;
+					}
 					return;
 				}
 				// Node found
@@ -3667,8 +3723,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 
 				if (ute_request == 0)
 				{ // Node found and teach-in request => ignore
-					Log(LOG_NORM, "Node %08X already known with EEP %02X-%02X-%02X (%s), teach-in request ignored",
-						senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+					Log(LOG_NORM, "Node %08X (%s) already known with EEP %02X-%02X-%02X, teach-in request ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 
 					if (ute_response == 0)
 					{ // Build and send response
@@ -3682,7 +3738,8 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 				else if (ute_request == 1 || ute_request == 2)
 				{ // Node found and teach-out request => teach-out
 					// Ignore teach-out request to avoid teach-in/out loop
-					Debug(DEBUG_NORM, "UTE msg: Node %08X, teach-out request not supported", senderID);
+					Debug(DEBUG_NORM, "UTE msg: Node %08X (%s), teach-out request not supported",
+						senderID, pNode->name.c_str());
 
 					if (ute_response == 0)
 					{ // Build and send response
@@ -3704,8 +3761,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					return;
 				}
 				CheckAndUpdateNodeRORG(pNode, RORG_VLD);
-
-				Debug(DEBUG_NORM, "VLD msg: Node %08X EEP %02X-%02X-%02X", senderID, pNode->RORG, pNode->func, pNode->type);
+				if (pNode->RORG != RORG_VLD)
+				{
+					Log(LOG_NORM, "VLD msg from Node %08X (%s) EEP %02X-%02X-%02X ignored",
+						senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
+					return;
+				}
+				Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) EEP %02X-%02X-%02X",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 
 				if (pNode->func == 0x01)
 				{ // D2-01-XX, Electronic Switches and Dimmers with Local Control
@@ -3742,19 +3805,64 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.LIGHTING2.cmnd = (OV > 0) ? light2_sOn : light2_sOff;
 						tsen.LIGHTING2.rssi = rssi;
 
-						Debug(DEBUG_NORM, "VLD msg: Node %08X status, IO %02X (UnitID %d) OV %02X (Cmnd %s Level %d)",
-							senderID, IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
-						Debug(DEBUG_NORM, "VLD msg: Node %08X status, PF %d PFD %d OC %d EL %d LC %d",
-							senderID, PF, PFD, OC, EL, LC);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status, IO %02X (UnitID %d) OV %02X (Cmnd %s Level %d)",
+							senderID, pNode->name.c_str(),
+							IO, tsen.LIGHTING2.unitcode, OV, tsen.LIGHTING2.cmnd ? "On" : "Off", tsen.LIGHTING2.level);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status, PF %d PFD %d OC %d EL %d LC %d",
+							senderID, pNode->name.c_str(), PF, PFD, OC, EL, LC);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), 255, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.LIGHTING2, pNode->name.c_str(), -1, m_Name.c_str());
 						return;
 					}
-					// TODO: handle other CMD returning status data
-					// TODO: manage CMD 0x7 - Actuator Measurement Response
-					// TODO: manage CMD 0xA - Actuator Pilot Wire Mode Response
+					if (CMD == 0x7)
+					{ // Actuator Measurement Response
+						std::string mes = printRawDataValues(&data[1], D20100_CMD7);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) Reply Measurement Response\n%s",
+							senderID, pNode->name.c_str(), mes.c_str());
 
-					Log(LOG_ERROR, "VLD msg: Node %08X, command 0x%01X not supported", senderID, CMD);
+						int unit = GetRawValue(&data[1], D20100_CMD7, D20100_CMD7_UN);
+						uint32_t mv = GetRawValue(&data[1], D20100_CMD7, D20100_CMD7_MV);
+						uint32_t id = (senderID << 8) | 1;
+						//get last total mesure value mtotal
+						std::string sValue = GetDbValue("DeviceStatus", "sValue", "DeviceId", GetEnOceanIDToString(id).c_str());
+						std::vector<std::string> strarray;
+						StringSplit(sValue, ";", strarray);
+						double mtotal = 0;
+						if (strarray.size() >= 2)
+							mtotal = std::stod(strarray[1]);
+						//add current
+						mtotal += mv;
+						SendKwhMeter(senderID, 1, -1, mv, mtotal / 1000.0, pNode->name, rssi);
+						//Value: 0x00 = Energy [Ws]
+						//Value: 0x01 = Energy [Wh]
+						//Value: 0x02 = Energy [KWh]
+						//Value: 0x03 = Power [W]
+						//Value: 0x04 = Power [KW]
+
+						//send CMD 0x9 - Actuator Pilot Wire Mode Query
+						//sendVld(m_id_chip, senderID, D20100_CMD9,  9 , END_ARG_DATA);
+						return;
+					}
+					if (CMD == 0xA)
+					{ // CMD 0xA - Actuator Pilotwire Mode Response
+						uint8_t PM = GetRawValue(&data[1], D20100_CMD10, D20100_CMD10_PM);
+
+						std::string mes = printRawDataValues(&data[1], D20100_CMD10);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status\n%s", senderID, pNode->name.c_str(), mes.c_str());
+
+						std::string sValue = std::to_string(PM * 10);
+						SendSelectorSwitch(senderID, 1, sValue, pNode->name, 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, m_Name);
+						return;
+					}
+					if (CMD == 0xD)
+					{ // Actuator External Interface Settings Response
+						std::string mes = printRawDataValues(&data[1], D20100_CMD13);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) Actuator External Interface Settings Response (not supported)\n%s",
+							senderID, pNode->name.c_str(), mes.c_str());
+						return;
+					}
+					Log(LOG_ERROR, "VLD msg: Node %08X (%s), command 0x%01X not supported",
+						senderID, pNode->name.c_str(), CMD);
 					return;
 				}
 				if (pNode->func == 0x03 && pNode->type == 0x0A)
@@ -3762,10 +3870,34 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					uint8_t BATT = round(GetDeviceValue(data[1], 1, 100, 1.0F, 100.0F));
 					uint8_t BA = data[2]; // 1 = Simple press, 2 = Double press, 3 = Long press, 4 = Long press released
 
-					Debug(DEBUG_NORM, "VLD msg: Node %08X status, BATT %d%% BA %02X (%s)", senderID,
+					Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status, BATT %d%% BA %02X (%s)",
+						senderID, pNode->name.c_str(),
 						BATT, BA, (BA == 1) ? "Simple press" : ((BA == 2) ? "Double press" : ((BA == 3) ? "Long press" : ((BA == 4) ? "Long press released" : "Invalid value"))));
 
-					SendGeneralSwitch(senderID, BA, BATT, 1, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					SendGeneralSwitch(senderID, BA, BATT, 1, 0, pNode->name, m_Name, rssi);
+					return;
+				}
+				if (pNode->func == 0x05 && (pNode->type == 0x00 || pNode->type == 0x01))
+				{ // D2-05-0X, Blind Control for Position and Angle
+					uint8_t CMD = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CMD);
+					int unitcode = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_CHN);
+
+					if (CMD == 0x4)
+					{ // CMD 0x4 - Reply Position and Angle
+						int POS = GetRawValue(&data[1], D20500_CMD1, D20500_CMD1_POS);
+						bool bon = POS > 0;
+
+						if (POS >= 100)
+							POS = 99;
+
+						Debug(DEBUG_HARDWARE, "VLD Node %08X (%s), Blind Reply Position: %d%%",
+							senderID, pNode->name.c_str(), POS);
+
+						SendSwitch(senderID, unitcode + 1, -1, bon, POS, pNode->name, m_Name, rssi);
+						return;
+					}
+					Log(LOG_ERROR, "VLD msg: Node %08X (%s), command 0x%01X not supported",
+						senderID, pNode->name.c_str(), CMD);
 					return;
 				}
 				if (pNode->func == 0x14 && pNode->type == 0x30)
@@ -3795,12 +3927,14 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 					// Indoor Air Quality Analysis, 0 = Optimal, 1 = Dry, 2 = High hum rng, 3 = High temp & hum rng, 4 = Temp & hum out of rng, 7 = Error
 					uint8_t IAQTH = bitrange(data[6], 4, 0x07);
 
-					Debug(DEBUG_NORM, "VLD msg: Node %08X status, SMA_SAS %u SMA_SFMS %u SMA_SACA_MNT %u SMA_SACA_HUM %u SMA_SACA_TMP %u SMA_TSLM %u ES %u RPLT %u TMP8 %u HUM %u HCI %u IAQTH %u",
-						senderID, SMA_SAS, SMA_SFMS, SMA_SACA_MNT, SMA_SACA_HUM, SMA_SACA_TMP, SMA_TSLM, ES, RPLT, TMP8, HUM, HCI, IAQTH);
+					Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) status, SMA_SAS %u SMA_SFMS %u SMA_SACA_MNT %u SMA_SACA_HUM %u SMA_SACA_TMP %u SMA_TSLM %u ES %u RPLT %u TMP8 %u HUM %u HCI %u IAQTH %u",
+						senderID, pNode->name.c_str(),
+						SMA_SAS, SMA_SFMS, SMA_SACA_MNT, SMA_SACA_HUM, SMA_SACA_TMP, SMA_TSLM, ES, RPLT, TMP8, HUM, HCI, IAQTH);
 
 					bool alarm = (SMA_SAS == 1);
-					int batterylevel = (ES == 0) ? 100 : ((ES == 0) ? 100 : ((ES == 0) ? 50 : ((ES == 0) ? 25 : 10)));
-					SendSwitch(senderID, 1, batterylevel, alarm, 0, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), m_Name, rssi);
+					int battery_level = (ES == 0) ? 100 : ((ES == 1) ? 50 : ((ES == 2) ? 20 : 5));
+
+					SendSwitch(senderID, 1, battery_level, alarm, 0, pNode->name, m_Name, rssi);
 
 					RBUF tsen;
 
@@ -3816,7 +3950,7 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.TEMP.id2 = ID_BYTE1;
 						// WARNING
 						// battery_level & rssi fields are used here to transmit ID_BYTE0 value to decode_Temp in mainworker.cpp
-						// decode_Temp assumes BatteryLevel to Unknown and SignalLevel to Not available
+						// decode_Temp assumes battery_level = 255 (Unknown) & rssi = 12 (Unavailable)
 						tsen.TEMP.battery_level = bitrange(ID_BYTE0, 0, 0x0F);
 						tsen.TEMP.rssi = bitrange(ID_BYTE0, 4, 0x0F);
 						tsen.TEMP.tempsign = (FTMP8 >= 0) ? 0 : 1;
@@ -3825,9 +3959,9 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						at10 -= (tsen.TEMP.temperatureh * 256);
 						tsen.TEMP.temperaturel = (BYTE) at10;
 
-						Debug(DEBUG_NORM, "VLD msg: Node %08X TMP8 %.1F°C", senderID, FTMP8);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) TMP8 %.1F°C", senderID, pNode->name.c_str(), FTMP8);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.TEMP, pNode->name.c_str(), battery_level, m_Name.c_str());
 					}
 					if (HUM <= 200)
 					{
@@ -3842,20 +3976,17 @@ void CEnOceanESP3::ParseERP1Packet(uint8_t *data, uint16_t datalen, uint8_t *opt
 						tsen.HUM.id2 = ID_BYTE1;
 						tsen.HUM.humidity = (BYTE) round(FHUM);
 						tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-						tsen.HUM.battery_level = (BYTE) batterylevel;
+						tsen.HUM.battery_level = (BYTE) ((ES == 3) ? 0 : 9); // decode_Hum will set battery_level = 0% or = 100%
 						tsen.HUM.rssi = rssi;
 
-						Debug(DEBUG_NORM, "VLD msg: Node %08X HUM %d%%", senderID, tsen.HUM.humidity);
+						Debug(DEBUG_NORM, "VLD msg: Node %08X (%s) HUM %d%%", senderID, pNode->name.c_str(), tsen.HUM.humidity);
 
-						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, GetEEPLabel(pNode->RORG, pNode->func, pNode->type), -1, m_Name.c_str());
+						sDecodeRXMessage(this, (const unsigned char *) &tsen.HUM, pNode->name.c_str(), battery_level, m_Name.c_str());
 					}
 					return;
 				}
-                if (manageVldMessage(senderID, &data[1], pNode->func, pNode->type, m_Name, rssi))
-                    return;
-
-				Log(LOG_ERROR, "VLD msg: Node %08X EEP %02X-%02X-%02X (%s) not supported",
-					senderID, pNode->RORG, pNode->func, pNode->type, GetEEPLabel(pNode->RORG, pNode->func, pNode->type));
+				Log(LOG_ERROR, "VLD msg: Node %08X (%s) EEP %02X-%02X-%02X not supported",
+					senderID, pNode->name.c_str(), pNode->RORG, pNode->func, pNode->type);
 			}
 			return;
 
@@ -4174,7 +4305,6 @@ const char *CEnOceanESP3::GetFunctionReturnCodeDescription(const uint8_t RC)
 	return ">>Unkown function return code... Please report!<<";
 }
 
-///---------------------------------------------------------------------------
 std::string CEnOceanESP3::GetDbValue(const char *tableName, const char *fieldName, const char *whereFieldName, const char *whereFielValue)
 {
 	std::vector<std::vector<std::string>> result;
@@ -4210,7 +4340,7 @@ void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, int channel, i
 	SendESP3PacketQueued(PACKET_RADIO_ERP1, buff, 9, opt, 7);
 }
 
-//send a VLD datagramm with payload : data to device Id sID
+// Send a VLD datagramm with payload : data to device Id sID
 void CEnOceanESP3::sendVld(unsigned int sID, unsigned int destID, unsigned char *data, int DataLen)
 {
 	unsigned char buffer[256];
@@ -4267,7 +4397,7 @@ uint32_t CEnOceanESP3::sendVld(unsigned int srcID, unsigned int destID, T_DATAFI
 	if (DataSize)
 		sendVld(srcID, destID, data, DataSize);
 	else
-		Log(LOG_ERROR, "Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		Log(LOG_ERROR, "sendVld: invalid argument number, cmd %s : %s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 
 	va_end(value);
 
@@ -4284,7 +4414,7 @@ uint32_t CEnOceanESP3::sendDataVld(unsigned int srcID, unsigned int destID, T_DA
 	if (DataSize)
 		sendVld(srcID, destID, data, DataSize);
 	else
-		Log(LOG_ERROR, "Error argument number in sendVld : cmd :%s :%s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
+		Log(LOG_ERROR, "sendVld: Invalid argument number, cmd %s : %s ", OffsetDes->ShortCut.c_str(), OffsetDes->description.c_str());
 
 	return DataSize;
 }
@@ -4300,122 +4430,6 @@ bool CEnOceanESP3::updateSwitchType(int HardwareID, const char *deviceID, _eSwit
 		return false;
 	}
 	return true;
-}
-
-void CEnOceanESP3::createOtherVldUteDevices(uint32_t iSenderID, uint8_t rorg, uint8_t func, uint8_t type, uint8_t nb_channel)
-{
-	if (rorg == RORG_VLD && func == 0x05 && (type == 0x00 || type == 0x01))
-	{ // Create Blinds Control switch
-		for (int nbc = 0; nbc < nb_channel; nbc++)
-		{
-			Log(LOG_NORM, "TEACH Blinds Switch : 0xD2 Node 0x%08x UnitID: %02X cmd: %02X ", iSenderID, nbc + 1, light2_sOff);
-			SendSwitch(iSenderID, nbc + 1, -1, light2_sOff, 0, "Blinds" + GetDeviceID(iSenderID), "EnOcean");
-			// Wait for decive creation
-			int timeout = 10; // 1 second
-			while (updateSwitchType(m_HwdID, GetDeviceID(iSenderID).c_str(), STYPE_BlindsPercentageWithStop) && (timeout > 0))
-			{
-				sleep_milliseconds(100);
-				timeout--;
-			}
-			// CreateDevice(m_HwdID, GetDeviceID(iSenderID).c_str(), nbc + 1, pTypeLighting2, sTypeAC, 0, -1, light2_sOff, "0", GetDeviceID(iSenderID), STYPE_BlindsPercentage , "" , 0 );
-		}
-		return;
-	}
-	if (rorg == RORG_VLD && func == 0x01 && type == 0x0C)
-	{ // Create Pilot Wire devices
-		const std::string deviceType = GetEEPLabel(rorg, func, type);
-
-		Log(LOG_NORM, "TEACH %s  : VLD Node 0x%08x UnitID: %02X ", deviceType.c_str(), iSenderID, 1);
-		//	SendSelectorSwitch(int NodeID, uint8_t ChildID, std::string &sValue, std::string &defaultname,  int customImage,  bool bDropdown,  std::string &LevelNames,  std::string &LevelActions,  bool bHideOff,  std::string &userName)
-		SendSelectorSwitch(iSenderID, 1, "0", "PilotWire" + GetDeviceID(iSenderID), 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
-		//								CreateDevice(m_HwdID, GetDeviceID(iSenderID).c_str(),  1, pTypeLighting2, sTypeAC, 0, -1, light2_sOff, "0", GetDeviceID(iSenderID), STYPE_Selector , false, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2" ,  ""      , 0 );
-
-		// Create kwh usage
-		SendKwhMeter(iSenderID, 1, 100, 0.0, 0.0, deviceType, 12);
-		return;
-	}
-}
-
-//return false if not managed
-bool CEnOceanESP3::manageVldMessage(uint32_t iSenderID, unsigned char *vldData, uint8_t func, uint8_t type, std::string &m_Name, uint8_t rssi)
-{
-	// D2-05
-	//{ 0xD2 , 0x05 , 0x00 , "Blinds Control for Position and Angle                                            ",  "Type 0x00
-	if (func == 0x05)
-	{
-		int cmd = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_CMD);
-		int unitcode = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_CHN);
-
-		if (cmd == 0x4)
-		{ // Get position
-			int pos = GetRawValue(vldData, D20500_CMD1, D20500_CMD1_POS);
-			bool bon = pos > 0;
-
-			if (pos >= 100)
-				pos = 99;
-
-			Debug(DEBUG_HARDWARE, "VLD Node %08X, EEP: D2-05 Reply Position: %d%%", iSenderID, pos);
-			SendSwitch(iSenderID, unitcode + 1, -1, bon, pos, "", m_Name.c_str(), rssi);
-			return true;
-		}
-		return false;
-	}
-	if (func == 0x01)
-	{
-		int cmd = GetRawValue(vldData, D20100_CMD7, D20100_CMD7_CMD);
-
-		if (cmd == 0x4)
-		{ // Actuator Status Response
-			// This message is sent by an actuator if one of the following events occurs:
-			// Already managed
-			return false;
-		}
-		if (cmd == 0x7)
-		{ // Actuator Measurement Response
-			std::string mes = printRawDataValues(vldData, D20100_CMD7);
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Reply Measurement Response %s", iSenderID, mes.c_str());
-			int unit = GetRawValue(vldData, D20100_CMD7, D20100_CMD7_UN);
-			uint32_t mv = GetRawValue(vldData, D20100_CMD7, D20100_CMD7_MV);
-			uint32_t id = (iSenderID << 8) | 1;
-			//get last total mesure value mtotal
-			std::string sValue = GetDbValue("DeviceStatus", "sValue", "DeviceId", GetEnOceanIDToString(id).c_str());
-			std::vector<std::string> strarray;
-			StringSplit(sValue, ";", strarray);
-			double mtotal = 0;
-			if (strarray.size() >= 2)
-				mtotal = std::stod(strarray[1]);
-			//add current
-			mtotal += mv;
-			SendKwhMeter(iSenderID, 1, 100, mv, mtotal / 1000.0, "", 12);
-			//Value: 0x00 = Energy [Ws]
-			//Value: 0x01 = Energy [Wh]
-			//Value: 0x02 = Energy [KWh]
-			//Value: 0x03 = Power [W]
-			//Value: 0x04 = Power [KW]
-
-			//send CMD 0x9 - Actuator Pilot Wire Mode Query
-			//sendVld(m_id_chip, iSenderID, D20100_CMD9,  9 , END_ARG_DATA);
-			return true;
-		}
-		if (cmd == 0xA)
-		{ // Actuator Pilot Wire Mode Response
-			std::string mes = printRawDataValues(vldData, D20100_CMD10);
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Actuator Pilot Wire Mode Response %s", iSenderID, mes.c_str());
-			int pm = GetRawValue(vldData, D20100_CMD10, D20100_CMD10_PM);
-			std::string level = std::to_string(pm * 10);
-			SendSelectorSwitch(iSenderID, 1, level, "", 0, false, "Off|Conf|Eco|Freeze|Conf-1|Conf-2", "00|10|20|30|40|50|60", false, "");
-
-			return true;
-		}
-		if (cmd == 0xD)
-		{ // Actuator External Interface Settings Response
-			std::string mes = printRawDataValues(vldData, D20100_CMD13);
-			Debug(DEBUG_HARDWARE, "VLD: senderID: %08X Actuator External Interface Settings Response %s", iSenderID, mes.c_str());
-			return true;
-		}
-		return false;
-	}
-	return false;
 }
 
 //return position 0..100% from command / level
@@ -4491,7 +4505,7 @@ namespace http
 
 			int rc = pESP3Hardware->IsNodeTeachedInJSON(root);
 
-			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3IsNodeTeachedIn: %s", (rc == 0) ? "waiting..." : (rc == 1) ? "OK" : "Timed out!");
+			pESP3Hardware->Debug(DEBUG_NORM, "Cmd_EnOceanESP3IsNodeTeachedIn: %s", (rc == 0) ? "waiting..." : ((rc == 1) ? "OK" : "Timed out!"));
 
 			root["status"] = "OK";
 			root["title"] = "EnOceanESP3IsNodeTeachedIn";

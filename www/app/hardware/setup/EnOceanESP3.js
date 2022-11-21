@@ -262,6 +262,9 @@ define(['app'], function (app) {
 			// Populate EnOcean RORG combo
 			$("#noderorg").html("");
 			$.each($.rorgtbl, function (i, item) {
+
+				// TODO : if node is virtual, put only allowed values in RORG combo
+
 				var option = $("<option />");
 				option.attr("value", item.rorg).text(item.label + " (" + addLeadingZeros(parseInt(item.rorg).toString(16).toUpperCase(), 2) +")");
 				$("#noderorg").append(option);
@@ -300,6 +303,9 @@ define(['app'], function (app) {
 			var eepfound = false;
 			$.each($.eeptbl, function (i, item) {
 				if (item.rorg == rorg) {
+
+					// TODO : if node is virtual, put only allowed values in EEP combo
+
 					var option = $("<option />");
 					option.attr("value", item.eep).text(item.eep);
 					$("#nodeeep").append(option);
@@ -383,7 +389,7 @@ define(['app'], function (app) {
 				dataType: "json",
 				success: function (data, status) {
 					if (data.result === 1) { // An EnOcean node has been teached-in
-						$scope.esp3_nodeid = data.nodeid;
+						$scope.esp3_nodeid = addLeadingZeros(parseInt(data.nodeid).toString(16).toUpperCase(), 8);
 						$scope.esp3_manufacturername = data.manufacturername;
 						$scope.esp3_eep = data.eep;
 						$scope.esp3_description = data.description;
