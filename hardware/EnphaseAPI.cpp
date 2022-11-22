@@ -56,8 +56,8 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short /*usIPPort*/) :
-	m_szIPAddress(IPAddress)
+EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, const std::string& szToken) :
+	m_szIPAddress(IPAddress), m_szToken(szToken)
 {
 	m_p1power.ID = 1;
 	m_c1power.ID = 2;
@@ -166,7 +166,14 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	std::stringstream sURL;
 	sURL << "http://" << m_szIPAddress << "/production.json";
 
-	if (!HTTPClient::GET(sURL.str(), sResult))
+	std::vector<std::string> ExtraHeaders;
+	if (!m_szToken.empty()) {
+		//new method since firmware v7, should be the default soon
+		ExtraHeaders.push_back("Authorization:Bearer " + m_szToken);
+		ExtraHeaders.push_back("Content-Type:application/json");
+	}
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
 		return false;

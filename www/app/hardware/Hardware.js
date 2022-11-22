@@ -588,6 +588,9 @@ define(['app'], function (app) {
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 				}
+				else if (text.indexOf("Enphase") >= 0) {
+					password = $("#hardwarecontent #divenphase #hwAccessToken").val();
+				}
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -1805,6 +1808,9 @@ define(['app'], function (app) {
 				else if (text.indexOf("Intergas InComfort") >= 0) {
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
+				}
+				else if (text.indexOf("Enphase") >= 0) {
+					password = $("#hardwarecontent #divenphase #hwAccessToken").val();
 				}
 				
 				$.ajax({
@@ -4199,6 +4205,7 @@ define(['app'], function (app) {
 						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0 || data["Type"].indexOf("RFLink Gateway MQTT") >= 0) &&
 						 		(data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) &&
 								(data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+									
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
@@ -4206,16 +4213,19 @@ define(['app'], function (app) {
 								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
 								$("#hardwarecontent #divkeyp1p1 #decryptionkey").val(data["Password"]);
 							}
-							if (data["Type"].indexOf("Teleinfo EDF") >= 0 ) {
+							else if (data["Type"].indexOf("Teleinfo EDF") >= 0 ) {
 								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
 								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
 							}
-							if (data["Type"].indexOf("Eco Devices") >= 0) {
+							else if (data["Type"].indexOf("Eco Devices") >= 0) {
 								$("#hardwarecontent #divmodelecodevices #combomodelecodevices").val(data["Mode1"]);
 								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode2"]);
 							}
-							if (data["Type"].indexOf("Evohome") >= 0) {
+							else if (data["Type"].indexOf("Evohome") >= 0) {
 								$("#hardwarecontent #divevohometcp #controlleridevohometcp").val(data["Extra"]);
+							}
+							else if (data["Type"].indexOf("Enphase") >= 0) {
+								$("#hardwarecontent #divenphase #hwAccessToken").val(data["Password"]);
 							}
 						}
 						else if (
@@ -4639,6 +4649,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
 			$("#hardwarecontent #divhoneywell").hide();
+			$("#hardwarecontent #divenphase").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
@@ -4768,6 +4779,9 @@ define(['app'], function (app) {
 					else if (text.indexOf("Intergas InComfort") >= 0) {
 						$("#hardwarecontent #divlogin").show();
 					}
+					else if (text.indexOf("Enphase") >= 0) {
+						$("#hardwarecontent #divenphase").show();
+					}
 			}
 			else if (
 					(text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) &&
@@ -4779,7 +4793,6 @@ define(['app'], function (app) {
 					(text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
 						$("#hardwarecontent #divremote").show();
 						$("#hardwarecontent #divlogin").show();
-
 						if (text.indexOf("Relay-Net") >= 0) {
 							$("#hardwarecontent #username").show();
 							$("#hardwarecontent #lblusername").show();

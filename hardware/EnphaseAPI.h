@@ -10,26 +10,27 @@ namespace Json
 
 class EnphaseAPI : public CDomoticzHardwareBase
 {
-      public:
-	EnphaseAPI(int ID, const std::string &IPAddress, unsigned short usIPPort);
+public:
+	EnphaseAPI(int ID, const std::string& IPAddress, unsigned short usIPPort, const std::string& szToken);
 	~EnphaseAPI() override = default;
-	bool WriteToHardware(const char *pdata, unsigned char length) override;
+	bool WriteToHardware(const char* pdata, unsigned char length) override;
 
-      private:
+private:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
 
-	bool getProductionDetails(Json::Value &result);
+	bool getProductionDetails(Json::Value& result);
 
-	void parseProduction(const Json::Value &root);
-	void parseConsumption(const Json::Value &root);
-	void parseNetConsumption(const Json::Value &root);
+	void parseProduction(const Json::Value& root);
+	void parseConsumption(const Json::Value& root);
+	void parseNetConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
 
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
-      private:
+private:
+	std::string m_szToken;
 	std::string m_szIPAddress;
 	P1Power m_p1power;
 	P1Power m_c1power;
