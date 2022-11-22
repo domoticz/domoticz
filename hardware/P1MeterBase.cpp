@@ -264,6 +264,12 @@ void P1MeterBase::Init()
 			m_gasmbuschannel = (char)s_gasmbuschannel[0];
 			m_gasprefix[2] = m_gasmbuschannel;
 			Log(LOG_STATUS, "Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+
+			_tMBusDevice mdevice;
+			mdevice.channel = m_gasmbuschannel;
+			mdevice.name = "Gas";
+			mdevice.prefix[2] = m_gasmbuschannel;
+			m_mbus_devices[P1MBusType::deviceType_Gas] = mdevice;
 		}
 	}
 	InitP1EncryptionState();
@@ -572,10 +578,13 @@ bool P1MeterBase::MatchLine()
 					*/
 					if (mbus_type == P1MBusType::deviceType_Gas)
 					{
-						m_gasmbuschannel = (char)l_buffer[2];
-						if (m_gasprefix[2] == 'n')
-							Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
-						m_gasprefix[2] = m_gasmbuschannel;
+						if (m_gasmbuschannel == 0)
+						{
+							m_gasmbuschannel = (char)l_buffer[2];
+							if (m_gasprefix[2] == 'n')
+								Log(LOG_STATUS, "Found gas meter on M-Bus channel %c", m_gasmbuschannel);
+							m_gasprefix[2] = m_gasmbuschannel;
+						}
 					}
 					else
 					{
@@ -591,7 +600,7 @@ bool P1MeterBase::MatchLine()
 									mdevice.name = itt.name;
 									mdevice.prefix[2] = (char)l_buffer[2];
 									m_mbus_devices[mbus_type] = mdevice;
-									Log(LOG_STATUS, "Found '%s' meter on M-Bus channel %c", itt.name, m_gasmbuschannel);
+									Log(LOG_STATUS, "Found '%s' meter on M-Bus channel %c", itt.name, mdevice.channel);
 								}
 							}
 						}
