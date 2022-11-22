@@ -930,7 +930,7 @@ namespace http {
 		{
 			if (network.empty())
 			{
-				_log.Log(LOG_ERROR, "[web:%s] Empty network string provided! Skipping...", GetPort().c_str());
+				_log.Log(LOG_STATUS, "[web:%s] Empty network string provided! Skipping...", GetPort().c_str());
 				return;
 			}
 
@@ -940,7 +940,7 @@ namespace http {
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
 
-			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of local networks.", (ipnetwork.bIsIPv6 ? "6" : "4"), GetPort().c_str(), network.c_str());
+			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of local networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
 
 			if (network.find('*') != std::string::npos)
 			{
@@ -2239,7 +2239,19 @@ namespace http {
 
 		void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
+			if(_log.IsDebugLevelEnabled(DEBUG_WEBSERVER))
+			{
+				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Host:%s Uri:%s", myWebem->GetPort().c_str(), req.host_remote_address.c_str(), req.uri.c_str());
+				if(_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
+				{
+					std::string sHeaders;
+					for (const auto &header : req.headers)
+					{
+						sHeaders += header.name + ": " + header.value + "\n";
+					}
+					_log.Debug(DEBUG_RECEIVED, "[web:%s] Request Headers:\n%s", myWebem->GetPort().c_str(), sHeaders.c_str());
+				}
+			}
 
 			if(!myWebem->CheckVHost(req))
 			{
