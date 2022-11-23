@@ -251,7 +251,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	}
 	m_szSoftwareVersion = pElem->GetText();
 
-	Log(LOG_STATUS, "Connected, serial: %d, software: %s", m_szSerial.c_str(), m_szSoftwareVersion.c_str());
+	Log(LOG_STATUS, "Connected, serial: %s, software: %s", m_szSerial.c_str(), m_szSoftwareVersion.c_str());
 
 	if (
 		(m_szSoftwareVersion.find("D5") != 0)
