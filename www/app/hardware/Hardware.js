@@ -589,7 +589,9 @@ define(['app'], function (app) {
 					password = $("#hardwarecontent #divlogin #password").val();
 				}
 				else if (text.indexOf("Enphase") >= 0) {
-					password = $("#hardwarecontent #divenphase #hwAccessToken").val();
+					Mode1 = $("#hardwarecontent #divenphase #pollinterval").val();
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
 				}
 
 				$.ajax({
@@ -1810,7 +1812,9 @@ define(['app'], function (app) {
 					password = $("#hardwarecontent #divlogin #password").val();
 				}
 				else if (text.indexOf("Enphase") >= 0) {
-					password = $("#hardwarecontent #divenphase #hwAccessToken").val();
+					Mode1 = $("#hardwarecontent #divenphase #pollinterval").val();
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
 				}
 				
 				$.ajax({
@@ -4225,7 +4229,12 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divevohometcp #controlleridevohometcp").val(data["Extra"]);
 							}
 							else if (data["Type"].indexOf("Enphase") >= 0) {
-								$("#hardwarecontent #divenphase #hwAccessToken").val(data["Password"]);
+								var pollInterval = parseInt(data["Mode1"]);
+								if (pollInterval<5)
+									pollInterval=30;
+								if (pollInterval>120)
+									pollInterval=120;
+								$("#hardwarecontent #divenphase #pollinterval").val(pollInterval);
 							}
 						}
 						else if (
@@ -4461,7 +4470,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-							
 						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0) ||
@@ -4488,6 +4496,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Razberry") >= 0) ||
 							(data["Type"].indexOf("Comm5") >= 0) ||
 							(data["Type"].indexOf("Intergas InComfort") >= 0)
+							(data["Type"].indexOf("Enphase") >= 0)
 						) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -4648,8 +4657,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
-			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divenphase").hide();
+			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
@@ -4781,6 +4790,7 @@ define(['app'], function (app) {
 					}
 					else if (text.indexOf("Enphase") >= 0) {
 						$("#hardwarecontent #divenphase").show();
+						$("#hardwarecontent #divlogin").show();
 					}
 			}
 			else if (

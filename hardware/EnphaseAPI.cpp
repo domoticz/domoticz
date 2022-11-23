@@ -2,18 +2,18 @@
 #include "EnphaseAPI.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../httpclient/UrlEncode.h"
-#include "hardwaretypes.h"
-#include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
+#include "../httpclient/UrlEncode.h"
+#include "../main/localtime_r.h"
 #include "../main/json_helper.h"
-#include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
+#include "../tinyxpath/tinyxml.h"
+#include "hardwaretypes.h"
 #include <iostream>
 
 //https://enphase.com/en-us/products-and-services/envoy
-
-#define Enphase_request_INTERVAL 30
 
 #ifdef _DEBUG
 //#define DEBUG_EnphaseAPI_R
@@ -56,14 +56,41 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, const std::string& szToken) :
-	m_szIPAddress(IPAddress), m_szToken(szToken)
+EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const std::string& szUsername, const std::string& szPassword) :
+	m_szIPAddress(IPAddress),
+	m_szUsername(szUsername),
+	m_szPassword(szPassword)
 {
 	m_p1power.ID = 1;
 	m_c1power.ID = 2;
 	m_c2power.ID = 3;
 
 	m_HwdID = ID;
+
+	if (PollInterval < 5)
+		PollInterval = 30;
+	if (PollInterval > 120)
+		PollInterval = 120;
+	m_poll_interval = PollInterval;
+
+	std::vector<std::vector<std::string> > result;
+	std::string szName = "EnphaseToken_" + std::to_string(m_HwdID);
+	result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+	if (result.empty())
+	{
+		m_sql.safe_query("INSERT INTO UserVariables (Name, ValueType, Value) VALUES ('%q',%d,'%q')", szName.c_str(), USERVARTYPE_STRING, "");
+		result = m_sql.safe_query("SELECT ID, Value FROM UserVariables WHERE (Name=='%q')", szName.c_str());
+		if (result.empty())
+			return;
+	}
+	if (!result.empty())
+	{
+		m_szToken = result[0][1];
+		if (!m_szToken.empty())
+		{
+			m_szSoftwareVersion = "D7.xx"; //prevent going online to check software version as we already know we need a token
+		}
+	}
 }
 
 bool EnphaseAPI::StartHardware()
@@ -93,7 +120,7 @@ bool EnphaseAPI::StopHardware()
 void EnphaseAPI::Do_Work()
 {
 	Log(LOG_STATUS, "Worker started...");
-	int sec_counter = Enphase_request_INTERVAL - 5;
+	int sec_counter = m_poll_interval - 4;
 
 	while (!IsStopRequested(1000))
 	{
@@ -103,10 +130,16 @@ void EnphaseAPI::Do_Work()
 			m_LastHeartbeat = mytime(nullptr);
 		}
 
-		if (sec_counter % Enphase_request_INTERVAL == 0)
+		if (sec_counter % m_poll_interval == 0)
 		{
 			try
 			{
+				if (m_szSoftwareVersion.empty())
+				{
+					if (!GetSerialSoftwareVersion())
+						continue;
+				}
+
 				Json::Value result;
 				if (getProductionDetails(result))
 				{
@@ -118,7 +151,7 @@ void EnphaseAPI::Do_Work()
 			}
 			catch (const std::exception& e)
 			{
-				Log(LOG_ERROR, "EnphaseAPI: Exception parsing data (%s)", e.what());
+				Log(LOG_ERROR, "Exception parsing data (%s)", e.what());
 			}
 		}
 	}
@@ -156,11 +189,205 @@ int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
-bool EnphaseAPI::getProductionDetails(Json::Value& result)
+bool EnphaseAPI::GetSerialSoftwareVersion()
 {
 	std::string sResult;
 
 #ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_info.xml");
+#else
+	std::stringstream sURL;
+	sURL << "http://" << m_szIPAddress << "/info.xml";
+
+	if (!HTTPClient::GET(sURL.str(), sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data!");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_info.xml");
+#endif
+#endif
+
+	TiXmlDocument doc;
+	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error())
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return false;
+	}
+
+	TiXmlElement* pRoot, * pDevice;
+	TiXmlElement* pElem;
+
+	pRoot = doc.FirstChildElement("envoy_info");
+	if (!pRoot)
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return false;
+	}
+
+	pDevice = pRoot->FirstChildElement("device");
+	if (!pRoot)
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return false;
+	}
+
+	pElem = pDevice->FirstChildElement("sn");
+	if (pElem == nullptr)
+	{
+		Log(LOG_ERROR, "Cannot find serial number");
+		return false;
+	}
+	m_szSerial = pElem->GetText();
+
+	pElem = pDevice->FirstChildElement("software");
+	if (pElem == nullptr)
+	{
+		Log(LOG_ERROR, "Cannot find software version");
+		return false;
+	}
+	m_szSoftwareVersion = pElem->GetText();
+
+	Log(LOG_STATUS, "Connected, serial: %d, software: %s", m_szSerial.c_str(), m_szSoftwareVersion.c_str());
+
+	if (
+		(m_szSoftwareVersion.find("D5") != 0)
+		&& (m_szSoftwareVersion.find("D7") != 0)
+		)
+	{
+		Log(LOG_STATUS, "Unsupported software version! Please contact us for support!");
+	}
+
+	return true;
+}
+
+bool EnphaseAPI::GetAccessToken()
+{
+	m_szToken.clear();
+
+	std::string sResult;
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_login.json");
+#else
+	if (
+		(m_szUsername.empty())
+		|| (m_szPassword.empty())
+		)
+	{
+		Log(LOG_ERROR, "You need to supply a username/password!");
+		return false;
+	}
+
+	std::string sURL = "https://enlighten.enphaseenergy.com/login/login.json";
+
+	std::stringstream sstr;
+	sstr
+		<< "user[email]=" << m_szUsername
+		<< "&user[password]=" << m_szPassword;
+	std::string szPostdata = sstr.str();
+
+	std::vector<std::string> ExtraHeaders;
+
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data!");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_login.json");
+#endif
+#endif
+	Json::Value root;
+	bool ret = ParseJSon(sResult, root);
+	if ((!ret) || (!root.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return false;
+	}
+
+	if (root["session_id"].empty())
+	{
+		Log(LOG_ERROR, "Invalid data received!");
+		return false;
+	}
+
+	std::string session_id = root["session_id"].asString();
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_token.json");
+#else
+	//Now get the Token
+	Json::Value reqRoot;
+	reqRoot["session_id"] = session_id;
+	reqRoot["serial_num"] = m_szSerial;
+	reqRoot["username"] = m_szUsername;
+
+	szPostdata = JSonToRawString(reqRoot);
+
+	ExtraHeaders.push_back("Content-type: application/json");
+
+	sURL = "https://entrez.enphaseenergy.com/tokens";
+
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data!");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_token.json");
+#endif
+#endif
+
+	m_szToken = sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_check_jwt.json");
+#else
+	//Validate token on IQ Gateway
+	ExtraHeaders.push_back("Authorization:Bearer " + m_szToken);
+
+	sURL = "http://" + m_szIPAddress + "/auth/check_jwt";
+
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (check_jwt)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_check_jwt.json");
+#endif
+#endif
+
+	if (sResult.find("Valid token") == std::string::npos)
+	{
+		Log(LOG_ERROR, "Error getting http data! (invalid token!)");
+		return false;
+	}
+
+	//Store token for later usage
+	std::string szName = "EnphaseToken_" + std::to_string(m_HwdID);
+	m_sql.safe_query("UPDATE UserVariables SET Value='%q' WHERE (Name=='%q')", m_szToken.c_str(), szName.c_str());
+	return true;
+}
+
+bool EnphaseAPI::getProductionDetails(Json::Value& result)
+{
+	if (m_szSoftwareVersion.find("D5") != 0)
+	{
+		if (m_szToken.empty())
+		{
+			//We need a access token
+			if (!GetAccessToken())
+				return false;
+			if (m_szToken.empty())
+				return false;
+		}
+	}
+
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R2
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
 	std::stringstream sURL;
@@ -175,18 +402,42 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
-		return false;
+		if (!m_szToken.empty())
+		{
+			//We might need a new access token
+			if (!GetAccessToken())
+				return false;
+			if (m_szToken.empty())
+				return false;
+
+			if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+			{
+				if (sResult.find("401") != std::string::npos)
+				{
+					Log(LOG_ERROR, "Error getting http data (Unauthorized!)");
+					m_szToken.clear();
+				}
+				else
+					Log(LOG_ERROR, "Error getting http data!");
+				return false;
+			}
+		}
+		else
+		{
+			Log(LOG_ERROR, "Error getting http data!");
+			return false;
+		}
 	}
 #ifdef DEBUG_EnphaseAPI_W
-	SaveString2Disk(sResult, "E:\\EnphaseAPI_production.json")
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_production.json");
 #endif
 #endif
 
-		bool ret = ParseJSon(sResult, result);
+	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
-		Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid data received!");
 		return false;
 	}
 	if (
@@ -194,7 +445,8 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 		&& (result["production"].empty())
 		)
 	{
-		Log(LOG_ERROR, "EnphaseAPI: Invalid (no) data received");
+		m_szToken.clear();
+		Log(LOG_ERROR, "Invalid (no) data received");
 		return false;
 	}
 	return true;
@@ -251,7 +503,7 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][0].empty())
 	{
-		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 
@@ -276,7 +528,7 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][1].empty() == true)
 	{
-		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 
@@ -299,13 +551,18 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 	{
 		return;
 	}
+
 	if (root["storage"][0].empty())
 	{
-		Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
+		Log(LOG_ERROR, "Invalid data received");
 		return;
 	}
 
 	Json::Value reading = root["storage"][0];
+
+	int readingTime = reading["readingTime"].asInt();
+	if (readingTime == 0)
+		return;
 
 	int musage = reading["wNow"].asInt();
 	int whNow = reading["whNow"].asInt();

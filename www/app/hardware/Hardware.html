@@ -1293,13 +1293,16 @@
 		<br>
 		<table class="display" id="hardwareparamsenphase" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:110px"><label><span data-i18n="Access token">Access token</span>:</label></td>
-				<td><textarea id="hwAccessToken" style="padding: .2em;" cols="80" rows="6" class="text ui-widget-content ui-corner-all"></textarea></td>
-			</tr>
-			<tr>
-				<td></td>
+				<td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
 				<td>
-					From firmware V7.0+ you need to sign up at Enphase to get the API Token <a href="https://entrez.enphaseenergy.com/" target="_blank">HERE</a>
+					<select id="pollinterval" name="pollinterval" style="width:60px" class="combobox ui-corner-all">
+						<option value="120">120</option>
+						<option value="60">60</option>
+						<option value="30">30</option>
+						<option value="20">20</option>
+						<option value="10">10</option>
+						<option value="5">5</option>
+					</select>&nbsp;<span data-i18n="(Seconds)">(Seconds)</span>
 				</td>
 			</tr>
 		</table>
