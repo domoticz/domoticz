@@ -120,6 +120,8 @@ void EnphaseAPI::Do_Work()
 	Log(LOG_STATUS, "Worker started...");
 	int sec_counter = m_poll_interval - 4;
 
+	bool bHaveRunOnce = false;
+
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
@@ -130,6 +132,40 @@ void EnphaseAPI::Do_Work()
 
 		if (sec_counter % m_poll_interval == 0)
 		{
+			time_t atime = mytime(nullptr);
+			struct tm ltime;
+			localtime_r(&atime, &ltime);
+
+			int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
+
+			int sunRise = getSunRiseSunSetMinutes(true);
+			int sunSet = getSunRiseSunSetMinutes(false);
+
+			bool bInsideSunHours = true;
+			if (sunRise != 0 && sunSet != 0)
+			{
+				if (
+					(ActHourMin - 60 < sunRise)
+					|| (ActHourMin + 60 > sunSet)
+					)
+				{
+					bInsideSunHours = false;
+				}
+			}
+
+			if ((bHaveRunOnce) && (!bInsideSunHours))
+			{
+				if (
+					(!m_bHaveConsumption)
+					&& (!m_bHaveeNetConsumption)
+					&& (!m_bHaveStorage)
+					)
+				{
+					//no need to poll outside sun hours
+					continue;
+				}
+			}
+
 			try
 			{
 				if (m_szSoftwareVersion.empty())
@@ -150,6 +186,7 @@ void EnphaseAPI::Do_Work()
 				{
 					getInverterDetails();
 				}
+				bHaveRunOnce = true;
 			}
 			catch (const std::exception& e)
 			{
@@ -514,28 +551,6 @@ bool EnphaseAPI::getInverterDetails()
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
 {
-	time_t atime = mytime(nullptr);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-
-	int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
-
-	int sunRise = getSunRiseSunSetMinutes(true);
-	int sunSet = getSunRiseSunSetMinutes(false);
-
-	if (sunRise != 0 && sunSet != 0)
-	{
-		//We only process one hour before sunrise till one hour after sunset
-
-		//GizMoCuz: why is this as the production.json is retreived anyway ?
-			//Tuurtje: production.json also contains data from the CT's. Consumption and NetConsumption produce data all day.
-
-		if (ActHourMin + 60 < sunRise)
-			return;
-		if (ActHourMin - 60 > sunSet)
-			return;
-	}
-
 	if (root["production"].empty() == true)
 	{
 		//No production details available
@@ -572,6 +587,8 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	int musage = reading["wNow"].asInt();
 	int mtotal = reading["whLifetime"].asInt();
 
+	m_bHaveConsumption = true;
+
 	SendKwhMeter(m_HwdID, 2, 255, musage, mtotal / 1000.0, "Enphase kWh Consumption");
 
 	m_c1power.powerusage1 = mtotal;
@@ -596,6 +613,8 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 
 	int musage = reading["wNow"].asInt();
 	int mtotal = reading["whLifetime"].asInt();
+
+	m_bHaveConsumption = true;
 
 	SendKwhMeter(m_HwdID, 3, 255, musage, mtotal / 1000.0, "Enphase kWh Net Consumption");
 
@@ -634,4 +653,6 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 
 	std::string szState = reading["state"].asString();
 	SendTextSensor(m_HwdID, 1, 255, szState, "Enphase Storage State");
+
+	m_bHaveStorage = true;
 }

@@ -45,6 +45,10 @@ private:
 
 	bool m_bGetInverterDetails;
 
+	bool m_bHaveConsumption = false;
+	bool m_bHaveeNetConsumption = false;
+	bool m_bHaveStorage = false;
+
 	P1Power m_p1power;
 	P1Power m_c1power;
 	P1Power m_c2power;
