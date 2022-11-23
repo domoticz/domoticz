@@ -590,6 +590,9 @@ define(['app'], function (app) {
 				}
 				else if (text.indexOf("Enphase") >= 0) {
 					Mode1 = $("#hardwarecontent #divenphase #pollinterval").val();
+					Mode2 = 0;
+					if ($("#hardwarecontent #divenphase #readinverters").prop("checked"))
+						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 				}
@@ -1813,6 +1816,9 @@ define(['app'], function (app) {
 				}
 				else if (text.indexOf("Enphase") >= 0) {
 					Mode1 = $("#hardwarecontent #divenphase #pollinterval").val();
+					Mode2 = 0;
+					if ($("#hardwarecontent #divenphase #readinverters").prop("checked"))
+						Mode2 = 1;
 					username = $("#hardwarecontent #divlogin #username").val();
 					password = $("#hardwarecontent #divlogin #password").val();
 				}
@@ -4235,6 +4241,7 @@ define(['app'], function (app) {
 								if (pollInterval>120)
 									pollInterval=120;
 								$("#hardwarecontent #divenphase #pollinterval").val(pollInterval);
+								$("#hardwarecontent #divenphase #readinverters").prop('checked', parseInt(data["Mode2"]) != 0);
 							}
 						}
 						else if (

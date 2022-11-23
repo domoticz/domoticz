@@ -56,11 +56,13 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const std::string& szUsername, const std::string& szPassword) :
+EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword) :
 	m_szIPAddress(IPAddress),
 	m_szUsername(szUsername),
 	m_szPassword(szPassword)
 {
+	m_bGetInverterDetails = bPollInverters;
+
 	m_p1power.ID = 1;
 	m_c1power.ID = 2;
 	m_c2power.ID = 3;
@@ -86,10 +88,6 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigne
 	if (!result.empty())
 	{
 		m_szToken = result[0][1];
-		if (!m_szToken.empty())
-		{
-			m_szSoftwareVersion = "D7.xx"; //prevent going online to check software version as we already know we need a token
-		}
 	}
 }
 
@@ -147,6 +145,10 @@ void EnphaseAPI::Do_Work()
 					parseConsumption(result);
 					parseNetConsumption(result);
 					parseStorage(result);
+				}
+				if (m_bGetInverterDetails)
+				{
+					getInverterDetails();
 				}
 			}
 			catch (const std::exception& e)
@@ -450,6 +452,64 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 		return false;
 	}
 	return true;
+}
+
+bool EnphaseAPI::getInverterDetails()
+{
+	std::string sResult;
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_inverters.json");
+#else
+	std::stringstream sURL;
+	sURL << "http://";
+
+	if (m_szSoftwareVersion.find("D5") == 0)
+	{
+		//V5
+		sURL << "envoy:" << m_szSerial.substr(m_szSerial.size() - 6) << "@";
+	}
+	sURL << m_szIPAddress << "/api/v1/production/inverters";
+
+	std::vector<std::string> ExtraHeaders;
+	if (!m_szToken.empty()) {
+		//new method since firmware v7, should be the default soon
+		ExtraHeaders.push_back("Authorization:Bearer " + m_szToken);
+		ExtraHeaders.push_back("Content-Type:application/json");
+	}
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Invalid data received! (inverter details)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");
+#endif
+#endif
+	Json::Value root;
+	bool ret = ParseJSon(sResult, root);
+	if ((!ret) || (!root.isArray()))
+	{
+		Log(LOG_ERROR, "Invalid data received! (inverter details)");
+		return false;
+	}
+
+	int iIndex = 128;
+	for (const auto &itt : root)
+	{
+		if (itt["serialNumber"].empty())
+			return false;
+		std::string szSerialNumber = itt["serialNumber"].asString();
+
+
+		int musage = itt["lastReportWatts"].asInt();
+		int mtotal = itt["maxReportWatts"].asInt();
+
+		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szSerialNumber);
+	}
+
+	return true;
+
 }
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
