@@ -295,8 +295,8 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	Log(LOG_STATUS, "Connected, serial: %s, software: %s", m_szSerial.c_str(), m_szSoftwareVersion.c_str());
 
 	if (
-		(m_szSoftwareVersion.find("D5") != 0)
-		&& (m_szSoftwareVersion.find("D7") != 0)
+		(m_szSoftwareVersion.size() < 2)
+		|| (m_szSoftwareVersion[0] != 'D')
 		)
 	{
 		Log(LOG_STATUS, "Unsupported software version! Please contact us for support!");
@@ -414,9 +414,15 @@ bool EnphaseAPI::GetAccessToken()
 	return true;
 }
 
+bool EnphaseAPI::NeedToken()
+{
+	int iMainVersion = m_szSoftwareVersion[1] - 0x30;
+	return (iMainVersion >= 7);
+}
+
 bool EnphaseAPI::getProductionDetails(Json::Value& result)
 {
-	if (m_szSoftwareVersion.find("D5") != 0)
+	if (NeedToken())
 	{
 		if (m_szToken.empty())
 		{
@@ -504,9 +510,9 @@ bool EnphaseAPI::getInverterDetails()
 	std::stringstream sURL;
 	sURL << "http://";
 
-	if (m_szSoftwareVersion.find("D5") == 0)
+	if (!NeedToken())
 	{
-		//V5
+		//Firmware version lower than V7
 		sURL << "envoy:" << m_szSerial.substr(m_szSerial.size() - 6) << "@";
 	}
 	sURL << m_szIPAddress << "/api/v1/production/inverters";

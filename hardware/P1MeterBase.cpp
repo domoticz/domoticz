@@ -258,6 +258,15 @@ void P1MeterBase::Init()
 	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1GasMeterChannel')");
 	if (!result.empty())
 	{
+		/*
+		Gas meter not reporting any data
+		When a gas meter is paired with the Smart Meter it gets assigned one of the four available channels.
+		Sometimes technicians leave the old gas meter registered in the Smart Meter and Domoticz ends up with multiple gas meters
+		and the wrong one is used
+		To fix this you can specify a fixed channel
+		Go to the Domoticz 'Set-up'->'More Options'->'User Variables' menu and create a new 'integer' value named 'P1GasMeterChannel'.
+		Allowed values are 0 which is the default and enables auto select, or 1 to 4 for either of the four possible channels.
+		*/
 		std::string s_gasmbuschannel = result[0][0];
 		if ((s_gasmbuschannel.length() == 1) && (s_gasmbuschannel[0] > 0x30) && (s_gasmbuschannel[0] < 0x35)) // value must be a single digit number between 1 and 4
 		{
@@ -266,7 +275,7 @@ void P1MeterBase::Init()
 			Log(LOG_STATUS, "Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
 
 			_tMBusDevice mdevice;
-			mdevice.channel = m_gasmbuschannel;
+			mdevice.channel = m_gasmbuschannel - 0x30;
 			mdevice.name = "Gas";
 			mdevice.prefix[2] = m_gasmbuschannel;
 			m_mbus_devices[P1MBusType::deviceType_Gas] = mdevice;
@@ -533,6 +542,7 @@ bool P1MeterBase::MatchLine()
 				float temp_power = 0;
 				float temp_float = 0;
 				P1MBusType mbus_type = P1MBusType::deviceType_Unknown;
+				uint8_t mbus_channel = 0;
 
 				switch (t->type)
 				{
@@ -558,6 +568,7 @@ bool P1MeterBase::MatchLine()
 					break;
 				case P1TYPE_MBUSDEVICETYPE:
 					mbus_type = (P1MBusType)std::stoul(sValue);
+					mbus_channel = l_buffer[2];
 					//Open Metering System Specification 4.3.3 table 2 (Device Types of OMS-Meter)
 					/*
 					* Electricity meter 02h
@@ -606,6 +617,7 @@ bool P1MeterBase::MatchLine()
 						}
 					}
 					m_p1_mbus_type = mbus_type;
+					m_p1_mbus_channel = l_buffer[2];
 					break;
 				case P1TYPE_POWERUSAGE:
 					temp_usage = (unsigned long)(std::stof(sValue) * 1000.0F);

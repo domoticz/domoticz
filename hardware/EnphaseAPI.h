@@ -33,6 +33,7 @@ private:
 	bool IsItSunny();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
+	bool NeedToken();
 private:
 	int m_poll_interval = 30;
 
