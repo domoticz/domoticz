@@ -46,7 +46,7 @@ define(['app'], function (app) {
 			    HideNotify();
 				$scope.failcounter += 1;
 				if ($scope.failcounter > 3) {
-					window.location.href = "http://www.1112.net/lastpage.html";
+					window.location.href = "https://hmpg.net/";
 					return;
 				}
 				else {
