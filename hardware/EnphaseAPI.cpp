@@ -132,27 +132,7 @@ void EnphaseAPI::Do_Work()
 
 		if (sec_counter % m_poll_interval == 0)
 		{
-			time_t atime = mytime(nullptr);
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
-
-			int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
-
-			int sunRise = getSunRiseSunSetMinutes(true);
-			int sunSet = getSunRiseSunSetMinutes(false);
-
-			bool bInsideSunHours = true;
-			if (sunRise != 0 && sunSet != 0)
-			{
-				if (
-					(ActHourMin - 60 < sunRise)
-					|| (ActHourMin + 60 > sunSet)
-					)
-				{
-					bInsideSunHours = false;
-				}
-			}
-
+			bool bInsideSunHours = IsItSunny();
 			if ((bHaveRunOnce) && (!bInsideSunHours))
 			{
 				if (
@@ -200,6 +180,30 @@ void EnphaseAPI::Do_Work()
 bool EnphaseAPI::WriteToHardware(const char* /*pdata*/, const unsigned char /*length*/)
 {
 	return false;
+}
+
+bool EnphaseAPI::IsItSunny()
+{
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
+
+	int sunRise = getSunRiseSunSetMinutes(true);
+	int sunSet = getSunRiseSunSetMinutes(false);
+
+	if (sunRise != 0 && sunSet != 0)
+	{
+		if (
+			(ActHourMin + 60 < sunRise)
+			|| (ActHourMin - 60 > sunSet)
+			)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 int EnphaseAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
@@ -551,6 +555,8 @@ bool EnphaseAPI::getInverterDetails()
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
 {
+	if (!IsItSunny())
+		return;
 	if (root["production"].empty() == true)
 	{
 		//No production details available

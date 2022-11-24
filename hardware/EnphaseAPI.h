@@ -30,6 +30,7 @@ private:
 	void parseNetConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
 
+	bool IsItSunny();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 
 private:
