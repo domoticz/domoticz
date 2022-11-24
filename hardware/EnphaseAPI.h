@@ -51,8 +51,5 @@ private:
 	bool m_bHaveeNetConsumption = false;
 	bool m_bHaveStorage = false;
 
-	P1Power m_p1power;
-	P1Power m_c1power;
-	P1Power m_c2power;
 	std::shared_ptr<std::thread> m_thread;
 };

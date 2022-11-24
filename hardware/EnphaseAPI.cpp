@@ -63,10 +63,6 @@ EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigne
 {
 	m_bGetInverterDetails = bPollInverters;
 
-	m_p1power.ID = 1;
-	m_c1power.ID = 2;
-	m_c2power.ID = 3;
-
 	m_HwdID = ID;
 
 	if (PollInterval < 5)
@@ -575,11 +571,6 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	int mtotal = reading["whLifetime"].asInt();
 
 	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
-
-	m_p1power.powerusage1 = mtotal;
-	m_p1power.powerusage2 = 0;
-	m_p1power.usagecurrent = std::max(musage, 0);
-	sDecodeRXMessage(this, (const unsigned char*)&m_p1power, "Enphase Production kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -602,11 +593,6 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	m_bHaveConsumption = true;
 
 	SendKwhMeter(m_HwdID, 2, 255, musage, mtotal / 1000.0, "Enphase kWh Consumption");
-
-	m_c1power.powerusage1 = mtotal;
-	m_c1power.powerusage2 = 0;
-	m_c1power.usagecurrent = std::max(musage, 0);
-	sDecodeRXMessage(this, (const unsigned char*)&m_c1power, "Enphase Consumption kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseNetConsumption(const Json::Value& root)
@@ -629,11 +615,6 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 	m_bHaveConsumption = true;
 
 	SendKwhMeter(m_HwdID, 3, 255, musage, mtotal / 1000.0, "Enphase kWh Net Consumption");
-
-	m_c2power.powerusage1 = mtotal;
-	m_c2power.powerusage2 = 0;
-	m_c2power.usagecurrent = std::max(musage, 0);
-	sDecodeRXMessage(this, (const unsigned char*)&m_c2power, "Enphase Net Consumption kWh Total", 255, nullptr);
 }
 
 void EnphaseAPI::parseStorage(const Json::Value& root)
