@@ -59,7 +59,7 @@ std::string ReadFile(std::string filename)
 EnphaseAPI::EnphaseAPI(const int ID, const std::string& IPAddress, const unsigned short usIPPort, int PollInterval, const bool bPollInverters, const std::string& szUsername, const std::string& szPassword) :
 	m_szIPAddress(IPAddress),
 	m_szUsername(szUsername),
-	m_szPassword(szPassword)
+	m_szPassword(CURLEncode::URLEncode(szPassword))
 {
 	m_bGetInverterDetails = bPollInverters;
 
@@ -382,6 +382,11 @@ bool EnphaseAPI::GetAccessToken()
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_token.json");
 #endif
 #endif
+	if (sResult.find("Failed") != std::string::npos)
+	{
+		Log(LOG_ERROR, "Error getting http data! (token returned)");
+		return false;
+	}
 
 	m_szToken = sResult;
 
@@ -641,8 +646,8 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 
 	Json::Value reading = root["storage"][0];
 
-	int readingTime = reading["readingTime"].asInt();
-	if (readingTime == 0)
+	int activeCount = reading["activeCount"].asInt();
+	if (activeCount == 0)
 		return;
 
 	int musage = reading["wNow"].asInt();
