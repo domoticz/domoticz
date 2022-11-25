@@ -166,7 +166,7 @@ void EnphaseAPI::Do_Work()
 			}
 			catch (const std::exception& e)
 			{
-				Log(LOG_ERROR, "Exception parsing data (%s)", e.what());
+				Log(LOG_ERROR, "Exception: %s", e.what());
 			}
 		}
 	}
@@ -240,13 +240,15 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 
 	if (!HTTPClient::GET(sURL.str(), sResult))
 	{
-		Log(LOG_ERROR, "Error getting http data!");
+		Log(LOG_ERROR, "Error getting http data! (info)");
 		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_info.xml");
 #endif
 #endif
+
+	_log.Debug(DEBUG_HARDWARE, "info: %s", sResult.c_str());
 
 	TiXmlDocument doc;
 	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error())
@@ -261,14 +263,14 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 	pRoot = doc.FirstChildElement("envoy_info");
 	if (!pRoot)
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received! (no xml/envoy_info)");
 		return false;
 	}
 
 	pDevice = pRoot->FirstChildElement("device");
 	if (!pRoot)
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received! (no xml/device)");
 		return false;
 	}
 
@@ -330,24 +332,27 @@ bool EnphaseAPI::GetAccessToken()
 
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error getting http data!");
+		Log(LOG_ERROR, "Error getting http data! (login)");
 		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_login.json");
 #endif
 #endif
+
+	_log.Debug(DEBUG_HARDWARE, "login: %s", sResult.c_str());
+
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received! (login/json)");
 		return false;
 	}
 
 	if (root["session_id"].empty())
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received! (no session_id)");
 		return false;
 	}
 
@@ -370,7 +375,7 @@ bool EnphaseAPI::GetAccessToken()
 
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error getting http data!");
+		Log(LOG_ERROR, "Error getting http data! (get token)");
 		return false;
 	}
 #ifdef DEBUG_EnphaseAPI_W
@@ -459,17 +464,17 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 			{
 				if (sResult.find("401") != std::string::npos)
 				{
-					Log(LOG_ERROR, "Error getting http data (Unauthorized!)");
+					Log(LOG_ERROR, "Error getting http data (production/Unauthorized!)");
 					m_szToken.clear();
 				}
 				else
-					Log(LOG_ERROR, "Error getting http data!");
+					Log(LOG_ERROR, "Error getting http data! (production)");
 				return false;
 			}
 		}
 		else
 		{
-			Log(LOG_ERROR, "Error getting http data!");
+			Log(LOG_ERROR, "Error getting http data! (production)");
 			return false;
 		}
 	}
@@ -477,12 +482,13 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_production.json");
 #endif
 #endif
+	_log.Debug(DEBUG_HARDWARE, "production: %s", sResult.c_str());
 
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
 	{
 		m_szToken.clear();
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received! (production/json)");
 		return false;
 	}
 	if (
@@ -491,7 +497,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 		)
 	{
 		m_szToken.clear();
-		Log(LOG_ERROR, "Invalid (no) data received");
+		Log(LOG_ERROR, "Invalid (no) data received (production, objects not found)");
 		return false;
 	}
 	return true;
@@ -529,11 +535,14 @@ bool EnphaseAPI::getInverterDetails()
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");
 #endif
 #endif
+
+	_log.Debug(DEBUG_HARDWARE, "inverters: %s", sResult.c_str());
+
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
 	if ((!ret) || (!root.isArray()))
 	{
-		Log(LOG_ERROR, "Invalid data received! (inverter details)");
+		Log(LOG_ERROR, "Invalid data received! (inverter details/json)");
 		return false;
 	}
 
@@ -581,7 +590,7 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][0].empty())
 	{
-		Log(LOG_ERROR, "Invalid data received");
+		Log(LOG_ERROR, "Invalid data received (consumption)");
 		return;
 	}
 
@@ -603,7 +612,7 @@ void EnphaseAPI::parseNetConsumption(const Json::Value& root)
 	}
 	if (root["consumption"][1].empty() == true)
 	{
-		Log(LOG_ERROR, "Invalid data received");
+		Log(LOG_ERROR, "Invalid data received (net_consumption)");
 		return;
 	}
 
@@ -626,7 +635,7 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 
 	if (root["storage"][0].empty())
 	{
-		Log(LOG_ERROR, "Invalid data received");
+		Log(LOG_ERROR, "Invalid data received (storage)");
 		return;
 	}
 
