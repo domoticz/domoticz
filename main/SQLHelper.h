@@ -321,6 +321,8 @@ typedef std::vector<std::string> TSqlRowQuery;
 // result for an sql query : Vector of TSqlRowQuery
 typedef std::vector<TSqlRowQuery> TSqlQueryResult;
 
+typedef   std::map<std::string, std::string> TOptionMap;
+
 class CSQLStatement
 {
       private:
@@ -375,6 +377,8 @@ class CSQLHelper : public StoppableTask
 			      const std::string &devname, unsigned char signallevel = 12, unsigned char batterylevel = 255, int used = 0);
 
 	bool GetLastValue(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
+
+    std::string GetDeviceValue(const char* FieldName, const std::string& Idx);
 
 	void Lighting2GroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);
 	void HomeConfortGroupCmd(const std::string &ID, unsigned char subType, unsigned char GroupCmd);

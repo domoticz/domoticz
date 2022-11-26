@@ -1323,7 +1323,9 @@ define(['app', 'livesocket'], function (app) {
 							status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 						}
 						else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-							status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
+							status += item.Data + '\u00B0 ' + $scope.config.TempSign;
+							if (typeof item.RoomTemp != 'undefined') status += '/' + item.RoomTemp + '\u00B0 ';
+							status += '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true,'+ item.ConforTemp + ',' + item.EcoTemp  +');">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 						}
 						else if (item.SubType == "Smartwares") {
 							status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1455,7 +1457,18 @@ define(['app', 'livesocket'], function (app) {
 						else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 							status = "";
 							bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-							$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
+							if (typeof item.RoomTemp != 'undefined') bigtext += '/' + item.RoomTemp + '\u00B0 ';
+							if (item.isVirtualThermostat) {
+								if (item.Switch == 1)
+									img = '<img src="images/override.png"';
+								else
+									img = '<img src="images/override_off.png"';
+
+								img += ' class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true,' + item.ConforTemp + ',' + item.EcoTemp + ');" height="40" width="40">';
+
+							}
+							else
+								$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
 						}
 						else if (item.SubType == "Smartwares") {
 							status = item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3318,7 +3331,7 @@ define(['app', 'livesocket'], function (app) {
 										status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-										status = '<button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
+										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',true'+',' + item.ConforTemp + ',' + item.EcoTemp +');">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 									}
 									else if (item.SubType == "Smartwares") {
 										status = item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3444,6 +3457,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
+										if (typeof item.RoomTemp != 'undefined') bigtexthtml += '/' + item.RoomTemp + '\u00B0 ';
 									}
 									else if (item.SubType == "Smartwares") {
 										bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3592,7 +3606,15 @@ define(['app', 'livesocket'], function (app) {
 										statushtml = "";
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-										imagehtml += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
+										if (item.isVirtualThermostat) {
+											if (item.Switch == 1)
+												imagehtml += 'override.png"';
+											else
+												imagehtml += 'override_off.png"';
+										}
+										else
+											imagehtml += 'override.png"';
+										imagehtml += ' class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',false,' + item.ConforTemp + ',' + item.EcoTemp  +  ');" height="40" width="40"></td>\n';
 										statushtml = "";
 									}
 									else if (item.SubType == "Smartwares") {

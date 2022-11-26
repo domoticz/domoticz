@@ -27,6 +27,7 @@
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
+#include "../hardware/VirtualThermostat.h"
 
 #ifndef WIN32
 #include <sys/stat.h>
@@ -598,6 +599,21 @@ constexpr auto sqlCreateMobileDevices =
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
 
+char * TITEM_name[] = {
+	"SWITCHCMD",
+	"EXECUTE_SCRIPT",
+	"EMAIL_CAMERA_SNAPSHOT",
+	"SEND_EMAIL",
+	"SWITCHCMD_EVENT",
+	"SWITCHCMD_SCENE",
+	"GETURL",
+	"SEND_EMAIL_TO",
+	"SET_VARIABLE",
+	"SEND_SMS",
+	"SEND_NOTIFICATION",
+	"SET_SETPOINT",
+	"SEND_IFTTT_TRIGGER",
+};
 constexpr auto sqlCreateApplications =
 "CREATE TABLE IF NOT EXISTS [Applications]("
 "[ID] INTEGER PRIMARY KEY, "
@@ -4053,7 +4069,7 @@ void CSQLHelper::Do_Work()
 
 		for (const auto &itt : _items2do)
 		{
-			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType:%d Cmd:%s Value:%s ", itt._ItemType, itt._command.c_str(), itt._sValue.c_str());
+			_log.Debug(DEBUG_NORM, "SQLH: Do Task ItemType:%d = %s  Cmd:%s Value:%s ", itt._ItemType, TITEM_name[itt._ItemType], itt._command.c_str(), itt._sValue.c_str());
 
 			if (itt._ItemType == TITEM_SWITCHCMD)
 			{
@@ -4562,6 +4578,11 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "20.5", devname, true, userName.c_str());
+
+		if (!soptions.empty() )
+		{
+			m_sql.SetDeviceOptions(DeviceRowIdx, m_sql.BuildDeviceOptions(soptions, false));
+		}
 		break;
 	}
 
@@ -5011,7 +5032,7 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const un
 
 	if (devname.empty())
 	{
-		name = "Unknown";
+		name = "Unknown" + std::string(ID);
 	}
 
 	safe_query(
@@ -5603,6 +5624,22 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 	return result;
 }
 
+std::string  CSQLHelper::GetDeviceValue(const char* FieldName, const std::string& Idx)
+{
+	bool result = false;
+	std::vector<std::vector<std::string> > sqlresult;
+
+    sqlresult = safe_query("SELECT %s FROM DeviceStatus WHERE ( ID= %s )" , FieldName, Idx.c_str() );
+
+	if (!sqlresult.empty())
+	{
+		return sqlresult[0][0] ;
+	}
+
+	return "" ;
+}
+
+
 void CSQLHelper::GetAddjustment(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float& AddjValue, float& AddjMulti)
 {
 	AddjValue = 0.0F;
@@ -5927,7 +5964,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -5988,9 +6025,29 @@ void CSQLHelper::UpdateTemperatureLog()
 			{
 			case pTypeRego6XXTemp:
 			case pTypeTEMP:
-			case pTypeThermostat:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
+			case pTypeThermostat:
+				{
+
+					//if not a virtual thermostat
+					std::string Options  = sd[6];
+					if (Options.empty() )
+					{
+						temp = static_cast<float>(atof(splitresults[0].c_str()));
+					}
+					else
+					{
+						//for virtual thermostat record Room Temperature / set point & power level 0..100%
+						//set point temperature record as chill
+						chill = static_cast<float>(atof(splitresults[0].c_str()));
+						//record power % as humidity
+						humidity = atoi(VirtualThermostatGetOption("Power", Options).c_str());
+						//record room temp 
+						temp = (float)atof(VirtualThermostatGetOption("RoomTemp", Options).c_str());
+					}
+				}
+			break;
 			case pTypeThermostat1:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
@@ -9561,6 +9618,9 @@ bool CSQLHelper::InsertCustomIconFromZipFile(const std::string& szZipFile, std::
 	return true;
 }
 
+
+//convert an options string "option1:value;option2:value;"  in a map structure [option]=value.
+//if decode = true the value is decoding from format base64
 std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string& options, const bool decode)
 {
 	std::map<std::string, std::string> optionsMap;
@@ -9587,6 +9647,8 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 	return optionsMap;
 }
 
+//get database  options string "option1:value;option2:value;"  in a map structur [option]=value.
+//if decode = true the value is decoding from format base64
 std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::string& idx)
 {
 	std::map<std::string, std::string> optionsMap;
@@ -9606,6 +9668,8 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
+//convert a map structure [option]=value. to a  string "option1:value;option2:value;" 
+//if encode = true the value is encoded to format base64
 std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string>& optionsMap)
 {
 	std::string options;
@@ -9630,6 +9694,8 @@ std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::str
 	return options;
 }
 
+//write in t database  the options string "option1:value;option2:value;"  from  optionsMap a map structur [option]=value.
+//if encode = true the value is encoded to format base64
 bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string>& optionsMap)
 {
 	if (idx < 1) {

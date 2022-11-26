@@ -68,6 +68,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#include "../hardware/VirtualThermostat.h"
+
 #define round(a) (int)(a + .5)
 
 #define OAUTH2_AUTH_URL "/oauth2/v1/authorize"
@@ -1828,6 +1830,10 @@ namespace http
 			{
 				// all fine here!
 			}
+			else if (htype == HTYPE_VirtualThermostat)
+			{
+				// all fine here!
+            }
 			else
 				return;
 
@@ -2205,6 +2211,10 @@ namespace http
 			{
 				// all fine here!
 			}
+			else if (htype == HTYPE_VirtualThermostat)
+			{
+				// all fine here!
+            }
 			else if (htype == HTYPE_RFLINKMQTT)
 			{
 				//all fine here!
@@ -11070,6 +11080,20 @@ namespace http
 						root["result"][ii]["SetPoint"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["TypeImg"] = "override_mini";
+
+						if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_VirtualThermostat)
+						{
+							TOptionMap optionsMap = m_sql.BuildDeviceOptions(sOptions);
+							//build option values
+							for (const auto & itt : optionsMap)
+							{
+								std::string optionName = itt.first.c_str();
+								std::string optionValue = itt.second;
+								root["result"][ii][optionName.c_str()] = optionValue.c_str();
+							}
+							root["result"][ii]["nValue"] = nValue;
+							root["result"][ii]["isVirtualThermostat"] = true;
+						}
 					}
 				}
 				else if (dType == pTypeRadiator1)
@@ -13476,7 +13500,8 @@ namespace http
 
 			if (!devoptions.empty())
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());
+                uint64_t ullidx = std::stoull(idx);
+                m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(devoptions.c_str(), false));
 			}
 
 			if (used == 0)
@@ -14270,12 +14295,12 @@ namespace http
 								double tvalue = ConvertTemperature(atof(sd[0].c_str()), tempsign);
 								root["result"][ii]["te"] = tvalue;
 							}
-							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)))
+							if (((dType == pTypeWIND) && (dSubType == sTypeWIND4)) || ((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp))  || (dType == pTypeThermostat && dSubType == sTypeThermSetpoint && sd[1] != "0.0"  ))
 							{
 								double tvalue = ConvertTemperature(atof(sd[1].c_str()), tempsign);
 								root["result"][ii]["ch"] = tvalue;
 							}
-							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
+							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeThermostat && dSubType == sTypeThermSetpoint  && sd[1] != "0.0" ) )
 							{
 								root["result"][ii]["hu"] = sd[2];
 							}

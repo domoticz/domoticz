@@ -1,4 +1,4 @@
-define(['app'], function (app) {
+define(['app','app/virtualThermostat.js'], function (app) {
 	
 	/**
 	 * Table of hardware using the new structure.
@@ -320,6 +320,7 @@ define(['app'], function (app) {
 			}
 			else if (
 				(text.indexOf("Panasonic") >= 0) ||
+				(text.indexOf("Virtual Thermostat") == 0) ||
 				(text.indexOf("BleBox") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
@@ -1858,6 +1859,7 @@ define(['app'], function (app) {
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
+				(text.indexOf("Virtual Thermostat") == 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
@@ -3941,6 +3943,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("Dummy") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
 							}
+							else if (HwTypeStr.indexOf("Virtual Thermostat") == 0) {
+							    HwTypeStr += ' <span class="label label-info lcursor" onclick="Editvirtualthermostatdevice(0,false,0,\'' + $scope.config.TempSign + '\','+item.idx+');"' + '>' + $.t("Create Virtual Thermostat Sensors") + '</span>';
+							}
 							else if (HwTypeStr.indexOf("YeeLight") >= 0) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="AddYeeLight(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Add Light") + '</span>';
 							}
@@ -4136,6 +4141,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("TE923") >= 0) ||
 							(data["Type"].indexOf("Volcraft") >= 0) ||
 							(data["Type"].indexOf("Dummy") >= 0) ||
+				            (data["Type"].indexOf("Virtual Thermostat") == 0) ||
 							(data["Type"].indexOf("System Alive") >= 0) ||
 							(data["Type"].indexOf("PiFace") >= 0) ||
 							(data["Type"].indexOf("Tellstick") >= 0) ||

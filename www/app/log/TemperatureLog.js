@@ -51,9 +51,9 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
                                 return GetLocalDateTimeFromString(dataItem.d, yearOffset);
                             },
                             [
-                                humiditySeriesSupplier(),
-                                chillSeriesSupplier(),
-                                setpointSeriesSupplier(),
+                                humiditySeriesSupplier(self.device),
+                                chillSeriesSupplier(self.device),
+                                setpointSeriesSupplier(self.device),
                                 temperatureSeriesSupplier(self.device.Type)
                             ]
                         )
@@ -112,14 +112,14 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         }
     });
 
-    function humiditySeriesSupplier() {
+    function humiditySeriesSupplier(device) {
         return {
             id: 'humidity',
             dataItemKeys: ['hu'],
             showWithoutDatapoints: false,
             label: 'Hu',
             template: {
-                name: $.t('Humidity'),
+                name: device.isVirtualThermostat === true ? $.t('Power') : $.t('Humidity'),
                 color: 'limegreen',
                 yAxis: 1,
                 tooltip: {
@@ -130,14 +130,14 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         };
     }
 
-    function chillSeriesSupplier() {
+    function chillSeriesSupplier(device) {
         return {
             id: 'chill',
             dataItemKeys: ['ch'],
             showWithoutDatapoints: false,
             label: 'Ch',
             template: {
-                name: $.t('Chill'),
+                name: device.isVirtualThermostat === true ? $.t('Room Temp') : $.t('Chill'), 
                 color: 'red',
                 yAxis: 0,
                 zIndex: 1,
@@ -149,7 +149,7 @@ define(['app', 'RefreshingChart', 'log/factories'], function (app, RefreshingCha
         };
     }
 
-    function setpointSeriesSupplier() {
+    function setpointSeriesSupplier(device) {
         return {
             id: 'setpoint',
             dataItemKeys: ['se'],

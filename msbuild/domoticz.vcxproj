@@ -29,27 +29,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <EnableUnitySupport>false</EnableUnitySupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -269,10 +269,16 @@
     <None Include="..\www\app\TemperatureController.js" />
     <None Include="..\www\app\TemperatureCustomLogController.js" />
     <None Include="..\www\app\TimerplanController.js" />
+    <None Include="..\www\app\timers\components.js" />
+    <None Include="..\www\app\timers\DeviceTimersController.js" />
+    <None Include="..\www\app\timers\factories.js" />
+    <None Include="..\www\app\timers\planning.js" />
+    <None Include="..\www\app\timers\SceneTimersController.js" />
     <None Include="..\www\app\UpdateController.js" />
     <None Include="..\www\app\UsersController.js" />
     <None Include="..\www\app\UserVariablesController.js" />
     <None Include="..\www\app\UtilityController.js" />
+    <None Include="..\www\app\virtualThermostat.js" />
     <None Include="..\www\app\WeatherController.js" />
     <None Include="..\www\app\ZWaveTopologyController.js" />
     <None Include="..\www\css\bootstrap-responsive.css" />
@@ -1011,6 +1017,7 @@
     <ClCompile Include="..\hardware\TTNMQTT.cpp" />
     <ClCompile Include="..\hardware\USBtin.cpp" />
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
+    <ClCompile Include="..\hardware\VirtualThermostat.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />

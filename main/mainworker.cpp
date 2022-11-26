@@ -180,6 +180,7 @@
 #include <iostream>
 #include <fstream>
 #endif
+#include "../hardware/VirtualThermostat.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -880,6 +881,9 @@ bool MainWorker::AddHardwareFromParams(
 #endif
 	case HTYPE_RaspberryBMP085:
 		pHardware = new I2C(ID, I2C::I2CTYPE_BMP085, Address, SerialPort, Mode1);
+		break;
+	case HTYPE_VirtualThermostat:
+		pHardware = new VirtualThermostat(ID);
 		break;
 	case HTYPE_RaspberryHTU21D:
 		pHardware = new I2C(ID, I2C::I2CTYPE_HTU21D, Address, SerialPort, Mode1);
@@ -12891,6 +12895,10 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 			return pGateway->SetSetpoint(sd[1], TempValue);
 		}
 	}
+    else if (pHardware->HwdType == HTYPE_VirtualThermostat) 
+	{
+		//nothing 
+	}
 	else
 	{
 		if (dType == pTypeRadiator1)
@@ -13089,6 +13097,11 @@ bool MainWorker::SetThermostatState(const std::string& idx, const int newState)
 		CToonThermostat* pGateway = dynamic_cast<CToonThermostat*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_VirtualThermostat)
+	//virtual thermostat set state confor/eco/off/frozen
+	{
+		return m_VirtualThermostat->SetThermostatState(idx,newState);
 	}
 	if (pHardware->HwdType == HTYPE_AtagOne)
 	{

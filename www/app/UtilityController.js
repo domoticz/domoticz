@@ -1,7 +1,39 @@
-define(['app', 'livesocket'], function (app) {
+define(['app', 'livesocket','app/virtualThermostat.js'], function (app) {
 	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
 		var $element = $('#main-view #utilitycontent').last();
 		
+
+		GetThermostatBigText = function (item) {
+	            var bigtext;
+	            bigtext = item.Data + '\u00B0';
+	            if (typeof item.RoomTemp != 'undefined') {
+	                bigtext += '/' + item.RoomTemp + '\u00B0 ';
+	            }
+	            bigtext += $scope.config.TempSign;
+	            return bigtext;
+	        }
+	    GetThermostatStatus = function (item) {
+	            var status="";
+	            if (typeof item.Power != 'undefined') {
+	                status = "Power:"+item.Power + '%';
+	            }
+	            return status;
+	        }
+
+	    getThermostatImage = function (item) {
+				var image = (item.CustomImage == 0)  ? '"images/override.png"' : '"images/'+ item.Image + '48_On.png"' ;
+	            if (item.isVirtualThermostat) {
+	                if (item.Switch == 1)
+	                    image = '"images/override.png"';
+	                else
+	                    image = '"images/override_off.png"';
+	            }
+	            var undef;
+	            var xhtm = '<img src=' + image + ' class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ',' + item.Protected + ', ' + item.Data + ','+undef+',' + item.ConforTemp + ',' + item.EcoTemp  + ');" height="48" width="48" ></td>\n';
+
+	            return xhtm;
+	        }
+
 		$.strPad = function (i, l, s) {
 			var o = i.toString();
 			if (!s) { s = '0'; }
@@ -431,9 +463,16 @@ define(['app', 'livesocket'], function (app) {
 					bigtext = item.Data;
 				}
 				else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-					status = "";
-					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-					$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ')');
+					bigtext = GetThermostatBigText(item);
+					status = GetThermostatStatus(item);
+					img = getThermostatImage(item);
+
+//					status = "";
+//					bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
+					var undef;
+					$(id + " #img").attr('onclick', 'ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ',' + undef + ',' + item.ConforTemp + ',' + item.EcoTemp +')');
+
+
 				}
 				else if (item.Type == "Radiator 1") {
 					status = item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -481,6 +520,7 @@ define(['app', 'livesocket'], function (app) {
 				$(id).addClass(backgroundClass);
 
 				if ($(id + " #status").html() != status) {
+					$(id + " #bigtext").html(bigtext);
 					$(id + " #status").html(status);
 				}
 				if ($(id + " #bigtext").html() != bigtext) {
@@ -604,6 +644,7 @@ define(['app', 'livesocket'], function (app) {
 							}
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 							var graphLogLink = '#/Devices/' + item.idx + '/Log';
+							var status = "";
 
 							var xhtm =
 								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
@@ -664,7 +705,8 @@ define(['app', 'livesocket'], function (app) {
 								xhtm += item.Data;
 							}
 							else if (item.Type == "Thermostat") {
-								xhtm += item.Data + '\u00B0 ' + $scope.config.TempSign;
+							    xhtm += GetThermostatBigText(item);
+							    status = GetThermostatStatus(item);
 							}
 							else if (item.SubType == "Waterflow") {
 								xhtm += item.Data;
@@ -681,7 +723,6 @@ define(['app', 'livesocket'], function (app) {
 							
 							xhtm += '</td>\n';
 							xhtm += '\t      <td id="img">';
-							var status = "";
 							if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental") || (item.SubType == "Managed Counter")) {
 									if (item.SwitchTypeVal == 1) {
@@ -811,9 +852,10 @@ define(['app', 'livesocket'], function (app) {
 								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
-								item.Image = (item.CustomImage == 0)  ? 'override.png' : item.Image + '48_On.png';
-								xhtm += '<img src="images/' + item.Image + '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
-								status = "";
+							    xhtm+=getThermostatImage(item);
+								//item.Image = (item.CustomImage == 0)  ? 'override.png' : item.Image + '48_On.png';
+								//xhtm += '<img src="images/' + item.Image + '" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
+								status = GetThermostatStatus(item);
 							}
 							else if (item.SubType == "Thermostat Clock") {
 								xhtm += '<img src="images/clock48.png" height="48" width="48"></td>\n';
@@ -945,6 +987,9 @@ define(['app', 'livesocket'], function (app) {
 									var logLink = '#/Devices/'+item.idx+'/Log';
 
 									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
+									if (item.isVirtualThermostat)
+									    xhtm += '<a class="btnsmall" onclick="Editvirtualthermostatdevice(' + item.idx + ','  + item.Protected + ',' + 'ShowUtilities,\'' + $scope.config.TempSign + '\',0);" data-i18n="Edit">Edit</a> ';
+									else
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ', ' + item.CustomImage + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';

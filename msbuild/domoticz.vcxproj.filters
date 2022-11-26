@@ -507,6 +507,12 @@
     <Filter Include="Plugin Framework">
       <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="www\app\devices\timers">
+      <UniqueIdentifier>{5d3e919c-7f5d-4c5c-a4dc-19c03c0d7dbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\VirtualThermostat">
+      <UniqueIdentifier>{b74016ba-539e-40a2-adcb-4c53c99a0f0f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1445,6 +1451,24 @@
     </None>
     <None Include="..\www\js\sw-toolbox.js">
       <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\app\virtualThermostat.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\timers\components.js">
+      <Filter>www\app\devices\timers</Filter>
+    </None>
+    <None Include="..\www\app\timers\DeviceTimersController.js">
+      <Filter>www\app\devices\timers</Filter>
+    </None>
+    <None Include="..\www\app\timers\factories.js">
+      <Filter>www\app\devices\timers</Filter>
+    </None>
+    <None Include="..\www\app\timers\planning.js">
+      <Filter>www\app\devices\timers</Filter>
+    </None>
+    <None Include="..\www\app\timers\SceneTimersController.js">
+      <Filter>www\app\devices\timers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2991,6 +3015,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\TeleinfoTCP.cpp">
       <Filter>Devices\Teleinfo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\VirtualThermostat.cpp">
+      <Filter>Devices\VirtualThermostat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
