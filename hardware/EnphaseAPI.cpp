@@ -155,7 +155,6 @@ void EnphaseAPI::Do_Work()
 				{
 					parseProduction(result);
 					parseConsumption(result);
-					parseNetConsumption(result);
 					parseStorage(result);
 				}
 				if (m_bGetInverterDetails)
@@ -248,7 +247,7 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 #endif
 #endif
 
-	_log.Debug(DEBUG_HARDWARE, "info: %s", sResult.c_str());
+	Debug(DEBUG_RECEIVED, "info: %s", sResult.c_str());
 
 	TiXmlDocument doc;
 	if (doc.Parse(sResult.c_str(), nullptr, TIXML_ENCODING_UTF8) && doc.Error())
@@ -340,7 +339,7 @@ bool EnphaseAPI::GetAccessToken()
 #endif
 #endif
 
-	_log.Debug(DEBUG_HARDWARE, "login: %s", sResult.c_str());
+	Debug(DEBUG_RECEIVED, "login: %s", sResult.c_str());
 
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
@@ -394,7 +393,7 @@ bool EnphaseAPI::GetAccessToken()
 	sResult = ReadFile("E:\\EnphaseAPI_check_jwt.json");
 #else
 	//Validate token on IQ Gateway
-	ExtraHeaders.push_back("Authorization:Bearer " + m_szToken);
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 
 	sURL = "http://" + m_szIPAddress + "/auth/check_jwt";
 
@@ -422,6 +421,8 @@ bool EnphaseAPI::GetAccessToken()
 
 bool EnphaseAPI::NeedToken()
 {
+	if (m_szSoftwareVersion.empty())
+		return false;
 	int iMainVersion = m_szSoftwareVersion[1] - 0x30;
 	return (iMainVersion >= 7);
 }
@@ -442,16 +443,15 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 
 	std::string sResult;
 
-#ifdef DEBUG_EnphaseAPI_R2
+#ifdef DEBUG_EnphaseAPI_R
 	sResult = ReadFile("E:\\EnphaseAPI_production.json");
 #else
 	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << "/production.json";
+	sURL << "http://" << m_szIPAddress << "/production.json?details=1";
 
 	std::vector<std::string> ExtraHeaders;
 	if (!m_szToken.empty()) {
-		//new method since firmware v7, should be the default soon
-		ExtraHeaders.push_back("Authorization:Bearer " + m_szToken);
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
 		ExtraHeaders.push_back("Content-Type:application/json");
 	}
 
@@ -487,7 +487,7 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_production.json");
 #endif
 #endif
-	_log.Debug(DEBUG_HARDWARE, "production: %s", sResult.c_str());
+	Debug(DEBUG_RECEIVED, "production: %s", sResult.c_str());
 
 	bool ret = ParseJSon(sResult, result);
 	if ((!ret) || (!result.isObject()))
@@ -506,67 +506,6 @@ bool EnphaseAPI::getProductionDetails(Json::Value& result)
 		return false;
 	}
 	return true;
-}
-
-bool EnphaseAPI::getInverterDetails()
-{
-	std::string sResult;
-#ifdef DEBUG_EnphaseAPI_R
-	sResult = ReadFile("E:\\EnphaseAPI_inverters.json");
-#else
-	std::stringstream sURL;
-	sURL << "http://";
-
-	if (!NeedToken())
-	{
-		//Firmware version lower than V7
-		sURL << "envoy:" << m_szSerial.substr(m_szSerial.size() - 6) << "@";
-	}
-	sURL << m_szIPAddress << "/api/v1/production/inverters";
-
-	std::vector<std::string> ExtraHeaders;
-	if (!m_szToken.empty()) {
-		//new method since firmware v7, should be the default soon
-		ExtraHeaders.push_back("Authorization:Bearer " + m_szToken);
-		ExtraHeaders.push_back("Content-Type:application/json");
-	}
-
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Invalid data received! (inverter details)");
-		return false;
-	}
-#ifdef DEBUG_EnphaseAPI_W
-	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");
-#endif
-#endif
-
-	_log.Debug(DEBUG_HARDWARE, "inverters: %s", sResult.c_str());
-
-	Json::Value root;
-	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isArray()))
-	{
-		Log(LOG_ERROR, "Invalid data received! (inverter details/json)");
-		return false;
-	}
-
-	int iIndex = 128;
-	for (const auto &itt : root)
-	{
-		if (itt["serialNumber"].empty())
-			return false;
-		std::string szSerialNumber = itt["serialNumber"].asString();
-
-
-		int musage = itt["lastReportWatts"].asInt();
-		int mtotal = itt["maxReportWatts"].asInt();
-
-		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szSerialNumber);
-	}
-
-	return true;
-
 }
 
 void EnphaseAPI::parseProduction(const Json::Value& root)
@@ -593,42 +532,22 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 	{
 		return;
 	}
-	if (root["consumption"][0].empty())
+
+	int iIndex = 2;
+	for (const auto& itt : root["consumption"])
 	{
-		Log(LOG_ERROR, "Invalid data received (consumption)");
-		return;
+		int activeCount = itt["activeCount"].asInt();
+		if (activeCount == 0)
+			continue;
+
+		m_bHaveConsumption = true;
+
+		std::string szName = "Enphase " + itt["measurementType"].asString();
+		int musage = itt["wNow"].asInt();
+		int mtotal = itt["whLifetime"].asInt();
+
+		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
 	}
-
-	Json::Value reading = root["consumption"][0];
-
-	int musage = reading["wNow"].asInt();
-	int mtotal = reading["whLifetime"].asInt();
-
-	m_bHaveConsumption = true;
-
-	SendKwhMeter(m_HwdID, 2, 255, musage, mtotal / 1000.0, "Enphase kWh Consumption");
-}
-
-void EnphaseAPI::parseNetConsumption(const Json::Value& root)
-{
-	if (root["consumption"].empty() == true)
-	{
-		return;
-	}
-	if (root["consumption"][1].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received (net_consumption)");
-		return;
-	}
-
-	Json::Value reading = root["consumption"][1];
-
-	int musage = reading["wNow"].asInt();
-	int mtotal = reading["whLifetime"].asInt();
-
-	m_bHaveConsumption = true;
-
-	SendKwhMeter(m_HwdID, 3, 255, musage, mtotal / 1000.0, "Enphase kWh Net Consumption");
 }
 
 void EnphaseAPI::parseStorage(const Json::Value& root)
@@ -662,4 +581,63 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 	SendTextSensor(m_HwdID, 1, 255, szState, "Enphase Storage State");
 
 	m_bHaveStorage = true;
+}
+
+bool EnphaseAPI::getInverterDetails()
+{
+	std::string sResult;
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_inverters.json");
+#else
+	std::stringstream sURL;
+	sURL << "http://";
+
+	if (!NeedToken())
+	{
+		//Firmware version lower than V7
+		sURL << "envoy:" << m_szSerial.substr(m_szSerial.size() - 6) << "@";
+	}
+	sURL << m_szIPAddress << "/api/v1/production/inverters";
+
+	std::vector<std::string> ExtraHeaders;
+	if (!m_szToken.empty()) {
+		ExtraHeaders.push_back("Authorization: Bearer " + m_szToken);
+		ExtraHeaders.push_back("Content-Type:application/json");
+	}
+
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Invalid data received! (inverter details)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_inverters.json");
+#endif
+#endif
+
+	Debug(DEBUG_RECEIVED, "inverters: %s", sResult.c_str());
+
+	Json::Value root;
+	bool ret = ParseJSon(sResult, root);
+	if ((!ret) || (!root.isArray()))
+	{
+		Log(LOG_ERROR, "Invalid data received! (inverter details/json)");
+		return false;
+	}
+
+	int iIndex = 128;
+	for (const auto& itt : root)
+	{
+		if (itt["serialNumber"].empty())
+			return false;
+		std::string szSerialNumber = itt["serialNumber"].asString();
+
+
+		int musage = itt["lastReportWatts"].asInt();
+		int mtotal = itt["maxReportWatts"].asInt();
+
+		SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szSerialNumber);
+	}
+
+	return true;
 }

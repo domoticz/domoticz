@@ -27,7 +27,6 @@ private:
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
-	void parseNetConsumption(const Json::Value& root);
 	void parseStorage(const Json::Value& root);
 
 	bool IsItSunny();
