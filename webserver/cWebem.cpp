@@ -1969,8 +1969,19 @@ namespace http {
 
 			if (AreWeInTrustedNetwork(session.remote_host))
 			{
-				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, so set rights = 2 (Admin)!");
+				for (const auto &my : myWebem->m_userpasswords)
+				{
+					if (my.userrights == URIGHTS_ADMIN) // we found an admin
+					{
+						session.username = my.Username;
+						session.rights = my.userrights;
+						break;
+					}
+				}
+				if (session.rights == -1)
+					_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, but no Admin User found!");
+				else
+					_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, so assume first Admin User (%s)!", session.username.c_str());
 			}
 
 			//Check for valid JWT token
