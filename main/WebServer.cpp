@@ -318,19 +318,21 @@ namespace http
 			m_pWebEm->SetDigistRealm(sRealm);
 			m_pWebEm->SetSessionStore(this);
 
-			if (!bIgnoreUsernamePassword)
-			{
-				LoadUsers();
+			LoadUsers();
 
-				std::string WebLocalNetworks;
-				int nValue;
-				if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
-				{
-					std::vector<std::string> strarray;
-					StringSplit(WebLocalNetworks, ";", strarray);
-					for (const auto& str : strarray)
-						m_pWebEm->AddLocalNetworks(str);
-				}
+			std::string WebLocalNetworks;
+			int nValue;
+			if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(WebLocalNetworks, ";", strarray);
+				for (const auto& str : strarray)
+					m_pWebEm->AddTrustedNetworks(str);
+			}
+			if (bIgnoreUsernamePassword)
+			{
+				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");
+				_log.Log(LOG_STATUS, "Allowing access without username/password as all incoming traffic is considered trusted! SECURITY RISK!");
 			}
 
 			// register callbacks
@@ -8694,7 +8696,7 @@ namespace http
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
-				m_webservers.ReloadLocalNetworks();
+				m_webservers.ReloadTrustedNetworks();
 				cntSettings++;
 				cntSettings++;
 
