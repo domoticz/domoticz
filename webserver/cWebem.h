@@ -199,8 +199,8 @@ namespace http
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
-			void AddLocalNetworks(std::string network);
-			void ClearLocalNetworks();
+			void AddTrustedNetworks(std::string network);
+			void ClearTrustedNetworks();
 			std::vector<_tIPNetwork> m_localnetworks;
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;
