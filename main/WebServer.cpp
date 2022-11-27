@@ -3184,30 +3184,21 @@ namespace http
 
 			std::vector<std::vector<std::string>> result;
 
-			if ((UserID != 0) && (UserID != 10000))
+			result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
+			if (!result.empty())
 			{
-				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
-				if (!result.empty())
-				{
-					int TabsEnabled = atoi(result[0][0].c_str());
-					bEnableTabLight = (TabsEnabled & (1 << 0));
-					bEnableTabScenes = (TabsEnabled & (1 << 1));
-					bEnableTabTemp = (TabsEnabled & (1 << 2));
-					bEnableTabWeather = (TabsEnabled & (1 << 3));
-					bEnableTabUtility = (TabsEnabled & (1 << 4));
-					bEnableTabCustom = (TabsEnabled & (1 << 5));
-					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
-				}
+				int TabsEnabled = atoi(result[0][0].c_str());
+				bEnableTabLight = (TabsEnabled & (1 << 0));
+				bEnableTabScenes = (TabsEnabled & (1 << 1));
+				bEnableTabTemp = (TabsEnabled & (1 << 2));
+				bEnableTabWeather = (TabsEnabled & (1 << 3));
+				bEnableTabUtility = (TabsEnabled & (1 << 4));
+				bEnableTabCustom = (TabsEnabled & (1 << 5));
+				bEnableTabFloorplans = (TabsEnabled & (1 << 6));
 			}
 			else
 			{
-				m_sql.GetPreferencesVar("EnableTabFloorplans", bEnableTabFloorplans);
-				m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
-				m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
-				m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
-				m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
-				m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
-				m_sql.GetPreferencesVar("EnableTabCustom", bEnableTabCustom);
+				_log.Log(LOG_ERROR,"Unable to find EnabledTabs settings for user (%d)", static_cast<int>(UserID));
 			}
 			if (iDashboardType == 3)
 			{
@@ -8570,13 +8561,6 @@ namespace http
 
 				m_sql.UpdatePreferencesVar("UseAutoUpdate", (request::findValue(&req, "checkforupdates") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("UseAutoBackup", (request::findValue(&req, "enableautobackup") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabFloorplans", (request::findValue(&req, "EnableTabFloorplans") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabLights", (request::findValue(&req, "EnableTabLights") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabTemp", (request::findValue(&req, "EnableTabTemp") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabWeather", (request::findValue(&req, "EnableTabWeather") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabUtility", (request::findValue(&req, "EnableTabUtility") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabScenes", (request::findValue(&req, "EnableTabScenes") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabCustom", (request::findValue(&req, "EnableTabCustom") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", (request::findValue(&req, "HideDisabledHardwareSensors") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("ShowUpdateEffect", (request::findValue(&req, "ShowUpdateEffect") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (request::findValue(&req, "FloorplanFullscreenMode") == "on" ? 1 : 0)); cntSettings++;

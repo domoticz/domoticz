@@ -3053,6 +3053,14 @@ bool CSQLHelper::OpenDatabase()
 					_log.Log(LOG_STATUS, "A default admin User called 'admin' has been added with a default password!");
 				}
 			}
+			// Remove these Pref vars as we do not use them anymore
+			DeletePreferencesVar("EnableTabLights");
+			DeletePreferencesVar("EnableTabTemp");
+			DeletePreferencesVar("EnableTabWeather");
+			DeletePreferencesVar("EnableTabUtility");
+			DeletePreferencesVar("EnableTabCustom");
+			DeletePreferencesVar("EnableTabScenes");
+			DeletePreferencesVar("EnableTabFloorplans");
 		}
 	}
 	else if (bNewInstall)
@@ -3241,34 +3249,6 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("SmartMeterType", nValue))	//0=meter has decimals, 1=meter does not have decimals, need this for the day graph
 	{
 		UpdatePreferencesVar("SmartMeterType", 0);
-	}
-	if (!GetPreferencesVar("EnableTabLights", nValue))
-	{
-		UpdatePreferencesVar("EnableTabLights", 1);
-	}
-	if (!GetPreferencesVar("EnableTabTemp", nValue))
-	{
-		UpdatePreferencesVar("EnableTabTemp", 1);
-	}
-	if (!GetPreferencesVar("EnableTabWeather", nValue))
-	{
-		UpdatePreferencesVar("EnableTabWeather", 1);
-	}
-	if (!GetPreferencesVar("EnableTabUtility", nValue))
-	{
-		UpdatePreferencesVar("EnableTabUtility", 1);
-	}
-	if (!GetPreferencesVar("EnableTabCustom", nValue))
-	{
-		UpdatePreferencesVar("EnableTabCustom", 1);
-	}
-	if (!GetPreferencesVar("EnableTabScenes", nValue))
-	{
-		UpdatePreferencesVar("EnableTabScenes", 1);
-	}
-	if (!GetPreferencesVar("EnableTabFloorplans", nValue))
-	{
-		UpdatePreferencesVar("EnableTabFloorplans", 0);
 	}
 	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
 	{
