@@ -1,24 +1,24 @@
 <div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px">
     <div>{{:: 'Total Usage' | translate }}:
-        {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.usage.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'Total' | translate }}: {{:: $ctrl.data.totalUsage.toFixed(3) }} {{:: $ctrl.unit}}
+        {{:: 'T1' | translate }}: <b>{{:: $ctrl.data.usage1.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}<span ng-if="$ctrl.data.totalUsage"> ({{ ((100.0 / $ctrl.data.totalUsage)*$ctrl.data.usage1.usage).toFixed(0) }}%)</span>,
+        {{:: 'T2' | translate }}: <b>{{:: $ctrl.data.usage2.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}<span ng-if="$ctrl.data.totalUsage"> ({{ ((100.0 / $ctrl.data.totalUsage)*$ctrl.data.usage2.usage).toFixed(0) }}%)</span>,
+        {{:: 'Total' | translate }}: <b>{{:: $ctrl.data.totalUsage.toFixed(3) }}</b> {{:: $ctrl.unit}}
     </div>
     <div>{{:: 'Counter' | translate }}:
-        {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.counter.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.counter.toFixed(3) }} {{:: $ctrl.unit}}
+        {{:: 'T1' | translate }}: <b>{{:: $ctrl.data.usage1.counter.toFixed(3) }}</b>,
+        {{:: 'T2' | translate }}: <b>{{:: $ctrl.data.usage2.counter.toFixed(3) }}</b>
     </div>
     <div ng-if="::$ctrl.hasReturn">{{:: 'Total Return' | translate }}:
-        {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.usage.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.usage.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'Total' | translate }}: {{:: $ctrl.data.totalReturn.toFixed(3) }} {{:: $ctrl.unit}}
+        {{:: 'R1' | translate }}: <b>{{:: $ctrl.data.return1.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}<span ng-if="$ctrl.data.totalReturn"> ({{ ((100.0 / $ctrl.data.totalReturn)*$ctrl.data.return1.usage).toFixed(0) }}%)</span>,
+        {{:: 'R2' | translate }}: <b>{{:: $ctrl.data.return2.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}<span ng-if="$ctrl.data.totalReturn"> ({{ ((100.0 / $ctrl.data.totalReturn)*$ctrl.data.return2.usage).toFixed(0) }}%)</span>,
+        {{:: 'Total' | translate }}: <b>{{:: $ctrl.data.totalReturn.toFixed(3) }}</b> {{:: $ctrl.unit}}
     </div>
     <div ng-if="::$ctrl.hasReturn">{{:: 'Counter Return' | translate }}:
-        {{:: 'R1' | translate }}: {{:: $ctrl.data.return1.counter.toFixed(3) }} {{:: $ctrl.unit}},
-        {{:: 'R2' | translate }}: {{:: $ctrl.data.return2.counter.toFixed(3) }} {{:: $ctrl.unit}}
+        {{:: 'R1' | translate }}: <b>{{:: $ctrl.data.return1.counter.toFixed(3) }}</b>,
+        {{:: 'R2' | translate }}: <b>{{:: $ctrl.data.return2.counter.toFixed(3) }}</b>
     </div>
-	<div>{{:: 'Total nett usage' | translate }}: {{$ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}</div>
-    	<div>{{:: 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+	<div>{{:: 'Total nett usage' | translate }}: <b>{{$ctrl.data.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}</div>
+    	<div>{{:: 'Year Cost' | translate }}: <b>{{:: $ctrl.data.cost.toFixed(2) }}</b></div>
 </div>
 
 <div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px">
