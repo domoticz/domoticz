@@ -497,6 +497,7 @@ define(['app', 'livesocket'], function (app) {
 				if ($scope.config.ShowUpdatedEffect == true) {
 					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 				}
+				RefreshLiveSearch();
 			}
 		};
 
@@ -563,6 +564,7 @@ define(['app', 'livesocket'], function (app) {
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
+					'\t    ' + GetLiveSearch() +
 					'\t</tr>\n' +
 					'\t</table>\n';
 			}
@@ -572,7 +574,8 @@ define(['app', 'livesocket'], function (app) {
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'<td align="right" valign="top">' +
-					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
+					'\t    ' + GetLiveSearch() +
+					'<span id="roomselect"><span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all"></span>' +
 					'<option value="0" data-i18n="All">All</option>' +
 					'</select>' +
 					'</td>' +
@@ -611,7 +614,7 @@ define(['app', 'livesocket'], function (app) {
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
 
-							xhtm += '\t      <td id="name">' + item.Name + '</td>\n';
+							xhtm += '\t      <td id="name" class="item_name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">';
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
@@ -1691,6 +1694,7 @@ define(['app', 'livesocket'], function (app) {
 
 			LoadCustomIcons();
 			ShowUtilities();
+			WatchLiveSearch();
 
 			$("#dialog-editutilitydevice").keydown(function (event) {
 				if (event.keyCode == 13) {
