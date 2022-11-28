@@ -6290,37 +6290,50 @@ function GetLiveSearch(){
 
 function WatchLiveSearch(){
 	/* live search*/
-	console.log('Watch...');
+	console.log('Starting WatchLiveSearch...');
 	$('.livesearch').off().on('keyup change',function(e){
-		console.log('LiveSearch processing...');
+		console.log('LiveSearch processing on keyup...');
 		var query=$(this).val().toUpperCase();
 		var div=$('.divider');
+		var parents= $('.item').parent('dztemperaturewidget,dzweatherwidget'); /* only for Wheater and Temperatures */
 		if(query.length == 0){
 			div.css('display','block');
 			div.addClass('row');
+			div.find('.clearfix').show();
+			$('.item').show().removeClass('livesearchshown');
+			parents.show().removeClass('livesearchshown');
 		}
 		else{
 			div.css('display','inline');
 			div.removeClass('row');
+			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
+			$('.item').each(function(index){
+				var name=$(this).find('#name').html().toUpperCase();
+				var desc=$(this).find('#name').attr('data-desc');
+				if(desc === undefined){
+					desc='';
+				}
+				desc=desc.toUpperCase();
+				var parent=$(this).parent('dztemperaturewidget,dzweatherwidget');	/* only for Wheater and Temperatures */
+				var to_hide=$(this);
+				if(parent.length > 0 ){
+					to_hide=parent;
+				}
+				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
+						to_hide.show();
+						to_hide.addClass('livesearchshown');
+				}
+				else{
+					to_hide.hide();
+					to_hide.removeClass('livesearchshown');
+				}
+			});
 		}
-		$('.item').each(function(index){
-			var name=$(this).find('#name').html().toUpperCase();
-			var desc=$(this).find('#name').attr('data-desc');
-			if(desc === undefined){
-				desc='';
-			}
-			desc=desc.toUpperCase();
-			if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
-				$(this).show();
-			}
-			else{
-				$(this).hide();				
-			}
-		});
 	});
 
 	/* Show description when hoveing item's name r*/
 	$(".item_name").hover(function() {
+		console.log("HOVER");
 		var desc=$(this).attr('data-desc');
 		if(desc.length > 0){
 			$(this).css('cursor','pointer').attr('title', desc);

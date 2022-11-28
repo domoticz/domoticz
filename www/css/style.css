@@ -1731,24 +1731,31 @@ span.evomobile {
 }
 
 #livesearchspan{
-	vertical-align: bottom;
+	vertical-align: top;
 }
+
+.livesearchshown{
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
 #livesearch{
 	border-radius: 5px;
 	padding: 1px 5px;
 	margin-bottom: 4px;
 	width: 146px;
 }
+
 #roomselect{
 	white-space: nowrap;
 	margin-bottom: 5px;
 	margin-left: 5px;
 	display: inline-block;
 }
+
 #forecastdiv{
 	margin-left: 5px;
 }
-
 
 .bheader {
 	margin: 0em;
