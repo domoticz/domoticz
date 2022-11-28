@@ -130,7 +130,7 @@ define(['app', 'livesocket'], function (app) {
 						ctrl.items = [];
 					}
 				}
-			});
+			}).done(function(){RefreshLiveSearch();});;
 			$('#modal').hide();
 			$('#weathercontent').html("");
 			$('#weathercontent').i18n();
@@ -539,6 +539,8 @@ define(['app', 'livesocket'], function (app) {
 			}).i18n();
 
 			ShowWeathers();
+			WatchLiveSearch();
+
 			$("dialog-editweatherdevice").keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
