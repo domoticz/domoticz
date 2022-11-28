@@ -104,6 +104,8 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
+			RefreshLiveSearch();
+
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
@@ -457,6 +459,8 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			ShowTemps();
+			WatchLiveSearch();
+
 
 			$("#dialog-edittempdevice").keydown(function (event) {
 				if (event.keyCode == 13) {

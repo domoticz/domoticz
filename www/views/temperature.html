@@ -107,13 +107,14 @@
 			<tr>
 				<td align="left" valign="top" id="timesun"></td>
 				<td align="right" valign="top">
-					<div ng-show="ctrl.RoomPlans.length>0">
+          <span id="mysearchspan"><script>document.getElementById('mysearchspan').innerHTML=GetLiveSearch();</script></span>
+          <span id="roomselect" ng-show="ctrl.RoomPlans.length>0">
 						<span data-i18n="Room">Room</span>:
 						<select id="comboroom" style="width:160px" class="combobox ui-corner-all"
 							ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans"
 							ng-change="ctrl.changeRoom()">
 						</select>
-					</div>
+					</span>
 				</td>
 			</tr>
 		</table>
