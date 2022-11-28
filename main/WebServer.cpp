@@ -2732,7 +2732,7 @@ namespace http
 				}
 			}
 			// Add Scenes
-			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
+			result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -4401,7 +4401,7 @@ namespace http
 			{
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -4534,7 +4534,7 @@ namespace http
 				int ii = 0;
 
 				// First List/Switch Devices
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -4592,7 +4592,7 @@ namespace http
 				} // end light/switches
 
 				// Add Scenes
-				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -8186,7 +8186,7 @@ namespace http
 				root["title"] = "GetUnusedFloorplanPlans";
 				int ii = 0;
 
-				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name COLLATE NOCASE ASC");
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -8206,7 +8206,7 @@ namespace http
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanPlans";
 				int ii = 0;
-				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name", idx.c_str());
+				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name COLLATE NOCASE ASC", idx.c_str());
 				if (!result.empty())
 				{
 					for (const auto& sd : result)
@@ -12411,7 +12411,7 @@ namespace http
 			root["title"] = "Mobiles";
 
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name ASC");
+			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				int ii = 0;
@@ -12694,7 +12694,7 @@ namespace http
 			root["title"] = "GetDevicesList";
 			int ii = 0;
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
+			result = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus WHERE (Used == 1) ORDER BY Name COLLATE NOCASE ASC");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
