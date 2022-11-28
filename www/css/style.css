@@ -1730,6 +1730,26 @@ span.evomobile {
 	height: 2.60em;
 }
 
+#livesearchspan{
+	vertical-align: bottom;
+}
+#livesearch{
+	border-radius: 5px;
+	padding: 1px 5px;
+	margin-bottom: 4px;
+	width: 146px;
+}
+#roomselect{
+	white-space: nowrap;
+	margin-bottom: 5px;
+	margin-left: 5px;
+	display: inline-block;
+}
+#forecastdiv{
+	margin-left: 5px;
+}
+
+
 .bheader {
 	margin: 0em;
 	padding: 0em;

@@ -6276,3 +6276,58 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 		}
 	}
 }
+
+function RefreshLiveSearch(){
+	console.log('Refresh LiveSearch...');
+	$('.livesearch').trigger('change');
+}
+
+function GetLiveSearch(){
+	return '<span id="livesearchspan"><i class="fa fa-search" title="search"></i> <span data-i18n="Search">Search</span>:&nbsp;<input placeholder="Name or Desc." type="search" class="livesearch"></span> '
+
+}
+
+
+function WatchLiveSearch(){
+	/* live search*/
+	console.log('Watch...');
+	$('.livesearch').off().on('keyup change',function(e){
+		console.log('LiveSearch processing...');
+		var query=$(this).val().toUpperCase();
+		var div=$('.divider');
+		if(query.length == 0){
+			div.css('display','block');
+			div.addClass('row');
+		}
+		else{
+			div.css('display','inline');
+			div.removeClass('row');
+		}
+		$('.item').each(function(index){
+			var name=$(this).find('#name').html().toUpperCase();
+			var desc=$(this).find('#name').attr('data-desc');
+			if(desc === undefined){
+				desc='';
+			}
+			desc=desc.toUpperCase();
+			if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
+				$(this).show();
+			}
+			else{
+				$(this).hide();				
+			}
+		});
+	});
+
+	/* Show description when hoveing item's name r*/
+	$(".item_name").hover(function() {
+		var desc=$(this).attr('data-desc');
+		if(desc.length > 0){
+			$(this).css('cursor','pointer').attr('title', desc);
+		}
+	}, function() {
+		$(this).css('cursor','auto');
+	});
+		
+}
+
