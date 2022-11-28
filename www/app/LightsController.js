@@ -756,6 +756,9 @@ define(['app', 'livesocket'], function (app) {
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
+					'\t  <td align="right" valign="top">' +
+					'\t    ' + GetLiveSearch() +
+					'\t  </td>' +
 					'\t</tr>\n' +
 					'\t</table>\n';
 			}
@@ -764,11 +767,12 @@ define(['app', 'livesocket'], function (app) {
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'<td align="right" valign="top">' +
-					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
+					'\t  <td align="right" valign="top">' +
+					'\t    ' + GetLiveSearch() +
+					'<span id="roomselect"><span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
 					'<option value="0" data-i18n="All">All</option>' +
-					'</select>' +
-					'</td>' +
+					'</select></span>' +
+					'\t  </td>' +
 					'\t</tr>\n' +
 					'\t</table>\n';
 			}
@@ -854,7 +858,7 @@ define(['app', 'livesocket'], function (app) {
 
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name">' + item.Name + '</td>\n' +
+								'\t      <td id="name" class="item_name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name +'</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.SwitchType === "Selector" || item.SubType == "Evohome") {
@@ -1283,7 +1287,7 @@ define(['app', 'livesocket'], function (app) {
 						});
 					}
 				}
-			});
+			}); //.done(function(){RefreshLiveSearch();});
 			if (bHaveAddedDevider == true) {
 				//close previous devider
 				htmlcontent += '</div>\n';
@@ -2389,6 +2393,7 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			ShowLights();
+			WatchLiveSearch();
 		};
 
 		$scope.$on('$destroy', function () {
