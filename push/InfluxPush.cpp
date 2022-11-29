@@ -111,14 +111,13 @@ void CInfluxPush::UpdateSettings()
 
 void CInfluxPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	if (m_bLinkActive)
-	{
-		DoInfluxPush(DeviceRowIdx);
-	}
+	DoInfluxPush(DeviceRowIdx);
 }
 
 void CInfluxPush::DoInfluxPush(const uint64_t DeviceRowIdx)
 {
+	if (!m_bLinkActive)
+		return;
 	if (!IsLinkInDatabase(DeviceRowIdx))
 		return;
 
