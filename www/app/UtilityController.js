@@ -614,7 +614,7 @@ define(['app', 'livesocket'], function (app) {
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
 
-							xhtm += '\t      <td id="name" class="item_name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
+							xhtm += '\t      <td id="name" class="item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">';
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;

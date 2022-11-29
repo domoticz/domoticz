@@ -6332,7 +6332,7 @@ function WatchLiveSearch(){
 	});
 
 	/* Show description when hovering item's name */
-	$(".item_name").hover(function() {
+	$(".item-name").hover(function() {
 		if(_debug_livesearch) console.log("Hover Description!");
 		var desc=$(this).attr('data-desc');
 		if(desc.length > 0){
