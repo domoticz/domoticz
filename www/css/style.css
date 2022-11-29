@@ -1730,20 +1730,24 @@ span.evomobile {
 	height: 2.60em;
 }
 
+/* LiveSearch ------ */
 #livesearchspan{
 	vertical-align: top;
 }
 
-.livesearchshown{
-	margin-left: 5px;
-	margin-right: 5px;
-}
-
-#livesearch{
-	border-radius: 5px;
+INPUT.livesearch{
+	width: 146px;
 	padding: 1px 5px;
 	margin-bottom: 4px;
-	width: 146px;
+	font-size: 13px;
+	line-height: 100%  !important;
+	border-radius: 7px;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+}
+INPUT.livesearch:focus{
+	background-color: rgb(13, 13, 13) !important;
+	color: #eee !important;
 }
 
 #roomselect{
@@ -1756,6 +1760,13 @@ span.evomobile {
 #forecastdiv{
 	margin-left: 5px;
 }
+
+.livesearchshown{
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+
 
 .bheader {
 	margin: 0em;
