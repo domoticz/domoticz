@@ -18,6 +18,7 @@
 #include <sqlite3.h>
 #include "../hardware/hardwaretypes.h"
 #include "../smtpclient/SMTPClient.h"
+#include "../push/InfluxPush.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
@@ -7349,6 +7350,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 						ID,
 						sd[0].c_str()
 					);
+					//also send this to Influx as this can be used as start counter of today()
+					m_influxpush.DoInfluxPush(ID);
 				}
 			}
 		}
