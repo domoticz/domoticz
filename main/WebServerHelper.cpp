@@ -104,8 +104,8 @@ namespace http {
 
 		void CWebServerHelper::ReloadTrustedNetworks()
 		{
-			std::string WebLocalNetworks;
-			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			std::string TrustedNetworks;
+			m_sql.GetPreferencesVar("WebLocalNetworks", TrustedNetworks);
 
 			for (auto &it : serverCollection)
 			{
@@ -114,7 +114,7 @@ namespace http {
 				it->m_pWebEm->ClearTrustedNetworks();
 
 				std::vector<std::string> strarray;
-				StringSplit(WebLocalNetworks, ";", strarray);
+				StringSplit(TrustedNetworks, ";", strarray);
 				for (const auto &str : strarray)
 					it->m_pWebEm->AddTrustedNetworks(str);
 			}
