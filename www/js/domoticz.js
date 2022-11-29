@@ -6276,23 +6276,21 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 		}
 	}
 }
+/* LiveSearch Fns: Filters devices when typing in the INPUT field  */
+var _debug_livesearch= true;
 
 function RefreshLiveSearch(){
-	console.log('Refresh LiveSearch...');
+	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
 	$('.livesearch').trigger('change');
 }
-
 function GetLiveSearch(){
 	return '<span id="livesearchspan"><i class="fa fa-search" title="search"></i> <span data-i18n="Search">Search</span>:&nbsp;<input placeholder="Name or Desc." type="search" class="livesearch"></span> '
-
 }
-
-
 function WatchLiveSearch(){
 	/* live search*/
-	console.log('Starting WatchLiveSearch...');
+	if(_debug_livesearch) console.log('LiveSearch : Start Watching ...');
 	$('.livesearch').off().on('keyup change',function(e){
-		console.log('LiveSearch processing on keyup...');
+		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query=$(this).val().toUpperCase();
 		var div=$('.divider');
 		var parents= $('.item').parent('dztemperaturewidget,dzweatherwidget'); /* only for Wheater and Temperatures */
@@ -6317,11 +6315,11 @@ function WatchLiveSearch(){
 				var parent=$(this).parent('dztemperaturewidget,dzweatherwidget');	/* only for Wheater and Temperatures */
 				var to_hide=$(this);
 				if(parent.length > 0 ){
-					to_hide=parent;
+					to_hide=parent; 
 				}
 				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
-						to_hide.show();
-						to_hide.addClass('livesearchshown');
+					to_hide.show();
+					to_hide.addClass('livesearchshown');
 				}
 				else{
 					to_hide.hide();
@@ -6329,11 +6327,13 @@ function WatchLiveSearch(){
 				}
 			});
 		}
+		//if(_debug_livesearch) console.log('LiveSearch: processing END.');
+
 	});
 
-	/* Show description when hoveing item's name r*/
+	/* Show description when hovering item's name */
 	$(".item_name").hover(function() {
-		console.log("HOVER");
+		if(_debug_livesearch) console.log("Hover Description!");
 		var desc=$(this).attr('data-desc');
 		if(desc.length > 0){
 			$(this).css('cursor','pointer').attr('title', desc);
