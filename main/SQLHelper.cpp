@@ -40,7 +40,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 157
+#define DB_VERSION 158
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3048,11 +3048,14 @@ bool CSQLHelper::OpenDatabase()
 				nValue = atoi(result[0][0].c_str());
 				if (nValue == 0)
 				{
-					// Add a default User as no users exist
+					// Add a default Admin User as no admin users exist
 					safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 63)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
 					_log.Log(LOG_STATUS, "A default admin User called 'admin' has been added with a default password!");
 				}
 			}
+		}
+		if (dbversion < 158)
+		{
 			// Remove these Pref vars as we do not use them anymore
 			DeletePreferencesVar("EnableTabLights");
 			DeletePreferencesVar("EnableTabTemp");
@@ -3069,7 +3072,7 @@ bool CSQLHelper::OpenDatabase()
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
 		// Add hardware for internal use
 		safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
-		safe_query("INSERT INTO Users (Active, Username, Password, Rights) VALUES (1, '%s', '%s', %d)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
+		safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%s', '%s', %d, 63)", base64_encode(DEFAULT_ADMINUSER).c_str(), GenerateMD5Hash(DEFAULT_ADMINPWD).c_str(), http::server::URIGHTS_ADMIN);
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 
