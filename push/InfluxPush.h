@@ -8,7 +8,7 @@ public:
 	bool Start();
 	void Stop();
 	void UpdateSettings();
-	void DoInfluxPush(const uint64_t DeviceRowIdx);
+	void DoInfluxPush(const uint64_t DeviceRowIdx, const bool bForced = false);
 private:
 	struct _tPushItem
 	{
