@@ -169,7 +169,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.BBRHCJB = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHCJB/text()");
 	teleinfo.BBRHPJB = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHPJB/text()");
 	teleinfo.BBRHCJW = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHCJW/text()");
-	teleinfo.BBRHPJW = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHPJB/text()");
+	teleinfo.BBRHPJW = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHPJW/text()");
 	teleinfo.BBRHCJR = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHCJR/text()");
 	teleinfo.BBRHPJR = i_xpath_int(XMLdoc.RootElement(), "/response/BBRHPJR/text()");
 	teleinfo.PEJP = i_xpath_int(XMLdoc.RootElement(), "/response/PEJP/text()");
