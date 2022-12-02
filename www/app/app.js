@@ -206,7 +206,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					if (response && response.status === 401) {
 						var permissionList = {
 							isloggedin: false,
-							rights: -1
+							rights: -1,
+							user: ''
 						};
 						permissions.setPermissions(permissionList);
 						$location.path('/Login');
@@ -288,7 +289,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
 		var permissionList = {
 			isloggedin: false,
-			rights: -1
+			rights: -1,
+			user: ''
 		};
 		permissions.setPermissions(permissionList);
 
@@ -356,7 +358,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			pythonversion: "",
 			versiontooltip: "",
 			ShowUpdatedEffect: true,
-			DateFormat: "yy-mm-dd"
+			DateFormat: "yy-mm-dd",
+			userName: "Unknown"
 		};
 
 		$rootScope.GetGlobalConfig = function () {
@@ -515,6 +518,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				if (data.status == "OK") {
 					permissionList.isloggedin = (data.user != "");
 					permissionList.rights = parseInt(data.rights);
+					permissionList.user = data.user;
 					dashboardType = data.DashboardType;
 				}
 			},
@@ -562,6 +566,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 		});
 		permissions.setPermissions(permissionList);
+		$rootScope.config.userName = permissionList.user;
 
 		Highcharts.setOptions({
 			chart: {

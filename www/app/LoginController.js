@@ -21,7 +21,7 @@ define(['app'], function (app) {
 			        HideNotify();
 					$scope.failcounter += 1;
 					if ($scope.failcounter > 3) {
-						window.location.href = "http://www.1112.net/lastpage.html";
+						window.location.href = "https://hmpg.net/";
 						return;
 					}
 					else {
@@ -30,16 +30,19 @@ define(['app'], function (app) {
 					return;
 			    }
 				var permissionList = {
-					isloggedin: true,
-					rights: 0
+					isloggedin: false,
+					rights: -1,
+					user: ''
 				};
 				if (data.user != "") {
 					permissionList.isloggedin = true;
+					permissionList.user = data.user;
 				}
 				permissionList.rights = parseInt(data.rights);
 				permissions.setPermissions(permissionList);
 
 				$rootScope.GetGlobalConfig();
+				$rootScope.config.userName = permissionList.user;
 
 				$location.path('/Dashboard');
 			}, function errorCallback(response) {
