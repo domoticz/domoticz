@@ -374,6 +374,16 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.appversion = data.version;
 						$rootScope.config.apphash = data.hash;
 						$rootScope.config.appdate = data.build_time;
+						$rootScope.config.dzventsversion = data.dzvents_version;
+						$rootScope.config.pythonversion = data.python_version;
+						$rootScope.config.isproxied = data.isproxied;
+						$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
+						$("#appversion").text(data.version);
+						$rootScope.config.HaveUpdate = data.HaveUpdate;
+						$rootScope.config.UseUpdate = data.UseUpdate;
+						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
+							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
+						}
 
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
@@ -487,32 +497,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		}
 
 		$rootScope.GetGlobalConfig();
-		$.ajax({
-			url: "json.htm?type=command&param=getversion",
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-			    isOnline = true;
-				if (data.status == "OK") {
-				    $rootScope.config.appversion = data.version;
-					$rootScope.config.apphash = data.hash;
-					$rootScope.config.appdate = data.build_time;
-					$rootScope.config.dzventsversion = data.dzvents_version;
-					$rootScope.config.pythonversion = data.python_version;
-					$rootScope.config.isproxied = data.isproxied;
-					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
-					$("#appversion").text(data.version);
-					$rootScope.config.HaveUpdate = data.HaveUpdate;
-					$rootScope.config.UseUpdate = data.UseUpdate;
-					if ((data.HaveUpdate == true) && (data.UseUpdate)) {
-						ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
-					}
-				}
-			},
-			error: function () {
-				isOnline = false;
-			}
-		});
 
 		$.ajax({
 			url: "json.htm?type=command&param=getauth",
