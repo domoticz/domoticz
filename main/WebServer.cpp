@@ -332,7 +332,7 @@ namespace http
 			{
 				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
 				m_pWebEm->AddTrustedNetworks("::");	// IPv6
-				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted!");
+				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted! Change admin password asap and restart Domoticz!");
 			}
 
 			// register callbacks
@@ -3183,23 +3183,17 @@ namespace http
 			int bEnableTabCustom = 1;
 
 			std::vector<std::vector<std::string>> result;
-
 			result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
-			if (!result.empty())
-			{
-				int TabsEnabled = atoi(result[0][0].c_str());
-				bEnableTabLight = (TabsEnabled & (1 << 0));
-				bEnableTabScenes = (TabsEnabled & (1 << 1));
-				bEnableTabTemp = (TabsEnabled & (1 << 2));
-				bEnableTabWeather = (TabsEnabled & (1 << 3));
-				bEnableTabUtility = (TabsEnabled & (1 << 4));
-				bEnableTabCustom = (TabsEnabled & (1 << 5));
-				bEnableTabFloorplans = (TabsEnabled & (1 << 6));
-			}
-			else
-			{
-				_log.Log(LOG_ERROR,"Unable to find EnabledTabs settings for user (%d)", static_cast<int>(UserID));
-			}
+			int TabsEnabled = atoi(result[0][0].c_str());
+
+			bEnableTabLight = (TabsEnabled & (1 << 0));
+			bEnableTabScenes = (TabsEnabled & (1 << 1));
+			bEnableTabTemp = (TabsEnabled & (1 << 2));
+			bEnableTabWeather = (TabsEnabled & (1 << 3));
+			bEnableTabUtility = (TabsEnabled & (1 << 4));
+			bEnableTabCustom = (TabsEnabled & (1 << 5));
+			bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+
 			if (iDashboardType == 3)
 			{
 				// Floorplan , no need to show a tab floorplan
