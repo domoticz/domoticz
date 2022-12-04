@@ -1980,8 +1980,6 @@ namespace http {
 				}
 				if (session.rights == -1)
 					_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, but no Admin User found!");
-				else
-					_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, so assume first Admin User (%s)!", session.username.c_str());
 			}
 
 			//Check for valid JWT token
@@ -2374,7 +2372,7 @@ namespace http {
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 			bool isAuthenticated = CheckAuthentication(session, req, rep);
-			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated);
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated, session.username.c_str());
 
 			// Check user authentication on each page or action, if it exists.
 			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)
