@@ -19,7 +19,8 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest   # Per Dec 2022 latest = 22.04 with GCC 11, OpenSSL3.0 and this breaks building OpenZwave
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -53,7 +54,7 @@ jobs:
       # get CMake
       - name: cmake-compile
         run: |
-          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.24.3/cmake-3.24.3-Linux-x86_64.tar.gz -o cmake.tar.gz;
+          curl -sSL https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-Linux-x86_64.tar.gz -o cmake.tar.gz;
           sudo tar xf cmake.tar.gz --strip 1 -C /usr/local;
           export PATH=/usr/local/bin:$PATH;
 
@@ -67,11 +68,21 @@ jobs:
           ./b2 stage threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
           sudo ./b2 install threading=multi link=static --with-thread --with-system --with-chrono >> /dev/null 2>&1
 
+      # OpenZWave
+      - name: openzwave
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ..
+          git clone https://github.com/domoticz/open-zwave.git open-zwave-read-only
+          cd open-zwave-read-only
+          make
+          sudo make install >> /dev/null 2>&1
+
       # Domoticz
       - name: build domoticz
         run: |
           cd $GITHUB_WORKSPACE
-          cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
           make
 
       # Run automated tests (disabled March 2022)
