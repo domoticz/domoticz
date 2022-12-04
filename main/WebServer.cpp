@@ -2981,14 +2981,10 @@ namespace http
 			CdzVents* dzvents = CdzVents::GetInstance();
 			root["dzvents_version"] = dzvents->GetVersion();
 			root["python_version"] = szPyVersion;
+			root["UseUpdate"] = false;
+			root["HaveUpdate"] = false;
 
-			if (session.rights != 2)
-			{
-				// only admin users will receive the update notification
-				root["UseUpdate"] = false;
-				root["HaveUpdate"] = false;
-			}
-			else
+			if (session.rights == URIGHTS_ADMIN)
 			{
 				root["UseUpdate"] = g_bUseUpdater;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
@@ -3123,24 +3119,24 @@ namespace http
 
 		void CWebServer::Cmd_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			root["status"] = "OK";
+			root["status"] = "ERR";
 			root["title"] = "GetConfig";
+			root["version"] = szAppVersion;
+			root["hash"] = szAppHash;
+			root["build_time"] = szAppDate;
 
-			bool bHaveUser = (!session.username.empty());
-			// int urights = 3;
-			unsigned long UserID = 0;
-			if (bHaveUser)
+			int iUser;
+			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
 			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-				{
-					// urights = static_cast<int>(m_users[iUser].userrights);
-					UserID = m_users[iUser].ID;
-				}
+				root["message"] = "Unable to find a logged-in User!";
+				return;
 			}
+			unsigned long UserID = m_users[iUser].ID;
+			root["UserName"] = m_users[iUser].Username;
 
-			int nValue;
 			std::string sValue;
+			int nValue = 0;
+			int iDashboardType = 0;
 
 			if (m_sql.GetPreferencesVar("Language", sValue))
 			{
@@ -3150,9 +3146,6 @@ namespace http
 			{
 				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
 			}
-
-			nValue = 0;
-			int iDashboardType = 0;
 			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
 			root["DashboardType"] = iDashboardType;
 			m_sql.GetPreferencesVar("MobileType", nValue);
@@ -3247,6 +3240,7 @@ namespace http
 					closedir(lDir);
 				}
 			}
+			root["status"] = "OK";
 		}
 
 		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
@@ -8844,7 +8838,7 @@ namespace http
 				_log.Log(LOG_ERROR, errmsg.str());
 			}
 			std::string msg = "Processed " + std::to_string(cntSettings) + " settings!";
-			root["msg"] = msg;
+			root["message"] = msg;
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession& session, const request& req, std::string& redirect_uri)
