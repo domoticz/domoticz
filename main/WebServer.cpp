@@ -3119,11 +3119,9 @@ namespace http
 
 		void CWebServer::Cmd_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			Cmd_GetVersion(session, req, root);
 			root["status"] = "ERR";
 			root["title"] = "GetConfig";
-			root["version"] = szAppVersion;
-			root["hash"] = szAppHash;
-			root["build_time"] = szAppDate;
 
 			int iUser;
 			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
