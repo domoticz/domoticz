@@ -1,0 +1,39 @@
+<div id="topBar">
+	<span id="tbFilters">
+		<span id="tbLiveSearchSpan">
+			<i class="fa fa-search" title="search"></i> 
+			<!-- <span data-i18n="Search"></span>&nbsp; -->
+			<input placeholder="Name or Desc." type="search" class="livesearch jsLiveSearch">
+		</span> 
+		<span id="tbRoomSpan" ng-show="ctrl.RoomPlans.length > 0">
+			<i class="fa fa-home" title="Room"></i> 
+			<!-- <span data-i18n="Room">Room</span>:&nbsp; -->
+			<select id="comboroom" class="combobox ui-corner-all" ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans" ng-change="ctrl.changeRoom()">
+		</select>
+
+		</span>		
+	</span>
+	<span id="tbTimeSun">
+		
+		<span id="jsTbTime"></span>
+		<span id="tbSun">
+			<i class="fa fa-sun"></i> 
+			<i class="fa fa-arrow-up"></i> <span id="jsTbSunRise"></span> 
+			<i class="fa fa-arrow-down"></i> <span id="jsTbSunSet"></span> 
+		</span>
+	</span>
+	<span id="tbLinks">		
+			<a ng-repeat="link in tblinks" class="btn btn-xs btn-info" data-i18n="{{link.i18n}}" href="{{link.href}}"  ng-click="link.onclick.length>0 ? HandleTbLinkClick(link.onclick) : null" >
+				<i class="fa fa-{{link.icon}}"></i> {{link.text}}
+			</a>
+	</span>
+
+	<!-- 
+		This JS call should certainly be moved to the Angular controller, 
+		but because of the 2 different stuctures of Weather and Temperatures, VS Dashboard, Lights, Scenes, Utility pages, 
+		this is the easiest way to get it working in both of theses 2 cases, ATM... 
+	-->
+	<script>WatchLiveSearch();</script>
+
+</div>
+
