@@ -1765,6 +1765,85 @@ INPUT.livesearch:focus{
 	margin-left: 5px;
 	margin-right: 5px;
 }
+SECTION.dashCategory{
+	display: block;
+	overflow: hidden;
+}
+}
+SECTION.dashCategory .livesearchshown{
+	margin: 0;
+}
+
+/* top bar*/
+#topBar{
+	overflow: hidden;
+	line-height: 100%;
+	padding-bottom: 10px;
+}
+#tbFilters{
+	float: left;
+	margin-right: 20px;
+	vertical-align: middle;
+	margin-bottom: 5px;
+}
+#tbLiveSearchSpan{
+	margin-right: 15px;
+}
+#tbLiveSearchSpan INPUT{
+	width: 110px;
+}
+#tbRoomSpan{
+	margin-right: 10px;
+}
+#tbRommSpan SELECT{
+	width: 110px;
+}
+
+#tbTimeSun{
+	float: left;
+	vertical-align: bottom;
+	line-height: 24px;
+	margin-bottom: 5px;
+}
+#tbTime{
+	margin-right: 5px;
+}
+#tbTimeSun .fa-sun{
+	margin-left: 8px;
+	color: yellow;
+}
+#tbSun{
+	color: #aaa;
+	font-size: 10px;
+}
+#tbLinks{
+	margin-left: 10px;
+	float: right;
+	margin-bottom: 5px;
+}
+
+#tbLinks A{
+	margin-left: 5px;
+}
+
+.sep{
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+@media (max-width: 730px) {
+	#tbLinks{
+		display: block;
+		width: 100%;
+		text-align: center;
+		padding-top: 5px;
+	}
+	#tbTimeSun{
+	float: right;
+	}
+}
+
+
 
 
 
