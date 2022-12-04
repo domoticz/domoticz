@@ -843,14 +843,11 @@ define(['app', 'livesocket'], function (app) {
 			var bAllowWidgetReorder = true;
 
 			var tophtm = "";
-
+/*
 			tophtm +=
 				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 				'\t<tr>\n' +
 				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-				'\t  <td align="right" valign="top">' +
-				'\t  ' + GetLiveSearch() +
-				'\t  </td>' +
 			'\t</tr>\n' +
 				'\t</table>\n';
 
@@ -864,6 +861,7 @@ define(['app', 'livesocket'], function (app) {
 					'\t</tr>' +
 					'\t</table>\n';
 			}
+*/
 
 			var i = 0;
 			var j = 0;
@@ -1068,6 +1066,23 @@ define(['app', 'livesocket'], function (app) {
 					$(this).dialog("close");
 				}
 			}).i18n();
+
+
+
+
+			//handles TopBar Links
+			$scope.tblinks=[];
+			if (permissions.hasPermission("Admin")) {
+				$scope.tblinks = [
+					{
+						onclick:"AddScene", 
+						text:"Add Scene", 
+						i18n: "Add Scene", 
+						icon: "plus-circle"
+					}
+				];
+			}
+
 			ShowScenes();
 			WatchLiveSearch();
 		};

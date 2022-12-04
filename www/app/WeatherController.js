@@ -171,6 +171,7 @@ define(['app', 'livesocket'], function (app) {
 				RefreshItem(deviceData);
 			});
 
+
 			//Default weather
 			var dialog_editweatherdevice_buttons = {};
 			dialog_editweatherdevice_buttons[$.t("Update")] = function () {
@@ -538,8 +539,16 @@ define(['app', 'livesocket'], function (app) {
 				}
 			}).i18n();
 
+			$scope.tblinks = [
+				{
+					onclick:"ShowForecast", 
+					text:"Forecast", 
+					i18n: "Forecast", 
+					icon: "calendar"
+				}
+			];
+
 			ShowWeathers();
-			WatchLiveSearch();
 
 			$("dialog-editweatherdevice").keydown(function (event) {
 				if (event.keyCode == 13) {
@@ -547,6 +556,7 @@ define(['app', 'livesocket'], function (app) {
 					return false;
 				}
 			});
+
 
 		};
 	}).directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
@@ -694,6 +704,8 @@ define(['app', 'livesocket'], function (app) {
 				};
 
 				$element.i18n();
+				//WatchLiveSearch();
+				WatchDescriptions();
 
 				if ($scope.ordering == true) {
 					if (permissions.hasPermission("Admin")) {

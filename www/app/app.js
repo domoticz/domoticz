@@ -591,8 +591,43 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
             }
 		});
 
+		$rootScope.HandleTbLinkClick = function (fn) {
+			window[fn]();
+		};
+		$rootScope.GetRoomPlans  = function(){
+			var RoomPlans={};
+			RoomPlans = [{ idx: 0, name: $.t("All") }];
+			$.ajax({
+				url: "json.htm?type=plans",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						var totalItems = data.result.length;
+						if (totalItems > 0) {
+							$.each(data.result, function (i, item) {
+								RoomPlans.push({
+									idx: item.idx,
+									name: item.Name
+								});
+							});
+						}
+					}
+				}
+			});
+			return RoomPlans;
+
+		}
+
+		/*
+		$rootScope.HandleTbSearch = function () {
+			WatchLiveSearch();
+		};
+		*/
+		
 		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
+			/*
 			var month = ServerTime.split(' ')[0];
 			ServerTime = ServerTime.replace(month, $.t(month));
 
@@ -606,6 +641,13 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				suntext = '<div>' + ServerTime + ' <font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' + '&#9660;' + sunSet + '</div>';
 			}
 			$("#timesun").html(suntext);
+			*/
+
+			var mytime=ServerTime.split(' ')[1];
+			$("#jsTbTime").html(mytime);
+			$("#jsTbSunRise").html(sunRise);
+			$("#jsTbSunSet").html(sunSet);
+
 		}
 
 		$rootScope.RefreshTimeAndSun = function (placeholder) {

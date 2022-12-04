@@ -721,6 +721,8 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').show();
 
 			var htmlcontent = '';
+	
+/*
 			var bShowRoomplan = false;
 			$.RoomPlans = [];
 			$.ajax({
@@ -747,18 +749,16 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
-
+*/
 			var bHaveAddedDevider = false;
 
 			var tophtm = "";
+/*
 			if ($.RoomPlans.length == 0) {
 				tophtm +=
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t  <td align="right" valign="top">' +
-					'\t    ' + GetLiveSearch() +
-					'\t  </td>' +
 					'\t</tr>\n' +
 					'\t</table>\n';
 			}
@@ -768,7 +768,6 @@ define(['app', 'livesocket'], function (app) {
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t  <td align="right" valign="top">' +
-					'\t    ' + GetLiveSearch() +
 					'<span id="roomselect"><span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
 					'<option value="0" data-i18n="All">All</option>' +
 					'</select></span>' +
@@ -785,6 +784,9 @@ define(['app', 'livesocket'], function (app) {
 					'\t</tr>\n' +
 					'\t</table>\n';
 			}
+
+*/
+
 
 			var i = 0;
 			var j = 0;
@@ -1287,7 +1289,9 @@ define(['app', 'livesocket'], function (app) {
 						});
 					}
 				}
-			}); //.done(function(){RefreshLiveSearch();});
+			});//.done(function(){RefreshLiveSearch();});
+
+
 			if (bHaveAddedDevider == true) {
 				//close previous devider
 				htmlcontent += '</div>\n';
@@ -1298,6 +1302,11 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').hide();
 			$element.html(tophtm + htmlcontent);
 			$element.i18n();
+			WatchDescriptions();
+
+
+
+			/*
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
@@ -1318,6 +1327,7 @@ define(['app', 'livesocket'], function (app) {
 					$scope.$apply();
 				});
 			}
+			*/
 
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
@@ -1350,6 +1360,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 			}
 			$rootScope.RefreshTimeAndSun();
+
 
 			//Create Dimmer Sliders
 			$element.find('.dimslider').slider({
@@ -2264,7 +2275,7 @@ define(['app', 'livesocket'], function (app) {
 			$scope.$on('device_update', function (event, deviceData) {
 				RefreshItem(deviceData);
 			});
-
+	
 			$(window).resize(function () { $scope.ResizeDimSliders(); });
 
 			$("#dialog-addlightdevice").dialog({
@@ -2392,9 +2403,53 @@ define(['app', 'livesocket'], function (app) {
 				EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice", true);
 			});
 
+
+
+			//handles TopBar Links
+			$scope.tblinks=[];
+			if (permissions.hasPermission("Admin")) {
+				$scope.tblinks = [
+					{
+						onclick:"AddManualLightDevice", 
+						text:"Add Switch", 
+						i18n: "Add Switch", 
+						icon: "plus-circle"
+					},
+					{
+						onclick:"AddLightDevice", 
+						text:"Learn Switch", 
+						i18n: "Learn Switch", 
+						icon: "camera"
+					}
+				];
+			}
+
+			//handles RoomPlans
+			var ctrl={};
+			ctrl.RoomPlans=$rootScope.GetRoomPlans();	
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+	
+			if (typeof roomPlanId != 'undefined') {
+				ctrl.roomSelected = roomPlanId;
+			}
+			ctrl.changeRoom = function () {
+				var idx = ctrl.roomSelected;
+				window.myglobals.LastPlanSelected = idx;
+	
+				$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
+			};
+			$scope.ctrl=ctrl;
+
 			ShowLights();
-			WatchLiveSearch();
+
 		};
+
+
+
 
 		$scope.$on('$destroy', function () {
 			$(window).off("resize");

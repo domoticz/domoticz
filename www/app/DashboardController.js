@@ -1523,6 +1523,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			} //Utility Sensors
+			RefreshLiveSearch();
 		}
 
 		RefreshFavorites = function () {
@@ -1558,11 +1559,11 @@ define(['app', 'livesocket'], function (app) {
 			var bHaveAddedDivider = false;
 			var htmlcontent = "";
 			var bShowRoomplan = false;
-			$.RoomPlans = [];
+			//$.RoomPlans = [];
 
 			$("body").removeClass();
 			$("body").addClass("dashboard");
-
+/*
 			$.ajax({
 				url: "json.htm?type=plans",
 				async: false,
@@ -1587,7 +1588,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
-
+*/
 			var bFavorites = 1;
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
@@ -1664,7 +1665,7 @@ define(['app', 'livesocket'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
 										'\t    <tr id="scene_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name">' + item.Name;
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name;
 									xhtm +=
 										'</td>\n';
 									var status = "";
@@ -1702,7 +1703,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									xhtm +=
 										'\t    <t>\n' +
-										'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
@@ -1811,7 +1812,7 @@ define(['app', 'livesocket'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
 										'\t    <tr id="light_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name">' + item.Name;
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name;
 									xhtm +=
 										'</td>\n';
 									var status = TranslateStatus(item.Status) + " ";
@@ -2186,7 +2187,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									xhtm +=
 										'\t    <tr>\n' +
-										'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
@@ -2555,7 +2556,7 @@ define(['app', 'livesocket'], function (app) {
 
 									xhtm +=
 										'\t    <tr id="temp_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name">' + vname + '</td>\n';
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
 									var status = "";
 									var bHaveBefore = false;
 									if (typeof item.Temp != 'undefined') {
@@ -2599,7 +2600,7 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr>\n';
-									xhtm += '\t      <td id="name" class="name">' + item.Name + '</td>\n';
+									xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = "";
 									if (typeof item.Temp != 'undefined') {
@@ -2730,7 +2731,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									xhtm +=
 										'\t    <tr id="weather_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name">' + vname + '</td>\n';
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n';
 									var status = "";
 									if (typeof item.Rain != 'undefined') {
 										status += item.Rain + ' mm';
@@ -2781,7 +2782,7 @@ define(['app', 'livesocket'], function (app) {
 									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr>\n';
-									xhtm += '\t      <td id="name" class="name">' + item.Name + '</td>\n';
+									xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span>';
 									if (typeof item.Barometer != 'undefined') {
 										xhtm += item.Barometer + ' hPa';
@@ -2919,7 +2920,7 @@ define(['app', 'livesocket'], function (app) {
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
 										'\t    <tr id="security_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name">' + item.Name + '</td>\n';
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 									var status = TranslateStatus(item.Status);
 
 									xhtm += '\t      <td id="status" class="status">';
@@ -2954,7 +2955,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
 									xhtm += '\t    <tr>\n' +
-										'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>' + TranslateStatusShort(item.Status) + '</span></td>\n';
 
 									if (item.SubType == "Security Panel") {
@@ -3366,7 +3367,7 @@ define(['app', 'livesocket'], function (app) {
 									}
 									xhtm +=
 										'\t    <tr id="utility_' + item.idx + '">\n' +
-										'\t      <td id="name" class="name">' + vname + '</td>\n' +
+										'\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + vname + '</td>\n' +
 										'\t      <td id="status" class="status"><span>' + status + '</span></td>\n' +
 										'\t    </tr>\n';
 								}
@@ -3646,7 +3647,7 @@ define(['app', 'livesocket'], function (app) {
 
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr">\n';
-									xhtm += '\t      <td id="name" class="name">' + item.Name + '</td>\n';
+									xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n' +
@@ -3689,6 +3690,8 @@ define(['app', 'livesocket'], function (app) {
 			}
 
 			var suntext = "";
+/*
+
 			if (bShowRoomplan == false) {
 				suntext =
 					'<div class="beforebannav">' +
@@ -3706,7 +3709,7 @@ define(['app', 'livesocket'], function (app) {
 					'<tr>' +
 					'<td align="left" valign="top" id="timesun"></td>' +
 					'<td align="right" valign="top">' +
-					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" class="combobox ui-corner-all">' +
+					'<span id="roomselect"><span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
 					'<option value="0" data-i18n="All">All</option>' +
 					'</select>' +
 					'</td>' +
@@ -3715,10 +3718,12 @@ define(['app', 'livesocket'], function (app) {
 					'</div>';
 			}
 
-
+*/
 			$element.html(suntext + htmlcontent + EvohomeAddJS());
 			$element.i18n();
+			WatchDescriptions();
 
+/*
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
@@ -3739,7 +3744,7 @@ define(['app', 'livesocket'], function (app) {
 					$scope.$apply();
 				});
 			}
-
+*/
 
 			// Store variables
 			var accordion_head = $('#dashcontent .accordion > li > a'),
@@ -4002,6 +4007,30 @@ define(['app', 'livesocket'], function (app) {
 			$scope.MakeGlobalConfig();
 			MobilePhoneDetection();
 			ShowFavorites();
+
+
+			//handles RoomPlans
+			var ctrl={};
+			ctrl.RoomPlans=$rootScope.GetRoomPlans();	
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+	
+			if (typeof roomPlanId != 'undefined') {
+				ctrl.roomSelected = roomPlanId;
+			}
+			ctrl.changeRoom = function () {
+				var idx = ctrl.roomSelected;
+				window.myglobals.LastPlanSelected = idx;
+	
+				$route.updateParams({
+						room: idx > 0 ? idx : undefined
+					});
+					$location.replace();
+					$scope.$apply();
+			};
+			$scope.ctrl=ctrl;
+
+
+			//WatchLiveSearch();
 
 			$scope.$on('device_update', function (event, deviceData) {
 				RefreshItem(deviceData);

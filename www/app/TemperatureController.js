@@ -459,7 +459,7 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			ShowTemps();
-			WatchLiveSearch();
+			////WatchLiveSearch();
 
 
 			$("#dialog-edittempdevice").keydown(function (event) {
@@ -478,26 +478,24 @@ define(['app', 'livesocket'], function (app) {
 
 		};
 
-		ctrl.RoomPlans = [{ idx: 0, name: $.t("All") }];
-		$.ajax({
-			url: "json.htm?type=plans",
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-				if (typeof data.result != 'undefined') {
-					var totalItems = data.result.length;
-					if (totalItems > 0) {
-						$.each(data.result, function (i, item) {
-							ctrl.RoomPlans.push({
-								idx: item.idx,
-								name: item.Name
-							});
-						});
-					}
-				}
+		//handles TopBar Links
+		$scope.tblinks = [
+			{
+				href:"#/Temperature/CustomTempLog", 
+				text:"Custom Graph", 
+				i18n: "Custom Graph", 
+				icon: "globe"
+			},
+			{
+				onclick:"ShowForecast", 
+				text:"Forecast", 
+				i18n: "Forecast", 
+				icon: "calendar"
 			}
-		});
+		];
 
+		//handles RoomPlans
+		ctrl.RoomPlans=$rootScope.GetRoomPlans();	
 		var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
 		if (typeof roomPlanId != 'undefined') {
@@ -682,6 +680,8 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					$element.i18n();
+					//WatchLiveSearch();
+					WatchDescriptions();
 
 					if ($scope.ordering == true) {
 						if (permissions.hasPermission("Admin")) {
