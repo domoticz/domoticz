@@ -28,6 +28,7 @@ define(['app'], function (app) {
 						}
 					});
 					permissions.setPermissions(permissionList);
+					$rootScope.GetGlobalConfig();
 					window.location = '#/Dashboard';
 				},
 				error: function (xhr, status, error) {
