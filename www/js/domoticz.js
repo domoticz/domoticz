@@ -6276,20 +6276,17 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 		}
 	}
 }
-/* LiveSearch Fns: Filters devices when typing in the INPUT field  */
+/* LiveSearch Functions: Filters devices when typing in the INPUT field  */
 var _debug_livesearch= true;
-
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
-	$('.livesearch').trigger('change');
+	$('.jsLiveSearch').trigger('change');
 }
-function GetLiveSearch(){
-	return '<span id="livesearchspan"><i class="fa fa-search" title="search"></i> <span data-i18n="Search">Search</span>:&nbsp;<input placeholder="Name or Desc." type="search" class="livesearch"></span> '
-}
+
 function WatchLiveSearch(){
 	/* live search*/
 	if(_debug_livesearch) console.log('LiveSearch : Start Watching ...');
-	$('.livesearch').off().on('keyup change',function(e){
+	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query=$(this).val().toUpperCase();
 		var div=$('.divider');
@@ -6331,6 +6328,11 @@ function WatchLiveSearch(){
 
 	});
 
+		
+}
+
+/* Display descriptions when hovering name */
+function WatchDescriptions(){
 	/* Show description when hovering item's name */
 	$(".item-name").hover(function() {
 		if(_debug_livesearch) console.log("Hover Description!");
@@ -6341,6 +6343,5 @@ function WatchLiveSearch(){
 	}, function() {
 		$(this).css('cursor','auto');
 	});
-		
-}
+};
 
