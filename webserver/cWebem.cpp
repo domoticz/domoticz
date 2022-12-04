@@ -940,7 +940,7 @@ namespace http {
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
 
-			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", (ipnetwork.bIsIPv6 ? "6" : "4"), GetPort().c_str(), network.c_str());
+			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
 
 			if (network.find('*') != std::string::npos)
 			{
