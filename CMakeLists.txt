@@ -513,6 +513,7 @@ set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
+add_dependencies(domoticztester revisiontag)
 
 TEST_BIG_ENDIAN(BIGENDIAN)
 IF(${BIGENDIAN})
