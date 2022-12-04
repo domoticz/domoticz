@@ -42,7 +42,6 @@ define(['app'], function (app) {
 				permissions.setPermissions(permissionList);
 
 				$rootScope.GetGlobalConfig();
-				$rootScope.config.userName = permissionList.user;
 
 				$location.path('/Dashboard');
 			}, function errorCallback(response) {

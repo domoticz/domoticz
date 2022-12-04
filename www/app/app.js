@@ -371,6 +371,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				success: function (data) {
 					isOnline = true;
 					if (data.status == "OK") {
+						$rootScope.config.appversion = data.version;
+						$rootScope.config.apphash = data.hash;
+						$rootScope.config.appdate = data.build_time;
+
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
@@ -380,6 +384,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.WindScale = data.WindScale;
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
+						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
+						$rootScope.config.userName = data.UserName;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;
@@ -388,7 +394,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
-						$rootScope.config.DegreeDaysBaseTemperature = data.result.DegreeDaysBaseTemperature;
 
 						SetLanguage(data.language);
 
@@ -566,7 +571,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 		});
 		permissions.setPermissions(permissionList);
-		$rootScope.config.userName = permissionList.user;
 
 		Highcharts.setOptions({
 			chart: {
