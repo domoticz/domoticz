@@ -891,7 +891,7 @@ define(['app', 'livesocket'], function (app) {
 							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 							var bAddTimer = true;
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 itemBlock ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n';
 							if (item.Type == "Scene") {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';

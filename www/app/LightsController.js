@@ -823,7 +823,7 @@ define(['app', 'livesocket'], function (app) {
 
 							var status = "";
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 itemBlock ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n';
 							if (
 								(item.SwitchType.indexOf("Blinds")>=0)

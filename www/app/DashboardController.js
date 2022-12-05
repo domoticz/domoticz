@@ -1694,7 +1694,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm = '\t<div class="span3 movable" id="scene_' + item.idx + '">\n';
 									}
 									var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
+									xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 									if (item.Type.indexOf('Scene') == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
@@ -2149,7 +2149,7 @@ define(['app', 'livesocket'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="light_' + item.idx + '">\n';
 									}
-									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
+									xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 									if (
 										(item.Type.indexOf('Blind') == 0)
 										|| (item.SwitchType == "Blinds")
@@ -2597,7 +2597,7 @@ define(['app', 'livesocket'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="temp_' + item.idx + '">\n';
 									}
-									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
+									xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr>\n';
 									xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
@@ -2779,7 +2779,7 @@ define(['app', 'livesocket'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="weather_' + item.idx + '">\n';
 									}
-									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
+									xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr>\n';
 									xhtm += '\t      <td id="name" class="name item-name" data-desc="'+item.Description.replace('"',"'")+'">' + item.Name + '</td>\n';
@@ -2947,7 +2947,7 @@ define(['app', 'livesocket'], function (app) {
 										xhtm = '\t<div class="span3 movable" id="security_' + item.idx + '">\n';
 									}
 									var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
+									xhtm += '\t  <div id="bstatus" class="item itemBlock ' + backgroundClass + '">\n';
 									if ($scope.config.DashboardType == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
@@ -3640,9 +3640,9 @@ define(['app', 'livesocket'], function (app) {
 									var count = (statushtml.match(/<span/g) || []).length;//$(statushtml).find("span").length;
 									// if ($(escape(statushtml)).text().length != $(escape(bigtexthtml)).text().length){
 									if (statushtml.length != bigtexthtml.length) {
-										xhtm += '\t  <div id="bstatus" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
+										xhtm += '\t  <div id="bstatus" class="item itemBlock ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
 									} else {
-										xhtm += '\t  <div id="bstatus" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
+										xhtm += '\t  <div id="bstatus" class="item itemBlock ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
 									}
 
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';

@@ -609,7 +609,7 @@ define(['app', 'livesocket'], function (app) {
 							var graphLogLink = '#/Devices/' + item.idx + '/Log';
 
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 itemBlock ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n' +
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
