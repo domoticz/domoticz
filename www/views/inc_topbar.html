@@ -23,8 +23,8 @@
 		</span>
 	</span>
 	<span id="tbLinks">		
-			<a ng-repeat="link in tblinks" class="btn btn-xs btn-info" data-i18n="{{link.i18n}}" href="{{link.href}}"  ng-click="link.onclick.length>0 ? HandleTbLinkClick(link.onclick) : null" >
-				<i class="fa fa-{{link.icon}}"></i> {{link.text}}
+			<a ng-repeat="link in tblinks" class="btn btn-xs btn-info" href="{{link.href}}"  ng-click="link.onclick.length>0 ? HandleTbLinkClick(link.onclick) : null" >
+				<i class="fa fa-{{link.icon}}"></i> <span data-i18n="{{link.i18n}}">{{link.text}}</a></span>
 			</a>
 	</span>
 
