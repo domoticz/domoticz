@@ -1746,14 +1746,6 @@ span.evomobile {
 }
 */
 
-SECTION.dashCategory{
-	display: block;
-	overflow: hidden;
-}
-
-SECTION.dashCategory .livesearchshown{
-	margin: 0;
-}
 
 #topBar{
 	/*margin-top: 5px;*/
@@ -1796,10 +1788,6 @@ INPUT.livesearch{
 INPUT.livesearch:focus{
 	background-color: rgb(13, 13, 13) !important;
 	color: #eee !important;
-}
-.livesearchshown{
-	margin-left: 5px;
-	margin-right: 5px;
 }
 
 #tbFiltRooms{
@@ -1864,7 +1852,23 @@ INPUT.livesearch:focus{
 	}
 }
 
+.itemBlock{
+}
 
+.livesearchshown{
+	margin-left: 5px;
+	margin-right: 5px;
+	float: left;
+}
+
+SECTION.dashCategory{
+	display: block;
+	overflow: hidden;
+}
+
+SECTION.dashCategory .livesearchshown{
+	margin: 0;
+}
 
 
 
