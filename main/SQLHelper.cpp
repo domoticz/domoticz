@@ -7351,7 +7351,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 						sd[0].c_str()
 					);
 					//also send this to Influx as this can be used as start counter of today()
-					m_influxpush.DoInfluxPush(ID);
+					m_influxpush.DoInfluxPush(ID, true);
 				}
 			}
 		}

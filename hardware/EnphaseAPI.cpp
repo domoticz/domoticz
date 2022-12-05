@@ -570,9 +570,9 @@ void EnphaseAPI::parseStorage(const Json::Value& root)
 		return;
 
 	int musage = reading["wNow"].asInt();
-	int whNow = reading["whNow"].asInt();
 	SendWattMeter(m_HwdID, 1, 255, static_cast<float>(musage), "Enphase Storage wNow");
-	SendWattMeter(m_HwdID, 2, 255, static_cast<float>(musage), "Enphase Storage whNow");
+	//int whNow = reading["whNow"].asInt();
+	//SendWattMeter(m_HwdID, 2, 255, static_cast<float>(musage), "Enphase Storage whNow");
 
 	int percentageFull = reading["percentFull"].asInt();
 	SendPercentageSensor(m_HwdID, 1, 255, static_cast<float>(percentageFull), "Enphase Storage Percent Full");
