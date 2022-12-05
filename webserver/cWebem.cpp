@@ -926,7 +926,7 @@ namespace http {
 			0b11111110, //
 		};
 
-		void cWebem::AddLocalNetworks(std::string network)
+		void cWebem::AddTrustedNetworks(std::string network)
 		{
 			if (network.empty())
 			{
@@ -940,7 +940,7 @@ namespace http {
 			uint8_t iASize = (!ipnetwork.bIsIPv6) ? 4 : 16;
 			int ii;
 
-			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of local networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
+			_log.Log(LOG_STATUS, "[web:%s] Adding IPv%s network (%s) to list of trusted networks.", GetPort().c_str(), (ipnetwork.bIsIPv6 ? "6" : "4"), network.c_str());
 
 			if (network.find('*') != std::string::npos)
 			{
@@ -1054,7 +1054,7 @@ namespace http {
 			m_localnetworks.push_back(ipnetwork);
 		}
 
-		void cWebem::ClearLocalNetworks()
+		void cWebem::ClearTrustedNetworks()
 		{
 			m_localnetworks.clear();
 		}
@@ -1589,12 +1589,12 @@ namespace http {
 					return false;
 
 			// As all segments of the given IP fit within the given network range, otherwise we wouldn't be here
-			_log.Debug(DEBUG_WEBSERVER,"[web:%s] IP (%s) is within Localnetwork range!",myWebem->GetPort().c_str(), ip.c_str());
+			_log.Debug(DEBUG_WEBSERVER,"[web:%s] IP (%s) is within Trusted network range!",myWebem->GetPort().c_str(), ip.c_str());
 			return true;
 		}
 
-		//Returns true is the connected host is in the local network
-		bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost)
+		//Returns true is the connected host is in the trusted network
+		bool cWebemRequestHandler::AreWeInTrustedNetwork(const std::string &sHost)
 		{
 			//Are there any local networks to check against?
 			if (myWebem->m_localnetworks.empty())
@@ -1605,7 +1605,7 @@ namespace http {
 			uint8_t IP[16] = { 0 };
 			if ( (sHost.size() < 3) || (inet_pton((!bIsIPv6) ? AF_INET : AF_INET6, sHost.c_str(), &IP) != 1) )
 			{
-				_log.Log(LOG_STATUS,"[web:%s] Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in LocalNetwork!", myWebem->GetPort().c_str() ,sHost.c_str());
+				_log.Log(LOG_STATUS,"[web:%s] Given host (%s) is not a valid Ipv4 or IPv6 address! Unable to check if in Trusted Network!", myWebem->GetPort().c_str() ,sHost.c_str());
 				return false;	// The IP address is not a valid IPv4 or IPv6 address
 			}
 
@@ -1967,10 +1967,19 @@ namespace http {
 				_log.Debug(DEBUG_AUTH, "[Check] No userpasswords set, so set rights = 2 (Admin)!");
 			}
 
-			if (AreWeInLocalNetwork(session.remote_host))
+			if (AreWeInTrustedNetwork(session.remote_host))
 			{
-				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "[Check] Local network exception detected, so set rights = 2 (Admin)!");
+				for (const auto &my : myWebem->m_userpasswords)
+				{
+					if (my.userrights == URIGHTS_ADMIN) // we found an admin
+					{
+						session.username = my.Username;
+						session.rights = my.userrights;
+						break;
+					}
+				}
+				if (session.rights == -1)
+					_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, but no Admin User found!");
 			}
 
 			//Check for valid JWT token
@@ -2363,7 +2372,7 @@ namespace http {
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
 			bool isAuthenticated = CheckAuthentication(session, req, rep);
-			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated);
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated, session.username.c_str());
 
 			// Check user authentication on each page or action, if it exists.
 			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)

@@ -318,19 +318,21 @@ namespace http
 			m_pWebEm->SetDigistRealm(sRealm);
 			m_pWebEm->SetSessionStore(this);
 
-			if (!bIgnoreUsernamePassword)
-			{
-				LoadUsers();
+			LoadUsers();
 
-				std::string WebLocalNetworks;
-				int nValue;
-				if (m_sql.GetPreferencesVar("WebLocalNetworks", nValue, WebLocalNetworks))
-				{
-					std::vector<std::string> strarray;
-					StringSplit(WebLocalNetworks, ";", strarray);
-					for (const auto& str : strarray)
-						m_pWebEm->AddLocalNetworks(str);
-				}
+			std::string TrustedNetworks;
+			if (m_sql.GetPreferencesVar("WebLocalNetworks", TrustedNetworks))
+			{
+				std::vector<std::string> strarray;
+				StringSplit(TrustedNetworks, ";", strarray);
+				for (const auto& str : strarray)
+					m_pWebEm->AddTrustedNetworks(str);
+			}
+			if (bIgnoreUsernamePassword)
+			{
+				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
+				m_pWebEm->AddTrustedNetworks("::");	// IPv6
+				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted! Change admin password asap and restart Domoticz!");
 			}
 
 			// register callbacks
@@ -2979,14 +2981,10 @@ namespace http
 			CdzVents* dzvents = CdzVents::GetInstance();
 			root["dzvents_version"] = dzvents->GetVersion();
 			root["python_version"] = szPyVersion;
+			root["UseUpdate"] = false;
+			root["HaveUpdate"] = false;
 
-			if (session.rights != 2)
-			{
-				// only admin users will receive the update notification
-				root["UseUpdate"] = false;
-				root["HaveUpdate"] = false;
-			}
-			else
+			if (session.rights == URIGHTS_ADMIN)
 			{
 				root["UseUpdate"] = g_bUseUpdater;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
@@ -3121,24 +3119,22 @@ namespace http
 
 		void CWebServer::Cmd_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			root["status"] = "OK";
+			Cmd_GetVersion(session, req, root);
+			root["status"] = "ERR";
 			root["title"] = "GetConfig";
 
-			bool bHaveUser = (!session.username.empty());
-			// int urights = 3;
-			unsigned long UserID = 0;
-			if (bHaveUser)
+			int iUser;
+			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
 			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-				{
-					// urights = static_cast<int>(m_users[iUser].userrights);
-					UserID = m_users[iUser].ID;
-				}
+				root["message"] = "Unable to find a logged-in User!";
+				return;
 			}
+			unsigned long UserID = m_users[iUser].ID;
+			root["UserName"] = m_users[iUser].Username;
 
-			int nValue;
 			std::string sValue;
+			int nValue = 0;
+			int iDashboardType = 0;
 
 			if (m_sql.GetPreferencesVar("Language", sValue))
 			{
@@ -3148,9 +3144,6 @@ namespace http
 			{
 				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
 			}
-
-			nValue = 0;
-			int iDashboardType = 0;
 			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
 			root["DashboardType"] = iDashboardType;
 			m_sql.GetPreferencesVar("MobileType", nValue);
@@ -3181,32 +3174,17 @@ namespace http
 			int bEnableTabCustom = 1;
 
 			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
+			int TabsEnabled = atoi(result[0][0].c_str());
 
-			if ((UserID != 0) && (UserID != 10000))
-			{
-				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
-				if (!result.empty())
-				{
-					int TabsEnabled = atoi(result[0][0].c_str());
-					bEnableTabLight = (TabsEnabled & (1 << 0));
-					bEnableTabScenes = (TabsEnabled & (1 << 1));
-					bEnableTabTemp = (TabsEnabled & (1 << 2));
-					bEnableTabWeather = (TabsEnabled & (1 << 3));
-					bEnableTabUtility = (TabsEnabled & (1 << 4));
-					bEnableTabCustom = (TabsEnabled & (1 << 5));
-					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
-				}
-			}
-			else
-			{
-				m_sql.GetPreferencesVar("EnableTabFloorplans", bEnableTabFloorplans);
-				m_sql.GetPreferencesVar("EnableTabLights", bEnableTabLight);
-				m_sql.GetPreferencesVar("EnableTabScenes", bEnableTabScenes);
-				m_sql.GetPreferencesVar("EnableTabTemp", bEnableTabTemp);
-				m_sql.GetPreferencesVar("EnableTabWeather", bEnableTabWeather);
-				m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
-				m_sql.GetPreferencesVar("EnableTabCustom", bEnableTabCustom);
-			}
+			bEnableTabLight = (TabsEnabled & (1 << 0));
+			bEnableTabScenes = (TabsEnabled & (1 << 1));
+			bEnableTabTemp = (TabsEnabled & (1 << 2));
+			bEnableTabWeather = (TabsEnabled & (1 << 3));
+			bEnableTabUtility = (TabsEnabled & (1 << 4));
+			bEnableTabCustom = (TabsEnabled & (1 << 5));
+			bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+
 			if (iDashboardType == 3)
 			{
 				// Floorplan , no need to show a tab floorplan
@@ -3260,6 +3238,7 @@ namespace http
 					closedir(lDir);
 				}
 			}
+			root["status"] = "OK";
 		}
 
 		// Could now be obsolete as only 1 usage was found in Forecast screen, which now uses other command
@@ -8568,13 +8547,6 @@ namespace http
 
 				m_sql.UpdatePreferencesVar("UseAutoUpdate", (request::findValue(&req, "checkforupdates") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("UseAutoBackup", (request::findValue(&req, "enableautobackup") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabFloorplans", (request::findValue(&req, "EnableTabFloorplans") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabLights", (request::findValue(&req, "EnableTabLights") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabTemp", (request::findValue(&req, "EnableTabTemp") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabWeather", (request::findValue(&req, "EnableTabWeather") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabUtility", (request::findValue(&req, "EnableTabUtility") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabScenes", (request::findValue(&req, "EnableTabScenes") == "on" ? 1 : 0)); cntSettings++;
-				m_sql.UpdatePreferencesVar("EnableTabCustom", (request::findValue(&req, "EnableTabCustom") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", (request::findValue(&req, "HideDisabledHardwareSensors") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("ShowUpdateEffect", (request::findValue(&req, "ShowUpdateEffect") == "on" ? 1 : 0)); cntSettings++;
 				m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (request::findValue(&req, "FloorplanFullscreenMode") == "on" ? 1 : 0)); cntSettings++;
@@ -8694,7 +8666,7 @@ namespace http
 
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
-				m_webservers.ReloadLocalNetworks();
+				m_webservers.ReloadTrustedNetworks();
 				cntSettings++;
 				cntSettings++;
 
@@ -8864,7 +8836,7 @@ namespace http
 				_log.Log(LOG_ERROR, errmsg.str());
 			}
 			std::string msg = "Processed " + std::to_string(cntSettings) + " settings!";
-			root["msg"] = msg;
+			root["message"] = msg;
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession& session, const request& req, std::string& redirect_uri)

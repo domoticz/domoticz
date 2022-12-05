@@ -1307,11 +1307,11 @@ $(document).ready(function() {
 							<li class="divider"></li>
 							<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
 							<li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
-							<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+							<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span><br />({{config.userName}})</a></li>
 						</ul>
 					</li>
 					<li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
-					<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>
+					<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span><br />({{config.userName}})</a></li>
 				</ul>
 			</div>
 		</div>

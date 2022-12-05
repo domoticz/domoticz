@@ -102,21 +102,21 @@ namespace http {
 			}
 		}
 
-		void CWebServerHelper::ReloadLocalNetworks()
+		void CWebServerHelper::ReloadTrustedNetworks()
 		{
-			std::string WebLocalNetworks;
-			m_sql.GetPreferencesVar("WebLocalNetworks", WebLocalNetworks);
+			std::string TrustedNetworks;
+			m_sql.GetPreferencesVar("WebLocalNetworks", TrustedNetworks);
 
 			for (auto &it : serverCollection)
 			{
 				if (it->m_pWebEm == nullptr)
 					continue;
-				it->m_pWebEm->ClearLocalNetworks();
+				it->m_pWebEm->ClearTrustedNetworks();
 
 				std::vector<std::string> strarray;
-				StringSplit(WebLocalNetworks, ";", strarray);
+				StringSplit(TrustedNetworks, ";", strarray);
 				for (const auto &str : strarray)
-					it->m_pWebEm->AddLocalNetworks(str);
+					it->m_pWebEm->AddTrustedNetworks(str);
 			}
 		}
 
