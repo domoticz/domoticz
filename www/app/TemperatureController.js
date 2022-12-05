@@ -484,13 +484,13 @@ define(['app', 'livesocket'], function (app) {
 				href:"#/Temperature/CustomTempLog", 
 				text:"Custom Graph", 
 				i18n: "Custom Graph", 
-				icon: "globe"
+				icon: "area-chart"
 			},
 			{
 				onclick:"ShowForecast", 
 				text:"Forecast", 
 				i18n: "Forecast", 
-				icon: "calendar"
+				icon: "cloud-sun-rain"
 			}
 		];
 

@@ -2410,16 +2410,16 @@ define(['app', 'livesocket'], function (app) {
 			if (permissions.hasPermission("Admin")) {
 				$scope.tblinks = [
 					{
-						onclick:"AddManualLightDevice", 
-						text:"Add Switch", 
-						i18n: "Add Switch", 
-						icon: "plus-circle"
-					},
-					{
 						onclick:"AddLightDevice", 
 						text:"Learn Switch", 
 						i18n: "Learn Switch", 
 						icon: "camera"
+					},
+					{
+						onclick:"AddManualLightDevice", 
+						text:"Add Switch", 
+						i18n: "Add Switch", 
+						icon: "plus-circle"
 					}
 				];
 			}

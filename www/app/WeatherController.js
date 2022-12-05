@@ -544,7 +544,7 @@ define(['app', 'livesocket'], function (app) {
 					onclick:"ShowForecast", 
 					text:"Forecast", 
 					i18n: "Forecast", 
-					icon: "calendar"
+					icon: "cloud-sun-rain"
 				}
 			];
 
