@@ -6290,30 +6290,25 @@ function WatchLiveSearch(){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query=$(this).val().toUpperCase();
 		var div=$('.divider');
-		var parents= $('.item').parent('dztemperaturewidget,dzweatherwidget'); /* only for Wheater and Temperatures */
 		if(query.length == 0){
 			div.css('display','block');
 			div.addClass('row');
 			div.find('.clearfix').show();
-			$('.item').show().removeClass('livesearchshown');
-			parents.show().removeClass('livesearchshown');
+			$('.itemBlock').show().removeClass('livesearchshown');
 		}
 		else{
 			div.css('display','inline');
 			div.removeClass('row');
 			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
-			$('.item').each(function(index){
+			$('.itemBlock').each(function(index){
 				var name=$(this).find('#name').html().toUpperCase();
 				var desc=$(this).find('#name').attr('data-desc');
 				if(desc === undefined){
 					desc='';
 				}
 				desc=desc.toUpperCase();
-				var parent=$(this).parent('dztemperaturewidget,dzweatherwidget');	/* only for Wheater and Temperatures */
+
 				var to_hide=$(this);
-				if(parent.length > 0 ){
-					to_hide=parent; 
-				}
 				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
 					to_hide.show();
 					to_hide.addClass('livesearchshown');
