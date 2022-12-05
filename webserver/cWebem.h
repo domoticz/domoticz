@@ -196,6 +196,7 @@ namespace http
 			bool GenerateJwtToken(std::string &jwttoken, const std::string clientid, const std::string clientsecret, const std::string user, const uint32_t exptime, const Json::Value jwtpayload = "");
 			bool FindAuthenticatedUser(std::string &user, const request &req, reply &rep);
 			bool CheckVHost(const request &req);
+			bool HandleProxies(const request &req, WebEmSession &sessions);
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;

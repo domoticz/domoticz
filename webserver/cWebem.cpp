@@ -1157,6 +1157,13 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
+		bool cWebem::HandleProxies(const request &req, WebEmSession &sessions)
+		{
+			bool bStatus = true;
+			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Checking proxy headers!", GetPort().c_str());
+			return bStatus;
+		}
+
 		bool cWebem::CheckVHost(const request &req)
 		{
 			if (m_settings.vhostname.empty() || !m_settings.is_secure())	// Only do vhost checking for Secure (https) server
@@ -2280,6 +2287,13 @@ namespace http {
 			session.remote_port = req.host_remote_port;
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
+
+			// Let's examine possible proxies, etc.
+			if(!myWebem->HandleProxies(req, session))
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
 
 			for (const auto& ittNetwork : myWebem->m_localnetworks)
 			{
