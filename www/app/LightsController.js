@@ -2411,14 +2411,14 @@ define(['app', 'livesocket'], function (app) {
 				$scope.tblinks = [
 					{
 						onclick:"AddLightDevice", 
-						text:"Learn Switch", 
-						i18n: "Learn Switch", 
+						text: "Learn Light/Switch",
+						i18n: "Learn Light/Switch", 
 						icon: "camera"
 					},
 					{
 						onclick:"AddManualLightDevice", 
-						text:"Add Switch", 
-						i18n: "Add Switch", 
+						text: "Manual Light/Switch",
+						i18n: "Manual Light/Switch", 
 						icon: "plus-circle"
 					}
 				];
