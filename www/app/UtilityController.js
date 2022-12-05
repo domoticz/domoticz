@@ -529,60 +529,9 @@ define(['app', 'livesocket'], function (app) {
 			$('#modal').show();
 
 			var htmlcontent = '';
-/*
-			var bShowRoomplan = false;
-			$.RoomPlans = [];
-			$.ajax({
-				url: "json.htm?type=plans",
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.result != 'undefined') {
-						var totalItems = data.result.length;
-						if (totalItems > 0) {
-							bShowRoomplan = true;
-							//				if (window.myglobals.ismobile==true) {
-							//				bShowRoomplan=false;
-							//		}
-							if (bShowRoomplan == true) {
-								$.each(data.result, function (i, item) {
-									$.RoomPlans.push({
-										idx: item.idx,
-										name: item.Name
-									});
-								});
-							}
-						}
-					}
-				}
-			});
-*/
 			var bHaveAddedDevider = false;
 
 			var tophtm = "";
-/*
-			if ($.RoomPlans.length == 0) {
-				tophtm +=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t</tr>\n' +
-					'\t</table>\n';
-			}
-			else {
-				tophtm +=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'<td align="right" valign="top">' +
-					'<span id="roomselect"><span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all"></span>' +
-					'<option value="0" data-i18n="All">All</option>' +
-					'</select>' +
-					'</td>' +
-					'\t</tr>\n' +
-					'\t</table>\n';
-			}
-*/
 			var i = 0;
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
@@ -1077,28 +1026,6 @@ define(['app', 'livesocket'], function (app) {
 			$element.i18n();
 			WatchDescriptions();
 
-/*			
-			if (bShowRoomplan == true) {
-				$.each($.RoomPlans, function (i, item) {
-					var option = $('<option />');
-					option.attr('value', item.idx).text(item.name);
-					$element.find("#comboroom").append(option);
-				});
-				if (typeof roomPlanId != 'undefined') {
-					$element.find("#comboroom").val(roomPlanId);
-				}
-				$element.find("#comboroom").change(function () {
-					var idx = $element.find("#comboroom option:selected").val();
-					window.myglobals.LastPlanSelected = idx;
-					
-					$route.updateParams({
-						room: idx > 0 ? idx : undefined
-					});
-					$location.replace();
-					$scope.$apply();
-				});
-			}
-*/
 			if ($scope.config.AllowWidgetOrdering == true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {

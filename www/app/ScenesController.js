@@ -844,25 +844,6 @@ define(['app', 'livesocket'], function (app) {
 			var bAllowWidgetReorder = true;
 
 			var tophtm = "";
-/*
-			tophtm +=
-				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-			'\t</tr>\n' +
-				'\t</table>\n';
-
-			if (permissions.hasPermission("Admin")) {
-				tophtm +=
-					'\t<table id="bannav" class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
-					'\t<tr>' +
-					'\t  <td align="left">' +
-					'\t    <a class="btnstyle addscenebtn" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
-					'\t  </td>' +
-					'\t</tr>' +
-					'\t</table>\n';
-			}
-*/
 
 			var i = 0;
 			var j = 0;

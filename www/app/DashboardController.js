@@ -1563,32 +1563,7 @@ define(['app', 'livesocket'], function (app) {
 
 			$("body").removeClass();
 			$("body").addClass("dashboard");
-/*
-			$.ajax({
-				url: "json.htm?type=plans",
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.result != 'undefined') {
-						var totalItems = data.result.length;
-						if (totalItems > 0) {
-							bShowRoomplan = true;
-							//				if (window.myglobals.ismobile==true) {
-							//				bShowRoomplan=false;
-							//		}
-							if (bShowRoomplan == true) {
-								$.each(data.result, function (i, item) {
-									$.RoomPlans.push({
-										idx: item.idx,
-										name: item.Name
-									});
-								});
-							}
-						}
-					}
-				}
-			});
-*/
+
 			var bFavorites = 1;
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 
@@ -3690,61 +3665,9 @@ define(['app', 'livesocket'], function (app) {
 			}
 
 			var suntext = "";
-/*
-
-			if (bShowRoomplan == false) {
-				suntext =
-					'<div class="beforebannav">' +
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t</tr>\n' +
-					'\t</table>\n' +
-					'\t</div>\n';
-			}
-			else {
-				suntext =
-					'<div class="beforebannav">' +
-					'<table "border="0" cellpadding="0" cellspacing="0" width="100%">' +
-					'<tr>' +
-					'<td align="left" valign="top" id="timesun"></td>' +
-					'<td align="right" valign="top">' +
-					'<span id="roomselect"><span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
-					'<option value="0" data-i18n="All">All</option>' +
-					'</select>' +
-					'</td>' +
-					'</tr>' +
-					'</table>' +
-					'</div>';
-			}
-
-*/
 			$element.html(suntext + htmlcontent + EvohomeAddJS());
 			$element.i18n();
 			WatchDescriptions();
-
-/*
-			if (bShowRoomplan == true) {
-				$.each($.RoomPlans, function (i, item) {
-					var option = $('<option />');
-					option.attr('value', item.idx).text(item.name);
-					$element.find("#comboroom").append(option);
-				});
-				if (typeof roomPlanId != 'undefined') {
-					$element.find("#comboroom").val(roomPlanId);
-				}
-				$element.find("#comboroom").change(function () {
-					var idx = $element.find("#comboroom option:selected").val();
-					window.myglobals.LastPlanSelected = idx;
-
-					$route.updateParams({
-						room: idx > 0 ? idx : undefined
-					});
-					$location.replace();
-					$scope.$apply();
-				});
-			}
-*/
 
 			// Store variables
 			var accordion_head = $('#dashcontent .accordion > li > a'),

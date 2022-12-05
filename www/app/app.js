@@ -627,22 +627,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		
 		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
-			/*
-			var month = ServerTime.split(' ')[0];
-			ServerTime = ServerTime.replace(month, $.t(month));
-
-			var suntext;
-			var bIsMobile = $.myglobals.ismobile;
-			if (bIsMobile == true) {
-				suntext = '<div><font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' + '&#9660;' + sunSet + '</div>';
-			}
-			else {
-				//$.t('SunRise') + $.t('SunSet')
-				suntext = '<div>' + ServerTime + ' <font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' + '&#9660;' + sunSet + '</div>';
-			}
-			$("#timesun").html(suntext);
-			*/
-
 			var mytime=ServerTime.split(' ')[1];
 			$("#jsTbTime").html(mytime);
 			$("#jsTbSunRise").html(sunRise);
