@@ -692,6 +692,7 @@ define(['app', 'livesocket'], function (app) {
 			if ($scope.config.ShowUpdatedEffect == true) {
 				$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 			}
+			RefreshLiveSearch();
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
@@ -1289,7 +1290,7 @@ define(['app', 'livesocket'], function (app) {
 						});
 					}
 				}
-			});//.done(function(){RefreshLiveSearch();});
+			});
 
 
 			if (bHaveAddedDevider == true) {

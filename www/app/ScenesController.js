@@ -811,6 +811,7 @@ define(['app', 'livesocket'], function (app) {
 				if ($scope.config.ShowUpdatedEffect == true) {
 					$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 				}
+				RefreshLiveSearch();
 			}
 		}
 
@@ -967,7 +968,7 @@ define(['app', 'livesocket'], function (app) {
 						});
 					}
 				}
-			}).done(function(){RefreshLiveSearch();});
+			});
 
 			if (bHaveAddedDevider == true) {
 				//close previous devider

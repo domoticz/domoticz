@@ -82,6 +82,7 @@ define(['app', 'livesocket'], function (app) {
 					}
 				}
 			});
+			RefreshLiveSearch();
 		}
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
@@ -104,7 +105,6 @@ define(['app', 'livesocket'], function (app) {
 					$.each(data.result, function (i, item) {
 						RefreshItem(item);
 					});
-
 				}
 			});
 		}
@@ -130,7 +130,7 @@ define(['app', 'livesocket'], function (app) {
 						ctrl.items = [];
 					}
 				}
-			}).done(function(){RefreshLiveSearch();});;
+			});
 			$('#modal').hide();
 			$('#weathercontent').html("");
 			$('#weathercontent').i18n();
