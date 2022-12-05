@@ -1,12 +1,12 @@
 <div id="topBar">
 	<span id="tbFilters">
-		<span id="tbLiveSearchSpan">
-			<i class="fa fa-search" title="search"></i> 
+		<span id="tbFiltSearch">
+			<span id="tbIconSearch" class="tbIcon"><i class="fa fa-search" title="search"></i> </span>
 			<!-- <span data-i18n="Search"></span>&nbsp; -->
 			<input placeholder="Name or Desc." type="search" class="livesearch jsLiveSearch">
 		</span> 
-		<span id="tbRoomSpan" ng-show="ctrl.RoomPlans.length > 0">
-			<i class="fa fa-home" title="Room"></i> 
+		<span id="tbFiltRooms" ng-show="ctrl.RoomPlans.length > 0">
+			<span id="tbIconRoom" class="tbIcon"><i class="fa fa-home" title="Room"></i> </span>
 			<!-- <span data-i18n="Room">Room</span>:&nbsp; -->
 			<select id="comboroom" class="combobox ui-corner-all" ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans" ng-change="ctrl.changeRoom()">
 		</select>
@@ -15,11 +15,11 @@
 	</span>
 	<span id="tbTimeSun">
 		
-		<span id="jsTbTime"></span>
-		<span id="tbSun">
-			<i class="fa fa-sun"></i> 
-			<i class="fa fa-arrow-up"></i> <span id="jsTbSunRise"></span> 
-			<i class="fa fa-arrow-down"></i> <span id="jsTbSunSet"></span> 
+		<span id="jsTbTime" class="tbTime"></span>
+		<span id="tbSunGroup">
+			<span id="tbIconSun" class="tbIcon"><i class="fa fa-sun"></i></span>
+			<span id="tbSunRise" class="tbSun"><i class="fa fa-arrow-up"></i> <span id="jsTbSunRise"></span></span>
+			<span id="tbSunSet" class="tbSun"><i class="fa fa-arrow-down"></i> <span id="jsTbSunSet"></span></span>
 		</span>
 	</span>
 	<span id="tbLinks">		

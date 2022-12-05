@@ -1,3 +1,5 @@
+/* @override http://domoticz.lo.lo:8080/css/style.css */
+
 @font-face {
 	font-family: 'Satisfy';
 	font-style: normal;
@@ -1730,80 +1732,91 @@ span.evomobile {
 	height: 2.60em;
 }
 
-/* LiveSearch ------ */
-#livesearchspan{
-	vertical-align: top;
+/* Top Bar ------ */
+
+/*#roomselect{
+	white-space: nowrap;
+	margin-bottom: 5px;
+	margin-left: 5px;
+	display: inline-block;
+}*/
+/*
+#forecastdiv{
+	margin-left: 5px;
+}
+*/
+
+SECTION.dashCategory{
+	display: block;
+	overflow: hidden;
 }
 
+SECTION.dashCategory .livesearchshown{
+	margin: 0;
+}
+
+#topBar{
+	/*margin-top: 5px;*/
+	overflow: hidden;
+	line-height: 38px;
+	padding-bottom: 5px;
+}
+#tbFilters{
+	float: left;
+	margin-right: 10px;
+	vertical-align: middle;
+}
+#tbFilters .tbIcon{
+	margin-right: 5px;
+
+}
+#tbFiltSearch{
+	vertical-align: middle;
+	margin-bottom: 10px;
+	margin-right: 15px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+#tbFiltSearch INPUT{
+	width: 110px;
+}
 INPUT.livesearch{
 	width: 146px;
 	padding: 1px 5px;
 	margin-bottom: 4px;
 	font-size: 13px;
 	line-height: 100%  !important;
+	border-color: transparent;
 	border-radius: 7px;
 	-moz-border-radius: 7px;
 	-webkit-border-radius: 7px;
 }
+
 INPUT.livesearch:focus{
 	background-color: rgb(13, 13, 13) !important;
 	color: #eee !important;
 }
-
-#roomselect{
-	white-space: nowrap;
-	margin-bottom: 5px;
-	margin-left: 5px;
-	display: inline-block;
-}
-
-#forecastdiv{
-	margin-left: 5px;
-}
-
 .livesearchshown{
 	margin-left: 5px;
 	margin-right: 5px;
 }
-SECTION.dashCategory{
-	display: block;
-	overflow: hidden;
-}
-}
-SECTION.dashCategory .livesearchshown{
-	margin: 0;
-}
 
-/* top bar*/
-#topBar{
-	overflow: hidden;
-	line-height: 100%;
-	padding-bottom: 10px;
-}
-#tbFilters{
-	float: left;
-	margin-right: 20px;
-	vertical-align: middle;
-	margin-bottom: 5px;
-}
-#tbLiveSearchSpan{
+#tbFiltRooms{
 	margin-right: 15px;
+	white-space: nowrap;
+	vertical-align: middle;
 }
-#tbLiveSearchSpan INPUT{
-	width: 110px;
-}
-#tbRoomSpan{
-	margin-right: 10px;
-}
-#tbRommSpan SELECT{
-	width: 110px;
+#tbFiltRooms SELECT{
+	width: 100px;
+	margin-bottom: 5px;
+	display: inline-block;
 }
 
 #tbTimeSun{
 	float: left;
-	vertical-align: bottom;
-	line-height: 24px;
-	margin-bottom: 5px;
+	vertical-align: middle;
+	white-space: nowrap;
 }
 #tbTime{
 	margin-right: 5px;
@@ -1812,18 +1825,26 @@ SECTION.dashCategory .livesearchshown{
 	margin-left: 8px;
 	color: yellow;
 }
-#tbSun{
+#tbSunGroup{
+	vertical-align: middle;
+	margin-left: 1px;
 	color: #aaa;
 	font-size: 10px;
+
+}
+.tbSun{
+	margin-left: 4px;
 }
 #tbLinks{
 	margin-left: 10px;
 	float: right;
-	margin-bottom: 5px;
+	white-space: nowrap;
 }
 
 #tbLinks A{
 	margin-left: 5px;
+	margin-bottom: 10px;
+	white-space: nowrap;
 }
 
 .sep{
