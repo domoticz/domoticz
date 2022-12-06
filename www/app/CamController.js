@@ -4,6 +4,16 @@ define(['app'], function (app) {
 		init();
 
 		function init() {
+			//handles topBar Links
+			$scope.tblinks = [
+				{
+					onclick: "AddCameraDevice", 
+					text: "Add Camera", 
+					i18n: "Add Camera", 
+					icon: "plus-circle"
+				}
+			];
+
 		};
 
 	}]);

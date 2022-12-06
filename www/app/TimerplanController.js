@@ -305,8 +305,19 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			//handles topBar Links
+			$scope.tblinks = [
+				{
+					onclick: "AddNewTimerPlan", 
+					text: "Add Plan", 
+					i18n: "Add Plan", 
+					icon: "plus-circle"
+				}
+			];
+
 			$scope.MakeGlobalConfig();
 			ShowTimerPlans();
+
 		};
 		$scope.$on('$destroy', function(){
 			if (typeof $scope.mytimer != 'undefined') {
