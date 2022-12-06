@@ -144,7 +144,7 @@ namespace http
 			std::string generateSessionID();
 			void send_cookie(reply &rep, const WebEmSession &session);
 			bool parse_cookie(const request &req, std::string &sSID, std::string &sAuthToken, std::string &szTime, bool &expired);
-			bool AreWeInLocalNetwork(const std::string &sHost);
+			bool AreWeInTrustedNetwork(const std::string &sHost);
 			bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork, const bool &bIsIPv6);
 			int authorize(WebEmSession &session, const request &req, reply &rep);
 			void Logout();
@@ -199,8 +199,8 @@ namespace http
 
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
-			void AddLocalNetworks(std::string network);
-			void ClearLocalNetworks();
+			void AddTrustedNetworks(std::string network);
+			void ClearTrustedNetworks();
 			std::vector<_tIPNetwork> m_localnetworks;
 			void SetDigistRealm(const std::string &realm);
 			std::string m_DigistRealm;

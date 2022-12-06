@@ -206,7 +206,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					if (response && response.status === 401) {
 						var permissionList = {
 							isloggedin: false,
-							rights: -1
+							rights: -1,
+							user: ''
 						};
 						permissions.setPermissions(permissionList);
 						$location.path('/Login');
@@ -288,7 +289,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
 		var permissionList = {
 			isloggedin: false,
-			rights: -1
+			rights: -1,
+			user: ''
 		};
 		permissions.setPermissions(permissionList);
 
@@ -356,7 +358,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			pythonversion: "",
 			versiontooltip: "",
 			ShowUpdatedEffect: true,
-			DateFormat: "yy-mm-dd"
+			DateFormat: "yy-mm-dd",
+			userName: "Unknown"
 		};
 
 		$rootScope.GetGlobalConfig = function () {
@@ -368,6 +371,20 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				success: function (data) {
 					isOnline = true;
 					if (data.status == "OK") {
+						$rootScope.config.appversion = data.version;
+						$rootScope.config.apphash = data.hash;
+						$rootScope.config.appdate = data.build_time;
+						$rootScope.config.dzventsversion = data.dzvents_version;
+						$rootScope.config.pythonversion = data.python_version;
+						$rootScope.config.isproxied = data.isproxied;
+						$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
+						$("#appversion").text(data.version);
+						$rootScope.config.HaveUpdate = data.HaveUpdate;
+						$rootScope.config.UseUpdate = data.UseUpdate;
+						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
+							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
+						}
+
 						$rootScope.config.AllowWidgetOrdering = data.AllowWidgetOrdering;
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
@@ -377,6 +394,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.WindScale = data.WindScale;
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
+						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
+						$rootScope.config.userName = data.UserName;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;
@@ -385,7 +404,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
-						$rootScope.config.DegreeDaysBaseTemperature = data.result.DegreeDaysBaseTemperature;
 
 						SetLanguage(data.language);
 
@@ -479,32 +497,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		}
 
 		$rootScope.GetGlobalConfig();
-		$.ajax({
-			url: "json.htm?type=command&param=getversion",
-			async: false,
-			dataType: 'json',
-			success: function (data) {
-			    isOnline = true;
-				if (data.status == "OK") {
-				    $rootScope.config.appversion = data.version;
-					$rootScope.config.apphash = data.hash;
-					$rootScope.config.appdate = data.build_time;
-					$rootScope.config.dzventsversion = data.dzvents_version;
-					$rootScope.config.pythonversion = data.python_version;
-					$rootScope.config.isproxied = data.isproxied;
-					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
-					$("#appversion").text(data.version);
-					$rootScope.config.HaveUpdate = data.HaveUpdate;
-					$rootScope.config.UseUpdate = data.UseUpdate;
-					if ((data.HaveUpdate == true) && (data.UseUpdate)) {
-						ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
-					}
-				}
-			},
-			error: function () {
-				isOnline = false;
-			}
-		});
 
 		$.ajax({
 			url: "json.htm?type=command&param=getauth",
@@ -515,6 +507,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				if (data.status == "OK") {
 					permissionList.isloggedin = (data.user != "");
 					permissionList.rights = parseInt(data.rights);
+					permissionList.user = data.user;
 					dashboardType = data.DashboardType;
 				}
 			},
