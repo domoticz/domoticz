@@ -1157,11 +1157,113 @@ namespace http {
 			m_session_clean_timer.async_wait([this](auto &&) { CleanSessions(); });
 		}
 
-		bool cWebem::HandleProxies(const request &req, WebEmSession &sessions)
+		bool cWebem::findRealHostBehindProxies(const request &req, std::string &realhost)
 		{
+			// Checking for 3 possible headers (in order of handling)
+			// "Forwarded"	RFC7239  (https://www.rfc-editor.org/rfc/rfc7239)
+			// "X-Forwarded-For" The defacto standard header used by many web/proxy servers (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For)
+			// "X-Real-IP"	The (old) default header used by NGINX  (http://nginx.org/en/docs/http/ngx_http_realip_module.html#real_ip_header)
+			//
+			// These headers can occur multiple times, so need to be 'squashed' together
+			// And a single line can contain multiple (comma separated) values in order
+
 			bool bStatus = true;
-			_log.Debug(DEBUG_WEBSERVER, "[web:%s] Checking proxy headers!", GetPort().c_str());
+			std::vector<std::string> headers;
+			std::vector<std::string> hosts;
+
+			if (sumProxyHeader("Forwarded", req, headers))
+			{	// We found one or more Forwarded headers that need to be processed into a list of Hosts
+				if (!parseForwardedProxyHeader(headers, hosts))
+				{
+					bStatus = false;
+				}
+			}
+			else if (sumProxyHeader("X-Forwarded-For", req, headers))
+			{	// We found one or more X-Forwarded-For headers that need to be processed into a list of Hosts
+				if (!parseProxyHeader(headers, hosts))
+				{
+					bStatus = false;
+				}
+			}
+			else if (sumProxyHeader("X-Real-IP", req, headers))
+			{	// We found one or more X-Real-IP headers that need to be processed into a list of Hosts
+				if (!parseProxyHeader(headers, hosts))
+				{
+					bStatus = false;
+				}
+			}
+
+			if (hosts.size() >= 1)
+			{
+				realhost = hosts[0];	// Even if we found a chain of hosts, we always use the first (= origin)
+			}
+
 			return bStatus;
+		}
+
+		bool cWebem::sumProxyHeader(const std::string sHeader, const request &req, std::vector<std::string> &vHeaderLines)
+		{
+			uint8_t iFound = 0;
+
+			for (const auto &header : req.headers)
+			{
+				if (sHeader.compare(header.name) == 0)
+				{
+					iFound++;
+					vHeaderLines.push_back(header.value);
+				}
+			}
+
+			return (iFound > 0);
+		}
+
+		bool cWebem::parseProxyHeader(std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
+		{
+			uint8_t iFound = 0;
+
+			for (const auto sLine : vHeaderLines)
+			{
+				std::vector<std::string> vLineParts;
+				StringSplit(sLine, ",", vLineParts);
+				for (std::string sPart : vLineParts)
+				{
+					iFound++;
+					stdstring_trimws(sPart);
+					vHosts.push_back(sPart);
+				}
+			}
+
+			return (iFound > 0);
+		}
+
+		bool cWebem::parseForwardedProxyHeader(std::vector<std::string> &vHeaderLines, std::vector<std::string> &vHosts)
+		{
+			uint8_t iFound = 0;
+
+			for (const auto sLine : vHeaderLines)
+			{
+				std::vector<std::string> vLineParts;
+				StringSplit(sLine, ",", vLineParts);
+				for (std::string sPart : vLineParts)
+				{
+					stdstring_trimws(sPart);
+					if (std::size_t isPos = sPart.find("for=") != std::string::npos)
+					{
+						iFound++;
+						isPos = isPos + 3;
+						std::size_t iePos = sLine.length();
+						if (sPart.find(";", isPos) != std::string::npos)
+						{
+							iePos = sPart.find(";", isPos);
+						}
+						std::string sSub = sPart.substr(isPos, (iePos - isPos));
+						stdstring_trimws(sSub);
+						vHosts.push_back(sSub);
+					}
+				}
+			}
+
+			return (iFound > 0);
 		}
 
 		bool cWebem::CheckVHost(const request &req)
@@ -2289,12 +2391,20 @@ namespace http {
 			session.local_port = req.host_local_port;
 
 			// Let's examine possible proxies, etc.
-			if(!myWebem->HandleProxies(req, session))
+			std::string realHost;
+			if(!myWebem->findRealHostBehindProxies(req, realHost))
 			{
-				rep = reply::stock_reply(reply::bad_request);
+				_log.Log(LOG_ERROR, "[web:%s]: Unable to determine origin due to different proxy headers being used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
+				rep = reply::stock_reply(reply::forbidden);
 				return;
 			}
+			else if (!realHost.empty())
+			{
+				session.remote_host = realHost;
+				rep.originHost = realHost;
+			}
 
+			/*
 			for (const auto& ittNetwork : myWebem->m_localnetworks)
 			{
 				if (ittNetwork.ip_string.empty())
@@ -2319,6 +2429,7 @@ namespace http {
 					}
 				}
 			}
+			*/
 
 			std::string remoteClientKey = session.remote_host + session.local_port;
 			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
@@ -2366,18 +2477,14 @@ namespace http {
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
 					_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
-					auto itt = myWebem->m_sessions.find(sSID);
-					if (itt != myWebem->m_sessions.end())
-					{
-						myWebem->m_sessions.erase(itt);
-					}
+					myWebem->RemoveSession(sSID);
 					removeAuthToken(sSID);
+					send_remove_cookie(rep);
 				}
 				session.username = "";
 				session.rights = -1;
 				session.forcelogin = true;
 				rep = reply::stock_reply(reply::no_content);
-				send_remove_cookie(rep);
 				return;
 			}
 
@@ -2406,13 +2513,13 @@ namespace http {
 			if (isAction)
 			{
 				// Post actions only allowed when authenticated and user has admin rights
-				if (session.rights != 2)
+				if (session.rights != URIGHTS_ADMIN)
 				{
 					rep = reply::stock_reply(reply::forbidden);
 					return;
 				}
 				bHandledAction = myWebem->CheckForAction(session, requestCopy);
-				if (!requestCopy.uri.empty())
+				if (bHandledAction && !requestCopy.uri.empty())
 				{
 					if ((requestCopy.method == "POST") && (requestCopy.uri[0] != '/'))
 					{
@@ -2483,7 +2590,7 @@ namespace http {
 			session.timeout = mytime(nullptr) + SHORT_SESSION_TIMEOUT;
 
 			if ((session.isnew == true) &&
-				(session.rights == 2) &&
+				(session.rights == URIGHTS_ADMIN) &&
 				(req.uri.find("json.htm") != std::string::npos) &&
 				(req.uri.find("logincheck") == std::string::npos)
 				)

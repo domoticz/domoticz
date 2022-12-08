@@ -53,6 +53,9 @@ struct reply
   std::string content;
   bool bIsGZIP;
 
+  /// The origin of the web request when behind proxies, etc.
+  std::string originHost;
+
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and
   /// not be changed until the write operation has completed.
