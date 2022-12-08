@@ -431,6 +431,8 @@ namespace http {
 							// LogFormat "%h %l %u %f \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
 							// 127.0.0.1 - frank [10/Oct/2000:13:55:36.012 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://my.domoticz.local/index.html" "Mozilla/4.08 [en] (Win98; I ;Nav)"
 							std::string wlHost = request_.host_remote_address;
+							if (!reply_.originHost.empty())
+								wlHost = reply_.originHost;
 							std::string wlUser = "-";	// Maybe we can fill this sometime? Or maybe not so we don't expose sensitive data?
 							std::string wlReqUri = request_.method + " " + request_.uri + " HTTP/" + std::to_string(request_.http_version_major) + (request_.http_version_minor ? "." + std::to_string(request_.http_version_minor): "");
 							std::string wlReqRef = "-";
