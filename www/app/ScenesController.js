@@ -63,6 +63,17 @@ define(['app', 'livesocket'], function (app) {
 				}, 200);
 			}, 600);
 		}
+		
+		AddManualCode = function() {
+			$('#dialog-addmanualactivationdevice #comboswitch').html("");
+			$.each($.LightsAndSwitches, function (i, item) {
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$('#dialog-addmanualactivationdevice #comboswitch').append(option);
+			});
+			
+			$("#dialog-addmanualactivationdevice").dialog("open");		
+		}
 
 		ClearCodes = function () {
 			var bValid = false;
@@ -1049,7 +1060,43 @@ define(['app', 'livesocket'], function (app) {
 				}
 			}).i18n();
 
-
+			$("#dialog-addmanualactivationdevice").dialog({
+				autoOpen: false,
+				width: 380,
+				height: 200,
+				modal: true,
+				resizable: false,
+				title: $.t("Add Manual Light/Switch Device"),
+				buttons: [{
+					text: $.t("Add Device"),
+					click: function () {
+						var deviceidx = $('#dialog-addmanualactivationdevice #comboswitch').val();
+						if (typeof deviceidx == 'undefined') {
+							bootbox.alert($.t('No Device Selected!'));
+							return;
+						}
+						var Cmd = $('#dialog-addmanualactivationdevice #combocode').val();
+						$.pDialog = $(this);
+						$.ajax({
+							url: "json.htm?type=command&param=addscenecode&sceneidx=" + SceneIdx + "&idx=" + deviceidx + "&cmnd=" + Cmd,
+							async: false,
+							dataType: 'json',
+							success: function (data) {
+								$.pDialog.dialog("close");
+								RefreshActivators();
+							}
+						});
+					}
+				}, {
+					text: $.t("Cancel"),
+					click: function () {
+						$(this).dialog("close");
+					}
+				}],
+				close: function () {
+					$(this).dialog("close");
+				}
+			}).i18n();
 
 
 			//handles TopBar Links
