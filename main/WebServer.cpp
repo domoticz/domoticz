@@ -3129,14 +3129,18 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "GetConfig";
 
-			int iUser;
+			int iUser = -1;
+			unsigned long UserID = -1;
 			if (session.username.empty() || (iUser = FindUser(session.username.c_str())) == -1)
 			{
 				root["message"] = "Unable to find a logged-in User!";
-				return;
+				//return;
 			}
-			unsigned long UserID = m_users[iUser].ID;
-			root["UserName"] = m_users[iUser].Username;
+			else
+			{
+				UserID = m_users[iUser].ID;
+				root["UserName"] = m_users[iUser].Username;
+			}
 
 			std::string sValue;
 			int nValue = 0;
@@ -18202,7 +18206,7 @@ namespace http
 		 */
 		WebEmStoredSession CWebServer::GetSession(const std::string& sessionId)
 		{
-			_log.Debug(DEBUG_SQL, "SessionStore : get...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : get...(%s)", sessionId.c_str());
 			WebEmStoredSession session;
 
 			if (sessionId.empty())
@@ -18226,6 +18230,10 @@ namespace http
 					// RemoteHost is not used to restore the session
 					// LastUpdate is not used to restore the session
 				}
+				else
+				{
+					_log.Debug(DEBUG_AUTH, "SessionStore : session not Found! (%s)", sessionId.c_str());
+				}
 			}
 
 			return session;
@@ -18236,7 +18244,7 @@ namespace http
 		 */
 		void CWebServer::StoreSession(const WebEmStoredSession& session)
 		{
-			_log.Debug(DEBUG_SQL, "SessionStore : store...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : store...(%s)", session.id.c_str());
 			if (session.id.empty())
 			{
 				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
@@ -18270,7 +18278,7 @@ namespace http
 		 */
 		void CWebServer::RemoveSession(const std::string& sessionId)
 		{
-			_log.Debug(DEBUG_SQL, "SessionStore : remove...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : remove... (%s)", sessionId.c_str());
 			if (sessionId.empty())
 			{
 				return;
@@ -18283,7 +18291,7 @@ namespace http
 		 */
 		void CWebServer::CleanSessions()
 		{
-			_log.Debug(DEBUG_SQL, "SessionStore : clean...");
+			_log.Debug(DEBUG_AUTH, "SessionStore : clean...");
 			m_sql.safe_query("DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
 		}
 
@@ -18293,6 +18301,7 @@ namespace http
 		 */
 		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession& exceptSession)
 		{
+			_log.Debug(DEBUG_AUTH, "SessionStore : remove all sessions for User... (%s)", exceptSession.id.c_str());
 			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}
 
