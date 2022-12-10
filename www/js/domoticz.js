@@ -6277,7 +6277,7 @@ function fromInstanceOrFunction(functionTemplate = f => f()) {
 	}
 }
 /* LiveSearch Functions: Filters devices when typing in the INPUT field  */
-var _debug_livesearch= true;
+var _debug_livesearch= false;
 function RefreshLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Refreshing...');
 	$('.jsLiveSearch').trigger('change');
