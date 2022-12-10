@@ -1963,11 +1963,9 @@ namespace http {
 
 			if (myWebem->m_userpasswords.empty())
 			{
-				session.rights = 2;
-				_log.Debug(DEBUG_AUTH, "[Check] No userpasswords set, so set rights = 2 (Admin)!");
+				_log.Log(LOG_ERROR, "No (active) users in the system! There should be at least 1 active Admin user!");
 			}
-
-			if (AreWeInTrustedNetwork(session.remote_host))
+			else if (AreWeInTrustedNetwork(session.remote_host))
 			{
 				for (const auto &my : myWebem->m_userpasswords)
 				{
@@ -1979,7 +1977,7 @@ namespace http {
 					}
 				}
 				if (session.rights == -1)
-					_log.Debug(DEBUG_AUTH, "[Check] Trusted network exception detected, but no Admin User found!");
+					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
 			}
 
 			//Check for valid JWT token
@@ -1988,7 +1986,7 @@ namespace http {
 			{
 				if (_ah.method == "JWT")
 				{
-					_log.Debug(DEBUG_AUTH, "[Check] Found JWT Authorization token: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+					_log.Debug(DEBUG_AUTH, "[Auth Check] Found JWT Authorization token: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
