@@ -6290,13 +6290,16 @@ function WatchLiveSearch(){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query=$(this).val().toUpperCase();
 		var div=$('.divider');
+		var cont=$('.devicesList');
 		if(query.length == 0){
+			cont.removeClass('devicesListFiltered');
 			div.css('display','block');
 			div.addClass('row');
 			div.find('.clearfix').show();
-			$('.itemBlock').show().removeClass('livesearchshown');
+			$('.itemBlock').show().removeClass('liveSearchShown');
 		}
 		else{
+			cont.addClass('devicesListFiltered');
 			div.css('display','inline');
 			div.removeClass('row');
 			div.find('.clearfix').hide();  /* only for Wheater and Temperatures */
@@ -6311,11 +6314,11 @@ function WatchLiveSearch(){
 				var to_hide=$(this);
 				if ( (name.indexOf(query) > -1) || desc.indexOf(query) > -1) {
 					to_hide.show();
-					to_hide.addClass('livesearchshown');
+					to_hide.addClass('liveSearchShown');
 				}
 				else{
 					to_hide.hide();
-					to_hide.removeClass('livesearchshown');
+					to_hide.removeClass('liveSearchShown');
 				}
 			});
 		}
