@@ -4,6 +4,11 @@
 			<span id="tbIconSearch" class="tbIcon"><i class="fa fa-search" title="search"></i> </span>
 			<!-- <span data-i18n="Search"></span>&nbsp; -->
 			<input placeholder="Name or Desc." type="search" class="livesearch jsLiveSearch">
+			<!-- 
+			This JS call should certainly be moved to the Angular controller, 
+			but because of the 2 different stuctures of Weather and Temperatures, VS Dashboard, Lights, Scenes, Utility pages, 
+			this is the easiest way to get it working in both of theses 2 cases, ATM... 
+			-->
 			<script>WatchLiveSearch();</script>
 		</span> 
 		<span id="tbFiltRooms" ng-show="ctrl.RoomPlans.length > 0">
@@ -25,12 +30,5 @@
 				<i class="fa fa-{{link.icon}}"></i> <span data-i18n="{{link.i18n}}">{{link.text}}</a></span>
 			</a>
 	</span>
-
-	<!-- 
-		This JS call should certainly be moved to the Angular controller, 
-		but because of the 2 different stuctures of Weather and Temperatures, VS Dashboard, Lights, Scenes, Utility pages, 
-		this is the easiest way to get it working in both of theses 2 cases, ATM... 
-	-->
-
 </div>
 
