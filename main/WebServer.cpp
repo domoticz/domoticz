@@ -333,6 +333,12 @@ namespace http
 				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
 				m_pWebEm->AddTrustedNetworks("::");	// IPv6
 				_log.Log(LOG_ERROR, "SECURITY RISK! Allowing access without username/password as all incoming traffic is considered trusted! Change admin password asap and restart Domoticz!");
+
+				if (m_users.empty())
+				{
+					AddUser(99999, "tmpadmin", "tmpadmin", (_eUserRights)URIGHTS_ADMIN, 63);
+					_log.Debug(DEBUG_AUTH, "[Start server] Added tmpadmin User as no active Users where found!");
+				}
 			}
 
 			// register callbacks
@@ -3173,9 +3179,11 @@ namespace http
 			int bEnableTabUtility = 1;
 			int bEnableTabCustom = 1;
 
+			int TabsEnabled = 63;
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
-			int TabsEnabled = atoi(result[0][0].c_str());
+			if (!result.empty())
+				TabsEnabled = atoi(result[0][0].c_str());
 
 			bEnableTabLight = (TabsEnabled & (1 << 0));
 			bEnableTabScenes = (TabsEnabled & (1 << 1));
@@ -6787,7 +6795,7 @@ namespace http
 			else if (cparam == "adduser" || cparam == "updateuser" || cparam == "deleteuser")
 			{	// C(R)UD operations for Users. Read is done by RType_Users
 				root["status"] = "ERR";
-				if (session.rights < 2)
+				if (session.rights != URIGHTS_ADMIN)
 				{
 					session.reply_status = reply::forbidden;
 					return; // Only admin user allowed
@@ -6815,7 +6823,7 @@ namespace http
 						root["message"] = "One or more expected values are empty!";
 						return;
 					}
-					if (rights != 2)
+					if (rights != URIGHTS_ADMIN)
 					{
 						if (!FindAdminUser())
 						{
@@ -6860,6 +6868,11 @@ namespace http
 						if ((oldrights == URIGHTS_ADMIN) && (rights != URIGHTS_ADMIN) && (CountAdminUsers() <= 1))
 						{
 							root["message"] = "Cannot change rights of last Admin user!";
+							return;
+						}
+						if ((senabled.compare("true") != 0) && (CountAdminUsers() <= 1))
+						{
+							root["message"] = "Cannot disable last Admin user!";
 							return;
 						}
 						if ((sHashedUsername != sOldUsername) || (password != sOldPassword) || (oldrights != rights))
@@ -12333,19 +12346,11 @@ namespace http
 
 		void CWebServer::RType_Users(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			bool bHaveUser = (!session.username.empty());
-			int urights = 3;
-			if (bHaveUser)
-			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-					urights = static_cast<int>(m_users[iUser].userrights);
-			}
-			if (urights < 2)
-				return;
-
-			root["status"] = "OK";
+			root["status"] = "ERR";
 			root["title"] = "Users";
+
+			if (session.rights != URIGHTS_ADMIN)
+				return;
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, RemoteSharing, TabsEnabled FROM USERS ORDER BY ID ASC");
@@ -12363,24 +12368,17 @@ namespace http
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
 					ii++;
 				}
+				root["status"] = "OK";
 			}
 		}
 
 		void CWebServer::RType_Mobiles(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			bool bHaveUser = (!session.username.empty());
-			int urights = 3;
-			if (bHaveUser)
-			{
-				int iUser = FindUser(session.username.c_str());
-				if (iUser != -1)
-					urights = static_cast<int>(m_users[iUser].userrights);
-			}
-			if (urights < 2)
-				return;
-
-			root["status"] = "OK";
+			root["status"] = "ERR";
 			root["title"] = "Mobiles";
+
+			if (session.rights != URIGHTS_ADMIN)
+				return;
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name COLLATE NOCASE ASC");
@@ -12397,6 +12395,7 @@ namespace http
 					root["result"][ii]["DeviceType"] = sd[5];
 					ii++;
 				}
+				root["status"] = "OK";
 			}
 		}
 
