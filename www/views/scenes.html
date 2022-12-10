@@ -2,7 +2,7 @@
 	<gz-back-to-top></gz-back-to-top>
 	<div ng-include="'views/inc_topbar.html'"></div>
 
-	<div id="scenecontent"></div>
+	<div id="scenecontent" class="devicesList"></div>
 </div>
 <div id="dialog-addscene">
     <form>
@@ -17,6 +17,28 @@
 				<select id="combotype" style="width:120px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="Scene">Scene</option>
 					<option value="1" data-i18n="Group">Group</option>
+				</select>
+			</td>
+        </tr>
+	    </table>
+    </form>
+</div>
+<div id="dialog-addmanualactivationdevice">
+    <form>
+        <table class="display" id="manualtable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Device"></span>: </label></td>
+			<td>
+				<select id="comboswitch" style="width:120px" class="combobox ui-corner-all">
+				</select>
+			</td>
+        </tr>
+        <tr>
+			<td align="right"><label><span data-i18n="Code"></span>: </label></td>
+			<td>
+				<select id="combocode" style="width:120px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Off">Off</option>
+					<option value="1" data-i18n="On" selected="selected">On</option>
 				</select>
 			</td>
         </tr>
@@ -85,6 +107,7 @@
 				<td>
 					<a class="btnstyle3-dis" id="removecode" data-i18n="Remove Device">Remove Device</a>
 					<button id="addcode" class="btn btn-small btn-success" type="button" onclick="AddCode();" data-i18n="Add Device">Add Device</button>
+					<button id="addmanualcode" class="btn btn-small btn-info" type="button" onclick="AddManualCode();" data-i18n="Add Manual Light/Switch Device">Add Manual Device</button>
 				</td>
 				<td align="right">
 					<a class="btnstyle3" onclick="ClearCodes();" data-i18n="Clear">Clear</a>

@@ -1818,7 +1818,6 @@ INPUT.livesearch:focus{
 	margin-left: 1px;
 	color: #aaa;
 	font-size: 10px;
-
 }
 .tbSun{
 	margin-left: 4px;
@@ -1828,7 +1827,6 @@ INPUT.livesearch:focus{
 	float: right;
 	white-space: nowrap;
 }
-
 #tbLinks A{
 	margin-left: 5px;
 	margin-bottom: 10px;
@@ -1852,12 +1850,33 @@ INPUT.livesearch:focus{
 	}
 }
 
-.itemBlock{
+/* mimic the margins done by the (removed when filtering) 'row' Bootstrap Class */
+.devicesList{
+
+}
+.devicesListFiltered{
+	margin-left: -20px;
+}
+@media (max-width: 767px){
+	.devicesListFiltered{
+		margin-left: 0;
+	}	
+}
+@media (min-width: 768px) and (max-width: 979px){
+	.devicesListFiltered{
+		margin-left: -20px;
+	}	
+}
+@media (min-width: 1200px){
+	.devicesListFiltered{
+		margin-left: -16px;
+	}	
 }
 
-.livesearchshown{
-	margin-left: 5px;
-	margin-right: 5px;
+.itemBlock{
+
+}
+.liveSearchShown{
 	float: left;
 }
 
@@ -1865,8 +1884,7 @@ SECTION.dashCategory{
 	display: block;
 	overflow: hidden;
 }
-
-SECTION.dashCategory .livesearchshown{
+SECTION.dashCategory .liveSearchShown{
 	margin: 0;
 }
 
