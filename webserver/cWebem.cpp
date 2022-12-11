@@ -1315,13 +1315,22 @@ namespace http {
 			if(!parse_auth_header(req, &_ah))
 				return false;
 
+			return CheckUserAuthorization(user, &_ah);
+		}
+
+		bool cWebemRequestHandler::CheckUserAuthorization(std::string &user, struct ah *ah)
+		{
 			// Check if valid password has been provided for the user
 			for (const auto &my : myWebem->m_userpasswords)
 			{
-				if (my.Username == _ah.user && my.userrights != URIGHTS_CLIENTID)
+				if (my.Username == ah->user && my.userrights != URIGHTS_CLIENTID)
 				{
-					user = _ah.user;	// At least we know it is an existing User
-					return check_password(&_ah, my.Password);
+					user = ah->user;	// At least we know it is an existing User
+					if (check_password(ah, my.Password))
+					{
+						ah->qop = std::to_string(my.userrights);
+						return true;
+					}
 				}
 			}
 			return false;
@@ -1384,10 +1393,12 @@ namespace http {
 					return 0;
 				}
 
-				ah->method = "BASIC";
 				ah->user = decoded.substr(0, npos);
 				ah->response = decoded.substr(npos + 1);
-				_log.Debug(DEBUG_AUTH, "[Basic] Found a Basic Auth Header (%s)", ah->user.c_str());
+				bool bValidUP = CheckUserAuthorization(ah->user, ah);
+				_log.Debug(DEBUG_AUTH, "[Basic] Found a %sValid Basic Auth Header (%s)", (bValidUP ? "" : "In"), ah->user.c_str());
+				if(bValidUP)
+					ah->method = "BASIC";
 				return 1;
 			}
 			// Bearer Auth header
@@ -2080,6 +2091,8 @@ namespace http {
 
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
+			bool bTrustedNetwork = false;
+
 			session.rights = -1; // no rights
 			session.id = "";
 			session.username = "";
@@ -2101,6 +2114,7 @@ namespace http {
 				}
 				if (session.rights == -1)
 					_log.Debug(DEBUG_AUTH, "[Auth Check] Trusted network exception detected, but no Admin User found!");
+				bTrustedNetwork = true;
 			}
 
 			//Check for valid JWT token
@@ -2116,6 +2130,19 @@ namespace http {
 					session.auth_token = _ah.nc;
 					session.rights = std::atoi(_ah.qop.c_str());
 					return true;
+				}
+				else if (_ah.method == "BASIC")
+				{
+					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					{
+						_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
+						session.isnew = false;
+						session.rememberme = false;
+						session.username = _ah.user;
+						session.auth_token = _ah.nc;
+						session.rights = std::atoi(_ah.qop.c_str());
+						return true;
+					}
 				}
 			}
 
@@ -2195,16 +2222,8 @@ namespace http {
 				// invalid cookie
 				if (myWebem->m_authmethod != AUTH_BASIC)
 				{
-					// Check if we need to bypass authentication (not when using basic-auth)
-					for (const auto &url : myWebem->myWhitelistURLs)
-						if (req.uri.find(url) == 0)
-							return true;
-
-					std::string cmdparam;
-					if (GetURICommandParameter(req.uri, cmdparam))
-						for (const auto &cmd : myWebem->myWhitelistCommands)
-							if (cmdparam.find(cmd) == 0)
-								return true;
+					if (CheckAuthByPass(req))
+						return true;
 
 					// Force login form
 					send_authorization_request(rep);
@@ -2212,18 +2231,11 @@ namespace http {
 				}
 			}
 
+			// Not sure why this is here? Isn't this the case for all situation where the session ID is empty? Not only with admins
 			if ((session.rights == URIGHTS_ADMIN) && (session.id.empty()))
 			{
 				session.isnew = true;
 				return true;
-			}
-
-			//patch to let always support basic authentication function for script calls
-			if (req.uri.find("json.htm") != std::string::npos)
-			{
-				//Check first if we have a basic auth
-				if (authorize(session, req, rep))
-					return true;
 			}
 
 			if (myWebem->m_authmethod == AUTH_BASIC)
