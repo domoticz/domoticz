@@ -815,36 +815,24 @@ namespace http
 			if (rtype == "command")
 			{
 				std::string cparam = request::findValue(&req, "param");
-				if (cparam.empty())
+				if (!cparam.empty())
 				{
-					cparam = request::findValue(&req, "dparam");
-					if (cparam.empty())
-					{
-						goto exitjson;
-					}
+					_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
+					HandleCommand(cparam, session, req, root);
 				}
-				if (cparam == "dologout")
-				{
-					session.forcelogin = true;
-					root["status"] = "OK";
-					root["title"] = "Logout";
-					goto exitjson;
-				}
-				_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage() :%s :%s ", cparam.c_str(), req.uri.c_str());
-				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else
 			{
 				HandleRType(rtype, session, req, root);
 			}
-		exitjson:
+
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.empty())
+			if (!jcallback.empty())
 			{
-				reply::set_content(&rep, root.toStyledString());
+				reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
 				return;
 			}
-			reply::set_content(&rep, "var data=" + root.toStyledString() + '\n' + jcallback + "(data);");
+			reply::set_content(&rep, root.toStyledString());
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession& session, const request& req, Json::Value& root)

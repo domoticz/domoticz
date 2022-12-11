@@ -4205,11 +4205,7 @@ namespace http {
 			std::string cparam = request::findValue(&req, "param");
 			if (cparam.empty())
 			{
-				cparam = request::findValue(&req, "dparam");
-				if (cparam.empty())
-				{
-					return;
-				}
+				return;
 			}
 
 			std::vector<std::vector<std::string> > result;
