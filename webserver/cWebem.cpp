@@ -2400,36 +2400,12 @@ namespace http {
 			}
 			else if (!realHost.empty())
 			{
-				session.remote_host = realHost;
-				rep.originHost = realHost;
-			}
-
-			/*
-			for (const auto& ittNetwork : myWebem->m_localnetworks)
-			{
-				if (ittNetwork.ip_string.empty())
-					continue;
-				if (session.remote_host == ittNetwork.ip_string)
-				{
-					const char* host_header = request::get_req_header(&req, "X-Forwarded-For");
-					if (host_header != nullptr)
-					{
-						if (strstr(host_header, ",") != nullptr)
-						{
-							//Multiple proxies are used... this is not very common
-							host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-							if (!host_header)
-							{
-								_log.Log(LOG_ERROR, "[web:%s]: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
-								rep = reply::stock_reply(reply::forbidden);
-								return;
-							}
-						}
-						session.remote_host = host_header;
-					}
+				if (AreWeInTrustedNetwork(session.remote_host))
+				{	// We only use Proxy header information if the connection Domotic receives comes from a Trusted network
+					session.remote_host = realHost;		// replace the host of the connection with the originating host behind the proxies
+					rep.originHost = realHost;
 				}
 			}
-			*/
 
 			std::string remoteClientKey = session.remote_host + session.local_port;
 			auto itt_rc = m_remote_web_clients.find(remoteClientKey);
