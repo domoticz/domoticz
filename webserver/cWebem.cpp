@@ -1370,6 +1370,7 @@ namespace http {
 				{
 					return 0;
 				}
+				ah->method = "X509";
 				_log.Debug(DEBUG_AUTH, "[X509] Found a X509 Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
@@ -1383,6 +1384,7 @@ namespace http {
 					return 0;
 				}
 
+				ah->method = "BASIC";
 				ah->user = decoded.substr(0, npos);
 				ah->response = decoded.substr(npos + 1);
 				_log.Debug(DEBUG_AUTH, "[Basic] Found a Basic Auth Header (%s)", ah->user.c_str());
@@ -2058,10 +2060,29 @@ namespace http {
 			return true;
 		}
 
+		bool cWebemRequestHandler::CheckAuthByPass(const request& req)
+		{
+			//Check if we need to bypass authentication for this request (URL or command)
+			for (const auto &url : myWebem->myWhitelistURLs)
+				if (req.uri.find(url) == 0)
+					return true;
+
+			std::string cmdparam;
+			if (GetURICommandParameter(req.uri, cmdparam))
+			{
+				for (const auto &cmd : myWebem->myWhitelistCommands)
+					if (cmdparam.find(cmd) == 0)
+						return true;
+			}
+
+			return false;
+		}
+
 		bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 		{
 			session.rights = -1; // no rights
 			session.id = "";
+			session.username = "";
 
 			if (myWebem->m_userpasswords.empty())
 			{
@@ -2191,7 +2212,7 @@ namespace http {
 				}
 			}
 
-			if ((session.rights == 2) && (session.id.empty()))
+			if ((session.rights == URIGHTS_ADMIN) && (session.id.empty()))
 			{
 				session.isnew = true;
 				return true;
@@ -2223,19 +2244,6 @@ namespace http {
 					return false;
 				}
 				return true;
-			}
-
-			//Check if we need to bypass authentication (not when using basic-auth)
-			for (const auto &url : myWebem->myWhitelistURLs)
-				if (req.uri.find(url) == 0)
-					return true;
-
-			std::string cmdparam;
-			if (GetURICommandParameter(req.uri, cmdparam))
-			{
-				for (const auto &cmd : myWebem->myWhitelistCommands)
-					if (cmdparam.find(cmd) == 0)
-						return true;
 			}
 
 			return false;
@@ -2382,6 +2390,7 @@ namespace http {
 			session.remote_port = req.host_remote_port;
 			session.local_host = req.host_local_address;
 			session.local_port = req.host_local_port;
+			session.rights = -1;
 
 			// Let's examine possible proxies, etc.
 			std::string realHost;
@@ -2445,7 +2454,7 @@ namespace http {
 				bool expired = false;
 				if(parse_cookie(req, sSID, sAuthToken, szTime, expired))
 				{
-					_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
+					_log.Debug(DEBUG_AUTH, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
 					myWebem->RemoveSession(sSID);
 					removeAuthToken(sSID);
 					send_remove_cookie(rep);
@@ -2459,11 +2468,15 @@ namespace http {
 
 			// Check if this is an upgrade request to a websocket connection
 			bool isUpgradeRequest = is_upgrade_request(session, req, rep);
+
+			// Does the request needs to be Authorized?
+			bool needsAuthentication = (!CheckAuthByPass(req));
 			bool isAuthenticated = CheckAuthentication(session, req, rep);
-			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, isAuthenticated, session.username.c_str());
+
+			_log.Debug(DEBUG_AUTH,"[web:%s] isPage %d isAction %d isUpgrade %d needsAuthentication %d isAuthenticated %d (%s)", myWebem->GetPort().c_str(), isPage, isAction, isUpgradeRequest, needsAuthentication, isAuthenticated, session.username.c_str());
 
 			// Check user authentication on each page or action, if it exists.
-			if ((isPage || isAction || isUpgradeRequest) && !isAuthenticated)
+			if ((isPage || isAction || isUpgradeRequest) && needsAuthentication && !isAuthenticated)
 			{
 				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Did not find suitable Authorization!", myWebem->GetPort().c_str());
 				send_authorization_request(rep);
