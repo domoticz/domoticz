@@ -2435,7 +2435,6 @@ namespace http {
 
 			session.reply_status = reply::ok;
 			session.isnew = false;
-			session.forcelogin = false;
 			session.rememberme = false;
 
 			rep.status = reply::ok;
@@ -2472,7 +2471,6 @@ namespace http {
 				}
 				session.username = "";
 				session.rights = -1;
-				session.forcelogin = true;
 				rep = reply::stock_reply(reply::no_content);
 				return;
 			}
@@ -2639,18 +2637,6 @@ namespace http {
 				session.isnew = false;
 				myWebem->AddSession(session);
 				send_cookie(rep, session);
-			}
-			else if (session.forcelogin == true)
-			{
-				_log.Debug(DEBUG_WEBSERVER, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
-
-				myWebem->RemoveSession(session.id);
-				removeAuthToken(session.id);
-				if (myWebem->m_authmethod == AUTH_BASIC)
-				{
-					send_authorization_request(rep);
-				}
-
 			}
 			else if (!session.id.empty())
 			{

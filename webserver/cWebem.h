@@ -54,7 +54,6 @@ namespace http
 			int rights = 0;
 			bool rememberme = false;
 			bool isnew = false;
-			bool forcelogin = false;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
