@@ -1393,12 +1393,10 @@ namespace http {
 					return 0;
 				}
 
+				ah->method = "BASIC";
 				ah->user = decoded.substr(0, npos);
 				ah->response = decoded.substr(npos + 1);
-				bool bValidUP = CheckUserAuthorization(ah->user, ah);
-				_log.Debug(DEBUG_AUTH, "[Basic] Found a %sValid Basic Auth Header (%s)", (bValidUP ? "" : "In"), ah->user.c_str());
-				if(bValidUP)
-					ah->method = "BASIC";
+				_log.Debug(DEBUG_AUTH, "[Basic] Found a Basic Auth Header (%s)", ah->user.c_str());
 				return 1;
 			}
 			// Bearer Auth header
@@ -1548,7 +1546,9 @@ namespace http {
 			return 0;
 		}
 
-		// Authorize against the opened passwords file. Return 1 if authorized.
+		// Authorize against the internal Userlist. Credentials coming via Authorization header or URL parameters.
+		// Return 1 if authorized.
+		// Only used when webserver Authentication method is set to Auth_Basic.
 		int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, reply& rep)
 		{
 			struct ah _ah;
@@ -2096,6 +2096,7 @@ namespace http {
 			session.rights = -1; // no rights
 			session.id = "";
 			session.username = "";
+			session.auth_token = "";
 
 			if (myWebem->m_userpasswords.empty())
 			{
@@ -2127,19 +2128,17 @@ namespace http {
 					session.isnew = false;
 					session.rememberme = false;
 					session.username = _ah.user;
-					session.auth_token = _ah.nc;
 					session.rights = std::atoi(_ah.qop.c_str());
 					return true;
 				}
 				else if (_ah.method == "BASIC")
 				{
-					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos)	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
+					if (bTrustedNetwork && req.uri.find("json.htm") != std::string::npos && CheckUserAuthorization(_ah.user, &_ah))	// Exception for the main API endpoint so scripts can execute them with 'just' Basic AUTH
 					{
 						_log.Debug(DEBUG_AUTH, "[Auth Check] Found Basic Authorization for json.htm call: Method %s, Userdata %s, rights %s", _ah.method.c_str(), _ah.user.c_str(), _ah.qop.c_str());
 						session.isnew = false;
 						session.rememberme = false;
 						session.username = _ah.user;
-						session.auth_token = _ah.nc;
 						session.rights = std::atoi(_ah.qop.c_str());
 						return true;
 					}
