@@ -518,27 +518,6 @@ define(['app'], function (app) {
 					if (typeof data.SmartMeterType != 'undefined') {
 						$("#p1metertable #comboP1MeterType").val(data.SmartMeterType);
 					}
-					if (typeof data.EnableTabFloorplans != 'undefined') {
-						$("#activemenustable #EnableTabFloorplans").prop('checked', data.EnableTabFloorplans == 1);
-					}
-					if (typeof data.EnableTabLights != 'undefined') {
-						$("#activemenustable #EnableTabLights").prop('checked', data.EnableTabLights == 1);
-					}
-					if (typeof data.EnableTabScenes != 'undefined') {
-						$("#activemenustable #EnableTabScenes").prop('checked', data.EnableTabScenes == 1);
-					}
-					if (typeof data.EnableTabTemp != 'undefined') {
-						$("#activemenustable #EnableTabTemp").prop('checked', data.EnableTabTemp == 1);
-					}
-					if (typeof data.EnableTabWeather != 'undefined') {
-						$("#activemenustable #EnableTabWeather").prop('checked', data.EnableTabWeather == 1);
-					}
-					if (typeof data.EnableTabUtility != 'undefined') {
-						$("#activemenustable #EnableTabUtility").prop('checked', data.EnableTabUtility == 1);
-					}
-					if (typeof data.EnableTabCustom != 'undefined') {
-						$("#activemenustable #EnableTabCustom").prop('checked', data.EnableTabCustom == 1);
-					}
 					if (typeof data.NotificationSensorInterval != 'undefined') {
 						$("#nitable #comboNotificationSensorInterval").val(data.NotificationSensorInterval);
 					}

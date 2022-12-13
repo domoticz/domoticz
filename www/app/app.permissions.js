@@ -7,7 +7,8 @@ define(['angular'], function () {
             setPermissions: function (permissions) {
                 permissionList = permissions;
                 window.my_config = {
-                    userrights: permissionList.rights
+                    userrights: permissionList.rights,
+                    username: permissionList.user
                 };
                 $rootScope.$broadcast('permissionsChanged');
             },
