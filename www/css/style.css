@@ -1771,23 +1771,24 @@ span.evomobile {
 }
 
 #tbFiltSearch INPUT{
-	width: 110px;
-}
-INPUT.livesearch{
-	width: 146px;
+	width: 140px;
 	padding: 1px 5px;
 	margin-bottom: 4px;
 	font-size: 13px;
-	line-height: 100%  !important;
+	line-height: 100%;
 	border-color: transparent;
 	border-radius: 7px;
 	-moz-border-radius: 7px;
 	-webkit-border-radius: 7px;
 }
 
-INPUT.livesearch:focus{
-	background-color: rgb(13, 13, 13) !important;
-	color: #eee !important;
+#tbFiltSearch INPUT:focus{
+	background-color: rgb(40, 55, 80);
+	color: #eee;
+	outline: none;
+	border-color: rgba(200, 200, 255,0.3);
+	box-shadow: none;
+	-webkit-box-shadow: none;
 }
 
 #tbFiltRooms{
