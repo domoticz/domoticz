@@ -1817,9 +1817,13 @@ span.evomobile {
 #tbSunGroup{
 	vertical-align: middle;
 	margin-left: 1px;
-	color: #aaa;
 	font-size: 10px;
 }
+#tbSunGroup A{
+	color: #ccc;
+	text-decoration: none;
+}
+
 .tbSun{
 	margin-left: 4px;
 }
